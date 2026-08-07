@@ -403,6 +403,98 @@
       (is (= :rejected (:status proof)) label)
       (is (= expected (:reason proof)) label))))
 
+(deftest sh08-recursive-unsupported-external-primitive-keeps-evidence
+  (let [proof
+        (recursive-proof
+         (recursive-carrier
+          [[[:nodes 8 :attributes :literal-kind] :decimal]]))
+        offending-node (:node proof)]
+    (is (= :rejected (:status proof)))
+    (is (= :unsupported-recursive-primitive-type (:reason proof)))
+    (is (= :recursive-external-literal-node (:node-id offending-node)))
+    (is (= :recursive-external-literal-node
+           (get-in offending-node [:source :syntax-id])))
+    (is (= {:line 1 :column 1 :length 1}
+           (get-in offending-node [:source :semantic-span])))
+    (is (= [] (get-in offending-node [:source :origin-chain])))
+    (is (nil? (get-in offending-node [:source :generated-origin])))))
+
+(deftest sh08-recursive-primitive-family-diagonal-and-conflicts
+  (let [primitive-kinds
+        [[:integer :gravity.type/integer]
+         [:boolean :gravity.type/bool]
+         [:string :gravity.type/string]]]
+    (doseq [[literal-kind expected-type] primitive-kinds]
+      (let [carrier
+            (recursive-carrier
+             [[[:nodes 6 :attributes :literal-kind] literal-kind]
+              [[:nodes 8 :attributes :literal-kind] literal-kind]])
+            proof (recursive-proof carrier)
+            skeleton
+            (invoke-c7 'sh08-ft-function-type-skeleton
+                       [(first (:function-records carrier)) (:module carrier)])
+            complete
+            (invoke-c7 'sh08-ft-recursive-complete-function
+                       [skeleton proof])
+            node-table
+            (into {} (map (fn [n] [(:node-id n) n]) (:nodes carrier)))
+            inference
+            (invoke-c7
+             'sh08-ft-infer-acyclic-with-context
+             [(:nodes carrier) node-table [] (:definitions carrier)
+              (:calls carrier) (:edges carrier)
+              {(:function-id complete) complete}
+              {(get-in proof [:definition :binding-id]) complete}
+              64 proof])
+            call-facts
+            (invoke-c7
+             'sh08-ft-call-facts
+             [(:calls carrier) (:edges carrier) node-table
+              (:type-table inference)
+              {(:function-id complete) complete}
+              (:module carrier)])
+            proof-input (invoke-c7 'sh08-ft-recursive-proof-input [proof])
+            ledger (invoke-c7 'sh08-ft-recursive-constraint-ledger [proof])]
+        (is (= :accepted (:status proof)) (str literal-kind))
+        (is (= expected-type (:base-type proof)) (str literal-kind))
+        (is (= [expected-type] (:parameter-types proof)) (str literal-kind))
+        (is (= expected-type (get-in complete [:parameters 0 :type])))
+        (is (= expected-type (:return complete)))
+        (is (= :pending-sh10 (:ownership-constraints complete)))
+        (is (= [:pending-sh09] (:thrown-error-effects complete)))
+        (is (= :converged (:convergence-status inference)))
+        (is (= [] (:diagnostics inference)))
+        (is (= expected-type (get (:type-table inference)
+                                  :recursive-call-node)))
+        (is (= expected-type (get (:type-table inference)
+                                  :recursive-body-node)))
+        (is (= expected-type (get-in (:binding-types inference)
+                                     [:recursive-parameter-binding])))
+        (is (= expected-type (get-in call-facts [0 :result-type])))
+        (is (= expected-type (get-in call-facts [1 :result-type])))
+        (is (= (get (:edges carrier) 0)
+               (:recursive-edge proof-input)))
+        (is (= (get (:edges carrier) 1)
+               (get-in proof-input [:parameter-evidence-call :edge])))
+        (is (= :recursive-fixed-point (get-in ledger [0 :kind])))
+        (is (= :meta (:recursive-call-profile proof-input)))
+        (is (= :meta (get-in proof-input
+                              [:parameter-evidence-call :profile])))))
+    (doseq [[base-kind base-type]
+            primitive-kinds
+            [evidence-kind evidence-type]
+            primitive-kinds
+            :when (not= base-kind evidence-kind)]
+      (let [proof
+            (recursive-proof
+             (recursive-carrier
+              [[[:nodes 6 :attributes :literal-kind] base-kind]
+               [[:nodes 8 :attributes :literal-kind] evidence-kind]]))]
+        (is (= :rejected (:status proof)))
+        (is (= :recursive-result-type-conflict (:reason proof)))
+        (is (= base-type (:expected proof)))
+        (is (= evidence-type (:actual proof)))))))
+
 (deftest sh08-recursive-nonconvergence-is-precise
   (let [carrier (recursive-carrier)
         proof (recursive-proof carrier)
@@ -532,6 +624,130 @@
            (:status
             (invoke-c7 'sh08-verify-function-type-result
                        [request result]))))
+    (doseq [candidate altered-candidates]
+      (is (= :rejected
+             (:status
+              (invoke-c7 'sh08-verify-function-type-result
+                         [request candidate])))))))
+
+(deftest sh08-recursive-authenticated-string-gravity-boundary
+  ;; Independently selectable authenticated boundary for the String diagonal.
+  ;; The paired .qst is byte-parity only and is not built here.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [namespace 'gravity.self-hosting.sh08-function-call-type-test
+        fixture-artifact (deref (ns-resolve namespace 'fixture-artifact))
+        function-request (deref (ns-resolve namespace 'function-request))
+        artifact (fixture-artifact "accepted"
+                                   "function-self-recursive-string-type"
+                                   ".gravity")
+        request (function-request artifact)
+        result (invoke-c7 'sh08-function-type-core-artifact [request])
+        proof (:recursive-proof result)
+        function-id (:function-syntax-id proof)
+        function-entry
+        (some #(when (= function-id (:function-id %)) %)
+              (:function-type-table result))
+        recursive-call-id (:recursive-call-core-node-id proof)
+        evidence-call-id (:parameter-evidence-call-core-node-id proof)
+        source-edges (get-in request [:canonical-core-artifact :call-edges])
+        source-recursive-edge
+        (some #(when (= recursive-call-id (:call-core-node-id %)) %)
+              source-edges)
+        source-evidence-edge
+        (some #(when (= evidence-call-id (:call-core-node-id %)) %)
+              source-edges)
+        recursive-facts (:recursive-call-facts result)
+        recursive-constraint-index
+        (first
+         (keep-indexed
+          (fn [index constraint]
+            (when (= :recursive-fixed-point (:kind constraint)) index))
+          (:constraint-ledger result)))
+        pending
+        [:mutual-recursion :unbounded-recursion :recursive-captures
+         :recursive-higher-order :recursive-polymorphism
+         :higher-order-functions :records :unions :protocols :generics
+         :casts :dynamic-boundaries]
+        verification
+        (invoke-c7 'sh08-verify-function-type-result [request result])
+        altered-candidates
+        [(assoc-in result [:function-type-table 0 :return]
+                   :gravity.type/integer)
+         (assoc-in result [:recursive-proof :base-type]
+                   :gravity.type/integer)
+         (assoc-in result [:identity-input :recursive-proof :base-type]
+                   :gravity.type/integer)
+         (assoc-in result [:typed-core :recursive-proof :base-type]
+                   :gravity.type/integer)
+         (assoc-in result [:recursive-call-facts 0 :dispatch]
+                   :altered-dispatch)
+         (assoc-in result [:constraint-ledger recursive-constraint-index :status]
+                   :rejected)]]
+    (is (= :accepted (:status result)))
+    (is (= :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base
+           (:scope result)))
+    (is (= :gravity/sh08-authoritative-recursive-proof-v1 (:domain proof)))
+    (is (= :gravity.type/string (:base-type proof)))
+    (is (= :gravity.type/string (:base-type
+                                 (get-in result [:identity-input
+                                                 :recursive-proof]))))
+    (is (= :gravity.type/string (:return function-entry)))
+    (is (= :gravity.type/string
+           (get-in function-entry [:parameters 0 :type])))
+    (is (= :pending-sh10 (:ownership-constraints function-entry)))
+    (is (= [:pending-sh09] (:thrown-error-effects function-entry)))
+    (is (= :gravity.type/string
+           (get (:type-table result) recursive-call-id)))
+    (is (= :gravity.type/string
+           (get (:type-table result) evidence-call-id)))
+    (is (= [:self-recursive-call :external-parameter-evidence]
+           (mapv :role recursive-facts)))
+    (is (= :direct-named-self-recursion
+           (get-in recursive-facts [0 :dispatch])))
+    (is (= :external-parameter-evidence
+           (get-in recursive-facts [1 :role])))
+    (is (= :gravity.type/string
+           (get-in recursive-facts [0 :result-type])))
+    (is (= :gravity.type/string
+           (get-in recursive-facts [1 :result-type])))
+    (is (= (invoke-c7 'sh08-ft-higher-order-edge-projection
+                      [source-recursive-edge])
+           (:recursive-edge proof)
+           (get-in recursive-facts [0 :b47-edge])))
+    (is (= (invoke-c7 'sh08-ft-higher-order-edge-projection
+                      [source-evidence-edge])
+           (get-in proof [:parameter-evidence-call :edge])
+           (get-in recursive-facts [1 :external-edge])))
+    (is (= (:recursive-call-source proof)
+           (select-keys (first recursive-facts)
+                        [:syntax-id :source-span :origin-chain
+                         :generated-origin])))
+    (is (= (select-keys (:parameter-evidence-call proof)
+                        [:syntax-id :source-span :origin-chain
+                         :generated-origin])
+           (select-keys (second recursive-facts)
+                        [:syntax-id :source-span :origin-chain
+                         :generated-origin])))
+    (is (= (:definition-binding-id proof)
+           (:recursive-definition-binding-id proof)
+           (get-in recursive-facts [0 :recursive-definition-binding-id])))
+    (is (= :operator-then-arguments
+           (get-in proof [:recursive-edge :evaluation-order])))
+    (is (= (:constraint-ledger result)
+           (get-in result [:typed-core :constraints])
+           (get-in result [:identity-input :constraint-ledger])))
+    (is (= pending (:pending result)
+           (get-in result [:identity-input :pending])))
+    (is (= proof
+           (get-in result [:typed-core :recursive-proof])
+           (get-in result [:identity-input :recursive-proof])))
+    (is (= recursive-facts
+           (get-in result [:typed-core :recursive-call-facts])))
+    (is (= :converged (get-in result [:convergence :status])))
+    (is (= (get-in request [:canonical-core-artifact :provenance :source-path])
+           (get-in result [:provenance :source-path])))
+    (is (contains? (:provenance result) :actual-source-path))
+    (is (= :passed (:status verification)))
     (doseq [candidate altered-candidates]
       (is (= :rejected
              (:status

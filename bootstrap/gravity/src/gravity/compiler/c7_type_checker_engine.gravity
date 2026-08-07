@@ -2580,6 +2580,25 @@
       false)
     false))
 
+(defn sh08-ft-authoritative-primitive-type? [value]
+  (if (= value :gravity.type/integer)
+    true
+    (if (= value :gravity.type/bool)
+      true
+      (= value :gravity.type/string))))
+
+(defn sh08-ft-authoritative-primitive-type-for-node [node]
+  (if (map? node)
+    (if (= :literal (get node :core-form))
+      (let [candidate
+            (sh08-primitive-type-from-literal-kind
+             (get (get node :attributes) :literal-kind))]
+        (if (sh08-ft-authoritative-primitive-type? candidate)
+          candidate
+          nil))
+      nil)
+    nil))
+
 (defn sh08-ft-higher-order-call-node-valid?
   [call node expected-argument-count owner-function-syntax-id]
   (if (map? call)
@@ -2668,13 +2687,9 @@
                       (if (= (get function-value-node :core-form)
                              :reference)
                         (if (= (get (get function-value-node :attributes)
-                                    :binding-id)
-                               (get identity-definition :binding-id))
-                          (if (= (get value-node :core-form) :literal)
-                            (= :integer
-                               (get (get value-node :attributes)
-                                    :literal-kind))
-                            false)
+                                  :binding-id)
+                             (get identity-definition :binding-id))
+                          (= (get value-node :core-form) :literal)
                           false)
                         false)
                       false)
@@ -2866,6 +2881,15 @@
                 apply-record (get apply :record)
                 identity-definition (get identity :definition)
                 apply-definition (get apply :definition)
+                outer-value-node
+                (get node-index
+                     (first
+                      (rest
+                       (get (get apply :outer-call)
+                            :argument-node-ids))))
+                value-type
+                (sh08-ft-authoritative-primitive-type-for-node
+                 outer-value-node)
                 identity-source
                 (get (get (get identity :function-node) :source) :semantic-span)
                 identity-syntax-id
@@ -2893,8 +2917,8 @@
                  (get identity-record :parameter-binding-ids)
                  :parameters
                  [{:binding-id (get identity :parameter-binding-id)
-                   :type :gravity.type/integer}]
-                 :return :gravity.type/integer
+                   :type value-type}]
+                 :return value-type
                  :return-conflict nil
                  :fixed-arity (get identity-record :fixed-arity)
                  :latent-effects (get module :effects)
@@ -2922,8 +2946,8 @@
                  [{:binding-id (get apply :callable-binding-id)
                    :type identity-function-type}
                   {:binding-id (get apply :value-binding-id)
-                   :type :gravity.type/integer}]
-                 :return :gravity.type/integer
+                   :type value-type}]
+                 :return value-type
                  :return-conflict nil
                  :fixed-arity (get apply-record :fixed-arity)
                  :latent-effects (get module :effects)
@@ -2938,7 +2962,8 @@
                  :profile (get module :profile)
                  :target (get module :target)
                  :status :inferred}]
-            {:status :accepted
+            (if (sh08-ft-authoritative-primitive-type? value-type)
+              {:status :accepted
              :identity identity
              :apply apply
              :identity-function-type identity-function-type
@@ -2975,10 +3000,18 @@
              (get (get apply :callable-binding) :definition-syntax-id)
              :initial-binding-types
              {(get identity-definition :binding-id) identity-function-type
-              (get identity :parameter-binding-id) :gravity.type/integer
+              (get identity :parameter-binding-id) value-type
               (get apply-definition :binding-id) apply-function-type
-              (get apply :callable-binding-id) identity-function-type
-              (get apply :value-binding-id) :gravity.type/integer}})
+             (get apply :callable-binding-id) identity-function-type
+              (get apply :value-binding-id) value-type}
+             :value-type value-type
+             :outer-value-literal-kind
+             (get (get outer-value-node :attributes) :literal-kind)}
+              {:status :rejected
+               :reason :unsupported-higher-order-primitive-type
+               :node outer-value-node
+               :actual (get (get outer-value-node :attributes) :literal-kind)
+               :value-type value-type}))
           {:status :not-applicable :reason :no-complete-identity-apply-shape}))
       {:status :not-applicable :reason :no-complete-identity-shape})))
 
@@ -3047,14 +3080,15 @@
      (sh08-ft-higher-order-edge-projection (get proof :outer-edge))
      :outer-value-argument-node-id
      (first (rest (get outer-call :argument-node-ids)))
-     :outer-value-literal-kind :integer
-     :identity-parameter-type :gravity.type/integer
+     :outer-value-literal-kind
+     (get proof :outer-value-literal-kind)
+     :identity-parameter-type (get proof :value-type)
      :apply-callable-parameter-type (get proof :identity-function-type)
-     :apply-value-parameter-type :gravity.type/integer
+     :apply-value-parameter-type (get proof :value-type)
      :identity-function-type (get proof :identity-function-type)
      :apply-function-type (get proof :apply-function-type)
-     :inner-result-type :gravity.type/integer
-     :outer-result-type :gravity.type/integer}))
+     :inner-result-type (get proof :value-type)
+     :outer-result-type (get proof :value-type)}))
 
 (defn sh08-ft-higher-order-call-proof-facts [proof]
   (let [identity (get proof :identity)
@@ -3079,7 +3113,7 @@
       :source-span (get proof :inner-source)
       :b47-edge
       (sh08-ft-higher-order-edge-projection (get proof :inner-edge))
-      :result-type :gravity.type/integer
+      :result-type (get proof :value-type)
       :dispatch :indirect-function-value}
      {:role :outer-direct-call
       :call-core-node-id (get outer-call :core-node-id)
@@ -3096,7 +3130,7 @@
       (sh08-ft-higher-order-edge-projection (get proof :outer-edge))
       :selected-apply-function-syntax-id
       (get apply-record :function-syntax-id)
-      :result-type :gravity.type/integer
+      :result-type (get proof :value-type)
       :dispatch :direct-local-function}]))
 
 (defn sh08-ft-higher-order-pending [base-pending]
@@ -3123,9 +3157,7 @@
 ; call that supplies every parameter slot. Everything else remains an explicit
 ; diagnostic rather than being silently approximated.
 (defn sh08-ft-recursive-known-type? [value]
-  (if (sh08-ft-unknown? value)
-    false
-    (if (map? value) false true)))
+  (sh08-ft-authoritative-primitive-type? value))
 
 (defn sh08-ft-recursive-reference-valid?
   [node binding-ids definition-binding-id function-syntax-id]
@@ -3215,7 +3247,35 @@
               (sh08-primitive-type-from-literal-kind
                (get (get node :attributes) :literal-kind))
               :gravity.type/unknown)]
-        (recur (rest remaining) (conj values literal-type))))))
+        (recur
+         (rest remaining)
+         (conj values
+               (if (sh08-ft-authoritative-primitive-type? literal-type)
+                 literal-type
+                 :gravity.type/unknown)))))))
+
+(defn sh08-ft-recursive-unsupported-primitive-node
+  [argument-node-ids node-index]
+  (if (= (count argument-node-ids) 0)
+    nil
+    (let [node (get node-index (first argument-node-ids))
+          candidate
+          (if (= :literal (get node :core-form))
+            (sh08-primitive-type-from-literal-kind
+             (get (get node :attributes) :literal-kind))
+            nil)]
+      (if (if (map? node)
+            (if (= :literal (get node :core-form))
+              (if (= candidate nil)
+                false
+                (if (sh08-ft-authoritative-primitive-type? candidate)
+                  false
+                  true))
+              false)
+            false)
+        node
+        (sh08-ft-recursive-unsupported-primitive-node
+         (rest argument-node-ids) node-index)))))
 
 (defn sh08-ft-recursive-parameter-evidence
   [calls edges node-index function-record definition-binding binding-table]
@@ -3249,11 +3309,18 @@
               node (get node-index (get call :core-node-id))
               types (sh08-ft-recursive-argument-types
                      (get call :argument-node-ids) node-index)
+              unsupported-node
+              (sh08-ft-recursive-unsupported-primitive-node
+               (get call :argument-node-ids) node-index)
               valid-edge
               (sh08-ft-recursive-call-edge-valid?
                edge call node function-record definition-binding
                binding-table false)]
-          (if (if valid-edge
+          (if (map? unsupported-node)
+            {:status :rejected
+             :reason :unsupported-recursive-primitive-type
+             :node unsupported-node}
+            (if (if valid-edge
                 (if (= (get edge :caller-function-syntax-id) nil)
                   (if (= (get edge :caller-function-core-node-id) nil)
                     (if (= arity (count types))
@@ -3269,7 +3336,7 @@
                           :edge edge
                           :node node
                           :types types}))
-            (recur (rest remaining) (rest remaining-edges) candidates)))))))
+            (recur (rest remaining) (rest remaining-edges) candidates))))))))
 
 (defn sh08-ft-recursive-base-evidence
   [body node-index recursive-call-id]
@@ -3320,11 +3387,13 @@
 (defn sh08-ft-recursive-rejection-evidence [result node component]
   (if (= :accepted (get result :status))
     result
-    (if (map? node)
-      (assoc result :node node)
-      (if (map? component)
-        (assoc result :component component)
-        result))))
+    (if (map? (get result :node))
+      result
+      (if (map? node)
+        (assoc result :node node)
+        (if (map? component)
+          (assoc result :component component)
+          result)))))
 
 (defn sh08-ft-recursive-diagnostic [proof module]
   (let [node (get proof :node)
@@ -3489,9 +3558,10 @@
                                    :expected (get base-evidence :type)
                                    :actual
                                    (first (get parameter-evidence :types))})
-                                {:status :rejected
-                                 :reason (get parameter-evidence :reason)
-                                 :actual (get parameter-evidence :actual)})
+                              {:status :rejected
+                               :reason (get parameter-evidence :reason)
+                               :actual (get parameter-evidence :actual)
+                               :node (get parameter-evidence :node)})
                               {:status :rejected
                                :reason (get base-evidence :reason)})
                             {:status :rejected :reason :recursive-capture-unsupported})
@@ -3765,7 +3835,7 @@
                               (= (get node :node-id)
                                  (get context :inner-call-core-node-id))
                               false)
-                          :gravity.type/integer
+                          (get context :value-type :gravity.type/unknown)
                           :gravity.type/unknown)))
                     :gravity.type/unknown)))))))))))
 
@@ -3857,7 +3927,8 @@
             parameters
             (if higher-order-call?
               [{:binding-id (get context :apply-value-binding-id)
-                :type :gravity.type/integer}]
+                :type (get context :value-type
+                           :gravity.type/unknown)}]
               (if (map? callee) (get callee :parameters) []))
             arity-ok (= (count args) (count parameters))]
         (if (if (= (get edge :classification) :local-function)
@@ -4238,7 +4309,7 @@
               false)
             result-type
             (if higher-order-call?
-              :gravity.type/integer
+              (get context :value-type :gravity.type/unknown)
               (if (map? callee)
                 (get callee :return)
                 :gravity.type/unknown))
@@ -4372,23 +4443,49 @@
                (get products :calls)
                (get products :call-edges)
                module)]
-          (if (if (> (count (get products :recursion-components)) 0)
+          (let [unsupported-higher-order?
+                (= :unsupported-higher-order-primitive-type
+                   (get higher-order-proof :reason))]
+            (if (if unsupported-higher-order?
+                  true
+                  (if (> (count (get products :recursion-components)) 0)
                 (if (= :accepted (get recursive-proof :status)) false true)
-                false)
-          {:artifact :gravity/sh08-function-typed-core-template
-           :schema-version 3
-           :status :rejected
-           :scope :first-order-fixed-arity-functions-locals-calls
-           :authentication-status
-           :host-resolved-b47-verification-boundary
-           :module module
-           :sh07-shaped-artifact-id (get core-artifact :artifact-id)
-           :diagnostics
-           [(sh08-ft-recursive-diagnostic recursive-proof module)]
-           :pending [:recursive-type-annotations
-                     :higher-order-functions :records :unions
-                     :protocols :generics :casts :dynamic-boundaries]}
-          (let [base-function-skeletons
+                false))
+              (if unsupported-higher-order?
+                {:artifact :gravity/sh08-function-typed-core-template
+                 :schema-version 3
+                 :status :rejected
+                 :scope :capture-free-higher-order-fixed-arity-one-hop
+                 :authentication-status
+                 :host-resolved-b47-verification-boundary
+                 :module module
+                 :sh07-shaped-artifact-id (get core-artifact :artifact-id)
+                 :diagnostics
+                 [(sh08-ft-diagnostic
+                   "C7-ANNOTATION"
+                   (get higher-order-proof :node)
+                   module
+                   :supported-higher-order-primitive-type
+                   (get higher-order-proof :actual)
+                   :unsupported-higher-order-primitive-type
+                   {})]
+                 :pending [:recursive-type-annotations
+                           :higher-order-functions :records :unions
+                           :protocols :generics :casts :dynamic-boundaries]}
+                {:artifact :gravity/sh08-function-typed-core-template
+                 :schema-version 3
+                 :status :rejected
+                 :scope :first-order-fixed-arity-functions-locals-calls
+                 :authentication-status
+                 :host-resolved-b47-verification-boundary
+                 :module module
+                 :sh07-shaped-artifact-id (get core-artifact :artifact-id)
+                 :diagnostics
+                 [(sh08-ft-recursive-diagnostic recursive-proof module)]
+                 :pending [:recursive-type-annotations
+                           :higher-order-functions :records :unions
+                           :protocols :generics :casts :dynamic-boundaries]})
+              (let [base-function-skeletons
                 (loop [remaining (get products :function-records)
                        result {}]
                   (if (= (count remaining) 0)
@@ -4702,7 +4799,7 @@
                    :unresolved-function-type {})]
                  :pending [:recursive-type-annotations
                            :higher-order-functions :records :unions
-                           :protocols :generics :casts :dynamic-boundaries]})))))
+                           :protocols :generics :casts :dynamic-boundaries]}))))))
         {:artifact :gravity/sh08-function-typed-core-template
          :schema-version 3
          :status :rejected

@@ -381,8 +381,12 @@
              ["outer-argument-order"
               [[[:calls 1 :argument-node-ids]
                 [:outer-literal :outer-function-value]]]]
-             ["outer-literal-kind"
-              [[[:nodes 8 :attributes :literal-kind] :string]]]]]
+             ;; String is now an intentionally supported authoritative
+             ;; primitive; retain this negative as a genuinely unsupported
+             ;; literal kind rather than rejecting a valid primitive family
+             ;; member.
+             ["outer-literal-kind-unsupported"
+              [[[:nodes 8 :attributes :literal-kind] :keyword]]]]]
       (is (not= :accepted
                 (:status (pure-proof (pure-carrier overrides))))
           label))))

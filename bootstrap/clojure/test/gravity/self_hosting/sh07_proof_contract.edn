@@ -297,9 +297,9 @@
   {:c7-types
    {:module-namespace gravity.compiler.c7-type-checker-engine
     :source-binding
-    {:source-byte-count 176551
+    {:source-byte-count 209800
      :source-bytes-sha256
-     "sha256:648c71d18f5b81649a8d6d755e1e73b5ba502d359e3a972e4a9341dff6dee975"}}}}
+     "sha256:4f9ff8f11b347afc17984acd558fdbb925cdbc8e1f1e329997ff7a04930ac320"}}}}
  :required-request-products
  [:fragment-manifest :fragment-coverage :module-assembly-manifest]
  :required-core-products

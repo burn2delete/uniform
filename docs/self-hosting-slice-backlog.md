@@ -477,27 +477,30 @@ accepted exact-context evidence for `5fe2013`, not current-context authority for
 those later commits. The 55.85-minute result is the new observational baseline:
 it is 38.7% slower than the 40.27-minute historical run while the source is
 24.2% larger, so it does not support a speedup claim or a controlled comparison.
-The current stage-owned C7 source is 205,845 bytes with hash
-`sha256:2b6f5dfa13c9de10514d7faa3cad3c422fda52a158284557bdf824ff38e5191a`.
-It retains the bounded one-hop higher-order result and adds one narrower
-self-recursive inference case: exactly one named, capture-free,
-positive-fixed-arity component with one direct positional parameter-forwarding
-self call, a direct primitive-literal sibling base, and concrete external call
-evidence. Its fixed-point context is node-order independent, its recursive and
-external B47 edges remain distinct and identity-bound, and recursive constraints
-are shared by the typed core, top-level result, and semantic identity. The final
-namespace gate passed 6 tests and 103 assertions in 65.406 seconds of test time
-with exactly one authenticated `.gravity` carrier and 4.263 GB sampled peak
-resident memory. Thirteen existing higher-order and first-order compatibility
-tests separately passed 130 assertions. These are current-runtime
+The current stage-owned C7 source is 209,800 bytes with hash
+`sha256:4f9ff8f11b347afc17984acd558fdbb925cdbc8e1f1e329997ff7a04930ac320`.
+It retains the bounded one-hop higher-order and one-self-edge recursion
+products, and now derives both from the authoritative primitive literal family
+integer, bool, and string. The self-recursive case remains exactly one named,
+capture-free, positive-fixed-arity component with one direct positional
+parameter-forwarding self call, a direct primitive-literal sibling base from
+the same family, and concrete external call evidence. Its fixed-point context
+is node-order independent, recursive and external B47 edges remain distinct
+and identity-bound, and recursive constraints are shared by the typed core,
+top-level result, and semantic identity. The combined cheap gate passed 18
+selected vars and 330 assertions. Separate authenticated boundary vars passed
+the bool higher-order `.gravity` case with 41 assertions and the string
+self-recursive `.gravity` case with 36 assertions, one cold carrier each; the
+paired `.qst` files were checked only for byte parity. These are current-runtime
 non-authoritative integration results. Zero-arity recursion, transformed or
-literal recursive arguments,
-nonliteral bases, multiple recursive calls or components, mutual recursion,
-recursive captures or higher-order values, and polymorphic, multi-arity,
-variadic, or nonconvergent recursion remain rejected or pending. The prior
-source-bound proof and census remain exact historical evidence for `5fe2013`;
-they do not authenticate this newer source, whose authority contract remains
-deliberately stale and fail-closed pending a separately reviewed fresh run.
+literal recursive arguments, nonliteral bases, multiple recursive calls or
+components, mutual recursion, recursive captures or higher-order values, and
+polymorphic, multi-arity, variadic, or nonconvergent recursion remain rejected
+or pending. The prior source-bound proof and census remain exact historical
+evidence for `5fe2013`; they do not authenticate this newer source. The
+source-bound-derived contract now binds this source's bytes and SHA only,
+retains no precommitted count maps, and remains fail-closed pending a
+separately reviewed fresh authority run.
 The C8 effect-checker source adds 44,102 authenticated bytes in 40 fragments
 containing 3,301 forms, 410 bindings, and 1,078 resolutions. It lowers to 2,788
 canonical core nodes with 40 definitions: 34 executable SH-09 functions and

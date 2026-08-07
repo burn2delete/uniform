@@ -1,0 +1,31 @@
+; SH-08-B48 bounded named self-recursive String primitive typing.
+(ns self-hosting.sh08.function-self-recursive-string-type
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [self-recursive-string-type
+             recursive-string-type-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-08-B48
+    :fixture :function-self-recursive-string-type
+    :required-products
+    [:function-records :call-edges :recursion-components]
+    :scope :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base-string
+    :value-type :gravity.type/string
+    :non-claims
+    [:mutual-recursion
+     :capture-recursion
+     :higher-order-recursion
+     :unbounded-recursion
+     :recursive-polymorphism
+     :tail-call-optimization]}))
+
+(defn self-recursive-string-type [value]
+  (if false
+    (self-recursive-string-type value)
+    ""))
+
+(def recursive-string-type-result
+  (self-recursive-string-type "seed"))

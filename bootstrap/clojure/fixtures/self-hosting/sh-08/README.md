@@ -17,18 +17,22 @@ Gravity cryptographic verification or remove host digest authority.
 The bounded slices cover primitive literals, vector/map/set literal
 descriptors, definitions, Gravity truthiness, equal-type conditional joins,
 fixed-arity first-order functions, immutable `let` locals, direct local calls,
-and one capture-free named callable value hop with a monomorphic integer
-signature. Function inference uses a declared finite round bound. The
-`function-self-recursive-type` pair additionally admits exactly one named,
-capture-free, positive-fixed-arity self edge. Its recursive call must forward
-each positional parameter directly, in exact arity/order and binding lineage;
-its sibling branch must be a direct primitive literal; and a concrete external
-call must supply every parameter slot. The bounded monotone fixed point must
-converge. It emits an additive recursive proof, call fact, and constraint
-ledger while preserving the function skeleton's pending ownership and
-thrown-error obligations. Mutual SCCs, zero-arity/no-base cycles, captures,
-higher-order or polymorphic recursion, transformed/literal recursive
-arguments, multi-arity/variadic recursion, edge/order tampering, and
+and one capture-free named callable value hop with one authoritative primitive
+signature (integer, bool, or string). Function inference uses a declared
+finite round bound. The `function-self-recursive-type` pair additionally
+admits exactly one named, capture-free, positive-fixed-arity self edge. Its
+recursive call must forward each positional parameter directly, in exact
+arity/order and binding lineage; its sibling branch must be a direct
+primitive-literal base from the same authoritative family; and a concrete
+external call must supply every parameter slot. The bounded monotone fixed
+point must converge. It emits an additive recursive proof, call fact, and
+constraint ledger while preserving the function skeleton's pending ownership
+and thrown-error obligations. The `function-value-typed-bool` pair and
+`function-self-recursive-string-type` pair exercise the bool and string
+diagonals; their `.gravity` and `.qst` files are byte-identical parity inputs.
+Mutual SCCs, zero-arity/no-base cycles, captures, higher-order or polymorphic
+recursion, transformed/literal recursive arguments, multi-arity/variadic
+recursion, edge/order tampering, unsupported primitive kinds, and
 nonconvergence remain explicit C7 diagnostics. Other nonlocal or lexically
 supplied callable shapes remain explicit `C7-ANNOTATION` rejections.
 
@@ -45,8 +49,9 @@ origin, generated-origin, binding, ordered-argument, and B47 identity-preimage
 data. Digest preimages are deterministic and checked for exact equality, but
 their digest resolution remains coordinator-owned. They do not claim list
 lowering, general higher-order calls, captures, multi-hop callable flow,
-variadic or multi-arity functions, general recursive inference beyond the
-single bounded self-edge rule, records, unions, protocols, generics, casts,
+variadic or multi-arity functions, primitive kinds outside integer/bool/string,
+general recursive inference beyond the single bounded self-edge rule, records,
+unions, protocols, generics, casts,
 dynamic boundaries, ownership, layout, schemas,
 effect legality, capability legality, native authenticated-envelope
 cryptographic verification, or complete SH-08 support.

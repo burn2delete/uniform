@@ -310,9 +310,13 @@ baseline, not a controlled optimization benchmark: source semantics, schema,
 and proof work changed, raw wall time increased 38.7%, and bytes per second fell
 about 10.4%. Profile that exact `5fe2013` proof phase before proposing another
 performance change; do not infer a speedup from interpreter microbenchmarks.
-The later 205,845-byte C7 source is a different candidate and deliberately
-fails the source-bound authority preflight until its contract is reviewed and
-updated; the 55.85-minute receipt must not be relabeled as current for it.
+The current 209,800-byte C7 source is a different candidate from that receipt,
+with source SHA `sha256:4f9ff8f11b347afc17984acd558fdbb925cdbc8e1f1e329997ff7a04930ac320`.
+Its source-bound-derived contract has been refreshed for the exact bytes only;
+count maps remain absent and the 55.85-minute receipt must not be relabeled as
+current evidence for it. The cheap primitive-family and separate bool/string
+`.gravity` boundary checks are non-authoritative development evidence; a fresh
+authoritative module run is still required.
 `--fresh all` is the exhaustive SH-07 transaction and is reserved for the
 stable-candidate/release lane because of its measured runtime and memory cost.
 
