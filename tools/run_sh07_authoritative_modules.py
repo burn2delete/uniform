@@ -76,6 +76,11 @@ def sha256_file(path: Path) -> str:
 def relevant_files(root: Path) -> list[Path]:
     required = [
         root / "deps.edn",
+        # Every SH-07 proof compiles its stage2 plan emitter from these sources.
+        # They live outside bootstrap/gravity/src, so the source-tree scan below
+        # cannot discover them implicitly.
+        root / "bootstrap/gravity/p15_s23/compiler.gravity",
+        root / "bootstrap/gravity/p15_s23/emitter.gravity",
         root / "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
         root / "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj",
         Path(__file__).resolve(),

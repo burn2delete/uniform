@@ -76,6 +76,8 @@ class Sh07CheckpointTests(unittest.TestCase):
         files = {
             "deps.edn": "{:paths []}\n",
             "bootstrap/clojure/src/gravity/bootstrap.clj": "(ns gravity.bootstrap)\n",
+            "bootstrap/gravity/p15_s23/compiler.gravity": "(ns gravity.p15-s23.compiler)\n",
+            "bootstrap/gravity/p15_s23/emitter.gravity": "(ns gravity.p15-s23.emitter)\n",
             "bootstrap/gravity/src/gravity/checked_core.gravity": "(ns gravity.checked-core)\n",
             "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn": "{:schema :test}\n",
             "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj": "(ns test.runner)\n",
@@ -141,6 +143,32 @@ class Sh07CheckpointTests(unittest.TestCase):
             self.assertEqual(["alpha", "beta", "alpha", "beta"], launcher.calls)
             self.assertNotEqual(previous, second["context_fingerprint"])
             self.assertEqual(previous, second["invalidated_context_fingerprint"])
+
+    def test_stage2_plan_source_changes_invalidate_every_checkpoint(self) -> None:
+        for name in ["compiler.gravity", "emitter.gravity"]:
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                self.make_repository(root)
+                launcher = FakeLauncher()
+                _, first = self.run_in_repository(root, launcher, ["alpha", "beta"])
+                previous = first["context_fingerprint"]
+                source = root / "bootstrap/gravity/p15_s23" / name
+                source.write_text(
+                    source.read_text(encoding="utf-8") + "; changed\n",
+                    encoding="utf-8",
+                )
+
+                code, second = self.run_in_repository(
+                    root, launcher, ["alpha", "beta"]
+                )
+                self.assertEqual(0, code)
+                self.assertEqual(
+                    ["alpha", "beta", "alpha", "beta"], launcher.calls
+                )
+                self.assertNotEqual(previous, second["context_fingerprint"])
+                self.assertEqual(
+                    previous, second["invalidated_context_fingerprint"]
+                )
 
     def test_source_change_during_child_run_stops_the_sequence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
