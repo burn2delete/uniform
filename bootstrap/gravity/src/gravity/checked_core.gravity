@@ -428,7 +428,7 @@
   ;; Four bytes per scalar carrier unit is a conservative UTF-8 upper bound:
   ;; it can reject an over-large carrier early but can never admit one whose
   ;; real UTF-8 byte count exceeds the declared safety limit.
-  (* 4 (count (vec (str value)))))
+  (* 4 (count (str value))))
 
 (defn sh07-aggregate? [value]
   (if (map? value)

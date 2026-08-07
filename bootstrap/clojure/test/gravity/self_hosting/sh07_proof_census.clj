@@ -55,7 +55,7 @@
   ;; Mirror gravity.checked-core/sh07-utf8-byte-count exactly. The stage2
   ;; subset deliberately charges the conservative four-byte upper bound for
   ;; every host character unit.
-  (* 4 (count (vec (str value)))))
+  (* 4 (count (str value))))
 
 (defn carrier-census
   [value]
