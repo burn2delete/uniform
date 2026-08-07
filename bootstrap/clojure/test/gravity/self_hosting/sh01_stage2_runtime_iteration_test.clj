@@ -69,3 +69,53 @@
                plan 'get arguments))]
         (is (= "L2-BUILTIN-ARITY" (:id data)))
         (is (= (count arguments) (:actual-arity data)))))))
+
+(deftest small-function-and-loop-binders-preserve-scope-and-recur
+  (let [function-plan
+        {:source {:path "stage2-runtime-iteration-test.gravity"}
+         :functions
+         {'sum-to
+          {:params ['n 'sum]
+           :instructions
+           [{:op :if
+             :test {:op :builtin-call
+                    :function '>
+                    :args [{:op :local :name 'n}
+                           {:op :literal :value 0}]}
+             :then {:op :recur
+                    :args
+                    [{:op :builtin-call
+                      :function '-
+                      :args [{:op :local :name 'n}
+                             {:op :literal :value 1}]}
+                     {:op :builtin-call
+                      :function '+
+                      :args [{:op :local :name 'sum}
+                             {:op :local :name 'n}]}]}
+             :else {:op :local :name 'sum}}]}
+          'loop-scope
+          {:params ['outer]
+           :instructions
+           [{:op :loop
+             :bindings [{:name 'index
+                         :expr {:op :literal :value 0}}]
+             :body
+             [{:op :if
+               :test {:op :builtin-call
+                      :function '<
+                      :args [{:op :local :name 'index}
+                             {:op :literal :value 2}]}
+               :then {:op :recur
+                      :args [{:op :builtin-call
+                              :function '+
+                              :args [{:op :local :name 'index}
+                                     {:op :literal :value 1}]}]}
+               :else {:op :vector-literal
+                      :items [{:op :local :name 'outer}
+                              {:op :local :name 'index}]}}]}]}}}]
+    (is (= 15
+           (bootstrap/p15-s23-stage2-runtime-execute-function
+            runtime function-plan 'sum-to [5 0])))
+    (is (= [9 2]
+           (bootstrap/p15-s23-stage2-runtime-execute-function
+            runtime function-plan 'loop-scope [9])))))

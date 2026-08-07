@@ -95112,6 +95112,22 @@
     runtime plan env instruction)
    reason))
 
+(defn- p15-s23-stage2-runtime-bind-values
+  [base names values]
+  ;; Function and loop binders are normally tiny. Avoid `zipmap`'s transient
+  ;; map plus `merge`'s seq traversal for the common fixed-arity cases.
+  (case (count names)
+    0 base
+    1 (assoc base (nth names 0) (nth values 0))
+    2 (assoc (assoc base
+                    (nth names 0) (nth values 0))
+             (nth names 1) (nth values 1))
+    3 (assoc (assoc (assoc base
+                          (nth names 0) (nth values 0))
+                   (nth names 1) (nth values 1))
+             (nth names 2) (nth values 2))
+    (merge base (zipmap names values))))
+
 (defn p15-s23-stage2-runtime-execute-values
   [runtime plan env instructions reason]
   ;; Builtin and function calls overwhelmingly carry zero to three arguments.
@@ -95283,7 +95299,9 @@
               (when-not (= target-arity (count values))
                 (p15-s23-stage2-runtime-recur-fail!
                  plan target-arity (count values) :loop-arity-mismatch))
-              (recur (merge env (zipmap binding-names values))))
+              (recur
+               (p15-s23-stage2-runtime-bind-values
+                env binding-names values)))
             result))))
     :recur
     (p15-s23-stage2-runtime-recur-signal
@@ -95331,7 +95349,7 @@
     (when-not (= (count params) (count args))
       (p15-s23-stage2-runtime-fail-call-arity!
        "L2-FUNCTION-ARITY" plan callee args (count params)))
-    (loop [env (zipmap params args)]
+    (loop [env (p15-s23-stage2-runtime-bind-values {} params args)]
       (let [result
             (p15-s23-stage2-runtime-execute-instructions
              runtime plan env (:instructions definition))]
@@ -95341,7 +95359,8 @@
               (p15-s23-stage2-runtime-recur-fail!
                plan (count params) (count values)
                :function-arity-mismatch))
-            (recur (zipmap params values)))
+            (recur
+             (p15-s23-stage2-runtime-bind-values {} params values)))
           result)))))
 
 (defn p15-s23-stage2-runtime-artifact-invoke
