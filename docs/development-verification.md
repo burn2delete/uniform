@@ -202,6 +202,30 @@ not promote exact-var results to slice, module, or release evidence.
 `--test-var` cannot be combined with `--namespace`; `--fail-fast` is rejected
 for a single var because it has no remaining selected work to skip.
 
+Order a multi-var batch by cache affinity rather than source order. Run cheap
+schema, plan, and fixture checks first. Then run the first var that constructs
+one heavy fixture, followed immediately by every var that consumes that same
+fixture. Introduce a different heavy fixture only after those hits have been
+observed. If the number of simultaneously useful heavy fixtures exceeds the
+small cache bound, split the work into separate fail-fast batches instead of
+raising the bound or retaining every carrier in one JVM.
+
+The per-var cache deltas are the acceptance evidence for this ordering. A
+follow-up var that is expected to reuse a fixture should report SH-06, core,
+and verification hits with no corresponding misses. In the measured SH-08
+HO1 batch, the first accepted pair took 113,418 ms and populated two entries;
+the related alteration and path-neutral checks then completed in 451 ms and
+879 ms. The aggregate counters were exactly 3 SH-06 hits / 6 misses, 9 core
+hits / 6 misses, and 3 verification hits / 6 misses. This is iteration
+evidence only, but it demonstrates why four related vars should not be launched
+as four cold JVMs.
+
+Remember that exact-var execution preserves Clojure's `run-test-var` fixture
+contract: a namespace `:once` fixture runs around each selected var. A
+namespace-local cache reset by that fixture therefore does not persist across
+the batch. Cross-var acceleration must be visible in the iteration runner's
+own cache deltas; do not infer reuse merely from a test-local atom or delay.
+
 ### 5. Selected fresh authoritative module
 
 Use after a focused change passes, when the changed contract is SH-07-owned,
