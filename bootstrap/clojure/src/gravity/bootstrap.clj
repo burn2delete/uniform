@@ -95264,6 +95264,22 @@
             (recur more value)))
         result))))
 
+(defn- p15-s23-stage2-runtime-execute-generic-builtin-call
+  [runtime plan env instruction function]
+  (let [args (p15-s23-stage2-runtime-execute-values
+              runtime plan env (:args instruction)
+              :recur-inside-builtin-argument)]
+    (if (and (= 'str function)
+             (:runtime-artifact-plan runtime))
+      (case (count args)
+        1 (p15-s23-stage2-runtime-artifact-invoke
+           runtime p15-s23-stage2-runtime-artifact-function args)
+        2 (p15-s23-stage2-runtime-artifact-invoke
+           runtime p15-s23-stage2-runtime-artifact-concat-function args)
+        (p15-s23-stage2-runtime-fail-call-arity!
+         "L2-BUILTIN-ARITY" plan function args "1 or 2"))
+      (p15-s23-stage2-runtime-invoke-builtin plan function args))))
+
 (defn p15-s23-stage2-runtime-execute-instruction
   [runtime plan env instruction]
   (case (:op instruction)
@@ -95391,22 +95407,33 @@
       runtime plan env (:args instruction) :recur-inside-recur-argument))
     :builtin-call
     (let [function (:function instruction)
-          args (p15-s23-stage2-runtime-execute-values
-                runtime plan env (:args instruction)
-                :recur-inside-builtin-argument)]
-      (if (and (= 'str function)
-               (:runtime-artifact-plan runtime))
-        (case (count args)
-          ;; One argument retains the existing Gravity format entrypoint;
-          ;; two arguments are owned by the dedicated concatenation function.
-          1 (p15-s23-stage2-runtime-artifact-invoke
-             runtime p15-s23-stage2-runtime-artifact-function args)
-          2 (p15-s23-stage2-runtime-artifact-invoke
-             runtime p15-s23-stage2-runtime-artifact-concat-function args)
-          (p15-s23-stage2-runtime-fail-call-arity!
-           "L2-BUILTIN-ARITY" plan function args "1 or 2"))
-        (p15-s23-stage2-runtime-invoke-builtin
-         plan function args)))
+          argument-instructions (:args instruction)]
+      (if (= 1 (count argument-instructions))
+        (case function
+          count
+          (count
+           (p15-s23-stage2-runtime-execute-value
+            runtime plan env (nth argument-instructions 0)
+            :recur-inside-builtin-argument))
+          first
+          (first
+           (p15-s23-stage2-runtime-execute-value
+            runtime plan env (nth argument-instructions 0)
+            :recur-inside-builtin-argument))
+          second
+          (second
+           (p15-s23-stage2-runtime-execute-value
+            runtime plan env (nth argument-instructions 0)
+            :recur-inside-builtin-argument))
+          rest
+          (p15-s23-seed-readable-normalized-rest
+           (p15-s23-stage2-runtime-execute-value
+            runtime plan env (nth argument-instructions 0)
+            :recur-inside-builtin-argument))
+          (p15-s23-stage2-runtime-execute-generic-builtin-call
+           runtime plan env instruction function))
+        (p15-s23-stage2-runtime-execute-generic-builtin-call
+         runtime plan env instruction function)))
     :function-call
     (let [function (:function instruction)
           args (p15-s23-stage2-runtime-execute-values

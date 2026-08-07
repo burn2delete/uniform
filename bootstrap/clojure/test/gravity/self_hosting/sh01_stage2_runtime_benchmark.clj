@@ -19,6 +19,11 @@
    {:op :literal :value 4}])
 (def ^:private local-environment {'value 1})
 (def ^:private local-instruction {:op :local :name 'value})
+(def ^:private collection-environment {'values (vec (range 16))})
+(def ^:private count-instruction
+  {:op :builtin-call
+   :function 'count
+   :args [{:op :local :name 'values}]})
 (def ^:private function-plan
   {:source {:path source-path}
    :functions
@@ -45,6 +50,9 @@
    :execute-values-two
    #(bootstrap/p15-s23-stage2-runtime-execute-values
      runtime simple-plan {} argument-instructions :benchmark)
+   :interpreted-count
+   #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+     runtime simple-plan collection-environment count-instruction)
    :function-bind-two
    #(bootstrap/p15-s23-stage2-runtime-execute-function
      runtime function-plan 'identity-second [1 2])
@@ -88,7 +96,19 @@
 
 (defn run-benchmark
   [options]
-  (let [options (merge default-options options)]
+  (let [options (merge default-options options)
+        available-workloads (workloads)
+        requested-workload (:workload options)
+        selected-workloads
+        (if requested-workload
+          (if-let [operation (get available-workloads requested-workload)]
+            (sorted-map requested-workload operation)
+            (throw
+             (ex-info "Unknown stage2 benchmark workload"
+                      {:id "SH01-STAGE2-BENCHMARK-WORKLOAD"
+                       :workload requested-workload
+                       :available (vec (keys available-workloads))})))
+          available-workloads)]
     (when-not (every? (fn [key]
                         (let [value (get options key)]
                           (and (integer? value) (pos? value))))
@@ -111,7 +131,7 @@
       (sorted-map)
       (map (fn [[name operation]]
              [name (benchmark-workload options operation)]))
-      (workloads))}))
+      selected-workloads)}))
 
 (defn- parse-positive-long
   [option value]
@@ -144,14 +164,19 @@
                 "--warmup" :warmup-iterations
                 "--iterations" :measurement-iterations
                 "--rounds" :rounds
+                "--workload" :workload
                 (throw
                  (ex-info "Unsupported stage2 benchmark option"
                           {:id "SH01-STAGE2-BENCHMARK-USAGE"
                            :option option
                            :supported
-                           ["--warmup" "--iterations" "--rounds"]})))]
+                           ["--warmup" "--iterations" "--rounds"
+                            "--workload"]})))]
           (recur (vec tail)
-                 (assoc options key (parse-positive-long option value))))))))
+                 (assoc options key
+                        (if (= key :workload)
+                          (keyword value)
+                          (parse-positive-long option value)))))))))
 
 (defn -main
   [& arguments]

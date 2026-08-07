@@ -259,6 +259,9 @@ performance feedback only; it is never proof evidence.
 
 ```bash
 clojure -J-Xmx512m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-stage2-runtime-benchmark --warmup 100000 --iterations 1000000 --rounds 5
+
+# Isolate one workload in a fresh JVM when comparing a small runtime change.
+clojure -J-Xmx512m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-stage2-runtime-benchmark --workload interpreted-count --warmup 100000 --iterations 1000000 --rounds 5
 ```
 
 Compare medians using the same host, JVM, heap, worktree state, and workload.

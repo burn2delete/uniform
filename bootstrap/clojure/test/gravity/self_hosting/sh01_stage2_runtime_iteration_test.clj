@@ -70,6 +70,28 @@
         (is (= "L2-BUILTIN-ARITY" (:id data)))
         (is (= (count arguments) (:actual-arity data)))))))
 
+(deftest unary-collection-instructions-preserve-values-and-arity-diagnostics
+  (let [invoke
+        (fn [function arguments]
+          (bootstrap/p15-s23-stage2-runtime-execute-instruction
+           runtime plan {}
+           {:op :builtin-call
+            :function function
+            :args (literal-instructions arguments)}))]
+    (is (= 2 (invoke 'count [[1 2]])))
+    (is (= 1 (invoke 'first [[1 2]])))
+    (is (= 2 (invoke 'second [[1 2]])))
+    (is (= (list 2) (invoke 'rest [[1 2]])))
+    (testing "wrong arities retain the generic fail-closed path"
+      (doseq [[function arguments]
+              [['count []]
+               ['first [[1] [2]]]
+               ['second []]
+               ['rest [[1] [2]]]]]
+        (let [data (diagnostic #(invoke function arguments))]
+          (is (= "L2-BUILTIN-ARITY" (:id data)))
+          (is (= (count arguments) (:actual-arity data))))))))
+
 (deftest small-function-and-loop-binders-preserve-scope-and-recur
   (let [function-plan
         {:source {:path "stage2-runtime-iteration-test.gravity"}
