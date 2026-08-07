@@ -110,6 +110,20 @@ Memory-heavy parallelism is intentionally fixed at `1`; any other value is
 rejected. The option remains visible so scripts can state the safety limit
 explicitly rather than relying on an implicit default.
 
+Before acquiring the shared heavy-run lock, require every selected test
+namespace in a small JVM and inspect the dry-run schedule. This catches reader,
+compile, and runner-wiring failures in seconds instead of discovering them
+after a memory-heavy slot has been occupied:
+
+```bash
+clojure -J-Xmx512m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -e '(require (quote gravity.self-hosting.sh07-b48-call-arity-test)) (println :preflight-ok)'
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-parallel-test-runner --changed --iteration-slice SH-07 --dry-run --normal-parallelism 2 --memory-parallelism 1
+```
+
+Replace the example namespace and slice with the selected work. A failed
+preflight blocks the heavy run; it is never evidence and does not replace the
+focused or authoritative execution.
+
 ### 4. Focused namespace or cached SH-07 feedback
 
 Use for a single changed test or a bounded shard. These runs are
