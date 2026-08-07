@@ -209,6 +209,136 @@ class VerifyDevelopmentTests(unittest.TestCase):
             )
             self.assertNotEqual(second["checks"][0]["status"], "reused")
 
+    def test_parallel_exact_file_checks_ignore_unrelated_sibling_mutation(self) -> None:
+        """Exact-file vnode watches must not inherit their parent's events."""
+
+        with tempfile.TemporaryDirectory(prefix="gravity-verify-parallel-exact-") as directory:
+            root = Path(directory)
+            shared = root / "shared"
+            shared.mkdir()
+            (shared / "input.txt").write_text("stable\n", encoding="ascii")
+            writer = [
+                sys.executable,
+                "-c",
+                (
+                    "from pathlib import Path; import time; "
+                    "Path('shared/unrelated-output.txt').write_text('generated\\n', encoding='ascii'); "
+                    "time.sleep(0.2)"
+                ),
+            ]
+            reader = [
+                sys.executable,
+                "-c",
+                (
+                    "from pathlib import Path; import time; "
+                    "Path('shared/input.txt').read_text(encoding='ascii'); "
+                    "time.sleep(0.2)"
+                ),
+            ]
+            manifest = manifest_for(
+                check("exact-reader", reader, inputs=["shared/input.txt"]),
+                check("unrelated-writer", writer, inputs=["shared/input.txt"]),
+            )
+
+            receipt = verifier.run_verification(manifest, root, all_checks=True, jobs=2)
+
+            self.assertEqual(receipt["status"], "passed")
+            self.assertEqual(
+                {record["id"]: record["status"] for record in receipt["checks"]},
+                {"exact-reader": "passed", "unrelated-writer": "passed"},
+            )
+            self.assertTrue((shared / "unrelated-output.txt").is_file())
+            for record in receipt["checks"]:
+                self.assertEqual(record["mutation_monitor"]["observations"], [])
+
+    def test_exact_file_immediate_parent_swap_restore_is_failed_and_not_cached(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-verify-exact-parent-swap-") as directory:
+            root = Path(directory)
+            parent = root / "parent"
+            parent.mkdir()
+            (parent / "input.txt").write_text("A\n", encoding="ascii")
+            command = [
+                sys.executable,
+                "-c",
+                (
+                    "from pathlib import Path; import shutil, time; "
+                    "parent=Path('parent'); saved=Path('parent.saved'); "
+                    "parent.rename(saved); parent.mkdir(); "
+                    "(parent/'input.txt').write_text('B\\n', encoding='ascii'); "
+                    "assert (parent/'input.txt').read_text(encoding='ascii') == 'B\\n'; "
+                    "shutil.rmtree(parent); saved.rename(parent); time.sleep(0.1)"
+                ),
+            ]
+            manifest = manifest_for(check("immediate-parent-swap", command, inputs=["parent/input.txt"]))
+            cache = root / "cache.json"
+
+            receipt = verifier.run_verification(manifest, root, all_checks=True, cache_path=cache)
+            record = receipt["checks"][0]
+
+            self.assertEqual(receipt["status"], "failed")
+            self.assertEqual(record["reason"], "stale-input")
+            self.assertTrue(record["mutation_observed"])
+            self.assertEqual((parent / "input.txt").read_text(encoding="ascii"), "A\n")
+            self.assertNotIn("immediate-parent-swap", verifier.load_cache(cache)["checks"])
+
+    def test_exact_file_intermediate_directory_swap_restore_is_failed_and_not_cached(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-verify-exact-intermediate-swap-") as directory:
+            root = Path(directory)
+            input_path = root / "outer" / "inner" / "input.txt"
+            input_path.parent.mkdir(parents=True)
+            input_path.write_text("A\n", encoding="ascii")
+            command = [
+                sys.executable,
+                "-c",
+                (
+                    "from pathlib import Path; import shutil, time; "
+                    "outer=Path('outer'); saved=Path('outer.saved'); "
+                    "outer.rename(saved); (outer/'inner').mkdir(parents=True); "
+                    "(outer/'inner/input.txt').write_text('B\\n', encoding='ascii'); "
+                    "assert (outer/'inner/input.txt').read_text(encoding='ascii') == 'B\\n'; "
+                    "shutil.rmtree(outer); saved.rename(outer); time.sleep(0.1)"
+                ),
+            ]
+            manifest = manifest_for(
+                check("intermediate-directory-swap", command, inputs=["outer/inner/input.txt"])
+            )
+            cache = root / "cache.json"
+
+            receipt = verifier.run_verification(manifest, root, all_checks=True, cache_path=cache)
+            record = receipt["checks"][0]
+
+            self.assertEqual(receipt["status"], "failed")
+            self.assertEqual(record["reason"], "stale-input")
+            self.assertTrue(record["mutation_observed"])
+            self.assertEqual(input_path.read_text(encoding="ascii"), "A\n")
+            self.assertNotIn("intermediate-directory-swap", verifier.load_cache(cache)["checks"])
+
+    def test_missing_exact_file_create_delete_is_failed_and_not_cached(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-verify-missing-exact-") as directory:
+            root = Path(directory)
+            (root / "parent").mkdir()
+            command = [
+                sys.executable,
+                "-c",
+                (
+                    "from pathlib import Path; import time; "
+                    "path=Path('parent/missing.txt'); path.write_text('B\\n', encoding='ascii'); "
+                    "assert path.read_text(encoding='ascii') == 'B\\n'; "
+                    "path.unlink(); time.sleep(0.1)"
+                ),
+            ]
+            manifest = manifest_for(check("missing-exact", command, inputs=["parent/missing.txt"]))
+            cache = root / "cache.json"
+
+            receipt = verifier.run_verification(manifest, root, all_checks=True, cache_path=cache)
+            record = receipt["checks"][0]
+
+            self.assertEqual(receipt["status"], "failed")
+            self.assertEqual(record["reason"], "stale-input")
+            self.assertTrue(record["mutation_observed"])
+            self.assertFalse((root / "parent" / "missing.txt").exists())
+            self.assertNotIn("missing-exact", verifier.load_cache(cache)["checks"])
+
     def test_unmatched_changed_path_fails_closed(self) -> None:
         command = [sys.executable, "-c", "import sys; sys.exit(0)"]
         with tempfile.TemporaryDirectory(prefix="gravity-verify-unmatched-") as directory:

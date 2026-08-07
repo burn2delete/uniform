@@ -1210,6 +1210,27 @@ def _watch_directories_for_declaration(root: Path, declaration: str) -> list[Pat
     return sorted(set(paths), key=lambda item: item.as_posix())
 
 
+def _exact_file_watch_directories(root: Path, declaration: str) -> list[Path]:
+    """Return every directory component that contains an existing exact file."""
+
+    normalised = _normalise_declared_path(declaration)
+    declared_path = root / normalised
+    if _contains_glob(normalised) or not declared_path.is_file():
+        return []
+    root_path = root.resolve()
+    current = root_path
+    directories = [root_path]
+    for component in Path(normalised).parts[:-1]:
+        current /= component
+        _assert_within_root(root_path, current, declaration)
+        if current.is_symlink():
+            raise VerificationError(f"declared input watch directory is a symlink: {current}")
+        if not current.is_dir():
+            raise VerificationError(f"declared input watch directory is not a directory: {current}")
+        directories.append(current.resolve())
+    return directories
+
+
 def _monitor_snapshot(check: Mapping[str, Any], root: Path) -> dict[str, Any]:
     """Capture bounded metadata for declared inputs and the command binary.
 
@@ -1257,6 +1278,7 @@ class _MutationMonitor:
         self._lock = threading.Lock()
         self._kqueue: Any = None
         self._watch_fds: dict[int, str] = {}
+        self._watch_event_masks: dict[int, int] = {}
         self._mode = "unavailable"
         self._cacheable = False
         self._unavailable = False
@@ -1270,45 +1292,96 @@ class _MutationMonitor:
             self._record_unavailable("kqueue vnode monitoring is unavailable")
             return
         try:
-            paths: dict[str, Path] = {}
-            declarations = list(self.check.get("inputs", [])) + list(self.check.get("tool_inputs", []))
-            for declaration in declarations:
-                for index, directory in enumerate(_watch_directories_for_declaration(self.root, declaration)):
-                    paths[f"<directory:{_normalise_declared_path(declaration)}:{index}>"] = directory
-                matches = _input_files(self.root, declaration)
-                for relative, path in matches:
-                    if path is None:
-                        # Missing/glob members are covered by the parent or
-                        # subtree directory watches above; they are not an
-                        # initialization failure.
-                        continue
-                    paths[relative] = path.resolve()
-            executable = command_identity(self.check, self.root)["executable"].get("resolved")
-            if executable is None:
-                raise OSError("command executable cannot be watched coherently")
-            paths["<command-executable>"] = Path(executable).resolve()
-            queue = kqueue_factory()
             flags = getattr(select, "KQ_EV_ADD", 0) | getattr(select, "KQ_EV_ENABLE", 0) | getattr(select, "KQ_EV_CLEAR", 0)
             vnode_flags = 0
             for name in ("KQ_NOTE_WRITE", "KQ_NOTE_DELETE", "KQ_NOTE_EXTEND", "KQ_NOTE_ATTRIB", "KQ_NOTE_LINK", "KQ_NOTE_RENAME", "KQ_NOTE_REVOKE"):
                 vnode_flags |= getattr(select, name, 0)
-            if not vnode_flags:
+            meaningful_flags = self._meaningful_vnode_flags()
+            exact_directory_flags = self._exact_directory_vnode_flags()
+            if not vnode_flags or not meaningful_flags or not exact_directory_flags:
                 raise OSError("kqueue vnode mutation flags are unavailable")
+
+            watch_specs: list[tuple[str, Path, int, int]] = []
+            declarations = list(self.check.get("inputs", [])) + list(self.check.get("tool_inputs", []))
+            for declaration in declarations:
+                matches = _input_files(self.root, declaration)
+                normalised = _normalise_declared_path(declaration)
+                declared_path = self.root / normalised
+                exact_file = not _contains_glob(normalised) and declared_path.is_file()
+                # Exact files retain a precise file-vnode watch.  Their path
+                # components are also watched, but only self delete/rename/
+                # revoke events count; directory WRITE/EXTEND events merely
+                # report unrelated sibling membership changes.  A directory
+                # declaration, glob, or missing exact path needs the broader
+                # membership watch instead.
+                if exact_file:
+                    for index, directory in enumerate(_exact_file_watch_directories(self.root, declaration)):
+                        watch_specs.append(
+                            (
+                                f"<exact-directory:{normalised}:{index}>",
+                                directory,
+                                exact_directory_flags,
+                                exact_directory_flags,
+                            )
+                        )
+                needs_directory_watch = (
+                    not exact_file
+                    and (
+                        _contains_glob(normalised)
+                        or declared_path.is_dir()
+                        or not declared_path.exists()
+                    )
+                )
+                if needs_directory_watch:
+                    for index, directory in enumerate(_watch_directories_for_declaration(self.root, declaration)):
+                        watch_specs.append(
+                            (
+                                f"<directory:{normalised}:{index}>",
+                                directory,
+                                vnode_flags,
+                                meaningful_flags,
+                            )
+                        )
+                for relative, path in matches:
+                    if path is None:
+                        # Missing exact/glob members are covered by the parent
+                        # or subtree directory watches above; they are not an
+                        # initialization failure.
+                        continue
+                    watch_specs.append((relative, path.resolve(), vnode_flags, meaningful_flags))
+            executable = command_identity(self.check, self.root)["executable"].get("resolved")
+            if executable is None:
+                raise OSError("command executable cannot be watched coherently")
+            watch_specs.append(("<command-executable>", Path(executable).resolve(), vnode_flags, meaningful_flags))
+            queue = kqueue_factory()
+            self._kqueue = queue
+            watches_by_path: dict[Path, dict[str, Any]] = {}
+            for label, path, subscription_flags, event_mask in watch_specs:
+                resolved = path.resolve()
+                watch = watches_by_path.setdefault(
+                    resolved,
+                    {"labels": set(), "subscription_flags": 0, "event_mask": 0},
+                )
+                watch["labels"].add(label)
+                watch["subscription_flags"] |= subscription_flags
+                watch["event_mask"] |= event_mask
             changes = []
-            seen_paths: set[Path] = set()
-            for label, path in sorted(paths.items()):
-                path = path.resolve()
-                if path in seen_paths:
-                    continue
-                seen_paths.add(path)
+            for path, watch in sorted(watches_by_path.items(), key=lambda item: item[0].as_posix()):
                 open_flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
                 if path.is_dir():
                     open_flags |= getattr(os, "O_DIRECTORY", 0)
                 descriptor = os.open(path, open_flags)
-                self._watch_fds[descriptor] = label
-                changes.append(select.kevent(descriptor, filter=vnode_filter, flags=flags, fflags=vnode_flags))
+                self._watch_fds[descriptor] = "|".join(sorted(watch["labels"]))
+                self._watch_event_masks[descriptor] = int(watch["event_mask"])
+                changes.append(
+                    select.kevent(
+                        descriptor,
+                        filter=vnode_filter,
+                        flags=flags,
+                        fflags=int(watch["subscription_flags"]),
+                    )
+                )
             queue.control(changes, 0, 0)
-            self._kqueue = queue
             self._mode = "kqueue-vnode"
             self._cacheable = True
         except (OSError, ValueError, VerificationError) as exc:
@@ -1327,6 +1400,7 @@ class _MutationMonitor:
             except OSError:
                 pass
         self._watch_fds.clear()
+        self._watch_event_masks.clear()
         if self._kqueue is not None:
             try:
                 self._kqueue.close()
@@ -1379,9 +1453,28 @@ class _MutationMonitor:
             flags |= getattr(select, name, 0)
         return flags
 
+    @staticmethod
+    def _exact_directory_vnode_flags() -> int:
+        flags = 0
+        for name in ("KQ_NOTE_DELETE", "KQ_NOTE_RENAME", "KQ_NOTE_REVOKE"):
+            flags |= getattr(select, name, 0)
+        return flags
+
+    def _vnode_event_is_mutation(self, event: Any) -> bool:
+        fflags = int(event.fflags)
+        event_mask = self._watch_event_masks.get(event.ident, self._meaningful_vnode_flags())
+        if fflags & event_mask:
+            return True
+        # Exact-file containment directories deliberately ignore all events
+        # outside their self delete/rename/revoke mask.  General file and
+        # membership watches retain the stable-snapshot fallback for benign
+        # NOTE_ATTRIB events.
+        if event_mask != self._meaningful_vnode_flags():
+            return False
+        return _monitor_snapshot(self.check, self.root) != self._baseline
+
     def _poll(self) -> None:
         if self._kqueue is not None:
-            meaningful = self._meaningful_vnode_flags()
             while not self._stop.is_set():
                 try:
                     events = self._kqueue.control(None, max(1, len(self._watch_fds)), self.interval)
@@ -1389,14 +1482,8 @@ class _MutationMonitor:
                     self._record_unavailable(f"kqueue control failed: {exc}")
                     break
                 for event in events:
-                    # Executing or reading a file may update atime and produce
-                    # NOTE_ATTRIB.  Ignore that benign event when the stable
-                    # metadata snapshot is unchanged; writes/renames remain
-                    # evidence even when bytes were restored before draining.
-                    if not (int(event.fflags) & meaningful):
-                        current = _monitor_snapshot(self.check, self.root)
-                        if current == self._baseline:
-                            continue
+                    if not self._vnode_event_is_mutation(event):
+                        continue
                     with self._lock:
                         if len(self._observations) < 32:
                             self._observations.append(
@@ -1425,12 +1512,9 @@ class _MutationMonitor:
             except OSError as exc:
                 self._record_unavailable(f"kqueue drain failed: {exc}")
                 events = []
-            meaningful = self._meaningful_vnode_flags()
             for event in events:
-                if not (int(event.fflags) & meaningful):
-                    current = _monitor_snapshot(self.check, self.root)
-                    if current == self._baseline:
-                        continue
+                if not self._vnode_event_is_mutation(event):
+                    continue
                 with self._lock:
                     if len(self._observations) < 32:
                         self._observations.append(
