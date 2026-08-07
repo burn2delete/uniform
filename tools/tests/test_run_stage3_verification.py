@@ -144,6 +144,70 @@ class Stage3WrapperTests(unittest.TestCase):
             self.assertEqual(123, receipt["observed_peak_process_tree_rss_bytes"])
             self.assertIn("runner_report", receipt)
 
+    def test_receipt_bounds_worst_case_unicode_child_streams(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+
+            def launcher(command, cwd, env, timeout):
+                report_path = Path(command[command.index("--report-file") + 1])
+                nonce = command[command.index("--report-nonce") + 1]
+                check_id = command[command.index("--report-check-id") + 1]
+                command_hash = command[command.index("--report-command-identity-sha256") + 1]
+                stage3.atomic_receipt_write(
+                    report_path,
+                    self._runner_report(
+                        root, report_path, nonce, check_id, command_hash
+                    ),
+                    root=root,
+                )
+                # Exercise byte-boundary truncation with multi-byte UTF-8,
+                # while keeping the synthetic child entirely in Python.
+                return stage3.ChildResult(
+                    0,
+                    "🙂" * 100_000,
+                    "漢" * 100_000,
+                    False,
+                    (),
+                    None,
+                    False,
+                )
+
+            receipt_path = root / ".cpcache" / "unicode.json"
+            code, receipt = stage3.run_stage3(
+                root=root,
+                receipt_path=receipt_path,
+                nonce="unicode",
+                check_id="unicode",
+                command_identity_sha256="sha256:" + "1" * 64,
+                launcher=launcher,
+                timeout_seconds=2,
+            )
+            self.assertEqual(0, code)
+            encoded = receipt_path.read_bytes()
+            self.assertLessEqual(len(encoded), stage3.MAX_RECEIPT_BYTES)
+            self.assertLessEqual(
+                len(receipt["child"]["stdout"].encode("utf-8"))
+                + len(receipt["child"]["stderr"].encode("utf-8")),
+                stage3.MAX_CHILD_OUTPUT_COMBINED_BYTES,
+            )
+
+    def test_reviewed_attestation_mode_is_explicitly_deferred(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.assertNotIn(stage3.MODE_REVIEWED_ATTESTATION, stage3.MODES)
+            with self.assertRaises(stage3.Stage3Error):
+                stage3.run_stage3(
+                    root=root,
+                    receipt_path=root / ".cpcache" / "attestation.json",
+                    nonce="attestation",
+                    check_id="attestation",
+                    mode=stage3.MODE_REVIEWED_ATTESTATION,
+                    batch="authority",
+                    command_identity_sha256="sha256:" + "2" * 64,
+                    launcher=self._pure_launcher(root),
+                    timeout_seconds=2,
+                )
+
     def test_missing_report_cannot_claim_exit_zero(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -353,11 +417,12 @@ class Stage3WrapperTests(unittest.TestCase):
             proof = root / sh07.PROOF_CONTRACT_RELATIVE
             proof.parent.mkdir(parents=True)
             proof.write_text("proof", encoding="utf-8")
+            record_overrides: dict[str, object] = {}
 
             def launcher(command, cwd, env, timeout):
                 state = Path(command[command.index("--state-dir") + 1])
                 modules = state / "modules"
-                modules.mkdir(parents=True)
+                modules.mkdir(parents=True, exist_ok=True)
                 stdout = modules / "c7-types.stdout.log"
                 stderr = modules / "c7-types.stderr.log"
                 stdout.write_text("structured output", encoding="utf-8")
@@ -371,7 +436,7 @@ class Stage3WrapperTests(unittest.TestCase):
                 }
                 record = {
                     "state": "passed",
-                    "command": ["clojure", "--fresh", "c7-types"],
+                    "command": [*sh07.default_base_command(), "--fresh", "c7-types"],
                     "module_context_fingerprint": context["sha256"],
                     "proof_contract_sha256": self._hash(proof),
                     "module_context": context,
@@ -385,21 +450,41 @@ class Stage3WrapperTests(unittest.TestCase):
                     "raw_child_exit_code": 0,
                     "timed_out": False,
                 }
+                record.update(record_overrides)
                 manifest = {
                     "schema": sh07.SCHEMA,
+                    "tool_version": sh07.TOOL_VERSION,
+                    "fingerprint_policy_version": sh07.FINGERPRINT_POLICY_VERSION,
                     "state": "completed",
                     "selected_modules": ["c7-types"],
                     "aggregate_authoritative": False,
                     "authority_scope": "individual-existing-runner-outputs-only",
                     "resumed_modules": [],
                     "shared_context_fingerprint": "sha256:" + "d" * 64,
+                    "shared_context_fingerprint_after": "sha256:" + "d" * 64,
+                    "shared_context": {
+                        "command": sh07.default_base_command(),
+                        "authoritative_module_catalog": {},
+                    },
                     "lock_path": str(self.lock),
                     "lock_mode": "0600",
                     "lock_acquired": True,
                     "lock_validated": True,
                     "lock_released": True,
                     "modules": {"c7-types": record},
+                    # The SH07 checkpoint manifest carries complete runtime,
+                    # classpath, source-contract, and module contexts.  It is
+                    # legitimately larger than the compact Stage3 receipt.
+                    "bounded_context_padding": "x" * (70 * 1024),
                 }
+                self.assertGreater(
+                    len(json.dumps(manifest).encode("utf-8")),
+                    stage3.MAX_RECEIPT_BYTES,
+                )
+                self.assertLess(
+                    len(json.dumps(manifest).encode("utf-8")),
+                    stage3.MAX_AUTHORITY_MANIFEST_BYTES,
+                )
                 (state / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
                 return stage3.ChildResult(
                     0, "", "", False, (), None, False, 123, 1.0,
@@ -407,21 +492,120 @@ class Stage3WrapperTests(unittest.TestCase):
                     "between-sample spikes may be missed",
                 )
 
-            with mock.patch.object(sh07, "output_contract_passed", return_value=True):
+            with mock.patch.object(sh07, "output_contract_passed", return_value=True), \
+                    mock.patch.object(stage3, "_validate_captured_output_contract", return_value=True), \
+                    mock.patch.object(
+                        stage3,
+                        "_recompute_shared_context",
+                        return_value={"sha256": "sha256:" + "d" * 64},
+                    ):
                 code, receipt = stage3.run_stage3(
                     root=root,
                     receipt_path=root / ".cpcache" / "authority.json",
                     nonce="auth1",
                     check_id="authority",
-                    mode=stage3.MODE_AUTHORITY,
+                    mode=stage3.MODE_PROOF_CANDIDATE,
                     batch="authority",
                     command_identity_sha256="sha256:" + "e" * 64,
                     launcher=launcher,
                     timeout_seconds=2,
                 )
+                for suffix, overrides in (
+                    ("missing-raw-exit", {"raw_child_exit_code": None}),
+                    ("missing-timeout", {"timed_out": None}),
+                ):
+                    record_overrides.clear()
+                    record_overrides.update(overrides)
+                    rejected_code, rejected = stage3.run_stage3(
+                        root=root,
+                        receipt_path=root / ".cpcache" / f"authority-{suffix}.json",
+                        nonce=f"auth-{suffix}",
+                        check_id=f"authority-{suffix}",
+                        mode=stage3.MODE_PROOF_CANDIDATE,
+                        batch="authority",
+                        command_identity_sha256="sha256:" + "e" * 64,
+                        launcher=launcher,
+                        timeout_seconds=2,
+                    )
+                    self.assertNotEqual(0, rejected_code)
+                    self.assertFalse(rejected["proof_candidate"])
             self.assertEqual(0, code)
-            self.assertEqual("scoped-proof-authority", receipt["authority"])
+            self.assertEqual("none", receipt["authority"])
+            self.assertTrue(receipt["non_authoritative"])
+            self.assertEqual("none", receipt["authority_scope"])
+            self.assertEqual("source-bound-derived-proof-candidate", receipt["evidence_kind"])
+            self.assertTrue(receipt["proof_candidate"])
+            self.assertEqual("passed", receipt["proof_candidate_status"])
+            self.assertEqual("individual-source-bound-derived", receipt["candidate_scope"])
+            self.assertTrue(receipt["attestation_required"])
+            self.assertFalse(receipt["attestation_present"])
+            self.assertFalse(receipt["aggregate_authoritative"])
+            self.assertFalse(receipt["release_authoritative"])
+            self.assertFalse((Path(receipt["state_dir"]) / "attestations").exists())
             self.assertEqual("authoritative-child", receipt["lock"]["owner"])
+
+    def test_authority_missing_manifest_exit_zero_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+
+            def launcher(command, cwd, env, timeout):
+                # The launcher claims success but publishes neither the
+                # checkpoint manifest nor the c7-types output files.
+                return stage3.ChildResult(0, "", "", False, (), None, False)
+
+            code, receipt = stage3.run_stage3(
+                root=root,
+                receipt_path=root / ".cpcache" / "authority-missing.json",
+                nonce="auth-missing",
+                check_id="authority-missing",
+                mode=stage3.MODE_PROOF_CANDIDATE,
+                batch="authority",
+                command_identity_sha256="sha256:" + "a" * 64,
+                launcher=launcher,
+                timeout_seconds=2,
+            )
+            self.assertNotEqual(0, code)
+            self.assertEqual("failed", receipt["status"])
+            self.assertTrue(receipt["child"]["supervision_failed"])
+            self.assertEqual("none", receipt["authority"])
+            self.assertTrue(receipt["non_authoritative"])
+            self.assertFalse(receipt["proof_candidate"])
+
+    def test_authority_state_modules_rename_cannot_redirect_held_output(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+
+            def launcher(command, cwd, env, timeout):
+                state = Path(command[command.index("--state-dir") + 1])
+                modules = state / "modules"
+                moved = state / "modules-original"
+                modules.rename(moved)
+                modules.mkdir(mode=0o700)
+                # A manifest in the replacement directory must not make the
+                # wrapper consume output from that replacement: it retained
+                # the original modules dirfd before launch.
+                (modules / "c7-types.stdout.log").write_text("fake", encoding="utf-8")
+                (modules / "c7-types.stderr.log").write_text("", encoding="utf-8")
+                return stage3.ChildResult(0, "", "", False, (), None, False,
+                                          1, 1.0,
+                                          "run_with_heartbeat.process_tree_metrics-v1",
+                                          "between-sample spikes may be missed")
+
+            code, receipt = stage3.run_stage3(
+                root=root,
+                receipt_path=root / ".cpcache" / "rename.json",
+                nonce="rename-modules",
+                check_id="rename-modules",
+                mode=stage3.MODE_PROOF_CANDIDATE,
+                batch="authority",
+                command_identity_sha256="sha256:" + "b" * 64,
+                launcher=launcher,
+                timeout_seconds=2,
+            )
+            self.assertEqual(75, code)
+            self.assertEqual("failed", receipt["status"])
+            self.assertTrue(receipt["child"]["supervision_failed"])
+            self.assertTrue(receipt["non_authoritative"])
 
 
 if __name__ == "__main__":

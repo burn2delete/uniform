@@ -76,6 +76,14 @@ _STAGE3_RESERVED_ENV = frozenset({
     _stage3.COMMAND_HASH_ENV,
     _stage3.EXPECTED_COMMAND_ENV,
     _stage3.TIMEOUT_ENV,
+    _stage3.CANDIDATE_CHECK_ID_ENV,
+    _stage3.CANDIDATE_RECEIPT_ENV,
+    _stage3.CANDIDATE_RECEIPT_SHA_ENV,
+    _stage3.CANDIDATE_STATE_ENV,
+    _stage3.CANDIDATE_MANIFEST_ENV,
+    _stage3.CANDIDATE_MANIFEST_SHA_ENV,
+    _stage3.ATTESTATION_PATH_ENV,
+    _stage3.ATTESTATION_SHA_ENV,
 })
 _LAUNCH_WRAPPER = (
     "import os,sys; "
@@ -308,6 +316,32 @@ def _check_authority(check: Mapping[str, Any], lane: str) -> str:
     return str(raw)
 
 
+def _stage3_mode(check: Mapping[str, Any]) -> str:
+    """Require an explicit Stage 3 mode for command-owned nodes."""
+
+    raw = check.get("stage3_mode")
+    if raw not in _stage3.MODES:
+        raise ManifestError(
+            f"check {check.get('id')!r} must declare one explicit stage3_mode: "
+            + ", ".join(_stage3.MODES)
+        )
+    mode = str(raw)
+    batch = check.get("stage3_batch")
+    authority = check.get("authority", "none")
+    if mode == _stage3.MODE_PURE and batch == "authority":
+        raise ManifestError("pure Stage 3 mode cannot select the authority batch")
+    if mode in {_stage3.MODE_PROOF_CANDIDATE, _stage3.MODE_REVIEWED_ATTESTATION} \
+            and batch != "authority":
+        raise ManifestError(
+            f"{mode} Stage 3 mode requires stage3_batch='authority'"
+        )
+    if mode == _stage3.MODE_REVIEWED_ATTESTATION and authority != "declared":
+        raise ManifestError("reviewed-attestation mode requires authority='declared'")
+    if mode != _stage3.MODE_REVIEWED_ATTESTATION and authority == "declared":
+        raise ManifestError("authority='declared' requires reviewed-attestation mode")
+    return mode
+
+
 def _lock_owner(check: Mapping[str, Any]) -> str:
     """Return the reviewed lock owner, defaulting to the verifier runner.
 
@@ -368,19 +402,15 @@ def _lock_owner(check: Mapping[str, Any]) -> str:
         raise ManifestError(
             f"check {check_id!r} cannot override verifier-bound Stage 3 environment: {reserved}"
         )
-    batch = check.get("stage3_batch", "authority" if check.get("authority") == "declared" else _stage3.DEFAULT_BATCH)
+    mode = _stage3_mode(check)
+    batch = check.get("stage3_batch")
     if batch not in _stage3.FIXED_BATCHES:
         raise ManifestError(
             f"check {check_id!r} stage3_batch must name a reviewed fixed Stage 3 batch"
         )
-    if check.get("authority") == "declared" and batch != "authority":
-        raise ManifestError(
-            f"check {check_id!r} declared authority requires stage3_batch='authority'"
-        )
-    if check.get("authority") != "declared" and batch == "authority":
-        raise ManifestError(
-            f"check {check_id!r} authority batch requires authority='declared'"
-        )
+    if mode in {_stage3.MODE_PROOF_CANDIDATE, _stage3.MODE_REVIEWED_ATTESTATION} \
+            and batch != "authority":
+        raise ManifestError(f"check {check_id!r} Stage 3 authority mode requires authority batch")
     return owner
 
 
@@ -482,6 +512,43 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
             raise ManifestError(
                 f"check {check_id!r} declared authority requires lock_owner='command'"
             )
+        if owner == "command":
+            stage3_mode = _stage3_mode(check)
+            if stage3_mode == _stage3.MODE_REVIEWED_ATTESTATION:
+                # Candidate/attestation artifacts are invocation-scoped.  A
+                # manifest may provide reviewed defaults for local tooling,
+                # while the verifier API/CLI can supply a fresh hand-off.
+                # Validate every provided value here; _run_one performs the
+                # complete presence check after applying invocation inputs.
+                candidate_id = check.get("stage3_candidate_check_id")
+                if candidate_id is not None and (
+                        not isinstance(candidate_id, str) or not candidate_id.strip()
+                        or candidate_id == check_id):
+                    raise ManifestError(
+                        f"check {check_id!r} reviewed-attestation candidate check id must be distinct"
+                    )
+                for field in (
+                    "stage3_candidate_receipt_path", "stage3_candidate_state_dir",
+                    "stage3_attestation_path",
+                ):
+                    if field not in check or check.get(field) in (None, ""):
+                        continue
+                    value = _normalise_declared_path(str(check[field]))
+                    if not _is_safe_relative_path(value):
+                        raise ManifestError(
+                            f"check {check_id!r} {field} must be a safe repository-relative path"
+                        )
+                for field in (
+                    "stage3_candidate_receipt_sha256",
+                    "stage3_candidate_manifest_sha256",
+                    "stage3_attestation_sha256",
+                ):
+                    if field not in check or check.get(field) in (None, ""):
+                        continue
+                    if _stage3._SHA256.fullmatch(str(check[field])) is None:
+                        raise ManifestError(
+                            f"check {check_id!r} {field} must be sha256:<64 lowercase hex>"
+                        )
         timeout = check.get("timeout_seconds")
         if timeout is not None and (not isinstance(timeout, (int, float)) or timeout <= 0):
             raise ManifestError(f"check {check_id!r} timeout_seconds must be positive")
@@ -2278,7 +2345,9 @@ def _stage3_runner_report_path(root: Path, check_id: str, nonce: str) -> Path:
         os.close(parent_fd)
 
 
-def _read_stage3_receipt(path: Path, root: Path) -> dict[str, Any]:
+def _read_stage3_receipt(
+    path: Path, root: Path, *, with_hash: bool = False
+) -> dict[str, Any] | tuple[dict[str, Any], str]:
     """Read one bounded, no-follow receipt and reject races/trailing values."""
 
     try:
@@ -2323,7 +2392,10 @@ def _read_stage3_receipt(path: Path, root: Path) -> dict[str, Any]:
         raise VerificationError("Stage 3 receipt is malformed JSON") from exc
     if not isinstance(value, Mapping):
         raise VerificationError("Stage 3 receipt must be a JSON object")
-    return dict(value)
+    parsed = dict(value)
+    if with_hash:
+        return parsed, "sha256:" + hashlib.sha256(payload).hexdigest()
+    return parsed
 
 
 def _validate_stage3_receipt(
@@ -2350,8 +2422,8 @@ def _validate_stage3_receipt(
         errors.append("receipt nonce mismatch")
     if receipt.get("check_id") != check.get("id"):
         errors.append("receipt check id mismatch")
-    expected_mode = _stage3.MODE_AUTHORITY if _check_authority(check, str(check["lane"])) == "declared" else _stage3.MODE_PURE
-    expected_batch = str(check.get("stage3_batch", "authority" if expected_mode == _stage3.MODE_AUTHORITY else _stage3.DEFAULT_BATCH))
+    expected_mode = _stage3_mode(check)
+    expected_batch = str(check["stage3_batch"])
     if receipt.get("mode") != expected_mode or receipt.get("batch") != expected_batch:
         errors.append("receipt mode or fixed batch mismatch")
     expected_command = ["python3", "tools/run_stage3_verification.py"]
@@ -2389,9 +2461,16 @@ def _validate_stage3_receipt(
         for field in ("acquired", "validated", "released"):
             if lock.get(field) is not True:
                 errors.append(f"receipt lock lifecycle missing {field}")
-        if expected_mode == _stage3.MODE_AUTHORITY and lock.get("owner") != "authoritative-child":
+        expected_owner = (
+            "authoritative-child"
+            if expected_mode == _stage3.MODE_PROOF_CANDIDATE
+            else "reviewed-attestation-wrapper"
+            if expected_mode == _stage3.MODE_REVIEWED_ATTESTATION
+            else None
+        )
+        if expected_owner is not None and lock.get("owner") != expected_owner:
             errors.append("authority receipt does not identify the authoritative child lease owner")
-        if expected_mode == _stage3.MODE_PURE and (
+        if expected_mode in {_stage3.MODE_PURE, _stage3.MODE_REVIEWED_ATTESTATION} and (
             not isinstance(lock.get("identity_before"), Mapping)
             or not isinstance(lock.get("identity_after"), Mapping)
         ):
@@ -2467,8 +2546,30 @@ def _validate_stage3_receipt(
     if errors:
         raise VerificationError("invalid command-owned Stage 3 receipt: " + "; ".join(errors))
     result = dict(receipt)
-    authority = _check_authority(check, str(check["lane"]))
-    if authority == "declared":
+    if expected_mode == _stage3.MODE_REVIEWED_ATTESTATION:
+        try:
+            reviewed_values = _reviewed_stage3_values(check, root)
+        except VerificationError as input_error:
+            raise VerificationError(str(input_error)) from input_error
+        expected_bindings = {
+            "candidate_check_id": reviewed_values["candidate_check_id"],
+            "candidate_receipt_path": reviewed_values["candidate_receipt_path"],
+            "candidate_receipt_sha256": reviewed_values["candidate_receipt_sha256"],
+            "candidate_state_dir": reviewed_values["candidate_state_dir"],
+            "candidate_manifest_path": reviewed_values["candidate_manifest_path"],
+            "candidate_manifest_sha256": reviewed_values["candidate_manifest_sha256"],
+            "attestation_path": reviewed_values["attestation_path"],
+            "attestation_sha256": reviewed_values["attestation_sha256"],
+        }
+        for field, expected in expected_bindings.items():
+            if receipt.get(field) != expected:
+                raise VerificationError(f"reviewed receipt {field} binding mismatch")
+        evidence = receipt.get("authority_evidence")
+        if isinstance(evidence, Mapping):
+            if evidence.get("state_dir") != expected_bindings["candidate_state_dir"]:
+                raise VerificationError("reviewed authority state directory binding mismatch")
+            if evidence.get("manifest_sha256") != expected_bindings["candidate_manifest_sha256"]:
+                raise VerificationError("reviewed authority manifest hash binding mismatch")
         # A genuinely failed authoritative child is valid negative evidence:
         # preserve its failed/non-authoritative receipt for diagnostics.  An
         # exit-0 child with an invalid authority manifest is different and is
@@ -2506,7 +2607,7 @@ def _validate_stage3_receipt(
         state_dir = evidence.get("state_dir")
         if not isinstance(state_dir, str):
             raise VerificationError("declared authority state directory is missing")
-        expected_state = (root / ".cpcache" / "stage3-authority" / nonce).resolve(strict=False)
+        expected_state = Path(str(evidence.get("state_dir"))).resolve(strict=False)
         try:
             state_path = Path(state_dir)
             info = os.lstat(state_path)
@@ -2515,14 +2616,159 @@ def _validate_stage3_receipt(
                 raise VerificationError("declared authority state directory is not fresh and nonce-bound")
         except OSError as exc:
             raise VerificationError("declared authority state directory is invalid") from exc
-        result["authority"] = "fresh-declared-authority"
+        result["authority"] = "scoped-proof-authority"
+        result["attestation_present"] = True
+    elif expected_mode == _stage3.MODE_PROOF_CANDIDATE:
+        if (receipt.get("status") != "passed"
+                or receipt.get("proof_candidate") is not True
+                or receipt.get("attestation_required") is not True
+                or receipt.get("authority") != "none"
+                or receipt.get("non_authoritative") is not True):
+            raise VerificationError(
+                "proof-candidate receipt is not a non-authoritative candidate"
+            )
+        evidence = receipt.get("authority_evidence")
+        if not isinstance(evidence, Mapping):
+            raise VerificationError("proof-candidate receipt lacks child manifest evidence")
+        if (evidence.get("state") != "completed"
+                or evidence.get("selected_modules") != ["c7-types"]
+                or evidence.get("aggregate_authoritative") is not False
+                or evidence.get("authority_scope") != "individual-source-bound-derived"
+                or evidence.get("lock_path") != _stage3.CANONICAL_LOCK_TEXT
+                or evidence.get("lock_mode") != "0600"
+                or any(evidence.get(field) is not True for field in (
+                    "lock_acquired", "lock_validated", "lock_released"))):
+            raise VerificationError("proof-candidate manifest scope/lifecycle is not exact")
+        candidate_record = evidence.get("module_record")
+        if not isinstance(candidate_record, Mapping):
+            raise VerificationError("proof-candidate module evidence is missing")
+        for field in ("stdout_sha256", "proof_contract_sha256", "module_context_fingerprint"):
+            value = candidate_record.get(field)
+            if not isinstance(value, str) or _stage3._SHA256.fullmatch(value) is None:
+                raise VerificationError(f"proof-candidate evidence lacks {field}")
+        if not isinstance(evidence.get("manifest_sha256"), str) \
+                or _stage3._SHA256.fullmatch(str(evidence["manifest_sha256"])) is None:
+            raise VerificationError("proof-candidate manifest hash is missing")
+        if not isinstance(receipt.get("candidate_manifest_path"), str):
+            raise VerificationError("proof-candidate state/manifest hand-off path is missing")
+        result["authority"] = "proof-candidate"
+        result["proof_candidate"] = True
+        result["attestation_required"] = True
     else:
         result["authority"] = "fresh-command-pass-non-authoritative" if receipt.get("status") == "passed" else "non-authoritative"
     result["lock_owner"] = "command"
     return result
 
 
-def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -> dict[str, Any]:
+_STAGE3_REVIEW_INPUT_KEYS = {
+    "candidate_check_id": "stage3_candidate_check_id",
+    "candidate_receipt_path": "stage3_candidate_receipt_path",
+    "candidate_receipt_sha256": "stage3_candidate_receipt_sha256",
+    "candidate_state_dir": "stage3_candidate_state_dir",
+    "candidate_manifest_path": "stage3_candidate_manifest_path",
+    "candidate_manifest_sha256": "stage3_candidate_manifest_sha256",
+    "attestation_path": "stage3_attestation_path",
+    "attestation_sha256": "stage3_attestation_sha256",
+}
+
+
+def _apply_stage3_review_inputs(
+    check: Mapping[str, Any],
+    inputs: Mapping[str, object] | None,
+) -> dict[str, Any]:
+    """Overlay one explicit reviewed-attestation hand-off on a check copy."""
+
+    result = dict(check)
+    if not inputs:
+        return result
+    if _stage3_mode(result) != _stage3.MODE_REVIEWED_ATTESTATION:
+        raise VerificationError(
+            f"check {result.get('id')!r} does not select reviewed-attestation mode"
+        )
+    unknown = set(inputs) - set(_STAGE3_REVIEW_INPUT_KEYS)
+    if unknown:
+        raise VerificationError(f"unknown Stage 3 reviewed input(s): {sorted(unknown)}")
+    for public_name, manifest_name in _STAGE3_REVIEW_INPUT_KEYS.items():
+        if public_name in inputs and inputs[public_name] is not None:
+            result[manifest_name] = inputs[public_name]
+    return result
+
+
+def _reviewed_stage3_values(check: Mapping[str, Any], root: Path) -> dict[str, str]:
+    """Validate and normalize all invocation-bound reviewed artifacts."""
+
+    required = {
+        "stage3_candidate_check_id",
+        "stage3_candidate_receipt_path",
+        "stage3_candidate_receipt_sha256",
+        "stage3_candidate_state_dir",
+        "stage3_candidate_manifest_sha256",
+        "stage3_attestation_path",
+        "stage3_attestation_sha256",
+    }
+    missing = sorted(field for field in required if not check.get(field))
+    if missing:
+        raise VerificationError(
+            f"check {check.get('id')!r} reviewed-attestation inputs are missing: {missing}"
+        )
+    candidate_id = str(check["stage3_candidate_check_id"])
+    if candidate_id == str(check.get("id")) or _stage3._SAFE_SLUG.fullmatch(candidate_id) is None:
+        raise VerificationError("reviewed-attestation candidate check id is unsafe or not distinct")
+    values: dict[str, str] = {"candidate_check_id": candidate_id}
+    for key in (
+        "stage3_candidate_receipt_path",
+        "stage3_candidate_state_dir",
+        "stage3_attestation_path",
+    ):
+        raw = check[key]
+        if not isinstance(raw, (str, Path)):
+            raise VerificationError(f"{key} must be a safe repository-relative path")
+        raw_path = Path(raw)
+        if raw_path.is_absolute():
+            try:
+                normalized = raw_path.resolve(strict=False).relative_to(root.resolve()).as_posix()
+            except ValueError as exc:
+                raise VerificationError(f"{key} must stay inside repository root") from exc
+        else:
+            normalized = _normalise_declared_path(str(raw))
+        if not _is_safe_relative_path(normalized):
+            raise VerificationError(f"{key} must be a safe repository-relative path")
+        values[key.removeprefix("stage3_")] = str(root / normalized)
+    # The manifest pathname is derived from the candidate state directory;
+    # callers may provide one only as an equality assertion.
+    derived_manifest = Path(values["candidate_state_dir"]) / "manifest.json"
+    supplied_manifest = check.get("stage3_candidate_manifest_path")
+    if supplied_manifest not in (None, ""):
+        manifest_path_value = Path(supplied_manifest)
+        if manifest_path_value.is_absolute():
+            try:
+                normalized_manifest = manifest_path_value.resolve(strict=False).relative_to(root.resolve()).as_posix()
+            except ValueError as exc:
+                raise VerificationError("candidate manifest path must stay inside repository root") from exc
+        else:
+            normalized_manifest = _normalise_declared_path(str(supplied_manifest))
+        if not _is_safe_relative_path(normalized_manifest) or root / normalized_manifest != derived_manifest:
+            raise VerificationError("candidate manifest path must be candidate_state_dir/manifest.json")
+    values["candidate_manifest_path"] = str(derived_manifest)
+    for key in (
+        "stage3_candidate_receipt_sha256",
+        "stage3_candidate_manifest_sha256",
+        "stage3_attestation_sha256",
+    ):
+        value = str(check[key])
+        if _stage3._SHA256.fullmatch(value) is None:
+            raise VerificationError(f"{key} must be sha256:<64 lowercase hex>")
+        values[key.removeprefix("stage3_")] = value
+    return values
+
+
+def _run_one(
+    check: Mapping[str, Any],
+    root: Path,
+    identities: dict[str, Any],
+    *,
+    stage3_review_inputs: Mapping[str, object] | None = None,
+) -> dict[str, Any]:
     started = _now()
     started_clock = time.monotonic()
     command = identities["command"]["argv"]
@@ -2535,13 +2781,17 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
     stage3_nonce: str | None = None
     stage3_receipt_path: Path | None = None
     stage3_runner_report_path: Path | None = None
+    reviewed_values: dict[str, str] | None = None
     if command_owned:
         stage3_nonce = secrets.token_hex(16)
         stage3_receipt_path = _stage3_receipt_path(root, str(check["id"]), stage3_nonce)
         stage3_runner_report_path = _stage3_runner_report_path(root, str(check["id"]), stage3_nonce)
-        authority = _check_authority(check, str(check["lane"]))
-        stage3_mode = _stage3.MODE_AUTHORITY if authority == "declared" else _stage3.MODE_PURE
-        stage3_batch = str(check.get("stage3_batch", "authority" if authority == "declared" else _stage3.DEFAULT_BATCH))
+        stage3_mode = _stage3_mode(check)
+        stage3_batch = str(check["stage3_batch"])
+        if stage3_mode == _stage3.MODE_REVIEWED_ATTESTATION:
+            reviewed_values = _reviewed_stage3_values(
+                _apply_stage3_review_inputs(check, stage3_review_inputs), root
+            )
         env.update({
             _stage3.RECEIPT_ENV: str(stage3_receipt_path),
             _stage3.REPORT_ENV: str(stage3_runner_report_path),
@@ -2554,6 +2804,18 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
             _stage3.EXPECTED_COMMAND_ENV: json.dumps(command, ensure_ascii=True, separators=(",", ":")),
             _stage3.TIMEOUT_ENV: str(check.get("timeout_seconds", 21600)),
         })
+        if stage3_mode == _stage3.MODE_REVIEWED_ATTESTATION:
+            assert reviewed_values is not None
+            env.update({
+                _stage3.CANDIDATE_CHECK_ID_ENV: reviewed_values["candidate_check_id"],
+                _stage3.CANDIDATE_RECEIPT_ENV: reviewed_values["candidate_receipt_path"],
+                _stage3.CANDIDATE_RECEIPT_SHA_ENV: reviewed_values["candidate_receipt_sha256"],
+                _stage3.CANDIDATE_STATE_ENV: reviewed_values["candidate_state_dir"],
+                _stage3.CANDIDATE_MANIFEST_ENV: reviewed_values["candidate_manifest_path"],
+                _stage3.CANDIDATE_MANIFEST_SHA_ENV: reviewed_values["candidate_manifest_sha256"],
+                _stage3.ATTESTATION_PATH_ENV: reviewed_values["attestation_path"],
+                _stage3.ATTESTATION_SHA_ENV: reviewed_values["attestation_sha256"],
+            })
     record: dict[str, Any] = {
         "id": check["id"],
         "lane": check["lane"],
@@ -2634,7 +2896,11 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
         if command_owned and record["status"] in {"passed", "failed", "timeout"}:
             assert stage3_receipt_path is not None and stage3_nonce is not None
             try:
-                stage3_receipt = _read_stage3_receipt(stage3_receipt_path, root)
+                stage3_receipt_value = _read_stage3_receipt(
+                    stage3_receipt_path, root, with_hash=True
+                )
+                assert isinstance(stage3_receipt_value, tuple)
+                stage3_receipt, stage3_receipt_sha256 = stage3_receipt_value
                 stage3_receipt = _validate_stage3_receipt(
                     stage3_receipt,
                     check=check,
@@ -2648,6 +2914,7 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
                     ),
                 )
                 record["stage3_receipt"] = stage3_receipt
+                record["stage3_receipt_sha256"] = stage3_receipt_sha256
                 record["lock_evidence"] = stage3_receipt.get("lock")
                 record["child_evidence"] = stage3_receipt.get("child")
                 record["observed_peak_process_tree_rss_bytes"] = stage3_receipt.get(
@@ -2658,8 +2925,8 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
                 )
                 record["rss_sampling_contract"] = stage3_receipt.get("rss_sampling_contract")
                 record["rss_sampling_limitation"] = stage3_receipt.get("rss_sampling_limitation")
-                if record["status"] == "passed" and stage3_receipt.get("authority") == "fresh-declared-authority":
-                    record["authority"] = "fresh-declared-authority"
+                if record["status"] == "passed" and stage3_receipt.get("authority") == "scoped-proof-authority":
+                    record["authority"] = "scoped-proof-authority"
                 elif record["status"] == "passed":
                     record["authority"] = "fresh-command-pass-non-authoritative"
             except VerificationError as exc:
@@ -2684,7 +2951,7 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
         record["status"] = "failed"
     record["finished_at"] = _now()
     record["duration_ms"] = round((time.monotonic() - started_clock) * 1000, 3)
-    if record["status"] == "passed" and record.get("authority") != "fresh-declared-authority":
+    if record["status"] == "passed" and record.get("authority") != "scoped-proof-authority":
         # Exit status alone cannot establish a required output artifact or
         # bootstrap/release claim.  Keep the result explicitly non-authoritative
         # until a dedicated artifact validator is declared by the manifest.
@@ -2757,6 +3024,14 @@ def run_verification(
     resume: bool = False,
     cache_path: Path | str | None = None,
     fail_fast: bool = True,
+    candidate_check_id: str | None = None,
+    candidate_receipt_path: Path | str | None = None,
+    candidate_receipt_sha256: str | None = None,
+    candidate_state_dir: Path | str | None = None,
+    candidate_manifest_path: Path | str | None = None,
+    candidate_manifest_sha256: str | None = None,
+    attestation_path: Path | str | None = None,
+    attestation_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Plan and optionally execute checks, returning a JSON-serializable receipt."""
 
@@ -2782,6 +3057,38 @@ def run_verification(
     )
     by_id = checks_by_id(manifest_value)
     selected_ids = selection["selected_ids"]
+    explicit_review_inputs = {
+        key: value for key, value in {
+            "candidate_check_id": candidate_check_id,
+            "candidate_receipt_path": candidate_receipt_path,
+            "candidate_receipt_sha256": candidate_receipt_sha256,
+            "candidate_state_dir": candidate_state_dir,
+            "candidate_manifest_path": candidate_manifest_path,
+            "candidate_manifest_sha256": candidate_manifest_sha256,
+            "attestation_path": attestation_path,
+            "attestation_sha256": attestation_sha256,
+        }.items() if value is not None
+    }
+    reviewed_selected = [
+        check_id for check_id in selected_ids
+        if by_id[check_id].get("lock_owner", "runner") == "command"
+        and by_id[check_id].get("stage3_mode") == _stage3.MODE_REVIEWED_ATTESTATION
+    ]
+    if explicit_review_inputs and not reviewed_selected:
+        raise VerificationError(
+            "explicit Stage 3 candidate/attestation inputs require a selected reviewed-attestation check"
+        )
+    if explicit_review_inputs:
+        # Apply invocation-scoped hand-off values only to selected reviewed
+        # nodes.  The manifest identity/cache key remains the original
+        # manifest; these fields are not declared source/tool inputs.
+        for check_id in reviewed_selected:
+            by_id[check_id] = _apply_stage3_review_inputs(
+                by_id[check_id], explicit_review_inputs
+            )
+    if not (dry_run or explain):
+        for check_id in reviewed_selected:
+            _reviewed_stage3_values(by_id[check_id], root_path)
     groups = parallel_ready_groups(manifest_value, selected_ids)
     manifest_identity = {"path": _relpath(root_path, manifest_path) if manifest_path else None, "sha256": _sha256_text(_canonical(manifest_value))}
     run_started_clock = time.monotonic()
@@ -3059,7 +3366,7 @@ def _print_human(receipt: Mapping[str, Any]) -> None:
             suffix = f" ({record['reason']})"
         print(f"  {record['id']}: {record['status']}{suffix}")
     if receipt.get("authoritative"):
-        print("authority: fresh-declared-authority")
+        print("authority: scoped-proof-authority")
     elif receipt.get("checks"):
         print("authority: non-authoritative")
 
@@ -3079,6 +3386,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dry-run", action="store_true", help="show the planned DAG without executing checks")
     parser.add_argument("--explain", action="store_true", help="explain impact, ordering, locks, and cache eligibility")
     parser.add_argument("--no-fail-fast", dest="fail_fast", action="store_false", help="continue independent checks after a failure")
+    parser.add_argument("--candidate-check-id", help="reviewed Stage 3 candidate check id")
+    parser.add_argument("--candidate-receipt", "--stage3-candidate-receipt", dest="candidate_receipt_path", type=Path)
+    parser.add_argument("--candidate-receipt-sha256", dest="candidate_receipt_sha256")
+    parser.add_argument("--candidate-state-dir", dest="candidate_state_dir", type=Path)
+    parser.add_argument("--candidate-manifest", dest="candidate_manifest_path", type=Path)
+    parser.add_argument("--candidate-manifest-sha256", dest="candidate_manifest_sha256")
+    parser.add_argument("--attestation", "--stage3-attestation", dest="attestation_path", type=Path)
+    parser.add_argument("--attestation-sha256", dest="attestation_sha256")
     parser.add_argument("--human", action="store_true", help="print a short human summary instead of JSON")
     parser.add_argument("--json", dest="force_json", action="store_true", help="explicitly request JSON output (the default)")
     return parser
@@ -3103,6 +3418,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             resume=args.resume,
             cache_path=args.cache,
             fail_fast=args.fail_fast,
+            candidate_check_id=args.candidate_check_id,
+            candidate_receipt_path=args.candidate_receipt_path,
+            candidate_receipt_sha256=args.candidate_receipt_sha256,
+            candidate_state_dir=args.candidate_state_dir,
+            candidate_manifest_path=args.candidate_manifest_path,
+            candidate_manifest_sha256=args.candidate_manifest_sha256,
+            attestation_path=args.attestation_path,
+            attestation_sha256=args.attestation_sha256,
         )
     except (ManifestError, VerificationError, OSError) as exc:
         error = {"kind": "development-verification-receipt", "schema_version": SCHEMA_VERSION, "status": "invalid", "error": str(exc)}

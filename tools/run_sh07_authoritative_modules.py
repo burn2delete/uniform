@@ -100,6 +100,45 @@ def sha256_bytes(value: bytes) -> str:
     return f"sha256:{hashlib.sha256(value).hexdigest()}"
 
 
+def _read_regular_snapshot(path: Path, *, maximum: int) -> tuple[bytes, os.stat_result] | None:
+    """Read one bounded regular-file snapshot with a no-follow final leaf.
+
+    The before/after descriptor identity check makes the hash and bytes one
+    observation.  Callers that already hold a directory descriptor (for
+    example the Stage 3 wrapper) pass an immutable private snapshot path here
+    rather than reopening a shared pathname during attestation validation.
+    """
+
+    descriptor = -1
+    try:
+        flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+        descriptor = os.open(path, flags)
+        before = os.fstat(descriptor)
+        if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1
+                or before.st_size > maximum):
+            return None
+        chunks: list[bytes] = []
+        total = 0
+        while total <= maximum:
+            block = os.read(descriptor, min(1024 * 1024, maximum + 1 - total))
+            if not block:
+                break
+            chunks.append(block)
+            total += len(block)
+        if total > maximum:
+            return None
+        after = os.fstat(descriptor)
+        if ((before.st_dev, before.st_ino, before.st_nlink, before.st_size)
+                != (after.st_dev, after.st_ino, after.st_nlink, after.st_size)):
+            return None
+        return b"".join(chunks), before
+    except OSError:
+        return None
+    finally:
+        if descriptor != -1:
+            os.close(descriptor)
+
+
 def canonical_json(value: object) -> bytes:
     return (json.dumps(value, sort_keys=True, separators=(",", ":"),
                        ensure_ascii=True) + "\n").encode("utf-8")
@@ -211,6 +250,14 @@ def validate_source_bound_attestation(
     attestation: Mapping[str, object],
     *,
     expected_proof_contract_sha256: str,
+    expected_stdout_sha256: str | None = None,
+    expected_source_path: str | None = None,
+    expected_source_byte_count: int | None = None,
+    expected_source_bytes_sha256: str | None = None,
+    expected_authority_scope: str = "individual-source-bound-derived",
+    expected_coverage_policy: str = SOURCE_BOUND_POLICY,
+    source_snapshot_path: Path | None = None,
+    stdout_snapshot_path: Path | None = None,
 ) -> bool:
     """Validate a reviewed, source-bound attestation and all raw-file links."""
     if not isinstance(attestation, Mapping):
@@ -227,14 +274,16 @@ def validate_source_bound_attestation(
         if (attestation["artifact"] != "gravity/sh07-source-bound-attestation"
                 or attestation["schema"] != SOURCE_BOUND_ATTESTATION_SCHEMA
                 or attestation["module"] != module
-                or attestation["authority_scope"] != "individual-source-bound-derived"):
+                or attestation["authority_scope"] != expected_authority_scope):
             return False
         if not isinstance(attestation["proof_contract_sha256"], str) or \
                 attestation["proof_contract_sha256"] != expected_proof_contract_sha256:
             return False
         if sha256_file(root / PROOF_CONTRACT_RELATIVE) != expected_proof_contract_sha256:
             return False
-        if source_bound_policy(root) != SOURCE_BOUND_POLICY:
+        if expected_coverage_policy != SOURCE_BOUND_POLICY:
+            return False
+        if source_bound_policy(root) != expected_coverage_policy:
             return False
         if SOURCE_SHA_PATTERN.fullmatch(str(attestation["stdout_sha256"])) is None:
             return False
@@ -249,16 +298,36 @@ def validate_source_bound_attestation(
         if (not isinstance(relative, str) or Path(relative).is_absolute()
                 or Path(relative).as_posix() != relative or ".." in Path(relative).parts):
             return False
-        source_path = root / relative
-        if source_path.is_symlink() or not source_path.is_file():
+        if expected_source_path is not None and relative != expected_source_path:
             return False
-        actual_size = source_path.stat().st_size
-        actual_sha = sha256_file(source_path)
-        if source["byte_count"] != actual_size or source["bytes_sha256"] != actual_sha:
+        source_path = source_snapshot_path or (root / relative)
+        source_snapshot = _read_regular_snapshot(source_path, maximum=16 * 1024 * 1024)
+        if source_snapshot is None:
             return False
-        if sha256_file(stdout_path) != attestation["stdout_sha256"]:
+        source_bytes, source_info = source_snapshot
+        actual_size = len(source_bytes)
+        actual_sha = sha256_bytes(source_bytes)
+        if (source["byte_count"] != actual_size
+                or source["bytes_sha256"] != actual_sha
+                or source_info.st_size != actual_size):
             return False
-        binding = _proof_output_binding(stdout_path, module, cwd=root)
+        if (expected_source_byte_count is not None
+                and actual_size != expected_source_byte_count):
+            return False
+        if (expected_source_bytes_sha256 is not None
+                and actual_sha != expected_source_bytes_sha256):
+            return False
+        stdout_target = stdout_snapshot_path or stdout_path
+        stdout_snapshot = _read_regular_snapshot(stdout_target, maximum=16 * 1024 * 1024)
+        if stdout_snapshot is None:
+            return False
+        stdout_bytes, _stdout_info = stdout_snapshot
+        stdout_sha = sha256_bytes(stdout_bytes)
+        if stdout_sha != attestation["stdout_sha256"]:
+            return False
+        if expected_stdout_sha256 is not None and stdout_sha != expected_stdout_sha256:
+            return False
+        binding = _proof_output_binding(stdout_target, module, cwd=root)
         if any(binding[key] != source[value] for key, value in (
                 ("source_path", "path"),
                 ("source_byte_count", "byte_count"),
@@ -1034,6 +1103,28 @@ EDN_OUTPUT_VALIDATOR = r"""
         (throw (ex-info "Expected exactly one proof contract EDN value"
                         {})))
       value)))
+(defn read-bounded-file [file maximum]
+  ;; Read through one channel into a maximum-plus-one buffer.  A separate
+  ;; metadata query and unrestricted read would let a
+  ;; growth/swap defeat the output bound before the parser sees the bytes.
+  (with-open [channel
+              (java.nio.channels.FileChannel/open
+               (.toPath file)
+               (into-array java.nio.file.OpenOption
+                           [java.nio.file.StandardOpenOption/READ]))]
+    (let [buffer (java.nio.ByteBuffer/allocate (inc maximum))]
+      (loop []
+        (let [read-count (.read channel buffer)]
+          (cond
+            (= -1 read-count)
+            (let [size (.position buffer)
+                  bytes (byte-array size)]
+              (.flip buffer)
+              (.get buffer bytes)
+              bytes)
+
+            (> (.position buffer) maximum) nil
+            :else (recur)))))))
 (let [path (System/getenv "GRAVITY_SH07_OUTPUT_PATH")
       expected-module (System/getenv "GRAVITY_SH07_EXPECTED_MODULE")
       expected-source-path (System/getenv "GRAVITY_SH07_EXPECTED_SOURCE_PATH")
@@ -1052,20 +1143,17 @@ EDN_OUTPUT_VALIDATOR = r"""
       (some-> (System/getenv "GRAVITY_SH07_EXPECTED_COVERAGE_POLICY")
               not-empty keyword)
       output-file (io/file path)
-      output-size (java.nio.file.Files/size (.toPath output-file))
-      output-bytes
-      (when (<= output-size 4194304)
-        ;; Read the child output exactly once.  The expected hash is supplied
-        ;; by the held descriptor snapshot in the Python authority wrapper;
-        ;; a pathname swap therefore fails closed below.
-        (java.nio.file.Files/readAllBytes (.toPath output-file)))
+      ;; Read the child output exactly once through the bounded channel above.
+      ;; The expected hash is supplied by the held descriptor snapshot in the
+      ;; Python authority wrapper; a pathname swap therefore fails closed.
+      output-bytes (read-bounded-file output-file 4194304)
       output-sha256 (when output-bytes (bytes-sha256 output-bytes))
       output-value (when output-bytes (read-one-edn-bytes output-bytes))
       contract-bytes
-      (java.nio.file.Files/readAllBytes
-       (.toPath
-        (io/file
-         "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")))
+      (read-bounded-file
+       (io/file
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
+       4194304)
       contract-sha256 (bytes-sha256 contract-bytes)
       contract
       (when (= expected-proof-contract-sha256 contract-sha256)
@@ -1247,7 +1335,7 @@ EDN_OUTPUT_VALIDATOR = r"""
                (map? checks)
                (seq checks)
                (true? (:authoritative-coverage-census-current? checks))
-               (every? true? (vals checks)))))]
+               (every? true? (vals checks))))]
   (when-not passed? (System/exit 1)))
 """
 
@@ -1961,6 +2049,10 @@ def run_modules(
             return stop_for_context_change(
                 modules[-1], observed_shared, stale, context_error
             )
+        # Persist the final post-run context observation even on a successful
+        # child.  Authority consumers require this exact value to equal the
+        # manifest's pre-run shared fingerprint before accepting the receipt.
+        manifest["shared_context_fingerprint_after"] = observed_shared
         manifest["state"] = "completed"
         manifest["finished_at"] = utc_now()
         manifest["updated_at"] = utc_now()
@@ -2215,6 +2307,7 @@ def _invalidate_cli_artifacts_after_lock_failure(
             manifest.update(
                 state="lock-unsafe", aggregate_authoritative=False,
                 authority_scope="none", resumable=False,
+                lock_validated=False, lock_released=True,
                 lock_validation_error=str(error), finished_at=utc_now(), updated_at=utc_now(),
             )
             atomic_json_write(manifest_path, manifest)
@@ -2231,8 +2324,27 @@ def main(arguments: list[str] | None = None) -> int:
     values = parser().parse_args(arguments)
     base = default_base_command()
     try:
+        code: int
+        lease_receipt: Mapping[str, object]
         with shared_lock_lease(values.lock) as (_handle, receipt):
-            return _main_under_lease(values, base, receipt)
+            lease_receipt = receipt
+            code = _main_under_lease(values, base, receipt)
+        # The checkpoint manifest is written while the lease is held.  Amend
+        # it only after the context exits so lock_released=true is an honest
+        # post-unlock fact for the Stage 3 authority validator.
+        manifest_path = values.state_dir.resolve() / "manifest.json"
+        if manifest_path.exists() and not values.list:
+            manifest = load_manifest(manifest_path)
+            if isinstance(manifest, dict):
+                manifest.update({
+                    key: lease_receipt.get(key)
+                    for key in (
+                        "lock_path", "lock_mode", "lock_mode_migrated",
+                        "lock_acquired", "lock_validated", "lock_released",
+                    )
+                })
+                atomic_json_write(manifest_path, manifest)
+        return code
     except SharedLockValidationError as error:
         _invalidate_cli_artifacts_after_lock_failure(values, error)
         print(f"SH-07 checkpoint runner failed: {error}", file=sys.stderr)

@@ -1331,6 +1331,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
             fresh=True,
         )
         value["lock_owner"] = "command"
+        value["stage3_mode"] = verifier._stage3.MODE_PURE
+        value["stage3_batch"] = "public-c7-check"
         verifier.validate_manifest(manifest_for(value))
         value["command"] = ["python3", "-c", "pass"]
         with self.assertRaises(verifier.ManifestError):
