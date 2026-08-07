@@ -7,7 +7,8 @@
             [gravity.cli-test]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.diagnostics-test]
-            [gravity.syntax-object-stream :as syntax-object-stream]))
+            [gravity.syntax-object-stream :as syntax-object-stream]
+            [gravity.syntax-origin :as syntax-origin]))
 
 (defn fixture
   [name]
@@ -10175,6 +10176,19 @@
     (is (contains? (first (bootstrap/syntax-object-stream
                            "source.gravity" records context))
                    :form-id))))
+
+(deftest c3-origin-chain-compatibility-wrapper-preserves-arity-and-output
+  (let [seed {:syntax-id "syntax-3"
+              :span {:form-index 3}
+              :generated-origin [{:reader-abbreviation :quote
+                                  :from {:form-index 3}}]}
+        source-unit {:source-id "sha256:source"}]
+    (is (= '([seed source-unit])
+           (:arglists (meta #'bootstrap/c3-origin-chain))))
+    (is (= (:arglists (meta #'syntax-origin/c3-origin-chain))
+           (:arglists (meta #'bootstrap/c3-origin-chain))))
+    (is (= (syntax-origin/c3-origin-chain seed source-unit)
+           (bootstrap/c3-origin-chain seed source-unit)))))
 
 (defn- absolute-test-classpath
   []

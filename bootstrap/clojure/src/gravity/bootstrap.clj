@@ -21,7 +21,8 @@
             [gravity.reader-primitives :as reader-primitives]
             [gravity.source-span :as source-span]
             [gravity.source-unit :as source-unit]
-            [gravity.syntax-object-stream :as syntax-object-stream])
+            [gravity.syntax-object-stream :as syntax-object-stream]
+            [gravity.syntax-origin :as syntax-origin])
   (:import [clojure.lang LineNumberingPushbackReader]))
 
 (def known-source-profiles #{:core :hardware :firmware :kernel :native :hosted
@@ -152712,31 +152713,7 @@
 
 (defn c3-origin-chain
   [seed source-unit]
-  (let [source-entry {:kind :source
-                      :producer {:kind :reader
-                                 :name 'gravity.stage0/reader
-                                 :version "stage0"}
-                      :source-id (get source-unit :source-id)
-                      :span (:span seed)
-                      :input-syntax-ids []
-                      :reason :source-read
-                      :build-effects []}
-        generated (mapv (fn [origin]
-                          {:kind :generated
-                           :producer {:kind :reader
-                                      :name 'gravity.stage0/reader-abbreviation
-                                      :version "stage0"}
-                           :inputs [(:syntax-id seed)]
-                           :generated-span (str "generated:reader:"
-                                                (name (or (:reader-abbreviation origin)
-                                                          :abbreviation))
-                                                ":"
-                                                (get-in seed [:span :form-index]))
-                           :source-span (:from origin)
-                           :reason (:reader-abbreviation origin)
-                           :build-effects []})
-                        (:generated-origin seed))]
-    (vec (cons source-entry generated))))
+  (syntax-origin/c3-origin-chain seed source-unit))
 
 (defn c3-c2-reader-integrity-report
   [c2-artifact]
