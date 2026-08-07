@@ -5,11 +5,19 @@
 
 (defn- selectors-for
   [namespace-symbol]
-  (->> runner/fixed-batch-selectors
-       vals
-       (mapcat identity)
+  (->> runner/fixed-batch-ids
+       (mapcat #(get runner/fixed-batch-selectors %))
        (filter #(= namespace-symbol (symbol (namespace %))))
        vec))
+
+(defn- source-plan-source-order
+  []
+  ;; The fixed execution order runs source-control-form-arity before
+  ;; source-plan-contract, while the source file intentionally interleaves
+  ;; those selectors as plan identity, control arity, then bounds.
+  [(first runner/source-plan-contract-selectors)
+   (first runner/source-control-form-arity-selectors)
+   (second runner/source-plan-contract-selectors)])
 
 (def ^:private primitive-ns
   'gravity.self-hosting.sh08-primitive-function-type-test)
@@ -25,6 +33,15 @@
   'gravity.self-hosting.stage3-fragment-size-preflight-test)
 (def ^:private bootstrap-ns
   'gravity.bootstrap-test)
+
+(defn- bound-report-arguments
+  [batch]
+  ["--batch" (name batch)
+   "--report-file" "/tmp/stage3-test-report.json"
+   "--report-nonce" "test-nonce"
+   "--report-check-id" "test-check"
+   "--report-command-identity-sha256"
+   "sha256:0000000000000000000000000000000000000000000000000000000000000000"])
 
 (def ^:private complete-source-files
   {primitive-ns "bootstrap/clojure/test/gravity/self_hosting/sh08_primitive_function_type_test.clj"
@@ -90,7 +107,7 @@
          ho-ns (selectors-for ho-ns)
          census-ns (conj (selectors-for census-ns)
                          'gravity.self-hosting.sh07-authoritative-coverage-census-test/intentionally-unowned-fixture)
-         source-plan-ns (selectors-for source-plan-ns)
+         source-plan-ns (source-plan-source-order)
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}]
     (let [catalog-result
@@ -131,7 +148,7 @@
          recursive-ns (selectors-for recursive-ns)
          ho-ns (selectors-for ho-ns)
          census-ns (selectors-for census-ns)
-         source-plan-ns (selectors-for source-plan-ns)
+         source-plan-ns (source-plan-source-order)
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}
         missing (update base primitive-ns pop)
@@ -433,8 +450,9 @@
             nil
             (catch Throwable error error))]
       (is (identical? cleanup-error thrown))
-      (is (= :failed (:status @published)))
-      (is (= 1 (:exit-code @published)))
+      (is (= :infrastructure-failure (:status @published)))
+      (is (= :gravity/stage3-infrastructure-failure-v1 (:schema @published)))
+      (is (= "/tmp/stage3-cleanup-ordinary.json" (:report-file @published)))
       (is (false? (:authoritative? @published))))
     (let [published (atom nil)
           execution (ex-info "delegate execution" {:id "STAGE3-DELEGATE-CONTRACT"})
@@ -459,7 +477,71 @@
       (is (identical? execution thrown))
       (is (some #(identical? cleanup-error %)
                 (seq (.getSuppressed ^Throwable execution))))
-      (is (= :failed (:status @published))))))
+      (is (= :infrastructure-failure (:status @published)))
+      (is (= :gravity/stage3-infrastructure-failure-v1 (:schema @published)))
+      (is (= "STAGE3-DELEGATE-CONTRACT" (:error-id @published))))))
+
+(deftest catalog-drift-publishes-bound-infrastructure-failure
+  (let [published (atom nil)
+        arguments (bound-report-arguments :primitive-pure)
+        missing-catalog (fn [_]
+                          {primitive-ns []})
+        thrown
+        (try
+          (with-redefs [runner/cleanup! (fn [] nil)
+                        runner/publish-report!
+                        (fn [_ receipt] (reset! published receipt))]
+            (binding [runner/*catalog-loader* missing-catalog
+                      runner/*delegate-run-test-vars* (fn [_] (throw (ex-info "delegate must not run" {})))
+                      runner/*exit-fn* (fn [_] nil)]
+              (apply runner/-main arguments)))
+          nil
+          (catch Throwable error error))
+        receipt @published]
+    (is (instance? clojure.lang.ExceptionInfo thrown))
+    (is (= "STAGE3-CATALOG-MISSING-TEST-VAR" (:id (ex-data thrown))))
+    (is (= :gravity/stage3-infrastructure-failure-v1 (:schema receipt)))
+    (is (= :infrastructure-failure (:status receipt)))
+    (is (= "/tmp/stage3-test-report.json" (:report-file receipt)))
+    (is (= "test-nonce" (:nonce receipt)))
+    (is (= "test-check" (:check-id receipt)))
+    (is (= "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+           (:command-identity-sha256 receipt)))
+    (is (= "STAGE3-CATALOG-MISSING-TEST-VAR" (:error-id receipt)))
+    (is (<= (count (:error-message receipt)) 1024))
+    (is (not (contains? receipt :selection-order)))
+    (is (false? (:authoritative? receipt)))))
+
+(deftest report-publication-never-replaces-target-created-after-preflight
+  (let [directory (java.nio.file.Files/createTempDirectory
+                   "stage3-report-race"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        target (.resolve directory "report.json")
+        attacker-bytes (.getBytes "attacker-wins\n"
+                                  java.nio.charset.StandardCharsets/UTF_8)
+        thrown
+        (try
+          (binding [runner/*before-report-link-hook*
+                    (fn [raced-target _temporary]
+                      (java.nio.file.Files/write
+                       raced-target
+                       attacker-bytes
+                       (into-array java.nio.file.OpenOption
+                                   [java.nio.file.StandardOpenOption/CREATE_NEW
+                                    java.nio.file.StandardOpenOption/WRITE])))]
+            (runner/publish-report! (str target)
+                                    {:schema :gravity/stage3-test-report-v1
+                                     :stage :stage3
+                                     :status :infrastructure-failure}))
+          nil
+          (catch Throwable error error))]
+    (try
+      (is (instance? java.nio.file.FileAlreadyExistsException thrown))
+      (is (= (seq attacker-bytes)
+             (seq (java.nio.file.Files/readAllBytes target))))
+      (finally
+        (java.nio.file.Files/deleteIfExists target)
+        (java.nio.file.Files/deleteIfExists directory)))))
 
 (deftest cli-lifecycle-cleans-up-and-preserves-fatal-and-interrupt
   (doseq [throwable [(Error. "fatal") (InterruptedException. "interrupt")]]

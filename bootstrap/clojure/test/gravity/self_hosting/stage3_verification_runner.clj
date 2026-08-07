@@ -152,17 +152,6 @@
   (set/union complete-owned-source-namespaces
              partial-selector-namespaces))
 
-(def ^:private expected-source-selectors
-  (into {}
-        (for [namespace-symbol catalog-source-namespaces]
-          [namespace-symbol
-           (vec
-            (mapcat
-             #(filter (fn [selector]
-                        (= namespace-symbol (symbol (namespace selector))))
-                      (get batch-selectors %))
-             batch-order))])))
-
 (defn- exception
   [id message data]
   (throw (ex-info message (merge {:id id} data))))
@@ -194,25 +183,41 @@
                  {:batch-id batch-id :duplicates duplicates})))
   selectors)
 
-(defn- expected-selectors-by-namespace
+(defn- expected-batch-selectors-by-namespace
   [batches]
   ;; `fixed-batches` has more than eight entries and therefore cannot rely on
   ;; Clojure's insertion-ordered array-map representation.  Always derive the
-  ;; expected source order from the literal fixed-batch-id vector.
+  ;; fixed execution order from the literal fixed-batch-id vector.  Keep the
+  ;; batch identity beside each selector: partial source files may interleave
+  ;; selectors from batches whose execution order is intentionally different
+  ;; from source order.
   (reduce
    (fn [result batch-id]
      (if (contains? batches batch-id)
-       (reduce
+      (reduce
         (fn [result selector]
           (let [namespace-symbol (selector-namespace selector)]
             (if (contains? catalog-source-namespaces namespace-symbol)
-              (update result namespace-symbol (fnil conj []) selector)
+              (update result namespace-symbol (fnil conj [])
+                      {:batch-id batch-id :selector selector})
               result)))
         result
         (ensure-selector-vector! batch-id (get-in batches [batch-id :test-vars])))
        result))
    {}
    batch-order))
+
+(defn- ordered-subsequence?
+  [expected actual]
+  (loop [expected (seq expected)
+         actual (seq actual)]
+    (cond
+      (nil? expected) true
+      (nil? actual) false
+      (= (first expected) (first actual))
+      (recur (next expected) (next actual))
+      :else
+      (recur expected (next actual)))))
 
 (defn validate-fixed-catalog!
   "Validate a fixed batch map against discovered deftest selectors.
@@ -247,7 +252,12 @@
                       "A fixed Stage3 selector belongs to an unexpected namespace"
                       {:batch-id batch-id :unexpected unexpected
                        :expected (vec (sort-by str catalog-source-namespaces))}))))
-     (let [expected-all (expected-selectors-by-namespace batches)
+     (let [expected-batches (expected-batch-selectors-by-namespace batches)
+           expected-all
+           (into {}
+                 (map (fn [[namespace-symbol entries]]
+                        [namespace-symbol (mapv :selector entries)]))
+                 expected-batches)
            loaded-namespaces (set loaded-namespaces)
            unexpected-loaded (set/difference loaded-namespaces
                                               catalog-source-namespaces)
@@ -257,7 +267,7 @@
                           {:unexpected (vec (sort-by str unexpected-loaded))
                            :expected (vec (sort-by str catalog-source-namespaces))}))
            expected (select-keys expected-all loaded-namespaces)
-           flattened (mapcat second expected)
+           flattened (mapcat (fn [[_ entries]] (map :selector entries)) expected)
            duplicates (->> flattened frequencies
                            (keep (fn [[selector count]]
                                    (when (> count 1) selector))) vec)]
@@ -285,8 +295,8 @@
                               (when (> count 1) selector))) vec)
                  missing (vec (remove (set actual-selectors) expected-selectors))
                  extra (vec (remove (set expected-selectors) actual-selectors))
-                 actual-fixed-subsequence
-                 (vec (filter (set expected-selectors) actual-selectors))]
+                 expected-by-batch
+                 (group-by :batch-id (get expected-batches namespace-symbol))]
              (when (seq duplicate-actuals)
                (exception "STAGE3-CATALOG-DUPLICATE-TEST-VAR"
                           "Discovered Stage3 test catalog contains duplicates"
@@ -306,23 +316,38 @@
                            :actual actual-selectors}))
              (when (and partial? (seq extra))
                (swap! intentionally-unowned assoc namespace-symbol extra))
-             (when (and (seq expected-selectors)
-                        (not= expected-selectors
-                             (if partial?
-                               actual-fixed-subsequence
-                               actual-selectors)))
+             ;; Partial source files can interleave selectors assigned to
+             ;; batches whose execution order differs from source order. Each
+             ;; fixed batch vector is therefore checked independently as an
+             ;; in-source-order subsequence; concatenating vectors in execution
+             ;; order would reject a valid interleaving (or hide drift).
+             (when (and partial? (seq expected-selectors))
+               (doseq [[batch-id entries] expected-by-batch]
+                 (let [batch-selectors (mapv :selector entries)]
+                   (when-not (ordered-subsequence?
+                              batch-selectors actual-selectors)
+                     (exception "STAGE3-CATALOG-SOURCE-ORDER"
+                                "A fixed partial-batch selector vector no longer matches source order"
+                                {:namespace namespace-symbol
+                                 :batch-id batch-id
+                                 :expected batch-selectors
+                                 :actual actual-selectors
+                                 :partial-namespace? true})))))
+             (when (and (not partial?)
+                        (seq expected-selectors)
+                        (not= expected-selectors actual-selectors))
                (exception "STAGE3-CATALOG-SOURCE-ORDER"
                           "Stage3 selectors no longer match source order"
                           {:namespace namespace-symbol
                            :expected expected-selectors
                            :actual actual-selectors
-                           :partial-namespace? partial?}))))))
+                           :partial-namespace? false}))))
      {:status :passed
      :batch-ids (vec fixed-batch-ids)
      :discovered discovered
       :intentionally-unowned @intentionally-unowned
       :authority :non-authoritative
-      :authoritative? false})))
+      :authoritative? false})))))
 
 (defn- discovered-test-vars
   [namespace-symbol]
@@ -380,6 +405,12 @@
   "Report publication seam.  The default writes a closed-shape JSON file
   atomically after lifecycle cleanup; tests can bind a recorder function."
   nil)
+
+(def ^:dynamic *before-report-link-hook*
+  "Test seam invoked after the target absence check and before the exclusive
+  hard-link publication.  Production leaves this as a no-op; a test may use it
+  to create the target and prove that publication never replaces a race winner."
+  (fn [_target _temporary] nil))
 
 (defn- default-delegate
   [selection]
@@ -1142,8 +1173,10 @@
                {:exit-code (if (:ok? result) 0 1)})))))
 
 (def ^:private usage-error-prefixes
-  ["STAGE3-CLI-" "STAGE3-UNKNOWN-BATCH" "STAGE3-BATCH-"
-   "STAGE3-CATALOG-"])
+  ;; Only syntax/allowlist selection errors are command usage.  A catalog
+  ;; drift, delegate contract violation, fixture failure, or lifecycle error
+  ;; is execution infrastructure and must retain the parsed report binding.
+  ["STAGE3-CLI-" "STAGE3-UNKNOWN-BATCH"])
 
 (defn- usage-error?
   [throwable]
@@ -1275,8 +1308,10 @@
 (defn- publish-report-default!
   [report-file receipt]
   (let [{:keys [target parent]} (report-target-path report-file)
-        ;; createTempFile is CREATE_NEW by contract; the final move does not
-        ;; use REPLACE_EXISTING, so a race cannot overwrite an existing leaf.
+        ;; createTempFile is CREATE_NEW by contract.  The final hard-link
+        ;; creation below is the no-replace primitive: unlike ATOMIC_MOVE, the
+        ;; Java API does not permit an implementation to replace an existing
+        ;; target when createLink sees a race.
         temporary (java.nio.file.Files/createTempFile
                    parent ".gravity-stage3-report-" ".tmp"
                    (make-array java.nio.file.attribute.FileAttribute 0))]
@@ -1295,16 +1330,44 @@
        (into-array java.nio.file.OpenOption
                    [java.nio.file.StandardOpenOption/WRITE
                     java.nio.file.StandardOpenOption/TRUNCATE_EXISTING])))
-      (with-open [channel
-                  (java.nio.channels.FileChannel/open
+        (with-open [channel
+                    (java.nio.channels.FileChannel/open
                    temporary
                    (into-array java.nio.file.OpenOption
                                [java.nio.file.StandardOpenOption/WRITE]))]
         (.force channel true))
-      (java.nio.file.Files/move
-       temporary target
-       (into-array java.nio.file.CopyOption
-                   [java.nio.file.StandardCopyOption/ATOMIC_MOVE]))
+      ;; The hook exists only for the deterministic race regression.  The
+      ;; createLink call itself remains the atomic, exclusive commit point.
+      (*before-report-link-hook* target temporary)
+      (java.nio.file.Files/createLink target temporary)
+      (with-open [channel
+                  (java.nio.channels.FileChannel/open
+                   target
+                   (into-array java.nio.file.OpenOption
+                               [java.nio.file.StandardOpenOption/WRITE]))]
+        (.force channel true))
+      ;; A directory fsync is not supported by every provider/platform.  When
+      ;; it is available, force the directory before and after unlinking the
+      ;; temporary name so both the link and final nlink=1 state are durable.
+      (try
+        (with-open [channel
+                    (java.nio.channels.FileChannel/open
+                     parent
+                     (into-array java.nio.file.OpenOption
+                                 [java.nio.file.StandardOpenOption/READ]))]
+          (.force channel true))
+        (catch java.lang.UnsupportedOperationException _)
+        (catch java.io.IOException _))
+      (java.nio.file.Files/deleteIfExists temporary)
+      (try
+        (with-open [channel
+                    (java.nio.channels.FileChannel/open
+                     parent
+                     (into-array java.nio.file.OpenOption
+                                 [java.nio.file.StandardOpenOption/READ]))]
+          (.force channel true))
+        (catch java.lang.UnsupportedOperationException _)
+        (catch java.io.IOException _))
       report-file
       (catch Throwable error
         (try (java.nio.file.Files/deleteIfExists temporary) (catch Throwable _))
@@ -1328,65 +1391,37 @@
       (subs text 0 maximum)
       text)))
 
-(defn- error-receipt
-  ([status exit-code throwable]
-   (error-receipt status exit-code throwable nil))
-  ([status exit-code throwable report-binding]
-   (let [batch-id (:batch-id report-binding)
-         definition (when batch-id (get fixed-batches batch-id))
-         selectors (vec (:test-vars definition))
-         zero-counts {:test 0 :pass 0 :fail 0 :error 0}
-         zero-cache (cache-map nil)
-         skipped-results
-         (mapv
-          (fn [selection-index selector]
-            {:test-var selector
-             :selection-index selection-index
-             :status :skipped
-             :counts zero-counts
-             :test 0 :pass 0 :fail 0 :error 0
-             :cache zero-cache
-             :elapsed-ms 0
-             :completed? false
-             :skipped? true
-             :skipped-tail? true
-             :skipped-tail selectors
-             :authority :non-authoritative
-             :authoritative? false})
-          (range)
-          selectors)]
-     {:schema :gravity/stage3-verification-batch-v1
-      :stage :stage3
-      :status status
-      :exit-code exit-code
-      :error-id (bounded-error-text (:id (ex-data throwable)) 128)
-      :error-class (bounded-error-text (.getName (class throwable)) 256)
-      :error-message (bounded-error-text (.getMessage throwable) 1024)
-      :batch-id batch-id
-      :batch-name (some-> batch-id name)
-      :selector-vector selectors
-      :selection-order selectors
-      :test-vars selectors
-      :maximum-entries maximum-cache-entries
-      :fail-fast? (> (count selectors) 1)
-      :counts zero-counts
-      :test 0 :pass 0 :fail 0 :error 0
-      :test-result (assoc zero-counts :type :summary)
-      :test-var-results skipped-results
-      :skipped-tail selectors
-      :skipped-test-vars selectors
-      :stopped-early? true
-      :cache zero-cache
-      :elapsed-ms 0
-      :authority :non-authoritative
-      :authoritative? false
-      :cache-authoritative? false
-      :fresh-authoritative-run-required? true
-      :report-file (:report-file report-binding)
-      :report-nonce (:report-nonce report-binding)
-      :report-check-id (:report-check-id report-binding)
-      :report-command-identity-sha256
-      (:report-command-identity-sha256 report-binding)})))
+(defn- infrastructure-failure-receipt
+  "Build a bounded command-bound receipt for non-test infrastructure failure.
+
+  This schema is intentionally not a verification receipt: it carries no
+  selector, execution, summary, or cache evidence that the wrapper could
+  mistake for a valid fixed batch.  The Python supervisor rejects this schema
+  as test evidence and maps the child to its infrastructure-failure outcome.
+  The report binding remains present whenever strict argument parsing reached
+  the selected batch."
+  [throwable report-binding]
+  (let [report-binding (or report-binding {})
+        batch-id (:batch-id report-binding)]
+    {:schema :gravity/stage3-infrastructure-failure-v1
+     :stage :stage3
+     :status :infrastructure-failure
+     :exit-code 1
+     :batch-id batch-id
+     :batch-name (some-> batch-id name)
+     :error-id (bounded-error-text
+                (or (:id (ex-data throwable))
+                    "STAGE3-INFRASTRUCTURE-FAILURE") 128)
+     :error-class (bounded-error-text (.getName (class throwable)) 256)
+     :error-message (bounded-error-text (.getMessage throwable) 1024)
+     :authority :non-authoritative
+     :authoritative? false
+     :cache-authoritative? false
+     :fresh-authoritative-run-required? true
+     :report-file (:report-file report-binding)
+     :nonce (:report-nonce report-binding)
+     :check-id (:report-check-id report-binding)
+     :command-identity-sha256 (:report-command-identity-sha256 report-binding)}))
 
 (defn- cleanup-preserving!
   [original]
@@ -1430,20 +1465,19 @@
             {:throwable throwable}))
         throwable (:throwable outcome)
         result (:result outcome)
+        report-binding
+        (merge (report-binding-from-arguments arguments)
+               (select-keys (or result {})
+                            [:batch-id :batch-name :report-file :report-nonce
+                             :report-check-id :report-command-identity-sha256]))
         receipt (if throwable
-                  (bounded-receipt
-                   (assoc
-                    (error-receipt
-                     :fatal 1 throwable
-                     (report-binding-from-arguments arguments))
-                    :status :failed))
+                  (infrastructure-failure-receipt throwable report-binding)
                   (if (= :usage (:status result))
                     (merge (bounded-receipt result)
                            {:status :usage
                             :error-id (:error-id result)
                             :error-data (:error-data result)})
                     (bounded-receipt result)))
-        report-file (:report-file receipt)
         cleanup-error
         (try
           (cleanup-preserving! throwable)
@@ -1451,8 +1485,9 @@
           (catch Throwable error error))
         final-receipt
         (if (and cleanup-error (nil? throwable))
-          (assoc receipt :status :failed :exit-code 1)
+          (infrastructure-failure-receipt cleanup-error report-binding)
           receipt)
+        report-file (:report-file final-receipt)
         publish-error
         (when report-file
           (try
