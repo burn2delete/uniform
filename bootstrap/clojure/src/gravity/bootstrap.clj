@@ -15,6 +15,7 @@
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
             [gravity.reader-cursor :as reader-cursor]
+            [gravity.reader-diagnostic-policy :as reader-diagnostic-policy]
             [gravity.reader-primitives :as reader-primitives]
             [gravity.source-span :as source-span]
             [gravity.source-unit :as source-unit])
@@ -110,49 +111,7 @@
 
 (defn classify-reader-diagnostic
   [source-text ex]
-  (let [message (or (.getMessage ex) "")
-        lower (str/lower-case message)
-        trimmed (str/trim source-text)]
-    (cond
-      (or (str/includes? lower "reader function for tag")
-          (str/includes? lower "unknown reader tag"))
-      ["L1-READER-EXTENSION"
-       "reader extension tag is not registered for the stage0 build policy"]
-
-      (or (str/includes? lower "metadata")
-          (and (str/includes? lower "eof while reading")
-               (str/starts-with? trimmed "^")))
-      ["L1-METADATA"
-       "metadata form is malformed or unattached"]
-
-      (or (str/includes? lower "map literal must contain")
-          (str/includes? lower "map literal contains"))
-      ["L1-MAP-ARITY"
-       "map literal contains an odd number of forms"]
-
-      (or (str/includes? lower "invalid number")
-          (str/includes? lower "invalid numeric")
-          (str/includes? lower "number format"))
-      ["L1-NUMERIC"
-       "numeric candidate fails every enabled numeric literal grammar"]
-
-      (str/includes? lower "invalid token")
-      ["L1-IDENTIFIER"
-       "symbol or keyword has an invalid surface spelling"]
-
-      (or (str/includes? lower "unsupported escape character")
-          (str/includes? lower "invalid unicode escape")
-          (str/includes? lower "string"))
-      ["L1-STRING"
-       "string or character literal is malformed"]
-
-      (str/includes? lower "eof while reading")
-      ["L1-DELIMITER"
-       "source has an unbalanced or mismatched delimiter"]
-
-      :else
-      ["C2-READER"
-       "source could not be read by the stage0 bootstrap reader"])))
+  (reader-diagnostic-policy/classify-reader-diagnostic source-text ex))
 
 (defn read-source-form-records-host-oracle
   [source-path source-text]
