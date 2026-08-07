@@ -196,6 +196,61 @@ incomparable observations and establish no speedup or regression. The backlog
 currently records 2411.35 seconds; resolve that against the raw receipt before
 replacing any canonical baseline.
 
+## Fixed Stage3 C7 candidate graph
+
+The Stage3 graph is a fixed, serial development route rather than generic
+namespace batching. It begins with the complete
+`gravity.self-hosting.stage3-verification-runner-test` unit namespace, then
+runs the reviewed SH08 primitive, recursive, and higher-order fixed batches.
+The exact source-control-form-arity batch precedes the source-plan contract,
+coverage-census contract, fragment-size preflight, public C7 check, and proof
+candidate. Each production node invokes
+`python3 tools/run_stage3_verification.py` with a reviewed `--batch` identity
+from the `:stage3-verification` alias. No generic `--namespace` or `--exact`
+selection is used by the production graph.
+
+Every C7 node is a fresh, exclusive, capacity-one heavy candidate using the
+command-owned canonical `/private/tmp/gravity-sh07-heavy.lock`. The public
+node fixes the child heap at `-J-Xmx2g`, uses a timeout of at least 900 seconds,
+and retains observed wall/RSS receipt evidence. The final authority-shaped
+node is only a fresh no-resume `proof-candidate` with a new invocation state
+directory, `authority: none`, and `attestation_required: true`. Reviewed
+attestation remains a separate disabled mode and is never inferred from an
+exit-0 proof candidate.
+
+Each command-owned node fingerprints all of the tools and delegates it can
+execute: `run_stage3_verification.py`, `verify_development.py`,
+`run_sh07_authoritative_modules.py`, the Stage3 and SH-07 iteration-cache
+Clojure runners, `gravity/bootstrap.clj`, and `deps.edn`. Authenticated SH08
+nodes bind `sh08_function_call_type_test.clj` plus the exact `.gravity` inputs
+they load (and paired `.qst` bytes for parity). The proof candidate additionally
+binds the authoritative runner and proof contract, so a changed delegate
+cannot be hidden behind an unchanged fixed selector.
+
+The source-plan and census test files contain deftests outside their fixed
+selector sets. Their paths are impact-excluded and therefore fail closed as
+deferred under implicit change-impact selection; the large bootstrap test file
+is not claimed by the single public selector. The complete SH08 and fragment
+files are covered by the union of their fixed selectors. Explicit `--check` and
+`--all` scopes retain the broad Stage0 graph, while a changed C7 implementation
+source selects the Stage3 chain and excludes legacy Stage0 heavy checks.
+
+The successful proof candidate on `206e89f` is retained as stale-after-tool-
+integration evidence, not authority or a speedup claim. Wrapper/proof elapsed
+time was 3998.709/3993.553 seconds, observed monitor peak was about 4.74 GiB,
+and source was 210,220 bytes with SHA
+`sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4`.
+Artifact/census/stdout SHA prefixes/suffixes were `9ee396...6587`,
+`6580b7...0393`, and `730071...5268`; the request census was 192
+fragments/roots, 18,554 forms, 1,528 bindings, 1,266 locals, and 7,687
+resolutions. Core counts were 15,286 nodes, 192 definitions, 3,082 calls,
+6,185 references, and zero keywords, with 187 function records, 3,082 call
+edges, and 14 recursion components. The source-bound-derived contract still
+requires a separate reviewed attestation and does not grant exact, aggregate,
+or release authority. Since the run used the pre-Stage2 wrapper, queued
+tool/dependency fingerprint changes invalidate it; exactly one fresh no-resume
+candidate rerun is required after integration and freeze.
+
 ## Selection and execution flow
 
 1. Normalize changed paths and validate the manifest before starting a command.

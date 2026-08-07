@@ -538,6 +538,61 @@ boundary checks likewise remain non-authoritative development evidence.
 `--fresh all` is the exhaustive SH-07 transaction and is reserved for the
 stable-candidate/release lane because of its measured runtime and memory cost.
 
+### 7. Fixed Stage3 C7 candidate graph
+
+The manifest's Stage3 graph is a fixed, serial development route. A cheap
+runner-unit node executes the complete
+`gravity.self-hosting.stage3-verification-runner-test` namespace. Capacity-one
+heavy candidate nodes then run the reviewed SH08 primitive, recursive, and
+authoritative higher-order selector batches. The exact source-control-form-
+arity selector runs before source-plan, census, fragment, public, and proof
+candidate nodes. Every Stage3 command uses
+`python3 tools/run_stage3_verification.py`, the `:stage3-verification` alias
+and a fixed `--batch` identity; generic `--namespace` and `--exact` selectors
+are not accepted by these production nodes.
+
+The manifest fingerprints the complete execution boundary for every
+command-owned node: the Stage3 wrapper, verifier/process-supervisor, SH-07
+authoritative tool, Stage3 Clojure runner, iteration-cache runner, bootstrap
+source, and `deps.edn`. Authenticated SH08 selectors additionally bind the
+exact `sh08_function_call_type_test.clj` source and the `.gravity` fixtures they
+load; parity selectors bind their paired `.qst` bytes. The proof candidate
+also binds `sh07_authoritative_runner.clj` and `sh07_proof_contract.edn`.
+
+All C7 nodes are fresh, exclusive, capacity one, and command-owned on the
+canonical `/private/tmp/gravity-sh07-heavy.lock`. The public C7 node records an
+explicit `-J-Xmx2g` child heap, a timeout of at least 900 seconds, and observed
+wall/RSS evidence. The final authority-shaped node is instead a
+`proof-candidate`: it is fresh, no-resume, uses a new invocation state
+directory, reports `authority: none`, and carries `attestation_required: true`.
+The separate reviewed-attestation mode is intentionally not enabled in this
+manifest.
+
+For source ownership, primitive/recursive/higher-order and fragment files are
+covered by the union of their fixed selectors. The source-plan and census
+files contain additional deftests that are not selected by this graph, so
+their paths are explicitly impact-excluded and an implicit change fails closed
+as deferred rather than claiming a false green. The large bootstrap test file
+is likewise not claimed by the single public selector. Explicit `--check` or
+`--all` runs retain the broad Stage0 graph; changed C7 implementation sources
+select the fixed Stage3 downstream chain and exclude legacy Stage0 heavy nodes.
+
+The successful `206e89f` proof candidate is retained as stale-after-tool-
+integration evidence, never as authority or a speedup claim. It completed in
+3998.709 seconds wrapper time / 3993.553 seconds proof time at about 4.74 GiB
+observed monitor peak. The source was 210,220 bytes,
+`sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4`;
+artifact, census, and stdout SHA prefixes/suffixes were
+`9ee396...6587`, `6580b7...0393`, and `730071...5268`. The request census was
+192 fragments/roots, 18,554 forms, 1,528 bindings, 1,266 locals, and 7,687
+resolutions; core counts were 15,286 nodes, 192 definitions, 3,082 calls,
+6,185 references, and zero keywords, with 187 function records, 3,082 call
+edges, and 14 recursion components. Its source-bound-derived contract still
+requires a separate reviewed attestation and does not grant exact, aggregate,
+or release authority. Because this receipt predates the Stage2 wrapper and
+its tool/dependency fingerprint changes, exactly one fresh no-resume candidate
+rerun is required after the final integration freeze.
+
 For a durable, resumable sequence of selected modules, use the checkpoint
 runner. It starts one fresh child for each module, writes stdout/stderr logs
 and a JSON receipt under `--state-dir`, and stops at the first failed or timed

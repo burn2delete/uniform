@@ -1,16 +1,18 @@
 {
   "schema_version": 1,
   "name": "gravity-stage0-development-verification",
-  "description": "Stage 0 and Milestone 0 verification graph with bounded Stage1 SH-01 and Stage2 authority-admission unit handoffs for fast, evidence-producing development loops.",
+  "description": "Stage 0 and Milestone 0 verification graph with bounded Stage1/Stage2 handoffs and a fixed, non-authoritative Stage3 C7 candidate graph for fast, evidence-producing development loops.",
   "scope": {
     "stage": "stage0",
     "stage1_handoff": "SH-01 planner and parallel-runner unit preflight",
     "stage2_admission": "lock-held Stage2 authority-admission unit (development-only)",
+    "stage3_handoff": "fixed SH08/C7 development batches through a fresh proof candidate; no reviewed attestation or authority promotion",
     "milestones": ["M0-documentation-lock", "M1-hosted-hello-slice"],
     "included": [
       "foundation contract and documentation validators",
       "the Stage1 SH-01 planner and parallel-runner unit preflight",
       "the Stage2 authority-admission unit",
+      "the fixed Stage3 runner unit and SH08/C7 development graph",
       "hosted reader validator",
       "first hosted hello and core application fixtures",
       "the focused project-structure extraction compatibility gate",
@@ -236,6 +238,16 @@
       "tool_inputs": [
         "deps.edn"
       ],
+      "impact_excludes": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_primitive_function_type_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_authoritative_higher_order_function_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_fragment_size_preflight_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+      ],
       "depends_on": [
         "stage0-orchestrator-unit"
       ]
@@ -272,6 +284,509 @@
       ]
     },
     {
+      "id": "stage3-runner-unit",
+      "lane": "focused",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "timeout_seconds": 180,
+      "command": [
+        "clojure",
+        "-M:test",
+        "--namespace",
+        "gravity.self-hosting.stage3-verification-runner-test"
+      ],
+      "inputs": [
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_fragment_size_preflight_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn"
+      ],
+      "depends_on": ["stage2-authority-admission-unit"]
+    },
+    {
+      "id": "stage3-primitive-pure",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1800,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "primitive-pure",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_primitive_function_type_test.clj",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-value-typed-bool.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-value-typed-bool.qst"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-runner-unit"]
+    },
+    {
+      "id": "stage3-primitive-bool-authenticated",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1800,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "primitive-bool-authenticated",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_primitive_function_type_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-value-typed-bool.gravity"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-primitive-pure"]
+    },
+    {
+      "id": "stage3-recursive-pure",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1800,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "recursive-pure",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-self-recursive-type.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-self-recursive-type.qst"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-primitive-bool-authenticated"]
+    },
+    {
+      "id": "stage3-recursive-integer-authenticated",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1800,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "recursive-integer-authenticated",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-self-recursive-type.gravity"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-recursive-pure"]
+    },
+    {
+      "id": "stage3-recursive-string-authenticated",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1800,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "recursive-string-authenticated",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-self-recursive-string-type.gravity"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-recursive-integer-authenticated"]
+    },
+    {
+      "id": "stage3-authoritative-ho-pure",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1800,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "authoritative-ho-pure",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_authoritative_higher_order_function_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-recursive-string-authenticated"]
+    },
+    {
+      "id": "stage3-authoritative-ho-fixture-parity",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1800,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "authoritative-ho-fixture-parity",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_authoritative_higher_order_function_test.clj",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-value-typed-call.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-value-typed-call.qst"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-authoritative-ho-pure"]
+    },
+    {
+      "id": "stage3-authoritative-ho2-authenticated",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1800,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "authoritative-ho2-authenticated",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_authoritative_higher_order_function_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-value-typed-call.gravity"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-authoritative-ho-fixture-parity"]
+    },
+    {
+      "id": "stage3-source-control-form-arity",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 900,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "source-control-form-arity",
+      "impact_excludes": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj"
+      ],
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-authoritative-ho2-authenticated"]
+    },
+    {
+      "id": "stage3-source-plan-contract",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1200,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "source-plan-contract",
+      "impact_excludes": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj"
+      ],
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-source-control-form-arity"]
+    },
+    {
+      "id": "stage3-coverage-census-contract",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1200,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "coverage-census-contract",
+      "impact_excludes": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj"
+      ],
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-source-plan-contract"]
+    },
+    {
+      "id": "stage3-fragment-size-preflight",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1200,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "fragment-size-preflight",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_fragment_size_preflight_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-coverage-census-contract"]
+    },
+    {
+      "id": "stage3-public-c7-check",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 900,
+      "jvm_heap": "-J-Xmx2g",
+      "minimum_heap_bytes": 2147483648,
+      "resource_receipt": "observed-peak-process-tree-rss-and-wall-time",
+      "impact_excludes": [
+        "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+      ],
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "public-c7-check",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj"
+      ],
+      "depends_on": ["stage3-fragment-size-preflight"]
+    },
+    {
+      "id": "stage3-c7-proof-candidate",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "no_resume": true,
+      "proof_candidate": true,
+      "attestation_required": true,
+      "timeout_seconds": 21600,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "proof-candidate",
+      "stage3_batch": "authority",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+      ],
+      "depends_on": ["stage3-public-c7-check"]
+    },
+    {
       "id": "stage0-reader",
       "lane": "focused",
       "cost": "cheap",
@@ -305,6 +820,9 @@
         "examples/hello.gravity",
         "examples/hello.qst"
       ],
+      "impact_excludes": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+      ],
       "depends_on": []
     },
     {
@@ -324,6 +842,9 @@
         "bootstrap/clojure/src/gravity/bootstrap.clj",
         "examples/hello.gravity",
         "examples/hello.qst"
+      ],
+      "impact_excludes": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
       ],
       "depends_on": []
     },
@@ -353,6 +874,9 @@
         "bootstrap/clojure/test/gravity/development_test_runner.clj",
         "bootstrap/clojure/fixtures/accepted/hello.gravity",
         "bootstrap/clojure/fixtures/accepted/core-app.gravity"
+      ],
+      "impact_excludes": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
       ],
       "depends_on": []
     },
@@ -454,6 +978,9 @@
         "examples/core-app.gravity",
         "examples/core-app.qst"
       ],
+      "impact_excludes": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+      ],
       "depends_on": ["stage0-hosted-hello"]
     },
     {
@@ -473,6 +1000,9 @@
         "bootstrap/clojure/src/gravity/bootstrap.clj",
         "examples/core-app.gravity",
         "examples/core-app.qst"
+      ],
+      "impact_excludes": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
       ],
       "depends_on": ["stage0-hosted-core-app"]
     },
@@ -498,6 +1028,10 @@
         "src/**/*.py",
         "examples/**/*.gravity",
         "examples/**/*.qst"
+      ],
+      "impact_excludes": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/**"
       ],
       "depends_on": [
         "m0-docs",
@@ -540,6 +1074,9 @@
         "bootstrap/clojure/fixtures/accepted/bootstrap-self-hosting.gravity",
         "bootstrap/clojure/fixtures/rejected/bootstrap-*.gravity",
         "docs/artifacts/phase-15/bootstrap/stage0-p15-bootstrap-self-hosting-proof.edn"
+      ],
+      "impact_excludes": [
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
       ],
       "depends_on": ["stage0-clojure-suite"]
     }

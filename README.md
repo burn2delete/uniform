@@ -158,6 +158,28 @@ source bytes; a user-provided historical observation is 2416.213 seconds at
 speedup or regression is claimed. The backlog records 2411.35 seconds; resolve
 that against the raw receipt before replacing a canonical baseline.
 
+The fixed Stage3 development graph is now explicit and non-authoritative. It
+runs the checked SH08 primitive, recursive, and higher-order batches, then the
+source-control-form-arity gate, source/plan and census contracts, the exact
+fragment-size preflight, the public C7 check, and finally a fresh C7 proof
+candidate. Every C7 node is a capacity-one heavy candidate using the
+command-owned canonical `/private/tmp/gravity-sh07-heavy.lock`; no generic
+namespace or batching path is admitted. The public check pins `-J-Xmx2g`, a
+timeout of at least 900 seconds, and observed wall/RSS receipt evidence.
+
+The successful proof candidate on `206e89f` is retained as stale-after-tool-
+integration evidence, not authority or a speed claim: wrapper/proof elapsed
+time was 3998.709/3993.553 seconds, observed monitor peak was about 4.74 GiB,
+source was 210,220 bytes with SHA
+`sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4`,
+artifact SHA prefix/suffix was `9ee396...6587`, census was `6580b7...0393`,
+and stdout was `730071...5268`. The
+source-bound-derived result requires a separate reviewed attestation and does
+not support exact-authentic-coverage, aggregate, or release claims. Because
+the run used the pre-Stage2 wrapper, the queued tool/dependency fingerprint
+changes invalidate it; exactly one fresh no-resume proof candidate is expected
+after integration and freeze.
+
 Every Stage 0 manifest check explicitly sets `daemonization: forbidden`.
 Commands run in a new process group; ordinary descendants are cleaned before a
 resource lock is released, with one bounded host-wide `ps eww` environment
