@@ -115,7 +115,8 @@
             (binding [*out* output]
               (runner/with-iteration-cache
                {:maximum-entries 1}
-               #(#'runner/run-tests-with-telemetry '[example.one example.two])))
+               #(#'runner/run-tests-with-telemetry
+                  '[example.one example.two] false)))
             namespace-results (get-in result [:value :namespace-results])]
         (is (= 1 @calls))
         (is (= '[example.one unrelated.namespace example.two]
@@ -136,14 +137,59 @@
                 (re-seq #":gravity/sh07-iteration-namespace-result"
                         (str output)))))))))
 
+(deftest iteration-cache-fail-fast-skips-downstream-namespaces
+  (let [tested-namespaces (atom [])
+        output (java.io.StringWriter.)]
+    (with-redefs
+      [clojure.test/test-ns
+       (fn [namespace]
+         (swap! tested-namespaces conj namespace)
+         (if (= 'example.failing namespace)
+           {:test 1 :pass 0 :fail 1 :error 0}
+           {:test 1 :pass 1 :fail 0 :error 0}))]
+      (let [result
+            (binding [*out* output
+                      clojure.test/*test-out* output]
+              (#'runner/run-tests-with-telemetry
+               '[example.failing example.skipped] true))]
+        (is (= '[example.failing] @tested-namespaces))
+        (is (= '[example.failing]
+               (mapv :namespace (:namespace-results result))))
+        (is (true? (:stopped-early? result)))
+        (is (= '[example.skipped] (:skipped-namespaces result)))
+        (is (= {:test 1 :pass 0 :fail 1 :error 0 :type :summary}
+               (:test-result result)))
+        (is (= 1
+               (count
+                (re-seq #":gravity/sh07-iteration-namespace-result"
+                        (str output)))))
+        (reset! tested-namespaces [])
+        (let [full-result
+              (binding [*out* (java.io.StringWriter.)
+                        clojure.test/*test-out* (java.io.StringWriter.)]
+                (#'runner/run-tests-with-telemetry
+                 '[example.failing example.skipped] false))]
+          (is (= '[example.failing example.skipped] @tested-namespaces))
+          (is (false? (:stopped-early? full-result)))
+          (is (= [] (:skipped-namespaces full-result)))
+          (is (= {:test 2 :pass 1 :fail 1 :error 0 :type :summary}
+                 (:test-result full-result))))))))
+
 (deftest argument-selection-is-explicit-and-owned
   (testing "repeatable namespaces and cache bound"
     (is (= {:namespaces '[gravity.diagnostics-test gravity.cli-test]
-            :maximum-entries 2}
+            :maximum-entries 2
+            :fail-fast? false}
            (runner/parse-arguments
             ["--namespace" "gravity.diagnostics-test"
              "--max-cache-entries" "2"
              "--namespace" "gravity.cli-test"]))))
+  (testing "fail-fast is explicit and order independent"
+    (is (= true
+           (:fail-fast?
+            (runner/parse-arguments
+             ["--fail-fast"
+              "--namespace" "gravity.cli-test"])))))
   (testing "zero work and invalid bounds fail closed"
     (is (= "SH07-ITERATION-CACHE-SELECTION"
            (:id (ex-data (try (runner/parse-arguments [])

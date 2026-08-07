@@ -144,7 +144,7 @@ Use for a single changed test or a bounded shard. These runs are
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting-test-runner --namespace gravity.self-hosting.sh07-module-fragment-test
 
 # One or more focused namespaces with a bounded process-local cache.
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-iteration-cache-runner --namespace gravity.self-hosting.sh07-b48-call-arity-test --max-cache-entries 2
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-iteration-cache-runner --fail-fast --namespace gravity.self-hosting.sh07-b48-call-arity-test --max-cache-entries 2
 
 # Process-local immutable-cache shards (acceleration only).
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-cached-shard-runner --list
@@ -171,6 +171,13 @@ a `:gravity/sh07-iteration-namespace-result` record with elapsed milliseconds
 and that namespace's cache hit/miss deltas. Use these records to identify the
 slow namespace and confirm that a combined run is actually reusing work before
 changing cache bounds or widening the selection.
+
+Use `--fail-fast` during edit/fix loops with multiple namespaces. It stops
+after the first namespace whose summary has a failure or error and records the
+remaining work in `:skipped-namespaces`; this prevents a known upstream failure
+from spending another heavy namespace's runtime on derivative diagnostics.
+Omit it when intentionally collecting the complete cross-namespace failure
+set. Either mode remains non-authoritative.
 
 ### 5. Selected fresh authoritative module
 

@@ -161,7 +161,8 @@
   [arguments]
   (loop [remaining (vec arguments)
          result {:namespaces []
-                 :maximum-entries default-maximum-entries}]
+                 :maximum-entries default-maximum-entries
+                 :fail-fast? false}]
     (if (empty? remaining)
       (do
         (when (empty? (:namespaces result))
@@ -175,30 +176,42 @@
                     {:id "SH07-ITERATION-CACHE-DUPLICATE-NAMESPACE"
                      :namespaces (:namespaces result)})))
         result)
-      (let [[option value & tail] remaining]
-        (when (nil? value)
-          (throw
-           (ex-info "Iteration cache option requires a value"
-                    {:id "SH07-ITERATION-CACHE-USAGE"
-                     :option option})))
+      (let [option (first remaining)]
         (case option
+          "--fail-fast"
+          (recur (subvec remaining 1)
+                 (assoc result :fail-fast? true))
+
           "--namespace"
-          (let [namespace (symbol value)]
-            ;; Delegate ownership validation to the coordinator runner.
-            (test-runner/select-tests ["--namespace" value])
-            (recur (vec tail)
-                   (update result :namespaces conj namespace)))
+          (let [value (second remaining)]
+            (when (nil? value)
+              (throw
+               (ex-info "Iteration cache option requires a value"
+                        {:id "SH07-ITERATION-CACHE-USAGE"
+                         :option option})))
+            (let [namespace (symbol value)]
+              ;; Delegate ownership validation to the coordinator runner.
+              (test-runner/select-tests ["--namespace" value])
+              (recur (subvec remaining 2)
+                     (update result :namespaces conj namespace))))
 
           "--max-cache-entries"
-          (recur (vec tail)
-                 (assoc result :maximum-entries
-                        (parse-positive-integer option value)))
+          (let [value (second remaining)]
+            (when (nil? value)
+              (throw
+               (ex-info "Iteration cache option requires a value"
+                        {:id "SH07-ITERATION-CACHE-USAGE"
+                         :option option})))
+            (recur (subvec remaining 2)
+                   (assoc result :maximum-entries
+                          (parse-positive-integer option value))))
 
           (throw
            (ex-info "Unsupported iteration cache option"
                     {:id "SH07-ITERATION-CACHE-USAGE"
                      :option option
-                     :supported ["--namespace" "--max-cache-entries"]})))))))
+                     :supported ["--namespace" "--max-cache-entries"
+                                 "--fail-fast"]})))))))
 
 (defn- cache-snapshot
   []
@@ -217,48 +230,64 @@
     namespace))
 
 (defn- run-tests-with-telemetry
-  [namespaces]
-  (let [namespace-results (atom [])
-        summaries
-        (mapv
-         (fn [namespace]
-           (let [started (System/nanoTime)
-                 before (cache-snapshot)]
-             (try
-               (test/test-ns namespace)
-               (finally
-                 (let [result
-                       {:namespace (namespace-symbol namespace)
-                        :elapsed-ms
-                        (long (/ (- (System/nanoTime) started) 1000000))
-                        :cache (cache-delta before (cache-snapshot))
-                        :authority :non-authoritative}]
-                   (swap! namespace-results conj result)
-                   (println
-                    (pr-str
-                     (assoc result
-                            :artifact
-                            :gravity/sh07-iteration-namespace-result)))
-                   (flush))))))
-         namespaces)
-        test-result (assoc (apply merge-with + summaries) :type :summary)]
-    (test/do-report test-result)
-    {:test-result test-result
-     :namespace-results @namespace-results}))
+  [namespaces fail-fast?]
+  (let [namespace-results (atom [])]
+    (letfn [(run-namespace [namespace]
+              (let [started (System/nanoTime)
+                    before (cache-snapshot)]
+                (try
+                  (test/test-ns namespace)
+                  (finally
+                    (let [result
+                          {:namespace (namespace-symbol namespace)
+                           :elapsed-ms
+                           (long (/ (- (System/nanoTime) started) 1000000))
+                           :cache (cache-delta before (cache-snapshot))
+                           :authority :non-authoritative}]
+                      (swap! namespace-results conj result)
+                      (println
+                       (pr-str
+                        (assoc result
+                               :artifact
+                               :gravity/sh07-iteration-namespace-result)))
+                      (flush))))))
+            (finish [summaries skipped]
+              (let [test-result
+                    (assoc (apply merge-with + summaries) :type :summary)]
+                (test/do-report test-result)
+                {:test-result test-result
+                 :namespace-results @namespace-results
+                 :stopped-early? (boolean (seq skipped))
+                 :skipped-namespaces (vec skipped)}))]
+      (loop [remaining (vec namespaces)
+             summaries []]
+        (let [namespace (first remaining)
+              summary (run-namespace namespace)
+              summaries' (conj summaries summary)
+              tail (subvec remaining 1)
+              failed? (or (pos? (:fail summary))
+                          (pos? (:error summary)))]
+          (if (or (empty? tail) (and fail-fast? failed?))
+            (finish summaries' (if (and fail-fast? failed?) tail []))
+            (recur tail summaries')))))))
 
 (defn run-namespaces
-  [{:keys [namespaces maximum-entries]}]
+  [{:keys [namespaces maximum-entries fail-fast?]}]
   (doseq [namespace namespaces]
     (require namespace))
   (let [cached
         (with-iteration-cache
           {:maximum-entries maximum-entries}
-          #(run-tests-with-telemetry namespaces))
-        {:keys [test-result namespace-results]} (:value cached)]
+          #(run-tests-with-telemetry namespaces fail-fast?))
+        {:keys [test-result namespace-results stopped-early?
+                skipped-namespaces]} (:value cached)]
     (-> cached
         (dissoc :value)
         (assoc :artifact :gravity/sh07-iteration-cache-run
                :namespaces namespaces
+               :fail-fast? (boolean fail-fast?)
+               :stopped-early? stopped-early?
+               :skipped-namespaces skipped-namespaces
                :namespace-results namespace-results
                :test-result test-result
                :ok? (and (zero? (:fail test-result))
