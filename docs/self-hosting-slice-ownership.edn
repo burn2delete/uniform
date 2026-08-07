@@ -9,6 +9,7 @@
   ["deps.edn"
    "bin/gravity"
    "bin/gravity-bootstrap"
+   "contracts/project-structure.json"
    "bootstrap/clojure/java/gravity/cli/Main.java"
    "bootstrap/clojure/src/gravity/bootstrap.clj"
    "bootstrap/clojure/test/gravity/bootstrap_test.clj"

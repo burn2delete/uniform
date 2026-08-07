@@ -111,6 +111,7 @@ class ProjectStructureRendererTests(unittest.TestCase):
 
     def test_coordinator_tooling_and_top_level_outputs_have_conservative_impact(self) -> None:
         for path in (
+            "contracts/project-structure.json",
             "tools/validate_math_system.py",
             "target/core-app",
             "target/core-app.gravity-artifact.edn",

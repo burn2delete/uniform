@@ -1114,7 +1114,7 @@
         "id": "reviewed-central-routing",
         "kind": "reviewed",
         "owner": "master-coordinator",
-        "patterns": ["deps.edn", "bin/gravity", "bin/gravity-bootstrap", "bootstrap/clojure/java/gravity/cli/Main.java", "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/clojure/test/gravity/bootstrap_test.clj", "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj", "tools/"],
+        "patterns": ["deps.edn", "bin/gravity", "bin/gravity-bootstrap", "contracts/project-structure.json", "bootstrap/clojure/java/gravity/cli/Main.java", "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/clojure/test/gravity/bootstrap_test.clj", "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj", "tools/"],
         "editable": true,
         "review_required": true,
         "reviewer": "master-coordinator",
