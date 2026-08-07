@@ -12,7 +12,9 @@
             [clojure.walk :as walk]
             [gravity.cli :as cli]
             [gravity.darwin-publication :as darwin-publication]
+            [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
+            [gravity.source-span :as source-span]
             [gravity.source-unit :as source-unit])
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io StringReader]))
@@ -55,59 +57,30 @@
 
 (defn line-terminator-char?
   [ch]
-  (or (= \newline ch) (= \return ch)))
+  (source-span/line-terminator-char? ch))
 
 (defn line-start-indices
-  [^String source-text]
-  (let [source-length (count source-text)]
-    (loop [idx 0
-           starts [0]]
-      (if (>= idx source-length)
-        starts
-        (let [ch (.charAt source-text idx)]
-          (cond
-            (= \return ch)
-            (if (and (< (inc idx) source-length)
-                     (= \newline (.charAt source-text (inc idx))))
-              (recur (+ idx 2) (conj starts (+ idx 2)))
-              (recur (inc idx) (conj starts (inc idx))))
-
-            (= \newline ch)
-            (recur (inc idx) (conj starts (inc idx)))
-
-            :else
-            (recur (inc idx) starts)))))))
+  [source-text]
+  (source-span/line-start-indices source-text))
 
 (defn char-index-at
   [line-starts line column]
-  (+ (get line-starts (dec line) 0) (max 0 (dec column))))
+  (source-span/char-index-at line-starts line column))
 
 (defn utf8-byte-count
   [text]
-  (alength (.getBytes ^String text
-                      java.nio.charset.StandardCharsets/UTF_8)))
+  (source-span/utf8-byte-count text))
 
 (defn source-location
   [source-text line-starts line column]
-  (let [char-index (min (count source-text)
-                        (char-index-at line-starts line column))]
-    {:line line
-     :column column
-     :char char-index
-     :byte (utf8-byte-count (subs source-text 0 char-index))}))
+  (source-span/source-location source-text line-starts line column))
 
 (defn source-span
   ([source form-index]
-   {:source source :form-index form-index})
+   (source-span/source-span source form-index))
   ([source-path source-text line-starts form-index start-line start-column end-line end-column]
-   (let [start (source-location source-text line-starts start-line start-column)
-         end (source-location source-text line-starts end-line end-column)]
-     {:source source-path
-      :form-index form-index
-      :start start
-      :end end
-      :byte-start (:byte start)
-      :byte-end (:byte end)})))
+   (source-span/source-span source-path source-text line-starts form-index
+                            start-line start-column end-line end-column)))
 
 (defn form-kind
   [form]
@@ -651,15 +624,11 @@
 
 (defn sha256-hex
   [text]
-  (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256")
-                        (.getBytes text "UTF-8"))]
-    (apply str (map #(format "%02x" (bit-and % 0xff)) digest))))
+  (digest/sha256-hex text))
 
 (defn sha256-bytes-hex
   [bytes]
-  (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256")
-                        bytes)]
-    (apply str (map #(format "%02x" (bit-and % 0xff)) digest))))
+  (digest/sha256-bytes-hex bytes))
 
 (defn assert-unique-aliases!
   [source-path dependencies]
