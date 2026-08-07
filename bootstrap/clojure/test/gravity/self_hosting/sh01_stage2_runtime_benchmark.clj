@@ -62,6 +62,26 @@
    :function '+
    :args [{:op :literal :value 1}
           {:op :literal :value 2}]})
+(def ^:private ternary-add-instruction
+  {:op :builtin-call
+   :function '+
+   :args [{:op :literal :value 1}
+          {:op :literal :value 2}
+          {:op :literal :value 3}]})
+(def ^:private four-argument-add-instruction
+  {:op :builtin-call
+   :function '+
+   :args [{:op :literal :value 1}
+          {:op :literal :value 2}
+          {:op :literal :value 3}
+          {:op :literal :value 4}]})
+(def ^:private assoc-environment {'record {:existing 1}})
+(def ^:private assoc-instruction
+  {:op :builtin-call
+   :function 'assoc
+   :args [{:op :local :name 'record}
+          {:op :literal :value :value}
+          {:op :literal :value 2}]})
 (def ^:private function-plan
   {:source {:path source-path}
    :functions
@@ -94,6 +114,15 @@
    :interpreted-binary-add
    #(bootstrap/p15-s23-stage2-runtime-execute-instruction
      runtime simple-plan {} binary-add-instruction)
+   :interpreted-ternary-add
+   #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+     runtime simple-plan {} ternary-add-instruction)
+   :interpreted-four-argument-add
+   #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+     runtime simple-plan {} four-argument-add-instruction)
+   :interpreted-assoc-three
+   #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+     runtime simple-plan assoc-environment assoc-instruction)
    :interpreted-equality
    #(bootstrap/p15-s23-stage2-runtime-execute-instruction
      runtime simple-plan equality-environment equality-instruction)
@@ -115,6 +144,12 @@
      (bootstrap/p15-s23-stage2-runtime-execute-values
       runtime simple-plan collection-environment
       (:args count-instruction) :recur-inside-builtin-argument))
+   :legacy-carrier-assoc
+   #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+     simple-plan 'assoc
+     (bootstrap/p15-s23-stage2-runtime-execute-values
+      runtime simple-plan assoc-environment
+      (:args assoc-instruction) :recur-inside-builtin-argument))
    :legacy-carrier-equality
    #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
      simple-plan '=

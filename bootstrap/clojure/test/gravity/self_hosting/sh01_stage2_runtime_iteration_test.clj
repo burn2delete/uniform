@@ -11,6 +11,37 @@
    :compiler {:stage :p15-s23-stage2-expression-lowering}
    :source {:path "stage2-runtime-iteration-test.gravity"}})
 
+(deftype ^:private ThrowingAssociative [failure]
+  clojure.lang.Associative
+  (containsKey [_ _] false)
+  (entryAt [_ _] nil)
+  (assoc [_ _ _] (throw failure))
+  clojure.lang.ILookup
+  (valAt [_ _] nil)
+  (valAt [_ _ not-found] not-found)
+  clojure.lang.IPersistentCollection
+  (count [_] 0)
+  (cons [_ _] (throw failure))
+  (empty [_] {})
+  (equiv [this other] (identical? this other))
+  clojure.lang.Seqable
+  (seq [_] nil))
+
+(deftype ^:private HostilePersistentCallee [equiv-calls hash-calls failure]
+  clojure.lang.IPersistentCollection
+  (count [_] 0)
+  (cons [_ _] (throw failure))
+  (empty [_] (throw failure))
+  (equiv [_ _]
+    (swap! equiv-calls inc)
+    (throw (AssertionError. "hostile persistent equiv invoked")))
+  clojure.lang.Seqable
+  (seq [_] (throw failure))
+  Object
+  (hashCode [_]
+    (swap! hash-calls inc)
+    (throw (AssertionError. "hostile persistent hash invoked"))))
+
 (defn- literal-instructions
   [values]
   (mapv (fn [value] {:op :literal :value value}) values))
@@ -523,6 +554,222 @@
       (is (= "L2-BUILTIN-ERROR" (:id dispatch-data)))
       (is (identical? malformed (:function dispatch-data)))
       (is (pos? @hash-calls)))))
+
+(deftest direct-three-argument-assoc-matches-generic-semantics
+  (doseq [arguments
+          [[nil :key :value]
+           [{} :key :value]
+           [{:existing 1} :key [1 2]]
+           [[0 1 2] 1 :replacement]
+           [(with-meta {:existing 1} {:source :fixture}) :key :value]]]
+    (let [generic
+          (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           plan 'assoc arguments)
+          interpreted (interpreted-builtin plan 'assoc arguments)]
+      (is (= generic interpreted) arguments)
+      (is (= (meta generic) (meta interpreted)) arguments)))
+  (testing "assoc has no compiler-artifact context requirement"
+    (is (= {:key :value}
+           (interpreted-builtin plan 'assoc [{} :key :value])))
+    (is (= {:key :value}
+           (interpreted-builtin compiler-plan 'assoc [{} :key :value]))))
+  (testing "a distinct but equal assoc symbol selects the direct operation"
+    (is (= {:key :value}
+           (interpreted-builtin plan (symbol "assoc")
+                                [{} :key :value]))))
+  (testing "list argument carriers retain the same semantics"
+    (is (= {:key :value}
+           (bootstrap/p15-s23-stage2-runtime-execute-instruction
+            runtime plan {}
+            {:op :builtin-call
+             :function 'assoc
+             :args (apply list
+                          (literal-instructions [{} :key :value]))})))))
+
+(deftest direct-three-argument-assoc-evaluates-left-to-right-once
+  (let [execute-value
+        (ns-resolve 'gravity.bootstrap
+                    'p15-s23-stage2-runtime-execute-value)
+        seen (atom [])
+        instruction
+        {:op :builtin-call
+         :function 'assoc
+         :args (literal-instructions [:collection :key :value])}
+        result
+        (with-redefs-fn
+          {execute-value
+           (fn [_runtime _plan _env argument reason]
+             (swap! seen conj [(:value argument) reason])
+             (case (:value argument)
+               :collection {}
+               :key :key
+               :value :value))}
+          #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+            runtime plan {} instruction))]
+    (is (= {:key :value} result))
+    (is (= [[:collection :recur-inside-builtin-argument]
+            [:key :recur-inside-builtin-argument]
+            [:value :recur-inside-builtin-argument]]
+           @seen))))
+
+(deftest direct-three-argument-assoc-preserves-argument-and-recur-boundaries
+  (doseq [[position expected]
+          [[0 [:collection]]
+           [1 [:collection :key]]
+           [2 [:collection :key :value]]]]
+    (let [execute-value
+          (ns-resolve 'gravity.bootstrap
+                      'p15-s23-stage2-runtime-execute-value)
+          labels [:collection :key :value]
+          seen (atom [])
+          marker (nth labels position)
+          observed
+          (with-redefs-fn
+            {execute-value
+             (fn [_runtime _plan _env argument _reason]
+               (let [label (:value argument)]
+                 (swap! seen conj label)
+                 (if (= marker label)
+                   (throw (ex-info "argument failed"
+                                   {:id "TEST-ASSOC-ARGUMENT"
+                                    :position position}))
+                   (case label :collection {} :key :key :value :value))))}
+            #(diagnostic
+              (fn []
+                (interpreted-builtin plan 'assoc labels))))]
+      (is (= "TEST-ASSOC-ARGUMENT" (:id observed)) position)
+      (is (= position (:position observed)) position)
+      (is (= expected @seen) position)))
+  (doseq [position (range 3)]
+    (let [arguments
+          (assoc (vec (literal-instructions [{} :key :value]))
+                 position
+                 {:op :recur
+                  :args [{:op :literal :value position}]})
+          data
+          (diagnostic
+           #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+             runtime plan {}
+             {:op :builtin-call :function 'assoc :args arguments}))]
+      (is (= "L2-RECUR-TARGET" (:id data)) position)
+      (is (= :recur-inside-builtin-argument (:reason data)) position))))
+
+(deftest direct-three-argument-assoc-preserves-error-mapping
+  (let [assoc-var (ns-resolve 'clojure.core 'assoc)
+        runtime-error (RuntimeException. "host assoc failed")
+        direct
+        (with-redefs-fn
+          {assoc-var (fn [& _] (throw runtime-error))}
+          #(diagnostic
+            (fn [] (interpreted-builtin plan 'assoc [{} :key :value]))))
+        generic
+        (with-redefs-fn
+          {assoc-var (fn [& _] (throw runtime-error))}
+          #(diagnostic
+            (fn []
+              (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+               plan 'assoc [{} :key :value]))))]
+    (is (= "L2-BUILTIN-ERROR" (:id direct)))
+    (is (= 'assoc (:function direct)))
+    (is (= generic direct)))
+  (doseq [error [(ex-info "assoc diagnostic" {:id "TEST-ASSOC"})
+                 (AssertionError. "assoc fatal")]]
+    (let [assoc-var (ns-resolve 'clojure.core 'assoc)
+          observed
+          (with-redefs-fn
+            {assoc-var (fn [& _] (throw error))}
+            #(try
+               (interpreted-builtin plan 'assoc [{} :key :value])
+               nil
+               (catch Throwable thrown thrown)))]
+      (is (identical? error observed))))
+  (testing "custom Associative throwables retain exact identity"
+    (doseq [error [(ex-info "custom associative diagnostic"
+                            {:id "TEST-ASSOCIATIVE"})
+                   (AssertionError. "custom associative fatal")]]
+      (let [carrier (ThrowingAssociative. error)
+            direct
+            (try
+              (interpreted-builtin plan 'assoc [carrier :key :value])
+              nil
+              (catch Throwable thrown thrown))
+            generic
+            (try
+              (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+               plan 'assoc [carrier :key :value])
+              nil
+              (catch Throwable thrown thrown))]
+        (is (identical? error direct))
+        (is (identical? error generic))
+        (is (identical? generic direct))))))
+
+(deftest direct-three-argument-assoc-keeps-other-arities-and-callees-generic
+  (is (= {:a 1 :b 2}
+         (interpreted-builtin plan 'assoc [{} :a 1 :b 2])))
+  (doseq [arguments [[] [{}] [{} :key]
+                     [{} :key :value :extra]
+                     [{} :a 1 :b 2 :dangling]]]
+    (let [data (diagnostic #(interpreted-builtin plan 'assoc arguments))]
+      (is (= "L2-BUILTIN-ARITY" (:id data)) arguments)
+      (is (= (count arguments) (:actual-arity data)) arguments)))
+  (let [arguments [7 :key :value]
+        generic (diagnostic
+                 #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+                   plan 'assoc arguments))
+        direct (diagnostic #(interpreted-builtin plan 'assoc arguments))]
+    (is (= "L2-BUILTIN-ERROR" (:id direct)))
+    (is (= generic direct)))
+  (let [hash-calls (atom 0)
+        equals-calls (atom 0)
+        malformed
+        (proxy [Object] []
+          (equals [_]
+            (swap! equals-calls inc)
+            (throw (RuntimeException. "malformed assoc equality")))
+          (hashCode []
+            (swap! hash-calls inc)
+            (throw (RuntimeException. "malformed assoc callee"))))
+        argument-data
+        (diagnostic
+         #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+           runtime plan {}
+           {:op :builtin-call
+            :function malformed
+            :args [{:op :local :name 'missing}
+                   {:op :literal :value :key}
+                   {:op :literal :value :value}]}))]
+    (is (= "L2-UNKNOWN-SYMBOL" (:id argument-data)))
+    (is (zero? @hash-calls))
+    (is (zero? @equals-calls))
+    (let [dispatch-data
+          (diagnostic
+           #(interpreted-builtin malformed malformed [{} :key :value]))]
+      (is (= "L2-BUILTIN-ERROR" (:id dispatch-data)))
+      (is (identical? malformed (:function dispatch-data)))
+      (is (pos? @hash-calls))))
+  (testing "persistent hostile callees cannot run equiv or hash before args"
+    (doseq [arity [1 2 3]]
+      (let [equiv-calls (atom 0)
+            hash-calls (atom 0)
+            failure (AssertionError. "hostile persistent callee")
+            malformed
+            (HostilePersistentCallee. equiv-calls hash-calls failure)
+            arguments
+            (into [{:op :local :name 'missing}]
+                  (repeat (dec arity) {:op :literal :value :unreachable}))
+            observed
+            (try
+              (bootstrap/p15-s23-stage2-runtime-execute-instruction
+               runtime plan {}
+               {:op :builtin-call
+                :function malformed
+                :args arguments})
+              nil
+              (catch Throwable thrown thrown))]
+        (is (instance? clojure.lang.ExceptionInfo observed) arity)
+        (is (= "L2-UNKNOWN-SYMBOL" (:id (ex-data observed))) arity)
+        (is (zero? @equiv-calls) arity)
+        (is (zero? @hash-calls) arity)))))
 
 (deftest runtime-artifact-str-remains-on-specialized-generic-path
   (let [artifact-invoke

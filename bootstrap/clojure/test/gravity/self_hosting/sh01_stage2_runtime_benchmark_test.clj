@@ -14,17 +14,28 @@
     (is (false? (:authoritative? result)))
     (is (= :performance-regression-feedback (:purpose result)))
     (is (= workload-names (set (keys (:results result)))))
-    (is (= 20 (count workload-names)))
+    (is (= 24 (count workload-names)))
+    (is (contains? workload-names :interpreted-assoc-three))
+    (is (contains? workload-names :legacy-carrier-assoc))
     (is (contains? workload-names :interpreted-equality))
     (is (contains? workload-names :legacy-carrier-equality))
     (doseq [sentinel [:interpreted-get
                       :interpreted-count
                       :interpreted-map-predicate
-                      :interpreted-binary-add]]
+                      :interpreted-binary-add
+                      :interpreted-ternary-add
+                      :interpreted-four-argument-add]]
       (is (contains? workload-names sentinel) sentinel))
     (is (true? ((get (benchmark/workloads) :interpreted-equality))))
     (is (true? ((get (benchmark/workloads) :legacy-carrier-equality))))
+    (is (= {:existing 1 :value 2}
+           ((get (benchmark/workloads) :interpreted-assoc-three))))
+    (is (= {:existing 1 :value 2}
+           ((get (benchmark/workloads) :legacy-carrier-assoc))))
     (is (= 3 ((get (benchmark/workloads) :interpreted-binary-add))))
+    (is (= 6 ((get (benchmark/workloads) :interpreted-ternary-add))))
+    (is (= 10
+           ((get (benchmark/workloads) :interpreted-four-argument-add))))
     (doseq [[name measurement] (:results result)]
       (is (= 1 (count (:samples-ns measurement))) name)
       (is (pos? (:median-ns measurement)) name)

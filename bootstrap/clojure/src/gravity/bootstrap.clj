@@ -95570,7 +95570,9 @@
           argument-instructions (:args instruction)
           argument-count (count argument-instructions)]
       (cond
-        (and (= 'get function) (= 2 argument-count))
+        (and (= 2 argument-count)
+             (instance? clojure.lang.Symbol function)
+             (.equals ^clojure.lang.Symbol 'get function))
         (let [collection
               (p15-s23-stage2-runtime-execute-value
                runtime plan env (nth argument-instructions 0)
@@ -95581,7 +95583,9 @@
                :recur-inside-builtin-argument)]
           (p15-s23-stage2-runtime-invoke-get plan collection key))
 
-        (and (= 'get function) (= 3 argument-count))
+        (and (= 3 argument-count)
+             (instance? clojure.lang.Symbol function)
+             (.equals ^clojure.lang.Symbol 'get function))
         (let [collection
               (p15-s23-stage2-runtime-execute-value
                runtime plan env (nth argument-instructions 0)
@@ -95597,7 +95601,9 @@
           (p15-s23-stage2-runtime-invoke-get
            plan collection key not-found))
 
-        (and (= 'count function) (= 1 argument-count))
+        (and (= 1 argument-count)
+             (instance? clojure.lang.Symbol function)
+             (.equals ^clojure.lang.Symbol 'count function))
         (let [value
               (p15-s23-stage2-runtime-execute-value
                runtime plan env (nth argument-instructions 0)
@@ -95610,8 +95616,9 @@
               (p15-s23-stage2-runtime-fail-builtin-error!
                plan function ex))))
 
-        (and (= 'str function)
-             (= 1 argument-count)
+        (and (= 1 argument-count)
+             (instance? clojure.lang.Symbol function)
+             (.equals ^clojure.lang.Symbol 'str function)
              (:runtime-artifact-plan runtime))
         (let [value
               (p15-s23-stage2-runtime-execute-value
@@ -95630,31 +95637,58 @@
           (p15-s23-stage2-runtime-invoke-unary-or-generic-builtin
            plan function value))
 
-        (and (= 2 argument-count)
-             (symbol? function)
-             (= '= function))
-        (let [left
-              (p15-s23-stage2-runtime-execute-value
-               runtime plan env (nth argument-instructions 0)
-               :recur-inside-builtin-argument)
-              right
-              (p15-s23-stage2-runtime-execute-value
-               runtime plan env (nth argument-instructions 1)
-               :recur-inside-builtin-argument)]
-          ;; Preserve the generic path's boundary: argument evaluation is
-          ;; outside the builtin try, while host equality failures are mapped
-          ;; exactly like p15-s23-stage2-runtime-invoke-builtin.
-          (try
-            (= left right)
-            (catch clojure.lang.ExceptionInfo ex
-              (throw ex))
-            (catch Exception ex
-              (p15-s23-stage2-runtime-fail-builtin-error!
-               plan function ex))))
-
         :else
-        (p15-s23-stage2-runtime-execute-generic-builtin-call
-         runtime plan env instruction function)))
+        ;; Retain the original exact-two equality-or-generic control-flow
+        ;; shape, then admit exact-three assoc before the generic fallback.
+        (if (= 2 argument-count)
+          (if (and (instance? clojure.lang.Symbol function)
+                   (.equals ^clojure.lang.Symbol '= function))
+            (let [left
+                  (p15-s23-stage2-runtime-execute-value
+                   runtime plan env (nth argument-instructions 0)
+                   :recur-inside-builtin-argument)
+                  right
+                  (p15-s23-stage2-runtime-execute-value
+                   runtime plan env (nth argument-instructions 1)
+                   :recur-inside-builtin-argument)]
+              ;; Preserve the generic path's boundary: argument evaluation is
+              ;; outside the builtin try, while host equality failures are
+              ;; mapped exactly like invoke-builtin.
+              (try
+                (= left right)
+                (catch clojure.lang.ExceptionInfo ex
+                  (throw ex))
+                (catch Exception ex
+                  (p15-s23-stage2-runtime-fail-builtin-error!
+                   plan function ex))))
+            (p15-s23-stage2-runtime-execute-generic-builtin-call
+             runtime plan env instruction function))
+          (if (and (= 3 argument-count)
+                   (instance? clojure.lang.Symbol function)
+                   (.equals ^clojure.lang.Symbol 'assoc function))
+            (let [collection
+                  (p15-s23-stage2-runtime-execute-value
+                   runtime plan env (nth argument-instructions 0)
+                   :recur-inside-builtin-argument)
+                  key
+                  (p15-s23-stage2-runtime-execute-value
+                   runtime plan env (nth argument-instructions 1)
+                   :recur-inside-builtin-argument)
+                  value
+                  (p15-s23-stage2-runtime-execute-value
+                   runtime plan env (nth argument-instructions 2)
+                   :recur-inside-builtin-argument)]
+              ;; Preserve the generic path's argument and exception boundaries
+              ;; while avoiding its argument vector and apply seq.
+              (try
+                (assoc collection key value)
+                (catch clojure.lang.ExceptionInfo ex
+                  (throw ex))
+                (catch Exception ex
+                  (p15-s23-stage2-runtime-fail-builtin-error!
+                   plan function ex))))
+            (p15-s23-stage2-runtime-execute-generic-builtin-call
+             runtime plan env instruction function)))))
     :function-call
     (let [function (:function instruction)
           args (p15-s23-stage2-runtime-execute-values
