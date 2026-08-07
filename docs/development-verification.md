@@ -238,6 +238,19 @@ another one is active.
 
 ## Benchmark record
 
+Use the repeatable stage2 microbenchmark when changing the hosted-core
+interpreter. It exercises the allocation and dispatch paths observed in live
+SH-07 profiles and reports five samples plus their median. The result is
+performance feedback only; it is never proof evidence.
+
+```bash
+clojure -J-Xmx512m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-stage2-runtime-benchmark --warmup 100000 --iterations 1000000 --rounds 5
+```
+
+Compare medians using the same host, JVM, heap, worktree state, and workload.
+Do not infer an end-to-end SH-07 speedup from this microbenchmark; confirm it
+with a fresh selected-module or representative fixture run.
+
 Record one row or EDN map for every lane that runs code. Keep the raw stdout,
 stderr, and proof/artifact paths beside the record.
 
