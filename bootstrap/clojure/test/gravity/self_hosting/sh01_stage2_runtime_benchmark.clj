@@ -49,6 +49,19 @@
    :function 'get
    :args [{:op :local :name 'record}
           {:op :literal :value :value}]})
+(def ^:private equality-environment
+  {'left [1 {:value :same}]
+   'right [1 {:value :same}]})
+(def ^:private equality-instruction
+  {:op :builtin-call
+   :function '=
+   :args [{:op :local :name 'left}
+          {:op :local :name 'right}]})
+(def ^:private binary-add-instruction
+  {:op :builtin-call
+   :function '+
+   :args [{:op :literal :value 1}
+          {:op :literal :value 2}]})
 (def ^:private function-plan
   {:source {:path source-path}
    :functions
@@ -78,6 +91,12 @@
    :interpreted-count
    #(bootstrap/p15-s23-stage2-runtime-execute-instruction
      runtime simple-plan collection-environment count-instruction)
+   :interpreted-binary-add
+   #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+     runtime simple-plan {} binary-add-instruction)
+   :interpreted-equality
+   #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+     runtime simple-plan equality-environment equality-instruction)
    :interpreted-first
    #(bootstrap/p15-s23-stage2-runtime-execute-instruction
      runtime simple-plan collection-environment first-instruction)
@@ -96,6 +115,12 @@
      (bootstrap/p15-s23-stage2-runtime-execute-values
       runtime simple-plan collection-environment
       (:args count-instruction) :recur-inside-builtin-argument))
+   :legacy-carrier-equality
+   #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+     simple-plan '=
+     (bootstrap/p15-s23-stage2-runtime-execute-values
+      runtime simple-plan equality-environment
+      (:args equality-instruction) :recur-inside-builtin-argument))
    :legacy-carrier-first
    #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
      simple-plan 'first

@@ -95630,6 +95630,28 @@
           (p15-s23-stage2-runtime-invoke-unary-or-generic-builtin
            plan function value))
 
+        (and (= 2 argument-count)
+             (symbol? function)
+             (= '= function))
+        (let [left
+              (p15-s23-stage2-runtime-execute-value
+               runtime plan env (nth argument-instructions 0)
+               :recur-inside-builtin-argument)
+              right
+              (p15-s23-stage2-runtime-execute-value
+               runtime plan env (nth argument-instructions 1)
+               :recur-inside-builtin-argument)]
+          ;; Preserve the generic path's boundary: argument evaluation is
+          ;; outside the builtin try, while host equality failures are mapped
+          ;; exactly like p15-s23-stage2-runtime-invoke-builtin.
+          (try
+            (= left right)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (p15-s23-stage2-runtime-fail-builtin-error!
+               plan function ex))))
+
         :else
         (p15-s23-stage2-runtime-execute-generic-builtin-call
          runtime plan env instruction function)))

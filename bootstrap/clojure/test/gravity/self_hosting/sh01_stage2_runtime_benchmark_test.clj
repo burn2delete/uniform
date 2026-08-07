@@ -14,7 +14,17 @@
     (is (false? (:authoritative? result)))
     (is (= :performance-regression-feedback (:purpose result)))
     (is (= workload-names (set (keys (:results result)))))
-    (is (= 17 (count workload-names)))
+    (is (= 20 (count workload-names)))
+    (is (contains? workload-names :interpreted-equality))
+    (is (contains? workload-names :legacy-carrier-equality))
+    (doseq [sentinel [:interpreted-get
+                      :interpreted-count
+                      :interpreted-map-predicate
+                      :interpreted-binary-add]]
+      (is (contains? workload-names sentinel) sentinel))
+    (is (true? ((get (benchmark/workloads) :interpreted-equality))))
+    (is (true? ((get (benchmark/workloads) :legacy-carrier-equality))))
+    (is (= 3 ((get (benchmark/workloads) :interpreted-binary-add))))
     (doseq [[name measurement] (:results result)]
       (is (= 1 (count (:samples-ns measurement))) name)
       (is (pos? (:median-ns measurement)) name)

@@ -340,6 +340,190 @@
       (is (= "L2-BUILTIN-ARITY" (:id data)) [function arguments])
       (is (= (count arguments) (:actual-arity data)) [function arguments]))))
 
+(deftest direct-binary-equality-matches-generic-semantics
+  (doseq [[left right]
+          [[nil nil]
+           [nil false]
+           [1 1]
+           [1 1N]
+           [1 2]
+           [:value :value]
+           ['value 'value]
+           [[1 2] (list 1 2)]
+           [(with-meta [1 2] {:side :left})
+            (with-meta [1 2] {:side :right})]
+           [[1 {:key :value}] [1 {:key :value}]]
+           [{:key [1 2]} {:key [1 2]}]
+           [#{1 2} #{2 1}]]]
+    (let [generic
+          (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           plan '= [left right])
+          interpreted (interpreted-builtin plan '= [left right])]
+      (is (= generic interpreted) [left right])))
+  (let [same-object (Object.)]
+    (is (true? (interpreted-builtin plan '= [same-object same-object]))))
+  (testing "equality remains valid outside compiler-artifact context"
+    (is (true? (interpreted-builtin plan '= [:same :same])))
+    (is (true?
+         (interpreted-builtin {:compiler-artifact-plan? true}
+                              '= [:same :same]))))
+  (testing "list argument carriers retain the same semantics"
+    (is (true?
+         (bootstrap/p15-s23-stage2-runtime-execute-instruction
+          runtime plan {}
+          {:op :builtin-call
+           :function '=
+           :args (apply list (literal-instructions [[1] [1]]))})))))
+
+(deftest direct-binary-equality-evaluates-left-to-right-once
+  (let [execute-value
+        (ns-resolve 'gravity.bootstrap
+                    'p15-s23-stage2-runtime-execute-value)
+        seen (atom [])
+        instruction
+        {:op :builtin-call
+         :function '=
+         :args [{:op :literal :value :left}
+                {:op :literal :value :right}]}
+        result
+        (with-redefs-fn
+          {execute-value
+           (fn [_runtime _plan _env argument reason]
+             (swap! seen conj [(:value argument) reason])
+             :same)}
+          #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+            runtime plan {} instruction))]
+    (is (true? result))
+    (is (= [[:left :recur-inside-builtin-argument]
+            [:right :recur-inside-builtin-argument]]
+           @seen))))
+
+(deftest direct-binary-equality-preserves-argument-and-recur-boundaries
+  (let [missing-data
+        (diagnostic
+         #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+           runtime plan {}
+           {:op :builtin-call
+            :function '=
+            :args [{:op :local :name 'missing-left}
+                   {:op :local :name 'missing-right}]}))
+        recur-data
+        (diagnostic
+         #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+           runtime plan {}
+           {:op :builtin-call
+            :function '=
+            :args [{:op :recur :args [{:op :literal :value :left}]}
+                   {:op :local :name 'missing-right}]}))]
+    (is (= "L2-UNKNOWN-SYMBOL" (:id missing-data)))
+    (is (= 'missing-left (:symbol missing-data)))
+    (is (= "L2-RECUR-TARGET" (:id recur-data)))
+    (is (= :recur-inside-builtin-argument (:reason recur-data))))
+  (let [right-recur-data
+        (diagnostic
+         #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+           runtime plan {}
+           {:op :builtin-call
+            :function '=
+            :args [{:op :literal :value :left}
+                   {:op :recur :args [{:op :literal :value :right}]}]}))]
+    (is (= "L2-RECUR-TARGET" (:id right-recur-data)))
+    (is (= :recur-inside-builtin-argument (:reason right-recur-data))))
+  (testing "a first-argument error prevents second-argument evaluation"
+    (let [execute-value
+          (ns-resolve 'gravity.bootstrap
+                      'p15-s23-stage2-runtime-execute-value)
+          seen (atom [])
+          data
+          (with-redefs-fn
+            {execute-value
+             (fn [_runtime _plan _env argument _reason]
+               (swap! seen conj (:value argument))
+               (if (= :left (:value argument))
+                 (throw (ex-info "first failed" {:id "TEST-EQUALITY-FIRST"}))
+                 :unreachable))}
+            #(diagnostic
+              (fn []
+                (interpreted-builtin plan '= [:left :right]))))]
+      (is (= "TEST-EQUALITY-FIRST" (:id data)))
+      (is (= [:left] @seen)))))
+
+(deftest direct-binary-equality-preserves-error-mapping
+  (let [runtime-error (RuntimeException. "host equality failed")
+        hostile
+        (proxy [Object] []
+          (equals [_] (throw runtime-error)))
+        direct-data (diagnostic #(interpreted-builtin plan '= [hostile :right]))
+        generic-data
+        (diagnostic
+         #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           plan '= [hostile :right]))]
+    (is (= "L2-BUILTIN-ERROR" (:id direct-data)))
+    (is (= '= (:function direct-data)))
+    (is (= generic-data direct-data)))
+  (let [info-error (ex-info "host equality diagnostic" {:id "TEST-EQUALITY"})
+        hostile
+        (proxy [Object] []
+          (equals [_] (throw info-error)))
+        observed
+        (try
+          (interpreted-builtin plan '= [hostile :right])
+          nil
+          (catch clojure.lang.ExceptionInfo error error))
+        generic-observed
+        (try
+          (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           plan '= [hostile :right])
+          nil
+          (catch clojure.lang.ExceptionInfo error error))]
+    (is (identical? info-error observed))
+    (is (identical? info-error generic-observed))
+    (is (identical? generic-observed observed)))
+  (let [fatal-error (AssertionError. "host equality fatal")
+        hostile
+        (proxy [Object] []
+          (equals [_] (throw fatal-error)))
+        observed
+        (try
+          (interpreted-builtin plan '= [hostile :right])
+          nil
+          (catch AssertionError error error))]
+    (is (identical? fatal-error observed))))
+
+(deftest direct-binary-equality-keeps-other-arities-and-callees-generic
+  (is (true? (interpreted-builtin plan '= [7])))
+  (is (true? (interpreted-builtin plan '= [7 7 7])))
+  (is (false? (interpreted-builtin plan '= [7 7 8])))
+  (is (= (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+          plan '= [7 7 7 7])
+         (interpreted-builtin plan '= [7 7 7 7])))
+  (is (= (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+          plan '= [7 7 7 8])
+         (interpreted-builtin plan '= [7 7 7 8])))
+  (is (= "L2-BUILTIN-ARITY"
+         (:id (diagnostic #(interpreted-builtin plan '= [])))))
+  (let [hash-calls (atom 0)
+        malformed
+        (proxy [Object] []
+          (hashCode []
+            (swap! hash-calls inc)
+            (throw (RuntimeException. "malformed binary callee"))))
+        argument-data
+        (diagnostic
+         #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+           runtime plan {}
+           {:op :builtin-call
+            :function malformed
+            :args [{:op :local :name 'missing}
+                   {:op :literal :value :right}]}))]
+    (is (= "L2-UNKNOWN-SYMBOL" (:id argument-data)))
+    (is (zero? @hash-calls))
+    (let [dispatch-data
+          (diagnostic #(interpreted-builtin plan malformed [:left :right]))]
+      (is (= "L2-BUILTIN-ERROR" (:id dispatch-data)))
+      (is (identical? malformed (:function dispatch-data)))
+      (is (pos? @hash-calls)))))
+
 (deftest runtime-artifact-str-remains-on-specialized-generic-path
   (let [artifact-invoke
         (ns-resolve 'gravity.bootstrap
