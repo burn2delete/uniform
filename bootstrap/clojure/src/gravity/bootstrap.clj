@@ -58134,10 +58134,10 @@
                             :cause-message (.getMessage ex)}))))
 
 (defn stage1-reader-token-stream
-  ([source-path source-text table]
+  ([source-path ^String source-text table]
    (stage1-reader-token-stream source-path source-text table
                                {:retain-comments false}))
-  ([source-path source-text table reader-options]
+  ([source-path ^String source-text table reader-options]
   (let [line-starts (line-start-indices source-text)
         whitespace (set (:whitespace table))
         delimiters (:delimiters table)
@@ -58435,7 +58435,7 @@
          ^:dynamic *stage1-reader-pipeline-trace*)
 
 (defn stage1-reader-character-stream
-  [source-path source-text]
+  [source-path ^String source-text]
   (let [line-starts (line-start-indices source-text)
         source-id (str "sha256:" (sha256-hex source-text))
         source-length (count source-text)
@@ -58895,7 +58895,7 @@
                :tokens tokens
                :token-count (count tokens))))))
 (defn stage1-reader-table-driven-records
-  [source-path source-text table]
+  [source-path ^String source-text table]
   (let [line-starts (line-start-indices source-text)
         whitespace (set (:whitespace table))
         delimiters (:delimiters table)
