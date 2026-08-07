@@ -1019,10 +1019,15 @@ EDN_OUTPUT_VALIDATOR = r"""
     (str "sha256:"
          (apply str (map #(format "%02x" (bit-and % 0xff))
                          (.digest digest))))))
+(defn utf8-text [bytes]
+  (let [decoder (-> (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+                    (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+                    (.onUnmappableCharacter java.nio.charset.CodingErrorAction/REPORT))]
+    (str (.decode decoder (java.nio.ByteBuffer/wrap bytes)))))
 (defn read-one-edn-bytes [bytes]
   (with-open [reader
               (java.io.PushbackReader.
-               (java.io.StringReader. (String. bytes "UTF-8")))]
+               (java.io.StringReader. (utf8-text bytes)))]
     (let [value (edn/read {:eof ::eof} reader)
           trailing (edn/read {:eof ::eof} reader)]
       (when (or (= ::eof value) (not= ::eof trailing))
@@ -1038,6 +1043,24 @@ EDN_OUTPUT_VALIDATOR = r"""
       (System/getenv "GRAVITY_SH07_EXPECTED_SOURCE_BYTES_SHA256")
       expected-proof-contract-sha256
       (System/getenv "GRAVITY_SH07_EXPECTED_PROOF_CONTRACT_SHA256")
+      expected-output-sha256
+      (some-> (System/getenv "GRAVITY_SH07_EXPECTED_OUTPUT_SHA256") not-empty)
+      expected-authority-scope
+      (some-> (System/getenv "GRAVITY_SH07_EXPECTED_AUTHORITY_SCOPE")
+              not-empty keyword)
+      expected-coverage-policy
+      (some-> (System/getenv "GRAVITY_SH07_EXPECTED_COVERAGE_POLICY")
+              not-empty keyword)
+      output-file (io/file path)
+      output-size (java.nio.file.Files/size (.toPath output-file))
+      output-bytes
+      (when (<= output-size 4194304)
+        ;; Read the child output exactly once.  The expected hash is supplied
+        ;; by the held descriptor snapshot in the Python authority wrapper;
+        ;; a pathname swap therefore fails closed below.
+        (java.nio.file.Files/readAllBytes (.toPath output-file)))
+      output-sha256 (when output-bytes (bytes-sha256 output-bytes))
+      output-value (when output-bytes (read-one-edn-bytes output-bytes))
       contract-bytes
       (java.nio.file.Files/readAllBytes
        (.toPath
@@ -1054,9 +1077,7 @@ EDN_OUTPUT_VALIDATOR = r"""
       module-expectation
       (get-in census-contract [:module-expectations (keyword expected-module)])
       passed?
-      (with-open [reader (java.io.PushbackReader. (io/reader path))]
-        (let [value (edn/read {:eof ::eof} reader)
-              trailing (edn/read {:eof ::eof} reader)
+        (let [value output-value
               modules (:modules value)
               result (when (= 1 (count modules)) (first modules))
               checks (:contract-checks result)
@@ -1072,12 +1093,19 @@ EDN_OUTPUT_VALIDATOR = r"""
                      (every? (fn [[_ count]]
                                (and (integer? count) (not (neg? count))))
                              counts)))]
-          (and (= expected-proof-contract-sha256 contract-sha256)
+          (and output-bytes
+               (<= (alength output-bytes) 4194304)
+               (or (nil? expected-output-sha256)
+                   (= expected-output-sha256 output-sha256))
+               (or (nil? expected-authority-scope)
+                   (= expected-authority-scope (:authority-scope census)))
+               (or (nil? expected-coverage-policy)
+                   (= expected-coverage-policy (:coverage-census-policy census)))
+               (= expected-proof-contract-sha256 contract-sha256)
                (map? contract)
                (or legacy-exact?
                    (contains? #{:exact-precommitted :source-bound-derived}
                               (:coverage-census-policy contract)))
-               (= ::eof trailing)
                (= :gravity/sh07-authoritative-proof-run (:artifact value))
                (= expected-output-schema (:schema-version value))
                (= :passed (:status value))
@@ -1234,6 +1262,9 @@ def output_contract_passed(
     *,
     clojure_command: str,
     cwd: Path,
+    expected_stdout_sha256: str | None = None,
+    expected_authority_scope: str | None = None,
+    expected_coverage_policy: str | None = None,
 ) -> bool:
     try:
         result = subprocess.run(
@@ -1258,6 +1289,15 @@ def output_contract_passed(
                 ),
                 "GRAVITY_SH07_EXPECTED_PROOF_CONTRACT_SHA256": (
                     expected_proof_contract_sha256
+                ),
+                "GRAVITY_SH07_EXPECTED_OUTPUT_SHA256": (
+                    expected_stdout_sha256 or ""
+                ),
+                "GRAVITY_SH07_EXPECTED_AUTHORITY_SCOPE": (
+                    expected_authority_scope or ""
+                ),
+                "GRAVITY_SH07_EXPECTED_COVERAGE_POLICY": (
+                    expected_coverage_policy or ""
                 ),
             },
             stdout=subprocess.DEVNULL,
@@ -1455,13 +1495,17 @@ def shared_lock_lease(lock_path: Path):
             migrated = handle.migrate_legacy_mode_after_exclusive_lock()
         except CheckpointError as error:
             raise SharedLockValidationError(str(error)) from error
+        lease_receipt = {
+            "lock_path": str(handle.path),
+            "lock_mode": "0600",
+            "lock_mode_migrated": migrated,
+            "lock_acquired": True,
+            "lock_validated": False,
+            "lock_released": False,
+        }
         try:
             try:
-                yield handle, {
-                    "lock_path": str(handle.path),
-                    "lock_mode": "0600",
-                    "lock_mode_migrated": migrated,
-                }
+                yield handle, lease_receipt
             except BaseException as body_error:
                 try:
                     handle.validate()
@@ -1473,8 +1517,14 @@ def shared_lock_lease(lock_path: Path):
                     handle.validate()
                 except CheckpointError as error:
                     raise SharedLockValidationError(str(error)) from error
+                lease_receipt["lock_validated"] = True
         finally:
-            fcntl.flock(handle.descriptor, fcntl.LOCK_UN)
+            try:
+                fcntl.flock(handle.descriptor, fcntl.LOCK_UN)
+            except BaseException:
+                raise
+            else:
+                lease_receipt["lock_released"] = True
     finally:
         handle.close()
 
@@ -1497,9 +1547,12 @@ def run_modules(
     _lock_receipt: Mapping[str, object] | None = None,
 ) -> tuple[int, dict[str, object]]:
     if lock_path is not None:
+        child_result: tuple[int, dict[str, object]] | None = None
+        lease_receipt: Mapping[str, object] | None = None
         try:
             with shared_lock_lease(lock_path) as (_handle, receipt):
-                result = run_modules(
+                lease_receipt = receipt
+                child_result = run_modules(
                     root=root, state_dir=state_dir, modules=modules,
                     module_catalog=module_catalog, base_command=base_command,
                     timeout_seconds=timeout_seconds, resume=resume, launcher=launcher,
@@ -1509,7 +1562,6 @@ def run_modules(
                     lock_path=None, _lock_receipt=receipt,
                 )
                 _handle.validate()
-                return result
         except SharedLockUnavailable:
             raise
         except SharedLockValidationError as error:
@@ -1522,8 +1574,33 @@ def run_modules(
                 authority_scope="none", resumable=False,
                 lock_validation_error=str(error), finished_at=utc_now(), updated_at=utc_now(),
             )
+            if isinstance(lease_receipt, Mapping):
+                existing.update({
+                    key: lease_receipt.get(key)
+                    for key in ("lock_path", "lock_mode", "lock_mode_migrated",
+                                "lock_acquired", "lock_validated", "lock_released")
+                })
             atomic_json_write(manifest_path, existing)
             return 75, existing
+        if child_result is None:
+            raise CheckpointError("authoritative child did not return a checkpoint result")
+        result_code, result_manifest = child_result
+        # The inner runner writes its completed manifest while the lease is
+        # still held.  Amend that same manifest only after the context exits,
+        # so the lifecycle receipt cannot claim release before the flock is
+        # actually unlocked.  The held outer lease receipt is immutable to
+        # callers except for these final booleans.
+        if isinstance(lease_receipt, Mapping):
+            manifest_path = Path(os.path.abspath(state_dir.expanduser())) / "manifest.json"
+            amended = dict(result_manifest)
+            amended.update({
+                key: lease_receipt.get(key)
+                for key in ("lock_path", "lock_mode", "lock_mode_migrated",
+                            "lock_acquired", "lock_validated", "lock_released")
+            })
+            atomic_json_write(manifest_path, amended)
+            result_manifest = amended
+        return result_code, result_manifest
     lock_receipt = dict(_lock_receipt or {})
     if (
         not modules

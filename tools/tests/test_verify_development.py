@@ -1293,6 +1293,64 @@ class VerifyDevelopmentTests(unittest.TestCase):
         full_suite = next(item for item in manifest["checks"] if item["id"] == "stage0-clojure-suite")
         self.assertIn("bin/gravity-bootstrap", full_suite["inputs"])
 
+    def test_impact_excludes_is_per_changed_path(self) -> None:
+        owned = check(
+            "owned",
+            ["python3", "-c", "pass"],
+            inputs=["bootstrap/gravity/**", "tools/verify_development.py"],
+            lane="focused",
+        )
+        owned["impact_excludes"] = ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"]
+        manifest = manifest_for(owned)
+        verifier.validate_manifest(manifest)
+        excluded_only = verifier.select_impacted_checks(
+            manifest,
+            ROOT,
+            changed_paths=["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"],
+        )
+        self.assertEqual([], excluded_only["selected_ids"])
+        mixed = verifier.select_impacted_checks(
+            manifest,
+            ROOT,
+            changed_paths=[
+                "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+                "tools/verify_development.py",
+            ],
+        )
+        self.assertEqual(["owned"], mixed["selected_ids"])
+
+    def test_command_lock_owner_requires_reviewed_stage3_shape(self) -> None:
+        value = check(
+            "stage3",
+            ["python3", "tools/run_stage3_verification.py"],
+            inputs=["tools/run_stage3_verification.py"],
+            lane="heavy-candidate",
+            cost="heavy",
+            lock=str(verifier._stage3.CANONICAL_LOCK),
+            exclusive=True,
+            fresh=True,
+        )
+        value["lock_owner"] = "command"
+        verifier.validate_manifest(manifest_for(value))
+        value["command"] = ["python3", "-c", "pass"]
+        with self.assertRaises(verifier.ManifestError):
+            verifier.validate_manifest(manifest_for(value))
+
+    def test_declared_authority_cannot_use_runner_lock_owner(self) -> None:
+        value = check(
+            "authority",
+            ["python3", "tools/run_stage3_verification.py"],
+            inputs=["tools/run_stage3_verification.py"],
+            lane="heavy-candidate",
+            cost="heavy",
+            lock=str(verifier._stage3.CANONICAL_LOCK),
+            exclusive=True,
+            fresh=True,
+            authority="declared",
+        )
+        with self.assertRaises(verifier.ManifestError):
+            verifier.validate_manifest(manifest_for(value))
+
 
 if __name__ == "__main__":
     unittest.main()

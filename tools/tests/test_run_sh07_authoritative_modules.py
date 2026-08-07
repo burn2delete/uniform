@@ -1868,6 +1868,9 @@ class Sh07CheckpointTests(unittest.TestCase):
             self.assertFalse(manifest["resumable"])
             durable = json.loads((root / "checkpoints/manifest.json").read_text())
             self.assertEqual("lock-unsafe", durable["state"])
+            self.assertTrue(durable["lock_acquired"])
+            self.assertFalse(durable["lock_validated"])
+            self.assertTrue(durable["lock_released"])
 
     def test_provider_checkpoint_error_does_not_relabel_prior_manifest_lock_unsafe(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1979,6 +1982,73 @@ class Sh07CheckpointTests(unittest.TestCase):
             if alive:
                 os.kill(child_pid, 9)
             self.assertFalse(alive, "timed-out descendant survived launcher return")
+
+    def test_shared_lock_receipt_lifecycle_is_finalized_after_unlock(self) -> None:
+        lock = Path(f"/private/tmp/gravity-sh07-lifecycle-{os.getpid()}-{time.time_ns()}.lock")
+        descriptor = os.open(lock, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600)
+        os.close(descriptor)
+        try:
+            with runner.shared_lock_lease(lock) as (_handle, receipt):
+                self.assertTrue(receipt["lock_acquired"])
+                self.assertFalse(receipt["lock_validated"])
+                self.assertFalse(receipt["lock_released"])
+            self.assertTrue(receipt["lock_validated"])
+            self.assertTrue(receipt["lock_released"])
+        finally:
+            lock.unlink(missing_ok=True)
+
+    def test_shared_lock_replacement_never_claims_validated_lifecycle(self) -> None:
+        lock = Path(f"/private/tmp/gravity-sh07-replacement-{os.getpid()}-{time.time_ns()}.lock")
+        replacement = lock.with_name(lock.name + ".replacement")
+        descriptor = os.open(lock, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600)
+        os.close(descriptor)
+        receipt = None
+        try:
+            with self.assertRaises(runner.SharedLockValidationError):
+                with runner.shared_lock_lease(lock) as (_handle, current):
+                    receipt = current
+                    replacement_descriptor = os.open(
+                        replacement, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600
+                    )
+                    os.close(replacement_descriptor)
+                    os.replace(replacement, lock)
+            self.assertIsNotNone(receipt)
+            self.assertTrue(receipt["lock_acquired"])
+            self.assertFalse(receipt["lock_validated"])
+            self.assertTrue(receipt["lock_released"])
+        finally:
+            lock.unlink(missing_ok=True)
+            replacement.unlink(missing_ok=True)
+
+    def test_output_contract_validator_binds_stdout_snapshot_scope_and_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "module.stdout.log"
+            output.write_text("{:status :passed}\n", encoding="utf-8")
+            completed = subprocess.CompletedProcess(["clojure"], 0, "", "")
+            with mock.patch.object(runner.subprocess, "run", return_value=completed) as invoke:
+                self.assertTrue(
+                    runner.output_contract_passed(
+                        "c7-types",
+                        "bootstrap/gravity/src/gravity/c7_type_checker_engine.gravity",
+                        1,
+                        "sha256:" + "a" * 64,
+                        "sha256:" + "b" * 64,
+                        output,
+                        clojure_command="clojure",
+                        cwd=root,
+                        expected_stdout_sha256="sha256:" + "c" * 64,
+                        expected_authority_scope="individual-source-bound-derived",
+                        expected_coverage_policy="source-bound-derived",
+                    )
+                )
+            environment = invoke.call_args.kwargs["env"]
+            self.assertEqual("sha256:" + "c" * 64,
+                             environment["GRAVITY_SH07_EXPECTED_OUTPUT_SHA256"])
+            self.assertEqual("individual-source-bound-derived",
+                             environment["GRAVITY_SH07_EXPECTED_AUTHORITY_SCOPE"])
+            self.assertEqual("source-bound-derived",
+                             environment["GRAVITY_SH07_EXPECTED_COVERAGE_POLICY"])
 
 
 if __name__ == "__main__":
