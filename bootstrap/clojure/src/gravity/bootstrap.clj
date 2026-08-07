@@ -17,6 +17,7 @@
             [gravity.reader-cursor :as reader-cursor]
             [gravity.reader-diagnostic-policy :as reader-diagnostic-policy]
             [gravity.reader-host-oracle :as reader-host-oracle]
+            [gravity.reader-namespace :as reader-namespace]
             [gravity.reader-primitives :as reader-primitives]
             [gravity.source-span :as source-span]
             [gravity.source-unit :as source-unit])
@@ -151,75 +152,34 @@
   [source-path source-text]
   (mapv :form (read-source-form-records source-path source-text)))
 
-(def allowed-ns-clauses
-  #{:profile :profiles :target :targets :requires :imports :exports :effects
-    :capabilities :safety :providers :doc :metadata})
+(defn ns-form?
+  [form]
+  (reader-namespace/ns-form? form))
 
-(declare ns-form?)
+(def allowed-ns-clauses
+  reader-namespace/allowed-ns-clauses)
 
 (defn fail-ns-shape!
   [source-path clause remediation]
-  (fail! "L1-NS-SHAPE"
-         "namespace clause has invalid reader syntax shape"
-         {:source-span (source-span source-path 0)
-          :clause clause
-          :remediation remediation}))
+  (reader-namespace/fail-ns-shape!
+   source-path clause remediation
+   {:source-span source-span
+    :fail! fail!}))
 
 (defn validate-ns-syntax!
   [source-path forms]
-  (when-let [form (first forms)]
-    (when (ns-form? form)
-      (when-not (symbol? (second form))
-        (fail-ns-shape! source-path form "Use a symbolic namespace name."))
-      (doseq [clause (drop 2 form)]
-        (when-not (and (seq? clause) (keyword? (first clause)))
-          (fail-ns-shape! source-path clause "Use list clauses such as (:profile :hosted)."))
-        (let [key (first clause)
-              args (vec (rest clause))
-              one? (= 1 (count args))
-              value (first args)]
-          (when-not (allowed-ns-clauses key)
-            (fail-ns-shape! source-path clause "Use one of the L1 allowed namespace clause keys."))
-          (case key
-            (:profile :target :safety)
-            (when-not one?
-              (fail-ns-shape! source-path clause "Use exactly one value in this namespace clause."))
-            (:profiles :targets :effects :capabilities)
-            (when-not (and one? (set? value))
-              (fail-ns-shape! source-path clause "Use exactly one set value in this namespace clause."))
-            (:exports :providers)
-            (when-not (and one? (vector? value))
-              (fail-ns-shape! source-path clause "Use exactly one vector value in this namespace clause."))
-            (:requires :imports)
-            (when-not (and (seq args) (every? vector? args))
-              (fail-ns-shape! source-path clause "Use one or more dependency vector values in this namespace clause."))
-            :doc
-            (when-not (and one? (string? value))
-              (fail-ns-shape! source-path clause "Use exactly one string value in the doc clause."))
-            :metadata
-            (when-not (and one? (map? value))
-              (fail-ns-shape! source-path clause "Use exactly one map value in the metadata clause."))))))))
+  (reader-namespace/validate-ns-syntax!
+   source-path forms
+   {:ns-form? ns-form?
+    :allowed-ns-clause? #(contains? allowed-ns-clauses %)
+    :fail-ns-shape! fail-ns-shape!}))
 
 (defn reader-module-context
   [forms]
-  (let [form (first forms)]
-    (when (ns-form? form)
-      (let [clauses (reduce (fn [acc clause]
-                              (assoc acc (first clause) (vec (rest clause))))
-                            {}
-                            (drop 2 form))]
-        {:module (second form)
-         :profile (first (get clauses :profile))
-         :target (or (first (get clauses :target)) :jvm)
-         :effects (or (first (get clauses :effects)) #{})
-         :capabilities (or (first (get clauses :capabilities)) #{})
-         :safety (first (get clauses :safety))
-         :namespace-clause-syntax
-         (mapv (fn [clause]
-                 {:clause (first clause)
-                  :raw-form-kind (form-kind clause)
-                  :value-kinds (mapv form-kind (rest clause))})
-               (drop 2 form))}))))
+  (reader-namespace/reader-module-context
+   forms
+   {:ns-form? ns-form?
+    :form-kind form-kind}))
 
 (defn syntax-object-stream
   ([source-path form-records]
@@ -283,10 +243,6 @@
        :namespace-clause-syntax (:namespace-clause-syntax context)
        :diagnostics []}
       reader-details))))
-
-(defn ns-form?
-  [form]
-  (and (seq? form) (= 'ns (first form))))
 
 (defn require-ns
   [source-path forms]
