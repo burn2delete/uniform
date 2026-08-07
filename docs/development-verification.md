@@ -146,6 +146,9 @@ clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M 
 # One or more focused namespaces with a bounded process-local cache.
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-iteration-cache-runner --fail-fast --namespace gravity.self-hosting.sh07-b48-call-arity-test --max-cache-entries 2
 
+# One named test var for the shortest reproduce/fix loop.
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-iteration-cache-runner --test-var gravity.self-hosting.sh07-b48-call-arity-test/sh07-b48-rejects-too-few-and-too-many-with-stable-diagnostics --max-cache-entries 2
+
 # Process-local immutable-cache shards (acceleration only).
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-cached-shard-runner --list
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-cached-shard-runner --check
@@ -178,6 +181,15 @@ remaining work in `:skipped-namespaces`; this prevents a known upstream failure
 from spending another heavy namespace's runtime on derivative diagnostics.
 Omit it when intentionally collecting the complete cross-namespace failure
 set. Either mode remains non-authoritative.
+
+Use exactly one namespace-qualified `--test-var` when reproducing or checking
+a known failure inside a heavy namespace. The runner validates that its
+namespace belongs to the discovered catalog, resolves only a var carrying
+Clojure test metadata, and applies that namespace's normal once/each fixtures.
+Its `:gravity/sh07-iteration-test-var-result` remains non-authoritative. After
+the var is green, run its owning namespace; do not promote a single-var result
+to slice, module, or release evidence. `--test-var` cannot be combined with
+`--namespace` or `--fail-fast`.
 
 ### 5. Selected fresh authoritative module
 

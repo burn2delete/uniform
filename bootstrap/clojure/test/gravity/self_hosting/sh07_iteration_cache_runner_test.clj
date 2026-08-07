@@ -175,11 +175,112 @@
           (is (= {:test 2 :pass 1 :fail 1 :error 0 :type :summary}
                  (:test-result full-result))))))))
 
+(deftest iteration-cache-runs-one-owned-test-var-with-honest-authority
+  (require 'gravity.cli-test)
+  (let [selection
+        (runner/parse-arguments
+         ["--test-var"
+          "gravity.cli-test/presentation-values-are-extracted-with-bootstrap-parity"
+          "--max-cache-entries" "1"])
+        namespace-object (find-ns 'gravity.cli-test)
+        original-namespace-meta (meta namespace-object)
+        once-calls (atom 0)
+        each-calls (atom 0)
+        report-events (atom [])
+        original-report clojure.test/report
+        output (java.io.StringWriter.)
+        result
+        (try
+          (alter-meta!
+           namespace-object assoc
+           :clojure.test/once-fixtures
+           [(fn [operation] (swap! once-calls inc) (operation))]
+           :clojure.test/each-fixtures
+           [(fn [operation] (swap! each-calls inc) (operation))])
+          (with-redefs
+            [clojure.test/report
+             (fn [event]
+               (swap! report-events conj (:type event))
+               (original-report event))]
+            (binding [*out* output
+                      clojure.test/*test-out* output]
+              (runner/run-selection selection)))
+          (finally
+            (reset-meta! namespace-object original-namespace-meta)))]
+    (is (true? (:ok? result)))
+    (is (= :gravity/sh07-iteration-cache-run (:artifact result)))
+    (is (= 1 (get-in result [:test-result :test])))
+    (is (= 40 (get-in result [:test-result :pass])))
+    (is (zero? (get-in result [:test-result :fail])))
+    (is (= :non-authoritative (:authority result)))
+    (is (false? (:authoritative? result)))
+    (is (true? (:fresh-authoritative-run-required? result)))
+    (is (= :non-authoritative
+           (get-in result [:test-var-result :authority])))
+    (is (re-find #":gravity/sh07-iteration-test-var-result" (str output)))
+    (is (= 1 @once-calls @each-calls))
+    (is (= :begin-test-ns (first @report-events)))
+    (is (= [:end-test-ns :summary] (vec (take-last 2 @report-events)))))
+  (is (= "SH07-ITERATION-CACHE-TEST-VAR"
+         (:id
+          (ex-data
+           (try
+             (runner/run-selection
+              (runner/parse-arguments
+               ["--test-var" "gravity.cli-test/not-a-test"]))
+             (catch clojure.lang.ExceptionInfo error error)))))))
+
+(deftest iteration-cache-test-var-rejects-refers-and-reports-failures
+  (require 'gravity.cli-test 'gravity.diagnostics-test)
+  (let [cli-namespace (find-ns 'gravity.cli-test)]
+    (binding [*ns* cli-namespace]
+      (refer 'gravity.diagnostics-test
+             :only '[base-exception-info-carrier-is-extracted-with-bootstrap-parity]
+             :rename
+             '{base-exception-info-carrier-is-extracted-with-bootstrap-parity
+               borrowed-cross-owner-test}))
+    (try
+      (is (= "SH07-ITERATION-CACHE-TEST-VAR"
+             (:id
+              (ex-data
+               (try
+                 (runner/run-selection
+                  (runner/parse-arguments
+                   ["--test-var"
+                    "gravity.cli-test/borrowed-cross-owner-test"]))
+                 (catch clojure.lang.ExceptionInfo error error))))))
+      (finally
+        (ns-unmap cli-namespace 'borrowed-cross-owner-test)))
+    (let [failing-var (intern cli-namespace 'synthetic-failing-test)]
+      (alter-meta!
+       failing-var assoc :test
+       #(clojure.test/do-report
+         {:type :fail
+          :message "synthetic failure"
+          :expected true
+          :actual false}))
+      (try
+        (let [output (java.io.StringWriter.)
+              result
+              (binding [*out* output
+                        clojure.test/*test-out* output]
+                (runner/run-selection
+                 (runner/parse-arguments
+                  ["--test-var"
+                   "gravity.cli-test/synthetic-failing-test"])))]
+          (is (false? (:ok? result)))
+          (is (= 1 (get-in result [:test-result :fail])))
+          (is (zero? (get-in result [:test-result :error])))
+          (is (= :non-authoritative (:authority result))))
+        (finally
+          (ns-unmap cli-namespace 'synthetic-failing-test))))))
+
 (deftest argument-selection-is-explicit-and-owned
   (testing "repeatable namespaces and cache bound"
     (is (= {:namespaces '[gravity.diagnostics-test gravity.cli-test]
             :maximum-entries 2
-            :fail-fast? false}
+            :fail-fast? false
+            :test-var nil}
            (runner/parse-arguments
             ["--namespace" "gravity.diagnostics-test"
              "--max-cache-entries" "2"
@@ -190,6 +291,39 @@
             (runner/parse-arguments
              ["--fail-fast"
               "--namespace" "gravity.cli-test"])))))
+  (testing "one owned namespace-qualified test var is accepted"
+    (is (= 'gravity.cli-test/presentation-values-are-extracted-with-bootstrap-parity
+           (:test-var
+            (runner/parse-arguments
+             ["--test-var"
+              "gravity.cli-test/presentation-values-are-extracted-with-bootstrap-parity"]))))
+    (is (= "SH07-ITERATION-CACHE-SELECTION-CONFLICT"
+           (:id
+            (ex-data
+             (try
+               (runner/parse-arguments
+               ["--namespace" "gravity.cli-test"
+                 "--test-var"
+                 "gravity.cli-test/presentation-values-are-extracted-with-bootstrap-parity"])
+               (catch clojure.lang.ExceptionInfo error error))))))
+    (doseq [[arguments expected-id]
+            [[["--test-var" "unqualified-test"]
+              "SH07-ITERATION-CACHE-TEST-VAR"]
+             [["--test-var"
+               "gravity.cli-test/presentation-values-are-extracted-with-bootstrap-parity"
+               "--test-var"
+               "gravity.cli-test/cli-namespace-contract-is-narrow-and-acyclic"]
+              "SH07-ITERATION-CACHE-DUPLICATE-TEST-VAR"]
+             [["--fail-fast"
+               "--test-var"
+               "gravity.cli-test/presentation-values-are-extracted-with-bootstrap-parity"]
+              "SH07-ITERATION-CACHE-FAIL-FAST-SELECTION"]]]
+      (is (= expected-id
+             (:id
+              (ex-data
+               (try
+                 (runner/parse-arguments arguments)
+                 (catch clojure.lang.ExceptionInfo error error))))))))
   (testing "zero work and invalid bounds fail closed"
     (is (= "SH07-ITERATION-CACHE-SELECTION"
            (:id (ex-data (try (runner/parse-arguments [])
