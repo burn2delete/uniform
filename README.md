@@ -80,6 +80,20 @@ gravity self-host verify
 `gravity self-host verify` writes a proof artifact and exits with `P18T04007`
 until final self-hosting and seed retirement are proven.
 
+For development, plan the smallest Stage 0 verification graph before running
+it, then use exact or related test vars in one JVM:
+
+```bash
+python3 tools/verify_development.py --dry-run --explain --human
+python3 tools/verify_development.py --lane preflight --lane focused --resume --human
+clojure -M:dev-test --exact hosted-hello-runs --exact hosted-core-app-runs-user-functions-and-builtins
+```
+
+`--resume` applies only to matching non-authoritative receipts. The
+authoritative lane is always fresh and serialized. See
+`docs/development-verification-workflow.md` for the gate, cache, lock, and
+evidence rules.
+
 Inspect the hosted core compiled safety proof artifact:
 
 ```bash

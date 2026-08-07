@@ -1,0 +1,385 @@
+{
+  "schema_version": 1,
+  "name": "gravity-stage0-development-verification",
+  "description": "Stage 0 and Milestone 0 verification graph for fast, evidence-producing development loops.",
+  "scope": {
+    "stage": "stage0",
+    "milestones": ["M0-documentation-lock", "M1-hosted-hello-slice"],
+    "included": [
+      "foundation contract and documentation validators",
+      "hosted reader validator",
+      "first hosted hello and core application fixtures",
+      "the existing Clojure bootstrap test surface"
+    ],
+    "excluded": [
+      "native, kernel, GPU, distributed, and AI production targets",
+      "final self-hosting and seed retirement",
+      "later-stage completeness claims"
+    ]
+  },
+  "lanes": {
+    "preflight": {
+      "description": "Fast contract and documentation checks that gate focused work.",
+      "default_parallelism": "unbounded-cheap"
+    },
+    "focused": {
+      "description": "Small hosted Stage 0 and earliest compiler-surface checks.",
+      "default_parallelism": "bounded-cheap"
+    },
+    "authoritative": {
+      "description": "Fresh Stage 0 candidate evidence; command passes never grant authority until output artifacts are validated.",
+      "default_parallelism": "serialized-heavy"
+    }
+  },
+  "checks": [
+    {
+      "id": "m0-docs",
+      "lane": "preflight",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "command": ["python3", "tools/validate_gravity_docs.py"],
+      "inputs": [
+        "README.md",
+        "docs/**/*.md",
+        "docs/document-inventory.json",
+        "tools/validate_gravity_docs.py",
+        "tools/validate_full_language_roadmap.py",
+        "tools/verify_development.py",
+        "tools/development_verification_manifest.json"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "m0-foundation-coverage",
+      "lane": "preflight",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "command": [
+        "python3",
+        "tools/validate_foundation_document_coverage.py",
+        "docs/artifacts/phase-00/foundation-document-coverage.json"
+      ],
+      "inputs": [
+        "docs/artifacts/phase-00/foundation-document-coverage.json",
+        "docs/phase-00-foundation-and-thesis/*.md",
+        "tools/validate_foundation_document_coverage.py"
+      ],
+      "depends_on": ["m0-docs"]
+    },
+    {
+      "id": "m0-contract-traceability",
+      "lane": "preflight",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "command": [
+        "python3",
+        "tools/validate_contract_traceability.py",
+        "docs/artifacts/phase-00/contract-traceability.json"
+      ],
+      "inputs": [
+        "docs/artifacts/phase-00/contract-traceability.json",
+        "docs/document-inventory.json",
+        "docs/**/*.md",
+        "tools/validate_contract_traceability.py"
+      ],
+      "depends_on": ["m0-docs"]
+    },
+    {
+      "id": "m0-milestone-evidence",
+      "lane": "preflight",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "command": [
+        "python3",
+        "tools/validate_milestone_evidence.py",
+        "docs/artifacts/phase-00/milestone-evidence-system.json"
+      ],
+      "inputs": [
+        "docs/artifacts/phase-00/milestone-evidence-system.json",
+        "docs/document-inventory.json",
+        "docs/**/*.md",
+        "tools/validate_milestone_evidence.py"
+      ],
+      "depends_on": ["m0-docs"]
+    },
+    {
+      "id": "m0-terminology",
+      "lane": "preflight",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "command": [
+        "python3",
+        "tools/validate_terminology_boundaries.py",
+        "docs/artifacts/phase-00/diagnostic-namespace-registry.json"
+      ],
+      "inputs": [
+        "docs/artifacts/phase-00/diagnostic-namespace-registry.json",
+        "docs/artifacts/phase-00/cross-phase-ambiguity-log.json",
+        "docs/document-inventory.json",
+        "docs/**/*.md",
+        "tools/validate_terminology_boundaries.py"
+      ],
+      "depends_on": ["m0-docs"]
+    },
+    {
+      "id": "m0-safety-performance",
+      "lane": "preflight",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "command": [
+        "python3",
+        "tools/validate_safety_performance_gates.py",
+        "docs/artifacts/phase-00/safety-performance-gate-model.json"
+      ],
+      "inputs": [
+        "docs/artifacts/phase-00/safety-performance-gate-model.json",
+        "docs/document-inventory.json",
+        "docs/**/*.md",
+        "tools/validate_safety_performance_gates.py"
+      ],
+      "depends_on": ["m0-docs"]
+    },
+    {
+      "id": "m0-change-control",
+      "lane": "preflight",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "command": [
+        "python3",
+        "tools/validate_change_control.py",
+        "docs/artifacts/phase-00/change-control-workflow.json"
+      ],
+      "inputs": [
+        "docs/artifacts/phase-00/change-control-workflow.json",
+        "docs/document-inventory.json",
+        "docs/**/*.md",
+        "tools/validate_change_control.py"
+      ],
+      "depends_on": ["m0-docs"]
+    },
+    {
+      "id": "stage0-orchestrator-unit",
+      "lane": "preflight",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/tests",
+        "-p",
+        "test_verify_development.py",
+        "-v"
+      ],
+      "inputs": [
+        ".gitignore",
+        "tools/verify_development.py",
+        "tools/development_verification_manifest.json",
+        "tools/tests/test_verify_development.py"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "stage0-reader",
+      "lane": "focused",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "command": ["python3", "tools/validate_reader.py"],
+      "inputs": [
+        "src/gravity/reader.py",
+        "tools/validate_reader.py",
+        "docs/artifacts/phase-01/fixtures/reader/**"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "stage0-hosted-hello",
+      "lane": "focused",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "fresh": true,
+      "command": ["clojure", "-M:gravity", "run", "examples/hello.gravity"],
+      "inputs": [
+        "deps.edn",
+        "bin/gravity",
+        "bootstrap/gravity/**",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "examples/hello.gravity",
+        "examples/hello.qst"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "stage0-hosted-hello-qst",
+      "lane": "focused",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "fresh": true,
+      "command": ["clojure", "-M:gravity", "run", "examples/hello.qst"],
+      "inputs": [
+        "deps.edn",
+        "bin/gravity",
+        "bootstrap/gravity/**",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "examples/hello.gravity",
+        "examples/hello.qst"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "stage0-selective-smoke",
+      "lane": "focused",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "fresh": true,
+      "command": [
+        "clojure",
+        "-M:dev-test",
+        "--exact",
+        "hosted-hello-runs",
+        "--exact",
+        "hosted-core-app-runs-user-functions-and-builtins"
+      ],
+      "inputs": [
+        "deps.edn",
+        "bin/gravity",
+        "bootstrap/gravity/**",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+        "bootstrap/clojure/test/gravity/development_test_runner.clj",
+        "bootstrap/clojure/fixtures/accepted/hello.gravity",
+        "bootstrap/clojure/fixtures/accepted/core-app.gravity"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "stage0-hosted-core-app",
+      "lane": "focused",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "fresh": true,
+      "command": ["clojure", "-M:gravity", "run", "examples/core-app.gravity"],
+      "inputs": [
+        "deps.edn",
+        "bin/gravity",
+        "bootstrap/gravity/**",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "examples/core-app.gravity",
+        "examples/core-app.qst"
+      ],
+      "depends_on": ["stage0-hosted-hello"]
+    },
+    {
+      "id": "stage0-hosted-core-compiled-app",
+      "lane": "focused",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "fresh": true,
+      "command": ["clojure", "-M:gravity", "run-compiled", "examples/core-app.gravity"],
+      "inputs": [
+        "deps.edn",
+        "bin/gravity",
+        "bootstrap/gravity/**",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "examples/core-app.gravity",
+        "examples/core-app.qst"
+      ],
+      "depends_on": ["stage0-hosted-core-app"]
+    },
+    {
+      "id": "stage0-clojure-suite",
+      "lane": "authoritative",
+      "cost": "heavy",
+      "lock": "/tmp/gravity-sh07-heavy.lock",
+      "exclusive": true,
+      "authority": "none",
+      "fresh": true,
+      "timeout_seconds": 1800,
+      "command": ["clojure", "-M:test"],
+      "inputs": [
+        "deps.edn",
+        "bin/gravity",
+        "bin/gravity-bootstrap",
+        "bootstrap/gravity/**",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+        "bootstrap/clojure/fixtures/**",
+        "src/**/*.py",
+        "examples/**/*.gravity",
+        "examples/**/*.qst"
+      ],
+      "depends_on": [
+        "m0-docs",
+        "m0-foundation-coverage",
+        "m0-contract-traceability",
+        "m0-milestone-evidence",
+        "m0-terminology",
+        "m0-safety-performance",
+        "m0-change-control",
+        "stage0-orchestrator-unit",
+        "stage0-reader",
+        "stage0-hosted-hello",
+        "stage0-hosted-hello-qst",
+        "stage0-selective-smoke",
+        "stage0-hosted-core-app",
+        "stage0-hosted-core-compiled-app"
+      ]
+    },
+    {
+      "id": "stage0-bootstrap-authority",
+      "lane": "authoritative",
+      "cost": "heavy",
+      "lock": "/tmp/gravity-sh07-heavy.lock",
+      "exclusive": true,
+      "authority": "none",
+      "fresh": true,
+      "timeout_seconds": 1800,
+      "command": [
+        "clojure",
+        "-M:gravity",
+        "bootstrap-self-hosting",
+        "bootstrap/clojure/fixtures/accepted/bootstrap-self-hosting.gravity"
+      ],
+      "inputs": [
+        "deps.edn",
+        "bin/gravity",
+        "bootstrap/gravity/**",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "bootstrap/clojure/fixtures/accepted/bootstrap-self-hosting.gravity",
+        "bootstrap/clojure/fixtures/rejected/bootstrap-*.gravity",
+        "docs/artifacts/phase-15/bootstrap/stage0-p15-bootstrap-self-hosting-proof.edn"
+      ],
+      "depends_on": ["stage0-clojure-suite"]
+    }
+  ]
+}
