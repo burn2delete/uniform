@@ -270,3 +270,50 @@
     (is (nil? (:authority plan)))
     (is (nil? (:full-gate-deferred? plan)))
     (is (nil? (:iteration? plan)))))
+
+(deftest exact-namespace-plan-does-not-expand-siblings-or-dependants
+  (let [plan
+        (planner/build-namespace-plan
+         ['gravity.self-hosting.sh07-b48-call-arity-test
+          'gravity.self-hosting.sh08-function-call-type-test])]
+    (is (= :non-authoritative (:authority plan)))
+    (is (false? (:authoritative? plan)))
+    (is (= :exact-namespaces (:selection-mode plan)))
+    (is (= ["SH-07" "SH-08"] (:affected-slices plan)))
+    (is (= ['gravity.self-hosting.sh07-b48-call-arity-test
+            'gravity.self-hosting.sh08-function-call-type-test]
+           (:namespaces plan)))
+    (is (= [:memory-heavy :normal]
+           (mapv :resource-class (:shards plan)))))
+  (doseq [[requested expected-id]
+          [[[] "SH01-IMPACT-NAMESPACE-EMPTY"]
+           [['gravity.self-hosting.sh07-b48-call-arity-test
+             'gravity.self-hosting.sh07-b48-call-arity-test]
+            "SH01-IMPACT-NAMESPACE-DUPLICATE"]
+           [['gravity.self-hosting.absent-test]
+            "SH01-IMPACT-NAMESPACE"]]]
+    (let [exception
+          (try
+            (planner/build-namespace-plan requested)
+            nil
+            (catch clojure.lang.ExceptionInfo exception exception))]
+      (is (= expected-id (:id (ex-data exception)))))))
+
+(deftest exact-namespace-plan-rejects-invalid-catalog-slices
+  (let [catalog-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'test-catalog)]
+    (doseq [[namespace slice]
+            [['gravity.self-hosting.sh30-future-test "SH-30"]
+             ['gravity.self-hosting.nested-test nil]]]
+      (with-redefs-fn
+        {catalog-var (constantly [{:namespace namespace :slice slice}])}
+        (fn []
+          (let [exception
+                (try
+                  (planner/build-namespace-plan [namespace])
+                  nil
+                  (catch clojure.lang.ExceptionInfo exception exception))]
+            (is (= "SH01-IMPACT-NAMESPACE-SLICE"
+                   (:id (ex-data exception))))
+            (is (= [namespace] (:namespaces (ex-data exception))))))))))

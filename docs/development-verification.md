@@ -93,12 +93,16 @@ one).
 # Inspect the schedule without starting workers.
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-parallel-test-runner --slice SH-07 --dry-run --normal-parallelism 2 --memory-parallelism 1
 
+# Keep a leaf edit to one discovered namespace rather than the full slice.
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-parallel-test-runner --namespace gravity.self-hosting.sh07-b48-call-arity-test --dry-run --memory-parallelism 1
+
 # Run changed namespaces in fresh child processes.
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-parallel-test-runner --changed --normal-parallelism 2 --memory-parallelism 1 --timeout-ms 3600000
 ```
 
-The implemented selection options are `--slice SH-NN`, `--changed`, or
-repeatable `--iteration-slice SH-NN` combined with `--changed`,
+The implemented selection options are repeatable `--namespace NS`,
+`--slice SH-NN`, `--changed`, or repeatable `--iteration-slice SH-NN`
+combined with `--changed`,
 `--dry-run`/`--plan`, `--normal-parallelism` (aliases
 `--normal-jobs` and `--parallelism`), `--memory-parallelism` (aliases
 `--memory-heavy-parallelism` and `--memory-jobs`), `--timeout-ms` (alias
@@ -117,10 +121,12 @@ after a memory-heavy slot has been occupied:
 
 ```bash
 clojure -J-Xmx512m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -e '(require (quote gravity.self-hosting.sh07-b48-call-arity-test)) (println :preflight-ok)'
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-parallel-test-runner --changed --iteration-slice SH-07 --dry-run --normal-parallelism 2 --memory-parallelism 1
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-parallel-test-runner --namespace gravity.self-hosting.sh07-b48-call-arity-test --dry-run --memory-parallelism 1
 ```
 
-Replace the example namespace and slice with the selected work. A failed
+Replace the example namespace with the selected work. Exact namespace mode is
+non-authoritative and never expands to sibling namespaces or dependants; use a
+slice only when the whole integration slice is intentional. A failed
 preflight blocks the heavy run; it is never evidence and does not replace the
 focused or authoritative execution. Preflight means `require` only: do not
 call `clojure.test/run-tests`, force namespace delays, or invoke artifact

@@ -514,7 +514,68 @@
          :ignored-paths
          (->> classified
               (filter #(= :unrelated (:classification %)))
-              (mapv :path))}))))
+         (mapv :path))}))))
+
+(defn build-namespace-plan
+  "Builds a non-authoritative plan for exact dedicated test namespaces.
+
+  This leaf iteration mode validates names against the same discovered catalog
+  as slice planning but deliberately does not expand to sibling namespaces or
+  downstream slices."
+  [requested]
+  (let [namespaces (mapv #(if (symbol? %) % (symbol (str %))) requested)
+        catalog (test-catalog)
+        by-namespace (into {} (map (juxt :namespace identity)) catalog)
+        unknown (vec (sort (remove #(contains? by-namespace %) namespaces)))
+        invalid-slice-namespaces
+        (->> namespaces
+             (filter
+              (fn [namespace]
+                (let [slice (:slice (get by-namespace namespace))]
+                  (and (contains? by-namespace namespace)
+                       (not (contains? (all-slices) slice))))))
+             sort
+             vec)]
+    (when (empty? namespaces)
+      (throw
+       (ex-info "At least one dedicated namespace is required"
+                {:id "SH01-IMPACT-NAMESPACE-EMPTY"})))
+    (when-not (= (count namespaces) (count (distinct namespaces)))
+      (throw
+       (ex-info "Dedicated namespaces must be unique"
+                {:id "SH01-IMPACT-NAMESPACE-DUPLICATE"
+                 :namespaces namespaces})))
+    (when (seq unknown)
+      (throw
+       (ex-info "Requested namespace is not in the dedicated test catalog"
+                {:id "SH01-IMPACT-NAMESPACE"
+                 :namespaces unknown})))
+    (when (seq invalid-slice-namespaces)
+      (throw
+       (ex-info "Requested namespace has no valid SH-00 through SH-29 slice"
+                {:id "SH01-IMPACT-NAMESPACE-SLICE"
+                 :namespaces invalid-slice-namespaces})))
+    (let [namespaces (vec (sort namespaces))
+          shards
+          (mapv
+           (fn [namespace]
+             (let [slice (:slice (get by-namespace namespace))]
+               {:namespace namespace
+                :slice slice
+                :resource-class (resource-class slice)}))
+           namespaces)
+          slices (vec (sort (distinct (map :slice shards))))]
+      {:schema :gravity/sh01-impact-test-plan-v1
+       :authority :non-authoritative
+       :authoritative? false
+       :selection-mode :exact-namespaces
+       :direct-slices slices
+       :affected-slices slices
+       :changed-paths []
+       :classifications []
+       :namespaces namespaces
+       :shards shards
+       :ignored-paths []})))
 
 (defn- process-lines
   [& command]

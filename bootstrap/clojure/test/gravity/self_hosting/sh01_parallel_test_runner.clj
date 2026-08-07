@@ -620,7 +620,7 @@
                (ex-info
                 "SH-01 parallel execution requires a selection mode"
                 {:id "SH01-PARALLEL-SELECTION"
-                 :supported ["--slice SH-NN" "--changed"]})))
+                 :supported ["--namespace NS" "--slice SH-NN" "--changed"]})))
             request
             (if (= :iteration mode)
               (do
@@ -641,7 +641,7 @@
       (let [argument (first remaining)]
         (cond
           (= "--changed" argument)
-          (if (= :slice mode)
+          (if (#{:slice :namespace} mode)
             (throw
              (ex-info "Only one planner selection mode may be supplied"
                       {:id "SH01-PARALLEL-USAGE" :arguments (vec arguments)}))
@@ -651,13 +651,34 @@
                    (if (= :iteration mode) :iteration :changed)
                    dry-run?))
 
+          (= "--namespace" argument)
+          (let [namespace (get remaining 1)]
+            (when (or (nil? namespace) (str/starts-with? namespace "--"))
+              (throw
+               (ex-info "--namespace requires a dedicated test namespace"
+                        {:id "SH01-PARALLEL-USAGE"})))
+            (when (#{:slice :changed :iteration} mode)
+              (throw
+               (ex-info "Only one planner selection mode may be supplied"
+                        {:id "SH01-PARALLEL-USAGE"})))
+            (when (contains? request :expand-dependants?)
+              (throw
+               (ex-info "Exact namespace mode does not accept dependant expansion"
+                        {:id "SH01-PARALLEL-USAGE"})))
+            (recur (subvec remaining 2)
+                   (update request :direct-namespaces (fnil conj [])
+                           (symbol namespace))
+                   options
+                   :namespace
+                   dry-run?))
+
           (= "--slice" argument)
           (let [slice (get remaining 1)]
             (when (or (nil? slice) (str/starts-with? slice "--"))
               (throw
                (ex-info "--slice requires SH-NN"
                         {:id "SH01-PARALLEL-USAGE"})))
-            (when (#{:changed :iteration} mode)
+            (when (#{:changed :iteration :namespace} mode)
               (throw
                (ex-info "Only one planner selection mode may be supplied"
                         {:id "SH01-PARALLEL-USAGE"})))
@@ -673,7 +694,7 @@
               (throw
                (ex-info "--iteration-slice requires SH-NN"
                         {:id "SH01-PARALLEL-USAGE"})))
-            (when (= :slice mode)
+            (when (#{:slice :namespace} mode)
               (throw
                (ex-info "Only one planner selection mode may be supplied"
                         {:id "SH01-PARALLEL-USAGE"})))
@@ -688,14 +709,22 @@
 
           (or (= "--expand-dependants" argument)
               (= "--expand-dependents" argument))
-          (recur (subvec remaining 1)
-                 (assoc request :expand-dependants? true)
-                 options mode dry-run?)
+          (if (= :namespace mode)
+            (throw
+             (ex-info "Exact namespace mode does not accept dependant expansion"
+                      {:id "SH01-PARALLEL-USAGE"}))
+            (recur (subvec remaining 1)
+                   (assoc request :expand-dependants? true)
+                   options mode dry-run?))
 
           (= "--no-expand-dependants" argument)
-          (recur (subvec remaining 1)
-                 (assoc request :expand-dependants? false)
-                 options mode dry-run?)
+          (if (= :namespace mode)
+            (throw
+             (ex-info "Exact namespace mode does not accept dependant expansion"
+                      {:id "SH01-PARALLEL-USAGE"}))
+            (recur (subvec remaining 1)
+                   (assoc request :expand-dependants? false)
+                   options mode dry-run?))
 
           (or (= "--normal-parallelism" argument)
               (= "--normal-jobs" argument)
@@ -785,7 +814,10 @@
               (assoc :changed-paths (planner/changed-paths))
               true
               (dissoc :changed-selection?))]
-        (assoc parsed :plan (planner/build-plan request))))))
+        (assoc parsed :plan
+               (if (= :namespace (:mode parsed))
+                 (planner/build-namespace-plan (:direct-namespaces request))
+                 (planner/build-plan request)))))))
 
 (defn run-cli
   "Runs the CLI request and returns an EDN-friendly result without exiting."
@@ -797,7 +829,7 @@
             {:status :help
              :exit-code 0
              :usage
-             "sh01-parallel-test-runner --slice SH-NN|--changed [--iteration-slice SH-NN] [--dry-run] [--normal-parallelism N] [--memory-parallelism 1]"}]
+             "sh01-parallel-test-runner (--namespace NS)...|--slice SH-NN|(--changed [--iteration-slice SH-NN]...) [--dry-run] [--normal-parallelism N] [--memory-parallelism 1]"}]
         (println (:usage report))
         report)
       (let [schedule (dry-run plan options)]

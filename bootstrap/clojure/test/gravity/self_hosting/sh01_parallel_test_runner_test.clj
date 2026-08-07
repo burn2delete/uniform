@@ -307,7 +307,49 @@
           (runner/parse-arguments
            ["--iteration-slice" "SH-07" "--changed" "--dry-run"])
           [:request :mode :dry-run?])))
+  (is (= {:request
+          {:direct-namespaces
+           ['gravity.self-hosting.sh07-b48-call-arity-test]}
+          :mode :namespace
+          :dry-run? true}
+         (select-keys
+          (runner/parse-arguments
+           ["--namespace" "gravity.self-hosting.sh07-b48-call-arity-test"
+            "--dry-run"])
+          [:request :mode :dry-run?])))
   (is (= "SH01-PARALLEL-USAGE"
          (:id
           (exception-data
            #(runner/parse-arguments ["--iteration-slice" "SH-07"]))))))
+
+(deftest exact-namespace-cli-builds-one-job-without-slice-expansion
+  (let [{:keys [mode plan]}
+        (runner/build-plan-from-arguments
+         ["--namespace" "gravity.self-hosting.sh07-b48-call-arity-test"
+          "--dry-run"])]
+    (is (= :namespace mode))
+    (is (= ['gravity.self-hosting.sh07-b48-call-arity-test]
+           (:namespaces plan)))
+    (is (= [{:namespace 'gravity.self-hosting.sh07-b48-call-arity-test
+             :slice "SH-07"
+             :resource-class :memory-heavy}]
+           (:shards plan)))
+    (is (= :non-authoritative (:authority plan))))
+  (is (= "SH01-PARALLEL-USAGE"
+         (:id
+          (exception-data
+           #(runner/parse-arguments
+             ["--namespace" "gravity.self-hosting.sh07-b48-call-arity-test"
+              "--changed"])))))
+  (is (= "SH01-IMPACT-NAMESPACE"
+         (:id
+          (exception-data
+           #(runner/build-plan-from-arguments
+             ["--namespace" "gravity.self-hosting.absent-test"])))))
+  (doseq [arguments
+          [["--namespace" "gravity.self-hosting.sh07-b48-call-arity-test"
+            "--expand-dependants"]
+           ["--no-expand-dependants"
+            "--namespace" "gravity.self-hosting.sh07-b48-call-arity-test"]]]
+    (is (= "SH01-PARALLEL-USAGE"
+           (:id (exception-data #(runner/parse-arguments arguments)))))))
