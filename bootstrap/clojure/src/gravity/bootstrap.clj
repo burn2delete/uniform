@@ -12,7 +12,8 @@
             [clojure.walk :as walk]
             [gravity.cli :as cli]
             [gravity.darwin-publication :as darwin-publication]
-            [gravity.diagnostics :as diagnostics])
+            [gravity.diagnostics :as diagnostics]
+            [gravity.source-unit :as source-unit])
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io StringReader]))
 
@@ -29,26 +30,20 @@
 (def max-macro-expansion-depth 16)
 (def max-reader-form-depth 512)
 (def max-reader-form-graph-depth (inc max-reader-form-depth))
-(def co-canonical-source-extensions #{".qst" ".gravity"})
+(def co-canonical-source-extensions
+  source-unit/co-canonical-source-extensions)
 
 (defn gravity-source-extension
   [path]
-  (let [name (.getName (java.io.File. (str path)))
-        dot (.lastIndexOf name ".")]
-    (when (pos? dot)
-      (subs name dot))))
+  (source-unit/gravity-source-extension path))
 
 (defn qst-or-gravity-source?
   [path]
-  (contains? co-canonical-source-extensions
-             (gravity-source-extension path)))
+  (source-unit/qst-or-gravity-source? path))
 
 (defn gravity-source-kind
   [path]
-  (case (gravity-source-extension path)
-    ".qst" :qst-theory-source
-    ".gravity" :gravity-branded-source
-    :gravity-source))
+  (source-unit/gravity-source-kind path))
 
 (defn diagnostic
   [id message data]
