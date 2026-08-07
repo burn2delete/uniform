@@ -133606,35 +133606,250 @@
      :builder-function p15-s23-b1-builder-function
      :required-functions p15-s23-b1-required-functions})})
 
-(defn- p15-s23-sh02-source-binding!
+(defn- p15-s23-sh02-source-location!
+  [candidate request-source]
+  (p15-s23-c13-c14-b1-require-authority!
+   candidate request-source :resolve-pinned-sh02-source)
+  (let [c11-source
+        (.normalize
+         (.toAbsolutePath
+          (java.nio.file.Paths/get
+           (p15-s23-c11-mir-resolve-source-path)
+           (make-array String 0))))
+        c11-relative
+        (java.nio.file.Paths/get
+         p15-s23-c11-mir-source-relative-path (make-array String 0))
+        repository-root
+        (loop [path c11-source
+               remaining (.getNameCount c11-relative)]
+          (if (zero? remaining)
+            path
+            (recur (.getParent path) (dec remaining))))
+        sh02-relative
+        (java.nio.file.Paths/get
+         p15-s23-sh02-source-relative-path (make-array String 0))
+        source-path (.normalize (.resolve repository-root sh02-relative))]
+    (when-not (and (.endsWith c11-source c11-relative)
+                   (.startsWith source-path repository-root))
+      (p15-s23-b3-llvm-fail!
+       "B1-INPUT" request-source {}
+       {:missing-fact :bounded-pinned-sh02-source-location
+        :source-path (str source-path)}))
+    {:repository-root repository-root
+     :source-path source-path}))
+
+(defn- p15-s23-sh02-component-safe-source-path!
+  [request-source repository-root source-path]
+  (let [repository-root (.normalize (.toAbsolutePath repository-root))
+        source-path (.normalize (.toAbsolutePath source-path))
+        nofollow
+        (into-array java.nio.file.LinkOption
+                    [java.nio.file.LinkOption/NOFOLLOW_LINKS])]
+    (when-not (.startsWith source-path repository-root)
+      (p15-s23-b3-llvm-fail!
+       "B1-INPUT" request-source {}
+       {:missing-fact :bounded-pinned-sh02-source-location
+        :source-path (str source-path)}))
+    (loop [path repository-root
+           components (seq (iterator-seq
+                            (.iterator
+                             (.relativize repository-root source-path))))]
+      (let [attributes
+            (try
+              (java.nio.file.Files/readAttributes
+               path java.nio.file.attribute.BasicFileAttributes nofollow)
+              (catch java.io.IOException _
+                (p15-s23-b3-llvm-fail!
+                 "B1-INPUT" request-source {}
+                 {:missing-fact :component-safe-pinned-sh02-source
+                  :source-path (str source-path)
+                  :observed-component (str path)})))]
+        (when (or (.isSymbolicLink attributes)
+                  (and (seq components) (not (.isDirectory attributes)))
+                  (and (nil? components) (not (.isRegularFile attributes))))
+          (p15-s23-b3-llvm-fail!
+           "B1-INPUT" request-source {}
+           {:missing-fact :component-safe-pinned-sh02-source
+            :source-path (str source-path)
+            :observed-component (str path)
+            :symbolic-link? (.isSymbolicLink attributes)
+            :directory? (.isDirectory attributes)
+            :regular-file? (.isRegularFile attributes)}))
+        (if-let [component (first components)]
+          (recur (.resolve path ^java.nio.file.Path component)
+                 (next components))
+          attributes)))))
+
+(defn- p15-s23-sh02-source-snapshot!
+  [request-source repository-root source-path]
+  (let [before
+        (p15-s23-sh02-component-safe-source-path!
+         request-source repository-root source-path)
+        maximum-byte-count (inc p15-s23-sh02-source-byte-count)
+        buffer (java.nio.ByteBuffer/allocate maximum-byte-count)]
+    (when-not (= (long p15-s23-sh02-source-byte-count) (.size before))
+      (p15-s23-b3-llvm-fail!
+       "B1-INPUT" request-source {}
+       {:missing-fact :pinned-sh02-source-snapshot
+        :source-path (str source-path)
+        :expected-source-bytes p15-s23-sh02-source-byte-count
+        :observed-source-bytes (.size before)}))
+    (try
+      (with-open
+       [channel
+        (java.nio.channels.FileChannel/open
+         source-path
+         (into-array java.nio.file.OpenOption
+                     [java.nio.file.StandardOpenOption/READ
+                      java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
+       (let [channel-size-before (.size channel)
+             observed-byte-count
+             (loop [zero-reads 0]
+               (if-not (.hasRemaining buffer)
+                 (.position buffer)
+                 (let [read-count (.read channel buffer)]
+                   (cond
+                     (neg? read-count) (.position buffer)
+                     (zero? read-count)
+                     (if (= 8 zero-reads)
+                       (p15-s23-b3-llvm-fail!
+                        "B1-INPUT" request-source {}
+                        {:missing-fact :bounded-pinned-sh02-source-read
+                         :source-path (str source-path)})
+                       (recur (inc zero-reads)))
+                     :else (recur 0)))))
+             channel-size-after (.size channel)
+             after
+             (p15-s23-sh02-component-safe-source-path!
+              request-source repository-root source-path)
+             bytes
+             (java.util.Arrays/copyOf (.array buffer) observed-byte-count)
+             observed-content-hash
+             (str "sha256:" (sha256-bytes-hex bytes))]
+         (when-not
+          (and (= p15-s23-sh02-source-byte-count observed-byte-count)
+               (= p15-s23-sh02-expected-source-content-hash
+                  observed-content-hash)
+               (= channel-size-before channel-size-after
+                  (long observed-byte-count))
+               (= (.fileKey before) (.fileKey after))
+               (= (.lastModifiedTime before) (.lastModifiedTime after))
+               (= (.size before) (.size after)
+                  (long observed-byte-count)))
+           (p15-s23-b3-llvm-fail!
+            "B1-INPUT" request-source {}
+            {:missing-fact :stable-pinned-sh02-source-snapshot
+             :source-path (str source-path)
+             :expected-source-bytes p15-s23-sh02-source-byte-count
+             :observed-source-bytes observed-byte-count
+             :expected-source-content-hash
+             p15-s23-sh02-expected-source-content-hash
+             :observed-source-content-hash observed-content-hash
+             :stable-observed-path-snapshot?
+             (and (= (.fileKey before) (.fileKey after))
+                  (= (.lastModifiedTime before)
+                     (.lastModifiedTime after))
+                  (= (.size before) (.size after)))
+             :stable-open-channel-size?
+             (= channel-size-before channel-size-after
+                (long observed-byte-count))}))
+         {:source-path (str source-path)
+          :source-byte-count observed-byte-count
+          :source-content-hash observed-content-hash
+          :source-bytes bytes}))
+      (catch java.io.IOException _
+        (p15-s23-b3-llvm-fail!
+         "B1-INPUT" request-source {}
+         {:missing-fact :stable-pinned-sh02-source-snapshot
+          :source-path (str source-path)})))))
+
+(defn- p15-s23-sh02-strict-source-text!
+  [request-source source-path bytes]
+  (try
+    (let [decoder
+          (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+            (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+            (.onUnmappableCharacter
+             java.nio.charset.CodingErrorAction/REPORT))]
+      (.toString (.decode decoder (java.nio.ByteBuffer/wrap bytes))))
+    (catch java.nio.charset.CharacterCodingException _
+      (p15-s23-b3-llvm-fail!
+       "B1-INPUT" request-source {}
+       {:missing-fact :strict-utf8-pinned-sh02-source
+        :source-path (str source-path)}))))
+
+(defn- p15-s23-sh02-source-binding-inputs!
   [candidate source-path]
-  (let [binding
-        (p15-s23-c13-c14-b1-source-binding!
-         candidate source-path
-         {:owner :gravity.compiler/authenticated-envelope
-          :relative-path p15-s23-sh02-source-relative-path
-          :source-byte-count p15-s23-sh02-source-byte-count
-          :source-content-hash p15-s23-sh02-expected-source-content-hash
-          :plan-semantic-hash p15-s23-sh02-expected-plan-semantic-hash
-          :functions-semantic-hash
-          p15-s23-sh02-expected-functions-semantic-hash
-          :builder-semantic-hash
-          p15-s23-sh02-expected-builder-semantic-hash
-          :builder-function p15-s23-sh02-builder-function
-          :required-functions p15-s23-sh02-required-functions
-          :emitter-target :jvm})
-        functions (get-in binding [:plan :functions])
-        verifier-hash
-        (p15-s23-c11-mir-digest
-         (get functions p15-s23-sh02-verifier-function))
+  (p15-s23-c13-c14-b1-require-authority!
+   candidate source-path :load-pinned-sh02-source)
+  (let [request-source source-path
+        location (p15-s23-sh02-source-location! candidate request-source)
+        repository-root (:repository-root location)
+        sh02-source-path (:source-path location)
+        snapshot
+        (p15-s23-sh02-source-snapshot!
+         request-source repository-root sh02-source-path)
+        bytes (:source-bytes snapshot)
+        source-text
+        (p15-s23-sh02-strict-source-text!
+         request-source sh02-source-path bytes)
+        emitter-rule
+        (c-backend-stage2-plan-emitter-source-rule! request-source :jvm)
+        emitter-source-path
+        (p15-s23-c6c10-canonical-file-path (:source-path emitter-rule))]
+    {:inputs
+     (merge
+      (dissoc snapshot :source-bytes)
+      {:emitter-target :jvm
+       :emitter-source-path emitter-source-path
+       :emitter-source-byte-count
+       p15-s23-stage2-compiler-expected-source-byte-count
+       :emitter-source-content-hash
+       p15-s23-stage2-compiler-expected-source-content-hash
+       :emitter-source-rule-hash (:source-rule-hash emitter-rule)})
+     :source-text source-text
+     :emitter-rule emitter-rule}))
+
+(defn- p15-s23-sh02-compile-source-binding!
+  [source-path {:keys [source-text emitter-rule inputs]}]
+  (when-not
+   (and (= p15-s23-sh02-source-byte-count (:source-byte-count inputs))
+        (= p15-s23-sh02-expected-source-content-hash
+           (:source-content-hash inputs)))
+    (p15-s23-b3-llvm-fail!
+     "B1-INPUT" source-path {}
+     {:missing-fact :pinned-sh02-source-identity
+      :expected-source-bytes p15-s23-sh02-source-byte-count
+      :observed-source-bytes (:source-byte-count inputs)
+      :expected-source-content-hash
+      p15-s23-sh02-expected-source-content-hash
+      :observed-source-content-hash (:source-content-hash inputs)}))
+  (let [compilation-source-path (:source-path inputs)
+        plan
+        (p15-s23-stage2-compiler-artifact-plan
+         (:emitter emitter-rule) compilation-source-path source-text)
+        functions (:functions plan)
         complete-shapes
         (into
          (sorted-map)
          (map (fn [[name function]]
                 [name (select-keys function [:arity :params])]))
-         functions)]
+         functions)
+        plan-hash
+        (p15-s23-c11-mir-digest
+         (p15-s23-stage2-compiler-artifact-semantic-input plan))
+        functions-hash (p15-s23-c11-mir-digest functions)
+        builder-hash
+        (p15-s23-c11-mir-digest
+         (get functions p15-s23-sh02-builder-function))
+        verifier-hash
+        (p15-s23-c11-mir-digest
+         (get functions p15-s23-sh02-verifier-function))]
     (when-not
      (and (= p15-s23-sh02-expected-function-count (count functions))
+          (= p15-s23-sh02-expected-plan-semantic-hash plan-hash)
+          (= p15-s23-sh02-expected-functions-semantic-hash functions-hash)
+          (= p15-s23-sh02-expected-builder-semantic-hash builder-hash)
           (= p15-s23-sh02-expected-verifier-semantic-hash verifier-hash)
           (= p15-s23-sh02-required-functions
              (select-keys complete-shapes
@@ -133644,11 +133859,31 @@
        {:missing-fact :pinned-sh02-gravity-function-identity
         :sh02-boundary :authenticated-envelope
         :observed-function-count (count functions)
+        :observed-plan-semantic-hash plan-hash
+        :observed-functions-semantic-hash functions-hash
+        :observed-builder-semantic-hash builder-hash
         :observed-verifier-semantic-hash verifier-hash}))
-    (assoc binding
-           :verifier-function p15-s23-sh02-verifier-function
-           :verifier-semantic-hash verifier-hash
-           :function-shapes complete-shapes)))
+    {:owner :gravity.compiler/authenticated-envelope
+     :source-path compilation-source-path
+     :source-byte-count (:source-byte-count inputs)
+     :source-content-hash (:source-content-hash inputs)
+     :plan-semantic-hash plan-hash
+     :functions-semantic-hash functions-hash
+     :builder-semantic-hash builder-hash
+     :verifier-function p15-s23-sh02-verifier-function
+     :verifier-semantic-hash verifier-hash
+     :function-shapes complete-shapes
+     :plan plan}))
+
+(defn- p15-s23-sh02-source-binding!
+  [candidate source-path]
+  (p15-s23-c13-c14-b1-require-authority!
+   candidate source-path :load-pinned-sh02-source)
+  ;; Source bytes, the emitter rule, and the compiled SH-02 plan are all
+  ;; authenticated and reconstructed for every authority-bearing call.
+  (p15-s23-sh02-compile-source-binding!
+   source-path
+   (p15-s23-sh02-source-binding-inputs! candidate source-path)))
 
 (defn- p15-s23-c13-c14-b1-c-source-bindings!
   [candidate source-path]
@@ -134061,8 +134296,159 @@
                              (map :to (get adjacency node [])))]
           (recur (into pending unseen) (into discovered unseen)))))))
 
+(declare p15-s23-sh02-fail!
+         p15-s23-sh02-require-bounded-carrier!)
+
+(defn- p15-s23-sh02-bounded-reference-edge-state
+  [stage root-id edge-seq]
+  (loop [remaining (seq edge-seq)
+         edges []
+         node-ids #{root-id}]
+    (if (nil? remaining)
+      {:edges edges :node-ids node-ids}
+      (let [edge (first remaining)
+            next-edges (conj edges edge)
+            next-node-ids (conj node-ids (:from edge) (:to edge))]
+        (when (or (> (count next-edges)
+                     (:maximum-reference-edges
+                      p15-s23-sh02-authenticated-envelope-bounds))
+                    (> (count next-node-ids)
+                     (:maximum-reference-nodes
+                      p15-s23-sh02-authenticated-envelope-bounds)))
+          (p15-s23-sh02-fail!
+           "<sh02-reference-closure>" {}
+           :bounded-sh02-reference-closure
+           {:stage stage
+            :observed-reference-nodes (count next-node-ids)
+            :observed-reference-edges (count next-edges)
+            :maximum-reference-nodes
+            (:maximum-reference-nodes
+             p15-s23-sh02-authenticated-envelope-bounds)
+            :maximum-reference-edges
+            (:maximum-reference-edges
+             p15-s23-sh02-authenticated-envelope-bounds)}))
+        (let [observed-depth
+              (p15-s23-sh02-reference-depth root-id next-edges)]
+          (when (> observed-depth
+                   (:maximum-reference-depth
+                    p15-s23-sh02-authenticated-envelope-bounds))
+            (p15-s23-sh02-fail!
+             "<sh02-reference-closure>" {}
+             :bounded-sh02-reference-closure
+             {:stage stage
+              :observed-reference-nodes (count next-node-ids)
+              :observed-reference-edges (count next-edges)
+              :observed-reference-depth observed-depth
+              :maximum-reference-depth
+              (:maximum-reference-depth
+               p15-s23-sh02-authenticated-envelope-bounds)})))
+        (recur (next remaining) next-edges next-node-ids)))))
+
+(defn- p15-s23-sh02-reference-packet-preflight!
+  [stage packet]
+  ;; Reject non-persistent/lazy carriers before selecting or flattening MIR
+  ;; instructions. Cardinalities are then checked from O(1) vector/map counts
+  ;; before `p15-s23-c11-mir-operation-sequence` can allocate its result.
+  (p15-s23-sh02-require-bounded-carrier!
+   "<sh02-reference-closure>" :sh02-reference-packet packet)
+  (let [mir (:optimized-mir packet)
+        functions (:functions mir)
+        maximum-edges
+        (:maximum-reference-edges
+         p15-s23-sh02-authenticated-envelope-bounds)]
+    (when-not (and (map? mir) (map? functions) (seq functions))
+      (p15-s23-sh02-fail!
+       "<sh02-reference-closure>" {}
+       :bounded-sh02-reference-closure
+       {:stage stage :bounded-reason :exact-mir-function-carrier}))
+    (let [blocks
+          (get-in mir [:functions (first (keys functions)) :blocks])
+          block-order (p15-s23-c11-mir-canonical-block-order mir)
+          {:keys [operation-count operand-edge-count]}
+          (reduce
+           (fn [{:keys [operation-count operand-edge-count]} block-id]
+             (let [instructions (get-in blocks [block-id :instructions] [])]
+               (when-not (vector? instructions)
+                 (p15-s23-sh02-fail!
+                  "<sh02-reference-closure>" {}
+                  :bounded-sh02-reference-closure
+                  {:stage stage
+                   :bounded-reason :exact-mir-instruction-vector}))
+               (let [next-operation-count
+                     (+ operation-count (count instructions))
+                     next-operand-edge-count
+                     (reduce
+                      (fn [count-so-far instruction]
+                        (let [operands (:operands instruction)]
+                          (when-not (and (map? instruction)
+                                         (vector? operands))
+                            (p15-s23-sh02-fail!
+                             "<sh02-reference-closure>" {}
+                             :bounded-sh02-reference-closure
+                             {:stage stage
+                              :bounded-reason
+                              :exact-mir-operation-carrier}))
+                          (+ count-so-far (count operands))))
+                      operand-edge-count instructions)]
+                 (when (> (+ next-operation-count
+                             next-operand-edge-count)
+                          maximum-edges)
+                   (p15-s23-sh02-fail!
+                    "<sh02-reference-closure>" {}
+                    :bounded-sh02-reference-closure
+                    {:stage stage
+                     :observed-reference-edges
+                     (+ next-operation-count next-operand-edge-count)
+                     :maximum-reference-edges maximum-edges}))
+                 {:operation-count next-operation-count
+                  :operand-edge-count next-operand-edge-count})))
+           {:operation-count 0 :operand-edge-count 0}
+           block-order)
+          {:keys [block-count cfg-edge-count]}
+          (reduce-kv
+           (fn [{:keys [block-count cfg-edge-count]} _ function]
+             (let [function-blocks (:blocks function)]
+               (when-not (map? function-blocks)
+                 (p15-s23-sh02-fail!
+                  "<sh02-reference-closure>" {}
+                  :bounded-sh02-reference-closure
+                  {:stage stage
+                   :bounded-reason :exact-mir-block-map}))
+               (reduce-kv
+                (fn [{:keys [block-count cfg-edge-count]} _ block]
+                  (let [successors (:successors block)]
+                    (when-not (and (map? block) (vector? successors))
+                      (p15-s23-sh02-fail!
+                       "<sh02-reference-closure>" {}
+                       :bounded-sh02-reference-closure
+                       {:stage stage
+                        :bounded-reason :exact-mir-successor-vector}))
+                    {:block-count (inc block-count)
+                     :cfg-edge-count (+ cfg-edge-count
+                                        (count successors))}))
+                {:block-count block-count
+                 :cfg-edge-count cfg-edge-count}
+                function-blocks)))
+           {:block-count 0 :cfg-edge-count 0}
+           functions)
+          prospective-edge-count
+          (+ operation-count operand-edge-count block-count cfg-edge-count)]
+      (when (> prospective-edge-count maximum-edges)
+        (p15-s23-sh02-fail!
+         "<sh02-reference-closure>" {}
+         :bounded-sh02-reference-closure
+         {:stage stage
+          :observed-reference-edges prospective-edge-count
+          :maximum-reference-edges maximum-edges}))
+      {:operation-count operation-count
+       :operand-edge-count operand-edge-count
+       :block-count block-count
+       :cfg-edge-count cfg-edge-count
+       :prospective-edge-count prospective-edge-count})))
+
 (defn p15-s23-sh02-reference-closure
   [stage packet]
+  (p15-s23-sh02-reference-packet-preflight! stage packet)
   (let [record (get packet stage)
         mir (:optimized-mir packet)
         root-id (:artifact-id record)
@@ -134083,11 +134469,10 @@
               successor (:successors block)]
           {:from block-id :role :cfg-successor :to successor})
         block-ids
-        (->> (for [[_ function] (:functions mir)
-                   [block-id _] (:blocks function)]
-               block-id)
-             distinct
-             (sort-by pr-str))
+        (distinct
+         (for [[_ function] (:functions mir)
+               [block-id _] (:blocks function)]
+           block-id))
         root-operation-edges
         (map (fn [operation]
                {:from root-id :role :contains-operation
@@ -134097,17 +134482,34 @@
         (map (fn [block-id]
                {:from root-id :role :contains-block :to block-id})
              block-ids)
+        bounded-edge-state
+        (p15-s23-sh02-bounded-reference-edge-state
+         stage root-id
+         (concat root-operation-edges root-block-edges
+                 cfg-edges operand-edges))
         edges
-        (->> (concat root-operation-edges root-block-edges
-                     cfg-edges operand-edges)
+        (->> (:edges bounded-edge-state)
              (sort-by #(pr-str [(:from %) (:role %) (:to %)]))
              vec)
         node-ids
-        (->> (concat [root-id]
-                     (mapcat (juxt :from :to) edges))
-             distinct
+        (->> (:node-ids bounded-edge-state)
              (sort-by pr-str)
-             vec)]
+             vec)
+        observed-maximum-depth
+        (p15-s23-sh02-reference-depth root-id edges)]
+    (when (> observed-maximum-depth
+             (:maximum-reference-depth
+              p15-s23-sh02-authenticated-envelope-bounds))
+      (p15-s23-sh02-fail!
+       "<sh02-reference-closure>" {}
+       :bounded-sh02-reference-closure
+       {:stage stage
+        :observed-reference-nodes (count node-ids)
+        :observed-reference-edges (count edges)
+        :observed-reference-depth observed-maximum-depth
+        :maximum-reference-depth
+        (:maximum-reference-depth
+         p15-s23-sh02-authenticated-envelope-bounds)}))
     {:root-id root-id
      :node-ids node-ids
      :edges edges
@@ -134126,8 +134528,7 @@
      (p15-s23-sh02-sha256-ids (:runtime-check-table mir))
      :observed-node-count (count node-ids)
      :observed-edge-count (count edges)
-     :observed-maximum-depth
-     (p15-s23-sh02-reference-depth root-id edges)}))
+     :observed-maximum-depth observed-maximum-depth}))
 
 (defn p15-s23-sh02-authenticated-envelope-descriptor
   [stage packet workspace-root invocation-root]
@@ -134527,6 +134928,11 @@
 
 (defn- p15-s23-sh02-descriptor-preflight!
   [source-path descriptor]
+  ;; Descriptor ingress is public and may be supplied by a later bootstrap
+  ;; stage. Establish exact, metadata-free host carriers before any `count`,
+  ;; `set`, `distinct`, tree walk, or reference-graph traversal.
+  (p15-s23-sh02-require-bounded-carrier!
+   source-path :sh02-descriptor descriptor)
   (let [bounds p15-s23-sh02-authenticated-envelope-bounds
         closure (:reference-closure descriptor)
         node-ids (:node-ids closure)

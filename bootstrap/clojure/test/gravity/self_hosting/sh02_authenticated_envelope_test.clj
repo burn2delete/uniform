@@ -74,8 +74,14 @@
   [function-name arguments]
   (bootstrap/p15-s23-stage2-runtime-execute-function
    {:engine :sh02-authenticated-envelope-leaf
-    :compiler-artifact-plan? true}
+   :compiler-artifact-plan? true}
    @envelope-plan function-name arguments))
+
+(defn- bootstrap-private-var
+  [symbol]
+  (or (ns-resolve 'gravity.bootstrap symbol)
+      (throw (ex-info "SH-02 private bootstrap helper is absent"
+                      {:id "SH02-PRIVATE-HELPER" :symbol symbol}))))
 
 (defn- canonical-id
   [value]
@@ -807,6 +813,215 @@
             :digest-request-replay]
            (mapv #(get-in % [:diagnostics 0 :reason])
                  replay-results)))))
+
+(deftest sh02-source-authentication-rejects-symlinks-hash-and-utf8-drift
+  (let [temporary-root
+        (java.nio.file.Files/createTempDirectory
+         "gravity-sh02-source-snapshot-"
+         (make-array java.nio.file.attribute.FileAttribute 0))
+        actual-source
+        (.toPath (io/file (path envelope-source-relative-path)))
+        final-link (.resolve temporary-root "final.gravity")
+        intermediate-link (.resolve temporary-root "compiler")
+        intermediate-source
+        (.resolve intermediate-link "authenticated_envelope.gravity")
+        valid-source (.resolve temporary-root "valid.gravity")
+        altered-source (.resolve temporary-root "altered.gravity")
+        component-safe!
+        (deref
+         (bootstrap-private-var
+          'p15-s23-sh02-component-safe-source-path!))
+        snapshot!
+        (deref
+         (bootstrap-private-var 'p15-s23-sh02-source-snapshot!))
+        strict-text!
+        (deref
+         (bootstrap-private-var 'p15-s23-sh02-strict-source-text!))]
+    (try
+      (java.nio.file.Files/createSymbolicLink
+       final-link actual-source
+       (make-array java.nio.file.attribute.FileAttribute 0))
+      (java.nio.file.Files/createSymbolicLink
+       intermediate-link (.getParent actual-source)
+       (make-array java.nio.file.attribute.FileAttribute 0))
+      (java.nio.file.Files/copy
+       actual-source valid-source
+       (into-array
+        java.nio.file.CopyOption
+        [java.nio.file.StandardCopyOption/REPLACE_EXISTING
+         java.nio.file.StandardCopyOption/COPY_ATTRIBUTES]))
+      (java.nio.file.Files/copy
+       actual-source altered-source
+       (into-array
+        java.nio.file.CopyOption
+        [java.nio.file.StandardCopyOption/REPLACE_EXISTING
+         java.nio.file.StandardCopyOption/COPY_ATTRIBUTES]))
+      (let [altered-bytes (java.nio.file.Files/readAllBytes altered-source)]
+        (aset-byte altered-bytes 0
+                   (unchecked-byte
+                    (bit-xor 1 (bit-and 255 (aget altered-bytes 0)))))
+        (java.nio.file.Files/write
+         altered-source altered-bytes
+         (into-array
+          java.nio.file.OpenOption
+          [java.nio.file.StandardOpenOption/WRITE
+           java.nio.file.StandardOpenOption/TRUNCATE_EXISTING])))
+      (let [final-result
+            (try
+              (component-safe!
+               "<sh02-final-symlink>" temporary-root final-link)
+              nil
+              (catch clojure.lang.ExceptionInfo exception
+                (ex-data exception)))
+            intermediate-result
+            (try
+              (component-safe!
+               "<sh02-intermediate-symlink>"
+               temporary-root intermediate-source)
+              nil
+              (catch clojure.lang.ExceptionInfo exception
+                (ex-data exception)))
+            valid-snapshot
+            (snapshot!
+             "<sh02-valid-source>" temporary-root valid-source)
+            altered-result
+            (try
+              (snapshot!
+               "<sh02-altered-source>" temporary-root altered-source)
+              nil
+              (catch clojure.lang.ExceptionInfo exception
+                (ex-data exception)))
+            invalid-utf8-result
+            (try
+              (strict-text!
+               "<sh02-invalid-utf8>" altered-source
+               (byte-array [(unchecked-byte 0xc3) (unchecked-byte 0x28)]))
+              nil
+              (catch clojure.lang.ExceptionInfo exception
+                (ex-data exception)))]
+        (is (= :component-safe-pinned-sh02-source
+               (:missing-fact final-result)))
+        (is (= :component-safe-pinned-sh02-source
+               (:missing-fact intermediate-result)))
+        (is (= bootstrap/p15-s23-sh02-source-byte-count
+               (:source-byte-count valid-snapshot)))
+        (is (= bootstrap/p15-s23-sh02-expected-source-content-hash
+               (:source-content-hash valid-snapshot)))
+        (is (= :stable-pinned-sh02-source-snapshot
+               (:missing-fact altered-result)))
+        (is (= :strict-utf8-pinned-sh02-source
+               (:missing-fact invalid-utf8-result))))
+      (finally
+        (doseq [candidate [final-link intermediate-link
+                           valid-source altered-source]]
+          (java.nio.file.Files/deleteIfExists candidate))
+        (java.nio.file.Files/deleteIfExists temporary-root)))))
+
+(deftest sh02-descriptor-preflight-rejects-hostile-carriers-and-bounded-graphs
+  (let [fixture (fixture-case "accepted/envelope-comparison.gravity")
+        base (descriptor fixture)
+        source-path (:source-path fixture)
+        lazy-value
+        (lazy-seq
+         (throw (ex-info "SH-02 lazy descriptor value was realized"
+                         {:id "SH02-LAZY-REALIZED"})))
+        hostile
+        (assoc base :semantic-projections lazy-value)
+        hostile-result
+        (try
+          (bootstrap/p15-s23-stage2-sh02-descriptor-envelope
+           :sh02-fixture :gravity/sh02-fixture-plan hostile source-path)
+          nil
+          (catch clojure.lang.ExceptionInfo exception
+            (ex-data exception)))
+        oversized-edges
+        (mapv (fn [index]
+                {:from "root" :role :contains :to (str "node-" index)})
+              (range 129))
+        bounded-edge-state-var
+        (bootstrap-private-var
+         'p15-s23-sh02-bounded-reference-edge-state)
+        oversized-result
+        (try
+          ((deref bounded-edge-state-var) :sh02-fixture "root"
+           oversized-edges)
+          nil
+          (catch clojure.lang.ExceptionInfo exception
+            (ex-data exception)))
+        deep-edges
+        (mapv (fn [index]
+                {:from (str "node-" index)
+                 :role :next
+                 :to (str "node-" (inc index))})
+              (range 65))
+        deep-result
+        (try
+          ((deref bounded-edge-state-var) :sh02-fixture "node-0"
+           deep-edges)
+          nil
+          (catch clojure.lang.ExceptionInfo exception
+            (ex-data exception)))
+        lazy-instructions
+        (lazy-seq
+         (throw (ex-info "SH-02 lazy instructions were realized"
+                         {:id "SH02-LAZY-INSTRUCTIONS-REALIZED"})))
+        reference-packet
+        (fn [instructions]
+          {:sh02-fixture {:artifact-id "root"}
+           :optimized-mir
+           {:source-core "root"
+            :functions
+            {'main
+             {:blocks
+              {"root:mir:entry"
+               {:instructions instructions :successors []}}}}}})
+        lazy-public-result
+        (try
+          (bootstrap/p15-s23-sh02-reference-closure
+           :sh02-fixture (reference-packet lazy-instructions))
+          nil
+          (catch clojure.lang.ExceptionInfo exception
+            (ex-data exception)))
+        oversized-instructions
+        (mapv (fn [index]
+                {:op-id (str "operation-" index) :operands []})
+              (range 129))
+        operation-sequence-var
+        (ns-resolve 'gravity.bootstrap
+                    'p15-s23-c11-mir-operation-sequence)
+        oversized-public-result
+        (with-redefs-fn
+          {operation-sequence-var
+           (fn [_]
+             (throw
+              (ex-info "SH-02 oversized MIR was materialized"
+                       {:id "SH02-OVERSIZED-MATERIALIZED"})))}
+          (fn []
+            (try
+              (bootstrap/p15-s23-sh02-reference-closure
+               :sh02-fixture
+               (reference-packet oversized-instructions))
+              nil
+              (catch clojure.lang.ExceptionInfo exception
+                (ex-data exception)))))]
+    (is (= "B1-METADATA" (:id hostile-result)))
+    (is (not= "SH02-LAZY-REALIZED"
+              (:id hostile-result)))
+    (is (= :bounded-sh02-reference-closure
+           (:missing-fact oversized-result)))
+    (is (= :bounded-sh02-reference-closure
+           (:missing-fact deep-result)))
+    (is (= 65
+           (bootstrap/p15-s23-sh02-reference-depth "node-0" deep-edges)))
+    (is (= :error (:severity deep-result)))
+    (is (= :trusted-bounded-sh02-carrier
+           (:missing-fact lazy-public-result)))
+    (is (not= "SH02-LAZY-INSTRUCTIONS-REALIZED"
+              (:id lazy-public-result)))
+    (is (= :bounded-sh02-reference-closure
+           (:missing-fact oversized-public-result)))
+    (is (not= "SH02-OVERSIZED-MATERIALIZED"
+              (:id oversized-public-result)))))
 
 (def ^:private coordinator-straight-line-source
   (str
