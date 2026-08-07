@@ -460,8 +460,22 @@ focused non-authoritative integration evidence, not a replacement for a fresh C7
 module proof. General higher-order values, captures and lifetimes, aliases and
 returns, multi-hop flow, polymorphism, overloads, multi-arity and variadic calls,
 protocol or dynamic dispatch, reflection, and complete recursive inference remain
-pending. The old C7 receipt remains historical; current source-bound authority and
-coverage-census evidence are still required before completion or release claims.
+pending. A fresh source-bound proof for this revision then passed at exact proof
+commit `5fe2013` in 3,351.068 seconds (55.85 minutes), with artifact identity
+`sha256:689e48e4a588cbe5e39a1f9a8cd385eb9e6d9ef7de35742c16958c404c161e15`.
+Its derived census has hash
+`sha256:5579f5f73d7a53ad84317a098541ec00f1bf18d30f8075c7694763f03c29341e`,
+163 fragments and root forms, 15,505 forms, 6,377 resolutions, 12,752 core
+nodes, 163 definitions, 2,561 calls, 5,111 references, and no keyword-lookup
+products. The reviewed attestation binds the exact source, proof contract, raw
+stdout, artifact, and census while recording that counts were derived rather
+than independently precommitted. It therefore does not establish exact
+authentic coverage, aggregate or release authority, or seed retirement. Later
+development-tool commits changed `deps.edn` after proof completion, so this is
+accepted exact-context evidence for `5fe2013`, not current-context authority for
+those later commits. The 55.85-minute result is the new observational baseline:
+it is 38.7% slower than the 40.27-minute historical run while the source is
+24.2% larger, so it does not support a speedup claim or a controlled comparison.
 The C8 effect-checker source adds 44,102 authenticated bytes in 40 fragments
 containing 3,301 forms, 410 bindings, and 1,078 resolutions. It lowers to 2,788
 canonical core nodes with 40 definitions: 34 executable SH-09 functions and
