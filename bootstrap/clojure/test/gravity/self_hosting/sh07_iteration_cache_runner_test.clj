@@ -492,6 +492,239 @@
         (finally
           (ns-unmap cli-namespace 'synthetic-failing-test))))))
 
+(deftest iteration-cache-batches-exact-vars-with-one-bounded-cache
+  (require 'gravity.cli-test)
+  (let [namespace-object (find-ns 'gravity.cli-test)
+        original-namespace-meta (meta namespace-object)
+        first-symbol 'synthetic-batch-first-test
+        second-symbol 'synthetic-batch-second-test
+        first-var (intern namespace-object first-symbol)
+        second-var (intern namespace-object second-symbol)
+        calls (atom 0)
+        once-calls (atom 0)
+        each-calls (atom 0)
+        operation
+        #(bootstrap/sh06-resolution-source-artifact "same" "content")]
+    (try
+      (alter-meta!
+       first-var assoc :test
+       #(do (operation)
+            (clojure.test/do-report
+             {:type :pass :expected true :actual true})))
+      (alter-meta!
+       second-var assoc :test
+       #(do (operation)
+            (clojure.test/do-report
+             {:type :pass :expected true :actual true})))
+      (alter-meta!
+       namespace-object assoc
+       :clojure.test/once-fixtures
+       [(fn [operation] (swap! once-calls inc) (operation))]
+       :clojure.test/each-fixtures
+       [(fn [operation] (swap! each-calls inc) (operation))])
+      (with-redefs
+        [bootstrap/sh06-resolution-source-artifact
+         (fn [path source]
+           (swap! calls inc)
+           [path source])]
+        (let [selection
+              (runner/parse-arguments
+               ["--test-var" (str "gravity.cli-test/" first-symbol)
+                "--test-var" (str "gravity.cli-test/" second-symbol)
+                "--max-cache-entries" "1"])
+              output (java.io.StringWriter.)
+              result
+              (binding [*out* output
+                        clojure.test/*test-out* output]
+                (runner/run-selection selection))]
+          (is (true? (:ok? result)))
+          (is (= :exact-test-vars (:selection-mode result)))
+          (is (= [(symbol "gravity.cli-test" (str first-symbol))
+                  (symbol "gravity.cli-test" (str second-symbol))]
+                 (:test-vars result)))
+          (is (= [0 1]
+                 (mapv :selection-index (:test-var-results result))))
+          (is (= 1 @calls))
+          (is (= 2 @once-calls @each-calls))
+          (is (= {:sh06-hits 1 :sh06-misses 1}
+                 (select-keys (:cache result)
+                              [:sh06-hits :sh06-misses])))
+          (is (= [{:sh06-hits 0 :sh06-misses 1}
+                  {:sh06-hits 1 :sh06-misses 0}]
+                 (mapv #(select-keys (:cache %)
+                                     [:sh06-hits :sh06-misses])
+                       (:test-var-results result))))
+          (is (= {:test 2 :pass 2 :fail 0 :error 0 :type :summary}
+                 (:test-result result)))
+          (is (every? :completed? (:test-var-results result)))
+          (is (every? #(= :non-authoritative (:authority %))
+                      (:test-var-results result)))
+          (is (= 2
+                 (count
+                  (re-seq #":gravity/sh07-iteration-test-var-result"
+                          (str output)))))))
+      (finally
+        (reset-meta! namespace-object original-namespace-meta)
+        (ns-unmap namespace-object first-symbol)
+        (ns-unmap namespace-object second-symbol)))))
+
+(deftest iteration-cache-test-var-batch-fail-fast-skips-ordered-tail
+  (require 'gravity.cli-test)
+  (let [namespace-object (find-ns 'gravity.cli-test)
+        symbols '[synthetic-batch-failing-test
+                  synthetic-batch-skipped-test]
+        test-vars (mapv #(intern namespace-object %) symbols)
+        executed (atom [])]
+    (try
+      (alter-meta!
+       (first test-vars) assoc :test
+       #(do
+          (swap! executed conj (first symbols))
+          (clojure.test/do-report
+           {:type :fail :message "batch failure"
+            :expected true :actual false})))
+      (alter-meta!
+       (second test-vars) assoc :test
+       #(do
+          (swap! executed conj (second symbols))
+          (clojure.test/do-report
+           {:type :pass :expected true :actual true})))
+      (let [qualified (mapv #(symbol "gravity.cli-test" (str %)) symbols)
+            result
+            (binding [*out* (java.io.StringWriter.)
+                      clojure.test/*test-out* (java.io.StringWriter.)]
+              (runner/run-selection
+               (runner/parse-arguments
+                ["--fail-fast"
+                 "--test-var" (str (first qualified))
+                 "--test-var" (str (second qualified))])))]
+        (is (= [(first symbols)] @executed))
+        (is (false? (:ok? result)))
+        (is (true? (:stopped-early? result)))
+        (is (= [(second qualified)] (:skipped-test-vars result)))
+        (is (= [(first qualified)]
+               (mapv :test-var (:test-var-results result))))
+        (is (= {:test 1 :pass 0 :fail 1 :error 0 :type :summary}
+               (:test-result result)))
+        (reset! executed [])
+        (let [full-result
+              (binding [*out* (java.io.StringWriter.)
+                        clojure.test/*test-out* (java.io.StringWriter.)]
+                (runner/run-selection
+                 (runner/parse-arguments
+                  ["--test-var" (str (first qualified))
+                   "--test-var" (str (second qualified))])))]
+          (is (= symbols @executed))
+          (is (false? (:stopped-early? full-result)))
+          (is (= [] (:skipped-test-vars full-result)))
+          (is (= {:test 2 :pass 1 :fail 1 :error 0 :type :summary}
+                 (:test-result full-result)))))
+      (finally
+        (doseq [symbol symbols]
+          (ns-unmap namespace-object symbol))))))
+
+(deftest iteration-cache-test-var-batch-preserves-cross-namespace-order
+  (require 'gravity.cli-test 'gravity.diagnostics-test)
+  (let [cli-namespace (find-ns 'gravity.cli-test)
+        diagnostics-namespace (find-ns 'gravity.diagnostics-test)
+        cli-symbol 'synthetic-cross-namespace-cli-test
+        diagnostics-symbol 'synthetic-cross-namespace-diagnostics-test
+        cli-var (intern cli-namespace cli-symbol)
+        diagnostics-var (intern diagnostics-namespace diagnostics-symbol)
+        cli-qualified (symbol "gravity.cli-test" (str cli-symbol))
+        diagnostics-qualified
+        (symbol "gravity.diagnostics-test" (str diagnostics-symbol))
+        executed (atom [])]
+    (try
+      (doseq [[test-var marker]
+              [[cli-var cli-qualified]
+               [diagnostics-var diagnostics-qualified]]]
+        (alter-meta!
+         test-var assoc :test
+         #(do
+            (swap! executed conj marker)
+            (clojure.test/do-report
+             {:type :pass :expected true :actual true}))))
+      (let [result
+            (binding [*out* (java.io.StringWriter.)
+                      clojure.test/*test-out* (java.io.StringWriter.)]
+              (runner/run-selection
+               (runner/parse-arguments
+                ["--test-var" (str diagnostics-qualified)
+                 "--test-var" (str cli-qualified)])))]
+        (is (= [diagnostics-qualified cli-qualified] @executed))
+        (is (= '[gravity.diagnostics-test gravity.cli-test]
+               (:namespaces result)))
+        (is (= [diagnostics-qualified cli-qualified]
+               (mapv :test-var (:test-var-results result)))))
+      (reset! executed [])
+      (let [data
+            (try
+              (runner/run-test-vars
+               {:test-vars
+                [cli-qualified
+                 'gravity.cli-test/absent-batch-test]
+                :maximum-entries 1
+                :fail-fast? false})
+              nil
+              (catch clojure.lang.ExceptionInfo error
+                (ex-data error)))]
+        (is (= "SH07-ITERATION-CACHE-TEST-VAR" (:id data)))
+        (is (= [] @executed)))
+      (finally
+        (ns-unmap cli-namespace cli-symbol)
+        (ns-unmap diagnostics-namespace diagnostics-symbol)))))
+
+(deftest iteration-cache-test-var-batch-retains-fixture-exception-telemetry
+  (require 'gravity.cli-test)
+  (let [namespace-object (find-ns 'gravity.cli-test)
+        original-namespace-meta (meta namespace-object)
+        symbols '[synthetic-batch-fixture-error-test
+                  synthetic-batch-after-fixture-error-test]
+        test-vars (mapv #(intern namespace-object %) symbols)
+        qualified (mapv #(symbol "gravity.cli-test" (str %)) symbols)]
+    (try
+      (doseq [test-var test-vars]
+        (alter-meta!
+         test-var assoc :test
+         #(clojure.test/do-report
+           {:type :pass :expected true :actual true})))
+      (alter-meta!
+       namespace-object assoc
+       :clojure.test/once-fixtures
+       [(fn [_operation]
+          (throw
+           (ex-info "batch fixture failed"
+                    {:id "BATCH-FIXTURE-FAILED"})))])
+      (let [output (java.io.StringWriter.)
+            data
+            (binding [*out* output
+                      clojure.test/*test-out* output]
+              (try
+                (runner/run-selection
+                 (runner/parse-arguments
+                  ["--fail-fast"
+                   "--test-var" (str (first qualified))
+                   "--test-var" (str (second qualified))]))
+                nil
+                (catch clojure.lang.ExceptionInfo error
+                  (ex-data error))))
+            rendered (str output)]
+        (is (= "BATCH-FIXTURE-FAILED" (:id data)))
+        (is (= 1
+               (count
+                (re-seq #":gravity/sh07-iteration-test-var-result"
+                        rendered))))
+        (is (re-find #":completed\? false" rendered))
+        (is (re-find
+             #":skipped-test-vars \[gravity\.cli-test/synthetic-batch-after-fixture-error-test\]"
+             rendered))
+        (is (re-find #":authority :non-authoritative" rendered)))
+      (finally
+        (reset-meta! namespace-object original-namespace-meta)
+        (doseq [symbol symbols]
+          (ns-unmap namespace-object symbol))))))
+
 (deftest argument-selection-is-explicit-and-owned
   (testing "repeatable namespaces and cache bound"
     (is (= {:namespaces '[gravity.diagnostics-test gravity.cli-test]
@@ -508,7 +741,7 @@
             (runner/parse-arguments
              ["--fail-fast"
               "--namespace" "gravity.cli-test"])))))
-  (testing "one owned namespace-qualified test var is accepted"
+  (testing "owned namespace-qualified test vars preserve input order"
     (is (= 'gravity.cli-test/presentation-values-are-extracted-with-bootstrap-parity
            (:test-var
             (runner/parse-arguments
@@ -523,13 +756,25 @@
                  "--test-var"
                  "gravity.cli-test/presentation-values-are-extracted-with-bootstrap-parity"])
                (catch clojure.lang.ExceptionInfo error error))))))
+    (let [left
+          'gravity.cli-test/presentation-values-are-extracted-with-bootstrap-parity
+          right
+          'gravity.cli-test/cli-namespace-contract-is-narrow-and-acyclic
+          selection
+          (runner/parse-arguments
+           ["--fail-fast"
+            "--test-var" (str left)
+            "--test-var" (str right)])]
+      (is (nil? (:test-var selection)))
+      (is (= [left right] (:test-vars selection)))
+      (is (true? (:fail-fast? selection))))
     (doseq [[arguments expected-id]
             [[["--test-var" "unqualified-test"]
               "SH07-ITERATION-CACHE-TEST-VAR"]
              [["--test-var"
                "gravity.cli-test/presentation-values-are-extracted-with-bootstrap-parity"
                "--test-var"
-               "gravity.cli-test/cli-namespace-contract-is-narrow-and-acyclic"]
+               "gravity.cli-test/presentation-values-are-extracted-with-bootstrap-parity"]
               "SH07-ITERATION-CACHE-DUPLICATE-TEST-VAR"]
              [["--fail-fast"
                "--test-var"

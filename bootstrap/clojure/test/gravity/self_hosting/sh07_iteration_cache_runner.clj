@@ -166,22 +166,27 @@
                  :test-var nil}]
     (if (empty? remaining)
       (do
-        (when (and (empty? (:namespaces result))
-                   (nil? (:test-var result)))
+        (let [test-vars
+              (cond
+                (:test-var result) [(:test-var result)]
+                (seq (:test-vars result)) (:test-vars result)
+                :else [])]
+          (when (and (empty? (:namespaces result))
+                     (empty? test-vars))
           (throw
            (ex-info "At least one --namespace or one --test-var is required"
                     {:id "SH07-ITERATION-CACHE-SELECTION"})))
-        (when (and (seq (:namespaces result)) (:test-var result))
+          (when (and (seq (:namespaces result)) (seq test-vars))
           (throw
            (ex-info "Namespace and test-var selections cannot be combined"
                     {:id "SH07-ITERATION-CACHE-SELECTION-CONFLICT"
                      :namespaces (:namespaces result)
-                     :test-var (:test-var result)})))
-        (when (and (:test-var result) (:fail-fast? result))
+                     :test-vars test-vars})))
+          (when (and (= 1 (count test-vars)) (:fail-fast? result))
           (throw
-           (ex-info "--fail-fast applies only to multi-namespace selection"
+           (ex-info "--fail-fast requires more than one selected unit"
                     {:id "SH07-ITERATION-CACHE-FAIL-FAST-SELECTION"
-                     :test-var (:test-var result)})))
+                     :test-var (first test-vars)}))))
         (when-not (= (count (:namespaces result))
                      (count (distinct (:namespaces result))))
           (throw
@@ -233,15 +238,27 @@
                  (ex-info "Test-var selection must be namespace-qualified"
                           {:id "SH07-ITERATION-CACHE-TEST-VAR"
                            :test-var test-var})))
-              (when (:test-var result)
+              (let [selected
+                    (cond
+                      (:test-var result) [(:test-var result)]
+                      (seq (:test-vars result)) (:test-vars result)
+                      :else [])]
+                (when (some #{test-var} selected)
                 (throw
-                 (ex-info "Only one --test-var selection is supported"
+                 (ex-info "Iteration cache test-var selections must be unique"
                           {:id "SH07-ITERATION-CACHE-DUPLICATE-TEST-VAR"
-                           :test-vars [(:test-var result) test-var]})))
+                           :test-vars (conj (vec selected) test-var)}))))
               ;; Ownership remains anchored in the discovered test catalog.
               (test-runner/select-tests ["--namespace" namespace-name])
               (recur (subvec remaining 2)
-                     (assoc result :test-var test-var))))
+                     (if (:test-var result)
+                       (-> result
+                           (assoc :test-var nil)
+                           (assoc :test-vars
+                                  [(:test-var result) test-var]))
+                       (if (seq (:test-vars result))
+                         (update result :test-vars conj test-var)
+                         (assoc result :test-var test-var))))))
 
           (throw
            (ex-info "Unsupported iteration cache option"
@@ -458,11 +475,105 @@
                :ok? (and (zero? (:fail test-result))
                          (zero? (:error test-result)))))))
 
+(defn- run-batch-test-var
+  [test-var resolved selection-index remaining-test-vars]
+  (let [namespace-symbol (symbol (namespace test-var))
+        started (System/nanoTime)
+        before (cache-snapshot)
+        completed (atom nil)]
+    (try
+      (let [test-result (test/run-test-var resolved)
+            test-var-result
+            {:test-var test-var
+             :selection-index selection-index
+             :namespace namespace-symbol
+             :elapsed-ms
+             (long (/ (- (System/nanoTime) started) 1000000))
+             :cache (cache-delta before (cache-snapshot))
+             :test-result test-result
+             :ok? (not (failed-summary? test-result))
+             :completed? true
+             :authority :non-authoritative}
+            result {:test-result test-result
+                    :test-var-result test-var-result}]
+        (reset! completed result)
+        result)
+      (finally
+        (let [test-var-result
+              (or
+               (:test-var-result @completed)
+               {:test-var test-var
+                :selection-index selection-index
+                :namespace namespace-symbol
+                :elapsed-ms
+                (long (/ (- (System/nanoTime) started) 1000000))
+                :cache (cache-delta before (cache-snapshot))
+                :ok? false
+                :completed? false
+                :skipped-test-vars remaining-test-vars
+                :authority :non-authoritative})]
+          (println
+           (pr-str
+            (assoc test-var-result
+                   :artifact :gravity/sh07-iteration-test-var-result)))
+          (flush))))))
+
+(defn run-test-vars
+  [{:keys [test-vars maximum-entries fail-fast?]}]
+  (let [resolved-vars (mapv (juxt identity resolve-test-var) test-vars)
+        cached
+        (with-iteration-cache
+          {:maximum-entries maximum-entries}
+          (fn []
+            (loop [remaining resolved-vars
+                   selection-index 0
+                   test-results []
+                   test-var-results []]
+              (let [[test-var resolved] (first remaining)
+                    tail (subvec remaining 1)
+                    {:keys [test-result test-var-result]}
+                    (run-batch-test-var
+                     test-var resolved selection-index (mapv first tail))
+                    test-results' (conj test-results test-result)
+                    test-var-results' (conj test-var-results test-var-result)
+                    failed? (failed-summary? test-result)]
+                (if (or (empty? tail) (and fail-fast? failed?))
+                  {:test-result
+                   (assoc
+                    (apply merge-with + (map #(dissoc % :type) test-results'))
+                    :type :summary)
+                   :test-var-results test-var-results'
+                   :stopped-early? (boolean (seq tail))
+                   :skipped-test-vars
+                   (if (and fail-fast? failed?)
+                     (mapv first tail)
+                     [])}
+                  (recur tail (inc selection-index)
+                         test-results' test-var-results'))))))
+        {:keys [test-result test-var-results stopped-early?
+                skipped-test-vars]} (:value cached)
+        namespaces
+        (vec (distinct (map (comp symbol namespace) test-vars)))]
+    (-> cached
+        (dissoc :value)
+        (assoc :artifact :gravity/sh07-iteration-cache-run
+               :selection-mode :exact-test-vars
+               :test-vars test-vars
+               :namespaces namespaces
+               :fail-fast? (boolean fail-fast?)
+               :stopped-early? stopped-early?
+               :skipped-test-vars skipped-test-vars
+               :test-var-results test-var-results
+               :test-result test-result
+               :ok? (and (zero? (:fail test-result))
+                         (zero? (:error test-result)))))))
+
 (defn run-selection
   [selection]
-  (if (:test-var selection)
-    (run-test-var selection)
-    (run-namespaces selection)))
+  (cond
+    (:test-var selection) (run-test-var selection)
+    (seq (:test-vars selection)) (run-test-vars selection)
+    :else (run-namespaces selection)))
 
 (defn -main
   [& arguments]

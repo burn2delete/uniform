@@ -149,6 +149,10 @@ clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M 
 # One named test var for the shortest reproduce/fix loop.
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-iteration-cache-runner --test-var gravity.self-hosting.sh07-b48-call-arity-test/sh07-b48-rejects-too-few-and-too-many-with-stable-diagnostics --max-cache-entries 2
 
+# Several related vars in one JVM, reusing the bounded cache and stopping on
+# the first failure.
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-iteration-cache-runner --fail-fast --test-var gravity.self-hosting.sh07-b48-call-arity-test/sh07-b48-rejects-too-few-and-too-many-with-stable-diagnostics --test-var gravity.self-hosting.sh07-b48-call-arity-test/sh07-b48-rejects-malformed-products-stale-identity-and-bounds --max-cache-entries 2
+
 # Process-local immutable-cache shards (acceleration only).
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-cached-shard-runner --list
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-cached-shard-runner --check
@@ -184,14 +188,19 @@ known upstream failure from spending the rest of a heavy namespace or another
 heavy namespace's runtime on derivative diagnostics. Omit it when intentionally
 collecting the complete failure set. Either mode remains non-authoritative.
 
-Use exactly one namespace-qualified `--test-var` when reproducing or checking
-a known failure inside a heavy namespace. The runner validates that its
+Use one namespace-qualified `--test-var` when reproducing a known failure
+inside a heavy namespace. Repeat `--test-var` after a fix when several related
+checks reuse the same compiler plan or artifacts; they run in argument order
+inside one JVM and one bounded process-local cache. Add `--fail-fast` to a
+multi-var batch to record the remainder in `:skipped-test-vars` after the first
+failure. The runner validates that every selected
 namespace belongs to the discovered catalog, resolves only a var carrying
 Clojure test metadata, and applies that namespace's normal once/each fixtures.
-Its `:gravity/sh07-iteration-test-var-result` remains non-authoritative. After
-the var is green, run its owning namespace; do not promote a single-var result
-to slice, module, or release evidence. `--test-var` cannot be combined with
-`--namespace` or `--fail-fast`.
+Each `:gravity/sh07-iteration-test-var-result` and the aggregate batch remain
+non-authoritative. After the vars are green, run their owning namespaces; do
+not promote exact-var results to slice, module, or release evidence.
+`--test-var` cannot be combined with `--namespace`; `--fail-fast` is rejected
+for a single var because it has no remaining selected work to skip.
 
 ### 5. Selected fresh authoritative module
 
