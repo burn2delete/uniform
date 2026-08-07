@@ -34,6 +34,17 @@ clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M 
 - Cached and iteration results never satisfy authoritative evidence. The
   authoritative runner must reread the source in a fresh process and perform
   the proof transaction's independent audit.
+- Coverage census policy is explicit. `:exact-precommitted` requires complete
+  request/core count maps in the contract and is the only mode with an
+  independent numerical oracle. `:source-bound-derived` permits one fresh
+  source-bound proof for a stable candidate, but records
+  `:counts-precommitted? false` and `:independent-count-oracle? false`.
+  Derived output is scoped to that individual proof and cannot claim exact
+  authentic coverage, aggregate authority, or release authority. A reviewed
+  attestation binds source bytes, proof-contract SHA, raw stdout SHA, artifact
+  id, census hash, reviewer, method, limitations, and decision without
+  upgrading those claims. Missing, unknown, or mixed policy fields fail before
+  an expensive proof transaction starts.
 
 ## Lane order
 
@@ -238,19 +249,29 @@ clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M 
 ```
 
 The module name must be one returned by `--list`. The result must report
-outer `:schema-version 2`, `:fresh-process-required? true`,
+outer `:schema-version 3`, `:fresh-process-required? true`,
 `:persistent-iteration-cache-used? false`, a passed capability proof, a passed
 independent verification report, and an empty `:failed-checks`. Each module
 result also carries a compact `:coverage-census` bound to the module,
-namespace, source revision, SH-07 artifact ID, and source bytes. Its exact
+namespace, source revision, SH-07 artifact ID, and source bytes. Its
 request/core counts, core-form frequencies, ordered root/form coverage flags,
 source binding flags, and canonical hash are computed from the already-built
 verified request/core carrier; no second compiler artifact is built or stored.
-The C7 census is checked against the exact expected maps in the proof contract.
+In exact-precommitted mode the census is checked against complete expected maps
+in the proof contract. In source-bound-derived mode the contract binds only the
+exact source path/bytes and module identity; counts remain derived observations
+and output carries the false independent-oracle flags plus unsupported
+exact/aggregate/release claims.
+The active source-bound-derived contract currently binds only `c7-types`; its
+preflight rejects a selected module without an expectation before any proof.
+Use `--fresh c7-types` for this policy. A `--fresh all` run is admissible
+only after every selected module has an explicit expectation (or under
+exact-precommitted policy).
 Each module expectation also binds the exact source byte count and SHA-256 that
-produced those measured counts. Before constructing any SH-07 artifact, the
-direct runner checks every selected module carrying an expectation; `--fresh
-all` performs the complete preflight before starting its first module. The
+produced those observations. Before constructing any SH-07 artifact, the
+direct runner checks every selected module and, in source-bound-derived mode,
+requires an expectation for each one; `--fresh all` performs the complete
+preflight before starting its first module. The
 checkpoint wrapper performs the same check before acquiring the heavy lock or
 launching an authoritative module child. A mismatch writes a
 `source-contract-mismatch` manifest,
@@ -259,11 +280,28 @@ test is the update seam for
 reviewing a deliberate expectation change without constructing the C7 artifact.
 
 The census has only the authority of its enclosing individual fresh module
-output. A valid `c7-types` census can satisfy the count and ordered-coverage
-evidence of
+output. Under exact-precommitted policy, a valid `c7-types` census can satisfy
+the count and ordered-coverage evidence of
 `sh07-b28-c7-source-has-exact-authentic-coverage` without rerunning that costly
-exact var. It does not satisfy the neighboring call/quote structural test,
-path-neutral parity, another module, or any aggregate/release claim.
+exact var. Under source-bound-derived policy it is evidence for the exact
+source-bound proof only; it does not satisfy that exact-authentic-coverage
+claim, the neighboring call/quote structural test, path-neutral parity, another
+module, or any aggregate/release claim. After review, create a scoped
+attestation:
+
+```bash
+python3 tools/run_sh07_authoritative_modules.py \
+  --module c7-types \
+  --state-dir target/validation/sh07-authoritative-v2 \
+  --attest --reviewer "reviewer-id" \
+  --reviewed-at 2026-08-07T12:00:00Z \
+  --method "source, stdout, artifact, and census linkage review" \
+  --limitation "counts are derived, not independently predeclared"
+```
+
+The attestation is checked against current source bytes, raw stdout, the
+proof-contract hash, artifact id, and census hash. It retains
+`individual-source-bound-derived` scope and never creates aggregate authority.
 `--fresh all` is the exhaustive SH-07 transaction and is reserved for the
 stable-candidate/release lane because of its measured runtime and memory cost.
 
@@ -279,7 +317,7 @@ python3 tools/run_sh07_authoritative_modules.py \
   --state-dir target/validation/sh07-authoritative-checkpoints \
   --timeout-seconds 21600
 python3 tools/run_sh07_authoritative_modules.py \
-  --all --state-dir target/validation/sh07-authoritative-checkpoints
+  --module c7-types --state-dir target/validation/sh07-authoritative-checkpoints
 ```
 
 `--module` is repeatable and is mutually exclusive with `--all` and
@@ -313,7 +351,7 @@ the current fail-closed tradeoff; the tool does not yet fingerprint independent
 per-module contract projections.
 
 A module is resumed only when both context tiers and the command match, the
-prior schema-2 receipt passes a structural single-EDN output check for exactly
+prior schema-2 checkpoint receipt passes a structural single-EDN output check for exactly
 that module and its catalog source path, byte count, and SHA-256, and its
 coverage census has the exact shape and bindings, a recomputable canonical
 hash, nonnegative counts, true integrity flags, and a passed runner census

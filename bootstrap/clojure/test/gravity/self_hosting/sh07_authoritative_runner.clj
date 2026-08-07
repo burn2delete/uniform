@@ -132,18 +132,94 @@
 (defn module-source-contracts []
   (module-source-contracts-for (proof-contract)))
 
+(def coverage-census-policies
+  #{:exact-precommitted :source-bound-derived})
+
+(def derived-census-unsupported-claims
+  [:exact-authentic-coverage :aggregate :release])
+
+(defn coverage-census-policy
+  "Returns the explicitly duplicated top-level and census policy marker."
+  [contract]
+  (let [top-level (:coverage-census-policy contract)
+        nested (get-in contract [:authoritative-coverage-census :policy])]
+    (when (= top-level nested) top-level)))
+
+(defn- valid-census-policy-contract?
+  [contract]
+  (let [policy (coverage-census-policy contract)
+        census (:authoritative-coverage-census contract)
+        claims (:authority-claims contract)
+        expectations (:module-expectations census)]
+    (and (= 2 (:schema-version contract))
+         (contains? coverage-census-policies policy)
+         (map? census)
+         (= 2 (:schema-version census))
+         (= policy (:policy census))
+         (map? expectations)
+         (every?
+          (fn [[_ expectation]]
+            (and (map? expectation)
+                 (valid-source-binding? (:source-binding expectation))
+                 (symbol? (:module-namespace expectation))
+                 (if (= :exact-precommitted policy)
+                   (and (map? (:request-counts expectation))
+                        (map? (:core-counts expectation)))
+                   (and (not (contains? expectation :request-counts))
+                        (not (contains? expectation :core-counts))))))
+          expectations)
+         (= (= :source-bound-derived policy)
+            (= false (:counts-precommitted? census))
+            (= false (:independent-count-oracle? census)))
+         (if (= :source-bound-derived policy)
+           (and (= derived-census-unsupported-claims
+                  (:unsupported-claims census)
+                  (get claims :unsupported-claims))
+                (= false (get claims :counts-precommitted?))
+                (= false (get claims :independent-count-oracle?))
+                (= false (get claims :aggregate-authoritative?))
+                (= false (get claims :release-authoritative?))
+                (= true (get claims :attestation-required))
+                (= :gravity/sh07-source-bound-attestation-v1
+                   (get claims :attestation-schema)))
+           (and (true? (:counts-precommitted? census))
+                (true? (:independent-count-oracle? census))
+                (= true (get claims :counts-precommitted?))
+                (= true (get claims :independent-count-oracle?))
+                (= [] (get claims :unsupported-claims))
+                (= false (get claims :aggregate-authoritative?))
+                (= false (get claims :release-authoritative?))
+                (or (not (contains? claims :attestation-required))
+                    (= false (get claims :attestation-required))))))))
+
+(defn validate-coverage-census-contract!
+  "Rejects an ambiguous policy before any expensive proof transaction starts."
+  [contract]
+  (when-not (valid-census-policy-contract? contract)
+    (throw
+     (ex-info "SH-07 coverage census policy is malformed or ambiguous"
+              {:id "SH07-COVERAGE-CENSUS-POLICY"
+               :policy (coverage-census-policy contract)})))
+  contract)
+
 (defn- validate-selected-source-contracts!
   [contract selected]
-  (let [contracts (module-source-contracts-for contract)]
+  (let [contracts (module-source-contracts-for contract)
+        policy (coverage-census-policy contract)]
     (doseq [module-name selected
             :let [expectation
                   (get-in contract
                           [:authoritative-coverage-census :module-expectations
-                           (keyword module-name)])]
-            :when expectation]
-      (let [{:keys [source-path]} (get contracts module-name)]
-        (validate-source-binding!
-         contract module-name (source-bytes-sha256 source-path))))))
+                           (keyword module-name)])]]
+      (when (and (= :source-bound-derived policy) (nil? expectation))
+        (throw
+         (ex-info "Source-bound-derived authority requires a module expectation"
+                  {:id "SH07-COVERAGE-CENSUS-MODULE-MISSING"
+                   :module module-name})))
+      (when expectation
+        (let [{:keys [source-path]} (get contracts module-name)]
+          (validate-source-binding!
+           contract module-name (source-bytes-sha256 source-path)))))))
 
 (defn- source-bytes-sha256
   [path]
@@ -199,7 +275,9 @@
   #{:artifact :schema-version :authority-scope :aggregate-authoritative?
     :module :module-namespace :source-revision-id :sh07-artifact-id
     :sh06-status :task :request-schema-version :scope :source-binding
-    :request-counts :core-counts :integrity :census-hash})
+    :request-counts :core-counts :integrity :census-hash
+    :coverage-census-policy :counts-precommitted?
+    :independent-count-oracle? :unsupported-claims})
 
 (defn authoritative-coverage-census
   "Builds the compact module census from an already-built SH-07 carrier.
@@ -207,8 +285,13 @@
   This is a pure projection. It neither rebuilds nor independently verifies
   the carrier and therefore has only the authority of its enclosing fresh
   authoritative module output."
-  [module-name artifact request core source-binding-before source-binding-after]
-  (let [module-namespace (get-in request [:module :namespace])
+  ([module-name artifact request core source-binding-before source-binding-after]
+   (authoritative-coverage-census
+    module-name artifact request core source-binding-before source-binding-after
+    :exact-precommitted))
+  ([module-name artifact request core source-binding-before source-binding-after
+    policy]
+   (let [module-namespace (get-in request [:module :namespace])
         source-revision-id (get-in request [:lineage :source-revision-id])
         fragments (:fragment-manifest request)
         fragment-coverage (:fragment-coverage core)
@@ -217,11 +300,20 @@
         request-form-ids (mapv :form-id (:forms request))
         fragment-form-ids (vec (mapcat :form-ids fragments))
         nodes (:nodes core)
+        derived? (= :source-bound-derived policy)
         census
         {:artifact :gravity/sh07-authoritative-coverage-census
-         :schema-version 1
-         :authority-scope :individual-existing-runner-output-only
+         :schema-version 2
+         :authority-scope
+         (if derived?
+           :individual-source-bound-derived
+           :individual-existing-runner-output-only)
          :aggregate-authoritative? false
+         :coverage-census-policy policy
+         :counts-precommitted? (not derived?)
+         :independent-count-oracle? (not derived?)
+         :unsupported-claims
+         (if derived? derived-census-unsupported-claims [])
          :module module-name
          :module-namespace module-namespace
          :source-revision-id source-revision-id
@@ -270,12 +362,13 @@
                           [:gravity-core-boundary :target-source-reread?]))}}]
     (assoc census :census-hash
            (bootstrap/reader-canonical-hash
-            {:domain :gravity/sh07-authoritative-coverage-census-v1
-             :census census}))))
+            {:domain :gravity/sh07-authoritative-coverage-census-v2
+             :census census})))))
 
 (defn authoritative-coverage-census-valid?
   [contract module-name census]
-  (let [expected
+  (let [policy (coverage-census-policy contract)
+        expected
         (get-in contract
                 [:authoritative-coverage-census :module-expectations
                  (keyword module-name)])
@@ -285,12 +378,23 @@
                                 (and (integer? value) (not (neg? value))))
                               %))
         frequencies-map (get-in census [:core-counts :core-form-frequencies])]
-    (and (= :gravity/sh07-authoritative-coverage-census (:artifact census))
+    (and (valid-census-policy-contract? contract)
+         (= :gravity/sh07-authoritative-coverage-census (:artifact census))
          (= authoritative-coverage-census-keys (set (keys census)))
          (= (get-in contract [:authoritative-coverage-census :schema-version])
             (:schema-version census))
-         (= :individual-existing-runner-output-only (:authority-scope census))
+         (= policy (:coverage-census-policy census))
+         (= (if (= :source-bound-derived policy)
+              :individual-source-bound-derived
+              :individual-existing-runner-output-only)
+            (:authority-scope census))
          (false? (:aggregate-authoritative? census))
+         (= (= :source-bound-derived policy)
+            (= false (:counts-precommitted? census))
+            (= false (:independent-count-oracle? census)))
+         (= (if (= :source-bound-derived policy)
+              derived-census-unsupported-claims [])
+            (:unsupported-claims census))
          (= module-name (:module census))
          (symbol? (:module-namespace census))
          (string? (:source-revision-id census))
@@ -321,15 +425,18 @@
          (every? true? (vals (:integrity census)))
          (= (:census-hash census)
             (bootstrap/reader-canonical-hash
-             {:domain :gravity/sh07-authoritative-coverage-census-v1
+             {:domain :gravity/sh07-authoritative-coverage-census-v2
               :census payload}))
-         (or (nil? expected)
-             (and (= (:module-namespace expected)
+         (and (some? expected)
+              (= (:module-namespace expected)
                      (:module-namespace census))
                   (= (:source-binding expected)
                      (:source-binding census))
-                  (= (:request-counts expected) (:request-counts census))
-                  (= (:core-counts expected) (:core-counts census)))))))
+                  (if (= :exact-precommitted policy)
+                    (and (= (:request-counts expected) (:request-counts census))
+                         (= (:core-counts expected) (:core-counts census)))
+                    (and (not (contains? expected :request-counts))
+                         (not (contains? expected :core-counts))))))))
 
 (defn- run-module
   [contract module-name]
@@ -376,14 +483,28 @@
           (get phase-by-name :independent-audit)
           boundary (:boundary contract)
           source-binding-after (source-bytes-sha256 path)
+          census-policy (coverage-census-policy contract)
           source-revision-id
           (get-in request [:lineage :source-revision-id])
           coverage-census
           (authoritative-coverage-census
            module-name artifact request core
-           source-binding-before source-binding-after)
+           source-binding-before source-binding-after census-policy)
           contract-checks
-          {:request-schema-current?
+          {:coverage-census-policy-current?
+           (= census-policy
+              (get-in contract [:authoritative-coverage-census :policy]))
+           :counts-precommitted-policy-current?
+           (= (if (= :source-bound-derived census-policy) false true)
+              (get-in coverage-census [:counts-precommitted?]))
+           :independent-count-oracle-policy-current?
+           (= (if (= :source-bound-derived census-policy) false true)
+              (get-in coverage-census [:independent-count-oracle?]))
+           :unsupported-claims-explicit?
+           (= (if (= :source-bound-derived census-policy)
+                derived-census-unsupported-claims [])
+              (:unsupported-claims coverage-census))
+           :request-schema-current?
            (= (:request-schema-version boundary)
               (:schema-version request))
            :task-current?
@@ -558,7 +679,7 @@
 
 (defn run-authoritative
   [requested]
-  (let [contract (proof-contract)
+  (let [contract (validate-coverage-census-contract! (proof-contract))
         selected
         (if (= requested "all")
           (vec (keys (modules contract)))
@@ -582,8 +703,23 @@
                (empty? (:failed-checks %)))
          results)]
     {:artifact :gravity/sh07-authoritative-proof-run
-     :schema-version 2
+     :schema-version 3
      :status (if passed? :passed :failed)
+     :coverage-census-policy (coverage-census-policy contract)
+     :authority-scope
+     (if (= :source-bound-derived (coverage-census-policy contract))
+       :individual-source-bound-derived
+       :individual-existing-runner-output-only)
+     :counts-precommitted?
+     (= :exact-precommitted (coverage-census-policy contract))
+     :independent-count-oracle?
+     (= :exact-precommitted (coverage-census-policy contract))
+     :aggregate-authoritative? false
+     :unsupported-claims
+     (if (= :source-bound-derived (coverage-census-policy contract))
+       derived-census-unsupported-claims [])
+     :attestation-required?
+     (= :source-bound-derived (coverage-census-policy contract))
      :fresh-process-required? true
      :persistent-iteration-cache-used? false
      :proof-receipt-reuse-used? (pos? proof-receipt-reuse-count)
@@ -605,6 +741,8 @@
     (= ["--source-contracts"] (vec arguments))
     (let [snapshot (proof-contract-snapshot)]
       (println (str "#proof-contract-sha256\t" (:sha256 snapshot)))
+      (println (str "#coverage-census-policy\t"
+                    (name (coverage-census-policy (:contract snapshot)))))
       (doseq [[module {:keys [source-path source-binding]}]
               (module-source-contracts-for (:contract snapshot))]
         (println

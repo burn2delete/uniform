@@ -26,6 +26,11 @@ from collections.abc import Callable, Mapping, Sequence
 SCHEMA = "gravity/sh07-authoritative-module-checkpoints-v2"
 TOOL_VERSION = 3
 FINGERPRINT_POLICY_VERSION = 1
+PROOF_OUTPUT_SCHEMA = 3
+CENSUS_SCHEMA = 2
+SOURCE_BOUND_POLICY = "source-bound-derived"
+SOURCE_BOUND_ATTESTATION_SCHEMA = "gravity/sh07-source-bound-attestation-v1"
+SOURCE_BOUND_UNSUPPORTED_CLAIMS = ["exact-authentic-coverage", "aggregate", "release"]
 DEFAULT_LOCK = Path("/tmp/gravity-sh07-heavy.lock")
 RUNNER_NAMESPACE = "gravity.self-hosting.sh07-authoritative-runner"
 PROOF_CONTRACT_RELATIVE = (
@@ -78,6 +83,259 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return f"sha256:{digest.hexdigest()}"
+
+
+def sha256_bytes(value: bytes) -> str:
+    return f"sha256:{hashlib.sha256(value).hexdigest()}"
+
+
+def canonical_json(value: object) -> bytes:
+    return (json.dumps(value, sort_keys=True, separators=(",", ":"),
+                       ensure_ascii=True) + "\n").encode("utf-8")
+
+
+def source_bound_policy(root: Path) -> str:
+    """Read and compare the duplicated top-level and nested policy markers."""
+    contract = root / PROOF_CONTRACT_RELATIVE
+    selector = r'''(do
+(require '[clojure.edn :as edn] '[clojure.java.io :as io])
+(let [contract (edn/read-string (slurp (System/getenv "GRAVITY_SH07_PROOF_CONTRACT")))
+      top (:coverage-census-policy contract)
+      nested (get-in contract [:authoritative-coverage-census :policy])]
+  (when (and (= top nested)
+             (contains? #{:exact-precommitted :source-bound-derived} top))
+    (println (name top)))))'''
+    try:
+        result = subprocess.run(
+            ["clojure", "-Srepro", "-M", "-e", selector],
+            cwd=root,
+            env={**os.environ, "GRAVITY_SH07_PROOF_CONTRACT": str(contract.resolve())},
+            capture_output=True, text=True, timeout=60, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise CheckpointError("proof contract policy cannot be parsed") from error
+    policy = result.stdout.strip()
+    if result.returncode != 0 or result.stderr.strip() or policy not in {
+            "exact-precommitted", SOURCE_BOUND_POLICY}:
+        raise CheckpointError("proof contract has no matching recognized coverage census policy")
+    return policy
+
+
+def _proof_output_binding(
+    path: Path, module: str, *, clojure_command: str = "clojure",
+    cwd: Path | None = None,
+) -> dict[str, str | int]:
+    """Select one module/result/census through the EDN reader, not regexes.
+
+    Authoritative output contains many nested records with repeated keys.  The
+    helper therefore parses one EDN value and selects the exact module result
+    before printing its binding fields for the Python attestation layer.
+    """
+    selector = r'''
+(do
+(require '[clojure.edn :as edn] '[clojure.java.io :as io])
+(defn read-one [path]
+  (with-open [reader (java.io.PushbackReader. (io/reader path))]
+    (let [value (edn/read {:eof ::eof} reader)
+          trailing (edn/read {:eof ::eof} reader)]
+      (when (or (= ::eof value) (not= ::eof trailing))
+        (throw (ex-info "expected one EDN output" {})))
+      value)))
+(let [value (read-one (System/getenv "GRAVITY_SH07_OUTPUT_PATH"))
+      module (System/getenv "GRAVITY_SH07_EXPECTED_MODULE")
+      matches (filter #(= module (:module %)) (:modules value))
+      result (first matches)
+      census (:coverage-census result)]
+  (when-not (and (= 1 (count matches))
+                 (map? census)
+                 (= :source-bound-derived (:coverage-census-policy census))
+                 (false? (:counts-precommitted? census))
+                 (false? (:independent-count-oracle? census)))
+    (System/exit 1))
+  (println (str (:source-path result) "\t"
+                (:source-byte-count result) "\t"
+                (:source-bytes-sha256 result) "\t"
+                (:source-revision-id result) "\t"
+                (:artifact-id result) "\t"
+                (:census-hash census)))))
+'''
+    try:
+        result = subprocess.run(
+            [clojure_command, "-Srepro", "-M", "-e", selector],
+            cwd=cwd or path.parent,
+            env={**os.environ,
+                 "GRAVITY_SH07_OUTPUT_PATH": str(path.resolve()),
+                 "GRAVITY_SH07_EXPECTED_MODULE": module},
+            capture_output=True, text=True, timeout=60, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise CheckpointError("authoritative stdout EDN binding could not be read") from error
+    if result.returncode != 0 or result.stderr.strip():
+        raise CheckpointError("authoritative stdout EDN binding is invalid")
+    lines = result.stdout.splitlines()
+    if len(lines) != 1 or lines[0].count("\t") != 5:
+        raise CheckpointError("authoritative stdout EDN binding is ambiguous")
+    source_path, size, source_sha, revision, artifact_id, census_hash = lines[0].split("\t")
+    if not size.isdecimal() or source_sha != revision:
+        raise CheckpointError("authoritative stdout source revision is not byte-bound")
+    return {
+        "source_path": source_path,
+        "source_byte_count": int(size),
+        "source_bytes_sha256": source_sha,
+        "source_revision_id": revision,
+        "artifact_id": artifact_id,
+        "census_hash": census_hash,
+    }
+
+
+def _attestation_payload(attestation: Mapping[str, object]) -> dict[str, object]:
+    return {str(key): value for key, value in attestation.items()
+            if key != "attestation_sha256"}
+
+
+def validate_source_bound_attestation(
+    root: Path,
+    module: str,
+    stdout_path: Path,
+    attestation: Mapping[str, object],
+    *,
+    expected_proof_contract_sha256: str,
+) -> bool:
+    """Validate a reviewed, source-bound attestation and all raw-file links."""
+    if not isinstance(attestation, Mapping):
+        return False
+    try:
+        required = {
+            "artifact", "schema", "module", "authority_scope", "source",
+            "proof_contract_sha256", "stdout_sha256", "artifact_id", "census_hash",
+            "reviewer", "reviewed_at", "method", "limitations", "decision",
+            "claims", "attestation_sha256",
+        }
+        if set(attestation) != required:
+            return False
+        if (attestation["artifact"] != "gravity/sh07-source-bound-attestation"
+                or attestation["schema"] != SOURCE_BOUND_ATTESTATION_SCHEMA
+                or attestation["module"] != module
+                or attestation["authority_scope"] != "individual-source-bound-derived"):
+            return False
+        if not isinstance(attestation["proof_contract_sha256"], str) or \
+                attestation["proof_contract_sha256"] != expected_proof_contract_sha256:
+            return False
+        if sha256_file(root / PROOF_CONTRACT_RELATIVE) != expected_proof_contract_sha256:
+            return False
+        if source_bound_policy(root) != SOURCE_BOUND_POLICY:
+            return False
+        if SOURCE_SHA_PATTERN.fullmatch(str(attestation["stdout_sha256"])) is None:
+            return False
+        if SOURCE_SHA_PATTERN.fullmatch(str(attestation["artifact_id"])) is None or \
+                SOURCE_SHA_PATTERN.fullmatch(str(attestation["census_hash"])) is None:
+            return False
+        source = attestation["source"]
+        if not isinstance(source, Mapping) or set(source) != {
+                "path", "byte_count", "bytes_sha256"}:
+            return False
+        relative = source["path"]
+        if (not isinstance(relative, str) or Path(relative).is_absolute()
+                or Path(relative).as_posix() != relative or ".." in Path(relative).parts):
+            return False
+        source_path = root / relative
+        if source_path.is_symlink() or not source_path.is_file():
+            return False
+        actual_size = source_path.stat().st_size
+        actual_sha = sha256_file(source_path)
+        if source["byte_count"] != actual_size or source["bytes_sha256"] != actual_sha:
+            return False
+        if sha256_file(stdout_path) != attestation["stdout_sha256"]:
+            return False
+        binding = _proof_output_binding(stdout_path, module, cwd=root)
+        if any(binding[key] != source[value] for key, value in (
+                ("source_path", "path"),
+                ("source_byte_count", "byte_count"),
+                ("source_bytes_sha256", "bytes_sha256"))):
+            return False
+        if binding["artifact_id"] != attestation["artifact_id"] or \
+                binding["census_hash"] != attestation["census_hash"]:
+            return False
+        reviewer = attestation["reviewer"]
+        if not isinstance(reviewer, str) or not reviewer.strip():
+            return False
+        reviewed_at = attestation["reviewed_at"]
+        if not isinstance(reviewed_at, str) or not reviewed_at.endswith("Z"):
+            return False
+        if not isinstance(attestation["method"], str) or not attestation["method"].strip():
+            return False
+        limitations = attestation["limitations"]
+        if (not isinstance(limitations, list) or not limitations
+                or not all(isinstance(item, str) and item.strip() for item in limitations)):
+            return False
+        if attestation["decision"] != "accepted-with-scope":
+            return False
+        claims = attestation["claims"]
+        if (not isinstance(claims, Mapping)
+                or set(claims) != {"counts_precommitted", "independent_count_oracle",
+                                   "aggregate_authoritative", "release_authoritative",
+                                   "unsupported"}
+                or claims["counts_precommitted"] is not False
+                or claims["independent_count_oracle"] is not False
+                or claims["aggregate_authoritative"] is not False
+                or claims["release_authoritative"] is not False
+                or claims["unsupported"] != SOURCE_BOUND_UNSUPPORTED_CLAIMS):
+            return False
+        digest = attestation.get("attestation_sha256")
+        return isinstance(digest, str) and digest == sha256_bytes(canonical_json(_attestation_payload(attestation)))
+    except (OSError, CheckpointError, TypeError, ValueError):
+        return False
+
+
+def create_source_bound_attestation(
+    root: Path,
+    module: str,
+    stdout_path: Path,
+    *,
+    proof_contract_sha256: str,
+    reviewer: str,
+    reviewed_at: str,
+    method: str,
+    limitations: Sequence[str],
+    decision: str = "accepted-with-scope",
+) -> dict[str, object]:
+    policy = source_bound_policy(root)
+    if policy != SOURCE_BOUND_POLICY:
+        raise CheckpointError("source-bound attestation requires source-bound-derived policy")
+    binding = _proof_output_binding(stdout_path, module, cwd=root)
+    payload: dict[str, object] = {
+        "artifact": "gravity/sh07-source-bound-attestation",
+        "schema": SOURCE_BOUND_ATTESTATION_SCHEMA,
+        "module": module,
+        "authority_scope": "individual-source-bound-derived",
+        "source": {
+            "path": binding["source_path"],
+            "byte_count": binding["source_byte_count"],
+            "bytes_sha256": binding["source_bytes_sha256"],
+        },
+        "proof_contract_sha256": proof_contract_sha256,
+        "stdout_sha256": sha256_file(stdout_path),
+        "artifact_id": binding["artifact_id"],
+        "census_hash": binding["census_hash"],
+        "reviewer": reviewer,
+        "reviewed_at": reviewed_at,
+        "method": method,
+        "limitations": list(limitations),
+        "decision": decision,
+        "claims": {
+            "counts_precommitted": False,
+            "independent_count_oracle": False,
+            "aggregate_authoritative": False,
+            "release_authoritative": False,
+            "unsupported": SOURCE_BOUND_UNSUPPORTED_CLAIMS,
+        },
+    }
+    payload["attestation_sha256"] = sha256_bytes(canonical_json(payload))
+    if not validate_source_bound_attestation(
+            root, module, stdout_path, payload,
+            expected_proof_contract_sha256=proof_contract_sha256):
+        raise CheckpointError("generated source-bound attestation failed self-validation")
+    return payload
 
 
 SHARED_GRAVITY_FILES = (
@@ -696,6 +954,8 @@ EDN_OUTPUT_VALIDATOR = r"""
       contract
       (when (= expected-proof-contract-sha256 contract-sha256)
         (read-one-edn-bytes contract-bytes))
+      legacy-exact? (= :test (:schema contract))
+      expected-output-schema (if legacy-exact? 2 3)
       boundary (:boundary contract)
       census-contract (:authoritative-coverage-census contract)
       module-expectation
@@ -721,12 +981,38 @@ EDN_OUTPUT_VALIDATOR = r"""
                              counts)))]
           (and (= expected-proof-contract-sha256 contract-sha256)
                (map? contract)
+               (or legacy-exact?
+                   (contains? #{:exact-precommitted :source-bound-derived}
+                              (:coverage-census-policy contract)))
                (= ::eof trailing)
                (= :gravity/sh07-authoritative-proof-run (:artifact value))
-               (= 2 (:schema-version value))
+               (= expected-output-schema (:schema-version value))
                (= :passed (:status value))
                (true? (:fresh-process-required? value))
                (false? (:persistent-iteration-cache-used? value))
+               (if legacy-exact?
+                 true
+                 (if (= :source-bound-derived (:coverage-census-policy contract))
+                   (and (= :source-bound-derived
+                           (:coverage-census-policy value))
+                        (= :individual-source-bound-derived
+                           (:authority-scope value))
+                        (false? (:counts-precommitted? value))
+                        (false? (:independent-count-oracle? value))
+                        (false? (:aggregate-authoritative? value))
+                        (= [:exact-authentic-coverage :aggregate :release]
+                           (:unsupported-claims value))
+                        (true? (:attestation-required? value)))
+                   (and (= :exact-precommitted
+                           (:coverage-census-policy value))
+                        (= :individual-existing-runner-output-only
+                           (:authority-scope value))
+                        (true? (:counts-precommitted? value))
+                        (true? (:independent-count-oracle? value))
+                        (false? (:aggregate-authoritative? value))
+                        (= [] (:unsupported-claims value))
+                        (or (not (contains? value :attestation-required?))
+                            (false? (:attestation-required? value))))))
                (vector? modules)
                (= expected-module (:module result))
                (= expected-source-path (:source-path result))
@@ -738,17 +1024,43 @@ EDN_OUTPUT_VALIDATOR = r"""
                (empty? (:failed-checks result))
                (= :gravity/sh07-authoritative-coverage-census
                   (:artifact census))
-               (= #{:artifact :schema-version :authority-scope
+               (= (if legacy-exact?
+                    #{:artifact :schema-version :authority-scope
+                      :aggregate-authoritative? :module :module-namespace
+                      :source-revision-id :sh07-artifact-id :sh06-status :task
+                      :request-schema-version :scope :source-binding
+                      :request-counts :core-counts :integrity :census-hash}
+                    #{:artifact :schema-version :authority-scope
                     :aggregate-authoritative? :module :module-namespace
                     :source-revision-id :sh07-artifact-id :sh06-status :task
                     :request-schema-version :scope :source-binding
-                    :request-counts :core-counts :integrity :census-hash}
+                    :request-counts :core-counts :integrity :census-hash
+                    :coverage-census-policy :counts-precommitted?
+                    :independent-count-oracle? :unsupported-claims})
                   (set (keys census)))
-               (= 1 (:schema-version census))
+               (= (if legacy-exact? 1 2) (:schema-version census))
                (= (:schema-version census-contract) (:schema-version census))
-               (= :individual-existing-runner-output-only
-                  (:authority-scope census))
+               (if legacy-exact?
+                 (= :individual-existing-runner-output-only
+                    (:authority-scope census))
+                 (and (= (:coverage-census-policy contract)
+                         (:coverage-census-policy census))
+                      (= (if (= :source-bound-derived
+                                 (:coverage-census-policy contract))
+                           :individual-source-bound-derived
+                           :individual-existing-runner-output-only)
+                         (:authority-scope census))))
                (false? (:aggregate-authoritative? census))
+               (if legacy-exact?
+                 true
+                 (if (= :source-bound-derived (:coverage-census-policy contract))
+                   (and (= false (:counts-precommitted? census))
+                        (= false (:independent-count-oracle? census))
+                        (= [:exact-authentic-coverage :aggregate :release]
+                           (:unsupported-claims census)))
+                   (and (= true (:counts-precommitted? census))
+                        (= true (:independent-count-oracle? census))
+                        (= [] (:unsupported-claims census)))))
                (= expected-module (:module census))
                (symbol? (:module-namespace census))
                (= (:task boundary) (:task census))
@@ -760,10 +1072,17 @@ EDN_OUTPUT_VALIDATOR = r"""
                            (:module-namespace census))
                         (= (:source-binding module-expectation)
                            source-binding)
-                        (= (:request-counts module-expectation)
-                           request-counts)
-                        (= (:core-counts module-expectation)
-                           core-counts)))
+                        (if (or legacy-exact?
+                                (= :exact-precommitted
+                                   (:coverage-census-policy contract)))
+                          (and (= (:request-counts module-expectation)
+                                  request-counts)
+                               (= (:core-counts module-expectation)
+                                  core-counts))
+                          (and (not (contains? module-expectation
+                                                :request-counts))
+                               (not (contains? module-expectation
+                                                :core-counts))))))
                (= expected-source-bytes-sha256
                   (:source-revision-id result)
                   (:source-revision-id census))
@@ -800,7 +1119,9 @@ EDN_OUTPUT_VALIDATOR = r"""
                (every? true? (vals integrity))
                (= (:census-hash census)
                   (canonical-hash
-                   {:domain :gravity/sh07-authoritative-coverage-census-v1
+                   {:domain (if legacy-exact?
+                              :gravity/sh07-authoritative-coverage-census-v1
+                              :gravity/sh07-authoritative-coverage-census-v2)
                     :census (dissoc census :census-hash)}))
                (map? checks)
                (seq checks)
@@ -866,6 +1187,7 @@ def resumable(
     module_fingerprint: str,
     command: Sequence[str],
     state_dir: Path,
+    proof_contract_sha256: str,
 ) -> bool:
     if not isinstance(entry, dict):
         return False
@@ -874,6 +1196,7 @@ def resumable(
         and entry.get("exit_code") == 0
         and entry.get("module_context_fingerprint") == module_fingerprint
         and entry.get("command") == list(command)
+        and entry.get("proof_contract_sha256") == proof_contract_sha256
         and entry.get("output_contract_checked") is True
     ):
         return False
@@ -977,6 +1300,25 @@ def run_modules(
         raise CheckpointError(
             "authoritative source contracts lack a trusted proof contract hash"
         )
+    try:
+        coverage_policy = source_bound_policy(root)
+    except CheckpointError:
+        # Tiny unit fixtures predate the policy fields; production contracts
+        # may not silently omit or mismatch them.
+        contract_text = (root / PROOF_CONTRACT_RELATIVE).read_text(
+            encoding="utf-8"
+        )
+        if ":schema :test" in contract_text:
+            coverage_policy = "exact-precommitted"
+        else:
+            raise
+    if coverage_policy == SOURCE_BOUND_POLICY:
+        missing_expectations = sorted(set(modules) - set(contracts))
+        if missing_expectations:
+            raise CheckpointError(
+                "source-bound-derived authority requires source contracts for "
+                f"selected modules: {missing_expectations}"
+            )
     state_dir = Path(os.path.abspath(state_dir.expanduser()))
     ensure_owned_directory(state_dir)
     modules_dir = state_dir / "modules"
@@ -1078,6 +1420,8 @@ def run_modules(
         previous = load_manifest(manifest_path)
         same_shared_context = bool(
             previous
+            and previous.get("schema") == SCHEMA
+            and previous.get("tool_version") == TOOL_VERSION
             and previous.get("shared_context_fingerprint") == shared_fingerprint
         )
         previous_modules = (
@@ -1186,7 +1530,8 @@ def run_modules(
                 resume
                 and same_shared_context
                 and resumable(
-                    module, prior, module_fingerprint, command, state_dir
+                    module, prior, module_fingerprint, command, state_dir,
+                    trusted_proof_contract_sha256
                 )
                 and validator(
                     module,
@@ -1212,6 +1557,7 @@ def run_modules(
                 "state": "running",
                 "command": command,
                 "module_context_fingerprint": module_fingerprint,
+                "proof_contract_sha256": trusted_proof_contract_sha256,
                 "module_context": module_context,
                 "stdout_path": relative_stdout,
                 "stderr_path": relative_stderr,
@@ -1266,6 +1612,7 @@ def run_modules(
                 "state": state,
                 "command": command,
                 "module_context_fingerprint": module_fingerprint,
+                "proof_contract_sha256": trusted_proof_contract_sha256,
                 "module_context": module_context,
                 "context_stable": context_stable,
                 "shared_context_fingerprint_after": shared_after,
@@ -1364,7 +1711,14 @@ def discover_source_contracts(
     if SOURCE_SHA_PATTERN.fullmatch(proof_contract_sha) is None:
         raise CheckpointError("module source contract proof hash is malformed")
     contracts: dict[str, dict[str, object]] = {}
+    policy_lines = [line for line in lines[1:]
+                    if line.startswith("#coverage-census-policy\t")]
+    if len(policy_lines) != 1 or policy_lines[0].split("\t", 1)[1] not in {
+            "exact-precommitted", SOURCE_BOUND_POLICY}:
+        raise CheckpointError("module source contract policy marker is malformed")
     for line in lines[1:]:
+        if line.startswith("#coverage-census-policy\t"):
+            continue
         if not line or line.count("\t") != 3:
             raise CheckpointError("module source contract output is malformed")
         module, relative, byte_count_text, source_sha = line.split("\t")
@@ -1398,6 +1752,16 @@ def parser() -> argparse.ArgumentParser:
     value.add_argument("--timeout-seconds", type=float, default=21600)
     value.add_argument("--lock", type=Path, default=DEFAULT_LOCK)
     value.add_argument("--no-resume", action="store_true")
+    value.add_argument(
+        "--attest", action="store_true",
+        help="write a reviewed source-bound attestation for one completed module",
+    )
+    value.add_argument("--attestation-output", type=Path)
+    value.add_argument("--reviewer")
+    value.add_argument("--reviewed-at")
+    value.add_argument("--method")
+    value.add_argument("--limitation", action="append", default=[])
+    value.add_argument("--decision", default="accepted-with-scope")
     value.add_argument("--cwd", type=Path, default=Path(__file__).resolve().parents[1])
     return value
 
@@ -1422,6 +1786,80 @@ def main(arguments: list[str] | None = None) -> int:
         unknown = sorted(set(selected) - set(available))
         if unknown:
             raise CheckpointError(f"unknown modules: {unknown}")
+        if values.attest:
+            if values.all or len(selected) != 1:
+                raise CheckpointError("--attest requires exactly one --module")
+            module = selected[0]
+            if source_bound_policy(values.cwd) != SOURCE_BOUND_POLICY:
+                raise CheckpointError(
+                    "--attest is available only for source-bound-derived policy"
+                )
+            state_dir = values.state_dir.resolve()
+            manifest = load_manifest(state_dir / "manifest.json")
+            record = manifest.get("modules", {}).get(module) if manifest else None
+            manifest_context_current = False
+            if isinstance(manifest, Mapping):
+                try:
+                    current_shared = shared_context_fingerprint(
+                        values.cwd, base, module_catalog=catalog,
+                        require_runtime_identity=True)
+                    current_module = module_context_fingerprint(
+                        values.cwd, module, catalog[module],
+                        str(manifest.get("shared_context_fingerprint")))
+                    manifest_context_current = (
+                        manifest.get("shared_context_fingerprint")
+                        == current_shared.get("sha256")
+                        and isinstance(record, Mapping)
+                        and record.get("module_context_fingerprint")
+                        == current_module.get("sha256")
+                    )
+                except (CheckpointError, OSError, subprocess.TimeoutExpired):
+                    manifest_context_current = False
+            if (not isinstance(record, Mapping)
+                    or not isinstance(manifest, Mapping)
+                    or manifest.get("schema") != SCHEMA
+                    or manifest.get("tool_version") != TOOL_VERSION
+                    or manifest.get("state") != "completed"
+                    or not manifest_context_current
+                    or record.get("state") != "passed"
+                    or record.get("output_contract_checked") is not True
+                    or record.get("proof_contract_sha256")
+                    != source_contract_proof_sha256):
+                raise CheckpointError(
+                    f"module {module} has no completed validated receipt to attest"
+                )
+            relative = record.get("stdout_path")
+            canonical_relative = f"modules/{module}.stdout.log"
+            if relative != canonical_relative or not isinstance(relative, str):
+                raise CheckpointError("completed module receipt lacks stdout path")
+            stdout_path = state_dir / relative
+            if (stdout_path.is_symlink()
+                    or not stdout_path.is_file()
+                    or stdout_path.resolve().parent != (state_dir / "modules").resolve()
+                    or record.get("stdout_sha256") != sha256_file(stdout_path)):
+                raise CheckpointError("completed module stdout receipt is not current")
+            if module not in source_contracts:
+                raise CheckpointError("completed module lacks a current source contract")
+            enforce_source_contract(values.cwd, module, source_contracts[module])
+            if values.reviewer is None or values.reviewed_at is None or values.method is None:
+                raise CheckpointError("--attest requires --reviewer, --reviewed-at, and --method")
+            attestation = create_source_bound_attestation(
+                values.cwd, module, stdout_path,
+                proof_contract_sha256=source_contract_proof_sha256,
+                reviewer=values.reviewer,
+                reviewed_at=values.reviewed_at,
+                method=values.method,
+                limitations=values.limitation,
+                decision=values.decision,
+            )
+            output = values.attestation_output or (
+                state_dir / "attestations" / f"{module}.json"
+            )
+            atomic_json_write(output, attestation)
+            print(json.dumps({"attestation": str(output.resolve()),
+                              "authority_scope": attestation["authority_scope"],
+                              "aggregate_authoritative": False}, sort_keys=True))
+            return 0
         code, manifest = run_modules(
             root=values.cwd,
             state_dir=values.state_dir,

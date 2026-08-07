@@ -172,6 +172,51 @@ class Sh07CheckpointTests(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(content, encoding="utf-8")
 
+    def make_source_bound_repository(self, root: Path) -> tuple[int, str]:
+        self.make_repository(root)
+        source = root / self.module_catalog()["alpha"]
+        source_size = source.stat().st_size
+        source_sha = runner.sha256_file(source)
+        (root / runner.PROOF_CONTRACT_RELATIVE).write_text(
+            "{:artifact :gravity/sh07-proof-process-contract "
+            ":schema-version 2 :coverage-census-policy :source-bound-derived "
+            ":authority-claims {:unsupported-claims "
+            "[:exact-authentic-coverage :aggregate :release]} "
+            ":boundary {:task \"SH-07-B45\" :request-schema-version 15 "
+            ":scope :sh07-b15-keyword-map-lookup} "
+            ":authoritative-coverage-census {:schema-version 2 "
+            ":policy :source-bound-derived :counts-precommitted? false "
+            ":independent-count-oracle? false "
+            ":unsupported-claims [:exact-authentic-coverage :aggregate :release] "
+            ":module-expectations {:alpha {:module-namespace gravity.alpha "
+            f":source-binding {{:source-byte-count {source_size} "
+            f':source-bytes-sha256 "{source_sha}"' + "}}}}}\n",
+            encoding="utf-8",
+        )
+        return source_size, source_sha
+
+    def source_bound_output(self, source_size: int, source_sha: str) -> str:
+        return (
+            "{:artifact :gravity/sh07-authoritative-proof-run :schema-version 3 "
+            ":status :passed :fresh-process-required? true "
+            ":persistent-iteration-cache-used? false :modules [{:module \"alpha\" "
+            ":status :accepted :source-path "
+            "\"bootstrap/gravity/src/gravity/alpha.gravity\" "
+            f":source-byte-count {source_size} :source-bytes-sha256 \"{source_sha}\" "
+            f":source-revision-id \"{source_sha}\" "
+            ':artifact-id "sha256:' + "a" * 64 + '" '
+            ":verification-status :passed :capability-proof-status :complete "
+            ":failed-checks [] :nested {:artifact-id \"sha256:"
+            + "b" * 64 + "\"} :coverage-census "
+            "{:artifact :gravity/sh07-authoritative-coverage-census :schema-version 2 "
+            ":authority-scope :individual-source-bound-derived "
+            ":aggregate-authoritative? false :coverage-census-policy "
+            ":source-bound-derived :counts-precommitted? false "
+            ":independent-count-oracle? false :unsupported-claims "
+            "[:exact-authentic-coverage :aggregate :release] "
+            ":census-hash \"sha256:" + "c" * 64 + "\"}}]}\n"
+        )
+
     def run_in_repository(
         self,
         root: Path,
@@ -233,6 +278,120 @@ class Sh07CheckpointTests(unittest.TestCase):
             self.assertEqual("source-contract-mismatch", persisted["state"])
             self.assertEqual({}, persisted["modules"])
 
+    @unittest.skipUnless(shutil.which("clojure"), "clojure CLI is required")
+    def test_source_bound_attestation_links_nested_edn_and_rejects_tamper(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_size, source_sha = self.make_source_bound_repository(root)
+            stdout = root / "proof.edn"
+            stdout.write_text(self.source_bound_output(source_size, source_sha), encoding="utf-8")
+            contract_sha = runner.sha256_file(root / runner.PROOF_CONTRACT_RELATIVE)
+            self.assertEqual("source-bound-derived", runner.source_bound_policy(root))
+            policy_contract = root / runner.PROOF_CONTRACT_RELATIVE
+            policy_contract.write_text(
+                policy_contract.read_text(encoding="utf-8").replace(
+                    ":policy :source-bound-derived",
+                    ":policy :exact-precommitted",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaises(runner.CheckpointError):
+                runner.source_bound_policy(root)
+            policy_contract.write_text(
+                policy_contract.read_text(encoding="utf-8").replace(
+                    ":policy :exact-precommitted",
+                    ":policy :source-bound-derived",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+            contract_sha = runner.sha256_file(policy_contract)
+            attestation = runner.create_source_bound_attestation(
+                root, "alpha", stdout,
+                proof_contract_sha256=contract_sha,
+                reviewer="sol-reviewer",
+                reviewed_at="2026-08-07T12:00:00Z",
+                method="independent source/census/artifact linkage review",
+                limitations=["counts are derived, not independently predeclared"],
+            )
+            self.assertTrue(runner.validate_source_bound_attestation(
+                root, "alpha", stdout, attestation,
+                expected_proof_contract_sha256=contract_sha,
+            ))
+            contract_path = root / runner.PROOF_CONTRACT_RELATIVE
+            contract_path.write_text(
+                contract_path.read_text(encoding="utf-8").replace(
+                    ":schema-version 2", ":schema-version 3", 1
+                ),
+                encoding="utf-8",
+            )
+            self.assertFalse(runner.validate_source_bound_attestation(
+                root, "alpha", stdout, attestation,
+                expected_proof_contract_sha256=contract_sha,
+            ))
+            forged = dict(attestation, artifact_id="sha256:" + "d" * 64)
+            self.assertFalse(runner.validate_source_bound_attestation(
+                root, "alpha", stdout, forged,
+                expected_proof_contract_sha256=contract_sha,
+            ))
+            stdout.write_text(stdout.read_text(encoding="utf-8") + " ", encoding="utf-8")
+            self.assertFalse(runner.validate_source_bound_attestation(
+                root, "alpha", stdout, attestation,
+                expected_proof_contract_sha256=contract_sha,
+            ))
+
+    def test_forged_manifest_proof_contract_binding_never_resumes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            launcher = FakeLauncher()
+            contracts = self.source_contract(root, "alpha")
+            code, _ = self.run_in_repository(
+                root, launcher, ["alpha"], source_contracts=contracts
+            )
+            self.assertEqual(0, code)
+            manifest_path = root / "checkpoints/manifest.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["modules"]["alpha"]["proof_contract_sha256"] = "sha256:" + "f" * 64
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            code, _ = self.run_in_repository(
+                root, launcher, ["alpha"], source_contracts=contracts
+            )
+            self.assertEqual(0, code)
+            self.assertEqual(["alpha", "alpha"], launcher.calls)
+
+    def test_source_bound_unbound_selection_is_rejected_before_launch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_source_bound_repository(root)
+            launcher = FakeLauncher()
+            with self.assertRaisesRegex(
+                    runner.CheckpointError, "requires source contracts"):
+                runner.run_modules(
+                    root=root,
+                    state_dir=root / "checkpoints",
+                    modules=["beta"],
+                    module_catalog=self.module_catalog(),
+                    base_command=["fake-runner"],
+                    launcher=launcher,
+                    output_validator=fixture_output_validator,
+                    source_contracts={
+                        "alpha": {
+                            "source_path": self.module_catalog()["alpha"],
+                            "source_byte_count": 19,
+                            "source_bytes_sha256": runner.sha256_file(
+                                root / self.module_catalog()["alpha"]
+                            ),
+                        }
+                    },
+                    source_contract_proof_sha256=runner.sha256_file(
+                        root / runner.PROOF_CONTRACT_RELATIVE
+                    ),
+                    lock_path=root / "heavy.lock",
+                )
+            self.assertEqual([], launcher.calls)
+
     def test_matching_source_contract_allows_launch(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -272,6 +431,7 @@ class Sh07CheckpointTests(unittest.TestCase):
             contract_sha = "sha256:" + "a" * 64
             output = (
                 f"#proof-contract-sha256\t{contract_sha}\n"
+                "#coverage-census-policy\tsource-bound-derived\n"
                 "alpha\tbootstrap/gravity/src/gravity/alpha.gravity\t"
                 f"{source.stat().st_size}\t{runner.sha256_file(source)}\n"
             )

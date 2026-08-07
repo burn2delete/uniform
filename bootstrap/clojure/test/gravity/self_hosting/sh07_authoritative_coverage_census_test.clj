@@ -4,21 +4,10 @@
             [clojure.test :refer [deftest is testing]]
             [gravity.self-hosting.sh07-authoritative-runner :as runner]))
 
-(def ^:private measured-c7-request-counts
-  {:fragment-count 142 :root-form-count 142 :form-count 12759
-   :binding-count 1114 :local-binding-count 852 :resolution-count 5221})
-
-(def ^:private measured-c7-core-counts
-  {:core-node-count 10405 :definition-count 142 :call-count 2069
-   :reference-count 4117 :keyword-lookup-count 0
-   :core-form-frequencies
-   {:let 98 :fn 137 :call 2069 :if 566 :recur 85 :loop 73
-    :reference 4117 :quote 3 :collection-literal 263 :literal 2852
-    :def 142}})
-
 (defn- fixture
   []
-  (let [source-revision "sha256:fixture-source"
+  (let [source-revision
+        "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         request
         {:schema-version 15
          :scope :sh07-b15-keyword-map-lookup
@@ -59,18 +48,31 @@
   ([] (census (fixture)))
   ([{:keys [artifact request core source-binding]}]
    (runner/authoritative-coverage-census
-    "c7-types" artifact request core source-binding source-binding)))
+    "c7-types" artifact request core source-binding source-binding
+    :source-bound-derived)))
 
 (defn- matching-contract
   [value]
-  {:authoritative-coverage-census
-   {:schema-version 1
-    :module-expectations
+  {:schema-version 2
+   :coverage-census-policy :source-bound-derived
+   :authority-claims
+   {:counts-precommitted? false
+    :independent-count-oracle? false
+    :unsupported-claims [:exact-authentic-coverage :aggregate :release]
+    :aggregate-authoritative? false
+    :release-authoritative? false
+    :attestation-required true
+    :attestation-schema :gravity/sh07-source-bound-attestation-v1}
+   :authoritative-coverage-census
+   {:schema-version 2
+    :policy :source-bound-derived
+    :counts-precommitted? false
+    :independent-count-oracle? false
+    :unsupported-claims [:exact-authentic-coverage :aggregate :release]
+   :module-expectations
     {:c7-types
      {:module-namespace (:module-namespace value)
-      :source-binding (:source-binding value)
-      :request-counts (:request-counts value)
-      :core-counts (:core-counts value)}}}})
+      :source-binding (:source-binding value)}}}})
 
 (deftest compact-census-projects-existing-request-and-core-exactly
   (let [value (census)]
@@ -82,9 +84,13 @@
             :core-form-frequencies {:literal 2 :reference 1}}
            (:core-counts value)))
     (is (every? true? (vals (:integrity value))))
-    (is (= :individual-existing-runner-output-only
+    (is (= :individual-source-bound-derived
            (:authority-scope value)))
     (is (false? (:aggregate-authoritative? value)))
+    (is (false? (:counts-precommitted? value)))
+    (is (false? (:independent-count-oracle? value)))
+    (is (= [:exact-authentic-coverage :aggregate :release]
+           (:unsupported-claims value)))
     (is (runner/authoritative-coverage-census-valid?
          (matching-contract value) "c7-types" value))))
 
@@ -97,12 +103,14 @@
         (get-in contract
                 [:authoritative-coverage-census
                  :module-expectations :c7-types])]
-    (is (= measured-c7-request-counts (:request-counts expectation)))
-    (is (= measured-c7-core-counts (:core-counts expectation)))
-    (is (= {:source-byte-count 142136
+    (is (= :source-bound-derived
+           (:coverage-census-policy contract)))
+    (is (= {:source-byte-count 176551
             :source-bytes-sha256
-            "sha256:ce4e48764a63a0e4240232364d05fa40c204e2153be1a56ffbb0f5d6b45baa50"}
+            "sha256:648c71d18f5b81649a8d6d755e1e73b5ba502d359e3a972e4a9341dff6dee975"}
            (:source-binding expectation)))
+    (is (not (contains? expectation :request-counts)))
+    (is (not (contains? expectation :core-counts)))
     (is (= {:source-path
             "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
             :source-binding (:source-binding expectation)}
@@ -133,9 +141,53 @@
                 #(runner/run-authoritative selection))
               nil
               (catch clojure.lang.ExceptionInfo error error))]
-        (is (= "SH07-AUTHORITATIVE-SOURCE-MISMATCH"
+        (is (= (if (= selection "all")
+                 "SH07-COVERAGE-CENSUS-MODULE-MISSING"
+                 "SH07-AUTHORITATIVE-SOURCE-MISMATCH")
                (:id (ex-data failure))))
         (is (false? @proof-called?))))))
+
+(deftest exact-precommitted-mode-remains-strict-and-explicit
+  (let [value (runner/authoritative-coverage-census
+               "c7-types" (:artifact (fixture)) (:request (fixture))
+               (:core (fixture)) (:source-binding (fixture))
+               (:source-binding (fixture)) :exact-precommitted)
+        contract
+        {:schema-version 2
+         :coverage-census-policy :exact-precommitted
+         :authority-claims {:counts-precommitted? true
+                            :independent-count-oracle? true
+                            :unsupported-claims []
+                            :aggregate-authoritative? false
+                            :release-authoritative? false}
+         :authoritative-coverage-census
+         {:schema-version 2 :policy :exact-precommitted
+          :counts-precommitted? true :independent-count-oracle? true
+          :module-expectations
+          {:c7-types {:module-namespace (:module-namespace value)
+                      :source-binding (:source-binding value)
+                      :request-counts (:request-counts value)
+                      :core-counts (:core-counts value)}}}}]
+    (is (runner/authoritative-coverage-census-valid?
+         contract "c7-types" value))
+    (is (= ::failed
+           (try
+             (runner/validate-coverage-census-contract!
+              (assoc-in contract
+                        [:authoritative-coverage-census
+                         :module-expectations :c7-types]
+                        (dissoc (get-in contract
+                                        [:authoritative-coverage-census
+                                         :module-expectations :c7-types])
+                                :request-counts)))
+             ::unexpected
+             (catch clojure.lang.ExceptionInfo _ ::failed))))
+    (is (= ::failed
+           (try
+             (runner/validate-coverage-census-contract!
+              (assoc contract :coverage-census-policy :unknown))
+             ::unexpected
+             (catch clojure.lang.ExceptionInfo _ ::failed))))))
 
 (deftest census-fails-closed-on-order-source-or-hash-drift
   (let [{:keys [artifact request core source-binding] :as values} (fixture)

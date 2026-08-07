@@ -1,5 +1,5 @@
 {:artifact :gravity/sh07-proof-process-contract
- :schema-version 1
+ :schema-version 2
  :status :active
  :scope :sh07-proof-orchestration
  :coverage-milestone "SH-07-B47"
@@ -130,6 +130,15 @@
   :adapter :gravity/sh07-to-c6-core-products-v16
   :fresh-authoritative-process-required true
   :iteration-cache-authoritative false}
+ :coverage-census-policy :source-bound-derived
+ :authority-claims
+ {:counts-precommitted? false
+  :independent-count-oracle? false
+  :aggregate-authoritative? false
+  :release-authoritative? false
+  :unsupported-claims [:exact-authentic-coverage :aggregate :release]
+  :attestation-required true
+  :attestation-schema :gravity/sh07-source-bound-attestation-v1}
  :proof-transaction
  {:schema-version 1
   :phase-order [:construction :independent-audit]
@@ -279,39 +288,18 @@
   :syntax
   "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
  :authoritative-coverage-census
- {:schema-version 1
+ {:schema-version 2
+  :policy :source-bound-derived
+  :counts-precommitted? false
+  :independent-count-oracle? false
+  :unsupported-claims [:exact-authentic-coverage :aggregate :release]
   :module-expectations
   {:c7-types
    {:module-namespace gravity.compiler.c7-type-checker-engine
     :source-binding
-    {:source-byte-count 142136
+    {:source-byte-count 176551
      :source-bytes-sha256
-     "sha256:ce4e48764a63a0e4240232364d05fa40c204e2153be1a56ffbb0f5d6b45baa50"}
-    :request-counts
-    {:fragment-count 142
-     :root-form-count 142
-     :form-count 12759
-     :binding-count 1114
-     :local-binding-count 852
-     :resolution-count 5221}
-    :core-counts
-    {:core-node-count 10405
-     :definition-count 142
-     :call-count 2069
-     :reference-count 4117
-     :keyword-lookup-count 0
-     :core-form-frequencies
-     {:literal 2852
-      :collection-literal 263
-      :def 142
-      :reference 4117
-      :call 2069
-      :if 566
-      :let 98
-      :loop 73
-      :recur 85
-      :quote 3
-      :fn 137}}}}}
+     "sha256:648c71d18f5b81649a8d6d755e1e73b5ba502d359e3a972e4a9341dff6dee975"}}}}
  :required-request-products
  [:fragment-manifest :fragment-coverage :module-assembly-manifest]
  :required-core-products
