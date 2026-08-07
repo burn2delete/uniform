@@ -214,11 +214,28 @@ clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M 
 ```
 
 The module name must be one returned by `--list`. The result must report
-`:fresh-process-required? true`, `:persistent-iteration-cache-used? false`, a
-passed capability proof, a passed independent verification report, and an
-empty `:failed-checks`. `--fresh all` is the exhaustive SH-07 transaction and
-is reserved for the stable-candidate/release lane because of its measured
-runtime and memory cost.
+outer `:schema-version 2`, `:fresh-process-required? true`,
+`:persistent-iteration-cache-used? false`, a passed capability proof, a passed
+independent verification report, and an empty `:failed-checks`. Each module
+result also carries a compact `:coverage-census` bound to the module,
+namespace, source revision, SH-07 artifact ID, and source bytes. Its exact
+request/core counts, core-form frequencies, ordered root/form coverage flags,
+source binding flags, and canonical hash are computed from the already-built
+verified request/core carrier; no second compiler artifact is built or stored.
+The C7 census is checked against the exact expected maps in the proof contract.
+Those maps record the measured integration-candidate census; the source SHA is
+deliberately bound by the catalog/source snapshot fields instead of duplicated
+in the census expectation. The lightweight census test is the update seam for
+reviewing a deliberate expectation change without constructing the C7 artifact.
+
+The census has only the authority of its enclosing individual fresh module
+output. A valid `c7-types` census can satisfy the count and ordered-coverage
+evidence of
+`sh07-b28-c7-source-has-exact-authentic-coverage` without rerunning that costly
+exact var. It does not satisfy the neighboring call/quote structural test,
+path-neutral parity, another module, or any aggregate/release claim.
+`--fresh all` is the exhaustive SH-07 transaction and is reserved for the
+stable-candidate/release lane because of its measured runtime and memory cost.
 
 For a durable, resumable sequence of selected modules, use the checkpoint
 runner. It starts one fresh child for each module, writes stdout/stderr logs
@@ -261,9 +278,19 @@ source change invalidates only that module; changing an unselected module does
 not invalidate the selected receipts.
 
 A module is resumed only when both context tiers and the command match, the
-prior receipt passes a structural single-EDN output check for exactly that
-module and its catalog source path, byte count, and SHA-256, and the canonical
-non-symlink stdout/stderr files still match their SHA-256 hashes. The tool
+prior schema-2 receipt passes a structural single-EDN output check for exactly
+that module and its catalog source path, byte count, and SHA-256, and its
+coverage census has the exact shape and bindings, a recomputable canonical
+hash, nonnegative counts, true integrity flags, and a passed runner census
+contract check. The validator receives the proof-contract SHA from the initial
+shared-context snapshot, reads the contract bytes once, verifies those exact
+bytes against the trusted SHA, and only then parses that same byte array. It
+compares any module expectation plus the boundary task, request schema, and
+scope. A coherently edited and rehashed stdout receipt therefore cannot
+override the contract, even if a forged contract is visible only during
+validation and restored before the final shared-context sweep. The canonical
+non-symlink stdout/stderr files must also still
+match their SHA-256 hashes. The tool
 performs a two-discovery catalog/shared-context handshake at startup and one
 final catalog rediscovery. Process-local source checks surround children; the
 receipt byte binding catches a transient current-module edit even if its bytes

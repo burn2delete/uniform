@@ -24,13 +24,14 @@ def fixture_output_validator(
     source_path: str,
     source_byte_count: int,
     source_bytes_sha256: str,
+    _proof_contract_sha256: str,
     path: Path,
 ) -> bool:
     output = path.read_text(encoding="utf-8")
     return (
         output.startswith(
             "{:artifact :gravity/sh07-authoritative-proof-run "
-            ":schema-version 1 :status :passed "
+            ":schema-version 2 :status :passed "
         )
         and f':module "{module}"' in output
         and f':source-path "{source_path}"' in output
@@ -39,6 +40,46 @@ def fixture_output_validator(
         and ":verification-status :passed" in output
         and ":capability-proof-status :complete" in output
         and ":failed-checks []" in output
+    )
+
+
+def authoritative_output(
+    source_size: int,
+    source_sha: str,
+    *,
+    form_count: int = 0,
+    census_hash: str = "sha256:c77fe8082508cb13e566555686f893c03e9e854de0a19b5d53876d5d500bf947",
+) -> str:
+    return (
+        "{:artifact :gravity/sh07-authoritative-proof-run "
+        ":schema-version 2 :status :passed "
+        ":fresh-process-required? true :persistent-iteration-cache-used? false "
+        ":modules [{:module \"alpha\" :status :accepted "
+        ":source-path \"bootstrap/gravity/src/gravity/alpha.gravity\" "
+        f":source-byte-count {source_size} :source-bytes-sha256 \"{source_sha}\" "
+        f":source-revision-id \"{source_sha}\" :artifact-id \"sha256:artifact\" "
+        ":verification-status :passed :capability-proof-status :complete "
+        ":failed-checks [] :coverage-census "
+        "{:artifact :gravity/sh07-authoritative-coverage-census :schema-version 1 "
+        ":authority-scope :individual-existing-runner-output-only "
+        ":aggregate-authoritative? false :module \"alpha\" "
+        f":module-namespace gravity.alpha :source-revision-id \"{source_sha}\" "
+        ":sh07-artifact-id \"sha256:artifact\" :sh06-status :accepted "
+        ":task \"SH-07-B45\" :request-schema-version 15 "
+        ":scope :sh07-b15-keyword-map-lookup "
+        f":source-binding {{:source-byte-count {source_size} "
+        f":source-bytes-sha256 \"{source_sha}\"}} "
+        ":request-counts {:fragment-count 0 :root-form-count 0 "
+        f":form-count {form_count} :binding-count 0 :local-binding-count 0 "
+        ":resolution-count 0} :core-counts {:core-node-count 0 "
+        ":definition-count 0 :call-count 0 :reference-count 0 "
+        ":keyword-lookup-count 0 :core-form-frequencies {}} "
+        ":integrity {:root-form-id-order-exact? true :form-id-order-exact? true "
+        ":source-snapshot-stable? true :source-revision-bound-to-bytes? true "
+        ":target-source-reread-disabled? true} "
+        f":census-hash \"{census_hash}\"}} "
+        ":contract-checks {:exact? true "
+        ":authoritative-coverage-census-current? true}}]}\n"
     )
 
 
@@ -63,7 +104,7 @@ class FakeLauncher:
             source = cwd / source_path
             stdout_path.write_text(
                 "{:artifact :gravity/sh07-authoritative-proof-run "
-                ":schema-version 1 :status :passed "
+                ":schema-version 2 :status :passed "
                 ":fresh-process-required? true "
                 ":persistent-iteration-cache-used? false "
                 f':modules [{{:module "{module}" :status :accepted '
@@ -107,7 +148,20 @@ class Sh07CheckpointTests(unittest.TestCase):
             "bootstrap/gravity/src/gravity/alpha.gravity": "(ns gravity.alpha)\n",
             "bootstrap/gravity/src/gravity/beta.gravity": "(ns gravity.beta)\n",
             "bootstrap/gravity/src/gravity/gamma.gravity": "(ns gravity.gamma)\n",
-            "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn": "{:schema :test}\n",
+            "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn": (
+                "{:schema :test "
+                ":boundary {:task \"SH-07-B45\" :request-schema-version 15 "
+                ":scope :sh07-b15-keyword-map-lookup} "
+                ":authoritative-coverage-census "
+                "{:schema-version 1 :module-expectations "
+                "{:alpha {:module-namespace gravity.alpha "
+                ":request-counts {:fragment-count 0 :root-form-count 0 "
+                ":form-count 0 :binding-count 0 :local-binding-count 0 "
+                ":resolution-count 0} "
+                ":core-counts {:core-node-count 0 :definition-count 0 "
+                ":call-count 0 :reference-count 0 :keyword-lookup-count 0 "
+                ":core-form-frequencies {}}}}}}\n"
+            ),
             "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj": "(ns test.runner)\n",
         }
         for relative, content in files.items():
@@ -559,6 +613,114 @@ class Sh07CheckpointTests(unittest.TestCase):
             self.assertEqual(0, code)
             self.assertEqual(["alpha", "alpha"], launcher.calls)
 
+    @unittest.skipUnless(shutil.which("clojure"), "clojure CLI is required")
+    def test_coherently_rehashed_census_cannot_override_contract_expectation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            calls: list[str] = []
+
+            def launcher(
+                command: list[str],
+                cwd: Path,
+                stdout_path: Path,
+                stderr_path: Path,
+                _timeout_seconds: float,
+            ) -> runner.ProcessOutcome:
+                module = command[-1]
+                calls.append(module)
+                source = cwd / "bootstrap/gravity/src/gravity/alpha.gravity"
+                stdout_path.write_text(
+                    authoritative_output(source.stat().st_size, runner.sha256_file(source)),
+                    encoding="utf-8",
+                )
+                stderr_path.write_text("", encoding="utf-8")
+                return runner.ProcessOutcome(0, False, 0.01)
+
+            contract_path = root / runner.PROOF_CONTRACT_RELATIVE
+            forge_during_validation = False
+            forged_once = False
+
+            def validator(
+                module: str,
+                source_path: str,
+                source_size: int,
+                source_sha: str,
+                trusted_contract_sha: str,
+                output_path: Path,
+            ) -> bool:
+                nonlocal forged_once
+                original = contract_path.read_bytes()
+                if forge_during_validation and not forged_once:
+                    forged_once = True
+                    contract_path.write_bytes(
+                        original.replace(b":form-count 0", b":form-count 1", 1)
+                    )
+                try:
+                    return runner.output_contract_passed(
+                        module,
+                        source_path,
+                        source_size,
+                        source_sha,
+                        trusted_contract_sha,
+                        output_path,
+                        clojure_command="clojure",
+                        cwd=root,
+                    )
+                finally:
+                    contract_path.write_bytes(original)
+
+            arguments = {
+                "root": root,
+                "state_dir": root / "checkpoints",
+                "modules": ["alpha"],
+                "module_catalog": self.module_catalog(),
+                "base_command": ["clojure"],
+                "timeout_seconds": 10,
+                "launcher": launcher,
+                "output_validator": validator,
+                "lock_path": root / "heavy.lock",
+            }
+            code, _ = runner.run_modules(**arguments)
+            self.assertEqual(0, code)
+            stdout = root / "checkpoints/modules/alpha.stdout.log"
+            source = root / "bootstrap/gravity/src/gravity/alpha.gravity"
+            stdout.write_text(
+                authoritative_output(
+                    source.stat().st_size,
+                    runner.sha256_file(source),
+                    form_count=1,
+                    census_hash=(
+                        "sha256:ed906ed90e5f6f64609621ef65e6135d"
+                        "b839663c3cfd7f7994af549e45c5376d"
+                    ),
+                ),
+                encoding="utf-8",
+            )
+            manifest_path = root / "checkpoints/manifest.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["modules"]["alpha"]["stdout_sha256"] = runner.sha256_file(stdout)
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+            forge_during_validation = True
+            code, result = runner.run_modules(**arguments)
+            self.assertEqual(0, code)
+            self.assertEqual(["alpha", "alpha"], calls)
+            self.assertEqual([], result["resumed_modules"])
+            self.assertTrue(forged_once)
+            self.assertEqual(
+                runner.sha256_file(contract_path),
+                result["shared_context"]["files"][
+                    next(
+                        index
+                        for index, entry in enumerate(
+                            result["shared_context"]["files"]
+                        )
+                        if entry["path"] == runner.PROOF_CONTRACT_RELATIVE
+                    )
+                ]["sha256"],
+            )
+
     def test_manifest_log_path_cannot_escape_checkpoint_directory(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -676,7 +838,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                 module = command[-1]
                 stdout_path.write_text(
                     "{:artifact :gravity/sh07-authoritative-proof-run "
-                    ":schema-version 1 :status :failed "
+                    ":schema-version 2 :status :failed "
                     ":fresh-process-required? true "
                     ":persistent-iteration-cache-used? false "
                     f':modules [{{:module "{module}" :status :passed}}]}}\n',
@@ -710,19 +872,48 @@ class Sh07CheckpointTests(unittest.TestCase):
             source = root / "bootstrap/gravity/src/gravity/alpha.gravity"
             source_size = source.stat().st_size
             source_sha = runner.sha256_file(source)
+            contract_sha = runner.sha256_file(
+                root / runner.PROOF_CONTRACT_RELATIVE
+            )
             output = root / "result.edn"
             output.write_text(
                 "{:artifact :gravity/sh07-authoritative-proof-run "
-                ":schema-version 1 :status :passed "
+                ":schema-version 2 :status :passed "
                 ":fresh-process-required? true "
                 ":persistent-iteration-cache-used? false "
                 ":modules [{:module \"alpha\" :status :accepted "
                 ":source-path \"bootstrap/gravity/src/gravity/alpha.gravity\" "
                 f":source-byte-count {source_size} "
                 f':source-bytes-sha256 "{source_sha}" '
+                f':source-revision-id "{source_sha}" '
+                ':artifact-id "sha256:artifact" '
                 ":verification-status :passed "
                 ":capability-proof-status :complete :failed-checks [] "
-                ":contract-checks {:exact? true}}]}\n",
+                ":coverage-census "
+                "{:artifact :gravity/sh07-authoritative-coverage-census "
+                ":schema-version 1 "
+                ":authority-scope :individual-existing-runner-output-only "
+                ":aggregate-authoritative? false :module \"alpha\" "
+                ":module-namespace gravity.alpha "
+                f':source-revision-id "{source_sha}" '
+                ':sh07-artifact-id "sha256:artifact" :sh06-status :accepted '
+                ':task "SH-07-B45" :request-schema-version 15 '
+                ":scope :sh07-b15-keyword-map-lookup "
+                f':source-binding {{:source-byte-count {source_size} '
+                f':source-bytes-sha256 "{source_sha}"}} '
+                ":request-counts {:fragment-count 0 :root-form-count 0 "
+                ":form-count 0 :binding-count 0 :local-binding-count 0 "
+                ":resolution-count 0} "
+                ":core-counts {:core-node-count 0 :definition-count 0 "
+                ":call-count 0 :reference-count 0 :keyword-lookup-count 0 "
+                ":core-form-frequencies {}} "
+                ":integrity {:root-form-id-order-exact? true "
+                ":form-id-order-exact? true :source-snapshot-stable? true "
+                ":source-revision-bound-to-bytes? true "
+                ":target-source-reread-disabled? true} "
+                ':census-hash "sha256:c77fe8082508cb13e566555686f893c03e9e854de0a19b5d53876d5d500bf947"} '
+                ":contract-checks "
+                "{:exact? true :authoritative-coverage-census-current? true}}]}\n",
                 encoding="utf-8",
             )
             self.assertTrue(
@@ -731,11 +922,47 @@ class Sh07CheckpointTests(unittest.TestCase):
                     "bootstrap/gravity/src/gravity/alpha.gravity",
                     source_size,
                     source_sha,
+                    contract_sha,
                     output,
                     clojure_command="clojure",
                     cwd=root,
                 )
             )
+            valid_output = output.read_text(encoding="utf-8")
+            # The embedded hash was produced by gravity.bootstrap/
+            # reader-canonical-hash for this census. Accepting the unmodified
+            # receipt proves the standalone validator's canonicalization is
+            # byte-for-byte compatible with the production reader hash.
+            for label, old, new in [
+                ("obsolete outer schema", ":schema-version 2", ":schema-version 1"),
+                ("missing census", ":coverage-census ", ":ignored-coverage-census "),
+                (
+                    "bad census hash",
+                    "sha256:c77fe8082508cb13e566555686f893c03e9e854de0a19b5d53876d5d500bf947",
+                    "sha256:" + "f" * 64,
+                ),
+                (
+                    "false census integrity",
+                    ":root-form-id-order-exact? true",
+                    ":root-form-id-order-exact? false",
+                ),
+                ("negative census count", ":form-count 0", ":form-count -1"),
+            ]:
+                with self.subTest(label=label):
+                    output.write_text(valid_output.replace(old, new, 1), encoding="utf-8")
+                    self.assertFalse(
+                        runner.output_contract_passed(
+                            "alpha",
+                            "bootstrap/gravity/src/gravity/alpha.gravity",
+                            source_size,
+                            source_sha,
+                            contract_sha,
+                            output,
+                            clojure_command="clojure",
+                            cwd=root,
+                        )
+                    )
+            output.write_text(valid_output, encoding="utf-8")
             output.write_text(
                 output.read_text(encoding="utf-8").replace(
                     "gravity/alpha.gravity", "gravity/beta.gravity"
@@ -748,6 +975,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                     "bootstrap/gravity/src/gravity/alpha.gravity",
                     source_size,
                     source_sha,
+                    contract_sha,
                     output,
                     clojure_command="clojure",
                     cwd=root,
@@ -766,6 +994,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                     "bootstrap/gravity/src/gravity/alpha.gravity",
                     source_size,
                     source_sha,
+                    contract_sha,
                     output,
                     clojure_command="clojure",
                     cwd=root,
@@ -784,6 +1013,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                     "bootstrap/gravity/src/gravity/alpha.gravity",
                     source_size,
                     source_sha,
+                    contract_sha,
                     output,
                     clojure_command="clojure",
                     cwd=root,

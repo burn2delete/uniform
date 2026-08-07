@@ -24,10 +24,13 @@ from collections.abc import Callable, Mapping, Sequence
 
 
 SCHEMA = "gravity/sh07-authoritative-module-checkpoints-v2"
-TOOL_VERSION = 2
+TOOL_VERSION = 3
 FINGERPRINT_POLICY_VERSION = 1
 DEFAULT_LOCK = Path("/tmp/gravity-sh07-heavy.lock")
 RUNNER_NAMESPACE = "gravity.self-hosting.sh07-authoritative-runner"
+PROOF_CONTRACT_RELATIVE = (
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+)
 MODULE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 
@@ -43,7 +46,7 @@ class ProcessOutcome:
 
 
 Launcher = Callable[[Sequence[str], Path, Path, Path, float], ProcessOutcome]
-OutputValidator = Callable[[str, str, int, str, Path], bool]
+OutputValidator = Callable[[str, str, int, str, str, Path], bool]
 CatalogProvider = Callable[[], Mapping[str, str]]
 
 
@@ -88,7 +91,7 @@ def shared_files(root: Path) -> list[Path]:
     required = [
         root / "deps.edn",
         *(root / relative for relative in SHARED_GRAVITY_FILES),
-        root / "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+        root / PROOF_CONTRACT_RELATIVE,
         root / "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj",
         Path(__file__).resolve(),
     ]
@@ -329,6 +332,23 @@ def fingerprint(value: object) -> str:
     return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
 
 
+def trusted_shared_file_sha256(
+    shared_context: Mapping[str, object], relative: str
+) -> str:
+    files = shared_context.get("files")
+    matches = (
+        [entry for entry in files if isinstance(entry, dict) and entry.get("path") == relative]
+        if isinstance(files, list)
+        else []
+    )
+    if len(matches) != 1:
+        raise CheckpointError(f"trusted shared input is absent or duplicated: {relative}")
+    value = matches[0].get("sha256")
+    if not isinstance(value, str) or re.fullmatch(r"sha256:[0-9a-f]{64}", value) is None:
+        raise CheckpointError(f"trusted shared input hash is malformed: {relative}")
+    return value
+
+
 def shared_context_fingerprint(
     root: Path,
     base_command: Sequence[str],
@@ -544,6 +564,44 @@ def default_launcher(
 
 EDN_OUTPUT_VALIDATOR = r"""
 (require '[clojure.edn :as edn] '[clojure.java.io :as io])
+(defn canonical-value [value]
+  (cond
+    (map? value)
+    (let [decorated
+          (mapv (fn [[key item]]
+                  (let [entry [(canonical-value key) (canonical-value item)]]
+                    [(pr-str entry) entry]))
+                value)]
+      [:map (->> decorated (sort-by first) (mapv second))])
+    (set? value) [:set (->> value (map canonical-value) (sort-by pr-str) vec)]
+    (vector? value) [:vector (mapv canonical-value value)]
+    (seq? value) [:list (mapv canonical-value value)]
+    :else value))
+(defn canonical-hash [value]
+  (let [digest (java.security.MessageDigest/getInstance "SHA-256")
+        canonical
+        (binding [*print-length* nil *print-level* nil *print-meta* true]
+          (pr-str (canonical-value value)))]
+    (.update digest (.getBytes canonical "UTF-8"))
+    (str "sha256:"
+         (apply str (map #(format "%02x" (bit-and % 0xff))
+                         (.digest digest))))))
+(defn bytes-sha256 [bytes]
+  (let [digest (java.security.MessageDigest/getInstance "SHA-256")]
+    (.update digest bytes)
+    (str "sha256:"
+         (apply str (map #(format "%02x" (bit-and % 0xff))
+                         (.digest digest))))))
+(defn read-one-edn-bytes [bytes]
+  (with-open [reader
+              (java.io.PushbackReader.
+               (java.io.StringReader. (String. bytes "UTF-8")))]
+    (let [value (edn/read {:eof ::eof} reader)
+          trailing (edn/read {:eof ::eof} reader)]
+      (when (or (= ::eof value) (not= ::eof trailing))
+        (throw (ex-info "Expected exactly one proof contract EDN value"
+                        {})))
+      value)))
 (let [path (System/getenv "GRAVITY_SH07_OUTPUT_PATH")
       expected-module (System/getenv "GRAVITY_SH07_EXPECTED_MODULE")
       expected-source-path (System/getenv "GRAVITY_SH07_EXPECTED_SOURCE_PATH")
@@ -551,16 +609,45 @@ EDN_OUTPUT_VALIDATOR = r"""
       (Long/parseLong (System/getenv "GRAVITY_SH07_EXPECTED_SOURCE_BYTE_COUNT"))
       expected-source-bytes-sha256
       (System/getenv "GRAVITY_SH07_EXPECTED_SOURCE_BYTES_SHA256")
+      expected-proof-contract-sha256
+      (System/getenv "GRAVITY_SH07_EXPECTED_PROOF_CONTRACT_SHA256")
+      contract-bytes
+      (java.nio.file.Files/readAllBytes
+       (.toPath
+        (io/file
+         "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")))
+      contract-sha256 (bytes-sha256 contract-bytes)
+      contract
+      (when (= expected-proof-contract-sha256 contract-sha256)
+        (read-one-edn-bytes contract-bytes))
+      boundary (:boundary contract)
+      census-contract (:authoritative-coverage-census contract)
+      module-expectation
+      (get-in census-contract [:module-expectations (keyword expected-module)])
       passed?
       (with-open [reader (java.io.PushbackReader. (io/reader path))]
         (let [value (edn/read {:eof ::eof} reader)
               trailing (edn/read {:eof ::eof} reader)
               modules (:modules value)
               result (when (= 1 (count modules)) (first modules))
-              checks (:contract-checks result)]
-          (and (= ::eof trailing)
+              checks (:contract-checks result)
+              census (:coverage-census result)
+              request-counts (:request-counts census)
+              core-counts (:core-counts census)
+              frequencies (:core-form-frequencies core-counts)
+              integrity (:integrity census)
+              source-binding (:source-binding census)
+              nonnegative-counts?
+              (fn [counts]
+                (and (map? counts)
+                     (every? (fn [[_ count]]
+                               (and (integer? count) (not (neg? count))))
+                             counts)))]
+          (and (= expected-proof-contract-sha256 contract-sha256)
+               (map? contract)
+               (= ::eof trailing)
                (= :gravity/sh07-authoritative-proof-run (:artifact value))
-               (= 1 (:schema-version value))
+               (= 2 (:schema-version value))
                (= :passed (:status value))
                (true? (:fresh-process-required? value))
                (false? (:persistent-iteration-cache-used? value))
@@ -573,8 +660,73 @@ EDN_OUTPUT_VALIDATOR = r"""
                (= :passed (:verification-status result))
                (= :complete (:capability-proof-status result))
                (empty? (:failed-checks result))
+               (= :gravity/sh07-authoritative-coverage-census
+                  (:artifact census))
+               (= #{:artifact :schema-version :authority-scope
+                    :aggregate-authoritative? :module :module-namespace
+                    :source-revision-id :sh07-artifact-id :sh06-status :task
+                    :request-schema-version :scope :source-binding
+                    :request-counts :core-counts :integrity :census-hash}
+                  (set (keys census)))
+               (= 1 (:schema-version census))
+               (= (:schema-version census-contract) (:schema-version census))
+               (= :individual-existing-runner-output-only
+                  (:authority-scope census))
+               (false? (:aggregate-authoritative? census))
+               (= expected-module (:module census))
+               (symbol? (:module-namespace census))
+               (= (:task boundary) (:task census))
+               (= (:request-schema-version boundary)
+                  (:request-schema-version census))
+               (= (:scope boundary) (:scope census))
+               (or (nil? module-expectation)
+                   (and (= (:module-namespace module-expectation)
+                           (:module-namespace census))
+                        (= (:request-counts module-expectation)
+                           request-counts)
+                        (= (:core-counts module-expectation)
+                           core-counts)))
+               (= expected-source-bytes-sha256
+                  (:source-revision-id result)
+                  (:source-revision-id census))
+               (string? (:artifact-id result))
+               (= (:artifact-id result) (:sh07-artifact-id census))
+               (= :accepted (:sh06-status census))
+               (string? (:task census))
+               (pos-int? (:request-schema-version census))
+               (keyword? (:scope census))
+               (= #{:source-byte-count :source-bytes-sha256}
+                  (set (keys source-binding)))
+               (= expected-source-byte-count
+                  (:source-byte-count source-binding))
+               (= expected-source-bytes-sha256
+                  (:source-bytes-sha256 source-binding))
+               (= #{:fragment-count :root-form-count :form-count
+                    :binding-count :local-binding-count :resolution-count}
+                  (set (keys request-counts)))
+               (nonnegative-counts? request-counts)
+               (= #{:core-node-count :definition-count :call-count
+                    :reference-count :keyword-lookup-count
+                    :core-form-frequencies}
+                  (set (keys core-counts)))
+               (nonnegative-counts?
+                (dissoc core-counts :core-form-frequencies))
+               (map? frequencies)
+               (every? (fn [[form count]]
+                         (and (keyword? form) (pos-int? count)))
+                       frequencies)
+               (= #{:root-form-id-order-exact? :form-id-order-exact?
+                    :source-snapshot-stable? :source-revision-bound-to-bytes?
+                    :target-source-reread-disabled?}
+                  (set (keys integrity)))
+               (every? true? (vals integrity))
+               (= (:census-hash census)
+                  (canonical-hash
+                   {:domain :gravity/sh07-authoritative-coverage-census-v1
+                    :census (dissoc census :census-hash)}))
                (map? checks)
                (seq checks)
+               (true? (:authoritative-coverage-census-current? checks))
                (every? true? (vals checks)))))]
   (when-not passed? (System/exit 1)))
 """
@@ -585,6 +737,7 @@ def output_contract_passed(
     expected_source_path: str,
     expected_source_byte_count: int,
     expected_source_bytes_sha256: str,
+    expected_proof_contract_sha256: str,
     stdout_path: Path,
     *,
     clojure_command: str,
@@ -610,6 +763,9 @@ def output_contract_passed(
                 ),
                 "GRAVITY_SH07_EXPECTED_SOURCE_BYTES_SHA256": (
                     expected_source_bytes_sha256
+                ),
+                "GRAVITY_SH07_EXPECTED_PROOF_CONTRACT_SHA256": (
+                    expected_proof_contract_sha256
                 ),
             },
             stdout=subprocess.DEVNULL,
@@ -751,12 +907,16 @@ def run_modules(
         require_runtime_identity=launcher is default_launcher,
     )
     shared_fingerprint = str(shared_context["sha256"])
+    trusted_proof_contract_sha256 = trusted_shared_file_sha256(
+        shared_context, PROOF_CONTRACT_RELATIVE
+    )
     validator = output_validator or (
-        lambda module, source_path, source_size, source_sha, output: output_contract_passed(
+        lambda module, source_path, source_size, source_sha, contract_sha, output: output_contract_passed(
             module,
             source_path,
             source_size,
             source_sha,
+            contract_sha,
             output,
             clojure_command=base[0],
             cwd=root,
@@ -901,6 +1061,7 @@ def run_modules(
                     catalog[module],
                     source_size,
                     source_sha,
+                    trusted_proof_contract_sha256,
                     state_dir / f"modules/{module}.stdout.log",
                 )
             ):
@@ -944,6 +1105,7 @@ def run_modules(
                     catalog[module],
                     source_size,
                     source_sha,
+                    trusted_proof_contract_sha256,
                     stdout_path,
                 )
             )
