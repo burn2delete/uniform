@@ -422,29 +422,46 @@ provenance, replay, and altered-product containment. This proves source-model
 representation only: production verifier execution, schema enforcement,
 certificate and evidence checking, translation validation and replay, release
 decisions, and plugin/backend conformance execution remain pending. The B16
-cohort remains unchanged. The C7 type-checker source now contributes 142,136
-authenticated bytes in 142 fragments containing 12,759 forms and 5,221
-resolutions. Its checked-core products contain 137 function records, 2,069 call
-edges, ten recursion components, and no keyword-lookup products. The recorded
+cohort remains unchanged. The recorded pre-promotion C7 type-checker revision
+contributed 142,136 authenticated bytes in 142 fragments containing 12,759
+forms and 5,221 resolutions. Its checked-core products contained 137 function
+records, 2,069 call edges, ten recursion components, and no keyword-lookup
+products. The recorded
 cache-free proof passed every contract check in 2,411.35 seconds in its
 then-current coordinator context, with artifact
 identity
 `sha256:fb44649cb56a696eb5132774ca4dd0100c9029e4c59bddc27791bbfb115a40f8`
 and verification report
 `sha256:7300876921f948fedbd2d9d723d1a4b7ec6827c4329777e167015db582937665`.
-The bounded function-typing integration then passed 24 tests and 244 assertions
+The bounded first-order function-typing integration then passed 24 tests and
+244 assertions
 in 723.332 seconds with 3.627 GB sampled peak resident memory. It consumes
 the host-validated B47 report and digest boundary, reconstructs definitions,
 fixed-arity functions, direct calls, local bindings, and recursion products in
 Gravity, emits path-neutral type identities with retained provenance, and
-rejects altered lineage and results. This proves a first-order function, local,
-and call typing slice, not complete C7 or SH-08: higher-order functions, complete
+rejects altered lineage and results. That revision proved a first-order
+function, local, and call typing slice, not complete C7 or SH-08: higher-order
+functions, complete
 recursive annotation inference, records, unions, protocols, generics, casts,
 dynamic/layout/schema/ownership legality, public routing, native Gravity digest
 verification, and seed retirement remain pending. The later proof-traversal
 deduplication changed a shared bootstrap fingerprint without changing this C7
 source; a fresh checkpoint-v2 replay is therefore pending before completion or
 release evidence, and the recorded v1 receipt is not resumed as current proof.
+The current stage-owned C7 source is 176,551 bytes with hash
+`sha256:648c71d18f5b81649a8d6d755e1e73b5ba502d359e3a972e4a9341dff6dee975`.
+It promotes exactly one capture-free named monomorphic fixed-arity function value
+through one `apply-one` hop, derives the authoritative integer signature from B47
+call, edge, binding, and evaluation-order products, preserves SH-09/SH-10 pending
+obligations, and recomputes altered candidates through the public verifier. Its
+dedicated current-runtime namespace passed 9 tests and 150 assertions; the
+existing function-call namespace passed 24 tests and 245 assertions. This is
+focused non-authoritative integration evidence, not a replacement for a fresh C7
+module proof. General higher-order values, captures and lifetimes, aliases and
+returns, multi-hop flow, polymorphism, overloads, multi-arity and variadic calls,
+protocol or dynamic dispatch, reflection, and complete recursive inference remain
+pending. The old C7 receipt remains historical; current source-bound authority and
+coverage-census evidence are still required before completion or release claims.
 The C8 effect-checker source adds 44,102 authenticated bytes in 40 fragments
 containing 3,301 forms, 410 bindings, and 1,078 resolutions. It lowers to 2,788
 canonical core nodes with 40 definitions: 34 executable SH-09 functions and
@@ -825,8 +842,9 @@ its source, plan, and function identities are pinned, while a fresh cache-free
 replay remains required before final B47 integration.
 The B47 census proves bounded construction of exact function, direct-call, and
 recursion products, but it is not the final cache-free authoritative replay or
-cross-root parity gate for this revision. `SH-07` remains partial: higher-order
-calls, closure capture, complete core-form coverage, public routing, and seed
+cross-root parity gate for this revision. `SH-07` remains partial: general
+higher-order calls beyond the bounded C7 one-hop consumer, closure capture,
+complete core-form coverage, public routing, and seed
 retirement remain pending. `SH-25` remains queued because its supplied component
 descriptors are bounded planning inputs rather than authentic `SH-24` build
 outputs.
@@ -845,7 +863,8 @@ and verification report
 This proves bounded direct local fixed-arity legality, ordered argument lineage,
 explicitly pending nonlocal calls, path-neutral identity, retained provenance,
 and structured rejection. Variadic and multi-arity dispatch, closure capture,
-higher-order calls, type/effect legality, execution, public routing, and seed
+general higher-order calls beyond the bounded C7 one-hop consumer, type/effect
+legality, execution, public routing, and seed
 retirement remain pending, so `SH-07` receives no completion credit. The later
 shared proof-traversal deduplication requires a fresh checkpoint-v2 replay
 before completion or release evidence; the recorded v1 receipt remains bounded
