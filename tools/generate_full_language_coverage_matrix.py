@@ -16,6 +16,11 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+if __package__:
+    from .output_publication import atomic_write_json, atomic_write_text
+else:
+    from output_publication import atomic_write_json, atomic_write_text
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
@@ -459,12 +464,25 @@ def gap_report(matrix: dict[str, Any]) -> dict[str, Any]:
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    atomic_write_json(path, payload)
 
 
-def write_report(path: Path, matrix: dict[str, Any], gaps: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+def logical_output_path(path: Path) -> str:
+    if path.is_absolute():
+        try:
+            return path.relative_to(ROOT).as_posix()
+        except ValueError as exc:
+            raise ValueError(f"coverage output path is outside repository root: {path}") from exc
+    return path.as_posix()
+
+
+def write_report(
+    path: Path,
+    matrix: dict[str, Any],
+    gaps: dict[str, Any],
+    matrix_path: Path = DEFAULT_MATRIX,
+    gaps_path: Path = DEFAULT_GAPS,
+) -> None:
     summary = matrix["summary"]
     public = summary["publicAudit"]
     rows = [
@@ -482,7 +500,7 @@ def write_report(path: Path, matrix: dict[str, Any], gaps: dict[str, Any]) -> No
         f"- Documents with no stable diagnostic: {summary['documentsWithNoStableDiagnostic']}",
         f"- Documents with no Gravity-authored implementation: {summary['documentsWithNoGravityAuthoredImplementation']}",
         "",
-        "## Public Binary Audit",
+        "## Static Public Reachability Audit",
         "",
         f"- Enabled: {public['enabled']}",
         f"- Accepted sources audited: {public['acceptedTotal']}",
@@ -511,11 +529,11 @@ def write_report(path: Path, matrix: dict[str, Any], gaps: dict[str, Any]) -> No
             "",
             "## Report Artifacts",
             "",
-            f"- Matrix: `{rel(DEFAULT_MATRIX)}`",
-            f"- Gap report: `{rel(DEFAULT_GAPS)}`",
+            f"- Matrix: `{logical_output_path(matrix_path)}`",
+            f"- Gap report: `{logical_output_path(gaps_path)}`",
         ]
     )
-    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    atomic_write_text(path, "\n".join(rows) + "\n")
 
 
 def fixture_is_complete(payload: dict[str, Any]) -> tuple[bool, list[str]]:
@@ -560,7 +578,11 @@ def self_test() -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write", action="store_true", help="write matrix, gap report, and Markdown report")
-    parser.add_argument("--audit-public", action="store_true", help="run bin/gravity check over source fixtures")
+    parser.add_argument(
+        "--audit-public",
+        action="store_true",
+        help="perform the static public reachability audit over release routing and diagnostics",
+    )
     parser.add_argument("--self-test", action="store_true", help="run coverage classifier fixture tests")
     parser.add_argument("--require-full-language", action="store_true", help="exit nonzero if any document is incomplete")
     parser.add_argument("--matrix", type=Path, default=DEFAULT_MATRIX)
@@ -577,7 +599,7 @@ def main() -> None:
     if args.write:
         write_json(args.matrix, matrix)
         write_json(args.gaps, gaps)
-        write_report(args.report, matrix, gaps)
+        write_report(args.report, matrix, gaps, args.matrix, args.gaps)
     summary = matrix["summary"]
     public = summary["publicAudit"]
     print(
