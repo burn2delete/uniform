@@ -94876,7 +94876,12 @@
               (apply assoc args))
       get (do (p15-s23-stage2-runtime-assert-between-arity!
                plan callee args 2 3)
-              (apply get args))
+              ;; `get` dominates checked-core execution. Avoid `apply` here:
+              ;; it turns the already-materialized argument vector into a seq
+              ;; and performs generic bounded-arity dispatch on every lookup.
+              (case (count args)
+                2 (get (nth args 0) (nth args 1))
+                3 (get (nth args 0) (nth args 1) (nth args 2))))
       first (do (p15-s23-stage2-runtime-assert-exact-arity!
                  plan callee args 1)
                 (first (first args)))
@@ -95104,30 +95109,70 @@
      plan nil (count (p15-s23-stage2-runtime-recur-values value)) reason))
   value)
 
+(defn- p15-s23-stage2-runtime-execute-value
+  [runtime plan env instruction reason]
+  (p15-s23-stage2-runtime-nontail-value!
+   plan
+   (p15-s23-stage2-runtime-execute-instruction
+    runtime plan env instruction)
+   reason))
+
 (defn p15-s23-stage2-runtime-execute-values
   [runtime plan env instructions reason]
-  (mapv (fn [instruction]
-          (p15-s23-stage2-runtime-nontail-value!
-           plan
-           (p15-s23-stage2-runtime-execute-instruction
-            runtime plan env instruction)
-           reason))
-        instructions))
+  ;; Builtin and function calls overwhelmingly carry zero to three arguments.
+  ;; `mapv` allocates a transient vector root/tail even for those tiny
+  ;; collections, which accounted for most allocation in a live B47 profile.
+  ;; Preserve the generic path for larger carriers.
+  (case (count instructions)
+    0 []
+    1 [(p15-s23-stage2-runtime-execute-value
+        runtime plan env (nth instructions 0) reason)]
+    2 [(p15-s23-stage2-runtime-execute-value
+        runtime plan env (nth instructions 0) reason)
+       (p15-s23-stage2-runtime-execute-value
+        runtime plan env (nth instructions 1) reason)]
+    3 [(p15-s23-stage2-runtime-execute-value
+        runtime plan env (nth instructions 0) reason)
+       (p15-s23-stage2-runtime-execute-value
+        runtime plan env (nth instructions 1) reason)
+       (p15-s23-stage2-runtime-execute-value
+        runtime plan env (nth instructions 2) reason)]
+    (mapv (fn [instruction]
+            (p15-s23-stage2-runtime-execute-value
+             runtime plan env instruction reason))
+          instructions)))
 
 (defn p15-s23-stage2-runtime-execute-instructions
   [runtime plan env instructions]
-  (loop [remaining (seq instructions)
-         result nil]
-    (if-let [instruction (first remaining)]
-      (let [value (p15-s23-stage2-runtime-execute-instruction
-                   runtime plan env instruction)
-            more (next remaining)]
-        (if (and (p15-s23-stage2-runtime-recur-signal? value) more)
-          (p15-s23-stage2-runtime-recur-fail!
-           plan nil (count (p15-s23-stage2-runtime-recur-values value))
-           :non-tail-sequential-position)
-          (recur more value)))
-      result)))
+  (if (vector? instructions)
+    ;; Compiler plans use vectors. Indexing avoids constructing a chunked seq
+    ;; and calling `next` for every interpreted function body.
+    (let [instruction-count (count instructions)]
+      (loop [index 0
+             result nil]
+        (if (< index instruction-count)
+          (let [value (p15-s23-stage2-runtime-execute-instruction
+                       runtime plan env (nth instructions index))
+                more? (< (inc index) instruction-count)]
+            (if (and (p15-s23-stage2-runtime-recur-signal? value) more?)
+              (p15-s23-stage2-runtime-recur-fail!
+               plan nil (count (p15-s23-stage2-runtime-recur-values value))
+               :non-tail-sequential-position)
+              (recur (inc index) value)))
+          result)))
+    ;; Retain the established behavior for direct callers that supply lists.
+    (loop [remaining (seq instructions)
+           result nil]
+      (if-let [instruction (first remaining)]
+        (let [value (p15-s23-stage2-runtime-execute-instruction
+                     runtime plan env instruction)
+              more (next remaining)]
+          (if (and (p15-s23-stage2-runtime-recur-signal? value) more)
+            (p15-s23-stage2-runtime-recur-fail!
+             plan nil (count (p15-s23-stage2-runtime-recur-values value))
+             :non-tail-sequential-position)
+            (recur more value)))
+        result))))
 
 (defn p15-s23-stage2-runtime-execute-instruction
   [runtime plan env instruction]
