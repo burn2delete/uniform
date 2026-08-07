@@ -119,6 +119,9 @@ Use for a single changed test or a bounded shard. These runs are
 # One discovered namespace through the normal coordinator.
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting-test-runner --namespace gravity.self-hosting.sh07-module-fragment-test
 
+# One or more focused namespaces with a bounded process-local cache.
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-iteration-cache-runner --namespace gravity.self-hosting.sh07-b48-call-arity-test --max-cache-entries 2
+
 # Process-local immutable-cache shards (acceleration only).
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-cached-shard-runner --list
 clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-cached-shard-runner --check
@@ -130,6 +133,16 @@ Cached output is marked `:cache-authoritative? false` and
 also list/check/run its named shards with
 `gravity.self-hosting.sh07-parallel-shard-runner`; that output is test
 feedback, not proof evidence.
+
+The iteration cache runner accepts repeatable `--namespace` options and runs
+them sequentially in one JVM. It caches SH-06 resolution, SH-07 core, and
+artifact verification results using source, adapter, plan, and runtime-bound
+keys. `--max-cache-entries` bounds each cache independently (default `4`) to
+avoid retaining the entire fixture corpus. Use a small bound such as `2` for
+memory-heavy work. Cache misses for the same key are serialized so test
+futures cannot accidentally start duplicate core builds. Its report always
+states `:authority :non-authoritative`, `:cache-authoritative? false`, and
+`:fresh-authoritative-run-required? true`.
 
 ### 5. Selected fresh authoritative module
 
