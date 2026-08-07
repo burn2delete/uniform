@@ -86,6 +86,56 @@
         (is (= 7 (get-in result [:cache :sh06-hits])))
         (is (apply = (:value result)))))))
 
+(deftest iteration-cache-reports-per-namespace-time-and-cache-deltas
+  (let [calls (atom 0)
+        tested-namespaces (atom [])
+        output (java.io.StringWriter.)]
+    (with-redefs
+      [bootstrap/sh06-resolution-source-artifact
+       (fn [path source]
+         (swap! calls inc)
+         [path source])
+       clojure.test/test-ns
+       (fn [namespace]
+         (swap! tested-namespaces conj namespace)
+         (case namespace
+           example.one
+           (let [nested (Thread.
+                         #(clojure.test/test-ns 'unrelated.namespace))]
+             (.start nested)
+             (.join nested))
+
+           unrelated.namespace
+           (bootstrap/sh06-resolution-source-artifact "same" "content")
+
+           example.two
+           (bootstrap/sh06-resolution-source-artifact "same" "content"))
+         {:test 0 :pass 0 :fail 0 :error 0})]
+      (let [result
+            (binding [*out* output]
+              (runner/with-iteration-cache
+               {:maximum-entries 1}
+               #(#'runner/run-tests-with-telemetry '[example.one example.two])))
+            namespace-results (get-in result [:value :namespace-results])]
+        (is (= 1 @calls))
+        (is (= '[example.one unrelated.namespace example.two]
+               @tested-namespaces))
+        (is (= '[example.one example.two]
+               (mapv :namespace namespace-results)))
+        (is (every? #(and (integer? (:elapsed-ms %))
+                          (not (neg? (:elapsed-ms %))))
+                    namespace-results))
+        (is (= 1 (get-in namespace-results [0 :cache :sh06-misses])))
+        (is (= 1 (get-in namespace-results [1 :cache :sh06-hits])))
+        (is (every? #(= :non-authoritative (:authority %))
+                    namespace-results))
+        (is (= (:cache result)
+               (apply merge-with + (map :cache namespace-results))))
+        (is (= 2
+               (count
+                (re-seq #":gravity/sh07-iteration-namespace-result"
+                        (str output)))))))))
+
 (deftest argument-selection-is-explicit-and-owned
   (testing "repeatable namespaces and cache bound"
     (is (= {:namespaces '[gravity.diagnostics-test gravity.cli-test]

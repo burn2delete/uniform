@@ -9,6 +9,13 @@
 
 (def ^:private default-maximum-entries 4)
 
+(def ^:private empty-cache-counters
+  {:sh06-hits 0 :sh06-misses 0
+   :core-hits 0 :core-misses 0
+   :verification-hits 0 :verification-misses 0})
+
+(def ^:dynamic ^:private *iteration-cache-counters* nil)
+
 (deftype ^:private IdentityKey [value]
   Object
   (equals [_ other]
@@ -98,9 +105,7 @@
         original-sh06 bootstrap/sh06-resolution-source-artifact
         original-core bootstrap/sh07-core-from-resolution-artifact
         original-verification bootstrap/sh07-core-artifact-verification
-        counters (atom {:sh06-hits 0 :sh06-misses 0
-                        :core-hits 0 :core-misses 0
-                        :verification-hits 0 :verification-misses 0})
+        counters (atom empty-cache-counters)
         sh06-cache (bounded-cache maximum-entries counters
                                   :sh06-hits :sh06-misses)
         core-cache (bounded-cache maximum-entries counters
@@ -123,11 +128,12 @@
            #(original-verification artifact)))
         started (System/nanoTime)
         value
-        (with-redefs [bootstrap/sh06-resolution-source-artifact cached-sh06
-                      bootstrap/sh07-core-from-resolution-artifact cached-core
-                      bootstrap/sh07-core-artifact-verification
-                      cached-verification]
-          (operation))]
+        (binding [*iteration-cache-counters* counters]
+          (with-redefs [bootstrap/sh06-resolution-source-artifact cached-sh06
+                        bootstrap/sh07-core-from-resolution-artifact cached-core
+                        bootstrap/sh07-core-artifact-verification
+                        cached-verification]
+            (operation)))]
     {:value value
      :cache @counters
      :cache-context context
@@ -194,6 +200,52 @@
                      :option option
                      :supported ["--namespace" "--max-cache-entries"]})))))))
 
+(defn- cache-snapshot
+  []
+  (if *iteration-cache-counters*
+    @*iteration-cache-counters*
+    empty-cache-counters))
+
+(defn- cache-delta
+  [before after]
+  (merge-with - after before))
+
+(defn- namespace-symbol
+  [namespace]
+  (if (instance? clojure.lang.Namespace namespace)
+    (ns-name namespace)
+    namespace))
+
+(defn- run-tests-with-telemetry
+  [namespaces]
+  (let [namespace-results (atom [])
+        summaries
+        (mapv
+         (fn [namespace]
+           (let [started (System/nanoTime)
+                 before (cache-snapshot)]
+             (try
+               (test/test-ns namespace)
+               (finally
+                 (let [result
+                       {:namespace (namespace-symbol namespace)
+                        :elapsed-ms
+                        (long (/ (- (System/nanoTime) started) 1000000))
+                        :cache (cache-delta before (cache-snapshot))
+                        :authority :non-authoritative}]
+                   (swap! namespace-results conj result)
+                   (println
+                    (pr-str
+                     (assoc result
+                            :artifact
+                            :gravity/sh07-iteration-namespace-result)))
+                   (flush))))))
+         namespaces)
+        test-result (assoc (apply merge-with + summaries) :type :summary)]
+    (test/do-report test-result)
+    {:test-result test-result
+     :namespace-results @namespace-results}))
+
 (defn run-namespaces
   [{:keys [namespaces maximum-entries]}]
   (doseq [namespace namespaces]
@@ -201,12 +253,13 @@
   (let [cached
         (with-iteration-cache
           {:maximum-entries maximum-entries}
-          #(apply test/run-tests namespaces))
-        test-result (:value cached)]
+          #(run-tests-with-telemetry namespaces))
+        {:keys [test-result namespace-results]} (:value cached)]
     (-> cached
         (dissoc :value)
         (assoc :artifact :gravity/sh07-iteration-cache-run
                :namespaces namespaces
+               :namespace-results namespace-results
                :test-result test-result
                :ok? (and (zero? (:fail test-result))
                          (zero? (:error test-result)))))))

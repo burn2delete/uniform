@@ -166,7 +166,11 @@ avoid retaining the entire fixture corpus. Use a small bound such as `2` for
 memory-heavy work. Cache misses for the same key are serialized so test
 futures cannot accidentally start duplicate core builds. Its report always
 states `:authority :non-authoritative`, `:cache-authoritative? false`, and
-`:fresh-authoritative-run-required? true`.
+`:fresh-authoritative-run-required? true`. After each namespace it also emits
+a `:gravity/sh07-iteration-namespace-result` record with elapsed milliseconds
+and that namespace's cache hit/miss deltas. Use these records to identify the
+slow namespace and confirm that a combined run is actually reusing work before
+changing cache bounds or widening the selection.
 
 ### 5. Selected fresh authoritative module
 
