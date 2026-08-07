@@ -63,7 +63,7 @@
   (or (= \newline ch) (= \return ch)))
 
 (defn line-start-indices
-  [source-text]
+  [^String source-text]
   (let [source-length (count source-text)]
     (loop [idx 0
            starts [0]]
