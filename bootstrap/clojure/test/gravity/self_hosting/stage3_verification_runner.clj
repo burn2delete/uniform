@@ -1309,9 +1309,9 @@
   [report-file receipt]
   (let [{:keys [target parent]} (report-target-path report-file)
         ;; createTempFile is CREATE_NEW by contract.  The final hard-link
-        ;; creation below is the no-replace primitive: unlike ATOMIC_MOVE, the
-        ;; Java API does not permit an implementation to replace an existing
-        ;; target when createLink sees a race.
+        ;; creation below is the no-replace primitive: the Java API does not
+        ;; permit an implementation to replace an existing target when
+        ;; createLink sees a race.
         temporary (java.nio.file.Files/createTempFile
                    parent ".gravity-stage3-report-" ".tmp"
                    (make-array java.nio.file.attribute.FileAttribute 0))]
