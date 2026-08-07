@@ -478,6 +478,8 @@ def select_impacted_checks(
     if unknown_lanes:
         raise ManifestError(f"unknown requested lanes: {sorted(unknown_lanes)}")
     requested = set(requested_ids or [])
+    if all_checks and requested:
+        raise ManifestError("--all cannot be combined with --check; choose one selection mode")
     unknown_ids = requested - set(by_id)
     if unknown_ids:
         raise ManifestError(f"unknown requested checks: {sorted(unknown_ids)}")
@@ -505,19 +507,23 @@ def select_impacted_checks(
                 direct.add(check_id)
                 reasons[check_id].append("changed-input:" + ",".join(matches))
     # First close downstream so changed source evidence reaches dependents.
+    # An explicitly named check is already the caller's complete scope; add
+    # only its prerequisites below.  Expanding its downstream graph would turn
+    # ``--check stage0-reader`` into an accidental full/heavy run.
     reverse: dict[str, list[str]] = {check_id: [] for check_id in by_id}
     for check_id, check in by_id.items():
         for dep in dependencies_of(check):
             reverse[dep].append(check_id)
     selected = set(direct) & allowed
-    queue = sorted(selected)
-    while queue:
-        current = queue.pop(0)
-        for child in sorted(reverse[current]):
-            if child not in selected and child in allowed:
-                selected.add(child)
-                reasons[child].append("downstream-of:" + current)
-                queue.append(child)
+    if not requested:
+        queue = sorted(selected)
+        while queue:
+            current = queue.pop(0)
+            for child in sorted(reverse[current]):
+                if child not in selected and child in allowed:
+                    selected.add(child)
+                    reasons[child].append("downstream-of:" + current)
+                    queue.append(child)
     # Then close dependencies.  Dependencies may come from another lane and
     # must be included even when a lane filter was requested.
     queue = sorted(selected)
@@ -558,7 +564,20 @@ def select_impacted_checks(
     }
     return {
         "selected_ids": selected_order,
+        # Keep the selection mode explicit in receipts.  A caller that asks
+        # for every check (or names a check directly) has supplied its own
+        # scope; ambient changed paths are observation only in those modes.
+        "selection_mode": (
+            "all"
+            if all_checks
+            else "explicit-check"
+            if requested
+            else "change-impact"
+            if changed
+            else "default"
+        ),
         "changed_paths": changed,
+        "changed_paths_observed": changed,
         "lanes": sorted(lane_set, key=LANES.index),
         "reasons": {check_id: sorted(set(reasons[check_id])) for check_id in selected_order},
         "unmatched_changes": unmatched,
@@ -2039,15 +2058,24 @@ def run_verification(
         "status": "planned" if (dry_run or explain) else "running",
         "authoritative": False,
     }
-    if selection["unmatched_changes"] or selection.get("matched_outside_lane") or selection.get("requested_outside_lane"):
+    # Changed-path ownership is fail-closed only for implicit change-impact
+    # selection.  ``--all`` and ``--check`` are explicit scopes, so a dirty
+    # worktree (including an unrelated generated file) is recorded in the
+    # selection metadata but must not veto the requested plan.  Lane ownership
+    # for an explicitly requested check remains enforced below.
+    impact_selection_error = (
+        selection.get("selection_mode") == "change-impact"
+        and (selection["unmatched_changes"] or selection.get("matched_outside_lane"))
+    )
+    if impact_selection_error or selection.get("requested_outside_lane"):
         # A changed path that no check declares is unsafe to ignore.  Returning
         # a failed receipt (rather than an empty passing plan) makes missing
         # manifest coverage visible to both humans and CI.
         receipt["status"] = "failed"
         errors: list[str] = []
-        if selection["unmatched_changes"]:
+        if impact_selection_error and selection["unmatched_changes"]:
             errors.append("unmatched changed paths: " + ", ".join(selection["unmatched_changes"]))
-        if selection.get("matched_outside_lane"):
+        if impact_selection_error and selection.get("matched_outside_lane"):
             details = selection.get("matched_outside_lane_details", {})
             rendered = []
             for path in selection["matched_outside_lane"]:

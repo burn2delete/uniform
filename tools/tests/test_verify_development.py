@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import json
 import os
+import io
+from contextlib import redirect_stdout
 from pathlib import Path
 import subprocess
 import sys
@@ -217,6 +219,115 @@ class VerifyDevelopmentTests(unittest.TestCase):
             self.assertEqual(receipt["status"], "failed")
             self.assertIn("undelared/file.py", receipt["error"])
             self.assertEqual(receipt["checks"], [])
+
+    def test_all_selection_ignores_ambient_unmatched_path_but_impact_selection_fails(self) -> None:
+        command = [sys.executable, "-c", "import sys; sys.exit(0)"]
+        with tempfile.TemporaryDirectory(prefix="gravity-verify-all-selection-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            manifest = manifest_for(
+                check("preflight", command, lane="preflight", inputs=["input.txt"]),
+                check("focused", command, lane="focused", inputs=["input.txt"]),
+            )
+            manifest_path = root / "manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="ascii")
+
+            # The CLI discovers this path from git in a real worktree.  It is
+            # deliberately unrelated to every declared input so the regression
+            # covers the coordinator's dirty-worktree behavior, not only the
+            # direct Python API.
+            with mock.patch.object(verifier, "_discover_changed_paths", return_value=["generated.py"]):
+                dry_output = io.StringIO()
+                with redirect_stdout(dry_output):
+                    dry_code = verifier.main(
+                        [
+                            "--manifest",
+                            str(manifest_path),
+                            "--root",
+                            str(root),
+                            "--all",
+                            "--lane",
+                            "preflight",
+                            "--lane",
+                            "focused",
+                            "--dry-run",
+                        ]
+                    )
+            self.assertEqual(dry_code, 0)
+            dry_receipt = json.loads(dry_output.getvalue())
+            self.assertEqual(dry_receipt["status"], "planned")
+            self.assertEqual(
+                [item["id"] for item in dry_receipt["checks"]],
+                ["focused", "preflight"],
+            )
+            self.assertEqual(dry_receipt["selection"]["selection_mode"], "all")
+            self.assertEqual(dry_receipt["selection"]["unmatched_changes"], ["generated.py"])
+
+            with mock.patch.object(verifier, "_discover_changed_paths", return_value=["generated.py"]):
+                run_output = io.StringIO()
+                with redirect_stdout(run_output):
+                    run_code = verifier.main(
+                        [
+                            "--manifest",
+                            str(manifest_path),
+                            "--root",
+                            str(root),
+                            "--all",
+                            "--lane",
+                            "preflight",
+                            "--lane",
+                            "focused",
+                        ]
+                    )
+            self.assertEqual(run_code, 0)
+            run_receipt = json.loads(run_output.getvalue())
+            self.assertEqual(run_receipt["status"], "passed")
+            self.assertEqual(
+                {item["id"] for item in run_receipt["checks"]},
+                {"focused", "preflight"},
+            )
+
+            # Without --all the same dirty path is an impact-selection input,
+            # so unmatched ownership remains fail-closed and no check runs.
+            impact = verifier.run_verification(
+                manifest,
+                root,
+                changed_paths=["generated.py"],
+                lanes=["preflight", "focused"],
+                dry_run=True,
+            )
+            self.assertEqual(impact["status"], "failed")
+            self.assertEqual(impact["selection"]["selection_mode"], "change-impact")
+            self.assertEqual(impact["checks"], [])
+            self.assertIn("generated.py", impact["error"])
+
+    def test_explicit_selection_modes_observe_changed_paths_and_reject_all_check_ambiguity(self) -> None:
+        command = [sys.executable, "-c", "import sys; sys.exit(0)"]
+        with tempfile.TemporaryDirectory(prefix="gravity-verify-selection-modes-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            manifest = manifest_for(check("focused", command, inputs=["input.txt"]))
+
+            explicit_check = verifier.run_verification(
+                manifest,
+                root,
+                changed_paths=["generated.py"],
+                requested_ids=["focused"],
+                dry_run=True,
+            )
+            self.assertEqual(explicit_check["status"], "planned")
+            self.assertEqual(explicit_check["selection"]["selection_mode"], "explicit-check")
+            self.assertEqual(explicit_check["selection"]["unmatched_changes"], ["generated.py"])
+            self.assertEqual(explicit_check["checks"][0]["id"], "focused")
+
+            with self.assertRaisesRegex(verifier.VerificationError, "--all cannot be combined"):
+                verifier.run_verification(
+                    manifest,
+                    root,
+                    all_checks=True,
+                    requested_ids=["focused"],
+                    dry_run=True,
+                )
 
     def test_lane_filtered_change_owned_only_by_excluded_lane_fails_closed(self) -> None:
         command = [sys.executable, "-c", "import sys; sys.exit(0)"]
@@ -772,6 +883,18 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertTrue(required <= selected)
         self.assertIn("stage0-clojure-suite", selected)
         self.assertIn("stage0-bootstrap-authority", selected)
+
+    def test_real_manifest_explicit_reader_check_does_not_expand_to_downstream_heavy_checks(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        selection = verifier.select_impacted_checks(
+            manifest,
+            ROOT,
+            requested_ids=["stage0-reader"],
+        )
+        self.assertEqual(selection["selection_mode"], "explicit-check")
+        self.assertEqual(selection["selected_ids"], ["stage0-reader"])
+        self.assertNotIn("stage0-clojure-suite", selection["selected_ids"])
+        self.assertNotIn("stage0-bootstrap-authority", selection["selected_ids"])
 
     def test_declared_resource_lock_is_host_wide_and_non_blocking(self) -> None:
         with verifier._process_lock("unit-test-heavy-resource"):
