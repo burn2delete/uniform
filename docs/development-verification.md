@@ -122,7 +122,11 @@ clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M 
 
 Replace the example namespace and slice with the selected work. A failed
 preflight blocks the heavy run; it is never evidence and does not replace the
-focused or authoritative execution.
+focused or authoritative execution. Preflight means `require` only: do not
+call `clojure.test/run-tests`, force namespace delays, or invoke artifact
+builders from the preflight JVM. A targeted SH-07 namespace can still trigger
+the same multi-gigabyte replay as a broad run and therefore still belongs
+behind the shared heavy-run lock.
 
 ### 4. Focused namespace or cached SH-07 feedback
 
