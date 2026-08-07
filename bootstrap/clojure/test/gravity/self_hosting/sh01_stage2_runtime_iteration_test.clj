@@ -112,13 +112,23 @@
                                      {:op :literal :value 1}]}]}
                :else {:op :vector-literal
                       :items [{:op :local :name 'outer}
-                              {:op :local :name 'index}]}}]}]}}}]
+                              {:op :local :name 'index}]}}]}]}
+          'caller
+          {:params ['value]
+           :instructions
+           [{:op :function-call
+             :function 'sum-to
+             :args [{:op :local :name 'value}
+                    {:op :literal :value 0}]}]}}}]
     (is (= 15
            (bootstrap/p15-s23-stage2-runtime-execute-function
             runtime function-plan 'sum-to [5 0])))
     (is (= [9 2]
            (bootstrap/p15-s23-stage2-runtime-execute-function
-            runtime function-plan 'loop-scope [9])))))
+            runtime function-plan 'loop-scope [9])))
+    (is (= 6
+           (bootstrap/p15-s23-stage2-runtime-execute-function
+            runtime function-plan 'caller [3])))))
 
 (deftest common-builtin-arities-preserve-hosted-core-semantics
   (let [compiler-plan

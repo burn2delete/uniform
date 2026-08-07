@@ -95269,13 +95269,15 @@
   (case (:op instruction)
     :literal (:value instruction)
     :quote (:value instruction)
-    :local (if (contains? env (:name instruction))
-             (get env (:name instruction))
-             (fail! "L2-UNKNOWN-SYMBOL"
-                    "stage2 runtime cannot resolve local"
-                    {:source-span {:source (get-in plan [:source :path])}
-                     :symbol (:name instruction)
-                     :remediation "Regenerate the stage2 instruction plan from a valid source module."}))
+    :local
+    (let [name (:name instruction)]
+      (if (contains? env name)
+        (get env name)
+        (fail! "L2-UNKNOWN-SYMBOL"
+               "stage2 runtime cannot resolve local"
+               {:source-span {:source (get-in plan [:source :path])}
+                :symbol name
+                :remediation "Regenerate the stage2 instruction plan from a valid source module."})))
     :vector-literal
     (p15-s23-stage2-runtime-execute-values
      runtime plan env (:items instruction) :recur-inside-vector)
@@ -95355,6 +95357,7 @@
          runtime plan env (:body instruction))))
     :loop
     (let [bindings (:bindings instruction)
+          body (:body instruction)
           binding-names (mapv :name bindings)
           target-arity (count binding-names)
           initial-env
@@ -95372,7 +95375,7 @@
       (loop [loop-env initial-env]
         (let [result
               (p15-s23-stage2-runtime-execute-instructions
-               runtime plan loop-env (:body instruction))]
+               runtime plan loop-env body)]
           (if (p15-s23-stage2-runtime-recur-signal? result)
             (let [values (p15-s23-stage2-runtime-recur-values result)]
               (when-not (= target-arity (count values))
@@ -95387,10 +95390,11 @@
      (p15-s23-stage2-runtime-execute-values
       runtime plan env (:args instruction) :recur-inside-recur-argument))
     :builtin-call
-    (let [args (p15-s23-stage2-runtime-execute-values
+    (let [function (:function instruction)
+          args (p15-s23-stage2-runtime-execute-values
                 runtime plan env (:args instruction)
                 :recur-inside-builtin-argument)]
-      (if (and (= 'str (:function instruction))
+      (if (and (= 'str function)
                (:runtime-artifact-plan runtime))
         (case (count args)
           ;; One argument retains the existing Gravity format entrypoint;
@@ -95400,15 +95404,16 @@
           2 (p15-s23-stage2-runtime-artifact-invoke
              runtime p15-s23-stage2-runtime-artifact-concat-function args)
           (p15-s23-stage2-runtime-fail-call-arity!
-           "L2-BUILTIN-ARITY" plan (:function instruction) args "1 or 2"))
+           "L2-BUILTIN-ARITY" plan function args "1 or 2"))
         (p15-s23-stage2-runtime-invoke-builtin
-         plan (:function instruction) args)))
+         plan function args)))
     :function-call
-    (let [args (p15-s23-stage2-runtime-execute-values
+    (let [function (:function instruction)
+          args (p15-s23-stage2-runtime-execute-values
                 runtime plan env (:args instruction)
                 :recur-inside-function-argument)]
       (p15-s23-stage2-runtime-execute-function
-       runtime plan (:function instruction) args))
+       runtime plan function args))
     (fail! "L2-UNKNOWN-CORE-FORM"
            "stage2 runtime plan contains an unknown instruction"
            {:source-span {:source (get-in plan [:source :path])}
@@ -95418,7 +95423,8 @@
 (defn p15-s23-stage2-runtime-execute-function
   [runtime plan callee args]
   (let [definition (get-in plan [:functions callee])
-        params (:params definition)]
+        params (:params definition)
+        instructions (:instructions definition)]
     (when-not definition
       (fail! "L2-UNKNOWN-CORE-FORM"
              "stage2 runtime plan references an unknown function"
@@ -95431,7 +95437,7 @@
     (loop [env (p15-s23-stage2-runtime-bind-values {} params args)]
       (let [result
             (p15-s23-stage2-runtime-execute-instructions
-             runtime plan env (:instructions definition))]
+             runtime plan env instructions)]
         (if (p15-s23-stage2-runtime-recur-signal? result)
           (let [values (p15-s23-stage2-runtime-recur-values result)]
             (when-not (= (count params) (count values))
