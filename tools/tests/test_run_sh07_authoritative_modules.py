@@ -155,6 +155,9 @@ class Sh07CheckpointTests(unittest.TestCase):
                 ":authoritative-coverage-census "
                 "{:schema-version 1 :module-expectations "
                 "{:alpha {:module-namespace gravity.alpha "
+                ":source-binding {:source-byte-count 19 "
+                ":source-bytes-sha256 "
+                '"sha256:164685cc0f9ae0bba036899d1be9fc9e56d8220af87990fd35f3078286ea00c0"} '
                 ":request-counts {:fragment-count 0 :root-form-count 0 "
                 ":form-count 0 :binding-count 0 :local-binding-count 0 "
                 ":resolution-count 0} "
@@ -176,7 +179,12 @@ class Sh07CheckpointTests(unittest.TestCase):
         modules: list[str],
         *,
         resume: bool = True,
+        source_contracts: runner.SourceContracts | None = None,
     ) -> tuple[int, dict[str, object]]:
+        proof_contract = (
+            root
+            / "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+        )
         return runner.run_modules(
             root=root,
             state_dir=root / "checkpoints",
@@ -187,8 +195,98 @@ class Sh07CheckpointTests(unittest.TestCase):
             resume=resume,
             launcher=launcher,
             output_validator=fixture_output_validator,
+            source_contracts=source_contracts,
+            source_contract_proof_sha256=(
+                runner.sha256_file(proof_contract) if source_contracts else None
+            ),
             lock_path=root / "heavy.lock",
         )
+
+    def source_contract(self, root: Path, module: str) -> dict[str, dict[str, object]]:
+        relative = self.module_catalog()[module]
+        source = root / relative
+        return {
+            module: {
+                "source_path": relative,
+                "source_byte_count": source.stat().st_size,
+                "source_bytes_sha256": runner.sha256_file(source),
+            }
+        }
+
+    def test_source_contract_mismatch_records_exit_75_without_launch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            contract = self.source_contract(root, "alpha")
+            contract["alpha"]["source_byte_count"] = 999
+            launcher = FakeLauncher()
+            code, manifest = self.run_in_repository(
+                root, launcher, ["alpha"], source_contracts=contract
+            )
+            self.assertEqual(75, code)
+            self.assertEqual([], launcher.calls)
+            self.assertEqual("source-contract-mismatch", manifest["state"])
+            self.assertIn("source contract mismatch", manifest["preflight_error"])
+            persisted = json.loads(
+                (root / "checkpoints/manifest.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual("source-contract-mismatch", persisted["state"])
+            self.assertEqual({}, persisted["modules"])
+
+    def test_matching_source_contract_allows_launch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            launcher = FakeLauncher()
+            code, _ = self.run_in_repository(
+                root,
+                launcher,
+                ["alpha"],
+                source_contracts=self.source_contract(root, "alpha"),
+            )
+            self.assertEqual(0, code)
+            self.assertEqual(["alpha"], launcher.calls)
+
+    def test_source_contract_requires_trusted_contract_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            with self.assertRaisesRegex(runner.CheckpointError, "trusted proof contract"):
+                runner.run_modules(
+                    root=root,
+                    state_dir=root / "checkpoints",
+                    modules=["alpha"],
+                    module_catalog=self.module_catalog(),
+                    base_command=["fake-runner"],
+                    launcher=FakeLauncher(),
+                    output_validator=fixture_output_validator,
+                    source_contracts=self.source_contract(root, "alpha"),
+                    lock_path=root / "heavy.lock",
+                )
+
+    def test_source_contract_discovery_binds_exact_contract_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            source = root / self.module_catalog()["alpha"]
+            contract_sha = "sha256:" + "a" * 64
+            output = (
+                f"#proof-contract-sha256\t{contract_sha}\n"
+                "alpha\tbootstrap/gravity/src/gravity/alpha.gravity\t"
+                f"{source.stat().st_size}\t{runner.sha256_file(source)}\n"
+            )
+            completed = subprocess.CompletedProcess(
+                ["fake-runner", "--source-contracts"], 0, output, ""
+            )
+            with mock.patch.object(runner.subprocess, "run", return_value=completed):
+                observed_sha, contracts = runner.discover_source_contracts(
+                    root,
+                    ["fake-runner"],
+                    1,
+                    module_catalog=self.module_catalog(),
+                )
+            self.assertEqual(contract_sha, observed_sha)
+            self.assertEqual(self.source_contract(root, "alpha"), contracts)
 
     def test_identical_context_resumes_only_verified_passed_modules(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

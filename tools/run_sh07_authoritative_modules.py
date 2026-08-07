@@ -32,6 +32,7 @@ PROOF_CONTRACT_RELATIVE = (
     "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
 )
 MODULE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+SOURCE_SHA_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 
 class CheckpointError(RuntimeError):
@@ -48,6 +49,7 @@ class ProcessOutcome:
 Launcher = Callable[[Sequence[str], Path, Path, Path, float], ProcessOutcome]
 OutputValidator = Callable[[str, str, int, str, str, Path], bool]
 CatalogProvider = Callable[[], Mapping[str, str]]
+SourceContracts = Mapping[str, Mapping[str, object]]
 
 
 def utc_now() -> str:
@@ -429,6 +431,80 @@ def validated_module_catalog(
     return validated
 
 
+def validated_source_contracts(
+    root: Path,
+    catalog: Mapping[str, str],
+    contracts: SourceContracts,
+) -> dict[str, dict[str, object]]:
+    if not isinstance(contracts, Mapping):
+        raise CheckpointError("authoritative source contracts are malformed")
+    validated_catalog = validated_module_catalog(root, catalog)
+    result: dict[str, dict[str, object]] = {}
+    for module, value in sorted(contracts.items()):
+        if (
+            module not in validated_catalog
+            or not isinstance(value, Mapping)
+            or set(value)
+            != {"source_path", "source_byte_count", "source_bytes_sha256"}
+        ):
+            raise CheckpointError("authoritative source contract has an invalid entry")
+        source_path = value.get("source_path")
+        source_byte_count = value.get("source_byte_count")
+        source_sha = value.get("source_bytes_sha256")
+        if (
+            source_path != validated_catalog[module]
+            or not isinstance(source_byte_count, int)
+            or isinstance(source_byte_count, bool)
+            or source_byte_count < 0
+            or not isinstance(source_sha, str)
+            or SOURCE_SHA_PATTERN.fullmatch(source_sha) is None
+        ):
+            raise CheckpointError("authoritative source contract has an invalid binding")
+        result[module] = {
+            "source_path": source_path,
+            "source_byte_count": source_byte_count,
+            "source_bytes_sha256": source_sha,
+        }
+    return result
+
+
+def enforce_source_contract(
+    root: Path, module: str, contract: Mapping[str, object]
+) -> None:
+    source = root / str(contract["source_path"])
+    if not hasattr(os, "O_NOFOLLOW"):
+        raise CheckpointError("platform cannot inspect module source without following symlinks")
+    try:
+        resolved = source.resolve(strict=True)
+        descriptor = os.open(source, os.O_RDONLY | os.O_NOFOLLOW)
+    except OSError as error:
+        raise CheckpointError(
+            f"authoritative source contract cannot read module {module}: {error}"
+        ) from error
+    try:
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode) or not resolved.is_relative_to(root):
+            raise CheckpointError(
+                f"authoritative source contract path is unsafe for module {module}"
+            )
+        digest = hashlib.sha256()
+        while block := os.read(descriptor, 1024 * 1024):
+            digest.update(block)
+        actual_size = metadata.st_size
+        actual_sha = f"sha256:{digest.hexdigest()}"
+    finally:
+        os.close(descriptor)
+    if (
+        actual_size != contract["source_byte_count"]
+        or actual_sha != contract["source_bytes_sha256"]
+    ):
+        raise CheckpointError(
+            f"authoritative source contract mismatch for module {module}: "
+            f"expected {contract['source_byte_count']} bytes/"
+            f"{contract['source_bytes_sha256']}, got {actual_size} bytes/{actual_sha}"
+        )
+
+
 def module_context_fingerprint(
     root: Path, module: str, relative: str, shared_sha256: str
 ) -> dict[str, object]:
@@ -682,6 +758,8 @@ EDN_OUTPUT_VALIDATOR = r"""
                (or (nil? module-expectation)
                    (and (= (:module-namespace module-expectation)
                            (:module-namespace census))
+                        (= (:source-binding module-expectation)
+                           source-binding)
                         (= (:request-counts module-expectation)
                            request-counts)
                         (= (:core-counts module-expectation)
@@ -869,6 +947,8 @@ def run_modules(
     launcher: Launcher = default_launcher,
     output_validator: OutputValidator | None = None,
     catalog_provider: CatalogProvider | None = None,
+    source_contracts: SourceContracts | None = None,
+    source_contract_proof_sha256: str | None = None,
     lock_path: Path | None = DEFAULT_LOCK,
 ) -> tuple[int, dict[str, object]]:
     if (
@@ -884,6 +964,19 @@ def run_modules(
     unknown = sorted(set(modules) - set(catalog))
     if unknown:
         raise CheckpointError(f"selected modules are absent from the catalog: {unknown}")
+    if source_contracts is None:
+        if launcher is default_launcher:
+            source_contract_proof_sha256, source_contracts = discover_source_contracts(
+                root, base_command or default_base_command(), 120,
+                module_catalog=catalog,
+            )
+        else:
+            source_contracts = {}
+    contracts = validated_source_contracts(root, catalog, source_contracts)
+    if contracts and source_contract_proof_sha256 is None:
+        raise CheckpointError(
+            "authoritative source contracts lack a trusted proof contract hash"
+        )
     state_dir = Path(os.path.abspath(state_dir.expanduser()))
     ensure_owned_directory(state_dir)
     modules_dir = state_dir / "modules"
@@ -910,6 +1003,13 @@ def run_modules(
     trusted_proof_contract_sha256 = trusted_shared_file_sha256(
         shared_context, PROOF_CONTRACT_RELATIVE
     )
+    if (
+        source_contract_proof_sha256 is not None
+        and source_contract_proof_sha256 != trusted_proof_contract_sha256
+    ):
+        raise CheckpointError(
+            "authoritative source contracts do not match the trusted proof contract"
+        )
     validator = output_validator or (
         lambda module, source_path, source_size, source_sha, contract_sha, output: output_contract_passed(
             module,
@@ -934,6 +1034,30 @@ def run_modules(
         raise CheckpointError(f"startup catalog confirmation failed: {error}") from error
     if confirmed_context["sha256"] != shared_fingerprint:
         raise CheckpointError("startup catalog/shared context was not stable")
+
+    try:
+        for module in modules:
+            if module in contracts:
+                enforce_source_contract(root, module, contracts[module])
+    except CheckpointError as error:
+        manifest: dict[str, object] = {
+            "schema": SCHEMA,
+            "tool_version": TOOL_VERSION,
+            "fingerprint_policy_version": FINGERPRINT_POLICY_VERSION,
+            "state": "source-contract-mismatch",
+            "shared_context_fingerprint": shared_fingerprint,
+            "shared_context": shared_context,
+            "selected_modules": list(modules),
+            "source_contracts": contracts,
+            "modules": {},
+            "aggregate_authoritative": False,
+            "authority_scope": "individual-existing-runner-outputs-only",
+            "preflight_error": str(error),
+            "finished_at": utc_now(),
+            "updated_at": utc_now(),
+        }
+        atomic_json_write(manifest_path, manifest)
+        return 75, manifest
 
     lock_stream = None
     if lock_path is not None:
@@ -969,6 +1093,7 @@ def run_modules(
             "shared_context_fingerprint": shared_fingerprint,
             "shared_context": shared_context,
             "selected_modules": list(modules),
+            "source_contracts": contracts,
             "module_contexts": {},
             "modules": dict(previous_modules),
             "resumed_modules": [],
@@ -1041,6 +1166,13 @@ def run_modules(
                 return stop_for_context_change(
                     module, observed_shared, stale, context_error
                 )
+            if module in contracts:
+                try:
+                    enforce_source_contract(root, module, contracts[module])
+                except CheckpointError as error:
+                    return stop_for_context_change(
+                        module, observed_shared, [module], str(error)
+                    )
             module_context = current_module_context(module)
             module_fingerprint = str(module_context["sha256"])
             source_entry = module_context["files"][0]
@@ -1202,6 +1334,51 @@ def discover_module_catalog(
     return validated_module_catalog(root, catalog)
 
 
+def discover_source_contracts(
+    root: Path,
+    base_command: Sequence[str],
+    timeout: float,
+    *,
+    module_catalog: Mapping[str, str] | None = None,
+) -> tuple[str, dict[str, dict[str, object]]]:
+    result = subprocess.run(
+        [*base_command, "--source-contracts"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise CheckpointError(
+            f"module source contract discovery failed: {result.stderr.strip()}"
+        )
+    lines = result.stdout.splitlines()
+    if (
+        not lines
+        or lines[0].count("\t") != 1
+        or not lines[0].startswith("#proof-contract-sha256\t")
+    ):
+        raise CheckpointError("module source contract output is malformed")
+    proof_contract_sha = lines[0].split("\t", 1)[1]
+    if SOURCE_SHA_PATTERN.fullmatch(proof_contract_sha) is None:
+        raise CheckpointError("module source contract proof hash is malformed")
+    contracts: dict[str, dict[str, object]] = {}
+    for line in lines[1:]:
+        if not line or line.count("\t") != 3:
+            raise CheckpointError("module source contract output is malformed")
+        module, relative, byte_count_text, source_sha = line.split("\t")
+        if module in contracts or not byte_count_text.isdecimal():
+            raise CheckpointError("module source contract output is malformed")
+        contracts[module] = {
+            "source_path": relative,
+            "source_byte_count": int(byte_count_text),
+            "source_bytes_sha256": source_sha,
+        }
+    catalog = module_catalog or discover_module_catalog(root, base_command, timeout)
+    return proof_contract_sha, validated_source_contracts(root, catalog, contracts)
+
+
 def discover_modules(root: Path, base_command: Sequence[str], timeout: float) -> list[str]:
     """Compatibility helper returning the strict catalog's ordered names."""
     return list(discover_module_catalog(root, base_command, timeout))
@@ -1232,6 +1409,10 @@ def main(arguments: list[str] | None = None) -> int:
         catalog = discover_module_catalog(
             values.cwd, base, min(values.timeout_seconds, 120)
         )
+        source_contract_proof_sha256, source_contracts = discover_source_contracts(
+            values.cwd, base, min(values.timeout_seconds, 120),
+            module_catalog=catalog,
+        )
         available = list(catalog)
         if values.list:
             print("\n".join(available))
@@ -1252,6 +1433,8 @@ def main(arguments: list[str] | None = None) -> int:
             catalog_provider=lambda: discover_module_catalog(
                 values.cwd, base, min(values.timeout_seconds, 120)
             ),
+            source_contracts=source_contracts,
+            source_contract_proof_sha256=source_contract_proof_sha256,
             lock_path=values.lock,
         )
         print(json.dumps({
@@ -1262,7 +1445,10 @@ def main(arguments: list[str] | None = None) -> int:
         return code
     except (CheckpointError, subprocess.TimeoutExpired) as error:
         print(f"SH-07 checkpoint runner failed: {error}", file=sys.stderr)
-        return 75 if "lock is unavailable" in str(error) else 2
+        return 75 if any(
+            marker in str(error)
+            for marker in ["lock is unavailable", "source contract mismatch"]
+        ) else 2
 
 
 if __name__ == "__main__":

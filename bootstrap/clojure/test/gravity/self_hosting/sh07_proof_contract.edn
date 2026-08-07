@@ -283,6 +283,10 @@
   :module-expectations
   {:c7-types
    {:module-namespace gravity.compiler.c7-type-checker-engine
+    :source-binding
+    {:source-byte-count 142136
+     :source-bytes-sha256
+     "sha256:ce4e48764a63a0e4240232364d05fa40c204e2153be1a56ffbb0f5d6b45baa50"}
     :request-counts
     {:fragment-count 142
      :root-form-count 142

@@ -247,9 +247,15 @@ request/core counts, core-form frequencies, ordered root/form coverage flags,
 source binding flags, and canonical hash are computed from the already-built
 verified request/core carrier; no second compiler artifact is built or stored.
 The C7 census is checked against the exact expected maps in the proof contract.
-Those maps record the measured integration-candidate census; the source SHA is
-deliberately bound by the catalog/source snapshot fields instead of duplicated
-in the census expectation. The lightweight census test is the update seam for
+Each module expectation also binds the exact source byte count and SHA-256 that
+produced those measured counts. Before constructing any SH-07 artifact, the
+direct runner checks every selected module carrying an expectation; `--fresh
+all` performs the complete preflight before starting its first module. The
+checkpoint wrapper performs the same check before acquiring the heavy lock or
+launching an authoritative module child. A mismatch writes a
+`source-contract-mismatch` manifest,
+returns exit 75, and launches no expensive process. The lightweight census
+test is the update seam for
 reviewing a deliberate expectation change without constructing the C7 artifact.
 
 The census has only the authority of its enclosing individual fresh module
@@ -299,7 +305,12 @@ The module context adds exactly the source path, byte count, and content hash
 reported for that module by the catalog.
 Thus a shared-context change invalidates every receipt, while a module-local
 source change invalidates only that module; changing an unselected module does
-not invalidate the selected receipts.
+not invalidate the selected receipts. The proof contract is conservatively
+hashed as one shared file. Consequently, updating one module's expected census
+or source binding invalidates every checkpoint receipt even though an ordinary
+source-only edit remains module-local. This deliberate global invalidation is
+the current fail-closed tradeoff; the tool does not yet fingerprint independent
+per-module contract projections.
 
 A module is resumed only when both context tiers and the command match, the
 prior schema-2 receipt passes a structural single-EDN output check for exactly
@@ -317,7 +328,12 @@ non-symlink stdout/stderr files must also still
 match their SHA-256 hashes. The tool
 performs a two-discovery catalog/shared-context handshake at startup and one
 final catalog rediscovery. Process-local source checks surround children; the
-receipt byte binding catches a transient current-module edit even if its bytes
+source-contract discovery record includes the hash of the exact contract bytes
+used to derive its bindings, and that hash must equal the trusted shared-context
+contract hash. Module sources are read through non-following regular file
+descriptors. The direct runner repeats the binding check on its immediately
+opened pre-proof source snapshot. The receipt byte binding catches a transient
+current-module edit even if its bytes
 are restored before the final snapshot. A mutation stops the sequence with
 exit 75, or rejects the output when its source binding differs. Each child
 command is the existing authoritative runner with `--fresh <module>`, and the

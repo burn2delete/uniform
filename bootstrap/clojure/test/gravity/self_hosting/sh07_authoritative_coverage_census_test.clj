@@ -68,6 +68,7 @@
     :module-expectations
     {:c7-types
      {:module-namespace (:module-namespace value)
+      :source-binding (:source-binding value)
       :request-counts (:request-counts value)
       :core-counts (:core-counts value)}}}})
 
@@ -97,7 +98,44 @@
                 [:authoritative-coverage-census
                  :module-expectations :c7-types])]
     (is (= measured-c7-request-counts (:request-counts expectation)))
-    (is (= measured-c7-core-counts (:core-counts expectation)))))
+    (is (= measured-c7-core-counts (:core-counts expectation)))
+    (is (= {:source-byte-count 142136
+            :source-bytes-sha256
+            "sha256:ce4e48764a63a0e4240232364d05fa40c204e2153be1a56ffbb0f5d6b45baa50"}
+           (:source-binding expectation)))
+    (is (= {:source-path
+            "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+            :source-binding (:source-binding expectation)}
+           (get (runner/module-source-contracts) "c7-types")))))
+
+(deftest source-contract-mismatch-stops-before-authoritative-proof
+  (let [source-reader
+        (or (ns-resolve 'gravity.self-hosting.sh07-authoritative-runner
+                        'source-bytes-sha256)
+            (throw (ex-info "source reader seam is absent" {})))
+        proof-var
+        (or (ns-resolve 'gravity.bootstrap 'sh07-core-file-proof-transaction)
+            (throw (ex-info "proof transaction seam is absent" {})))
+        proof-called? (atom false)]
+    (doseq [selection ["c7-types" "all"]]
+      (reset! proof-called? false)
+      (let [failure
+            (try
+              (with-redefs-fn
+                {source-reader
+                 (fn [_]
+                   {:byte-count 1
+                    :sha256 (str "sha256:" (apply str (repeat 64 "0")))})
+                 proof-var
+                 (fn [_]
+                   (reset! proof-called? true)
+                   (throw (ex-info "proof must not run" {})))}
+                #(runner/run-authoritative selection))
+              nil
+              (catch clojure.lang.ExceptionInfo error error))]
+        (is (= "SH07-AUTHORITATIVE-SOURCE-MISMATCH"
+               (:id (ex-data failure))))
+        (is (false? @proof-called?))))))
 
 (deftest census-fails-closed-on-order-source-or-hash-drift
   (let [{:keys [artifact request core source-binding] :as values} (fixture)
@@ -120,6 +158,14 @@
                 contract "c7-types" wrong-order)))
       (is (not (runner/authoritative-coverage-census-valid?
                 contract "c7-types" changed-source))))
+    (testing "a coherent census cannot substitute different source bytes"
+      (is (not
+           (runner/authoritative-coverage-census-valid?
+            (assoc-in contract
+                      [:authoritative-coverage-census :module-expectations
+                       :c7-types :source-binding :source-byte-count]
+                      43)
+            "c7-types" valid))))
     (testing "the compact hash and exact C7 expectations are binding"
       (is (not (runner/authoritative-coverage-census-valid?
                 contract "c7-types"

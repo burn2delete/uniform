@@ -8,7 +8,7 @@
 (def ^:private contract-resource
   "gravity/self_hosting/sh07_proof_contract.edn")
 
-(defn- proof-contract
+(defn- proof-contract-snapshot
   []
   (let [resource (io/resource contract-resource)]
     (when-not resource
@@ -16,7 +16,17 @@
        (ex-info "SH-07 proof contract is absent"
                 {:id "SH07-PROOF-CONTRACT-ABSENT"
                  :resource contract-resource})))
-    (edn/read-string (slurp resource))))
+    (let [bytes (with-open [input (io/input-stream resource)]
+                  (.readAllBytes input))
+          digest (java.security.MessageDigest/getInstance "SHA-256")]
+      (.update digest bytes)
+      {:contract (edn/read-string (String. bytes "UTF-8"))
+       :sha256
+       (str "sha256:"
+            (apply str (map #(format "%02x" (bit-and % 0xff))
+                            (.digest digest))))})))
+
+(defn- proof-contract [] (:contract (proof-contract-snapshot)))
 
 (defn- modules
   [contract]
@@ -30,13 +40,13 @@
   []
   (vec (keys (modules (proof-contract)))))
 
-(defn module-catalog
+(defn- module-catalog-for
   "Returns the deterministic module-to-source catalog used by --fresh.
 
   The tab-delimited CLI representation is intentionally narrow so external
   checkpoint tooling can validate paths without attempting to parse EDN."
-  []
-  (let [catalog (modules (proof-contract))
+  [contract]
+  (let [catalog (modules contract)
         invalid
         (vec
          (for [[module path] catalog
@@ -59,18 +69,118 @@
                  :duplicate-paths duplicate-paths})))
     catalog))
 
+(defn module-catalog []
+  (module-catalog-for (proof-contract)))
+
+(defn- valid-source-binding?
+  [binding]
+  (and (map? binding)
+       (= #{:source-byte-count :source-bytes-sha256} (set (keys binding)))
+       (integer? (:source-byte-count binding))
+       (not (neg? (:source-byte-count binding)))
+       (string? (:source-bytes-sha256 binding))
+       (boolean
+        (re-matches #"sha256:[0-9a-f]{64}" (:source-bytes-sha256 binding)))))
+
+(declare source-bytes-sha256)
+
+(defn- validate-source-binding!
+  [contract module-name actual]
+  (let [expected
+        (get-in contract
+                [:authoritative-coverage-census :module-expectations
+                 (keyword module-name)])]
+    (when expected
+      (let [binding (:source-binding expected)]
+        (when-not (and (valid-source-binding? binding)
+                       (= binding
+                          {:source-byte-count (:byte-count actual)
+                           :source-bytes-sha256 (:sha256 actual)}))
+          (throw
+           (ex-info "SH-07 authoritative source differs from its census contract"
+                    {:id "SH07-AUTHORITATIVE-SOURCE-MISMATCH"
+                     :module module-name
+                     :expected binding
+                     :actual {:source-byte-count (:byte-count actual)
+                              :source-bytes-sha256 (:sha256 actual)}})))))))
+
+(defn- module-source-contracts-for
+  "Returns exact source bindings for modules with authoritative census expectations."
+  [contract]
+  (let [catalog (module-catalog-for contract)
+        expectations
+        (get-in contract [:authoritative-coverage-census :module-expectations])]
+    (when-not (map? expectations)
+      (throw (ex-info "SH-07 census module expectations are malformed"
+                      {:id "SH07-AUTHORITATIVE-SOURCE-CONTRACT"})))
+    (into
+     (sorted-map)
+     (for [[module expectation] expectations
+           :let [module-name (name module)
+                 path (get catalog module-name)
+                 binding (:source-binding expectation)]]
+       (do
+         (when-not (and path (valid-source-binding? binding))
+           (throw
+            (ex-info "SH-07 authoritative source contract is malformed"
+                     {:id "SH07-AUTHORITATIVE-SOURCE-CONTRACT"
+                      :module module-name
+                      :path path
+                      :source-binding binding})))
+         [module-name {:source-path path :source-binding binding}])))))
+
+(defn module-source-contracts []
+  (module-source-contracts-for (proof-contract)))
+
+(defn- validate-selected-source-contracts!
+  [contract selected]
+  (let [contracts (module-source-contracts-for contract)]
+    (doseq [module-name selected
+            :let [expectation
+                  (get-in contract
+                          [:authoritative-coverage-census :module-expectations
+                           (keyword module-name)])]
+            :when expectation]
+      (let [{:keys [source-path]} (get contracts module-name)]
+        (validate-source-binding!
+         contract module-name (source-bytes-sha256 source-path))))))
+
 (defn- source-bytes-sha256
   [path]
-  (let [digest (java.security.MessageDigest/getInstance "SHA-256")
-        bytes (java.nio.file.Files/readAllBytes
-               (.toPath (io/file path)))]
-    (.update digest bytes)
-    {:byte-count (alength bytes)
-     :sha256
-     (str
-      "sha256:"
-      (apply str (map #(format "%02x" (bit-and % 0xff))
-                      (.digest digest))))}))
+  (let [source-path (.toPath (io/file path))
+        options (doto (java.util.HashSet.)
+                  (.add java.nio.file.StandardOpenOption/READ)
+                  (.add java.nio.file.LinkOption/NOFOLLOW_LINKS))
+        digest (java.security.MessageDigest/getInstance "SHA-256")]
+    (with-open [channel
+                (java.nio.file.Files/newByteChannel
+                 source-path options
+                 (make-array java.nio.file.attribute.FileAttribute 0))]
+      (let [attributes
+            (java.nio.file.Files/readAttributes
+             source-path java.nio.file.attribute.BasicFileAttributes
+             (into-array java.nio.file.LinkOption
+                         [java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
+        (when-not (and (.isRegularFile attributes)
+                       (not (.isSymbolicLink attributes)))
+          (throw (ex-info "SH-07 module source is not a regular non-symlink"
+                          {:id "SH07-AUTHORITATIVE-SOURCE-TYPE"
+                           :path path})))
+        (let [buffer (java.nio.ByteBuffer/allocate 1048576)]
+          (loop [byte-count 0]
+            (let [read (.read channel buffer)]
+              (if (= -1 read)
+                {:byte-count byte-count
+                 :sha256
+                 (str "sha256:"
+                      (apply str
+                             (map #(format "%02x" (bit-and % 0xff))
+                                  (.digest digest))))}
+                (do
+                  (.flip buffer)
+                  (.update digest buffer)
+                  (.clear buffer)
+                  (recur (+ byte-count read)))))))))))
 
 (def authoritative-coverage-census-request-count-keys
   #{:fragment-count :root-form-count :form-count :binding-count
@@ -216,6 +326,8 @@
          (or (nil? expected)
              (and (= (:module-namespace expected)
                      (:module-namespace census))
+                  (= (:source-binding expected)
+                     (:source-binding census))
                   (= (:request-counts expected) (:request-counts census))
                   (= (:core-counts expected) (:core-counts census)))))))
 
@@ -230,6 +342,8 @@
                  :available (module-names)})))
     (let [started (System/nanoTime)
           source-binding-before (source-bytes-sha256 path)
+          _ (validate-source-binding!
+             contract module-name source-binding-before)
           proof-run (bootstrap/sh07-core-file-proof-transaction path)
           artifact (:artifact proof-run)
           verification (:verification proof-run)
@@ -449,6 +563,7 @@
         (if (= requested "all")
           (vec (keys (modules contract)))
           [requested])
+        _ (validate-selected-source-contracts! contract selected)
         started (System/nanoTime)
         results (mapv #(run-module contract %) selected)
         proof-receipt-reuse-count
@@ -487,6 +602,16 @@
     (doseq [[module path] (module-catalog)]
       (println (str module "\t" path)))
 
+    (= ["--source-contracts"] (vec arguments))
+    (let [snapshot (proof-contract-snapshot)]
+      (println (str "#proof-contract-sha256\t" (:sha256 snapshot)))
+      (doseq [[module {:keys [source-path source-binding]}]
+              (module-source-contracts-for (:contract snapshot))]
+        (println
+         (str module "\t" source-path "\t"
+              (:source-byte-count source-binding) "\t"
+              (:source-bytes-sha256 source-binding)))))
+
     (and (= 2 (count arguments))
          (= "--fresh" (first arguments))
          (contains? (set (conj (module-names) "all"))
@@ -499,7 +624,7 @@
     :else
     (throw
      (ex-info
-      (str "Expected --list, --catalog, or --fresh <module|all>; available modules: "
+      (str "Expected --list, --catalog, --source-contracts, or --fresh <module|all>; available modules: "
            (string/join "|" (module-names)))
       {:id "SH07-AUTHORITATIVE-USAGE"
        :arguments (vec arguments)
