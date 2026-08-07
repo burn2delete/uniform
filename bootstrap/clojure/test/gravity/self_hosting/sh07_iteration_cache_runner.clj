@@ -266,20 +266,89 @@
     (ns-name namespace)
     namespace))
 
+(defn- failed-summary?
+  [summary]
+  (or (pos? (:fail summary))
+      (pos? (:error summary))))
+
+(defn- new-failure?
+  [before after]
+  (or (> (:fail after 0) (:fail before 0))
+      (> (:error after 0) (:error before 0))))
+
+(defn- qualified-test-var-symbol
+  [test-var]
+  (let [metadata (meta test-var)]
+    (symbol (str (ns-name (:ns metadata)))
+            (str (:name metadata)))))
+
+(defn- fail-fast-test-ns
+  [namespace]
+  (binding [test/*report-counters* (ref test/*initial-report-counters*)]
+    (let [namespace-object (the-ns namespace)
+          skipped-test-vars (atom [])]
+      (test/do-report {:type :begin-test-ns :ns namespace-object})
+      (if-let [hook
+               (find-var
+                (symbol (str (ns-name namespace-object)) "test-ns-hook"))]
+        ((var-get hook))
+        (let [namespace-vars (vec (vals (ns-interns namespace-object)))
+              once-fixture
+              (test/join-fixtures
+               (:clojure.test/once-fixtures (meta namespace-object)))
+              each-fixture
+              (test/join-fixtures
+               (:clojure.test/each-fixtures (meta namespace-object)))]
+          (when (seq namespace-vars)
+            (once-fixture
+             (fn []
+               (loop [remaining namespace-vars]
+                 (when-let [test-var (first remaining)]
+                   (let [tail (subvec remaining 1)]
+                     (if (:test (meta test-var))
+                       (let [before @test/*report-counters*]
+                         (each-fixture #(test/test-var test-var))
+                         (if (new-failure?
+                              before @test/*report-counters*)
+                           (reset!
+                            skipped-test-vars
+                            (mapv qualified-test-var-symbol
+                                  (filter (comp :test meta) tail)))
+                           (recur tail)))
+                       (recur tail))))))))))
+      (test/do-report {:type :end-test-ns :ns namespace-object})
+      {:summary @test/*report-counters*
+       :skipped-test-vars @skipped-test-vars})))
+
+(defn- test-namespace
+  [namespace fail-fast?]
+  (if fail-fast?
+    (fail-fast-test-ns namespace)
+    {:summary (test/test-ns namespace)
+     :skipped-test-vars []}))
+
 (defn- run-tests-with-telemetry
   [namespaces fail-fast?]
   (let [namespace-results (atom [])]
     (letfn [(run-namespace [namespace]
               (let [started (System/nanoTime)
-                    before (cache-snapshot)]
+                    before (cache-snapshot)
+                    test-run (atom nil)]
                 (try
-                  (test/test-ns namespace)
+                  (let [result (test-namespace namespace fail-fast?)]
+                    (reset! test-run result)
+                    result)
                   (finally
-                    (let [result
+                    (let [skipped-test-vars
+                          (or (:skipped-test-vars @test-run) [])
+                          result
                           {:namespace (namespace-symbol namespace)
                            :elapsed-ms
-                           (long (/ (- (System/nanoTime) started) 1000000))
+                           (long
+                            (/ (- (System/nanoTime) started) 1000000))
                            :cache (cache-delta before (cache-snapshot))
+                           :completed? (some? @test-run)
+                           :skipped-test-vars skipped-test-vars
                            :authority :non-authoritative}]
                       (swap! namespace-results conj result)
                       (println
@@ -288,24 +357,29 @@
                                :artifact
                                :gravity/sh07-iteration-namespace-result)))
                       (flush))))))
-            (finish [summaries skipped]
+            (finish [summaries skipped-namespaces skipped-test-vars]
               (let [test-result
                     (assoc (apply merge-with + summaries) :type :summary)]
                 (test/do-report test-result)
                 {:test-result test-result
                  :namespace-results @namespace-results
-                 :stopped-early? (boolean (seq skipped))
-                 :skipped-namespaces (vec skipped)}))]
+                 :stopped-early?
+                 (boolean (or (seq skipped-namespaces)
+                              (seq skipped-test-vars)))
+                 :skipped-namespaces (vec skipped-namespaces)
+                 :skipped-test-vars (vec skipped-test-vars)}))]
       (loop [remaining (vec namespaces)
              summaries []]
         (let [namespace (first remaining)
-              summary (run-namespace namespace)
+              {:keys [summary skipped-test-vars]}
+              (run-namespace namespace)
               summaries' (conj summaries summary)
               tail (subvec remaining 1)
-              failed? (or (pos? (:fail summary))
-                          (pos? (:error summary)))]
+              failed? (failed-summary? summary)]
           (if (or (empty? tail) (and fail-fast? failed?))
-            (finish summaries' (if (and fail-fast? failed?) tail []))
+            (finish summaries'
+                    (if (and fail-fast? failed?) tail [])
+                    skipped-test-vars)
             (recur tail summaries')))))))
 
 (defn run-namespaces
@@ -317,7 +391,7 @@
           {:maximum-entries maximum-entries}
           #(run-tests-with-telemetry namespaces fail-fast?))
         {:keys [test-result namespace-results stopped-early?
-                skipped-namespaces]} (:value cached)]
+                skipped-namespaces skipped-test-vars]} (:value cached)]
     (-> cached
         (dissoc :value)
         (assoc :artifact :gravity/sh07-iteration-cache-run
@@ -325,6 +399,7 @@
                :fail-fast? (boolean fail-fast?)
                :stopped-early? stopped-early?
                :skipped-namespaces skipped-namespaces
+               :skipped-test-vars skipped-test-vars
                :namespace-results namespace-results
                :test-result test-result
                :ok? (and (zero? (:fail test-result))

@@ -138,25 +138,33 @@
                         (str output)))))))))
 
 (deftest iteration-cache-fail-fast-skips-downstream-namespaces
-  (let [tested-namespaces (atom [])
+  (let [test-namespace-var
+        (ns-resolve
+         'gravity.self-hosting.sh07-iteration-cache-runner
+         'test-namespace)
+        tested-namespaces (atom [])
         output (java.io.StringWriter.)]
-    (with-redefs
-      [clojure.test/test-ns
-       (fn [namespace]
+    (with-redefs-fn
+      {test-namespace-var
+       (fn [namespace _fail-fast?]
          (swap! tested-namespaces conj namespace)
-         (if (= 'example.failing namespace)
-           {:test 1 :pass 0 :fail 1 :error 0}
-           {:test 1 :pass 1 :fail 0 :error 0}))]
-      (let [result
-            (binding [*out* output
-                      clojure.test/*test-out* output]
-              (#'runner/run-tests-with-telemetry
-               '[example.failing example.skipped] true))]
+         {:summary
+          (if (= 'example.failing namespace)
+            {:test 1 :pass 0 :fail 1 :error 0}
+            {:test 1 :pass 1 :fail 0 :error 0})
+          :skipped-test-vars []})}
+      (fn []
+        (let [result
+              (binding [*out* output
+                        clojure.test/*test-out* output]
+                (#'runner/run-tests-with-telemetry
+                 '[example.failing example.skipped] true))]
         (is (= '[example.failing] @tested-namespaces))
         (is (= '[example.failing]
                (mapv :namespace (:namespace-results result))))
         (is (true? (:stopped-early? result)))
         (is (= '[example.skipped] (:skipped-namespaces result)))
+        (is (= [] (:skipped-test-vars result)))
         (is (= {:test 1 :pass 0 :fail 1 :error 0 :type :summary}
                (:test-result result)))
         (is (= 1
@@ -173,7 +181,216 @@
           (is (false? (:stopped-early? full-result)))
           (is (= [] (:skipped-namespaces full-result)))
           (is (= {:test 2 :pass 1 :fail 1 :error 0 :type :summary}
-                 (:test-result full-result))))))))
+                 (:test-result full-result)))))))))
+
+(deftest iteration-cache-fail-fast-stops-inside-ordinary-namespace
+  (let [namespace-symbol 'gravity.self-hosting.synthetic-fail-fast-test
+        namespace-object (create-ns namespace-symbol)
+        once-calls (atom 0)
+        each-calls (atom 0)
+        executed (atom [])
+        output (java.io.StringWriter.)]
+    (try
+      (let [test-vars
+            (mapv
+             (fn [var-name]
+               (let [test-var (intern namespace-object var-name)]
+                 (alter-meta! test-var assoc :test (fn []))
+                 test-var))
+             '[alpha-test beta-test gamma-test])
+            ordered-vars
+            (vec
+             (filter (comp :test meta)
+                     (vals (ns-interns namespace-object))))
+            failing-var (first ordered-vars)
+            passing-vars (subvec ordered-vars 1)
+            qualified
+            (fn [test-var]
+              (symbol (str namespace-symbol)
+                      (str (:name (meta test-var)))))]
+        (alter-meta!
+         failing-var assoc :test
+         #(do
+            (swap! executed conj (:name (meta failing-var)))
+            (clojure.test/do-report
+             {:type :fail
+              :message "synthetic fail-fast failure"
+              :expected true
+              :actual false})))
+        (doseq [test-var passing-vars]
+          (alter-meta!
+           test-var assoc :test
+           #(do
+              (swap! executed conj (:name (meta test-var)))
+              (clojure.test/do-report
+               {:type :pass :expected true :actual true}))))
+        (alter-meta!
+         namespace-object assoc
+         :clojure.test/once-fixtures
+         [(fn [operation] (swap! once-calls inc) (operation))]
+         :clojure.test/each-fixtures
+         [(fn [operation] (swap! each-calls inc) (operation))])
+        (let [result
+              (binding [*out* output
+                        clojure.test/*test-out* output]
+                (#'runner/run-tests-with-telemetry
+                 [namespace-symbol] true))]
+          (is (= [(:name (meta failing-var))] @executed))
+          (is (= 1 @once-calls @each-calls))
+          (is (= (mapv qualified passing-vars)
+                 (:skipped-test-vars result)))
+          (is (= (:skipped-test-vars result)
+                 (get-in result [:namespace-results 0
+                                 :skipped-test-vars])))
+          (is (true? (:stopped-early? result)))
+          (is (= {:test 1 :pass 0 :fail 1 :error 0 :type :summary}
+                 (:test-result result))))
+        (reset! executed [])
+        (reset! once-calls 0)
+        (reset! each-calls 0)
+        (let [result
+              (binding [*out* (java.io.StringWriter.)
+                        clojure.test/*test-out* (java.io.StringWriter.)]
+                (#'runner/run-tests-with-telemetry
+                 [namespace-symbol] false))]
+          (is (= (set (map (comp :name meta) test-vars))
+                 (set @executed)))
+          (is (= 1 @once-calls))
+          (is (= 3 @each-calls))
+          (is (false? (:stopped-early? result)))
+          (is (= [] (:skipped-test-vars result)))
+          (is (= {:test 3 :pass 2 :fail 1 :error 0 :type :summary}
+                 (:test-result result)))))
+      (finally
+        (remove-ns namespace-symbol)))))
+
+(deftest iteration-cache-fail-fast-preserves-dynamic-fixture-selection
+  (let [namespace-symbol 'gravity.self-hosting.synthetic-fixture-selection-test
+        namespace-object (create-ns namespace-symbol)
+        added-var (intern namespace-object 'added-by-once-fixture)
+        removed-var (intern namespace-object 'removed-by-once-fixture)
+        empty-namespace-symbol
+        'gravity.self-hosting.synthetic-empty-fixture-test
+        empty-namespace (create-ns empty-namespace-symbol)
+        executed (atom [])
+        each-calls (atom 0)
+        empty-once-calls (atom 0)]
+    (try
+      (alter-meta!
+       removed-var assoc :test
+       #(swap! executed conj 'removed-by-once-fixture))
+      (alter-meta!
+       namespace-object assoc
+       :clojure.test/once-fixtures
+       [(fn [operation]
+          (alter-meta!
+           added-var assoc :test
+           #(do
+              (swap! executed conj 'added-by-once-fixture)
+              (clojure.test/do-report
+               {:type :pass :expected true :actual true})))
+          (alter-meta! removed-var dissoc :test)
+          (operation))]
+       :clojure.test/each-fixtures
+       [(fn [operation] (swap! each-calls inc) (operation))])
+      (alter-meta!
+       empty-namespace assoc
+       :clojure.test/once-fixtures
+       [(fn [operation] (swap! empty-once-calls inc) (operation))])
+      (let [selection-result
+            (binding [*out* (java.io.StringWriter.)
+                      clojure.test/*test-out* (java.io.StringWriter.)]
+              (#'runner/fail-fast-test-ns namespace-symbol))
+            empty-result
+            (binding [*out* (java.io.StringWriter.)
+                      clojure.test/*test-out* (java.io.StringWriter.)]
+              (#'runner/fail-fast-test-ns empty-namespace-symbol))]
+        (is (= '[added-by-once-fixture] @executed))
+        (is (= 1 @each-calls))
+        (is (= {:test 1 :pass 1 :fail 0 :error 0}
+               (:summary selection-result)))
+        (is (zero? @empty-once-calls))
+        (is (= {:test 0 :pass 0 :fail 0 :error 0}
+               (:summary empty-result))))
+      (finally
+        (remove-ns namespace-symbol)
+        (remove-ns empty-namespace-symbol)))))
+
+(deftest iteration-cache-retains-telemetry-when-fixture-throws
+  (let [namespace-symbol 'gravity.self-hosting.synthetic-fixture-error-test
+        namespace-object (create-ns namespace-symbol)
+        test-var (intern namespace-object 'never-runs-test)]
+    (try
+      (alter-meta!
+       test-var assoc :test
+       #(clojure.test/do-report
+         {:type :pass :expected true :actual true}))
+      (alter-meta!
+       namespace-object assoc
+       :clojure.test/once-fixtures
+       [(fn [_operation]
+          (throw (ex-info "fixture failed" {:id "FIXTURE-FAILED"})))])
+      (doseq [fail-fast? [false true]]
+        (let [output (java.io.StringWriter.)
+              data
+              (binding [*out* output
+                        clojure.test/*test-out* output]
+                (try
+                  (#'runner/run-tests-with-telemetry
+                   [namespace-symbol] fail-fast?)
+                  nil
+                  (catch clojure.lang.ExceptionInfo error
+                    (ex-data error))))
+              rendered (str output)]
+          (is (= "FIXTURE-FAILED" (:id data)))
+          (is (re-find #":gravity/sh07-iteration-namespace-result"
+                       rendered))
+          (is (re-find #":completed\? false" rendered))
+          (is (re-find #":authority :non-authoritative" rendered))))
+      (finally
+        (remove-ns namespace-symbol)))))
+
+(deftest iteration-cache-fail-fast-preserves-test-ns-hook-boundary
+  (let [hook-namespace-symbol
+        'gravity.self-hosting.synthetic-test-ns-hook-test
+        later-namespace-symbol
+        'gravity.self-hosting.synthetic-after-test-ns-hook-test
+        hook-namespace (create-ns hook-namespace-symbol)
+        later-namespace (create-ns later-namespace-symbol)
+        hook-calls (atom 0)
+        later-calls (atom 0)]
+    (try
+      (intern
+       hook-namespace 'test-ns-hook
+       #(do
+          (swap! hook-calls inc)
+          (clojure.test/do-report
+           {:type :fail
+            :message "synthetic hook failure"
+            :expected true
+            :actual false})))
+      (let [later-var (intern later-namespace 'later-test)]
+        (alter-meta!
+         later-var assoc :test
+         #(do
+            (swap! later-calls inc)
+            (clojure.test/do-report
+             {:type :pass :expected true :actual true}))))
+      (let [result
+            (binding [*out* (java.io.StringWriter.)
+                      clojure.test/*test-out* (java.io.StringWriter.)]
+              (#'runner/run-tests-with-telemetry
+               [hook-namespace-symbol later-namespace-symbol] true))]
+        (is (= 1 @hook-calls))
+        (is (zero? @later-calls))
+        (is (true? (:stopped-early? result)))
+        (is (= [later-namespace-symbol] (:skipped-namespaces result)))
+        (is (= [] (:skipped-test-vars result)))
+        (is (= {:test 0 :pass 0 :fail 1 :error 0 :type :summary}
+               (:test-result result))))
+      (finally
+        (remove-ns hook-namespace-symbol)
+        (remove-ns later-namespace-symbol)))))
 
 (deftest iteration-cache-runs-one-owned-test-var-with-honest-authority
   (require 'gravity.cli-test)

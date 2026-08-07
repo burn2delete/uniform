@@ -175,12 +175,14 @@ and that namespace's cache hit/miss deltas. Use these records to identify the
 slow namespace and confirm that a combined run is actually reusing work before
 changing cache bounds or widening the selection.
 
-Use `--fail-fast` during edit/fix loops with multiple namespaces. It stops
-after the first namespace whose summary has a failure or error and records the
-remaining work in `:skipped-namespaces`; this prevents a known upstream failure
-from spending another heavy namespace's runtime on derivative diagnostics.
-Omit it when intentionally collecting the complete cross-namespace failure
-set. Either mode remains non-authoritative.
+Use `--fail-fast` during edit/fix loops. It stops after the first failing or
+erroring test var inside an ordinary namespace, records the remaining vars in
+`:skipped-test-vars`, and records later namespaces in `:skipped-namespaces`.
+Namespaces that define `test-ns-hook` retain the hook's indivisible execution
+semantics, but a failing hook still skips later namespaces. This prevents a
+known upstream failure from spending the rest of a heavy namespace or another
+heavy namespace's runtime on derivative diagnostics. Omit it when intentionally
+collecting the complete failure set. Either mode remains non-authoritative.
 
 Use exactly one namespace-qualified `--test-var` when reproducing or checking
 a known failure inside a heavy namespace. The runner validates that its
