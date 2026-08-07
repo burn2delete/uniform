@@ -95300,6 +95300,146 @@
          "L2-BUILTIN-ARITY" plan function args "1 or 2"))
       (p15-s23-stage2-runtime-invoke-builtin plan function args))))
 
+(defn- p15-s23-stage2-runtime-invoke-unary-or-generic-builtin
+  [plan function value]
+  ;; Argument evaluation deliberately happens at the call site, before this
+  ;; exception boundary and before compiler-context validation. This retains
+  ;; the generic path's evaluation order while avoiding its one-element vector.
+  (try
+    (case function
+      first (first value)
+      second (second value)
+      rest (p15-s23-seed-readable-normalized-rest value)
+
+      symbol? (do
+                (when-not
+                 (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                  (throw
+                   (IllegalArgumentException.
+                    "compiler-only predicate outside compiler artifact")))
+                (symbol? value))
+      keyword? (do
+                 (when-not
+                  (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                   (throw
+                    (IllegalArgumentException.
+                     "compiler-only predicate outside compiler artifact")))
+                 (keyword? value))
+      char? (do
+              (when-not
+               (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                (throw
+                 (IllegalArgumentException.
+                  "compiler-only predicate outside compiler artifact")))
+              (char? value))
+      number? (do
+                (when-not
+                 (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                  (throw
+                   (IllegalArgumentException.
+                    "compiler-only predicate outside compiler artifact")))
+                (number? value))
+      seq? (do
+             (when-not
+              (p15-s23-stage2-compiler-artifact-plan-context? plan)
+               (throw
+                (IllegalArgumentException.
+                 "compiler-only predicate outside compiler artifact")))
+             (seq? value))
+      list? (do
+              (when-not
+               (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                (throw
+                 (IllegalArgumentException.
+                  "compiler-only predicate outside compiler artifact")))
+              (list? value))
+      vector? (do
+                (when-not
+                 (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                  (throw
+                   (IllegalArgumentException.
+                    "compiler-only predicate outside compiler artifact")))
+                (vector? value))
+      map? (do
+             (when-not
+              (p15-s23-stage2-compiler-artifact-plan-context? plan)
+               (throw
+                (IllegalArgumentException.
+                 "compiler-only predicate outside compiler artifact")))
+             (map? value))
+      set? (do
+             (when-not
+              (p15-s23-stage2-compiler-artifact-plan-context? plan)
+               (throw
+                (IllegalArgumentException.
+                 "compiler-only predicate outside compiler artifact")))
+             (set? value))
+      string? (do
+                (when-not
+                 (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                  (throw
+                   (IllegalArgumentException.
+                    "compiler-only predicate outside compiler artifact")))
+                (string? value))
+      even? (do
+              (when-not
+               (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                (throw
+                 (IllegalArgumentException.
+                  "compiler-only predicate outside compiler artifact")))
+              (even? value))
+      integer? (do
+                 (when-not
+                  (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                   (throw
+                    (IllegalArgumentException.
+                     "compiler-only predicate outside compiler artifact")))
+                 (integer? value))
+      boolean? (do
+                 (when-not
+                  (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                   (throw
+                    (IllegalArgumentException.
+                     "compiler-only predicate outside compiler artifact")))
+                 (boolean? value))
+
+      keys (do
+             (when-not
+              (p15-s23-stage2-compiler-artifact-plan-context? plan)
+               (throw
+                (IllegalArgumentException.
+                 "compiler-only collection primitive outside compiler artifact")))
+             (apply list (keys value)))
+      set (do
+            (when-not
+             (p15-s23-stage2-compiler-artifact-plan-context? plan)
+              (throw
+               (IllegalArgumentException.
+                "compiler-only collection primitive outside compiler artifact")))
+            (set value))
+      sort-by-pr-str
+      (do
+        (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+          (throw
+           (IllegalArgumentException.
+            "compiler-only ordering primitive outside compiler artifact")))
+        (apply list (sort-by pr-str value)))
+      vec (do
+            (when-not
+             (p15-s23-stage2-compiler-artifact-plan-context? plan)
+              (throw
+               (IllegalArgumentException.
+                "compiler-only vectorization primitive outside compiler artifact")))
+            (into [] value))
+
+      ;; Variadic builtins, pr-str, and malformed callees retain generic
+      ;; dispatch after the sole argument has been evaluated exactly once.
+      (p15-s23-stage2-runtime-invoke-builtin plan function [value]))
+    (catch clojure.lang.ExceptionInfo ex
+      (throw ex))
+    (catch Exception ex
+      (p15-s23-stage2-runtime-fail-builtin-error! plan function ex))))
+
 (defn p15-s23-stage2-runtime-execute-instruction
   [runtime plan env instruction]
   (case (:op instruction)
@@ -95457,30 +95597,38 @@
           (p15-s23-stage2-runtime-invoke-get
            plan collection key not-found))
 
+        (and (= 'count function) (= 1 argument-count))
+        (let [value
+              (p15-s23-stage2-runtime-execute-value
+               runtime plan env (nth argument-instructions 0)
+               :recur-inside-builtin-argument)]
+          (try
+            (count value)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (p15-s23-stage2-runtime-fail-builtin-error!
+               plan function ex))))
+
+        (and (= 'str function)
+             (= 1 argument-count)
+             (:runtime-artifact-plan runtime))
+        (let [value
+              (p15-s23-stage2-runtime-execute-value
+               runtime plan env (nth argument-instructions 0)
+               :recur-inside-builtin-argument)]
+          ;; Preserve the established artifact boundary: ordinary artifact
+          ;; exceptions are not reclassified as host builtin failures.
+          (p15-s23-stage2-runtime-artifact-invoke
+           runtime p15-s23-stage2-runtime-artifact-function [value]))
+
         (= 1 argument-count)
-        (case function
-          count
-          (count
-           (p15-s23-stage2-runtime-execute-value
-            runtime plan env (nth argument-instructions 0)
-            :recur-inside-builtin-argument))
-          first
-          (first
-           (p15-s23-stage2-runtime-execute-value
-            runtime plan env (nth argument-instructions 0)
-            :recur-inside-builtin-argument))
-          second
-          (second
-           (p15-s23-stage2-runtime-execute-value
-            runtime plan env (nth argument-instructions 0)
-            :recur-inside-builtin-argument))
-          rest
-          (p15-s23-seed-readable-normalized-rest
-           (p15-s23-stage2-runtime-execute-value
-            runtime plan env (nth argument-instructions 0)
-            :recur-inside-builtin-argument))
-          (p15-s23-stage2-runtime-execute-generic-builtin-call
-           runtime plan env instruction function))
+        (let [value
+              (p15-s23-stage2-runtime-execute-value
+               runtime plan env (nth argument-instructions 0)
+               :recur-inside-builtin-argument)]
+          (p15-s23-stage2-runtime-invoke-unary-or-generic-builtin
+           plan function value))
 
         :else
         (p15-s23-stage2-runtime-execute-generic-builtin-call

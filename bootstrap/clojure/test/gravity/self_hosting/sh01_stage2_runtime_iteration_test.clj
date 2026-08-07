@@ -4,6 +4,12 @@
 
 (def ^:private runtime {:engine :stage2-runtime-iteration-test})
 (def ^:private plan {:source {:path "stage2-runtime-iteration-test.gravity"}})
+(def ^:private compiler-plan
+  {:compiler-artifact-plan? true
+   :kind :gravity/stage2-compiler-artifact-plan
+   :module {:profile :meta}
+   :compiler {:stage :p15-s23-stage2-expression-lowering}
+   :source {:path "stage2-runtime-iteration-test.gravity"}})
 
 (defn- literal-instructions
   [values]
@@ -16,6 +22,14 @@
     nil
     (catch clojure.lang.ExceptionInfo error
       (ex-data error))))
+
+(defn- interpreted-builtin
+  [active-plan function arguments]
+  (bootstrap/p15-s23-stage2-runtime-execute-instruction
+   runtime active-plan {}
+   {:op :builtin-call
+    :function function
+    :args (literal-instructions arguments)}))
 
 (deftest small-argument-carriers-preserve-values-and-order
   (doseq [values [[] [1] [1 2] [1 2 3] [1 2 3 4]]]
@@ -172,6 +186,209 @@
         (let [data (diagnostic #(invoke function arguments))]
           (is (= "L2-BUILTIN-ARITY" (:id data)))
           (is (= (count arguments) (:actual-arity data))))))))
+
+(def ^:private direct-unary-cases
+  [['count [1 2] 2 false]
+   ['first [1 2] 1 false]
+   ['second [1 2] 2 false]
+   ['rest [1 2] (list 2) false]
+   ['symbol? 'value true true]
+   ['keyword? :value true true]
+   ['char? \x true true]
+   ['number? 1 true true]
+   ['seq? (list 1) true true]
+   ['list? (list 1) true true]
+   ['vector? [1] true true]
+   ['map? {:key 1} true true]
+   ['set? #{1} true true]
+   ['string? "value" true true]
+   ['even? 2 true true]
+   ['integer? 2 true true]
+   ['boolean? false true true]
+   ['keys (array-map :a 1 :b 2) (list :a :b) true]
+   ['set [1 1 2] #{1 2} true]
+   ['sort-by-pr-str [2 1] (list 1 2) true]
+   ['vec (list 1 2) [1 2] true]])
+
+(deftest direct-unary-allowlist-matches-generic-builtin-semantics
+  (doseq [[function value expected compiler-only?] direct-unary-cases]
+    (let [active-plan (if compiler-only? compiler-plan plan)
+          generic
+          (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           active-plan function [value])
+          interpreted (interpreted-builtin active-plan function [value])]
+      (is (= expected generic) [function :generic])
+      (is (= generic interpreted) [function :interpreted]))))
+
+(deftest direct-unary-evaluates-once-before-compiler-context-validation
+  (let [execute-value
+        (ns-resolve 'gravity.bootstrap
+                    'p15-s23-stage2-runtime-execute-value)
+        calls (atom [])
+        data
+        (with-redefs-fn
+          {execute-value
+           (fn [_runtime _plan _env instruction reason]
+             (swap! calls conj [instruction reason])
+             (:value instruction))}
+          #(diagnostic
+            (fn []
+              (interpreted-builtin plan 'map? [{:evaluated true}]))))]
+    (is (= [[{:op :literal :value {:evaluated true}}
+             :recur-inside-builtin-argument]]
+           @calls))
+    (is (= "L2-BUILTIN-ERROR" (:id data)))
+    (is (= 'map? (:function data))))
+  (testing "argument diagnostics win before compiler-context validation"
+    (let [data
+          (diagnostic
+           #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+             runtime plan {}
+             {:op :builtin-call
+              :function 'map?
+              :args [{:op :local :name 'missing}]}))]
+      (is (= "L2-UNKNOWN-SYMBOL" (:id data))))))
+
+(deftest malformed-nonsymbol-callee-cannot-hash-before-argument-evaluation
+  (let [hash-calls (atom 0)
+        malformed
+        (proxy [Object] []
+          (hashCode []
+            (swap! hash-calls inc)
+            (throw (AssertionError. "callee hash ran before argument"))))
+        data
+        (diagnostic
+         #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+           runtime plan {}
+           {:op :builtin-call
+            :function malformed
+            :args [{:op :local :name 'missing}]}))]
+    (is (= "L2-UNKNOWN-SYMBOL" (:id data)))
+    (is (zero? @hash-calls)))
+  (testing "dispatch failures after successful evaluation are contained"
+    (let [hash-calls (atom 0)
+          malformed
+          (proxy [Object] []
+            (hashCode []
+              (swap! hash-calls inc)
+              (throw (RuntimeException. "malformed callee hash"))))
+          data (diagnostic #(interpreted-builtin plan malformed [:value]))]
+      (is (= "L2-BUILTIN-ERROR" (:id data)))
+      (is (identical? malformed (:function data)))
+      (is (pos? @hash-calls)))))
+
+(deftest unary-nonallowlisted-builtins-retain-generic-semantics
+  (doseq [[function value expected]
+          [['+ 7 7]
+           ['* 7 7]
+           ['= 7 true]
+           ['vector 7 [7]]
+           ['list 7 (list 7)]
+           ['pr-str :value ":value"]]]
+    (is (= expected (interpreted-builtin plan function [value])) function)
+    (is (= (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+            plan function [value])
+           (interpreted-builtin plan function [value]))
+        function)))
+
+(deftest direct-unary-preserves-recur-and-exception-boundaries
+  (let [recur-data
+        (diagnostic
+         #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+           runtime compiler-plan {}
+           {:op :builtin-call
+            :function 'map?
+            :args [{:op :recur :args [{:op :literal :value {}}]}]}))
+        exceptional
+        (reify clojure.lang.Seqable
+          (seq [_]
+            (throw (ex-info "sequence failed" {:id "TEST-SEQUENCE"}))))
+        direct-data (diagnostic #(interpreted-builtin plan 'first [exceptional]))
+        generic-data
+        (diagnostic
+         #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           plan 'first [exceptional]))]
+    (is (= "L2-RECUR-TARGET" (:id recur-data)))
+    (is (= :recur-inside-builtin-argument (:reason recur-data)))
+    (is (= "TEST-SEQUENCE" (:id direct-data)))
+    (is (= generic-data direct-data))))
+
+(deftest direct-unary-wraps-host-errors-identically-to-generic-dispatch
+  (doseq [[function value active-plan]
+          [['count 1 plan]
+           ['first 1 plan]
+           ['second 1 plan]
+           ['rest 1 plan]
+           ['even? "not-an-integer" compiler-plan]
+           ['keys 1 compiler-plan]
+           ['set (Object.) compiler-plan]
+           ['sort-by-pr-str (Object.) compiler-plan]
+           ['vec (Object.) compiler-plan]]]
+    (let [direct (diagnostic #(interpreted-builtin active-plan function [value]))
+          generic
+          (diagnostic
+           #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+             active-plan function [value]))]
+      (is (= "L2-BUILTIN-ERROR" (:id direct)) function)
+      (is (= generic direct) function))))
+
+(deftest direct-unary-wrong-arities-remain-on-generic-path
+  (doseq [[function value _expected compiler-only?] direct-unary-cases
+          arguments [[] [value value]]]
+    (let [active-plan (if compiler-only? compiler-plan plan)
+          data (diagnostic #(interpreted-builtin active-plan function arguments))]
+      (is (= "L2-BUILTIN-ARITY" (:id data)) [function arguments])
+      (is (= (count arguments) (:actual-arity data)) [function arguments]))))
+
+(deftest runtime-artifact-str-remains-on-specialized-generic-path
+  (let [artifact-invoke
+        (ns-resolve 'gravity.bootstrap
+                    'p15-s23-stage2-runtime-artifact-invoke)
+        calls (atom [])
+        artifact-runtime (assoc runtime :runtime-artifact-plan true)
+        invoke
+        (fn [arguments]
+          (with-redefs-fn
+            {artifact-invoke
+             (fn [_runtime function values]
+               (swap! calls conj [function values])
+               :artifact-result)}
+            #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+              artifact-runtime plan {}
+              {:op :builtin-call
+               :function 'str
+               :args (literal-instructions arguments)})))]
+    (is (= :artifact-result (invoke ["a"])))
+    (is (= :artifact-result (invoke ["a" "b"])))
+    (is (= 2 (count @calls)))
+    (is (= [["a"] ["a" "b"]] (mapv second @calls))))
+  (testing "unary artifact exceptions retain the pre-fast-path boundary"
+    (let [artifact-invoke
+          (ns-resolve 'gravity.bootstrap
+                      'p15-s23-stage2-runtime-artifact-invoke)
+          artifact-runtime (assoc runtime :runtime-artifact-plan true)
+          invoke
+          #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+            artifact-runtime plan {}
+            {:op :builtin-call
+             :function 'str
+             :args (literal-instructions [:value])})
+          runtime-error (RuntimeException. "artifact runtime failure")
+          observed-runtime
+          (with-redefs-fn
+            {artifact-invoke (fn [& _] (throw runtime-error))}
+            #(try (invoke)
+                  nil
+                  (catch RuntimeException error error)))
+          info-error (ex-info "artifact diagnostic" {:id "TEST-ARTIFACT"})
+          observed-info
+          (with-redefs-fn
+            {artifact-invoke (fn [& _] (throw info-error))}
+            #(try (invoke)
+                  nil
+                  (catch clojure.lang.ExceptionInfo error error)))]
+      (is (identical? runtime-error observed-runtime))
+      (is (identical? info-error observed-info)))))
 
 (deftest small-function-and-loop-binders-preserve-scope-and-recur
   (let [function-plan

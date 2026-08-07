@@ -10,6 +10,12 @@
 (def ^:private runtime {:engine :stage2-runtime-benchmark})
 (def ^:private source-path "stage2-runtime-benchmark.gravity")
 (def ^:private simple-plan {:source {:path source-path}})
+(def ^:private compiler-plan
+  {:compiler-artifact-plan? true
+   :kind :gravity/stage2-compiler-artifact-plan
+   :module {:profile :meta}
+   :compiler {:stage :p15-s23-stage2-expression-lowering}
+   :source {:path source-path}})
 (def ^:private argument-instructions
   [{:op :literal :value 1} {:op :literal :value 2}])
 (def ^:private body-instructions
@@ -24,6 +30,19 @@
   {:op :builtin-call
    :function 'count
    :args [{:op :local :name 'values}]})
+(def ^:private first-instruction
+  {:op :builtin-call
+   :function 'first
+   :args [{:op :local :name 'values}]})
+(def ^:private rest-instruction
+  {:op :builtin-call
+   :function 'rest
+   :args [{:op :local :name 'values}]})
+(def ^:private predicate-environment {'record {:value 1}})
+(def ^:private map-predicate-instruction
+  {:op :builtin-call
+   :function 'map?
+   :args [{:op :local :name 'record}]})
 (def ^:private lookup-environment {'record {:value 1}})
 (def ^:private get-instruction
   {:op :builtin-call
@@ -59,9 +78,42 @@
    :interpreted-count
    #(bootstrap/p15-s23-stage2-runtime-execute-instruction
      runtime simple-plan collection-environment count-instruction)
+   :interpreted-first
+   #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+     runtime simple-plan collection-environment first-instruction)
    :interpreted-get
    #(bootstrap/p15-s23-stage2-runtime-execute-instruction
      runtime simple-plan lookup-environment get-instruction)
+   :interpreted-map-predicate
+   #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+     runtime compiler-plan predicate-environment map-predicate-instruction)
+   :interpreted-rest
+   #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+     runtime simple-plan collection-environment rest-instruction)
+   :legacy-carrier-count
+   #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+     simple-plan 'count
+     (bootstrap/p15-s23-stage2-runtime-execute-values
+      runtime simple-plan collection-environment
+      (:args count-instruction) :recur-inside-builtin-argument))
+   :legacy-carrier-first
+   #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+     simple-plan 'first
+     (bootstrap/p15-s23-stage2-runtime-execute-values
+      runtime simple-plan collection-environment
+      (:args first-instruction) :recur-inside-builtin-argument))
+   :legacy-carrier-map-predicate
+   #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+     compiler-plan 'map?
+     (bootstrap/p15-s23-stage2-runtime-execute-values
+      runtime compiler-plan predicate-environment
+      (:args map-predicate-instruction) :recur-inside-builtin-argument))
+   :legacy-carrier-rest
+   #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+     simple-plan 'rest
+     (bootstrap/p15-s23-stage2-runtime-execute-values
+      runtime simple-plan collection-environment
+      (:args rest-instruction) :recur-inside-builtin-argument))
    :function-bind-two
    #(bootstrap/p15-s23-stage2-runtime-execute-function
      runtime function-plan 'identity-second [1 2])
@@ -76,11 +128,50 @@
   (dotimes [_ iterations]
     (operation)))
 
-(defn- measure-nanoseconds
+(def ^:private thread-allocated-bytes-reader
+  (delay
+    (try
+      (let [bean (java.lang.management.ManagementFactory/getThreadMXBean)
+            bean-class (Class/forName "com.sun.management.ThreadMXBean")
+            no-parameters (make-array Class 0)
+            supported-method
+            (.getMethod bean-class "isThreadAllocatedMemorySupported"
+                        no-parameters)
+            enabled-method
+            (.getMethod bean-class "isThreadAllocatedMemoryEnabled"
+                        no-parameters)
+            bytes-method
+            (.getMethod bean-class "getThreadAllocatedBytes"
+                        (into-array Class [Long/TYPE]))]
+        (when (and (.isInstance bean-class bean)
+                   (true? (.invoke supported-method bean (object-array 0)))
+                   (true? (.invoke enabled-method bean (object-array 0))))
+          (fn []
+            (long
+             (.invoke bytes-method bean
+                      (object-array [(.getId (Thread/currentThread))]))))))
+      (catch Exception _
+        nil))))
+
+(defn- thread-allocated-bytes
+  []
+  (when-let [reader @thread-allocated-bytes-reader]
+    (try
+      (reader)
+      (catch Exception _
+        nil))))
+
+(defn- measure-round
   [iterations operation]
-  (let [started (System/nanoTime)]
+  (let [allocated-before (thread-allocated-bytes)
+        started (System/nanoTime)]
     (run-iterations iterations operation)
-    (- (System/nanoTime) started)))
+    (let [elapsed (- (System/nanoTime) started)
+          allocated-after (thread-allocated-bytes)]
+      {:nanoseconds elapsed
+       :allocated-bytes
+       (when (and allocated-before allocated-after)
+         (- allocated-after allocated-before))})))
 
 (defn- median
   [values]
@@ -89,19 +180,30 @@
 (defn benchmark-workload
   [{:keys [warmup-iterations measurement-iterations rounds]} operation]
   (run-iterations warmup-iterations operation)
-  (let [samples-ns
-        (mapv (fn [_]
-                (measure-nanoseconds measurement-iterations operation))
-              (range rounds))
+  (let [samples (mapv (fn [_] (measure-round measurement-iterations
+                                             operation))
+                      (range rounds))
+        samples-ns (mapv :nanoseconds samples)
+        allocation-samples (mapv :allocated-bytes samples)
+        allocation-available? (every? some? allocation-samples)
         median-ns (median samples-ns)]
-    {:samples-ns samples-ns
-     :median-ns median-ns
-     :median-ms (/ (double median-ns) 1000000.0)
-     :operations-per-second
-     (if (zero? median-ns)
-       nil
-       (/ (* (double measurement-iterations) 1000000000.0)
-          median-ns))}))
+    (cond->
+     {:samples-ns samples-ns
+      :median-ns median-ns
+      :median-ms (/ (double median-ns) 1000000.0)
+      :operations-per-second
+      (if (zero? median-ns)
+        nil
+        (/ (* (double measurement-iterations) 1000000000.0)
+           median-ns))
+      :allocation-telemetry-available? allocation-available?}
+      allocation-available?
+      (assoc
+       :samples-allocated-bytes allocation-samples
+       :median-allocated-bytes (median allocation-samples)
+       :median-allocated-bytes-per-operation
+       (/ (double (median allocation-samples))
+          (double measurement-iterations))))))
 
 (defn run-benchmark
   [options]

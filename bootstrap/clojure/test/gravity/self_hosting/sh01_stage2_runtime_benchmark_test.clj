@@ -14,12 +14,18 @@
     (is (false? (:authoritative? result)))
     (is (= :performance-regression-feedback (:purpose result)))
     (is (= workload-names (set (keys (:results result)))))
-    (is (= 10 (count workload-names)))
+    (is (= 17 (count workload-names)))
     (doseq [[name measurement] (:results result)]
       (is (= 1 (count (:samples-ns measurement))) name)
       (is (pos? (:median-ns measurement)) name)
       (is (pos? (:median-ms measurement)) name)
-      (is (pos? (:operations-per-second measurement)) name))))
+      (is (pos? (:operations-per-second measurement)) name)
+      (is (boolean? (:allocation-telemetry-available? measurement)) name)
+      (when (:allocation-telemetry-available? measurement)
+        (is (= 1 (count (:samples-allocated-bytes measurement))) name)
+        (is (<= 0 (:median-allocated-bytes measurement)) name)
+        (is (<= 0.0 (:median-allocated-bytes-per-operation measurement))
+            name)))))
 
 (deftest benchmark-cli-options-are-explicit-and-fail-closed
   (is (= {:warmup-iterations 10
