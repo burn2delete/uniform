@@ -105,9 +105,9 @@
                  :module-expectations :c7-types])]
     (is (= :source-bound-derived
            (:coverage-census-policy contract)))
-    (is (= {:source-byte-count 209800
+    (is (= {:source-byte-count 210220
             :source-bytes-sha256
-            "sha256:4f9ff8f11b347afc17984acd558fdbb925cdbc8e1f1e329997ff7a04930ac320"}
+            "sha256:bfcaeb3eab70139a969add3f6697fabe12000238198048c064bcacee1d04e38d"}
            (:source-binding expectation)))
     (is (not (contains? expectation :request-counts)))
     (is (not (contains? expectation :core-counts)))

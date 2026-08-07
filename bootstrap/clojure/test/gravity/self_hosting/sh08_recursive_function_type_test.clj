@@ -202,6 +202,15 @@
          (filter
           #(= 'sh08-ft-infer-acyclic-with-context (:function %))
           calls))
+        proof-results-call
+        (first
+         (filter
+          #(= 'sh08-ft-proof-results (:function %))
+          calls))
+        context-proof-function
+        (get-in @c7-plan [:functions 'sh08-ft-context-proof])
+        context-proof-branch
+        (first (:instructions context-proof-function))
         instructions (:instructions artifact-function)
         top-level (first instructions)
         invalid-lets
@@ -214,14 +223,19 @@
     (is (empty? invalid-lets))
     (is (map? recursive-function))
     (is (map? (get-in @c7-plan [:functions
+                                'sh08-ft-proof-results])))
+    (is (map? (get-in @c7-plan [:functions
                                 'sh08-ft-recursive-complete-function])))
     (is (map? (get-in @c7-plan [:functions
                                 'sh08-ft-recursive-call-proof-facts])))
     (is (map? inference-call))
-    (is (= :if (get-in inference-call [:args 9 :op])))
-    (is (= :local (get-in inference-call [:args 9 :then :op])))
+    (is (map? proof-results-call))
+    (is (= 'sh08-ft-context-proof
+           (get-in inference-call [:args 9 :function])))
+    (is (= :if (:op context-proof-branch)))
+    (is (= :local (get-in context-proof-branch [:then :op])))
     (is (= 'recursive-proof
-           (get-in inference-call [:args 9 :then :name]))))
+           (get-in context-proof-branch [:then :name]))))
   (doseq [name ["sh08-ft-recursive-proof"
                 "sh08-ft-recursive-pending"
                 "sh08-ft-recursive-constraint-ledger"

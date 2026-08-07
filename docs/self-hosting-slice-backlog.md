@@ -477,8 +477,8 @@ accepted exact-context evidence for `5fe2013`, not current-context authority for
 those later commits. The 55.85-minute result is the new observational baseline:
 it is 38.7% slower than the 40.27-minute historical run while the source is
 24.2% larger, so it does not support a speedup claim or a controlled comparison.
-The current stage-owned C7 source is 209,800 bytes with hash
-`sha256:4f9ff8f11b347afc17984acd558fdbb925cdbc8e1f1e329997ff7a04930ac320`.
+The current stage-owned C7 source is 210,220 bytes with hash
+`sha256:bfcaeb3eab70139a969add3f6697fabe12000238198048c064bcacee1d04e38d`.
 It retains the bounded one-hop higher-order and one-self-edge recursion
 products, and now derives both from the authoritative primitive literal family
 integer, bool, and string. The self-recursive case remains exactly one named,

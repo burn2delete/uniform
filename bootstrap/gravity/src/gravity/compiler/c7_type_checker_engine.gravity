@@ -4413,6 +4413,145 @@
      (sh08-ft-recursive-call-proof-facts proof canonical-call-facts))
     result))
 
+(defn sh08-ft-function-skeletons [function-records module]
+  (loop [remaining function-records
+         result {}]
+    (if (= (count remaining) 0)
+      result
+      (let [record (first remaining)]
+        (recur
+         (rest remaining)
+         (assoc result
+                (get record :function-syntax-id)
+                (sh08-ft-function-type-skeleton record module)))))))
+
+(defn sh08-ft-complete-recursive-skeletons
+  [base-function-skeletons recursive-proof]
+  (if (= :accepted (get recursive-proof :status))
+    (loop [remaining (keys base-function-skeletons)
+           result base-function-skeletons]
+      (if (= (count remaining) 0)
+        result
+        (let [function-id (first remaining)
+              function (get result function-id)]
+          (if (= function-id (get recursive-proof :function-syntax-id))
+            (recur
+             (rest remaining)
+             (assoc result function-id
+                    (sh08-ft-recursive-complete-function
+                     function recursive-proof)))
+            (recur (rest remaining) result)))))
+    base-function-skeletons))
+
+(defn sh08-ft-complete-higher-order-skeletons
+  [base-function-skeletons higher-order-proof]
+  (if (= :accepted (get higher-order-proof :status))
+    (loop [remaining (keys base-function-skeletons)
+           result base-function-skeletons]
+      (if (= (count remaining) 0)
+        result
+        (let [function-id (first remaining)
+              function (get result function-id)]
+          (if (= function-id
+                 (get (get (get higher-order-proof :identity)
+                           :record)
+                      :function-syntax-id))
+            (recur
+             (rest remaining)
+             (assoc result function-id
+                    (sh08-ft-higher-order-complete-function
+                     function
+                     (get higher-order-proof :identity-function-type))))
+            (if (= function-id
+                   (get (get (get higher-order-proof :apply)
+                             :record)
+                        :function-syntax-id))
+              (recur
+               (rest remaining)
+               (assoc result function-id
+                      (sh08-ft-higher-order-complete-function
+                       function
+                       (get higher-order-proof
+                            :apply-function-type))))
+              (recur (rest remaining) result))))))
+    base-function-skeletons))
+
+(defn sh08-ft-complete-function-skeletons
+  [base-function-skeletons recursive-proof higher-order-proof]
+  (if (= :accepted (get recursive-proof :status))
+    (sh08-ft-complete-recursive-skeletons
+     base-function-skeletons recursive-proof)
+    (if (= :accepted (get higher-order-proof :status))
+      (sh08-ft-complete-higher-order-skeletons
+       base-function-skeletons higher-order-proof)
+      base-function-skeletons)))
+
+(defn sh08-ft-inference-context
+  [recursive? higher-order? recursive-proof higher-order-proof
+   function-skeletons]
+  (if recursive?
+    {(get (get recursive-proof :definition) :binding-id)
+     (get function-skeletons
+          (get recursive-proof :function-syntax-id))}
+    (if higher-order?
+      (get higher-order-proof :initial-binding-types)
+      {})))
+
+(defn sh08-ft-context-proof
+  [recursive? higher-order? recursive-proof higher-order-proof]
+  (if recursive?
+    recursive-proof
+    (if higher-order?
+      higher-order-proof
+      {})))
+
+(defn sh08-ft-proof-results [shape products bindings module]
+  (let [recursive-proof
+        (if (> (count (get products :recursion-components)) 0)
+          (sh08-ft-recursive-proof
+           (get shape :nodes)
+           (get products :definitions)
+           bindings
+           (get products :function-records)
+           (get products :calls)
+           (get products :call-edges)
+           (get products :recursion-components)
+           module)
+          {:status :not-applicable :reason :no-recursive-component})
+        higher-order-proof
+        (sh08-ft-higher-order-proof
+         (get shape :nodes)
+         (get products :definitions)
+         bindings
+         (get products :function-records)
+         (get products :calls)
+         (get products :call-edges)
+         module)]
+    {:recursive-proof recursive-proof
+     :higher-order-proof higher-order-proof}))
+
+(defn sh08-ft-final-functions [functions]
+  (loop [remaining functions
+         values []]
+    (if (= (count remaining) 0)
+      values
+      (let [known?
+            (if (sh08-ft-every-known?
+                 (loop [params (get (first remaining) :parameters)
+                        result []]
+                   (if (= (count params) 0)
+                     (conj result (get (first remaining) :return))
+                     (recur
+                      (rest params)
+                      (conj result (get (first params) :type)))))
+              true
+              false))]
+        (if known?
+          (recur (rest remaining) (conj values (first remaining)))
+          (recur
+           (rest remaining)
+           (conj values (assoc (first remaining) :status :unresolved))))))))
+
 (defn sh08-ft-function-type-core-artifact [core-artifact bindings]
   (if (map? core-artifact)
     (let [shape (sh08-validate-core-shape core-artifact)
@@ -4422,27 +4561,10 @@
           products (sh08-ft-products-valid?
                     core-artifact shape bindings)]
       (if (= (get products :status) :accepted)
-        (let [recursive-proof
-              (if (> (count (get products :recursion-components)) 0)
-                (sh08-ft-recursive-proof
-                 (get shape :nodes)
-                 (get products :definitions)
-                 bindings
-                 (get products :function-records)
-                 (get products :calls)
-                 (get products :call-edges)
-                 (get products :recursion-components)
-                 module)
-                {:status :not-applicable :reason :no-recursive-component})
-              higher-order-proof
-              (sh08-ft-higher-order-proof
-               (get shape :nodes)
-               (get products :definitions)
-               bindings
-               (get products :function-records)
-               (get products :calls)
-               (get products :call-edges)
-               module)]
+        (let [proof-results
+              (sh08-ft-proof-results shape products bindings module)
+              recursive-proof (get proof-results :recursive-proof)
+              higher-order-proof (get proof-results :higher-order-proof)]
           (let [unsupported-higher-order?
                 (= :unsupported-higher-order-primitive-type
                    (get higher-order-proof :reason))]
@@ -4486,68 +4608,16 @@
                            :higher-order-functions :records :unions
                            :protocols :generics :casts :dynamic-boundaries]})
               (let [base-function-skeletons
-                (loop [remaining (get products :function-records)
-                       result {}]
-                  (if (= (count remaining) 0)
-                    result
-                    (let [record (first remaining)]
-                      (recur
-                       (rest remaining)
-                       (assoc result
-                              (get record :function-syntax-id)
-                               (sh08-ft-function-type-skeleton
-                               record module))))))
+                (sh08-ft-function-skeletons
+                 (get products :function-records) module)
                 nodes (get products :node-table)
                 recursive?
                 (= :accepted (get recursive-proof :status))
                 higher-order?
                 (= :accepted (get higher-order-proof :status))
                 function-skeletons
-                (if recursive?
-                  (loop [remaining (keys base-function-skeletons)
-                         result base-function-skeletons]
-                    (if (= (count remaining) 0)
-                      result
-                      (let [function-id (first remaining)
-                            function (get result function-id)]
-                        (if (= function-id (get recursive-proof :function-syntax-id))
-                          (recur
-                           (rest remaining)
-                           (assoc result function-id
-                                  (sh08-ft-recursive-complete-function
-                                   function recursive-proof)))
-                          (recur (rest remaining) result)))))
-                  (if higher-order?
-                    (loop [remaining (keys base-function-skeletons)
-                           result base-function-skeletons]
-                      (if (= (count remaining) 0)
-                        result
-                        (let [function-id (first remaining)
-                              function (get result function-id)]
-                          (if (= function-id
-                                 (get (get (get higher-order-proof :identity)
-                                           :record)
-                                      :function-syntax-id))
-                            (recur
-                             (rest remaining)
-                             (assoc result function-id
-                                    (sh08-ft-higher-order-complete-function
-                                     function
-                                     (get higher-order-proof
-                                          :identity-function-type))))
-                            (if (= function-id
-                                   (get (get (get higher-order-proof :apply)
-                                             :record)
-                                        :function-syntax-id))
-                              (recur
-                               (rest remaining)
-                               (assoc result function-id
-                                      (sh08-ft-higher-order-complete-function
-                                       function
-                                       (get higher-order-proof
-                                            :apply-function-type))))
-                              (recur (rest remaining) result))))))
-                    base-function-skeletons))
+                (sh08-ft-complete-function-skeletons
+                 base-function-skeletons recursive-proof higher-order-proof)
                 raw-inference
                 (sh08-ft-infer-acyclic-with-context
                  (get shape :nodes)
@@ -4557,23 +4627,16 @@
                  (get products :calls)
                  (get products :call-edges)
                  function-skeletons
-                 (if recursive?
-                   {(get (get recursive-proof :definition) :binding-id)
-                    (get function-skeletons
-                         (get recursive-proof :function-syntax-id))}
-                   (if higher-order?
-                     (get higher-order-proof :initial-binding-types)
-                     {}))
+                 (sh08-ft-inference-context
+                  recursive? higher-order? recursive-proof
+                  higher-order-proof function-skeletons)
                  (sh08-ft-inference-round-bound
                   (get shape :nodes)
                   (get products :function-records)
                   (get products :calls)
                   (get products :lexical-bindings))
-                 (if recursive?
-                   recursive-proof
-                   (if higher-order?
-                     higher-order-proof
-                     {})))
+                 (sh08-ft-context-proof
+                  recursive? higher-order? recursive-proof higher-order-proof))
                 unknown-node
                 (if (= (get raw-inference :convergence-status)
                        :converged)
@@ -4599,28 +4662,7 @@
                  (get inference :function-types)
                  nodes module)
                 final-functions
-                (loop [remaining functions values []]
-                  (if (= (count remaining) 0)
-                    values
-                    (if (if (sh08-ft-every-known?
-                             (loop [params (get (first remaining)
-                                                :parameters)
-                                    result []]
-                               (if (= (count params) 0)
-                                 (conj result
-                                       (get (first remaining) :return))
-                                 (recur
-                                  (rest params)
-                                  (conj result (get (first params) :type)))))
-                             )
-                          true
-                          false)
-                      (recur (rest remaining) (conj values (first remaining)))
-                      (recur
-                       (rest remaining)
-                       (conj values
-                             (assoc (first remaining)
-                                    :status :unresolved))))))]
+                (sh08-ft-final-functions functions)]
             (if (> (count (get inference :diagnostics)) 0)
               {:artifact :gravity/sh08-function-typed-core-template
                :schema-version 3

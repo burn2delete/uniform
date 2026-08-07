@@ -212,6 +212,8 @@
 (deftest sh08-primitive-family-structure-and-fixture-parity
   (let [artifact-function
         (get-in @c7-plan [:functions 'sh08-ft-function-type-core-artifact])
+        proof-function
+        (get-in @c7-plan [:functions 'sh08-ft-proof-results])
         instructions (:instructions artifact-function)
         top-level (first instructions)
         invalid-lets
@@ -224,11 +226,16 @@
         function-calls
         (filter #(and (map? %)
                       (= :function-call (:op %)))
-                (tree-seq coll? seq artifact-function))]
+                (tree-seq coll? seq artifact-function))
+        proof-calls
+        (filter #(and (map? %)
+                      (= :function-call (:op %)))
+                (tree-seq coll? seq proof-function))]
     (is (= 1 (count instructions)))
     (is (= :if (:op top-level)))
     (is (empty? invalid-lets))
-    (is (some #(= 'sh08-ft-higher-order-proof (:function %)) function-calls))
+    (is (some #(= 'sh08-ft-proof-results (:function %)) function-calls))
+    (is (some #(= 'sh08-ft-higher-order-proof (:function %)) proof-calls))
     (is (some #(= 'sh08-ft-infer-acyclic-with-context (:function %))
               function-calls))
     (is (.contains source "sh08-ft-authoritative-primitive-type-for-node"))
