@@ -119,3 +119,67 @@
     (is (= [9 2]
            (bootstrap/p15-s23-stage2-runtime-execute-function
             runtime function-plan 'loop-scope [9])))))
+
+(deftest common-builtin-arities-preserve-hosted-core-semantics
+  (let [compiler-plan
+        {:compiler-artifact-plan? true
+         :kind :gravity/stage2-compiler-artifact-plan
+         :module {:profile :meta}
+         :compiler {:stage :p15-s23-stage2-expression-lowering}
+         :source {:path "stage2-runtime-iteration-test.gravity"}}
+        invoke
+        (fn [callee arguments]
+          (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           plan callee arguments))]
+    (doseq [[callee arguments expected]
+            [['+ [] 0]
+             ['+ [7] 7]
+             ['+ [7 5] 12]
+             ['+ [7 5 3] 15]
+             ['+ [7 5 3 2] 17]
+             ['- [7] -7]
+             ['- [7 5] 2]
+             ['- [7 5 3] -1]
+             ['* [] 1]
+             ['* [7] 7]
+             ['* [7 5] 35]
+             ['/ [4] 1/4]
+             ['/ [12 3] 4]
+             ['/ [24 3 2] 4]
+             ['= [1] true]
+             ['= [1 1] true]
+             ['= [1 1 2] false]
+             ['< [1 2] true]
+             ['< [1 2 3] true]
+             ['> [3 2 1] true]
+             ['<= [1 1 2] true]
+             ['>= [2 2 1] true]
+             ['str [] ""]
+             ['str ["a"] "a"]
+             ['str ["a" 1] "a1"]
+             ['str ["a" 1 :b] "a1:b"]
+             ['first [[1 2]] 1]
+             ['second [[1 2]] 2]
+             ['count [[1 2]] 2]]]
+      (is (= expected (invoke callee arguments))
+          [callee arguments]))
+    (is (= (list 2) (invoke 'rest [[1 2]])))
+    (doseq [[callee arguments expected]
+            [['symbol? ['value] true]
+             ['keyword? [:value] true]
+             ['vector? [[1 2]] true]
+             ['map? [{:key 1}] true]
+             ['contains? [{:key 1} :key] true]
+             ['even? [2] true]
+             ['integer? [2] true]
+             ['keys [{:key 1}] (list :key)]
+             ['quot [7 2] 3]
+             ['subvec [[1 2 3] 1 3] [2 3]]]]
+      (is (= expected
+             (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+              compiler-plan callee arguments))
+          [callee arguments]))
+    (doseq [[callee arguments]
+            [['- []] ['/ []] ['= []] ['< [1]] ['> [1]]]]
+      (is (= "L2-BUILTIN-ARITY"
+             (:id (diagnostic #(invoke callee arguments))))))))

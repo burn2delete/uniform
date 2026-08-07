@@ -94828,34 +94828,113 @@
        (= :p15-s23-stage2-expression-lowering
           (get-in plan [:compiler :stage]))))
 
+(defn- p15-s23-stage2-runtime-add
+  [args]
+  (case (count args)
+    0 0
+    1 (nth args 0)
+    2 (+ (nth args 0) (nth args 1))
+    3 (+ (nth args 0) (nth args 1) (nth args 2))
+    (apply + args)))
+
+(defn- p15-s23-stage2-runtime-subtract
+  [args]
+  (case (count args)
+    1 (- (nth args 0))
+    2 (- (nth args 0) (nth args 1))
+    3 (- (nth args 0) (nth args 1) (nth args 2))
+    (apply - args)))
+
+(defn- p15-s23-stage2-runtime-multiply
+  [args]
+  (case (count args)
+    0 1
+    1 (nth args 0)
+    2 (* (nth args 0) (nth args 1))
+    3 (* (nth args 0) (nth args 1) (nth args 2))
+    (apply * args)))
+
+(defn- p15-s23-stage2-runtime-divide
+  [args]
+  (case (count args)
+    1 (/ (nth args 0))
+    2 (/ (nth args 0) (nth args 1))
+    3 (/ (nth args 0) (nth args 1) (nth args 2))
+    (apply / args)))
+
+(defn- p15-s23-stage2-runtime-equal
+  [args]
+  (case (count args)
+    1 true
+    2 (= (nth args 0) (nth args 1))
+    3 (= (nth args 0) (nth args 1) (nth args 2))
+    (apply = args)))
+
+(defn- p15-s23-stage2-runtime-less-than
+  [args]
+  (case (count args)
+    2 (< (nth args 0) (nth args 1))
+    3 (< (nth args 0) (nth args 1) (nth args 2))
+    (apply < args)))
+
+(defn- p15-s23-stage2-runtime-greater-than
+  [args]
+  (case (count args)
+    2 (> (nth args 0) (nth args 1))
+    3 (> (nth args 0) (nth args 1) (nth args 2))
+    (apply > args)))
+
+(defn- p15-s23-stage2-runtime-less-than-or-equal
+  [args]
+  (case (count args)
+    2 (<= (nth args 0) (nth args 1))
+    3 (<= (nth args 0) (nth args 1) (nth args 2))
+    (apply <= args)))
+
+(defn- p15-s23-stage2-runtime-greater-than-or-equal
+  [args]
+  (case (count args)
+    2 (>= (nth args 0) (nth args 1))
+    3 (>= (nth args 0) (nth args 1) (nth args 2))
+    (apply >= args)))
+
+(defn- p15-s23-stage2-runtime-str
+  [args]
+  (case (count args)
+    0 ""
+    1 (str (nth args 0))
+    2 (str (nth args 0) (nth args 1))
+    3 (str (nth args 0) (nth args 1) (nth args 2))
+    (apply str args)))
+
 (defn p15-s23-stage2-runtime-invoke-builtin
   [plan callee args]
   (try
     (case callee
-      + (apply + args)
+      + (p15-s23-stage2-runtime-add args)
       - (do (p15-s23-stage2-runtime-assert-min-arity!
              plan callee args 1)
-            (apply - args))
-      * (apply * args)
+            (p15-s23-stage2-runtime-subtract args))
+      * (p15-s23-stage2-runtime-multiply args)
       / (do (p15-s23-stage2-runtime-assert-min-arity!
              plan callee args 1)
-            (apply / args))
+            (p15-s23-stage2-runtime-divide args))
       = (do (p15-s23-stage2-runtime-assert-min-arity!
              plan callee args 1)
-            (apply = args))
+            (p15-s23-stage2-runtime-equal args))
       < (do (p15-s23-stage2-runtime-assert-min-arity!
              plan callee args 2)
-            (apply < args))
+            (p15-s23-stage2-runtime-less-than args))
       > (do (p15-s23-stage2-runtime-assert-min-arity!
              plan callee args 2)
-            (apply > args))
+            (p15-s23-stage2-runtime-greater-than args))
       <= (do (p15-s23-stage2-runtime-assert-min-arity!
               plan callee args 2)
-             (apply <= args))
+             (p15-s23-stage2-runtime-less-than-or-equal args))
       >= (do (p15-s23-stage2-runtime-assert-min-arity!
               plan callee args 2)
-             (apply >= args))
-      str (apply str args)
+             (p15-s23-stage2-runtime-greater-than-or-equal args))
+      str (p15-s23-stage2-runtime-str args)
       pr-str (p15-s23-seed-readable-pr-str
               (get-in plan [:source :path]) args)
       hash-map (do (p15-s23-stage2-runtime-assert-even-arity!
@@ -94884,149 +94963,149 @@
                 3 (get (nth args 0) (nth args 1) (nth args 2))))
       first (do (p15-s23-stage2-runtime-assert-exact-arity!
                  plan callee args 1)
-                (first (first args)))
+                (first (nth args 0)))
       second (do (p15-s23-stage2-runtime-assert-exact-arity!
                   plan callee args 1)
-                 (second (first args)))
+                 (second (nth args 0)))
       rest (do (p15-s23-stage2-runtime-assert-exact-arity!
                 plan callee args 1)
-               (p15-s23-seed-readable-normalized-rest (first args)))
+               (p15-s23-seed-readable-normalized-rest (nth args 0)))
       count (do (p15-s23-stage2-runtime-assert-exact-arity!
                  plan callee args 1)
-                (count (first args)))
+                (count (nth args 0)))
       symbol? (do
                 (p15-s23-stage2-runtime-assert-exact-arity!
                  plan callee args 1)
                 (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                   (throw (IllegalArgumentException.
                           "compiler-only predicate outside compiler artifact")))
-                (symbol? (first args)))
+                (symbol? (nth args 0)))
       keyword? (do
                  (p15-s23-stage2-runtime-assert-exact-arity!
                   plan callee args 1)
                  (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                    (throw (IllegalArgumentException.
                            "compiler-only predicate outside compiler artifact")))
-                 (keyword? (first args)))
+                 (keyword? (nth args 0)))
       char? (do
               (p15-s23-stage2-runtime-assert-exact-arity!
                plan callee args 1)
               (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                 (throw (IllegalArgumentException.
                         "compiler-only predicate outside compiler artifact")))
-              (char? (first args)))
+              (char? (nth args 0)))
       number? (do
                 (p15-s23-stage2-runtime-assert-exact-arity!
                  plan callee args 1)
                 (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                   (throw (IllegalArgumentException.
                           "compiler-only predicate outside compiler artifact")))
-                (number? (first args)))
+                (number? (nth args 0)))
       seq? (do
              (p15-s23-stage2-runtime-assert-exact-arity!
               plan callee args 1)
              (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                (throw (IllegalArgumentException.
                        "compiler-only predicate outside compiler artifact")))
-             (seq? (first args)))
+             (seq? (nth args 0)))
       list? (do
               (p15-s23-stage2-runtime-assert-exact-arity!
                plan callee args 1)
               (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                 (throw (IllegalArgumentException.
                         "compiler-only predicate outside compiler artifact")))
-              (list? (first args)))
+              (list? (nth args 0)))
       vector? (do
                 (p15-s23-stage2-runtime-assert-exact-arity!
                  plan callee args 1)
                 (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                   (throw (IllegalArgumentException.
                           "compiler-only predicate outside compiler artifact")))
-                (vector? (first args)))
+                (vector? (nth args 0)))
       map? (do
              (p15-s23-stage2-runtime-assert-exact-arity!
               plan callee args 1)
              (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                (throw (IllegalArgumentException.
                        "compiler-only predicate outside compiler artifact")))
-             (map? (first args)))
+             (map? (nth args 0)))
       set? (do
              (p15-s23-stage2-runtime-assert-exact-arity!
               plan callee args 1)
              (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                (throw (IllegalArgumentException.
                        "compiler-only predicate outside compiler artifact")))
-             (set? (first args)))
+             (set? (nth args 0)))
       string? (do
                 (p15-s23-stage2-runtime-assert-exact-arity!
                  plan callee args 1)
                 (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                   (throw (IllegalArgumentException.
                           "compiler-only predicate outside compiler artifact")))
-                (string? (first args)))
+                (string? (nth args 0)))
       contains? (do
                   (p15-s23-stage2-runtime-assert-exact-arity!
                    plan callee args 2)
                   (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                     (throw (IllegalArgumentException.
                             "compiler-only predicate outside compiler artifact")))
-                  (contains? (first args) (second args)))
+                  (contains? (nth args 0) (nth args 1)))
       even? (do
               (p15-s23-stage2-runtime-assert-exact-arity!
                plan callee args 1)
               (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                 (throw (IllegalArgumentException.
                         "compiler-only predicate outside compiler artifact")))
-              (even? (first args)))
+              (even? (nth args 0)))
       integer? (do
                  (p15-s23-stage2-runtime-assert-exact-arity!
                   plan callee args 1)
                  (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                    (throw (IllegalArgumentException.
                            "compiler-only predicate outside compiler artifact")))
-                 (integer? (first args)))
+                 (integer? (nth args 0)))
       boolean? (do
                  (p15-s23-stage2-runtime-assert-exact-arity!
                   plan callee args 1)
                  (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                    (throw (IllegalArgumentException.
                            "compiler-only predicate outside compiler artifact")))
-                 (boolean? (first args)))
+                 (boolean? (nth args 0)))
       keys (do
              (p15-s23-stage2-runtime-assert-exact-arity!
               plan callee args 1)
              (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                (throw (IllegalArgumentException.
                        "compiler-only collection primitive outside compiler artifact")))
-             (apply list (keys (first args))))
+             (apply list (keys (nth args 0))))
       set (do
             (p15-s23-stage2-runtime-assert-exact-arity!
              plan callee args 1)
             (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
               (throw (IllegalArgumentException.
                       "compiler-only collection primitive outside compiler artifact")))
-            (set (first args)))
+            (set (nth args 0)))
       sort-by-pr-str (do
                        (p15-s23-stage2-runtime-assert-exact-arity!
                         plan callee args 1)
                        (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                          (throw (IllegalArgumentException.
                                  "compiler-only ordering primitive outside compiler artifact")))
-                       (apply list (sort-by pr-str (first args))))
+                       (apply list (sort-by pr-str (nth args 0))))
       vec (do
             (p15-s23-stage2-runtime-assert-exact-arity!
              plan callee args 1)
             (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
               (throw (IllegalArgumentException.
                       "compiler-only vectorization primitive outside compiler artifact")))
-            (into [] (first args)))
+            (into [] (nth args 0)))
       quot (do
              (p15-s23-stage2-runtime-assert-exact-arity!
               plan callee args 2)
              (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                (throw (IllegalArgumentException.
                        "compiler-only arithmetic primitive outside compiler artifact")))
-             (quot (first args) (second args)))
+             (quot (nth args 0) (nth args 1)))
       subvec (do
                (p15-s23-stage2-runtime-assert-exact-arity!
                 plan callee args 3)
@@ -95034,7 +95113,7 @@
                  (throw (IllegalArgumentException.
                          "compiler-only slicing primitive outside compiler artifact")))
                (into []
-                     (subvec (first args) (second args) (nth args 2)))))
+                     (subvec (nth args 0) (nth args 1) (nth args 2)))))
     (catch clojure.lang.ExceptionInfo ex
       (throw ex))
     (catch Exception ex
