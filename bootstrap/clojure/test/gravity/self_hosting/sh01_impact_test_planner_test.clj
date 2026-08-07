@@ -314,6 +314,158 @@
                   (planner/build-namespace-plan [namespace])
                   nil
                   (catch clojure.lang.ExceptionInfo exception exception))]
-            (is (= "SH01-IMPACT-NAMESPACE-SLICE"
+            (is (= (if (= "SH-30" slice)
+                     "SH01-IMPACT-NAMESPACE-SLICE"
+                     "SH01-IMPACT-CATALOG")
                    (:id (ex-data exception))))
-            (is (= [namespace] (:namespaces (ex-data exception))))))))))
+            (when (= "SH-30" slice)
+              (is (= [namespace] (:namespaces (ex-data exception)))))))))))
+
+(deftest catalog-validation-rejects-nil-and-out-of-range-entries
+  (doseq [catalog [nil
+                   [{:namespace 'gravity.self-hosting.sh30-future-test
+                     :slice "SH-30"}]
+                   [{:namespace 'gravity.self-hosting.nested-test
+                     :slice nil}]]
+          mode [:normal :iteration :exact]]
+    (let [context (planner/planning-context {:catalog catalog})
+          exception
+          (try
+            (case mode
+              :normal (planner/build-plan {:context context
+                                           :direct-slices #{"SH-01"}})
+              :iteration (planner/build-plan {:context context
+                                              :iteration-slices #{"SH-01"}})
+              :exact (planner/build-namespace-plan
+                      ['gravity.self-hosting.sh01-ownership-test]
+                      context))
+            nil
+            (catch clojure.lang.ExceptionInfo exception exception))]
+      (is (= "SH01-IMPACT-CATALOG" (:id (ex-data exception)))
+          [mode catalog]))))
+
+(deftest catalog-validation-rejects-duplicate-namespace-identities
+  (let [catalog-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'test-catalog)
+        duplicate 'gravity.self-hosting.sh01-ownership-test
+        duplicate-entry {:namespace duplicate :slice "SH-01"}
+        catalog
+        [{:namespace 'gravity.self-hosting.sh02-envelope-test
+          :slice "SH-02"}
+         duplicate-entry
+         duplicate-entry]]
+    (with-redefs-fn
+      {catalog-var (constantly catalog)}
+      (fn []
+        (doseq [request [{:direct-slices #{"SH-01"}}
+                         {:iteration-slices #{"SH-01"}}]]
+          (let [exception
+                (try
+                  (planner/build-plan request)
+                  nil
+                  (catch clojure.lang.ExceptionInfo exception exception))
+                data (ex-data exception)]
+            (is (= "SH01-IMPACT-CATALOG" (:id data)) request)
+            (is (= [duplicate] (:duplicate-namespaces data)) request)
+            (is (= [{:namespace duplicate
+                     :count 2
+                     :entries [duplicate-entry duplicate-entry]}]
+                   (:duplicate-entries data))
+                request)
+            (is (= :namespace-duplicate
+                   (:reason (last (:entries data))))
+                request)))))))
+
+(deftest planner-context-discovers-catalog-once
+  (let [ownership-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'ownership-record)
+        dependencies-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'backlog-dependencies)
+        catalog-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'test-catalog)
+        ownership-scans (atom 0)
+        dependency-scans (atom 0)
+        catalog-scans (atom 0)
+        ownership-loader @ownership-var
+        dependency-loader @dependencies-var]
+    (with-redefs-fn
+      {ownership-var
+       (fn []
+         (swap! ownership-scans inc)
+         (ownership-loader))
+       dependencies-var
+       (fn []
+         (swap! dependency-scans inc)
+         (dependency-loader))
+       catalog-var
+       (fn []
+         (swap! catalog-scans inc)
+         [{:namespace 'gravity.self-hosting.sh01-ownership-test
+           :slice "SH-01"}])}
+      (fn []
+        (let [context (planner/planning-context)]
+          (planner/build-plan {:context context
+                               :direct-slices #{"SH-01"}})
+          (planner/build-plan {:context context
+                               :direct-slices #{"SH-01"}})
+          (is (= 1 @ownership-scans))
+          (is (= 1 @dependency-scans))
+          (is (= 1 @catalog-scans)))))))
+
+(deftest invalid-and-unowned-inputs-fail-before-catalog-discovery
+  (let [catalog-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'test-catalog)
+        scans (atom 0)]
+    (with-redefs-fn
+      {catalog-var
+       (fn []
+         (swap! scans inc)
+         [])}
+      (fn []
+        (doseq [[request expected-id]
+                [[{:direct-slices #{"SH-30"}} "SH01-IMPACT-SLICE"]
+                 [{:changed-paths
+                   ["bootstrap/clojure/test/gravity/self_hosting/unowned_test.clj"]}
+                  "SH01-IMPACT-UNOWNED"]
+                 [{:iteration-slices #{"SH-30"}}
+                  "SH01-IMPACT-SLICE"]]]
+          (let [exception
+                (try
+                  (planner/build-plan request)
+                  nil
+                  (catch clojure.lang.ExceptionInfo exception exception))]
+            (is (= expected-id (:id (ex-data exception))) request)))
+        (is (zero? @scans))))))
+
+(deftest unresolved-present-dedicated-test-fails-and-deleted-one-selects-slice
+  (let [catalog [{:namespace 'gravity.self-hosting.sh01-ownership-test
+                  :slice "SH-01"}]
+        context (planner/planning-context {:catalog catalog})
+        present
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj"
+        deleted
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_deleted_test.clj"
+        exception
+        (try
+          (planner/build-plan {:context context
+                               :changed-paths [present]})
+          nil
+          (catch clojure.lang.ExceptionInfo exception exception))
+        plan (planner/build-plan {:context context
+                                  :changed-paths [deleted]})]
+    (is (= "SH01-IMPACT-NAMESPACE" (:id (ex-data exception))))
+    (is (= [present] (:paths (ex-data exception))))
+    (is (= ["SH-01"] (:direct-slices plan)))
+    (is (= ["SH-01"] (:affected-slices plan)))))
+
+(deftest parse-plan-only-is-always-boolean
+  (let [parse (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                          'parse-arguments)]
+    (with-redefs [planner/changed-paths (constantly [])]
+      (is (true? (:plan-only? (parse ["--slice" "SH-01" "--plan"]))))
+      (is (false? (:plan-only? (parse ["--slice" "SH-01"])))))))

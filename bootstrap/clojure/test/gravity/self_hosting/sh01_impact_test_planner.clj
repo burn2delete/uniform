@@ -240,6 +240,134 @@
            :slice (namespace-slice namespace)}))
        vec))
 
+(defn- valid-slice?
+  [slice]
+  (and (string? slice)
+       (contains? (all-slices) slice)))
+
+(defn validate-test-catalog
+  "Validates the complete discovered dedicated-test catalog.
+
+  Catalog discovery is an input boundary, rather than a selection hint.  A
+  missing namespace-to-slice mapping, a namespace outside SH-00 through
+  SH-29, a duplicate namespace identity, or a malformed catalog entry
+  therefore fails closed before any namespace can be selected.  The catalog
+  is allowed to have no tests for a particular slice; every discovered entry
+  must simply map to one of the bounded slices exactly once.
+  "
+  [catalog]
+  (let [catalog (when (some? catalog) (vec catalog))
+        duplicate-details
+        (when catalog
+          (->> catalog
+               (filter map?)
+               (filter #(some? (:namespace %)))
+               (group-by :namespace)
+               (keep
+                (fn [[namespace entries]]
+                  (when (< 1 (count entries))
+                    {:namespace namespace
+                     :count (count entries)
+                     :entries (vec entries)})))
+               (sort-by (comp str :namespace))
+               vec))
+        malformed-entries
+        (if (or (nil? catalog) (empty? catalog))
+          [{:entry nil
+            :reason (if (nil? catalog) :catalog-nil :catalog-empty)}]
+          (->> catalog
+               (keep
+                (fn [entry]
+                  (cond
+                    (not (map? entry))
+                    {:entry entry :reason :entry-not-map}
+
+                    (nil? (:namespace entry))
+                    {:entry entry :reason :namespace-missing}
+
+                    (not (valid-slice? (:slice entry)))
+                    {:entry entry :reason :slice-invalid}
+
+                    (not= (:slice entry) (namespace-slice (:namespace entry)))
+                    {:entry entry :reason :namespace-slice-mismatch}
+
+                    :else
+                    nil)))
+               vec))
+        malformed
+        (into
+         malformed-entries
+         (map
+          (fn [{:keys [namespace count entries]}]
+            {:namespace namespace
+             :count count
+             :entries entries
+             :reason :namespace-duplicate})
+          duplicate-details))]
+    (when (seq malformed)
+      (throw
+       (ex-info
+        "The discovered SH-01 test catalog must contain unique namespaces mapped to SH-00 through SH-29"
+        {:id "SH01-IMPACT-CATALOG"
+         :entries malformed
+         :catalog catalog
+         :duplicate-namespaces (mapv :namespace duplicate-details)
+         :duplicate-entries duplicate-details
+         :slices
+         (->> malformed
+              (keep (fn [{:keys [entry]}]
+                      (when (map? entry) (:slice entry))))
+              distinct
+              (sort-by str)
+              vec)})))
+    catalog))
+
+(defn planning-context
+  "Creates an isolated, request-local planner context.
+
+  Ownership and dependency records are read once when the context is built.
+  The discovered test catalog is delayed until a request has passed its
+  syntactic, slice, and ownership checks; once forced, the delay memoizes the
+  catalog for this context only.  No global mutable selection cache is used.
+
+  The optional map is intended for tests and callers that already loaded
+  coordinator inputs.  `:catalog` may be supplied to avoid discovery, while
+  `:ownership` and `:dependencies` replace the corresponding coordinator
+  records.
+  "
+  ([]
+   (planning-context {}))
+  ([options]
+   (let [options (or options {})]
+     {:ownership
+      (if (contains? options :ownership)
+        (:ownership options)
+        (ownership-record))
+      :dependencies
+      (if (contains? options :dependencies)
+        (:dependencies options)
+        (backlog-dependencies))
+      :catalog-delay
+      (delay
+       (if (contains? options :catalog)
+         (:catalog options)
+         (test-catalog)))})))
+
+(defn- context-catalog
+  [context]
+  (cond
+    (contains? context :catalog)
+    (:catalog context)
+
+    (contains? context :catalog-delay)
+    @(:catalog-delay context)
+
+    :else
+    (throw
+     (ex-info
+      "SH-01 planner context is missing its test catalog"
+      {:id "SH01-IMPACT-CONTEXT"}))))
+
 (defn- resource-class
   [slice]
   (cond
@@ -264,9 +392,9 @@
 (defn- dedicated-test-namespace
   "Returns a discovered namespace for a dedicated test path, or nil.
 
-  A path can be syntactically slice-owned before its file has been created.
-  Falling back to the slice catalog in that case is safer than requiring a
-  namespace that the classpath cannot load.
+  A path can be syntactically slice-owned after its file has been deleted.
+  Callers distinguish that conservative fallback from a present file whose
+  namespace discovery failed.
   "
   [catalog relative]
   (when (dedicated-test-path? relative)
@@ -278,6 +406,45 @@
               (as-> value (symbol (str "gravity.self-hosting." value))))]
       (when (some #(= namespace (:namespace %)) catalog)
         namespace))))
+
+(defn- repository-path-exists?
+  [relative]
+  (.exists (path relative)))
+
+(defn- unresolved-present-dedicated-test-paths
+  [catalog classified]
+  (->> classified
+       (keep
+        (fn [entry]
+          (when (and (= :dedicated (:classification entry))
+                     (dedicated-test-path? (:path entry))
+                     (nil? (dedicated-test-namespace catalog (:path entry)))
+                     (repository-path-exists? (:path entry)))
+            (:path entry))))
+       distinct
+       sort
+       vec))
+
+(defn- validate-unresolved-present-dedicated-test-paths!
+  [catalog classified]
+  (let [paths (unresolved-present-dedicated-test-paths catalog classified)]
+    (when (seq paths)
+      (throw
+       (ex-info
+        "A present dedicated self-hosting test path is not in the discovered test catalog"
+        {:id "SH01-IMPACT-NAMESPACE"
+         :paths paths
+         :namespaces
+         (->> paths
+              (map
+               (fn [relative]
+                 (let [filename (last (str/split relative #"/"))]
+                   (-> filename
+                       (str/replace #"\.clj$" "")
+                       (str/replace "_" "-")
+                       (as-> value (symbol (str "gravity.self-hosting." value)))))))
+              vec)
+         :reason :unresolved-present-test})))))
 
 (defn- canonical-iteration-slices
   [requested]
@@ -350,9 +517,12 @@
          vec)))
 
 (defn- build-iteration-plan
-  [classified changed-paths requested]
-  (let [catalog (test-catalog)
+  [context classified changed-paths requested]
+  (let [catalog (-> context context-catalog validate-test-catalog)
         requested (canonical-iteration-slices requested)
+        _ (validate-unresolved-present-dedicated-test-paths!
+           catalog
+           classified)
         direct-test-entries
         (filter
          #(and (= :dedicated (:classification %))
@@ -367,9 +537,19 @@
              (filter
               #(or
                 (seq (set/intersection requested (set (:slices %))))
-                (dedicated-test-namespace catalog (:path %))))
+                (dedicated-test-namespace catalog (:path %))
+                (not (repository-path-exists? (:path %)))))
              (mapcat :slices)
              set)
+        deleted-test-slices
+        (->> direct-test-entries
+             (filter
+              #(and (nil? (dedicated-test-namespace catalog (:path %)))
+                    (not (repository-path-exists? (:path %)))))
+             (mapcat :slices)
+             set)
+        catalog-selection-slices
+        (set/union requested deleted-test-slices)
         selected-slices
         (set/union requested test-path-slices)
         changed-path-slices
@@ -394,7 +574,7 @@
              vec)
         namespaces
         (->> catalog
-             (filter #(contains? requested (:slice %)))
+             (filter #(contains? catalog-selection-slices (:slice %)))
              (map :namespace)
              (concat exact-test-namespaces)
              distinct
@@ -438,14 +618,49 @@
           (filter #(= :unrelated (:classification %)))
           (mapv :path))}))
 
-(defn build-plan
-  "Builds a deterministic plan for directly selected slices or changed paths."
+(defn- planner-context-for-request
   [request]
-  (let [{:keys [direct-slices changed-paths expand-dependants?]
-         :or {direct-slices #{}
-              changed-paths []
-              expand-dependants? false}}
-        request
+  (or (:planning-context request)
+      (:context request)
+      (planning-context)))
+
+(defn- invalid-slices!
+  [slices]
+  (let [invalid (set/difference (set slices) (all-slices))]
+    (when (seq invalid)
+      (throw
+       (ex-info
+        "Requested slices must belong to the SH-00 through SH-29 plan"
+        {:id "SH01-IMPACT-SLICE"
+         :slices (vec (sort-by str invalid))}))))
+  slices)
+
+(defn- unowned-paths!
+  [classified]
+  (let [unowned
+        (->> classified
+             (filter #(= :unowned (:classification %)))
+             (mapv :path))]
+    (when (seq unowned)
+      (throw
+       (ex-info
+        "Changed self-hosting paths must have exactly one SH-01 owner"
+        {:id "SH01-IMPACT-UNOWNED"
+         :paths unowned})))
+    unowned))
+
+(defn build-plan
+  "Builds a deterministic plan for directly selected slices or changed paths.
+
+  All coordinator inputs belong to one request-local context.  Slice and
+  ownership failures are checked before forcing the catalog delay so malformed
+  requests cannot trigger filesystem discovery.
+  "
+  [request]
+  (let [request (or request {})
+        direct-slices (set (or (:direct-slices request) #{}))
+        changed-paths (->> (or (:changed-paths request) []) distinct sort vec)
+        expand-dependants? (boolean (:expand-dependants? request))
         iteration-request?
         (or (contains? request :iteration-slices)
             (contains? request :iteration-slice))
@@ -453,31 +668,29 @@
         (if (contains? request :iteration-slices)
           (:iteration-slices request)
           (:iteration-slice request))
-        changed-paths (->> changed-paths distinct sort vec)
-        record (ownership-record)
-        dependencies (backlog-dependencies)
+        context (planner-context-for-request request)
+        record (:ownership context)
+        dependencies (:dependencies context)
         classified (mapv #(classify-path record %) changed-paths)
-        unowned
-        (->> classified
-             (filter #(= :unowned (:classification %)))
-             (mapv :path))]
+        path-slices (into #{} (mapcat :slices classified))
+        direct (set/union direct-slices path-slices)
+        _ (invalid-slices! direct)
+        unowned (unowned-paths! classified)]
     (if iteration-request?
-      (do
-        (when (seq unowned)
-          (throw
-           (ex-info
-            "Changed self-hosting paths must have exactly one SH-01 owner"
-            {:id "SH01-IMPACT-UNOWNED"
-             :paths unowned})))
-        (build-iteration-plan classified changed-paths iteration-slices))
-      (let [path-slices (into #{} (mapcat :slices classified))
-            direct (set/union (set direct-slices) path-slices)
-            invalid-slices (set/difference direct (all-slices))
-            selected
+      (let [iteration-slices (canonical-iteration-slices iteration-slices)]
+        (build-iteration-plan
+         context
+         classified
+         changed-paths
+         iteration-slices))
+      (let [selected
             (if expand-dependants?
               (downstream-closure dependencies direct)
               direct)
-            catalog (test-catalog)
+            catalog (-> context context-catalog validate-test-catalog)
+            _ (validate-unresolved-present-dedicated-test-paths!
+               catalog
+               classified)
             namespaces
             (->> catalog
                  (filter #(contains? selected (:slice %)))
@@ -492,18 +705,6 @@
                       {:namespace namespace
                        :slice slice
                        :resource-class (resource-class slice)}))))]
-        (when (seq invalid-slices)
-          (throw
-           (ex-info
-            "Requested slices must belong to the SH-00 through SH-29 plan"
-            {:id "SH01-IMPACT-SLICE"
-             :slices (vec (sort invalid-slices))})))
-        (when (seq unowned)
-          (throw
-           (ex-info
-            "Changed self-hosting paths must have exactly one SH-01 owner"
-            {:id "SH01-IMPACT-UNOWNED"
-             :paths unowned})))
         {:schema :gravity/sh01-impact-test-plan-v1
          :direct-slices (vec (sort direct))
          :affected-slices (vec (sort selected))
@@ -514,7 +715,7 @@
          :ignored-paths
          (->> classified
               (filter #(= :unrelated (:classification %)))
-         (mapv :path))}))))
+              (mapv :path))}))))
 
 (defn build-namespace-plan
   "Builds a non-authoritative plan for exact dedicated test namespaces.
@@ -522,60 +723,81 @@
   This leaf iteration mode validates names against the same discovered catalog
   as slice planning but deliberately does not expand to sibling namespaces or
   downstream slices."
-  [requested]
-  (let [namespaces (mapv #(if (symbol? %) % (symbol (str %))) requested)
-        catalog (test-catalog)
-        by-namespace (into {} (map (juxt :namespace identity)) catalog)
-        unknown (vec (sort (remove #(contains? by-namespace %) namespaces)))
-        invalid-slice-namespaces
-        (->> namespaces
-             (filter
+  ([requested]
+   (build-namespace-plan requested (planning-context)))
+  ([requested context]
+   (let [namespaces (mapv #(if (symbol? %) % (symbol (str %))) requested)]
+     (when (empty? namespaces)
+       (throw
+        (ex-info "At least one dedicated namespace is required"
+                 {:id "SH01-IMPACT-NAMESPACE-EMPTY"})))
+     (when-not (= (count namespaces) (count (distinct namespaces)))
+       (throw
+        (ex-info "Dedicated namespaces must be unique"
+                 {:id "SH01-IMPACT-NAMESPACE-DUPLICATE"
+                  :namespaces namespaces})))
+     ;; A slice encoded in a requested namespace is a syntactic input and can
+     ;; be rejected without discovering the catalog.  Namespaces without an
+     ;; encoded slice still require catalog lookup so their ownership can be
+     ;; checked normally.
+     (let [invalid-requested-slices
+           (->> namespaces
+                (keep
+                 (fn [namespace]
+                   (let [slice (namespace-slice namespace)]
+                     (when (and slice (not (valid-slice? slice)))
+                       namespace))))
+                sort
+                vec)]
+       (when (seq invalid-requested-slices)
+         (throw
+          (ex-info
+           "Requested namespace has no valid SH-00 through SH-29 slice"
+           {:id "SH01-IMPACT-NAMESPACE-SLICE"
+            :namespaces invalid-requested-slices}))))
+     (let [catalog (-> context context-catalog validate-test-catalog)
+           by-namespace (into {} (map (juxt :namespace identity)) catalog)
+           unknown (vec (sort (remove #(contains? by-namespace %) namespaces)))
+           invalid-slice-namespaces
+           (->> namespaces
+                (filter
+                 (fn [namespace]
+                   (let [slice (:slice (get by-namespace namespace))]
+                     (and (contains? by-namespace namespace)
+                          (not (valid-slice? slice))))))
+                sort
+                vec)]
+       (when (seq unknown)
+         (throw
+          (ex-info "Requested namespace is not in the dedicated test catalog"
+                   {:id "SH01-IMPACT-NAMESPACE"
+                    :namespaces unknown})))
+       (when (seq invalid-slice-namespaces)
+         (throw
+          (ex-info "Requested namespace has no valid SH-00 through SH-29 slice"
+                   {:id "SH01-IMPACT-NAMESPACE-SLICE"
+                    :namespaces invalid-slice-namespaces})))
+       (let [namespaces (vec (sort namespaces))
+             shards
+             (mapv
               (fn [namespace]
                 (let [slice (:slice (get by-namespace namespace))]
-                  (and (contains? by-namespace namespace)
-                       (not (contains? (all-slices) slice))))))
-             sort
-             vec)]
-    (when (empty? namespaces)
-      (throw
-       (ex-info "At least one dedicated namespace is required"
-                {:id "SH01-IMPACT-NAMESPACE-EMPTY"})))
-    (when-not (= (count namespaces) (count (distinct namespaces)))
-      (throw
-       (ex-info "Dedicated namespaces must be unique"
-                {:id "SH01-IMPACT-NAMESPACE-DUPLICATE"
-                 :namespaces namespaces})))
-    (when (seq unknown)
-      (throw
-       (ex-info "Requested namespace is not in the dedicated test catalog"
-                {:id "SH01-IMPACT-NAMESPACE"
-                 :namespaces unknown})))
-    (when (seq invalid-slice-namespaces)
-      (throw
-       (ex-info "Requested namespace has no valid SH-00 through SH-29 slice"
-                {:id "SH01-IMPACT-NAMESPACE-SLICE"
-                 :namespaces invalid-slice-namespaces})))
-    (let [namespaces (vec (sort namespaces))
-          shards
-          (mapv
-           (fn [namespace]
-             (let [slice (:slice (get by-namespace namespace))]
-               {:namespace namespace
-                :slice slice
-                :resource-class (resource-class slice)}))
-           namespaces)
-          slices (vec (sort (distinct (map :slice shards))))]
-      {:schema :gravity/sh01-impact-test-plan-v1
-       :authority :non-authoritative
-       :authoritative? false
-       :selection-mode :exact-namespaces
-       :direct-slices slices
-       :affected-slices slices
-       :changed-paths []
-       :classifications []
-       :namespaces namespaces
-       :shards shards
-       :ignored-paths []})))
+                  {:namespace namespace
+                   :slice slice
+                   :resource-class (resource-class slice)}))
+              namespaces)
+             slices (vec (sort (distinct (map :slice shards))))]
+         {:schema :gravity/sh01-impact-test-plan-v1
+          :authority :non-authoritative
+          :authoritative? false
+          :selection-mode :exact-namespaces
+          :direct-slices slices
+          :affected-slices slices
+          :changed-paths []
+          :classifications []
+          :namespaces namespaces
+          :shards shards
+          :ignored-paths []})))))
 
 (defn- process-lines
   [& command]
@@ -670,7 +892,7 @@
 (defn- parse-arguments
   [arguments]
   (let [arguments (vec arguments)
-        plan-only? (some #{"--plan"} arguments)
+        plan-only? (boolean (some #{"--plan"} arguments))
         args (vec (remove #{"--plan"} arguments))]
     (if (some #{"--iteration-slice"} args)
       (iteration-arguments args plan-only?)
