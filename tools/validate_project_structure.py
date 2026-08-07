@@ -333,13 +333,13 @@ def _extract_normative_string_vector(
 
 def parse_normative_ownership(
     path: Path = NORMATIVE_OWNERSHIP,
-) -> tuple[list[str], dict[str, str], list[str]]:
+) -> tuple[list[str], list[str], list[str], dict[str, str], list[str]]:
     """Project only coordinator ownership facts from the normative EDN.
 
     This is deliberately not a permissive EDN parser.  The parity contract
-    depends on two simple, stable shapes: a string vector under
-    ``:integration-surfaces`` and a string-to-keyword map under
-    ``:module-owners``.  Any missing marker, duplicate marker, non-ASCII input,
+    depends on simple, stable vector shapes for coordinator routing, generated
+    evidence, and integration surfaces, plus a string-to-keyword map under
+    ``:module-owners``. Any missing marker, duplicate marker, non-ASCII input,
     or token outside those shapes is an error rather than a best-effort parse.
     """
 
@@ -347,17 +347,22 @@ def parse_normative_ownership(
     try:
         raw = path.read_bytes()
     except OSError as exc:
-        return [], {}, [f"cannot read normative ownership EDN {path}: {exc}"]
+        return [], [], [], {}, [f"cannot read normative ownership EDN {path}: {exc}"]
     if len(raw) > MAX_OWNERSHIP_EDN_BYTES:
-        return [], {}, [f"normative ownership EDN exceeds {MAX_OWNERSHIP_EDN_BYTES} bytes"]
+        return [], [], [], {}, [f"normative ownership EDN exceeds {MAX_OWNERSHIP_EDN_BYTES} bytes"]
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError as exc:
-        return [], {}, [f"normative ownership EDN is not UTF-8: {exc}"]
+        return [], [], [], {}, [f"normative ownership EDN is not UTF-8: {exc}"]
     try:
         text.encode("ascii")
     except UnicodeEncodeError:
         errors.append("normative ownership EDN must be ASCII")
+    non_string_text = re.sub(r'"([^"\\]*(?:\\.[^"\\]*)*)"', '""', text)
+    if re.search(r"[#;]", non_string_text):
+        errors.append(
+            "normative ownership EDN may not use comments, reader discard, or tagged reader syntax"
+        )
     if text.count(":schema") != 1 or ":schema :gravity/self-hosting-slice-ownership-v1" not in text:
         errors.append("normative ownership EDN schema marker is unrecognized")
     integration_owner_markers = re.findall(
@@ -373,13 +378,19 @@ def parse_normative_ownership(
     if len(module_matches) != 1:
         errors.append("normative ownership EDN must contain exactly one :module-owners map")
     if errors:
-        return [], {}, errors
+        return [], [], [], {}, errors
 
     coordinator_start = coordinator_matches[0].end()
     module_start = module_matches[0].start()
     if module_start <= coordinator_start:
-        return [], {}, ["normative ownership EDN coordinator/module owner order is unrecognized"]
+        return [], [], [], {}, ["normative ownership EDN coordinator/module owner order is unrecognized"]
     coordinator_section = text[coordinator_start:module_start]
+    central_routing = _extract_normative_string_vector(
+        coordinator_section, "central-routing", errors
+    )
+    generated_evidence_prefixes = _extract_normative_string_vector(
+        coordinator_section, "generated-evidence-prefixes", errors
+    )
     integration_surfaces = _extract_normative_string_vector(
         coordinator_section, "integration-surfaces", errors
     )
@@ -387,7 +398,7 @@ def parse_normative_ownership(
     reserved_matches = list(re.finditer(r":reserved-leaf-modules\s*\{", text))
     if len(reserved_matches) != 1 or reserved_matches[0].start() <= module_matches[0].end():
         errors.append("normative ownership EDN must delimit :module-owners before :reserved-leaf-modules")
-        return integration_surfaces, {}, errors
+        return central_routing, generated_evidence_prefixes, integration_surfaces, {}, errors
     module_section = text[module_matches[0].end() : reserved_matches[0].start()]
     entry_re = re.compile(r'"([^"\\]*(?:\\.[^"\\]*)*)"\s+:([A-Za-z0-9_-]+)')
     entries = list(entry_re.finditer(module_section))
@@ -400,7 +411,7 @@ def parse_normative_ownership(
     remainder = entry_re.sub("", module_section).replace("}", "")
     if not entries or re.search(r"[^\s]", remainder):
         errors.append("normative ownership EDN :module-owners map contains unrecognized structure")
-    return integration_surfaces, module_owners, errors
+    return central_routing, generated_evidence_prefixes, integration_surfaces, module_owners, errors
 
 
 def _path_pattern_matches(pattern: str, path: str) -> bool:
@@ -416,7 +427,13 @@ def _validate_normative_ownership_parity(
 ) -> None:
     """Ensure coordinator paths in the normative EDN have the same owner here."""
 
-    integration_surfaces, module_owners, parse_errors = parse_normative_ownership()
+    (
+        central_routing,
+        generated_evidence_prefixes,
+        integration_surfaces,
+        module_owners,
+        parse_errors,
+    ) = parse_normative_ownership()
     for parse_error in parse_errors:
         _add_error(errors, "normative ownership parity", parse_error)
     if parse_errors:
@@ -450,6 +467,57 @@ def _validate_normative_ownership_parity(
     if not isinstance(policies, list):
         _add_error(errors, "normative ownership parity", "manifest path policies are unavailable")
         return
+    policies_by_id = {
+        policy.get("id"): policy
+        for policy in policies
+        if _is_mapping(policy) and isinstance(policy.get("id"), str)
+    }
+    for policy_id, normative_patterns, required_semantics in (
+        (
+            "reviewed-central-routing",
+            central_routing,
+            {
+                "owner": "master-coordinator",
+                "kind": "reviewed",
+                "editable": True,
+                "review_required": True,
+                "reviewer": "master-coordinator",
+            },
+        ),
+        (
+            "generated-evidence",
+            generated_evidence_prefixes,
+            {
+                "owner": "master-coordinator",
+                "kind": "generated",
+                "editable": False,
+                "review_required": True,
+            },
+        ),
+    ):
+        policy = policies_by_id.get(policy_id)
+        manifest_patterns = policy.get("patterns") if _is_mapping(policy) else None
+        if manifest_patterns != normative_patterns:
+            _add_error(
+                errors,
+                "normative ownership parity",
+                f"policy {policy_id!r} patterns differ from normative ownership: "
+                f"normative {normative_patterns!r}, manifest {manifest_patterns!r}",
+            )
+        if _is_mapping(policy):
+            for field, expected_value in required_semantics.items():
+                if policy.get(field) != expected_value:
+                    _add_error(
+                        errors,
+                        "normative ownership parity",
+                        f"policy {policy_id!r} must set {field!r} to {expected_value!r}",
+                    )
+            if policy_id == "generated-evidence" and not isinstance(policy.get("generator"), str):
+                _add_error(
+                    errors,
+                    "normative ownership parity",
+                    "policy 'generated-evidence' must name its coordinator-owned generator",
+                )
     for expected_path in sorted(expected_paths):
         claims: list[tuple[str, str]] = []
         for policy in policies:

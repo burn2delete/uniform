@@ -105,6 +105,68 @@ class ProjectStructureValidationTests(unittest.TestCase):
         errors = self.errors_for(mutate)
         self.assertTrue(any("module owner mismatch" in error for error in errors), errors)
 
+    def test_normative_central_routing_policy_parity_is_enforced(self) -> None:
+        def mutate(manifest: dict) -> None:
+            for policy in manifest["path_policy"]["policies"]:
+                if policy["id"] == "reviewed-central-routing":
+                    policy["patterns"].append("README.md")
+                    break
+
+        errors = self.errors_for(mutate)
+        self.assertTrue(any("reviewed-central-routing" in error for error in errors), errors)
+
+    def test_normative_central_routing_owner_cannot_be_transferred(self) -> None:
+        def mutate(manifest: dict) -> None:
+            for policy in manifest["path_policy"]["policies"]:
+                if policy["id"] == "reviewed-central-routing":
+                    policy["owner"] = "sh-reader"
+                    break
+            for owner in manifest["ownership"]["owners"]:
+                if owner["id"] == "master-coordinator":
+                    owner["path_policy_ids"].remove("reviewed-central-routing")
+                elif owner["id"] == "sh-reader":
+                    owner["path_policy_ids"].append("reviewed-central-routing")
+
+        errors = self.errors_for(mutate)
+        self.assertTrue(any("must set 'owner' to 'master-coordinator'" in error for error in errors), errors)
+
+    def test_normative_generated_evidence_policy_parity_is_enforced(self) -> None:
+        def mutate(manifest: dict) -> None:
+            for policy in manifest["path_policy"]["policies"]:
+                if policy["id"] == "generated-evidence":
+                    policy["patterns"] = ["docs/artifacts/", "target/validation/"]
+                    break
+
+        errors = self.errors_for(mutate)
+        self.assertTrue(any("generated-evidence" in error for error in errors), errors)
+
+    def test_normative_generated_evidence_cannot_become_editable_source(self) -> None:
+        def mutate(manifest: dict) -> None:
+            for policy in manifest["path_policy"]["policies"]:
+                if policy["id"] in {"generated-evidence", "generated-coverage"}:
+                    policy["kind"] = "reviewed"
+                    policy["editable"] = True
+                    policy["reviewer"] = "master-coordinator"
+                    policy.pop("generator", None)
+
+        errors = self.errors_for(mutate)
+        self.assertTrue(any("must set 'kind' to 'generated'" in error for error in errors), errors)
+
+    def test_normative_projection_rejects_reader_discard_and_comments(self) -> None:
+        source = validator.NORMATIVE_OWNERSHIP.read_text(encoding="utf-8")
+        for replacement in (
+            "#_:central-routing\n  [",
+            "; hidden policy\n  :central-routing\n  [",
+        ):
+            with self.subTest(replacement=replacement), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "ownership.edn"
+                path.write_text(
+                    source.replace(":central-routing\n  [", replacement, 1),
+                    encoding="utf-8",
+                )
+                *_, errors = validator.parse_normative_ownership(path)
+                self.assertTrue(any("reader" in error or "comments" in error for error in errors), errors)
+
     def test_normative_projection_fails_closed_on_unrecognized_edn(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "ownership.edn"
@@ -113,7 +175,9 @@ class ProjectStructureValidationTests(unittest.TestCase):
                 ":integration-owner :master-coordinator}\n",
                 encoding="utf-8",
             )
-            surfaces, owners, errors = validator.parse_normative_ownership(path)
+            routing, generated, surfaces, owners, errors = validator.parse_normative_ownership(path)
+        self.assertEqual([], routing)
+        self.assertEqual([], generated)
         self.assertEqual([], surfaces)
         self.assertEqual({}, owners)
         self.assertTrue(errors)

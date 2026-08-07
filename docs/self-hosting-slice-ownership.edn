@@ -12,7 +12,8 @@
    "bootstrap/clojure/java/gravity/cli/Main.java"
    "bootstrap/clojure/src/gravity/bootstrap.clj"
    "bootstrap/clojure/test/gravity/bootstrap_test.clj"
-   "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"]
+   "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
+   "tools/"]
   :host-boundary-modules
   ["bootstrap/clojure/src/gravity/cli.clj"
    "bootstrap/clojure/src/gravity/darwin_publication.clj"
@@ -35,7 +36,7 @@
   ["docs/self-hosting-slice-backlog.md"
    "docs/self-hosting-slice-ownership.edn"]
   :generated-evidence-prefixes
-  ["docs/artifacts/" "target/phase-18/" "target/validation/"]
+  ["docs/artifacts/" "target/"]
   :coverage-prefixes
   ["docs/artifacts/full-language/coverage/"
    "docs/artifacts/full-language/reports/full-language-coverage-"]

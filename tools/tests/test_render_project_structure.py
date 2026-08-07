@@ -109,6 +109,21 @@ class ProjectStructureRendererTests(unittest.TestCase):
         self.assertEqual(["unclaimed/path.txt"], view["unowned_paths"])
         self.assertTrue(view["paths"][0]["unowned"])
 
+    def test_coordinator_tooling_and_top_level_outputs_have_conservative_impact(self) -> None:
+        for path in (
+            "tools/validate_math_system.py",
+            "target/core-app",
+            "target/core-app.gravity-artifact.edn",
+        ):
+            with self.subTest(path=path):
+                impact = renderer.changed_path_impact_closure(self.manifest, [path])
+                self.assertEqual([], impact["unowned_paths"])
+                self.assertEqual([], impact["unresolved_paths"])
+                self.assertTrue(impact["impact_complete"])
+                self.assertFalse(impact["blocking"])
+                self.assertIn("SH-00", impact["direct_slices"])
+                self.assertIn("master-coordinator", impact["impacted_owners"])
+
     def test_local_path_matcher_has_independent_exact_directory_and_glob_behavior(self) -> None:
         self.assertTrue(renderer._path_pattern_matches("one/file.gravity", "one/file.gravity"))
         self.assertFalse(renderer._path_pattern_matches("one/file.gravity", "one/other.gravity"))

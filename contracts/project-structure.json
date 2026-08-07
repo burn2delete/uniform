@@ -658,7 +658,7 @@
       "artifact_outputs": ["emitted-artifact", "package-provenance"],
       "cost": {"class": "heavy", "lane": "heavy-candidate", "resource": "toolchain"},
       "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-00"], "human_review_required": true},
-      "path_policy_ids": ["reviewed-backlog", "generated-evidence"]
+      "path_policy_ids": ["reviewed-central-routing", "reviewed-backlog", "generated-evidence"]
     },
     {
       "id": "SH-01",
@@ -1114,7 +1114,7 @@
         "id": "reviewed-central-routing",
         "kind": "reviewed",
         "owner": "master-coordinator",
-        "patterns": ["deps.edn", "bin/gravity", "bin/gravity-bootstrap", "bootstrap/clojure/java/gravity/cli/Main.java", "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/clojure/test/gravity/bootstrap_test.clj", "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"],
+        "patterns": ["deps.edn", "bin/gravity", "bin/gravity-bootstrap", "bootstrap/clojure/java/gravity/cli/Main.java", "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/clojure/test/gravity/bootstrap_test.clj", "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj", "tools/"],
         "editable": true,
         "review_required": true,
         "reviewer": "master-coordinator",
@@ -1354,7 +1354,7 @@
         "id": "generated-evidence",
         "kind": "generated",
         "owner": "master-coordinator",
-        "patterns": ["docs/artifacts/", "target/phase-18/", "target/validation/"],
+        "patterns": ["docs/artifacts/", "target/"],
         "editable": false,
         "review_required": true,
         "generator": "coordinator-owned evidence and validation tools",
