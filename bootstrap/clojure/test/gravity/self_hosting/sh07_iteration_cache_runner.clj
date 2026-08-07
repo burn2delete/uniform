@@ -393,5 +393,7 @@
   [& arguments]
   (let [result (run-selection (parse-arguments arguments))]
     (println (pr-str result))
+    (flush)
+    (shutdown-agents)
     (when-not (:ok? result)
       (System/exit 1))))
