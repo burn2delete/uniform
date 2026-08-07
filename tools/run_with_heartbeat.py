@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -110,6 +111,7 @@ def parser() -> argparse.ArgumentParser:
     )
     value.add_argument("--log", type=Path, required=True)
     value.add_argument("--status", type=Path)
+    value.add_argument("--lock", type=Path)
     value.add_argument("--heartbeat-seconds", type=float, default=60.0)
     value.add_argument("--timeout-seconds", type=float)
     value.add_argument("--terminate-grace-seconds", type=float, default=10.0)
@@ -135,8 +137,11 @@ def validated_arguments(arguments: list[str] | None) -> argparse.Namespace:
     values.cwd = values.cwd.resolve()
     values.log = values.log.resolve()
     values.status = (values.status or values.log.with_suffix(values.log.suffix + ".status.json")).resolve()
+    values.lock = values.lock.resolve() if values.lock is not None else None
     if values.log == values.status:
         parser().error("--log and --status must name different files")
+    if values.lock is not None and values.lock in {values.log, values.status}:
+        parser().error("--lock must differ from --log and --status")
     return values
 
 
@@ -146,6 +151,7 @@ def run(arguments: list[str] | None = None) -> int:
     started_at = utc_now()
     started_monotonic = time.monotonic()
     durable_log = DurableLog(values.log, values.append)
+    lock_stream = None
     process: subprocess.Popen[bytes] | None = None
     timed_out = False
     received_signal: int | None = None
@@ -158,6 +164,7 @@ def run(arguments: list[str] | None = None) -> int:
         "cwd": str(values.cwd),
         "log_path": str(values.log),
         "status_path": str(values.status),
+        "lock_path": None if values.lock is None else str(values.lock),
         "started_at": started_at,
         "updated_at": started_at,
         "heartbeat_seconds": values.heartbeat_seconds,
@@ -170,6 +177,47 @@ def run(arguments: list[str] | None = None) -> int:
         "exit_code": None,
     }
     atomic_json_write(values.status, status)
+
+    if values.lock is not None:
+        values.lock.parent.mkdir(parents=True, exist_ok=True)
+        lock_stream = values.lock.open("a+", encoding="utf-8")
+        try:
+            fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            lock_stream.seek(0)
+            owner = lock_stream.read().strip()
+            status.update(
+                state="lock-unavailable",
+                updated_at=utc_now(),
+                finished_at=utc_now(),
+                elapsed_seconds=round(time.monotonic() - started_monotonic, 3),
+                exit_code=75,
+                lock_owner=owner or None,
+            )
+            atomic_json_write(values.status, status)
+            print(
+                f"long-run lock unavailable: {values.lock}"
+                + (f" ({owner})" if owner else ""),
+                file=sys.stderr,
+            )
+            lock_stream.close()
+            durable_log.close()
+            return 75
+        lock_stream.seek(0)
+        lock_stream.truncate()
+        json.dump(
+            {
+                "run_id": run_id,
+                "runner_pid": os.getpid(),
+                "acquired_at": utc_now(),
+                "command": values.command,
+            },
+            lock_stream,
+            sort_keys=True,
+        )
+        lock_stream.write("\n")
+        lock_stream.flush()
+        os.fsync(lock_stream.fileno())
 
     def forward_signal(signum: int, _frame: object) -> None:
         nonlocal received_signal
@@ -323,6 +371,9 @@ def run(arguments: list[str] | None = None) -> int:
     finally:
         for signum, handler in previous_handlers.items():
             signal.signal(signum, handler)
+        if lock_stream is not None:
+            fcntl.flock(lock_stream.fileno(), fcntl.LOCK_UN)
+            lock_stream.close()
         durable_log.close()
 
 

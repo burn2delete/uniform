@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import fcntl
 import os
 from pathlib import Path
 import signal
@@ -152,6 +153,36 @@ class LongRunHeartbeatTests(unittest.TestCase):
             self.assertEqual("signaled", status["state"])
             self.assertEqual(signal.SIGTERM, status["received_signal"])
             self.assertEqual(143, status["exit_code"])
+
+    def test_held_cross_process_lock_fails_fast(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lock_path = root / "heavy.lock"
+            with lock_path.open("a+", encoding="utf-8") as lock_stream:
+                fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                lock_stream.write('{"runner_pid": 42}\n')
+                lock_stream.flush()
+                started = time.monotonic()
+                exit_code = runner.run(
+                    [
+                        "--log",
+                        str(root / "run.log"),
+                        "--status",
+                        str(root / "status.json"),
+                        "--lock",
+                        str(lock_path),
+                        "--quiet",
+                        "--",
+                        sys.executable,
+                        "-c",
+                        "raise SystemExit('must not start')",
+                    ]
+                )
+            status = json.loads((root / "status.json").read_text())
+            self.assertEqual(75, exit_code)
+            self.assertEqual("lock-unavailable", status["state"])
+            self.assertIn("runner_pid", status["lock_owner"])
+            self.assertLess(time.monotonic() - started, 1)
 
 
 if __name__ == "__main__":

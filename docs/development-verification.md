@@ -197,6 +197,7 @@ silent verifier result from being lost when a turn or terminal view changes.
 python3 tools/run_with_heartbeat.py \
   --log /tmp/gravity-sh07-authoritative.log \
   --status /tmp/gravity-sh07-authoritative.status.json \
+  --lock /tmp/gravity-sh07-heavy.lock \
   --heartbeat-seconds 60 \
   --timeout-seconds 21600 \
   -- clojure -J-Xmx8g \
@@ -210,6 +211,12 @@ Inspect the status without attaching to the running process:
 python3 -m json.tool /tmp/gravity-sh07-authoritative.status.json
 tail -n 50 /tmp/gravity-sh07-authoritative.log
 ```
+
+Use the same `--lock /tmp/gravity-sh07-heavy.lock` path for every SH-07
+memory-heavy command, even when different tasks start them. A second wrapper
+fails immediately with exit `75` and records `lock-unavailable` instead of
+starting another high-memory JVM. The lock is advisory: direct commands that
+bypass the wrapper are not protected.
 
 The status is telemetry, not proof authority. The wrapped verifier's proof
 artifact and exit status remain the evidence. Use a unique log/status pair per
