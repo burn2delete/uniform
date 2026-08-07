@@ -90,9 +90,21 @@ clojure -M:dev-test --exact hosted-hello-runs --exact hosted-core-app-runs-user-
 ```
 
 `--resume` applies only to matching non-authoritative receipts. The
-authoritative lane is always fresh and serialized. See
+`heavy-candidate` lane is always fresh and serialized, but its command results
+remain non-authoritative until deferred output-artifact validation and an
+explicit authority promotion step exist. See
 `docs/development-verification-workflow.md` for the gate, cache, lock, and
 evidence rules.
+
+Every Stage 0 manifest check explicitly sets `daemonization: forbidden`.
+Commands run in a new process group; ordinary descendants are cleaned before a
+resource lock is released, with one bounded host-wide `ps eww` environment
+census at command termination for saved
+same-run processes. Strict containment of arbitrary cross-session daemonization
+remains deferred to an OS job/container and is not a current Stage 0 claim.
+Resource locks are direct children of trusted sticky `/private/tmp`; cache
+writers serialize with a canonical root/cache identity hashed to a separate
+`/private/tmp` lock while keeping cache data access dirfd-relative.
 
 Inspect the hosted core compiled safety proof artifact:
 
@@ -154,11 +166,15 @@ Inspect the hosted core compiled AI/agentic proof artifact:
 clojure -M:gravity hosted-core-compiled-ai bootstrap/clojure/fixtures/accepted/core-app.gravity
 ```
 
-Validate the Clojure bootstrap:
+Validate the full Stage 0 Clojure bootstrap suite:
 
 ```bash
-clojure -M:test
+clojure -M:stage0-test
 ```
+
+The `:stage0-test` alias invokes `gravity.bootstrap-test` directly. The `:test`
+alias remains unchanged and invokes the broader self-hosting test runner used
+by the coordinator branch.
 
 Inspect the first module artifact:
 

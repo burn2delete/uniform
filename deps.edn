@@ -7,6 +7,10 @@
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.self-hosting-test-runner"]}
 
+  :stage0-test
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.bootstrap-test"]}
+
   :dev-test
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.development-test-runner"]}}}

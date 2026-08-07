@@ -26,8 +26,8 @@
       "description": "Small hosted Stage 0 and earliest compiler-surface checks.",
       "default_parallelism": "bounded-cheap"
     },
-    "authoritative": {
-      "description": "Fresh Stage 0 candidate evidence; command passes never grant authority until output artifacts are validated.",
+    "heavy-candidate": {
+      "description": "Fresh, serialized Stage 0 heavy-candidate evidence; command passes remain non-authoritative until deferred output artifacts are validated.",
       "default_parallelism": "serialized-heavy"
     }
   },
@@ -39,6 +39,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "command": ["python3", "tools/validate_gravity_docs.py"],
       "inputs": [
         "README.md",
@@ -58,6 +59,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "command": [
         "python3",
         "tools/validate_foundation_document_coverage.py",
@@ -77,6 +79,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "command": [
         "python3",
         "tools/validate_contract_traceability.py",
@@ -97,6 +100,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "command": [
         "python3",
         "tools/validate_milestone_evidence.py",
@@ -117,6 +121,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "command": [
         "python3",
         "tools/validate_terminology_boundaries.py",
@@ -138,6 +143,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "command": [
         "python3",
         "tools/validate_safety_performance_gates.py",
@@ -158,6 +164,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "command": [
         "python3",
         "tools/validate_change_control.py",
@@ -178,6 +185,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "command": [
         "python3",
         "-m",
@@ -204,6 +212,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "command": ["python3", "tools/validate_reader.py"],
       "inputs": [
         "src/gravity/reader.py",
@@ -219,6 +228,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "fresh": true,
       "command": ["clojure", "-M:gravity", "run", "examples/hello.gravity"],
       "inputs": [
@@ -238,6 +248,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "fresh": true,
       "command": ["clojure", "-M:gravity", "run", "examples/hello.qst"],
       "inputs": [
@@ -257,6 +268,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "fresh": true,
       "command": [
         "clojure",
@@ -285,6 +297,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "fresh": true,
       "command": ["clojure", "-M:gravity", "run", "examples/core-app.gravity"],
       "inputs": [
@@ -304,6 +317,7 @@
       "lock": null,
       "exclusive": false,
       "authority": "none",
+      "daemonization": "forbidden",
       "fresh": true,
       "command": ["clojure", "-M:gravity", "run-compiled", "examples/core-app.gravity"],
       "inputs": [
@@ -318,14 +332,15 @@
     },
     {
       "id": "stage0-clojure-suite",
-      "lane": "authoritative",
+      "lane": "heavy-candidate",
       "cost": "heavy",
       "lock": "/tmp/gravity-sh07-heavy.lock",
       "exclusive": true,
       "authority": "none",
+      "daemonization": "forbidden",
       "fresh": true,
       "timeout_seconds": 1800,
-      "command": ["clojure", "-M:test"],
+      "command": ["clojure", "-M:stage0-test"],
       "inputs": [
         "deps.edn",
         "bin/gravity",
@@ -357,11 +372,12 @@
     },
     {
       "id": "stage0-bootstrap-authority",
-      "lane": "authoritative",
+      "lane": "heavy-candidate",
       "cost": "heavy",
       "lock": "/tmp/gravity-sh07-heavy.lock",
       "exclusive": true,
       "authority": "none",
+      "daemonization": "forbidden",
       "fresh": true,
       "timeout_seconds": 1800,
       "command": [
