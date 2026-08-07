@@ -40,6 +40,11 @@ import threading
 import time
 from typing import Any, Iterable, Mapping, Sequence
 
+try:
+    from tools import run_sh07_authoritative_modules as _sh07
+except ImportError:
+    import run_sh07_authoritative_modules as _sh07
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = Path(__file__).with_name("development_verification_manifest.json")
@@ -1092,6 +1097,32 @@ def _process_lock(lock_name: str | None):
     except ImportError as exc:  # pragma: no cover - the project currently targets POSIX hosts
         raise LockUnavailable("host does not provide POSIX file locking") from exc
     path = _resource_lock_path(lock_name)
+    if path == _sh07.canonical_shared_lock_path(_sh07.DEFAULT_LOCK):
+        handle = _sh07.open_lock_file(path)
+        try:
+            try:
+                fcntl.flock(handle.descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                raise LockUnavailable(f"shared resource lock is busy: {lock_name}") from exc
+            handle.migrate_legacy_mode_after_exclusive_lock()
+            try:
+                try:
+                    yield handle.path
+                except BaseException as body_error:
+                    try:
+                        handle.validate()
+                    except _sh07.CheckpointError as validation_error:
+                        raise LockUnavailable(str(validation_error)) from body_error
+                    raise
+                else:
+                    handle.validate()
+            finally:
+                fcntl.flock(handle.descriptor, fcntl.LOCK_UN)
+        except _sh07.CheckpointError as exc:
+            raise LockUnavailable(str(exc)) from exc
+        finally:
+            handle.close()
+        return
     with _open_safe_regular(path, label="resource lock") as stream:
         try:
             fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)

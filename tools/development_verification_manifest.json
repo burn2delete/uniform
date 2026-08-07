@@ -260,7 +260,12 @@
       "inputs": [
         "tools/stage2_authority_admission.py",
         "tools/run_sh07_authoritative_modules.py",
-        "tools/tests/test_stage2_authority_admission.py"
+        "tools/run_with_heartbeat.py",
+        "tools/verify_development.py",
+        "tools/tests/test_stage2_authority_admission.py",
+        "tools/tests/test_run_with_heartbeat.py",
+        "tools/tests/test_run_sh07_authoritative_modules.py",
+        "tools/tests/test_verify_development.py"
       ],
       "depends_on": [
         "stage1-sh01-unit"

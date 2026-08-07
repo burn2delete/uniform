@@ -16,6 +16,11 @@ import threading
 import time
 import uuid
 
+try:
+    from tools import run_sh07_authoritative_modules as sh07
+except ImportError:
+    import run_sh07_authoritative_modules as sh07
+
 
 SCHEMA = "gravity/long-running-command-status-v1"
 
@@ -140,7 +145,10 @@ def validated_arguments(arguments: list[str] | None) -> argparse.Namespace:
     values.cwd = values.cwd.resolve()
     values.log = values.log.resolve()
     values.status = (values.status or values.log.with_suffix(values.log.suffix + ".status.json")).resolve()
-    values.lock = values.lock.resolve() if values.lock is not None else None
+    values.lock = (
+        sh07.canonical_shared_lock_path(values.lock)
+        if values.lock is not None else None
+    )
     if values.log == values.status:
         parser().error("--log and --status must name different files")
     if values.lock is not None and values.lock in {values.log, values.status}:
@@ -148,13 +156,13 @@ def validated_arguments(arguments: list[str] | None) -> argparse.Namespace:
     return values
 
 
-def run(arguments: list[str] | None = None) -> int:
+def _run(arguments: list[str] | None = None) -> int:
     values = validated_arguments(arguments)
     run_id = str(uuid.uuid4())
     started_at = utc_now()
     started_monotonic = time.monotonic()
     durable_log = DurableLog(values.log, values.append)
-    lock_stream = None
+    lock_handle = None
     process: subprocess.Popen[bytes] | None = None
     timed_out = False
     received_signal: int | None = None
@@ -190,45 +198,47 @@ def run(arguments: list[str] | None = None) -> int:
     atomic_json_write(values.status, status)
 
     if values.lock is not None:
-        values.lock.parent.mkdir(parents=True, exist_ok=True)
-        lock_stream = values.lock.open("a+", encoding="utf-8")
+        owner: str | None = None
         try:
-            fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            lock_stream.seek(0)
-            owner = lock_stream.read().strip()
+            lock_handle = sh07.open_lock_file(values.lock)
+            values.lock = lock_handle.path
+            status["lock_path"] = str(values.lock)
+            try:
+                fcntl.flock(
+                    lock_handle.descriptor,
+                    fcntl.LOCK_EX | fcntl.LOCK_NB,
+                )
+            except BlockingIOError:
+                owner = os.pread(lock_handle.descriptor, 4096, 0).decode(
+                    "utf-8", errors="replace"
+                ).strip()
+                raise sh07.CheckpointError(
+                    "shared heavy lock is unavailable"
+                    + (f" ({owner})" if owner else "")
+                )
+            lock_mode_migrated = lock_handle.migrate_legacy_mode_after_exclusive_lock()
+            status.update(
+                lock_path=str(lock_handle.path),
+                lock_mode="0600",
+                lock_mode_migrated=lock_mode_migrated,
+            )
+            atomic_json_write(values.status, status)
+        except sh07.CheckpointError as error:
             status.update(
                 state="lock-unavailable",
                 updated_at=utc_now(),
                 finished_at=utc_now(),
                 elapsed_seconds=round(time.monotonic() - started_monotonic, 3),
                 exit_code=75,
-                lock_owner=owner or None,
+                lock_error=str(error),
+                legacy_untrusted_lock_payload=owner or None,
             )
             atomic_json_write(values.status, status)
-            print(
-                f"long-run lock unavailable: {values.lock}"
-                + (f" ({owner})" if owner else ""),
-                file=sys.stderr,
-            )
-            lock_stream.close()
+            print(f"long-run lock unavailable: {values.lock} ({error})", file=sys.stderr)
+            if lock_handle is not None:
+                lock_handle.close()
             durable_log.close()
             return 75
-        lock_stream.seek(0)
-        lock_stream.truncate()
-        json.dump(
-            {
-                "run_id": run_id,
-                "runner_pid": os.getpid(),
-                "acquired_at": utc_now(),
-                "command": values.command,
-            },
-            lock_stream,
-            sort_keys=True,
-        )
-        lock_stream.write("\n")
-        lock_stream.flush()
-        os.fsync(lock_stream.fileno())
 
     def forward_signal(signum: int, _frame: object) -> None:
         nonlocal received_signal
@@ -415,10 +425,41 @@ def run(arguments: list[str] | None = None) -> int:
     finally:
         for signum, handler in previous_handlers.items():
             signal.signal(signum, handler)
-        if lock_stream is not None:
-            fcntl.flock(lock_stream.fileno(), fcntl.LOCK_UN)
-            lock_stream.close()
+        lock_error: BaseException | None = None
+        if lock_handle is not None:
+            try:
+                lock_handle.validate()
+            except BaseException as error:
+                lock_error = error
+            finally:
+                fcntl.flock(lock_handle.descriptor, fcntl.LOCK_UN)
+                lock_handle.close()
         durable_log.close()
+        if lock_error is not None:
+            raise lock_error
+
+
+def run(arguments: list[str] | None = None) -> int:
+    try:
+        return _run(arguments)
+    except sh07.CheckpointError as error:
+        values = validated_arguments(arguments)
+        try:
+            status = json.loads(values.status.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            status = {"schema": SCHEMA, "command": values.command}
+        status.update(
+            state="lock-unsafe",
+            updated_at=utc_now(),
+            finished_at=utc_now(),
+            exit_code=75,
+            proof_authority_granted=False,
+            authority_scope="none",
+            lock_validation_error=str(error),
+        )
+        atomic_json_write(values.status, status)
+        print(f"long-run lock validation failed: {error}", file=sys.stderr)
+        return 75
 
 
 def main() -> None:

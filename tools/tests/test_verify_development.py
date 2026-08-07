@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import fcntl
 import os
 import io
 from contextlib import redirect_stdout
@@ -1051,6 +1052,46 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 with verifier._process_lock("unit-test-heavy-resource"):
                     self.fail("a second owner must not enter the shared lock")
 
+    def test_shared_authority_lock_legacy_holder_queues_then_free_inode_migrates(self) -> None:
+        lock_path = Path("/private/tmp") / f"gravity-verifier-{os.getpid()}-{time.time_ns()}.lock"
+        descriptor = os.open(lock_path, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o644)
+        os.write(descriptor, b"legacy verifier payload\n")
+        try:
+            with mock.patch.object(verifier._sh07, "DEFAULT_LOCK", lock_path):
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                with self.assertRaisesRegex(verifier.LockUnavailable, "busy"):
+                    with verifier._process_lock(str(lock_path)):
+                        pass
+                self.assertEqual(0o644, lock_path.stat().st_mode & 0o777)
+                fcntl.flock(descriptor, fcntl.LOCK_UN)
+                with verifier._process_lock(str(lock_path)) as acquired:
+                    self.assertEqual(lock_path, acquired)
+                    self.assertEqual(0o600, lock_path.stat().st_mode & 0o777)
+                self.assertEqual(b"legacy verifier payload\n", lock_path.read_bytes())
+        finally:
+            os.close(descriptor)
+            lock_path.unlink(missing_ok=True)
+
+    def test_shared_authority_body_error_plus_replacement_reports_lock_failure(self) -> None:
+        lock_path = Path("/private/tmp") / f"gravity-verifier-{os.getpid()}-{time.time_ns()}.lock"
+        descriptor = os.open(lock_path, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600)
+        os.close(descriptor)
+        replacement = lock_path.with_suffix(".replacement")
+        try:
+            with mock.patch.object(verifier._sh07, "DEFAULT_LOCK", lock_path):
+                with self.assertRaises(verifier.LockUnavailable) as captured:
+                    with verifier._process_lock(str(lock_path)):
+                        other = os.open(
+                            replacement, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600
+                        )
+                        os.close(other)
+                        os.replace(replacement, lock_path)
+                        raise ValueError("body failed")
+            self.assertIsInstance(captured.exception.__cause__, ValueError)
+        finally:
+            replacement.unlink(missing_ok=True)
+            lock_path.unlink(missing_ok=True)
+
     def test_cache_writer_uses_lock_and_merges_existing_entries(self) -> None:
         command = [sys.executable, "-c", "import sys; sys.exit(0)"]
         with tempfile.TemporaryDirectory(prefix="gravity-verify-cache-merge-") as directory:
@@ -1240,7 +1281,12 @@ class VerifyDevelopmentTests(unittest.TestCase):
             {
                 "tools/stage2_authority_admission.py",
                 "tools/run_sh07_authoritative_modules.py",
+                "tools/run_with_heartbeat.py",
+                "tools/verify_development.py",
                 "tools/tests/test_stage2_authority_admission.py",
+                "tools/tests/test_run_with_heartbeat.py",
+                "tools/tests/test_run_sh07_authoritative_modules.py",
+                "tools/tests/test_verify_development.py",
             },
         )
         self.assertEqual(stage2_admission_unit["depends_on"], ["stage1-sh01-unit"])

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import dataclasses
 import datetime as dt
 import fcntl
@@ -32,6 +33,8 @@ SOURCE_BOUND_POLICY = "source-bound-derived"
 SOURCE_BOUND_ATTESTATION_SCHEMA = "gravity/sh07-source-bound-attestation-v1"
 SOURCE_BOUND_UNSUPPORTED_CLAIMS = ["exact-authentic-coverage", "aggregate", "release"]
 DEFAULT_LOCK = Path("/tmp/gravity-sh07-heavy.lock")
+SHARED_LOCK_PROTOCOL = "gravity-sh07-heavy-flock-owned-0600-v1"
+SHARED_LOCK_MODE = 0o600
 RUNNER_NAMESPACE = "gravity.self-hosting.sh07-authoritative-runner"
 PROOF_CONTRACT_RELATIVE = (
     "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
@@ -41,6 +44,14 @@ SOURCE_SHA_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 
 class CheckpointError(RuntimeError):
+    pass
+
+
+class SharedLockUnavailable(CheckpointError):
+    pass
+
+
+class SharedLockValidationError(CheckpointError):
     pass
 
 
@@ -346,16 +357,110 @@ SHARED_GRAVITY_FILES = (
     "bootstrap/gravity/src/gravity/checked_core.gravity",
 )
 
+# Static repository inputs in the shared checkpoint fingerprint.  Keep path
+# classification and shared_files() derived from this single policy so an
+# integration admission check cannot drift from checkpoint invalidation.
+SHARED_REPOSITORY_FILES = (
+    "deps.edn",
+    *SHARED_GRAVITY_FILES,
+    PROOF_CONTRACT_RELATIVE,
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj",
+    "tools/run_sh07_authoritative_modules.py",
+)
+SHARED_REPOSITORY_TREES = ("bootstrap/clojure/src",)
+ROOT_CLASSPATH_DIRECTORIES = (
+    "bootstrap/clojure/src",
+    "bootstrap/clojure/test",
+)
+ROOT_CLASSPATH_LOAD_RESOURCES = ("data_readers.clj", "data_readers.cljc")
+
+
+def _normalized_repository_path(relative: str) -> str:
+    if (
+        not isinstance(relative, str)
+        or not relative
+        or "\t" in relative
+        or "\n" in relative
+    ):
+        raise CheckpointError(
+            f"fingerprint policy path is not normalized and relative: {relative!r}"
+        )
+    path = Path(relative)
+    if (
+        path == Path(".")
+        or path.is_absolute()
+        or path.as_posix() != relative
+        or ".." in path.parts
+    ):
+        raise CheckpointError(
+            f"fingerprint policy path is not normalized and relative: {relative!r}"
+        )
+    return relative
+
+
+def classpath_structural_path(relative: str) -> bool:
+    """Whether a repository path is inside a root-local classpath directory."""
+    relative = _normalized_repository_path(relative)
+    return any(
+        relative == directory or relative.startswith(directory + "/")
+        for directory in ROOT_CLASSPATH_DIRECTORIES
+    )
+
+
+def classify_fingerprint_path(
+    relative: str, module_catalog: Mapping[str, str]
+) -> str:
+    """Classify one candidate path against checkpoint invalidation policy.
+
+    Returns ``shared``, ``module``, ``unsafe``, or ``unrelated``.  Symlink and
+    special-file identity remains a caller-side tree inspection; tracked AOT
+    class shadows are recognizable from the path alone.
+    """
+    relative = _normalized_repository_path(relative)
+    catalog = validated_module_catalog_paths(module_catalog)
+    if classpath_structural_path(relative) and relative.endswith(".class"):
+        return "unsafe"
+    if relative in SHARED_REPOSITORY_FILES or any(
+        relative == directory or relative.startswith(directory + "/")
+        for directory in SHARED_REPOSITORY_TREES
+    ):
+        return "shared"
+    for directory in ROOT_CLASSPATH_DIRECTORIES:
+        prefix = directory + "/"
+        if relative.startswith(prefix):
+            nested = relative[len(prefix):]
+            if nested in ROOT_CLASSPATH_LOAD_RESOURCES:
+                return "shared"
+    if relative in set(catalog.values()):
+        return "module"
+    return "unrelated"
+
+
+def validated_module_catalog_paths(catalog: Mapping[str, str]) -> dict[str, str]:
+    """Validate catalog spelling without reading module files from a root."""
+    if not isinstance(catalog, Mapping) or not catalog:
+        raise CheckpointError("authoritative module catalog is empty")
+    result: dict[str, str] = {}
+    paths: set[str] = set()
+    for module, relative in sorted(catalog.items()):
+        if not valid_module_name(module) or not isinstance(relative, str):
+            raise CheckpointError("authoritative module catalog has an invalid entry")
+        _normalized_repository_path(relative)
+        if relative in paths:
+            raise CheckpointError(f"authoritative modules cannot share a source: {relative}")
+        paths.add(relative)
+        result[module] = relative
+    return result
+
 
 def shared_files(root: Path) -> list[Path]:
     required = [
-        root / "deps.edn",
-        *(root / relative for relative in SHARED_GRAVITY_FILES),
-        root / PROOF_CONTRACT_RELATIVE,
-        root / "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj",
-        Path(__file__).resolve(),
+        Path(__file__).resolve()
+        if relative == "tools/run_sh07_authoritative_modules.py"
+        else root / relative
+        for relative in SHARED_REPOSITORY_FILES
     ]
-    for directory in [root / "bootstrap/clojure/src"]:
+    for directory in [root / relative for relative in SHARED_REPOSITORY_TREES]:
         if not directory.is_dir():
             raise CheckpointError(f"required fingerprint directory is absent: {directory}")
         required.extend(path for path in directory.rglob("*") if path.is_file())
@@ -651,23 +756,11 @@ def validated_module_catalog(
     root: Path, catalog: Mapping[str, str]
 ) -> dict[str, str]:
     root = root.resolve()
-    if not isinstance(catalog, Mapping) or not catalog:
-        raise CheckpointError("authoritative module catalog is empty")
+    catalog = validated_module_catalog_paths(catalog)
     validated: dict[str, str] = {}
     resolved_paths: set[Path] = set()
     for module, relative in sorted(catalog.items()):
-        if not valid_module_name(module) or not isinstance(relative, str):
-            raise CheckpointError("authoritative module catalog has an invalid entry")
         relative_path = Path(relative)
-        if (
-            not relative
-            or "\t" in relative
-            or "\n" in relative
-            or relative_path.is_absolute()
-            or relative_path.as_posix() != relative
-            or ".." in relative_path.parts
-        ):
-            raise CheckpointError(f"module source path is not normalized and relative: {relative}")
         path = root / relative_path
         try:
             metadata = os.lstat(path)
@@ -1233,29 +1326,157 @@ def load_manifest(path: Path) -> dict[str, object] | None:
     return value
 
 
-def open_lock_file(lock_path: Path):
+@dataclasses.dataclass
+class SharedLockFile:
+    path: Path
+    descriptor: int
+    parent_descriptor: int
+    parent_device: int
+    parent_inode: int
+
+    def validate(self, *, allow_legacy_mode: bool = False) -> None:
+        try:
+            opened = os.fstat(self.descriptor)
+            named = os.stat(
+                self.path.name,
+                dir_fd=self.parent_descriptor,
+                follow_symlinks=False,
+            )
+            parent = os.fstat(self.parent_descriptor)
+        except OSError as error:
+            raise CheckpointError(
+                f"shared heavy lock pathname changed: {self.path}"
+            ) from error
+        if (
+            not stat.S_ISREG(opened.st_mode)
+            or not stat.S_ISREG(named.st_mode)
+            or opened.st_uid != os.geteuid()
+            or named.st_uid != os.geteuid()
+            or opened.st_nlink != 1
+            or named.st_nlink != 1
+            or stat.S_IMODE(opened.st_mode)
+            not in ({SHARED_LOCK_MODE, 0o644} if allow_legacy_mode else {SHARED_LOCK_MODE})
+            or stat.S_IMODE(named.st_mode)
+            not in ({SHARED_LOCK_MODE, 0o644} if allow_legacy_mode else {SHARED_LOCK_MODE})
+            or (opened.st_dev, opened.st_ino) != (named.st_dev, named.st_ino)
+            or (parent.st_dev, parent.st_ino)
+            != (self.parent_device, self.parent_inode)
+        ):
+            raise CheckpointError(
+                "shared heavy lock must be one stable owned 0600 regular file"
+            )
+
+    def close(self) -> None:
+        os.close(self.descriptor)
+        os.close(self.parent_descriptor)
+
+    def migrate_legacy_mode_after_exclusive_lock(self) -> bool:
+        """Promote an owned legacy 0644 inode only while this fd holds flock."""
+        self.validate(allow_legacy_mode=True)
+        metadata = os.fstat(self.descriptor)
+        if stat.S_IMODE(metadata.st_mode) == SHARED_LOCK_MODE:
+            return False
+        os.fchmod(self.descriptor, SHARED_LOCK_MODE)
+        self.validate()
+        return True
+
+
+def canonical_shared_lock_path(lock_path: Path) -> Path:
+    """Return a direct child of verified canonical /private/tmp."""
+    absolute = Path(os.path.abspath(lock_path.expanduser()))
+    if absolute.parent == Path("/tmp") and Path("/tmp").is_symlink():
+        if Path("/tmp").resolve() != Path("/private/tmp"):
+            raise CheckpointError("system /tmp alias does not resolve exactly to /private/tmp")
+        absolute = Path("/private/tmp") / absolute.name
+    if absolute.parent != Path("/private/tmp") or absolute.name in {"", ".", ".."}:
+        raise CheckpointError("shared heavy lock must be a direct child of /private/tmp")
+    return absolute
+
+
+def open_lock_file(lock_path: Path, *, create: bool = True) -> SharedLockFile:
     if not hasattr(os, "O_NOFOLLOW"):
         raise CheckpointError("platform cannot open the shared lock without following symlinks")
-    absolute = Path(os.path.abspath(lock_path.expanduser()))
-    absolute.parent.mkdir(parents=True, exist_ok=True)
+    absolute = canonical_shared_lock_path(lock_path)
+    parent_descriptor = -1
+    descriptor = -1
     try:
+        parent_descriptor = os.open(
+            absolute.parent,
+            os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | os.O_NOFOLLOW,
+        )
+        parent = os.fstat(parent_descriptor)
+        if not stat.S_ISDIR(parent.st_mode):
+            raise CheckpointError("shared heavy lock parent must be a directory")
+        flags = os.O_RDWR | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
+        if create:
+            flags |= os.O_CREAT
         descriptor = os.open(
-            absolute,
-            os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW,
-            0o600,
+            absolute.name,
+            flags,
+            SHARED_LOCK_MODE,
+            dir_fd=parent_descriptor,
         )
     except OSError as error:
+        if parent_descriptor != -1:
+            os.close(parent_descriptor)
         raise CheckpointError(f"shared heavy lock cannot be opened safely: {absolute}") from error
     try:
-        metadata = os.fstat(descriptor)
-        if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != os.geteuid():
-            raise CheckpointError(
-                "shared heavy lock must be a regular file owned by the current user"
-            )
-        return absolute, os.fdopen(descriptor, "r+", encoding="utf-8")
+        handle = SharedLockFile(
+            path=absolute,
+            descriptor=descriptor,
+            parent_descriptor=parent_descriptor,
+            parent_device=parent.st_dev,
+            parent_inode=parent.st_ino,
+        )
+        # Legacy owned 0644 locks may be opened only far enough to contend on
+        # the same inode.  The exclusive acquirer promotes that inode to 0600.
+        handle.validate(allow_legacy_mode=True)
+        return handle
     except BaseException:
         os.close(descriptor)
+        os.close(parent_descriptor)
         raise
+
+
+@contextlib.contextmanager
+def shared_lock_lease(lock_path: Path):
+    try:
+        handle = open_lock_file(lock_path)
+    except CheckpointError as error:
+        raise SharedLockValidationError(str(error)) from error
+    try:
+        try:
+            fcntl.flock(handle.descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise SharedLockUnavailable(
+                f"shared heavy lock is unavailable: {handle.path}"
+            ) from error
+        try:
+            migrated = handle.migrate_legacy_mode_after_exclusive_lock()
+        except CheckpointError as error:
+            raise SharedLockValidationError(str(error)) from error
+        try:
+            try:
+                yield handle, {
+                    "lock_path": str(handle.path),
+                    "lock_mode": "0600",
+                    "lock_mode_migrated": migrated,
+                }
+            except BaseException as body_error:
+                try:
+                    handle.validate()
+                except CheckpointError as validation_error:
+                    raise SharedLockValidationError(str(validation_error)) from body_error
+                raise
+            else:
+                try:
+                    handle.validate()
+                except CheckpointError as error:
+                    raise SharedLockValidationError(str(error)) from error
+        finally:
+            fcntl.flock(handle.descriptor, fcntl.LOCK_UN)
+    finally:
+        handle.close()
 
 
 def run_modules(
@@ -1273,7 +1494,37 @@ def run_modules(
     source_contracts: SourceContracts | None = None,
     source_contract_proof_sha256: str | None = None,
     lock_path: Path | None = DEFAULT_LOCK,
+    _lock_receipt: Mapping[str, object] | None = None,
 ) -> tuple[int, dict[str, object]]:
+    if lock_path is not None:
+        try:
+            with shared_lock_lease(lock_path) as (_handle, receipt):
+                result = run_modules(
+                    root=root, state_dir=state_dir, modules=modules,
+                    module_catalog=module_catalog, base_command=base_command,
+                    timeout_seconds=timeout_seconds, resume=resume, launcher=launcher,
+                    output_validator=output_validator, catalog_provider=catalog_provider,
+                    source_contracts=source_contracts,
+                    source_contract_proof_sha256=source_contract_proof_sha256,
+                    lock_path=None, _lock_receipt=receipt,
+                )
+                _handle.validate()
+                return result
+        except SharedLockUnavailable:
+            raise
+        except SharedLockValidationError as error:
+            manifest_path = Path(os.path.abspath(state_dir.expanduser())) / "manifest.json"
+            existing = load_manifest(manifest_path) if manifest_path.exists() else None
+            if existing is None:
+                raise
+            existing.update(
+                state="lock-unsafe", aggregate_authoritative=False,
+                authority_scope="none", resumable=False,
+                lock_validation_error=str(error), finished_at=utc_now(), updated_at=utc_now(),
+            )
+            atomic_json_write(manifest_path, existing)
+            return 75, existing
+    lock_receipt = dict(_lock_receipt or {})
     if (
         not modules
         or len(set(modules)) != len(modules)
@@ -1397,26 +1648,12 @@ def run_modules(
             "preflight_error": str(error),
             "finished_at": utc_now(),
             "updated_at": utc_now(),
+            **lock_receipt,
         }
         atomic_json_write(manifest_path, manifest)
         return 75, manifest
 
-    lock_stream = None
-    if lock_path is not None:
-        lock_path, lock_stream = open_lock_file(lock_path)
-        try:
-            fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as error:
-            lock_stream.close()
-            raise CheckpointError(f"shared heavy lock is unavailable: {lock_path}") from error
-        lock_stream.seek(0)
-        lock_stream.truncate()
-        json.dump({"pid": os.getpid(), "acquired_at": utc_now()}, lock_stream)
-        lock_stream.write("\n")
-        lock_stream.flush()
-        os.fsync(lock_stream.fileno())
-
-    try:
+    if True:
         previous = load_manifest(manifest_path)
         same_shared_context = bool(
             previous
@@ -1445,6 +1682,7 @@ def run_modules(
             "authority_scope": "individual-existing-runner-outputs-only",
             "started_at": utc_now(),
             "updated_at": utc_now(),
+            **lock_receipt,
         }
         if previous and not same_shared_context:
             manifest["invalidated_shared_context_fingerprint"] = previous.get(
@@ -1651,12 +1889,6 @@ def run_modules(
         manifest["updated_at"] = utc_now()
         atomic_json_write(manifest_path, manifest)
         return 0, manifest
-    finally:
-        if lock_stream is not None:
-            fcntl.flock(lock_stream.fileno(), fcntl.LOCK_UN)
-            lock_stream.close()
-
-
 def discover_module_catalog(
     root: Path, base_command: Sequence[str], timeout: float
 ) -> dict[str, str]:
@@ -1766,9 +1998,11 @@ def parser() -> argparse.ArgumentParser:
     return value
 
 
-def main(arguments: list[str] | None = None) -> int:
-    values = parser().parse_args(arguments)
-    base = default_base_command()
+def _main_under_lease(
+    values: argparse.Namespace,
+    base: Sequence[str],
+    lock_receipt: Mapping[str, object],
+) -> int:
     try:
         catalog = discover_module_catalog(
             values.cwd, base, min(values.timeout_seconds, 120)
@@ -1873,7 +2107,8 @@ def main(arguments: list[str] | None = None) -> int:
             ),
             source_contracts=source_contracts,
             source_contract_proof_sha256=source_contract_proof_sha256,
-            lock_path=values.lock,
+            lock_path=None,
+            _lock_receipt=lock_receipt,
         )
         print(json.dumps({
             "state": manifest["state"],
@@ -1887,6 +2122,47 @@ def main(arguments: list[str] | None = None) -> int:
             marker in str(error)
             for marker in ["lock is unavailable", "source contract mismatch"]
         ) else 2
+
+
+def _invalidate_cli_artifacts_after_lock_failure(
+    values: argparse.Namespace, error: SharedLockValidationError
+) -> None:
+    state_dir = values.state_dir.resolve()
+    manifest_path = state_dir / "manifest.json"
+    if manifest_path.exists():
+        try:
+            manifest = load_manifest(manifest_path)
+        except CheckpointError:
+            manifest = None
+        if manifest is not None:
+            manifest.update(
+                state="lock-unsafe", aggregate_authoritative=False,
+                authority_scope="none", resumable=False,
+                lock_validation_error=str(error), finished_at=utc_now(), updated_at=utc_now(),
+            )
+            atomic_json_write(manifest_path, manifest)
+    if values.attest:
+        selected = values.module or []
+        output = values.attestation_output
+        if output is None and len(selected) == 1:
+            output = state_dir / "attestations" / f"{selected[0]}.json"
+        if output is not None:
+            Path(output).unlink(missing_ok=True)
+
+
+def main(arguments: list[str] | None = None) -> int:
+    values = parser().parse_args(arguments)
+    base = default_base_command()
+    try:
+        with shared_lock_lease(values.lock) as (_handle, receipt):
+            return _main_under_lease(values, base, receipt)
+    except SharedLockValidationError as error:
+        _invalidate_cli_artifacts_after_lock_failure(values, error)
+        print(f"SH-07 checkpoint runner failed: {error}", file=sys.stderr)
+        return 75
+    except CheckpointError as error:
+        print(f"SH-07 checkpoint runner failed: {error}", file=sys.stderr)
+        return 75 if "lock is unavailable" in str(error) else 2
 
 
 if __name__ == "__main__":

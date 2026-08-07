@@ -159,12 +159,26 @@ or promote a proof. The manifest check
 declares only the admission implementation, the shared SH-07 fingerprint
 policy helper, and its tests as inputs.
 
-For an authority-affecting integration, invoke the wrapper with the immutable
-base and candidate and keep the merge command inside its lock-held execution
-callback. A `--probe-only`/advisory invocation may explain the prospective
+For an authority-affecting integration, invoke the wrapper with immutable full
+commit OIDs and the exact `git merge --ff-only <candidate-oid>` spelling. The
+wrapper validates that spelling but performs its own fixed fast-forward; it
+never executes an arbitrary coordinator callback. A `--probe-only`/advisory invocation may explain the prospective
 impact and report that the lock is busy, but it must not be treated as a
 reservation or as evidence for a subsequent merge. If the lock is busy, queue
 or retry the whole admission transaction after the current owner releases it.
+All shared-heavy lock users accept only direct children of canonical
+`/private/tmp` (or the verified Darwin `/tmp` system alias). They never write
+lock content. After exclusive acquisition only, an owned stable legacy 0644
+inode is migrated in place to 0600 and the receipt records that migration.
+The SH-07 `--list` route also launches catalog discovery, so it acquires this
+same lock before Clojure starts.
+Hard admission rejects tracked/untracked changes and Git operation state;
+ordinary contained `.cpcache`, validation/log, and Python cache outputs are
+ignored, while classpath shadows, symlinks, special files, and fingerprint
+inputs remain fail-closed.
+A successful receipt sets `integration_admission_granted: true` only for the
+lock-held fixed fast-forward. It always keeps `proof_authority_granted: false`;
+advisory and failure receipts grant neither.
 
 The safer long-running alternative is immutable detached authority: run the
 authoritative verifier from a clean detached worktree pinned to the exact

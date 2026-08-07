@@ -135,7 +135,7 @@ python3 tools/stage2_authority_admission.py \
   --cwd <repo> --base <base-oid> --candidate <candidate-oid> \
   --probe-only --human
 
-# Hard admission; the integration command runs while the lock is held.
+# Hard admission; only this spelling is accepted and the wrapper performs the FF.
 python3 tools/stage2_authority_admission.py \
   --cwd <repo> --base <base-oid> --candidate <candidate-oid> --exec -- \
   git merge --ff-only <candidate-oid>
@@ -147,6 +147,22 @@ grants no reservation, freshness, merge permission, or proof authority. If the
 lock is busy, retry or queue the complete wrapper transaction; do not probe,
 release, and merge later. The wrapper is the only admission path for changes
 that can invalidate a shared or selected-module fingerprint.
+
+The wrapper never executes an arbitrary command in the coordinator. Every
+shared-heavy `--lock` override must be a direct child of canonical
+`/private/tmp`; Darwin's verified `/tmp` system alias is canonicalized there.
+Lock content is never written. A free owned stable legacy 0644 inode is
+migrated in place to 0600 only after exclusive flock, with the migration
+recorded in receipts; a held legacy inode reports busy without mutation.
+SH-07 `--list` is Clojure-backed catalog discovery and therefore acquires the
+same lock before it starts; it is not an unlocked static listing.
+Operational ignored outputs are narrowly limited to ordinary contained
+`.cpcache`, declared validation/log, and Python cache files. Ignored classpath
+shadows and any symlink, special, or fingerprint-sensitive entry still reject
+hard admission.
+A successful receipt grants only the lock-held fixed-fast-forward admission
+(`integration_admission_granted: true`). It never grants proof authority;
+`proof_authority_granted` remains false for success, advisory, and failure.
 
 For long-running authority work, an immutable detached alternative is valid:
 run the verifier from a clean detached worktree pinned to the exact candidate
