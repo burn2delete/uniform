@@ -113,6 +113,7 @@ def parser() -> argparse.ArgumentParser:
     value.add_argument("--status", type=Path)
     value.add_argument("--lock", type=Path)
     value.add_argument("--heartbeat-seconds", type=float, default=60.0)
+    value.add_argument("--metrics-sample-seconds", type=float, default=1.0)
     value.add_argument("--timeout-seconds", type=float)
     value.add_argument("--terminate-grace-seconds", type=float, default=10.0)
     value.add_argument("--cwd", type=Path, default=Path.cwd())
@@ -130,6 +131,8 @@ def validated_arguments(arguments: list[str] | None) -> argparse.Namespace:
         parser().error("a command is required after --")
     if values.heartbeat_seconds <= 0:
         parser().error("--heartbeat-seconds must be positive")
+    if values.metrics_sample_seconds <= 0:
+        parser().error("--metrics-sample-seconds must be positive")
     if values.timeout_seconds is not None and values.timeout_seconds <= 0:
         parser().error("--timeout-seconds must be positive")
     if values.terminate_grace_seconds < 0:
@@ -155,6 +158,8 @@ def run(arguments: list[str] | None = None) -> int:
     process: subprocess.Popen[bytes] | None = None
     timed_out = False
     received_signal: int | None = None
+    peak_rss_bytes: int | None = None
+    peak_process_count: int | None = None
 
     status: dict[str, object] = {
         "schema": SCHEMA,
@@ -168,12 +173,18 @@ def run(arguments: list[str] | None = None) -> int:
         "started_at": started_at,
         "updated_at": started_at,
         "heartbeat_seconds": values.heartbeat_seconds,
+        "metrics_sample_seconds": values.metrics_sample_seconds,
         "timeout_seconds": values.timeout_seconds,
         "runner_pid": os.getpid(),
         "pid": None,
         "elapsed_seconds": 0.0,
         "bytes_written": durable_log.bytes_written,
         "last_output_seconds_ago": None,
+        "process_count": None,
+        "rss_bytes": None,
+        "cpu_percent": None,
+        "peak_process_count": None,
+        "peak_rss_bytes": None,
         "exit_code": None,
     }
     atomic_json_write(values.status, status)
@@ -239,6 +250,22 @@ def run(arguments: list[str] | None = None) -> int:
         signal.signal(signum, forward_signal)
 
     reader: threading.Thread | None = None
+
+    def sample_process_tree(root_pid: int) -> dict[str, object]:
+        nonlocal peak_process_count, peak_rss_bytes
+        metrics = process_tree_metrics(root_pid)
+        process_count = metrics.get("process_count")
+        rss_bytes = metrics.get("rss_bytes")
+        if isinstance(process_count, int):
+            peak_process_count = max(peak_process_count or 0, process_count)
+        if isinstance(rss_bytes, int):
+            peak_rss_bytes = max(peak_rss_bytes or 0, rss_bytes)
+        return {
+            **metrics,
+            "peak_process_count": peak_process_count,
+            "peak_rss_bytes": peak_rss_bytes,
+        }
+
     try:
         try:
             process = subprocess.Popen(
@@ -260,7 +287,13 @@ def run(arguments: list[str] | None = None) -> int:
             print(f"long-run launch failed: {error}", file=sys.stderr)
             return 127
 
-        status.update(state="running", pid=process.pid, updated_at=utc_now())
+        latest_metrics = sample_process_tree(process.pid)
+        status.update(
+            state="running",
+            pid=process.pid,
+            updated_at=utc_now(),
+            **latest_metrics,
+        )
         atomic_json_write(values.status, status)
 
         assert process.stdout is not None
@@ -276,6 +309,7 @@ def run(arguments: list[str] | None = None) -> int:
         reader.start()
 
         next_heartbeat = time.monotonic()
+        next_metrics_sample = time.monotonic() + values.metrics_sample_seconds
         termination_started: float | None = None
         while process.poll() is None:
             now = time.monotonic()
@@ -299,6 +333,9 @@ def run(arguments: list[str] | None = None) -> int:
                         os.killpg(process.pid, signal.SIGKILL)
                     except OSError:
                         process.kill()
+            if now >= next_metrics_sample:
+                latest_metrics = sample_process_tree(process.pid)
+                next_metrics_sample = now + values.metrics_sample_seconds
             if now >= next_heartbeat:
                 durable_log.sync()
                 last_output_age = (
@@ -312,7 +349,7 @@ def run(arguments: list[str] | None = None) -> int:
                     elapsed_seconds=round(elapsed, 3),
                     bytes_written=durable_log.bytes_written,
                     last_output_seconds_ago=last_output_age,
-                    **process_tree_metrics(process.pid),
+                    **latest_metrics,
                 )
                 atomic_json_write(values.status, status)
                 if not values.quiet:
@@ -325,7 +362,13 @@ def run(arguments: list[str] | None = None) -> int:
                         flush=True,
                     )
                 next_heartbeat = now + values.heartbeat_seconds
-            time.sleep(min(0.2, values.heartbeat_seconds / 4))
+            time.sleep(
+                min(
+                    0.2,
+                    values.heartbeat_seconds / 4,
+                    values.metrics_sample_seconds / 2,
+                )
+            )
 
         exit_code = process.wait()
         reader.join(timeout=5.0)
@@ -365,6 +408,7 @@ def run(arguments: list[str] | None = None) -> int:
             child_exit_code=exit_code,
             received_signal=received_signal,
             timed_out=timed_out,
+            **latest_metrics,
         )
         atomic_json_write(values.status, status)
         return reported_exit_code

@@ -32,6 +32,8 @@ class LongRunHeartbeatTests(unittest.TestCase):
                     str(status),
                     "--heartbeat-seconds",
                     "0.05",
+                    "--metrics-sample-seconds",
+                    "0.02",
                     "--quiet",
                     *options,
                     "--",
@@ -115,6 +117,45 @@ class LongRunHeartbeatTests(unittest.TestCase):
             self.assertEqual(0, result[0])
             self.assertIsInstance(observed["pid"], int)
             self.assertGreaterEqual(observed["process_count"], 1)
+            self.assertGreaterEqual(
+                observed["peak_process_count"], observed["process_count"]
+            )
+            self.assertGreaterEqual(observed["peak_rss_bytes"], observed["rss_bytes"])
+
+    def test_final_status_retains_peak_process_metrics(self) -> None:
+        code, _, status = self.run_in_temp(
+            [
+                sys.executable,
+                "-c",
+                "import time; payload = bytearray(20_000_000); time.sleep(0.2)",
+            ]
+        )
+        self.assertEqual(0, code)
+        self.assertGreater(status["peak_rss_bytes"], 20_000_000)
+        self.assertGreaterEqual(status["peak_rss_bytes"], status["rss_bytes"])
+        self.assertGreaterEqual(
+            status["peak_process_count"], status["process_count"]
+        )
+
+    def test_peak_sampling_is_independent_from_status_heartbeat(self) -> None:
+        code, _, status = self.run_in_temp(
+            [
+                sys.executable,
+                "-c",
+                (
+                    "import time; time.sleep(0.05); "
+                    "payload = bytearray(120_000_000); "
+                    "[(payload.__setitem__(i, 1)) for i in range(0, len(payload), 4096)]; "
+                    "time.sleep(0.2); "
+                    "del payload; time.sleep(0.05)"
+                ),
+            ],
+            "--heartbeat-seconds",
+            "60",
+        )
+        self.assertEqual(0, code)
+        self.assertGreater(status["peak_rss_bytes"], 120_000_000)
+        self.assertEqual(0.02, status["metrics_sample_seconds"])
 
     def test_sigterm_is_forwarded_and_reported_conventionally(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

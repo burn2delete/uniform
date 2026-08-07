@@ -290,8 +290,13 @@ memory-heavy or exclusive lane.
 Wrap any command expected to outlive a task turn with the heartbeat runner.
 It launches the command without a shell, tees combined output to the requested
 log, and atomically refreshes a JSON status file with elapsed time, output
-bytes, process-tree RSS, CPU use, and the final exit code. This prevents a
-silent verifier result from being lost when a turn or terminal view changes.
+bytes, process-tree RSS, process counts, CPU use, and the final exit code. It
+samples resource metrics independently every second by default and retains the
+highest observed RSS and process count in `:peak_rss_bytes` and
+`:peak_process_count`, even when the JVM releases memory before exiting. These
+are sampled high-water values, not an OS-guaranteed maximum. This prevents a
+silent verifier result or sustained resource spike from being lost when a turn
+or terminal view changes.
 
 ```bash
 python3 tools/run_with_heartbeat.py \
@@ -299,6 +304,7 @@ python3 tools/run_with_heartbeat.py \
   --status /tmp/gravity-sh07-authoritative.status.json \
   --lock /tmp/gravity-sh07-heavy.lock \
   --heartbeat-seconds 60 \
+  --metrics-sample-seconds 1 \
   --timeout-seconds 21600 \
   -- clojure -J-Xmx8g \
   -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
