@@ -6,7 +6,8 @@
             [gravity.bootstrap :as bootstrap]
             [gravity.cli-test]
             [gravity.darwin-publication :as darwin-publication]
-            [gravity.diagnostics-test]))
+            [gravity.diagnostics-test]
+            [gravity.syntax-object-stream :as syntax-object-stream]))
 
 (defn fixture
   [name]
@@ -10154,6 +10155,26 @@
     (is (= :quote (get-in syntax [:reader-origin :abbreviation])))
     (is (= '(quote gravity.reader/value) (:form syntax)))
     (is (= :quote (get-in syntax [:generated-origin 0 :reader-abbreviation])))))
+
+(deftest syntax-object-stream-compatibility-wrapper-preserves-arity-and-output
+  (let [records [{:form 'value
+                  :span {:source "source.gravity"}
+                  :form-id nil}]
+        context {:module 'syntax.compatibility :profile :hosted}]
+    (is (= '([source-path form-records]
+             [source-path form-records module-context])
+           (:arglists (meta #'bootstrap/syntax-object-stream))))
+    (is (= (:arglists (meta #'syntax-object-stream/syntax-object-stream))
+           (:arglists (meta #'bootstrap/syntax-object-stream))))
+    (is (= (syntax-object-stream/syntax-object-stream "source.gravity" records)
+           (bootstrap/syntax-object-stream "source.gravity" records)))
+    (is (= (syntax-object-stream/syntax-object-stream
+            "source.gravity" records context)
+           (bootstrap/syntax-object-stream
+            "source.gravity" records context)))
+    (is (contains? (first (bootstrap/syntax-object-stream
+                           "source.gravity" records context))
+                   :form-id))))
 
 (defn- absolute-test-classpath
   []

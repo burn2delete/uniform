@@ -20,7 +20,8 @@
             [gravity.reader-namespace :as reader-namespace]
             [gravity.reader-primitives :as reader-primitives]
             [gravity.source-span :as source-span]
-            [gravity.source-unit :as source-unit])
+            [gravity.source-unit :as source-unit]
+            [gravity.syntax-object-stream :as syntax-object-stream])
   (:import [clojure.lang LineNumberingPushbackReader]))
 
 (def known-source-profiles #{:core :hardware :firmware :kernel :native :hosted
@@ -185,23 +186,8 @@
   ([source-path form-records]
    (syntax-object-stream source-path form-records nil))
   ([source-path form-records module-context]
-   (mapv (fn [idx {:keys [form span metadata reader-origin generated-origin]
-                   :as record}]
-           (cond->
-            {:syntax-id (str "stage0-syntax-" idx)
-             :form form
-             :span span
-             :origin :source
-             :reader-origin reader-origin
-             :generated-origin generated-origin
-             :namespace (:module module-context)
-             :phase :read
-             :profile (:profile module-context)
-             :hygiene []
-             :metadata metadata}
-             (contains? record :form-id) (assoc :form-id (:form-id record))))
-        (range)
-        form-records)))
+   (syntax-object-stream/syntax-object-stream
+    source-path form-records module-context)))
 
 (declare l1-source-unit-artifacts
          reader-project-context-for-source
