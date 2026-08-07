@@ -14,6 +14,7 @@
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
+            [gravity.reader-primitives :as reader-primitives]
             [gravity.source-span :as source-span]
             [gravity.source-unit :as source-unit])
   (:import [clojure.lang LineNumberingPushbackReader]
@@ -84,46 +85,19 @@
 
 (defn form-kind
   [form]
-  (cond
-    (nil? form) :nil
-    (true? form) :boolean
-    (false? form) :boolean
-    (integer? form) :integer
-    (ratio? form) :ratio
-    (float? form) :decimal
-    (string? form) :string
-    (char? form) :character
-    (symbol? form) :symbol
-    (keyword? form) :keyword
-    (seq? form) :list
-    (vector? form) :vector
-    (map? form) :map
-    (set? form) :set
-    :else :unknown))
+  (reader-primitives/form-kind form))
 
 (defn safe-excerpt
   [source-text span]
-  (let [start (get-in span [:start :char] 0)
-        end (get-in span [:end :char] start)
-        excerpt (subs source-text start (min end (count source-text)))]
-    (if (> (count excerpt) 160)
-      (str (subs excerpt 0 160) "...")
-      excerpt)))
+  (reader-primitives/safe-excerpt source-text span))
 
 (defn abbreviation-kind
   [excerpt]
-  (cond
-    (str/starts-with? excerpt "~@") :splice-unquote
-    (str/starts-with? excerpt "'") :quote
-    (str/starts-with? excerpt "`") :syntax-quote
-    (str/starts-with? excerpt "~") :unquote
-    (str/starts-with? excerpt "^") :metadata
-    (str/starts-with? excerpt "@") :deref
-    :else nil))
+  (reader-primitives/abbreviation-kind excerpt))
 
 (defn source-metadata
   [form]
-  (apply dissoc (or (meta form) {}) [:line :column :end-line :end-column]))
+  (reader-primitives/source-metadata form))
 
 (defn skip-line-comment!
   [^LineNumberingPushbackReader rdr]
