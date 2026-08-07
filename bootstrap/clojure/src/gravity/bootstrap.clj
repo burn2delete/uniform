@@ -95053,13 +95053,11 @@
 (declare p15-s23-stage2-runtime-artifact-println-function)
 (declare p15-s23-stage2-runtime-artifact-println-two-function)
 
-(def ^:private p15-s23-stage2-runtime-recur-token
-  (Object.))
+(deftype ^:private P15S23Stage2RuntimeRecurSignal [values])
 
 (defn p15-s23-stage2-runtime-recur-signal
   [values]
-  {:p15-s23/recur-token p15-s23-stage2-runtime-recur-token
-   :values (vec values)})
+  (P15S23Stage2RuntimeRecurSignal. (vec values)))
 
 (defn- p15-s23-stage2-runtime-map-entry
   [value requested-key]
@@ -95079,17 +95077,14 @@
 
 (defn- p15-s23-stage2-runtime-recur-values
   [value]
-  (some-> (p15-s23-stage2-runtime-map-entry value :values) val))
+  (when (instance? P15S23Stage2RuntimeRecurSignal value)
+    (.-values ^P15S23Stage2RuntimeRecurSignal value)))
 
 (defn p15-s23-stage2-runtime-recur-signal?
   [value]
-  (let [token-entry
-        (p15-s23-stage2-runtime-map-entry value :p15-s23/recur-token)
-        values (p15-s23-stage2-runtime-recur-values value)]
-    (boolean
-     (and token-entry
-          (identical? p15-s23-stage2-runtime-recur-token (val token-entry))
-          (vector? values)))))
+  (boolean
+   (and (instance? P15S23Stage2RuntimeRecurSignal value)
+        (vector? (p15-s23-stage2-runtime-recur-values value)))))
 
 (defn p15-s23-stage2-runtime-recur-fail!
   [plan target-arity actual-arity reason]

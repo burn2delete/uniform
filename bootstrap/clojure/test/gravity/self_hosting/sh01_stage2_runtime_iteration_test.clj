@@ -44,6 +44,16 @@
         (is (= "L2-RECUR-TARGET" (:id data)))
         (is (= :non-tail-sequential-position (:reason data)))))))
 
+(deftest recur-carrier-is-distinct-from-ordinary-runtime-maps
+  (is (true?
+       (bootstrap/p15-s23-stage2-runtime-recur-signal?
+        (bootstrap/p15-s23-stage2-runtime-recur-signal [1 2 3]))))
+  (doseq [value [{:values [1 2 3]}
+                 {:p15-s23/recur-token (Object.) :values [1 2 3]}
+                 (sorted-map 'artifact :unrelated)]]
+    (is (false?
+         (bootstrap/p15-s23-stage2-runtime-recur-signal? value)))))
+
 (deftest hot-get-builtin-preserves-two-and-three-argument-semantics
   (is (= 1
          (bootstrap/p15-s23-stage2-runtime-invoke-builtin
