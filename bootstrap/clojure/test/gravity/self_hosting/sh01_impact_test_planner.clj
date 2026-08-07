@@ -247,32 +247,157 @@
     (contains? #{"SH-26" "SH-27" "SH-28" "SH-29"} slice) :exclusive
     :else :normal))
 
-(defn build-plan
-  "Builds a deterministic plan for directly selected slices or changed paths."
-  [{:keys [direct-slices changed-paths expand-dependants?]
-    :or {direct-slices #{}
-         changed-paths []
-         expand-dependants? false}}]
-  (let [changed-paths (->> changed-paths distinct sort vec)
-        record (ownership-record)
-        dependencies (backlog-dependencies)
-        classified (mapv #(classify-path record %) changed-paths)
-        unowned
-        (->> classified
-             (filter #(= :unowned (:classification %)))
-             (mapv :path))
-        path-slices (into #{} (mapcat :slices) classified)
-        direct (set/union (set direct-slices) path-slices)
-        invalid-slices (set/difference direct (all-slices))
-        selected
-        (if expand-dependants?
-          (downstream-closure dependencies direct)
-          direct)
-        catalog (test-catalog)
+(defn- dedicated-test-path?
+  "Returns true when a path names a dedicated self-hosting test file.
+
+  The path convention is intentionally narrower than `path-slice`: a fixture
+  or a Gravity source module must select the complete catalog for its slice,
+  while a directly changed test can safely select just its namespace when the
+  runner can discover that namespace.
+  "
+  [relative]
+  (boolean
+   (re-matches
+    #"^bootstrap/clojure/test/gravity/self_hosting/sh\d{2}_.+_test\.clj$"
+    relative)))
+
+(defn- dedicated-test-namespace
+  "Returns a discovered namespace for a dedicated test path, or nil.
+
+  A path can be syntactically slice-owned before its file has been created.
+  Falling back to the slice catalog in that case is safer than requiring a
+  namespace that the classpath cannot load.
+  "
+  [catalog relative]
+  (when (dedicated-test-path? relative)
+    (let [filename (last (str/split relative #"/"))
+          namespace
+          (-> filename
+              (str/replace #"\.clj$" "")
+              (str/replace "_" "-")
+              (as-> value (symbol (str "gravity.self-hosting." value))))]
+      (when (some #(= namespace (:namespace %)) catalog)
+        namespace))))
+
+(defn- canonical-iteration-slices
+  [requested]
+  (let [values
+        (cond
+          (nil? requested) []
+          (string? requested) [requested]
+          (sequential? requested) requested
+          (set? requested) requested
+          :else [requested])
+        values (vec values)
+        invalid
+        (->> values
+             (remove #(and (string? %) (contains? (all-slices) %)))
+             distinct
+             (sort-by str)
+             vec)]
+    (when (empty? values)
+      (throw
+       (ex-info
+        "Iteration mode requires at least one explicitly requested slice"
+        {:id "SH01-IMPACT-ITERATION-SLICE"
+         :slices []})))
+    (when (seq invalid)
+      (throw
+       (ex-info
+        "Requested iteration slices must belong to the SH-00 through SH-29 plan"
+        {:id "SH01-IMPACT-SLICE"
+         :slices invalid})))
+    (set values)))
+
+(defn- iteration-deferred-entries
+  "Returns changed owned paths that this non-authoritative request does not run.
+
+  Coordinator paths are always deferred. Leaf fixture/module paths are only
+  run when their slice was explicitly requested. A directly changed test is a
+  safe exception: when its namespace is discoverable, only that namespace is
+  run even if its slice was not explicitly requested.
+  "
+  [classified requested catalog]
+  (let [catalog-test-namespaces
+        (set (map :namespace catalog))]
+    (->> classified
+         (keep
+          (fn [entry]
+            (let [classification (:classification entry)
+                  slices (set (:slices entry))
+                  test-namespace
+                  (when (= :dedicated classification)
+                    (dedicated-test-namespace catalog (:path entry)))
+                  explicitly-selected?
+                  (seq (set/intersection requested slices))]
+              (cond
+                (= :coordinator classification)
+                entry
+
+                (and (= :dedicated classification)
+                     (dedicated-test-path? (:path entry))
+                     (contains? catalog-test-namespaces test-namespace))
+                nil
+
+                explicitly-selected?
+                nil
+
+                (#{:dedicated :module} classification)
+                entry
+
+                :else
+                nil))))
+         vec)))
+
+(defn- build-iteration-plan
+  [classified changed-paths requested]
+  (let [catalog (test-catalog)
+        requested (canonical-iteration-slices requested)
+        direct-test-entries
+        (filter
+         #(and (= :dedicated (:classification %))
+               (dedicated-test-path? (:path %)))
+         classified)
+        exact-test-namespaces
+        (->> direct-test-entries
+             (keep #(dedicated-test-namespace catalog (:path %)))
+             set)
+        test-path-slices
+        (->> direct-test-entries
+             (filter
+              #(or
+                (seq (set/intersection requested (set (:slices %))))
+                (dedicated-test-namespace catalog (:path %))))
+             (mapcat :slices)
+             set)
+        selected-slices
+        (set/union requested test-path-slices)
+        changed-path-slices
+        (into #{} (mapcat :slices) classified)
+        invalid-slices
+        (set/difference
+         (set/union selected-slices changed-path-slices)
+         (all-slices))
+        deferred
+        (iteration-deferred-entries classified requested catalog)
+        deferred-coordinator
+        (->> deferred
+             (filter #(= :coordinator (:classification %)))
+             (map :path)
+             sort
+             vec)
+        deferred-other
+        (->> deferred
+             (remove #(= :coordinator (:classification %)))
+             (map :path)
+             sort
+             vec)
         namespaces
         (->> catalog
-             (filter #(contains? selected (:slice %)))
-             (mapv :namespace)
+             (filter #(contains? requested (:slice %)))
+             (map :namespace)
+             (concat exact-test-namespaces)
+             distinct
              sort
              vec)
         shards
@@ -289,15 +414,21 @@
         "Requested slices must belong to the SH-00 through SH-29 plan"
         {:id "SH01-IMPACT-SLICE"
          :slices (vec (sort invalid-slices))})))
-    (when (seq unowned)
-      (throw
-       (ex-info
-        "Changed self-hosting paths must have exactly one SH-01 owner"
-        {:id "SH01-IMPACT-UNOWNED"
-         :paths unowned})))
     {:schema :gravity/sh01-impact-test-plan-v1
-     :direct-slices (vec (sort direct))
-     :affected-slices (vec (sort selected))
+     :mode :iteration
+     :authority :non-authoritative
+     :non-authoritative? true
+     :authoritative? false
+     :iteration? true
+     :iteration-slices (vec (sort requested))
+     :full-gate-deferred? true
+     :full-gate-deferred-reason
+     "The authoritative dependency-expanded gate is deferred for slice iteration feedback."
+     :deferred-coordinator-paths deferred-coordinator
+     :deferred-other-affected-paths deferred-other
+     :deferred-paths (vec (concat deferred-coordinator deferred-other))
+     :direct-slices (vec (sort selected-slices))
+     :affected-slices (vec (sort selected-slices))
      :changed-paths changed-paths
      :classifications classified
      :namespaces namespaces
@@ -306,6 +437,84 @@
      (->> classified
           (filter #(= :unrelated (:classification %)))
           (mapv :path))}))
+
+(defn build-plan
+  "Builds a deterministic plan for directly selected slices or changed paths."
+  [request]
+  (let [{:keys [direct-slices changed-paths expand-dependants?]
+         :or {direct-slices #{}
+              changed-paths []
+              expand-dependants? false}}
+        request
+        iteration-request?
+        (or (contains? request :iteration-slices)
+            (contains? request :iteration-slice))
+        iteration-slices
+        (if (contains? request :iteration-slices)
+          (:iteration-slices request)
+          (:iteration-slice request))
+        changed-paths (->> changed-paths distinct sort vec)
+        record (ownership-record)
+        dependencies (backlog-dependencies)
+        classified (mapv #(classify-path record %) changed-paths)
+        unowned
+        (->> classified
+             (filter #(= :unowned (:classification %)))
+             (mapv :path))]
+    (if iteration-request?
+      (do
+        (when (seq unowned)
+          (throw
+           (ex-info
+            "Changed self-hosting paths must have exactly one SH-01 owner"
+            {:id "SH01-IMPACT-UNOWNED"
+             :paths unowned})))
+        (build-iteration-plan classified changed-paths iteration-slices))
+      (let [path-slices (into #{} (mapcat :slices classified))
+            direct (set/union (set direct-slices) path-slices)
+            invalid-slices (set/difference direct (all-slices))
+            selected
+            (if expand-dependants?
+              (downstream-closure dependencies direct)
+              direct)
+            catalog (test-catalog)
+            namespaces
+            (->> catalog
+                 (filter #(contains? selected (:slice %)))
+                 (mapv :namespace)
+                 sort
+                 vec)
+            shards
+            (->> namespaces
+                 (mapv
+                  (fn [namespace]
+                    (let [slice (namespace-slice namespace)]
+                      {:namespace namespace
+                       :slice slice
+                       :resource-class (resource-class slice)}))))]
+        (when (seq invalid-slices)
+          (throw
+           (ex-info
+            "Requested slices must belong to the SH-00 through SH-29 plan"
+            {:id "SH01-IMPACT-SLICE"
+             :slices (vec (sort invalid-slices))})))
+        (when (seq unowned)
+          (throw
+           (ex-info
+            "Changed self-hosting paths must have exactly one SH-01 owner"
+            {:id "SH01-IMPACT-UNOWNED"
+             :paths unowned})))
+        {:schema :gravity/sh01-impact-test-plan-v1
+         :direct-slices (vec (sort direct))
+         :affected-slices (vec (sort selected))
+         :changed-paths changed-paths
+         :classifications classified
+         :namespaces namespaces
+         :shards shards
+         :ignored-paths
+         (->> classified
+              (filter #(= :unrelated (:classification %)))
+              (mapv :path))}))))
 
 (defn- process-lines
   [& command]
@@ -346,12 +555,65 @@
            :when (= owner-keyword (:leaf-owner ownership))]
        slice))))
 
+(defn- iteration-arguments
+  [arguments plan-only?]
+  (loop [remaining arguments
+         changed? false
+         slices []]
+    (if (empty? remaining)
+      (do
+        (when-not changed?
+          (throw
+           (ex-info
+            "Iteration mode requires --changed"
+            {:id "SH01-IMPACT-USAGE"
+             :arguments arguments})))
+        (when (empty? slices)
+          (throw
+           (ex-info
+            "Iteration mode requires at least one --iteration-slice value"
+            {:id "SH01-IMPACT-ITERATION-SLICE"
+             :arguments arguments})))
+        {:plan-only? plan-only?
+         :request {:changed-paths (changed-paths)
+                   :iteration-slices (set slices)}})
+      (let [argument (first remaining)]
+        (cond
+          (= "--changed" argument)
+          (do
+            (when changed?
+              (throw
+               (ex-info
+                "--changed may only be provided once"
+                {:id "SH01-IMPACT-USAGE"
+                 :arguments arguments})))
+            (recur (next remaining) true slices))
+
+          (= "--iteration-slice" argument)
+          (let [value (second remaining)]
+            (when (or (nil? value) (str/starts-with? value "--"))
+              (throw
+               (ex-info
+                "--iteration-slice requires a slice id"
+                {:id "SH01-IMPACT-ITERATION-SLICE"
+                 :arguments arguments})))
+            (recur (nnext remaining) changed? (conj slices value)))
+
+          :else
+          (throw
+           (ex-info
+            "Unsupported SH-01 iteration planner arguments"
+            {:id "SH01-IMPACT-USAGE"
+             :arguments arguments})))))))
+
 (defn- parse-arguments
   [arguments]
   (let [arguments (vec arguments)
         plan-only? (some #{"--plan"} arguments)
         args (vec (remove #{"--plan"} arguments))]
-    (cond
+    (if (some #{"--iteration-slice"} args)
+      (iteration-arguments args plan-only?)
+      (cond
       (= ["--changed"] args)
       {:plan-only? plan-only?
        :request {:changed-paths (changed-paths)
@@ -380,8 +642,9 @@
          :arguments arguments
          :supported
          [["--changed" "--plan"]
+          ["--changed" "--iteration-slice" "SH-NN" "--plan"]
           ["--slice" "SH-NN" "--plan"]
-          ["--owner" "leaf-owner" "--plan"]]})))))
+          ["--owner" "leaf-owner" "--plan"]]}))))))
 
 (defn- run-plan
   [plan]

@@ -148,3 +148,125 @@
           (catch clojure.lang.ExceptionInfo exception exception))]
     (is (= "SH01-IMPACT-SLICE" (:id (ex-data exception))))
     (is (= ["SH-30"] (:slices (ex-data exception))))))
+
+(deftest iteration-coordinator-path-is-explicitly-non-authoritative
+  (let [plan
+        (planner/build-plan
+         {:changed-paths ["bootstrap/clojure/src/gravity/bootstrap.clj"]
+          :iteration-slices #{"SH-07"}})]
+    (is (= :gravity/sh01-impact-test-plan-v1 (:schema plan)))
+    (is (= :non-authoritative (:authority plan)))
+    (is (false? (:authoritative? plan)))
+    (is (true? (:iteration? plan)))
+    (is (true? (:full-gate-deferred? plan)))
+    (is (seq (:full-gate-deferred-reason plan)))
+    (is (= ["SH-07"] (:iteration-slices plan)))
+    (is (= ["SH-07"] (:affected-slices plan)))
+    (is (= ["bootstrap/clojure/src/gravity/bootstrap.clj"]
+           (:deferred-coordinator-paths plan)))
+    (is (empty? (:deferred-other-affected-paths plan)))
+    (is (every? #(= "SH-07" (:slice %)) (:shards plan)))))
+
+(deftest iteration-repeatable-slices-and-leaf-catalog-selection
+  (let [plan
+        (planner/build-plan
+         {:changed-paths
+          ["bootstrap/clojure/fixtures/self-hosting/sh-07/accepted/new.gravity"
+           "bootstrap/gravity/src/gravity/checked_core.gravity"]
+          :iteration-slices ["SH-07" "SH-08"]})]
+    (is (= ["SH-07" "SH-08"] (:iteration-slices plan)))
+    (is (= ["SH-07" "SH-08"] (:affected-slices plan)))
+    (is (seq (:namespaces plan)))
+    (is (every? #{"SH-07" "SH-08"} (map :slice (:shards plan))))
+    (is (empty? (:deferred-other-affected-paths plan)))))
+
+(deftest iteration-changed-test-prefers-an-exact-discovered-namespace
+  (let [changed
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_primitive_type_test.clj"
+        plan
+        (planner/build-plan
+         {:changed-paths [changed]
+          :iteration-slices #{"SH-07"}})
+        sh08-namespaces
+        (filter #(= "SH-08" (:slice %)) (:shards plan))]
+    (is (= ["SH-07" "SH-08"] (:affected-slices plan)))
+    (is (= ['gravity.self-hosting.sh08-primitive-type-test]
+           (mapv :namespace sh08-namespaces)))
+    (is (empty? (:deferred-other-affected-paths plan)))))
+
+(deftest iteration-unselected-leaf-paths-are-deferred
+  (let [fixture
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/new.gravity"
+        module
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+        plan
+        (planner/build-plan
+         {:changed-paths [module fixture]
+          :iteration-slices #{"SH-07"}})]
+    (is (= ["SH-07"] (:affected-slices plan)))
+    (is (= [fixture module] (:deferred-other-affected-paths plan)))
+    (is (= [fixture module] (:deferred-paths plan)))))
+
+(deftest iteration-invalid-and-missing-slices-fail-closed
+  (doseq [[request expected-id expected-slices]
+          [[{:iteration-slices #{}} "SH01-IMPACT-ITERATION-SLICE" []]
+           [{:iteration-slices #{"SH-99"}} "SH01-IMPACT-SLICE" ["SH-99"]]
+           [{:iteration-slices #{"SH-07"}
+             :changed-paths
+             ["bootstrap/clojure/fixtures/self-hosting/sh-99/accepted/new.gravity"]}
+            "SH01-IMPACT-SLICE" ["SH-99"]]]]
+    (let [exception
+          (try
+            (planner/build-plan request)
+            nil
+            (catch clojure.lang.ExceptionInfo exception exception))]
+      (is (= expected-id (:id (ex-data exception))))
+      (is (= expected-slices (:slices (ex-data exception)))))))
+
+(deftest iteration-unowned-paths-fail-closed
+  (let [exception
+        (try
+          (planner/build-plan
+           {:changed-paths
+            ["bootstrap/clojure/test/gravity/self_hosting/unowned_test.clj"]
+            :iteration-slices #{"SH-07"}})
+          nil
+          (catch clojure.lang.ExceptionInfo exception exception))]
+    (is (= "SH01-IMPACT-UNOWNED" (:id (ex-data exception))))
+    (is (= ["bootstrap/clojure/test/gravity/self_hosting/unowned_test.clj"]
+           (:paths (ex-data exception))))))
+
+(deftest iteration-cli-requires-changed-and-repeatable-slice-values
+  (let [parse (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                          'parse-arguments)]
+    (with-redefs [planner/changed-paths (constantly [])]
+      (let [{:keys [plan-only? request]}
+            (parse ["--changed"
+                    "--iteration-slice" "SH-08"
+                    "--iteration-slice" "SH-07"
+                    "--plan"])]
+        (is plan-only?)
+        (is (= #{"SH-07" "SH-08"}
+               (:iteration-slices request))))
+      (doseq [[arguments expected-id]
+              [[["--changed" "--iteration-slice"]
+                "SH01-IMPACT-ITERATION-SLICE"]
+               [["--iteration-slice" "SH-07"]
+                "SH01-IMPACT-USAGE"]]]
+        (let [exception
+              (try
+                (parse arguments)
+                nil
+                (catch clojure.lang.ExceptionInfo exception exception))]
+          (is (= expected-id (:id (ex-data exception))) arguments))))))
+
+(deftest authoritative-changed-plan-remains-full-and-unchanged
+  (let [plan
+        (planner/build-plan
+         {:changed-paths ["bootstrap/clojure/src/gravity/bootstrap.clj"]
+          :expand-dependants? true})]
+    (is (= 30 (count (:direct-slices plan))))
+    (is (= 30 (count (:affected-slices plan))))
+    (is (nil? (:authority plan)))
+    (is (nil? (:full-gate-deferred? plan)))
+    (is (nil? (:iteration? plan)))))
