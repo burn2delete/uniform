@@ -1026,6 +1026,25 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertNotIn("stage0-clojure-suite", selection["selected_ids"])
         self.assertNotIn("stage0-bootstrap-authority", selection["selected_ids"])
 
+    def test_real_manifest_stage2_admission_unit_closes_only_declared_prerequisites(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        selection = verifier.select_impacted_checks(
+            manifest,
+            ROOT,
+            requested_ids=["stage2-authority-admission-unit"],
+        )
+        self.assertEqual(selection["selection_mode"], "explicit-check")
+        self.assertEqual(
+            selection["selected_ids"],
+            [
+                "stage0-orchestrator-unit",
+                "stage1-sh01-unit",
+                "stage2-authority-admission-unit",
+            ],
+        )
+        self.assertNotIn("stage0-clojure-suite", selection["selected_ids"])
+        self.assertNotIn("stage0-bootstrap-authority", selection["selected_ids"])
+
     def test_declared_resource_lock_is_host_wide_and_non_blocking(self) -> None:
         with verifier._process_lock("unit-test-heavy-resource"):
             with self.assertRaises(verifier.LockUnavailable):
@@ -1195,6 +1214,36 @@ class VerifyDevelopmentTests(unittest.TestCase):
         )
         self.assertNotIn("bin/gravity", sh01_unit["inputs"])
         self.assertNotIn("bootstrap/gravity/**", sh01_unit["inputs"])
+        stage2_admission_unit = next(
+            item for item in manifest["checks"] if item["id"] == "stage2-authority-admission-unit"
+        )
+        self.assertEqual(stage2_admission_unit["lane"], "preflight")
+        self.assertEqual(stage2_admission_unit["cost"], "cheap")
+        self.assertIsNone(stage2_admission_unit["lock"])
+        self.assertFalse(stage2_admission_unit["exclusive"])
+        self.assertEqual(stage2_admission_unit["authority"], "none")
+        self.assertEqual(stage2_admission_unit["daemonization"], "forbidden")
+        self.assertIs(stage2_admission_unit["fresh"], True)
+        self.assertEqual(stage2_admission_unit["timeout_seconds"], 120)
+        self.assertEqual(
+            stage2_admission_unit["command"],
+            [
+                "python3",
+                "-m",
+                "unittest",
+                "tools.tests.test_stage2_authority_admission",
+                "-v",
+            ],
+        )
+        self.assertEqual(
+            set(stage2_admission_unit["inputs"]),
+            {
+                "tools/stage2_authority_admission.py",
+                "tools/run_sh07_authoritative_modules.py",
+                "tools/tests/test_stage2_authority_admission.py",
+            },
+        )
+        self.assertEqual(stage2_admission_unit["depends_on"], ["stage1-sh01-unit"])
         full_suite = next(item for item in manifest["checks"] if item["id"] == "stage0-clojure-suite")
         self.assertIn("bin/gravity-bootstrap", full_suite["inputs"])
 

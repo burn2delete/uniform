@@ -1,14 +1,16 @@
 {
   "schema_version": 1,
   "name": "gravity-stage0-development-verification",
-  "description": "Stage 0 and Milestone 0 verification graph with a bounded Stage1 SH-01 unit handoff for fast, evidence-producing development loops.",
+  "description": "Stage 0 and Milestone 0 verification graph with bounded Stage1 SH-01 and Stage2 authority-admission unit handoffs for fast, evidence-producing development loops.",
   "scope": {
     "stage": "stage0",
     "stage1_handoff": "SH-01 planner and parallel-runner unit preflight",
+    "stage2_admission": "lock-held Stage2 authority-admission unit (development-only)",
     "milestones": ["M0-documentation-lock", "M1-hosted-hello-slice"],
     "included": [
       "foundation contract and documentation validators",
       "the Stage1 SH-01 planner and parallel-runner unit preflight",
+      "the Stage2 authority-admission unit",
       "hosted reader validator",
       "first hosted hello and core application fixtures",
       "the focused project-structure extraction compatibility gate",
@@ -236,6 +238,32 @@
       ],
       "depends_on": [
         "stage0-orchestrator-unit"
+      ]
+    },
+    {
+      "id": "stage2-authority-admission-unit",
+      "lane": "preflight",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "timeout_seconds": 120,
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "tools.tests.test_stage2_authority_admission",
+        "-v"
+      ],
+      "inputs": [
+        "tools/stage2_authority_admission.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "tools/tests/test_stage2_authority_admission.py"
+      ],
+      "depends_on": [
+        "stage1-sh01-unit"
       ]
     },
     {

@@ -2,8 +2,9 @@
 
 Status: supplemental rollout guide; outside the 240-document inventory
 
-This guide is an implementation bridge for the Stage 0 development runner and
-the bounded Stage1 SH-01 unit handoff. It
+This guide is an implementation bridge for the Stage 0 development runner, the
+bounded Stage1 SH-01 unit handoff, and the cheap Stage2 authority-admission
+unit. It
 does not replace or amend `docs/development-verification.md`, the phase
 README files, or the D0-D9, BOOT, TEST, and package contracts. Those documents
 remain the source of truth for verification, safety, provenance, authority,
@@ -27,6 +28,11 @@ EDN report states `:authority :non-authoritative`, and any test failure or error
 produces a nonzero exit. It validates selection and scheduling mechanics; it
 does not execute the namespaces selected by a plan.
 
+The Stage2 unit is similarly bounded. It tests the authority-admission
+classifier and lock-held integration transaction in Python, depends on the
+Stage1 unit gate, and remains `authority: none`. It does not merge a candidate,
+run an authoritative verifier, or grant authority.
+
 The bridge is intentionally subordinate. It records current implementation
 behavior and deferred work; it does not define a new language, backend,
 self-hosting, seed-retirement, or release contract.
@@ -43,7 +49,7 @@ self-hosting, seed-retirement, or release contract.
 | Mutation monitoring | Kernel vnode watches with final event drain on supported hosts; unsupported polling fallback is non-cacheable; glob roots and existing subtree directories are watched | Cross-platform FSEvents/inotify parity and a future artifact event protocol |
 | Lock safety | Shared safe open (`O_NOFOLLOW|O_CREAT|O_RDWR`, mode `0600`) with regular-file, owner, link-count, and parent-path checks; resource locks are direct children of trusted sticky `/private/tmp`, while cache locks hash the canonical resolved root/cache identity under `/private/tmp` | Bounded eviction and cache lifecycle policy |
 | Process safety | Every manifest check binds `daemonization: forbidden`; commands run in new process groups, ordinary descendants are cleaned before lock release, and one bounded host-wide `ps eww` environment census at command termination covers saved same-marker processes | Strict containment of arbitrary cross-session daemonization (including double-fork/`setsid`) is deferred to an OS job/container; private output isolation and atomic artifact publication are also deferred |
-| Stage rollout | Stage0 selection, receipts, cache/lock safety, targeted verification commands, and the Stage1 `stage1-sh01-unit` preflight | Shared heavy-verifier identity, selected-namespace batching/chunking, Stage2 rollout, SH-07/C7 integration, and later-stage claims |
+| Stage rollout | Stage0 selection, receipts, cache/lock safety, targeted verification commands, the Stage1 `stage1-sh01-unit` preflight, and the fresh cheap `stage2-authority-admission-unit` | Authority-affecting merge execution outside the lock-held wrapper, shared heavy-verifier identity, selected-namespace batching/chunking, SH-07/C7 integration, and later-stage claims |
 
 The deferred column is a boundary, not an implied implementation. A passing
 command, warm cache hit, benchmark, or heavy-candidate receipt must not be
@@ -52,7 +58,7 @@ described as a proof, authority artifact, bootstrap claim, or release result.
 ## Stage 0 lane model
 
 - `preflight` contains cheap contract, documentation, orchestrator, and fresh
-  Stage1 SH-01 planner/runner unit checks.
+  Stage1 SH-01 planner/runner and Stage2 authority-admission unit checks.
 - `focused` contains small reader, hosted, selective, and project-structure
   extraction checks. Exact cache identities may be reused only after input,
   command, dependency, and environment revalidation. The cheap
@@ -72,6 +78,13 @@ The existing `:test` Clojure alias remains the broad self-hosting runner. The
 Stage0 manifest uses `:stage0-test` so a development check cannot accidentally
 launch that larger target. The Stage1 preflight uses `:sh01-test`; it does not
 delegate to `:test` and therefore cannot widen into the broader suite.
+
+The Stage2 admission unit uses the exact Python test module
+`tools.tests.test_stage2_authority_admission`. It is fresh and cheap, depends
+on `stage1-sh01-unit`, and binds only
+`tools/stage2_authority_admission.py`, the shared SH-07 fingerprint-policy
+helper, and its test file. Its pass is a unit signal, not permission to merge
+or proof authority.
 
 ## Stage1 SH-01 handoff and measured boundary
 
@@ -108,6 +121,65 @@ child may be noisy. Shared verifier identity and same-JVM selected-namespace
 batching/chunking remain deferred; the current process-per-namespace behavior
 must be included in any measurement.
 
+## Stage2 authority-admission boundary
+
+Any integration that changes a shared or module-local fingerprint input must
+run through the lock-held Stage2 admission wrapper. The wrapper resolves the
+base and candidate revisions, computes the prospective tree, classifies changed
+paths, acquires `/private/tmp/gravity-sh07-heavy.lock` before mutation, and
+keeps the same lock descriptor through the recheck and fast-forward integration:
+
+```bash
+# Advisory planning only; this never reserves the lock or authorizes a merge.
+python3 tools/stage2_authority_admission.py \
+  --cwd <repo> --base <base-oid> --candidate <candidate-oid> \
+  --probe-only --human
+
+# Hard admission; the integration command runs while the lock is held.
+python3 tools/stage2_authority_admission.py \
+  --cwd <repo> --base <base-oid> --candidate <candidate-oid> --exec -- \
+  git merge --ff-only <candidate-oid>
+```
+
+The advisory probe is useful for planning and diagnostics only. Releasing the
+lock before merge creates a time-of-check/time-of-use race, so a probe result
+grants no reservation, freshness, merge permission, or proof authority. If the
+lock is busy, retry or queue the complete wrapper transaction; do not probe,
+release, and merge later. The wrapper is the only admission path for changes
+that can invalidate a shared or selected-module fingerprint.
+
+For long-running authority work, an immutable detached alternative is valid:
+run the verifier from a clean detached worktree pinned to the exact candidate
+commit/tree and bind proof, attestation, and shared/module fingerprints to that
+revision. A later merge with different fingerprints requires a new run; an
+older detached proof is never carried forward merely because the candidate is
+a descendant.
+
+## Stage2 observations and bounded SH-02 loop
+
+The current SH-02 authenticated-envelope development audit measured namespace
+require at 5.88 seconds and about 1.40 GiB peak resident memory. The first ten
+leaf vars passed warm in one JVM in 13.97 seconds at about 1.46 GiB peak
+resident memory. The coordinator integration var exceeded the 60-second audit
+bound and was stopped at 66.53 seconds after about 2.47 GiB peak resident
+memory; it produced no pass result. These are non-authoritative scheduling
+observations, not performance or proof claims.
+
+Run the cheap contract and negative vars first. Then run coordinator vars 11,
+12, and 13 together in one JVM behind the shared heavy-run lock, with
+`--fail-fast` so derivative vars are skipped after the first failure. Separate
+JVMs repeat the shared coordinator proof and its multi-gigabyte construction.
+This is a bounded SH-02 test ordering, not a batching-speedup claim. The
+normal-only batching ceiling and SH-07 cache-affine strategy remain future
+work, and same-JVM selected-namespace batching/chunking is still deferred.
+
+The current C7 observation is 3351.068 seconds (55.85 minutes) at 176,551
+source bytes; the user-provided historical observation is 2416.213 seconds at
+142,136 source bytes. The contexts and source sizes differ, so they are
+incomparable observations and establish no speedup or regression. The backlog
+currently records 2411.35 seconds; resolve that against the raw receipt before
+replacing any canonical baseline.
+
 ## Selection and execution flow
 
 1. Normalize changed paths and validate the manifest before starting a command.
@@ -125,7 +197,9 @@ must be included in any measurement.
    manifest secrets or ambient values.
 6. Run cheap independent checks in bounded parallelism. Run locked/heavy work
    one check at a time. Every manifest command declares `daemonization:
-   forbidden` and is placed in a new process group.
+   forbidden` and is placed in a new process group. Any authority-affecting
+   integration must additionally run inside the Stage2 lock-held admission
+   wrapper; a standalone advisory probe cannot authorize the mutation.
 7. Monitor declared files and command identity across execution. On kqueue
    hosts, drain vnode events after the child exits; watch glob parents and all
    existing directories in recursive declared subtrees so create/delete/
@@ -167,13 +241,15 @@ swaps, and replacement races fail closed without modifying the victim.
 
 ## Commands and compatibility
 
-These examples are limited to the Stage0 graph and the bounded Stage1 SH-01
-unit handoff:
+These examples are limited to the Stage0 graph, the bounded Stage1 SH-01 unit
+handoff, and the cheap Stage2 authority-admission unit:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tools/tests -p test_verify_development.py -v
+python3 -m unittest tools.tests.test_stage2_authority_admission -v
 python3 tools/verify_development.py --lane preflight --lane focused --dry-run --explain --human
 python3 tools/verify_development.py --check stage1-sh01-unit --dry-run --human
+python3 tools/stage2_authority_admission.py --cwd <repo> --base <base-oid> --candidate <candidate-oid> --probe-only --human
 python3 tools/verify_development.py --lane heavy-candidate --dry-run --human
 clojure -M:sh01-test
 clojure -M:stage0-test
@@ -222,11 +298,16 @@ Use the existing `docs/development-verification.md` contract and the relevant
 phase README/documents first. This bridge is informed by D0, D1, D2, D3, D6,
 D8, D9, BOOT, TEST, and package contracts, but it does not redefine them. The
 implementation files are `tools/verify_development.py`,
-`tools/development_verification_manifest.json`, and
+`tools/development_verification_manifest.json`,
+`tools/stage2_authority_admission.py`,
+`tools/tests/test_stage2_authority_admission.py`, and
 `tools/tests/test_verify_development.py`. The Stage1 unit handoff also binds
 `deps.edn`, `gravity.self-hosting.sh01-development-test-runner`, the two SH-01
 unit namespaces and their planner/runner implementations, the self-hosting
-test catalog, and the SH-01 backlog/ownership records they read.
+test catalog, and the SH-01 backlog/ownership records they read. The Stage2
+unit binds only the admission implementation and its exact Python test module;
+the hard wrapper additionally binds the immutable candidate tree and shared or
+module fingerprint policy it evaluates.
 
 ## Outputs and artifacts
 
@@ -238,7 +319,11 @@ coverage-census authority, equivalence/conformance evidence, SBOMs, and
 release decisions remain deferred to the normative contracts and later work.
 The one-JVM SH-01 alias additionally emits a deterministic namespace-ordered
 unit summary with an explicit non-authority marker and pass/fail exit code; it
-does not emit a stage-advancement artifact.
+does not emit a stage-advancement artifact. The Stage2 unit emits ordinary
+Python test output only. The admission wrapper may emit a plan or transaction
+receipt, but advisory output is explicitly non-authoritative and a hard
+transaction is valid only while its lock descriptor remains held through the
+integration mutation and post-mutation identity check.
 
 ## Conformance and acceptance
 
@@ -248,6 +333,14 @@ does not emit a stage-advancement artifact.
 - `stage1-sh01-unit` depends on `stage0-orchestrator-unit`, runs fresh through
   `clojure -M:sh01-test`, and binds only the SH-01 unit/catalog/backlog inputs
   plus `deps.edn`; it does not bind the Stage0 runtime or full bootstrap tree.
+- `stage2-authority-admission-unit` depends on `stage1-sh01-unit`, runs fresh
+  through `python3 -m unittest tools.tests.test_stage2_authority_admission -v`,
+  and binds only the admission implementation, shared fingerprint-policy
+  helper, and exact Python test module.
+- Authority-affecting integration changes use the lock-held Stage2 wrapper;
+  an advisory probe cannot reserve the lock or authorize a later merge, and a
+  detached proof is valid only for its immutable candidate tree and matching
+  fingerprints.
 - A changed path owned only by an excluded lane, or a requested check outside
   the selected lane, produces a failed receipt with owner/lane details.
 - A declared input cannot escape the root, follow a symlink, or change during

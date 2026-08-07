@@ -133,6 +133,47 @@ no timeout, and empty stderr. Their counts are source-bound-derived rather than
 precommitted, `:attestation-required?` remains true, and no trusted attestation
 or authority promotion was performed.
 
+## Stage2 authority-admission boundary
+
+An integration that changes a shared or module-local fingerprint input must
+use the Stage2 authority-admission wrapper. The wrapper resolves the base and
+candidate to immutable revisions, computes the prospective tree, classifies the
+changed paths, and acquires the canonical `/private/tmp/gravity-sh07-heavy.lock`
+before it rechecks the candidate and performs the integration mutation. The
+same lock descriptor remains held through the mutation and the resulting
+context check. A lock probe that releases the lock before merge or integration
+is only advisory and grants no permission, freshness, or authority; it cannot
+be used as a later admission decision.
+
+The unit contract for this boundary is intentionally cheap and fresh:
+
+```bash
+python3 -m unittest tools.tests.test_stage2_authority_admission -v
+```
+
+That unit command validates the admission classifier, prospective-tree and
+worktree checks, and lock-held transaction mechanics. It is a development
+check with `authority: none`; a passing unit result does not authorize a merge
+or promote a proof. The manifest check
+`stage2-authority-admission-unit` depends on the Stage1 SH-01 unit gate and
+declares only the admission implementation, the shared SH-07 fingerprint
+policy helper, and its tests as inputs.
+
+For an authority-affecting integration, invoke the wrapper with the immutable
+base and candidate and keep the merge command inside its lock-held execution
+callback. A `--probe-only`/advisory invocation may explain the prospective
+impact and report that the lock is busy, but it must not be treated as a
+reservation or as evidence for a subsequent merge. If the lock is busy, queue
+or retry the whole admission transaction after the current owner releases it.
+
+The safer long-running alternative is immutable detached authority: run the
+authoritative verifier from a clean detached worktree pinned to the exact
+candidate commit/tree, bind the proof and attestation to that revision and
+shared/module fingerprints, and require the later integration candidate to
+match those bindings. A descendant merge with a changed fingerprint requires a
+new proof; an older detached result is never carried forward merely because
+the merge is related.
+
 ## Lane order
 
 Use the first lane that answers the question. Re-run the routing/plan check
@@ -352,6 +393,39 @@ contract: a namespace `:once` fixture runs around each selected var. A
 namespace-local cache reset by that fixture therefore does not persist across
 the batch. Cross-var acceleration must be visible in the iteration runner's
 own cache deltas; do not infer reuse merely from a test-local atom or delay.
+
+### Stage2 SH-02 development measurements
+
+The SH-02 authenticated-envelope namespace was measured as a bounded
+development audit on the current host. These are non-authoritative observations
+for scheduling, not performance claims or proof evidence:
+
+- Requiring the namespace took 5.88 seconds and reached about 1.40 GiB peak
+  resident memory.
+- The first ten leaf vars, run warm in one JVM, all passed in 13.97 seconds
+  with about 1.46 GiB peak resident memory.
+- The coordinator integration var exceeded a 60-second bounded audit and was
+  stopped at 66.53 seconds after reaching about 2.47 GiB peak resident memory;
+  it did not produce a pass result. Its first integration row alone measured
+  roughly 14.31 seconds for checked-core, 11.47 seconds for C11, 12.71 seconds
+  for the packet, and another 11.34 seconds for the fresh C11 inside SH-02
+  reconstruction.
+
+For a focused edit loop, run the cheap contract and negative vars first, then
+run coordinator vars 11 through 13 together in one JVM behind the shared
+heavy-run lock, with `--fail-fast` so derivative vars are skipped after the
+first failure. Running those three vars in separate JVMs repeats the shared
+`coordinator-proof` build and its multi-gigabyte cost. This ordering is a
+bounded SH-02 test practice only: it makes no batching speedup claim. The
+current normal-only batching ceiling and SH-07 cache-affine strategy remain
+future work; same-JVM selected-namespace batching/chunking is still deferred.
+
+The current C7 observation is 3351.068 seconds (55.85 minutes) at 176,551
+source bytes. A user-provided historical observation is 2416.213 seconds at
+142,136 source bytes. The source and shared contexts differ, so these are
+incomparable observations and do not establish a speedup or regression. The
+backlog currently contains 2411.35 seconds; the raw receipt must resolve that
+discrepancy before any canonical baseline is replaced.
 
 ### 6. Selected fresh authoritative module
 

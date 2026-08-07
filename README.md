@@ -128,6 +128,36 @@ explicit authority promotion step exist. See
 `docs/development-verification-workflow.md` for the gate, cache, lock, and
 evidence rules.
 
+The Stage2 authority-admission unit is a fresh, cheap preflight after the
+Stage1 gate:
+
+```bash
+python3 -m unittest tools.tests.test_stage2_authority_admission -v
+```
+
+An integration that changes a shared or module fingerprint must use the
+lock-held wrapper, keeping `/private/tmp/gravity-sh07-heavy.lock` held through
+the recheck and fast-forward mutation. An advisory probe grants no reservation
+or authority and cannot be used to justify a later merge. For long-running
+authority work, use an immutable detached worktree pinned to the candidate
+commit/tree and bind the proof to that exact revision; a changed fingerprint
+requires a new proof.
+
+The current SH-02 development audit measured namespace require at 5.88 seconds
+and about 1.40 GiB peak resident memory, and the first ten leaf vars warm in one
+JVM at 13.97 seconds and about 1.46 GiB. The coordinator var exceeded the
+60-second bound and was stopped at 66.53 seconds after about 2.47 GiB; these
+are scheduling observations, not proof or speed claims. Run cheap exact vars
+first, then coordinator vars 11-13 together behind the heavy lock with
+`--fail-fast`; separate JVMs repeat the shared proof. Normal-only batching and
+SH-07 cache-affine scheduling remain future work.
+
+The current C7 observation is 3351.068 seconds (55.85 minutes) at 176,551
+source bytes; a user-provided historical observation is 2416.213 seconds at
+142,136 bytes. Different source/shared contexts make these incomparable, so no
+speedup or regression is claimed. The backlog records 2411.35 seconds; resolve
+that against the raw receipt before replacing a canonical baseline.
+
 Every Stage 0 manifest check explicitly sets `daemonization: forbidden`.
 Commands run in a new process group; ordinary descendants are cleaned before a
 resource lock is released, with one bounded host-wide `ps eww` environment
