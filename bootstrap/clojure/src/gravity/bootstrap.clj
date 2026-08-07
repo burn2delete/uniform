@@ -160603,47 +160603,51 @@
        :alias-table (vec (:alias-table resolved-analysis))
        :resolution-table resolutions})))
 
-(defn sh07-core-lineage
-  [resolution-artifact]
+(defn- sh07-core-lineage-with-semantic-trace
+  [resolution-artifact semantic-trace]
   (let [boundary (:gravity-resolution-boundary resolution-artifact)
-        analysis (:resolved-analysis boundary)
-        sh05 (:sh05-macro-artifact resolution-artifact)
-        neutral sh05-path-neutral-semantic-value
-        source-unit
-        (get-in sh05
+         analysis (:resolved-analysis boundary)
+         sh05 (:sh05-macro-artifact resolution-artifact)
+         neutral sh05-path-neutral-semantic-value
+         source-unit
+         (get-in sh05
                 [:gravity-macro-boundary
                  :authenticated-sh04-artifact
                  :c2-reader-artifact :source-unit-record])
-        source-revision-id (:bytes-hash source-unit)
-        expanded-forms (mapv :form (:expanded-syntax-stream sh05))
-        semantic-trace
-        (sh07-core-semantic-macro-trace
-         (:macro-expansion-trace sh05))
-        semantic-module
-        (select-keys (:module-contract analysis)
+         source-revision-id (:bytes-hash source-unit)
+         expanded-forms (mapv :form (:expanded-syntax-stream sh05))
+         neutral-expanded-forms (neutral expanded-forms)
+         semantic-module
+         (select-keys (:module-contract analysis)
                      [:namespace :profile :target :safety
                       :effects :capabilities :exports])
-        binding-semantics
-        (mapv #(select-keys
+         binding-semantics
+         (mapv #(select-keys
                 %
                 [:name :kind :namespace :package
                  :binding-class :visibility
                  :profile-set :target-set :type-ref :effects
                  :capabilities :safety :semantic-span])
               (:binding-table analysis))
-        resolution-semantics
-        (mapv #(select-keys
+         resolution-semantics
+         (mapv #(select-keys
                 %
                 [:reference-syntax-id :symbol :position
                  :resolution-order :semantic-span :resolution-kind])
               (:resolution-table analysis))
-        alias-semantics (vec (:alias-table analysis))]
+         alias-semantics (vec (:alias-table analysis))
+         sh05-artifact-id
+         (reader-canonical-hash
+          {:domain :gravity/sh07-semantic-sh05-artifact-v1
+           :source-revision-id source-revision-id
+           :expanded-forms neutral-expanded-forms
+           :macro-trace semantic-trace})]
     (let [semantic-projection-id
           (reader-canonical-hash
            {:domain :gravity/sh07-semantic-sh06-artifact-v1
             :source-revision-id source-revision-id
             :module semantic-module
-            :expanded-forms (neutral expanded-forms)
+            :expanded-forms neutral-expanded-forms
             :bindings binding-semantics
             :aliases alias-semantics
             :resolutions resolution-semantics})]
@@ -160663,16 +160667,12 @@
      :source-revision-id
      source-revision-id
      :sh05-artifact-id
-     (reader-canonical-hash
-      {:domain :gravity/sh07-semantic-sh05-artifact-v1
-       :source-revision-id source-revision-id
-       :expanded-forms (neutral expanded-forms)
-       :macro-trace semantic-trace})
+     sh05-artifact-id
      :expanded-syntax-stream-id
      (reader-canonical-hash
       {:domain :gravity/sh07-semantic-expanded-stream-v1
        :source-revision-id source-revision-id
-       :expanded-forms (neutral expanded-forms)})
+       :expanded-forms neutral-expanded-forms})
      :macro-expansion-trace-id
      (reader-canonical-hash
       {:domain :gravity/sh07-semantic-macro-trace-v1
@@ -160702,12 +160702,15 @@
      (reader-canonical-hash
       {:domain :gravity/sh07-semantic-upstream-envelope-v1
        :source-revision-id source-revision-id
-       :sh05-artifact-id
-       (reader-canonical-hash
-        {:domain :gravity/sh07-semantic-sh05-artifact-v1
-         :source-revision-id source-revision-id
-         :expanded-forms (neutral expanded-forms)
-         :macro-trace semantic-trace})})})))
+       :sh05-artifact-id sh05-artifact-id})})))
+
+(defn sh07-core-lineage
+  [resolution-artifact]
+  (let [sh05 (:sh05-macro-artifact resolution-artifact)]
+    (sh07-core-lineage-with-semantic-trace
+     resolution-artifact
+     (sh07-core-semantic-macro-trace
+      (:macro-expansion-trace sh05)))))
 
 (defn sh07-core-projection-binding-input
   [request]
@@ -160863,8 +160866,13 @@
                 {:id "C6-VERIFY" :stage :core-lowering
                  :source-path source-path
                  :missing-fields [:fresh-authenticated-sh06-resolution]})))
-    (let [lineage (sh07-core-lineage resolution-artifact)
-          sh05 (:sh05-macro-artifact resolution-artifact)
+    (let [sh05 (:sh05-macro-artifact resolution-artifact)
+          semantic-macro-trace
+          (sh07-core-semantic-macro-trace
+           (:macro-expansion-trace sh05))
+          lineage
+          (sh07-core-lineage-with-semantic-trace
+           resolution-artifact semantic-macro-trace)
           module-contract
           (get-in resolution-artifact
                   [:gravity-resolution-boundary
@@ -160978,9 +160986,7 @@
            :fragment-manifest fragment-manifest
            :fragment-coverage fragment-coverage
            :module-assembly-manifest module-assembly-manifest
-           :macro-expansion-trace
-           (sh07-core-semantic-macro-trace
-            (:macro-expansion-trace sh05))
+           :macro-expansion-trace semantic-macro-trace
            :macro-origin-traces traces
            :macro-origin-expectation expectation
            :projection-binding nil
@@ -162308,7 +162314,13 @@
         expected-core
         (get-in expected
                 [:gravity-core-boundary :canonical-core-artifact])
-        source-path (get-in artifact [:provenance :source-path])]
+        source-path (get-in artifact [:provenance :source-path])
+        self-comparison? (identical? artifact expected)
+        replay-equal?
+        (fn [expected-value actual-value]
+          (or self-comparison?
+              (= (sh07-core-exact-comparison-value expected-value)
+                 (sh07-core-exact-comparison-value actual-value))))]
     {:wrapper-schema-current?
      (= (set (keys expected)) (set (keys artifact)))
      :wrapper-kind-current?
@@ -162343,33 +162355,22 @@
         (get-in artifact
                 [:gravity-core-boundary :resolved-digests]))
      :canonical-core-replays?
-     (= (sh07-core-exact-comparison-value expected-core)
-        (sh07-core-exact-comparison-value core))
+     (replay-equal? expected-core core)
      :fragment-manifest-replay?
-     (= (sh07-core-exact-comparison-value
-         (:fragment-manifest expected-core))
-        (sh07-core-exact-comparison-value
-         (:fragment-manifest core)))
+     (replay-equal? (:fragment-manifest expected-core)
+                    (:fragment-manifest core))
      :fragment-coverage-replay?
-     (= (sh07-core-exact-comparison-value
-         (:fragment-coverage expected-core))
-        (sh07-core-exact-comparison-value
-         (:fragment-coverage core)))
+     (replay-equal? (:fragment-coverage expected-core)
+                    (:fragment-coverage core))
      :module-assembly-manifest-replay?
-     (= (sh07-core-exact-comparison-value
-         (:module-assembly-manifest expected-core))
-        (sh07-core-exact-comparison-value
-         (:module-assembly-manifest core)))
+     (replay-equal? (:module-assembly-manifest expected-core)
+                    (:module-assembly-manifest core))
      :module-replay?
      (and
-      (= (sh07-core-exact-comparison-value
-          (:identity-preimage expected-core))
-         (sh07-core-exact-comparison-value
-          (:identity-preimage core)))
-      (= (sh07-core-exact-comparison-value
-          (:module-assembly-manifest expected-core))
-         (sh07-core-exact-comparison-value
-          (:module-assembly-manifest core)))
+      (replay-equal? (:identity-preimage expected-core)
+                     (:identity-preimage core))
+      (replay-equal? (:module-assembly-manifest expected-core)
+                     (:module-assembly-manifest core))
       (= (sh07-core-exact-comparison-value
           (get-in core
                   [:identity-preimage
@@ -162377,94 +162378,53 @@
          (sh07-core-exact-comparison-value
           (:module-assembly-manifest core))))
      :declared-alias-table-replay?
-     (= (sh07-core-exact-comparison-value
-         (:declared-alias-table expected-core))
-        (sh07-core-exact-comparison-value
-         (:declared-alias-table core)))
+     (replay-equal? (:declared-alias-table expected-core)
+                    (:declared-alias-table core))
      :control-flow-replays?
-     (= (sh07-core-exact-comparison-value
-         (:control-flow expected-core))
-        (sh07-core-exact-comparison-value
-         (:control-flow core)))
+     (replay-equal? (:control-flow expected-core) (:control-flow core))
      :reference-uses-replay?
-     (= (sh07-core-exact-comparison-value
-         (:reference-uses expected-core))
-        (sh07-core-exact-comparison-value
-         (:reference-uses core)))
+     (replay-equal? (:reference-uses expected-core) (:reference-uses core))
      :var-references-replay?
-     (= (sh07-core-exact-comparison-value
-         (:var-references expected-core))
-        (sh07-core-exact-comparison-value
-         (:var-references core)))
+     (replay-equal? (:var-references expected-core) (:var-references core))
      :calls-replay?
-     (= (sh07-core-exact-comparison-value
-         (:calls expected-core))
-        (sh07-core-exact-comparison-value
-         (:calls core)))
+     (replay-equal? (:calls expected-core) (:calls core))
      :keyword-lookups-replay?
-     (= (sh07-core-exact-comparison-value
-         (:keyword-lookups expected-core))
-        (sh07-core-exact-comparison-value
-         (:keyword-lookups core)))
+     (replay-equal? (:keyword-lookups expected-core) (:keyword-lookups core))
      :lexical-bindings-replay?
-     (= (sh07-core-exact-comparison-value
-         (:lexical-bindings expected-core))
-        (sh07-core-exact-comparison-value
-         (:lexical-bindings core)))
+     (replay-equal? (:lexical-bindings expected-core)
+                    (:lexical-bindings core))
      :loop-bindings-replay?
-     (= (sh07-core-exact-comparison-value
-         (:loop-bindings expected-core))
-        (sh07-core-exact-comparison-value
-         (:loop-bindings core)))
+     (replay-equal? (:loop-bindings expected-core) (:loop-bindings core))
      :recur-targets-replay?
-     (= (sh07-core-exact-comparison-value
-         (:recur-targets expected-core))
-        (sh07-core-exact-comparison-value
-         (:recur-targets core)))
+     (replay-equal? (:recur-targets expected-core) (:recur-targets core))
      :recur-transfers-replay?
-     (= (sh07-core-exact-comparison-value
-         (:recur-transfers expected-core))
-        (sh07-core-exact-comparison-value
-         (:recur-transfers core)))
+     (replay-equal? (:recur-transfers expected-core) (:recur-transfers core))
      :mutations-replay?
-     (= (sh07-core-exact-comparison-value
-         (:mutations expected-core))
-        (sh07-core-exact-comparison-value
-         (:mutations core)))
+     (replay-equal? (:mutations expected-core) (:mutations core))
      :error-transfers-replay?
      (and
-      (= (sh07-core-exact-comparison-value
-          (:error-transfers expected-core))
-         (sh07-core-exact-comparison-value
-          (:error-transfers core)))
+      (replay-equal? (:error-transfers expected-core)
+                     (:error-transfers core))
       (sh07-core-error-transfers-coherent? core))
      :error-handlers-replay?
      (and
-      (= (sh07-core-exact-comparison-value
-          (:error-handlers expected-core))
-         (sh07-core-exact-comparison-value
-          (:error-handlers core)))
+      (replay-equal? (:error-handlers expected-core)
+                     (:error-handlers core))
       (sh07-core-error-handlers-coherent? core))
      :match-branch-records-replay?
      (and
-      (= (sh07-core-exact-comparison-value
-          (:match-branch-records expected-core))
-         (sh07-core-exact-comparison-value
-          (:match-branch-records core)))
+      (replay-equal? (:match-branch-records expected-core)
+                     (:match-branch-records core))
       (sh07-core-match-products-coherent? core))
      :match-decision-skeletons-replay?
      (and
-      (= (sh07-core-exact-comparison-value
-          (:match-decision-skeletons expected-core))
-         (sh07-core-exact-comparison-value
-          (:match-decision-skeletons core)))
+      (replay-equal? (:match-decision-skeletons expected-core)
+                     (:match-decision-skeletons core))
       (sh07-core-match-products-coherent? core))
      :match-pattern-records-replay?
      (and
-      (= (sh07-core-exact-comparison-value
-          (:match-pattern-records expected-core))
-         (sh07-core-exact-comparison-value
-          (:match-pattern-records core)))
+      (replay-equal? (:match-pattern-records expected-core)
+                     (:match-pattern-records core))
       (sh07-core-match-products-coherent? core))
      :template-verification-passed?
      (= :passed
@@ -162477,10 +162437,8 @@
                 [:gravity-core-boundary
                  :resolved-verification :status]))
      :authoritative-products-replay?
-     (= (sh07-core-exact-comparison-value
-         (dissoc expected :capability-based-proof))
-        (sh07-core-exact-comparison-value
-         (dissoc artifact :capability-based-proof)))
+     (replay-equal? (dissoc expected :capability-based-proof)
+                    (dissoc artifact :capability-based-proof))
      :stored-capability-proof-current?
      (= (:capability-based-proof expected)
         (:capability-based-proof artifact))
