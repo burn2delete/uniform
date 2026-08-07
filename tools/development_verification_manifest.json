@@ -11,6 +11,7 @@
       "the Stage1 SH-01 planner and parallel-runner unit preflight",
       "hosted reader validator",
       "first hosted hello and core application fixtures",
+      "the focused project-structure extraction compatibility gate",
       "the existing Clojure bootstrap test surface"
     ],
     "excluded": [
@@ -321,6 +322,86 @@
         "bootstrap/clojure/fixtures/accepted/core-app.gravity"
       ],
       "depends_on": []
+    },
+    {
+      "id": "stage0-project-structure-runner-unit",
+      "lane": "focused",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "timeout_seconds": 120,
+      "command": [
+        "clojure",
+        "-M:project-structure-runner-unit"
+      ],
+      "inputs": [
+        "bootstrap/clojure/test/gravity/project_structure_test_runner.clj",
+        "bootstrap/clojure/test/gravity/project_structure_test_runner_test.clj",
+        "bootstrap/clojure/test/gravity/project_structure_test_runner_unit.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "stage0-project-structure-extraction",
+      "lane": "focused",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "timeout_seconds": 180,
+      "command": [
+        "clojure",
+        "-J-Xmx512m",
+        "-M:project-structure-test",
+        "--exact",
+        "gravity.bootstrap-test/hosted-hello-runs",
+        "--exact",
+        "gravity.bootstrap-test/reader-source-unit-identity-preserves-path-extension-and-options",
+        "--exact",
+        "gravity.bootstrap-test/reader-file-policy-rejects-extension-and-malformed-utf8",
+        "--exact",
+        "gravity.bootstrap-test/c2-reader-treats-cr-lf-and-crlf-as-line-terminators",
+        "--fail-fast"
+      ],
+      "inputs": [
+        "bootstrap/clojure/src/gravity/source_unit.clj",
+        "bootstrap/clojure/test/gravity/source_unit_test.clj",
+        "bootstrap/clojure/src/gravity/source_span.clj",
+        "bootstrap/clojure/test/gravity/source_span_test.clj",
+        "bootstrap/clojure/src/gravity/digest.clj",
+        "bootstrap/clojure/test/gravity/digest_test.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+        "README.md",
+        "docs/README.md",
+        "docs/source-concepts.md",
+        "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+        "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+        "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+        "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+        "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+        "docs/phase-06-compiler-architecture/README.md",
+        "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md",
+        "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md",
+        "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md",
+        "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md",
+        "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+        "docs/development-verification.md",
+        "docs/development-verification-workflow.md"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "bootstrap/clojure/test/gravity/project_structure_test_runner.clj"
+      ],
+      "depends_on": ["stage0-project-structure-runner-unit"]
     },
     {
       "id": "stage0-hosted-core-app",

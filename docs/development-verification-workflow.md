@@ -53,9 +53,16 @@ described as a proof, authority artifact, bootstrap claim, or release result.
 
 - `preflight` contains cheap contract, documentation, orchestrator, and fresh
   Stage1 SH-01 planner/runner unit checks.
-- `focused` contains small reader, hosted, and selective Stage0 checks. Exact
-  cache identities may be reused only after input, command, dependency, and
-  environment revalidation.
+- `focused` contains small reader, hosted, selective, and project-structure
+  extraction checks. Exact cache identities may be reused only after input,
+  command, dependency, and environment revalidation. The cheap
+  `stage0-project-structure-runner-unit` prerequisite executes the runner's
+  own synthetic/failure/lifecycle tests in one bounded JVM before the
+  `stage0-project-structure-extraction` check runs the three extracted leaf
+  test namespaces followed by four qualified `gravity.bootstrap-test` vars in
+  one fresh JVM through the bounded `:project-structure-test` alias with
+  `-J-Xmx512m`; it is non-authoritative and owns only its declared source
+  leaves and contracts.
 - `heavy-candidate` contains fresh, serialized, expensive checks such as the
   Stage0 Clojure suite. Its `authority` field is `none`; a command pass remains
   `fresh-command-pass-non-authoritative`.
@@ -170,6 +177,8 @@ python3 tools/verify_development.py --check stage1-sh01-unit --dry-run --human
 python3 tools/verify_development.py --lane heavy-candidate --dry-run --human
 clojure -M:sh01-test
 clojure -M:stage0-test
+clojure -M:project-structure-runner-unit
+clojure -J-Xmx512m -M:project-structure-test --exact gravity.bootstrap-test/hosted-hello-runs --exact gravity.bootstrap-test/reader-source-unit-identity-preserves-path-extension-and-options --exact gravity.bootstrap-test/reader-file-policy-rejects-extension-and-malformed-utf8 --exact gravity.bootstrap-test/c2-reader-treats-cr-lf-and-crlf-as-line-terminators --fail-fast
 ```
 
 The runner should be exercised with targeted checks and dry runs while this
@@ -178,6 +187,24 @@ the planner. The Stage1 manifest command is `clojure -M:sh01-test`; it is a
 fresh, cheap preflight after `stage0-orchestrator-unit`. The Stage0 heavy
 command remains `clojure -M:stage0-test`, and the existing `:test` alias remains
 untouched for its broader purpose.
+
+The focused project-structure extraction node is the durable manifest form of
+that exact command and depends on the runner-unit node. It runs all 15
+extracted leaf tests before the four-var compatibility component in one JVM.
+The compatibility component alone was
+observed at 4 tests and 190 assertions in 51.05 seconds, avoiding 467 of the
+471 bootstrap deftests in the broad suite; the full gate's measured result is
+reported separately: 19 tests and 397 assertions in 51.97 seconds with a peak
+resident set of 789,315,584 bytes (about 753 MiB). These are development
+observations only, not equivalence, authority, or general speedup claims.
+The runner-unit prerequisite observed 9 tests and 28 assertions in 0.62
+seconds with a peak resident set of 144,703,488 bytes (about 138 MiB); it
+intentionally does not load the production leaf or bootstrap test namespaces.
+Changes to the six declared
+`source_unit`, `source_span`, and `digest` source/test leaves route to this
+focused node without selecting `stage0-clojure-suite` or
+`stage0-bootstrap-authority`; shared `bootstrap.clj` and `bootstrap_test.clj`
+remain owned by the broader checks that declare them.
 
 For a bounded selected-namespace execution outside the manifest unit gate:
 

@@ -1077,17 +1077,104 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertTrue(all(item["cost"] == "heavy" and item["lock"] for item in heavy_candidates))
         self.assertTrue(all(item.get("fresh") is True for item in heavy_candidates))
         self.assertTrue(all(item.get("authority") == "none" for item in heavy_candidates))
+        # Only checks that declare the broad bootstrap tree participate in
+        # this legacy shape assertion.  The focused project-structure gate is
+        # intentionally precise and must not inherit this broad ownership.
         stage0_clojure_checks = [
             item
             for item in manifest["checks"]
             if item["id"].startswith("stage0-")
             and item["command"]
             and item["command"][0] == "clojure"
+            and "bootstrap/gravity/**" in item["inputs"]
         ]
         self.assertTrue(stage0_clojure_checks)
         self.assertTrue(all(item.get("fresh") is True for item in stage0_clojure_checks))
         self.assertTrue(all("bin/gravity" in item["inputs"] for item in stage0_clojure_checks))
         self.assertTrue(all("bootstrap/gravity/**" in item["inputs"] for item in stage0_clojure_checks))
+        project_structure = next(
+            item
+            for item in manifest["checks"]
+            if item["id"] == "stage0-project-structure-extraction"
+        )
+        self.assertEqual(project_structure["lane"], "focused")
+        self.assertEqual(project_structure["cost"], "cheap")
+        self.assertEqual(project_structure["authority"], "none")
+        self.assertIs(project_structure["fresh"], True)
+        self.assertEqual(
+            project_structure["command"],
+            [
+                "clojure",
+                "-J-Xmx512m",
+                "-M:project-structure-test",
+                "--exact",
+                "gravity.bootstrap-test/hosted-hello-runs",
+                "--exact",
+                "gravity.bootstrap-test/reader-source-unit-identity-preserves-path-extension-and-options",
+                "--exact",
+                "gravity.bootstrap-test/reader-file-policy-rejects-extension-and-malformed-utf8",
+                "--exact",
+                "gravity.bootstrap-test/c2-reader-treats-cr-lf-and-crlf-as-line-terminators",
+                "--fail-fast",
+            ],
+        )
+        self.assertEqual(
+            project_structure["tool_inputs"],
+            [
+                "deps.edn",
+                "bootstrap/clojure/test/gravity/project_structure_test_runner.clj",
+            ],
+        )
+        runner_unit = next(
+            item
+            for item in manifest["checks"]
+            if item["id"] == "stage0-project-structure-runner-unit"
+        )
+        self.assertEqual(runner_unit["lane"], "focused")
+        self.assertEqual(runner_unit["command"], ["clojure", "-M:project-structure-runner-unit"])
+        self.assertEqual(runner_unit["depends_on"], [])
+        self.assertEqual(runner_unit["tool_inputs"], ["deps.edn"])
+        self.assertIn(
+            "bootstrap/clojure/test/gravity/project_structure_test_runner_unit.clj",
+            runner_unit["inputs"],
+        )
+        self.assertEqual(project_structure["depends_on"], ["stage0-project-structure-runner-unit"])
+        self.assertNotIn("bin/gravity", project_structure["inputs"])
+        self.assertNotIn("bootstrap/gravity/**", project_structure["inputs"])
+        self.assertNotIn("bootstrap/clojure/fixtures/**", project_structure["inputs"])
+        extracted_leaf_paths = {
+            "bootstrap/clojure/src/gravity/source_unit.clj",
+            "bootstrap/clojure/test/gravity/source_unit_test.clj",
+            "bootstrap/clojure/src/gravity/source_span.clj",
+            "bootstrap/clojure/test/gravity/source_span_test.clj",
+            "bootstrap/clojure/src/gravity/digest.clj",
+            "bootstrap/clojure/test/gravity/digest_test.clj",
+        }
+        self.assertTrue(extracted_leaf_paths <= set(project_structure["inputs"]))
+        for changed_path in sorted(extracted_leaf_paths):
+            selection = verifier.select_impacted_checks(
+                manifest,
+                ROOT,
+                changed_paths=[changed_path],
+            )
+            self.assertEqual(
+                selection["selected_ids"],
+                ["stage0-project-structure-runner-unit", "stage0-project-structure-extraction"],
+            )
+            self.assertIn("stage0-project-structure-extraction", selection["selected_ids"])
+            self.assertNotIn("stage0-clojure-suite", selection["selected_ids"])
+            self.assertNotIn("stage0-bootstrap-authority", selection["selected_ids"])
+        runner_selection = verifier.select_impacted_checks(
+            manifest,
+            ROOT,
+            changed_paths=[
+                "bootstrap/clojure/test/gravity/project_structure_test_runner_test.clj"
+            ],
+        )
+        self.assertEqual(
+            runner_selection["selected_ids"],
+            ["stage0-project-structure-runner-unit", "stage0-project-structure-extraction"],
+        )
         sh01_unit = next(item for item in manifest["checks"] if item["id"] == "stage1-sh01-unit")
         self.assertEqual(sh01_unit["lane"], "preflight")
         self.assertEqual(sh01_unit["command"], ["clojure", "-M:sh01-test"])

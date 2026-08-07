@@ -90,12 +90,29 @@ python3 tools/verify_development.py --dry-run --explain --human
 python3 tools/verify_development.py --lane preflight --lane focused --resume --human
 clojure -M:sh01-test
 clojure -M:dev-test --exact hosted-hello-runs --exact hosted-core-app-runs-user-functions-and-builtins
+clojure -M:project-structure-runner-unit
+clojure -J-Xmx512m -M:project-structure-test --exact gravity.bootstrap-test/hosted-hello-runs --exact gravity.bootstrap-test/reader-source-unit-identity-preserves-path-extension-and-options --exact gravity.bootstrap-test/reader-file-policy-rejects-extension-and-malformed-utf8 --exact gravity.bootstrap-test/c2-reader-treats-cr-lf-and-crlf-as-line-terminators --fail-fast
 ```
 
 `:sh01-test` runs its two namespaces in a fixed order, emits an explicitly
 non-authoritative EDN result, and exits nonzero on a failure or error. It does
 not run the selected self-hosting implementation namespaces or replace exact,
 iteration, authoritative, or release verification.
+
+The manifest's focused `stage0-project-structure-extraction` node is the
+one-JVM form of the final command. It runs the three extracted leaf test
+namespaces before the four compatibility vars, after the cheap runner-unit
+prerequisite, and is fresh and
+non-authoritative. Changing one of its six source-unit/source-span/digest
+leaves selects this node without selecting the broad `stage0-clojure-suite` or
+`stage0-bootstrap-authority`. The compatibility component alone was observed
+at 4 tests and 190 assertions in 51.05 seconds; the full gate's measured result
+was 19 tests and 397 assertions in 51.97 seconds with a peak resident set of
+789,315,584 bytes (about 753 MiB). These observations are not an equivalence or
+general speedup claim. The runner-unit prerequisite itself observed 9 tests and
+28 assertions in 0.62 seconds with a peak resident set of 144,703,488 bytes
+(about 138 MiB), without loading the production leaf or bootstrap test
+namespaces.
 
 The SH-01 parallel runner treats every child timeout as containment-unproven
 and stops the scheduler even without `--fail-fast`: queued and exclusive jobs

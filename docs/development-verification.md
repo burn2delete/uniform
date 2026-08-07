@@ -232,7 +232,36 @@ builders from the preflight JVM. A targeted SH-07 namespace can still trigger
 the same multi-gigabyte replay as a broad run and therefore still belongs
 behind the shared heavy-run lock.
 
-### 4. Focused namespace or cached SH-07 feedback
+### 4. Focused project-structure extraction gate
+
+Changes limited to the extracted Stage 0 source-structure leaves can use the
+manifest's `stage0-project-structure-extraction` check. It runs the three
+extracted leaf test namespaces followed by the exact four qualified bootstrap
+vars in one fresh JVM through the bounded `:project-structure-test` alias and
+`--fail-fast`, after `stage0-project-structure-runner-unit` has exercised the
+runner's own synthetic/failure/lifecycle tests:
+
+```bash
+clojure -J-Xmx512m -M:project-structure-test --exact gravity.bootstrap-test/hosted-hello-runs --exact gravity.bootstrap-test/reader-source-unit-identity-preserves-path-extension-and-options --exact gravity.bootstrap-test/reader-file-policy-rejects-extension-and-malformed-utf8 --exact gravity.bootstrap-test/c2-reader-treats-cr-lf-and-crlf-as-line-terminators --fail-fast
+```
+
+The check binds the source-unit, source-span, and digest leaves and their
+tests, the compatibility wrapper and exact legacy bootstrap test, the
+dedicated project-structure runner, `deps.edn`, and the governing architecture
+and verification contracts. The prerequisite binds and executes the runner's
+unit wrapper and test. Both checks are focused, fresh, and non-authoritative. The
+compatibility component alone was observed at 4 tests and 190 assertions in
+51.05 seconds, avoiding 467 of 471 bootstrap deftests; the full gate's measured
+test/assertion count, wall time, and memory were 19 tests and 397 assertions in
+51.97 seconds with a peak resident set of 789,315,584 bytes (about 753 MiB).
+The runner-unit prerequisite observed 9 tests and 28 assertions in 0.62 seconds
+with a peak resident set of 144,703,488 bytes (about 138 MiB), without loading
+the production leaf or bootstrap test namespaces. These are feedback rather
+than equivalence or general speedup claims. Leaf changes
+route only to this check and do not select `stage0-clojure-suite` or
+`stage0-bootstrap-authority`.
+
+### 5. Focused namespace or cached SH-07 feedback
 
 Use for a single changed test or a bounded shard. These runs are
 `non-authoritative`, even when a child process is fresh.
@@ -324,7 +353,7 @@ namespace-local cache reset by that fixture therefore does not persist across
 the batch. Cross-var acceleration must be visible in the iteration runner's
 own cache deltas; do not infer reuse merely from a test-local atom or delay.
 
-### 5. Selected fresh authoritative module
+### 6. Selected fresh authoritative module
 
 Use after a focused change passes, when the changed contract is SH-07-owned,
 or before handing a module to integration review. This is the first lane that
@@ -505,7 +534,7 @@ aggregate proof. They explicitly report `aggregate_authoritative: false` and
 `authority_scope: individual-existing-runner-outputs-only`; only the individual
 fresh runner outputs can satisfy module-scoped authoritative evidence.
 
-### 6. Full release gate
+### 7. Full release gate
 
 Run only after the candidate is stable, the selected authoritative modules
 pass, and the worktree is ready for release review. This preserves every

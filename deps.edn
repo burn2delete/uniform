@@ -17,4 +17,12 @@
 
   :dev-test
   {:extra-paths ["bootstrap/clojure/test"]
-   :main-opts ["-m" "gravity.development-test-runner"]}}}
+   :main-opts ["-m" "gravity.development-test-runner"]}
+
+  :project-structure-test
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.project-structure-test-runner"]}
+
+  :project-structure-runner-unit
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.project-structure-test-runner-unit"]}}}
