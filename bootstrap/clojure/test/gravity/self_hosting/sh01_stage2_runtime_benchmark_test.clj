@@ -14,7 +14,7 @@
     (is (false? (:authoritative? result)))
     (is (= :performance-regression-feedback (:purpose result)))
     (is (= workload-names (set (keys (:results result)))))
-    (is (= 9 (count workload-names)))
+    (is (= 10 (count workload-names)))
     (doseq [[name measurement] (:results result)]
       (is (= 1 (count (:samples-ns measurement))) name)
       (is (pos? (:median-ns measurement)) name)

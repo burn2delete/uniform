@@ -70,6 +70,87 @@
         (is (= "L2-BUILTIN-ARITY" (:id data)))
         (is (= (count arguments) (:actual-arity data)))))))
 
+(deftest interpreted-get-avoids-carrier-without-changing-observable-semantics
+  (let [invoke
+        (fn [arguments]
+          (bootstrap/p15-s23-stage2-runtime-execute-instruction
+           runtime plan {}
+           {:op :builtin-call
+            :function 'get
+            :args (literal-instructions arguments)}))]
+    (is (= 1 (invoke [{:key 1} :key])))
+    (is (= :missing (invoke [{} :key :missing])))
+    (is (nil? (invoke [{} :key])))
+    (is (nil? (invoke [{:key nil} :key :missing])))
+    (is (nil? (invoke [nil :key])))
+    (is (= :missing (invoke [nil :key :missing])))
+    (testing "wrong arities retain generic diagnostics"
+      (doseq [arguments [[] [{}] [{} :key :missing :extra]]]
+        (let [data (diagnostic #(invoke arguments))]
+          (is (= "L2-BUILTIN-ARITY" (:id data)))
+          (is (= (count arguments) (:actual-arity data))))))
+    (testing "lookup failures retain generic builtin error mapping"
+      (let [arguments [(sorted-map 1 :one) :key]
+            data (diagnostic #(invoke arguments))
+            generic-data
+            (diagnostic
+             #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+               plan 'get arguments))]
+        (is (= "L2-BUILTIN-ERROR" (:id data)))
+        (is (= 'get (:function data)))
+        (is (= generic-data data))))))
+
+(deftest interpreted-get-evaluates-arguments-left-to-right-exactly-once
+  (let [execute-value
+        (ns-resolve 'gravity.bootstrap
+                    'p15-s23-stage2-runtime-execute-value)
+        seen (atom [])
+        instruction
+        {:op :builtin-call
+         :function 'get
+         :args [{:op :literal :value {:key 1}}
+                {:op :literal :value :key}
+                {:op :literal :value :missing}]}
+        result
+        (with-redefs-fn
+          {execute-value
+           (fn [_runtime _plan _env argument reason]
+             (swap! seen conj [(:value argument) reason])
+             (:value argument))}
+          #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+            runtime plan {} instruction))]
+    (is (= 1 result))
+    (is (= [[{:key 1} :recur-inside-builtin-argument]
+            [:key :recur-inside-builtin-argument]
+            [:missing :recur-inside-builtin-argument]]
+           @seen))))
+
+(deftest interpreted-get-preserves-recur-and-exceptioninfo-boundaries
+  (let [recur-data
+        (diagnostic
+         #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+           runtime plan {}
+           {:op :builtin-call
+            :function 'get
+            :args [{:op :recur :args [{:op :literal :value {}}]}
+                   {:op :literal :value :key}]}))
+        exceptional
+        (reify clojure.lang.ILookup
+          (valAt [_ _]
+            (throw (ex-info "lookup failed" {:id "TEST-LOOKUP"})))
+          (valAt [_ _ _]
+            (throw (ex-info "lookup failed" {:id "TEST-LOOKUP"}))))
+        exception-data
+        (diagnostic
+         #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+           runtime plan {}
+           {:op :builtin-call
+            :function 'get
+            :args (literal-instructions [exceptional :key])}))]
+    (is (= "L2-RECUR-TARGET" (:id recur-data)))
+    (is (= :recur-inside-builtin-argument (:reason recur-data)))
+    (is (= "TEST-LOOKUP" (:id exception-data)))))
+
 (deftest unary-collection-instructions-preserve-values-and-arity-diagnostics
   (let [invoke
         (fn [function arguments]

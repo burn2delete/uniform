@@ -94907,6 +94907,31 @@
     3 (str (nth args 0) (nth args 1) (nth args 2))
     (apply str args)))
 
+(defn- p15-s23-stage2-runtime-fail-builtin-error!
+  [plan callee ex]
+  (fail! "L2-BUILTIN-ERROR"
+         "stage2 runtime builtin call failed"
+         {:source-span {:source (get-in plan [:source :path])}
+          :function callee
+          :cause-message (.getMessage ex)
+          :remediation "Keep builtin inputs inside the checked stage2 hosted-core runtime subset."}))
+
+(defn- p15-s23-stage2-runtime-invoke-get
+  ([plan collection key]
+   (try
+     (get collection key)
+     (catch clojure.lang.ExceptionInfo ex
+       (throw ex))
+     (catch Exception ex
+       (p15-s23-stage2-runtime-fail-builtin-error! plan 'get ex))))
+  ([plan collection key not-found]
+   (try
+     (get collection key not-found)
+     (catch clojure.lang.ExceptionInfo ex
+       (throw ex))
+     (catch Exception ex
+       (p15-s23-stage2-runtime-fail-builtin-error! plan 'get ex)))))
+
 (defn p15-s23-stage2-runtime-invoke-builtin
   [plan callee args]
   (try
@@ -95117,12 +95142,7 @@
     (catch clojure.lang.ExceptionInfo ex
       (throw ex))
     (catch Exception ex
-      (fail! "L2-BUILTIN-ERROR"
-             "stage2 runtime builtin call failed"
-             {:source-span {:source (get-in plan [:source :path])}
-              :function callee
-              :cause-message (.getMessage ex)
-              :remediation "Keep builtin inputs inside the checked stage2 hosted-core runtime subset."}))))
+      (p15-s23-stage2-runtime-fail-builtin-error! plan callee ex))))
 
 (declare p15-s23-stage2-runtime-execute-instruction)
 (declare p15-s23-stage2-runtime-execute-function)
@@ -95407,8 +95427,37 @@
       runtime plan env (:args instruction) :recur-inside-recur-argument))
     :builtin-call
     (let [function (:function instruction)
-          argument-instructions (:args instruction)]
-      (if (= 1 (count argument-instructions))
+          argument-instructions (:args instruction)
+          argument-count (count argument-instructions)]
+      (cond
+        (and (= 'get function) (= 2 argument-count))
+        (let [collection
+              (p15-s23-stage2-runtime-execute-value
+               runtime plan env (nth argument-instructions 0)
+               :recur-inside-builtin-argument)
+              key
+              (p15-s23-stage2-runtime-execute-value
+               runtime plan env (nth argument-instructions 1)
+               :recur-inside-builtin-argument)]
+          (p15-s23-stage2-runtime-invoke-get plan collection key))
+
+        (and (= 'get function) (= 3 argument-count))
+        (let [collection
+              (p15-s23-stage2-runtime-execute-value
+               runtime plan env (nth argument-instructions 0)
+               :recur-inside-builtin-argument)
+              key
+              (p15-s23-stage2-runtime-execute-value
+               runtime plan env (nth argument-instructions 1)
+               :recur-inside-builtin-argument)
+              not-found
+              (p15-s23-stage2-runtime-execute-value
+               runtime plan env (nth argument-instructions 2)
+               :recur-inside-builtin-argument)]
+          (p15-s23-stage2-runtime-invoke-get
+           plan collection key not-found))
+
+        (= 1 argument-count)
         (case function
           count
           (count
@@ -95432,6 +95481,8 @@
             :recur-inside-builtin-argument))
           (p15-s23-stage2-runtime-execute-generic-builtin-call
            runtime plan env instruction function))
+
+        :else
         (p15-s23-stage2-runtime-execute-generic-builtin-call
          runtime plan env instruction function)))
     :function-call

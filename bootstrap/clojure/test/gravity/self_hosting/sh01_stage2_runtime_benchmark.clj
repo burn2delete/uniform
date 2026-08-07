@@ -24,6 +24,12 @@
   {:op :builtin-call
    :function 'count
    :args [{:op :local :name 'values}]})
+(def ^:private lookup-environment {'record {:value 1}})
+(def ^:private get-instruction
+  {:op :builtin-call
+   :function 'get
+   :args [{:op :local :name 'record}
+          {:op :literal :value :value}]})
 (def ^:private function-plan
   {:source {:path source-path}
    :functions
@@ -53,6 +59,9 @@
    :interpreted-count
    #(bootstrap/p15-s23-stage2-runtime-execute-instruction
      runtime simple-plan collection-environment count-instruction)
+   :interpreted-get
+   #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+     runtime simple-plan lookup-environment get-instruction)
    :function-bind-two
    #(bootstrap/p15-s23-stage2-runtime-execute-function
      runtime function-plan 'identity-second [1 2])
