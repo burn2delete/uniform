@@ -10,6 +10,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.walk :as walk]
+            [gravity.c2-pass-cache :as c2-pass-cache]
             [gravity.cli :as cli]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
@@ -152578,6 +152579,353 @@
           :facts {:observed-source-byte-count observed
                   :maximum-source-bytes sh03-reader-maximum-source-bytes}}))
       (java.util.Arrays/copyOf buffer observed))))
+
+(def ^:private c2-pass-cache-compiler-contract
+  {:implementation :gravity-stage0-clojure-bootstrap
+   :implementation-contract-version 1
+   :c2-artifact-schema-version 1
+   :c2-artifact-identity-version 1
+   :canonical-reader :gravity-sh03-reader
+   :adapter-contract :gravity/sh03-to-c2-reader-products-v2
+   :clojure-adapter-residual? true
+   :self-hosted? false
+   :release-authority? false})
+
+(def ^:private c2-pass-cache-pass-contract
+  {:name :c2-reader-document-coverage
+   :input :source-bytes
+   :output :reader-document-proof
+   :requires [:source-unit :reader-policy]
+   :preserves [:source-spans :raw-literal-facts
+               :reader-origin :trivia :diagnostics]
+   :emits [:source-unit-record :token-stream :form-tree
+           :syntax-seed-stream :reader-source-map
+           :literal-decoding-records
+           :reader-extension-invocation-records
+           :reader-diagnostics :incremental-reader-hash]
+   :rejects c2-reader-diagnostic-ids})
+
+(def ^:private c2-pass-cache-boundary-contract
+  {:slice :SH-03
+   :owner :gravity-source
+   :adapter-contract :gravity/sh03-to-c2-reader-products-v2
+   :plan-binding-contract :exact-current-sh03-plan-binding
+   :semantic-value-table-contract
+   :authenticated-reader-product-identity-projection
+   :authenticated-envelope-contract
+   {:stage :c2-reader
+    :artifact-kind :gravity/sh03-reader-products
+    :verification :fresh-sh02-descriptor-envelope-reconstruction}
+   :target-source-reread? false
+   :uncredited-source-models
+   {:status :not-executed
+    :entrypoints sh03-reader-uncredited-source-model-entrypoints
+    :self-hosting-credit? false
+    :seed-retirement-credit? false
+    :release-credit? false}
+   :clojure-adapter-residual? true
+   :self-hosted? false})
+
+(def ^:private c2-pass-cache-sh03-semantic-binding-fields
+  [:artifact :status :semantic-authority :compiled-by :executed-by
+   :generic-bridge-residual? :self-hosted?
+   :source-byte-count :source-content-hash :plan-id
+   :plan-semantic-hash :functions-semantic-hash :function-count
+   :function-names-hash :function-shapes-hash
+   :entrypoint-semantic-hash :verifier-semantic-hash
+   :builtin-functions-hash :instruction-summary])
+
+(defn- c2-pass-cache-current-binding!
+  [source-path]
+  (let [exact-sh03-binding
+        (dissoc (sh03-reader-current-binding! source-path) :plan)
+        sh03-semantic-binding
+        (select-keys exact-sh03-binding
+                     c2-pass-cache-sh03-semantic-binding-fields)
+        sh03-binding-id
+        (c2-pass-cache/canonical-content-id
+         {:domain :gravity/c2-pass-cache-sh03-binding-v1
+          :binding sh03-semantic-binding})
+        compiler-input
+        (assoc c2-pass-cache-compiler-contract
+               :sh03-binding-id sh03-binding-id
+               :sh03-binding sh03-semantic-binding)
+        compiler-id
+        (c2-pass-cache/canonical-content-id
+         {:domain :gravity/c2-pass-cache-compiler-binding-v1
+          :compiler compiler-input})
+        pass-contract-id
+        (c2-pass-cache/canonical-content-id
+         {:domain :gravity/c2-pass-cache-pass-contract-v1
+          :pass c2-pass-cache-pass-contract})
+        plan-binding-id
+        (c2-pass-cache/canonical-content-id
+         {:domain :gravity/c2-pass-cache-exact-sh03-plan-binding-v1
+          :binding exact-sh03-binding})
+        semantic-value-table-contract-id
+        (c2-pass-cache/canonical-content-id
+         {:domain :gravity/c2-pass-cache-semantic-value-table-contract-v1
+          :contract
+          (:semantic-value-table-contract c2-pass-cache-boundary-contract)})
+        authenticated-envelope-contract-id
+        (c2-pass-cache/canonical-content-id
+         {:domain :gravity/c2-pass-cache-authenticated-envelope-contract-v1
+          :contract
+          (:authenticated-envelope-contract c2-pass-cache-boundary-contract)})
+        boundary-binding-base
+        (assoc c2-pass-cache-boundary-contract
+               :plan-binding-id plan-binding-id
+               :semantic-value-table-contract-id
+               semantic-value-table-contract-id
+               :authenticated-envelope-contract-id
+               authenticated-envelope-contract-id)
+        boundary-binding
+        (assoc boundary-binding-base
+               :identity
+               (c2-pass-cache/canonical-content-id
+                {:domain :gravity/c2-pass-cache-boundary-binding-v1
+                 :binding boundary-binding-base}))
+        compiler-binding (assoc compiler-input :compiler-id compiler-id)
+        pass-binding {:pass :c2-reader
+                      :pass-contract c2-pass-cache-pass-contract
+                      :pass-contract-id pass-contract-id}
+        entry-binding
+        {:artifact :gravity/c2-pass-cache-producer-binding
+         :schema-version 1
+         :compiler-id compiler-id
+         :pass-contract-id pass-contract-id
+         :sh03-binding-id sh03-binding-id
+         :boundary-binding-id (:identity boundary-binding)
+         :exact-sh03-plan-binding exact-sh03-binding
+         :adapter-contract :gravity/sh03-to-c2-reader-products-v2
+         :clojure-adapter-residual? true
+         :self-hosted? false
+         :release-authority? false}]
+    {:compiler-binding compiler-binding
+     :pass-binding pass-binding
+     :boundary-binding boundary-binding
+     :entry-binding entry-binding
+     :exact-sh03-binding exact-sh03-binding}))
+
+(defn- c2-pass-cache-key-context!
+  [source-path snapshot current-binding]
+  (let [source-bytes (:bytes snapshot)
+        source-text
+        (sh03-reader-strict-source-text! source-path source-path source-bytes)
+        project-context (reader-project-context-for-source source-path)
+        source-unit (c2-source-unit-record source-path source-text
+                                           standard-reader-options
+                                           project-context)
+        dependency-binding
+        {:dependencies :not-consumed-at-c2
+         :project-root-id (:project-root-id project-context)
+         :identity
+         (c2-pass-cache/canonical-content-id
+          {:domain :gravity/c2-pass-cache-dependency-binding-v1
+           :stage :c2-reader
+           :project-root-id (:project-root-id project-context)
+           :dependencies :not-consumed-at-c2})}
+        build-effect-input
+        {:ambient-authority :denied
+         :registered-tags (:registered-tags standard-reader-policy)
+         :build-effects #{}}
+        build-effect-binding
+        (assoc build-effect-input
+               :identity
+               (c2-pass-cache/canonical-content-id
+                {:domain :gravity/c2-pass-cache-build-effect-binding-v1
+                 :binding build-effect-input}))
+        capability-input {:capabilities #{}
+                          :ambient-authority :denied}
+        capability-binding
+        (assoc capability-input
+               :identity
+               (c2-pass-cache/canonical-content-id
+                {:domain :gravity/c2-pass-cache-capability-binding-v1
+                 :binding capability-input}))
+        facet-input {:facets (:enabled-features standard-reader-options)}
+        facet-binding
+        (assoc facet-input
+               :identity
+               (c2-pass-cache/canonical-content-id
+                {:domain :gravity/c2-pass-cache-facet-binding-v1
+                 :binding facet-input}))
+        key
+        (c2-pass-cache/cache-key
+         {:source-unit
+          (select-keys source-unit
+                       [:source-id :bytes-hash :reader-options
+                        :identity-inputs])
+          :source-snapshot
+          (select-keys snapshot
+                       [:artifact :schema-version :byte-count :bytes-hash
+                        :maximum-source-bytes])
+          :reader-policy
+          {:reader-options standard-reader-options
+           :extension-policy (:extension-policy standard-reader-options)
+           :standard-reader-policy-id
+           (reader-canonical-hash standard-reader-policy)}
+          :project-binding
+          {:project-root-id (:project-root-id project-context)
+           :project-relative-path (:project-relative-path project-context)}
+          :compiler-binding (:compiler-binding current-binding)
+          :pass-binding (:pass-binding current-binding)
+          :dependency-binding dependency-binding
+          :build-effect-binding build-effect-binding
+          :capability-binding capability-binding
+          :facet-binding facet-binding
+          :profile-binding {:applicability :not-applicable-at-c2}
+          :target-binding {:applicability :not-applicable-at-c2}
+          :boundary-binding (:boundary-binding current-binding)
+          :path-provenance
+          {:canonical-path (:canonical-path snapshot)
+           :supplied-path (str source-path)}})]
+    {:key key
+     :source-text source-text
+     :source-unit source-unit
+    :project-context project-context}))
+
+(defn- c2-pass-cache-boundary-projection-id
+  [artifact]
+  (c2-pass-cache/canonical-content-id
+   {:domain :gravity/c2-pass-cache-artifact-boundary-projection-v1
+    :gravity-reader-boundary (:gravity-reader-boundary artifact)}))
+
+(defn- c2-pass-cache-revalidate-artifact!
+  [source-path source-text expected-source-unit current-binding
+   artifact entry key]
+  (let [source-unit (:source-unit-record artifact)
+        token-stream (:token-stream artifact)
+        form-tree (:form-tree artifact)
+        syntax-seeds (:syntax-seed-stream artifact)
+        extension-invocations
+        (:reader-extension-invocation-records artifact)
+        diagnostics (:reader-diagnostics artifact)
+        incremental-hashes
+        (c2-incremental-hashes source-unit token-stream form-tree syntax-seeds
+                               extension-invocations diagnostics)
+        integrity-record
+        (c2-reader-product-integrity-record
+         source-unit (:top-level-form-ids artifact) incremental-hashes
+         (:literal-decoding-records artifact)
+         (get-in artifact
+                 [:semantic-error-deferment-record
+                  :deferred-literal-records]))
+        artifact-id (c2-reader-artifact-id artifact)
+        reconstructed-source
+        (c2-reader-artifact-source-text source-path artifact)
+        accepted-reader-boundary
+        (:gravity-reader-boundary artifact)
+        envelope-descriptor
+        (:authenticated-envelope-descriptor accepted-reader-boundary)
+        envelope (:authenticated-envelope accepted-reader-boundary)
+        descriptor-summary
+        (:value
+         (some #(when (= :reader-product-identities (:name %)) %)
+               (:semantic-projections envelope-descriptor)))
+        expected-uncredited
+        (:uncredited-source-models c2-pass-cache-boundary-contract)
+        boundary-projection-id
+        (c2-pass-cache-boundary-projection-id artifact)]
+    (p15-s23-stage2-sh02-descriptor-envelope-verify!
+     envelope :c2-reader :gravity/sh03-reader-products
+     envelope-descriptor source-path)
+    (when-not
+     (and (= :gravity/stage0-c2-reader-document-artifact (:kind artifact))
+          (= "P06-D081" (:task artifact))
+          (= ["C2"] (:document-set artifact))
+          (= c2-pass-cache-pass-contract (:pass artifact))
+          (= expected-source-unit source-unit)
+          (= source-text reconstructed-source)
+          (= (get-in key [:semantic-preimage :source-unit :source-id])
+             (:source-id source-unit))
+          (= :gravity/sh03-to-c2-reader-products-v2
+             (:adapter-contract accepted-reader-boundary))
+          (= #{:slice :owner :plan-binding :resolved-reader-result
+               :adapter-contract :uncredited-source-models
+               :semantic-value-table-id
+               :authenticated-envelope-descriptor
+               :authenticated-envelope :target-source-reread?
+               :clojure-adapter-residual? :self-hosted?}
+             (set (keys accepted-reader-boundary)))
+          (= :SH-03 (:slice accepted-reader-boundary))
+          (= :gravity-source (:owner accepted-reader-boundary))
+          (= (:exact-sh03-binding current-binding)
+             (:plan-binding accepted-reader-boundary))
+          (= (get-in current-binding [:boundary-binding :plan-binding-id])
+             (c2-pass-cache/canonical-content-id
+              {:domain :gravity/c2-pass-cache-exact-sh03-plan-binding-v1
+               :binding (:plan-binding accepted-reader-boundary)}))
+          (= :accepted
+             (get-in accepted-reader-boundary
+                     [:resolved-reader-result :status]))
+          (= expected-uncredited
+             (:uncredited-source-models accepted-reader-boundary))
+          (= (:semantic-value-table-id descriptor-summary)
+             (:semantic-value-table-id accepted-reader-boundary))
+          (false? (:target-source-reread? accepted-reader-boundary))
+          (true? (:clojure-adapter-residual? accepted-reader-boundary))
+          (false? (:self-hosted? accepted-reader-boundary))
+          (empty? diagnostics)
+          (empty? (:diagnostics artifact))
+          (= incremental-hashes (:incremental-reader-hashes artifact))
+          (= integrity-record (:reader-product-integrity artifact))
+          (= artifact-id (:artifact-id artifact))
+          (or (nil? entry)
+              (and (= boundary-projection-id
+                      (:boundary-projection-id entry))
+                   (= (get-in incremental-hashes [:reader-diagnostics])
+                      (:diagnostics entry)))))
+      (throw
+       (ex-info
+        "cached C2 artifact failed current compiler/pass/SH03 revalidation"
+        {:id "C16-STALE"
+         :stage :c2-reader
+         :artifact-id (:artifact-id artifact)
+         :cache-key (:semantic-key-id key)
+         :release-authority? false
+         :self-hosted? false})))
+    (c2-reader-validate! source-path artifact)
+    artifact))
+
+(defn compiler-c2-reader-file-artifact-cached
+  "Opt in to the local persistent C2 pass cache for one source file.
+
+  The existing `compiler-c2-reader-file-artifact` path remains the default.
+  This function returns an operational envelope containing the unchanged C2
+  artifact and explicit hit/miss evidence.  A validated hit does not execute
+  the target reader.  This local cache has no release, proof, equivalence, or
+  self-hosting authority."
+  [path cache-base]
+  (let [snapshot (c2-pass-cache/bounded-source-snapshot!
+                  path sh03-reader-maximum-source-bytes)
+        current-binding (c2-pass-cache-current-binding! path)
+        {:keys [key source-text source-unit]}
+        (c2-pass-cache-key-context! path snapshot current-binding)
+        store (c2-pass-cache/open-local-store cache-base)
+        result
+        (c2-pass-cache/lookup-or-compute!
+         store key
+         {:current-binding (:entry-binding current-binding)
+          :artifact-id-of c2-reader-artifact-id
+          :boundary-projection-id-of
+          c2-pass-cache-boundary-projection-id
+          :validate-artifact!
+          (fn [artifact entry cache-key]
+            (c2-pass-cache-revalidate-artifact!
+             path source-text source-unit current-binding
+             artifact entry cache-key))
+          :compute! #(compiler-c2-reader-file-artifact path)})]
+    {:kind :gravity/local-c2-pass-cache-result
+     :stage :c2-reader
+     :c2-reader-artifact (:artifact result)
+     :cache-evidence (:cache-evidence result)
+     :cache-contract (c2-pass-cache/cache-contract)
+     :clojure-adapter-residual? true
+     :self-hosted? false
+     :release-authority? false
+     :proof-authority? false
+     :equivalence-authority? false}))
 
 (defn compiler-c2-reader-file-artifact
   [path]
