@@ -8,6 +8,7 @@
             [gravity.c3-literal-projection :as c3-literal-projection]
             [gravity.c3-syntax-construction :as c3-syntax-construction]
             [gravity.c3-syntax-evidence :as c3-syntax-evidence]
+            [gravity.c3-syntax-verification :as c3-syntax-verification]
             [gravity.c4-macro-evidence :as c4-macro-evidence]
             [gravity.c6-core-lowering :as c6]
             [gravity.c7-type-checker :as c7]
@@ -10326,6 +10327,112 @@
              (:path-neutral
               (:span (bootstrap/c3-identity-input
                       seed [] {} {} :list))))))))
+
+(deftest c3-syntax-verification-compatibility-wrappers-preserve-interposition
+  (let [stream [{:syntax/id "sha256:compatibility"
+                 :form {:kind :symbol}
+                 :span {:primary {:source "compatibility.gravity"
+                                  :byte-start 0
+                                  :byte-end 1}}
+                 :source {}
+                 :namespace {}
+                 :phase :read
+                 :profile :hosted
+                 :metadata {}
+                 :hygiene {}
+                 :origin [{:kind :source}]
+                 :facts {}
+                 :reader-binding {}
+                 :reader-source-revision "sha256:reader"
+                 :ownership {}
+                 :version 1
+                 :prior-syntax-ids []
+                 :immutable? true}]
+        serialization (bootstrap/c3-syntax-serialization-fixture stream)
+        operations
+        {:c3-syntax-schema bootstrap/c3-syntax-schema
+         :c3-resolvable-span? bootstrap/c3-resolvable-span?
+         :c3-syntax-serialization-fixture
+         bootstrap/c3-syntax-serialization-fixture
+         :c3-syntax-stream-reader-products-authentic?
+         bootstrap/c3-syntax-stream-reader-products-authentic?
+         :c3-syntax-verification-report
+         bootstrap/c3-syntax-verification-report
+         :c3-syntax-capability-proof bootstrap/c3-syntax-capability-proof
+         :c3-syntax-validate! bootstrap/c3-syntax-validate!
+         :c3-syntax-fail! bootstrap/c3-syntax-fail!
+         :c3-syntax-diagnostic-ids bootstrap/c3-syntax-diagnostic-ids}]
+    (is (= '([syntax-stream serialization]
+             [syntax-stream serialization c2-artifact]
+             [syntax-stream serialization c2-artifact gravity-boundary])
+           (:arglists (meta #'bootstrap/c3-syntax-verification-report))))
+    (is (= '([artifact])
+           (:arglists (meta #'bootstrap/c3-syntax-capability-proof))))
+    (is (= '([source-path artifact])
+           (:arglists (meta #'bootstrap/c3-syntax-validate!))))
+    (is (= (c3-syntax-verification/with-operations
+            operations
+            #(c3-syntax-verification/c3-syntax-verification-report
+              stream serialization))
+           (bootstrap/c3-syntax-verification-report stream serialization)))
+    (let [calls (atom [])
+          interposed-serialization {:roundtrip? true :sentinel :serialization}]
+      (with-redefs [bootstrap/c3-syntax-schema
+                    (fn []
+                      (swap! calls conj :schema)
+                      {:required-fields [:sentinel]})
+                    bootstrap/c3-resolvable-span?
+                    (fn [_] (swap! calls conj :span) true)
+                    bootstrap/c3-syntax-serialization-fixture
+                    (fn [_]
+                      (swap! calls conj :serialization)
+                      interposed-serialization)
+                    bootstrap/c3-syntax-stream-reader-products-authentic?
+                    (fn [& _] (swap! calls conj :authentication) true)]
+        (let [report
+              (bootstrap/c3-syntax-verification-report
+               [{:sentinel true
+                 :form {:kind :symbol}
+                 :span :interposed
+                 :hygiene {}
+                 :metadata {}
+                 :namespace {}
+                 :phase :read}]
+               interposed-serialization
+               {:artifact-id :c2}
+               {:slice :SH-04})]
+          (is (= :passed (:status report)))
+          (is (= #{:schema :span :serialization :authentication}
+                 (set @calls)))))
+      (reset! calls [])
+      (let [complete-proof
+            (zipmap [:construction-from-reader-seeds?
+                     :stable-syntax-ids?
+                     :source-and-generated-origins?
+                     :hygiene-propagated?
+                     :intentional-capture-recorded?
+                     :metadata-preservation-and-change?
+                     :fact-invalidation-recorded?
+                     :serialization-round-trips?
+                     :reader-products-authentic?
+                     :syntax-verifier-current?
+                     :syntax-verifier-passed?
+                     :gravity-authoritative-products-current?
+                     :diagnostics-covered?]
+                    (repeat true))]
+        (with-redefs [bootstrap/c3-syntax-capability-proof
+                      (fn [_]
+                        (assoc complete-proof :stable-syntax-ids? false))
+                      bootstrap/c3-syntax-fail!
+                      (fn [& args] (swap! calls conj args))]
+          (is (= :complete
+                 (bootstrap/c3-syntax-validate!
+                  "compatibility.gravity" {})))
+          (is (= [["C3-ID"
+                   "compatibility.gravity"
+                   {:stage :syntax-object-model}
+                   {:missing-fields [:stable-syntax-ids?]}]]
+                 @calls)))))))
 
 (deftest c3-literal-projection-compatibility-wrappers-preserve-interposition
   (let [span {:source "ratio.gravity" :byte-start 0 :byte-end 3}

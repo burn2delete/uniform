@@ -15,6 +15,7 @@
             [gravity.c3-literal-projection :as c3-literal-projection]
             [gravity.c3-syntax-construction :as c3-syntax-construction]
             [gravity.c3-syntax-evidence :as c3-syntax-evidence]
+            [gravity.c3-syntax-verification :as c3-syntax-verification]
             [gravity.c4-macro-evidence :as c4-macro-evidence]
             [gravity.cli :as cli]
             [gravity.c5-name-resolution :as c5]
@@ -146986,153 +146987,57 @@
      (catch StackOverflowError _ false)
      (catch Exception _ false))))
 
+(declare c3-syntax-verification-report
+         c3-syntax-capability-proof
+         c3-syntax-validate!)
+
+(defn- c3-syntax-verification-ops
+  []
+  {:c3-syntax-schema c3-syntax-schema
+   :c3-resolvable-span? c3-resolvable-span?
+   :c3-syntax-serialization-fixture c3-syntax-serialization-fixture
+   :c3-syntax-stream-reader-products-authentic?
+   c3-syntax-stream-reader-products-authentic?
+   :c3-syntax-verification-report c3-syntax-verification-report
+   :c3-syntax-capability-proof c3-syntax-capability-proof
+   :c3-syntax-validate! c3-syntax-validate!
+   :c3-syntax-fail! c3-syntax-fail!
+   :c3-syntax-diagnostic-ids c3-syntax-diagnostic-ids})
+
+(def ^:private ^:dynamic *c3-syntax-verification-leaf-call?* false)
+
+(defn- c3-syntax-verification-call
+  [operation & args]
+  (if *c3-syntax-verification-leaf-call?*
+    (apply operation args)
+    (binding [*c3-syntax-verification-leaf-call?* true]
+      (c3-syntax-verification/with-operations
+       (c3-syntax-verification-ops)
+       #(apply operation args)))))
+
 (defn c3-syntax-verification-report
   ([syntax-stream serialization]
-   (c3-syntax-verification-report syntax-stream serialization nil))
+   (c3-syntax-verification-call
+    c3-syntax-verification/c3-syntax-verification-report
+    syntax-stream serialization))
   ([syntax-stream serialization c2-artifact]
-   (c3-syntax-verification-report
-    syntax-stream serialization c2-artifact nil))
+   (c3-syntax-verification-call
+    c3-syntax-verification/c3-syntax-verification-report
+    syntax-stream serialization c2-artifact))
   ([syntax-stream serialization c2-artifact gravity-boundary]
-   (let [required-fields (set (:required-fields (c3-syntax-schema)))
-         checks
-         {:required-fields-present?
-          (every? #(set/subset? required-fields (set (keys %)))
-                  syntax-stream)
-          :source-spans-resolve?
-          (every? #(c3-resolvable-span? (:span %)) syntax-stream)
-          :generated-origins-valid?
-          (every? #(and (get-in % [:origin 0 :producer])
-                        (seq (or (get-in %
-                                         [:origin 0 :input-syntax-ids])
-                                 (get-in % [:origin 0 :inputs])))
-                        (or (get-in % [:origin 0 :span])
-                            (get-in %
-                                    [:origin 0 :generated-span])))
-                  (filter #(= :generated-form (get-in % [:form :kind]))
-                          syntax-stream))
-          :hygiene-visible? (every? #(map? (:hygiene %)) syntax-stream)
-          :metadata-valid? (every? #(map? (:metadata %)) syntax-stream)
-          :namespace-context-valid?
-          (every? #(map? (:namespace %)) syntax-stream)
-          :phase-transitions-allowed?
-          (every? #{:read :macro-expanded} (map :phase syntax-stream))
-          :serialization-round-trips? (true? (:roundtrip? serialization))
-          :serialization-current?
-          (= serialization (c3-syntax-serialization-fixture syntax-stream))
-          :reader-products-authentic?
-          (if c2-artifact
-            (c3-syntax-stream-reader-products-authentic?
-             syntax-stream c2-artifact gravity-boundary)
-            true)}]
-     (assoc checks
-            :artifact :gravity/syntax-verification-report
-            :status (if (every? true? (vals checks)) :passed :failed)))))
+   (c3-syntax-verification-call
+    c3-syntax-verification/c3-syntax-verification-report
+    syntax-stream serialization c2-artifact gravity-boundary)))
 
 (defn c3-syntax-capability-proof
   [artifact]
-  (let [syntax-stream (:syntax-object-stream artifact)
-        source-syntax (remove #(= :generated-form (get-in % [:form :kind]))
-                              syntax-stream)
-        diagnostics (set (map :diagnostic (:rejected-design-coverage artifact)))
-        metadata-ledger (:metadata-ledger artifact)
-        expected-metadata-syntax-ids
-        (set (map :syntax/id (filter #(seq (:metadata %)) source-syntax)))
-        recorded-metadata-syntax-ids
-        (set (map :syntax-id (:source-metadata metadata-ledger)))
-        fact-ledger (:fact-ledger artifact)
-        serialization (:syntax-serialization-fixture artifact)
-        fresh-serialization (c3-syntax-serialization-fixture syntax-stream)
-        generated-report (:generated-syntax-report artifact)
-        verifier (:syntax-verification-report artifact)
-        gravity-result
-        (get-in artifact
-                [:gravity-syntax-boundary :resolved-syntax-result])
-        gravity-ownership (:gravity-syntax-ownership-product artifact)
-        fresh-verifier
-        (c3-syntax-verification-report syntax-stream fresh-serialization
-                                       (:c2-reader-artifact artifact)
-                                       (:gravity-syntax-boundary artifact))
-        checks
-        {:construction-from-reader-seeds?
-     (boolean (and (seq syntax-stream)
-                   (= (inc (count (:syntax-seed-stream (:c2-reader-artifact
-                                                        artifact))))
-                      (count syntax-stream))))
-     :stable-syntax-ids?
-     (boolean (and (every? #(re-find #"^sha256:" (:syntax/id %))
-                           syntax-stream)
-                   (= (count syntax-stream)
-                      (count (set (map :syntax/id syntax-stream))))))
-     :source-and-generated-origins?
-     (boolean (and (every? #(some (comp #{:source} :kind) (:origin %))
-                           (remove #(= :generated-form (get-in % [:form :kind]))
-                                   syntax-stream))
-                   (seq (:generated generated-report))))
-     :hygiene-propagated?
-     (boolean (and (= :complete (get-in artifact [:hygiene-context-map
-                                                 :status]))
-                   (some #(seq (get-in % [:hygiene :marks]))
-                         syntax-stream)))
-     :intentional-capture-recorded?
-     (boolean (some #(seq (get-in % [:hygiene :captures])) syntax-stream))
-     :capture-rejection-covered?
-     (contains? diagnostics "C3-CAPTURE")
-     :metadata-preservation-and-change?
-     (boolean (and (= expected-metadata-syntax-ids
-                      recorded-metadata-syntax-ids)
-                   (seq (:explicit-changes metadata-ledger))))
-     :fact-invalidation-recorded?
-     (boolean (and (seq (:attached fact-ledger))
-                   (seq (:invalidated fact-ledger))))
-     :serialization-round-trips?
-     (and (true? (:roundtrip? serialization))
-          (= serialization fresh-serialization))
-     :reader-products-authentic?
-     (true? (:reader-products-authentic? fresh-verifier))
-     :syntax-verifier-current? (= verifier fresh-verifier)
-     :syntax-verifier-passed? (= :passed (:status fresh-verifier))
-     :gravity-authoritative-products-current?
-     (boolean
-      (and (= (:gravity-hygiene-context-map artifact)
-              (:hygiene-context-map gravity-result))
-           (= (:gravity-metadata-ledger artifact)
-              (:metadata-ledger gravity-result))
-           (= (:gravity-fact-invalidation-ledger artifact)
-              (:fact-invalidation-ledger gravity-result))
-           (= (:gravity-origin-chain-graph artifact)
-              (:origin-chain-graph gravity-result))
-           (= gravity-ownership (:ownership-product gravity-result))
-           (= :gravity-source (:owner gravity-ownership))
-           (= 'gravity.bootstrap.syntax (:module gravity-ownership))
-           (= (mapv :ownership (:syntax-object-stream gravity-result))
-              (:syntax-ownership gravity-ownership))))
-     :diagnostics-covered?
-     (= (set c3-syntax-diagnostic-ids) diagnostics)}]
-    (assoc checks :status (if (every? true? (vals checks))
-                            :complete
-                            :failed))))
+  (c3-syntax-verification-call
+   c3-syntax-verification/c3-syntax-capability-proof artifact))
 
 (defn c3-syntax-validate!
   [source-path artifact]
-  (let [proof (c3-syntax-capability-proof artifact)]
-    (doseq [[field id] [[:construction-from-reader-seeds? "C3-SHAPE"]
-                        [:stable-syntax-ids? "C3-ID"]
-                        [:source-and-generated-origins? "C3-ORIGIN"]
-                        [:hygiene-propagated? "C3-HYGIENE"]
-                        [:intentional-capture-recorded? "C3-CAPTURE"]
-                        [:metadata-preservation-and-change? "C3-METADATA"]
-                        [:fact-invalidation-recorded? "C3-FACT-STALE"]
-                        [:serialization-round-trips? "C3-SERIALIZE"]
-                        [:reader-products-authentic? "C3-FACT-STALE"]
-                        [:syntax-verifier-current? "C3-FACT-STALE"]
-                        [:syntax-verifier-passed? "C3-SHAPE"]
-                        [:gravity-authoritative-products-current?
-                         "C3-FACT-STALE"]
-                        [:diagnostics-covered? "C3-SHAPE"]]]
-      (when-not (get proof field)
-        (c3-syntax-fail! id source-path {:stage :syntax-object-model}
-                         {:missing-fields [field]}))))
-  :complete)
+  (c3-syntax-verification-call
+   c3-syntax-verification/c3-syntax-validate! source-path artifact))
 
 (defn sh04-syntax-registered-literal-fail!
   [source-path form-record missing-fields facts]
