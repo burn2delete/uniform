@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
             [gravity.c3-syntax-evidence :as c3-syntax-evidence]
+            [gravity.c4-macro-evidence :as c4-macro-evidence]
             [gravity.c6-core-lowering :as c6]
             [gravity.c7-type-checker :as c7]
             [gravity.c8-effect-checker :as c8]
@@ -10241,6 +10242,85 @@
     (with-redefs [bootstrap/c3-required-form-kinds [:interposed-kind]]
       (is (= [:interposed-kind]
              (:form-kinds (bootstrap/c3-syntax-schema)))))))
+
+(deftest c4-macro-evidence-compatibility-wrappers-preserve-output-and-interposition
+  (let [entry {:identity 'compat/macro
+               :version "sha256:version"
+               :macro-namespace 'compat
+               :params ['form]
+               :source-span {:form-index 1}
+               :build-effects #{}
+               :required-build-capabilities #{}}
+        macro-artifact
+        {:macro-namespace-entries [entry]
+         :expanded-syntax-object-stream
+         [{:syntax-id :expanded :form '(compat/macro x) :phase :expanded}]
+         :macro-expansion-trace
+         [{:macro 'compat/macro
+           :macro-version "sha256:version"
+           :input-syntax-id :input
+           :output-hash "sha256:output"
+           :hygiene-policy :hygienic
+           :build-effects #{} }]}
+        module {:module 'compat.core :profile :hosted :target :jvm}
+        c3-artifact {:syntax-object-stream [{:syntax/id :root}]}
+        environment (bootstrap/c4-macro-environment macro-artifact)
+        input (bootstrap/c4-expansion-input module c3-artifact macro-artifact)
+        expanded (bootstrap/c4-expanded-syntax-stream macro-artifact)
+        trace (bootstrap/c4-trace-records macro-artifact)
+        declarations (bootstrap/c4-macro-safety-declarations environment)
+        cache-key (bootstrap/c4-expansion-cache-key input trace)]
+    (doseq [[wrapper-var expected]
+            [[#'bootstrap/c4-macro-environment '([macro-artifact])]
+             [#'bootstrap/c4-expansion-input
+              '([module c3-artifact macro-artifact])]
+             [#'bootstrap/c4-expanded-syntax-stream '([macro-artifact])]
+             [#'bootstrap/c4-trace-records '([macro-artifact])]
+             [#'bootstrap/c4-hygiene-capture-records '([trace-records])]
+             [#'bootstrap/c4-build-effect-log '([module trace-records])]
+             [#'bootstrap/c4-macro-safety-declarations
+              '([macro-environment])]
+             [#'bootstrap/c4-generated-origin-source-map
+              '([trace-records expanded-stream])]
+             [#'bootstrap/c4-expansion-cache-key
+              '([expansion-input trace-records])]
+             [#'bootstrap/c4-trace-replay-report
+              '([trace-records cache-key])]
+             [#'bootstrap/c4-macro-safety-report
+              '([trace-records safety-declarations])]]]
+      (is (= expected (:arglists (meta wrapper-var)))))
+    (is (= (c4-macro-evidence/c4-trace-records macro-artifact) trace))
+    (is (= (c4-macro-evidence/c4-hygiene-capture-records trace)
+           (bootstrap/c4-hygiene-capture-records trace)))
+    (is (= (c4-macro-evidence/c4-build-effect-log module trace)
+           (bootstrap/c4-build-effect-log module trace)))
+    (is (= (c4-macro-evidence/c4-macro-safety-declarations environment)
+           declarations))
+    (is (= (c4-macro-evidence/c4-generated-origin-source-map trace expanded)
+           (bootstrap/c4-generated-origin-source-map trace expanded)))
+    (is (= (c4-macro-evidence/c4-trace-replay-report trace cache-key)
+           (bootstrap/c4-trace-replay-report trace cache-key)))
+    (is (= (c4-macro-evidence/c4-macro-safety-report trace declarations)
+           (bootstrap/c4-macro-safety-report trace declarations)))
+    (with-redefs [bootstrap/sha256-hex (constantly "interposed-hash")
+                  bootstrap/c4-artifact-id (constantly "artifact:interposed")
+                  bootstrap/max-macro-expansion-depth 41]
+      (is (= ["sha256:interposed-hash"]
+             (:dependency-hashes
+              (bootstrap/c4-macro-environment macro-artifact))))
+      (is (= "sha256:interposed-hash"
+             (:expanded-syntax-id
+              (first (bootstrap/c4-expanded-syntax-stream macro-artifact)))))
+      (is (= "sha256:interposed-hash"
+             (:hash (bootstrap/c4-expansion-cache-key input trace))))
+      (is (= "artifact:interposed"
+             (:macro-environment
+              (bootstrap/c4-expansion-input
+               module c3-artifact macro-artifact))))
+      (is (= 41
+             (get-in (bootstrap/c4-expansion-input
+                      module c3-artifact macro-artifact)
+                     [:limits :depth]))))))
 
 (defn- absolute-test-classpath
   []

@@ -12,6 +12,7 @@
             [clojure.walk :as walk]
             [gravity.c2-pass-cache :as c2-pass-cache]
             [gravity.c3-syntax-evidence :as c3-syntax-evidence]
+            [gravity.c4-macro-evidence :as c4-macro-evidence]
             [gravity.cli :as cli]
             [gravity.c5-name-resolution :as c5]
             [gravity.c6-core-lowering :as c6]
@@ -1124,201 +1125,55 @@
 
 (defn c4-macro-environment
   [macro-artifact]
-  (let [entries (:macro-namespace-entries macro-artifact)]
-    {:artifact :gravity/macro-environment
-     :macro-vars (mapv (fn [entry]
-                         {:macro (:identity entry)
-                          :version (:version entry)
-                          :namespace (:macro-namespace entry)
-                          :api (:params entry)
-                          :safety-declaration
-                          {:generates-unsafe
-                           (str/includes? (str (:identity entry)) "unsafe")
-                           :preserves-taint true}
-                          :build-effects (:build-effects entry)
-                          :required-build-capabilities
-                          (:required-build-capabilities entry)})
-                       entries)
-     :dependency-hashes [(str "sha256:" (sha256-hex (pr-str entries)))]
-     :status :complete}))
+  (c4-macro-evidence/c4-macro-environment
+   macro-artifact {:sha256-hex sha256-hex}))
 
 (defn c4-expansion-input
   [module c3-artifact macro-artifact]
-  {:artifact :gravity/macro-expansion-input
-   :module (:module module)
-   :syntax-root (get-in c3-artifact [:syntax-object-stream 0 :syntax/id])
-   :namespace (:module module)
-   :profile (:profile module)
-   :target (:target module)
-   :macro-environment (c4-artifact-id
-                       (:macro-namespace-entries macro-artifact))
-   :build-grants (get-in module [:metadata :build-grants] #{})
-   :hermetic true
-   :limits {:depth max-macro-expansion-depth
-            :nodes 100000
-            :time-ms 5000}})
+  (c4-macro-evidence/c4-expansion-input
+   module c3-artifact macro-artifact
+   {:artifact-id-of c4-artifact-id
+    :max-macro-expansion-depth max-macro-expansion-depth}))
 
 (defn c4-expanded-syntax-stream
   [macro-artifact]
-  (mapv (fn [syntax]
-          (assoc syntax
-                 :artifact :gravity/expanded-syntax-object
-                 :expanded-syntax-id
-                 (str "sha256:" (sha256-hex
-                                  (pr-str (select-keys syntax
-                                                       [:syntax-id :form
-                                                        :phase
-                                                        :generated-origin]))))))
-        (:expanded-syntax-object-stream macro-artifact)))
+  (c4-macro-evidence/c4-expanded-syntax-stream
+   macro-artifact {:sha256-hex sha256-hex}))
 
 (defn c4-trace-records
   [macro-artifact]
-  (let [entries-by-id (into {} (map (juxt :identity identity)
-                                    (:macro-namespace-entries macro-artifact)))]
-    (mapv (fn [idx record]
-            (let [entry (get entries-by-id (:macro record))]
-              {:artifact :gravity/macro-expansion-step
-               :step (inc idx)
-               :macro (:macro record)
-               :macro-version (:macro-version record)
-               :definition-span (:source-span entry)
-               :call-site (:call-span record)
-               :input-syntax [(:input-syntax-id record)]
-               :output-syntax [(:output-hash record)]
-               :hygiene {:introduced-marks [(:macro record)]
-                         :captures (if (= :explicit-capture
-                                          (:hygiene-policy record))
-                                     [{:macro (:macro record)
-                                       :capture :explicit
-                                       :policy-result :allowed}]
-                                     [])}
-               :build-effects (:build-effects record)
-               :capabilities (:required-build-capabilities entry)
-               :safety {:generates-unsafe
-                        (str/includes? (str (:macro record)) "unsafe")
-                        :preserves-taint true}
-               :profile-check :pending-downstream
-               :generated-origin (:generated-origin record)
-               :generated-spans (:generated-spans record)
-               :diagnostics []}))
-          (range)
-          (:macro-expansion-trace macro-artifact))))
+  (c4-macro-evidence/c4-trace-records macro-artifact))
 
 (defn c4-hygiene-capture-records
   [trace-records]
-  (vec
-   (keep (fn [record]
-           (when (seq (get-in record [:hygiene :captures]))
-             {:artifact :gravity/macro-hygiene-capture-record
-              :macro (:macro record)
-              :step (:step record)
-              :captures (get-in record [:hygiene :captures])
-              :status :explicit-and-allowed}))
-         trace-records)))
+  (c4-macro-evidence/c4-hygiene-capture-records trace-records))
 
 (defn c4-build-effect-log
   [module trace-records]
-  (let [grants (get-in module [:metadata :build-grants] #{})]
-    {:artifact :gravity/macro-build-effect-log
-     :records
-     (mapv (fn [record]
-             {:macro (:macro record)
-              :step (:step record)
-              :build-effects (:build-effects record)
-              :grants grants
-              :authorization (if (set/subset? (set (:build-effects record))
-                                              grants)
-                               :granted
-                               :not-required)
-              :replay-policy :hermetic})
-           trace-records)
-     :status :complete}))
+  (c4-macro-evidence/c4-build-effect-log module trace-records))
 
 (defn c4-macro-safety-declarations
   [macro-environment]
-  {:artifact :gravity/macro-safety-declaration-records
-   :records
-   (mapv (fn [entry]
-           {:macro (:macro entry)
-            :version (:version entry)
-            :generates-unsafe (get-in entry [:safety-declaration
-                                             :generates-unsafe])
-            :build-effects (:build-effects entry)
-            :capabilities (:required-build-capabilities entry)
-            :preserves-taint true
-            :safe12-metadata-schema
-            (if (get-in entry [:safety-declaration :generates-unsafe])
-              :safe6-unsafe-island-required
-              :not-applicable)})
-         (:macro-vars macro-environment))
-   :status :complete})
+  (c4-macro-evidence/c4-macro-safety-declarations macro-environment))
 
 (defn c4-generated-origin-source-map
   [trace-records expanded-stream]
-  {:artifact :gravity/generated-origin-source-map
-   :trace-origins (mapv #(select-keys % [:step :macro :generated-origin
-                                         :generated-spans])
-                        trace-records)
-   :expanded-syntax (mapv #(select-keys % [:syntax-id :expanded-syntax-id
-                                           :span :generated-origin])
-                          expanded-stream)
-   :status :complete})
+  (c4-macro-evidence/c4-generated-origin-source-map
+   trace-records expanded-stream))
 
 (defn c4-expansion-cache-key
   [expansion-input trace-records]
-  (let [payload {:source-syntax (:syntax-root expansion-input)
-                 :macro-versions (mapv #(select-keys % [:macro
-                                                        :macro-version])
-                                        trace-records)
-                 :build-grants (:build-grants expansion-input)
-                 :target (:target expansion-input)
-                 :profile (:profile expansion-input)
-                 :reader-and-namespace-config
-                 (select-keys expansion-input [:module :namespace])
-                 :replay-records []
-                 :enabled-facets #{}
-                 :language-version "stage0"}]
-    {:artifact :gravity/macro-expansion-cache-key
-     :payload payload
-     :hash (str "sha256:" (sha256-hex (pr-str payload)))
-     :reuse-policy :trace-replay-required
-     :status :stable}))
+  (c4-macro-evidence/c4-expansion-cache-key
+   expansion-input trace-records {:sha256-hex sha256-hex}))
 
 (defn c4-trace-replay-report
   [trace-records cache-key]
-  {:artifact :gravity/macro-trace-replay-report
-   :trace-steps (count trace-records)
-   :cache-key (:hash cache-key)
-   :inputs-match? (every? #(and (:macro-version %)
-                                (seq (:input-syntax %))
-                                (seq (:output-syntax %)))
-                          trace-records)
-   :grants-match? true
-   :replay-inputs-match? true
-   :status :passed})
+  (c4-macro-evidence/c4-trace-replay-report trace-records cache-key))
 
 (defn c4-macro-safety-report
   [trace-records safety-declarations]
-  {:artifact :gravity/macro-safety-report
-   :generated-code-check :pending-downstream-normal-pipeline
-   :declarations (:records safety-declarations)
-   :generated-unsafe
-   (mapv (fn [declaration]
-           {:macro (:macro declaration)
-            :safe6-metadata (if (:generates-unsafe declaration)
-                              :required-and-recorded
-                              :not-applicable)
-            :status :accepted})
-         (filter :generates-unsafe (:records safety-declarations)))
-   :taint-preservation (mapv (fn [record]
-                               {:macro (:macro record)
-                                :preserves-taint true})
-                             trace-records)
-   :profile-checks (mapv (fn [record]
-                           {:macro (:macro record)
-                            :profile-check (:profile-check record)})
-                         trace-records)
-   :status :complete})
+  (c4-macro-evidence/c4-macro-safety-report
+   trace-records safety-declarations))
 
 (defn c4-macro-capability-proof
   [artifact]
