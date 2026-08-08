@@ -1,0 +1,8 @@
+(ns gravity.p15-s23.native-runtime-driver.accepted-str
+  (:profile :native)
+  (:target :arm64-macos)
+  (:effects #{:memory/allocate :io/write})
+  (:capabilities #{:memory/allocator :io/stdout})
+  (:safety :safe))
+
+(defn main [] (println (str "name" 42)))

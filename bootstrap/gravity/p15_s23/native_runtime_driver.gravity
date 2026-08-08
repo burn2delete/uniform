@@ -1,0 +1,103 @@
+; Gravity-authored semantic contract for the bounded native stage2 runtime
+; driver. The C provider is an independently reviewable host implementation
+; of this contract; Clojure remains trusted for packet construction and
+; verification and the public command remains disabled.
+(ns gravity.bootstrap.p15-s23.native-runtime-driver
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/read :io/write :memory/allocate})
+  (:capabilities #{:io/stdin :io/stdout :io/stderr :memory/allocator})
+  (:safety :safe))
+
+(def p15-s23-native-runtime-driver-contract
+  {:artifact :gravity/p15-s23-native-runtime-driver-contract
+   :schema-version 1
+   :status :complete-for-bounded-native-runtime-provider
+   :packet-format "gravity-native-runtime-v1"
+   :semantic-contract-verification-profile :hosted
+   :semantic-contract-verification-target :jvm
+   :deployment-provider-profile :native
+   :deployment-provider-target :arm64-macos
+   :packet-transport :inherited-stdin
+   :diagnostic-transport :inherited-stderr
+   :application-output-transport :inherited-stdout
+   :maximum-packet-bytes 65536
+   :maximum-instructions 128
+   :maximum-stack-values 128
+   :maximum-value-bytes 1024
+   :maximum-output-bytes 8192
+   :operations
+   {push-string {:operands [:hex-utf8] :stack-effect [0 1]}
+    push-int {:operands [:signed-i64] :stack-effect [0 1]}
+    push-bool {:operands [:boolean] :stack-effect [0 1]}
+    push-nil {:operands [] :stack-effect [0 1]}
+    str {:operands [:arity-1-or-2] :stack-effect :arity-to-one}
+    println {:operands [:arity-1-or-2] :stack-effect :arity-to-nil
+             :effect :io/write :capability :io/stdout}
+    jump {:operands [:forward-instruction-index] :stack-effect [0 0]}
+    jump-if-false {:operands [:forward-instruction-index]
+                   :stack-effect [1 0]}
+    halt {:operands [] :stack-effect [0 0]}}
+   :content-binding :sha256-over-canonical-payload-bytes
+   :rule-binding :sha256-over-this-gravity-source
+   :packet-source-sha256-status :declared-but-not-independently-verified
+   :packet-source-sha256-declared? true
+   :source-content-hash-verified-by-provider? false
+   :semantic-owner :gravity-source
+   :provider-implementation :host-authored-c
+   :provider-id :gravity.native/libsystem-stdio-v1
+   :allocation-provider-id :gravity.native/bounded-stack-storage-v1
+   :ambient-process-authority? false
+   :ambient-filesystem-authority? false
+   :ambient-network-authority? false
+   :shell-authority? false
+   :dynamic-library-authority? false
+   :runtime-input-filesystem? false
+   :selected-runtime-invokes-clojure? false
+   :selected-runtime-invokes-jvm? false
+   :selected-runtime-clojure-seed-boundary? false
+   :compiler-clojure-seed-boundary? true
+   :verifier-clojure-seed-boundary? true
+   :artifact-construction-clojure-seed-boundary? true
+   :process-and-file-io-clojure-seed-boundary? true
+   :public-wrapper-clojure-seed-boundary? true
+   :clojure-seed-boundary? true
+   :public-command-route? false
+   :descriptor-relative-execution? false
+   :os-process-tree-containment? false
+   :whole-language? false
+   :self-hosted? false
+   :release-ready? false
+   :seedless-release? false})
+
+(defn p15-s23-native-runtime-truthy?
+  [value]
+  (if (= value nil)
+    false
+    (if (= value false) false true)))
+
+(defn p15-s23-native-runtime-string
+  [value]
+  (if (= value nil)
+    "nil"
+    (if (= value true)
+      "true"
+      (if (= value false) "false" (str value)))))
+
+(defn p15-s23-native-runtime-str
+  [arguments]
+  (if (= 1 (count arguments))
+    (p15-s23-native-runtime-string (first arguments))
+    (if (= 2 (count arguments))
+      (str (p15-s23-native-runtime-string (first arguments))
+           (p15-s23-native-runtime-string (second arguments)))
+      {:status :rejected :diagnostic "P15NR007"})))
+
+(defn p15-s23-native-runtime-println
+  [arguments]
+  (if (= 1 (count arguments))
+    (str (p15-s23-native-runtime-string (first arguments)) "\n")
+    (if (= 2 (count arguments))
+      (str (p15-s23-native-runtime-string (first arguments)) " "
+           (p15-s23-native-runtime-string (second arguments)) "\n")
+      {:status :rejected :diagnostic "P15NR007"})))

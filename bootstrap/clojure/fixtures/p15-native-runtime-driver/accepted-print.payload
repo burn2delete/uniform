@@ -1,0 +1,3 @@
+push-string 48656c6c6f2047726176697479
+println 1
+halt

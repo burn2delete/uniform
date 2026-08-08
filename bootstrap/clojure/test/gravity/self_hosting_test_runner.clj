@@ -14,7 +14,8 @@
     gravity.bootstrap-test
     gravity.p15-public-native-run-test
     gravity.p15-public-native-run-wrapper-test
-    gravity.p15-native-launcher-test])
+    gravity.p15-native-launcher-test
+    gravity.p15-native-runtime-driver-test])
 
 (def ^:private explicitly-selectable-test-namespaces
   '#{gravity.darwin-publication-test})
