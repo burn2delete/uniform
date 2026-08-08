@@ -5,10 +5,10 @@
   "scope": {
     "roots": ["src/gravity", "tools"],
     "excluded_segments": ["__pycache__"],
-    "inventory_count": 149,
-    "inventory_sha256": "sha256:e410eae441b806c4686e336dbc7d1635aa84a5cedf241d649ba307715ac89a9d",
-    "dependency_edge_count": 172,
-    "dependency_edge_sha256": "sha256:dc3daddbaa7f3ea2c8cf79fbceab7958856674dc90f5998810506ce47981aec3"
+    "inventory_count": 151,
+    "inventory_sha256": "sha256:be42a9a3c279bc2233a6c627a7d51b5635f9dbab6a3dbb4775a04fabb57f1df7",
+    "dependency_edge_count": 173,
+    "dependency_edge_sha256": "sha256:f7c20260def8c09f365d6d5e024999356044bca8c52717b7d733c1b21f1fa3e8"
   },
   "enums": {
     "categories": [
@@ -127,6 +127,16 @@
       "blocking": false,
       "external_contract": "contracts/project-structure.json",
       "external_policy_id": "generated-coverage"
+    },
+    {
+      "id": "development-private-state",
+      "kind": "generated",
+      "patterns": [".cpcache/"],
+      "authorizes_edits": false,
+      "review_required": false,
+      "blocking": false,
+      "external_contract": null,
+      "external_policy_id": null
     },
     {
       "id": "unresolved-reviewed-document-source",
@@ -280,7 +290,7 @@
       "output_classes": ["stdout-diagnostic", "development-state-isolated"],
       "authority_ceiling": "non-authoritative-observation",
       "source_path_policy_refs": ["reviewed-central-routing"],
-      "output_path_policy_refs": ["generated-evidence"],
+      "output_path_policy_refs": ["generated-evidence", "development-private-state"],
       "import_safety": "guarded-cli",
       "execution_mode": "resource-bounded",
       "test_surfaces": ["import-smoke", "unit-test"]
@@ -326,6 +336,7 @@
       "excludes": [
         "tools/validate_change_control.py",
         "tools/validate_contract_traceability.py",
+        "tools/validate_evidence_producers.py",
         "tools/validate_foundation_document_coverage.py",
         "tools/validate_full_language_roadmap.py",
         "tools/validate_gravity_docs.py",
@@ -348,7 +359,7 @@
       "output_classes": ["stdout-diagnostic", "generated-evidence-isolated"],
       "authority_ceiling": "none",
       "source_path_policy_refs": ["reviewed-central-routing"],
-      "output_path_policy_refs": ["generated-evidence"],
+      "output_path_policy_refs": ["generated-evidence", "generated-coverage"],
       "import_safety": "guarded-cli",
       "execution_mode": "parallel-safe",
       "test_surfaces": ["import-smoke", "validator-cli"]
@@ -378,6 +389,22 @@
       "import_safety": "guarded-cli",
       "execution_mode": "parallel-safe",
       "test_surfaces": ["import-smoke", "validator-cli"]
+    },
+    {
+      "id": "evidence-producer-contract-validator",
+      "includes": ["tools/validate_evidence_producers.py"],
+      "excludes": [],
+      "category": "validator",
+      "role": "contract-validator",
+      "allowed_dependency_categories": [],
+      "effects": ["filesystem-read", "filesystem-write", "process", "environment", "stdout"],
+      "output_classes": ["stdout-diagnostic"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
+      "import_safety": "guarded-cli",
+      "execution_mode": "resource-bounded",
+      "test_surfaces": ["import-smoke", "validator-cli", "unit-test"]
     },
     {
       "id": "environment-contract-validators",
@@ -490,7 +517,9 @@
       "Static-analysis limit: AST checks cannot prove dynamically constructed imports, calls, or runtime behavior; such behavior requires separate execution evidence and review.",
       "Alias-analysis limit: direct imports and simple module-level aliases are checked, but dynamic `getattr`, monkey-patching, and runtime alias construction require separate review.",
       "Output-policy limit: custom or dynamically constructed argument parsing and writers are outside this static check and require separate review.",
-      "Authoritative evidence composition: Python candidates and reviewed-promotion candidates remain non-authoritative; pass/slice/artifact/policy/check data is nonclaim context; no digest is a signature; v1 has no trusted admission root and cannot mint authority."
+      "Authoritative evidence composition: Python candidates and reviewed-promotion candidates remain non-authoritative; pass/slice/artifact/policy/check data is nonclaim context; no digest is a signature; v1 has no trusted admission root and cannot mint authority.",
+      "Evidence producer inventory: `contracts/evidence-producers.json` classifies every production Python filesystem producer separately from the compiler artifact graph; `python3 tools/validate_evidence_producers.py` fails closed on uncovered or overlapping producers, output-policy drift, unreviewed reviewed-path generation, incomplete provenance/schema/nonclaims, and forged or stale promotion records.",
+      "Evidence promotion commit policy: an admitted record's full commit ID must name an existing commit in this repository and be reachable as an ancestor of the current `HEAD`; current source and output bytes are opened by component-wise no-follow traversal. The validator separately inventories the seven validators that expose `--coverage-out`, pins non-producer exclusions exactly, and rejects reviewed-document output patterns that overlap generated artifact policies."
     ]
   }
 }
