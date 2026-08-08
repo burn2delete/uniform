@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
+            [gravity.c3-syntax-evidence :as c3-syntax-evidence]
             [gravity.c6-core-lowering :as c6]
             [gravity.c7-type-checker :as c7]
             [gravity.c8-effect-checker :as c8]
@@ -10205,6 +10206,41 @@
            (:arglists (meta #'bootstrap/c3-origin-chain))))
     (is (= (syntax-origin/c3-origin-chain seed source-unit)
            (bootstrap/c3-origin-chain seed source-unit)))))
+
+(deftest c3-syntax-evidence-compatibility-wrappers-preserve-output-and-interposition
+  (let [stream [{:syntax/id :source
+                 :form {:kind :symbol}
+                 :profile :hosted
+                 :metadata {:doc "source"}
+                 :hygiene {:marks []}
+                 :origin [{:kind :source}]
+                 :prior-syntax-ids []}
+                {:syntax/id :generated
+                 :form {:kind :generated-form}
+                 :profile :hosted
+                 :metadata {:generated true}
+                 :hygiene {:marks [:m]}
+                 :origin [{:kind :generated :inputs [:source]}]
+                 :prior-syntax-ids [:source]}]]
+    (is (= '([]) (:arglists (meta #'bootstrap/c3-syntax-schema))))
+    (doseq [[wrapper-var leaf]
+            [[#'bootstrap/c3-hygiene-context-map
+              c3-syntax-evidence/c3-hygiene-context-map]
+             [#'bootstrap/c3-origin-chain-graph
+              c3-syntax-evidence/c3-origin-chain-graph]
+             [#'bootstrap/c3-metadata-ledger
+              c3-syntax-evidence/c3-metadata-ledger]
+             [#'bootstrap/c3-fact-ledger
+              c3-syntax-evidence/c3-fact-ledger]
+             [#'bootstrap/c3-generated-syntax-report
+              c3-syntax-evidence/c3-generated-syntax-report]]]
+      (is (= '([syntax-stream]) (:arglists (meta wrapper-var))))
+      (is (= (leaf stream) (@wrapper-var stream))))
+    (is (= (c3-syntax-evidence/c3-syntax-schema)
+           (bootstrap/c3-syntax-schema)))
+    (with-redefs [bootstrap/c3-required-form-kinds [:interposed-kind]]
+      (is (= [:interposed-kind]
+             (:form-kinds (bootstrap/c3-syntax-schema)))))))
 
 (defn- absolute-test-classpath
   []

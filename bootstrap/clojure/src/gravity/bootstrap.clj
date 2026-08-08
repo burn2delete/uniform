@@ -11,6 +11,7 @@
             [clojure.string :as str]
             [clojure.walk :as walk]
             [gravity.c2-pass-cache :as c2-pass-cache]
+            [gravity.c3-syntax-evidence :as c3-syntax-evidence]
             [gravity.cli :as cli]
             [gravity.c5-name-resolution :as c5]
             [gravity.c6-core-lowering :as c6]
@@ -147076,117 +147077,31 @@
      :prior-syntax-ids [(:syntax/id base-object)]
      :immutable? true}))
 
-(def c3-required-form-kinds
-  [:list :vector :map :set :symbol :keyword :string :character :integer
-   :ratio :decimal :boolean :nil :tagged-literal :metadata-wrapper
-   :abbreviation-expansion :generated-form])
+(def c3-required-form-kinds c3-syntax-evidence/c3-required-form-kinds)
 
 (defn c3-syntax-schema
   []
-  {:artifact :gravity/syntax-object-schema
-   :required-fields [:artifact :syntax/id :form :span :source :namespace
-                     :phase :profile :metadata :hygiene :origin :facts
-                     :reader-binding :reader-source-revision :ownership
-                     :version :prior-syntax-ids :immutable?]
-   :form-kinds c3-required-form-kinds
-   :identity :content-derived
-   :mutation :immutable
-   :fact-policy :versioned-and-invalidated})
+  (c3-syntax-evidence/c3-syntax-schema c3-required-form-kinds))
 
 (defn c3-hygiene-context-map
   [syntax-stream]
-  {:artifact :gravity/hygiene-context-map
-   :contexts
-   (mapv (fn [syntax]
-           {:syntax-id (:syntax/id syntax)
-            :marks (get-in syntax [:hygiene :marks])
-            :lexical-scopes (get-in syntax [:hygiene :lexical-scopes])
-            :renames (get-in syntax [:hygiene :renames])
-            :captures (get-in syntax [:hygiene :captures])
-            :introduced-identifiers (get-in syntax
-                                             [:hygiene :introduced-identifiers])
-            :macro-definition-namespace
-            (get-in syntax [:hygiene :macro-definition-namespace])
-            :macro-call-site-namespace
-            (get-in syntax [:hygiene :macro-call-site-namespace])})
-         syntax-stream)
-   :status :complete})
+  (c3-syntax-evidence/c3-hygiene-context-map syntax-stream))
 
 (defn c3-origin-chain-graph
   [syntax-stream]
-  {:artifact :gravity/syntax-origin-chain-graph
-   :nodes (mapv (fn [syntax]
-                  {:syntax-id (:syntax/id syntax)
-                   :origin (:origin syntax)
-                   :prior-syntax-ids (:prior-syntax-ids syntax)})
-                syntax-stream)
-   :status :complete})
+  (c3-syntax-evidence/c3-origin-chain-graph syntax-stream))
 
 (defn c3-metadata-ledger
   [syntax-stream]
-  (let [source-metadata (vec (keep (fn [syntax]
-                                     (when (and (not= :generated-form
-                                                      (get-in syntax
-                                                              [:form :kind]))
-                                                (seq (:metadata syntax)))
-                                       {:syntax-id (:syntax/id syntax)
-                                        :action :preserved
-                                        :metadata (:metadata syntax)}))
-                                   syntax-stream))
-        generated (first (filter #(= :generated-form (get-in % [:form :kind]))
-                                 syntax-stream))]
-    {:artifact :gravity/syntax-metadata-ledger
-     :source-metadata source-metadata
-     :explicit-changes
-     (if generated
-       [{:syntax-id (:syntax/id generated)
-         :action :explicit-change
-         :producer 'compiler.c3/with-capture-demo
-         :metadata (:metadata generated)}]
-       [])
-     :status :complete}))
+  (c3-syntax-evidence/c3-metadata-ledger syntax-stream))
 
 (defn c3-fact-ledger
   [syntax-stream]
-  (let [target (first syntax-stream)
-        generated (first (filter #(= :generated-form (get-in % [:form :kind]))
-                                 syntax-stream))]
-    {:artifact :gravity/syntax-fact-ledger
-     :attached [{:syntax-id (:syntax/id target)
-                 :fact :declared-profile
-                 :value (:profile target)
-                 :producer :syntax-object-model
-                 :version 1
-                 :invalidation-conditions [:macro-expansion
-                                           :metadata-change
-                                           :namespace-change]}]
-     :invalidated [{:syntax-id (:syntax/id target)
-                    :successor-syntax-id (:syntax/id generated)
-                    :fact :declared-profile
-                    :stale-version 1
-                    :new-version 2
-                    :reason :syntax-transformation
-                    :replacement-fact :declared-profile}]
-     :status :complete}))
+  (c3-syntax-evidence/c3-fact-ledger syntax-stream))
 
 (defn c3-generated-syntax-report
   [syntax-stream]
-  {:artifact :gravity/generated-syntax-report
-   :generated
-   (mapv (fn [syntax]
-           {:syntax-id (:syntax/id syntax)
-            :producer (get-in syntax [:origin 0 :producer])
-            :input-syntax-ids (or (get-in syntax
-                                          [:origin 0 :input-syntax-ids])
-                                  (get-in syntax [:origin 0 :inputs]))
-            :expansion-step 1
-            :generated-span (or (get-in syntax [:origin 0 :span])
-                                (get-in syntax
-                                        [:origin 0 :generated-span]))
-            :caller-profile (:profile syntax)
-            :hygiene (:hygiene syntax)})
-         (filter #(= :generated-form (get-in % [:form :kind])) syntax-stream))
-   :status :complete})
+  (c3-syntax-evidence/c3-generated-syntax-report syntax-stream))
 
 (defn c3-syntax-serialization-fixture
   [syntax-stream]
