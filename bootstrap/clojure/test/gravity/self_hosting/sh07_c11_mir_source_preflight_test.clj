@@ -196,7 +196,9 @@
   [source-path]
   (let [location (if (map? source-path)
                    source-path
-                   {:path (.toPath (io/file source-path))})
+                   {:path (if (instance? java.nio.file.Path source-path)
+                            source-path
+                            (.toPath (io/file source-path)))})
         path (:path location)
         component-states (:components location)
         state-before (basic-file-state path)]
@@ -638,8 +640,12 @@
          (make-array java.nio.file.OpenOption 0))
         (binding [*snapshot-before-open-hook*
                   (fn []
-                    (java.nio.file.Files/move real-file moved-original)
-                    (java.nio.file.Files/move replacement-file real-file))]
+                    (java.nio.file.Files/move
+                     real-file moved-original
+                     (make-array java.nio.file.CopyOption 0))
+                    (java.nio.file.Files/move
+                     replacement-file real-file
+                     (make-array java.nio.file.CopyOption 0)))]
           (is (thrown? clojure.lang.ExceptionInfo
                        (read-source-snapshot real-file))))
         (finally
@@ -719,26 +725,17 @@
                       collection-over-limit maximum-collection-width
                       "C11-TEST-WIDTH" "width")))))
     (testing "node and diagnostic bounds reject the first over-limit item"
-      (let [base-root-count 4095
-            leaves-per-base-root 60
-            base-roots
-            (vec (repeat base-root-count
-                          (apply list
-                                 (cons 'branch
-                                       (repeat leaves-per-base-root 'leaf)))))
-            exact-remainder
-            (- maximum-form-nodes
-               (* base-root-count (inc leaves-per-base-root)))
+      (let [base-root-count 250
+            leaves-per-base-root 998
+            ;; Each root contributes exactly 1,000 nodes: the collection,
+            ;; its branch-head symbol, and 998 leaves.  All roots stay below
+            ;; the independent collection-width bound.
             exact-forms
-            (conj base-roots
-                  (apply list
-                         (cons 'branch
-                               (repeat (dec exact-remainder) 'leaf))))
-            over-forms
-            (conj base-roots
-                  (apply list
-                         (cons 'branch
-                               (repeat exact-remainder 'leaf))))
+            (vec (repeat base-root-count
+                         (apply list
+                                (cons 'branch
+                                      (repeat leaves-per-base-root 'leaf)))))
+            over-forms (conj exact-forms 'one-node-over)
             diagnostic-at-limit
             (vec (repeat maximum-diagnostics '(if true)))
             diagnostic-over-limit (conj diagnostic-at-limit '(if true))]
