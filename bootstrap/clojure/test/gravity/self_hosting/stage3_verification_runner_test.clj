@@ -70,11 +70,9 @@
   (is (= [:primitive-pure
           :primitive-bool-authenticated
           :recursive-pure
-          :recursive-integer-authenticated
-          :recursive-string-authenticated
+          :recursive-authenticated
           :authoritative-ho-pure
-          :authoritative-ho-fixture-parity
-          :authoritative-ho2-authenticated
+          :authoritative-ho-authenticated
           :source-control-form-arity
           :source-plan-contract
           :coverage-census-contract
@@ -93,12 +91,36 @@
          (get runner/fixed-batch-selectors :coverage-census-contract)))
   (is (= runner/source-control-form-arity-selectors
          (get runner/fixed-batch-selectors :source-control-form-arity)))
+  (is (= runner/recursive-authenticated-selectors
+         (get runner/fixed-batch-selectors :recursive-authenticated)))
+  (is (= runner/authoritative-ho-authenticated-selectors
+         (get runner/fixed-batch-selectors :authoritative-ho-authenticated)))
   (is (= (count runner/primitive-pure-selectors) 4))
   (is (= (count runner/recursive-pure-selectors) 7))
+  (is (= (count runner/recursive-authenticated-selectors) 2))
   (is (= (count runner/authoritative-ho-pure-selectors) 7))
+  (is (= (count runner/authoritative-ho-authenticated-selectors) 2))
   (is (= (count runner/source-plan-contract-selectors) 2))
   (is (= (count runner/coverage-census-contract-selectors) 2))
   (is (= (count runner/source-control-form-arity-selectors) 1)))
+
+(deftest authenticated-sibling-batches-have-exact-cross-namespace-order-and-old-ids-are-rejected
+  (is (= ['gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-authenticated-gravity-boundary
+          'gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-authenticated-string-gravity-boundary]
+         runner/recursive-authenticated-selectors))
+  (is (= ['gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-ho2-fixtures-are-co-canonical
+          'gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-ho2-authenticated-fixture-boundary]
+         runner/authoritative-ho-authenticated-selectors))
+  (doseq [old-id [:recursive-integer-authenticated
+                  :recursive-string-authenticated
+                  :authoritative-ho-fixture-parity
+                  :authoritative-ho2-authenticated]]
+    (let [error (try
+                  (runner/batch-definition old-id)
+                  nil
+                  (catch clojure.lang.ExceptionInfo error error))]
+      (is (= "STAGE3-UNKNOWN-BATCH" (:id (ex-data error)))
+          (str "retired Stage3 batch ID remained accepted: " old-id)))))
 
 (deftest fixed-catalog-covers-owned-source-files-exactly
   (let [discovered
@@ -123,15 +145,13 @@
     (is (= (set (selectors-for recursive-ns))
            (set (mapcat val
                         (select-keys runner/fixed-batch-selectors
-                                    [:recursive-pure
-                                     :recursive-integer-authenticated
-                                     :recursive-string-authenticated])))))
+                                     [:recursive-pure
+                                     :recursive-authenticated])))))
     (is (= (set (selectors-for ho-ns))
            (set (mapcat val
                         (select-keys runner/fixed-batch-selectors
                                     [:authoritative-ho-pure
-                                     :authoritative-ho-fixture-parity
-                                     :authoritative-ho2-authenticated])))))))
+                                     :authoritative-ho-authenticated])))))))
 
 (deftest complete-source-files-have-exact-fixed-selector-coverage
   (doseq [[namespace-symbol relative-path] complete-source-files]

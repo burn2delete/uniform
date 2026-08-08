@@ -45,11 +45,12 @@
    'gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-primitive-family-diagonal-and-conflicts
    'gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-nonconvergence-is-precise])
 
-(def recursive-integer-authenticated-selectors
-  ['gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-authenticated-gravity-boundary])
-
-(def recursive-string-authenticated-selectors
-  ['gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-authenticated-string-gravity-boundary])
+(def recursive-authenticated-selectors
+  ;; These two authenticated boundaries share the recursive test namespace and
+  ;; therefore run in one cold JVM. Preserve the source/deftest order: the
+  ;; integer boundary is declared before the string boundary.
+  ['gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-authenticated-gravity-boundary
+   'gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-authenticated-string-gravity-boundary])
 
 (def authoritative-ho-pure-selectors
   ['gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-c7-reachability-and-identity
@@ -60,11 +61,11 @@
    'gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-rejected-proof-uses-first-order-public-fallback
    'gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-higher-order-pending-is-an-exact-replacement])
 
-(def authoritative-ho-fixture-parity-selectors
-  ['gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-ho2-fixtures-are-co-canonical])
-
-(def authoritative-ho2-authenticated-selectors
-  ['gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-ho2-authenticated-fixture-boundary])
+(def authoritative-ho-authenticated-selectors
+  ;; The fixture parity and authenticated boundary are adjacent deftests in
+  ;; one namespace; retain that declaration order in their shared JVM.
+  ['gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-ho2-fixtures-are-co-canonical
+   'gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-ho2-authenticated-fixture-boundary])
 
 (def source-plan-contract-selectors
   ['gravity.self-hosting.sh07-c7-type-source-coverage-test/sh07-b47-c7-stage2-plan-identity-is-exact
@@ -87,11 +88,9 @@
   [:primitive-pure
    :primitive-bool-authenticated
    :recursive-pure
-   :recursive-integer-authenticated
-   :recursive-string-authenticated
+   :recursive-authenticated
    :authoritative-ho-pure
-   :authoritative-ho-fixture-parity
-   :authoritative-ho2-authenticated
+   :authoritative-ho-authenticated
    :source-control-form-arity
    :source-plan-contract
    :coverage-census-contract
@@ -103,11 +102,9 @@
    :primitive-pure primitive-pure-selectors
    :primitive-bool-authenticated primitive-bool-authenticated-selectors
    :recursive-pure recursive-pure-selectors
-   :recursive-integer-authenticated recursive-integer-authenticated-selectors
-   :recursive-string-authenticated recursive-string-authenticated-selectors
+   :recursive-authenticated recursive-authenticated-selectors
    :authoritative-ho-pure authoritative-ho-pure-selectors
-   :authoritative-ho-fixture-parity authoritative-ho-fixture-parity-selectors
-   :authoritative-ho2-authenticated authoritative-ho2-authenticated-selectors
+   :authoritative-ho-authenticated authoritative-ho-authenticated-selectors
    :source-control-form-arity source-control-form-arity-selectors
    :source-plan-contract source-plan-contract-selectors
    :coverage-census-contract coverage-census-contract-selectors

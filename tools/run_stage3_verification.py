@@ -73,11 +73,9 @@ FIXED_BATCHES = (
     "primitive-pure",
     "primitive-bool-authenticated",
     "recursive-pure",
-    "recursive-integer-authenticated",
-    "recursive-string-authenticated",
+    "recursive-authenticated",
     "authoritative-ho-pure",
-    "authoritative-ho-fixture-parity",
-    "authoritative-ho2-authenticated",
+    "authoritative-ho-authenticated",
     "source-control-form-arity",
     "source-plan-contract",
     "coverage-census-contract",
@@ -88,8 +86,16 @@ FIXED_BATCHES = (
 
 _BATCH_ALIAS = "-M:stage3-verification"
 _BATCH_HEAP = {
-    # Public/source-plan/fragment preflights have a reviewed 2 GiB floor;
+    # Every fixed batch declares its JVM floor explicitly.  Structural/source
+    # checks and the public compatibility check have a reviewed 2 GiB floor;
     # cold primitive/recursive/HO batches retain the measured 8 GiB bound.
+    "primitive-pure": "-J-Xmx8g",
+    "primitive-bool-authenticated": "-J-Xmx8g",
+    "recursive-pure": "-J-Xmx8g",
+    "recursive-authenticated": "-J-Xmx8g",
+    "authoritative-ho-pure": "-J-Xmx8g",
+    "authoritative-ho-authenticated": "-J-Xmx8g",
+    "authority": "-J-Xmx8g",
     "public-c7-check": "-J-Xmx2g",
     "fragment-size-preflight": "-J-Xmx2g",
     "source-plan-contract": "-J-Xmx2g",
@@ -124,10 +130,8 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
         "gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-primitive-family-diagonal-and-conflicts",
         "gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-nonconvergence-is-precise",
     ),
-    "recursive-integer-authenticated": (
+    "recursive-authenticated": (
         "gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-authenticated-gravity-boundary",
-    ),
-    "recursive-string-authenticated": (
         "gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-authenticated-string-gravity-boundary",
     ),
     "authoritative-ho-pure": (
@@ -139,10 +143,8 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
         "gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-rejected-proof-uses-first-order-public-fallback",
         "gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-higher-order-pending-is-an-exact-replacement",
     ),
-    "authoritative-ho-fixture-parity": (
+    "authoritative-ho-authenticated": (
         "gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-ho2-fixtures-are-co-canonical",
-    ),
-    "authoritative-ho2-authenticated": (
         "gravity.self-hosting.sh08-authoritative-higher-order-function-test/sh08-authoritative-ho2-authenticated-fixture-boundary",
     ),
     "source-control-form-arity": (

@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import tempfile
 import unittest
 from unittest import mock
@@ -12,6 +13,30 @@ from unittest import mock
 from tools import run_sh07_authoritative_modules as sh07
 from tools import run_stage3_verification as stage3
 from tools import verify_development as verifier
+
+
+_CLOJURE_STAGE3_RUNNER = (
+    Path(__file__).parents[2]
+    / "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj"
+)
+
+
+def _clojure_vector_definition(name: str) -> list[str]:
+    """Read one literal fixed vector without starting a Clojure runtime."""
+
+    source = _CLOJURE_STAGE3_RUNNER.read_text(encoding="utf-8")
+    definition = re.search(
+        rf"\(def(?:\s+\^:[^\s]+)?\s+{re.escape(name)}\b(.*?)(?=\n\(def(?:\s|\s+\^)|\Z)",
+        source,
+        re.DOTALL,
+    )
+    vector = re.search(r"\[(.*?)\]", definition.group(1), re.DOTALL) if definition else None
+    if vector is None:
+        raise AssertionError(f"missing literal Clojure vector definition: {name}")
+    body = vector.group(1)
+    if name == "batch-order":
+        return re.findall(r":([A-Za-z0-9_-]+)", body)
+    return re.findall(r"'([^\s\]]+)", body)
 
 
 class Stage3WrapperTests(unittest.TestCase):
@@ -27,6 +52,61 @@ class Stage3WrapperTests(unittest.TestCase):
         self.lock_text_patch.stop()
         self.lock_patch.stop()
         self.lock.unlink(missing_ok=True)
+
+    def test_fixed_batches_match_clojure_order_selectors_and_heap_contract(self) -> None:
+        """Keep the Python command boundary identical to the Clojure allowlist."""
+
+        self.assertEqual(
+            list(stage3.FIXED_BATCHES),
+            _clojure_vector_definition("batch-order")
+            + ["authority"],
+        )
+        selector_definitions = {
+            "primitive-pure": "primitive-pure-selectors",
+            "primitive-bool-authenticated": "primitive-bool-authenticated-selectors",
+            "recursive-pure": "recursive-pure-selectors",
+            "recursive-authenticated": "recursive-authenticated-selectors",
+            "authoritative-ho-pure": "authoritative-ho-pure-selectors",
+            "authoritative-ho-authenticated": "authoritative-ho-authenticated-selectors",
+            "source-control-form-arity": "source-control-form-arity-selectors",
+            "source-plan-contract": "source-plan-contract-selectors",
+            "coverage-census-contract": "coverage-census-contract-selectors",
+            "fragment-size-preflight": "fragment-size-preflight-selectors",
+            "public-c7-check": "public-c7-check-selectors",
+        }
+        for batch, definition in selector_definitions.items():
+            self.assertEqual(
+                list(stage3._FIXED_BATCH_SELECTORS[batch]),
+                _clojure_vector_definition(definition),
+                batch,
+            )
+        expected_heap = {
+            "primitive-pure": "-J-Xmx8g",
+            "primitive-bool-authenticated": "-J-Xmx8g",
+            "recursive-pure": "-J-Xmx8g",
+            "recursive-authenticated": "-J-Xmx8g",
+            "authoritative-ho-pure": "-J-Xmx8g",
+            "authoritative-ho-authenticated": "-J-Xmx8g",
+            "source-control-form-arity": "-J-Xmx2g",
+            "source-plan-contract": "-J-Xmx2g",
+            "coverage-census-contract": "-J-Xmx2g",
+            "fragment-size-preflight": "-J-Xmx2g",
+            "public-c7-check": "-J-Xmx2g",
+            "authority": "-J-Xmx8g",
+        }
+        self.assertEqual(stage3._BATCH_HEAP, expected_heap)
+        for batch in stage3._BATCH_COMMANDS:
+            self.assertEqual(stage3._BATCH_COMMANDS[batch][1], expected_heap[batch])
+
+    def test_retired_singleton_batch_ids_are_rejected(self) -> None:
+        for retired in (
+            "recursive-integer-authenticated",
+            "recursive-string-authenticated",
+            "authoritative-ho-fixture-parity",
+            "authoritative-ho2-authenticated",
+        ):
+            with self.assertRaises(stage3.Stage3Error):
+                stage3.batch_command(retired)
 
     @staticmethod
     def _hash(path: Path) -> str:
