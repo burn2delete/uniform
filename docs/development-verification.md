@@ -843,7 +843,7 @@ production execution. It depends only on `stage3-runner-unit` and branches:
 2. `stage7-sh12-c10-mir-adapter` keeps the envelope helper, four semantic
    checks, and the authenticated `.gravity` boundary in one 8 GiB JVM. Helper
    placement first catches duplicated-carrier bounds before the cold carrier;
-   boundary placement last preserves fail-fast cache affinity. The fresh
+   boundary placement last preserves fail-fast cache affinity. The
    aggregate receipt at `target/validation/stage7-c11-post-native-3/receipt.json`
    passed in 490866.529 ms with
    `authority: fresh-command-pass-non-authoritative` under the canonical
@@ -851,17 +851,23 @@ production execution. It depends only on `stage3-runner-unit` and branches:
    235 assertions (runner 80730 ms, wrapper 86737.375 ms, peak
    1,892,941,824 bytes), with exit 0 and no skipped selectors. The earlier
    separate 1/53 helper and 5/182 suffix receipts are superseded planning
-   evidence.
+   evidence. These measurements were fresh on the prior 6084-based composition;
+   coordinator changes since then alter the exact Stage7 tool input
+   `bootstrap/clojure/test/gravity/self_hosting_test_runner.clj`, so this receipt
+   is historical non-authoritative planning/performance evidence, not current
+   admission evidence. The final exact seven-node rerun is pending coordinator
+   C12/SH13 freeze.
 3. `stage7-public-c11` is a 2 GiB two-selector batch. It validates the complete
    source/plan/functions/builder/verifier tuple before the public compatibility
    selector. It is a sibling of the adapter, so an SH12-only edit does not
-   force public work. In the same fresh aggregate receipt, the public batch
+   force public work. In the same aggregate receipt, the public batch
    passed 2 tests/39 assertions (runner 350265 ms, wrapper 359909.526 ms,
    peak 2,789,851,136 bytes) and the source gate passed 3/62 (runner 298 ms,
    wrapper 6722.023 ms, peak 522,780,672 bytes); both exited 0 with no skipped
-   selectors. These are fresh non-authoritative development receipts only, not
-   proof, reviewed attestation, scoped authority, or release evidence, and no
-   C11 proof candidate was rerun.
+   selectors. These are historical non-authoritative development receipts only,
+   not current admission evidence, proof, reviewed attestation, scoped
+   authority, or release evidence, and no C11 proof candidate was rerun. The
+   final exact seven-node rerun is pending coordinator C12/SH13 freeze.
 
 C11 source changes select all three automatic Stage7 nodes. SH12 test changes
 select source plus adapter. Legacy broad Stage0 ownership is impact-excluded,
