@@ -49,6 +49,8 @@
   :source-sha256-declared? true
   :source-content-hash-verified-by-provider? false
   :trusted-packet-constructor :clojure-test-and-bootstrap-boundary
+  :authenticated-packet-adapter
+  gravity.p15-native-packet-binding/bind-native-runtime-packet
   :supported-operations
   [push-string push-int push-bool push-nil str println jump
    jump-if-false halt]
@@ -56,6 +58,36 @@
   :strict-utf8? true
   :embedded-nul-rejected? true
   :stdout-buffered-until-complete-halt? true}
+ :packet-binding
+ {:path "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+  :public-api gravity.p15-native-packet-binding/bind-native-runtime-packet
+  :input :actual-target-neutral-stage2-runtime-packet-and-exact-trusted-context
+  :requested-target :c
+  :accepted-source-extensions [".gravity" ".qst"]
+  :packet-and-context-authenticator
+  gravity.bootstrap/p15-s23-closed-runtime-packet-authentic?
+  :authenticator-receives-both-packet-and-context? true
+  :authentication-completes-before-plan-lowering? true
+  :supported-plan-operations [literal quote str println]
+  :supported-builtin-arities [1 2]
+  :stable-diagnostics
+  {"authentication-and-tamper" "P15NP001"
+   "unsupported-plan" "P15NP002"
+   "wire-and-bound" "P15NP003"}
+  :provider-invoked-by-binding? false
+  :trusted-input :strictly-decoded-source-text-reencoded-as-utf8
+  :raw-source-bytes-consumed-by-adapter? false
+  :executed-provider-binary-bound-by-adapter? false
+  :source-content-hash-verified-by-provider? false
+  :implementation-content-hash
+  "sha256:4431797726f96a141bdfa1db7cde7a81fd3224656be8c3fa2ed8b62878b6e7b5"
+  :implementation-status :complete
+  :focused-validation-status :passed
+  :accepted-contextual-packet-executions 2
+  :pre-child-rejection-families
+  [:packet-envelope-tamper :coherent-source-context-mismatch
+   :coherent-source-path-mismatch :runtime-rule-tamper :plan-tamper
+   :unsupported-if :unsupported-let :wire-path-bound]}
  :accepted-evidence
  [{:source
    "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-print.gravity"
@@ -96,30 +128,49 @@
    :invalid-halt :missing-halt]}
  :focused-validation
  {:test-namespace gravity.p15-native-runtime-driver-test
-  :tests 10
-  :assertions 235
+  :tests 15
+  :assertions 305
   :failures 0
   :errors 0
   :receipt-scope :source-only-census
-  :test-source-content-hash
-  "sha256:eb18f4a44f439ccb2b2378b4180e11e90f2be577be108c31f8ff6f7344d773f7"
+ :test-source-content-hash
+  "sha256:ed06b42bff2bc63e72e055ce0d626fda1c4cb4089821877a88623eb1af35fdcc"
+  :profiles
+  {:fast {:tests 10 :assertions 235 :failures 0 :errors 0}
+   :authenticated-packet-binding {:tests 5 :assertions 70 :failures 0 :errors 0}}
   :historical-receipt
-  {:tests 9
-   :assertions 234
+  {:tests 13
+   :assertions 303
    :failures 0
    :errors 0
    :supervisor :gravity/hardened-shared-capacity-runner
    :canonical-lock "/private/tmp/gravity-sh07-heavy.lock"
-   :run-id "079fb07a-f057-497d-98e2-52dc2373b8d4"
-   :elapsed-seconds 3.791
-   :peak-rss-bytes 163463168
-   :peak-process-count 2
+   :run-id "c0beecca-06ed-41f2-9e28-9d22e2d804e2"
+   :elapsed-seconds 935.983
+   :peak-rss-bytes 4101619712
+   :peak-process-count 3
    :log-content-hash
-   "sha256:15d35d523c0681f8c6aca852df33189bd2cd9b199de99b69ed84c47ee3e3c728"
+   "sha256:3761b381b61f17c31780c24ebceeb108a097018fbef6819f478905f08d518b5f"
    :status-content-hash
-   "sha256:0b7db3ae683d2daedebbd9ede2329f2c5edfd7da263e77bf5bd9188e91c1bd31"
+   "sha256:60d06e7ad13b03e8f0375f67ae0e6472b4f2f2ddf46b167faa3f1a300f5e714f"
    :test-source-content-hash
-   "sha256:a33423e704c5f414f845d7c5dd39ad9ad2d20902544b4c95cac0389a373e64a1"}
+   "sha256:08a12bfae9f7b29058c5e95b140eea0553befe3cf6413eb6e39942e78a3a9f96"
+   :attempt-history
+   [{:result :timed-out
+     :timeout-seconds 900
+     :exit-code 124
+     :child-exit-code 143
+     :peak-rss-bytes 4011704320
+     :log-content-hash
+     "sha256:feacfb9fe5ceb05c9b3545d8f82b3b57d213a3cfd407f76ede25533c8daa86b2"
+     :status-content-hash
+     "sha256:1d33743fa6c4b06b0c782320855dbbccafc3bce235979dedc453af6880d5a971"}
+    {:result :passed
+     :timeout-seconds 1800
+     :exit-code 0
+     :tests 13
+     :assertions 303}]
+   :authority :historical-nonauthority}
   :coverage-audit
   {:documents 240
    :full-language-complete 0
@@ -140,11 +191,18 @@
  {:selected-runtime-invokes-clojure? false
   :selected-runtime-invokes-jvm? false
   :selected-runtime-clojure-seed-boundary? false
+  :selected-child-clojure-seed-boundary? false
   :compiler-clojure-seed-boundary? true
+  :adapter-clojure-seed-boundary? true
   :verifier-clojure-seed-boundary? true
+  :artifact-clojure-seed-boundary? true
   :artifact-construction-clojure-seed-boundary? true
+  :process-clojure-seed-boundary? true
+  :file-io-clojure-seed-boundary? true
   :process-and-file-io-clojure-seed-boundary? true
+  :public-clojure-seed-boundary? true
   :public-wrapper-clojure-seed-boundary? true
+  :global-clojure-seed-boundary? true
   :public-path-boundary-reduced? false
   :clojure-seed-boundary? true}
  :limitations

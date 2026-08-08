@@ -109,42 +109,55 @@ non-authoritative development evidence and makes no public, self-hosted,
 release, or strict process-containment claim. Local validation does not rerun
 the JVM while coordinator C12 work is active.
 
-The bounded P15-S23 native runtime provider is a separate internal prerequisite:
-`stage0-p15-native-runtime-provider-prerequisite` runs the exact direct command
-`clojure -J-Xmx1g -M:test --namespace gravity.p15-native-runtime-driver-test`.
-It is fresh/no-resume, automatic, serialized, and non-authoritative with a
-180-second timeout, Xmx1g / 1,073,741,824-byte floor, and the canonical
-`/private/tmp/gravity-sh07-heavy.lock` (`lock_owner: runner`, `exclusive: true`,
-`capacity: 1`). The observed process-tree receipt is required; the common
-runner fails closed on a non-positive RSS peak, invalid cadence, or a sampling
-contract other than `run_with_heartbeat.process_tree_metrics-v1`.
+The bounded P15-S23 native runtime provider is split into two exact internal
+prerequisites. `stage0-p15-native-runtime-provider-contract-prerequisite` is
+the fast contract profile. It runs the fixed
+`gravity.self-hosting.sh07-iteration-cache-runner` command with the ten
+provider-contract vars in source order (artifact preflight first),
+`--fail-fast`, `--max-cache-entries 1`, and explicit
+`bootstrap/clojure/src` plus `bootstrap/clojure/test` paths. It pins Xmx1g,
+a strict 180-second timeout, and a 1,073,741,824-byte floor. It owns the four
+shared inputs plus the exact 22 legacy fixtures (26 primary inputs) and reports
+10 tests/235 assertions.
 
-The provider node owns the C source, Gravity contract, exact test, provider
-artifact, and every one of the 22 current fixture files as exact declarations,
-with only `deps.edn` and
-`bootstrap/clojure/test/gravity/self_hosting_test_runner.clj` as tool inputs.
-Each owned path routes to this node and `stage0-orchestrator-unit` only;
-legacy Stage0 broad owners impact-exclude those paths. Explicit `--check`
-includes the prerequisite closure and `--all` includes the node. The reviewed
-coordinator observation is historical evidence: 9 tests/234 assertions in
-about 3.791 seconds with peak process-tree RSS 163,463,168 bytes, using the
-host-authored C provider on ARM64 macOS. The manifest binds exactly
-`GRAVITY_P15_NATIVE_RUNTIME_REQUIRED=1`. The namespace's always-running
-source-only preflight performs a bounded no-follow single-form EDN parse of
-the provider artifact, recomputes both current source hashes, and checks every
-accepted/rejected evidence path against the exact 22-file fixture set.
+`stage0-p15-native-runtime-provider-packet-binding-prerequisite` is the
+authenticated packet-binding profile. It uses the same fixed runner shape with
+the packet-binding artifact preflight first and the four authenticated vars in
+source order, Xmx8g, a strict 1,800-second timeout, and an 8,589,934,592-byte
+floor. It owns the four shared inputs, the exact packet binder, and the four
+new fixtures (9 primary inputs) and reports 5 tests/70 assertions. Both nodes
+depend only on `stage0-orchestrator-unit`; stable ID ordering puts the contract
+profile before packet binding whenever shared inputs select both. Explicit
+`--check` closes only the selected profile plus the orchestrator, while
+`--all` includes both profiles.
 
-An ordinary direct namespace run without that environment retains an explicit
-unsupported-platform/no-claim skip. The focused verifier supplies the marker;
-if the ARM64 macOS Clang/file toolchain is unavailable, the namespace fails
-instead of producing an ordinary pass. Therefore a focused exit zero means
-the provider was exercised, while no host or toolchain substitution is
-allowed. This is a narrow internal exception to the usual native-target
-exclusion and does not create public native, self-hosting, release, seedless,
-or strict containment authority.
-The refreshed artifact's current source-only census is 10 tests/235 assertions;
-the embedded 9-test timing/RSS hashes are nested historical receipt data, not a
-new runtime measurement.
+Both profiles are fresh/no-resume, automatic, serialized, non-authoritative
+gates using `/private/tmp/gravity-sh07-heavy.lock`, `lock_owner: runner`,
+`exclusive: true`, `capacity: 1`, and the observed process-tree RSS/wall-time
+receipt. The exact executable tool closure is shared: `deps.edn`, the
+iteration-cache runner, the self-hosting runner, `bootstrap.clj`, the packet
+binder, and its six direct Gravity dependencies. Shared C/Gravity/test/artifact,
+the binder, and eager namespace-load helper edits route to both profiles; old
+fixtures route only to the contract profile and the four authenticated fixtures
+only to packet binding. Existing `bootstrap.clj` and six-helper consumers retain
+their prior Stage0/Stage3/Stage4 routes in addition to both provider profiles.
+Exact exclusions remove provider-specific fixtures and the new binder from
+unrelated broad replay; they do not replace genuine existing helper ownership.
+Neither provider profile grants M0, proof, public, self-hosted, release, or
+containment authority.
+
+The manifest binds exactly `GRAVITY_P15_NATIVE_RUNTIME_REQUIRED=1`. Without
+that marker an ordinary namespace run retains its unsupported-platform/no-claim
+behavior; the focused verifier supplies it and fails when the ARM64 macOS
+Clang/file toolchain is unavailable. Each profile independently performs a
+bounded no-follow, strict-UTF8, single-form EDN read with identity/size checks
+and recomputes current hashes; packet binding additionally validates its own
+adapter and authenticated fixtures. The artifact's current source-only census
+is 15 tests/305 assertions (fast 10/235 plus packet 5/70). The prior ae9f
+13-test/303-assertion receipt, timing, RSS, hashes, and attempt history remain
+explicitly historical and non-authoritative; no current receipt is fabricated.
+This remains a narrow internal provider gate and grants no public native,
+self-hosting, release, seedless, or strict process-containment authority.
 
 ## Stage1 SH-01 handoff and measured boundary
 

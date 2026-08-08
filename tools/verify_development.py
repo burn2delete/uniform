@@ -416,18 +416,67 @@ _P15_NATIVE_LAUNCHER_TOOL_INPUTS = [
     "deps.edn",
     "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
 ]
-_P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID = "stage0-p15-native-runtime-provider-prerequisite"
-_P15_NATIVE_RUNTIME_PROVIDER_COMMAND = [
-    "clojure",
-    "-J-Xmx1g",
-    "-M:test",
-    "--namespace",
-    "gravity.p15-native-runtime-driver-test",
+_P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID = (
+    "stage0-p15-native-runtime-provider-contract-prerequisite"
+)
+_P15_NATIVE_RUNTIME_AUTHENTICATED_CHECK_ID = (
+    "stage0-p15-native-runtime-provider-packet-binding-prerequisite"
+)
+_P15_NATIVE_RUNTIME_TEST_NAMESPACE = "gravity.p15-native-runtime-driver-test"
+_P15_NATIVE_RUNTIME_ITERATION_RUNNER = (
+    "gravity.self-hosting.sh07-iteration-cache-runner"
+)
+_P15_NATIVE_RUNTIME_PROVIDER_TEST_VARS = [
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-provider-artifact-identity-and-fixture-contract",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-provider-strict-compiles",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-provider-boundary-is-explicitly-partial",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-accepted-packets-execute-without-host-tools",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-rejects-header-provenance-and-hash-tampering",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-rejects-embedded-nul-with-matching-hash-and-count",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-rejects-unsupported-and-malformed-instructions",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-rejects-cli-usage-and-bounded-overflow",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-rejects-noncanonical-instruction-counts",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-rejects-overbound-packets",
 ]
-_P15_NATIVE_RUNTIME_PROVIDER_INPUTS = [
+_P15_NATIVE_RUNTIME_AUTHENTICATED_TEST_VARS = [
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-authenticated-packet-binding-artifact-contract",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-real-stage2-packets-bind-and-execute",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-binding-rejects-tamper-before-provider",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-binding-rejects-wire-bound-before-provider",
+    f"{_P15_NATIVE_RUNTIME_TEST_NAMESPACE}/p15-native-runtime-binding-rejects-real-unsupported-plans-before-provider",
+]
+
+
+def _p15_native_runtime_command(heap: str, test_vars: list[str]) -> list[str]:
+    command = [
+        "clojure",
+        heap,
+        "-Sdeps",
+        '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}',
+        "-M",
+        "-m",
+        _P15_NATIVE_RUNTIME_ITERATION_RUNNER,
+        "--fail-fast",
+    ]
+    for test_var in test_vars:
+        command.extend(["--test-var", test_var])
+    command.extend(["--max-cache-entries", "1"])
+    return command
+
+
+_P15_NATIVE_RUNTIME_PROVIDER_COMMAND = _p15_native_runtime_command(
+    "-J-Xmx1g", _P15_NATIVE_RUNTIME_PROVIDER_TEST_VARS
+)
+_P15_NATIVE_RUNTIME_AUTHENTICATED_COMMAND = _p15_native_runtime_command(
+    "-J-Xmx8g", _P15_NATIVE_RUNTIME_AUTHENTICATED_TEST_VARS
+)
+_P15_NATIVE_RUNTIME_COMMON_INPUTS = [
     "bootstrap/native/p15_native_runtime_driver.c",
     "bootstrap/gravity/p15_s23/native_runtime_driver.gravity",
     "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
+    "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+]
+_P15_NATIVE_RUNTIME_PROVIDER_OLD_FIXTURE_INPUTS = [
     "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-branch.gravity",
     "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-branch.payload",
     "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-print.gravity",
@@ -450,11 +499,34 @@ _P15_NATIVE_RUNTIME_PROVIDER_INPUTS = [
     "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-underflow.payload",
     "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-unsupported.payload",
     "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-value-overflow.payload",
-    "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
 ]
-_P15_NATIVE_RUNTIME_PROVIDER_TOOL_INPUTS = [
+_P15_NATIVE_RUNTIME_AUTHENTICATED_FIXTURE_INPUTS = [
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/bound-packet.gravity",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/bound-packet.qst",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-bound-if.gravity",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-bound-let.gravity",
+]
+_P15_NATIVE_RUNTIME_PROVIDER_INPUTS = (
+    _P15_NATIVE_RUNTIME_COMMON_INPUTS
+    + _P15_NATIVE_RUNTIME_PROVIDER_OLD_FIXTURE_INPUTS
+)
+_P15_NATIVE_RUNTIME_AUTHENTICATED_INPUTS = (
+    _P15_NATIVE_RUNTIME_COMMON_INPUTS
+    + ["bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"]
+    + _P15_NATIVE_RUNTIME_AUTHENTICATED_FIXTURE_INPUTS
+)
+_P15_NATIVE_RUNTIME_TOOL_INPUTS = [
     "deps.edn",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
     "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+    "bootstrap/clojure/src/gravity/bootstrap.clj",
+    "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+    "bootstrap/clojure/src/gravity/cli.clj",
+    "bootstrap/clojure/src/gravity/darwin_publication.clj",
+    "bootstrap/clojure/src/gravity/digest.clj",
+    "bootstrap/clojure/src/gravity/diagnostics.clj",
+    "bootstrap/clojure/src/gravity/source_span.clj",
+    "bootstrap/clojure/src/gravity/source_unit.clj",
 ]
 _P15_NATIVE_RUNTIME_REQUIRED_ENV = {
     "GRAVITY_P15_NATIVE_RUNTIME_REQUIRED": "1",
@@ -545,17 +617,28 @@ def _validate_p15_native_launcher_contract(check: Mapping[str, Any]) -> None:
 
 
 def _validate_p15_native_runtime_provider_contract(check: Mapping[str, Any]) -> None:
-    """Keep the bounded native runtime provider on its reviewed direct command.
+    """Validate the split, exact P15 native provider profiles."""
 
-    This is an internal prerequisite for the P15 native/runtime boundary.  It
-    is intentionally a direct Clojure namespace command (not a Stage3 wrapper)
-    and therefore retains the verifier-owned canonical lock and non-authority
-    lifecycle used by the launcher prerequisite.
-    """
-
-    if check.get("id") != _P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID:
+    check_id = check.get("id")
+    if check_id not in {
+        _P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID,
+        _P15_NATIVE_RUNTIME_AUTHENTICATED_CHECK_ID,
+    }:
         return
-    check_id = _P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID
+    authenticated = check_id == _P15_NATIVE_RUNTIME_AUTHENTICATED_CHECK_ID
+    expected_command = (
+        _P15_NATIVE_RUNTIME_AUTHENTICATED_COMMAND
+        if authenticated
+        else _P15_NATIVE_RUNTIME_PROVIDER_COMMAND
+    )
+    expected_inputs = (
+        _P15_NATIVE_RUNTIME_AUTHENTICATED_INPUTS
+        if authenticated
+        else _P15_NATIVE_RUNTIME_PROVIDER_INPUTS
+    )
+    expected_heap = "-J-Xmx8g" if authenticated else "-J-Xmx1g"
+    expected_heap_bytes = 8589934592 if authenticated else 1073741824
+    expected_timeout = 1800 if authenticated else 180
     if check.get("lane") != "heavy-candidate":
         raise ManifestError(f"check {check_id!r} must use heavy-candidate lane")
     if check.get("cost") != "heavy":
@@ -593,16 +676,20 @@ def _validate_p15_native_runtime_provider_contract(check: Mapping[str, Any]) -> 
     if check.get("daemonization") != "forbidden":
         raise ManifestError(f"check {check_id!r} must declare daemonization='forbidden'")
     timeout = check.get("timeout_seconds")
-    if type(timeout) is not int or timeout != 180:
-        raise ManifestError(f"check {check_id!r} timeout_seconds must be exactly 180")
-    if check.get("jvm_heap") != "-J-Xmx1g":
-        raise ManifestError(f"check {check_id!r} must declare jvm_heap='-J-Xmx1g'")
+    if type(timeout) is not int or timeout != expected_timeout:
+        raise ManifestError(
+            f"check {check_id!r} timeout_seconds must be exactly {expected_timeout}"
+        )
+    if check.get("jvm_heap") != expected_heap:
+        raise ManifestError(
+            f"check {check_id!r} must declare jvm_heap={expected_heap!r}"
+        )
     if (
         type(check.get("minimum_heap_bytes")) is not int
-        or check.get("minimum_heap_bytes") != 1073741824
+        or check.get("minimum_heap_bytes") != expected_heap_bytes
     ):
         raise ManifestError(
-            f"check {check_id!r} minimum_heap_bytes must equal 1073741824"
+            f"check {check_id!r} minimum_heap_bytes must equal {expected_heap_bytes}"
         )
     if check.get("resource_receipt") != _OBSERVED_PROCESS_TREE_RESOURCE_RECEIPT:
         raise ManifestError(
@@ -612,29 +699,31 @@ def _validate_p15_native_runtime_provider_contract(check: Mapping[str, Any]) -> 
         raise ManifestError(
             f"check {check_id!r} must bind the exact native-runtime required environment"
         )
-    if (
-        type(check.get("command")) is not list
-        or check.get("command") != _P15_NATIVE_RUNTIME_PROVIDER_COMMAND
-    ):
+    if type(check.get("command")) is not list or check.get("command") != expected_command:
         raise ManifestError(
-            f"check {check_id!r} command must be the exact direct native runtime provider test command"
+            f"check {check_id!r} command must be the exact fixed P15 native runtime selector command"
         )
-    if check.get("inputs") != _P15_NATIVE_RUNTIME_PROVIDER_INPUTS:
+    if check.get("inputs") != expected_inputs:
         raise ManifestError(
-            f"check {check_id!r} inputs drifted from the reviewed native runtime provider source/fixture/artifact set"
+            f"check {check_id!r} inputs drifted from the reviewed P15 native runtime profile set"
         )
-    if check.get("tool_inputs") != _P15_NATIVE_RUNTIME_PROVIDER_TOOL_INPUTS:
+    if check.get("tool_inputs") != _P15_NATIVE_RUNTIME_TOOL_INPUTS:
         raise ManifestError(
-            f"check {check_id!r} tool_inputs drifted from deps.edn and the test runner"
+            f"check {check_id!r} tool_inputs drifted from the exact P15 runtime tool closure"
+        )
+    if check.get("impact_excludes", []):
+        raise ManifestError(
+            f"check {check_id!r} P15 runtime profiles must not impact-exclude their exact shared tool closure"
         )
     if "dependencies" in check:
         raise ManifestError(
             f"check {check_id!r} must use the exact depends_on field"
         )
     dependencies = check.get("depends_on", [])
-    if dependencies != ["stage0-orchestrator-unit"]:
+    expected_dependencies = ["stage0-orchestrator-unit"]
+    if dependencies != expected_dependencies:
         raise ManifestError(
-            f"check {check_id!r} must depend only on stage0-orchestrator-unit"
+            f"check {check_id!r} must depend exactly on {expected_dependencies!r}"
         )
 
 
@@ -970,16 +1059,24 @@ def validate_manifest(
                 "manifest must contain exactly one check id "
                 f"{_P15_NATIVE_LAUNCHER_CHECK_ID!r}"
             )
-        runtime_provider_count = sum(
-            1
-            for item in checks
-            if isinstance(item, Mapping)
-            and item.get("id") == _P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID
-        )
-        if runtime_provider_count != 1:
+        runtime_provider_ids = {
+            _P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID,
+            _P15_NATIVE_RUNTIME_AUTHENTICATED_CHECK_ID,
+        }
+        runtime_provider_counts = {
+            check_id: sum(
+                1
+                for item in checks
+                if isinstance(item, Mapping) and item.get("id") == check_id
+            )
+            for check_id in runtime_provider_ids
+        }
+        if runtime_provider_counts != {
+            _P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID: 1,
+            _P15_NATIVE_RUNTIME_AUTHENTICATED_CHECK_ID: 1,
+        }:
             raise ManifestError(
-                "manifest must contain exactly one check id "
-                f"{_P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID!r}"
+                "manifest must contain exactly one fast and one authenticated P15 native runtime check"
             )
         observed_stage8_ids = {
             str(item.get("id"))

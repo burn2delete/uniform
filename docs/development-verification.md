@@ -359,55 +359,53 @@ the local verification boundary while C12 work remains active.
 
 ### 4b. Focused P15-S23 native runtime provider prerequisite
 
-The bounded native runtime provider has its own exact direct namespace gate,
-`stage0-p15-native-runtime-provider-prerequisite`:
+The bounded native runtime provider has two exact fixed-profile gates. The fast
+`stage0-p15-native-runtime-provider-contract-prerequisite` uses
+`gravity.self-hosting.sh07-iteration-cache-runner` with explicit
+`-Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}'`,
+`--fail-fast`, ten ordered `--test-var` selectors (artifact preflight first),
+and `--max-cache-entries 1`. It pins `-J-Xmx1g`, a strict 180-second timeout,
+and a 1,073,741,824-byte floor; its exact primary inputs are the four shared
+source/contract/test/artifact paths and all 22 legacy fixtures (26 total).
+Its expected profile receipt is 10 tests/235 assertions.
 
-```bash
-clojure -J-Xmx1g -M:test --namespace gravity.p15-native-runtime-driver-test
-```
+The `stage0-p15-native-runtime-provider-packet-binding-prerequisite` uses the
+same fixed runner shape with its packet-binding artifact preflight first and
+four ordered authenticated selectors. It pins `-J-Xmx8g`, a strict 1,800-second
+timeout, and an 8,589,934,592-byte floor; its exact primary inputs are the four
+shared paths, `p15_native_packet_binding.clj`, and the four new fixtures (9
+total). Its expected profile receipt is 5 tests/70 assertions. Both nodes are
+fresh/no-resume, automatic, `authority: none`, and depend only on
+`stage0-orchestrator-unit`; deterministic IDs put the contract node before the
+packet-binding node for shared changes. Explicit `--check` closes only the
+requested profile plus the orchestrator, while `--all` includes both.
 
-It is a fresh, serialized `heavy-candidate` with a strict 180-second timeout,
-`resume: false`, `no_resume: true`, `automatic: true`, and `authority: none`.
-The verifier owns the canonical `/private/tmp/gravity-sh07-heavy.lock` while
-the direct command runs (`lock_owner: runner`, `exclusive: true`,
-`capacity: 1`). The node pins `-J-Xmx1g` / 1,073,741,824 bytes and records
-`observed-peak-process-tree-rss-and-wall-time`; the shared runner rejects any
-non-positive RSS, non-positive or non-finite cadence, or mismatched
-`run_with_heartbeat.process_tree_metrics-v1` contract.
+Both profiles use `/private/tmp/gravity-sh07-heavy.lock` with
+`lock_owner: runner`, `exclusive: true`, `capacity: 1`, and the observed
+process-tree RSS/wall-time receipt. Their shared exact tool closure is
+`deps.edn`, the iteration-cache runner, the self-hosting runner,
+`bootstrap.clj`, the packet binder, and its six direct Gravity dependencies;
+there is no ownership glob. Shared C/Gravity/test/artifact and eager
+namespace-load helper edits select both; the binder also selects both because
+the namespace eagerly loads it. Old fixtures select only contract, while the
+four authenticated fixtures select only packet binding. Existing bootstrap and
+six-helper consumers keep their prior Stage0/Stage3/Stage4 routes in addition
+to both profiles. Exact exclusions remove provider-specific fixtures and the
+new binder from unrelated broad replay without replacing genuine helper
+ownership; neither provider profile adds M0, proof, or public authority.
 
-The manifest binds the provider C source, the Gravity semantic contract, the
-exact provider test, the provider artifact, and all 22 files currently under
-`bootstrap/clojure/fixtures/p15-native-runtime-driver` as individual inputs.
-It binds only `deps.edn` and
-`bootstrap/clojure/test/gravity/self_hosting_test_runner.clj` as tool inputs;
-the fixture directory is not an ownership glob. Every owned path selects this
-node and `stage0-orchestrator-unit` only. Legacy broad Stage0 owners
-impact-exclude every exact path, so no broad Stage0, Stage3-8, or proof node is
-selected. Explicit `--check` closes over the orchestrator prerequisite, and
-`--all` includes the provider node.
-
-The manifest binds the exact environment entry
-`GRAVITY_P15_NATIVE_RUNTIME_REQUIRED=1`. The namespace always runs a bounded,
-no-follow source-only EDN check before the provider tests: it parses the
-artifact as exactly one form, recomputes the current C and Gravity contract
-SHA-256 values, and checks the complete reviewed set of 22 regular fixture
-files plus every accepted/rejected evidence path. This check runs on every
-host and does not make an artifact, public, self-hosting, or release claim.
-
-The reviewed host-authored C observation is historical evidence: 9 tests and
-234 assertions in about 3.791 seconds, with a measured peak process-tree RSS
-of 163,463,168 bytes under the canonical lock, on ARM64 macOS. An ordinary
-direct namespace invocation without the required environment keeps its
-explicit unsupported-platform/no-claim skip. The focused verifier invocation
-sets the required environment; an unavailable ARM64 macOS Clang/file
-toolchain then fails the namespace, while exit zero means the native provider
-was actually exercised. No target substitution or support inference is made.
-This internal prerequisite is a narrow exception to the general native-target
-exclusion: it does not claim public native execution, self-hosting, release
-readiness, seedless completion, or strict OS-level process containment.
-The refreshed provider artifact records the current source-only census as 10
-tests and 235 assertions and retains the prior 9-test timing/RSS hashes only
-under an explicitly historical receipt; it is not a new runtime measurement.
+The manifest binds exactly `GRAVITY_P15_NATIVE_RUNTIME_REQUIRED=1`. Without the
+marker an ordinary namespace run retains its unsupported-platform/no-claim
+skip; the focused verifier supplies it and fails when the ARM64 macOS
+Clang/file toolchain is unavailable. Each profile independently performs a
+bounded no-follow, strict-UTF8, single-form EDN artifact read with identity and
+size checks and current C/Gravity/test hashes; packet binding additionally
+validates its adapter and four authenticated fixtures. The artifact's current
+source-only census is 15 tests/305 assertions (10/235 fast plus 5/70 packet).
+The prior ae9f 13-test/303-assertion receipt, timing, RSS, hashes, and attempt
+history are explicitly historical/non-authoritative, not a fabricated current
+measurement. This remains an internal bounded gate with no public native,
+self-hosting, release, seedless, or strict process-containment authority.
 
 ### 5. Focused namespace or cached SH-07 feedback
 

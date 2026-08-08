@@ -76,6 +76,12 @@
    "rejected-unsupported.payload"
    "rejected-value-overflow.payload"])
 
+(def ^:private authenticated-fixture-relatives
+  ["bound-packet.gravity"
+   "bound-packet.qst"
+   "rejected-bound-if.gravity"
+   "rejected-bound-let.gravity"])
+
 (def ^:private reviewed-accepted-evidence
   [{:source (str fixture-root-relative "/accepted-print.gravity")
     :extension ".gravity"
@@ -111,11 +117,18 @@
   {:selected-runtime-invokes-clojure? false
    :selected-runtime-invokes-jvm? false
    :selected-runtime-clojure-seed-boundary? false
+   :selected-child-clojure-seed-boundary? false
    :compiler-clojure-seed-boundary? true
+   :adapter-clojure-seed-boundary? true
    :verifier-clojure-seed-boundary? true
+   :artifact-clojure-seed-boundary? true
    :artifact-construction-clojure-seed-boundary? true
+   :process-clojure-seed-boundary? true
+   :file-io-clojure-seed-boundary? true
    :process-and-file-io-clojure-seed-boundary? true
+   :public-clojure-seed-boundary? true
    :public-wrapper-clojure-seed-boundary? true
+   :global-clojure-seed-boundary? true
    :public-path-boundary-reduced? false
    :clojure-seed-boundary? true})
 
@@ -263,7 +276,7 @@
                         error))))))
 
 (defn- assert-reviewed-fixture-set
-  []
+  [expected-relatives exact-directory?]
   (let [directory (path fixture-root-relative)]
     (require-artifact! (not (Files/isSymbolicLink directory))
                        {:path fixture-root-relative :reason :symlink})
@@ -274,14 +287,18 @@
           actual (sort (mapv #(str fixture-root-relative "/" (.getFileName ^Path %))
                              entries))
           expected (sort (mapv #(str fixture-root-relative "/" %)
-                               reviewed-fixture-relatives))]
+                               expected-relatives))]
       (doseq [entry entries]
         (require-artifact! (not (Files/isSymbolicLink entry))
                            {:path (str entry) :reason :symlink})
         (require-artifact! (Files/isRegularFile entry no-follow-options)
                            {:path (str entry) :reason :not-regular-file}))
-      (require-artifact! (= expected actual) {:expected expected :actual actual})
-      (doseq [relative reviewed-fixture-relatives]
+      (require-artifact!
+       (if exact-directory?
+         (= expected actual)
+         (every? (set actual) expected))
+       {:expected expected :actual actual :exact-directory? exact-directory?})
+      (doseq [relative expected-relatives]
         (read-bounded-regular-file (str fixture-root-relative "/" relative)
                                    bounded-source-read-limit)))))
 
@@ -522,17 +539,21 @@
     (catch clojure.lang.ExceptionInfo ex
       (:id (ex-data ex)))))
 
-(defn- artifact-contract!
-  []
-  (let [artifact (read-artifact)
-        contract-hash (sha256-file contract-relative)
+(defn- artifact-shared-identity!
+  "Validate shared artifact identity without enumerating profile fixtures.
+
+  Both fixed profiles call this helper so the packet-binding profile remains
+  independently useful when selected without the fast contract profile.
+  "
+  [artifact]
+  (let [contract-hash (sha256-file contract-relative)
         provider-hash (sha256-file source-relative)
         test-source-hash (sha256-file test-source-relative)]
     (require-artifact! (map? artifact) {:label :artifact :value artifact})
     (exact-map-keys
      artifact
      #{:artifact :schema-version :status :scope :authority :semantic-contract :provider
-       :packet-contract :accepted-evidence :rejected-evidence
+       :packet-contract :packet-binding :accepted-evidence :rejected-evidence
        :focused-validation :seed-boundary :limitations}
      :artifact)
     (require-artifact! (= :gravity/p15-s23-bounded-native-runtime-provider-proof
@@ -546,7 +567,6 @@
     (require-artifact! (= :none (:authority artifact)) artifact)
     (let [semantic-contract (:semantic-contract artifact)
           provider (:provider artifact)
-          packet-contract (:packet-contract artifact)
           focused (:focused-validation artifact)]
       (exact-map-keys semantic-contract #{:path :content-hash :owner}
                       :semantic-contract)
@@ -606,51 +626,74 @@
            "_strcmp" "_strlen" "_strncmp" "_strstr"]
           (:undefined-imports provider))
        provider)
-      (exact-map-keys
-       packet-contract
-       #{:format :maximum-packet-bytes :maximum-instructions
-         :maximum-stack-values :maximum-value-bytes :maximum-output-bytes
-         :payload-content-binding :runtime-rule-binding
-         :source-path-and-extension-preserved? :source-sha256-declared?
-         :source-content-hash-verified-by-provider?
-         :trusted-packet-constructor :supported-operations
-         :canonical-integer-grammar? :strict-utf8? :embedded-nul-rejected?
-         :stdout-buffered-until-complete-halt?}
-       :packet-contract)
-      (require-artifact!
-       (= {:format "gravity-native-runtime-v1"
-           :maximum-packet-bytes 65536
-           :maximum-instructions 128
-           :maximum-stack-values 128
-           :maximum-value-bytes 1024
-           :maximum-output-bytes 8192
-           :payload-content-binding :sha256
-           :runtime-rule-binding :gravity-source-sha256
-           :source-path-and-extension-preserved? true
-           :source-sha256-declared? true
-           :source-content-hash-verified-by-provider? false
-           :trusted-packet-constructor :clojure-test-and-bootstrap-boundary
+      (let [packet-contract (:packet-contract artifact)]
+        (exact-map-keys
+         packet-contract
+         #{:format :maximum-packet-bytes :maximum-instructions
+           :maximum-stack-values :maximum-value-bytes :maximum-output-bytes
+           :payload-content-binding :runtime-rule-binding
+           :source-path-and-extension-preserved? :source-sha256-declared?
+           :source-content-hash-verified-by-provider?
+           :trusted-packet-constructor :authenticated-packet-adapter
            :supported-operations
-           (vec '(push-string push-int push-bool push-nil str println jump
-                  jump-if-false halt))
-           :canonical-integer-grammar? true
-           :strict-utf8? true
-           :embedded-nul-rejected? true
-           :stdout-buffered-until-complete-halt? true}
-          packet-contract)
-       packet-contract)
+           :canonical-integer-grammar? :strict-utf8? :embedded-nul-rejected?
+           :stdout-buffered-until-complete-halt?}
+         :packet-contract)
+        (require-artifact!
+         (= {:format "gravity-native-runtime-v1"
+             :maximum-packet-bytes 65536
+             :maximum-instructions 128
+             :maximum-stack-values 128
+             :maximum-value-bytes 1024
+             :maximum-output-bytes 8192
+             :payload-content-binding :sha256
+             :runtime-rule-binding :gravity-source-sha256
+             :source-path-and-extension-preserved? true
+             :source-sha256-declared? true
+             :source-content-hash-verified-by-provider? false
+             :trusted-packet-constructor :clojure-test-and-bootstrap-boundary
+             :authenticated-packet-adapter
+             'gravity.p15-native-packet-binding/bind-native-runtime-packet
+             :supported-operations
+             (vec '(push-string push-int push-bool push-nil str println jump
+                    jump-if-false halt))
+             :canonical-integer-grammar? true
+             :strict-utf8? true
+             :embedded-nul-rejected? true
+             :stdout-buffered-until-complete-halt? true}
+            packet-contract)
+         packet-contract))
       (exact-map-keys focused
                       #{:test-namespace :tests :assertions :failures :errors
-                        :receipt-scope :test-source-content-hash
+                        :receipt-scope :test-source-content-hash :profiles
                         :historical-receipt :coverage-audit
                         :gravity-contract-check}
                       :focused-validation)
       (require-artifact! (= 'gravity.p15-native-runtime-driver-test
                             (:test-namespace focused)) focused)
       (require-artifact!
-       (= {:tests 10 :assertions 235 :failures 0 :errors 0}
+       (= {:tests 15 :assertions 305 :failures 0 :errors 0}
           (select-keys focused [:tests :assertions :failures :errors]))
        focused)
+      (exact-map-keys (:profiles focused)
+                      #{:fast :authenticated-packet-binding}
+                      :focused-validation-profiles)
+      (exact-map-keys (:fast (:profiles focused))
+                      #{:tests :assertions :failures :errors}
+                      :focused-validation-fast-profile)
+      (require-artifact!
+       (= {:tests 10 :assertions 235 :failures 0 :errors 0}
+          (select-keys (:fast (:profiles focused))
+                       [:tests :assertions :failures :errors]))
+       (:fast (:profiles focused)))
+      (exact-map-keys (:authenticated-packet-binding (:profiles focused))
+                      #{:tests :assertions :failures :errors}
+                      :focused-validation-authenticated-profile)
+      (require-artifact!
+       (= {:tests 5 :assertions 70 :failures 0 :errors 0}
+          (select-keys (:authenticated-packet-binding (:profiles focused))
+                       [:tests :assertions :failures :errors]))
+       (:authenticated-packet-binding (:profiles focused)))
       (require-artifact!
        (= test-source-hash (:test-source-content-hash focused))
        {:expected test-source-hash
@@ -661,12 +704,17 @@
                         :canonical-lock :run-id
                         :elapsed-seconds :peak-rss-bytes :peak-process-count
                         :log-content-hash :status-content-hash
-                        :test-source-content-hash}
+                        :test-source-content-hash :attempt-history
+                        :authority}
                       :historical-receipt)
       (require-artifact!
-       (= {:tests 9 :assertions 234 :failures 0 :errors 0}
+       (= {:tests 13 :assertions 303 :failures 0 :errors 0}
           (select-keys (:historical-receipt focused)
                        [:tests :assertions :failures :errors]))
+       (:historical-receipt focused))
+      (require-artifact!
+       (= :historical-nonauthority
+          (:authority (:historical-receipt focused)))
        (:historical-receipt focused))
       (require-artifact!
        (= {:supervisor :gravity/hardened-shared-capacity-runner
@@ -682,18 +730,138 @@
       (exact-map-keys (:gravity-contract-check focused)
                       #{:verification-profile :verification-target :result
                         :log-content-hash :status-content-hash}
-                      :gravity-contract-check))
+                      :gravity-contract-check)
+      (exact-map-keys (:seed-boundary artifact)
+                      #{:selected-runtime-invokes-clojure?
+                        :selected-runtime-invokes-jvm?
+                        :selected-runtime-clojure-seed-boundary?
+                        :selected-child-clojure-seed-boundary?
+                        :compiler-clojure-seed-boundary?
+                        :adapter-clojure-seed-boundary?
+                        :verifier-clojure-seed-boundary?
+                        :artifact-clojure-seed-boundary?
+                        :artifact-construction-clojure-seed-boundary?
+                        :process-clojure-seed-boundary?
+                        :file-io-clojure-seed-boundary?
+                        :process-and-file-io-clojure-seed-boundary?
+                        :public-clojure-seed-boundary?
+                        :public-wrapper-clojure-seed-boundary?
+                        :global-clojure-seed-boundary?
+                        :public-path-boundary-reduced?
+                        :clojure-seed-boundary?}
+                      :seed-boundary)
+      (require-artifact! (= reviewed-seed-boundary (:seed-boundary artifact)) artifact)
+      (exact-map-keys (:limitations artifact)
+                      #{:public-command-route? :descriptor-relative-execution?
+                        :os-process-tree-containment? :packet-signature-verified?
+                        :source-content-hash-verified-by-provider?
+                        :compiler-authored-in-gravity? :provider-authored-in-gravity?
+                        :whole-language? :formal-language-complete?
+                        :full-language-completion-count :self-hosted? :release-ready?
+                        :seedless-release?}
+                      :limitations)
+      (require-artifact! (= reviewed-limitations (:limitations artifact)) artifact))
+    true))
+
+(defn- shared-artifact-rejected?
+  "Exercise shared identity rejection without touching either fixture profile."
+  [artifact]
+  (try
+    (artifact-shared-identity! artifact)
+    false
+    (catch clojure.lang.ExceptionInfo ex
+      (= "P15NR-ARTIFACT-CONTRACT" (:id (ex-data ex))))))
+
+(defn- artifact-fast-contract!
+  []
+  (let [artifact (read-artifact)]
+    (artifact-shared-identity! artifact)
     (require-artifact! (= reviewed-accepted-evidence (:accepted-evidence artifact))
                        artifact)
     (require-artifact! (= reviewed-rejected-evidence (:rejected-evidence artifact))
                        artifact)
-    (assert-reviewed-fixture-set)
-    (require-artifact! (= reviewed-seed-boundary (:seed-boundary artifact)) artifact)
-    (require-artifact! (= reviewed-limitations (:limitations artifact)) artifact)
+    (assert-reviewed-fixture-set reviewed-fixture-relatives false)
+    true))
+
+(defn- artifact-authenticated-packet-binding-contract!
+  []
+  (let [artifact (read-artifact)
+        binding (:packet-binding artifact)
+        binder-hash (sha256-file
+                     "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj")
+        expected-api 'gravity.p15-native-packet-binding/bind-native-runtime-packet
+        expected-authenticator
+        'gravity.bootstrap/p15-s23-closed-runtime-packet-authentic?]
+    (artifact-shared-identity! artifact)
+    ;; Explicit selection of this independent profile must reject shared drift
+    ;; without relying on the fast profile or reading its old fixture set.
+    (doseq [[label mutated]
+            [[:semantic-contract-hash
+              (assoc-in artifact [:semantic-contract :content-hash]
+                        "sha256:shared-contract-drift")]
+             [:provider-content-hash
+              (assoc-in artifact [:provider :content-hash]
+                        "sha256:provider-content-drift")]
+             [:test-source-content-hash
+              (assoc-in artifact [:focused-validation :test-source-content-hash]
+                        "sha256:test-source-drift")]
+             [:provider-build-command
+              (assoc-in artifact [:provider :build-command]
+                        ["/usr/bin/false"])]
+             [:limitations
+              (assoc-in artifact [:limitations :release-ready?] true)]]]
+      (require-artifact! (shared-artifact-rejected? mutated)
+                         {:label label :reason :shared-drift-accepted}))
+    (exact-map-keys
+     binding
+     #{:path :public-api :input :requested-target :accepted-source-extensions
+       :packet-and-context-authenticator :authenticator-receives-both-packet-and-context?
+       :authentication-completes-before-plan-lowering? :supported-plan-operations
+       :supported-builtin-arities :stable-diagnostics :provider-invoked-by-binding?
+       :trusted-input :raw-source-bytes-consumed-by-adapter?
+       :executed-provider-binary-bound-by-adapter?
+       :source-content-hash-verified-by-provider? :implementation-content-hash
+       :implementation-status :focused-validation-status
+       :accepted-contextual-packet-executions :pre-child-rejection-families}
+     :packet-binding)
+    (require-artifact!
+     (= {:path "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+         :public-api expected-api
+         :input :actual-target-neutral-stage2-runtime-packet-and-exact-trusted-context
+         :requested-target :c
+         :accepted-source-extensions [".gravity" ".qst"]
+         :packet-and-context-authenticator expected-authenticator
+         :authenticator-receives-both-packet-and-context? true
+         :authentication-completes-before-plan-lowering? true
+         :supported-plan-operations (vec '(literal quote str println))
+         :supported-builtin-arities [1 2]
+         :stable-diagnostics
+         {"authentication-and-tamper" "P15NP001"
+          "unsupported-plan" "P15NP002"
+          "wire-and-bound" "P15NP003"}
+         :provider-invoked-by-binding? false
+         :trusted-input :strictly-decoded-source-text-reencoded-as-utf8
+         :raw-source-bytes-consumed-by-adapter? false
+         :executed-provider-binary-bound-by-adapter? false
+         :source-content-hash-verified-by-provider? false
+         :implementation-content-hash binder-hash
+         :implementation-status :complete
+         :focused-validation-status :passed
+         :accepted-contextual-packet-executions 2
+         :pre-child-rejection-families
+         [:packet-envelope-tamper :coherent-source-context-mismatch
+          :coherent-source-path-mismatch :runtime-rule-tamper :plan-tamper
+          :unsupported-if :unsupported-let :wire-path-bound]}
+        binding)
+     binding)
+    (assert-reviewed-fixture-set authenticated-fixture-relatives false)
     true))
 
 (deftest p15-native-runtime-provider-artifact-identity-and-fixture-contract
-  (is (true? (artifact-contract!))))
+  (is (true? (artifact-fast-contract!))))
+
+(deftest p15-native-runtime-authenticated-packet-binding-artifact-contract
+  (is (true? (artifact-authenticated-packet-binding-contract!))))
 
 (deftest p15-native-runtime-provider-strict-compiles
   (with-provider
