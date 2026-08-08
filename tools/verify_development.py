@@ -416,6 +416,46 @@ _P15_NATIVE_LAUNCHER_TOOL_INPUTS = [
     "deps.edn",
     "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
 ]
+_P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID = "stage0-p15-native-runtime-provider-prerequisite"
+_P15_NATIVE_RUNTIME_PROVIDER_COMMAND = [
+    "clojure",
+    "-J-Xmx1g",
+    "-M:test",
+    "--namespace",
+    "gravity.p15-native-runtime-driver-test",
+]
+_P15_NATIVE_RUNTIME_PROVIDER_INPUTS = [
+    "bootstrap/native/p15_native_runtime_driver.c",
+    "bootstrap/gravity/p15_s23/native_runtime_driver.gravity",
+    "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-branch.gravity",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-branch.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-print.gravity",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-print.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-print.qst",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-str.gravity",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-str.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-halt.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-int-leading-zero.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-int-negative-zero.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-int-plus.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-invalid-utf8-ff.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-invalid-utf8-overlong.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-jump-leading-zero.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-jump-negative-zero.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-jump-plus.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-missing-halt.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-operand.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-output-overflow.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-underflow.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-unsupported.payload",
+    "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-value-overflow.payload",
+    "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+]
+_P15_NATIVE_RUNTIME_PROVIDER_TOOL_INPUTS = [
+    "deps.edn",
+    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+]
 _OBSERVED_PROCESS_TREE_RESOURCE_RECEIPT = "observed-peak-process-tree-rss-and-wall-time"
 _OBSERVED_PROCESS_TREE_RSS_CONTRACT = "run_with_heartbeat.process_tree_metrics-v1"
 
@@ -499,6 +539,96 @@ def _validate_p15_native_launcher_contract(check: Mapping[str, Any]) -> None:
         )
     if check.get("automatic", True) is not True:
         raise ManifestError(f"check {check_id!r} must participate in change-impact routing")
+
+
+def _validate_p15_native_runtime_provider_contract(check: Mapping[str, Any]) -> None:
+    """Keep the bounded native runtime provider on its reviewed direct command.
+
+    This is an internal prerequisite for the P15 native/runtime boundary.  It
+    is intentionally a direct Clojure namespace command (not a Stage3 wrapper)
+    and therefore retains the verifier-owned canonical lock and non-authority
+    lifecycle used by the launcher prerequisite.
+    """
+
+    if check.get("id") != _P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID:
+        return
+    check_id = _P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID
+    if check.get("lane") != "heavy-candidate":
+        raise ManifestError(f"check {check_id!r} must use heavy-candidate lane")
+    if check.get("cost") != "heavy":
+        raise ManifestError(f"check {check_id!r} must use cost='heavy'")
+    if check.get("lock") != str(_stage3.CANONICAL_LOCK):
+        raise ManifestError(
+            f"check {check_id!r} must use canonical lock {str(_stage3.CANONICAL_LOCK)!r}"
+        )
+    if check.get("lock_owner") != "runner":
+        raise ManifestError(
+            f"check {check_id!r} direct command must retain lock_owner='runner'"
+        )
+    expected_booleans = {
+        "exclusive": True,
+        "fresh": True,
+        "resume": False,
+        "no_resume": True,
+        "automatic": True,
+    }
+    for field, expected in expected_booleans.items():
+        if check.get(field) is not expected:
+            raise ManifestError(
+                f"check {check_id!r} {field} must be exactly {expected!r}"
+            )
+    if type(check.get("capacity")) is not int or check.get("capacity") != 1:
+        raise ManifestError(
+            f"check {check_id!r} must declare exclusive=true and capacity=1"
+        )
+    if check.get("authority") != "none":
+        raise ManifestError(f"check {check_id!r} must declare authority='none'")
+    if check.get("proof_candidate", False) is not False or check.get("attestation_required", False) is not False:
+        raise ManifestError(
+            f"check {check_id!r} must remain a non-proof, non-attestation gate"
+        )
+    if check.get("daemonization") != "forbidden":
+        raise ManifestError(f"check {check_id!r} must declare daemonization='forbidden'")
+    timeout = check.get("timeout_seconds")
+    if type(timeout) is not int or timeout != 180:
+        raise ManifestError(f"check {check_id!r} timeout_seconds must be exactly 180")
+    if check.get("jvm_heap") != "-J-Xmx1g":
+        raise ManifestError(f"check {check_id!r} must declare jvm_heap='-J-Xmx1g'")
+    if (
+        type(check.get("minimum_heap_bytes")) is not int
+        or check.get("minimum_heap_bytes") != 1073741824
+    ):
+        raise ManifestError(
+            f"check {check_id!r} minimum_heap_bytes must equal 1073741824"
+        )
+    if check.get("resource_receipt") != _OBSERVED_PROCESS_TREE_RESOURCE_RECEIPT:
+        raise ManifestError(
+            f"check {check_id!r} must declare the observed process-tree resource receipt"
+        )
+    if (
+        type(check.get("command")) is not list
+        or check.get("command") != _P15_NATIVE_RUNTIME_PROVIDER_COMMAND
+    ):
+        raise ManifestError(
+            f"check {check_id!r} command must be the exact direct native runtime provider test command"
+        )
+    if check.get("inputs") != _P15_NATIVE_RUNTIME_PROVIDER_INPUTS:
+        raise ManifestError(
+            f"check {check_id!r} inputs drifted from the reviewed native runtime provider source/fixture/artifact set"
+        )
+    if check.get("tool_inputs") != _P15_NATIVE_RUNTIME_PROVIDER_TOOL_INPUTS:
+        raise ManifestError(
+            f"check {check_id!r} tool_inputs drifted from deps.edn and the test runner"
+        )
+    if "dependencies" in check:
+        raise ManifestError(
+            f"check {check_id!r} must use the exact depends_on field"
+        )
+    dependencies = check.get("depends_on", [])
+    if dependencies != ["stage0-orchestrator-unit"]:
+        raise ManifestError(
+            f"check {check_id!r} must depend only on stage0-orchestrator-unit"
+        )
 
 
 def _resource_receipt_error(record: Mapping[str, Any]) -> str | None:
@@ -833,6 +963,17 @@ def validate_manifest(
                 "manifest must contain exactly one check id "
                 f"{_P15_NATIVE_LAUNCHER_CHECK_ID!r}"
             )
+        runtime_provider_count = sum(
+            1
+            for item in checks
+            if isinstance(item, Mapping)
+            and item.get("id") == _P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID
+        )
+        if runtime_provider_count != 1:
+            raise ManifestError(
+                "manifest must contain exactly one check id "
+                f"{_P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID!r}"
+            )
         observed_stage8_ids = {
             str(item.get("id"))
             for item in checks
@@ -863,6 +1004,7 @@ def validate_manifest(
             raise ManifestError(f"check {check_id!r} has invalid lane {lane!r}")
         _parse_command(check.get("command"), check_id)
         _validate_p15_native_launcher_contract(check)
+        _validate_p15_native_runtime_provider_contract(check)
         _validate_stage3_resource_contract(check)
         _validate_stage3_runtime_inputs(check)
         _validate_stage8_node_contract(check)

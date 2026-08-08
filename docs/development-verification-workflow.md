@@ -109,6 +109,30 @@ non-authoritative development evidence and makes no public, self-hosted,
 release, or strict process-containment claim. Local validation does not rerun
 the JVM while coordinator C12 work is active.
 
+The bounded P15-S23 native runtime provider is a separate internal prerequisite:
+`stage0-p15-native-runtime-provider-prerequisite` runs the exact direct command
+`clojure -J-Xmx1g -M:test --namespace gravity.p15-native-runtime-driver-test`.
+It is fresh/no-resume, automatic, serialized, and non-authoritative with a
+180-second timeout, Xmx1g / 1,073,741,824-byte floor, and the canonical
+`/private/tmp/gravity-sh07-heavy.lock` (`lock_owner: runner`, `exclusive: true`,
+`capacity: 1`). The observed process-tree receipt is required; the common
+runner fails closed on a non-positive RSS peak, invalid cadence, or a sampling
+contract other than `run_with_heartbeat.process_tree_metrics-v1`.
+
+The provider node owns the C source, Gravity contract, exact test, provider
+artifact, and every one of the 22 current fixture files as exact declarations,
+with only `deps.edn` and
+`bootstrap/clojure/test/gravity/self_hosting_test_runner.clj` as tool inputs.
+Each owned path routes to this node and `stage0-orchestrator-unit` only;
+legacy Stage0 broad owners impact-exclude those paths. Explicit `--check`
+includes the prerequisite closure and `--all` includes the node. The reviewed
+coordinator observation is 9 tests/234 assertions in about 3.791 seconds with
+peak process-tree RSS 163,463,168 bytes, using the host-authored C provider on
+ARM64 macOS. Toolchain-unavailable platforms record a skip/no-claim result.
+This is a narrow internal exception to the usual native-target exclusion and
+does not create public native, self-hosting, release, seedless, or strict
+containment authority.
+
 ## Stage1 SH-01 handoff and measured boundary
 
 The bounded alias ran 50 tests and 290 assertions in 1.98 seconds in the clean

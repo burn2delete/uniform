@@ -357,6 +357,46 @@ self-hosting, release, or strict process-containment claim. The coordinator
 receipt was not rerun in this gate; Python unit/static/JSON/docs validation is
 the local verification boundary while C12 work remains active.
 
+### 4b. Focused P15-S23 native runtime provider prerequisite
+
+The bounded native runtime provider has its own exact direct namespace gate,
+`stage0-p15-native-runtime-provider-prerequisite`:
+
+```bash
+clojure -J-Xmx1g -M:test --namespace gravity.p15-native-runtime-driver-test
+```
+
+It is a fresh, serialized `heavy-candidate` with a strict 180-second timeout,
+`resume: false`, `no_resume: true`, `automatic: true`, and `authority: none`.
+The verifier owns the canonical `/private/tmp/gravity-sh07-heavy.lock` while
+the direct command runs (`lock_owner: runner`, `exclusive: true`,
+`capacity: 1`). The node pins `-J-Xmx1g` / 1,073,741,824 bytes and records
+`observed-peak-process-tree-rss-and-wall-time`; the shared runner rejects any
+non-positive RSS, non-positive or non-finite cadence, or mismatched
+`run_with_heartbeat.process_tree_metrics-v1` contract.
+
+The manifest binds the provider C source, the Gravity semantic contract, the
+exact provider test, the provider artifact, and all 22 files currently under
+`bootstrap/clojure/fixtures/p15-native-runtime-driver` as individual inputs.
+It binds only `deps.edn` and
+`bootstrap/clojure/test/gravity/self_hosting_test_runner.clj` as tool inputs;
+the fixture directory is not an ownership glob. Every owned path selects this
+node and `stage0-orchestrator-unit` only. Legacy broad Stage0 owners
+impact-exclude every exact path, so no broad Stage0, Stage3-8, or proof node is
+selected. Explicit `--check` closes over the orchestrator prerequisite, and
+`--all` includes the provider node.
+
+Coordinator evidence for the reviewed provider is 9 tests and 234 assertions
+in about 3.791 seconds, with a measured peak process-tree RSS of 163,463,168
+bytes under the canonical lock. The implementation is a host-authored C
+provider compiled for ARM64 macOS and is non-authoritative development
+evidence. On other hosts, or when the ARM64 macOS Clang/file toolchain is not
+available, the namespace records a platform skip with no native-runtime claim;
+the gate does not substitute another target or infer support. This internal
+prerequisite is a narrow exception to the general native-target exclusion: it
+does not claim public native execution, self-hosting, release readiness,
+seedless completion, or strict OS-level process containment.
+
 ### 5. Focused namespace or cached SH-07 feedback
 
 Use for a single changed test or a bounded shard. These runs are

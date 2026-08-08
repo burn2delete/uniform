@@ -3308,6 +3308,225 @@ class VerifyDevelopmentTests(unittest.TestCase):
 
         self.assertEqual(by_id[check_id]["authority"], "none")
 
+    def test_real_manifest_p15_native_runtime_provider_gate_contract_and_routing(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        provider = verifier.checks_by_id(manifest)[
+            "stage0-p15-native-runtime-provider-prerequisite"
+        ]
+        self.assertEqual(
+            provider["command"],
+            [
+                "clojure",
+                "-J-Xmx1g",
+                "-M:test",
+                "--namespace",
+                "gravity.p15-native-runtime-driver-test",
+            ],
+        )
+        self.assertEqual(provider["lane"], "heavy-candidate")
+        self.assertEqual(provider["cost"], "heavy")
+        self.assertEqual(provider["timeout_seconds"], 180)
+        self.assertEqual(provider["jvm_heap"], "-J-Xmx1g")
+        self.assertEqual(provider["minimum_heap_bytes"], 1073741824)
+        self.assertEqual(provider["lock"], "/private/tmp/gravity-sh07-heavy.lock")
+        self.assertEqual(provider["lock_owner"], "runner")
+        self.assertIs(provider["exclusive"], True)
+        self.assertEqual(provider["capacity"], 1)
+        self.assertIs(provider["fresh"], True)
+        self.assertIs(provider["resume"], False)
+        self.assertIs(provider["no_resume"], True)
+        self.assertIs(provider["automatic"], True)
+        self.assertEqual(provider["authority"], "none")
+        self.assertEqual(
+            provider["resource_receipt"],
+            "observed-peak-process-tree-rss-and-wall-time",
+        )
+        expected_inputs = [
+            "bootstrap/native/p15_native_runtime_driver.c",
+            "bootstrap/gravity/p15_s23/native_runtime_driver.gravity",
+            "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-branch.gravity",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-branch.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-print.gravity",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-print.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-print.qst",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-str.gravity",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-str.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-halt.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-int-leading-zero.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-int-negative-zero.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-int-plus.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-invalid-utf8-ff.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-invalid-utf8-overlong.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-jump-leading-zero.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-jump-negative-zero.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-jump-plus.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-missing-halt.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-operand.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-output-overflow.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-underflow.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-unsupported.payload",
+            "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-value-overflow.payload",
+            "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        ]
+        self.assertEqual(provider["inputs"], expected_inputs)
+        self.assertTrue(all("*" not in path and "?" not in path for path in provider["inputs"]))
+        self.assertEqual(
+            provider["tool_inputs"],
+            [
+                "deps.edn",
+                "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+            ],
+        )
+        self.assertEqual(provider["depends_on"], ["stage0-orchestrator-unit"])
+
+        expected_ids = {
+            "stage0-orchestrator-unit",
+            "stage0-p15-native-runtime-provider-prerequisite",
+        }
+        legacy_broad_ids = {
+            "stage0-hosted-hello",
+            "stage0-hosted-hello-qst",
+            "stage0-selective-smoke",
+            "stage0-hosted-core-app",
+            "stage0-hosted-core-compiled-app",
+            "stage0-clojure-suite",
+            "stage0-bootstrap-authority",
+        }
+        by_id = verifier.checks_by_id(manifest)
+        for owned_path in provider["inputs"]:
+            with self.subTest(owned_path=owned_path):
+                selection = verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[owned_path]
+                )
+                self.assertEqual(set(selection["selected_ids"]), expected_ids)
+                self.assertEqual(selection["unmatched_changes"], [])
+                for broad_id in legacy_broad_ids:
+                    self.assertEqual(
+                        by_id[broad_id]["impact_excludes"].count(owned_path),
+                        1,
+                        broad_id,
+                    )
+                receipt = verifier.run_verification(
+                    manifest,
+                    ROOT,
+                    changed_paths=[owned_path],
+                    dry_run=True,
+                )
+                self.assertEqual(receipt["status"], "planned")
+                self.assertFalse(receipt["authoritative"])
+                self.assertEqual(
+                    {record["id"] for record in receipt["checks"]}, expected_ids
+                )
+                record = next(
+                    item
+                    for item in receipt["checks"]
+                    if item["id"] == "stage0-p15-native-runtime-provider-prerequisite"
+                )
+                self.assertEqual(record["authority"], "non-authoritative")
+                self.assertEqual(record["lock_owner"], "runner")
+                self.assertEqual(record["lock"], "/private/tmp/gravity-sh07-heavy.lock")
+                self.assertEqual(record["command"], provider["command"])
+
+        explicit = verifier.run_verification(
+            manifest,
+            ROOT,
+            requested_ids=["stage0-p15-native-runtime-provider-prerequisite"],
+            dry_run=True,
+        )
+        self.assertEqual(explicit["status"], "planned")
+        self.assertEqual(
+            explicit["plan"]["topological_order"],
+            [
+                "stage0-orchestrator-unit",
+                "stage0-p15-native-runtime-provider-prerequisite",
+            ],
+        )
+        all_checks = verifier.select_impacted_checks(manifest, ROOT, all_checks=True)
+        self.assertIn(
+            "stage0-p15-native-runtime-provider-prerequisite",
+            all_checks["selected_ids"],
+        )
+
+    def test_real_manifest_p15_native_runtime_provider_gate_rejects_contract_drift(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        check_id = "stage0-p15-native-runtime-provider-prerequisite"
+
+        def check_in(manifest_value: dict) -> dict:
+            return next(item for item in manifest_value["checks"] if item["id"] == check_id)
+
+        cases = (
+            ("missing source", lambda item: item["inputs"].pop(0), "inputs drifted"),
+            ("missing fixture", lambda item: item["inputs"].pop(3), "inputs drifted"),
+            (
+                "wrong command",
+                lambda item: item["command"].__setitem__(4, "gravity.p15-native-runtime-proof"),
+                "exact direct native runtime provider test command",
+            ),
+            ("missing tool input", lambda item: item["tool_inputs"].pop(), "tool_inputs drifted"),
+            ("wrong heap", lambda item: item.__setitem__("jvm_heap", "-J-Xmx2g"), "jvm_heap"),
+            (
+                "minimum heap float",
+                lambda item: item.__setitem__("minimum_heap_bytes", 1073741824.0),
+                "minimum_heap_bytes",
+            ),
+            (
+                "minimum heap bool",
+                lambda item: item.__setitem__("minimum_heap_bytes", True),
+                "minimum_heap_bytes",
+            ),
+            ("wrong lock", lambda item: item.__setitem__("lock", "/private/tmp/wrong.lock"), "canonical lock"),
+            ("wrong lock owner", lambda item: item.__setitem__("lock_owner", "command"), "lock_owner='runner'"),
+            ("wrong capacity", lambda item: item.__setitem__("capacity", 2), "capacity=1"),
+            ("wrong dependency", lambda item: item.__setitem__("depends_on", []), "depend only on stage0-orchestrator-unit"),
+            ("timeout bool", lambda item: item.__setitem__("timeout_seconds", True), "timeout_seconds must be exactly 180"),
+            ("timeout 181", lambda item: item.__setitem__("timeout_seconds", 181), "timeout_seconds must be exactly 180"),
+            ("timeout float", lambda item: item.__setitem__("timeout_seconds", 180.0), "timeout_seconds must be exactly 180"),
+            ("timeout NaN", lambda item: item.__setitem__("timeout_seconds", float("nan")), "timeout_seconds must be exactly 180"),
+            ("missing timeout", lambda item: item.pop("timeout_seconds"), "timeout_seconds must be exactly 180"),
+            ("wrong fresh", lambda item: item.__setitem__("fresh", False), "fresh must be exactly True"),
+            ("wrong resume", lambda item: item.__setitem__("resume", True), "resume must be exactly False"),
+            ("wrong no_resume", lambda item: item.__setitem__("no_resume", False), "no_resume must be exactly True"),
+            ("wrong automatic", lambda item: item.__setitem__("automatic", False), "automatic must be exactly True"),
+            ("wrong authority", lambda item: item.__setitem__("authority", "declared"), "authority='none'"),
+            ("wrong resource receipt", lambda item: item.__setitem__("resource_receipt", "none"), "resource receipt"),
+        )
+        for label, mutate, message in cases:
+            with self.subTest(case=label):
+                value = json.loads(json.dumps(manifest))
+                mutate(check_in(value))
+                with self.assertRaisesRegex(verifier.ManifestError, message):
+                    verifier.validate_manifest(value)
+
+    def test_real_manifest_requires_exact_p15_native_runtime_provider_node_once(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        check_id = "stage0-p15-native-runtime-provider-prerequisite"
+
+        removed = json.loads(json.dumps(manifest))
+        removed["checks"] = [item for item in removed["checks"] if item["id"] != check_id]
+        with self.assertRaisesRegex(verifier.ManifestError, "exactly one check id"):
+            verifier.validate_manifest(removed, require_production_contracts=True)
+
+        renamed = json.loads(json.dumps(manifest))
+        renamed_item = next(item for item in renamed["checks"] if item["id"] == check_id)
+        renamed_item.update(
+            {
+                "id": "stage0-p15-native-runtime-provider-prerequisite-widened",
+                "lane": "focused",
+                "cost": "cheap",
+                "lock": None,
+                "exclusive": False,
+                "command": [sys.executable, "-c", "pass"],
+                "inputs": ["input.txt"],
+                "tool_inputs": [],
+                "depends_on": [],
+                "fresh": False,
+                "automatic": True,
+            }
+        )
+        with self.assertRaisesRegex(verifier.ManifestError, "exactly one check id"):
+            verifier.validate_manifest(renamed, require_production_contracts=True)
+
     def test_real_manifest_requires_exact_p15_native_launcher_node_once(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
         check_id = "stage0-p15-native-launcher-prerequisite"
@@ -3435,6 +3654,27 @@ class VerifyDevelopmentTests(unittest.TestCase):
             record["rss_sampling_contract"],
             "run_with_heartbeat.process_tree_metrics-v1",
         )
+
+    def test_non_jvm_mocked_positive_resource_receipt_is_recorded(self) -> None:
+        """The shared receipt gate must not depend on a JVM-shaped command."""
+
+        outcome = {
+            "timed_out": False,
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "",
+            "cleanup": None,
+            "surviving_descendants": False,
+            "supervision_failed": False,
+            "observed_peak_process_tree_rss_bytes": 163463168,
+            "rss_sampling_cadence_seconds": 1.0,
+            "rss_sampling_contract": "run_with_heartbeat.process_tree_metrics-v1",
+            "rss_sampling_limitation": "between-sample spikes may be missed",
+        }
+        record, run_command = self._run_mocked_resource_check(outcome)
+        self.assertEqual(record["status"], "passed")
+        self.assertEqual(record["observed_peak_process_tree_rss_bytes"], 163463168)
+        self.assertTrue(run_command.call_args.kwargs["sample_rss"])
 
     def test_resource_receipt_sampling_invalid_observations_fail_closed(self) -> None:
         base = {

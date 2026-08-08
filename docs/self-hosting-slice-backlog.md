@@ -155,6 +155,35 @@ non-authoritative. It makes no public native-run, self-hosted, release, or
 strict process-containment claim, and does not change the SH-19 or P15-S23
 completion state.
 
+### P15-S23 native runtime provider prerequisite
+
+The bounded native runtime provider is tracked as a narrow internal
+prerequisite, not as a completed self-hosting slice or general native-target
+support. Its development-verification node is
+`stage0-p15-native-runtime-provider-prerequisite` and runs
+`clojure -J-Xmx1g -M:test --namespace gravity.p15-native-runtime-driver-test`
+fresh with no resume, automatically, and with a strict 180-second timeout.
+The verifier owns `/private/tmp/gravity-sh07-heavy.lock` with
+`lock_owner: runner`, `exclusive: true`, and `capacity: 1`; the node pins
+Xmx1g / 1,073,741,824 bytes and records the observed process-tree resource
+receipt. It depends only on `stage0-orchestrator-unit` and remains
+`authority: none`.
+
+The node binds the host-authored C provider, the Gravity semantic contract,
+the exact provider test, its partial provider artifact, and all 22 current
+fixture files as individual inputs. It binds only `deps.edn` and the
+self-hosting test runner as tool inputs. Legacy broad Stage0 owners
+impact-exclude every exact provider path, so a provider edit selects only the
+provider node and the orchestrator prerequisite; explicit `--check` and
+`--all` retain the same fixed closure rules.
+
+The reviewed ARM64 macOS host-C observation passed 9 tests and 234 assertions
+in about 3.791 seconds with peak process-tree RSS 163,463,168 bytes under the
+canonical lock. Non-ARM64/macOS or missing-toolchain hosts record a platform
+skip with no native-runtime claim. This internal evidence does not grant
+public native execution, self-hosting, release, seedless, or strict
+OS-containment authority.
+
 ## Countable Backlog
 
 Status meanings:
