@@ -690,8 +690,18 @@ def _lock_owner(check: Mapping[str, Any]) -> str:
     return owner
 
 
-def load_manifest(path: Path | str = DEFAULT_MANIFEST) -> dict[str, Any]:
-    """Load and validate a JSON verification manifest."""
+def load_manifest(
+    path: Path | str = DEFAULT_MANIFEST,
+    *,
+    require_production_contracts: bool | None = None,
+) -> dict[str, Any]:
+    """Load and validate a JSON verification manifest.
+
+    The repository's canonical manifest is a trusted production context: its
+    fixed-node contracts cannot be disabled by editing mutable JSON metadata.
+    Callers may opt other paths into the same checks, while generic fixture
+    manifests remain usable without production-only nodes.
+    """
 
     manifest_path = Path(path)
     if not manifest_path.is_file():
@@ -700,11 +710,23 @@ def load_manifest(path: Path | str = DEFAULT_MANIFEST) -> dict[str, Any]:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ManifestError(f"cannot read manifest {manifest_path}: {exc}") from exc
-    validate_manifest(manifest)
+    canonical_production_path = manifest_path.resolve() == DEFAULT_MANIFEST.resolve()
+    require_fixed_contracts = (
+        canonical_production_path
+        or require_production_contracts is True
+    )
+    validate_manifest(
+        manifest,
+        require_production_contracts=require_fixed_contracts,
+    )
     return manifest
 
 
-def validate_manifest(manifest: Mapping[str, Any]) -> None:
+def validate_manifest(
+    manifest: Mapping[str, Any],
+    *,
+    require_production_contracts: bool = False,
+) -> None:
     """Validate graph shape and resource declarations before any command runs."""
 
     if not isinstance(manifest, Mapping):
@@ -720,17 +742,11 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
     checks = manifest.get("checks")
     if not isinstance(checks, list) or not checks:
         raise ManifestError("manifest checks must be a non-empty list")
-    # Synthetic manifests used by the unit tests exercise the generic graph
-    # contract.  The shipped Stage0 manifest, identified by its stable name,
-    # additionally has one and only one reviewed P15 launcher gate.  Enforce
-    # presence before per-check validation so removal, renaming, or replacement
-    # by a widened arbitrary command cannot silently drop the focused owner.
-    scope = manifest.get("scope")
-    requires_p15_launcher = (
-        manifest.get("name") == "gravity-stage0-development-verification"
-        or isinstance(scope, Mapping) and scope.get("stage") == "stage0"
-    )
-    if requires_p15_launcher:
+    # Production-only membership is selected by the trusted load context, not
+    # mutable manifest metadata.  Enforce presence before per-check validation
+    # so removal, renaming, or replacement by a widened arbitrary command
+    # cannot silently drop the focused owner.
+    if require_production_contracts:
         launcher_count = sum(
             1
             for item in checks

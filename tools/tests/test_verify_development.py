@@ -3251,7 +3251,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             item for item in removed["checks"] if item["id"] != check_id
         ]
         with self.assertRaisesRegex(verifier.ManifestError, "exactly one check id"):
-            verifier.validate_manifest(removed)
+            verifier.validate_manifest(removed, require_production_contracts=True)
 
         renamed = json.loads(json.dumps(manifest))
         renamed_item = next(item for item in renamed["checks"] if item["id"] == check_id)
@@ -3271,7 +3271,31 @@ class VerifyDevelopmentTests(unittest.TestCase):
             }
         )
         with self.assertRaisesRegex(verifier.ManifestError, "exactly one check id"):
-            verifier.validate_manifest(renamed)
+            verifier.validate_manifest(renamed, require_production_contracts=True)
+
+    def test_production_manifest_context_cannot_be_bypassed_by_metadata_drift(self) -> None:
+        manifest_path = ROOT / "tools" / "development_verification_manifest.json"
+        manifest = verifier.load_manifest(manifest_path)
+        drifted = json.loads(json.dumps(manifest))
+        drifted["name"] = "test-development-verification"
+        drifted["scope"] = {"stage": "synthetic"}
+        drifted["checks"] = [
+            item
+            for item in drifted["checks"]
+            if item["id"] != "stage0-p15-native-launcher-prerequisite"
+        ]
+
+        # Content alone does not opt a generic fixture into production-only
+        # membership.  The trusted canonical load path does.
+        verifier.validate_manifest(drifted)
+        with tempfile.TemporaryDirectory(prefix="gravity-synthetic-manifest-") as directory:
+            synthetic_path = Path(directory) / "manifest.json"
+            synthetic_path.write_text(json.dumps(drifted), encoding="utf-8")
+            verifier.load_manifest(synthetic_path)
+
+        with mock.patch.object(Path, "read_text", return_value=json.dumps(drifted)):
+            with self.assertRaisesRegex(verifier.ManifestError, "exactly one check id"):
+                verifier.load_manifest(manifest_path)
 
     def _run_mocked_resource_check(
         self,
@@ -3359,8 +3383,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 self.assertTrue(run_command.call_args.kwargs["sample_rss"])
                 self.assertEqual(record["status"], "failed")
                 self.assertEqual(record["reason"], "invalid-resource-receipt")
-            self.assertFalse(record["cacheable"])
-            self.assertIn("resource receipt", record["stderr"])
+                self.assertFalse(record["cacheable"])
+                self.assertIn("resource receipt", record["stderr"])
 
     def test_commands_without_observed_resource_receipt_do_not_sample_rss(self) -> None:
         outcome = {
