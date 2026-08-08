@@ -1464,11 +1464,18 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage6-sh11-c9-safety-adapter",
             "c10-authority",
         }
+        # Stage7 currently exposes only a reviewed runner/preflight seed.  It
+        # is deliberately absent from the durable manifest until the moving
+        # C11 source, proof binding, and complete ownership graph freeze.
+        stage7_deferred_batches = {
+            "stage7-c11-source-preflight",
+        }
         stage3_fixed_batches = (
             set(verifier._stage3.FIXED_BATCHES)
             - stage4_batches
             - stage5_batches
             - stage6_batches
+            - stage7_deferred_batches
         )
         self.assertEqual(
             {item["stage3_batch"] for item in stage3.values()},

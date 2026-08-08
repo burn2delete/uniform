@@ -8,7 +8,7 @@
   explicit limits.  This prevents stack growth in the supported lexical
   cases, while the host reader remains a separate bounded parsing step."
   (:require [clojure.java.io :as io]
-            [clojure.test :refer [deftest is testing thrown?]]))
+            [clojure.test :refer [deftest is testing]]))
 
 (defn- repository-root
   []
