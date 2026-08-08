@@ -1755,6 +1755,151 @@ class VerifyDevelopmentTests(unittest.TestCase):
             self.assertNotIn("stage0-clojure-suite", selection["selected_ids"])
             self.assertNotIn("stage0-bootstrap-authority", selection["selected_ids"])
 
+    def _valid_stage3_proof_candidate_receipt(
+        self,
+        root: Path,
+        *,
+        check_id: str,
+        batch: str,
+        module: str,
+    ) -> tuple[dict, dict, dict]:
+        """Build a bounded fixed-policy proof receipt for parent validation tests."""
+
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        check_item = verifier.checks_by_id(manifest)[check_id]
+        receipt_path = root / ".cpcache" / f"{check_id}.json"
+        nonce = "proof-receipt-test"
+        command = ["python3", "tools/run_stage3_verification.py"]
+        command_hash = "sha256:" + verifier._sha256_text(verifier._canonical(command))
+        digest = "sha256:" + ("a" if module == "c7-types" else "b") * 64
+        evidence = {
+            "state_dir": str(root / ".cpcache" / "stage3-authority" / nonce),
+            "state": "completed",
+            "selected_modules": [module],
+            "module": module,
+            "aggregate_authoritative": False,
+            "authority_scope": "individual-source-bound-derived",
+            "lock_path": verifier._stage3.CANONICAL_LOCK_TEXT,
+            "lock_mode": "0600",
+            "lock_acquired": True,
+            "lock_validated": True,
+            "lock_released": True,
+            "manifest_sha256": digest,
+            "module_record": {
+                "state": "passed",
+                "stdout_sha256": digest,
+                "proof_contract_sha256": digest,
+                "module_context_fingerprint": digest,
+            },
+        }
+        receipt = {
+            "schema": verifier._stage3.SCHEMA,
+            "receipt_path": str(receipt_path),
+            "root": str(root),
+            "nonce": nonce,
+            "check_id": check_id,
+            "mode": verifier._stage3.MODE_PROOF_CANDIDATE,
+            "batch": batch,
+            "proof_batch": batch,
+            "proof_module": module,
+            "command": command,
+            "command_identity_sha256": command_hash,
+            "lock": {
+                "path": verifier._stage3.CANONICAL_LOCK_TEXT,
+                "canonical_path": verifier._stage3.CANONICAL_LOCK_TEXT,
+                "protocol": verifier._sh07.SHARED_LOCK_PROTOCOL,
+                "acquired": True,
+                "validated": True,
+                "released": True,
+                "owner": "authoritative-child",
+            },
+            "daemonization": "forbidden",
+            "no_surviving_descendants": True,
+            "observed_peak_process_tree_rss_bytes": 123,
+            "rss_sampling_cadence_seconds": 1.0,
+            "rss_sampling_contract": "run_with_heartbeat.process_tree_metrics-v1",
+            "rss_sampling_limitation": "between-sample spike may be missed",
+            "child": {
+                "command": command,
+                "returncode": 0,
+                "timed_out": False,
+                "supervision_failed": False,
+                "survivors": [],
+                "cleanup": {"terminal_safe": True, "output_complete": True},
+                "observed_peak_process_tree_rss_bytes": 123,
+                "rss_sampling_cadence_seconds": 1.0,
+                "rss_sampling_contract": "run_with_heartbeat.process_tree_metrics-v1",
+                "rss_sampling_limitation": "between-sample spike may be missed",
+            },
+            "exit_code": 0,
+            "status": "passed",
+            "proof_candidate": True,
+            "attestation_required": True,
+            "authority": "none",
+            "non_authoritative": True,
+            "candidate_manifest_path": str(Path(evidence["state_dir"]) / "manifest.json"),
+            "authority_evidence": evidence,
+        }
+        identities = {"command": command}
+        return receipt, check_item, identities
+
+    def test_parent_accepts_valid_c7_and_c8_proof_candidate_receipts(self) -> None:
+        for check_id, batch, module in (
+            ("stage3-c7-proof-candidate", "authority", "c7-types"),
+            ("stage4-c8-proof-candidate", "c8-authority", "c8-effects"),
+        ):
+            with tempfile.TemporaryDirectory(prefix=f"gravity-{module}-receipt-") as directory:
+                root = Path(directory).resolve()
+                receipt, check_item, identities = self._valid_stage3_proof_candidate_receipt(
+                    root,
+                    check_id=check_id,
+                    batch=batch,
+                    module=module,
+                )
+                validated = verifier._validate_stage3_receipt(
+                    receipt,
+                    check=check_item,
+                    identities=identities,
+                    root=root,
+                    receipt_path=Path(receipt["receipt_path"]),
+                    runner_report_path=None,
+                    nonce=receipt["nonce"],
+                    expected_returncode=0,
+                )
+                self.assertEqual(validated["authority"], "proof-candidate")
+                self.assertEqual(validated["proof_module"], module)
+                self.assertEqual(validated["authority_evidence"]["module"], module)
+                self.assertEqual(validated["authority_evidence"]["selected_modules"], [module])
+
+    def test_parent_rejects_cross_module_proof_candidate_tampering(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-c8-tamper-") as directory:
+            root = Path(directory).resolve()
+            receipt, check_item, identities = self._valid_stage3_proof_candidate_receipt(
+                root,
+                check_id="stage4-c8-proof-candidate",
+                batch="c8-authority",
+                module="c8-effects",
+            )
+            for mutate in (
+                lambda value: value.update({"proof_batch": "authority"}),
+                lambda value: value.update({"proof_module": "c7-types"}),
+                lambda value: value["authority_evidence"].update({"module": "c7-types"}),
+                lambda value: value["authority_evidence"].update({"selected_modules": ["c7-types"]}),
+            ):
+                candidate = json.loads(json.dumps(receipt))
+                mutate(candidate)
+                with self.assertRaises(verifier.VerificationError):
+                    verifier._validate_stage3_receipt(
+                        candidate,
+                        check=check_item,
+                        identities=identities,
+                        root=root,
+                        receipt_path=Path(candidate["receipt_path"]),
+                        runner_report_path=None,
+                        nonce=candidate["nonce"],
+                        expected_returncode=0,
+                    )
+
     def test_real_manifest_partial_stage3_source_files_fail_closed_as_deferred(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
         for changed in (

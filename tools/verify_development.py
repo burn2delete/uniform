@@ -2543,8 +2543,26 @@ def _validate_stage3_receipt(
         errors.append("receipt check id mismatch")
     expected_mode = _stage3_mode(check)
     expected_batch = str(check["stage3_batch"])
+    proof_policy = getattr(_stage3, "FIXED_MODULE_POLICIES", {}).get(expected_batch)
+    expected_proof_module = (
+        proof_policy.get("module")
+        if isinstance(proof_policy, Mapping) and isinstance(proof_policy.get("module"), str)
+        else None
+    )
+    expected_proof_scope = (
+        proof_policy.get("authority_scope")
+        if isinstance(proof_policy, Mapping) and isinstance(proof_policy.get("authority_scope"), str)
+        else None
+    )
     if receipt.get("mode") != expected_mode or receipt.get("batch") != expected_batch:
         errors.append("receipt mode or fixed batch mismatch")
+    if expected_mode in {_stage3.MODE_PROOF_CANDIDATE, _stage3.MODE_REVIEWED_ATTESTATION}:
+        if expected_proof_module is None:
+            errors.append("fixed proof policy is unavailable for receipt batch")
+        if receipt.get("proof_batch") != expected_batch:
+            errors.append("receipt proof batch binding mismatch")
+        if receipt.get("proof_module") != expected_proof_module:
+            errors.append("receipt proof module binding mismatch")
     expected_command = ["python3", "tools/run_stage3_verification.py"]
     if receipt.get("command") != expected_command:
         errors.append("receipt command mismatch")
@@ -2787,9 +2805,11 @@ def _validate_stage3_receipt(
         if not isinstance(evidence, Mapping):
             raise VerificationError("declared authority receipt lacks child manifest evidence")
         if (evidence.get("state") != "completed"
-                or evidence.get("selected_modules") != ["c7-types"]
+                or expected_proof_module is None
+                or evidence.get("module") != expected_proof_module
+                or evidence.get("selected_modules") != [expected_proof_module]
                 or evidence.get("aggregate_authoritative") is not False
-                or evidence.get("authority_scope") != "individual-source-bound-derived"):
+                or evidence.get("authority_scope") != expected_proof_scope):
             raise VerificationError("declared authority manifest scope is not exact")
         if (evidence.get("lock_path") != _stage3.CANONICAL_LOCK_TEXT
                 or evidence.get("lock_mode") != "0600"
@@ -2798,7 +2818,9 @@ def _validate_stage3_receipt(
             raise VerificationError("declared authority manifest lease lifecycle is not exact")
         record = evidence.get("module_record")
         if not isinstance(record, Mapping) or record.get("state") != "passed":
-            raise VerificationError("declared authority c7-types module is not structurally passed")
+            raise VerificationError(
+                f"declared authority {expected_proof_module or 'fixed-proof'} module is not structurally passed"
+            )
         for field in ("stdout_sha256", "proof_contract_sha256", "module_context_fingerprint"):
             value = record.get(field)
             if not isinstance(value, str) or not value.startswith("sha256:"):
@@ -2830,9 +2852,11 @@ def _validate_stage3_receipt(
         if not isinstance(evidence, Mapping):
             raise VerificationError("proof-candidate receipt lacks child manifest evidence")
         if (evidence.get("state") != "completed"
-                or evidence.get("selected_modules") != ["c7-types"]
+                or expected_proof_module is None
+                or evidence.get("module") != expected_proof_module
+                or evidence.get("selected_modules") != [expected_proof_module]
                 or evidence.get("aggregate_authoritative") is not False
-                or evidence.get("authority_scope") != "individual-source-bound-derived"
+                or evidence.get("authority_scope") != expected_proof_scope
                 or evidence.get("lock_path") != _stage3.CANONICAL_LOCK_TEXT
                 or evidence.get("lock_mode") != "0600"
                 or any(evidence.get(field) is not True for field in (
