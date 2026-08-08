@@ -111,10 +111,27 @@ persistent-immutable primitive read and classifies the derived private load as
 resolution. The generic C10 classifier continues to reject load requests;
 runtime-checked, unsafe, nonpersistent, aggregate, and effectful load families
 remain pending. The five-test, 147-assertion combined lane is its current
-cross-stage development evidence. A fresh source-bound-derived `c10-safety`
-proof candidate is still required after the source and contract freeze. No
-current C8, C9, or C10 proof candidate has a trusted reviewed attestation or
-claims exact-authentic, aggregate, release, or safety-certificate authority.
+cross-stage development evidence. None of the current C8, C9, or C10 proof
+candidates has a trusted reviewed attestation or claims exact-authentic,
+aggregate, release, or safety-certificate authority.
+
+Fresh proof candidates for the three frozen adapter sources completed at
+commit `e27757e`. C8 passed in 1,035.465 seconds with artifact
+`sha256:e36f64d3fab9f8419d9f0e8d1b4b2f59f137b2ca07b7756dd9c0a7c92be6c3a4`
+and census
+`sha256:ecd335f292da034f0e283f79969d75002d459f41cd4f43f3ce10cee887510570`.
+C9 passed in 748.278 seconds with artifact
+`sha256:ec15a730d9f264b7744e797d29e928adc9ca8953daf186a4f2e84634b6baa86d`
+and census
+`sha256:a6d95d6a7ddc63c3a446dafc946e102587b753f443cba7a004d3240dafe3d7c6`.
+C10 passed in 1,624.000 seconds with artifact
+`sha256:de279d0e495212d259fd3f78e5575aa57c3a7559984df9acfdb71fd5f0488cb2`
+and census
+`sha256:d327c313e26d09bfbab9417d06ce4987767e7547941ec9afdeefdf643026c469`.
+All three manifests report stable context, checked output contracts, exit zero,
+no timeout, and empty stderr. Their counts are source-bound-derived rather than
+precommitted, `:attestation-required?` remains true, and no trusted attestation
+or authority promotion was performed.
 
 ## Lane order
 

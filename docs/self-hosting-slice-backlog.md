@@ -636,10 +636,34 @@ classifier still rejects load requests, and runtime-checked, unsafe,
 nonpersistent, aggregate, and effectful load families remain pending. Its
 current cross-stage development receipt is the five-test, 147-assertion lane
 above; the final authenticated `.gravity` boundary took 61.220 seconds, used
-one cold carrier, and did not build `.qst`. Fresh source-bound-derived C8, C9,
-and C10 proof candidates are required for these frozen sources. No trusted
-reviewed attestation, exact-authentic coverage, aggregate authority, release
-authority, or safety-certificate authority is claimed.
+one cold carrier, and did not build `.qst`. Fresh source-bound-derived proof
+candidates for the three frozen sources completed at commit `e27757e` with
+stable context, checked output contracts, exit zero, no timeout, and empty
+stderr. C8 took 1,035.465 seconds and produced artifact
+`sha256:e36f64d3fab9f8419d9f0e8d1b4b2f59f137b2ca07b7756dd9c0a7c92be6c3a4`
+and census
+`sha256:ecd335f292da034f0e283f79969d75002d459f41cd4f43f3ce10cee887510570`:
+72 fragments and roots, 6,757 forms, 570 bindings, 308 local bindings, 2,312
+resolutions, 5,792 core nodes, 72 definitions, 976 calls and call edges, 1,847
+references, 66 function records, four recursion components, and zero keyword
+lookups. C9 took 748.278 seconds and produced artifact
+`sha256:ec15a730d9f264b7744e797d29e928adc9ca8953daf186a4f2e84634b6baa86d`
+and census
+`sha256:a6d95d6a7ddc63c3a446dafc946e102587b753f443cba7a004d3240dafe3d7c6`:
+66 fragments and roots, 5,243 forms, 556 bindings, 294 local bindings, 1,797
+resolutions, 4,409 core nodes, 66 definitions, 716 calls and call edges, 1,440
+references, 59 function records, 13 recursion components, and zero keyword
+lookups. C10 took 1,624.000 seconds and produced artifact
+`sha256:de279d0e495212d259fd3f78e5575aa57c3a7559984df9acfdb71fd5f0488cb2`
+and census
+`sha256:d327c313e26d09bfbab9417d06ce4987767e7547941ec9afdeefdf643026c469`:
+111 fragments and roots, 9,200 forms, 728 bindings, 466 local bindings, 3,306
+resolutions, 7,728 core nodes, 111 definitions, 1,350 calls and call edges,
+2,560 references, 104 function records, one recursion component, and zero
+keyword lookups. Counts were derived rather than precommitted and all three
+receipts require separate attestation. No trusted reviewed attestation,
+exact-authentic coverage, aggregate authority, release authority, or
+safety-certificate authority is claimed.
 The C12 domain-IR source adds 61,946 authenticated bytes in 85 fragments
 containing 5,711 forms, 569 bindings, and 2,073 resolutions. Its calibrated
 lowering contains 4,591 canonical core nodes with 85 definitions: 72
