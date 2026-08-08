@@ -104,6 +104,74 @@
   (bootstrap/p18-t04-run-runtime-derived-c-file!
    (native-run-request source-path)))
 
+(defn- delayed-post-exit-pump-failure
+  "Publish FATAL only after the initial post-exit pump recheck has inspected
+  stdout.  The stderr predicate call releases the blocked stdout pump after
+  computing its own successful result, so the failure can only be observed by
+  the normal final-pump outcome path."
+  [fatal]
+  (let [release-stdout (promise)
+        await-returned? (atom false)
+        released? (atom false)
+        original-read
+        (var-get (private-bootstrap-var
+                  "*c-backend-process-read-stream-fn*"))
+        original-await
+        (var-get (private-bootstrap-var "c-backend-await-process!"))
+        original-failure
+        (var-get (private-bootstrap-var "c-backend-output-pump-failure"))
+        outcome (promise)
+        worker
+        (Thread.
+         (fn []
+           (try
+             (with-private-redefs
+               {"*c-backend-process-read-stream-fn*"
+                (fn [input limit]
+                  (if (str/includes? (.getName (Thread/currentThread))
+                                     "stdout-pump")
+                    (do
+                      @release-stdout
+                      (throw fatal))
+                    (original-read input limit)))
+                "c-backend-await-process!"
+                (fn [process pumps]
+                  (let [result (original-await process pumps)]
+                    (reset! await-returned? true)
+                    result))
+                "c-backend-output-pump-failure"
+                (fn [pump]
+                  (let [failure (original-failure pump)]
+                    (when (and @await-returned?
+                               (= :stderr (:stream pump))
+                               (compare-and-set! released? false true))
+                      ;; This predicate has already computed nil for stderr,
+                      ;; and stdout was inspected immediately before it.
+                      (deliver release-stdout true))
+                    failure))}
+               #(supervised-process
+                 ["/usr/bin/true"]
+                 "p15-native-process-delayed-pump-failure.gravity"
+                 :c :test-delayed-pump-failure))
+             (deliver outcome
+                      {:status :returned
+                       :interrupted? (.isInterrupted (Thread/currentThread))})
+             (catch Throwable error
+               (deliver outcome
+                        {:status :failed
+                         :error error
+                         :interrupted?
+                         (.isInterrupted (Thread/currentThread))})))))]
+    (.start worker)
+    (.join worker 10000)
+    (when (.isAlive worker)
+      (deliver release-stdout true)
+      (.interrupt worker)
+      (.join worker 2000))
+    (assoc (deref outcome 1000 {:status :missing-outcome})
+           :worker-alive? (.isAlive worker)
+           :post-exit-release? @released?)))
+
 (defn- runtime-component
   [record]
   (:application-runtime record))
@@ -274,23 +342,60 @@
     (is (= [14] (:new-ids churn-snapshot)) churn-snapshot)))
 
 (deftest p15-s23-native-process-census-final-snapshot-fails-before-overcap-retain
-  (let [initial
-        (private-bootstrap-call "c-backend-census-consume-ids" #{} [21 22] 2)
-        error
-        (try
-          (private-bootstrap-call "c-backend-census-consume-ids"
-                                  (:retained-ids initial) [23] 2)
-          nil
-          (catch clojure.lang.ExceptionInfo failure
-            failure))]
-    (is (false? (:overflow? initial)) initial)
-    (is (= #{21 22} (:retained-ids initial)) initial)
-    (is (some? error) error)
-    (is (= :bounded-c-backend-process-descendants
-           (:missing-fact (ex-data error))) error)
-    (is (= 2 (:captured-count (ex-data error))) error)
-    (is (= 1 (:candidate-count (ex-data error))) error)
-    (is (= #{21 22} (:retained-ids (ex-data error))) error)))
+  (let [processes
+        (vec (repeatedly 3 #(.start (ProcessBuilder.
+                                    ^java.util.List ["/usr/bin/true"]))))
+        root (nth processes 0)
+        first-descendant (.toHandle ^Process (nth processes 1))
+        final-descendant (.toHandle ^Process (nth processes 2))
+        snapshots (atom 0)
+        merges (atom [])
+        original-merge
+        (var-get (private-bootstrap-var "c-backend-merge-census-handles"))]
+    (try
+      (doseq [process processes]
+        (.waitFor ^Process process))
+      (let [error
+            (try
+              (with-private-redefs
+                {"*c-backend-process-max-descendants*" 1
+                 "c-backend-process-descendants"
+                 (fn [_]
+                   (if (= 1 (swap! snapshots inc))
+                     {:handles [first-descendant]
+                      :overflow? false
+                      :snapshot-ok? true}
+                     {:handles [final-descendant]
+                      :overflow? false
+                      :snapshot-ok? true}))
+                 "c-backend-merge-census-handles"
+                 (fn [captured handles maximum]
+                   (let [result (original-merge captured handles maximum)]
+                     (swap! merges conj result)
+                     result))}
+                #(private-bootstrap-call
+                  "c-backend-terminate-process-tree!"
+                  root "p15-native-process-final-census.gravity" :c))
+              nil
+              (catch clojure.lang.ExceptionInfo failure
+                failure))
+            final-merge (last @merges)
+            retained-ids (set (keys (:captured final-merge)))]
+        (is (some? error) error)
+        (is (= :bounded-c-backend-process-descendants
+               (:missing-fact (ex-data error))) error)
+        (is (true? (:final-snapshot-overflow? (ex-data error))) error)
+        (is (= 1 (:observed-descendants (ex-data error))) error)
+        (is (= 2 @snapshots) {:snapshot-count @snapshots})
+        (is (= 2 (count @merges)) {:merges @merges})
+        (is (true? (:overflow? final-merge)) final-merge)
+        (is (= 1 (count retained-ids)) final-merge)
+        (is (contains? retained-ids (.pid first-descendant)) final-merge)
+        (is (not (contains? retained-ids (.pid final-descendant))) final-merge))
+      (finally
+        (doseq [process processes]
+          (when (.isAlive ^Process process)
+            (.destroyForcibly ^Process process)))))))
 
 (deftest p15-s23-native-process-blocking-pump-closes-and-terminates
   (let [reader (java.io.PipedInputStream.)
@@ -350,6 +455,22 @@
       (finally
         (Thread/interrupted)))))
 
+(deftest p15-s23-native-process-delayed-pump-fatal-identities-survive-final-path
+  (doseq [fatal [(OutOfMemoryError. "delayed pump OOME")
+                 (ThreadDeath.)]]
+    (let [evidence (delayed-post-exit-pump-failure fatal)]
+      (is (= :failed (:status evidence)) evidence)
+      (is (identical? fatal (:error evidence)) evidence)
+      (is (true? (:post-exit-release? evidence)) evidence)
+      (is (false? (:worker-alive? evidence)) evidence)))
+  (let [interrupted (InterruptedException. "delayed pump interrupt")
+        evidence (delayed-post-exit-pump-failure interrupted)]
+    (is (= :failed (:status evidence)) evidence)
+    (is (identical? interrupted (:error evidence)) evidence)
+    (is (true? (:interrupted? evidence)) evidence)
+    (is (true? (:post-exit-release? evidence)) evidence)
+    (is (false? (:worker-alive? evidence)) evidence)))
+
 (deftest p15-s23-native-run-cc-fatal-primary-suppresses-cleanup
   (let [fatal (OutOfMemoryError. "synthetic run-cc fatal")
         cleanup (ex-info "synthetic staging cleanup failure"
@@ -373,6 +494,40 @@
     (is (some #(identical? cleanup %)
               (.getSuppressed ^Throwable caught))
         {:suppressed (vec (.getSuppressed ^Throwable caught))})))
+
+(deftest p15-s23-internal-c-backend-cc-compile-and-runtime-remain-operational
+  (let [directory (java.nio.file.Files/createTempDirectory
+                   "gravity-p15-native-cc-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        source (.resolve ^java.nio.file.Path directory "smoke.c")
+        executable (.resolve ^java.nio.file.Path directory "smoke")]
+    (try
+      (java.nio.file.Files/write
+       source
+       (.getBytes
+        "#include <stdio.h>\nint main(void) { fputs(\"native-cc-smoke\\n\", stdout); return 0; }\n"
+        java.nio.charset.StandardCharsets/UTF_8)
+       (make-array java.nio.file.OpenOption 0))
+      (let [result
+            (private-bootstrap-call
+             "c-backend-run-cc!" source executable
+             "p15-internal-native-cc-smoke.gravity" :c true)]
+        (is (= 0 (:exit result)) result)
+        (is (= 0 (:runtime-exit result)) result)
+        (is (= "" (:compile-out result)) result)
+        (is (= "" (:compile-err result)) result)
+        (is (= "native-cc-smoke\n" (:runtime-out result)) result)
+        (is (= "" (:runtime-err result)) result)
+        (is (java.nio.file.Files/isRegularFile
+             executable (make-array java.nio.file.LinkOption 0))
+            {:executable executable :result result}))
+      (finally
+        (try (java.nio.file.Files/deleteIfExists executable)
+             (catch Exception _ nil))
+        (try (java.nio.file.Files/deleteIfExists source)
+             (catch Exception _ nil))
+        (try (java.nio.file.Files/deleteIfExists directory)
+             (catch Exception _ nil))))))
 
 (deftest p15-s23-native-process-output-overflow-terminates-fail-closed
   (let [data

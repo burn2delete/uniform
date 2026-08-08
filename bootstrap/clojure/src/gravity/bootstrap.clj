@@ -145305,24 +145305,6 @@
      :overflow? (> (+ (count captured-ids) (count new-ids))
                    (long maximum))}))
 
-(defn- c-backend-census-consume-ids
-  "Consume one sequential snapshot, failing before an over-cap retain.
-
-  This consumer-level seam mirrors the ordering used by the real handle
-  merger and makes the final-snapshot boundary independently testable."
-  [captured-ids candidate-ids maximum]
-  (let [result (c-backend-census-merge-ids
-                captured-ids candidate-ids maximum)]
-    (when (:overflow? result)
-      (throw
-       (ex-info
-        "native process descendant census exceeded its global bound"
-        (assoc result
-               :missing-fact :bounded-c-backend-process-descendants
-               :captured-count (count (:retained-ids result))
-               :candidate-count (count (:new-ids result))))))
-    result))
-
 (defn- c-backend-merge-census-handles
   "Merge HANDLES into CAPTURED only after checking the global unique bound.
 
@@ -145829,6 +145811,7 @@
               (some (fn [outcome]
                       (when (or (:limit-exceeded? outcome)
                                 (:decode-error outcome)
+                                (:fatal-error outcome)
                                 (:read-error outcome))
                         outcome))
                     [stdout stderr])]
