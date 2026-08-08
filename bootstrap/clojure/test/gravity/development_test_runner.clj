@@ -12,7 +12,37 @@
    {:namespace 'gravity.bootstrap-compatibility.c2-test
     :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj"}
    {:namespace 'gravity.bootstrap-compatibility.c3-test
-    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"}])
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c4-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c5-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c5_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c6-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c6_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c7-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c7_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c8-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c8_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c9-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c9_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c10-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c10_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c11-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c12-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c12_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c13-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c13_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c14-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c14_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c15-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c15_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c16-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c16_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c17-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c17_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c18-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj"}])
 
 (def ^:private default-test-namespace 'gravity.bootstrap-test)
 (def ^:private catalog-by-namespace

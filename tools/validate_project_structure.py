@@ -79,6 +79,21 @@ STAGE0_TEST_LANES = {"bootstrap-free", "compatibility", "coordinator"}
 STAGE0_COORDINATOR_SUPPORT_PATHS = {
     "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj",
     "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c5_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c6_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c7_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c8_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c9_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c10_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c12_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c13_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c14_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c15_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c16_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c17_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj",
     "bootstrap/clojure/test/gravity/development_test_runner.clj",
 }
 STAGE0_MAPPING_KINDS = {

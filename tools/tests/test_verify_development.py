@@ -6,7 +6,9 @@ from __future__ import annotations
 import json
 import os
 import io
+import re
 import contextlib
+import hashlib
 import shutil
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -23,6 +25,60 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 import verify_development as verifier
+
+
+C4_C18_COMPATIBILITY_FORMS = {
+    "c4_test.clj": {
+        "c4-macro-evidence-compatibility-wrappers-preserve-output-and-interposition": "705f4268b8b265bd7e79cf1288a7ea4a2074047ca3d376f764b8722a641a3c70",
+        "macro-expansion-compatibility-wrappers-preserve-output-and-interposition": "737de10877b86d9248384d4d8a8d5ca99897b633bdb91bf8a3f6db7a7fc47f78",
+    },
+    "c5_test.clj": {"c5-resolution-compatibility-wrappers-preserve-arglists-and-interposition": "73eeff6cf219d27b5de6a7b80bd2dbd0d2fcbade5f1ede24104f769d8b28042e"},
+    "c6_test.clj": {"c6-lowering-compatibility-wrappers-preserve-arglists-and-interposition": "3b3861dc9fe27fc42abe0adf0b03d591ad06aba5780437518dd00709247ad4ac"},
+    "c7_test.clj": {"c7-type-checker-compatibility-wrappers-preserve-interposition": "0b78a41ab70ea329ee27d8f860a5a89d997c5cf2de4eca33f865058c263fcc19"},
+    "c8_test.clj": {"c8-effect-checker-compatibility-wrappers-preserve-interposition": "5a55d1772f66e6833e09fc0552b1bcde9d7dc0427d99b1f103cb150fb69f4b21"},
+    "c9_test.clj": {"c9-ownership-checker-compatibility-wrappers-preserve-interposition": "0b71ec75b13ca7599c6338f984759a3617fbb6537c644be0e075d03f08b8af48"},
+    "c10_test.clj": {"c10-safety-analysis-compatibility-wrappers-preserve-interposition": "119dfcc7e85daf3e05b6343944c894c1148c7574358a7cbf08f957fe58d86125"},
+    "c11_test.clj": {"c11-mir-compatibility-wrappers-preserve-interposition": "850a30974d63d36c5353983094f79089aae7aab15aa07cfe3c207cb3927e81b6"},
+    "c12_test.clj": {"c12-domain-ir-compatibility-wrappers-preserve-interposition": "66c368ea6860a2284abee4e87212aed078c365a3d251fb6b1b0d7e0652cb6ed9"},
+    "c13_test.clj": {"c13-optimization-compatibility-wrappers-preserve-interposition": "806c1edd066063a8c7ec53dddebd909e768d34c59000b8371286626b27004607"},
+    "c14_test.clj": {"c14-lowering-compatibility-wrappers-preserve-interposition": "e3080d947809166821578aa838ec8f5145b00d7dcd08d0c300c1cbd56971eafb"},
+    "c15_test.clj": {"c15-diagnostics-compatibility-wrappers-preserve-interposition": "ba4e0d297f3a8b479693b85bce817be5ff5f6e2193f507d9a1d7c1009397f044"},
+    "c16_test.clj": {"c16-incremental-compatibility-wrappers-preserve-interposition": "7f55bf46604118570a812826c57d776f978cf2a17bd66865e1347d782f77b327"},
+    "c17_test.clj": {"c17-plugin-compatibility-wrappers-preserve-interposition": "693d0a4d846084953476126a93c1ecda1a6097d4b0435151b7f9d11e10b006a1"},
+    "c18_test.clj": {"c18-verification-compatibility-wrappers-preserve-interposition": "0b0fc1689131a565f55b7b34f80fe81c0642d80f333e105723d8fa886aad9636"},
+}
+
+
+def clojure_deftest_source(source: str, name: str) -> str:
+    start = source.index(f"(deftest {name}")
+    depth = 0
+    in_string = False
+    escaped = False
+    in_comment = False
+    for index in range(start, len(source)):
+        character = source[index]
+        if in_comment:
+            in_comment = character != "\n"
+            continue
+        if in_string:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                in_string = False
+            continue
+        if character == ";":
+            in_comment = True
+        elif character == '"':
+            in_string = True
+        elif character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+            if depth == 0:
+                return source[start : index + 1]
+    raise AssertionError(f"unterminated deftest {name}")
 
 
 def manifest_for(*checks: dict) -> dict:
@@ -1739,6 +1795,155 @@ class VerifyDevelopmentTests(unittest.TestCase):
                     )
                 finally:
                     target.write_bytes(original)
+
+    def test_c4_c18_compatibility_forms_are_exactly_preserved_and_absent_centrally(self) -> None:
+        central = (ROOT / "bootstrap/clojure/test/gravity/bootstrap_test.clj").read_text()
+        observed = 0
+        for file_name, expected_forms in C4_C18_COMPATIBILITY_FORMS.items():
+            source = (
+                ROOT / "bootstrap/clojure/test/gravity/bootstrap_compatibility" / file_name
+            ).read_text()
+            for name, expected_hash in expected_forms.items():
+                with self.subTest(file=file_name, name=name):
+                    self.assertNotIn(f"(deftest {name}", central)
+                    form = clojure_deftest_source(source, name)
+                    self.assertEqual(expected_hash, hashlib.sha256(form.encode()).hexdigest())
+                    observed += 1
+        self.assertEqual(16, observed)
+        self.assertEqual(471, central.count("\n(deftest ") + central.startswith("(deftest "))
+
+    def test_c4_c18_compatibility_batches_are_exact_routable_and_cacheable(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        checks = {item["id"]: item for item in manifest["checks"]}
+        batches = {
+            "stage0-c4-c6-compatibility": range(4, 7),
+            "stage0-c7-c10-compatibility": range(7, 11),
+            "stage0-c11-c18-compatibility": range(11, 19),
+        }
+        for check_id, stages in batches.items():
+            item = checks[check_id]
+            expected_namespaces = [f"gravity.bootstrap-compatibility.c{stage}-test" for stage in stages]
+            actual_namespaces = [
+                item["command"][index + 1]
+                for index, token in enumerate(item["command"])
+                if token == "--namespace"
+            ]
+            self.assertEqual(expected_namespaces, actual_namespaces, check_id)
+            expected_exact = [
+                f"gravity.bootstrap-compatibility.c{stage}-test/{name}"
+                for stage in stages
+                for name in C4_C18_COMPATIBILITY_FORMS[f"c{stage}_test.clj"]
+            ]
+            if check_id == "stage0-c11-c18-compatibility":
+                expected_exact.insert(
+                    3,
+                    "gravity.bootstrap-compatibility.c13-test/"
+                    "optimization-lowering-captured-facade-delegates-exactly-once",
+                )
+            actual_exact = [
+                item["command"][index + 1]
+                for index, token in enumerate(item["command"])
+                if token == "--exact"
+            ]
+            self.assertEqual(expected_exact, actual_exact, check_id)
+            self.assertEqual("bootstrap-hosted", item["resource_class"])
+            self.assertEqual("none", item["authority"])
+            self.assertFalse(item["fresh"])
+            self.assertIsNone(item["lock"])
+            self.assertEqual(verifier.CANONICAL_HEAVY_LOCK,
+                             verifier.check_resource_declaration(manifest, item)["capacity_lock"])
+            for stage in stages:
+                path = f"bootstrap/clojure/test/gravity/bootstrap_compatibility/c{stage}_test.clj"
+                self.assertIn(path, item["inputs"])
+                selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[path])
+                self.assertIn(check_id, selection["selected_ids"])
+                self.assertIn("stage0-clojure-suite", selection["selected_ids"])
+                self.assertEqual([], selection["unmatched_changes"])
+            for control_path in (
+                "contracts/project-structure.json",
+                "contracts/stage0-clojure-components.json",
+                "docs/self-hosting-slice-ownership.edn",
+                "bootstrap/clojure/test/gravity/development_test_runner.clj",
+            ):
+                self.assertIn(control_path, item["inputs"])
+            fixture_paths = {
+                f"bootstrap/clojure/fixtures/{relative}"
+                for stage in stages
+                for relative in re.findall(
+                    r'\(fixture\s+"([^"]+)"',
+                    (
+                        ROOT
+                        / f"bootstrap/clojure/test/gravity/bootstrap_compatibility/c{stage}_test.clj"
+                    ).read_text(),
+                )
+            }
+            declared_fixtures = {
+                path for path in item["inputs"]
+                if path.startswith("bootstrap/clojure/fixtures/")
+            }
+            self.assertEqual(fixture_paths, declared_fixtures, check_id)
+            for fixture_path in fixture_paths:
+                selection = verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[fixture_path]
+                )
+                self.assertIn(check_id, selection["selected_ids"])
+                self.assertIn("stage0-clojure-suite", selection["selected_ids"])
+                self.assertEqual([], selection["unmatched_changes"])
+
+    def test_development_runner_catalog_has_exact_18_static_namespaces(self) -> None:
+        source = (
+            ROOT / "bootstrap/clojure/test/gravity/development_test_runner.clj"
+        ).read_text()
+        catalog_source = source[
+            source.index("(def namespace-catalog") : source.index("(def ^:private usage-text")
+        ]
+        observed = re.findall(r"\{:namespace '([^\s]+)\s+:path \"([^\"]+)\"\}", catalog_source)
+        expected = [
+            ("gravity.bootstrap-test", "bootstrap/clojure/test/gravity/bootstrap_test.clj"),
+            *[
+                (
+                    f"gravity.bootstrap-compatibility.c{stage}-test",
+                    f"bootstrap/clojure/test/gravity/bootstrap_compatibility/c{stage}_test.clj",
+                )
+                for stage in range(2, 19)
+            ],
+        ]
+        self.assertEqual(expected, observed)
+
+    def test_c4_c18_compatibility_cache_identity_tracks_test_runner_and_contract(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        checks = {item["id"]: item for item in manifest["checks"]}
+        for check_id in (
+            "stage0-c4-c6-compatibility",
+            "stage0-c7-c10-compatibility",
+            "stage0-c11-c18-compatibility",
+        ):
+            item = checks[check_id]
+            with tempfile.TemporaryDirectory(prefix="gravity-c4-c18-compat-cache-") as directory:
+                temp_root = Path(directory)
+                copied = [path for path in item["inputs"] if "*" not in path]
+                copied += ["bootstrap/clojure/src/gravity/bootstrap.clj", *item["tool_inputs"]]
+                for relative in copied:
+                    target = temp_root / relative
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(ROOT / relative, target)
+                baseline = verifier.cache_key(manifest, item, temp_root)
+                fixture_paths = [
+                    path for path in item["inputs"]
+                    if path.startswith("bootstrap/clojure/fixtures/")
+                ]
+                self.assertTrue(fixture_paths, check_id)
+                for relative in fixture_paths:
+                    target = temp_root / relative
+                    original = target.read_bytes()
+                    target.write_bytes(original + b"\ncompatibility-cache-change\n")
+                    try:
+                        self.assertNotEqual(
+                            baseline, verifier.cache_key(manifest, item, temp_root), relative
+                        )
+                    finally:
+                        target.write_bytes(original)
+
     def test_dependency_source_edits_route_to_every_consuming_leaf_group(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
         leaf_ids = {
@@ -1789,6 +1994,9 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage0-selective-smoke",
                 "stage0-c2-compatibility",
                 "stage0-c3-compatibility",
+                "stage0-c4-c6-compatibility",
+                "stage0-c7-c10-compatibility",
+                "stage0-c11-c18-compatibility",
                 "stage0-hosted-core-app",
                 "stage0-hosted-core-compiled-app",
                 "stage0-clojure-suite",
@@ -1991,7 +2199,13 @@ class VerifyDevelopmentTests(unittest.TestCase):
             if item["command"]
             and item["command"][0] == "clojure"
             and not item["id"].startswith("stage0-leaf-")
-            and item["id"] not in {"stage0-c2-compatibility", "stage0-c3-compatibility"}
+            and item["id"] not in {
+                "stage0-c2-compatibility",
+                "stage0-c3-compatibility",
+                "stage0-c4-c6-compatibility",
+                "stage0-c7-c10-compatibility",
+                "stage0-c11-c18-compatibility",
+            }
         ]
         self.assertTrue(clojure_checks)
         self.assertTrue(all(item.get("fresh") is True for item in clojure_checks))

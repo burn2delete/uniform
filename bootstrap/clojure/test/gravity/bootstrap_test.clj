@@ -8,26 +8,9 @@
             [gravity.c2-source-identity :as c2-source-identity]
             [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
             [gravity.c2-lexical-validation :as c2-lexical-validation]
-            [gravity.c4-macro-evidence :as c4-macro-evidence]
-            [gravity.c6-core-lowering :as c6]
-            [gravity.c7-type-checker :as c7]
-            [gravity.c8-effect-checker :as c8]
-            [gravity.c9-ownership-checker :as c9]
-            [gravity.c10-safety-analysis :as c10]
-            [gravity.c11-mir :as c11]
-            [gravity.c12-domain-ir :as c12]
-            [gravity.c13-optimization :as c13]
-            [gravity.c14-lowering :as c14]
-            [gravity.c15-diagnostics :as c15]
-            [gravity.c16-incremental :as c16]
-            [gravity.c17-plugin :as c17]
-            [gravity.c18-verification :as c18]
-            [gravity.compiler-verification-shared :as compiler-verification-shared]
-            [gravity.optimization-lowering :as optimization-lowering]
             [gravity.cli-test]
             [gravity.darwin-publication :as darwin-publication]
-            [gravity.diagnostics-test]
-            [gravity.macro-expansion :as macro-expansion]))
+            [gravity.diagnostics-test]))
 
 (defn fixture
   [name]
@@ -10176,84 +10159,6 @@
     (is (= '(quote gravity.reader/value) (:form syntax)))
     (is (= :quote (get-in syntax [:generated-origin 0 :reader-abbreviation])))))
 
-(deftest c4-macro-evidence-compatibility-wrappers-preserve-output-and-interposition
-  (let [entry {:identity 'compat/macro
-               :version "sha256:version"
-               :macro-namespace 'compat
-               :params ['form]
-               :source-span {:form-index 1}
-               :build-effects #{}
-               :required-build-capabilities #{}}
-        macro-artifact
-        {:macro-namespace-entries [entry]
-         :expanded-syntax-object-stream
-         [{:syntax-id :expanded :form '(compat/macro x) :phase :expanded}]
-         :macro-expansion-trace
-         [{:macro 'compat/macro
-           :macro-version "sha256:version"
-           :input-syntax-id :input
-           :output-hash "sha256:output"
-           :hygiene-policy :hygienic
-           :build-effects #{} }]}
-        module {:module 'compat.core :profile :hosted :target :jvm}
-        c3-artifact {:syntax-object-stream [{:syntax/id :root}]}
-        environment (bootstrap/c4-macro-environment macro-artifact)
-        input (bootstrap/c4-expansion-input module c3-artifact macro-artifact)
-        expanded (bootstrap/c4-expanded-syntax-stream macro-artifact)
-        trace (bootstrap/c4-trace-records macro-artifact)
-        declarations (bootstrap/c4-macro-safety-declarations environment)
-        cache-key (bootstrap/c4-expansion-cache-key input trace)]
-    (doseq [[wrapper-var expected]
-            [[#'bootstrap/c4-macro-environment '([macro-artifact])]
-             [#'bootstrap/c4-expansion-input
-              '([module c3-artifact macro-artifact])]
-             [#'bootstrap/c4-expanded-syntax-stream '([macro-artifact])]
-             [#'bootstrap/c4-trace-records '([macro-artifact])]
-             [#'bootstrap/c4-hygiene-capture-records '([trace-records])]
-             [#'bootstrap/c4-build-effect-log '([module trace-records])]
-             [#'bootstrap/c4-macro-safety-declarations
-              '([macro-environment])]
-             [#'bootstrap/c4-generated-origin-source-map
-              '([trace-records expanded-stream])]
-             [#'bootstrap/c4-expansion-cache-key
-              '([expansion-input trace-records])]
-             [#'bootstrap/c4-trace-replay-report
-              '([trace-records cache-key])]
-             [#'bootstrap/c4-macro-safety-report
-              '([trace-records safety-declarations])]]]
-      (is (= expected (:arglists (meta wrapper-var)))))
-    (is (= (c4-macro-evidence/c4-trace-records macro-artifact) trace))
-    (is (= (c4-macro-evidence/c4-hygiene-capture-records trace)
-           (bootstrap/c4-hygiene-capture-records trace)))
-    (is (= (c4-macro-evidence/c4-build-effect-log module trace)
-           (bootstrap/c4-build-effect-log module trace)))
-    (is (= (c4-macro-evidence/c4-macro-safety-declarations environment)
-           declarations))
-    (is (= (c4-macro-evidence/c4-generated-origin-source-map trace expanded)
-           (bootstrap/c4-generated-origin-source-map trace expanded)))
-    (is (= (c4-macro-evidence/c4-trace-replay-report trace cache-key)
-           (bootstrap/c4-trace-replay-report trace cache-key)))
-    (is (= (c4-macro-evidence/c4-macro-safety-report trace declarations)
-           (bootstrap/c4-macro-safety-report trace declarations)))
-    (with-redefs [bootstrap/sha256-hex (constantly "interposed-hash")
-                  bootstrap/c4-artifact-id (constantly "artifact:interposed")
-                  bootstrap/max-macro-expansion-depth 41]
-      (is (= ["sha256:interposed-hash"]
-             (:dependency-hashes
-              (bootstrap/c4-macro-environment macro-artifact))))
-      (is (= "sha256:interposed-hash"
-             (:expanded-syntax-id
-              (first (bootstrap/c4-expanded-syntax-stream macro-artifact)))))
-      (is (= "sha256:interposed-hash"
-             (:hash (bootstrap/c4-expansion-cache-key input trace))))
-      (is (= "artifact:interposed"
-             (:macro-environment
-              (bootstrap/c4-expansion-input
-               module c3-artifact macro-artifact))))
-      (is (= 41
-             (get-in (bootstrap/c4-expansion-input
-                      module c3-artifact macro-artifact)
-                     [:limits :depth]))))))
 
 (defn- absolute-test-classpath
   []
@@ -12672,45 +12577,6 @@
     (is (every? #(re-find #"^sha256:" (:output-hash %)) trace))
     (is (= "macro\nunless\n1\nthreaded\n" (bootstrap/run-file path)))))
 
-(deftest macro-expansion-compatibility-wrappers-preserve-output-and-interposition
-  (let [path (fixture "accepted/macro-expansion.gravity")
-        source-text (slurp path)
-        records (bootstrap/read-source-form-records path source-text)
-        forms (mapv :form records)
-        module (bootstrap/parse-module path forms)
-        syntax (bootstrap/syntax-object-stream path records module)
-        wrapped (bootstrap/macro-source-artifact-from-records
-                 path source-text records)
-        extracted (macro-expansion/macro-source-artifact-from-records
-                   path source-text records module syntax
-                   (bootstrap/macro-expansion-ops))]
-    (is (= '([source-path source-text records])
-           (:arglists (meta #'bootstrap/macro-source-artifact-from-records))))
-    (is (= '([source-path source-text])
-           (:arglists (meta #'bootstrap/macro-source-artifact))))
-    (is (= '([path])
-           (:arglists (meta #'bootstrap/macro-file-artifact))))
-    (is (= wrapped extracted))
-    (is (= :interposed
-           (with-redefs [bootstrap/macro-env-value
-                         (fn [_ _] :interposed)]
-             (bootstrap/expand-template {} '(unquote ignored)))))
-    (is (= [[:start :a] :b]
-           (with-redefs [bootstrap/thread-first-step
-                         (fn [value step] [value step])]
-             (bootstrap/builtin-thread-first-output
-              [:start :a :b] {:form-index 0}))))
-    (let [interposed
-          (with-redefs [bootstrap/macro-namespace-entry
-                        (fn [macro] {:entry (:identity macro)})
-                        bootstrap/macro-build-effect-record
-                        (fn [macro] {:effect (:identity macro)})]
-            (bootstrap/macro-source-artifact-from-records
-             path source-text records))]
-      (is (every? #(= #{:entry} (set (keys %)))
-                  (:macro-namespace-entries interposed)))
-      (is (every? #(= #{:effect} (set (keys %)))
-                  (:macro-build-effect-records interposed))))))
 
 (deftest typed-core-artifact-preserves-l5-boundary
   (let [artifact (bootstrap/typed-file-artifact (fixture "accepted/typed-core.gravity"))
@@ -15078,129 +14944,7 @@
     (is (= :stable (:invalidation-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c5-resolution-compatibility-wrappers-preserve-arglists-and-interposition
-  (let [path (fixture "accepted/compiler-c5-name-resolution.gravity")
-        source-text (slurp path)
-        validation-calls (atom [])
-        artifact
-        (with-redefs [bootstrap/c5-resolution-validate-overrides!
-                      (fn [source-path module overrides]
-                        (swap! validation-calls conj
-                               [source-path (:module module) overrides])
-                        nil)]
-          (bootstrap/compiler-c5-resolution-source-artifact
-           path source-text))
-        file-sentinel {:interposed :compiler-c5-resolution-source-artifact}
-        file-result
-        (with-redefs [bootstrap/compiler-c5-resolution-source-artifact
-                      (fn [_ _] file-sentinel)]
-          (bootstrap/compiler-c5-resolution-file-artifact path))
-        override-id
-        (with-redefs [bootstrap/c5-resolution-override-diagnostics
-                      {:alias "C5-OVERRIDE"}]
-          (diagnostic-id
-           #(bootstrap/c5-resolution-validate-overrides!
-             path {:module 'demo.main}
-             {:fail :alias})))
-        special-record
-        (with-redefs [bootstrap/c5-special-form-symbols #{'sentinel}]
-          (bootstrap/c5-resolution-record
-           {:module 'demo.main}
-           {} {} {} [] {:syntax-id "sentinel-syntax"} 0 'sentinel))
-        sentinel-artifact
-        (with-redefs [bootstrap/c5-resolution-diagnostic-ids ["C5-SENTINEL"]
-                      bootstrap/c5-resolution-governing-document "sentinel-doc"
-                      bootstrap/c5-resolution-rejected-designs
-                      [{:diagnostic "C5-SENTINEL"}]
-                      bootstrap/c5-resolution-validate!
-                      (fn [_ _] nil)]
-          (bootstrap/compiler-c5-resolution-source-artifact
-           path source-text))]
-    (is (= '([source-path source-text])
-           (:arglists (meta #'bootstrap/compiler-c5-resolution-source-artifact))))
-    (is (= '([path])
-           (:arglists (meta #'bootstrap/compiler-c5-resolution-file-artifact))))
-    (is (= '([source-path module overrides])
-           (:arglists (meta #'bootstrap/c5-resolution-validate-overrides!))))
-    (is (= :gravity/stage0-c5-name-resolution-artifact (:kind artifact)))
-    (is (= 1 (count @validation-calls)))
-    (is (= path (ffirst @validation-calls)))
-    (is (= file-sentinel file-result))
-    (is (= "C5-OVERRIDE" override-id))
-    (is (= :special-form (:resolution-order special-record)))
-    (is (= "sentinel-doc" (:governing-document sentinel-artifact)))
-    (is (= ["C5-SENTINEL"]
-           (get-in sentinel-artifact
-                   [:c5-resolution-results :required-diagnostic-ids])))
-    (is (= [{:diagnostic "C5-SENTINEL"}]
-           (:rejected-design-coverage sentinel-artifact)))
-    (is (= #{:jvm :wasm}
-           (:target-set
-            (binding [bootstrap/*additional-bootstrap-targets* #{:native}]
-              (with-redefs [bootstrap/supported-targets #{:jvm :wasm}]
-                (bootstrap/c5-special-form-binding
-                 'if {:module 'demo.main}))))))))
 
-(deftest c6-lowering-compatibility-wrappers-preserve-arglists-and-interposition
-  (is (= '([id source-path subject extra])
-         (:arglists (meta #'bootstrap/c6-lowering-fail!))))
-  (is (= '([counter module syntax form])
-         (:arglists (meta #'bootstrap/c6-lower-form))))
-  (is (= '([source-path source-text])
-         (:arglists (meta #'bootstrap/compiler-c6-lowering-source-artifact))))
-  (is (= '([path])
-         (:arglists (meta #'bootstrap/compiler-c6-lowering-file-artifact))))
-  (let [calls (atom [])
-        sentinel {:artifact :gravity/core-node :node-id "sentinel"}]
-    (is (= [sentinel]
-           (with-redefs [bootstrap/c6-lower-form
-                         (fn [& args]
-                           (swap! calls conj args)
-                           sentinel)]
-             (bootstrap/c6-lower-children
-              (atom 0)
-              {:module 'gravity.c6-test :profile :hosted :target :jvm}
-              {:syntax-id "syntax" :form '(do 1)}
-              [1]))))
-    (is (= 1 (count @calls))))
-  (let [bindings (atom 0)
-        with-operations c6/with-operations]
-    (with-redefs [c6/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/c6-lower-form
-       (atom 0)
-       {:module 'gravity.c6-test :source-path "probe.gravity"
-        :profile :hosted :target :jvm :capabilities #{}}
-       {:syntax-id "syntax" :form '(do 1 2)
-        :span {:source "probe.gravity" :form-index 0}}
-       '(do 1 2)))
-    (is (= 1 @bindings)))
-  (let [error (with-redefs [bootstrap/c6-lowering-message
-                            (constantly "interposed C6 message")]
-                (try
-                  (bootstrap/c6-lowering-fail!
-                   "C6-VERIFY" "probe.gravity" {:syntax-id "probe"} {})
-                  nil
-                  (catch clojure.lang.ExceptionInfo exception exception)))]
-    (is (= "interposed C6 message" (.getMessage error)))
-    (is (= "C6-VERIFY" (:id (ex-data error)))))
-  (let [artifact
-        (with-redefs [bootstrap/c6-lowering-diagnostic-ids ["C6-SENTINEL"]
-                      bootstrap/c6-lowering-rejected-designs
-                      [{:diagnostic "C6-SENTINEL"}]
-                      bootstrap/c6-lowering-governing-document
-                      "docs/c6-sentinel.md"]
-          (bootstrap/compiler-c6-lowering-file-artifact
-           (fixture "accepted/compiler-c6-core-lowering.gravity")))]
-    (is (= "docs/c6-sentinel.md" (:governing-document artifact)))
-    (is (= ["C6-SENTINEL"]
-           (get-in artifact [:c6-lowering-results
-                             :required-diagnostic-ids])))
-    (is (= [{:diagnostic "C6-SENTINEL"}]
-           (:rejected-design-coverage artifact))))
-  (is (= (:public-api (c6/c6-engine-contract)) c6/public-api)))
 
 (deftest c6-lowering-artifact-preserves-p06-d085-contract
   (let [artifact (bootstrap/compiler-c6-lowering-file-artifact
@@ -15269,42 +15013,6 @@
     (is (= :stable (:invalidation-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c7-type-checker-compatibility-wrappers-preserve-interposition
-  (is (= '([node]) (:arglists (meta #'bootstrap/c7-node-type))))
-  (is (= '([source-path source-text])
-         (:arglists (meta #'bootstrap/compiler-c7-type-source-artifact))))
-  (is (= '([path])
-         (:arglists (meta #'bootstrap/compiler-c7-type-file-artifact))))
-  (is (= "CheckedCast[String]"
-         (with-redefs [bootstrap/c7-node-operator
-                       (constantly 'dynamic/cast)]
-           (bootstrap/c7-node-type
-            {:form :call :children {:operator 'dynamic/value}}))))
-  (let [bindings (atom 0)
-        with-operations c7/with-operations]
-    (with-redefs [c7/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c7-type-file-artifact
-       (fixture "accepted/compiler-c7-type-checker.gravity")))
-    (is (= 1 @bindings)))
-  (let [artifact
-        (with-redefs [bootstrap/c7-type-diagnostic-ids ["C7-SENTINEL"]
-                      bootstrap/c7-type-rejected-designs
-                      [{:diagnostic "C7-SENTINEL"}]
-                      bootstrap/c7-type-governing-document
-                      "docs/c7-sentinel.md"]
-          (bootstrap/compiler-c7-type-file-artifact
-           (fixture "accepted/compiler-c7-type-checker.gravity")))]
-    (is (= "docs/c7-sentinel.md" (:governing-document artifact)))
-    (is (= ["C7-SENTINEL"]
-           (get-in artifact [:c7-type-check-results
-                             :required-diagnostic-ids])))
-    (is (= #{"C7-SENTINEL"}
-           (set (map :diagnostic
-                     (get-in artifact [:type-diagnostics :diagnostics]))))))
-  (is (= (:public-api (c7/c7-engine-contract)) c7/public-api)))
 
 (deftest c7-type-checker-artifact-preserves-p06-d086-contract
   (let [artifact (bootstrap/compiler-c7-type-file-artifact
@@ -15387,47 +15095,6 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c8-effect-checker-compatibility-wrappers-preserve-interposition
-  (is (= '([module type-facts functions])
-         (:arglists (meta #'bootstrap/c8-effect-graph))))
-  (is (= '([source-path source-text])
-         (:arglists (meta #'bootstrap/compiler-c8-effect-source-artifact))))
-  (is (= '([path])
-         (:arglists (meta #'bootstrap/compiler-c8-effect-file-artifact))))
-  (let [calls (atom [])
-        fact {:core-node "probe" :effects #{}}]
-    (is (= [fact]
-           (with-redefs [bootstrap/c8-fact-direct-effects
-                         (fn [value]
-                           (swap! calls conj value)
-                           #{:interposed/effect})]
-             (vec (bootstrap/c8-effectful-facts [fact])))))
-    (is (= 1 (count @calls))))
-  (let [bindings (atom 0)
-        with-operations c8/with-operations]
-    (with-redefs [c8/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c8-effect-file-artifact
-       (fixture "accepted/compiler-c8-effect-checker.gravity")))
-    (is (= 1 @bindings)))
-  (let [artifact
-        (with-redefs [bootstrap/c8-effect-diagnostic-ids ["C8-SENTINEL"]
-                      bootstrap/c8-effect-rejected-designs
-                      [{:diagnostic "C8-SENTINEL"}]
-                      bootstrap/c8-effect-governing-document
-                      "docs/c8-sentinel.md"]
-          (bootstrap/compiler-c8-effect-file-artifact
-           (fixture "accepted/compiler-c8-effect-checker.gravity")))]
-    (is (= "docs/c8-sentinel.md" (:governing-document artifact)))
-    (is (= ["C8-SENTINEL"]
-           (get-in artifact [:c8-effect-check-results
-                             :required-diagnostic-ids])))
-    (is (= #{"C8-SENTINEL"}
-           (set (map :diagnostic
-                     (get-in artifact [:effect-diagnostics :diagnostics]))))))
-  (is (= (:public-api (c8/c8-engine-contract)) c8/public-api)))
 
 (deftest c8-effect-checker-artifact-preserves-p06-d087-contract
   (let [artifact (bootstrap/compiler-c8-effect-file-artifact
@@ -15501,53 +15168,6 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c9-ownership-checker-compatibility-wrappers-preserve-interposition
-  (is (= '([module effect-graph])
-         (:arglists (meta #'bootstrap/c9-ownership-graph))))
-  (is (= '([source-path source-text])
-         (:arglists (meta #'bootstrap/compiler-c9-ownership-source-artifact))))
-  (is (= '([path])
-         (:arglists (meta #'bootstrap/compiler-c9-ownership-file-artifact))))
-  (let [calls (atom [])
-        graph
-        (with-redefs [bootstrap/c9-node
-                      (fn [node-ids index fallback]
-                        (swap! calls conj [node-ids index fallback])
-                        "interposed-node")]
-          (bootstrap/c9-ownership-graph
-           {:module 'gravity.c9-probe
-            :source-path "c9-probe.gravity"
-            :profile :hosted
-            :target :jvm}
-           {:nodes (sorted-map "node-0" {} "node-1" {})}))]
-    (is (= "interposed-node" (get-in graph [:moves 0 :value])))
-    (is (= 1 (count @calls))))
-  (let [bindings (atom 0)
-        with-operations c9/with-operations]
-    (with-redefs [c9/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c9-ownership-file-artifact
-       (fixture "accepted/compiler-c9-ownership-checker.gravity")))
-    (is (= 1 @bindings)))
-  (let [artifact
-        (with-redefs [bootstrap/c9-ownership-diagnostic-ids ["C9-SENTINEL"]
-                      bootstrap/c9-ownership-rejected-designs
-                      [{:diagnostic "C9-SENTINEL"}]
-                      bootstrap/c9-ownership-governing-document
-                      "docs/c9-sentinel.md"]
-          (bootstrap/compiler-c9-ownership-file-artifact
-           (fixture "accepted/compiler-c9-ownership-checker.gravity")))]
-    (is (= "docs/c9-sentinel.md" (:governing-document artifact)))
-    (is (= ["C9-SENTINEL"]
-           (get-in artifact [:c9-ownership-check-results
-                             :required-diagnostic-ids])))
-    (is (= #{"C9-SENTINEL"}
-           (set (map :diagnostic
-                     (get-in artifact
-                             [:ownership-diagnostics :diagnostics]))))))
-  (is (= (:public-api (c9/c9-engine-contract)) c9/public-api)))
 
 (deftest c9-ownership-checker-artifact-preserves-p06-d088-contract
   (let [artifact (bootstrap/compiler-c9-ownership-file-artifact
@@ -15638,55 +15258,6 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c10-safety-analysis-compatibility-wrappers-preserve-interposition
-  (is (= '([module inventory])
-         (:arglists (meta #'bootstrap/c10-safety-outcome-records))))
-  (is (= '([source-path source-text])
-         (:arglists (meta #'bootstrap/compiler-c10-safety-source-artifact))))
-  (is (= '([path])
-         (:arglists (meta #'bootstrap/compiler-c10-safety-file-artifact))))
-  (let [calls (atom 0)
-        proof {:operation-inventory-complete? true
-               :exactly-one-outcome-per-operation? true
-               :runtime-checks-emitted? true
-               :proof-obligations-discharged? true
-               :certificate-references-recorded? true
-               :unsafe-island-audits-complete? true
-               :taint-and-capability-reports-complete? true
-               :generated-provenance-recorded? true
-               :optimization-evidence-preserved? true
-               :diagnostics-covered? true
-               :verifier-passed? true}]
-    (is (= :complete
-           (with-redefs [bootstrap/c10-safety-capability-proof
-                         (fn [_] (swap! calls inc) proof)]
-             (bootstrap/c10-safety-validate! "c10-probe.gravity" {}))))
-    (is (= 1 @calls)))
-  (let [bindings (atom 0)
-        with-operations c10/with-operations]
-    (with-redefs [c10/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c10-safety-file-artifact
-       (fixture "accepted/compiler-c10-safety-analysis.gravity")))
-    (is (= 1 @bindings)))
-  (let [artifact
-        (with-redefs [bootstrap/c10-safety-diagnostic-ids ["C10-SENTINEL"]
-                      bootstrap/c10-safety-rejected-designs
-                      [{:diagnostic "C10-SENTINEL"}]
-                      bootstrap/c10-safety-governing-document
-                      "docs/c10-sentinel.md"]
-          (bootstrap/compiler-c10-safety-file-artifact
-           (fixture "accepted/compiler-c10-safety-analysis.gravity")))]
-    (is (= "docs/c10-sentinel.md" (:governing-document artifact)))
-    (is (= ["C10-SENTINEL"]
-           (get-in artifact [:c10-safety-analysis-results
-                             :required-diagnostic-ids])))
-    (is (= #{"C10-SENTINEL"}
-           (set (map :diagnostic
-                     (get-in artifact [:safety-diagnostics :diagnostics]))))))
-  (is (= (:public-api (c10/c10-engine-contract)) c10/public-api)))
 
 (deftest c10-safety-analysis-artifact-preserves-p06-d089-contract
   (let [artifact (bootstrap/compiler-c10-safety-file-artifact
@@ -15770,53 +15341,6 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c11-mir-compatibility-wrappers-preserve-interposition
-  (is (= '([module span outcome-by-index index family])
-         (:arglists (meta #'bootstrap/c11-mir-operation))))
-  (is (= '([]) (:arglists (meta #'bootstrap/c11-domain-anchor-table))))
-  (is (= '([source-path source-text])
-         (:arglists (meta #'bootstrap/compiler-c11-mir-source-artifact))))
-  (is (= '([path])
-         (:arglists (meta #'bootstrap/compiler-c11-mir-file-artifact))))
-  (let [calls (atom [])
-        operation
-        (with-redefs [bootstrap/c11-family-effects
-                      (fn [family]
-                        (swap! calls conj family)
-                        #{:interposed/effect})]
-          (bootstrap/c11-mir-operation
-           {:profile :hosted}
-           {:source "c11-probe.gravity" :form-index 0}
-           [{:operation "op-safe" :proof "proof-safe"}]
-           0 :constant))]
-    (is (= #{:interposed/effect} (:effects operation)))
-    (is (= [:constant] @calls)))
-  (let [bindings (atom 0)
-        with-operations c11/with-operations]
-    (with-redefs [c11/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c11-mir-file-artifact
-       (fixture "accepted/compiler-c11-mir-spec.gravity")))
-    (is (= 1 @bindings)))
-  (let [artifact
-        (with-redefs [bootstrap/c11-mir-diagnostic-ids ["C11-SENTINEL"]
-                      bootstrap/c11-mir-rejected-designs
-                      [{:diagnostic "C11-SENTINEL"}]
-                      bootstrap/c11-mir-governing-document
-                      "docs/c11-sentinel.md"]
-          (bootstrap/compiler-c11-mir-file-artifact
-           (fixture "accepted/compiler-c11-mir-spec.gravity")))]
-    (is (= "docs/c11-sentinel.md" (:governing-document artifact)))
-    (is (= ["C11-SENTINEL"]
-           (get-in artifact [:c11-mir-spec-results
-                             :required-diagnostic-ids])))
-    (is (= #{"C11-SENTINEL"}
-           (set (map :diagnostic
-                     (get-in artifact
-                             [:mir-diagnostic-stream :diagnostics]))))))
-  (is (= (:public-api (c11/c11-engine-contract)) c11/public-api)))
 
 (deftest c11-mir-spec-artifact-preserves-p06-d090-contract
   (let [artifact (bootstrap/compiler-c11-mir-file-artifact
@@ -15893,43 +15417,6 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c12-domain-ir-compatibility-wrappers-preserve-interposition
-  (is (= '([source-path overrides])
-         (:arglists
-          (meta #'bootstrap/c12-domain-ir-validate-source-overrides!))))
-  (is (= '([source-path source-text])
-         (:arglists (meta #'bootstrap/compiler-c12-domain-ir-source-artifact))))
-  (is (= '([path])
-         (:arglists (meta #'bootstrap/compiler-c12-domain-ir-file-artifact))))
-  (let [calls (atom [])]
-    (with-redefs [bootstrap/domain-ir-validate-overrides!
-                  (fn [source-path artifact]
-                    (swap! calls conj [source-path artifact])
-                    :complete)]
-      (bootstrap/c12-domain-ir-validate-source-overrides!
-       "c12-probe.gravity" {:probe true}))
-    (is (= 1 (count @calls)))
-    (is (= {:probe true}
-           (get-in (second (first @calls)) [:source-overrides]))))
-  (let [bindings (atom 0)
-        with-operations c12/with-operations]
-    (with-redefs [c12/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c12-domain-ir-file-artifact
-       (fixture "accepted/compiler-c12-domain-ir.gravity")))
-    (is (= 1 @bindings)))
-  (let [catalog
-        (with-redefs [bootstrap/domain-ir-diagnostic-ids ["C12-SENTINEL"]
-                      bootstrap/domain-ir-diagnostic-messages
-                      {"C12-SENTINEL" "sentinel message"}]
-          (bootstrap/c12-domain-ir-diagnostic-catalog "c12-probe.gravity"))]
-    (is (= ["C12-SENTINEL"]
-           (mapv :diagnostic (:diagnostics catalog))))
-    (is (= "sentinel message"
-           (get-in catalog [:diagnostics 0 :remediation]))))
-  (is (= (:public-api (c12/c12-engine-contract)) c12/public-api)))
 
 (deftest c12-domain-ir-architecture-artifact-preserves-p06-d091-contract
   (let [artifact (bootstrap/compiler-c12-domain-ir-file-artifact
@@ -16024,63 +15511,6 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c13-optimization-compatibility-wrappers-preserve-interposition
-  (is (= '([record])
-         (:arglists (meta #'bootstrap/optimization-pass-contract-record))))
-  (is (= '([domain-ir-artifact input-id index contract])
-         (:arglists (meta #'bootstrap/optimization-decision-record))))
-  (is (= '([source-path source-text])
-         (:arglists
-          (meta #'bootstrap/compiler-c13-optimization-source-artifact))))
-  (is (= '([path])
-         (:arglists (meta #'bootstrap/compiler-c13-optimization-file-artifact))))
-  (let [bindings (atom 0)
-        with-operations c13/with-operations]
-    (with-redefs [c13/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c13-optimization-file-artifact
-       (fixture "accepted/compiler-c13-optimization.gravity")))
-    (is (= 1 @bindings)))
-  (let [calls (atom 0)
-        original bootstrap/optimization-pass-contract-record
-        artifact
-        (with-redefs [bootstrap/optimization-pass-contract-record
-                      (fn [record]
-                        (swap! calls inc)
-                        (assoc (original record) :interposed? true))]
-          (bootstrap/compiler-c13-optimization-file-artifact
-           (fixture "accepted/compiler-c13-optimization.gravity")))]
-    (is (= 6 @calls))
-    (is (every? :interposed? (:optimization-pass-registry artifact))))
-  (let [sentinel {:kind :sentinel-c13-source}]
-    (is (= sentinel
-           (with-redefs [bootstrap/compiler-c13-optimization-source-artifact
-                         (fn [_ _] sentinel)]
-             (bootstrap/compiler-c13-optimization-file-artifact
-              (fixture "accepted/compiler-c13-optimization.gravity"))))))
-  (let [artifact
-        (with-redefs [bootstrap/c13-optimization-diagnostic-ids
-                      ["C13-SENTINEL"]
-                      bootstrap/optimization-lowering-diagnostic-messages
-                      {"C13-SENTINEL" "sentinel diagnostic"}
-                      bootstrap/c13-optimization-governing-document
-                      "docs/c13-sentinel.md"]
-          (bootstrap/compiler-c13-optimization-file-artifact
-           (fixture "accepted/compiler-c13-optimization.gravity")))]
-    (is (= "docs/c13-sentinel.md" (:governing-document artifact)))
-    (is (= ["C13-SENTINEL"]
-           (get-in artifact [:c13-optimization-results
-                             :required-diagnostic-ids])))
-    (is (= #{"C13-SENTINEL"}
-           (set (map :diagnostic
-                     (get-in artifact
-                             [:optimization-diagnostic-stream
-                              :diagnostics]))))))
-  (is (= (:public-api (c13/c13-engine-contract)) c13/public-api))
-  (is (= (:public-api (optimization-lowering/shared-engine-contract))
-         optimization-lowering/public-api)))
 
 (deftest c13-mir-optimization-artifact-preserves-p06-d092-contract
   (let [artifact (bootstrap/compiler-c13-optimization-file-artifact
@@ -16166,60 +15596,6 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c14-lowering-compatibility-wrappers-preserve-interposition
-  (is (= '([source-path input-id])
-         (:arglists (meta #'bootstrap/c14-lowering-diagnostic-catalog))))
-  (is (= '([source-path source-text])
-         (:arglists (meta #'bootstrap/compiler-c14-lowering-source-artifact))))
-  (is (= '([path])
-         (:arglists (meta #'bootstrap/compiler-c14-lowering-file-artifact))))
-  (let [bindings (atom 0)
-        with-operations c14/with-operations]
-    (with-redefs [c14/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c14-lowering-file-artifact
-       (fixture "accepted/compiler-c14-lowering.gravity")))
-    (is (= 1 @bindings)))
-  (let [calls (atom 0)
-        original bootstrap/c14-lowering-diagnostic-catalog
-        artifact
-        (with-redefs [bootstrap/c14-lowering-diagnostic-catalog
-                      (fn [source-path input-id]
-                        (swap! calls inc)
-                        (original source-path input-id))]
-          (bootstrap/compiler-c14-lowering-file-artifact
-           (fixture "accepted/compiler-c14-lowering.gravity")))]
-    (is (= 1 @calls))
-    (is (= (set bootstrap/c14-lowering-diagnostic-ids)
-           (set (map :diagnostic
-                     (get-in artifact
-                             [:lowering-diagnostic-stream :diagnostics]))))))
-  (let [sentinel {:kind :sentinel-c14-source}]
-    (is (= sentinel
-           (with-redefs [bootstrap/compiler-c14-lowering-source-artifact
-                         (fn [_ _] sentinel)]
-             (bootstrap/compiler-c14-lowering-file-artifact
-              (fixture "accepted/compiler-c14-lowering.gravity"))))))
-  (let [artifact
-        (with-redefs [bootstrap/c14-lowering-diagnostic-ids
-                      ["C14-SENTINEL"]
-                      bootstrap/optimization-lowering-diagnostic-messages
-                      {"C14-SENTINEL" "sentinel diagnostic"}
-                      bootstrap/c14-lowering-governing-document
-                      "docs/c14-sentinel.md"]
-          (bootstrap/compiler-c14-lowering-file-artifact
-           (fixture "accepted/compiler-c14-lowering.gravity")))]
-    (is (= "docs/c14-sentinel.md" (:governing-document artifact)))
-    (is (= ["C14-SENTINEL"]
-           (get-in artifact [:c14-lowering-results
-                             :required-diagnostic-ids])))
-    (is (= #{"C14-SENTINEL"}
-           (set (map :diagnostic
-                     (get-in artifact
-                             [:lowering-diagnostic-stream :diagnostics]))))))
-  (is (= (:public-api (c14/c14-engine-contract)) c14/public-api)))
 
 (deftest c14-target-lowering-artifact-preserves-p06-d093-contract
   (let [artifact (bootstrap/compiler-c14-lowering-file-artifact
@@ -16297,62 +15673,6 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c15-diagnostics-compatibility-wrappers-preserve-interposition
-  (is (= '([diagnostic])
-         (:arglists (meta #'bootstrap/c15-stable-diagnostic-id))))
-  (is (= '([rule severity stage message-key source-path form-index
-            primary-artifact facts remediation &
-            {:keys [related origin-chain redactions lifecycle generated?]}])
-         (:arglists (meta #'bootstrap/c15-diagnostic-record))))
-  (is (= '([source-path source-text])
-         (:arglists
-          (meta #'bootstrap/compiler-c15-diagnostics-source-artifact))))
-  (is (= '([path])
-         (:arglists (meta #'bootstrap/compiler-c15-diagnostics-file-artifact))))
-  (let [bindings (atom 0)
-        with-operations c15/with-operations]
-    (with-redefs [c15/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c15-diagnostics-file-artifact
-       (fixture "accepted/compiler-c15-diagnostics.gravity")))
-    (is (= 1 @bindings)))
-  (let [calls (atom 0)
-        original bootstrap/c15-diagnostic-record
-        artifact
-        (with-redefs [bootstrap/c15-diagnostic-record
-                      (fn [& args]
-                        (swap! calls inc)
-                        (assoc (apply original args) :interposed? true))]
-          (bootstrap/compiler-c15-diagnostics-file-artifact
-           (fixture "accepted/compiler-c15-diagnostics.gravity")))]
-    (is (= 4 @calls))
-    (is (every? :interposed?
-                (get-in artifact [:diagnostic-stream :diagnostics]))))
-  (let [sentinel {:kind :sentinel-c15-source}]
-    (is (= sentinel
-           (with-redefs [bootstrap/compiler-c15-diagnostics-source-artifact
-                         (fn [_ _] sentinel)]
-             (bootstrap/compiler-c15-diagnostics-file-artifact
-              (fixture "accepted/compiler-c15-diagnostics.gravity"))))))
-  (let [artifact
-        (with-redefs [bootstrap/c15-diagnostics-diagnostic-ids
-                      ["C15-SENTINEL"]
-                      bootstrap/c15-diagnostics-governing-document
-                      "docs/c15-sentinel.md"]
-          (bootstrap/compiler-c15-diagnostics-file-artifact
-           (fixture "accepted/compiler-c15-diagnostics.gravity")))]
-    (is (= "docs/c15-sentinel.md" (:governing-document artifact)))
-    (is (= ["C15-SENTINEL"]
-           (get-in artifact [:c15-diagnostics-results
-                             :required-diagnostic-ids])))
-    (is (= #{"C15-SENTINEL"}
-           (set (map :rule (:golden-diagnostic-fixtures artifact))))))
-  (is (= (:public-api (c15/c15-engine-contract)) c15/public-api))
-  (is (= (:public-api
-          (compiler-verification-shared/shared-contract))
-         compiler-verification-shared/public-api)))
 
 (deftest c15-compiler-diagnostics-artifact-preserves-p06-d094-contract
   (let [artifact (bootstrap/compiler-c15-diagnostics-file-artifact
@@ -16431,58 +15751,6 @@
     (is (= :complete (:golden-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c16-incremental-compatibility-wrappers-preserve-interposition
-  (is (= '([stage source-hash dependency-hash])
-         (:arglists (meta #'bootstrap/c16-stage-cache-key))))
-  (is (= '([source-path source-text])
-         (:arglists
-          (meta #'bootstrap/compiler-c16-incremental-source-artifact))))
-  (is (= '([path])
-         (:arglists (meta #'bootstrap/compiler-c16-incremental-file-artifact))))
-  (let [bindings (atom 0)
-        with-operations c16/with-operations]
-    (with-redefs [c16/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c16-incremental-file-artifact
-       (fixture "accepted/compiler-c16-incremental.gravity")))
-    (is (= 1 @bindings)))
-  (let [calls (atom [])
-        original bootstrap/c16-stage-cache-key
-        artifact
-        (with-redefs [bootstrap/c16-stage-cache-key
-                      (fn [stage source dependency]
-                        (swap! calls conj stage)
-                        (assoc (original stage source dependency)
-                               :interposed? true))]
-          (bootstrap/compiler-c16-incremental-file-artifact
-           (fixture "accepted/compiler-c16-incremental.gravity")))]
-    (is (= 8 (count @calls)))
-    (is (every? :interposed? (:stage-cache-keys artifact))))
-  (let [sentinel {:kind :sentinel-c16-source}]
-    (is (= sentinel
-           (with-redefs [bootstrap/compiler-c16-incremental-source-artifact
-                         (fn [_ _] sentinel)]
-             (bootstrap/compiler-c16-incremental-file-artifact
-              (fixture "accepted/compiler-c16-incremental.gravity"))))))
-  (let [artifact
-        (with-redefs [bootstrap/c16-incremental-diagnostic-ids
-                      ["C16-SENTINEL"]
-                      bootstrap/c16-incremental-governing-document
-                      "docs/c16-sentinel.md"]
-          (bootstrap/compiler-c16-incremental-file-artifact
-           (fixture "accepted/compiler-c16-incremental.gravity")))]
-    (is (= "docs/c16-sentinel.md" (:governing-document artifact)))
-    (is (= ["C16-SENTINEL"]
-           (get-in artifact [:c16-incremental-results
-                             :required-diagnostic-ids])))
-    (is (= #{"C16-SENTINEL"}
-           (set (map :diagnostic
-                     (get-in artifact
-                             [:incremental-diagnostic-stream
-                              :diagnostics]))))))
-  (is (= (:public-api (c16/c16-engine-contract)) c16/public-api)))
 
 (deftest c16-incremental-compilation-artifact-preserves-p06-d095-contract
   (let [artifact (bootstrap/compiler-c16-incremental-file-artifact
@@ -16574,56 +15842,6 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c17-plugin-compatibility-wrappers-preserve-interposition
-  (is (= '([source-path plugin-manifest input-id])
-         (:arglists (meta #'bootstrap/c17-plugin-diagnostic-stream))))
-  (is (= '([source-path source-text])
-         (:arglists (meta #'bootstrap/compiler-c17-plugin-source-artifact))))
-  (is (= '([path])
-         (:arglists (meta #'bootstrap/compiler-c17-plugin-file-artifact))))
-  (let [bindings (atom 0)
-        with-operations c17/with-operations]
-    (with-redefs [c17/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c17-plugin-file-artifact
-       (fixture "accepted/compiler-c17-plugin.gravity")))
-    (is (= 1 @bindings)))
-  (let [calls (atom 0)
-        original bootstrap/c17-plugin-diagnostic-stream
-        artifact
-        (with-redefs [bootstrap/c17-plugin-diagnostic-stream
-                      (fn [path manifest input]
-                        (swap! calls inc)
-                        (assoc (original path manifest input)
-                               :interposed? true))]
-          (bootstrap/compiler-c17-plugin-file-artifact
-           (fixture "accepted/compiler-c17-plugin.gravity")))]
-    (is (= 1 @calls))
-    (is (true? (get-in artifact [:plugin-diagnostic-stream :interposed?]))))
-  (let [sentinel {:kind :sentinel-c17-source}]
-    (is (= sentinel
-           (with-redefs [bootstrap/compiler-c17-plugin-source-artifact
-                         (fn [_ _] sentinel)]
-             (bootstrap/compiler-c17-plugin-file-artifact
-              (fixture "accepted/compiler-c17-plugin.gravity"))))))
-  (let [artifact
-        (with-redefs [bootstrap/c17-plugin-diagnostic-ids
-                      ["C17-SENTINEL"]
-                      bootstrap/c17-plugin-governing-document
-                      "docs/c17-sentinel.md"]
-          (bootstrap/compiler-c17-plugin-file-artifact
-           (fixture "accepted/compiler-c17-plugin.gravity")))]
-    (is (= "docs/c17-sentinel.md" (:governing-document artifact)))
-    (is (= ["C17-SENTINEL"]
-           (get-in artifact [:c17-plugin-results
-                             :required-diagnostic-ids])))
-    (is (= #{"C17-SENTINEL"}
-           (set (map :diagnostic
-                     (get-in artifact
-                             [:plugin-diagnostic-stream :diagnostics]))))))
-  (is (= (:public-api (c17/c17-engine-contract)) c17/public-api)))
 
 (deftest c17-compiler-plugin-artifact-preserves-p06-d096-contract
   (let [artifact (bootstrap/compiler-c17-plugin-file-artifact
@@ -16727,57 +15945,6 @@
     (is (= :complete (:conformance-status conformance)))
     (is (= :complete (:status conformance)))))
 
-(deftest c18-verification-compatibility-wrappers-preserve-interposition
-  (is (= '([]) (:arglists (meta #'bootstrap/c18-pass-risk-records))))
-  (is (= '([source-path source-text])
-         (:arglists
-          (meta #'bootstrap/compiler-c18-verification-source-artifact))))
-  (is (= '([path])
-         (:arglists
-          (meta #'bootstrap/compiler-c18-verification-file-artifact))))
-  (let [bindings (atom 0)
-        with-operations c18/with-operations]
-    (with-redefs [c18/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c18-verification-file-artifact
-       (fixture "accepted/compiler-c18-verification.gravity")))
-    (is (= 1 @bindings)))
-  (let [calls (atom 0)
-        original bootstrap/c18-pass-risk-records
-        artifact
-        (with-redefs [bootstrap/c18-pass-risk-records
-                      (fn []
-                        (swap! calls inc)
-                        (mapv #(assoc % :interposed? true) (original)))]
-          (bootstrap/compiler-c18-verification-file-artifact
-           (fixture "accepted/compiler-c18-verification.gravity")))]
-    (is (= 1 @calls))
-    (is (every? :interposed? (:pass-risk-classification artifact))))
-  (let [sentinel {:kind :sentinel-c18-source}]
-    (is (= sentinel
-           (with-redefs [bootstrap/compiler-c18-verification-source-artifact
-                         (fn [_ _] sentinel)]
-             (bootstrap/compiler-c18-verification-file-artifact
-              (fixture "accepted/compiler-c18-verification.gravity"))))))
-  (let [artifact
-        (with-redefs [bootstrap/c18-verification-diagnostic-ids
-                      ["C18-SENTINEL"]
-                      bootstrap/c18-verification-governing-document
-                      "docs/c18-sentinel.md"]
-          (bootstrap/compiler-c18-verification-file-artifact
-           (fixture "accepted/compiler-c18-verification.gravity")))]
-    (is (= "docs/c18-sentinel.md" (:governing-document artifact)))
-    (is (= ["C18-SENTINEL"]
-           (get-in artifact [:c18-verification-results
-                             :required-diagnostic-ids])))
-    (is (= #{"C18-SENTINEL"}
-           (set (map :diagnostic
-                     (get-in artifact
-                             [:verification-diagnostic-stream
-                              :diagnostics]))))))
-  (is (= (:public-api (c18/c18-engine-contract)) c18/public-api)))
 
 (deftest c18-compiler-verification-artifact-preserves-p06-d097-contract
   (let [artifact (bootstrap/compiler-c18-verification-file-artifact

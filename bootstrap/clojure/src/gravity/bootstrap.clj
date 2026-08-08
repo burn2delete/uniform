@@ -23977,44 +23977,61 @@
    :optimization-lowering-source-artifact optimization-lowering-source-artifact})
 
 (def ^:private ^:dynamic *optimization-lowering-leaf-call?* false)
-(defn- optimization-lowering-call [operation & args]
+(defn- optimization-lowering-call [operation-key operation & args]
   (if *optimization-lowering-leaf-call?*
     (apply operation args)
     (binding [*optimization-lowering-leaf-call?* true]
-      (optimization-lowering/with-operations (optimization-lowering-ops)
+      (optimization-lowering/with-operations
+        (assoc (optimization-lowering-ops) operation-key operation)
         #(apply operation args)))))
 
 (defn optimization-lowering-source-overrides
   [module]
-  (optimization-lowering-call optimization-lowering/optimization-lowering-source-overrides module))
+  (optimization-lowering-call :optimization-lowering-source-overrides
+                              optimization-lowering/optimization-lowering-source-overrides
+                              module))
 
 (defn optimization-lowering-fail!
   [id source-path artifact subject extra]
-  (optimization-lowering-call optimization-lowering/optimization-lowering-fail! id source-path artifact subject extra))
+  (optimization-lowering-call :optimization-lowering-fail!
+                              optimization-lowering/optimization-lowering-fail!
+                              id source-path artifact subject extra))
 
 (defn optimization-pass-contract-record
   [record]
-  (optimization-lowering-call optimization-lowering/optimization-pass-contract-record record))
+  (optimization-lowering-call :optimization-pass-contract-record
+                              optimization-lowering/optimization-pass-contract-record
+                              record))
 
 (defn optimization-decision-record
   [domain-ir-artifact input-id index contract]
-  (optimization-lowering-call optimization-lowering/optimization-decision-record domain-ir-artifact input-id index contract))
+  (optimization-lowering-call :optimization-decision-record
+                              optimization-lowering/optimization-decision-record
+                              domain-ir-artifact input-id index contract))
 
 (defn optimization-lowering-validate-overrides!
   [source-path artifact]
-  (optimization-lowering-call optimization-lowering/optimization-lowering-validate-overrides! source-path artifact))
+  (optimization-lowering-call :optimization-lowering-validate-overrides!
+                              optimization-lowering/optimization-lowering-validate-overrides!
+                              source-path artifact))
 
 (defn optimization-lowering-validate!
   [source-path artifact]
-  (optimization-lowering-call optimization-lowering/optimization-lowering-validate! source-path artifact))
+  (optimization-lowering-call :optimization-lowering-validate!
+                              optimization-lowering/optimization-lowering-validate!
+                              source-path artifact))
 
 (defn optimization-lowering-capability-proof
   [artifact]
-  (optimization-lowering-call optimization-lowering/optimization-lowering-capability-proof artifact))
+  (optimization-lowering-call :optimization-lowering-capability-proof
+                              optimization-lowering/optimization-lowering-capability-proof
+                              artifact))
 
 (defn optimization-lowering-source-artifact
   [source-path source-text]
-  (optimization-lowering-call optimization-lowering/optimization-lowering-source-artifact source-path source-text))
+  (optimization-lowering-call :optimization-lowering-source-artifact
+                              optimization-lowering/optimization-lowering-source-artifact
+                              source-path source-text))
 
 (def c13-optimization-governing-document c13/c13-optimization-governing-document)
 
