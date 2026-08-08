@@ -189,11 +189,12 @@
           error))))))
 
 (defn- read-source-snapshot
-  "Read one bounded, no-follow descriptor snapshot and authenticate it.
+  "Read one bounded, no-follow descriptor snapshot.
 
   Path metadata is sampled before opening, immediately after opening, and
   after the bounded channel read.  The decoded text and digest are derived
-  only from those exact bytes."
+  only from those exact bytes.  Exact source-pin authentication belongs to
+  the dedicated binding selector."
   [source-path]
   (let [location (if (map? source-path)
                    source-path
@@ -606,6 +607,12 @@
       (is (empty? (missing-export-definitions forms)))
       (is (thrown? clojure.lang.ExceptionInfo
                    (validate-source-binding! loaded)))))
+  (testing "injected snapshots cannot bypass the source-byte ceiling"
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (binding [*source-snapshot-loader*
+                           (fn [] {:bytes (byte-array
+                                           (inc maximum-source-bytes))})]
+                   (load-source-snapshot)))))
   (testing "strict UTF-8 rejects malformed bytes without a platform decoder"
     (is (try
           (strict-utf8 (byte-array [(unchecked-byte 0xc3) (byte 0x28)])
