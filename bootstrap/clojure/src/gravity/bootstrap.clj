@@ -22,6 +22,8 @@
             [gravity.c12-domain-ir :as c12]
             [gravity.c13-optimization :as c13]
             [gravity.c14-lowering :as c14]
+            [gravity.c15-diagnostics :as c15]
+            [gravity.compiler-verification-shared :as compiler-verification-shared]
             [gravity.optimization-lowering :as optimization-lowering]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
@@ -24284,526 +24286,105 @@
   (c14-call c14/compiler-c14-lowering-file-artifact path))
 
 (def compiler-verification-diagnostic-ids
-  ["C15-SCHEMA"
-   "C15-ID"
-   "C15-SPAN"
-   "C15-ORIGIN"
-   "C15-FACTS"
-   "C15-REMEDIATION"
-   "C15-REDACTION"
-   "C15-ORDER"
-   "C15-GOLDEN"
-   "C16-KEY"
-   "C16-ENTRY"
-   "C16-STALE"
-   "C16-PROOF"
-   "C16-SPECULATIVE"
-   "C16-REPLAY"
-   "C16-POLICY"
-   "C16-DIAGNOSTIC"
-   "C16-GRAPH"
-   "C17-MANIFEST"
-   "C17-API"
-   "C17-CAPABILITY"
-   "C17-BUILD-EFFECT"
-   "C17-SANDBOX"
-   "C17-PASS-CONTRACT"
-   "C17-OUTPUT"
-   "C17-DOMAIN"
-   "C17-FACET"
-   "C17-TRUST"
-   "C18-RISK"
-   "C18-EVIDENCE"
-   "C18-VALIDATION"
-   "C18-PROOF"
-   "C18-TRUST-REPORT"
-   "C18-RELEASE-GATE"
-   "C18-COUNTEREXAMPLE"
-   "C18-PLUGIN"
-   "C18-BACKEND"])
-
+  compiler-verification-shared/compiler-verification-diagnostic-ids)
 (def compiler-verification-diagnostic-messages
-  {"C15-SCHEMA" "diagnostic record does not match schema"
-   "C15-ID" "diagnostic id is unstable or duplicate"
-   "C15-SPAN" "diagnostic primary span is missing"
-   "C15-ORIGIN" "diagnostic generated-origin chain is missing"
-   "C15-FACTS" "diagnostic facts are missing or unstructured"
-   "C15-REMEDIATION" "diagnostic remediation is missing"
-   "C15-REDACTION" "diagnostic leaks secret or private data"
-   "C15-ORDER" "diagnostic stream order is nondeterministic"
-   "C15-GOLDEN" "golden diagnostic fixture does not match"
-   "C16-KEY" "incremental cache key is malformed"
-   "C16-ENTRY" "incremental cache entry is malformed"
-   "C16-STALE" "stale artifact was reused"
-   "C16-PROOF" "stale proof or certificate was reused"
-   "C16-SPECULATIVE" "speculative cache reached publish boundary"
-   "C16-REPLAY" "build-effect replay record is missing"
-   "C16-POLICY" "cache crossed incompatible policy"
-   "C16-DIAGNOSTIC" "stale diagnostic stream was reused"
-   "C16-GRAPH" "incremental dependency graph is inconsistent"
-   "C17-MANIFEST" "compiler plugin manifest is malformed"
-   "C17-API" "compiler plugin API version is incompatible"
-   "C17-CAPABILITY" "compiler plugin capabilities are missing or excessive"
-   "C17-BUILD-EFFECT" "compiler plugin requested ungranted build effects"
-   "C17-SANDBOX" "compiler plugin violated sandbox policy"
-   "C17-PASS-CONTRACT" "compiler plugin pass contract is invalid"
-   "C17-OUTPUT" "compiler plugin output failed verification"
-   "C17-DOMAIN" "compiler plugin domain IR registration is invalid"
-   "C17-FACET" "compiler plugin facet registration is invalid"
-   "C17-TRUST" "compiler plugin trust or signature is rejected"
-   "C18-RISK" "pass risk classification is missing"
-   "C18-EVIDENCE" "required compiler verification evidence is missing"
-   "C18-VALIDATION" "translation validation failed"
-   "C18-PROOF" "proof or certificate was rejected"
-   "C18-TRUST-REPORT" "compiler trust report is incomplete"
-   "C18-RELEASE-GATE" "release gate is blocked by verification gaps"
-   "C18-COUNTEREXAMPLE" "counterexample artifact is malformed"
-   "C18-PLUGIN" "plugin evidence is below policy"
-   "C18-BACKEND" "backend lowering conformance is incomplete"})
-
+  compiler-verification-shared/compiler-verification-diagnostic-messages)
 (def compiler-verification-override-diagnostics
-  {:c15-schema ["C15-SCHEMA" :diagnostic-schema]
-   :c15-id ["C15-ID" :diagnostic-id]
-   :c15-span ["C15-SPAN" :diagnostic-span]
-   :c15-origin ["C15-ORIGIN" :diagnostic-origin]
-   :c15-facts ["C15-FACTS" :diagnostic-facts]
-   :c15-remediation ["C15-REMEDIATION" :diagnostic-remediation]
-   :c15-redaction ["C15-REDACTION" :diagnostic-redaction]
-   :c15-order ["C15-ORDER" :diagnostic-order]
-   :c15-golden ["C15-GOLDEN" :diagnostic-golden]
-   :c16-key ["C16-KEY" :cache-key]
-   :c16-entry ["C16-ENTRY" :cache-entry]
-   :c16-stale ["C16-STALE" :cache-stale]
-   :c16-proof ["C16-PROOF" :cache-proof]
-   :c16-speculative ["C16-SPECULATIVE" :cache-speculative]
-   :c16-replay ["C16-REPLAY" :cache-replay]
-   :c16-policy ["C16-POLICY" :cache-policy]
-   :c16-diagnostic ["C16-DIAGNOSTIC" :cache-diagnostic]
-   :c16-graph ["C16-GRAPH" :cache-graph]
-   :c17-manifest ["C17-MANIFEST" :plugin-manifest]
-   :c17-api ["C17-API" :plugin-api]
-   :c17-capability ["C17-CAPABILITY" :plugin-capability]
-   :c17-build-effect ["C17-BUILD-EFFECT" :plugin-build-effect]
-   :c17-sandbox ["C17-SANDBOX" :plugin-sandbox]
-   :c17-pass-contract ["C17-PASS-CONTRACT" :plugin-pass-contract]
-   :c17-output ["C17-OUTPUT" :plugin-output]
-   :c17-domain ["C17-DOMAIN" :plugin-domain]
-   :c17-facet ["C17-FACET" :plugin-facet]
-   :c17-trust ["C17-TRUST" :plugin-trust]
-   :c18-risk ["C18-RISK" :pass-risk]
-   :c18-evidence ["C18-EVIDENCE" :pass-evidence]
-   :c18-validation ["C18-VALIDATION" :translation-validation]
-   :c18-proof ["C18-PROOF" :verification-proof]
-   :c18-trust-report ["C18-TRUST-REPORT" :trust-report]
-   :c18-release-gate ["C18-RELEASE-GATE" :release-gate]
-   :c18-counterexample ["C18-COUNTEREXAMPLE" :counterexample]
-   :c18-plugin ["C18-PLUGIN" :plugin-evidence]
-   :c18-backend ["C18-BACKEND" :backend-conformance]})
+  compiler-verification-shared/compiler-verification-override-diagnostics)
 
 (def c15-diagnostics-governing-document
-  "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md")
+  c15/c15-diagnostics-governing-document)
+(def c15-diagnostics-diagnostic-ids c15/c15-diagnostics-diagnostic-ids)
+(def c15-diagnostic-required-fields c15/c15-diagnostic-required-fields)
 
-(def c15-diagnostics-diagnostic-ids
-  ["C15-SCHEMA"
-   "C15-ID"
-   "C15-SPAN"
-   "C15-ORIGIN"
-   "C15-FACTS"
-   "C15-REMEDIATION"
-   "C15-REDACTION"
-   "C15-ORDER"
-   "C15-GOLDEN"])
+(declare c15-diagnostics-source-overrides
+         c15-stable-diagnostic-id
+         c15-diagnostics-fail!
+         c15-diagnostics-validate-source-overrides!
+         c15-diagnostic-record
+         c15-diagnostic-catalog
+         c15-diagnostics-validate!
+         c15-diagnostics-capability-proof
+         compiler-c15-diagnostics-source-artifact
+         compiler-c15-diagnostics-file-artifact)
 
-(def c15-diagnostic-required-fields
-  [:artifact :diagnostic-id :rule :severity :stage :message-key :primary
-   :related :origin-chain :profile :target :involved-artifacts :facts
-   :remediation :redactions :lifecycle])
+(defn- c15-diagnostics-ops []
+  {:fail! fail!
+   :source-span source-span
+   :sha256-hex sha256-hex
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c14-lowering-source-artifact
+   compiler-c14-lowering-source-artifact
+   :compiler-verification-diagnostic-messages
+   compiler-verification-diagnostic-messages
+   :compiler-verification-override-diagnostics
+   compiler-verification-override-diagnostics
+   :c15-diagnostics-governing-document c15-diagnostics-governing-document
+   :c15-diagnostics-diagnostic-ids c15-diagnostics-diagnostic-ids
+   :c15-diagnostic-required-fields c15-diagnostic-required-fields
+   :c15-diagnostics-source-overrides c15-diagnostics-source-overrides
+   :c15-stable-diagnostic-id c15-stable-diagnostic-id
+   :c15-diagnostics-fail! c15-diagnostics-fail!
+   :c15-diagnostics-validate-source-overrides!
+   c15-diagnostics-validate-source-overrides!
+   :c15-diagnostic-record c15-diagnostic-record
+   :c15-diagnostic-catalog c15-diagnostic-catalog
+   :c15-diagnostics-validate! c15-diagnostics-validate!
+   :c15-diagnostics-capability-proof c15-diagnostics-capability-proof
+   :compiler-c15-diagnostics-source-artifact
+   compiler-c15-diagnostics-source-artifact
+   :compiler-c15-diagnostics-file-artifact
+   compiler-c15-diagnostics-file-artifact})
 
-(defn c15-diagnostics-source-overrides
-  [module]
-  (or (get-in module [:metadata :compiler :c15-diagnostics])
-      (get-in module [:metadata :compiler :verification])
-      {}))
+(def ^:private ^:dynamic *c15-leaf-call?* false)
+(defn- c15-call [operation & args]
+  (if *c15-leaf-call?*
+    (apply operation args)
+    (binding [*c15-leaf-call?* true]
+      (c15/with-operations (c15-diagnostics-ops)
+        #(apply operation args)))))
 
-(defn c15-stable-diagnostic-id
-  [diagnostic]
-  (str "diag-"
-       (sha256-hex
-        (pr-str {:rule (:rule diagnostic)
-                 :stage (:stage diagnostic)
-                 :primary-artifact (get-in diagnostic [:primary :artifact])
-                 :facts (:facts diagnostic)}))))
+(defn c15-diagnostics-source-overrides [module]
+  (c15-call c15/c15-diagnostics-source-overrides module))
 
-(defn c15-diagnostics-fail!
-  [id source-path subject extra]
-  (fail! id
-         (get compiler-verification-diagnostic-messages id
-              "compiler diagnostic validation failed")
-         (merge {:source-span (or (:source-span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :compiler-diagnostics
-                 :stage (or (:stage subject) :c15-compiler-diagnostics)
-                 :offending-diagnostic-id (:diagnostic-id subject)
-                 :schema-field (:schema-field subject)
-                 :artifact-id (:artifact-id subject)
-                 :profile (:profile subject)
-                 :target (:target subject)
-                 :remediation "Regenerate structured diagnostic artifacts with stable ids, primary spans, origin chains, facts, remediation, redaction, deterministic ordering, and golden fixtures."}
-                extra)))
+(defn c15-stable-diagnostic-id [diagnostic]
+  (c15-call c15/c15-stable-diagnostic-id diagnostic))
 
-(defn c15-diagnostics-validate-source-overrides!
-  [source-path overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (let [[id subject-kind] (get compiler-verification-override-diagnostics
-                                 fail-kind)]
-      (when (contains? (set c15-diagnostics-diagnostic-ids) id)
-        (c15-diagnostics-fail!
-         id source-path
-         {:stage subject-kind
-          :diagnostic-id (str "c15-invalid-" (name fail-kind))
-          :schema-field fail-kind
-          :artifact-id (str "c15-diagnostic-artifact-" (name fail-kind))
-          :profile :hosted
-          :target :jvm}
-         {:missing-fields [fail-kind]})))))
+(defn c15-diagnostics-fail! [id source-path subject extra]
+  (c15-call c15/c15-diagnostics-fail! id source-path subject extra))
+
+(defn c15-diagnostics-validate-source-overrides! [source-path overrides]
+  (c15-call c15/c15-diagnostics-validate-source-overrides!
+            source-path overrides))
 
 (defn c15-diagnostic-record
   [rule severity stage message-key source-path form-index primary-artifact
    facts remediation & {:keys [related origin-chain redactions lifecycle
                                generated?]}]
-  (let [diagnostic
-        {:artifact :gravity/diagnostic
-         :rule rule
-         :severity severity
-         :stage stage
-         :message-key message-key
-         :primary {:span (source-span source-path form-index)
-                   :syntax-id (str "c15-syntax-" form-index)
-                   :artifact primary-artifact}
-         :related (vec related)
-         :origin-chain (vec origin-chain)
-         :profile :hosted
-         :target :jvm
-         :involved-artifacts [primary-artifact]
-         :facts facts
-         :remediation (vec remediation)
-         :redactions (vec redactions)
-         :lifecycle (or lifecycle :active)
-         :generated? (true? generated?)}]
-    (assoc diagnostic
-           :diagnostic-id (c15-stable-diagnostic-id diagnostic)
-           :ordering-key [rule stage primary-artifact form-index])))
+  (c15-call c15/c15-diagnostic-record
+            rule severity stage message-key source-path form-index
+            primary-artifact facts remediation
+            :related related :origin-chain origin-chain
+            :redactions redactions :lifecycle lifecycle :generated? generated?))
 
-(defn c15-diagnostic-catalog
-  []
-  {:artifact :gravity/diagnostic-catalog
-   :status :complete
-   :rules
-   (mapv (fn [id]
-           {:rule id
-            :severity (if (= "C15-GOLDEN" id) :hint :error)
-            :message-key (keyword "diagnostic"
-                                  (clojure.string/lower-case
-                                   (clojure.string/replace id #"_" "-")))
-            :explain-page (str "gravity://diagnostics/" id)
-            :lifecycle :active
-            :stable-id-policy :rule-primary-artifact-stage-facts})
-         c15-diagnostics-diagnostic-ids)})
+(defn c15-diagnostic-catalog []
+  (c15-call c15/c15-diagnostic-catalog))
 
-(defn c15-diagnostics-validate!
-  [source-path artifact]
-  (let [required (set c15-diagnostic-required-fields)
-        schema-fields (set (get-in artifact [:diagnostic-schema
-                                             :required-fields]))
-        diagnostics (get-in artifact [:diagnostic-stream :diagnostics])
-        catalog-rules (set (map :rule (get-in artifact
-                                               [:diagnostic-catalog :rules])))
-        golden (:golden-diagnostic-fixtures artifact)]
-    (when-not (= required schema-fields)
-      (c15-diagnostics-fail! "C15-SCHEMA" source-path
-                             (:diagnostic-schema artifact)
-                             {:missing-fields
-                              (vec (remove schema-fields required))}))
-    (when-not (= (count diagnostics)
-                 (count (distinct (map :diagnostic-id diagnostics))))
-      (c15-diagnostics-fail! "C15-ID" source-path
-                             (first diagnostics)
-                             {:missing-fields [:diagnostic-id]}))
-    (doseq [diagnostic diagnostics]
-      (let [present (set (keys diagnostic))]
-        (when-not (every? present required)
-          (c15-diagnostics-fail! "C15-SCHEMA" source-path diagnostic
-                                 {:missing-fields
-                                  (vec (remove present required))})))
-      (when-not (= (:diagnostic-id diagnostic)
-                   (c15-stable-diagnostic-id
-                    (dissoc diagnostic :diagnostic-id :ordering-key)))
-        (c15-diagnostics-fail! "C15-ID" source-path diagnostic
-                               {:missing-fields [:stable-id]}))
-      (when-not (and (get-in diagnostic [:primary :span])
-                     (get-in diagnostic [:primary :syntax-id])
-                     (get-in diagnostic [:primary :artifact]))
-        (c15-diagnostics-fail! "C15-SPAN" source-path diagnostic
-                               {:missing-fields [:primary]}))
-      (when (and (:generated? diagnostic)
-                 (or (empty? (:origin-chain diagnostic))
-                     (not-any? #(= :generated-by (:role %))
-                               (:related diagnostic))))
-        (c15-diagnostics-fail! "C15-ORIGIN" source-path diagnostic
-                               {:missing-fields [:origin-chain]}))
-      (when-not (and (map? (:facts diagnostic))
-                     (seq (:facts diagnostic)))
-        (c15-diagnostics-fail! "C15-FACTS" source-path diagnostic
-                               {:missing-fields [:facts]}))
-      (when-not (seq (:remediation diagnostic))
-        (c15-diagnostics-fail! "C15-REMEDIATION" source-path diagnostic
-                               {:missing-fields [:remediation]})))
-    (when-not (true? (get-in artifact [:redaction-report :public-safe?]))
-      (c15-diagnostics-fail! "C15-REDACTION" source-path
-                             (:redaction-report artifact)
-                             {:missing-fields [:public-safe]}))
-    (when-not (= diagnostics (vec (sort-by :ordering-key diagnostics)))
-      (c15-diagnostics-fail! "C15-ORDER" source-path
-                             (:diagnostic-stream artifact)
-                             {:missing-fields [:ordering-key]}))
-    (when-not (= (set c15-diagnostics-diagnostic-ids) catalog-rules)
-      (c15-diagnostics-fail! "C15-SCHEMA" source-path
-                             (:diagnostic-catalog artifact)
-                             {:missing-fields [:diagnostic-catalog]}))
-    (when-not (and (= (set c15-diagnostics-diagnostic-ids)
-                      (set (map :rule golden)))
-                   (every? #(= :matched (:status %)) golden))
-      (c15-diagnostics-fail! "C15-GOLDEN" source-path
-                             (first golden)
-                             {:missing-fields [:golden-fixtures]})))
-  :complete)
+(defn c15-diagnostics-validate! [source-path artifact]
+  (c15-call c15/c15-diagnostics-validate! source-path artifact))
 
-(defn c15-diagnostics-capability-proof
-  [artifact]
-  {:c14-lowering-input-verified?
-   (= :complete (get-in artifact
-                        [:c14-lowering-artifact
-                         :capability-based-proof :status]))
-   :diagnostic-schema-complete?
-   (= :complete (get-in artifact [:diagnostic-schema :status]))
-   :diagnostic-stream-deterministic?
-   (= (get-in artifact [:diagnostic-stream :diagnostics])
-      (vec (sort-by :ordering-key
-                    (get-in artifact
-                            [:diagnostic-stream :diagnostics]))))
-   :stable-ids?
-   (every? (fn [diagnostic]
-             (= (:diagnostic-id diagnostic)
-                (c15-stable-diagnostic-id
-                 (dissoc diagnostic :diagnostic-id :ordering-key))))
-           (get-in artifact [:diagnostic-stream :diagnostics]))
-   :locations-and-origins-linked?
-   (every? #(and (get-in % [:primary :span])
-                 (get-in % [:primary :syntax-id])
-                 (get-in % [:primary :artifact])
-                 (or (not (:generated? %))
-                     (and (seq (:origin-chain %))
-                          (some (fn [related]
-                                  (= :generated-by (:role related)))
-                                (:related %)))))
-           (get-in artifact [:diagnostic-stream :diagnostics]))
-   :facts-structured?
-   (every? #(and (map? (:facts %)) (seq (:facts %)))
-           (get-in artifact [:diagnostic-stream :diagnostics]))
-   :remediation-and-quick-fixes?
-   (and (every? #(seq (:remediation %))
-                (get-in artifact [:diagnostic-stream :diagnostics]))
-        (every? #(= :available (:status %))
-                (:remediation-and-quick-fix-records artifact)))
-   :redaction-public-safe?
-   (true? (get-in artifact [:redaction-report :public-safe?]))
-   :renderers-covered?
-   (= #{:cli :ide :ci :safety-report :package-report}
-      (set (map :renderer (:rendering-records artifact))))
-   :golden-fixtures-matched?
-   (every? #(= :matched (:status %))
-           (:golden-diagnostic-fixtures artifact))
-   :diagnostics-covered?
-   (= (set c15-diagnostics-diagnostic-ids)
-      (set (map :rule (:golden-diagnostic-fixtures artifact))))
-   :status :complete})
+(defn c15-diagnostics-capability-proof [artifact]
+  (c15-call c15/c15-diagnostics-capability-proof artifact))
 
-(defn compiler-c15-diagnostics-source-artifact
-  [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        source-overrides (c15-diagnostics-source-overrides module)
-        _ (c15-diagnostics-validate-source-overrides! source-path
-                                                      source-overrides)
-        lowering-artifact (compiler-c14-lowering-source-artifact source-path
-                                                                 source-text)
-        lowering-id (:artifact-id lowering-artifact)
-        diagnostics
-        (vec
-         (sort-by
-          :ordering-key
-          [(c15-diagnostic-record
-            "C15-FACTS" :info :c15-compiler-diagnostics
-            :diagnostic.structured-facts source-path 0 lowering-id
-            {:fact-families [:types :effects :capabilities :safety
-                             :proofs :target-features]
-             :artifact lowering-id}
-            [{:kind :inspect-facts}])
-           (c15-diagnostic-record
-            "C15-ORIGIN" :warning :c15-compiler-diagnostics
-            :diagnostic.generated-origin source-path 1 lowering-id
-            {:generated-form "c15-generated-check"
-             :producer :compiler-c15-diagnostics
-             :source-producer :stage0-build-macro}
-            [{:kind :jump-to-source-producer}]
-            :generated? true
-            :origin-chain
-            [{:producer :stage0-build-macro
-              :source (source-span source-path 1)
-              :generated-artifact lowering-id}]
-            :related
-            [{:role :generated-by
-              :span (source-span source-path 1)
-              :artifact :stage0-build-macro}])
-           (c15-diagnostic-record
-            "C15-REDACTION" :error :c15-compiler-diagnostics
-            :diagnostic.redaction-policy source-path 2 lowering-id
-            {:redacted-fields [:credential-value :private-expansion]
-             :policy :public-diagnostic}
-            [{:kind :move-to-private-artifact-store}]
-            :redactions [{:field :credential-value
-                          :replacement :redacted
-                          :value-hash "sha256:redacted-stage0"}])
-           (c15-diagnostic-record
-            "C15-GOLDEN" :hint :c15-compiler-diagnostics
-            :diagnostic.golden-fixture source-path 3 lowering-id
-            {:fixture :compiler-c15-diagnostics
-             :asserts [:rule :severity :primary :related :facts
-                       :remediation :redactions :ordering]}
-            [{:kind :regenerate-golden-fixture}])]))
-        summary (frequencies (map :severity diagnostics))
-        catalog (c15-diagnostic-catalog)
-        artifact-base
-        {:kind :gravity/stage0-c15-compiler-diagnostics-artifact
-         :task "P06-D094"
-         :document-set ["C15"]
-         :governing-document c15-diagnostics-governing-document
-         :pass {:name :c15-compiler-diagnostics
-                :input :target-artifact-manifest
-                :output :diagnostic-artifact-bundle
-                :requires [:c14-target-artifact-manifest :source-spans
-                           :origin-chain :profile :target :facts
-                           :remediation-policy :redaction-policy]
-                :preserves [:source-spans :origin-chain :profile :target
-                            :artifact-provenance :facts :redactions]
-                :emits [:diagnostic-schema :diagnostic-stream
-                        :diagnostic-catalog :related-span-map
-                        :remediation-and-quick-fix-records
-                        :redaction-report :rendering-records
-                        :golden-diagnostic-fixtures]
-                :rejects c15-diagnostics-diagnostic-ids}
-         :source-overrides source-overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c14-lowering-artifact
-         (select-keys lowering-artifact
-                      [:kind :task :artifact-id :governing-document
-                       :target-artifact-manifest :capability-based-proof])
-         :lowering-artifact-kind (:kind lowering-artifact)
-         :lowering-artifact-hash lowering-id
-         :diagnostic-schema
-         {:artifact :gravity/diagnostic-schema
-          :status :complete
-          :required-fields c15-diagnostic-required-fields
-          :stable-id-input [:rule :primary-artifact :stage :facts]
-          :display-wording-version "stage0-c15"}
-         :diagnostic-stream
-         {:artifact :gravity/diagnostic-stream
-          :stage :c15-compiler-diagnostics
-          :input-artifact lowering-id
-          :output-artifact :gravity/diagnostic-artifact-bundle
-          :diagnostics diagnostics
-          :summary summary
-          :deterministic-ordering-key :ordering-key
-          :redaction-policy :public-safe
-          :rendering-version "stage0-c15"
-          :status :complete}
-         :diagnostic-catalog catalog
-         :related-span-map
-         {:artifact :gravity/related-span-map
-          :status :complete
-          :entries (mapv (fn [diagnostic]
-                           {:diagnostic-id (:diagnostic-id diagnostic)
-                            :related (:related diagnostic)})
-                         diagnostics)}
-         :remediation-and-quick-fix-records
-         (mapv (fn [id]
-                 {:rule id
-                  :remediation :structured-diagnostic-repair
-                  :quick-fix :regenerate-diagnostic-artifact
-                  :status :available})
-               c15-diagnostics-diagnostic-ids)
-         :redaction-report
-         {:artifact :gravity/diagnostic-redaction-report
-          :status :passed
-          :public-safe? true
-          :redacted-value-hashes ["sha256:redacted-stage0"]
-          :private-artifact-store :authorized-only
-          :raw-secret-values-present? false}
-         :rendering-records
-         [{:renderer :cli
-           :source :gravity/diagnostic-stream
-           :status :complete}
-          {:renderer :ide
-           :source :gravity/diagnostic-stream
-           :status :complete}
-          {:renderer :ci
-           :source :gravity/diagnostic-stream
-           :status :complete}
-          {:renderer :safety-report
-           :source :gravity/diagnostic-stream
-           :status :complete}
-          {:renderer :package-report
-           :source :gravity/diagnostic-stream
-           :status :complete}]
-         :golden-diagnostic-fixtures
-         (mapv (fn [id]
-                 {:fixture (str "compiler-c15-" id)
-                  :rule id
-                  :asserts [:rule :severity :primary :related :stage
-                            :profile :target :facts :remediation
-                            :redactions :ordering]
-                  :status :matched})
-               c15-diagnostics-diagnostic-ids)
-         :c15-diagnostics-results
-         {:documents ["C15"]
-          :task "P06-D094"
-          :required-diagnostic-ids c15-diagnostics-diagnostic-ids
-          :c14-input-status :complete
-          :schema-status :complete
-          :stream-status :complete
-          :catalog-status :complete
-          :related-span-status :complete
-          :remediation-status :complete
-          :redaction-status :complete
-          :rendering-status :complete
-          :golden-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c15-diagnostics-validate! source-path artifact-base)
-        capability-proof (c15-diagnostics-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+(defn compiler-c15-diagnostics-source-artifact [source-path source-text]
+  (c15-call c15/compiler-c15-diagnostics-source-artifact
+            source-path source-text))
 
-(defn compiler-c15-diagnostics-file-artifact
-  [path]
-  (compiler-c15-diagnostics-source-artifact path (slurp path)))
+(defn compiler-c15-diagnostics-file-artifact [path]
+  (c15-call c15/compiler-c15-diagnostics-file-artifact path))
 
 (def c16-incremental-governing-document
   "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md")
