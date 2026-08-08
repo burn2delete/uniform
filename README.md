@@ -258,11 +258,14 @@ helper first, authenticated `.gravity` boundary last) and one 2 GiB public
 batch that checks semantic pins before CLI acceptance. The frozen C11 source is 253,588 bytes with SHA
 `sha256:34f0e797...4136`; its measured plan/functions hashes are
 `sha256:974d3949...fb39` and `sha256:ece068d2...89a4`, while the builder and
-verifier hashes remain unchanged. The final adapter lane passed 5 tests/182
-assertions in 86.284 seconds with a 1,569,554,432-byte observed peak. These are
-non-authoritative development and calibration receipts. The final two-selector
-public batch passed 2/39 in 319.494 seconds with a sampled 3,166,142,464-byte
-process-tree peak.
+verifier hashes remain unchanged. Evidence for the six-selector adapter is
+currently split: the helper passed separately as 1 test/53 assertions at
+2 GiB, while the five-selector suffix passed 5 tests/182 assertions in 86.284
+seconds with a 1,569,554,432-byte observed peak. The exact combined
+six-selector 8 GiB batch has not been rerun. These are non-authoritative
+development and calibration receipts. The final two-selector public batch
+passed 2/39 in 319.494 seconds with a sampled 3,166,142,464-byte process-tree
+peak.
 
 The manual `stage7-c11-proof-candidate` is fixed to `c11-authority` / `c11-mir`,
 fresh, no-resume, new-state, `automatic: false`, `authority: none`, and

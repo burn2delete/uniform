@@ -404,9 +404,11 @@ the builder and verifier hashes remain pinned and unchanged.
 
 The adapter keeps six exact SH12 selectors in one 8 GiB JVM. The narrow
 verification-envelope helper runs first, four semantic checks follow, and the
-single authenticated `.gravity` boundary runs last. The final frozen-source
-receipt passed 5 tests/182 assertions in 86.284 seconds with an observed peak
-of 1,569,554,432 bytes. The public branch is one 2 GiB batch: exact C11
+single authenticated `.gravity` boundary runs last. Current evidence is split:
+the helper passed separately as 1 test/53 assertions at 2 GiB, and the
+five-selector suffix passed 5 tests/182 assertions in 86.284 seconds with an
+observed peak of 1,569,554,432 bytes. The exact combined six-selector 8 GiB
+batch has not been rerun. The public branch is one 2 GiB batch: exact C11
 source/builder semantic identity first, then the public compatibility selector.
 Its final receipt passed 2 tests/39 assertions in 319.494 seconds with a sampled
 3,166,142,464-byte process-tree peak. The source gate passed 3/62 in 5.278

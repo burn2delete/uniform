@@ -843,9 +843,11 @@ production execution. It depends only on `stage3-runner-unit` and branches:
 2. `stage7-sh12-c10-mir-adapter` keeps the envelope helper, four semantic
    checks, and the authenticated `.gravity` boundary in one 8 GiB JVM. Helper
    placement first catches duplicated-carrier bounds before the cold carrier;
-   boundary placement last preserves fail-fast cache affinity. The frozen
-   receipt passed 5 tests/182 assertions in 86.284 seconds with an observed
-   process-tree peak of 1,569,554,432 bytes.
+   boundary placement last preserves fail-fast cache affinity. Evidence is
+   split: the helper passed separately as 1 test/53 assertions at 2 GiB, while
+   the five-selector suffix passed 5 tests/182 assertions in 86.284 seconds
+   with an observed process-tree peak of 1,569,554,432 bytes. The exact
+   combined six-selector 8 GiB batch has not been rerun.
 3. `stage7-public-c11` is a 2 GiB two-selector batch. It validates the complete
    source/plan/functions/builder/verifier tuple before the public compatibility
    selector. It is a sibling of the adapter, so an SH12-only edit does not
