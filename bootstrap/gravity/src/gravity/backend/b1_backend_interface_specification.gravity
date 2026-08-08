@@ -870,10 +870,10 @@
         (get rule :executed-by) (get rule :self-hosted?)
         (get rule :function-shapes)]
        [:gravity/pinned-gravity-source-rule
-        :gravity.compiler/c13-mir-optimization 98836
-        "sha256:071511017d4f3f3816716cfa899ae0189e882e6be9d67dc34e794729ae105681"
-        "sha256:840089668cb979b5ddceda17b6df586652655dd364d503a080d4c9d28372ea50"
-        "sha256:a511673fffd4888cd1f4b826d27e50adcf5b769cd7759a5dce88ad8b370de265"
+        :gravity.compiler/c13-mir-optimization 126236
+        "sha256:14bb6c059b7654d818210dbf1b201d98f33a43fec6e527cbd12aaa4b9529f8ab"
+        "sha256:5d88c74816d75297d37e1030295ca97785d18dafb757913f0df887d70d6cc48c"
+        "sha256:c48051f293ece207f6fca30b6d4ad5d57f8310f66fb7220f326cf1e4e75f5095"
         'c13-build-bounded-identity-optimized-mir
         "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3"
         :gravity-source :clojure-stage0-seed
@@ -890,7 +890,13 @@
           c13-bounded-mir-operation-shape-valid?
           {:arity 2 :params [mir operation-order]}
           c13-build-bounded-identity-optimized-mir
-          {:arity 2 :params [mir evidence]}}])
+          {:arity 2 :params [mir evidence]}
+          sh16-c13-evidence-input-valid?
+          {:arity 1 :params [request]}
+          sh16-build-c13-evidence-boundary
+          {:arity 1 :params [request]}
+          sh16-verify-c13-evidence-boundary
+          {:arity 2 :params [request candidate]}}])
      false)
     false))
 
@@ -1092,10 +1098,10 @@
           (get rule :compiled-by) (get rule :executed-by)
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
-          :gravity.compiler/c14-target-lowering 168303
-          "sha256:f433e27eab7f58f50ea8c57b9a60c3046796f9f484d59f9534ec72921b33c126"
-          "sha256:7ee55da35e45ae726c322dd52e739bea67c3ff3e6c9fb1644d3f1b6b38d1c94f"
-          "sha256:c43facf8fc5b644209554093d1d2f23992eac5f403de8ad2c94ee92cb8809f93"
+          :gravity.compiler/c14-target-lowering 168685
+          "sha256:931928313d0218aca740a906634ea1fa3a21058b546ce3f0ddc7329a059b566d"
+          "sha256:6fc0eb4d2b3329f1de6a06da066c426012d063b0ec3f4b80db4ca39f6f7d5bbb"
+          "sha256:108b01f8c1b08f0abe56894ae2c7926eb8e9006b63fb9547ec1880ffdc246488"
           'c14-build-bounded-llvm-lowering-record
           "sha256:982cf0d77a2026c55699d3ac44a0d0d9f0b29f1a214e2b54ab9bc2d97c5ab5b7"
           '{c14-bounded-optimized-input-valid?
@@ -1672,10 +1678,10 @@
           (get rule :compiled-by) (get rule :executed-by)
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
-          :gravity.compiler/c14-target-lowering 168303
-          "sha256:f433e27eab7f58f50ea8c57b9a60c3046796f9f484d59f9534ec72921b33c126"
-          "sha256:7ee55da35e45ae726c322dd52e739bea67c3ff3e6c9fb1644d3f1b6b38d1c94f"
-          "sha256:c43facf8fc5b644209554093d1d2f23992eac5f403de8ad2c94ee92cb8809f93"
+          :gravity.compiler/c14-target-lowering 168685
+          "sha256:931928313d0218aca740a906634ea1fa3a21058b546ce3f0ddc7329a059b566d"
+          "sha256:6fc0eb4d2b3329f1de6a06da066c426012d063b0ec3f4b80db4ca39f6f7d5bbb"
+          "sha256:108b01f8c1b08f0abe56894ae2c7926eb8e9006b63fb9547ec1880ffdc246488"
           'c14-build-bounded-c-lowering-record
           "sha256:3209bb1605d40c7a466a53eb01d6cf7a4d243210ce6a0c189ceb3b15564f09ee"
           '{c14-bounded-optimized-input-valid?
@@ -2695,10 +2701,10 @@
           (get rule :compiled-by) (get rule :executed-by)
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
-          :gravity.compiler/c14-target-lowering 168303
-          "sha256:f433e27eab7f58f50ea8c57b9a60c3046796f9f484d59f9534ec72921b33c126"
-          "sha256:7ee55da35e45ae726c322dd52e739bea67c3ff3e6c9fb1644d3f1b6b38d1c94f"
-          "sha256:c43facf8fc5b644209554093d1d2f23992eac5f403de8ad2c94ee92cb8809f93"
+          :gravity.compiler/c14-target-lowering 168685
+          "sha256:931928313d0218aca740a906634ea1fa3a21058b546ce3f0ddc7329a059b566d"
+          "sha256:6fc0eb4d2b3329f1de6a06da066c426012d063b0ec3f4b80db4ca39f6f7d5bbb"
+          "sha256:108b01f8c1b08f0abe56894ae2c7926eb8e9006b63fb9547ec1880ffdc246488"
           'c14-build-bounded-wasm-lowering-record
           "sha256:fe20574f102acb55063e64223715adf2e2fa40a25e9e147616ee554f9989b3fa"
           '{c14-bounded-optimized-input-valid?

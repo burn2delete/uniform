@@ -29,9 +29,9 @@
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private accepted-fixture-relative-path
   "bootstrap/clojure/fixtures/self-hosting/sh-16/accepted/mir-optimizations.gravity")
-(def ^:private expected-source-byte-count 98836)
+(def ^:private expected-source-byte-count 126236)
 (def ^:private expected-source-revision-id
-  "sha256:071511017d4f3f3816716cfa899ae0189e882e6be9d67dc34e794729ae105681")
+  "sha256:14bb6c059b7654d818210dbf1b201d98f33a43fec6e527cbd12aaa4b9529f8ab")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:3b42495073aac7f58957bafeaa8720e803df2203b69e499628e10755d93fdfb5")
 (def ^:private expected-coverage
@@ -66,7 +66,8 @@
     build-c13-decision-record build-c13-invalidation-entry
     build-c13-check-elision-gate c13-build-bounded-identity-optimized-mir
     verify-c13-mir-optimization-passes sh16-optimization-policy
-    sh16-optimize sh16-verify])
+    sh16-optimize sh16-verify sh16-c13-evidence-input-valid?
+    sh16-build-c13-evidence-boundary sh16-verify-c13-evidence-boundary])
 (def ^:private data-definition-names
   '#{c13-mir-optimization-contract c13-optimization-pass-contract
      c13-invalidation-ledger-contract c13-preservation-contract
@@ -121,7 +122,20 @@
      sh16-pass-reports-passed-from? sh16-pipeline-valid?
      sh16-check-ids-for-selected sh16-elision-records-for-selected
      sh16-finalize-pipeline sh16-accepted-artifact
-     sh16-structural-rejection sh16-optimize sh16-verify})
+     sh16-structural-rejection sh16-optimize sh16-verify
+     sh16-c13-evidence-aggregate? sh16-c13-evidence-children
+     sh16-c13-evidence-scalar? sh16-c13-evidence-push
+     sh16-c13-evidence-rejection sh16-c13-evidence-preflight
+     sh16-c13-evidence-exact-keys? sh16-c13-c12-checks
+     sh16-c13-c12-nonclaims sh16-c13-evidence-checks
+     sh16-c13-evidence-nonclaims sh16-c13-evidence-pending
+     sh16-c13-c12-evidence-valid? sh16-c13-c12-verification-valid?
+     sh16-c13-evidence-request-valid? sh16-c13-evidence-identity-input
+     sh16-c13-evidence-boundary-metadata
+     sh16-c13-evidence-boundary-member-valid?
+     sh16-c13-evidence-boundary-preflight
+     sh16-c13-evidence-input-valid? sh16-build-c13-evidence-boundary
+     sh16-verify-c13-evidence-boundary})
 (def ^:private expected-definition-names
   (set/union data-definition-names quoted-definition-names
              executable-definition-names))
@@ -392,7 +406,7 @@
                               :when (and (= 'defn (first form))
                                          (nil? (quoted-body form)))] name))
         if-calls (mapcat #(collect-calls 'if %) (vals definitions))]
-    (is (= 115 (count forms)))
+    (is (= 137 (count forms)))
     (is (= 'gravity.compiler.c13-mir-optimization-passes (second ns-form)))
     (is (= :meta (:profile clauses)))
     (is (= :jvm (:target clauses)))
@@ -409,18 +423,18 @@
                          :retirement-objective :ambient-authority-denied])))
     (is (= expected-definition-names (set (keys definitions))))
     (is (= 9 (count (filter #(= 'def (first %)) (vals definitions)))))
-    (is (= 105 (count (filter #(= 'defn (first %)) (vals definitions)))))
+    (is (= 127 (count (filter #(= 'defn (first %)) (vals definitions)))))
     (is (= quoted-definition-names
            (set (for [[name form] definitions :when (quoted-body form)] name))))
     (is (= executable-definition-names executable))
-    (is (= 100 (count executable)))
+    (is (= 122 (count executable)))
     (doseq [[name expected-hash] expected-contract-value-hashes]
       (is (= expected-hash (value-sha256-id (nth (get definitions name) 2)))))
     (is (= expected-diagnostic-catalog
            (nth (get definitions 'c13-optimization-diagnostic-catalog) 2)))
     (is (= expected-policy
            (nth (get definitions 'sh16-optimization-policy) 3)))
-    (is (= 396 (count if-calls)))
+    (is (= 498 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path c13-relative-path)))))
@@ -441,17 +455,17 @@
         verifier (get definitions 'sh16-verify)
         identity (get definitions 'sh16-identity-input)
         sha-shape (get definitions 'c13-sha256-id?)]
-    (is (= 493 (count gets)))
-    (is (= 445 (count literal)))
-    (is (= 48 (count dynamic)))
-    (is (= {:reference 36 :call 4 :literal 8}
+    (is (= 622 (count gets)))
+    (is (= 572 (count literal)))
+    (is (= 50 (count dynamic)))
+    (is (= {:reference 37 :call 5 :literal 8}
            (frequencies
             (map #(let [key-form (nth % 2)]
                     (cond (symbol? key-form) :reference
                           (seq? key-form) :call
                           :else :literal)) dynamic))))
-    (is (= 667 (-> dynamic first meta :line)))
-    (is (= 2287 (-> dynamic last meta :line)))
+    (is (= 670 (-> dynamic first meta :line)))
+    (is (= 2900 (-> dynamic last meta :line)))
     (is (contains? (symbols-in preflight) 'sh16-aggregate-components))
     (is (contains? (symbols-in preflight) 'sh16-structural-scalar-valid?))
     (is (contains? (symbols-in verifier) 'sh16-structural-preflight))

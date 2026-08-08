@@ -1571,10 +1571,10 @@
               (get rule :compiled-by) (get rule :executed-by)
               (get rule :self-hosted?)]
              [:gravity/pinned-gravity-source-rule
-              :gravity.compiler/c13-mir-optimization 98836
-              "sha256:071511017d4f3f3816716cfa899ae0189e882e6be9d67dc34e794729ae105681"
-              "sha256:840089668cb979b5ddceda17b6df586652655dd364d503a080d4c9d28372ea50"
-              "sha256:a511673fffd4888cd1f4b826d27e50adcf5b769cd7759a5dce88ad8b370de265"
+              :gravity.compiler/c13-mir-optimization 126236
+              "sha256:14bb6c059b7654d818210dbf1b201d98f33a43fec6e527cbd12aaa4b9529f8ab"
+              "sha256:5d88c74816d75297d37e1030295ca97785d18dafb757913f0df887d70d6cc48c"
+              "sha256:c48051f293ece207f6fca30b6d4ad5d57f8310f66fb7220f326cf1e4e75f5095"
               (quote c13-build-bounded-identity-optimized-mir)
               "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3"
               :gravity-source :clojure-stage0-seed
@@ -1594,7 +1594,13 @@
              c13-bounded-mir-operation-shape-valid?
              {:arity 2 :params [mir operation-order]}
              c13-build-bounded-identity-optimized-mir
-             {:arity 2 :params [mir evidence]}}))
+             {:arity 2 :params [mir evidence]}
+             sh16-c13-evidence-input-valid?
+             {:arity 1 :params [request]}
+             sh16-build-c13-evidence-boundary
+             {:arity 1 :params [request]}
+             sh16-verify-c13-evidence-boundary
+             {:arity 2 :params [request candidate]}}))
         false)
       false)
     false))
@@ -1947,12 +1953,12 @@
              {:artifact :gravity/pinned-gravity-source-rule
               :owner :gravity.backend/b1-backend-interface
               :source-content-hash
-              "sha256:afd3eda966529c2193fb08c67d998286d7a289989a3ea4b91fb6c63e43fd4d6e"
-              :source-byte-count 140646
+              "sha256:c808fb7d4fa7d9bd6a2c3427700c029f74d5edc9c8c7d73f7447ce8e5c2b588f"
+              :source-byte-count 140902
               :plan-semantic-hash
-              "sha256:8fb24efb351a238d0047c063949309be3912a88e75e49e0c7c0e78c77dee015f"
+              "sha256:46b07dfcde14e10430321949274adbe2cdbe7ff2a5c6db3a844c5f32d5336b96"
               :functions-semantic-hash
-              "sha256:1660ab0d6314a68ccd018e73c2cfa90692e383a658c59af063189a12e9d27d49"
+              "sha256:25f3981e5595c3aa54997ecd691328d6ef81393c7dfe6ee4781f22d97bbe6def"
               :builder-function
               (quote b1-build-bounded-wasm-authenticated-packet)
               :builder-semantic-hash

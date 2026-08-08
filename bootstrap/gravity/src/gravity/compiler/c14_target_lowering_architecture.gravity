@@ -704,13 +704,13 @@
                :gravity.compiler/c13-mir-optimization)
           (if (= (get rule :builder-function)
                  'c13-build-bounded-identity-optimized-mir)
-              (if (= (get rule :source-byte-count) 98836)
+              (if (= (get rule :source-byte-count) 126236)
                 (if (= (get rule :source-content-hash)
-                       "sha256:071511017d4f3f3816716cfa899ae0189e882e6be9d67dc34e794729ae105681")
+                       "sha256:14bb6c059b7654d818210dbf1b201d98f33a43fec6e527cbd12aaa4b9529f8ab")
                   (if (= (get rule :plan-semantic-hash)
-                         "sha256:840089668cb979b5ddceda17b6df586652655dd364d503a080d4c9d28372ea50")
+                         "sha256:5d88c74816d75297d37e1030295ca97785d18dafb757913f0df887d70d6cc48c")
                     (if (= (get rule :functions-semantic-hash)
-                           "sha256:a511673fffd4888cd1f4b826d27e50adcf5b769cd7759a5dce88ad8b370de265")
+                           "sha256:c48051f293ece207f6fca30b6d4ad5d57f8310f66fb7220f326cf1e4e75f5095")
                     (if (= (get rule :builder-semantic-hash)
                            "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3")
                       (if (= (get rule :function-shapes)
@@ -730,7 +730,13 @@
                                c13-bounded-mir-operation-shape-valid?
                                {:arity 2 :params [mir operation-order]}
                                c13-build-bounded-identity-optimized-mir
-                               {:arity 2 :params [mir evidence]}})
+                               {:arity 2 :params [mir evidence]}
+                               sh16-c13-evidence-input-valid?
+                               {:arity 1 :params [request]}
+                               sh16-build-c13-evidence-boundary
+                               {:arity 1 :params [request]}
+                               sh16-verify-c13-evidence-boundary
+                               {:arity 2 :params [request candidate]}})
                         (if (= (get rule :semantic-authority)
                                :gravity-source)
                           (if (= (get rule :compiled-by)
