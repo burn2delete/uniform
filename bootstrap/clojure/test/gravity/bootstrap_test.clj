@@ -10241,9 +10241,23 @@
       (is (= (leaf stream) (@wrapper-var stream))))
     (is (= (c3-syntax-evidence/c3-syntax-schema)
            (bootstrap/c3-syntax-schema)))
+    (is (= '([syntax-stream])
+           (:arglists (meta #'bootstrap/c3-syntax-serialization-fixture))))
+    (is (= (c3-syntax-evidence/c3-syntax-serialization-fixture
+            stream bootstrap/reader-canonical-hash)
+           (bootstrap/c3-syntax-serialization-fixture stream)))
+    (is (= '([span]) (:arglists (meta #'bootstrap/c3-resolvable-span?))))
+    (is (= (c3-syntax-evidence/c3-resolvable-span?
+            {:primary "generated:compat:1"})
+           (bootstrap/c3-resolvable-span?
+            {:primary "generated:compat:1"})))
     (with-redefs [bootstrap/c3-required-form-kinds [:interposed-kind]]
       (is (= [:interposed-kind]
-             (:form-kinds (bootstrap/c3-syntax-schema)))))))
+             (:form-kinds (bootstrap/c3-syntax-schema)))))
+    (with-redefs [bootstrap/reader-canonical-hash
+                  (constantly "sha256:interposed-serialization")]
+      (is (= "sha256:interposed-serialization"
+             (:hash (bootstrap/c3-syntax-serialization-fixture stream)))))))
 
 (deftest c3-syntax-construction-compatibility-wrappers-preserve-interposition
   (let [seed {:syntax-id :seed

@@ -146745,47 +146745,12 @@
 
 (defn c3-syntax-serialization-fixture
   [syntax-stream]
-  (let [payload {:artifact :gravity/syntax-serialization-fixture
-                 :syntax-ids (mapv :syntax/id syntax-stream)
-                 :forms (mapv #(get-in % [:form :kind]) syntax-stream)
-                 :origins (mapv #(mapv :kind (:origin %)) syntax-stream)
-                 :identity-input-hashes
-                 (mapv #(get-in % [:identity :input-hash]) syntax-stream)
-                 :source-links (mapv :source syntax-stream)
-                 :reader-facts (mapv :facts syntax-stream)
-                 :versions (mapv :version syntax-stream)}
-        serialized (pr-str payload)
-        semantic-payload
-        (-> payload
-            (update :source-links
-                    #(mapv (fn [source]
-                             (dissoc source :actual-path :path))
-                           (or % []))))
-        round-trip (read-string serialized)]
-    {:artifact :gravity/syntax-serialization-fixture
-     :format :edn
-     :payload payload
-     :canonical serialized
-     :hash (reader-canonical-hash
-            {:domain :gravity/c3-syntax-serialization-fixture-v2
-             :semantic-payload semantic-payload})
-     :roundtrip? (= payload round-trip)}))
+  (c3-syntax-evidence/c3-syntax-serialization-fixture
+   syntax-stream reader-canonical-hash))
 
 (defn c3-resolvable-span?
   [span]
-  (let [primary (:primary span)]
-    (or (and (map? primary)
-             (:source primary)
-             (contains? primary :byte-start)
-             (contains? primary :byte-end))
-        (and (string? primary)
-             (str/starts-with? primary "generated:"))
-        (and (map? primary)
-             (= :generated (:kind primary))
-             (string? (:producer-id primary))
-             (re-find #"^sha256:[0-9a-f]{64}$" (:producer-id primary))
-             (integer? (:ordinal primary))
-             (not (neg? (:ordinal primary)))))))
+  (c3-syntax-evidence/c3-resolvable-span? span))
 
 (declare sh04-syntax-current-binding!
          sh04-syntax-execute!

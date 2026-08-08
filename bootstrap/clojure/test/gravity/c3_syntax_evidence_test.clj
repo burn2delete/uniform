@@ -119,7 +119,54 @@
     (is (identical? (:origin syntax)
                     (:origin (first (:nodes
                                      (evidence/c3-origin-chain-graph
-                                      [syntax]))))))))
+                                     [syntax]))))))))
+
+(deftest serialization-and-span-projections-preserve-path-neutral-identity
+  (let [stream [(assoc source-syntax
+                       :identity {:input-hash "sha256:input"}
+                       :source {:source-id "sha256:source"
+                                :path "/checkout/source.gravity"
+                                :actual-path "/tmp/source.gravity"}
+                       :facts {:reader true}
+                       :version 1)]
+        observed (atom nil)
+        fixture (evidence/c3-syntax-serialization-fixture
+                 stream
+                 (fn [value]
+                   (reset! observed value)
+                   "sha256:serialization"))]
+    (is (= "sha256:serialization" (:hash fixture)))
+    (is (true? (:roundtrip? fixture)))
+    (is (= "/checkout/source.gravity"
+           (get-in fixture [:payload :source-links 0 :path])))
+    (is (not (contains? (get-in @observed
+                                [:semantic-payload :source-links 0])
+                        :path)))
+    (is (not (contains? (get-in @observed
+                                [:semantic-payload :source-links 0])
+                        :actual-path))))
+  (is (true? (evidence/c3-resolvable-span?
+              {:primary {:source "source.gravity"
+                         :byte-start 0 :byte-end 1}})))
+  (is (true? (evidence/c3-resolvable-span?
+              {:primary "generated:macro:1"})))
+  (is (true? (evidence/c3-resolvable-span?
+              {:primary {:kind :generated
+                         :producer-id
+                         (str "sha256:" (apply str (repeat 64 "a")))
+                         :ordinal 0}})))
+  (doseq [span [nil
+                {}
+                {:primary {:source "x" :byte-start 0}}
+                {:primary "other:macro:1"}
+                {:primary {:kind :generated
+                           :producer-id "sha256:short"
+                           :ordinal 0}}
+                {:primary {:kind :generated
+                           :producer-id
+                           (str "sha256:" (apply str (repeat 64 "a")))
+                           :ordinal -1}}]]
+    (is (false? (boolean (evidence/c3-resolvable-span? span))))))
 
 (deftest contract-is-narrow-bootstrap-free-and-nonauthoritative
   (let [contract-var (get (ns-interns 'gravity.c3-syntax-evidence)
@@ -133,11 +180,13 @@
              'c3-origin-chain-graph
              'c3-metadata-ledger
              'c3-fact-ledger
-             'c3-generated-syntax-report}
+             'c3-generated-syntax-report
+             'c3-syntax-serialization-fixture
+             'c3-resolvable-span?}
            (set (keys (:public-api contract)))))
     (is (= (set (keys (:public-api contract)))
            (set (keys (ns-publics 'gravity.c3-syntax-evidence)))))
-    (is (= ['clojure.core]
+    (is (= ['clojure.core 'clojure.string]
            (get-in contract [:dependency-direction :requires])))
     (is (= ['gravity.bootstrap 'gravity.diagnostics]
            (get-in contract [:dependency-direction :forbids])))
@@ -145,13 +194,15 @@
                    :c2-reader-product-authentication
                    :syntax-object-construction
                    :syntax-identity
+                   :canonical-syntax-serialization
                    :syntax-validation
                    :hygiene-authority
                    :proof-authority
                    :self-hosted-authority
                    :release-authority]]
       (is (some #{claim} (get-in contract [:ownership :does-not-own]))))
-    (is (empty? (ns-aliases 'gravity.c3-syntax-evidence)))
+    (is (= #{'str}
+           (set (keys (ns-aliases 'gravity.c3-syntax-evidence)))))
     (is (nil? (find-ns 'gravity.bootstrap)))
     (is (false? (:canonical-c3-authority? contract)))
     (is (false? (:self-hosted? contract)))

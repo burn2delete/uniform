@@ -4,7 +4,8 @@
   This leaf owns only deterministic projections over an already constructed
   hosted syntax stream. It does not construct or authenticate canonical C3
   syntax objects, establish syntax identity, validate C2 reader products, or
-  grant proof, self-hosting, or release authority.")
+  grant proof, self-hosting, or release authority."
+  (:require [clojure.string :as str]))
 
 (def ^:private namespace-contract
   {:namespace 'gravity.c3-syntax-evidence
@@ -16,21 +17,25 @@
     'c3-origin-chain-graph {:arglists '([syntax-stream])}
     'c3-metadata-ledger {:arglists '([syntax-stream])}
     'c3-fact-ledger {:arglists '([syntax-stream])}
-    'c3-generated-syntax-report {:arglists '([syntax-stream])}}
+    'c3-generated-syntax-report {:arglists '([syntax-stream])}
+    'c3-syntax-serialization-fixture
+    {:arglists '([syntax-stream canonical-hash])}
+    'c3-resolvable-span? {:arglists '([span])}}
    :artifact-inputs [:hosted-c3-syntax-stream]
    :artifact-outputs [:hosted-c3-syntax-object-schema
                       :hosted-c3-hygiene-context-map
                       :hosted-c3-origin-chain-graph
                       :hosted-c3-metadata-ledger
                       :hosted-c3-fact-ledger
-                      :hosted-c3-generated-syntax-report]
+                      :hosted-c3-generated-syntax-report
+                      :hosted-c3-syntax-serialization-fixture]
    :ownership
    {:owns [:hosted-c3-syntax-evidence-projection]
     :does-not-own [:canonical-c3-syntax-object-authority
                    :c2-reader-product-authentication
                    :syntax-object-construction
                    :syntax-identity
-                   :syntax-serialization
+                   :canonical-syntax-serialization
                    :syntax-validation
                    :hygiene-authority
                    :macro-expansion
@@ -39,7 +44,7 @@
                    :self-hosted-authority
                    :release-authority]}
    :dependency-direction
-   {:requires ['clojure.core]
+   {:requires ['clojure.core 'clojure.string]
     :forbids ['gravity.bootstrap 'gravity.diagnostics]}
    :bootstrap-hosted? true
    :clojure-seed-boundary? true
@@ -160,3 +165,47 @@
             :hygiene (:hygiene syntax)})
          (filter #(= :generated-form (get-in % [:form :kind])) syntax-stream))
    :status :complete})
+
+(defn c3-syntax-serialization-fixture
+  [syntax-stream canonical-hash]
+  (let [payload {:artifact :gravity/syntax-serialization-fixture
+                 :syntax-ids (mapv :syntax/id syntax-stream)
+                 :forms (mapv #(get-in % [:form :kind]) syntax-stream)
+                 :origins (mapv #(mapv :kind (:origin %)) syntax-stream)
+                 :identity-input-hashes
+                 (mapv #(get-in % [:identity :input-hash]) syntax-stream)
+                 :source-links (mapv :source syntax-stream)
+                 :reader-facts (mapv :facts syntax-stream)
+                 :versions (mapv :version syntax-stream)}
+        serialized (pr-str payload)
+        semantic-payload
+        (-> payload
+            (update :source-links
+                    #(mapv (fn [source]
+                             (dissoc source :actual-path :path))
+                           (or % []))))
+        round-trip (read-string serialized)]
+    {:artifact :gravity/syntax-serialization-fixture
+     :format :edn
+     :payload payload
+     :canonical serialized
+     :hash (canonical-hash
+            {:domain :gravity/c3-syntax-serialization-fixture-v2
+             :semantic-payload semantic-payload})
+     :roundtrip? (= payload round-trip)}))
+
+(defn c3-resolvable-span?
+  [span]
+  (let [primary (:primary span)]
+    (or (and (map? primary)
+             (:source primary)
+             (contains? primary :byte-start)
+             (contains? primary :byte-end))
+        (and (string? primary)
+             (str/starts-with? primary "generated:"))
+        (and (map? primary)
+             (= :generated (:kind primary))
+             (string? (:producer-id primary))
+             (re-find #"^sha256:[0-9a-f]{64}$" (:producer-id primary))
+             (integer? (:ordinal primary))
+             (not (neg? (:ordinal primary)))))))
