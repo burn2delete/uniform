@@ -49,7 +49,7 @@ class ProjectStructureValidationTests(unittest.TestCase):
         contract = validator.load_stage0_component_contract()
         by_id = {component["id"]: component for component in contract["components"]}
         expected_by_id = validator.STAGE0_LEAF_EXECUTION_GROUP_BY_COMPONENT
-        self.assertEqual(39, len(expected_by_id))
+        self.assertEqual(41, len(expected_by_id))
         self.assertEqual(
             validator.STAGE0_LEAF_EXECUTION_GROUP_COUNTS,
             {
@@ -76,6 +76,7 @@ class ProjectStructureValidationTests(unittest.TestCase):
             "digest": ("compatibility-support", "foundation-reader"),
             "syntax-object-stream": ("compiler", "foundation-reader"),
             "syntax-origin": ("compiler", "foundation-reader"),
+            "module-analysis": ("compiler", "foundation-reader"),
             "compiler-verification-shared": ("compatibility-support", "compiler"),
             "darwin-publication": ("compatibility-support", "compiler"),
         }
@@ -175,7 +176,7 @@ class ProjectStructureValidationTests(unittest.TestCase):
     def test_stage0_edn_projection_has_exact_reserved_and_compatibility_shapes(self) -> None:
         reserved, compatibility, errors = validator.parse_stage0_component_ownership()
         self.assertEqual([], errors)
-        self.assertEqual(45, len(reserved))
+        self.assertEqual(47, len(reserved))
         self.assertEqual(5, len(compatibility))
         self.assertEqual(sorted(compatibility), compatibility)
 
@@ -303,6 +304,8 @@ class ProjectStructureValidationTests(unittest.TestCase):
     "bootstrap/clojure/test/gravity/bootstrap_compatibility/c16_test.clj",
     "bootstrap/clojure/test/gravity/bootstrap_compatibility/c17_test.clj",
     "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj",
                 "bootstrap/clojure/test/gravity/development_test_runner.clj",
             },
             validator.STAGE0_COORDINATOR_SUPPORT_PATHS,

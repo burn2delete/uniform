@@ -25,7 +25,7 @@
 (def ^:const summary-schema
   :gravity/bootstrap-free-leaf-test-summary-v1)
 
-(def ^:const expected-catalog-count 39)
+(def ^:const expected-catalog-count 41)
 
 (def excluded-top-level-test-files
   "The six top-level tests that intentionally remain outside the leaf runner."
@@ -71,9 +71,11 @@
    "c8_effect_checker"
    "c9_ownership_checker"
    "compiler_verification_shared"
+   "core_ast_lowering"
    "darwin_publication"
    "digest"
    "macro_expansion"
+   "module_analysis"
    "optimization_lowering"
    "reader_cursor"
    "reader_diagnostic_policy"
@@ -95,7 +97,7 @@
     :c2-c3
 
     (or (str/starts-with? stem "reader_")
-        (contains? #{"digest" "source_unit" "syntax_object_stream"
+        (contains? #{"digest" "module_analysis" "source_unit" "syntax_object_stream"
                      "syntax_origin"}
                    stem))
     :foundation-reader
@@ -684,7 +686,7 @@
    "Usage: clojure -M:leaf-test [options]\n"
    "\n"
    "Runs each reviewed bootstrap-free top-level Stage 0 test in a fresh JVM.\n"
-   "With no selector, all 39 catalog entries run in canonical order.\n"
+   "With no selector, all 41 catalog entries run in canonical order.\n"
    "\n"
    "Options (repeatable):\n"
    "  --namespace NAME  select one namespace exactly\n"

@@ -1587,8 +1587,12 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj": {"stage0-leaf-c2-c3"},
             "bootstrap/clojure/src/gravity/c7_type_checker.clj": {"stage0-leaf-compiler"},
             "bootstrap/clojure/test/gravity/c7_type_checker_test.clj": {"stage0-leaf-compiler"},
+            "bootstrap/clojure/src/gravity/core_ast_lowering.clj": {"stage0-leaf-compiler"},
+            "bootstrap/clojure/test/gravity/core_ast_lowering_test.clj": {"stage0-leaf-compiler"},
             "bootstrap/clojure/src/gravity/reader_cursor.clj": {"stage0-leaf-foundation-reader"},
             "bootstrap/clojure/test/gravity/reader_cursor_test.clj": {"stage0-leaf-foundation-reader"},
+            "bootstrap/clojure/src/gravity/module_analysis.clj": {"stage0-leaf-foundation-reader"},
+            "bootstrap/clojure/test/gravity/module_analysis_test.clj": {"stage0-leaf-foundation-reader"},
         }
         for changed_path, expected in cases.items():
             with self.subTest(changed_path=changed_path):
@@ -1608,7 +1612,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         )
         components = {component["id"]: component for component in contract["components"]}
         checks = {item["id"]: item for item in manifest["checks"]}
-        expected_counts = {"foundation-reader": 8, "c2-c3": 12, "compiler": 19}
+        expected_counts = {"foundation-reader": 9, "c2-c3": 12, "compiler": 20}
         all_roots: set[str] = set()
         for group, expected_count in expected_counts.items():
             roots = {
@@ -1642,7 +1646,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             expected_tests = {components[component_id]["test"]["path"] for component_id in roots}
             self.assertEqual(expected_sources, actual_sources, group)
             self.assertEqual(expected_tests, actual_tests, group)
-        self.assertEqual(39, len(all_roots))
+        self.assertEqual(41, len(all_roots))
         self.assertEqual(
             {
                 component_id
@@ -1796,6 +1800,54 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 finally:
                     target.write_bytes(original)
 
+    def test_foundation_compatibility_check_is_exact_cacheable_and_routable(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(
+            check for check in manifest["checks"]
+            if check["id"] == "stage0-foundation-compatibility"
+        )
+        self.assertEqual(
+            [
+                "gravity.bootstrap-compatibility.module-analysis-test",
+                "gravity.bootstrap-compatibility.core-ast-lowering-test",
+            ],
+            [
+                item["command"][index + 1]
+                for index, token in enumerate(item["command"])
+                if token == "--namespace"
+            ],
+        )
+        self.assertEqual(
+            [
+                "gravity.bootstrap-compatibility.module-analysis-test/"
+                "module-analysis-compatibility-wrappers-preserve-arglists-output-and-interposition",
+                "gravity.bootstrap-compatibility.module-analysis-test/"
+                "bootstrap-owned-policy-map-redefs-reach-helpers-and-downstream-checks",
+                "gravity.bootstrap-compatibility.core-ast-lowering-test/"
+                "core-ast-lowering-compatibility-wrappers-preserve-arglists-output-and-interposition",
+            ],
+            [
+                item["command"][index + 1]
+                for index, token in enumerate(item["command"])
+                if token == "--exact"
+            ],
+        )
+        self.assertEqual("bootstrap-hosted", item["resource_class"])
+        self.assertEqual("none", item["authority"])
+        self.assertFalse(item["fresh"])
+        self.assertIsNone(item["lock"])
+        compatibility_paths = {
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj",
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj",
+        }
+        self.assertTrue(compatibility_paths <= set(item["inputs"]))
+        self.assertFalse(any(path.startswith("bootstrap/clojure/fixtures/") for path in item["inputs"]))
+        for path in compatibility_paths:
+            selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[path])
+            self.assertIn(item["id"], selection["selected_ids"])
+            self.assertIn("stage0-clojure-suite", selection["selected_ids"])
+            self.assertEqual([], selection["unmatched_changes"])
+
     def test_c4_c18_compatibility_forms_are_exactly_preserved_and_absent_centrally(self) -> None:
         central = (ROOT / "bootstrap/clojure/test/gravity/bootstrap_test.clj").read_text()
         observed = 0
@@ -1890,7 +1942,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 self.assertIn("stage0-clojure-suite", selection["selected_ids"])
                 self.assertEqual([], selection["unmatched_changes"])
 
-    def test_development_runner_catalog_has_exact_18_static_namespaces(self) -> None:
+    def test_development_runner_catalog_has_exact_20_static_namespaces(self) -> None:
         source = (
             ROOT / "bootstrap/clojure/test/gravity/development_test_runner.clj"
         ).read_text()
@@ -1905,7 +1957,22 @@ class VerifyDevelopmentTests(unittest.TestCase):
                     f"gravity.bootstrap-compatibility.c{stage}-test",
                     f"bootstrap/clojure/test/gravity/bootstrap_compatibility/c{stage}_test.clj",
                 )
-                for stage in range(2, 19)
+                for stage in range(2, 4)
+            ],
+            (
+                "gravity.bootstrap-compatibility.module-analysis-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj",
+            ),
+            (
+                "gravity.bootstrap-compatibility.core-ast-lowering-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj",
+            ),
+            *[
+                (
+                    f"gravity.bootstrap-compatibility.c{stage}-test",
+                    f"bootstrap/clojure/test/gravity/bootstrap_compatibility/c{stage}_test.clj",
+                )
+                for stage in range(4, 19)
             ],
         ]
         self.assertEqual(expected, observed)
@@ -1994,6 +2061,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage0-selective-smoke",
                 "stage0-c2-compatibility",
                 "stage0-c3-compatibility",
+                "stage0-foundation-compatibility",
                 "stage0-c4-c6-compatibility",
                 "stage0-c7-c10-compatibility",
                 "stage0-c11-c18-compatibility",
@@ -2202,6 +2270,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             and item["id"] not in {
                 "stage0-c2-compatibility",
                 "stage0-c3-compatibility",
+                "stage0-foundation-compatibility",
                 "stage0-c4-c6-compatibility",
                 "stage0-c7-c10-compatibility",
                 "stage0-c11-c18-compatibility",
@@ -2214,6 +2283,16 @@ class VerifyDevelopmentTests(unittest.TestCase):
         full_suite = next(item for item in manifest["checks"] if item["id"] == "stage0-clojure-suite")
         self.assertIn("bin/gravity-bootstrap", full_suite["inputs"])
         self.assertIn("bootstrap/clojure/src/gravity/*.clj", full_suite["inputs"])
+        self.assertIn("bootstrap/clojure/test/gravity/module_analysis_test.clj", full_suite["inputs"])
+        self.assertIn("bootstrap/clojure/test/gravity/core_ast_lowering_test.clj", full_suite["inputs"])
+        self.assertIn(
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj",
+            full_suite["inputs"],
+        )
+        self.assertIn(
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj",
+            full_suite["inputs"],
+        )
         self.assertIn("bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj", full_suite["inputs"])
         self.assertIn(
             "bootstrap/clojure/test/gravity/self_hosting/sh01_stage0_leaf_test_runner_test.clj",

@@ -54,6 +54,10 @@
            :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj"}
           {:namespace 'gravity.bootstrap-compatibility.c3-test
            :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"}
+          {:namespace 'gravity.bootstrap-compatibility.module-analysis-test
+           :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj"}
+          {:namespace 'gravity.bootstrap-compatibility.core-ast-lowering-test
+           :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj"}
           {:namespace 'gravity.bootstrap-compatibility.c4-test :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj"}
           {:namespace 'gravity.bootstrap-compatibility.c5-test :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c5_test.clj"}
           {:namespace 'gravity.bootstrap-compatibility.c6-test :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c6_test.clj"}
@@ -85,6 +89,20 @@
                           (runner/run-cli!
                            ["--namespace" "gravity.not-in-static-catalog"]))))))))
     (is (empty? @loads))))
+
+(deftest foundation-compatibility-namespaces-are-static-and-selectable
+  (let [parse-args @#'gravity.development-test-runner/parse-args
+        selected-namespaces
+        @#'gravity.development-test-runner/selected-namespace-records]
+    (is (= ['gravity.bootstrap-compatibility.module-analysis-test
+            'gravity.bootstrap-compatibility.core-ast-lowering-test]
+           (mapv :namespace
+                 (selected-namespaces
+                  (parse-args
+                   ["--namespace"
+                    "gravity.bootstrap-compatibility.module-analysis-test"
+                    "--namespace"
+                    "gravity.bootstrap-compatibility.core-ast-lowering-test"])))))))
 
 (deftest default-and-repeatable-namespace-selection-is-deterministic
   (let [parse-args @#'gravity.development-test-runner/parse-args

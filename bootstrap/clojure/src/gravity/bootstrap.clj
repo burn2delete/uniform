@@ -25,6 +25,8 @@
             [gravity.c3-syntax-verification :as c3-syntax-verification]
             [gravity.c4-macro-evidence :as c4-macro-evidence]
             [gravity.cli :as cli]
+            [gravity.module-analysis :as module-analysis]
+            [gravity.core-ast-lowering :as core-ast-lowering]
             [gravity.c5-name-resolution :as c5]
             [gravity.c6-core-lowering :as c6]
             [gravity.c7-type-checker :as c7]
@@ -262,214 +264,9 @@
        :diagnostics []}
       reader-details))))
 
-(defn require-ns
-  [source-path forms]
-  (let [first-form (first forms)]
-    (when-not (ns-form? first-form)
-      (fail! "L3-NS-MISSING"
-             "Gravity source must start with an ns form"
-             {:source-span (source-span source-path 0)
-              :remediation "Add an ns form with :profile, :effects, and :capabilities clauses."}))
-    first-form))
-
-(defn parse-clause
-  [source-path clause]
-  (when-not (and (seq? clause) (keyword? (first clause)))
-    (fail! "L3-NS-CLAUSE"
-           "namespace clause must be a list starting with a keyword"
-           {:source-span (source-span source-path 0)
-            :clause clause
-            :remediation "Use clauses such as (:profile :hosted) or (:effects #{:io/write})."}))
-  [(first clause) (vec (rest clause))])
-
-(defn single-clause-value
-  [source-path clause-map key required?]
-  (let [values (get clause-map key)]
-    (cond
-      (and required? (empty? values))
-      (fail! "L3-NS-MISSING"
-             (str "namespace is missing " key " clause")
-             {:source-span (source-span source-path 0)
-              :missing key
-              :remediation "Declare the required namespace clause."})
-
-      (> (count values) 1)
-      (fail! "L3-PROFILE-MULTIPLE"
-             (str "namespace declares " key " more than once")
-             {:source-span (source-span source-path 0)
-              :clause key
-              :remediation "Keep one active implementation profile/target clause."})
-
-      :else
-      (first values))))
-
-(defn clause-args
-  [clause-map key]
-  (vec (mapcat identity (get clause-map key))))
-
-(defn parse-options
-  [source-path entry option-items]
-  (when-not (even? (count option-items))
-    (fail! "L3-UNKNOWN-ALIAS"
-           "namespace dependency options must be key/value pairs"
-           {:source-span (source-span source-path 0)
-            :entry entry
-            :remediation "Use dependency entries such as [gravity.io :as io :profile :hosted]."}))
-  (loop [items option-items
-         options {}]
-    (if-let [[k v & more] (seq items)]
-      (do
-        (when-not (keyword? k)
-          (fail! "L3-UNKNOWN-ALIAS"
-                 "namespace dependency option keys must be keywords"
-                 {:source-span (source-span source-path 0)
-                  :entry entry
-                  :option k
-                  :remediation "Use keyword options such as :as, :refer, :profile, :effects, or :boundary."}))
-        (recur more (assoc options k v)))
-      options)))
-
-(defn parse-dependency-entry
-  [source-path kind entry]
-  (when-not (and (vector? entry) (symbol? (first entry)))
-    (fail! "L3-UNKNOWN-ALIAS"
-           "namespace dependency entry must start with a module symbol"
-           {:source-span (source-span source-path 0)
-            :entry entry
-            :remediation "Use entries such as [gravity.io :as io]."}))
-  (let [[module & option-items] entry
-        options (parse-options source-path entry option-items)
-        alias (:as options)
-        refer (:refer options)
-        effects (or (:effects options) #{})
-        capabilities (or (:capabilities options) #{})]
-    (when (and alias (not (symbol? alias)))
-      (fail! "L3-UNKNOWN-ALIAS"
-             "namespace alias must be a symbol"
-             {:source-span (source-span source-path 0)
-              :entry entry
-              :alias alias
-              :remediation "Use :as with a symbolic alias."}))
-    (when (= :all refer)
-      (fail! "L3-AMBIGUOUS-NAME"
-             "wildcard imports are rejected for stable stage0 modules"
-             {:source-span (source-span source-path 0)
-              :entry entry
-              :remediation "Import explicit public symbols instead of :refer :all."}))
-    (when (some #(str/starts-with? (name %) "private-")
-                (if (vector? refer) refer []))
-      (fail! "L3-PRIVATE-IMPORT"
-             "private definitions cannot be imported as public API"
-             {:source-span (source-span source-path 0)
-              :entry entry
-              :refer refer
-              :remediation "Export a public facade or remove the private import."}))
-    {:kind kind
-     :module module
-     :alias alias
-     :refer (cond
-              (nil? refer) []
-              (vector? refer) refer
-              :else [refer])
-     :profile (:profile options)
-     :boundary (:boundary options)
-     :edge (:edge options)
-     :facade (:facade options)
-     :evidence (or (:evidence options) #{})
-     :artifact (:artifact options)
-     :artifact-schema (:artifact-schema options)
-     :runtime (:runtime options)
-     :memory (:memory options)
-     :generated? (boolean (:generated? options))
-     :matrix-override (:matrix-override options)
-     :producer-effects (or (:producer-effects options) #{})
-     :producer-capabilities (or (:producer-capabilities options) #{})
-     :safety-evidence (or (:safety-evidence options) #{})
-     :provider (:provider options)
-     :effects effects
-     :capabilities capabilities
-     :visibility (or (:visibility options) :public)}))
-
-(defn parse-dependencies
-  [source-path kind entries]
-  (mapv #(parse-dependency-entry source-path kind %) entries))
-
-(defn top-level-definition
-  [syntax]
-  (let [form (:form syntax)]
-    (when (seq? form)
-      (case (first form)
-        def {:name (second form) :kind :var}
-        defconst {:name (second form) :kind :compile-time-constant}
-        defn {:name (second form) :kind :function}
-        defmacro {:name (second form) :kind :macro}
-        defschema {:name (second form) :kind :schema}
-        defprotocol {:name (second form) :kind :protocol}
-        nil))))
-
-(defn definition-table
-  [syntax module]
-  (let [exports (set (:exports module))]
-    (->> syntax
-         (keep (fn [syn]
-                 (when-let [definition (top-level-definition syn)]
-                   (when (symbol? (:name definition))
-                     (merge definition
-                            {:visibility (if (contains? exports (:name definition))
-                                           :public
-                                           :private)
-                             :source-span (:span syn)
-                             :profile (:profile module)
-                             :safety (:safety module)
-                             :latent-effects #{}
-                             :required-capabilities #{}
-                             :artifact-links []})))))
-         vec)))
-
-(defn collect-symbols
-  [form]
-  (cond
-    (symbol? form) [form]
-    (seq? form) (mapcat collect-symbols form)
-    (coll? form) (mapcat collect-symbols form)
-    :else []))
-
-(defn collect-code-symbols
-  "Collect symbols in executable positions while treating quote payloads as data.
-
-  Reader abbreviations are expanded to `(quote ...)` before this collector is
-  called.  The quote operator itself remains part of the executable shape, but
-  its payload is deliberately not traversed: symbols in quoted data are not
-  namespace references and must not participate in alias resolution.  Other
-  forms recurse through every nested collection so an unresolved qualified
-  symbol in an executable branch still produces the owning L3 diagnostic."
-  [form]
-  (cond
-    (symbol? form) [form]
-    (seq? form) (if (= 'quote (first form))
-                  (if (symbol? (first form)) [(first form)] [])
-                  (mapcat collect-code-symbols form))
-    (coll? form) (mapcat collect-code-symbols form)
-    :else []))
-
-(declare uses-println?)
-
-(defn infer-effects
-  [forms]
-  (set (mapcat (fn [form]
-                 (cond
-                   (uses-println? form) [:io/write]
-                   (and (seq? form) (= 'network-listen (first form))) [:network/listen]
-                   :else []))
-               forms)))
-
 (def effect-capability
   {:io/write :io/stdout
    :network/listen :network/listener})
-
-(defn required-capabilities-for-effects
-  [effects]
-  (set (keep effect-capability effects)))
 
 (def profile-direct-imports
   {:core #{:core}
@@ -484,11 +281,6 @@
    :gpu #{:core :gpu}
    :formal #{:core :formal}})
 
-(defn profile-direct-import-allowed?
-  [consumer-profile producer-profile]
-  (contains? (get profile-direct-imports consumer-profile #{})
-             producer-profile))
-
 (defn sha256-hex
   [text]
   (digest/sha256-hex text))
@@ -497,252 +289,213 @@
   [bytes]
   (digest/sha256-bytes-hex bytes))
 
+(declare require-ns
+         parse-clause
+         single-clause-value
+         clause-args
+         parse-options
+         parse-dependency-entry
+         parse-dependencies
+         top-level-definition
+         definition-table
+         collect-symbols
+         collect-code-symbols
+         infer-effects
+         required-capabilities-for-effects
+         profile-direct-import-allowed?
+         assert-unique-aliases!
+         assert-referred-names-unambiguous!
+         assert-qualified-symbols-resolve!
+         assert-profile-boundaries!
+         assert-namespace-effect-and-capability!
+         parse-module
+         uses-println?
+         validate-module-effects!
+         module-source-artifact-from-records)
+
+(defn- module-analysis-ops
+  []
+  {:fail! fail!
+   :source-span source-span
+   :ns-form? ns-form?
+   :bootstrap-target-supported? bootstrap-target-supported?
+   :validate-ns-syntax! validate-ns-syntax!
+   :syntax-object-stream syntax-object-stream
+   :sha256-hex sha256-hex
+   :known-source-profiles known-source-profiles
+   :supported-profiles supported-profiles
+   :supported-targets (set/union supported-targets
+                                 *additional-bootstrap-targets*)
+   :effect-capability effect-capability
+   :profile-direct-imports profile-direct-imports
+   :require-ns require-ns
+   :parse-clause parse-clause
+   :single-clause-value single-clause-value
+   :clause-args clause-args
+   :parse-options parse-options
+   :parse-dependency-entry parse-dependency-entry
+   :parse-dependencies parse-dependencies
+   :top-level-definition top-level-definition
+   :definition-table definition-table
+   :collect-symbols collect-symbols
+   :collect-code-symbols collect-code-symbols
+   :infer-effects infer-effects
+   :required-capabilities-for-effects required-capabilities-for-effects
+   :profile-direct-import-allowed? profile-direct-import-allowed?
+   :assert-unique-aliases! assert-unique-aliases!
+   :assert-referred-names-unambiguous! assert-referred-names-unambiguous!
+   :assert-qualified-symbols-resolve! assert-qualified-symbols-resolve!
+   :assert-profile-boundaries! assert-profile-boundaries!
+   :assert-namespace-effect-and-capability!
+   assert-namespace-effect-and-capability!
+   :parse-module parse-module
+   :uses-println? uses-println?
+   :validate-module-effects! validate-module-effects!
+   :module-source-artifact-from-records module-source-artifact-from-records})
+
+(def ^:private ^:dynamic *module-analysis-leaf-call?* false)
+
+(defn- module-analysis-call
+  [operation-key operation & args]
+  (if *module-analysis-leaf-call?*
+    (module-analysis/call-entrypoint-body operation-key operation args)
+    (binding [*module-analysis-leaf-call?* true]
+      (module-analysis/with-operations
+       (module-analysis-ops)
+       #(module-analysis/call-entrypoint-body
+         operation-key operation args)))))
+
+(defn require-ns
+  [source-path forms]
+  (module-analysis-call
+   :require-ns module-analysis/require-ns source-path forms))
+
+(defn parse-clause
+  [source-path clause]
+  (module-analysis-call
+   :parse-clause module-analysis/parse-clause source-path clause))
+
+(defn single-clause-value
+  [source-path clause-map key required?]
+  (module-analysis-call
+   :single-clause-value module-analysis/single-clause-value
+   source-path clause-map key required?))
+
+(defn clause-args
+  [clause-map key]
+  (module-analysis-call
+   :clause-args module-analysis/clause-args clause-map key))
+
+(defn parse-options
+  [source-path entry option-items]
+  (module-analysis-call
+   :parse-options module-analysis/parse-options
+   source-path entry option-items))
+
+(defn parse-dependency-entry
+  [source-path kind entry]
+  (module-analysis-call
+   :parse-dependency-entry module-analysis/parse-dependency-entry
+   source-path kind entry))
+
+(defn parse-dependencies
+  [source-path kind entries]
+  (module-analysis-call
+   :parse-dependencies module-analysis/parse-dependencies
+   source-path kind entries))
+
+(defn top-level-definition
+  [syntax]
+  (module-analysis-call
+   :top-level-definition module-analysis/top-level-definition syntax))
+
+(defn definition-table
+  [syntax module]
+  (module-analysis-call
+   :definition-table module-analysis/definition-table syntax module))
+
+(defn collect-symbols
+  [form]
+  (module-analysis-call
+   :collect-symbols module-analysis/collect-symbols form))
+
+(defn collect-code-symbols
+  [form]
+  (module-analysis-call
+   :collect-code-symbols module-analysis/collect-code-symbols form))
+
+(defn infer-effects
+  [forms]
+  (module-analysis-call
+   :infer-effects module-analysis/infer-effects forms))
+
+(defn required-capabilities-for-effects
+  [effects]
+  (module-analysis-call
+   :required-capabilities-for-effects
+   module-analysis/required-capabilities-for-effects effects))
+
+(defn profile-direct-import-allowed?
+  [consumer-profile producer-profile]
+  (module-analysis-call
+   :profile-direct-import-allowed?
+   module-analysis/profile-direct-import-allowed?
+   consumer-profile producer-profile))
+
 (defn assert-unique-aliases!
   [source-path dependencies]
-  (let [aliases (keep :alias dependencies)
-        duplicate (first (for [[alias n] (frequencies aliases) :when (> n 1)] alias))]
-    (when duplicate
-      (fail! "L3-AMBIGUOUS-NAME"
-             "namespace alias resolves to multiple dependencies"
-             {:source-span (source-span source-path 0)
-              :alias duplicate
-              :remediation "Use one unique alias per required or imported module."}))))
+  (module-analysis-call
+   :assert-unique-aliases! module-analysis/assert-unique-aliases!
+   source-path dependencies))
 
 (defn assert-referred-names-unambiguous!
   [source-path dependencies]
-  (let [referred (mapcat :refer dependencies)
-        duplicate (first (for [[sym n] (frequencies referred) :when (> n 1)] sym))]
-    (when duplicate
-      (fail! "L3-AMBIGUOUS-NAME"
-             "unqualified imported name resolves to multiple dependencies"
-             {:source-span (source-span source-path 0)
-              :symbol duplicate
-              :remediation "Remove one refer or qualify the symbol through an alias."}))))
+  (module-analysis-call
+   :assert-referred-names-unambiguous!
+   module-analysis/assert-referred-names-unambiguous!
+   source-path dependencies))
 
 (defn assert-qualified-symbols-resolve!
   [source-path forms module dependencies]
-  (let [aliases (set (map str (keep :alias dependencies)))
-        allowed-qualified (conj aliases (str (:module module)))
-        unknown (first (for [sym (mapcat collect-code-symbols forms)
-                             :let [ns-part (namespace sym)]
-                             :when (and ns-part
-                                        (not (contains? allowed-qualified ns-part))
-                                        (not (str/includes? ns-part ".")))]
-                         sym))]
-    (when unknown
-      (fail! "L3-UNKNOWN-ALIAS"
-             "qualified symbol uses an unknown namespace alias"
-             {:source-span {:source source-path}
-              :symbol unknown
-              :alias (symbol (namespace unknown))
-              :remediation "Declare the alias in :requires or :imports, or use a fully qualified namespace."}))))
+  (module-analysis-call
+   :assert-qualified-symbols-resolve!
+   module-analysis/assert-qualified-symbols-resolve!
+   source-path forms module dependencies))
 
 (defn assert-profile-boundaries!
   [source-path module dependencies]
-  (doseq [dependency dependencies]
-    (let [dep-profile (:profile dependency)
-          module-profile (:profile module)]
-      (when (and dep-profile
-                 (not (profile-direct-import-allowed? module-profile
-                                                      dep-profile))
-                 (nil? (:boundary dependency)))
-        (fail! "L3-CROSS-PROFILE"
-               "cross-profile import requires an explicit boundary"
-               {:source-span (source-span source-path 0)
-                :module (:module dependency)
-                :profile module-profile
-                :dependency-profile dep-profile
-                :remediation "Use a :core API, profile-safe facade, typed schema/artifact boundary, or explicit interop boundary."})))))
+  (module-analysis-call
+   :assert-profile-boundaries! module-analysis/assert-profile-boundaries!
+   source-path module dependencies))
 
 (defn assert-namespace-effect-and-capability!
   [source-path module inferred-effects]
-  (let [declared-effects (:effects module)
-        widened (first (remove declared-effects inferred-effects))
-        required-capabilities (required-capabilities-for-effects inferred-effects)
-        missing-capability (first (remove (:capabilities module) required-capabilities))]
-    (when widened
-      (fail! "L3-EFFECT-WIDEN"
-             "inferred namespace effects exceed declared effect allowance"
-             {:source-span {:source source-path}
-              :effect widened
-              :declared-effects declared-effects
-              :remediation "Declare the effect at namespace level or remove the effectful form."}))
-    (when missing-capability
-      (fail! "L3-CAPABILITY-MISSING"
-             "namespace requires a capability not declared by the namespace"
-             {:source-span {:source source-path}
-              :required-capability missing-capability
-              :declared-capabilities (:capabilities module)
-              :remediation "Declare the required capability or remove the capability-using form."}))))
+  (module-analysis-call
+   :assert-namespace-effect-and-capability!
+   module-analysis/assert-namespace-effect-and-capability!
+   source-path module inferred-effects))
 
 (defn parse-module
   [source-path forms]
-  (let [ns-form (require-ns source-path forms)
-        module-name (second ns-form)
-        clauses (map #(parse-clause source-path %) (drop 2 ns-form))
-        clause-map (reduce (fn [acc [k v]] (update acc k (fnil conj []) v)) {} clauses)
-        active-profile-values (get clause-map :profile)
-        library-profile-values (get clause-map :profiles)
-        profile (first (single-clause-value source-path clause-map :profile true))
-        target (or (first (single-clause-value source-path clause-map :target false)) :jvm)
-        effects (or (first (single-clause-value source-path clause-map :effects false)) #{})
-        capabilities (or (first (single-clause-value source-path clause-map :capabilities false)) #{})
-        requires (parse-dependencies source-path :require (clause-args clause-map :requires))
-        imports (parse-dependencies source-path :import (clause-args clause-map :imports))
-        exports (or (first (single-clause-value source-path clause-map :exports false)) [])
-        safety (or (first (single-clause-value source-path clause-map :safety false)) :safe)
-        providers (or (first (single-clause-value source-path clause-map :providers false)) [])
-        metadata (or (first (single-clause-value source-path clause-map :metadata false)) {})
-        docs (or (first (single-clause-value source-path clause-map :doc false)) nil)]
-    (when (or (> (count active-profile-values) 1)
-              (and (seq active-profile-values) (seq library-profile-values))
-              (seq library-profile-values))
-      (fail! "L3-PROFILE-MULTIPLE"
-             "stage0 implementation namespaces must declare exactly one active profile"
-             {:source-span (source-span source-path 0)
-              :profile-clauses active-profile-values
-              :profiles-clauses library-profile-values
-              :remediation "Use one (:profile p) clause for stage0 implementation modules."}))
-    (when-not (symbol? module-name)
-      (fail! "L3-NS-MISSING"
-             "namespace name must be a symbol"
-             {:source-span (source-span source-path 0)
-              :remediation "Use a symbolic namespace name, for example hello.main."}))
-    (when-not (known-source-profiles profile)
-      (fail! "P1-PROFILE-UNSUPPORTED"
-             "stage0 bootstrap does not know this source profile"
-             {:source-span (source-span source-path 0)
-              :profile profile
-              :known known-source-profiles
-              :supported supported-profiles
-              :remediation "Use a known source profile such as :hosted, :core, or :kernel."}))
-    (when-not (bootstrap-target-supported? target)
-      (fail! "B1-TARGET-UNSUPPORTED"
-             "stage0 bootstrap does not support this requested target"
-             {:source-span (source-span source-path 0)
-              :target target
-              :supported (set/union supported-targets
-                                    *additional-bootstrap-targets*)
-              :remediation "Use a target enabled by the selected bootstrap backend."}))
-    {:module module-name
-     :source-path source-path
-     :profile profile
-     :target target
-     :effects effects
-     :capabilities capabilities
-     :requires requires
-     :imports imports
-     :exports exports
-     :safety safety
-     :providers providers
-     :metadata metadata
-     :doc docs
-     :forms (vec (rest forms))}))
+  (module-analysis-call
+   :parse-module module-analysis/parse-module source-path forms))
 
 (defn uses-println?
   [form]
-  (cond
-    (seq? form) (or (= 'println (first form)) (some uses-println? form))
-    (coll? form) (some uses-println? form)
-    :else false))
+  (module-analysis-call
+   :uses-println? module-analysis/uses-println? form))
 
 (defn validate-module-effects!
   [module]
-  (let [forms (:forms module)
-        writes? (some uses-println? forms)]
-    (when (and writes? (not (contains? (:effects module) :io/write)))
-      (fail! "L6-EFFECT-UNDECLARED"
-             "println requires the :io/write effect"
-             {:source-span {:source (:source-path module)}
-              :required-effect :io/write
-              :declared-effects (:effects module)
-              :remediation "Add :io/write to the namespace effects."}))
-    (when (and writes? (not (contains? (:capabilities module) :io/stdout)))
-      (fail! "L3-CAPABILITY-MISSING"
-             "println requires the :io/stdout capability"
-             {:source-span {:source (:source-path module)}
-              :required-capability :io/stdout
-              :declared-capabilities (:capabilities module)
-              :remediation "Add :io/stdout to the namespace capabilities."}))))
+  (module-analysis-call
+   :validate-module-effects! module-analysis/validate-module-effects! module))
 
 (defn module-source-artifact-from-records
   [source-path source-text records]
-  (let [forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        syntax (syntax-object-stream source-path records module)
-        dependencies (vec (concat (:requires module) (:imports module)))
-        _ (assert-unique-aliases! source-path dependencies)
-        _ (assert-referred-names-unambiguous! source-path dependencies)
-        _ (assert-profile-boundaries! source-path module dependencies)
-        _ (assert-qualified-symbols-resolve! source-path (:forms module) module dependencies)
-        inferred-effects (infer-effects (:forms module))
-        _ (assert-namespace-effect-and-capability! source-path module inferred-effects)
-        definitions (definition-table syntax module)
-        source-hash (str "sha256:" (sha256-hex source-text))
-        definitions-hash (str "sha256:" (sha256-hex (pr-str definitions)))
-        dependency-records (mapv #(select-keys % [:kind :module :alias :profile :boundary :effects :capabilities])
-                                 dependencies)
-        public-api (filterv #(= :public (:visibility %)) definitions)]
-    {:kind :gravity/stage0-module-artifact
-     :pass {:name :namespace-analyzer
-            :input :syntax-object-stream
-            :output :module-artifact
-            :requires [:reader]
-            :preserves [:source-spans :profile :target :effects :capabilities]
-            :rejects ["L3-NS-MISSING" "L3-PROFILE-MULTIPLE" "L3-UNKNOWN-ALIAS"
-                      "L3-AMBIGUOUS-NAME" "L3-PRIVATE-IMPORT" "L3-CROSS-PROFILE"
-                      "L3-EFFECT-WIDEN" "L3-CAPABILITY-MISSING"]}
-     :namespace-table [{:name (:module module)
-                        :package (get-in module [:metadata :package])
-                        :profile (:profile module)
-                        :target (:target module)
-                        :source-path source-path
-                        :safety (:safety module)
-                        :metadata (:metadata module)}]
-     :alias-table (mapv (fn [dependency]
-                          {:alias (:alias dependency)
-                           :module (:module dependency)
-                           :kind (:kind dependency)
-                           :profile (:profile dependency)})
-                        (filter :alias dependencies))
-     :import-export-table {:requires (:requires module)
-                           :imports (:imports module)
-                           :exports (:exports module)}
-     :module-dependency-graph {:module (:module module)
-                               :dependencies dependency-records
-                               :acyclic true}
-     :namespace-effect-summary {:declared (:effects module)
-                                :inferred inferred-effects}
-     :namespace-capability-summary {:declared (:capabilities module)
-                                    :required (required-capabilities-for-effects inferred-effects)}
-     :profile-boundary-records (mapv (fn [dependency]
-                                       {:module (:module dependency)
-                                        :from-profile (:profile module)
-                                        :to-profile (:profile dependency)
-                                        :boundary (or (:boundary dependency)
-                                                      (when (= :core (:profile dependency)) :pure-core))})
-                                     (filter #(or (:boundary %)
-                                                  (and (:profile %)
-                                                       (not= (:profile %) (:profile module))))
-                                             dependencies))
-     :module-artifact {:module (:module module)
-                       :package (get-in module [:metadata :package])
-                       :profile (:profile module)
-                       :target (:target module)
-                       :exports (:exports module)
-                       :requires (mapv #(select-keys % [:module :profile :effects]) (:requires module))
-                       :imports (mapv #(select-keys % [:module :profile :effects :boundary]) (:imports module))
-                       :effects (:effects module)
-                       :capabilities (:capabilities module)
-                       :safety (:safety module)
-                       :source-hash source-hash
-                       :definitions definitions-hash}
-     :public-api-manifest {:module (:module module)
-                           :exports public-api}
-     :definitions definitions
-     :syntax-object-stream syntax
-     :diagnostics []}))
+  (module-analysis-call
+   :module-source-artifact-from-records
+   module-analysis/module-source-artifact-from-records
+   source-path source-text records))
 
 (defn module-source-artifact
   [source-path source-text]
@@ -1581,365 +1334,140 @@
    :c5-resolution-validate! c5-resolution-validate!
    :compiler-c5-resolution-source-artifact
    compiler-c5-resolution-source-artifact})
-(def core-forms
-  '#{quote if do let fn loop recur def var set! try throw match})
-
-(def lowering-gap-forms
-  '#{defn when -> cond case with-open with-region defmacro defschema defworkflow
-     defagent ui query ai-form})
-
+(def core-forms core-ast-lowering/core-forms)
+(def lowering-gap-forms core-ast-lowering/lowering-gap-forms)
 (def unknown-reserved-core-forms
-  '#{core-unknown})
+  core-ast-lowering/unknown-reserved-core-forms)
+
+(declare form-effect
+         combine-effects
+         core-node
+         lower-sequential-body
+         extract-pattern-guard
+         lower-match-clauses
+         next-node-id
+         assert-recur-target!
+         assert-set-target!
+         assert-throw-legal!
+         assert-core-operator!
+         lower-core-expr
+         flatten-core
+         core-source-artifact)
+
+(defn- core-ast-lowering-ops
+  []
+  {:fail! fail!
+   :macro-source-artifact macro-source-artifact
+   :uses-println? uses-println?
+   :core-forms core-forms
+   :lowering-gap-forms lowering-gap-forms
+   :unknown-reserved-core-forms unknown-reserved-core-forms
+   :form-effect form-effect
+   :combine-effects combine-effects
+   :core-node core-node
+   :lower-sequential-body lower-sequential-body
+   :extract-pattern-guard extract-pattern-guard
+   :lower-match-clauses lower-match-clauses
+   :next-node-id next-node-id
+   :assert-recur-target! assert-recur-target!
+   :assert-set-target! assert-set-target!
+   :assert-throw-legal! assert-throw-legal!
+   :assert-core-operator! assert-core-operator!
+   :lower-core-expr lower-core-expr
+   :flatten-core flatten-core
+   :core-source-artifact core-source-artifact})
+
+(def ^:private ^:dynamic *core-ast-lowering-leaf-call?* false)
+
+(defn- core-ast-lowering-call
+  [operation-key operation & args]
+  (if *core-ast-lowering-leaf-call?*
+    (core-ast-lowering/call-entrypoint-body operation-key operation args)
+    (binding [*core-ast-lowering-leaf-call?* true]
+      (core-ast-lowering/with-operations
+       (core-ast-lowering-ops)
+       #(core-ast-lowering/call-entrypoint-body
+         operation-key operation args)))))
 
 (defn form-effect
   [form]
-  (cond
-    (uses-println? form) #{:io/write}
-    (and (seq? form) (= 'throw (first form))) #{:error/throw}
-    (and (seq? form) (= 'set! (first form))) #{:state/write}
-    :else #{}))
+  (core-ast-lowering-call
+   :form-effect core-ast-lowering/form-effect form))
 
 (defn combine-effects
   [& effect-sets]
-  (set (mapcat identity effect-sets)))
+  (apply core-ast-lowering-call
+         :combine-effects core-ast-lowering/combine-effects effect-sets))
 
 (defn core-node
   [node-id kind syntax form data]
-  (merge {:node-id (str "stage0-core-" node-id)
-          :kind kind
-          :form form
-          :source-span (:span syntax)
-          :generated-origin (:generated-origin syntax)
-          :profile (:profile syntax)
-          :namespace (:namespace syntax)
-          :effects (form-effect form)
-          :capabilities #{}}
-         data))
-
-(declare lower-core-expr)
+  (core-ast-lowering-call
+   :core-node core-ast-lowering/core-node
+   node-id kind syntax form data))
 
 (defn lower-sequential-body
   [counter module syntax forms context]
-  (mapv #(lower-core-expr counter module syntax % context) forms))
+  (core-ast-lowering-call
+   :lower-sequential-body core-ast-lowering/lower-sequential-body
+   counter module syntax forms context))
 
 (defn extract-pattern-guard
   [pattern]
-  (if (and (map? pattern) (contains? pattern :when))
-    {:pattern (dissoc pattern :when)
-     :guard (get pattern :when)}
-    {:pattern pattern
-     :guard nil}))
+  (core-ast-lowering-call
+   :extract-pattern-guard core-ast-lowering/extract-pattern-guard pattern))
 
 (defn lower-match-clauses
   [counter module syntax clauses context]
-  (when (odd? (count clauses))
-    (fail! "L7-PATTERN-TYPE"
-           "match requires pattern/expression clause pairs"
-           {:source-span (:span syntax)
-            :remediation "Use (match value pattern expr ...)."}))
-  (mapv (fn [branch-index [raw-pattern raw-expr]]
-          (let [{:keys [pattern guard]} (extract-pattern-guard raw-pattern)]
-            {:branch-index branch-index
-             :raw-pattern raw-pattern
-             :pattern pattern
-             :guard (when guard
-                      (lower-core-expr counter module syntax guard context))
-             :body (lower-core-expr counter module syntax raw-expr context)}))
-        (range)
-        (partition 2 clauses)))
+  (core-ast-lowering-call
+   :lower-match-clauses core-ast-lowering/lower-match-clauses
+   counter module syntax clauses context))
 
 (defn next-node-id
   [counter]
-  (let [id @counter]
-    (swap! counter inc)
-    id))
+  (core-ast-lowering-call
+   :next-node-id core-ast-lowering/next-node-id counter))
 
 (defn assert-recur-target!
   [module syntax form context]
-  (when (= 'recur (first form))
-    (let [target-arity (:recur-arity context)
-          actual-arity (count (rest form))]
-      (when (or (nil? target-arity)
-                (not= target-arity actual-arity))
-        (fail! "L2-RECUR-TARGET"
-               "recur has no compatible loop or function target"
-               {:source-span (:span syntax)
-                :form form
-                :target-arity target-arity
-                :actual-arity actual-arity
-                :remediation "Use recur only inside a compatible loop or function recur point with matching arity."})))))
+  (core-ast-lowering-call
+   :assert-recur-target! core-ast-lowering/assert-recur-target!
+   module syntax form context))
 
 (defn assert-set-target!
   [module syntax form]
-  (when (= 'set! (first form))
-    (let [[_ target] form]
-      (when-not (and (symbol? target)
-                     (str/starts-with? (name target) "mutable-"))
-        (fail! "L2-SET-ILLEGAL"
-               "set! targets an immutable or profile-forbidden location"
-               {:source-span (:span syntax)
-                :target target
-                :profile (:profile module)
-                :remediation "Use an explicit mutable location accepted by the active profile."})))))
+  (core-ast-lowering-call
+   :assert-set-target! core-ast-lowering/assert-set-target!
+   module syntax form))
 
 (defn assert-throw-legal!
   [module syntax form]
-  (when (and (= 'throw (first form))
-             (not (contains? (:effects module) :error/throw)))
-    (fail! "L2-THROW-ILLEGAL"
-           "throw requires an error effect in the namespace"
-           {:source-span (:span syntax)
-            :declared-effects (:effects module)
-            :required-effect :error/throw
-            :remediation "Declare :error/throw or lower to an explicit result value."})))
+  (core-ast-lowering-call
+   :assert-throw-legal! core-ast-lowering/assert-throw-legal!
+   module syntax form))
 
 (defn assert-core-operator!
   [module syntax form]
-  (when (seq? form)
-    (let [op (first form)]
-      (cond
-        (contains? unknown-reserved-core-forms op)
-        (fail! "L2-UNKNOWN-CORE-FORM"
-               "analyzer found an unrecognized reserved core form"
-               {:source-span (:span syntax)
-                :operator op
-                :remediation "Use an L2 core form, a call, or a documented domain IR boundary."})
-
-        (contains? lowering-gap-forms op)
-        (fail! "L2-LOWERING-GAP"
-               "surface form failed to lower to core or a declared domain IR boundary"
-               {:source-span (:span syntax)
-                :operator op
-                :remediation "Lower the surface form to L2 core before core analysis."})
-
-        (= 'reorder-effects op)
-        (fail! "L2-EVAL-ORDER"
-               "transformation changed required evaluation order for effectful expressions"
-               {:source-span (:span syntax)
-                :operator op
-                :remediation "Preserve left-to-right order for effectful expressions or prove purity before reordering."})
-
-        (= 'host-exception op)
-        (fail! "L2-HOST-SEMANTICS"
-               "code depends on host behavior not represented in Gravity semantics"
-               {:source-span (:span syntax)
-                :operator op
-                :remediation "Normalize host behavior into Gravity error, type, effect, and capability contracts."})
-
-        :else nil))))
+  (core-ast-lowering-call
+   :assert-core-operator! core-ast-lowering/assert-core-operator!
+   module syntax form))
 
 (defn lower-core-expr
   [counter module syntax form context]
-  (let [id (next-node-id counter)]
-    (cond
-      (seq? form)
-      (let [op (first form)]
-        (assert-core-operator! module syntax form)
-        (assert-recur-target! module syntax form context)
-        (assert-set-target! module syntax form)
-        (assert-throw-legal! module syntax form)
-        (case op
-              quote
-              (core-node id :quote syntax form
-                         {:value (second form)
-                          :evaluation-order []})
-
-              if
-              (let [[_ test then else] form
-                    children [(lower-core-expr counter module syntax test context)
-                              (lower-core-expr counter module syntax then context)
-                              (lower-core-expr counter module syntax else context)]]
-                (core-node id :if syntax form
-                           {:children children
-                            :evaluation-order [:condition :then-or-else]
-                            :effects (apply combine-effects (form-effect form) (map :effects children))}))
-
-              do
-              (let [children (lower-sequential-body counter module syntax (rest form) context)]
-                (core-node id :do syntax form
-                           {:children children
-                            :evaluation-order (mapv (fn [idx] [:expr idx]) (range (count children)))
-                            :effects (apply combine-effects (form-effect form) (map :effects children))}))
-
-              let
-              (let [[_ bindings & body] form
-                    binding-pairs (partition 2 bindings)
-                    binding-nodes (mapv (fn [[name expr]]
-                                          {:name name
-                                           :initializer (lower-core-expr counter module syntax expr context)})
-                                        binding-pairs)
-                    body-nodes (lower-sequential-body counter module syntax body context)]
-                (core-node id :let syntax form
-                           {:bindings binding-nodes
-                            :children body-nodes
-                            :evaluation-order (concat (mapv (fn [[name _]] [:binding name]) binding-pairs)
-                                                       (mapv (fn [idx] [:body idx]) (range (count body-nodes))))
-                            :effects (apply combine-effects
-                                            (form-effect form)
-                                            (concat (map (comp :effects :initializer) binding-nodes)
-                                                    (map :effects body-nodes)))}))
-
-              fn
-              (let [[_ params & body] form
-                    body-nodes (lower-sequential-body counter module syntax body (assoc context :recur-arity (count params)))
-                    latent-effects (apply combine-effects (map :effects body-nodes))]
-                (core-node id :fn syntax form
-                           {:params params
-                            :children body-nodes
-                            :latent-effects latent-effects
-                            :evaluation-order [:call-arguments-left-to-right]}))
-
-              loop
-              (let [[_ bindings & body] form
-                    recur-arity (/ (count bindings) 2)
-                    binding-pairs (partition 2 bindings)
-                    binding-nodes (mapv (fn [[name expr]]
-                                          {:name name
-                                           :initializer (lower-core-expr counter module syntax expr context)})
-                                        binding-pairs)
-                    body-nodes (lower-sequential-body counter module syntax body (assoc context :recur-arity recur-arity))]
-                (core-node id :loop syntax form
-                           {:bindings binding-nodes
-                            :recur-arity recur-arity
-                            :children body-nodes
-                            :evaluation-order (concat (mapv (fn [[name _]] [:loop-binding name]) binding-pairs)
-                                                       (mapv (fn [idx] [:body idx]) (range (count body-nodes))))}))
-
-              recur
-              (core-node id :recur syntax form
-                         {:arguments (lower-sequential-body counter module syntax (rest form) context)
-                          :target-arity (:recur-arity context)
-                          :evaluation-order [:arguments-left-to-right]})
-
-              def
-              (let [[_ name value] form
-                    value-node (lower-core-expr counter module syntax value context)]
-                (core-node id :def syntax form
-                           {:name name
-                            :value value-node
-                            :evaluation-order [:initializer]
-                            :effects (:effects value-node)}))
-
-              defconst
-              (let [[_ name value] form
-                    value-node (lower-core-expr counter module syntax value context)]
-                (core-node id :def syntax form
-                           {:name name
-                            :value value-node
-                            :compile-time-binding? true
-                            :evaluation-order [:compile-time-initializer]
-                            :effects (:effects value-node)}))
-
-              var
-              (core-node id :var syntax form
-                         {:name (second form)
-                          :evaluation-order []})
-
-              set!
-              (let [[_ target value] form
-                    value-node (lower-core-expr counter module syntax value context)]
-                (core-node id :set! syntax form
-                           {:target target
-                            :value value-node
-                            :evaluation-order [:value]
-                            :effects (combine-effects #{:state/write} (:effects value-node))}))
-
-              try
-              (let [[_ body & handlers] form
-                    body-node (lower-core-expr counter module syntax body context)]
-                (core-node id :try syntax form
-                           {:body body-node
-                            :handlers handlers
-                            :evaluation-order [:body :matching-handler]
-                            :effects (:effects body-node)}))
-
-              throw
-              (let [[_ value] form
-                    value-node (lower-core-expr counter module syntax value context)]
-                (core-node id :throw syntax form
-                           {:value value-node
-                            :evaluation-order [:value]
-                            :effects (combine-effects #{:error/throw} (:effects value-node))}))
-
-              match
-              (let [[_ value & clauses] form
-                    value-node (lower-core-expr counter module syntax value context)
-                    lowered-clauses (lower-match-clauses counter module syntax clauses context)]
-                (core-node id :match syntax form
-                           {:value value-node
-                            :clauses lowered-clauses
-                            :evaluation-order [:scrutinee :selected-clause]
-                            :effects (apply combine-effects
-                                            (:effects value-node)
-                                            (concat (map #(get-in % [:guard :effects] #{}) lowered-clauses)
-                                                    (map #(get-in % [:body :effects] #{}) lowered-clauses)))}))
-
-              (let [children (lower-sequential-body counter module syntax form context)]
-                (core-node id :call syntax form
-                           {:operator op
-                            :arguments (vec (rest children))
-                            :evaluation-order [:operator :arguments-left-to-right]
-                            :effects (apply combine-effects (form-effect form) (map :effects children))}))))
-
-      (symbol? form)
-      (core-node id :symbol syntax form
-                 {:name form
-                  :evaluation-order []})
-
-      :else
-      (core-node id :literal syntax form
-                 {:value form
-                  :evaluation-order []}))))
+  (core-ast-lowering-call
+   :lower-core-expr core-ast-lowering/lower-core-expr
+   counter module syntax form context))
 
 (defn flatten-core
   [node]
-  (let [core-child? #(and (map? %) (:node-id %))
-        children (filter core-child?
-                         (concat (:children node)
-                                 (keep :initializer (:bindings node))
-                                 (when-let [v (:value node)] [v])
-                                 (when-let [b (:body node)] [b])
-                                 (:arguments node)
-                                 (mapcat (fn [clause]
-                                           (cond-> [(:body clause)]
-                                             (:guard clause) (conj (:guard clause))))
-                                         (:clauses node))))]
-    (vec (cons node (mapcat flatten-core children)))))
+  (core-ast-lowering-call
+   :flatten-core core-ast-lowering/flatten-core node))
 
 (defn core-source-artifact
   [source-path source-text]
-  (let [macro-artifact (macro-source-artifact source-path source-text)
-        module (:module macro-artifact)
-        expanded-syntax (:expanded-syntax-object-stream macro-artifact)
-        body-syntax (subvec expanded-syntax 1)
-        counter (atom 0)
-        roots (mapv #(lower-core-expr counter module % (:form %) {}) body-syntax)
-        flat (vec (mapcat flatten-core roots))
-        source-map (mapv #(select-keys % [:node-id :kind :source-span :generated-origin]) flat)
-        form-kinds (mapv #(select-keys % [:node-id :kind :profile :namespace :effects :capabilities]) flat)
-        evaluation (mapv #(select-keys % [:node-id :kind :evaluation-order]) (filter :evaluation-order flat))
-        latent (mapv #(select-keys % [:node-id :params :latent-effects]) (filter #(= :fn (:kind %)) flat))
-        calls (mapv #(select-keys % [:node-id :operator :arguments :effects]) (filter #(= :call (:kind %)) flat))]
-    {:kind :gravity/stage0-core-artifact
-     :pass {:name :core-lowering
-            :input :expanded-syntax
-            :output :core-ast
-            :requires [:reader :namespace-analyzer]
-            :preserves [:source-spans :generated-origin :profile :effects :capabilities]
-            :rejects ["L2-UNKNOWN-CORE-FORM" "L2-EVAL-ORDER" "L2-RECUR-TARGET"
-                      "L2-SET-ILLEGAL" "L2-THROW-ILLEGAL" "L2-HOST-SEMANTICS"
-                      "L2-LOWERING-GAP"]}
-     :module (select-keys module [:module :source-path :profile :target :effects
-                                  :capabilities :safety :metadata])
-     :macro-expansion-trace (:macro-expansion-trace macro-artifact)
-     :expanded-syntax-object-stream expanded-syntax
-     :expanded-core-ast roots
-     :core-node-source-map source-map
-     :core-form-kind-records form-kinds
-     :evaluation-order-metadata evaluation
-     :latent-function-effect-records latent
-     :call-records calls
-     :diagnostics []}))
+  (core-ast-lowering-call
+   :core-source-artifact core-ast-lowering/core-source-artifact
+   source-path source-text))
+
 (def c6-lowering-diagnostic-ids c6/c6-lowering-diagnostic-ids)
 (def c6-lowering-governing-document c6/c6-lowering-governing-document)
 (def c6-lowering-rejected-designs c6/c6-lowering-rejected-designs)

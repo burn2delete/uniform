@@ -6,10 +6,10 @@
   "source_root": "bootstrap/clojure/src",
   "test_root": "bootstrap/clojure/test",
   "counts": {
-    "components": 45,
-    "sources": 45,
-    "tests": 45,
-    "bootstrap_free_tests": 39,
+    "components": 47,
+    "sources": 47,
+    "tests": 47,
+    "bootstrap_free_tests": 41,
     "compatibility_tests": 5,
     "coordinator_tests": 1
   },
@@ -108,10 +108,12 @@
         "c9-ownership-checker",
         "cli",
         "compiler-verification-shared",
+        "core-ast-lowering",
         "darwin-publication",
         "diagnostics",
         "digest",
         "macro-expansion",
+        "module-analysis",
         "optimization-lowering",
         "reader-cursor",
         "reader-diagnostic-policy",
@@ -1190,6 +1192,39 @@
       "leaf_execution_group": "compiler"
     },
     {
+      "id": "core-ast-lowering",
+      "owner": "sh-core",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/core_ast_lowering.clj",
+        "namespace": "gravity.core-ast-lowering"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/core_ast_lowering_test.clj",
+        "namespace": "gravity.core-ast-lowering-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "core-ast-lowering"
+      ],
+      "canonical_pass_refs": [
+        "core-ast"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
       "id": "darwin-publication",
       "owner": "master-coordinator",
       "source": {
@@ -1317,6 +1352,39 @@
       "contract_var": "namespace-contract",
       "stage0_group": "compiler",
       "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "module-analysis",
+      "owner": "sh-resolution",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/module_analysis.clj",
+        "namespace": "gravity.module-analysis"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/module_analysis_test.clj",
+        "namespace": "gravity.module-analysis-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "module-analysis"
+      ],
+      "canonical_pass_refs": [
+        "name-resolution"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "foundation-reader"
     },
     {
       "id": "optimization-lowering",

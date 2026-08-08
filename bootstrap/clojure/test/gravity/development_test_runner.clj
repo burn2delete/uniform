@@ -13,6 +13,10 @@
     :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj"}
    {:namespace 'gravity.bootstrap-compatibility.c3-test
     :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.module-analysis-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.core-ast-lowering-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj"}
    {:namespace 'gravity.bootstrap-compatibility.c4-test
     :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj"}
    {:namespace 'gravity.bootstrap-compatibility.c5-test

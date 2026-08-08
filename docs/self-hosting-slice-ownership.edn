@@ -29,6 +29,8 @@
    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c16_test.clj"
    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c17_test.clj"
    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj"
+   "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj"
+   "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj"
    "bootstrap/clojure/test/gravity/bootstrap_test.clj"
    "bootstrap/clojure/test/gravity/development_test_runner.clj"
    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
@@ -141,10 +143,12 @@
   "bootstrap/clojure/src/gravity/c9_ownership_checker.clj" :sh-ownership
   "bootstrap/clojure/src/gravity/cli.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/compiler_verification_shared.clj" :sh-verification
+  "bootstrap/clojure/src/gravity/core_ast_lowering.clj" :sh-core
   "bootstrap/clojure/src/gravity/darwin_publication.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/diagnostics.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/digest.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/macro_expansion.clj" :sh-macro
+  "bootstrap/clojure/src/gravity/module_analysis.clj" :sh-resolution
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" :sh-optimization
   "bootstrap/clojure/src/gravity/reader_cursor.clj" :sh-reader
   "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj" :sh-reader
@@ -172,6 +176,8 @@
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/c16_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/c17_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/bootstrap_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/development_test_runner.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/c10_safety_analysis_test.clj" :sh-safety
@@ -204,10 +210,12 @@
   "bootstrap/clojure/test/gravity/c9_ownership_checker_test.clj" :sh-ownership
   "bootstrap/clojure/test/gravity/cli_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/compiler_verification_shared_test.clj" :sh-verification
+  "bootstrap/clojure/test/gravity/core_ast_lowering_test.clj" :sh-core
   "bootstrap/clojure/test/gravity/darwin_publication_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/diagnostics_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/digest_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/macro_expansion_test.clj" :sh-macro
+  "bootstrap/clojure/test/gravity/module_analysis_test.clj" :sh-resolution
   "bootstrap/clojure/test/gravity/optimization_lowering_test.clj" :sh-optimization
   "bootstrap/clojure/test/gravity/reader_cursor_test.clj" :sh-reader
   "bootstrap/clojure/test/gravity/reader_diagnostic_policy_test.clj" :sh-reader
@@ -251,10 +259,12 @@
   "c9-ownership-checker" :sh-ownership
   "cli" :master-coordinator
   "compiler-verification-shared" :sh-verification
+  "core-ast-lowering" :sh-core
   "darwin-publication" :master-coordinator
   "diagnostics" :master-coordinator
   "digest" :master-coordinator
   "macro-expansion" :sh-macro
+  "module-analysis" :sh-resolution
   "optimization-lowering" :sh-optimization
   "reader-cursor" :sh-reader
   "reader-diagnostic-policy" :sh-reader
