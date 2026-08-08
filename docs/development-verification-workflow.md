@@ -306,8 +306,8 @@ or Stage4 production nodes. Automatic changed-path routing is:
 with a parallel source -> `stage5-sh10-c8-adapter` branch. The source gate
 uses the four exact C9 coverage selectors in source order (proof contract,
 control-form arity, contracts, limitations), `-J-Xmx2g`, and a 1,200-second
-timeout. Its source is pinned to 47,414 bytes and
-`sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59`.
+timeout. Its source is pinned to 71,132 bytes and
+`sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd`.
 Coverage vars 5--9 remain deferred; the partial coverage namespace is
 fingerprinted and impact-excluded so an edit fails closed.
 
@@ -333,7 +333,8 @@ no-resume, new-state, `authority: none`, `proof_candidate: true`, and
 `c9-ownership` module, `-J-Xmx8g`, and a 21,600-second timeout. The b6e80f1
 candidate (505.045 seconds, artifact `sha256:56aa7b6c...b2de`, census
 `sha256:b28f186a...1a45`) is planning evidence only and is invalidated by the
-current wrapper identity; do not rerun proof during this integration. An
+current source, contract, tool, and shared-input identities; do not rerun proof
+during this integration. An
 exit-0 candidate does not promote authority.
 
 C9 source changes select source plus both automatic branches. Kernel fixture or
@@ -343,6 +344,45 @@ for those same C8 paths remains independent. Changed paths never select the proo
 explicit `--check` and `--all` may request its public+adapter closure. C9
 paths are impact-excluded from legacy broad Stage0 ownership, and all C9 fixed
 nodes carry the centralized runtime/input, heap, lock, and receipt checks.
+
+## Fixed Stage6 C10 safety graph
+
+Stage6 owns C10 with a fixed, non-authoritative graph layered only on
+`stage3-runner-unit`; it does not replay Stage3--5 production lanes:
+
+`stage6-c10-source-structural` -> `stage6-c10-kernel` -> `stage6-public-c10`
+
+and, in a separate branch, source -> `stage6-sh11-c9-safety-adapter`. The
+source gate runs five source-only selectors in reviewed order: special-form
+arity, export completeness, proof-contract registration, exact contracts, and
+static lookup/residual boundaries. It binds the 112,712-byte C10 source at
+`sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968`.
+Deferred artifact/parity/replay vars are absent; the partial source namespace
+is fingerprinted and impact-excluded so its own edits fail closed.
+
+The kernel keeps all seven numeric-safety selectors in one `-J-Xmx2g` JVM,
+preserving the namespace-local C10 plan and accepted/rejected fixture-plan
+delays. The adapter keeps four pure C9-to-C10 checks followed by exactly one
+authenticated `.gravity` boundary in one `-J-Xmx8g` JVM. Its measured lane was
+5 tests/147 assertions in 69.470 seconds; the final boundary took 61.220
+seconds, built one cold carrier, and did not build the byte-identical `.qst`
+twin. The public node is one exact C10 selector at `-J-Xmx2g`, with a
+600-second timeout and wall/RSS telemetry. These are resource and development
+receipts, not speedup, proof, or authority claims.
+
+C10 source changes select the four automatic Stage6 nodes. Kernel test/fixture
+changes select source/kernel/public; adapter test/fixture changes select only
+source/adapter. C8/C9 changes retain their owning Stage4/5 routing and select
+only the Stage6 source/adapter branch as a downstream consumer. Legacy broad
+owners are impact-excluded. All Stage6 production nodes are fresh, exclusive,
+capacity-one, command-owned users of `/private/tmp/gravity-sh07-heavy.lock`.
+
+`stage6-c10-proof-candidate` is manual-only, fresh, no-resume, and new-state.
+It uses fixed `c10-authority` -> `c10-safety`, `-J-Xmx8g`, a 21,600-second
+timeout, `authority: none`, `proof_candidate: true`, and
+`attestation_required: true`. Explicit selection joins the public and adapter
+branches; ordinary change impact never selects it. An exit-0 proof candidate
+does not grant authority.
 
 ## Selection and execution flow
 

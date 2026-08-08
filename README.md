@@ -201,7 +201,7 @@ least 600 seconds and records sampled wall/RSS telemetry. The source coverage
 file is partial and impact-excluded for deferred vars 5--9, so edits fail
 closed. The manual-only `c8-authority` proof candidate is fresh/no-resume,
 `authority: none`, and `attestation_required: true`; it is never inferred from
-an exit-0 candidate. Frozen `eefb20d` evidence is 80,761 bytes with source /
+an exit-0 candidate. Historical frozen `eefb20d` evidence is 80,761 bytes with source /
 contract 4 tests/96 assertions, synthetic 5/82, and public 108.627 seconds at
 2 GiB with about 2.84 GB observed peak RSS. The prior `f3729a5` proof is stale
 historical evidence only; no new proof, speedup, equivalence, or authority
@@ -226,9 +226,29 @@ The manual `stage5-c9-proof-candidate` is a fresh, no-resume, new-state
 timeout, `automatic: false`, `authority: none`, and
 `attestation_required: true`. The b6e80f1 result is planning evidence only
 (505.045 seconds; artifact `sha256:56aa7b6c...b2de`; census
-`sha256:b28f186a...1a45`) and is invalidated by the current wrapper identity.
+`sha256:b28f186a...1a45`) and is invalidated by current source, contract, tool,
+and shared-input drift.
 No C8 proof is rerun for C9-only work, and no candidate exit status promotes
 authority.
+
+The fixed Stage6 C10 safety graph applies the same bounded pattern without
+replaying Stage3--5 production lanes. A five-selector source-only gate
+(`-J-Xmx2g`) branches to the seven-selector numeric-safety kernel
+(`-J-Xmx2g`) and a five-selector C9-to-C10 adapter (`-J-Xmx8g`); the kernel
+continues to the exact public C10 selector (`-J-Xmx2g`). The adapter keeps its
+four pure checks and the single authenticated `.gravity` boundary in one JVM,
+so namespace-local C9/C10 plans and the process cache are reused and `.qst`
+remains byte-parity evidence only. C10 source edits select all four automatic
+Stage6 nodes, kernel edits select source/kernel/public, and adapter edits select
+source/adapter. Legacy broad owners are impact-excluded for these paths.
+
+The manual `stage6-c10-proof-candidate` is fixed to `c10-authority` /
+`c10-safety`, fresh, no-resume, new-state, `automatic: false`,
+`authority: none`, and `attestation_required: true`. It joins the public and
+adapter branches only when explicitly requested. The current C10 source is
+112,712 bytes (`sha256:2d334872...4968`); the combined adapter lane passed
+5 tests/147 assertions in 69.470 seconds, with its authenticated boundary last.
+These are non-authoritative development receipts, not proof or speedup claims.
 
 Every Stage 0 manifest check explicitly sets `daemonization: forbidden`.
 Commands run in a new process group; ordinary descendants are cleaned before a

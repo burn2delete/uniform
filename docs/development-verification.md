@@ -87,10 +87,10 @@ These are non-authoritative development receipts. The adapter admits only
 persistent immutable integer, boolean, and string reads. Persistent aggregates,
 owned-mutable, effectful, and nonprimitive adaptation, regions, arenas, linear
 resources, runtime checks, unsafe audits, trusted digest resolution, and MIR
-preservation remain pending. The historical C9 proof binds the preceding
-35,894-byte source. A fresh source-bound-derived C9 proof candidate for the
-current source completed in 505.045 seconds of checkpoint time (499.953 seconds
-in the proof), with stable context, empty stderr, artifact
+preservation remain pending. The earliest historical C9 proof binds the
+35,894-byte source. A later source-bound-derived candidate for the now-
+preceding 47,414-byte revision completed in 505.045 seconds of checkpoint time
+(499.953 seconds in the proof), with stable context, empty stderr, artifact
 `sha256:56aa7b6cded727e47b7528a7b027b711b7fb911e8dd288df259d15282412b2de`,
 and derived census
 `sha256:b28f186ab5586620913748d21224937344cbacea22a178c391640a8c2bd61a45`.
@@ -101,7 +101,8 @@ and zero keyword lookups. Counts were not precommitted and a trusted reviewed
 attestation was not created, so this is historical proof-candidate evidence
 rather than exact,
 aggregate, release, or automatically promoted scoped authority. Do not rerun
-C8 authority for this C9-only change.
+C8 authority for this C9-only change. The current 71,132-byte C9 source requires
+a new candidate after source, contract, tool, and shared-input freeze.
 
 The current C10 safety source is 112,712 bytes with source hash
 `sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968`.
@@ -747,9 +748,9 @@ never selects either earlier proof candidate. The automatic route is:
 
 1. `stage5-c9-source-structural`, a 2 GiB source/contract gate whose four
    selectors run in source order: proof-contract, control-form arity, source
-   contracts, and structural limitations. The C9 source is bound at 47,414
+   contracts, and structural limitations. The C9 source is bound at 71,132
    bytes with SHA
-   `sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59`.
+   `sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd`.
    Coverage vars 5--9 remain intentionally deferred: their partial namespace
    is fingerprinted and impact-excluded so an edit fails closed rather than
    being reported as covered by a different selector.
@@ -778,8 +779,9 @@ candidate for `c9-ownership`, with a new invocation state directory,
 an exit-0 candidate is not an attestation or authority promotion. The
 historical b6e80f1 planning evidence (505.045-second candidate, artifact
 `sha256:56aa7b6c...b2de`, census `sha256:b28f186a...1a45`) is retained only as
-stale planning evidence because the current wrapper identity must be rerun
-after integration and freeze. Do not rerun C8 authority for a C9-only change.
+stale planning evidence because the source, contract, tool, and shared-input
+identities have changed. The current source requires a fresh candidate after
+integration and freeze. Do not rerun C8 authority for a C9-only change.
 
 C9 source changes select source structure and both automatic branches (kernel
 to public, and the merged adapter). Kernel fixture/test changes select only
@@ -790,7 +792,43 @@ explicit `--check`/`--all` requests may include its dependency closure. C9
 paths are impact-excluded from the legacy broad Stage0 heavy checks so the
 fixed graph remains the sole automatic C9 owner.
 
-### 10. Full release gate
+### 10. Fixed Stage6 C10 safety graph
+
+The C10 route is fixed, non-authoritative, and independent of Stage3--5
+production execution. It depends only on `stage3-runner-unit` and branches:
+
+1. `stage6-c10-source-structural` runs five source-only selectors at 2 GiB:
+   special-form arity, export completeness, proof-contract registration,
+   exact policy contracts, and static lookup/residual boundaries. It binds
+   112,712 source bytes with SHA
+   `sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968`.
+   Artifact, parity, replay, and rejected-family coverage remains deferred;
+   the partial namespace is fingerprinted and impact-excluded.
+2. `stage6-c10-kernel` keeps all seven numeric-safety vars in one 2 GiB JVM,
+   sharing the C10 plan and accepted/rejected `.gravity`/`.qst` fixture-plan
+   delays. It continues to `stage6-public-c10`, one exact 2 GiB public selector
+   with a 600-second timeout and wall/RSS receipt.
+3. `stage6-sh11-c9-safety-adapter` keeps four pure checks and its authenticated
+   `.gravity` boundary in one 8 GiB JVM. The measured lane passed 5 tests/147
+   assertions in 69.470 seconds; its final boundary took 61.220 seconds and
+   built one carrier. The `.qst` twin is bound for byte parity but is not built
+   as another authenticated carrier.
+
+C10 source changes select all four automatic Stage6 nodes. Kernel inputs select
+source/kernel/public; adapter inputs select source/adapter. C8/C9 paths retain
+their independent owning graphs and add only the Stage6 source/adapter branch.
+Legacy broad owners are impact-excluded. Every Stage6 production node is fresh,
+exclusive, capacity one, command-owned on the canonical heavy lock, and binds
+the centralized runtime/tool identity.
+
+`stage6-c10-proof-candidate` is manual-only and joins public plus adapter. It is
+fixed to `c10-authority` / `c10-safety`, fresh, no-resume, new-state, 8 GiB,
+21,600 seconds, `authority: none`, `proof_candidate: true`, and
+`attestation_required: true`. It is not selected by ordinary changed-path
+routing, and an exit-0 candidate does not promote authority. No C10 proof was
+run as part of this graph integration.
+
+### 11. Full release gate
 
 Run only after the candidate is stable, the selected authoritative modules
 pass, and the worktree is ready for release review. This preserves every

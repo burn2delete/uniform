@@ -359,7 +359,7 @@ def _is_fixed_stage_check(check_id: str) -> bool:
     identity, lock-owner, or receipt validation.
     """
 
-    return check_id.startswith(("stage3-", "stage4-", "stage5-"))
+    return check_id.startswith(("stage3-", "stage4-", "stage5-", "stage6-"))
 
 
 def _validate_stage3_resource_contract(check: Mapping[str, Any]) -> None:

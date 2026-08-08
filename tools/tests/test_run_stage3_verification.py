@@ -59,7 +59,7 @@ class Stage3WrapperTests(unittest.TestCase):
         self.assertEqual(
             list(stage3.FIXED_BATCHES),
             _clojure_vector_definition("batch-order")
-            + ["authority", "c8-authority", "c9-authority"],
+            + ["authority", "c8-authority", "c9-authority", "c10-authority"],
         )
         selector_definitions = {
             "primitive-pure": "primitive-pure-selectors",
@@ -80,6 +80,10 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage5-c9-kernel": "stage5-c9-kernel-selectors",
             "stage5-sh10-c8-adapter": "stage5-sh10-c8-adapter-selectors",
             "stage5-public-c9": "stage5-public-c9-selectors",
+            "stage6-c10-source-structural": "stage6-c10-source-structural-selectors",
+            "stage6-c10-kernel": "stage6-c10-kernel-selectors",
+            "stage6-public-c10": "stage6-public-c10-selectors",
+            "stage6-sh11-c9-safety-adapter": "stage6-sh11-c9-safety-adapter-selectors",
         }
         for batch, definition in selector_definitions.items():
             self.assertEqual(
@@ -109,6 +113,11 @@ class Stage3WrapperTests(unittest.TestCase):
             "authority": "-J-Xmx8g",
             "c8-authority": "-J-Xmx8g",
             "c9-authority": "-J-Xmx8g",
+            "stage6-c10-source-structural": "-J-Xmx2g",
+            "stage6-c10-kernel": "-J-Xmx2g",
+            "stage6-public-c10": "-J-Xmx2g",
+            "stage6-sh11-c9-safety-adapter": "-J-Xmx8g",
+            "c10-authority": "-J-Xmx8g",
         }
         self.assertEqual(stage3._BATCH_HEAP, expected_heap)
         for batch in stage3._BATCH_COMMANDS:
@@ -134,6 +143,15 @@ class Stage3WrapperTests(unittest.TestCase):
         self.assertEqual(5, len(c9_adapter))
         self.assertEqual(5, len(set(c9_adapter)))
         self.assertTrue(c9_adapter[-1].endswith("/sh10-c8-adapter-authenticated-gravity-boundary"))
+
+        c10_adapter = list(
+            stage3._FIXED_BATCH_SELECTORS["stage6-sh11-c9-safety-adapter"]
+        )
+        self.assertEqual(5, len(c10_adapter))
+        self.assertEqual(5, len(set(c10_adapter)))
+        self.assertTrue(
+            c10_adapter[-1].endswith("/sh11-c9-safety-authenticated-gravity-boundary")
+        )
 
     def test_retired_singleton_batch_ids_are_rejected(self) -> None:
         for retired in (
@@ -986,6 +1004,11 @@ class Stage3WrapperTests(unittest.TestCase):
         self.assertEqual(
             ("--fresh", "c8-effects"), stage3.C8_AUTHORITY_POLICY["child_args"]
         )
+        self.assertEqual(82797, stage3.C8_AUTHORITY_POLICY["source_size"])
+        self.assertEqual(
+            "sha256:de3fb80e14336cadacf710a0b2fef33b19efab0728d5ca08e7a25c72df7afe16",
+            stage3.C8_AUTHORITY_POLICY["source_sha256"],
+        )
         with self.assertRaises(stage3.Stage3Error):
             stage3._authority_policy_for_batch("arbitrary-module")
         with self.assertRaises(stage3.Stage3Error):
@@ -1100,9 +1123,9 @@ class Stage3WrapperTests(unittest.TestCase):
             "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
             policy["source_path"],
         )
-        self.assertEqual(47414, policy["source_size"])
+        self.assertEqual(71132, policy["source_size"])
         self.assertEqual(
-            "sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59",
+            "sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd",
             policy["source_sha256"],
         )
         self.assertEqual(("--fresh", "c9-ownership"), policy["child_args"])
@@ -1110,6 +1133,35 @@ class Stage3WrapperTests(unittest.TestCase):
             stage3._authority_policy_for_batch("c9-ownership")
         with self.assertRaises(stage3.Stage3Error):
             stage3.batch_command("c9-authority")
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_relative = Path(str(policy["source_path"]))
+            source = root / source_relative
+            source.parent.mkdir(parents=True)
+            source.write_bytes((Path(__file__).parents[2] / source_relative).read_bytes())
+            self.assertEqual(source.stat().st_size, policy["source_size"])
+            self.assertEqual(self._hash(source), policy["source_sha256"])
+
+    def test_c10_fixed_policy_binds_module_source_and_fresh_child_command(self) -> None:
+        """C10 proof admission is fixed to the frozen safety source."""
+
+        policy = stage3.C10_AUTHORITY_POLICY
+        self.assertEqual("c10-safety", policy["module"])
+        self.assertEqual(
+            "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
+            policy["source_path"],
+        )
+        self.assertEqual(112712, policy["source_size"])
+        self.assertEqual(
+            "sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968",
+            policy["source_sha256"],
+        )
+        self.assertEqual(("--fresh", "c10-safety"), policy["child_args"])
+        with self.assertRaises(stage3.Stage3Error):
+            stage3._authority_policy_for_batch("c10-safety")
+        with self.assertRaises(stage3.Stage3Error):
+            stage3.batch_command("c10-authority")
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1183,6 +1235,40 @@ class Stage3WrapperTests(unittest.TestCase):
             self.assertEqual("c9-authority", receipt["proof_batch"])
             self.assertEqual("c9-ownership", receipt["proof_module"])
             self.assertEqual("c9-ownership", observed[0][observed[0].index("--module") + 1])
+
+    def test_c10_proof_candidate_uses_only_fixed_child_module(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            observed: list[list[str]] = []
+
+            def launcher(command, cwd, env, timeout):
+                observed.append(list(command))
+                return stage3.ChildResult(0, "", "", False, (), None, False)
+
+            with mock.patch.object(
+                stage3,
+                "_authority_manifest_valid",
+                return_value=(True, {"module": "c10-safety"}),
+            ):
+                code, receipt = stage3.run_stage3(
+                    root=root,
+                    receipt_path=root / ".cpcache" / "c10-proof.json",
+                    nonce="c10-proof",
+                    check_id="c10-proof",
+                    mode=stage3.MODE_PROOF_CANDIDATE,
+                    batch="c10-authority",
+                    command_identity_sha256="sha256:" + "3" * 64,
+                    launcher=launcher,
+                    timeout_seconds=2,
+                )
+            self.assertEqual(0, code)
+            self.assertTrue(receipt["proof_candidate"])
+            self.assertEqual("none", receipt["authority"])
+            self.assertEqual("c10-authority", receipt["proof_batch"])
+            self.assertEqual("c10-safety", receipt["proof_module"])
+            self.assertEqual(
+                "c10-safety", observed[0][observed[0].index("--module") + 1]
+            )
 
     def test_authority_missing_manifest_exit_zero_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
