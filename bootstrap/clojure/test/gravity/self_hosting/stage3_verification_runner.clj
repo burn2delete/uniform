@@ -1,5 +1,5 @@
 (ns gravity.self-hosting.stage3-verification-runner
-  "Runs the fixed, non-authoritative Stage3/Stage4 development batches.
+  "Runs the fixed, non-authoritative Stage3/Stage4/Stage5 development batches.
 
   This namespace intentionally has no compile-time dependency on the Clojure
   bootstrap, the C7 tests, or the SH-07 iteration runner.  The production
@@ -26,6 +26,12 @@
   'gravity.self-hosting.sh07-c8-effect-source-coverage-test)
 (def ^:private sh09-adapter-test-namespace
   'gravity.self-hosting.sh09-c7-effect-adapter-test)
+(def ^:private c9-source-test-namespace
+  'gravity.self-hosting.sh07-c9-ownership-source-coverage-test)
+(def ^:private sh10-ownership-transition-test-namespace
+  'gravity.self-hosting.sh10-ownership-transition-test)
+(def ^:private sh10-c8-ownership-adapter-test-namespace
+  'gravity.self-hosting.sh10-c8-ownership-adapter-test)
 (def ^:private public-test-namespace
   'gravity.bootstrap-test)
 
@@ -113,6 +119,32 @@
 (def stage4-public-c8-selectors
   ['gravity.bootstrap-test/public-check-accepts-gravity-authored-c8-effect-checker-engine])
 
+;; C9 source checks intentionally put control-form arity immediately after
+;; proof-contract registration.  Coverage vars 5--9 in this partial source
+;; namespace remain deferred; they are not silently admitted by a generic
+;; namespace run.
+(def stage5-c9-source-structural-selectors
+  ['gravity.self-hosting.sh07-c9-ownership-source-coverage-test/sh07-b30-proof-contract-registers-c9-source-exactly
+   'gravity.self-hosting.sh07-c9-ownership-source-coverage-test/sh07-b30-c9-source-control-form-arities-are-bounded
+   'gravity.self-hosting.sh07-c9-ownership-source-coverage-test/sh07-b30-c9-source-contracts-states-and-reasons-are-exact
+   'gravity.self-hosting.sh07-c9-ownership-source-coverage-test/sh07-b30-c9-structural-limitations-remain-explicit])
+
+(def stage5-c9-kernel-selectors
+  ['gravity.self-hosting.sh10-ownership-transition-test/sh10-source-and-fixtures-compile-as-gravity
+   'gravity.self-hosting.sh10-ownership-transition-test/sh10-accepts-initiation-borrow-move-and-bounded-lifetime-flows
+   'gravity.self-hosting.sh10-ownership-transition-test/sh10-rejects-invalid-state-transitions-structurally
+   'gravity.self-hosting.sh10-ownership-transition-test/sh10-fails-closed-on-request-event-and-result-substitution])
+
+(def stage5-sh10-c8-adapter-selectors
+  ['gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-source-api-and-policy-are-exact
+   'gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-accepts-persistent-primitive-read
+   'gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-accepts-primitive-type-family
+   'gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-rejects-mutation-and-non-read-events
+   'gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-authenticated-gravity-boundary])
+
+(def stage5-public-c9-selectors
+  ['gravity.bootstrap-test/public-check-accepts-gravity-authored-c9-ownership-checker-engine])
+
 (def ^:private batch-order
   [:primitive-pure
    :primitive-bool-authenticated
@@ -127,7 +159,11 @@
    :public-c7-check
    :stage4-c8-source-structural
    :stage4-sh09-adapter
-   :stage4-public-c8])
+   :stage4-public-c8
+   :stage5-c9-source-structural
+   :stage5-c9-kernel
+   :stage5-sh10-c8-adapter
+   :stage5-public-c9])
 
 (def ^:private batch-selectors
   (array-map
@@ -144,7 +180,11 @@
    :public-c7-check public-c7-check-selectors
    :stage4-c8-source-structural stage4-c8-source-structural-selectors
    :stage4-sh09-adapter stage4-sh09-adapter-selectors
-   :stage4-public-c8 stage4-public-c8-selectors))
+   :stage4-public-c8 stage4-public-c8-selectors
+   :stage5-c9-source-structural stage5-c9-source-structural-selectors
+   :stage5-c9-kernel stage5-c9-kernel-selectors
+   :stage5-sh10-c8-adapter stage5-sh10-c8-adapter-selectors
+   :stage5-public-c9 stage5-public-c9-selectors))
 
 (def fixed-batch-ids
   "The complete CLI allowlist, in deterministic presentation order."
@@ -182,12 +222,15 @@
     recursive-test-namespace
     authoritative-ho-test-namespace
     fragment-test-namespace
-    sh09-adapter-test-namespace})
+    sh09-adapter-test-namespace
+    sh10-ownership-transition-test-namespace
+    sh10-c8-ownership-adapter-test-namespace})
 
 (def ^:private partial-selector-namespaces
   #{'gravity.self-hosting.sh07-authoritative-coverage-census-test
     'gravity.self-hosting.sh07-c7-type-source-coverage-test
     c8-source-test-namespace
+    c9-source-test-namespace
     public-test-namespace})
 
 (def ^:private catalog-source-namespaces

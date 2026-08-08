@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the reviewed Stage 3 C7 verification boundary.
+"""Run the reviewed Stage 3/4/5 fixed verification boundary.
 
 The development verifier deliberately treats this file as the only command
 that may own the SH-07 heavy lock.  The command is intentionally boring: its
@@ -96,8 +96,13 @@ FIXED_BATCHES = (
     "stage4-c8-source-structural",
     "stage4-sh09-adapter",
     "stage4-public-c8",
+    "stage5-c9-source-structural",
+    "stage5-c9-kernel",
+    "stage5-sh10-c8-adapter",
+    "stage5-public-c9",
     "authority",
     "c8-authority",
+    "c9-authority",
 )
 
 _BATCH_ALIAS = "-M:stage3-verification"
@@ -121,6 +126,11 @@ _BATCH_HEAP = {
     "stage4-c8-source-structural": "-J-Xmx2g",
     "stage4-sh09-adapter": "-J-Xmx8g",
     "stage4-public-c8": "-J-Xmx2g",
+    "stage5-c9-source-structural": "-J-Xmx2g",
+    "stage5-c9-kernel": "-J-Xmx2g",
+    "stage5-sh10-c8-adapter": "-J-Xmx8g",
+    "stage5-public-c9": "-J-Xmx2g",
+    "c9-authority": "-J-Xmx8g",
 }
 _BATCH_COMMANDS: dict[str, tuple[str, ...]] = {
     # The Clojure writer owns this one alias.  Batch identity is passed only
@@ -128,7 +138,7 @@ _BATCH_COMMANDS: dict[str, tuple[str, ...]] = {
     # runner arguments are accepted at this boundary.
     batch: ("clojure", _BATCH_HEAP.get(batch, "-J-Xmx8g"), _BATCH_ALIAS, "--batch", batch)
     for batch in FIXED_BATCHES
-    if batch not in {"authority", "c8-authority"}
+    if batch not in {"authority", "c8-authority", "c9-authority"}
 }
 
 _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
@@ -201,6 +211,28 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
     "stage4-public-c8": (
         "gravity.bootstrap-test/public-check-accepts-gravity-authored-c8-effect-checker-engine",
     ),
+    "stage5-c9-source-structural": (
+        "gravity.self-hosting.sh07-c9-ownership-source-coverage-test/sh07-b30-proof-contract-registers-c9-source-exactly",
+        "gravity.self-hosting.sh07-c9-ownership-source-coverage-test/sh07-b30-c9-source-control-form-arities-are-bounded",
+        "gravity.self-hosting.sh07-c9-ownership-source-coverage-test/sh07-b30-c9-source-contracts-states-and-reasons-are-exact",
+        "gravity.self-hosting.sh07-c9-ownership-source-coverage-test/sh07-b30-c9-structural-limitations-remain-explicit",
+    ),
+    "stage5-c9-kernel": (
+        "gravity.self-hosting.sh10-ownership-transition-test/sh10-source-and-fixtures-compile-as-gravity",
+        "gravity.self-hosting.sh10-ownership-transition-test/sh10-accepts-initiation-borrow-move-and-bounded-lifetime-flows",
+        "gravity.self-hosting.sh10-ownership-transition-test/sh10-rejects-invalid-state-transitions-structurally",
+        "gravity.self-hosting.sh10-ownership-transition-test/sh10-fails-closed-on-request-event-and-result-substitution",
+    ),
+    "stage5-sh10-c8-adapter": (
+        "gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-source-api-and-policy-are-exact",
+        "gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-accepts-persistent-primitive-read",
+        "gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-accepts-primitive-type-family",
+        "gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-rejects-mutation-and-non-read-events",
+        "gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-authenticated-gravity-boundary",
+    ),
+    "stage5-public-c9": (
+        "gravity.bootstrap-test/public-check-accepts-gravity-authored-c9-ownership-checker-engine",
+    ),
 }
 
 CANONICAL_LOCK = _sh07.canonical_shared_lock_path(_sh07.DEFAULT_LOCK)
@@ -260,8 +292,9 @@ def _fixed_authority_policy(
 
 
 # Exact proof candidates admitted by this wrapper.  ``authority`` preserves
-# the reviewed C7 behavior; ``c8-authority`` is the Stage4 C8 candidate.  No
-# other module or batch can reach the authority child path.
+# the reviewed C7 behavior; ``c8-authority`` and ``c9-authority`` are the
+# fixed Stage4/Stage5 candidates.  No other module or batch can reach the
+# authority child path.
 FIXED_MODULE_POLICIES = MappingProxyType({
     "authority": _fixed_authority_policy(
         batch="authority",
@@ -277,12 +310,21 @@ FIXED_MODULE_POLICIES = MappingProxyType({
         source_size=80761,
         source_sha256="sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70",
     ),
+    "c9-authority": _fixed_authority_policy(
+        batch="c9-authority",
+        module="c9-ownership",
+        source_path="bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
+        heap="-J-Xmx8g",
+        source_size=47414,
+        source_sha256="sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59",
+    ),
 })
 
 # Compatibility names retained for callers and tests that inspect the C7
 # policy directly.  They are values, not alternate input mechanisms.
 AUTHORITY_POLICY = FIXED_MODULE_POLICIES["authority"]
 C8_AUTHORITY_POLICY = FIXED_MODULE_POLICIES["c8-authority"]
+C9_AUTHORITY_POLICY = FIXED_MODULE_POLICIES["c9-authority"]
 
 
 class Stage3Error(RuntimeError):
