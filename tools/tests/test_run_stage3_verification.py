@@ -59,7 +59,7 @@ class Stage3WrapperTests(unittest.TestCase):
         self.assertEqual(
             list(stage3.FIXED_BATCHES),
             _clojure_vector_definition("batch-order")
-            + ["authority"],
+            + ["authority", "c8-authority"],
         )
         selector_definitions = {
             "primitive-pure": "primitive-pure-selectors",
@@ -73,6 +73,10 @@ class Stage3WrapperTests(unittest.TestCase):
             "coverage-census-contract": "coverage-census-contract-selectors",
             "fragment-size-preflight": "fragment-size-preflight-selectors",
             "public-c7-check": "public-c7-check-selectors",
+            "stage4-c8-source-structural": "stage4-c8-source-structural-selectors",
+            "stage4-sh09-adapter-synthetic": "stage4-sh09-adapter-synthetic-selectors",
+            "stage4-sh09-authenticated": "stage4-sh09-authenticated-selectors",
+            "stage4-public-c8": "stage4-public-c8-selectors",
         }
         for batch, definition in selector_definitions.items():
             self.assertEqual(
@@ -92,11 +96,28 @@ class Stage3WrapperTests(unittest.TestCase):
             "coverage-census-contract": "-J-Xmx2g",
             "fragment-size-preflight": "-J-Xmx2g",
             "public-c7-check": "-J-Xmx2g",
+            "stage4-c8-source-structural": "-J-Xmx2g",
+            "stage4-sh09-adapter-synthetic": "-J-Xmx8g",
+            "stage4-sh09-authenticated": "-J-Xmx8g",
+            "stage4-public-c8": "-J-Xmx2g",
             "authority": "-J-Xmx8g",
+            "c8-authority": "-J-Xmx8g",
         }
         self.assertEqual(stage3._BATCH_HEAP, expected_heap)
         for batch in stage3._BATCH_COMMANDS:
             self.assertEqual(stage3._BATCH_COMMANDS[batch][1], expected_heap[batch])
+        c8 = stage3._FIXED_BATCH_SELECTORS["stage4-c8-source-structural"]
+        self.assertFalse(any(
+            marker in selector
+            for selector in c8
+            for marker in (
+                "sh07-b29-c8-source-has-exact-authentic-coverage",
+                "sh07-b29-c8-calls-lookups-and-error-effect",
+                "sh07-b29-c8-is-deterministic-path-neutral",
+                "sh07-b29-c8-replay-and-alteration",
+                "sh07-b29-existing-rejected-families",
+            )
+        ))
 
     def test_retired_singleton_batch_ids_are_rejected(self) -> None:
         for retired in (
@@ -882,6 +903,154 @@ class Stage3WrapperTests(unittest.TestCase):
             self.assertFalse(receipt["release_authoritative"])
             self.assertFalse((Path(receipt["state_dir"]) / "attestations").exists())
             self.assertEqual("authoritative-child", receipt["lock"]["owner"])
+
+    def test_c8_fixed_policy_binds_module_source_and_fresh_child_command(self) -> None:
+        """C8 proof validation is exact and cannot become a module passthrough."""
+
+        self.assertEqual("c8-effects", stage3.C8_AUTHORITY_POLICY["module"])
+        self.assertEqual(
+            "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+            stage3.C8_AUTHORITY_POLICY["source_path"],
+        )
+        self.assertEqual(
+            ("--fresh", "c8-effects"), stage3.C8_AUTHORITY_POLICY["child_args"]
+        )
+        with self.assertRaises(stage3.Stage3Error):
+            stage3._authority_policy_for_batch("arbitrary-module")
+        with self.assertRaises(stage3.Stage3Error):
+            stage3.batch_command("c8-authority")
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_relative = Path(str(stage3.C8_AUTHORITY_POLICY["source_path"]))
+            source = root / source_relative
+            source.parent.mkdir(parents=True)
+            source.write_bytes(
+                (Path(__file__).parents[2] / source_relative).read_bytes()
+            )
+            proof = root / sh07.PROOF_CONTRACT_RELATIVE
+            proof.parent.mkdir(parents=True)
+            proof.write_bytes(b"fixed proof contract")
+            state = root / "state"
+            modules = state / "modules"
+            modules.mkdir(parents=True)
+            stdout = modules / "c8-effects.stdout.log"
+            stderr = modules / "c8-effects.stderr.log"
+            stdout.write_bytes(b"structured c8 output")
+            stderr.write_bytes(b"")
+            context_sha = "sha256:" + "c" * 64
+            shared_sha = "sha256:" + "d" * 64
+            source_sha = "sha256:" + hashlib.sha256(source.read_bytes()).hexdigest()
+            context = {
+                "module": "c8-effects",
+                "sha256": context_sha,
+                "files": [{
+                    "path": str(source_relative),
+                    "size": source.stat().st_size,
+                    "sha256": source_sha,
+                }],
+            }
+            record = {
+                "state": "passed",
+                "command": [*sh07.default_base_command(), "--fresh", "c8-effects"],
+                "module_context_fingerprint": context_sha,
+                "proof_contract_sha256": "sha256:" + hashlib.sha256(proof.read_bytes()).hexdigest(),
+                "module_context": context,
+                "context_stable": True,
+                "output_contract_checked": True,
+                "stdout_path": "modules/c8-effects.stdout.log",
+                "stderr_path": "modules/c8-effects.stderr.log",
+                "stdout_sha256": "sha256:" + hashlib.sha256(stdout.read_bytes()).hexdigest(),
+                "stderr_sha256": "sha256:" + hashlib.sha256(stderr.read_bytes()).hexdigest(),
+                "exit_code": 0,
+                "raw_child_exit_code": 0,
+                "timed_out": False,
+            }
+            manifest = {
+                "schema": sh07.SCHEMA,
+                "tool_version": sh07.TOOL_VERSION,
+                "fingerprint_policy_version": sh07.FINGERPRINT_POLICY_VERSION,
+                "state": "completed",
+                "selected_modules": ["c8-effects"],
+                "aggregate_authoritative": False,
+                "authority_scope": "individual-source-bound-derived",
+                "resumed_modules": [],
+                "lock_path": str(self.lock),
+                "lock_mode": "0600",
+                "lock_acquired": True,
+                "lock_validated": True,
+                "lock_released": True,
+                "shared_context_fingerprint": shared_sha,
+                "shared_context_fingerprint_after": shared_sha,
+                "shared_context": {
+                    "command": sh07.default_base_command(),
+                    "authoritative_module_catalog": {
+                        "c8-effects": str(source_relative),
+                    },
+                },
+                "modules": {"c8-effects": record},
+            }
+            with mock.patch.object(
+                stage3,
+                "_recompute_shared_context",
+                return_value={"sha256": shared_sha},
+            ):
+                valid, evidence = stage3._authority_manifest_valid(
+                    root,
+                    state,
+                    manifest,
+                    check_output_contract=False,
+                    policy=stage3.C8_AUTHORITY_POLICY,
+                )
+            self.assertTrue(valid, evidence)
+            self.assertEqual("c8-effects", evidence["module"])
+            record["command"] = [*sh07.default_base_command(), "--fresh", "c7-types"]
+            with mock.patch.object(
+                stage3,
+                "_recompute_shared_context",
+                return_value={"sha256": shared_sha},
+            ):
+                invalid, details = stage3._authority_manifest_valid(
+                    root,
+                    state,
+                    manifest,
+                    check_output_contract=False,
+                    policy=stage3.C8_AUTHORITY_POLICY,
+                )
+            self.assertFalse(invalid)
+            self.assertTrue(any("fresh module" in error for error in details["errors"]))
+
+    def test_c8_proof_candidate_uses_only_fixed_child_module(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            observed: list[list[str]] = []
+
+            def launcher(command, cwd, env, timeout):
+                observed.append(list(command))
+                return stage3.ChildResult(0, "", "", False, (), None, False)
+
+            with mock.patch.object(
+                stage3,
+                "_authority_manifest_valid",
+                return_value=(True, {"module": "c8-effects"}),
+            ):
+                code, receipt = stage3.run_stage3(
+                    root=root,
+                    receipt_path=root / ".cpcache" / "c8-proof.json",
+                    nonce="c8-proof",
+                    check_id="c8-proof",
+                    mode=stage3.MODE_PROOF_CANDIDATE,
+                    batch="c8-authority",
+                    command_identity_sha256="sha256:" + "1" * 64,
+                    launcher=launcher,
+                    timeout_seconds=2,
+                )
+            self.assertEqual(0, code)
+            self.assertTrue(receipt["proof_candidate"])
+            self.assertEqual("none", receipt["authority"])
+            self.assertEqual("c8-authority", receipt["proof_batch"])
+            self.assertEqual("c8-effects", receipt["proof_module"])
+            self.assertEqual("c8-effects", observed[0][observed[0].index("--module") + 1])
 
     def test_authority_missing_manifest_exit_zero_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -1,5 +1,5 @@
 (ns gravity.self-hosting.stage3-verification-runner
-  "Runs the fixed, non-authoritative Stage3 development batches.
+  "Runs the fixed, non-authoritative Stage3/Stage4 development batches.
 
   This namespace intentionally has no compile-time dependency on the Clojure
   bootstrap, the C7 tests, or the SH-07 iteration runner.  The production
@@ -22,6 +22,10 @@
   'gravity.self-hosting.sh08-authoritative-higher-order-function-test)
 (def ^:private fragment-test-namespace
   'gravity.self-hosting.stage3-fragment-size-preflight-test)
+(def ^:private c8-source-test-namespace
+  'gravity.self-hosting.sh07-c8-effect-source-coverage-test)
+(def ^:private sh09-adapter-test-namespace
+  'gravity.self-hosting.sh09-c7-effect-adapter-test)
 (def ^:private public-test-namespace
   'gravity.bootstrap-test)
 
@@ -84,6 +88,30 @@
 (def fragment-size-preflight-selectors
   ['gravity.self-hosting.stage3-fragment-size-preflight-test/stage3-fragment-size-preflight])
 
+;; C8 source coverage is a deliberate execution order, not a copy of the
+;; source-file order.  The control-form arity check is intentionally moved
+;; immediately after the proof-contract registration so malformed input fails
+;; before the broader policy/contract traversal can do expensive work.  The
+;; fixed-catalog validator records this exception explicitly below.
+(def stage4-c8-source-structural-selectors
+  ['gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-proof-contract-registers-c8-source-exactly
+   'gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-source-control-form-arities-are-bounded
+   'gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-source-contracts-policy-and-boundaries-are-exact
+   'gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-structural-limitations-remain-explicit])
+
+(def stage4-sh09-adapter-synthetic-selectors
+  ['gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-source-structure-and-policy-are-exact
+   'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-derives-one-pure-effect-fact-per-type-fact
+   'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-rejects-upstream-and-candidate-substitution
+   'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-derives-declared-pure-function-call-effects
+   'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-binds-ordered-effect-identities])
+
+(def stage4-sh09-authenticated-selectors
+  ['gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-authenticated-gravity-boundary])
+
+(def stage4-public-c8-selectors
+  ['gravity.bootstrap-test/public-check-accepts-gravity-authored-c8-effect-checker-engine])
+
 (def ^:private batch-order
   [:primitive-pure
    :primitive-bool-authenticated
@@ -95,7 +123,11 @@
    :source-plan-contract
    :coverage-census-contract
    :fragment-size-preflight
-   :public-c7-check])
+   :public-c7-check
+   :stage4-c8-source-structural
+   :stage4-sh09-adapter-synthetic
+   :stage4-sh09-authenticated
+   :stage4-public-c8])
 
 (def ^:private batch-selectors
   (array-map
@@ -109,7 +141,11 @@
    :source-plan-contract source-plan-contract-selectors
    :coverage-census-contract coverage-census-contract-selectors
    :fragment-size-preflight fragment-size-preflight-selectors
-   :public-c7-check public-c7-check-selectors))
+   :public-c7-check public-c7-check-selectors
+   :stage4-c8-source-structural stage4-c8-source-structural-selectors
+   :stage4-sh09-adapter-synthetic stage4-sh09-adapter-synthetic-selectors
+   :stage4-sh09-authenticated stage4-sh09-authenticated-selectors
+   :stage4-public-c8 stage4-public-c8-selectors))
 
 (def fixed-batch-ids
   "The complete CLI allowlist, in deterministic presentation order."
@@ -126,6 +162,14 @@
                  :selector-vector (get batch-selectors batch-id)
                  :maximum-entries maximum-cache-entries
                  :fail-fast? (> (count (get batch-selectors batch-id)) 1)
+                 ;; Most partial namespaces retain source/deftest order.  C8
+                 ;; source coverage is the reviewed exception: its vector is
+                 ;; the exact execution order, while membership is checked
+                 ;; against the source independently of ordering.
+                 :catalog-order-policy
+                 (if (= batch-id :stage4-c8-source-structural)
+                   :explicit-execution-order
+                   :source-subsequence)
                  :authority :non-authoritative
                  :authoritative? false}])
              batch-order)))
@@ -138,11 +182,13 @@
   #{primitive-test-namespace
     recursive-test-namespace
     authoritative-ho-test-namespace
-    fragment-test-namespace})
+    fragment-test-namespace
+    sh09-adapter-test-namespace})
 
 (def ^:private partial-selector-namespaces
   #{'gravity.self-hosting.sh07-authoritative-coverage-census-test
     'gravity.self-hosting.sh07-c7-type-source-coverage-test
+    c8-source-test-namespace
     public-test-namespace})
 
 (def ^:private catalog-source-namespaces
@@ -317,19 +363,38 @@
              ;; batches whose execution order differs from source order. Each
              ;; fixed batch vector is therefore checked independently as an
              ;; in-source-order subsequence; concatenating vectors in execution
-             ;; order would reject a valid interleaving (or hide drift).
+             ;; order would reject a valid interleaving (or hide drift).  The
+             ;; C8 source batch is the one reviewed exception: its deliberate
+             ;; arity-before-contract order is checked as an exact unique
+             ;; membership vector, not as a source-order subsequence.
              (when (and partial? (seq expected-selectors))
                (doseq [[batch-id entries] expected-by-batch]
-                 (let [batch-selectors (mapv :selector entries)]
-                   (when-not (ordered-subsequence?
-                              batch-selectors actual-selectors)
-                     (exception "STAGE3-CATALOG-SOURCE-ORDER"
-                                "A fixed partial-batch selector vector no longer matches source order"
-                                {:namespace namespace-symbol
-                                 :batch-id batch-id
-                                 :expected batch-selectors
-                                 :actual actual-selectors
-                                 :partial-namespace? true})))))
+                 (let [batch-selectors (mapv :selector entries)
+                       policy (get-in batches [batch-id :catalog-order-policy]
+                                      :source-subsequence)]
+                   (if (= policy :explicit-execution-order)
+                     (let [actual-set (set actual-selectors)
+                           expected-set (set batch-selectors)]
+                       (when (or (not= (count batch-selectors)
+                                       (count expected-set))
+                                 (not (set/subset? expected-set actual-set)))
+                         (exception "STAGE3-CATALOG-EXPLICIT-ORDER"
+                                    "A fixed explicit-order batch has missing or duplicate selectors"
+                                    {:namespace namespace-symbol
+                                     :batch-id batch-id
+                                     :expected batch-selectors
+                                     :actual actual-selectors
+                                     :policy policy})))
+                     (when-not (ordered-subsequence?
+                                batch-selectors actual-selectors)
+                       (exception "STAGE3-CATALOG-SOURCE-ORDER"
+                                  "A fixed partial-batch selector vector no longer matches source order"
+                                  {:namespace namespace-symbol
+                                   :batch-id batch-id
+                                   :expected batch-selectors
+                                   :actual actual-selectors
+                                   :partial-namespace? true
+                                   :policy policy}))))))
              (when (and (not partial?)
                         (seq expected-selectors)
                         (not= expected-selectors actual-selectors))

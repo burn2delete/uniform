@@ -31,6 +31,10 @@
   'gravity.self-hosting.sh07-c7-type-source-coverage-test)
 (def ^:private fragment-ns
   'gravity.self-hosting.stage3-fragment-size-preflight-test)
+(def ^:private c8-source-ns
+  'gravity.self-hosting.sh07-c8-effect-source-coverage-test)
+(def ^:private sh09-adapter-ns
+  'gravity.self-hosting.sh09-c7-effect-adapter-test)
 (def ^:private bootstrap-ns
   'gravity.bootstrap-test)
 
@@ -47,7 +51,8 @@
   {primitive-ns "bootstrap/clojure/test/gravity/self_hosting/sh08_primitive_function_type_test.clj"
    recursive-ns "bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj"
    ho-ns "bootstrap/clojure/test/gravity/self_hosting/sh08_authoritative_higher_order_function_test.clj"
-   fragment-ns "bootstrap/clojure/test/gravity/self_hosting/stage3_fragment_size_preflight_test.clj"})
+   fragment-ns "bootstrap/clojure/test/gravity/self_hosting/stage3_fragment_size_preflight_test.clj"
+   sh09-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj"})
 
 (defn- source-deftest-selectors
   [namespace-symbol relative-path]
@@ -77,7 +82,11 @@
           :source-plan-contract
           :coverage-census-contract
           :fragment-size-preflight
-          :public-c7-check]
+          :public-c7-check
+          :stage4-c8-source-structural
+          :stage4-sh09-adapter-synthetic
+          :stage4-sh09-authenticated
+          :stage4-public-c8]
          runner/fixed-batch-ids))
   (is (= runner/primitive-pure-selectors
          (get runner/fixed-batch-selectors :primitive-pure)))
@@ -91,6 +100,14 @@
          (get runner/fixed-batch-selectors :coverage-census-contract)))
   (is (= runner/source-control-form-arity-selectors
          (get runner/fixed-batch-selectors :source-control-form-arity)))
+  (is (= runner/stage4-c8-source-structural-selectors
+         (get runner/fixed-batch-selectors :stage4-c8-source-structural)))
+  (is (= runner/stage4-sh09-adapter-synthetic-selectors
+         (get runner/fixed-batch-selectors :stage4-sh09-adapter-synthetic)))
+  (is (= runner/stage4-sh09-authenticated-selectors
+         (get runner/fixed-batch-selectors :stage4-sh09-authenticated)))
+  (is (= runner/stage4-public-c8-selectors
+         (get runner/fixed-batch-selectors :stage4-public-c8)))
   (is (= runner/recursive-authenticated-selectors
          (get runner/fixed-batch-selectors :recursive-authenticated)))
   (is (= runner/authoritative-ho-authenticated-selectors
@@ -102,7 +119,13 @@
   (is (= (count runner/authoritative-ho-authenticated-selectors) 2))
   (is (= (count runner/source-plan-contract-selectors) 2))
   (is (= (count runner/coverage-census-contract-selectors) 2))
-  (is (= (count runner/source-control-form-arity-selectors) 1)))
+  (is (= (count runner/source-control-form-arity-selectors) 1))
+  (is (= 4 (count runner/stage4-c8-source-structural-selectors)))
+  (is (= 5 (count runner/stage4-sh09-adapter-synthetic-selectors)))
+  (is (= 1 (count runner/stage4-sh09-authenticated-selectors)))
+  (is (= 1 (count runner/stage4-public-c8-selectors)))
+  (is (not-any? #(re-find #"sh07-b29-(c8-source-has-exact-authentic-coverage|c8-calls-lookups-and-error-effect|c8-is-deterministic-path-neutral|c8-replay-and-alteration|existing-rejected-families)" (str %))
+                runner/stage4-c8-source-structural-selectors)))
 
 (deftest authenticated-sibling-batches-have-exact-cross-namespace-order-and-old-ids-are-rejected
   (is (= ['gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-authenticated-gravity-boundary
@@ -130,6 +153,12 @@
          census-ns (conj (selectors-for census-ns)
                          'gravity.self-hosting.sh07-authoritative-coverage-census-test/intentionally-unowned-fixture)
          source-plan-ns (source-plan-source-order)
+         c8-source-ns (source-deftest-selectors
+                       c8-source-ns
+                       "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj")
+         sh09-adapter-ns (source-deftest-selectors
+                          sh09-adapter-ns
+                          "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}]
     (let [catalog-result
@@ -162,6 +191,19 @@
       (is (= (set expected) (set actual))
           (str "selector coverage drift for " namespace-symbol)))))
 
+(deftest c8-source-batch-keeps-explicit-arity-before-contract-order
+  (is (= :explicit-execution-order
+         (get-in runner/fixed-batches
+                 [:stage4-c8-source-structural :catalog-order-policy])))
+  (is (= ['gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-proof-contract-registers-c8-source-exactly
+          'gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-source-control-form-arities-are-bounded
+          'gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-source-contracts-policy-and-boundaries-are-exact
+          'gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-structural-limitations-remain-explicit]
+         runner/stage4-c8-source-structural-selectors))
+  (is (not-any? #(re-find #"authentic-coverage|calls-lookups|deterministic-path|replay-and-alteration|rejected-families"
+                          (str %))
+                runner/stage4-c8-source-structural-selectors)))
+
 (deftest fixed-catalog-rejects-missing-extra-and-duplicate-drift
   (let [base
         {primitive-ns (selectors-for primitive-ns)
@@ -169,6 +211,12 @@
          ho-ns (selectors-for ho-ns)
          census-ns (selectors-for census-ns)
          source-plan-ns (source-plan-source-order)
+         c8-source-ns (source-deftest-selectors
+                       c8-source-ns
+                       "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj")
+         sh09-adapter-ns (source-deftest-selectors
+                          sh09-adapter-ns
+                          "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}
         missing (update base primitive-ns pop)

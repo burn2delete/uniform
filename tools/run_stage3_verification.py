@@ -31,6 +31,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from types import MappingProxyType
 import uuid
 from typing import Any, Callable, Mapping, Sequence
 
@@ -92,7 +93,12 @@ FIXED_BATCHES = (
     "coverage-census-contract",
     "fragment-size-preflight",
     "public-c7-check",
+    "stage4-c8-source-structural",
+    "stage4-sh09-adapter-synthetic",
+    "stage4-sh09-authenticated",
+    "stage4-public-c8",
     "authority",
+    "c8-authority",
 )
 
 _BATCH_ALIAS = "-M:stage3-verification"
@@ -107,11 +113,16 @@ _BATCH_HEAP = {
     "authoritative-ho-pure": "-J-Xmx8g",
     "authoritative-ho-authenticated": "-J-Xmx8g",
     "authority": "-J-Xmx8g",
+    "c8-authority": "-J-Xmx8g",
     "public-c7-check": "-J-Xmx2g",
     "fragment-size-preflight": "-J-Xmx2g",
     "source-plan-contract": "-J-Xmx2g",
     "coverage-census-contract": "-J-Xmx2g",
     "source-control-form-arity": "-J-Xmx2g",
+    "stage4-c8-source-structural": "-J-Xmx2g",
+    "stage4-sh09-adapter-synthetic": "-J-Xmx8g",
+    "stage4-sh09-authenticated": "-J-Xmx8g",
+    "stage4-public-c8": "-J-Xmx2g",
 }
 _BATCH_COMMANDS: dict[str, tuple[str, ...]] = {
     # The Clojure writer owns this one alias.  Batch identity is passed only
@@ -119,7 +130,7 @@ _BATCH_COMMANDS: dict[str, tuple[str, ...]] = {
     # runner arguments are accepted at this boundary.
     batch: ("clojure", _BATCH_HEAP.get(batch, "-J-Xmx8g"), _BATCH_ALIAS, "--batch", batch)
     for batch in FIXED_BATCHES
-    if batch != "authority"
+    if batch not in {"authority", "c8-authority"}
 }
 
 _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
@@ -175,6 +186,25 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
     "public-c7-check": (
         "gravity.bootstrap-test/public-check-accepts-gravity-authored-c7-type-checker-engine",
     ),
+    "stage4-c8-source-structural": (
+        "gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-proof-contract-registers-c8-source-exactly",
+        "gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-source-control-form-arities-are-bounded",
+        "gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-source-contracts-policy-and-boundaries-are-exact",
+        "gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-structural-limitations-remain-explicit",
+    ),
+    "stage4-sh09-adapter-synthetic": (
+        "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-source-structure-and-policy-are-exact",
+        "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-derives-one-pure-effect-fact-per-type-fact",
+        "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-rejects-upstream-and-candidate-substitution",
+        "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-derives-declared-pure-function-call-effects",
+        "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-binds-ordered-effect-identities",
+    ),
+    "stage4-sh09-authenticated": (
+        "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-authenticated-gravity-boundary",
+    ),
+    "stage4-public-c8": (
+        "gravity.bootstrap-test/public-check-accepts-gravity-authored-c8-effect-checker-engine",
+    ),
 }
 
 CANONICAL_LOCK = _sh07.canonical_shared_lock_path(_sh07.DEFAULT_LOCK)
@@ -203,8 +233,75 @@ _SAFE_SLUG = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 _SHA256 = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 
+def _fixed_authority_policy(
+    *, batch: str, module: str, source_path: str, heap: str,
+    source_size: int | None = None, source_sha256: str | None = None,
+) -> Mapping[str, object]:
+    """Build one immutable, reviewed proof-module policy.
+
+    The authority child has a deliberately tiny module surface.  Keeping the
+    module name, source binding, child argv suffix, and resource floor in one
+    map prevents a caller from smuggling an arbitrary ``--module`` through a
+    proof invocation.  The map is frozen below; adding a module is therefore a
+    reviewable source change, not a CLI extension point.
+    """
+
+    return MappingProxyType({
+        "batch": batch,
+        "module": module,
+        "source_path": source_path,
+        "proof_contract_path": _sh07.PROOF_CONTRACT_RELATIVE,
+        "coverage_policy": "source-bound-derived",
+        "authority_scope": "individual-source-bound-derived",
+        "heap": heap,
+        "fresh": True,
+        "resume": False,
+        "child_args": ("--fresh", module),
+        "catalog": MappingProxyType({module: source_path}),
+        "source_size": source_size,
+        "source_sha256": source_sha256,
+    })
+
+
+# Exact proof candidates admitted by this wrapper.  ``authority`` preserves
+# the reviewed C7 behavior; ``c8-authority`` is the Stage4 C8 candidate.  No
+# other module or batch can reach the authority child path.
+FIXED_MODULE_POLICIES = MappingProxyType({
+    "authority": _fixed_authority_policy(
+        batch="authority",
+        module="c7-types",
+        source_path="bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+        heap="-J-Xmx8g",
+    ),
+    "c8-authority": _fixed_authority_policy(
+        batch="c8-authority",
+        module="c8-effects",
+        source_path="bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+        heap="-J-Xmx8g",
+        source_size=80761,
+        source_sha256="sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70",
+    ),
+})
+
+# Compatibility names retained for callers and tests that inspect the C7
+# policy directly.  They are values, not alternate input mechanisms.
+AUTHORITY_POLICY = FIXED_MODULE_POLICIES["authority"]
+C8_AUTHORITY_POLICY = FIXED_MODULE_POLICIES["c8-authority"]
+
+
 class Stage3Error(RuntimeError):
     """Raised when the fixed Stage 3 boundary cannot produce valid evidence."""
+
+
+def _authority_policy_for_batch(batch: str) -> Mapping[str, object]:
+    """Return the reviewed proof policy for ``batch`` or fail closed."""
+
+    policy = FIXED_MODULE_POLICIES.get(batch)
+    if not isinstance(policy, Mapping):
+        raise Stage3Error(f"unknown fixed proof batch: {batch}")
+    if policy.get("batch") != batch or not isinstance(policy.get("module"), str):
+        raise Stage3Error(f"malformed fixed proof policy: {batch}")
+    return policy
 
 
 @dataclasses.dataclass(frozen=True)
@@ -1050,6 +1147,9 @@ def _validate_captured_output_contract(
     source_size: int,
     source_hash: str,
     proof_hash: str,
+    module: str = AUTHORITY_MODULE,
+    authority_scope: str = "individual-source-bound-derived",
+    coverage_policy: str = "source-bound-derived",
     validator: Callable[..., bool] | None = None,
 ) -> bool:
     """Structurally validate exactly the bytes captured by the held output fd.
@@ -1126,7 +1226,7 @@ def _validate_captured_output_contract(
         validate = validator or _sh07.output_contract_passed
         try:
             valid = bool(validate(
-                AUTHORITY_MODULE,
+                module,
                 source_path,
                 source_size,
                 source_hash,
@@ -1135,8 +1235,8 @@ def _validate_captured_output_contract(
                 clojure_command="clojure",
                 cwd=root,
                 expected_stdout_sha256=expected_stdout_hash,
-                expected_authority_scope="individual-source-bound-derived",
-                expected_coverage_policy="source-bound-derived",
+                expected_authority_scope=authority_scope,
+                expected_coverage_policy=coverage_policy,
             ))
         except (OSError, TypeError, ValueError):
             valid = False
@@ -1193,7 +1293,12 @@ def _validate_captured_output_contract(
     return valid_result and not cleanup_failed
 
 
-def _recompute_shared_context(root: Path, manifest: Mapping[str, object]) -> Mapping[str, object] | None:
+def _recompute_shared_context(
+    root: Path,
+    manifest: Mapping[str, object],
+    *,
+    policy: Mapping[str, object] | None = None,
+) -> Mapping[str, object] | None:
     """Recompute the child-declared runtime/classpath context for acceptance.
 
     The production path deliberately performs the expensive runtime identity
@@ -1216,11 +1321,15 @@ def _recompute_shared_context(root: Path, manifest: Mapping[str, object]) -> Map
         return None
     if command != expected_command:
         return None
-    canonical_module_path = (
-        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
-    )
+    policy = policy or AUTHORITY_POLICY
+    canonical_module_path = policy.get("source_path")
+    module_name = policy.get("module")
+    expected_catalog = policy.get("catalog")
     if (not isinstance(catalog, Mapping)
-            or catalog.get(AUTHORITY_MODULE) != canonical_module_path
+            or not isinstance(module_name, str)
+            or not isinstance(canonical_module_path, str)
+            or not isinstance(expected_catalog, Mapping)
+            or dict(catalog) != dict(expected_catalog)
             or not all(
                 isinstance(key, str)
                 and _SAFE_SLUG.fullmatch(key) is not None
@@ -1459,10 +1568,27 @@ def _authority_manifest_valid(
     modules_fd: int | None = None,
     check_output_contract: bool = True,
     manifest_sha256: str | None = None,
+    policy: Mapping[str, object] | None = None,
 ) -> tuple[bool, dict[str, object]]:
-    """Validate the exact C7 completed source-bound-derived receipt shape."""
+    """Validate one exact fixed proof-module receipt shape."""
 
     reasons: list[str] = []
+    policy = policy or AUTHORITY_POLICY
+    module_name = policy.get("module")
+    source_path_value = policy.get("source_path")
+    authority_scope = policy.get("authority_scope")
+    coverage_policy = policy.get("coverage_policy")
+    proof_contract_path = policy.get("proof_contract_path")
+    child_args = policy.get("child_args")
+    expected_source_size = policy.get("source_size")
+    expected_source_sha256 = policy.get("source_sha256")
+    if (not isinstance(module_name, str)
+            or not isinstance(source_path_value, str)
+            or not isinstance(authority_scope, str)
+            or not isinstance(coverage_policy, str)
+            or not isinstance(proof_contract_path, str)
+            or not isinstance(child_args, tuple)):
+        return False, {"errors": ["fixed proof policy is malformed"]}
     if not isinstance(manifest, Mapping):
         return False, {"errors": ["manifest is not an object"]}
     if manifest.get("schema") != _sh07.SCHEMA:
@@ -1473,8 +1599,8 @@ def _authority_manifest_valid(
         reasons.append("child fingerprint policy version is not the reviewed version")
     if manifest.get("state") != "completed":
         reasons.append("state is not completed")
-    if manifest.get("selected_modules") != [AUTHORITY_MODULE]:
-        reasons.append("selected module is not exactly c7-types")
+    if manifest.get("selected_modules") != [module_name]:
+        reasons.append(f"selected module is not exactly {module_name}")
     if manifest.get("aggregate_authoritative") is not False:
         reasons.append("aggregate authority must be false")
     if manifest.get("resumed_modules") != []:
@@ -1487,53 +1613,60 @@ def _authority_manifest_valid(
     for lifecycle in ("lock_acquired", "lock_validated", "lock_released"):
         if manifest.get(lifecycle) is not True:
             reasons.append(f"child manifest lease lifecycle lacks {lifecycle}")
-    if manifest.get("authority_scope") not in {
+    allowed_scopes = ({
         "individual-existing-runner-outputs-only",
         "individual-source-bound-derived",
-    }:
+    } if policy is AUTHORITY_POLICY else {authority_scope})
+    if manifest.get("authority_scope") not in allowed_scopes:
         reasons.append("authority scope is not an individual source-bound scope")
     shared_fingerprint = manifest.get("shared_context_fingerprint")
     if not isinstance(shared_fingerprint, str) or not _SHA256.fullmatch(shared_fingerprint):
         reasons.append("shared context fingerprint is missing or malformed")
     if manifest.get("shared_context_fingerprint_after") != shared_fingerprint:
         reasons.append("shared context changed after module completion")
-    current_shared = _recompute_shared_context(root, manifest)
+    # Preserve the existing two-argument C7 test seam.  New proof modules use
+    # the explicit policy-aware context provider and therefore cannot widen
+    # their catalog through manifest data.
+    current_shared = (
+        _recompute_shared_context(root, manifest)
+        if policy is AUTHORITY_POLICY
+        else _recompute_shared_context(root, manifest, policy=policy)
+    )
     if (not isinstance(current_shared, Mapping)
             or current_shared.get("sha256") != shared_fingerprint):
         reasons.append("current runtime/classpath context does not match child manifest")
     modules = manifest.get("modules")
-    if not isinstance(modules, Mapping) or set(modules) != {AUTHORITY_MODULE}:
+    if not isinstance(modules, Mapping) or set(modules) != {module_name}:
         reasons.append("child manifest module records are not exact")
         record: Mapping[str, object] = {}
     else:
-        raw = modules.get(AUTHORITY_MODULE)
+        raw = modules.get(module_name)
         record = raw if isinstance(raw, Mapping) else {}
     if record.get("state") != "passed":
-        reasons.append("c7-types module did not pass")
+        reasons.append(f"{module_name} module did not pass")
     if record.get("exit_code") != 0 or record.get("raw_child_exit_code") != 0:
-        reasons.append("c7-types child exit was not zero")
+        reasons.append(f"{module_name} child exit was not zero")
     if record.get("timed_out") is not False or record.get("context_stable") is not True:
-        reasons.append("c7-types context is not stable")
+        reasons.append(f"{module_name} context is not stable")
     if record.get("output_contract_checked") is not True:
-        reasons.append("c7-types output contract was not checked")
+        reasons.append(f"{module_name} output contract was not checked")
     command = record.get("command")
     try:
         expected_child_command = [
             *[str(value) for value in _sh07.default_base_command()],
-            "--fresh",
-            AUTHORITY_MODULE,
+            *[str(value) for value in child_args],
         ]
     except Exception:
         expected_child_command = None
     if (not isinstance(command, list)
             or expected_child_command is None
             or command != expected_child_command):
-        reasons.append("c7-types was not run as one fresh module")
+        reasons.append(f"{module_name} was not run as one fresh module")
     module_context = record.get("module_context")
     if (not isinstance(module_context, Mapping)
             or record.get("module_context_fingerprint") != module_context.get("sha256")):
         reasons.append("module context fingerprint is not bound to its record")
-    expected_contract = root / _sh07.PROOF_CONTRACT_RELATIVE
+    expected_contract = root / proof_contract_path
     proof_hash = record.get("proof_contract_sha256")
     if not isinstance(proof_hash, str) or not _SHA256.fullmatch(proof_hash):
         reasons.append("proof contract hash is missing or malformed")
@@ -1549,16 +1682,16 @@ def _authority_manifest_valid(
     source_bytes: bytes | None = None
     source_info: os.stat_result | None = None
     context = record.get("module_context")
-    if not isinstance(context, Mapping) or context.get("module") != AUTHORITY_MODULE:
-        reasons.append("module context does not bind c7-types")
+    if not isinstance(context, Mapping) or context.get("module") != module_name:
+        reasons.append(f"module context does not bind {module_name}")
     else:
         files = context.get("files")
         if not isinstance(files, list) or not files or not isinstance(files[0], Mapping):
             reasons.append("module context lacks source binding")
         else:
             source_entry = files[0]
-            if source_entry.get("path") != "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity":
-                reasons.append("module context source path is not c7-types")
+            if source_entry.get("path") != source_path_value:
+                reasons.append(f"module context source path is not {module_name}")
             source_path = root / str(source_entry.get("path", ""))
             source_snapshot = _open_regular_bounded_snapshot(
                 root,
@@ -1574,10 +1707,18 @@ def _authority_manifest_valid(
                 if (source_entry.get("size") != len(source_bytes)
                         or source_entry.get("sha256") != "sha256:" + _sha256_bytes(source_bytes)):
                     reasons.append("module context source binding is stale")
+                if (expected_source_size is not None
+                        and source_entry.get("size") != expected_source_size):
+                    reasons.append(f"{module_name} source byte count is not the reviewed pin")
+                if (expected_source_sha256 is not None
+                        and source_entry.get("sha256") != expected_source_sha256):
+                    reasons.append(f"{module_name} source hash is not the reviewed pin")
         if not isinstance(context.get("sha256"), str) or not context.get("sha256"):
             reasons.append("module context fingerprint is missing")
     stdout_relative = record.get("stdout_path")
-    if stdout_relative != f"modules/{AUTHORITY_MODULE}.stdout.log":
+    stdout_name = f"modules/{module_name}.stdout.log"
+    stderr_name = f"modules/{module_name}.stderr.log"
+    if stdout_relative != stdout_name:
         reasons.append("stdout path is not canonical")
         stdout_path = state_dir / "invalid"
     else:
@@ -1595,7 +1736,7 @@ def _authority_manifest_valid(
         except OSError:
             modules_fd = -1
     output = (
-        _read_regular_bounded_fd(modules_fd, f"{AUTHORITY_MODULE}.stdout.log", maximum=MAX_AUTHORITY_OUTPUT_BYTES)
+        _read_regular_bounded_fd(modules_fd, f"{module_name}.stdout.log", maximum=MAX_AUTHORITY_OUTPUT_BYTES)
         if modules_fd != -1 else _read_regular_bounded(
             state_dir, stdout_path, maximum=MAX_AUTHORITY_OUTPUT_BYTES
         )
@@ -1628,17 +1769,20 @@ def _authority_manifest_valid(
                     source_size=len(source_bytes),
                     source_hash="sha256:" + _sha256_bytes(source_bytes),
                     proof_hash=str(record.get("proof_contract_sha256")),
+                    module=module_name,
+                    authority_scope=authority_scope,
+                    coverage_policy=coverage_policy,
                 ):
                     reasons.append("authoritative output contract did not structurally validate")
             except (KeyError, TypeError, ValueError, OSError):
                 reasons.append("authoritative output contract inputs are malformed")
     stderr_relative = record.get("stderr_path")
-    if stderr_relative != f"modules/{AUTHORITY_MODULE}.stderr.log":
+    if stderr_relative != stderr_name:
         reasons.append("stderr path is not canonical")
     else:
         stderr_output = (
             _read_regular_bounded_fd(
-                modules_fd, f"{AUTHORITY_MODULE}.stderr.log", maximum=MAX_AUTHORITY_OUTPUT_BYTES
+                modules_fd, f"{module_name}.stderr.log", maximum=MAX_AUTHORITY_OUTPUT_BYTES
             )
             if modules_fd != -1 else _read_regular_bounded(
                 state_dir, state_dir / str(stderr_relative), maximum=MAX_AUTHORITY_OUTPUT_BYTES
@@ -1688,8 +1832,8 @@ def _authority_manifest_valid(
         "current_shared_context_fingerprint": (
             current_shared.get("sha256") if isinstance(current_shared, Mapping) else None
         ),
-        "authority_scope": "individual-source-bound-derived",
-        "module": AUTHORITY_MODULE,
+        "authority_scope": authority_scope,
+        "module": module_name,
         "module_record": {
             "state": record.get("state"),
             "stdout_path": stdout_relative,
@@ -1805,9 +1949,12 @@ def _run_proof_candidate(
     root: Path,
     receipt: dict[str, object],
     nonce: str,
+    batch: str = "authority",
     launcher: Launcher,
     timeout_seconds: float,
 ) -> ChildResult:
+    policy = _authority_policy_for_batch(batch)
+    module_name = str(policy["module"])
     authority_parent = _ensure_directory(root, root / ".cpcache" / "stage3-authority", "state")
     state_dir = authority_parent / nonce
     _ensure_directory(root, state_dir, "state", mode=0o700, fresh=True)
@@ -1819,7 +1966,7 @@ def _run_proof_candidate(
         "python3",
         AUTHORITY_CHILD_SCRIPT,
         "--module",
-        AUTHORITY_MODULE,
+        module_name,
         "--state-dir",
         str(state_dir),
         "--lock",
@@ -1868,6 +2015,7 @@ def _run_proof_candidate(
             state_fd=state_fd,
             modules_fd=modules_fd,
             manifest_sha256=(str(manifest_hash) if isinstance(manifest_hash, str) else None),
+            policy=policy,
         )
     finally:
         if modules_fd != -1:
@@ -1881,6 +2029,8 @@ def _run_proof_candidate(
     # reusable/latest-file discovery in reviewed-attestation mode.
     receipt["candidate_receipt_path"] = str(receipt.get("receipt_path"))
     receipt["candidate_check_id"] = receipt.get("check_id")
+    receipt["proof_batch"] = batch
+    receipt["proof_module"] = module_name
     lock = receipt["lock"]
     assert isinstance(lock, dict)
     # The authoritative child owns the lease; a completed manifest with its
@@ -1910,7 +2060,7 @@ def _run_proof_candidate(
             "evidence_kind": "source-bound-derived-proof-candidate",
             "proof_candidate": True,
             "proof_candidate_status": "passed",
-            "candidate_scope": "individual-source-bound-derived",
+            "candidate_scope": str(policy["authority_scope"]),
             "attestation_required": True,
             "attestation_present": False,
             "aggregate_authoritative": False,
@@ -2364,10 +2514,13 @@ def run_stage3(
     check_id = _safe_slug(check_id, "check_id")
     if mode not in MODES:
         raise Stage3Error(f"unknown Stage 3 mode: {mode}")
-    if mode == MODE_PURE and batch == "authority":
-        raise Stage3Error("authority batch requires proof-candidate or reviewed-attestation mode")
-    if mode in {MODE_PROOF_CANDIDATE, MODE_REVIEWED_ATTESTATION} and batch != "authority":
-        raise Stage3Error("proof-candidate/reviewed-attestation modes require the authority batch")
+    proof_batches = frozenset(FIXED_MODULE_POLICIES)
+    if mode == MODE_PURE and batch in proof_batches:
+        raise Stage3Error("fixed proof batches require proof-candidate or reviewed-attestation mode")
+    if mode in {MODE_PROOF_CANDIDATE, MODE_REVIEWED_ATTESTATION} and batch not in proof_batches:
+        raise Stage3Error(
+            "proof-candidate/reviewed-attestation modes require an exact fixed proof batch"
+        )
     command_hash = command_identity_sha256 or "sha256:" + ("0" * 64)
     if command_identity_sha256 and _SHA256.fullmatch(command_identity_sha256) is None:
         raise Stage3Error("command identity hash is malformed")
@@ -2407,6 +2560,7 @@ def run_stage3(
                 root=root_path,
                 receipt=receipt,
                 nonce=nonce,
+                batch=batch,
                 launcher=launcher,
                 timeout_seconds=timeout_seconds,
             )
