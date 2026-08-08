@@ -1,0 +1,5 @@
+push-string 6e616d65
+push-int 42
+str 2
+println 1
+halt

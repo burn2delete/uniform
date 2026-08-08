@@ -1,0 +1,7 @@
+push-bool false
+jump-if-false 4
+push-string 626164
+println 1
+push-string 6f6b
+println 1
+halt
