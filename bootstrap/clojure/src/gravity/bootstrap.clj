@@ -145090,85 +145090,855 @@
        "  return 0;\n"
        "}\n"))
 
+(def ^:private c-backend-process-timeout-ms 60000)
+(def ^:private c-backend-process-max-output-bytes (* 8 1024 1024))
+(def ^:private c-backend-process-max-descendants 64)
+(def ^:private c-backend-process-max-staging-entries 16)
+(def ^:private c-backend-private-directory-permissions
+  #{java.nio.file.attribute.PosixFilePermission/OWNER_READ
+    java.nio.file.attribute.PosixFilePermission/OWNER_WRITE
+    java.nio.file.attribute.PosixFilePermission/OWNER_EXECUTE})
+
+(def ^:private c-backend-no-follow
+  (into-array java.nio.file.LinkOption
+              [java.nio.file.LinkOption/NOFOLLOW_LINKS]))
+
+(defn- c-backend-read-basic-attributes
+  [path source-path target missing-fact]
+  (try
+    (java.nio.file.Files/readAttributes
+     path java.nio.file.attribute.BasicFileAttributes c-backend-no-follow)
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (c-backend-fail!
+       "B2-DIALECT" "C backend process operation was interrupted"
+       source-path target nil
+       {:missing-fact :c-backend-process-interrupted
+        :operation missing-fact
+        :interrupted? true}))
+    (catch Exception error
+      (c-backend-fail!
+       "B2-DIALECT" "C backend private process staging is unavailable"
+       source-path target nil
+       {:missing-fact missing-fact
+        :cause-message (.getMessage error)}))))
+
+(defn- c-backend-private-staging-directory!
+  [source-path target]
+  (let [temporary-root
+        (.toAbsolutePath
+         (.normalize
+          (java.nio.file.Paths/get
+           (System/getProperty "java.io.tmpdir")
+           (make-array String 0))))
+        temporary-root-attributes
+        (c-backend-read-basic-attributes
+         temporary-root source-path target :temporary-root-attributes)]
+    (when-not (and (.isDirectory temporary-root-attributes)
+                   (not (java.nio.file.Files/isSymbolicLink temporary-root))
+                   (some? (.fileKey temporary-root-attributes)))
+      (c-backend-fail!
+       "B2-DIALECT" "C backend temporary root is not a stable directory"
+       source-path target nil
+       {:missing-fact :stable-private-process-parent
+        :temporary-root (.toString temporary-root)}))
+    ;; Hold and validate the parent before creating anything.  Permissions are
+    ;; supplied atomically at mkdir time, so unsupported POSIX attributes fail
+    ;; without leaving a partially initialized directory behind.
+    (let [parent temporary-root
+          parent-stream
+          (try
+            (java.nio.file.Files/newDirectoryStream parent)
+            (catch Exception error
+              (c-backend-fail!
+               "B2-DIALECT"
+               "C backend private process parent cannot be held securely"
+               source-path target nil
+               {:missing-fact :secure-private-process-parent
+                :cause-message (.getMessage error)})))]
+      (when-not (instance? java.nio.file.SecureDirectoryStream parent-stream)
+        (try (.close ^java.io.Closeable parent-stream) (catch Exception _ nil))
+        (c-backend-fail!
+         "B2-DIALECT" "C backend secure process parent is unavailable"
+         source-path target nil
+         {:missing-fact :secure-private-process-parent}))
+      (let [directory-holder (atom nil)
+            created-file-key (atom nil)
+            root-stream-holder (atom nil)]
+        (try
+          (let [directory
+                (java.nio.file.Files/createTempDirectory
+                 parent ".gravity-c-process-"
+                 (into-array
+                  java.nio.file.attribute.FileAttribute
+                [(java.nio.file.attribute.PosixFilePermissions/asFileAttribute
+                    c-backend-private-directory-permissions)]))
+                _ (reset! directory-holder directory)
+                created-attributes
+                (java.nio.file.Files/readAttributes
+                 directory java.nio.file.attribute.BasicFileAttributes
+                 c-backend-no-follow)
+                _ (reset! created-file-key (.fileKey created-attributes))
+                ;; Keep the validated diagnostic boundary separate from the
+                ;; identity capture so any later initialization failure still
+                ;; has enough identity to clean descriptor-relative.
+                _ (c-backend-read-basic-attributes
+                   directory source-path target
+                   :private-process-staging-created-attributes)
+                leaf (.getFileName directory)
+                root-stream
+                (.newDirectoryStream
+                 ^java.nio.file.SecureDirectoryStream parent-stream
+                 leaf c-backend-no-follow)
+                _ (reset! root-stream-holder root-stream)]
+            (when-not (instance? java.nio.file.SecureDirectoryStream root-stream)
+              (c-backend-fail!
+               "B2-DIALECT" "C backend secure process root is unavailable"
+               source-path target nil
+               {:missing-fact :secure-private-process-root}))
+            (let [directory-view
+                  (.getFileAttributeView
+                   ^java.nio.file.SecureDirectoryStream root-stream
+                   java.nio.file.attribute.BasicFileAttributeView)
+                  directory-attributes (.readAttributes directory-view)]
+              (when-not (and (.isDirectory directory-attributes)
+                             (.isDirectory temporary-root-attributes)
+                             (not (java.nio.file.Files/isSymbolicLink directory))
+                             (not (java.nio.file.Files/isSymbolicLink parent))
+                             (some? (.fileKey directory-attributes))
+                             (= @created-file-key (.fileKey directory-attributes))
+                             (= c-backend-private-directory-permissions
+                                (set (java.nio.file.Files/getPosixFilePermissions
+                                     directory c-backend-no-follow))))
+                (c-backend-fail!
+                 "B2-DIALECT"
+                 "C backend private process staging identity is invalid"
+                 source-path target nil
+                 {:missing-fact :stable-private-process-staging-binding}))
+              {:path directory
+               :parent parent
+               :leaf leaf
+               :parent-stream parent-stream
+               :root-stream root-stream
+               :parent-file-key (.fileKey temporary-root-attributes)
+               :root-file-key (.fileKey directory-attributes)}))
+          (catch Throwable error
+            (when-let [root-stream @root-stream-holder]
+              (try (.close ^java.io.Closeable root-stream) (catch Exception _ nil)))
+            ;; Cleanup is descriptor-relative and identity-checked.  If an
+            ;; attacker substituted the leaf, retain it and surface the primary
+            ;; failure rather than deleting an unverified directory.
+            (when-let [directory @directory-holder]
+              (let [leaf (.getFileName ^java.nio.file.Path directory)]
+                (try
+                  (let [view
+                        (.getFileAttributeView
+                         ^java.nio.file.SecureDirectoryStream parent-stream
+                         leaf java.nio.file.attribute.BasicFileAttributeView
+                         c-backend-no-follow)
+                        attributes (.readAttributes view)]
+                    (when (= @created-file-key (.fileKey attributes))
+                      (.deleteDirectory
+                       ^java.nio.file.SecureDirectoryStream parent-stream leaf)))
+                  (catch Exception cleanup
+                    (.addSuppressed ^Throwable error ^Throwable cleanup)))))
+            (try (.close ^java.io.Closeable parent-stream)
+                 (catch Exception cleanup
+                   (.addSuppressed ^Throwable error ^Throwable cleanup)))
+            (throw error)))))))
+
+(defn- c-backend-process-descendants
+  [process]
+  (let [root (.toHandle process)]
+    (with-open [stream (.descendants root)]
+      (vec (iterator-seq
+            (.iterator (.limit stream
+                               (long (inc c-backend-process-max-descendants)))))))))
+
+(defn- c-backend-terminate-process-tree!
+  [process source-path target]
+  (let [root (.toHandle process)
+        captured (atom {(.pid root) root})
+        deadline (+ (System/nanoTime) 2000000000)]
+    (loop []
+      (let [descendants
+            (try
+              (c-backend-process-descendants process)
+              (catch InterruptedException interrupted
+                (.interrupt (Thread/currentThread))
+                (throw interrupted)))
+            _ (swap! captured
+                     into
+                     (into {}
+                           (map (fn [handle] [(.pid ^java.lang.ProcessHandle handle)
+                                              handle])
+                                descendants)))]
+        (let [descendant-overflow?
+              (> (count @captured)
+                 (inc c-backend-process-max-descendants))]
+        (doseq [handle (vals @captured)]
+          (try
+            (.destroyForcibly ^java.lang.ProcessHandle handle)
+            (catch Exception _ nil)))
+        ;; A containment diagnostic must never preempt the kill requests for
+        ;; handles that were already captured.  More descendants may exist
+        ;; beyond the bounded snapshot, so this remains a fail-closed error
+        ;; rather than process-tree proof.
+        (when descendant-overflow?
+          (c-backend-fail!
+           "B2-DIALECT" "C backend process descendant set exceeded its bound"
+           source-path target nil
+           {:missing-fact :bounded-c-backend-process-descendants
+            :maximum-descendants c-backend-process-max-descendants
+            :observed-descendants (dec (count @captured))
+            :captured-kill-requested? true
+            :whole-process-tree-reaping-proved? false})))
+        (let [alive
+              (filter #(.isAlive ^java.lang.ProcessHandle %) (vals @captured))]
+          (if (and (seq alive) (< (System/nanoTime) deadline))
+            (do
+              (try
+                (Thread/sleep 10)
+                (catch InterruptedException interrupted
+                  (.interrupt (Thread/currentThread))
+                  (throw interrupted)))
+              (recur))
+            (let [final-descendants (c-backend-process-descendants process)
+                  final-handles
+                  (vals
+                   (into
+                    {}
+                    (map (fn [handle]
+                           [(.pid ^java.lang.ProcessHandle handle) handle]))
+                    (concat (vals @captured) final-descendants [root])))
+                  final-alive
+                  (filter #(.isAlive ^java.lang.ProcessHandle %)
+                          final-handles)
+                  result
+                  {:kill-requested? true
+                   :captured-process-count (count @captured)
+                   :descendant-count (dec (count @captured))
+                   :alive-process-count (count final-alive)
+                   :root-alive-after-kill? (.isAlive root)
+                   :captured-process-set-reaped? (empty? final-alive)
+                   ;; ProcessHandle.descendants is only a snapshot.  It cannot
+                   ;; prove that a descendant did not reparent or fork between
+                   ;; enumeration and termination; only an OS containment
+                   ;; primitive such as a process group/job can prove that.
+                   :os-process-containment? false
+                   :whole-process-tree-reaping-proved? false}]
+              (when-not (:captured-process-set-reaped? result)
+                (c-backend-fail!
+                 "B2-DIALECT"
+                 "C backend process tree could not be reaped fail-closed"
+                 source-path target nil
+                 {:missing-fact :c-backend-process-tree-reaping
+                  :termination result}))
+              result)))))))
+
+(defn- c-backend-start-output-pump!
+  [input-stream stream-kind]
+  (let [outcome (promise)
+        thread
+        (Thread.
+         (fn []
+           (try
+             (with-open [input ^java.io.InputStream input-stream
+                         output (java.io.ByteArrayOutputStream.)]
+               (let [buffer (byte-array 8192)]
+                 (loop [byte-count 0]
+                   (let [read-count (.read input buffer)]
+                     (if (neg? read-count)
+                       (deliver outcome
+                                {:stream stream-kind
+                                 :byte-count byte-count
+                                 :text (.toString
+                                        output
+                                        (.name
+                                         java.nio.charset.StandardCharsets/UTF_8))})
+                       (let [next-count (+ byte-count read-count)]
+                         (if (> next-count c-backend-process-max-output-bytes)
+                           (deliver outcome
+                                    {:stream stream-kind
+                                     :overflow? true
+                                     :maximum-byte-count
+                                     c-backend-process-max-output-bytes
+                                     :observed-byte-count next-count})
+                           (do
+                             (.write output buffer 0 read-count)
+                             (recur next-count)))))))))
+             (catch Throwable error
+               (deliver outcome
+                        {:stream stream-kind
+                         :read-error error}))))
+         (str "gravity-c-backend-" (name stream-kind) "-pump"))]
+    (.setDaemon thread true)
+    (try
+      (.start thread)
+      (catch Throwable error
+        (try (.close ^java.io.InputStream input-stream)
+             (catch Throwable cleanup
+               (.addSuppressed ^Throwable error ^Throwable cleanup)))
+        (throw error)))
+    {:thread thread
+     :input input-stream
+     :outcome outcome
+     :stream stream-kind}))
+
+(defn- c-backend-output-pump-failure
+  [pump]
+  (when (realized? (:outcome pump))
+    (let [outcome @(:outcome pump)]
+      (when (or (:overflow? outcome) (:read-error outcome))
+        outcome))))
+
+(defn- c-backend-await-process!
+  [process pumps]
+  (let [deadline (+ (System/nanoTime)
+                    (* c-backend-process-timeout-ms 1000000))]
+    (loop []
+      (if-let [failure (some c-backend-output-pump-failure pumps)]
+        {:status :output-failure :failure failure}
+        (cond
+          (.waitFor process 10 java.util.concurrent.TimeUnit/MILLISECONDS)
+          {:status :finished}
+
+          (>= (System/nanoTime) deadline)
+          {:status :timeout}
+
+          :else
+          (recur))))))
+
+(defn- c-backend-fail-output-pump!
+  [process failure source-path target role]
+  (let [termination
+        (c-backend-terminate-process-tree! process source-path target)]
+    (if (:overflow? failure)
+      (c-backend-fail!
+       "B2-DIALECT" "C backend process output exceeded its bound"
+       source-path target nil
+       (assoc (dissoc failure :overflow?)
+              :missing-fact :bounded-c-backend-process-output
+              :role role
+              :termination termination))
+      (c-backend-fail!
+       "B2-DIALECT" "C backend process output could not be read"
+       source-path target nil
+       {:missing-fact :c-backend-process-output-read
+        :stream (:stream failure)
+        :role role
+        :cause-message (.getMessage ^Throwable (:read-error failure))
+        :termination termination}))))
+
+(defn- c-backend-finish-output-pump!
+  [pump source-path target]
+  (let [thread ^Thread (:thread pump)]
+    (.join thread 2000)
+    (when (.isAlive thread)
+      (try (.close ^java.io.InputStream (:input pump))
+           (catch Exception _ nil))
+      (.interrupt thread)
+      (.join thread 2000)
+      (when (.isAlive thread)
+        (c-backend-fail!
+         "B2-DIALECT" "C backend process output pump did not terminate"
+         source-path target nil
+         {:missing-fact :c-backend-process-output-pump-termination
+          :stream (:stream pump)})))
+    @(:outcome pump)))
+
+(defn- c-backend-clean-output-pump!
+  [pump]
+  (let [thread ^Thread (:thread pump)
+        caller (Thread/currentThread)
+        restore-interrupt? (atom (.isInterrupted caller))
+        cleanup-error (atom nil)
+        record-error!
+        (fn [error]
+          (when (instance? InterruptedException error)
+            (reset! restore-interrupt? true)
+            ;; InterruptedException clears the flag.  Keep it clear until all
+            ;; bounded cleanup steps have had a chance to run.
+            (Thread/interrupted))
+          (if-let [existing @cleanup-error]
+            (.addSuppressed ^Throwable existing ^Throwable error)
+            (reset! cleanup-error error)))]
+    ;; A pre-existing caller interrupt would make join throw immediately and
+    ;; skip containment cleanup.  Temporarily clear it, then restore it after
+    ;; close/join/interrupt/rejoin/alive verification completes.
+    (when @restore-interrupt?
+      (Thread/interrupted))
+    (try
+      (try
+        (.close ^java.io.InputStream (:input pump))
+        (catch Throwable error
+          (record-error! error)))
+      (try
+        (.join thread 2000)
+        (catch Throwable error
+          (record-error! error)))
+      (when (.isAlive thread)
+        (.interrupt thread)
+        (try
+          (.join thread 2000)
+          (catch Throwable error
+            (record-error! error))))
+      (when (.isAlive thread)
+        (record-error!
+         (ex-info
+          "C backend process output pump cleanup did not terminate"
+          {:id "B2-DIALECT"
+           :missing-fact :c-backend-process-output-pump-cleanup
+           :stream (:stream pump)})))
+      @cleanup-error
+      (finally
+        (when @restore-interrupt?
+          (.interrupt caller))))))
+
+(defn- c-backend-run-process!
+  [staging command source-path target role]
+  (let [root (:path staging)
+        builder (ProcessBuilder. ^java.util.List command)
+        _ (.directory builder (.toFile root))
+        environment (.environment builder)
+        _ (.clear environment)
+        _ (.put environment "PATH" "/usr/bin:/bin:/usr/sbin:/sbin")
+        _ (.put environment "LC_ALL" "C")
+        _ (.put environment "LANG" "C")
+        _ (.put environment "HOME" (.toString root))
+        _ (.put environment "TMPDIR" (.toString root))
+        _ (.redirectErrorStream builder false)
+        process-holder (atom nil)
+        pumps-holder (atom [])
+        primary-failure (atom nil)]
+    (try
+      (let [process (.start builder)
+            _ (reset! process-holder process)
+            _ (.close (.getOutputStream process))
+            stdout-pump (c-backend-start-output-pump!
+                         (.getInputStream process) :stdout)
+            _ (reset! pumps-holder [stdout-pump])
+            stderr-pump (c-backend-start-output-pump!
+                         (.getErrorStream process) :stderr)
+            pumps [stdout-pump stderr-pump]
+            _ (reset! pumps-holder pumps)
+            wait-result (c-backend-await-process! process pumps)]
+        (when (= :timeout (:status wait-result))
+          (let [termination
+                (c-backend-terminate-process-tree!
+                 process source-path target)]
+            (c-backend-fail!
+             "B2-DIALECT" "C backend process exceeded its timeout"
+             source-path target nil
+             {:missing-fact :c-backend-process-timeout
+              :role role
+              :timeout-ms c-backend-process-timeout-ms
+              :timed-out? true
+              :termination termination})))
+        (when (= :output-failure (:status wait-result))
+          (c-backend-fail-output-pump!
+           process (:failure wait-result) source-path target role))
+        ;; A pump can publish overflow after await's failure check but before
+        ;; waitFor observes that the pipe-closing child has exited.  Recheck
+        ;; immediately on the :finished edge and route the result through the
+        ;; same termination evidence path before the normal finisher can emit
+        ;; a diagnostic without containment evidence.
+        (when (= :finished (:status wait-result))
+          ;; The child may have exited before a finite buffered stream was
+          ;; fully drained.  Give both bounded pumps an EOF join before the
+          ;; recheck so a post-exit overflow cannot fall through to the normal
+          ;; result finisher.
+          (doseq [pump pumps]
+            (.join ^Thread (:thread pump) 2000))
+          (when-let [failure (some c-backend-output-pump-failure pumps)]
+            (c-backend-fail-output-pump!
+             process failure source-path target role)))
+        (let [descendants (c-backend-process-descendants process)]
+          (when (seq descendants)
+            (let [termination
+                  (c-backend-terminate-process-tree!
+                   process source-path target)]
+              (c-backend-fail!
+               "B2-DIALECT" "C backend process left descendants behind"
+               source-path target nil
+               {:missing-fact :c-backend-process-descendants
+                :role role
+                :termination termination}))))
+        (let [stdout (c-backend-finish-output-pump!
+                      stdout-pump source-path target)
+              stderr (c-backend-finish-output-pump!
+                      stderr-pump source-path target)
+              failure
+              (some (fn [outcome]
+                      (when (or (:overflow? outcome)
+                                (:read-error outcome))
+                        outcome))
+                    [stdout stderr])]
+          ;; Finish both pumps before diagnosing either one.  Any late outcome
+          ;; failure still passes through process termination so containment
+          ;; evidence is never omitted.
+          (when failure
+            (c-backend-fail-output-pump!
+             process failure source-path target role))
+          {:exit (.exitValue process)
+           :out (:text stdout)
+           :err (:text stderr)
+           :stdout-byte-count (:byte-count stdout)
+           :stderr-byte-count (:byte-count stderr)
+           :finished? true
+           :timed-out? false
+           :role role}))
+      (catch InterruptedException interrupted
+        (reset! primary-failure interrupted)
+        (when-let [process @process-holder]
+          (try
+            (c-backend-terminate-process-tree!
+             process source-path target)
+            (catch Throwable cleanup
+              (.addSuppressed ^Throwable interrupted ^Throwable cleanup))))
+        (.interrupt (Thread/currentThread))
+        (try
+          (c-backend-fail!
+           "B2-DIALECT" "C backend process operation was interrupted"
+           source-path target nil
+           {:missing-fact :c-backend-process-interrupted
+            :role role
+            :interrupted? true})
+          (catch clojure.lang.ExceptionInfo diagnostic
+            (reset! primary-failure diagnostic)
+            (throw diagnostic))))
+      (catch clojure.lang.ExceptionInfo ex
+        (reset! primary-failure ex)
+        (throw ex))
+      (catch Exception ex
+        (reset! primary-failure ex)
+        (try
+          (c-backend-fail!
+           "B2-DIALECT" "C backend process could not be started"
+           source-path target nil
+           {:missing-fact :c-backend-process-start
+            :role role
+            :cause-message (.getMessage ex)})
+          (catch clojure.lang.ExceptionInfo diagnostic
+            (.addSuppressed ^Throwable diagnostic ^Throwable ex)
+            (reset! primary-failure diagnostic)
+            (throw diagnostic))))
+      (finally
+        (let [cleanup-failure (atom nil)]
+          (when-let [process @process-holder]
+            (when (.isAlive process)
+              (try
+                (c-backend-terminate-process-tree!
+                 process source-path target)
+                (catch Throwable cleanup
+                  (reset! cleanup-failure cleanup)))))
+          ;; Process input/error streams are pump-owned.  Close and bounded-
+          ;; join both threads on success, timeout, overflow, interruption,
+          ;; and every diagnostic path.  A cleanup failure never replaces an
+          ;; active primary failure.
+          (doseq [pump @pumps-holder]
+            (when-let [cleanup (c-backend-clean-output-pump! pump)]
+              (if-let [existing @cleanup-failure]
+                (.addSuppressed ^Throwable existing ^Throwable cleanup)
+                (reset! cleanup-failure cleanup))))
+          (when-let [cleanup @cleanup-failure]
+            (if-let [error @primary-failure]
+              (.addSuppressed ^Throwable error ^Throwable cleanup)
+              (throw cleanup))))))))
+
+(defn- c-backend-delete-private-staging!
+  [staging source-path target]
+  (let [root (:path staging)
+        parent (:parent staging)
+        parent-stream (:parent-stream staging)
+        root-stream (:root-stream staging)
+        leaf (:leaf staging)
+        primary-failure (atom nil)
+        cleanup-failure (atom nil)
+        result (atom nil)]
+    (try
+      (when-not (and (instance? java.nio.file.SecureDirectoryStream parent-stream)
+                     (instance? java.nio.file.SecureDirectoryStream root-stream))
+        (c-backend-fail!
+         "B2-DIALECT" "C backend private process staging handles are unavailable"
+         source-path target nil
+         {:missing-fact :secure-private-process-staging-handles}))
+      (let [parent-before
+            (try
+              (let [parent-view-before
+                    (.getFileAttributeView
+                     ^java.nio.file.SecureDirectoryStream parent-stream
+                     ^java.nio.file.Path leaf
+                     java.nio.file.attribute.BasicFileAttributeView
+                     c-backend-no-follow)]
+                (.readAttributes parent-view-before))
+              (catch Exception error
+                (c-backend-fail!
+                 "B2-DIALECT"
+                 "C backend private process root cannot be rechecked"
+                 source-path target nil
+                 {:missing-fact :secure-private-process-root-reopen
+                  :cause-message (.getMessage error)})))]
+        (when-not (= (:root-file-key staging) (.fileKey parent-before))
+          (c-backend-fail!
+           "B2-DIALECT" "C backend private process root identity changed"
+           source-path target nil
+           {:missing-fact :stable-private-process-staging-cleanup-identity}))
+        (try
+          (.close ^java.io.Closeable root-stream)
+          (catch Exception error
+            (c-backend-fail!
+             "B2-DIALECT" "C backend private process root handle close failed"
+             source-path target nil
+             {:missing-fact :private-process-root-handle-close
+              :cause-message (.getMessage error)})))
+        (let [cleanup-root-stream
+              (try
+                (.newDirectoryStream
+                 ^java.nio.file.SecureDirectoryStream parent-stream
+                 leaf c-backend-no-follow)
+                (catch Exception error
+                  (c-backend-fail!
+                   "B2-DIALECT"
+                   "C backend private process root cannot be reopened securely"
+                   source-path target nil
+                   {:missing-fact :secure-private-process-root-reopen
+                    :cause-message (.getMessage error)})))]
+          (try
+            (let [cleanup-view
+                  (.getFileAttributeView
+                   ^java.nio.file.SecureDirectoryStream cleanup-root-stream
+                   java.nio.file.attribute.BasicFileAttributeView)
+                  cleanup-attributes (.readAttributes cleanup-view)
+                  paths (vec (iterator-seq
+                              (.iterator
+                               ^java.nio.file.SecureDirectoryStream
+                               cleanup-root-stream)))]
+              (when-not (= (:root-file-key staging)
+                           (.fileKey cleanup-attributes))
+                (c-backend-fail!
+                 "B2-DIALECT" "C backend private process root identity changed"
+                 source-path target nil
+                 {:missing-fact :stable-private-process-staging-cleanup-identity}))
+              (when (> (count paths) c-backend-process-max-staging-entries)
+                (c-backend-fail!
+                 "B2-DIALECT" "C backend private process staging exceeded its bound"
+                 source-path target nil
+                 {:missing-fact :bounded-private-process-staging-cleanup
+                  :maximum-entries c-backend-process-max-staging-entries
+                  :observed-entries (count paths)}))
+              (doseq [path (sort-by #(.getNameCount ^java.nio.file.Path %) > paths)]
+                (let [entry (.getFileName ^java.nio.file.Path path)
+                      view
+                      (.getFileAttributeView
+                       ^java.nio.file.SecureDirectoryStream cleanup-root-stream
+                       ^java.nio.file.Path entry
+                       java.nio.file.attribute.BasicFileAttributeView
+                       c-backend-no-follow)
+                      attributes (.readAttributes view)]
+                  (when-not (.isRegularFile attributes)
+                    (c-backend-fail!
+                     "B2-DIALECT"
+                     "C backend private process staging contains non-file residue"
+                     source-path target nil
+                     {:missing-fact :nofollow-private-process-staging-cleanup
+                      :path (.toString ^java.nio.file.Path path)}))
+                  (try
+                    (.deleteFile ^java.nio.file.SecureDirectoryStream
+                                 cleanup-root-stream entry)
+                    (catch Exception error
+                      (c-backend-fail!
+                       "B2-DIALECT"
+                       "C backend private process staging cleanup failed"
+                       source-path target nil
+                       {:missing-fact :private-process-staging-delete
+                        :path (.toString ^java.nio.file.Path path)
+                        :cause-message (.getMessage error)}))))))
+            (finally
+              (.close ^java.io.Closeable cleanup-root-stream)))))
+      (let [recheck-root
+            (try
+              (.newDirectoryStream
+               ^java.nio.file.SecureDirectoryStream parent-stream
+               leaf c-backend-no-follow)
+              (catch Exception error
+                (c-backend-fail!
+                 "B2-DIALECT" "C backend private process root cannot be rechecked"
+                 source-path target nil
+                 {:missing-fact :private-process-root-recheck
+                  :cause-message (.getMessage error)})))]
+        (try
+          (let [recheck-view
+                (.getFileAttributeView
+                 ^java.nio.file.SecureDirectoryStream recheck-root
+                 java.nio.file.attribute.BasicFileAttributeView)
+                recheck-attributes (.readAttributes recheck-view)
+                remaining (vec (iterator-seq (.iterator recheck-root)))]
+            (when-not (and (.isDirectory recheck-attributes)
+                           (= (:root-file-key staging)
+                              (.fileKey recheck-attributes))
+                           (empty? remaining))
+              (c-backend-fail!
+               "B2-DIALECT" "C backend private process staging left residue"
+               source-path target nil
+               {:missing-fact :private-process-staging-residue
+                :path (.toString root)
+                :remaining-entries (mapv str remaining)})))
+          (finally
+            (.close ^java.io.Closeable recheck-root))))
+      (let [parent-view
+            (.getFileAttributeView
+             ^java.nio.file.SecureDirectoryStream parent-stream
+             ^java.nio.file.Path leaf
+             java.nio.file.attribute.BasicFileAttributeView
+             c-backend-no-follow)
+            parent-entry (.readAttributes parent-view)]
+        (when-not (and (.isDirectory parent-entry)
+                       (not (.isSymbolicLink parent-entry))
+                       (= (:root-file-key staging) (.fileKey parent-entry)))
+          (c-backend-fail!
+           "B2-DIALECT" "C backend private process root identity changed"
+           source-path target nil
+           {:missing-fact :stable-private-process-staging-cleanup-identity}))
+        (try
+          (.deleteDirectory ^java.nio.file.SecureDirectoryStream
+                            parent-stream leaf)
+          (catch Exception error
+            (c-backend-fail!
+             "B2-DIALECT" "C backend private process root cleanup failed"
+             source-path target nil
+             {:missing-fact :private-process-root-delete
+              :cause-message (.getMessage error)})))
+        (when (java.nio.file.Files/exists root c-backend-no-follow)
+          (c-backend-fail!
+           "B2-DIALECT" "C backend private process staging left residue"
+           source-path target nil
+           {:missing-fact :private-process-staging-residue
+            :path (.toString root)})))
+      (reset! result
+              {:status :complete
+               :cleanup-complete? true
+               :residue-possible? false
+               :root-removed? true
+               :directory (.toString root)
+               :parent-file-key-hash
+               (str "sha256:" (sha256-hex (str (:parent-file-key staging))))
+               :root-file-key-hash
+               (str "sha256:" (sha256-hex (str (:root-file-key staging))))})
+      (catch Throwable error
+        (reset! primary-failure error))
+      (finally
+        (doseq [stream [root-stream parent-stream]]
+          (when stream
+            (try
+              (.close ^java.io.Closeable stream)
+              (catch Throwable error
+                (let [wrapped
+                      (ex-info
+                       "C backend private process staging handle close failed"
+                       {:id "B2-DIALECT"
+                        :message "C backend private process staging handle close failed"
+                        :bootstrap-stage :stage0
+                        :backend :c
+                        :target target
+                        :source-path source-path
+                        :missing-fact :private-process-staging-handle-close}
+                       error)]
+                  (if-let [primary @primary-failure]
+                    (.addSuppressed ^Throwable primary ^Throwable wrapped)
+                    (if-let [existing @cleanup-failure]
+                      (.addSuppressed ^Throwable existing ^Throwable wrapped)
+                      (reset! cleanup-failure wrapped))))))))))
+    (when-let [error @primary-failure]
+      (throw ^Throwable error))
+    (when-let [error @cleanup-failure]
+      (throw ^Throwable error))
+    @result))
+
 (defn c-backend-run-cc!
   ([c-source-path executable-path source-path target]
    (c-backend-run-cc! c-source-path executable-path source-path target false))
   ([c-source-path executable-path source-path target execute?]
-  (let [stdout-file (java.io.File/createTempFile "gravity-c-cc-stdout-" ".txt")
-        stderr-file (java.io.File/createTempFile "gravity-c-cc-stderr-" ".txt")
-        pb (ProcessBuilder.
-            ^java.util.List
-            ["/usr/bin/cc" "-std=c11" "-Wall" "-Werror"
-             (str c-source-path) "-o" (str executable-path)])]
-    (try
-      (.redirectOutput pb stdout-file)
-      (.redirectError pb stderr-file)
-      (let [process (.start pb)]
-        (.waitFor process 60000 java.util.concurrent.TimeUnit/MILLISECONDS)
-        (let [result {:exit (.exitValue process)
-                      :out (if (.exists stdout-file) (slurp stdout-file) "")
-                      :err (if (.exists stderr-file) (slurp stderr-file) "")}]
-          (when-not (zero? (:exit result))
-            (c-backend-fail! "B2-DIALECT"
-                             "host C compiler rejected generated C11 source"
-                             source-path target nil
-                             {:compiler "/usr/bin/cc"
-                              :compile-result result
-                              :missing-fact :c11-compiler-acceptance}))
-          ;; The compiler process itself normally writes no stdout.  Runtime-
-          ;; derived lowering opts into executing the emitted program here so
-          ;; callers can compare its result with the stage2 runtime record.
-          (if-not execute?
-            result
-            (let [run-stdout-file
-                (java.io.File/createTempFile
-                 "gravity-c-runtime-stdout-" ".txt")
-                run-stderr-file
-                (java.io.File/createTempFile
-                 "gravity-c-runtime-stderr-" ".txt")
-                run-pb (ProcessBuilder. [(str executable-path)])]
-            (try
-              (.redirectOutput run-pb run-stdout-file)
-              (.redirectError run-pb run-stderr-file)
-              (let [run-process (.start run-pb)]
-                (.waitFor run-process 60000
-                          java.util.concurrent.TimeUnit/MILLISECONDS)
-                (let [run-result {:exit (.exitValue run-process)
-                                  :out (if (.exists run-stdout-file)
-                                         (slurp run-stdout-file)
-                                         "")
-                                  :err (if (.exists run-stderr-file)
-                                         (slurp run-stderr-file)
-                                         "")}]
-                  (when-not (zero? (:exit run-result))
-                    (c-backend-fail!
-                     "B2-DIALECT"
-                     "generated C executable failed at runtime"
-                     source-path target nil
-                     {:compiler "/usr/bin/cc"
-                      :runtime-result run-result
-                      :missing-fact :c-runtime-execution}))
-                  (assoc result
-                         :compile-out (:out result)
-                         :compile-err (:err result)
-                         :runtime-out (:out run-result)
-                         :runtime-err (:err run-result)
-                         :runtime-exit (:exit run-result))))
-              (finally
-                (.delete run-stdout-file)
-                (.delete run-stderr-file)))))))
-      (catch clojure.lang.ExceptionInfo ex
-        (throw ex))
-      (catch Exception ex
-        (c-backend-fail! "B2-DIALECT"
-                         "host C compiler is unavailable"
-                         source-path target nil
-                         {:compiler "/usr/bin/cc"
-                          :cause-message (.getMessage ex)
-                          :missing-fact :c11-compiler}))
-      (finally
-        (.delete stdout-file)
-        (.delete stderr-file))))))
+   (let [c-source-command-path
+         (.getAbsolutePath (java.io.File. (str c-source-path)))
+         executable-command-path
+         (.getAbsolutePath (java.io.File. (str executable-path)))
+         staging (c-backend-private-staging-directory! source-path target)
+         primary-failure (atom nil)
+         cleanup-failure (atom nil)
+         compile-result (atom nil)
+         runtime-result (atom nil)]
+     (try
+       (reset! compile-result
+               (c-backend-run-process!
+                staging
+                ["/usr/bin/cc" "-std=c11" "-Wall" "-Werror"
+                 c-source-command-path "-o" executable-command-path]
+                source-path target :compile))
+       (let [result @compile-result]
+         (when-not (zero? (:exit result))
+           (c-backend-fail! "B2-DIALECT"
+                            "host C compiler rejected generated C11 source"
+                            source-path target nil
+                            {:compiler "/usr/bin/cc"
+                             :compile-result result
+                             :missing-fact :c11-compiler-acceptance})))
+       (when execute?
+         (reset! runtime-result
+                (c-backend-run-process!
+                 staging [executable-command-path]
+                 source-path target :runtime))
+         (let [result @runtime-result]
+           (when-not (zero? (:exit result))
+             (c-backend-fail!
+              "B2-DIALECT"
+              "generated C executable failed at runtime"
+              source-path target nil
+              {:compiler "/usr/bin/cc"
+               :runtime-result result
+               :missing-fact :c-runtime-execution}))))
+       (cond-> @compile-result
+         execute?
+         (assoc :compile-out (:out @compile-result)
+                :compile-err (:err @compile-result)
+                :runtime-out (:out @runtime-result)
+                :runtime-err (:err @runtime-result)
+                :runtime-exit (:exit @runtime-result)))
+       (catch clojure.lang.ExceptionInfo ex
+         (reset! primary-failure ex)
+         (throw ex))
+       (catch InterruptedException interrupted
+         (reset! primary-failure interrupted)
+         (.interrupt (Thread/currentThread))
+         (throw interrupted))
+       (catch Exception ex
+         (reset! primary-failure ex)
+         (c-backend-fail! "B2-DIALECT"
+                          "host C compiler is unavailable"
+                          source-path target nil
+                          {:compiler "/usr/bin/cc"
+                           :cause-message (.getMessage ex)
+                           :missing-fact :c11-compiler}))
+       (finally
+         (try
+           (c-backend-delete-private-staging!
+            staging source-path target)
+           (catch Throwable cleanup
+             (reset! cleanup-failure cleanup)
+             (when-let [error @primary-failure]
+               (.addSuppressed ^Throwable error ^Throwable cleanup))))))
+     (when-let [error @cleanup-failure]
+       (when-not @primary-failure
+         (throw ^Throwable error)))
+     (if-let [error @primary-failure]
+       (throw ^Throwable error)
+       (cond-> @compile-result
+         execute?
+         (assoc :compile-out (:out @compile-result)
+                :compile-err (:err @compile-result)
+                :runtime-out (:out @runtime-result)
+                :runtime-err (:err @runtime-result)
+                :runtime-exit (:exit @runtime-result)))))))
 
 (defn c-backend-source-artifact
   "Lower a source unit through the genuine stage0 plan into a C artifact.
@@ -165196,6 +165966,136 @@
   [args]
   (:output-path (p18-t04-parse-compile-request args)))
 
+(defn p18-t04-parse-run-request
+  "Parse the public run command while keeping native execution opt-in.
+
+  The historical `run <source>` form deliberately returns a request that the
+  existing Clojure-hosted `run-file` path can consume.  The only additional
+  form is the explicit pair `--target c --lowering runtime-derived`; option
+  order is flexible, but output paths and every other option are rejected
+  before the source is read or lowered."
+  [args]
+  (let [[command source-path & options] (vec args)]
+    (when-not (= "run" command)
+      (p18-t04-fail!
+       "P18T04002"
+       {:source "bin/gravity"
+        :command args
+        :missing-fields [:run-command]}))
+    (when-not (and (string? source-path)
+                   (not (str/blank? source-path)))
+      (p18-t04-fail!
+       "P18T04002"
+       {:source "bin/gravity"
+        :command args
+        :missing-fields [:source-path]}))
+    (loop [remaining (vec options)
+           target-argument nil
+           lowering-argument nil]
+      (if (empty? remaining)
+        (let [target-requested? (some? target-argument)
+              lowering-requested? (some? lowering-argument)
+              native-requested?
+              (and target-requested? lowering-requested?)]
+          (when (or (and target-requested?
+                         (not= "c" target-argument))
+                    (and lowering-requested?
+                         (not= "runtime-derived" lowering-argument)))
+            (p18-t04-fail!
+             "P18T04002"
+             {:source source-path
+              :command args
+              :target target-argument
+              :lowering-mode lowering-argument
+              :missing-fields [:exact-runtime-derived-c-run-options]
+              :remediation
+              "Use exactly --target c --lowering runtime-derived."}))
+          (when (not= target-requested? lowering-requested?)
+            (p18-t04-fail!
+             "P18T04002"
+             {:source source-path
+              :command args
+              :target target-argument
+              :lowering-mode lowering-argument
+              :missing-fields
+              (if target-requested?
+                [:lowering-mode]
+                [:target])
+              :remediation
+              "The native run route requires both --target c and --lowering runtime-derived."}))
+          {:command command
+           :source-path source-path
+           :source-extension (gravity-source-extension source-path)
+           :source-kind (gravity-source-kind source-path)
+           :target (when native-requested? :c)
+           :target-argument target-argument
+           :target-requested? target-requested?
+           :lowering-mode (when native-requested? :runtime-derived)
+           :lowering-argument lowering-argument
+           :lowering-requested? lowering-requested?
+           :runtime-derived-requested? native-requested?
+           :output-option nil
+           :output-path nil})
+        (let [option (first remaining)
+              rest-options (subvec remaining 1)]
+          (cond
+            (= "--target" option)
+            (do
+              (when (or (empty? rest-options) (some? target-argument))
+                (p18-t04-fail!
+                 "P18T04002"
+                 {:source source-path
+                  :command args
+                  :option option
+                  :missing-fields
+                  (if (empty? rest-options)
+                    [:target]
+                    [:duplicate-target-option])}))
+              (let [candidate (first rest-options)]
+                (when-not (string? candidate)
+                  (p18-t04-fail!
+                   "P18T04002"
+                   {:source source-path
+                    :command args
+                    :option option
+                    :missing-fields [:target]}))
+                (recur (subvec rest-options 1)
+                       candidate lowering-argument)))
+
+            (= "--lowering" option)
+            (do
+              (when (or (empty? rest-options) (some? lowering-argument))
+                (p18-t04-fail!
+                 "P18T04002"
+                 {:source source-path
+                  :command args
+                  :option option
+                  :missing-fields
+                  (if (empty? rest-options)
+                    [:lowering-mode]
+                    [:duplicate-lowering-option])}))
+              (let [candidate (first rest-options)]
+                (when-not (string? candidate)
+                  (p18-t04-fail!
+                   "P18T04002"
+                   {:source source-path
+                    :command args
+                    :option option
+                    :missing-fields [:lowering-mode]}))
+                (recur (subvec rest-options 1)
+                       target-argument candidate)))
+
+            :else
+            (p18-t04-fail!
+             "P18T04002"
+             {:source source-path
+              :command args
+              :unsupported-option option
+              :expected-forms
+              [["run" "<file.qst|file.gravity>"]
+               ["run" "<file.qst|file.gravity>"
+                "--target" "c" "--lowering" "runtime-derived"]]})))))))
+
 (def p18-t04-verified-mir-c-maximum-source-bytes (* 1024 1024))
 
 (def p18-t04-experimental-verified-mir-c-route-policy
@@ -166449,6 +167349,255 @@
              :public-current-source? true
              :lowering-mode lowering-mode
              :lowering-requested? (some? lowering-mode))))))
+
+(defn- p18-t04-run-private-directory!
+  [source-path]
+  (try
+    (c-backend-private-staging-directory! source-path :c)
+    (catch clojure.lang.ExceptionInfo ex
+      (throw ex))
+    (catch Exception ex
+      (p18-t04-fail!
+       "P18T04002"
+       {:source source-path
+        :missing-fields [:private-runtime-directory]
+        :cause-message (.getMessage ex)
+        :missing-fact :private-runtime-directory}))))
+
+(defn- p18-t04-run-delete-private-tree!
+  [directory source-path]
+  (when directory
+    (let [cleanup
+          (c-backend-delete-private-staging! directory source-path :c)]
+      (assoc cleanup
+             :fail-closed? true
+             :directory (.toString ^java.nio.file.Path (:path directory))))))
+
+(defn p18-t04-run-runtime-derived-c-file!
+  "Execute one explicitly requested source unit through the real C runtime.
+
+  Compilation and execution happen in a private temporary directory.  The
+  returned record distinguishes the native application runtime from the
+  still-bootstrap-hosted compiler, verifier, comparison, and process/IO
+  boundaries.  The default `run <source>` command never calls this function."
+  [request]
+  (when-not
+   (and (map? request)
+        (= "run" (:command request))
+        (string? (:source-path request))
+        (= :c (:target request))
+        (= "c" (:target-argument request))
+        (= :runtime-derived (:lowering-mode request))
+        (= "runtime-derived" (:lowering-argument request))
+        (true? (:target-requested? request))
+        (true? (:lowering-requested? request))
+        (true? (:runtime-derived-requested? request))
+        (nil? (:output-path request)))
+    (p18-t04-fail!
+     "P18T04002"
+     {:source (or (:source-path request) "bin/gravity")
+      :request request
+      :missing-fields [:exact-runtime-derived-c-run-request]
+      :remediation
+      "Use p18-t04-parse-run-request on run <source> --target c --lowering runtime-derived."}))
+  ;; Java's ProcessBuilder cannot execute descriptor-relative to the retained
+  ;; SecureDirectoryStream, and ProcessHandle does not establish an OS process
+  ;; group/job.  Do not perform source I/O, staging, compilation, or native
+  ;; execution until both path identity and whole-tree containment are backed
+  ;; by OS primitives.
+  (p18-t04-fail!
+   "P18T04002"
+   {:source (:source-path request)
+    :request (select-keys request
+                          [:source-path :source-extension :source-kind
+                           :target :target-argument
+                           :lowering-mode :lowering-argument])
+    :missing-fields [:descriptor-relative-native-execution
+                     :os-process-tree-containment]
+    :missing-fact :contained-public-native-run
+    :native-executable-run? false
+    :clojure-seed-boundary? true
+    :self-hosted? false
+    :public-release? false
+    :seedless-release? false
+    :remediation
+    "Provide an OS-contained native launcher with descriptor-relative execution before enabling this route."})
+  (let [source-path (:source-path request)
+        directory (p18-t04-run-private-directory! source-path)
+        output-path (str (.toString ^java.nio.file.Path (:path directory))
+                        "/program")
+        primary-failure (atom nil)
+        cleanup-failure (atom nil)
+        cleanup-record (atom nil)
+        result (atom nil)]
+    (try
+      (try
+        (let [artifact
+              (p18-t04-compile-c-target-file!
+               source-path output-path :c :runtime-derived)
+              executable (java.io.File. output-path)
+              stdout (:compiled-execution-output artifact)
+              source-record (:source artifact)
+              target-record (:target artifact)
+              emitted-files (:emitted-files artifact)]
+          (when-not (and (true? (:compiled-executable? artifact))
+                         (.isFile executable)
+                         (.canExecute executable)
+                         (= :c (:target target-record))
+                         (= :runtime-derived
+                            (:lowering-mode target-record))
+                         (string? stdout)
+                         (= stdout (:stdout artifact)))
+            (p18-t04-fail!
+             "P18T04002"
+             {:source source-path
+              :target target-record
+              :missing-fields [:real-compiled-executable-execution]
+              :missing-fact :compiled-executable-execution-result}))
+          (when-not (and (map? source-record)
+                         (= source-path (:path source-record))
+                         (= (gravity-source-extension source-path)
+                            (:extension source-record))
+                         (= (gravity-source-kind source-path)
+                            (:kind source-record)))
+            (p18-t04-fail!
+             "P18T04002"
+             {:source source-path
+              :observed-source source-record
+              :missing-fields [:actual-source-path-extension-provenance]
+              :missing-fact :source-path-extension-provenance}))
+          (reset!
+           result
+           {:artifact :gravity/p18-t04-runtime-derived-c-application-execution
+            :schema-version 1
+            :task "P18-T04"
+            :status :complete
+            :command (:command request)
+            :request (select-keys request
+                                  [:source-path :source-extension :source-kind
+                                   :target :target-argument
+                                   :lowering-mode :lowering-argument])
+            :source source-record
+            :target {:backend :c
+                     :target :c
+                     :lowering-mode :runtime-derived
+                     :runtime :hosted-libc-stdout}
+            :stdout stdout
+            :execution-result
+            {:source :compiled-executable
+             :exit-code 0
+             :stdout stdout
+             :stdout-hash (str "sha256:" (sha256-hex stdout))
+             :stderr :not-retained
+             :compiled-executable? true}
+            :application-runtime
+            {:component :native-compiled-c-executable
+             :execution-source :p18-t04-compile-c-target-file!
+             :compiled-executable? true
+             :native-executable-run? true
+             :clojure-seed-boundary? false
+             :self-hosted? false
+             :evidence
+             {:executable-path output-path
+              :artifact-kind (:kind artifact)
+              :compiled-execution-output-field :compiled-execution-output
+              :observed-stdout-hash (str "sha256:" (sha256-hex stdout))}}
+            :seed-boundary
+            {:application-runtime
+             {:clojure-seed-boundary? false
+              :self-hosted? false
+              :evidence :compiled-executable-output}
+             :compiler
+             {:owner :clojure-bootstrap
+              :clojure-seed-boundary? true
+              :self-hosted? false}
+             :verifier
+             {:owner :clojure-bootstrap
+              :clojure-seed-boundary? true
+              :self-hosted? false}
+             :comparison
+             {:owner :clojure-bootstrap
+              :authoritative? false
+              :clojure-seed-boundary? true
+              :self-hosted? false}
+             :process-file-io
+             {:owner :clojure-bootstrap
+              :role :temporary-staging-and-process-launch
+              :clojure-seed-boundary? true
+              :self-hosted? false}
+             :public-command
+             {:owner :clojure-bootstrap
+              :clojure-seed-boundary? true
+              :self-hosted? false
+              :public-release? false}}
+            :runtime-gravity-source
+            {:artifact-source (:runtime-artifact-source artifact)
+             :artifact-source-path (:runtime-artifact-source-path artifact)
+             :rule-source (:runtime-rule-source artifact)
+             :rule-source-path (:runtime-rule-source-path artifact)}
+            :provenance
+            {:backend (:provenance artifact)
+             :actual-paths (get-in artifact [:provenance :actual-paths])
+             :source source-record
+             :runtime-gravity-source
+             {:artifact-source-path (:runtime-artifact-source-path artifact)
+              :rule-source-path (:runtime-rule-source-path artifact)}}
+            :temporary-artifacts
+            {:root (.toString ^java.nio.file.Path (:path directory))
+             :executable output-path
+             :emitted-files emitted-files
+             :retention :ephemeral
+             :cleanup :pending}
+            :diagnostics []
+            :native-executable-run? true
+            :clojure-seed-boundary? true
+            :self-hosted? false
+            :public-release? false
+            :seedless-release? false}))
+        (catch clojure.lang.ExceptionInfo error
+          (let [facts (ex-data error)
+                enriched
+                (if (or (:source-path facts)
+                        (:source facts)
+                        (get-in facts [:source :path]))
+                  error
+                  (ex-info
+                   (.getMessage error)
+                   (assoc facts
+                          :source-path source-path
+                          :source
+                          {:path source-path
+                           :extension (gravity-source-extension source-path)
+                           :kind (gravity-source-kind source-path)})
+                   error))]
+            (reset! primary-failure enriched)))
+        (catch Throwable error
+          (reset! primary-failure error)))
+      (try
+        (reset! cleanup-record
+                (p18-t04-run-delete-private-tree!
+                 directory source-path))
+        (catch Throwable cleanup
+          (reset! cleanup-failure cleanup)
+          (when-let [error @primary-failure]
+            (.addSuppressed ^Throwable error ^Throwable cleanup))))
+      (when-let [error @primary-failure]
+        (throw ^Throwable error))
+      (when-let [error @cleanup-failure]
+        (throw ^Throwable error))
+      (when-not @result
+        (p18-t04-fail!
+         "P18T04002"
+         {:source source-path
+          :missing-fields [:runtime-derived-c-run-record]
+          :missing-fact :runtime-derived-c-run-record}))
+      (assoc @result :temporary-artifacts
+             (assoc (:temporary-artifacts @result)
+                    :cleanup @cleanup-record
+                    :root-removed? (true? (:root-removed? @cleanup-record))))
+      (catch Throwable error
+        (reset! primary-failure error)
+        (throw error)))))
 
 (defn p18-t04-compile-js-ts-target-file!
   "Compile a current source unit to the bounded Node 20 ES2022 ESM target.
@@ -170641,7 +171790,11 @@
                                    (prn (compile-file path))))))
 	        "check" (let [artifact (check-file-artifact path)]
 	                  (println "gravity stage0 check passed:" (check-artifact-module-name artifact)))
-        "run" (print (run-file path))
+        "run" (let [request (p18-t04-parse-run-request args)]
+                 (if (:runtime-derived-requested? request)
+                   (print (:stdout
+                           (p18-t04-run-runtime-derived-c-file! request)))
+                   (print (run-file path))))
         "run-compiled" (print (run-compiled-file path))
         (do
 	          (binding [*out* *err*]

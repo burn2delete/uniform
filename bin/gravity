@@ -18,13 +18,17 @@ packaged_cli_selected() {
   [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && -f "${PACKAGED_JAR}" ]]
 }
 
-current_source_compile_requested() {
-  [[ "${1:-}" == "compile" ]] || return 1
+current_source_targeted_command_requested() {
+  case "${1:-}" in
+    compile|run) ;;
+    *) return 1 ;;
+  esac
   shift
   for argument in "$@"; do
     # Explicit target or lowering requests must use the current source
     # compiler path.  The packaged JVM CLI may be stale and must not silently
-    # consume the opt-in runtime-derived lowering flag.
+    # consume an opt-in target/lowering flag.  This also sends malformed
+    # targeted run requests to the current fail-closed parser.
     case "${argument}" in
       --target|--lowering|--target=*|--lowering=*) return 0 ;;
     esac
@@ -134,6 +138,7 @@ Usage:
   gravity check <file.qst|file.gravity>
   gravity sh07-core <file.qst|file.gravity>
   gravity run <file.qst|file.gravity>
+  gravity run <file.gravity|file.qst> --target c --lowering runtime-derived
   gravity compile <file.qst|file.gravity>
   gravity compile <file.qst|file.gravity> -o <executable>
   gravity compile <file.qst|file.gravity> --target c -o <executable>
@@ -146,6 +151,7 @@ Metadata:
   :bootstrap-hosted? true
   :packaged-jvm-cli? ${packaged}
   :seedless-release? false
+  bounded runtime-derived run route: bootstrap-hosted and non-seedless; argv is forwarded unchanged
   :delegates-to "${delegate}"
   :experimental-verified-mir-c-route "implementation present; public exposure disabled pending feature-specific GOV4, GOV9, and GOV7 records; exact requests reject before source-file I/O, output-filesystem I/O, native calls, tool execution, or publication"
 
@@ -221,7 +227,7 @@ case "${1:-}" in
     ;;
 esac
 
-if packaged_cli_selected && { [[ "${1:-}" == "sh07-core" ]] || current_source_compile_requested "$@"; }; then
+if packaged_cli_selected && { [[ "${1:-}" == "sh07-core" ]] || current_source_targeted_command_requested "$@"; }; then
   if ! command -v clojure >/dev/null 2>&1; then
     missing_clojure_diagnostic
     exit 1

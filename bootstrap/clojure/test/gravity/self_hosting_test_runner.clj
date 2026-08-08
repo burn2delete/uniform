@@ -11,7 +11,9 @@
 (def ^:private base-test-namespaces
   '[gravity.diagnostics-test
     gravity.cli-test
-    gravity.bootstrap-test])
+    gravity.bootstrap-test
+    gravity.p15-public-native-run-test
+    gravity.p15-public-native-run-wrapper-test])
 
 (def ^:private explicitly-selectable-test-namespaces
   '#{gravity.darwin-publication-test})

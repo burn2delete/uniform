@@ -33,7 +33,8 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Repair the pinned Gravity runtime module's allocation, failure, effect, capability, and provider contract, then extend checked-core admission to `str` and `println` only after the C8/R11 gates pass.
 - [completed] Consume only the resulting verified checked-core artifact in a pinned Gravity-authored C11 MIR builder, preserving real operands/results/CFG/definitions/uses and recomputing verifier facts.
 - [completed] Consume only that verified MIR in a bounded internal executable LLVM slice through the pinned ARM64 macOS target and real Clang execution, with standalone accepted/rejected co-canonical fixtures and fail-closed publication.
-- [pending] Build the first Gravity-authored executable driver/runtime that the tracked public `bin/gravity` path invokes, then retire only the public component boundary it actually replaces.
+- [completed] Add and independently review an explicit public native-run admission boundary; keep it fail-closed before source or staging I/O because the current Java host cannot prove descriptor-relative executable selection or OS-level process-tree containment.
+- [pending] Build an OS-contained, descriptor-relative Gravity-authored executable driver/runtime that the tracked public `bin/gravity` path invokes, then retire only the public component boundary it actually replaces.
 
 ## Baseline snapshot (2026-08-08)
 
@@ -70,10 +71,10 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 
 ## Active slice
 
-- Owner: master coordinator; the current patch is restricted to standalone fixtures, their focused gate wiring, and seed-boundary accounting.
-- Completed proof: authenticated C11 MIR reaches a pinned Gravity-authored B3 lowering for exactly one closed scalar/control-flow subset. Independent reconstruction preserves the C13/C14/B1 pass, fact, proof, target, ABI, source-map, and provenance closure; Apple Clang emits an ARM64 Mach-O executable that runs with the expected exit code. Unsupported MIR, declared-target leakage, evidence tampering, hostile output paths, and failed publication reject with stable diagnostics before toolchain execution or final publication.
-- Honest boundary: the LLVM slice is internal, bounded, and Clojure-seed-bound. Clojure still reconstructs and verifies the Gravity rules and owns process/file I/O and publication; Apple Clang/linker and the Darwin runtime remain trusted. The slice has no public-target, release, full-B3, whole-language, or self-hosting credit. Formal-language completion remains 0/240.
-- Next gate: produce a Gravity-authored executable driver/runtime that consumes a source-bound artifact and is actually invoked by tracked `bin/gravity`; prove an accepted public execution and a stable rejected diagnostic without a Clojure invocation in the selected component. Replays, manifests, source models, and Clojure-hosted comparisons cannot satisfy this gate.
+- Owner: master coordinator; the current patch is restricted to the explicit public native-run admission boundary, its process/workspace safety support, focused tests, wrapper routing, and seed-boundary accounting.
+- Completed proof: tracked `bin/gravity run <source> --target c --lowering runtime-derived` bypasses a stale packaged JAR and reaches the current source boundary, which rejects with stable `P18T04002` / `:contained-public-native-run` before source reads, staging, compilation, or native execution. Focused parser, wrapper, timeout, captured-process termination, interrupt, secure-workspace, symlink, replacement, and partial-initialization tests pass. Process evidence no longer claims whole-tree reaping from a `ProcessHandle.descendants` snapshot.
+- Honest boundary: no public seed boundary was reduced. The rejected route records `:clojure-seed-boundary? true`, `:native-executable-run? false`, `:self-hosted? false`, and `:seedless-release? false`. Java does not provide the descriptor-relative execution and OS process containment required to enable this route safely. Formal-language completion remains 0/240.
+- Next gate: provide an OS-contained launcher that executes a descriptor-bound Gravity-authored driver/runtime and contains its complete process tree; then prove accepted `.gravity` and `.qst` execution plus stable rejection through tracked `bin/gravity` without a Clojure evaluator in the selected runtime component. Replays, manifests, source models, Clojure-hosted comparisons, and the currently disabled route cannot satisfy this gate.
 
 ## Completion gates
 
