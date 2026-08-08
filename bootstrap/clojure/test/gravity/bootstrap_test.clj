@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
             [gravity.c6-core-lowering :as c6]
+            [gravity.c7-type-checker :as c7]
             [gravity.cli-test]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.diagnostics-test]
@@ -15206,6 +15207,43 @@
     (is (= :stable (:invalidation-status conformance)))
     (is (= :complete (:status conformance)))))
 
+(deftest c7-type-checker-compatibility-wrappers-preserve-interposition
+  (is (= '([node]) (:arglists (meta #'bootstrap/c7-node-type))))
+  (is (= '([source-path source-text])
+         (:arglists (meta #'bootstrap/compiler-c7-type-source-artifact))))
+  (is (= '([path])
+         (:arglists (meta #'bootstrap/compiler-c7-type-file-artifact))))
+  (is (= "CheckedCast[String]"
+         (with-redefs [bootstrap/c7-node-operator
+                       (constantly 'dynamic/cast)]
+           (bootstrap/c7-node-type
+            {:form :call :children {:operator 'dynamic/value}}))))
+  (let [bindings (atom 0)
+        with-operations c7/with-operations]
+    (with-redefs [c7/with-operations
+                  (fn [operations thunk]
+                    (swap! bindings inc)
+                    (with-operations operations thunk))]
+      (bootstrap/compiler-c7-type-file-artifact
+       (fixture "accepted/compiler-c7-type-checker.gravity")))
+    (is (= 1 @bindings)))
+  (let [artifact
+        (with-redefs [bootstrap/c7-type-diagnostic-ids ["C7-SENTINEL"]
+                      bootstrap/c7-type-rejected-designs
+                      [{:diagnostic "C7-SENTINEL"}]
+                      bootstrap/c7-type-governing-document
+                      "docs/c7-sentinel.md"]
+          (bootstrap/compiler-c7-type-file-artifact
+           (fixture "accepted/compiler-c7-type-checker.gravity")))]
+    (is (= "docs/c7-sentinel.md" (:governing-document artifact)))
+    (is (= ["C7-SENTINEL"]
+           (get-in artifact [:c7-type-check-results
+                             :required-diagnostic-ids])))
+    (is (= #{"C7-SENTINEL"}
+           (set (map :diagnostic
+                     (get-in artifact [:type-diagnostics :diagnostics]))))))
+  (is (= (:public-api (c7/c7-engine-contract)) c7/public-api)))
+
 (deftest c7-type-checker-artifact-preserves-p06-d086-contract
   (let [artifact (bootstrap/compiler-c7-type-file-artifact
                   (fixture "accepted/compiler-c7-type-checker.gravity"))
@@ -15225,6 +15263,8 @@
                               (get-in artifact
                                       [:type-diagnostics :diagnostics])))]
     (is (= :gravity/stage0-c7-type-checker-artifact (:kind artifact)))
+    (is (= "sha256:79efb7c627a24124eb9d0bc726ba047532c4e2b3bfa288c03926017245afd2fd"
+           (:artifact-id artifact)))
     (is (= "P06-D086" (:task artifact)))
     (is (= ["C7"] (:document-set artifact)))
     (is (= bootstrap/c7-type-governing-document
@@ -15233,6 +15273,15 @@
            (get-in artifact [:c6-core-lowering-artifact :kind])))
     (is (= :gravity/typed-core (:artifact typed-core)))
     (is (= :complete (:status typed-core)))
+    (is (= 76 (count (:type-facts artifact))))
+    (is (= 76 (count (:constraints constraints))))
+    (is (= 2 (count (:functions functions))))
+    (is (= 1 (count (:records dynamic))))
+    (is (= 1 (count (:records casts))))
+    (is (= 1 (count (:records generic))))
+    (is (= 1 (count (:records dispatch))))
+    (is (= 1 (count (:records schema))))
+    (is (= 76 (count (:records layout))))
     (is (seq (:type-facts artifact)))
     (is (= (count (:type-facts artifact))
            (count (:types environment))))

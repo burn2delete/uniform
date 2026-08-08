@@ -12,8 +12,9 @@
             [clojure.walk :as walk]
             [gravity.c2-pass-cache :as c2-pass-cache]
             [gravity.cli :as cli]
-            [gravity.c6-core-lowering :as c6]
             [gravity.c5-name-resolution :as c5]
+            [gravity.c6-core-lowering :as c6]
+            [gravity.c7-type-checker :as c7]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
@@ -2210,583 +2211,174 @@
   [path]
   (compiler-c6-lowering-source-artifact path (slurp path)))
 
-(def c7-type-diagnostic-ids
-  ["C7-TYPE-MISMATCH"
-   "C7-ANNOTATION"
-   "C7-DYNAMIC"
-   "C7-CAST"
-   "C7-NULLABILITY"
-   "C7-GENERIC"
-   "C7-PROTOCOL"
-   "C7-LAYOUT"
-   "C7-SCHEMA"
-   "C7-VERIFY"])
+(def c7-type-diagnostic-ids c7/c7-type-diagnostic-ids)
+(def c7-type-governing-document c7/c7-type-governing-document)
+(def c7-type-rejected-designs c7/c7-type-rejected-designs)
+(def c7-type-override-diagnostics c7/c7-type-override-diagnostics)
 
-(def c7-type-governing-document
-  "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md")
+(declare c7-type-source-overrides
+         c7-type-message
+         c7-type-fail!
+         c7-type-validate-overrides!
+         c7-literal-type
+         c7-node-operator
+         c7-node-type
+         c7-type-fact
+         c7-type-environment
+         c7-constraint-ledger
+         c7-function-table
+         c7-dynamic-boundary-records
+         c7-cast-records
+         c7-generic-instantiations
+         c7-protocol-dispatch-table
+         c7-schema-links
+         c7-layout-facts
+         c7-type-diagnostics
+         c7-typed-core-verifier-report
+         c7-type-capability-proof
+         c7-type-validate!
+         compiler-c7-type-source-artifact
+         compiler-c7-type-file-artifact)
 
-(def c7-type-rejected-designs
-  [{:diagnostic "C7-TYPE-MISMATCH"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-type-mismatch.gravity"
-    :rejected-design :incompatible-inferred-and-expected-types}
-   {:diagnostic "C7-ANNOTATION"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-annotation.gravity"
-    :rejected-design :profile-required-type-fact-missing}
-   {:diagnostic "C7-DYNAMIC"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-dynamic.gravity"
-    :rejected-design :dynamic-fallback-in-constrained-profile}
-   {:diagnostic "C7-CAST"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-cast.gravity"
-    :rejected-design :unchecked-or-illegal-conversion}
-   {:diagnostic "C7-NULLABILITY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-nullability.gravity"
-    :rejected-design :host-null-without-typed-wrapper}
-   {:diagnostic "C7-GENERIC"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-generic.gravity"
-    :rejected-design :failed-generic-instantiation}
-   {:diagnostic "C7-PROTOCOL"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-protocol.gravity"
-    :rejected-design :missing-protocol-implementation}
-   {:diagnostic "C7-LAYOUT"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-layout.gravity"
-    :rejected-design :missing-profile-required-layout-facts}
-   {:diagnostic "C7-SCHEMA"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-schema.gravity"
-    :rejected-design :schema-derived-type-weakened}
-   {:diagnostic "C7-VERIFY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-verify.gravity"
-    :rejected-design :typed-core-verifier-failure}])
+(defn- c7-type-ops
+  []
+  {:fail! fail!
+   :source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c6-lowering-source-artifact
+   compiler-c6-lowering-source-artifact
+   :c7-type-diagnostic-ids c7-type-diagnostic-ids
+   :c7-type-governing-document c7-type-governing-document
+   :c7-type-rejected-designs c7-type-rejected-designs
+   :c7-type-override-diagnostics c7-type-override-diagnostics
+   :c7-type-source-overrides c7-type-source-overrides
+   :c7-type-message c7-type-message
+   :c7-type-fail! c7-type-fail!
+   :c7-type-validate-overrides! c7-type-validate-overrides!
+   :c7-literal-type c7-literal-type
+   :c7-node-operator c7-node-operator
+   :c7-node-type c7-node-type
+   :c7-type-fact c7-type-fact
+   :c7-type-environment c7-type-environment
+   :c7-constraint-ledger c7-constraint-ledger
+   :c7-function-table c7-function-table
+   :c7-dynamic-boundary-records c7-dynamic-boundary-records
+   :c7-cast-records c7-cast-records
+   :c7-generic-instantiations c7-generic-instantiations
+   :c7-protocol-dispatch-table c7-protocol-dispatch-table
+   :c7-schema-links c7-schema-links
+   :c7-layout-facts c7-layout-facts
+   :c7-type-diagnostics c7-type-diagnostics
+   :c7-typed-core-verifier-report c7-typed-core-verifier-report
+   :c7-type-capability-proof c7-type-capability-proof
+   :c7-type-validate! c7-type-validate!
+   :compiler-c7-type-source-artifact compiler-c7-type-source-artifact
+   :compiler-c7-type-file-artifact compiler-c7-type-file-artifact})
 
-(def c7-type-override-diagnostics
-  {:type-mismatch "C7-TYPE-MISMATCH"
-   :annotation "C7-ANNOTATION"
-   :dynamic "C7-DYNAMIC"
-   :cast "C7-CAST"
-   :nullability "C7-NULLABILITY"
-   :generic "C7-GENERIC"
-   :protocol "C7-PROTOCOL"
-   :layout "C7-LAYOUT"
-   :schema "C7-SCHEMA"
-   :verify "C7-VERIFY"})
+(def ^:private ^:dynamic *c7-leaf-call?* false)
+
+(defn- c7-call
+  [operation & args]
+  (if *c7-leaf-call?*
+    (apply operation args)
+    (binding [*c7-leaf-call?* true]
+      (c7/with-operations (c7-type-ops)
+        #(apply operation args)))))
 
 (defn c7-type-source-overrides
   [module]
-  (get-in module [:metadata :compiler :c7-type-check] {}))
+  (c7-call c7/c7-type-source-overrides module))
 
 (defn c7-type-message
   [id]
-  (case id
-    "C7-TYPE-MISMATCH" "inferred type is incompatible with the expected type"
-    "C7-ANNOTATION" "active profile requires a type annotation or layout fact"
-    "C7-DYNAMIC" "dynamic behavior is forbidden by the active profile"
-    "C7-CAST" "cast or conversion lacks a checked or unsafe classification"
-    "C7-NULLABILITY" "host null crossed into a non-null Gravity type without a wrapper"
-    "C7-GENERIC" "generic instantiation failed or omitted bound evidence"
-    "C7-PROTOCOL" "protocol dispatch lacks a matching implementation"
-    "C7-LAYOUT" "profile-required layout facts are missing"
-    "C7-SCHEMA" "schema-derived type lost source schema identity"
-    "C7-VERIFY" "typed-core verifier rejected the artifact"
-    "Type checking failed"))
+  (c7-call c7/c7-type-message id))
 
 (defn c7-type-fail!
   [id source-path subject extra]
-  (fail! id
-         (c7-type-message id)
-         (merge {:source-span (or (:source-span subject)
-                                  (get-in subject [:source :span])
-                                  (:span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :c7-type-checker
-                 :stage :type-check
-                 :document-id "C7"
-                 :expected-document c7-type-governing-document
-                 :core-node-id (or (:core-node-id subject) (:node-id subject))
-                 :syntax-id (or (:syntax-id subject)
-                                (get-in subject [:source :syntax-id]))
-                 :expected-type (or (:expected-type subject) "Typed")
-                 :actual-type (or (:actual-type subject) "Dynamic")
-                 :active-profile (:profile subject)
-                 :target (:target subject)
-                 :relevant-binding-id (:binding-ref subject)
-                 :generated-origin-chain (or (:generated-origin subject)
-                                             (get-in subject
-                                                     [:source :origin-chain]))
-                 :remediation "Emit typed-core facts, solved constraints, checked casts, dynamic boundary records, schema/layout links, generic and protocol evidence, and verifier-accepted diagnostics before effect checking."}
-                extra)))
+  (c7-call c7/c7-type-fail! id source-path subject extra))
 
 (defn c7-type-validate-overrides!
   [source-path module overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c7-type-override-diagnostics fail-kind)]
-      (c7-type-fail! id source-path
-                     {:source-span (source-span source-path 0)
-                      :syntax-id "fixture-override"
-                      :core-node-id "fixture-override"
-                      :expected-type "Expected"
-                      :actual-type "Actual"
-                      :profile (:profile module)
-                      :target (:target module)
-                      :generated-origin []}
-                     {:missing-fields [fail-kind]}))))
+  (c7-call c7/c7-type-validate-overrides! source-path module overrides))
 
 (defn c7-literal-type
   [value]
-  (cond
-    (nil? value) "Nil"
-    (true? value) "Boolean"
-    (false? value) "Boolean"
-    (integer? value) "I64"
-    (float? value) "F64"
-    (string? value) "String"
-    (keyword? value) "Keyword"
-    (symbol? value) "Symbol"
-    (vector? value) "Vector[Dynamic]"
-    (map? value) "Map[Keyword, Dynamic]"
-    (set? value) "Set[Dynamic]"
-    (seq? value) "List[Dynamic]"
-    :else "Dynamic"))
+  (c7-call c7/c7-literal-type value))
 
 (defn c7-node-operator
   [node]
-  (get-in node [:children :operator]))
+  (c7-call c7/c7-node-operator node))
 
 (defn c7-node-type
   [node]
-  (let [operator (c7-node-operator node)]
-    (case (:form node)
-      :literal (c7-literal-type (:value node))
-      quote "Syntax"
-      :symbol "BindingRef"
-      def "Var"
-      fn "Fn[Dynamic]->Dynamic"
-      let "Dynamic"
-      do "Dynamic"
-      if "Dynamic"
-      match "Dynamic"
-      try "Dynamic"
-      throw "Never"
-      loop "Dynamic"
-      recur "Never"
-      var "VarRef"
-      set! "Unit"
-      :declared-primitive (if (:unsafe-metadata node)
-                            "UnsafeIsland[Dynamic]"
-                            "PrimitiveResult")
-      :call (case operator
-              dynamic/value "Dynamic"
-              dynamic/cast "CheckedCast[String]"
-              generic/id "Generic[T]"
-              protocol/value "ProtocolValue"
-              schema/derive "SchemaDerived"
-              schema/validate "Validated[Schema]"
-              "Dynamic")
-      "Dynamic")))
+  (c7-call c7/c7-node-type node))
 
 (defn c7-type-fact
   [node]
-  {:artifact :gravity/c7-type-fact
-   :fact-id (str "c7-type-" (:node-id node))
-   :core-node (:node-id node)
-   :source (:source node)
-   :type (c7-node-type node)
-   :type-source :local-deterministic-inference
-   :profile (:profile node)
-   :target (:target node)
-   :effects (:effects node)
-   :capabilities (:capabilities node)
-   :ownership {:mode :borrowed :resource :nonlinear}
-   :layout {:representation (case (:profile node)
-                              :hosted :managed-object
-                              :native :layout-required
-                              :kernel :explicit-layout-required
-                              :firmware :fixed-layout-required
-                              :hardware :synthesizable-layout-required
-                              :abstract)
-            :status :recorded}
-   :diagnostics []})
+  (c7-call c7/c7-type-fact node))
 
 (defn c7-type-environment
   [type-facts]
-  {:artifact :gravity/c7-type-environment
-   :types (into (sorted-map)
-                (map (fn [fact] [(:core-node fact) (:type fact)])
-                     type-facts))
-   :locals (into (sorted-map)
-                 (keep (fn [fact]
-                         (when (= "BindingRef" (:type fact))
-                           [(:core-node fact)
-                            {:type (:type fact)
-                             :mutability :immutable
-                             :ownership :borrowed}]))
-                       type-facts))
-   :status :complete})
+  (c7-call c7/c7-type-environment type-facts))
 
 (defn c7-constraint-ledger
   [type-facts]
-  {:artifact :gravity/c7-constraint-ledger
-   :constraints
-   (mapv (fn [idx fact]
-           {:constraint-id (str "c7-constraint-" idx)
-            :kind :type-assignment
-            :source-node (:core-node fact)
-            :producer-rule :local-inference
-            :dependencies [(:core-node fact)]
-            :solution (:type fact)
-            :invalidation [:core-node :binding-table :profile-contract]
-            :status :solved})
-         (range)
-         type-facts)
-   :status :solved})
+  (c7-call c7/c7-constraint-ledger type-facts))
 
 (defn c7-function-table
   [nodes]
-  {:artifact :gravity/c7-function-type-table
-   :functions
-   (mapv (fn [node]
-           {:fn-id (:node-id node)
-            :params (vec (repeat (count (get-in node [:children :params]))
-                                 "Dynamic"))
-            :return "Dynamic"
-            :latent-effects (:effects node)
-            :capabilities (:capabilities node)
-            :ownership-constraints [:borrowed-captures-preserved]
-            :profile-constraints [(:profile node)]
-            :throws #{"String"}
-            :source (:source node)
-            :status :typed})
-         (filter #(= 'fn (:form %)) nodes))
-   :status :complete})
+  (c7-call c7/c7-function-table nodes))
 
 (defn c7-dynamic-boundary-records
   [nodes module]
-  {:artifact :gravity/c7-dynamic-boundary-records
-   :records
-   (mapv (fn [node]
-           {:boundary-id (str "c7-dynamic-" (:node-id node))
-            :kind :dynamic-call
-            :source (:node-id node)
-            :input-type "Dynamic"
-            :result-type "Dynamic"
-            :profile (:profile node)
-            :target (:target node)
-            :runtime-checks [:runtime-type-known]
-            :effects #{:runtime/dynamic-dispatch}
-            :capabilities #{}
-            :accepted? (= :hosted (:profile module))
-            :diagnostics []})
-         (filter #(= 'dynamic/value (c7-node-operator %)) nodes))
-   :status :complete})
+  (c7-call c7/c7-dynamic-boundary-records nodes module))
 
 (defn c7-cast-records
   [nodes]
-  {:artifact :gravity/c7-cast-records
-   :records
-   (mapv (fn [node]
-           {:cast-id (str "c7-cast-" (:node-id node))
-            :kind :checked-dynamic-cast
-            :source-node (:node-id node)
-            :from "Dynamic"
-            :to "String"
-            :classification :runtime-checked
-            :runtime-check :type-tag-check
-            :unsafe-metadata (:unsafe-metadata node)
-            :source (:source node)
-            :status :checked})
-         (filter #(= 'dynamic/cast (c7-node-operator %)) nodes))
-   :status :complete})
+  (c7-call c7/c7-cast-records nodes))
 
 (defn c7-generic-instantiations
   [nodes]
-  {:artifact :gravity/c7-generic-instantiation-table
-   :records
-   (mapv (fn [node]
-           {:instantiation-id (str "c7-generic-" (:node-id node))
-            :generic 'generic/id
-            :type-arguments ["T"]
-            :bounds ["Any"]
-            :source-node (:node-id node)
-            :profile (:profile node)
-            :target (:target node)
-            :status :solved})
-         (filter #(= 'generic/id (c7-node-operator %)) nodes))
-   :status :complete})
+  (c7-call c7/c7-generic-instantiations nodes))
 
 (defn c7-protocol-dispatch-table
   [nodes]
-  {:artifact :gravity/c7-protocol-dispatch-type-table
-   :records
-   (mapv (fn [node]
-           {:dispatch-id (str "c7-dispatch-" (:node-id node))
-            :protocol :Displayable
-            :method 'protocol/value
-            :receiver-type "String"
-            :dispatch :hosted-dynamic
-            :effects (:effects node)
-            :capabilities (:capabilities node)
-            :profile (:profile node)
-            :target (:target node)
-            :source-node (:node-id node)
-            :status :typed})
-         (filter #(= 'protocol/value (c7-node-operator %)) nodes))
-   :status :complete})
+  (c7-call c7/c7-protocol-dispatch-table nodes))
 
 (defn c7-schema-links
   [domain-boundaries]
-  {:artifact :gravity/c7-schema-type-links
-   :records
-   (mapv (fn [boundary]
-           {:schema-type-id (str "c7-schema-"
-                                 (get-in boundary
-                                         [:source :syntax-id]))
-            :schema :Packet
-            :source-schema (get-in boundary [:semantic-anchor :source-syntax])
-            :domain (:domain boundary)
-            :validation-boundary :schema-ir-verifier
-            :profile (:profile boundary)
-            :target (:target boundary)
-            :status :preserved})
-         (filter #(= :schema-ir (:domain %)) domain-boundaries))
-   :status :complete})
+  (c7-call c7/c7-schema-links domain-boundaries))
 
 (defn c7-layout-facts
   [nodes]
-  {:artifact :gravity/c7-layout-facts
-   :records
-   (mapv (fn [node]
-           {:layout-id (str "c7-layout-" (:node-id node))
-            :core-node (:node-id node)
-            :type (c7-node-type node)
-            :profile (:profile node)
-            :target (:target node)
-            :layout (case (:profile node)
-                      :hosted :managed
-                      :native :explicit-native-layout
-                      :firmware :fixed-layout
-                      :kernel :explicit-kernel-layout
-                      :hardware :synthesizable-layout
-                      :abstract)
-            :status :recorded})
-         nodes)
-   :status :complete})
+  (c7-call c7/c7-layout-facts nodes))
 
 (defn c7-type-diagnostics
   [source-path nodes]
-  {:artifact :gravity/c7-type-diagnostic-registry
-   :required-diagnostic-ids c7-type-diagnostic-ids
-   :diagnostics
-   (mapv (fn [design]
-           (let [node (first nodes)]
-             {:diagnostic (:diagnostic design)
-              :fixture (:fixture design)
-              :core-node-id (:node-id node)
-              :syntax-id (get-in node [:source :syntax-id])
-              :source-span (get-in node [:source :span]
-                                   (source-span source-path 0))
-              :expected-type "Expected"
-              :actual-type "Actual"
-              :active-profile (:profile node)
-              :target (:target node)
-              :relevant-binding-id (:node-id node)
-              :generated-origin-chain (get-in node [:source :origin-chain])
-              :remediation "Keep C7 type facts explicit and profile-gated."}))
-         c7-type-rejected-designs)
-   :status :complete})
+  (c7-call c7/c7-type-diagnostics source-path nodes))
 
 (defn c7-typed-core-verifier-report
   [nodes type-facts constraints functions dynamic cast generic dispatch schema layout]
-  (let [node-ids (set (map :node-id nodes))
-        typed-node-ids (set (map :core-node type-facts))
-        all-typed? (= node-ids typed-node-ids)
-        constraints-solved? (every? #(= :solved (:status %))
-                                    (:constraints constraints))
-        functions-have-effects? (every? #(contains? % :latent-effects)
-                                        (:functions functions))
-        casts-classified? (every? #(contains? % :classification)
-                                  (:records cast))
-        dynamic-profiled? (every? #(contains? % :profile) (:records dynamic))
-        schema-preserved? (seq (:records schema))
-        layout-recorded? (and (seq (:records layout))
-                              (every? #(= :recorded (:status %))
-                                      (:records layout)))
-        origins-preserved? (every? #(get-in % [:source :syntax-id]) nodes)
-        generic-solved? (= :complete (:status generic))
-        dispatch-typed? (= :complete (:status dispatch))]
-    {:artifact :gravity/c7-typed-core-verifier-report
-     :every-node-typed-or-diagnostic? all-typed?
-     :constraints-solved? constraints-solved?
-     :function-latent-effects-present? functions-have-effects?
-     :casts-classified? casts-classified?
-     :dynamic-boundaries-profile-marked? dynamic-profiled?
-     :schema-derived-types-preserve-identity? (boolean schema-preserved?)
-     :layout-facts-recorded? layout-recorded?
-     :generic-instantiations-solved? generic-solved?
-     :protocol-dispatch-typed? dispatch-typed?
-     :origins-preserved? origins-preserved?
-     :status (if (and all-typed? constraints-solved?
-                      functions-have-effects? casts-classified?
-                      dynamic-profiled? schema-preserved? layout-recorded?
-                      generic-solved? dispatch-typed? origins-preserved?)
-               :passed
-               :failed)}))
+  (c7-call c7/c7-typed-core-verifier-report nodes type-facts constraints functions dynamic cast generic dispatch schema layout))
 
 (defn c7-type-capability-proof
   [artifact]
-  (let [diagnostics (set (map :diagnostic
-                              (get-in artifact
-                                      [:type-diagnostics :diagnostics])))
-        verifier (:typed-core-verifier-report artifact)]
-    {:every-core-node-has-type-or-diagnostic?
-     (:every-node-typed-or-diagnostic? verifier)
-     :constraints-solved?
-     (:constraints-solved? verifier)
-     :function-types-include-latent-effects?
-     (:function-latent-effects-present? verifier)
-     :dynamic-boundaries-profile-gated?
-     (:dynamic-boundaries-profile-marked? verifier)
-     :casts-classified?
-     (:casts-classified? verifier)
-     :generic-and-protocol-evidence?
-     (and (:generic-instantiations-solved? verifier)
-          (:protocol-dispatch-typed? verifier))
-     :schema-identity-preserved?
-     (:schema-derived-types-preserve-identity? verifier)
-     :layout-facts-recorded?
-     (:layout-facts-recorded? verifier)
-     :diagnostics-covered?
-     (= (set c7-type-diagnostic-ids) diagnostics)
-     :verifier-passed?
-     (= :passed (:status verifier))
-     :status :complete}))
+  (c7-call c7/c7-type-capability-proof artifact))
 
 (defn c7-type-validate!
   [source-path artifact]
-  (let [proof (c7-type-capability-proof artifact)]
-    (doseq [[field id] [[:every-core-node-has-type-or-diagnostic?
-                         "C7-TYPE-MISMATCH"]
-                        [:constraints-solved? "C7-VERIFY"]
-                        [:function-types-include-latent-effects?
-                         "C7-VERIFY"]
-                        [:dynamic-boundaries-profile-gated? "C7-DYNAMIC"]
-                        [:casts-classified? "C7-CAST"]
-                        [:generic-and-protocol-evidence? "C7-GENERIC"]
-                        [:schema-identity-preserved? "C7-SCHEMA"]
-                        [:layout-facts-recorded? "C7-LAYOUT"]
-                        [:diagnostics-covered? "C7-VERIFY"]
-                        [:verifier-passed? "C7-VERIFY"]]]
-      (when-not (get proof field)
-        (c7-type-fail! id source-path {:stage :type-check}
-                       {:missing-fields [field]}))))
-  :complete)
+  (c7-call c7/c7-type-validate! source-path artifact))
 
 (defn compiler-c7-type-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        overrides (c7-type-source-overrides module)
-        _ (c7-type-validate-overrides! source-path module overrides)
-        c6-artifact (compiler-c6-lowering-source-artifact source-path
-                                                          source-text)
-        nodes (:core-node-table c6-artifact)
-        type-facts (mapv c7-type-fact nodes)
-        environment (c7-type-environment type-facts)
-        constraints (c7-constraint-ledger type-facts)
-        functions (c7-function-table nodes)
-        dynamic (c7-dynamic-boundary-records nodes module)
-        cast (c7-cast-records nodes)
-        generic (c7-generic-instantiations nodes)
-        dispatch (c7-protocol-dispatch-table nodes)
-        schema (c7-schema-links (:domain-boundary-records c6-artifact))
-        layout (c7-layout-facts nodes)
-        diagnostics (c7-type-diagnostics source-path nodes)
-        typed-core
-        {:artifact :gravity/typed-core
-         :module (get-in c6-artifact [:core-ast-module :module])
-         :core-input (:artifact-id c6-artifact)
-         :types (:types environment)
-         :locals (:locals environment)
-         :functions (:functions functions)
-         :constraints (mapv :constraint-id (:constraints constraints))
-         :dynamic-boundaries (mapv :boundary-id (:records dynamic))
-         :casts (mapv :cast-id (:records cast))
-         :layout-facts :c7-layout-facts
-         :diagnostics []
-         :status :complete}
-        verifier (c7-typed-core-verifier-report nodes type-facts constraints
-                                                functions dynamic cast generic
-                                                dispatch schema layout)
-        artifact-base
-        {:kind :gravity/stage0-c7-type-checker-artifact
-         :task "P06-D086"
-         :document-set ["C7"]
-         :governing-document c7-type-governing-document
-         :pass {:name :c7-type-checker
-                :input :verified-core-ast
-                :output :typed-core
-                :requires [:core-ast-module :core-node-table
-                           :binding-table :profile :target
-                           :domain-boundary-records]
-                :preserves [:source-spans :generated-origin :metadata
-                            :profile :target :effects :capabilities
-                            :unsafe-metadata]
-                :emits [:typed-core-module :type-environment
-                        :constraint-ledger :generic-instantiation-table
-                        :protocol-dispatch-type-table
-                        :dynamic-boundary-records :cast-conversion-records
-                        :layout-facts :schema-type-links
-                        :typed-core-verifier-report :type-diagnostics]
-                :rejects c7-type-diagnostic-ids}
-         :source-overrides overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c6-core-lowering-artifact
-         (select-keys c6-artifact [:kind :artifact-id :core-ast-module
-                                   :surface-to-core-map
-                                   :evaluation-order-records
-                                   :domain-boundary-records])
-         :typed-core-module typed-core
-         :type-environment environment
-         :type-facts type-facts
-         :constraint-ledger constraints
-         :function-type-table functions
-         :generic-instantiation-table generic
-         :protocol-dispatch-type-table dispatch
-         :dynamic-boundary-records dynamic
-         :cast-conversion-records cast
-         :layout-facts layout
-         :schema-type-links schema
-         :typed-core-verifier-report verifier
-         :type-diagnostics diagnostics
-         :c7-type-check-results
-         {:documents ["C7"]
-          :task "P06-D086"
-          :required-diagnostic-ids c7-type-diagnostic-ids
-          :typed-core-status :complete
-          :type-environment-status :complete
-          :constraint-status :solved
-          :generic-status :complete
-          :protocol-status :complete
-          :dynamic-boundary-status :complete
-          :cast-status :complete
-          :schema-link-status :complete
-          :layout-status :complete
-          :verifier-status (:status verifier)
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c7-type-validate! source-path artifact-base)
-        capability-proof (c7-type-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+  (c7-call c7/compiler-c7-type-source-artifact source-path source-text))
 
 (defn compiler-c7-type-file-artifact
   [path]
-  (compiler-c7-type-source-artifact path (slurp path)))
+  (c7-call c7/compiler-c7-type-file-artifact path))
 
 (def c8-effect-diagnostic-ids
   ["C8-UNDECLARED"
