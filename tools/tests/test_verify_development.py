@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import os
 import io
+import shutil
 from contextlib import redirect_stdout
 from pathlib import Path
 import subprocess
@@ -933,6 +934,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "m0-terminology",
             "m0-safety-performance",
             "m0-change-control",
+            "stage0-project-structure",
             "stage0-orchestrator-unit",
             "stage0-reader",
             "stage0-hosted-hello",
@@ -944,6 +946,277 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertTrue(required <= selected)
         self.assertIn("stage0-clojure-suite", selected)
         self.assertIn("stage0-bootstrap-authority", selected)
+
+    def test_stage0_project_structure_check_has_contract_inputs(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        check_record = next(item for item in manifest["checks"] if item["id"] == "stage0-project-structure")
+        self.assertEqual(check_record["lane"], "preflight")
+        self.assertEqual(check_record["cost"], "cheap")
+        self.assertIsNone(check_record["lock"])
+        self.assertFalse(check_record["exclusive"])
+        self.assertEqual(check_record["authority"], "none")
+        self.assertEqual(
+            check_record["command"],
+            ["python3", "tools/validate_project_structure.py", "contracts/project-structure.json"],
+        )
+        self.assertEqual(
+            set(check_record["inputs"]),
+            {
+                "contracts/project-structure.json",
+                "contracts/stage0-clojure-components.json",
+                "docs/self-hosting-slice-ownership.edn",
+                "tools/validate_project_structure.py",
+            },
+        )
+
+    def test_component_source_and_test_edits_route_to_the_matching_leaf_group(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        leaf_ids = {
+            "stage0-leaf-foundation-reader",
+            "stage0-leaf-c2-c3",
+            "stage0-leaf-compiler",
+        }
+        cases = {
+            "bootstrap/clojure/src/gravity/c2_artifact_identity.clj": {"stage0-leaf-c2-c3"},
+            "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj": {"stage0-leaf-c2-c3"},
+            "bootstrap/clojure/src/gravity/c7_type_checker.clj": {"stage0-leaf-compiler"},
+            "bootstrap/clojure/test/gravity/c7_type_checker_test.clj": {"stage0-leaf-compiler"},
+            "bootstrap/clojure/src/gravity/reader_cursor.clj": {"stage0-leaf-foundation-reader"},
+            "bootstrap/clojure/test/gravity/reader_cursor_test.clj": {"stage0-leaf-foundation-reader"},
+        }
+        for changed_path, expected in cases.items():
+            with self.subTest(changed_path=changed_path):
+                selection = verifier.select_impacted_checks(
+                    manifest,
+                    ROOT,
+                    changed_paths=[changed_path],
+                    lanes=["focused"],
+                )
+                selected_leaf_ids = set(selection["selected_ids"]) & leaf_ids
+                self.assertEqual(expected, selected_leaf_ids)
+
+    def test_leaf_manifest_inputs_exactly_cover_normative_roots_and_source_closures(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        contract = json.loads(
+            (ROOT / "contracts" / "stage0-clojure-components.json").read_text(encoding="utf-8")
+        )
+        components = {component["id"]: component for component in contract["components"]}
+        checks = {item["id"]: item for item in manifest["checks"]}
+        expected_counts = {"foundation-reader": 8, "c2-c3": 11, "compiler": 19}
+        all_roots: set[str] = set()
+        for group, expected_count in expected_counts.items():
+            roots = {
+                component_id
+                for component_id, component in components.items()
+                if component["leaf_execution_group"] == group
+            }
+            self.assertEqual(expected_count, len(roots), group)
+            all_roots.update(roots)
+            closure = set(roots)
+            pending = list(roots)
+            while pending:
+                component_id = pending.pop()
+                for dependency in components[component_id]["direct_source_dependencies"]:
+                    if dependency not in closure:
+                        closure.add(dependency)
+                        pending.append(dependency)
+            item = checks[f"stage0-leaf-{group}"]
+            actual_sources = {
+                path
+                for path in item["inputs"]
+                if path.startswith("bootstrap/clojure/src/gravity/")
+            }
+            actual_tests = {
+                path
+                for path in item["inputs"]
+                if path.startswith("bootstrap/clojure/test/gravity/")
+                and path.endswith("_test.clj")
+            }
+            expected_sources = {components[component_id]["source"]["path"] for component_id in closure}
+            expected_tests = {components[component_id]["test"]["path"] for component_id in roots}
+            self.assertEqual(expected_sources, actual_sources, group)
+            self.assertEqual(expected_tests, actual_tests, group)
+        self.assertEqual(38, len(all_roots))
+        self.assertEqual(
+            {
+                component_id
+                for component_id, component in components.items()
+                if component["test"]["lane"] == "bootstrap-free"
+            },
+            all_roots,
+        )
+
+    def test_dependency_source_edits_route_to_every_consuming_leaf_group(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        leaf_ids = {
+            "stage0-leaf-foundation-reader",
+            "stage0-leaf-c2-c3",
+            "stage0-leaf-compiler",
+        }
+        cases = {
+            "bootstrap/clojure/src/gravity/digest.clj": leaf_ids,
+            "bootstrap/clojure/src/gravity/reader_primitives.clj": {
+                "stage0-leaf-foundation-reader",
+                "stage0-leaf-c2-c3",
+            },
+            "bootstrap/clojure/src/gravity/syntax_origin.clj": {
+                "stage0-leaf-foundation-reader",
+                "stage0-leaf-c2-c3",
+            },
+            "bootstrap/clojure/src/gravity/optimization_lowering.clj": {
+                "stage0-leaf-compiler",
+            },
+            "bootstrap/clojure/src/gravity/compiler_verification_shared.clj": {
+                "stage0-leaf-compiler",
+            },
+        }
+        for changed_path, expected in cases.items():
+            with self.subTest(changed_path=changed_path):
+                selection = verifier.select_impacted_checks(
+                    manifest,
+                    ROOT,
+                    changed_paths=[changed_path],
+                    lanes=["focused"],
+                )
+                selected_leaf_ids = set(selection["selected_ids"]) & leaf_ids
+                self.assertEqual(expected, selected_leaf_ids)
+
+    def test_bootstrap_source_change_selects_hosted_and_heavy_closure(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        selection = verifier.select_impacted_checks(
+            manifest,
+            ROOT,
+            changed_paths=["bootstrap/clojure/src/gravity/bootstrap.clj"],
+        )
+        self.assertEqual(
+            set(selection["selected_ids"]),
+            {
+                "stage0-hosted-hello",
+                "stage0-hosted-hello-qst",
+                "stage0-selective-smoke",
+                "stage0-hosted-core-app",
+                "stage0-hosted-core-compiled-app",
+                "stage0-clojure-suite",
+                "stage0-bootstrap-authority",
+                "m0-docs",
+                "m0-foundation-coverage",
+                "m0-contract-traceability",
+                "m0-milestone-evidence",
+                "m0-terminology",
+                "m0-safety-performance",
+                "m0-change-control",
+                "stage0-project-structure",
+                "stage0-orchestrator-unit",
+                "stage0-reader",
+            },
+        )
+
+    def test_unowned_top_level_stage0_test_fails_closed_in_plan_diagnostics(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        receipt = verifier.run_verification(
+            manifest,
+            ROOT,
+            changed_paths=["bootstrap/clojure/test/gravity/not_registered_test.clj"],
+            dry_run=True,
+        )
+        self.assertEqual(receipt["status"], "failed")
+        self.assertEqual(receipt["checks"], [])
+        self.assertEqual(
+            receipt["selection"]["unmatched_changes"],
+            ["bootstrap/clojure/test/gravity/not_registered_test.clj"],
+        )
+        self.assertIn("not_registered_test.clj", receipt["error"])
+
+    def test_leaf_checks_are_cacheable_non_authoritative_and_bind_sources_contracts_and_runner(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        leaf_checks = [item for item in manifest["checks"] if item["id"].startswith("stage0-leaf-")]
+        self.assertEqual(3, len(leaf_checks))
+        for item in leaf_checks:
+            with self.subTest(check=item["id"]):
+                self.assertEqual(item["lane"], "focused")
+                self.assertEqual(item["cost"], "cheap")
+                self.assertIsNone(item["lock"])
+                self.assertFalse(item["exclusive"])
+                self.assertEqual(item["authority"], "none")
+                self.assertFalse(item["fresh"])
+                self.assertEqual(item.get("tool_inputs"), ["tools/validate_project_structure.py"])
+                self.assertIn("deps.edn", item["inputs"])
+                self.assertIn("contracts/project-structure.json", item["inputs"])
+                self.assertIn("contracts/stage0-clojure-components.json", item["inputs"])
+                self.assertIn("docs/self-hosting-slice-ownership.edn", item["inputs"])
+                self.assertIn(
+                    "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj",
+                    item["inputs"],
+                )
+                with tempfile.TemporaryDirectory(prefix="gravity-leaf-cache-identity-") as directory:
+                    temp_root = Path(directory)
+                    for relative in item["inputs"] + item.get("tool_inputs", []):
+                        source = ROOT / relative
+                        if not source.is_file():
+                            continue
+                        target = temp_root / relative
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copyfile(source, target)
+                    baseline = verifier.cache_key(manifest, item, temp_root)
+                    for relative in (
+                        "bootstrap/clojure/src/gravity/digest.clj",
+                        "contracts/stage0-clojure-components.json",
+                        "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj",
+                    ):
+                        target = temp_root / relative
+                        if not target.is_file() or relative not in item["inputs"]:
+                            continue
+                        original = target.read_bytes()
+                        target.write_bytes(original + b"\ncache-identity-change\n")
+                        try:
+                            self.assertNotEqual(baseline, verifier.cache_key(manifest, item, temp_root))
+                        finally:
+                            target.write_bytes(original)
+
+    def test_all_canonical_heavy_lock_declarations_remain_unchanged(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        expected = {
+            "stage0-clojure-suite": {
+                "lock": "/tmp/gravity-sh07-heavy.lock",
+                "exclusive": True,
+                "fresh": True,
+                "authority": "none",
+                "cost": "heavy",
+            },
+            "stage0-bootstrap-authority": {
+                "lock": "/tmp/gravity-sh07-heavy.lock",
+                "exclusive": True,
+                "fresh": True,
+                "authority": "none",
+                "cost": "heavy",
+            },
+        }
+        for check_id, fields in expected.items():
+            with self.subTest(check=check_id):
+                item = next(entry for entry in manifest["checks"] if entry["id"] == check_id)
+                self.assertEqual({key: item[key] for key in fields}, fields)
+
+    def test_every_canonical_clojure_component_path_is_owned_by_a_check(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        contract = json.loads(
+            (ROOT / "contracts" / "stage0-clojure-components.json").read_text(encoding="utf-8")
+        )
+        checks = manifest["checks"]
+        for component in contract["components"]:
+            paths = [component["source"]["path"], component["test"]["path"]]
+            for path in paths:
+                with self.subTest(path=path):
+                    self.assertTrue(
+                        any(
+                            any(
+                                verifier._matches_change(declaration, path)
+                                for declaration in list(item.get("inputs", []))
+                                + list(item.get("tool_inputs", []))
+                            )
+                            for item in checks
+                        ),
+                        path,
+                    )
 
     def test_real_manifest_explicit_reader_check_does_not_expand_to_downstream_heavy_checks(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
@@ -1009,13 +1282,31 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertTrue(all(item["cost"] == "heavy" and item["lock"] for item in heavy_candidates))
         self.assertTrue(all(item.get("fresh") is True for item in heavy_candidates))
         self.assertTrue(all(item.get("authority") == "none" for item in heavy_candidates))
-        clojure_checks = [item for item in manifest["checks"] if item["command"] and item["command"][0] == "clojure"]
+        leaf_checks = [item for item in manifest["checks"] if item["id"].startswith("stage0-leaf-")]
+        self.assertEqual(3, len(leaf_checks))
+        self.assertTrue(all(item.get("fresh") is False for item in leaf_checks))
+        self.assertTrue(all(item.get("authority") == "none" for item in leaf_checks))
+        self.assertTrue(all(item.get("lock") is None and not item.get("exclusive") for item in leaf_checks))
+        clojure_checks = [
+            item
+            for item in manifest["checks"]
+            if item["command"]
+            and item["command"][0] == "clojure"
+            and not item["id"].startswith("stage0-leaf-")
+        ]
         self.assertTrue(clojure_checks)
         self.assertTrue(all(item.get("fresh") is True for item in clojure_checks))
         self.assertTrue(all("bin/gravity" in item["inputs"] for item in clojure_checks))
         self.assertTrue(all("bootstrap/gravity/**" in item["inputs"] for item in clojure_checks))
         full_suite = next(item for item in manifest["checks"] if item["id"] == "stage0-clojure-suite")
         self.assertIn("bin/gravity-bootstrap", full_suite["inputs"])
+        self.assertIn("bootstrap/clojure/src/gravity/*.clj", full_suite["inputs"])
+        self.assertIn("bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj", full_suite["inputs"])
+        self.assertIn(
+            "bootstrap/clojure/test/gravity/self_hosting/sh01_stage0_leaf_test_runner_test.clj",
+            full_suite["inputs"],
+        )
+        self.assertIn("contracts/stage0-clojure-components.json", full_suite["inputs"])
 
 
 if __name__ == "__main__":

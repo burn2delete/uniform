@@ -188,7 +188,8 @@
         "seed_retirement": false
       },
       "contract_var": null,
-      "stage0_group": "coordinator"
+      "stage0_group": "coordinator",
+      "leaf_execution_group": null
     },
     {
       "id": "c10-safety-analysis",
@@ -222,7 +223,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c11-mir",
@@ -256,7 +258,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c12-domain-ir",
@@ -290,7 +293,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c13-optimization",
@@ -326,7 +330,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c14-lowering",
@@ -362,7 +367,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c15-diagnostics",
@@ -395,7 +401,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c16-incremental",
@@ -428,7 +435,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c17-plugin",
@@ -461,7 +469,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c18-verification",
@@ -494,7 +503,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c2-artifact-identity",
@@ -526,7 +536,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "c2-c3"
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
     },
     {
       "id": "c2-lexical-validation",
@@ -558,7 +569,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "c2-c3"
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
     },
     {
       "id": "c2-pass-cache",
@@ -591,7 +603,8 @@
         "seed_retirement": false
       },
       "contract_var": "cache-contract",
-      "stage0_group": "c2-c3"
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": null
     },
     {
       "id": "c2-reader-diagnostics",
@@ -623,7 +636,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "c2-c3"
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
     },
     {
       "id": "c2-source-identity",
@@ -655,7 +669,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "c2-c3"
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
     },
     {
       "id": "c3-artifact-identity",
@@ -687,7 +702,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "c2-c3"
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
     },
     {
       "id": "c3-literal-projection",
@@ -721,7 +737,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "c2-c3"
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
     },
     {
       "id": "c3-reader-integrity",
@@ -753,7 +770,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "c2-c3"
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
     },
     {
       "id": "c3-syntax-construction",
@@ -788,7 +806,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "c2-c3"
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
     },
     {
       "id": "c3-syntax-diagnostics",
@@ -820,7 +839,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "c2-c3"
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
     },
     {
       "id": "c3-syntax-evidence",
@@ -852,7 +872,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "c2-c3"
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
     },
     {
       "id": "c3-syntax-verification",
@@ -884,7 +905,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "c2-c3"
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
     },
     {
       "id": "c4-macro-evidence",
@@ -918,7 +940,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c5-name-resolution",
@@ -952,7 +975,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c6-core-lowering",
@@ -986,7 +1010,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c7-type-checker",
@@ -1020,7 +1045,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c8-effect-checker",
@@ -1054,7 +1080,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "c9-ownership-checker",
@@ -1088,7 +1115,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "cli",
@@ -1119,7 +1147,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compatibility-support"
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": null
     },
     {
       "id": "compiler-verification-shared",
@@ -1149,7 +1178,8 @@
         "seed_retirement": false
       },
       "contract_var": "shared-contract",
-      "stage0_group": "compatibility-support"
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "darwin-publication",
@@ -1179,7 +1209,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compatibility-support"
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "diagnostics",
@@ -1210,7 +1241,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compatibility-support"
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": null
     },
     {
       "id": "digest",
@@ -1240,7 +1272,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compatibility-support"
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": "foundation-reader"
     },
     {
       "id": "macro-expansion",
@@ -1274,7 +1307,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "optimization-lowering",
@@ -1309,7 +1343,8 @@
         "seed_retirement": false
       },
       "contract_var": "shared-engine-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "reader-cursor",
@@ -1343,7 +1378,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "foundation-reader"
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": "foundation-reader"
     },
     {
       "id": "reader-diagnostic-policy",
@@ -1375,7 +1411,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "foundation-reader"
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": "foundation-reader"
     },
     {
       "id": "reader-host-oracle",
@@ -1418,7 +1455,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "foundation-reader"
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": "foundation-reader"
     },
     {
       "id": "reader-namespace",
@@ -1454,7 +1492,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "foundation-reader"
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": "foundation-reader"
     },
     {
       "id": "reader-primitives",
@@ -1487,7 +1526,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "foundation-reader"
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": null
     },
     {
       "id": "source-span",
@@ -1518,7 +1558,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "foundation-reader"
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": null
     },
     {
       "id": "source-unit",
@@ -1550,7 +1591,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "foundation-reader"
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": "foundation-reader"
     },
     {
       "id": "syntax-object-stream",
@@ -1582,7 +1624,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "foundation-reader"
     },
     {
       "id": "syntax-origin",
@@ -1614,7 +1657,8 @@
         "seed_retirement": false
       },
       "contract_var": "namespace-contract",
-      "stage0_group": "compiler"
+      "stage0_group": "compiler",
+      "leaf_execution_group": "foundation-reader"
     }
   ]
 }

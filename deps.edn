@@ -11,6 +11,10 @@
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.bootstrap-test"]}
 
+  :leaf-test
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.bootstrap-free-leaf-test-runner"]}
+
   :dev-test
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.development-test-runner"]}}}

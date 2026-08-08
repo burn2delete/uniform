@@ -63,6 +63,7 @@ STAGE0_COMPONENT_FIELDS = {
     "authority",
     "contract_var",
     "stage0_group",
+    "leaf_execution_group",
 }
 STAGE0_SOURCE_FIELDS = {"path", "namespace"}
 STAGE0_TEST_FIELDS = {"path", "namespace", "lane", "execution_requires_bootstrap"}
@@ -89,6 +90,67 @@ STAGE0_GROUPS = {
     "c2-c3",
     "compiler",
     "compatibility-support",
+}
+STAGE0_LEAF_EXECUTION_GROUPS = {
+    "foundation-reader",
+    "c2-c3",
+    "compiler",
+}
+STAGE0_LEAF_EXECUTION_GROUP_COMPONENT_IDS = {
+    "foundation-reader": {
+        "digest",
+        "reader-cursor",
+        "reader-diagnostic-policy",
+        "reader-host-oracle",
+        "reader-namespace",
+        "source-unit",
+        "syntax-object-stream",
+        "syntax-origin",
+    },
+    "c2-c3": {
+        "c2-artifact-identity",
+        "c2-lexical-validation",
+        "c2-reader-diagnostics",
+        "c2-source-identity",
+        "c3-artifact-identity",
+        "c3-literal-projection",
+        "c3-reader-integrity",
+        "c3-syntax-construction",
+        "c3-syntax-diagnostics",
+        "c3-syntax-evidence",
+        "c3-syntax-verification",
+    },
+    "compiler": {
+        "c10-safety-analysis",
+        "c11-mir",
+        "c12-domain-ir",
+        "c13-optimization",
+        "c14-lowering",
+        "c15-diagnostics",
+        "c16-incremental",
+        "c17-plugin",
+        "c18-verification",
+        "c4-macro-evidence",
+        "c5-name-resolution",
+        "c6-core-lowering",
+        "c7-type-checker",
+        "c8-effect-checker",
+        "c9-ownership-checker",
+        "compiler-verification-shared",
+        "darwin-publication",
+        "macro-expansion",
+        "optimization-lowering",
+    },
+}
+STAGE0_LEAF_EXECUTION_GROUP_COUNTS = {
+    "foundation-reader": 8,
+    "c2-c3": 11,
+    "compiler": 19,
+}
+STAGE0_LEAF_EXECUTION_GROUP_BY_COMPONENT = {
+    component_id: group
+    for group, component_ids in STAGE0_LEAF_EXECUTION_GROUP_COMPONENT_IDS.items()
+    for component_id in component_ids
 }
 STAGE0_BOOTSTRAP_COMPATIBILITY_TEST_COUNT = 5
 STAGE0_COMPONENT_NONCLAIMS = (
@@ -1032,6 +1094,7 @@ def _validate_stage0_component_contract(
     test_namespace_to_id: dict[str, str] = {}
     source_paths: list[str] = []
     test_paths: list[str] = []
+    leaf_execution_groups: list[Any] = []
     for index, component in enumerate(components):
         location = f"stage0 component contract.components[{index}]"
         if not _is_mapping(component):
@@ -1110,6 +1173,25 @@ def _validate_stage0_component_contract(
             _add_error(errors, f"{location}.mapping_kind", f"unknown mapping kind {component.get('mapping_kind')!r}")
         if component.get("stage0_group") not in STAGE0_GROUPS:
             _add_error(errors, f"{location}.stage0_group", f"unknown Stage0 group {component.get('stage0_group')!r}")
+        leaf_execution_group = component.get("leaf_execution_group")
+        leaf_execution_groups.append(leaf_execution_group)
+        valid_leaf_execution_group = (
+            isinstance(leaf_execution_group, str)
+            and leaf_execution_group in STAGE0_LEAF_EXECUTION_GROUPS
+        )
+        if leaf_execution_group is not None and not valid_leaf_execution_group:
+            _add_error(
+                errors,
+                f"{location}.leaf_execution_group",
+                f"unknown leaf execution group {leaf_execution_group!r}",
+            )
+        expected_leaf_execution_group = STAGE0_LEAF_EXECUTION_GROUP_BY_COMPONENT.get(component_id)
+        if leaf_execution_group != expected_leaf_execution_group:
+            _add_error(
+                errors,
+                f"{location}.leaf_execution_group",
+                f"must be {expected_leaf_execution_group!r} for component {component_id!r}",
+            )
         if component.get("contract_var") is not None and not isinstance(component.get("contract_var"), str):
             _add_error(errors, f"{location}.contract_var", "must be a string or null")
         authority = component.get("authority")
@@ -1130,6 +1212,12 @@ def _validate_stage0_component_contract(
         execution_requires_bootstrap = test.get("execution_requires_bootstrap") if _is_mapping(test) else None
         if lane not in STAGE0_TEST_LANES:
             _add_error(errors, f"{location}.test.lane", f"unknown test lane {lane!r}")
+        if (lane == "bootstrap-free") != valid_leaf_execution_group:
+            _add_error(
+                errors,
+                f"{location}.leaf_execution_group",
+                "must be non-null exactly for bootstrap-free tests",
+            )
         if not isinstance(execution_requires_bootstrap, bool):
             _add_error(errors, f"{location}.test.execution_requires_bootstrap", "must be boolean")
         elif execution_requires_bootstrap != (lane in {"compatibility", "coordinator"}):
@@ -1231,6 +1319,23 @@ def _validate_stage0_component_contract(
         _add_error(errors, "stage0 component test lanes", "must contain exactly 5 compatibility tests")
     if lanes.count("coordinator") != STAGE0_COMPONENT_COUNTS["coordinator_tests"]:
         _add_error(errors, "stage0 component test lanes", "must contain exactly 1 coordinator test")
+    for group, expected_count in STAGE0_LEAF_EXECUTION_GROUP_COUNTS.items():
+        actual_count = leaf_execution_groups.count(group)
+        if actual_count != expected_count:
+            _add_error(
+                errors,
+                "stage0 component leaf execution groups",
+                f"{group!r} must contain exactly {expected_count} components, found {actual_count}",
+            )
+    non_null_execution_group_count = sum(
+        group in STAGE0_LEAF_EXECUTION_GROUPS for group in leaf_execution_groups
+    )
+    if non_null_execution_group_count != STAGE0_COMPONENT_COUNTS["bootstrap_free_tests"]:
+        _add_error(
+            errors,
+            "stage0 component leaf execution groups",
+            "must contain exactly 38 grouped bootstrap-free components",
+        )
 
     reserved, compatibility_tests, ownership_errors = parse_stage0_component_ownership()
     for ownership_error in ownership_errors:

@@ -45,6 +45,74 @@ class ProjectStructureValidationTests(unittest.TestCase):
         validator._validate_stage0_component_contract(self.manifest, errors, contract)
         self.assertEqual([], errors)
 
+    def test_stage0_leaf_execution_groups_are_exact_and_exhaustive(self) -> None:
+        contract = validator.load_stage0_component_contract()
+        by_id = {component["id"]: component for component in contract["components"]}
+        expected_by_id = validator.STAGE0_LEAF_EXECUTION_GROUP_BY_COMPONENT
+        self.assertEqual(38, len(expected_by_id))
+        self.assertEqual(
+            validator.STAGE0_LEAF_EXECUTION_GROUP_COUNTS,
+            {
+                group: sum(
+                    component["leaf_execution_group"] == group
+                    for component in contract["components"]
+                )
+                for group in validator.STAGE0_LEAF_EXECUTION_GROUPS
+            },
+        )
+        for component_id, component in by_id.items():
+            expected = expected_by_id.get(component_id)
+            self.assertEqual(expected, component["leaf_execution_group"], component_id)
+            self.assertEqual(
+                component["test"]["lane"] == "bootstrap-free",
+                component["leaf_execution_group"] is not None,
+                component_id,
+            )
+
+    def test_leaf_execution_group_is_distinct_from_semantic_stage0_group(self) -> None:
+        contract = validator.load_stage0_component_contract()
+        by_id = {component["id"]: component for component in contract["components"]}
+        expected_distinctions = {
+            "digest": ("compatibility-support", "foundation-reader"),
+            "syntax-object-stream": ("compiler", "foundation-reader"),
+            "syntax-origin": ("compiler", "foundation-reader"),
+            "compiler-verification-shared": ("compatibility-support", "compiler"),
+            "darwin-publication": ("compatibility-support", "compiler"),
+        }
+        for component_id, expected in expected_distinctions.items():
+            component = by_id[component_id]
+            self.assertEqual(expected, (component["stage0_group"], component["leaf_execution_group"]))
+
+    def test_stage0_leaf_execution_group_drift_is_rejected(self) -> None:
+        def mutate(contract: dict) -> None:
+            by_id = {component["id"]: component for component in contract["components"]}
+            by_id["digest"]["leaf_execution_group"] = "compiler"
+            by_id["c10-safety-analysis"]["leaf_execution_group"] = "foundation-reader"
+
+        errors = self.stage0_errors_for(mutate)
+        self.assertTrue(any("leaf_execution_group" in error and "digest" in error for error in errors), errors)
+        self.assertTrue(any("leaf_execution_group" in error and "c10-safety-analysis" in error for error in errors), errors)
+
+    def test_stage0_leaf_execution_group_must_match_test_lane(self) -> None:
+        def mutate(contract: dict) -> None:
+            by_id = {component["id"]: component for component in contract["components"]}
+            by_id["digest"]["leaf_execution_group"] = None
+            by_id["diagnostics"]["leaf_execution_group"] = "foundation-reader"
+
+        errors = self.stage0_errors_for(mutate)
+        self.assertTrue(
+            any("leaf_execution_group" in error and "bootstrap-free" in error for error in errors),
+            errors,
+        )
+
+    def test_stage0_leaf_execution_group_rejects_unknown_value(self) -> None:
+        errors = self.stage0_errors_for(
+            lambda contract: contract["components"][1].__setitem__(
+                "leaf_execution_group", "unknown-group"
+            )
+        )
+        self.assertTrue(any("unknown leaf execution group" in error for error in errors), errors)
+
     def test_strict_json_rejects_duplicate_object_keys(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "duplicate.json"
