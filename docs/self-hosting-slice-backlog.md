@@ -536,8 +536,19 @@ upstream identities, facts, requests, or results. Four synthetic tests passed
 64 assertions, and one authenticated `.gravity` function-typed boundary passed
 27 assertions in 65.918 seconds with one cold carrier; its `.qst` twin was not
 built. These are non-authoritative development results. A fresh source-bound
-C8 proof candidate and derived census remain required. This does not establish
-a production effect checker, complete schema enforcement, effectful adaptation,
+C8 proof candidate then completed at commit `871cd14` in 877.765 seconds of
+checkpoint time (872.388 seconds in the proof), with stable context, empty
+stderr, and a checked output contract. It produced artifact
+`sha256:ed0a4eb33beafb7c0585cab276ab97aac3d6542872b8bad3e89e9df1930d46a0`
+and derived census
+`sha256:78ea0c864b4a59694e99470408e4aebbf5783c623827d29ea0f0d4ae9e49c902`:
+61 fragments and roots, 5,973 forms, 512 bindings, 250 local bindings, 2,023
+resolutions, 5,135 core nodes, 61 definitions, 852 calls and call edges, 1,607
+references, 55 function records, one recursion component, and zero keyword
+lookups. Counts were derived rather than precommitted and no trusted reviewed
+attestation was created, so this is proof-candidate evidence only. This does
+not establish exact authentic coverage, aggregate or release authority, a
+production effect checker, complete schema enforcement, effectful adaptation,
 general effect inference, completed thrown effects, latent or transitive call
 effects, handlers, namespace or module summaries, complete runtime-profile
 policy, MIR preservation, C8-to-C9 adaptation, or SH-09 completion.

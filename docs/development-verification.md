@@ -56,9 +56,14 @@ current capture-free one-hop function-typed core with empty declared call and
 latent effects; thrown effects remain `[:pending-sh09]`. Keep `.qst` to byte
 parity, do not rerun C7 authority for this C8-only change, and require a new
 `c8-effects` source-bound-derived proof candidate after source and contract
-freeze. That candidate still requires a separately trusted reviewed
-attestation and cannot claim exact-authentic coverage, aggregate, or release
-authority.
+freeze. The fresh candidate at commit `871cd14` completed in 877.765 seconds
+(872.388 seconds in the proof), with stable context, empty stderr, artifact
+`sha256:ed0a4eb33beafb7c0585cab276ab97aac3d6542872b8bad3e89e9df1930d46a0`,
+and derived census
+`sha256:78ea0c864b4a59694e99470408e4aebbf5783c623827d29ea0f0d4ae9e49c902`.
+It remains a proof candidate: counts were not precommitted, no trusted reviewed
+attestation was created, and it cannot claim exact-authentic coverage,
+aggregate, or release authority.
 
 ## Lane order
 
