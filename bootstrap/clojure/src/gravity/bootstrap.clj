@@ -12,6 +12,7 @@
             [clojure.walk :as walk]
             [gravity.c2-pass-cache :as c2-pass-cache]
             [gravity.cli :as cli]
+            [gravity.c5-name-resolution :as c5]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
@@ -1440,801 +1441,264 @@
   (compiler-c4-macro-source-artifact path (slurp path)))
 
 (def c5-resolution-diagnostic-ids
-  ["C5-UNRESOLVED"
-   "C5-AMBIGUOUS"
-   "C5-PRIVATE"
-   "C5-ALIAS"
-   "C5-SHADOW"
-   "C5-CYCLE"
-   "C5-CROSS-PROFILE"
-   "C5-CAPABILITY"
-   "C5-TARGET"
-   "C5-FOREIGN"])
-
+  c5/c5-resolution-diagnostic-ids)
 (def c5-resolution-governing-document
-  "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md")
-
+  c5/c5-resolution-governing-document)
 (def c5-resolution-rejected-designs
-  [{:diagnostic "C5-UNRESOLVED"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-unresolved.gravity"
-    :rejected-design :unresolved-symbol}
-   {:diagnostic "C5-AMBIGUOUS"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-ambiguous.gravity"
-    :rejected-design :ambiguous-unqualified-symbol}
-   {:diagnostic "C5-PRIVATE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-private.gravity"
-    :rejected-design :private-binding-access}
-   {:diagnostic "C5-ALIAS"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-alias.gravity"
-    :rejected-design :unknown-or-duplicate-alias}
-   {:diagnostic "C5-SHADOW"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-shadow.gravity"
-    :rejected-design :illegal-shadowing}
-   {:diagnostic "C5-CYCLE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-cycle.gravity"
-    :rejected-design :namespace-dependency-cycle}
-   {:diagnostic "C5-CROSS-PROFILE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-cross-profile.gravity"
-    :rejected-design :cross-profile-edge-without-boundary}
-   {:diagnostic "C5-CAPABILITY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-capability.gravity"
-    :rejected-design :imported-binding-without-capability}
-   {:diagnostic "C5-TARGET"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-target.gravity"
-    :rejected-design :target-incompatible-import}
-   {:diagnostic "C5-FOREIGN"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-foreign.gravity"
-    :rejected-design :malformed-foreign-import-record}])
-
+  c5/c5-resolution-rejected-designs)
 (def c5-resolution-override-diagnostics
-  {:unresolved "C5-UNRESOLVED"
-   :ambiguous "C5-AMBIGUOUS"
-   :private "C5-PRIVATE"
-   :alias "C5-ALIAS"
-   :shadow "C5-SHADOW"
-   :cycle "C5-CYCLE"
-   :cross-profile "C5-CROSS-PROFILE"
-   :capability "C5-CAPABILITY"
-   :target "C5-TARGET"
-   :foreign "C5-FOREIGN"})
-
+  c5/c5-resolution-override-diagnostics)
 (def c5-special-form-symbols
-  '#{quote if do let fn loop recur def defn defmacro defschema defprotocol
-     syntax-quote unquote splice-unquote unsafe})
-
+  c5/c5-special-form-symbols)
 (def c5-core-auto-imports
-  '#{println + - * / = < > <= >= str pr-str hash-map vector list conj assoc
-     get first second rest count})
-
+  c5/c5-core-auto-imports)
 (def c5-type-auto-imports
-  '#{I8 I16 I32 I64 U8 U16 U32 U64 F32 F64 Bool String Symbol Keyword
-     Dynamic Unit Never})
+  c5/c5-type-auto-imports)
+
+(declare c5-resolution-ops
+         c5-resolution-source-overrides
+         c5-resolution-message
+         c5-resolution-fail!
+         c5-resolution-validate-overrides!
+         c5-package-record
+         c5-binding-id
+         c5-binding-identity
+         c5-definition-binding
+         c5-special-form-binding
+         c5-core-binding
+         c5-type-binding
+         c5-import-binding
+         c5-alias-table
+         c5-import-export-table
+         c5-definition-bindings
+         c5-macro-bindings
+         c5-param-symbols
+         c5-local-bindings-from-params
+         c5-let-binding-symbols
+         c5-local-scope-graph
+         c5-bindings-by-name
+         c5-resolve-qualified-symbol
+         c5-resolution-record
+         c5-binding-table
+         c5-namespace-analysis-artifact
+         c5-dependency-graph
+         c5-cross-profile-edge-report
+         c5-incremental-invalidation-keys
+         c5-resolution-diagnostics
+         c5-resolution-verification-report
+         c5-resolution-capability-proof
+         c5-resolution-validate!
+         compiler-c5-resolution-source-artifact
+         compiler-c5-resolution-file-artifact)
+
+(defn- c5-call
+  [operation & args]
+  (c5/with-operations (c5-resolution-ops)
+    #(apply operation args)))
 
 (defn c5-resolution-source-overrides
   [module]
-  (get-in module [:metadata :compiler :c5-resolution] {}))
+  (c5-call c5/c5-resolution-source-overrides module))
 
 (defn c5-resolution-message
   [id]
-  (case id
-    "C5-UNRESOLVED" "symbol has no resolvable binding"
-    "C5-AMBIGUOUS" "symbol has multiple legal bindings"
-    "C5-PRIVATE" "private binding is accessed outside its namespace boundary"
-    "C5-ALIAS" "namespace alias is unknown or duplicated"
-    "C5-SHADOW" "lexical binding shadows a namespace binding illegally"
-    "C5-CYCLE" "namespace dependency graph contains an illegal cycle"
-    "C5-CROSS-PROFILE" "cross-profile import lacks an accepted boundary"
-    "C5-CAPABILITY" "imported binding requires an unavailable capability"
-    "C5-TARGET" "imported binding is incompatible with the active target"
-    "C5-FOREIGN" "foreign import record is malformed"
-    "name resolution and namespace analysis failed"))
+  (c5-call c5/c5-resolution-message id))
 
 (defn c5-resolution-fail!
   [id source-path subject extra]
-  (fail! id
-         (c5-resolution-message id)
-         (merge {:source-span (or (:source-span subject)
-                                  (:span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :c5-name-resolution
-                 :stage :name-resolution
-                 :document-id "C5"
-                 :expected-document c5-resolution-governing-document
-                 :symbol (:symbol subject)
-                 :syntax-id (:syntax-id subject)
-                 :namespace (:namespace subject)
-                 :active-profile (:profile subject)
-                 :target (:target subject)
-                 :candidate-bindings (:candidate-bindings subject)
-                 :dependency-edge (:dependency-edge subject)
-                 :capabilities (:capabilities subject)
-                 :remediation "Resolve names through lexical, namespace, alias, package, foreign, core, or target-intrinsic records with explicit profile, target, effect, capability, visibility, and dependency metadata."}
-                extra)))
+  (c5-call c5/c5-resolution-fail! id source-path subject extra))
 
 (defn c5-resolution-validate-overrides!
   [source-path module overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c5-resolution-override-diagnostics fail-kind)]
-      (c5-resolution-fail! id source-path
-                           {:source-span (source-span source-path 0)
-                            :symbol (symbol (str "fixture/" (name fail-kind)))
-                            :syntax-id "fixture-override"
-                            :namespace (:module module)
-                            :profile (:profile module)
-                            :target (:target module)
-                            :capabilities (:capabilities module)}
-                           {:missing-fields [fail-kind]}))))
+  (c5-call c5/c5-resolution-validate-overrides!
+           source-path module overrides))
 
 (defn c5-package-record
   [module]
-  {:name (or (get-in module [:metadata :package]) 'gravity/stage0-local)
-   :version (or (get-in module [:metadata :package-version]) "0.0.0-stage0")})
+  (c5-call c5/c5-package-record module))
 
 (defn c5-binding-id
   [binding]
-  (str "sha256:" (sha256-hex (pr-str (select-keys binding
-                                                   [:name :kind :namespace
-                                                    :package :visibility
-                                                    :profile-set :target-set
-                                                    :type-ref :effects
-                                                    :capabilities :safety
-                                                    :source-span])))))
+  (c5-call c5/c5-binding-id binding))
 
 (defn c5-binding-identity
   [binding]
-  (let [stable (select-keys binding
-                            [:name :kind :namespace :package :visibility
-                             :profile-set :target-set :type-ref :effects
-                             :capabilities :safety :source-span :artifact])]
-    (assoc stable :binding-id (c5-binding-id stable))))
+  (c5-call c5/c5-binding-identity binding))
 
 (defn c5-definition-binding
   [module definition artifact-id]
-  (c5-binding-identity
-   {:name (:name definition)
-    :kind (:kind definition)
-    :namespace (:module module)
-    :package (c5-package-record module)
-    :visibility (:visibility definition)
-    :profile-set #{(:profile module)}
-    :target-set #{(:target module)}
-    :type-ref (case (:kind definition)
-                :schema :gravity.type/schema
-                :protocol :gravity.type/protocol
-                :macro :gravity.syntax/macro
-                :function :gravity.type/function
-                :gravity.type/value)
-    :effects (:latent-effects definition)
-    :capabilities (:required-capabilities definition)
-    :safety (:safety definition)
-    :source-span (:source-span definition)
-    :artifact artifact-id}))
+  (c5-call c5/c5-definition-binding module definition artifact-id))
 
 (defn c5-special-form-binding
   [sym module]
-  (c5-binding-identity
-   {:name sym
-    :kind :special-form
-    :namespace 'gravity.core
-    :package {:name 'gravity/core :version "stage0"}
-    :visibility :public
-    :profile-set known-source-profiles
-    :target-set supported-targets
-    :type-ref :gravity.syntax/special-form
-    :effects #{}
-    :capabilities #{}
-    :safety :safe
-    :source-span {:source "gravity.core" :form-index 0}
-    :artifact (:module module)}))
+  (c5-call c5/c5-special-form-binding sym module))
 
 (defn c5-core-binding
   [sym module]
-  (c5-binding-identity
-   {:name sym
-    :kind :var
-    :namespace 'gravity.core
-    :package {:name 'gravity/core :version "stage0"}
-    :visibility :public
-    :profile-set known-source-profiles
-    :target-set supported-targets
-    :type-ref :gravity.type/core-var
-    :effects (if (= 'println sym) #{:io/write} #{})
-    :capabilities (if (= 'println sym) #{:io/stdout} #{})
-    :safety :safe
-    :source-span {:source "gravity.core" :form-index 0}
-    :artifact (:module module)}))
+  (c5-call c5/c5-core-binding sym module))
 
 (defn c5-type-binding
   [sym module]
-  (c5-binding-identity
-   {:name sym
-    :kind :type
-    :namespace 'gravity.core
-    :package {:name 'gravity/core :version "stage0"}
-    :visibility :public
-    :profile-set known-source-profiles
-    :target-set supported-targets
-    :type-ref :gravity.type/type
-    :effects #{}
-    :capabilities #{}
-    :safety :safe
-    :source-span {:source "gravity.core" :form-index 0}
-    :artifact (:module module)}))
+  (c5-call c5/c5-type-binding sym module))
 
 (defn c5-import-binding
   [module dependency imported-name artifact-id]
-  (c5-binding-identity
-   {:name imported-name
-    :kind (if (= :import (:kind dependency)) :foreign-var :var)
-    :namespace (:module dependency)
-    :package {:name (symbol (str (:module dependency))) :version "stage0"}
-    :visibility (:visibility dependency)
-    :profile-set #{(or (:profile dependency) (:profile module))}
-    :target-set #{(:target module)}
-    :type-ref (if (= :import (:kind dependency))
-                :gravity.interop/foreign-value
-                :gravity.type/imported-var)
-    :effects (:effects dependency)
-    :capabilities (:capabilities dependency)
-    :safety (if (= :import (:kind dependency)) :boundary-checked :safe)
-    :source-span (source-span (:source-path module) 0)
-    :artifact artifact-id}))
+  (c5-call c5/c5-import-binding module dependency imported-name artifact-id))
 
 (defn c5-alias-table
   [module]
-  (mapv (fn [dependency]
-          {:alias (:alias dependency)
-           :namespace (:module dependency)
-           :kind (:kind dependency)
-           :package {:name (symbol (str (:module dependency)))
-                     :version "stage0"}
-           :profile (:profile dependency)
-           :target (:target module)
-           :effects (:effects dependency)
-           :capabilities (:capabilities dependency)
-           :visibility (:visibility dependency)
-           :boundary (or (:boundary dependency)
-                         (when (= :core (:profile dependency)) :pure-core))})
-        (filter :alias (concat (:requires module) (:imports module)))))
+  (c5-call c5/c5-alias-table module))
 
 (defn c5-import-export-table
   [module]
-  {:artifact :gravity/c5-import-export-table
-   :requires (mapv #(select-keys % [:module :alias :refer :profile :boundary
-                                    :effects :capabilities :visibility])
-                   (:requires module))
-   :foreign-imports (mapv #(select-keys % [:module :alias :refer :profile
-                                           :boundary :effects :capabilities
-                                           :visibility])
-                          (:imports module))
-   :exports (:exports module)
-   :status :complete})
+  (c5-call c5/c5-import-export-table module))
 
 (defn c5-definition-bindings
   [module module-artifact c4-artifact]
-  (mapv #(c5-definition-binding module % (:artifact-id c4-artifact))
-        (:definitions module-artifact)))
+  (c5-call c5/c5-definition-bindings module module-artifact c4-artifact))
 
 (defn c5-macro-bindings
   [module c4-artifact]
-  (mapv (fn [entry]
-          (c5-binding-identity
-           {:name (:macro entry)
-            :kind :macro
-            :namespace (:namespace entry)
-            :package (c5-package-record module)
-            :visibility :private
-            :profile-set #{(:profile module)}
-            :target-set #{(:target module)}
-            :type-ref :gravity.syntax/macro
-            :effects #{}
-            :capabilities (:capabilities entry)
-            :safety :safe
-            :source-span (source-span (:source-path module) 0)
-            :artifact (:artifact-id c4-artifact)}))
-        (get-in c4-artifact [:macro-environment :macro-vars])))
+  (c5-call c5/c5-macro-bindings module c4-artifact))
 
 (defn c5-param-symbols
   [params]
-  (loop [items (seq params)
-         symbols []]
-    (cond
-      (nil? items) symbols
-      (= ':- (first items)) (recur (nnext items) symbols)
-      (and (symbol? (first items)) (= ':- (second items)))
-      (recur (nnext (next items)) (conj symbols (first items)))
-      (symbol? (first items)) (recur (next items) (conj symbols (first items)))
-      :else (recur (next items) symbols))))
+  (c5-call c5/c5-param-symbols params))
 
 (defn c5-local-bindings-from-params
   [module form syntax-id]
-  (when (and (seq? form) (= 'defn (first form)))
-    (let [fn-name (second form)
-          params (nth form 2 [])
-          param-symbols (c5-param-symbols params)]
-      (mapv (fn [idx sym]
-              (c5-binding-identity
-               {:name sym
-                :kind :local
-                :namespace (:module module)
-                :package (c5-package-record module)
-                :visibility :lexical
-                :profile-set #{(:profile module)}
-                :target-set #{(:target module)}
-                :type-ref :gravity.type/local
-                :effects #{}
-                :capabilities #{}
-                :safety (:safety module)
-                :source-span {:source (:source-path module)
-                              :function fn-name
-                              :param-index idx}
-                :artifact syntax-id}))
-            (range)
-            param-symbols))))
+  (c5-call c5/c5-local-bindings-from-params module form syntax-id))
 
 (defn c5-let-binding-symbols
   [form]
-  (letfn [(walk [value]
-            (cond
-              (and (seq? value) (= 'let (first value)) (vector? (second value)))
-              (let [bindings (second value)
-                    names (->> (partition 2 bindings)
-                               (map first)
-                               (filter symbol?))]
-                (concat names (mapcat walk (drop 2 value))))
-              (seq? value) (mapcat walk value)
-              (coll? value) (mapcat walk value)
-              :else []))]
-    (vec (walk form))))
+  (c5-call c5/c5-let-binding-symbols form))
 
 (defn c5-local-scope-graph
   [module expanded-stream]
-  (let [scopes
-        (vec
-         (mapcat
-          (fn [syntax]
-            (let [form (:form syntax)
-                  syntax-id (:syntax-id syntax)
-                  params (or (c5-local-bindings-from-params module form syntax-id)
-                             [])
-                  lets (mapv (fn [idx sym]
-                               (c5-binding-identity
-                                {:name sym
-                                 :kind :local
-                                 :namespace (:module module)
-                                 :package (c5-package-record module)
-                                 :visibility :lexical
-                                 :profile-set #{(:profile module)}
-                                 :target-set #{(:target module)}
-                                 :type-ref :gravity.type/local
-                                 :effects #{}
-                                 :capabilities #{}
-                                 :safety (:safety module)
-                                 :source-span (:span syntax)
-                                 :artifact syntax-id}))
-                             (range)
-                             (c5-let-binding-symbols form))]
-              (when (seq (concat params lets))
-                [{:scope-id (str "scope/" syntax-id)
-                  :owner-syntax-id syntax-id
-                  :namespace (:module module)
-                  :bindings (vec (concat params lets))
-                  :parent :namespace-root}])))
-          expanded-stream))]
-    {:artifact :gravity/c5-lexical-scope-graph
-     :root {:scope-id :namespace-root :namespace (:module module)}
-     :scopes scopes
-     :status :complete}))
+  (c5-call c5/c5-local-scope-graph module expanded-stream))
 
 (defn c5-bindings-by-name
   [bindings]
-  (reduce (fn [acc binding]
-            (update acc (:name binding) (fnil conj []) binding))
-          {}
-          bindings))
+  (c5-call c5/c5-bindings-by-name bindings))
 
 (defn c5-resolve-qualified-symbol
   [module alias-map dependency-map sym]
-  (let [ns-part (namespace sym)
-        local-name (symbol (name sym))
-        alias-sym (symbol ns-part)]
-    (cond
-      (contains? alias-map alias-sym)
-      {:resolution-kind :alias-qualified
-       :binding (c5-import-binding module
-                                   (get dependency-map alias-sym)
-                                   local-name
-                                   (:module module))}
-
-      (= ns-part (str (:module module)))
-      {:resolution-kind :fully-qualified
-       :binding (c5-binding-identity
-                 {:name local-name
-                  :kind :var
-                  :namespace (:module module)
-                  :package (c5-package-record module)
-                  :visibility :public
-                  :profile-set #{(:profile module)}
-                  :target-set #{(:target module)}
-                  :type-ref :gravity.type/value
-                  :effects #{}
-                  :capabilities #{}
-                  :safety (:safety module)
-                  :source-span (source-span (:source-path module) 0)
-                  :artifact (:module module)})}
-
-      (str/includes? ns-part ".")
-      {:resolution-kind :fully-qualified
-       :binding (c5-binding-identity
-                 {:name local-name
-                  :kind :var
-                  :namespace (symbol ns-part)
-                  :package {:name (symbol ns-part) :version "stage0"}
-                  :visibility :public
-                  :profile-set known-source-profiles
-                  :target-set #{(:target module)}
-                  :type-ref :gravity.type/qualified-var
-                  :effects #{}
-                  :capabilities #{}
-                  :safety :safe
-                  :source-span (source-span (:source-path module) 0)
-                  :artifact (symbol ns-part)})}
-
-      :else nil)))
+  (c5-call c5/c5-resolve-qualified-symbol
+           module alias-map dependency-map sym))
 
 (defn c5-resolution-record
   [module bindings-by-name alias-map dependency-map local-bindings syntax idx sym]
-  (let [local-by-name (c5-bindings-by-name local-bindings)
-        qualified? (namespace sym)
-        resolved (if qualified?
-                   (c5-resolve-qualified-symbol module alias-map dependency-map sym)
-                   (cond
-                     (contains? local-by-name sym)
-                     {:resolution-kind :local
-                      :binding (first (get local-by-name sym))}
-                     (contains? bindings-by-name sym)
-                     {:resolution-kind :namespace
-                      :binding (first (get bindings-by-name sym))}
-                     (contains? c5-special-form-symbols sym)
-                     {:resolution-kind :special-form
-                      :binding (c5-special-form-binding sym module)}
-                     (contains? c5-core-auto-imports sym)
-                     {:resolution-kind :core-auto-import
-                      :binding (c5-core-binding sym module)}
-                     (contains? c5-type-auto-imports sym)
-                     {:resolution-kind :type-position
-                      :binding (c5-type-binding sym module)}
-                     :else nil))]
-    (when resolved
-      {:syntax-id (:syntax-id syntax)
-       :symbol-index idx
-       :symbol sym
-       :position (cond
-                   (contains? c5-special-form-symbols sym) :special-form
-                   (contains? c5-type-auto-imports sym) :type
-                   qualified? :expression
-                   :else :expression)
-       :resolution-order (:resolution-kind resolved)
-       :binding-id (get-in resolved [:binding :binding-id])
-       :binding (select-keys (:binding resolved)
-                             [:binding-id :name :kind :namespace :visibility
-                              :profile-set :target-set :effects
-                              :capabilities :safety])})))
+  (c5-call c5/c5-resolution-record module bindings-by-name alias-map
+           dependency-map local-bindings syntax idx sym))
 
 (defn c5-binding-table
-  [module definition-bindings macro-bindings lexical-scope-graph expanded-stream]
-  (let [namespace-bindings (vec (concat definition-bindings macro-bindings))
-        bindings-by-name (c5-bindings-by-name namespace-bindings)
-        dependencies (concat (:requires module) (:imports module))
-        alias-map (into {} (map (juxt :alias identity) (filter :alias dependencies)))
-        dependency-map alias-map
-        locals (vec (mapcat :bindings (:scopes lexical-scope-graph)))]
-    {:artifact :gravity/c5-binding-table
-     :bindings
-     (vec
-      (keep-indexed
-       (fn [idx pair]
-         (let [[syntax sym] pair]
-           (c5-resolution-record module bindings-by-name alias-map
-                                 dependency-map locals syntax idx sym)))
-       (mapcat (fn [syntax]
-                 (map (fn [sym] [syntax sym])
-                      (collect-code-symbols (:form syntax))))
-               (remove #(ns-form? (:form %)) expanded-stream))))
-     :namespace-bindings namespace-bindings
-     :local-bindings locals
-     :status :complete}))
+  [module definition-bindings macro-bindings lexical-scope-graph
+   expanded-stream]
+  (c5-call c5/c5-binding-table module definition-bindings macro-bindings
+           lexical-scope-graph expanded-stream))
 
 (defn c5-namespace-analysis-artifact
-  [module binding-table alias-table import-export-table dependency-graph cross-profile-report]
-  {:artifact :gravity/namespace-analysis
-   :namespace (:module module)
-   :package (get-in module [:metadata :package])
-   :profile (:profile module)
-   :target (:target module)
-   :aliases (into {} (map (juxt :alias :namespace) alias-table))
-   :exports (:exports module)
-   :locals (c4-artifact-id (:local-bindings binding-table))
-   :bindings (into {} (map (fn [record]
-                             [[(:syntax-id record) (:symbol-index record)]
-                              (:binding-id record)])
-                           (:bindings binding-table)))
-   :requires (get import-export-table :requires)
-   :foreign-imports (get import-export-table :foreign-imports)
-   :dependency-graph dependency-graph
-   :cross-profile-edge-report cross-profile-report
-   :rejected-edges []
-   :diagnostics []
-   :status :complete})
+  [module binding-table alias-table import-export-table dependency-graph
+   cross-profile-report]
+  (c5-call c5/c5-namespace-analysis-artifact module binding-table alias-table
+           import-export-table dependency-graph cross-profile-report))
 
 (defn c5-dependency-graph
   [module]
-  (let [dependencies (mapv (fn [dependency]
-                             {:namespace (:module dependency)
-                              :package {:name (symbol (str (:module dependency)))
-                                        :version "stage0"}
-                              :edge (or (:edge dependency) :direct)
-                              :kind (:kind dependency)
-                              :alias (:alias dependency)
-                              :profile-boundary
-	                              (cond
-	                                (:boundary dependency) (:boundary dependency)
-	                                (= :core (:profile dependency)) :pure-core
-	                                (= (:profile dependency) (:profile module)) :compatible
-	                                :else :missing)
-                              :effects (:effects dependency)
-                              :capabilities (:capabilities dependency)
-                              :target (:target module)})
-                           (concat (:requires module) (:imports module)))]
-    {:artifact :gravity/c5-module-dependency-graph
-     :module (:module module)
-     :dependencies dependencies
-     :edges (mapv (fn [dependency]
-                    {:from (:module module)
-                     :to (:namespace dependency)
-                     :kind (:kind dependency)
-                     :profile-boundary (:profile-boundary dependency)})
-                  dependencies)
-     :acyclic true
-     :status :complete}))
+  (c5-call c5/c5-dependency-graph module))
 
 (defn c5-cross-profile-edge-report
   [module dependency-graph]
-  {:artifact :gravity/c5-cross-profile-edge-report
-   :edges
-   (mapv (fn [dependency]
-           {:from (:module module)
-            :to (:namespace dependency)
-            :from-profile (:profile module)
-            :to-profile (or (some (fn [dep]
-                                    (when (= (:module dep) (:namespace dependency))
-                                      (:profile dep)))
-                                  (concat (:requires module) (:imports module)))
-                            (:profile module))
-            :boundary (:profile-boundary dependency)
-            :accepted? (not= :missing (:profile-boundary dependency))})
-         (:dependencies dependency-graph))
-   :status :complete})
+  (c5-call c5/c5-cross-profile-edge-report module dependency-graph))
 
 (defn c5-incremental-invalidation-keys
   [module c4-artifact binding-table dependency-graph]
-  {:artifact :gravity/c5-incremental-invalidation-keys
-   :keys [{:input :namespace-source
-           :hash (str "sha256:" (sha256-hex (pr-str (:source-path module))))
-           :invalidates [:namespace-analysis :type-check :lsp-index]}
-          {:input :aliases
-           :hash (str "sha256:" (sha256-hex (pr-str (map :alias (concat (:requires module) (:imports module))))))
-           :invalidates [:binding-table :dependency-graph]}
-          {:input :exports
-           :hash (str "sha256:" (sha256-hex (pr-str (:exports module))))
-           :invalidates [:public-api :package-graph]}
-          {:input :package-version
-           :hash (str "sha256:" (sha256-hex (pr-str (c5-package-record module))))
-           :invalidates [:dependency-graph :trust-policy]}
-          {:input :profile-target
-           :hash (str "sha256:" (sha256-hex (pr-str [(:profile module)
-                                                      (:target module)])))
-           :invalidates [:profile-validation :target-lowering]}
-          {:input :macro-expansion
-           :hash (:artifact-id c4-artifact)
-           :invalidates [:binding-table :type-check :effect-check]}
-          {:input :binding-identities
-           :hash (str "sha256:" (sha256-hex (pr-str (:namespace-bindings binding-table))))
-           :invalidates [:incremental-cache :lsp-index]}
-          {:input :dependency-graph
-           :hash (str "sha256:" (sha256-hex (pr-str (:edges dependency-graph))))
-           :invalidates [:package-graph :capability-check]}]
-   :status :stable})
+  (c5-call c5/c5-incremental-invalidation-keys module c4-artifact
+           binding-table dependency-graph))
 
 (defn c5-resolution-diagnostics
   [module]
-  {:artifact :gravity/c5-resolution-diagnostics
-   :required-diagnostic-ids c5-resolution-diagnostic-ids
-   :covered c5-resolution-rejected-designs
-   :accepted-run []
-   :status :complete})
+  (c5-call c5/c5-resolution-diagnostics module))
 
 (defn c5-resolution-verification-report
-  [binding-table lexical-scope-graph dependency-graph cross-profile-report invalidation]
-  {:artifact :gravity/c5-resolution-verification-report
-   :binding-identities-stable?
-   (every? #(re-find #"^sha256:" (:binding-id %))
-           (concat (:namespace-bindings binding-table)
-                   (:local-bindings binding-table)))
-   :all-resolved-bindings-have-metadata?
-   (every? #(and (:binding-id %)
-                 (:profile-set %)
-                 (:target-set %)
-                 (contains? % :effects)
-                 (contains? % :capabilities)
-                 (:visibility %))
-           (concat (:namespace-bindings binding-table)
-                   (:local-bindings binding-table)))
-   :lexical-scopes-present? (seq (:scopes lexical-scope-graph))
-   :dependency-graph-present? (seq (:edges dependency-graph))
-   :cross-profile-boundaries-recorded?
-   (every? :accepted? (:edges cross-profile-report))
-   :invalidation-keys-stable?
-   (every? #(re-find #"^sha256:" (:hash %)) (:keys invalidation))
-   :status :passed})
+  [binding-table lexical-scope-graph dependency-graph cross-profile-report
+   invalidation]
+  (c5-call c5/c5-resolution-verification-report binding-table
+           lexical-scope-graph dependency-graph cross-profile-report
+           invalidation))
 
 (defn c5-resolution-capability-proof
   [artifact]
-  (let [binding-table (:binding-table artifact)
-        records (:bindings binding-table)
-        namespace-bindings (:namespace-bindings binding-table)
-        diagnostics (set (map :diagnostic (:rejected-design-coverage artifact)))
-        verifier (:resolution-verification-report artifact)]
-    {:local-resolution?
-     (boolean (some #(= :local (:resolution-order %)) records))
-     :namespace-resolution?
-     (boolean (some #(= :namespace (:resolution-order %)) records))
-     :alias-qualified-resolution?
-     (boolean (some #(= :alias-qualified (:resolution-order %)) records))
-     :fully-qualified-resolution?
-     (boolean (some #(= :fully-qualified (:resolution-order %)) records))
-     :macro-and-type-position-resolution?
-     (boolean (and (some #(= :macro (:kind %)) namespace-bindings)
-                   (some #(= :type-position (:resolution-order %)) records)))
-     :binding-identity-stable?
-     (true? (:binding-identities-stable? verifier))
-     :visibility-diagnostics-covered?
-     (contains? diagnostics "C5-PRIVATE")
-     :dependency-graph-emitted?
-     (= :complete (get-in artifact [:dependency-graph :status]))
-     :cross-profile-boundaries-recorded?
-     (true? (:cross-profile-boundaries-recorded? verifier))
-     :target-and-capability-compatibility?
-     (every? #(set/subset? (set (:capabilities %))
-                           (set (get-in artifact [:module :capabilities])))
-             (get-in artifact [:dependency-graph :dependencies]))
-     :incremental-invalidation-recorded?
-     (= :stable (get-in artifact [:incremental-invalidation-keys :status]))
-     :diagnostics-covered?
-     (= (set c5-resolution-diagnostic-ids) diagnostics)
-     :status :complete}))
+  (c5-call c5/c5-resolution-capability-proof artifact))
 
 (defn c5-resolution-validate!
   [source-path artifact]
-  (let [proof (c5-resolution-capability-proof artifact)]
-    (doseq [[field id] [[:local-resolution? "C5-UNRESOLVED"]
-                        [:namespace-resolution? "C5-UNRESOLVED"]
-                        [:alias-qualified-resolution? "C5-ALIAS"]
-                        [:fully-qualified-resolution? "C5-UNRESOLVED"]
-                        [:macro-and-type-position-resolution? "C5-UNRESOLVED"]
-                        [:binding-identity-stable? "C5-UNRESOLVED"]
-                        [:visibility-diagnostics-covered? "C5-PRIVATE"]
-                        [:dependency-graph-emitted? "C5-CYCLE"]
-                        [:cross-profile-boundaries-recorded? "C5-CROSS-PROFILE"]
-                        [:target-and-capability-compatibility? "C5-CAPABILITY"]
-                        [:incremental-invalidation-recorded? "C5-UNRESOLVED"]
-                        [:diagnostics-covered? "C5-UNRESOLVED"]]]
-      (when-not (get proof field)
-        (c5-resolution-fail! id source-path {:stage :name-resolution}
-                             {:missing-fields [field]}))))
-  :complete)
+  (c5-call c5/c5-resolution-validate! source-path artifact))
 
 (defn compiler-c5-resolution-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        overrides (c5-resolution-source-overrides module)
-        _ (c5-resolution-validate-overrides! source-path module overrides)
-        c4-artifact (compiler-c4-macro-source-artifact source-path source-text)
-        module-artifact (module-source-artifact source-path source-text)
-        expanded-stream (:expanded-syntax-stream c4-artifact)
-        alias-table (c5-alias-table module)
-        import-export-table (c5-import-export-table module)
-        definition-bindings (c5-definition-bindings module module-artifact
-                                                    c4-artifact)
-        macro-bindings (c5-macro-bindings module c4-artifact)
-        lexical-scope-graph (c5-local-scope-graph module expanded-stream)
-        binding-table (c5-binding-table module definition-bindings
-                                        macro-bindings lexical-scope-graph
-                                        expanded-stream)
-        dependency-graph (c5-dependency-graph module)
-        cross-profile-report (c5-cross-profile-edge-report module
-                                                           dependency-graph)
-        invalidation (c5-incremental-invalidation-keys module c4-artifact
-                                                       binding-table
-                                                       dependency-graph)
-        namespace-analysis (c5-namespace-analysis-artifact module binding-table
-                                                           alias-table
-                                                           import-export-table
-                                                           dependency-graph
-                                                           cross-profile-report)
-        verifier (c5-resolution-verification-report binding-table
-                                                    lexical-scope-graph
-                                                    dependency-graph
-                                                    cross-profile-report
-                                                    invalidation)
-        artifact-base
-        {:kind :gravity/stage0-c5-name-resolution-artifact
-         :task "P06-D084"
-         :document-set ["C5"]
-         :governing-document c5-resolution-governing-document
-         :pass {:name :c5-name-resolution-and-namespace-analyzer
-                :input :c4-expanded-syntax-artifact
-                :output :namespace-analysis
-                :requires [:expanded-syntax-stream :macro-expansion-context
-                           :alias-table :package-dependency-graph
-                           :active-profile :active-target :language-facets]
-                :preserves [:source-spans :syntax-ids :hygiene
-                            :generated-origin :profile :target
-                            :effects :capabilities]
-                :emits [:namespace-analysis :binding-table :alias-table
-                        :import-export-table :lexical-scope-graph
-                        :dependency-graph :cross-profile-edge-report
-                        :resolution-diagnostics
-                        :incremental-invalidation-keys]
-                :rejects c5-resolution-diagnostic-ids}
-         :source-overrides overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c4-macro-expansion-artifact
-         (select-keys c4-artifact [:kind :artifact-id :expanded-syntax-stream
-                                   :macro-expansion-trace
-                                   :macro-environment
-                                   :generated-origin-source-map])
-         :namespace-analysis namespace-analysis
-         :binding-table binding-table
-         :alias-table alias-table
-         :import-export-table import-export-table
-         :lexical-scope-graph lexical-scope-graph
-         :dependency-graph dependency-graph
-         :cross-profile-edge-report cross-profile-report
-         :resolution-diagnostics (c5-resolution-diagnostics module)
-         :incremental-invalidation-keys invalidation
-         :resolution-verification-report verifier
-         :rejected-design-coverage c5-resolution-rejected-designs
-         :diagnostics []}
-        _ (c5-resolution-validate! source-path artifact-base)
-        capability-proof (c5-resolution-capability-proof artifact-base)
-        conformance {:documents ["C5"]
-                     :task "P06-D084"
-                     :required-diagnostic-ids c5-resolution-diagnostic-ids
-                     :namespace-analysis-status :complete
-                     :binding-table-status :complete
-                     :alias-table-status :complete
-                     :import-export-status :complete
-                     :lexical-scope-status :complete
-                     :dependency-graph-status :complete
-                     :cross-profile-status :complete
-                     :diagnostic-status :complete
-                     :invalidation-status :stable
-                     :status :complete}
-        artifact (assoc artifact-base
-                        :capability-based-proof capability-proof
-                        :c5-resolution-results conformance)]
-    (assoc artifact :artifact-id (c4-artifact-id artifact))))
+  (c5-call c5/compiler-c5-resolution-source-artifact source-path source-text))
 
 (defn compiler-c5-resolution-file-artifact
   [path]
-  (compiler-c5-resolution-source-artifact path (slurp path)))
+  (c5-call c5/compiler-c5-resolution-file-artifact path))
 
+(defn c5-resolution-ops
+  []
+  {:fail! fail!
+   :source-span source-span
+   :sha256-hex sha256-hex
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :module-source-artifact module-source-artifact
+   :compiler-c4-macro-source-artifact compiler-c4-macro-source-artifact
+   :collect-code-symbols collect-code-symbols
+   :ns-form? ns-form?
+   :known-source-profiles known-source-profiles
+   :supported-targets supported-targets
+   :c5-resolution-diagnostic-ids c5-resolution-diagnostic-ids
+   :c5-resolution-governing-document c5-resolution-governing-document
+   :c5-resolution-rejected-designs c5-resolution-rejected-designs
+   :c5-resolution-override-diagnostics c5-resolution-override-diagnostics
+   :c5-special-form-symbols c5-special-form-symbols
+   :c5-core-auto-imports c5-core-auto-imports
+   :c5-type-auto-imports c5-type-auto-imports
+   :c5-resolution-source-overrides c5-resolution-source-overrides
+   :c5-resolution-message c5-resolution-message
+   :c5-resolution-fail! c5-resolution-fail!
+   :c5-resolution-validate-overrides! c5-resolution-validate-overrides!
+   :c5-package-record c5-package-record
+   :c5-binding-id c5-binding-id
+   :c5-binding-identity c5-binding-identity
+   :c5-definition-binding c5-definition-binding
+   :c5-special-form-binding c5-special-form-binding
+   :c5-core-binding c5-core-binding
+   :c5-type-binding c5-type-binding
+   :c5-import-binding c5-import-binding
+   :c5-alias-table c5-alias-table
+   :c5-import-export-table c5-import-export-table
+   :c5-definition-bindings c5-definition-bindings
+   :c5-macro-bindings c5-macro-bindings
+   :c5-param-symbols c5-param-symbols
+   :c5-local-bindings-from-params c5-local-bindings-from-params
+   :c5-let-binding-symbols c5-let-binding-symbols
+   :c5-local-scope-graph c5-local-scope-graph
+   :c5-bindings-by-name c5-bindings-by-name
+   :c5-resolve-qualified-symbol c5-resolve-qualified-symbol
+   :c5-resolution-record c5-resolution-record
+   :c5-binding-table c5-binding-table
+   :c5-namespace-analysis-artifact c5-namespace-analysis-artifact
+   :c5-dependency-graph c5-dependency-graph
+   :c5-cross-profile-edge-report c5-cross-profile-edge-report
+   :c5-incremental-invalidation-keys c5-incremental-invalidation-keys
+   :c5-resolution-diagnostics c5-resolution-diagnostics
+   :c5-resolution-verification-report c5-resolution-verification-report
+   :c5-resolution-capability-proof c5-resolution-capability-proof
+   :c5-resolution-validate! c5-resolution-validate!
+   :compiler-c5-resolution-source-artifact
+   compiler-c5-resolution-source-artifact})
 (def core-forms
   '#{quote if do let fn loop recur def var set! try throw match})
 
