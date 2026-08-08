@@ -312,9 +312,12 @@ test/assertion count, wall time, and memory were 19 tests and 397 assertions in
 The runner-unit prerequisite observed 9 tests and 28 assertions in 0.62 seconds
 with a peak resident set of 144,703,488 bytes (about 138 MiB), without loading
 the production leaf or bootstrap test namespaces. These are feedback rather
-than equivalence or general speedup claims. Leaf changes
-route only to this check and do not select `stage0-clojure-suite` or
-`stage0-bootstrap-authority`.
+than equivalence or general speedup claims. Leaf changes select this focused
+check and, because `bootstrap/clojure/src/**` is part of the Stage3 execution
+runtime, also select the automatic Stage3 chain through its public check. That
+additional heavy routing is the safety cost of complete runtime fingerprinting;
+the proof candidate remains manual-only. Leaf changes still do not select
+`stage0-clojure-suite` or `stage0-bootstrap-authority`.
 
 ### 5. Focused namespace or cached SH-07 feedback
 
