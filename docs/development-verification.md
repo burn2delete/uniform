@@ -82,9 +82,19 @@ immutable integer, boolean, and string reads. Persistent aggregates,
 owned-mutable, effectful, and nonprimitive adaptation, regions, arenas, linear
 resources, runtime checks, unsafe audits, trusted digest resolution, and MIR
 preservation remain pending. The historical C9 proof binds the preceding
-35,894-byte source; the current source requires one fresh `c9-ownership`
-source-bound-derived proof candidate after its public check and final freeze.
-Do not rerun C8 authority for this C9-only change.
+35,894-byte source. A fresh source-bound-derived C9 proof candidate for the
+current source completed in 505.045 seconds of checkpoint time (499.953 seconds
+in the proof), with stable context, empty stderr, artifact
+`sha256:56aa7b6cded727e47b7528a7b027b711b7fb911e8dd288df259d15282412b2de`,
+and derived census
+`sha256:b28f186ab5586620913748d21224937344cbacea22a178c391640a8c2bd61a45`.
+It contains 44 fragments and roots, 3,274 forms, 426 bindings, 164 local
+bindings, 1,060 resolutions, 2,776 core nodes, 44 definitions, 423 calls and
+call edges, 855 references, 37 function records, five recursion components,
+and zero keyword lookups. Counts were not precommitted and a trusted reviewed
+attestation was not created, so this is a proof candidate rather than exact,
+aggregate, release, or automatically promoted scoped authority. Do not rerun
+C8 authority for this C9-only change.
 
 ## Lane order
 

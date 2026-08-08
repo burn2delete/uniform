@@ -583,12 +583,23 @@ identity-bound pure integer, boolean, and string values as persistent immutable
 reads. Four synthetic adapter tests passed 32 assertions, the existing kernel
 passed 424 assertions, and one authenticated boolean `.gravity` boundary
 passed 19 assertions in 70.298 seconds of wrapper time with one cold carrier.
-These are non-authoritative development results; no current C9 proof candidate
-has yet been produced. Persistent aggregate copy semantics, owned-mutable,
-effectful, and nonprimitive SH-09 adaptation, field and range splitting,
-regions, arenas, linear resources, task, actor, and FFI transfer, runtime borrow
-checks, unsafe-audit execution, trusted digest resolution, MIR preservation,
-and SH-10 completion remain pending.
+These are non-authoritative development results. A fresh source-bound-derived
+proof candidate for the current source then completed in 505.045 seconds of
+checkpoint time (499.953 seconds in the proof), with stable context, empty
+stderr, artifact
+`sha256:56aa7b6cded727e47b7528a7b027b711b7fb911e8dd288df259d15282412b2de`,
+and derived census
+`sha256:b28f186ab5586620913748d21224937344cbacea22a178c391640a8c2bd61a45`:
+44 fragments and roots, 3,274 forms, 426 bindings, 164 local bindings, 1,060
+resolutions, 2,776 core nodes, 44 definitions, 423 calls and call edges, 855
+references, 37 function records, five recursion components, and zero keyword
+lookups. Counts were not precommitted, and no trusted reviewed attestation was
+created, so the result does not establish exact authentic coverage, aggregate
+or release authority, or automatic scoped authority. Persistent aggregate copy
+semantics, owned-mutable, effectful, and nonprimitive SH-09 adaptation, field
+and range splitting, regions, arenas, linear resources, task, actor, and FFI
+transfer, runtime borrow checks, unsafe-audit execution, trusted digest
+resolution, MIR preservation, and SH-10 completion remain pending.
 The C10 safety-analysis source adds 68,327 authenticated bytes in 73 fragments
 containing 5,652 forms, 542 bindings, and 2,046 resolutions. Its calibrated
 lowering contains 4,709 canonical core nodes with 73 definitions: 63
