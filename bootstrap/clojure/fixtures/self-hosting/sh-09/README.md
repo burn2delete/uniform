@@ -14,6 +14,10 @@ capture-free one-hop function-typed core when every declared call and latent
 effect set is empty. The latter preserves `[:pending-sh09]` thrown effects
 rather than treating them as discharged. Both paths recompute normalized pure
 C8 legality products and keep physical source paths outside semantic identity.
+The next bounded seam emits ordered canonical type, effect, and no-capability
+digest requests, accepts only exact coordinator-returned request/digest pairs,
+and binds those identities into a separate path-neutral effected-core template.
+Digest computation itself remains an explicit coordinator boundary.
 
 The fixtures do not claim effectful adaptation, general effect inference,
 completed thrown effects, transitive effect inference, handler checking,

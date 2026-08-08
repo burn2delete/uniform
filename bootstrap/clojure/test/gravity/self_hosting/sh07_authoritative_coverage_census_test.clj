@@ -120,9 +120,9 @@
             "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
             :source-binding (:source-binding c7-expectation)}
            (get source-contracts "c7-types")))
-    (is (= {:source-byte-count 73997
+    (is (= {:source-byte-count 80761
             :source-bytes-sha256
-            "sha256:6f4a16abc758f47c9598ff211c3e465839990bba3dd75d74da49de907a78b080"}
+            "sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70"}
            (:source-binding c8-expectation)))
     (is (not (contains? c8-expectation :request-counts)))
     (is (not (contains? c8-expectation :core-counts)))

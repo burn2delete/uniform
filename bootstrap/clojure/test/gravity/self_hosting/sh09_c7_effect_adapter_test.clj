@@ -275,10 +275,26 @@
            (select-keys
             (get functions 'sh09-verify-authenticated-pure-effect-result)
             [:arity :params])))
+    (is (= {:arity 3 :params ['typed 'verification 'effected]}
+           (select-keys
+            (get functions 'sh09-authenticated-effect-identity-requests)
+            [:arity :params])))
+    (is (= {:arity 4
+            :params ['typed 'verification 'effected 'resolved]}
+           (select-keys
+            (get functions 'sh09-bind-authenticated-effect-identities)
+            [:arity :params])))
+    (is (= {:arity 5
+            :params
+            ['typed 'verification 'effected 'resolved 'candidate]}
+           (select-keys
+            (get functions 'sh09-verify-authenticated-effect-identities)
+            [:arity :params])))
     (is (some #{:pure-typed-core} (:accepted-effect-scopes policy)))
     (is (some #{:declared-pure-call-effects-with-thrown-effects-pending}
               (:accepted-effect-scopes policy)))
     (is (some #{:effectful-sh08-adapter} (:pending policy)))
+    (is (some #{:trusted-digest-resolution} (:pending policy)))
     (is (not-any? #{:authenticated-sh08-adapter}
                   (:pending (invoke-c8 'sh09-effect-policy []))))))
 
@@ -391,6 +407,71 @@
             (invoke-c8
              'sh09-verify-authenticated-pure-effect-result
              [typed-a (function-verification typed-a) result-a]))))))
+
+(deftest sh09-c7-adapter-binds-ordered-effect-identities
+  (let [typed-a (function-typed-result "/checkout-a/function.gravity")
+        typed-b (function-typed-result "/checkout-b/function.qst")
+        verification-a (function-verification typed-a)
+        verification-b (function-verification typed-b)
+        effected-a (build typed-a verification-a)
+        effected-b (build typed-b verification-b)
+        template-a
+        (invoke-c8
+         'sh09-authenticated-effect-identity-requests
+         [typed-a verification-a effected-a])
+        template-b
+        (invoke-c8
+         'sh09-authenticated-effect-identity-requests
+         [typed-b verification-b effected-b])
+        requests (:requests template-a)
+        resolved
+        (mapv (fn [request digest]
+                {:request request :digest digest})
+              requests [sha-a sha-b sha-c])
+        bound-a
+        (invoke-c8
+         'sh09-bind-authenticated-effect-identities
+         [typed-a verification-a effected-a resolved])
+        bound-b
+        (invoke-c8
+         'sh09-bind-authenticated-effect-identities
+         [typed-b verification-b effected-b resolved])]
+    (is (= :accepted (:status template-a) (:status template-b)))
+    (is (= (:requests template-a) (:requests template-b)))
+    (is (= [:type-fact :effect-fact :capability-proof]
+           (mapv :kind requests)))
+    (is (= [sha-d sha-d sha-d]
+           (mapv :core-node-id requests)))
+    (is (= :accepted (:status bound-a) (:status bound-b)))
+    (is (= {:type-fact-id sha-a
+            :effect-fact-id sha-b
+            :capability-proof-id sha-c}
+           (get-in bound-a [:fact-identities sha-d])))
+    (is (= (:identity-input bound-a) (:identity-input bound-b)))
+    (is (not= (:provenance bound-a) (:provenance bound-b)))
+    (is (not (contains? (:identity-input bound-a) :provenance)))
+    (is (= :passed
+           (:status
+            (invoke-c8
+             'sh09-verify-authenticated-effect-identities
+             [typed-a verification-a effected-a resolved bound-a]))))
+    (doseq [candidate
+            [(vec (reverse resolved))
+             (assoc-in resolved [0 :digest] "not-a-digest")
+             (assoc-in resolved [0 :unexpected] true)]]
+      (is (= :rejected
+             (:status
+              (invoke-c8
+               'sh09-bind-authenticated-effect-identities
+               [typed-a verification-a effected-a candidate])))))
+    (is (= :rejected
+           (:status
+            (invoke-c8
+             'sh09-verify-authenticated-effect-identities
+             [typed-a verification-a effected-a resolved
+              (assoc-in bound-a
+                        [:fact-identities sha-d :effect-fact-id]
+                        sha-e)]))))))
 
 (deftest sh09-c7-adapter-authenticated-gravity-boundary
   ;; This is a separately selected cold boundary. It reuses one authenticated

@@ -16,7 +16,10 @@
              sh09-verify-effect-result
              sh09-authenticated-sh08-adapter-policy
              sh09-build-authenticated-pure-effect-result
-             sh09-verify-authenticated-pure-effect-result])
+             sh09-verify-authenticated-pure-effect-result
+             sh09-authenticated-effect-identity-requests
+             sh09-bind-authenticated-effect-identities
+             sh09-verify-authenticated-effect-identities])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -1090,6 +1093,7 @@
    :gravity/sh08-authenticated-type-verification
    :diagnostics ["C8-VERIFY" "C8-PROFILE" "C8-UNDECLARED"]
    :pending [:effectful-sh08-adapter
+             :trusted-digest-resolution
              :effect-inference-beyond-declared-pure
              :function-latent-effects
              :transitive-call-effects
@@ -1800,6 +1804,181 @@
               :exact-type-fact-preservation
               :pure-effect-request-recomputation
               :pure-effect-graph-recomputation
+              :path-neutral-identity-input
+              :separate-actual-path-provenance]
+     :expected expected
+     :candidate candidate}))
+
+(defn sh09-effect-identity-request [kind core-node-id identity-input]
+  {:domain :gravity/sh09-effect-fact-identity-v1
+   :kind kind
+   :core-node-id core-node-id
+   :identity-input identity-input})
+
+(defn sh09-effect-identity-requests-loop
+  [remaining legality-results nodes requests]
+  (if (= (count remaining) 0)
+    requests
+    (let [effect-request (first remaining)
+          legality (first legality-results)
+          core-node-id (get effect-request :core-node-id)
+          node (get nodes core-node-id)
+          type-input (get (get node :type-fact-id) :identity-input)]
+      (sh09-effect-identity-requests-loop
+       (rest remaining)
+       (rest legality-results)
+       nodes
+       (conj
+        (conj
+         (conj
+          requests
+          (sh09-effect-identity-request
+           :type-fact core-node-id type-input))
+         (sh09-effect-identity-request
+          :effect-fact core-node-id
+          {:effect-request effect-request
+           :effect-legality-result legality
+           :effect-node node}))
+        (sh09-effect-identity-request
+         :capability-proof core-node-id
+         {:authority-mode :none
+          :declared-capabilities #{}
+          :required-capability nil}))))))
+
+(defn sh09-authenticated-effect-identity-requests
+  [typed verification effected]
+  (let [fresh
+        (sh09-verify-authenticated-pure-effect-result
+         typed verification effected)]
+    (if (= :passed (get fresh :status))
+      {:artifact :gravity/sh09-effect-identity-request-template
+       :schema-version 1
+       :status :accepted
+       :effect-scope (get effected :scope)
+       :requests
+       (sh09-effect-identity-requests-loop
+        (get effected :effect-requests)
+        (get effected :effect-legality-results)
+        (get (get effected :effect-graph) :nodes)
+        [])
+       :resolution :coordinator-digest-required
+       :diagnostics []}
+      {:artifact :gravity/sh09-effect-identity-request-template
+       :schema-version 1
+       :status :rejected
+       :effect-scope (get effected :scope)
+       :requests []
+       :resolution :coordinator-digest-required
+       :diagnostics
+       [(sh09-adapter-diagnostic
+         typed :unverified-authenticated-effected-core)]})))
+
+(defn sh09-resolved-effect-identities-valid?
+  [requests resolved]
+  (if (= (count requests) (count resolved))
+    (if (= (count requests) 0)
+      true
+      (let [entry (first resolved)]
+        (if (map? entry)
+          (if (sh09-exact-keys? entry #{:request :digest})
+            (if (= (first requests) (get entry :request))
+              (if (sh09-sha256-id? (get entry :digest))
+                (sh09-resolved-effect-identities-valid?
+                 (rest requests) (rest resolved))
+                false)
+              false)
+            false)
+          false)))
+    false))
+
+(defn sh09-bound-effect-identities
+  [requests resolved result]
+  (if (= (count requests) 0)
+    result
+    (let [type-entry (first resolved)
+          effect-entry (first (rest resolved))
+          capability-entry (first (rest (rest resolved)))
+          core-node-id (get (first requests) :core-node-id)]
+      (sh09-bound-effect-identities
+       (rest (rest (rest requests)))
+       (rest (rest (rest resolved)))
+       (assoc
+        result core-node-id
+        {:type-fact-id (get type-entry :digest)
+         :effect-fact-id (get effect-entry :digest)
+         :capability-proof-id (get capability-entry :digest)})))))
+
+(defn sh09-bind-authenticated-effect-identities
+  [typed verification effected resolved]
+  (let [template
+        (sh09-authenticated-effect-identity-requests
+         typed verification effected)
+        requests (get template :requests)]
+    (if (= :accepted (get template :status))
+      (if (vector? resolved)
+        (if (sh09-resolved-effect-identities-valid? requests resolved)
+          (let [facts
+                (sh09-bound-effect-identities requests resolved {})
+                identity-input
+                {:domain :gravity/sh09-identity-bound-effected-core-v1
+                 :effected-core-identity-input
+                 (get effected :identity-input)
+                 :fact-identities facts
+                 :pending
+                 (get (sh09-authenticated-sh08-adapter-policy) :pending)}]
+            {:artifact
+             :gravity/sh09-identity-bound-effected-core-template
+             :schema-version 1
+             :status :accepted
+             :scope (get effected :scope)
+             :effected-core effected
+             :fact-identities facts
+             :identity-input identity-input
+             :identity-resolution :coordinator-digest-bound
+             :provenance (get effected :provenance)
+             :diagnostics []
+             :pending (get identity-input :pending)
+             :self-hosted? false
+             :clojure-seed-boundary? true})
+          {:artifact
+           :gravity/sh09-identity-bound-effected-core-template
+           :schema-version 1
+           :status :rejected
+           :scope (get effected :scope)
+           :diagnostics
+           [(sh09-adapter-diagnostic
+             typed :effect-identity-resolution-substitution)]
+           :pending
+           (get (sh09-authenticated-sh08-adapter-policy) :pending)})
+        {:artifact
+         :gravity/sh09-identity-bound-effected-core-template
+         :schema-version 1
+         :status :rejected
+         :scope (get effected :scope)
+         :diagnostics
+         [(sh09-adapter-diagnostic
+           typed :malformed-effect-identity-resolution)]
+         :pending
+         (get (sh09-authenticated-sh08-adapter-policy) :pending)})
+      {:artifact :gravity/sh09-identity-bound-effected-core-template
+       :schema-version 1
+       :status :rejected
+       :scope (get effected :scope)
+       :diagnostics (get template :diagnostics)
+       :pending
+       (get (sh09-authenticated-sh08-adapter-policy) :pending)})))
+
+(defn sh09-verify-authenticated-effect-identities
+  [typed verification effected resolved candidate]
+  (let [expected
+        (sh09-bind-authenticated-effect-identities
+         typed verification effected resolved)]
+    {:artifact :gravity/sh09-effect-identity-binding-verification
+     :status (if (= expected candidate) :passed :rejected)
+     :checks [:fresh-authenticated-effected-core
+              :exact-digest-request-order
+              :resolved-digest-shape
+              :type-effect-capability-linkage
               :path-neutral-identity-input
               :separate-actual-path-provenance]
      :expected expected

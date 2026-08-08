@@ -32,9 +32,9 @@
   "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 73997)
+(def ^:private expected-source-byte-count 80761)
 (def ^:private expected-source-revision-id
-  "sha256:6f4a16abc758f47c9598ff211c3e465839990bba3dd75d74da49de907a78b080")
+  "sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70")
 (def ^:private expected-coverage
   {:fragment-count 40
    :root-form-count 40
@@ -74,7 +74,10 @@
     sh09-verify-effect-result
     sh09-authenticated-sh08-adapter-policy
     sh09-build-authenticated-pure-effect-result
-    sh09-verify-authenticated-pure-effect-result])
+    sh09-verify-authenticated-pure-effect-result
+    sh09-authenticated-effect-identity-requests
+    sh09-bind-authenticated-effect-identities
+    sh09-verify-authenticated-effect-identities])
 (def ^:private expected-definition-names
   '#{c8-effect-graph-contract
      c8-effect-legality-contract
@@ -136,6 +139,13 @@
      sh09-build-authenticated-function-effect-result
      sh09-build-authenticated-pure-effect-result
      sh09-verify-authenticated-pure-effect-result
+     sh09-effect-identity-request
+     sh09-effect-identity-requests-loop
+     sh09-authenticated-effect-identity-requests
+     sh09-resolved-effect-identities-valid?
+     sh09-bound-effect-identities
+     sh09-bind-authenticated-effect-identities
+     sh09-verify-authenticated-effect-identities
      sh09-verify-effect-result})
 (def ^:private quoted-definition-names
   '#{build-c8-effect-node
@@ -731,7 +741,7 @@
           #(filter keyword?
                    (tree-seq coll? seq (nth % 3)))
           rejection-calls))]
-    (is (= 62 (count forms)))
+    (is (= 69 (count forms)))
     (is (= 'gravity.compiler.c8-effect-checker-engine
            (second namespace-form)))
     (is (= :meta (:profile namespace-clauses)))
@@ -783,7 +793,7 @@
     (is (= expected-definition-names (set (keys definition-forms))))
     (is (= 6 (count (filter #(= 'def (first %))
                             (vals definition-forms)))))
-    (is (= 55 (count (filter #(= 'defn (first %))
+    (is (= 62 (count (filter #(= 'defn (first %))
                              (vals definition-forms)))))
     (is (= quoted-definition-names
            (set
@@ -791,7 +801,7 @@
                   :when (quoted-body form)]
               name))))
     (is (= expected-executable-sh09-names executable-names))
-    (is (= 52 (count executable-names)))
+    (is (= 59 (count executable-names)))
     (is (= expected-policy (nth policy-form 3)))
     (is (= expected-registry (parse-registry registry-form)))
     (is (= expected-diagnostic-catalog

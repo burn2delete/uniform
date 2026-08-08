@@ -525,8 +525,8 @@ complete capability proof, and no failed checks. The bounded source recognizes
 provider, grant, or resource subject. That receipt is historical evidence for
 the 44,102-byte revision, not current evidence for the adapter revision.
 
-The current stage-owned C8 source is 73,997 bytes with hash
-`sha256:6f4a16abc758f47c9598ff211c3e465839990bba3dd75d74da49de907a78b080`.
+The current stage-owned C8 source is 80,761 bytes with hash
+`sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70`.
 It adds a bounded authenticated SH-08 adapter for legacy pure primitive typed
 cores and the current capture-free one-hop function-typed core when all
 declared call and latent effect sets are empty. The adapter preserves
@@ -545,8 +545,14 @@ and derived census
 61 fragments and roots, 5,973 forms, 512 bindings, 250 local bindings, 2,023
 resolutions, 5,135 core nodes, 61 definitions, 852 calls and call edges, 1,607
 references, 55 function records, one recursion component, and zero keyword
-lookups. Counts were derived rather than precommitted and no trusted reviewed
-attestation was created, so this is proof-candidate evidence only. This does
+lookups. That proof binds the preceding 73,997-byte revision at commit
+`f3729a5`; the current source adds ordered canonical type, effect, and
+no-capability digest requests plus exact request/digest binding into a separate
+path-neutral effected-core template. Its focused identity lane passed two
+tests and 26 assertions. Digest computation remains an external coordinator
+boundary. Counts were derived rather than precommitted and no trusted reviewed
+attestation was created, so the prior result is historical proof-candidate
+evidence only. This does
 not establish exact authentic coverage, aggregate or release authority, a
 production effect checker, complete schema enforcement, effectful adaptation,
 general effect inference, completed thrown effects, latent or transitive call

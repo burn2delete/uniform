@@ -46,8 +46,8 @@ clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M 
   upgrading those claims. Missing, unknown, or mixed policy fields fail before
   an expensive proof transaction starts.
 
-The current C8 adapter revision is 73,997 bytes with source hash
-`sha256:6f4a16abc758f47c9598ff211c3e465839990bba3dd75d74da49de907a78b080`.
+The current C8 adapter revision is 80,761 bytes with source hash
+`sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70`.
 Its cheap synthetic lane passed four tests and 64 assertions; its single
 authenticated SH-08 function-typed `.gravity` boundary passed 27 assertions in
 65.918 seconds with one cold carrier. These are non-authoritative development
@@ -61,7 +61,12 @@ freeze. The fresh candidate at commit `871cd14` completed in 877.765 seconds
 `sha256:ed0a4eb33beafb7c0585cab276ab97aac3d6542872b8bad3e89e9df1930d46a0`,
 and derived census
 `sha256:78ea0c864b4a59694e99470408e4aebbf5783c623827d29ea0f0d4ae9e49c902`.
-It remains a proof candidate: counts were not precommitted, no trusted reviewed
+That receipt binds the preceding 73,997-byte revision at `f3729a5`. The current
+source adds an ordered digest-request and exact binding seam for type, effect,
+and no-capability facts; its focused lane passed two tests and 26 assertions.
+Digest computation remains an external coordinator boundary, so no C9 adapter
+may synthesize or substitute those identities. The historical receipt remains
+a proof candidate: counts were not precommitted, no trusted reviewed
 attestation was created, and it cannot claim exact-authentic coverage,
 aggregate, or release authority.
 
