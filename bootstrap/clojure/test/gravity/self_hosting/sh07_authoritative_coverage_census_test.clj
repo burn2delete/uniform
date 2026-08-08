@@ -111,6 +111,14 @@
         (get-in contract
                 [:authoritative-coverage-census
                  :module-expectations :c9-ownership])
+        c10-expectation
+        (get-in contract
+                [:authoritative-coverage-census
+                 :module-expectations :c10-safety])
+        c11-expectation
+        (get-in contract
+                [:authoritative-coverage-census
+                 :module-expectations :c11-mir])
         source-contracts (runner/module-source-contracts)]
     (is (= :source-bound-derived
            (:coverage-census-policy contract)))
@@ -124,9 +132,9 @@
             "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
             :source-binding (:source-binding c7-expectation)}
            (get source-contracts "c7-types")))
-    (is (= {:source-byte-count 80761
+    (is (= {:source-byte-count 82797
             :source-bytes-sha256
-            "sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70"}
+            "sha256:de3fb80e14336cadacf710a0b2fef33b19efab0728d5ca08e7a25c72df7afe16"}
            (:source-binding c8-expectation)))
     (is (not (contains? c8-expectation :request-counts)))
     (is (not (contains? c8-expectation :core-counts)))
@@ -134,16 +142,36 @@
             "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
             :source-binding (:source-binding c8-expectation)}
            (get source-contracts "c8-effects")))
-    (is (= {:source-byte-count 47414
+    (is (= {:source-byte-count 71132
             :source-bytes-sha256
-            "sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59"}
+            "sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd"}
            (:source-binding c9-expectation)))
     (is (not (contains? c9-expectation :request-counts)))
     (is (not (contains? c9-expectation :core-counts)))
     (is (= {:source-path
             "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
             :source-binding (:source-binding c9-expectation)}
-           (get source-contracts "c9-ownership")))))
+           (get source-contracts "c9-ownership")))
+    (is (= {:source-byte-count 112712
+            :source-bytes-sha256
+            "sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968"}
+           (:source-binding c10-expectation)))
+    (is (not (contains? c10-expectation :request-counts)))
+    (is (not (contains? c10-expectation :core-counts)))
+    (is (= {:source-path
+            "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+            :source-binding (:source-binding c10-expectation)}
+           (get source-contracts "c10-safety")))
+    (is (= {:source-byte-count 253588
+            :source-bytes-sha256
+            "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"}
+           (:source-binding c11-expectation)))
+    (is (not (contains? c11-expectation :request-counts)))
+    (is (not (contains? c11-expectation :core-counts)))
+    (is (= {:source-path
+            "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+            :source-binding (:source-binding c11-expectation)}
+           (get source-contracts "c11-mir")))))
 
 (deftest source-contract-mismatch-stops-before-authoritative-proof
   (let [source-reader

@@ -26,10 +26,12 @@ import datetime as _datetime
 import fnmatch
 import hashlib
 import json
+import math
 import os
 from pathlib import Path, PurePosixPath
 import platform
 import select
+import secrets
 import signal
 import shutil
 import stat
@@ -39,6 +41,16 @@ import tempfile
 import threading
 import time
 from typing import Any, Iterable, Mapping, Sequence
+
+try:
+    from tools import run_sh07_authoritative_modules as _sh07
+except ImportError:
+    import run_sh07_authoritative_modules as _sh07
+
+try:
+    from tools import run_stage3_verification as _stage3
+except ImportError:  # pragma: no cover - direct execution from tools/
+    import run_stage3_verification as _stage3
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,6 +64,28 @@ _MAX_OUTPUT_BYTES = 64 * 1024
 _MUTATION_POLL_SECONDS = 0.05
 _PROCESS_TERM_GRACE_SECONDS = 0.5
 _PROCESS_KILL_GRACE_SECONDS = 0.5
+_STAGE3_RSS_CADENCE_SECONDS = 1.0
+LOCK_OWNERS = ("runner", "command")
+_STAGE3_RESERVED_ENV = frozenset({
+    _stage3.RECEIPT_ENV,
+    _stage3.REPORT_ENV,
+    _stage3.NONCE_ENV,
+    _stage3.CHECK_ID_ENV,
+    _stage3.ROOT_ENV,
+    _stage3.MODE_ENV,
+    _stage3.BATCH_ENV,
+    _stage3.COMMAND_HASH_ENV,
+    _stage3.EXPECTED_COMMAND_ENV,
+    _stage3.TIMEOUT_ENV,
+    _stage3.CANDIDATE_CHECK_ID_ENV,
+    _stage3.CANDIDATE_RECEIPT_ENV,
+    _stage3.CANDIDATE_RECEIPT_SHA_ENV,
+    _stage3.CANDIDATE_STATE_ENV,
+    _stage3.CANDIDATE_MANIFEST_ENV,
+    _stage3.CANDIDATE_MANIFEST_SHA_ENV,
+    _stage3.ATTESTATION_PATH_ENV,
+    _stage3.ATTESTATION_SHA_ENV,
+})
 _LAUNCH_WRAPPER = (
     "import os,sys; "
     "fd=int(os.environ.pop('_GRAVITY_VERIFIER_LAUNCH_FD')); "
@@ -283,6 +317,217 @@ def _check_authority(check: Mapping[str, Any], lane: str) -> str:
     return str(raw)
 
 
+def _stage3_mode(check: Mapping[str, Any]) -> str:
+    """Require an explicit Stage 3 mode for command-owned nodes."""
+
+    raw = check.get("stage3_mode")
+    if raw not in _stage3.MODES:
+        raise ManifestError(
+            f"check {check.get('id')!r} must declare one explicit stage3_mode: "
+            + ", ".join(_stage3.MODES)
+        )
+    mode = str(raw)
+    batch = check.get("stage3_batch")
+    authority = check.get("authority", "none")
+    proof_batches = frozenset(getattr(_stage3, "FIXED_MODULE_POLICIES", {"authority": None}))
+    if mode == _stage3.MODE_PURE and batch in proof_batches:
+        raise ManifestError("pure Stage 3 mode cannot select the authority batch")
+    if mode in {_stage3.MODE_PROOF_CANDIDATE, _stage3.MODE_REVIEWED_ATTESTATION} \
+            and batch not in proof_batches:
+        raise ManifestError(
+            f"{mode} Stage 3 mode requires an exact fixed proof batch"
+        )
+    if mode == _stage3.MODE_REVIEWED_ATTESTATION and authority != "declared":
+        raise ManifestError("reviewed-attestation mode requires authority='declared'")
+    if mode != _stage3.MODE_REVIEWED_ATTESTATION and authority == "declared":
+        raise ManifestError("authority='declared' requires reviewed-attestation mode")
+    return mode
+
+
+_STAGE3_HEAP_BYTES = {
+    "-J-Xmx512m": 512 * 1024 * 1024,
+    "-J-Xmx2g": 2 * 1024 * 1024 * 1024,
+    "-J-Xmx8g": 8 * 1024 * 1024 * 1024,
+}
+
+
+def _is_fixed_stage_check(check_id: str) -> bool:
+    """Return whether a manifest node invokes the fixed stage wrapper.
+
+    Stage3 through Stage7 all use the same command-owned
+    ``run_stage3_verification.py`` boundary.  Keep this predicate centralized
+    so a newly added fixed stage cannot accidentally bypass heap, runtime
+    identity, lock-owner, or receipt validation.
+    """
+
+    return check_id.startswith(("stage3-", "stage4-", "stage5-", "stage6-", "stage7-"))
+
+
+def _validate_stage3_resource_contract(check: Mapping[str, Any]) -> None:
+    """Require a fixed heap declaration for every Stage3 process boundary."""
+
+    check_id = str(check.get("id", ""))
+    if not _is_fixed_stage_check(check_id):
+        return
+    declared = check.get("jvm_heap")
+    if check_id == "stage3-runner-unit":
+        expected = "-J-Xmx2g"
+        command = _parse_command(check.get("command"), check_id)
+        if len(command) < 2 or command[1] != expected:
+            raise ManifestError(
+                f"check {check_id!r} must pin {expected} immediately after clojure"
+            )
+    else:
+        batch = check.get("stage3_batch")
+        proof_batches = frozenset(getattr(_stage3, "FIXED_MODULE_POLICIES", {"authority": None}))
+        if batch in proof_batches:
+            # The proof-candidate wrapper launches the authoritative module
+            # child rather than the fixed Clojure batch command.  Its reviewed
+            # child contract still requires the semantic/authentication floor.
+            policy = getattr(_stage3, "FIXED_MODULE_POLICIES", {}).get(batch)
+            expected = str(policy.get("heap", "-J-Xmx8g")) if isinstance(policy, Mapping) else "-J-Xmx8g"
+        else:
+            try:
+                expected = str(_stage3.batch_command(str(batch))[1])
+            except Exception as exc:
+                raise ManifestError(
+                    f"check {check_id!r} must declare a reviewed fixed Stage3 batch"
+                ) from exc
+    if declared != expected or expected not in _STAGE3_HEAP_BYTES:
+        raise ManifestError(
+            f"check {check_id!r} jvm_heap must equal the fixed wrapper heap {expected!r}"
+        )
+    minimum = check.get("minimum_heap_bytes")
+    if type(minimum) is not int or minimum != _STAGE3_HEAP_BYTES[expected]:
+        raise ManifestError(
+            f"check {check_id!r} minimum_heap_bytes must equal the declared {expected} floor"
+        )
+
+
+def _validate_stage3_runtime_inputs(check: Mapping[str, Any]) -> None:
+    """Keep every command-owned production node on the central runtime set.
+
+    The runner-unit is intentionally a narrow unit preflight and does not
+    launch the production wrapper, so it is exempt.  Production nodes must
+    carry the complete centralized set in their declared inputs/tool inputs;
+    otherwise a shared runtime edit could falsely reuse a receipt.
+    """
+
+    check_id = str(check.get("id", ""))
+    if (
+        not _is_fixed_stage_check(check_id)
+        or check_id == "stage3-runner-unit"
+        or check.get("lock_owner", "runner") != "command"
+    ):
+        return
+    required = getattr(_stage3, "STAGE3_RUNTIME_DEPENDENCIES", None)
+    if not isinstance(required, (tuple, list)) or not required:
+        raise ManifestError("Stage3 wrapper runtime dependency contract is unavailable")
+    declared = set(check.get("inputs", [])) | set(check.get("tool_inputs", []))
+    missing = sorted(set(required) - declared)
+    if missing:
+        raise ManifestError(
+            f"check {check_id!r} omits centralized Stage3 runtime inputs: {missing}"
+        )
+    missing_exact: list[str] = []
+    for relative in required:
+        if _contains_glob(str(relative)):
+            continue
+        try:
+            info = os.lstat(ROOT / str(relative))
+        except OSError:
+            missing_exact.append(str(relative))
+            continue
+        if not stat.S_ISREG(info.st_mode):
+            missing_exact.append(str(relative))
+    if missing_exact:
+        raise ManifestError(
+            "centralized Stage3 runtime inputs are not existing regular files: "
+            f"{sorted(missing_exact)}"
+        )
+
+
+def _lock_owner(check: Mapping[str, Any]) -> str:
+    """Return the reviewed lock owner, defaulting to the verifier runner.
+
+    A command may own a lease only through the fixed Stage 3 wrapper.  Keeping
+    this policy in manifest validation makes a plain command unable to opt out
+    of the parent lock merely by adding a metadata field at run time.
+    """
+
+    raw = check.get("lock_owner", "runner")
+    if raw not in LOCK_OWNERS:
+        raise ManifestError(
+            f"check {check.get('id')!r} lock_owner must be 'runner' or 'command'"
+        )
+    owner = str(raw)
+    check_id = str(check.get("id"))
+    if (
+        _is_fixed_stage_check(check_id)
+        and check_id != "stage3-runner-unit"
+        and owner != "command"
+    ):
+        raise ManifestError(
+            f"fixed stage check {check_id!r} must use command-owned lock evidence"
+        )
+    if owner == "runner":
+        return owner
+
+    lane = check.get("lane")
+    command = _parse_command(check.get("command"), check_id)
+    if lane != "heavy-candidate":
+        raise ManifestError(
+            f"check {check_id!r} command lock ownership requires heavy-candidate lane"
+        )
+    if check.get("cost", "cheap") != "heavy":
+        raise ManifestError(
+            f"check {check_id!r} command lock ownership requires cost='heavy'"
+        )
+    if check.get("fresh") is not True:
+        raise ManifestError(
+            f"check {check_id!r} command lock ownership requires fresh=true"
+        )
+    if check.get("exclusive") is not True:
+        raise ManifestError(
+            f"check {check_id!r} command lock ownership requires exclusive=true"
+        )
+    lock = check.get("lock")
+    try:
+        canonical_lock = _stage3.canonical_lock_path(Path(str(lock)))
+    except Exception as exc:
+        raise ManifestError(
+            f"check {check_id!r} command lock ownership requires the canonical SH-07 lock"
+        ) from exc
+    if canonical_lock != _stage3.CANONICAL_LOCK:
+        raise ManifestError(
+            f"check {check_id!r} command lock ownership requires the canonical SH-07 lock"
+        )
+    expected_command = ["python3", "tools/run_stage3_verification.py"]
+    if command != expected_command:
+        raise ManifestError(
+            f"check {check_id!r} command lock ownership requires the reviewed fixed Stage 3 command"
+        )
+    env = check.get("env", {})
+    if not isinstance(env, Mapping):
+        raise ManifestError(f"check {check_id!r} env must be an object")
+    reserved = sorted(set(env) & _STAGE3_RESERVED_ENV)
+    if reserved:
+        raise ManifestError(
+            f"check {check_id!r} cannot override verifier-bound Stage 3 environment: {reserved}"
+        )
+    mode = _stage3_mode(check)
+    batch = check.get("stage3_batch")
+    if batch not in _stage3.FIXED_BATCHES:
+        raise ManifestError(
+            f"check {check_id!r} stage3_batch must name a reviewed fixed Stage 3 batch"
+        )
+    proof_batches = frozenset(getattr(_stage3, "FIXED_MODULE_POLICIES", {"authority": None}))
+    if mode in {_stage3.MODE_PROOF_CANDIDATE, _stage3.MODE_REVIEWED_ATTESTATION} \
+            and batch not in proof_batches:
+        raise ManifestError(f"check {check_id!r} Stage 3 authority mode requires an exact fixed proof batch")
+    return owner
+
+
 def load_manifest(path: Path | str = DEFAULT_MANIFEST) -> dict[str, Any]:
     """Load and validate a JSON verification manifest."""
 
@@ -329,6 +574,8 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
         if lane not in LANES:
             raise ManifestError(f"check {check_id!r} has invalid lane {lane!r}")
         _parse_command(check.get("command"), check_id)
+        _validate_stage3_resource_contract(check)
+        _validate_stage3_runtime_inputs(check)
         if check.get("daemonization") != "forbidden":
             raise ManifestError(
                 f"check {check_id!r} must declare daemonization='forbidden'; "
@@ -341,6 +588,16 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
             normalised = _normalise_declared_path(item)
             if not _is_safe_relative_path(normalised):
                 raise ManifestError(f"check {check_id!r} input escapes repository root: {item!r}")
+        impact_excludes = check.get("impact_excludes", [])
+        if (not isinstance(impact_excludes, list)
+                or not all(isinstance(item, str) and item for item in impact_excludes)):
+            raise ManifestError(f"check {check_id!r} impact_excludes must be a string list")
+        for item in impact_excludes:
+            normalised = _normalise_declared_path(item)
+            if not _is_safe_relative_path(normalised):
+                raise ManifestError(
+                    f"check {check_id!r} impact_excludes escapes repository root: {item!r}"
+                )
         deps = check.get("depends_on", check.get("dependencies", []))
         if not isinstance(deps, list) or not all(isinstance(item, str) and item for item in deps):
             raise ManifestError(f"check {check_id!r} depends_on must be a string list")
@@ -358,9 +615,59 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
             raise ManifestError(f"check {check_id!r} exclusive must be boolean")
         if not isinstance(check.get("fresh", False), bool):
             raise ManifestError(f"check {check_id!r} fresh must be boolean")
+        automatic = check.get("automatic", True)
+        if not isinstance(automatic, bool):
+            raise ManifestError(f"check {check_id!r} automatic must be boolean")
+        env = check.get("env", {})
+        if not isinstance(env, Mapping):
+            raise ManifestError(f"check {check_id!r} env must be an object")
+        if not all(isinstance(key, str) and isinstance(value, (str, int, float, bool)) for key, value in env.items()):
+            raise ManifestError(f"check {check_id!r} env keys and values must be scalar")
         if cost == "heavy" and lock is None and not exclusive:
             raise ManifestError(f"heavy check {check_id!r} must declare lock or exclusive=true")
-        _check_authority(check, str(lane))
+        authority = _check_authority(check, str(lane))
+        owner = _lock_owner(check)
+        if authority == "declared" and owner != "command":
+            raise ManifestError(
+                f"check {check_id!r} declared authority requires lock_owner='command'"
+            )
+        if owner == "command":
+            stage3_mode = _stage3_mode(check)
+            if stage3_mode == _stage3.MODE_REVIEWED_ATTESTATION:
+                # Candidate/attestation artifacts are invocation-scoped.  A
+                # manifest may provide reviewed defaults for local tooling,
+                # while the verifier API/CLI can supply a fresh hand-off.
+                # Validate every provided value here; _run_one performs the
+                # complete presence check after applying invocation inputs.
+                candidate_id = check.get("stage3_candidate_check_id")
+                if candidate_id is not None and (
+                        not isinstance(candidate_id, str) or not candidate_id.strip()
+                        or candidate_id == check_id):
+                    raise ManifestError(
+                        f"check {check_id!r} reviewed-attestation candidate check id must be distinct"
+                    )
+                for field in (
+                    "stage3_candidate_receipt_path", "stage3_candidate_state_dir",
+                    "stage3_attestation_path",
+                ):
+                    if field not in check or check.get(field) in (None, ""):
+                        continue
+                    value = _normalise_declared_path(str(check[field]))
+                    if not _is_safe_relative_path(value):
+                        raise ManifestError(
+                            f"check {check_id!r} {field} must be a safe repository-relative path"
+                        )
+                for field in (
+                    "stage3_candidate_receipt_sha256",
+                    "stage3_candidate_manifest_sha256",
+                    "stage3_attestation_sha256",
+                ):
+                    if field not in check or check.get(field) in (None, ""):
+                        continue
+                    if _stage3._SHA256.fullmatch(str(check[field])) is None:
+                        raise ManifestError(
+                            f"check {check_id!r} {field} must be sha256:<64 lowercase hex>"
+                        )
         timeout = check.get("timeout_seconds")
         if timeout is not None and (not isinstance(timeout, (int, float)) or timeout <= 0):
             raise ManifestError(f"check {check_id!r} timeout_seconds must be positive")
@@ -454,6 +761,24 @@ def _matches_change(declaration: str, changed: str) -> bool:
     return changed == declaration or changed.startswith(declaration.rstrip("/") + "/")
 
 
+def _impact_excludes_change(check: Mapping[str, Any], changed: str) -> bool:
+    return any(
+        _matches_change(str(declaration), changed)
+        for declaration in check.get("impact_excludes", [])
+    )
+
+
+def _automatic_check(check: Mapping[str, Any]) -> bool:
+    """Return whether a check participates in implicit change-impact routing.
+
+    The opt-out is intentionally ignored by explicit ``--check`` and
+    ``--all`` scopes.  Those callers have requested the exact graph scope;
+    only ambient changed-path routing is allowed to defer a manual check.
+    """
+
+    return check.get("automatic", True) is not False
+
+
 def select_impacted_checks(
     manifest: Mapping[str, Any],
     root: Path | str = ROOT,
@@ -499,13 +824,19 @@ def select_impacted_checks(
     else:
         direct = set()
         for check_id, check in by_id.items():
-            if check_id not in allowed:
+            if check_id not in allowed or not _automatic_check(check):
                 continue
             declared = list(check["inputs"]) + list(check.get("tool_inputs", []))
-            matches = [path for path in changed if any(_matches_change(item, path) for item in declared)]
+            # Exclusions are path patterns, not a check-wide veto.  A broad
+            # check may ignore its owned C7 path while still being selected by
+            # a second changed path that it genuinely owns.
+            active_changed = [path for path in changed if not _impact_excludes_change(check, path)]
+            matches = [path for path in active_changed if any(_matches_change(item, path) for item in declared)]
             if matches:
                 direct.add(check_id)
                 reasons[check_id].append("changed-input:" + ",".join(matches))
+            elif any(_impact_excludes_change(check, path) for path in changed):
+                reasons[check_id].append("impact-excluded")
     # First close downstream so changed source evidence reaches dependents.
     # An explicitly named check is already the caller's complete scope; add
     # only its prerequisites below.  Expanding its downstream graph would turn
@@ -520,7 +851,7 @@ def select_impacted_checks(
         while queue:
             current = queue.pop(0)
             for child in sorted(reverse[current]):
-                if child not in selected and child in allowed:
+                if child not in selected and child in allowed and _automatic_check(by_id[child]):
                     selected.add(child)
                     reasons[child].append("downstream-of:" + current)
                     queue.append(child)
@@ -530,7 +861,10 @@ def select_impacted_checks(
     while queue:
         current = queue.pop(0)
         for dep in dependencies_of(by_id[current]):
-            if dep not in selected:
+            # Change-impact plans never revive a manual-only node through
+            # dependency closure.  Explicit --check/--all retain the exact
+            # prerequisite graph, including manual-only checks.
+            if dep not in selected and (requested or _automatic_check(by_id[dep])):
                 selected.add(dep)
                 reasons[dep].append("dependency-of:" + current)
                 queue.append(dep)
@@ -540,8 +874,12 @@ def select_impacted_checks(
     selected_order = topological_order(manifest, selected)
     matches_by_path: dict[str, list[tuple[str, str]]] = {path: [] for path in changed}
     for check_id, check in by_id.items():
+        if not _automatic_check(check):
+            continue
         declared = list(check["inputs"]) + list(check.get("tool_inputs", []))
         for path in changed:
+            if _impact_excludes_change(check, path):
+                continue
             if any(_matches_change(item, path) for item in declared):
                 matches_by_path[path].append((check_id, str(check["lane"])))
     unmatched = sorted(path for path, matches in matches_by_path.items() if not matches)
@@ -754,6 +1092,7 @@ def check_identity(check: Mapping[str, Any], root: Path | str = ROOT) -> dict[st
         "inputs": input_identities(check, root),
         "cost": check.get("cost", "cheap"),
         "lock": check.get("lock"),
+        "lock_owner": _lock_owner(check),
         "exclusive": bool(check.get("exclusive", False)),
         "authority": _check_authority(check, str(check["lane"])),
         "daemonization": check["daemonization"],
@@ -1092,6 +1431,32 @@ def _process_lock(lock_name: str | None):
     except ImportError as exc:  # pragma: no cover - the project currently targets POSIX hosts
         raise LockUnavailable("host does not provide POSIX file locking") from exc
     path = _resource_lock_path(lock_name)
+    if path == _sh07.canonical_shared_lock_path(_sh07.DEFAULT_LOCK):
+        handle = _sh07.open_lock_file(path)
+        try:
+            try:
+                fcntl.flock(handle.descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                raise LockUnavailable(f"shared resource lock is busy: {lock_name}") from exc
+            handle.migrate_legacy_mode_after_exclusive_lock()
+            try:
+                try:
+                    yield handle.path
+                except BaseException as body_error:
+                    try:
+                        handle.validate()
+                    except _sh07.CheckpointError as validation_error:
+                        raise LockUnavailable(str(validation_error)) from body_error
+                    raise
+                else:
+                    handle.validate()
+            finally:
+                fcntl.flock(handle.descriptor, fcntl.LOCK_UN)
+        except _sh07.CheckpointError as exc:
+            raise LockUnavailable(str(exc)) from exc
+        finally:
+            handle.close()
+        return
     with _open_safe_regular(path, label="resource lock") as stream:
         try:
             fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -1550,6 +1915,38 @@ def _output_text(value: Any) -> str:
     return str(value)
 
 
+def _bounded_stream_reader(stream: Any, maximum: int) -> tuple[threading.Thread, dict[str, Any]]:
+    """Drain one text pipe in a bounded background buffer."""
+
+    state: dict[str, Any] = {"chunks": [], "bytes": 0, "truncated": False}
+
+    def read() -> None:
+        try:
+            while True:
+                chunk = stream.read(4096)
+                if not chunk:
+                    break
+                data = chunk.encode("utf-8", errors="replace") if isinstance(chunk, str) else bytes(chunk)
+                if state["bytes"] < maximum:
+                    remaining = maximum - state["bytes"]
+                    state["chunks"].append(data[:remaining])
+                state["bytes"] += len(data)
+                if state["bytes"] > maximum:
+                    state["truncated"] = True
+        except (OSError, ValueError):
+            state["truncated"] = True
+
+    thread = threading.Thread(target=read, name="gravity-bounded-output", daemon=True)
+    thread.start()
+    return thread, state
+
+
+def _bounded_stream_text(state: Mapping[str, Any]) -> str:
+    payload = b"".join(state.get("chunks", []))
+    text = payload.decode("utf-8", errors="replace")
+    return text + ("\n[output truncated]" if state.get("truncated") else "")
+
+
 def _process_group_alive(pid: int) -> bool:
     if os.name != "posix":
         return False
@@ -1791,6 +2188,29 @@ def _cleanup_terminal_safe(cleanup: Mapping[str, Any] | None) -> bool:
     )
 
 
+def _stage3_process_tree_rss(root_pid: int) -> tuple[int | None, float, str, str]:
+    """Sample process-tree RSS using the reviewed heartbeat metric helper."""
+
+    try:
+        if __package__:
+            from .run_with_heartbeat import process_tree_metrics
+        else:  # Direct ``python3 tools/verify_development.py`` import graph.
+            from run_with_heartbeat import process_tree_metrics
+
+        metrics = process_tree_metrics(root_pid)
+        rss = metrics.get("rss_bytes")
+        return (
+            int(rss) if isinstance(rss, int) and rss >= 0 else None,
+            _STAGE3_RSS_CADENCE_SECONDS,
+            "run_with_heartbeat.process_tree_metrics-v1",
+            "between-sample spikes may be missed",
+        )
+    except Exception:
+        return (None, _STAGE3_RSS_CADENCE_SECONDS,
+                "run_with_heartbeat.process_tree_metrics-v1",
+                "RSS unavailable; between-sample spikes may be missed")
+
+
 def _run_command(
     command: list[str],
     *,
@@ -1798,6 +2218,7 @@ def _run_command(
     env: Mapping[str, str],
     timeout: float | int | None,
     marker: str,
+    sample_rss: bool = False,
 ) -> dict[str, Any]:
     """Run one command in an isolated process group with bounded timeout cleanup."""
 
@@ -1834,6 +2255,14 @@ def _run_command(
         if barrier_write is not None:
             os.close(barrier_write)
         raise
+    capture_threads: list[threading.Thread] = []
+    capture_states: dict[str, dict[str, Any]] = {}
+    if sample_rss:
+        for stream_name, stream in (("stdout", process.stdout), ("stderr", process.stderr)):
+            if stream is not None:
+                thread, state = _bounded_stream_reader(stream, _MAX_OUTPUT_BYTES)
+                capture_threads.append(thread)
+                capture_states[stream_name] = state
     if barrier_read is not None:
         os.close(barrier_read)
     supervisor = _ProcessSupervisor(process.pid, marker)
@@ -1857,20 +2286,27 @@ def _run_command(
             "escaped_pids": [], "escaped_alive": [], "marker_alive": [],
             "output_complete": True, "error": census.get("error"),
         }
-        try:
-            stdout, stderr = process.communicate(timeout=_PROCESS_KILL_GRACE_SECONDS)
-            stdout_text = _output_text(stdout)
-            stderr_text = _output_text(stderr)
-        except subprocess.TimeoutExpired:
-            cleanup["output_complete"] = False
-            stdout_text = ""
-            stderr_text = ""
-            for stream in (process.stdout, process.stderr):
-                if stream is not None:
-                    stream.close()
-        finally:
-            if barrier_write is not None:
-                os.close(barrier_write)
+        if sample_rss:
+            for thread in capture_threads:
+                thread.join(_PROCESS_KILL_GRACE_SECONDS)
+            output_complete = not any(thread.is_alive() for thread in capture_threads)
+            cleanup["output_complete"] = output_complete
+            stdout_text = _bounded_stream_text(capture_states.get("stdout", {}))
+            stderr_text = _bounded_stream_text(capture_states.get("stderr", {}))
+        else:
+            try:
+                stdout, stderr = process.communicate(timeout=_PROCESS_KILL_GRACE_SECONDS)
+                stdout_text = _output_text(stdout)
+                stderr_text = _output_text(stderr)
+            except subprocess.TimeoutExpired:
+                cleanup["output_complete"] = False
+                stdout_text = ""
+                stderr_text = ""
+                for stream in (process.stdout, process.stderr):
+                    if stream is not None:
+                        stream.close()
+        if barrier_write is not None:
+            os.close(barrier_write)
         cleanup["terminal_safe"] = _cleanup_terminal_safe(cleanup)
         return {
             "returncode": process.returncode,
@@ -1881,15 +2317,39 @@ def _run_command(
             "surviving_descendants": False,
             "supervision_failed": True,
             "supervisor": census,
+            "observed_peak_process_tree_rss_bytes": None,
+            "rss_sampling_cadence_seconds": _STAGE3_RSS_CADENCE_SECONDS if sample_rss else None,
+            "rss_sampling_contract": "run_with_heartbeat.process_tree_metrics-v1" if sample_rss else None,
+            "rss_sampling_limitation": "RSS unavailable before supervised launch; between-sample spikes may be missed" if sample_rss else None,
         }
     timed_out = False
     # Wait for the leader only.  ``communicate`` waits for inherited pipe
     # descriptors held by a detached child, which would delay supervision
     # until after the child had already mutated files.
-    try:
-        process.wait(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        timed_out = True
+    # Keep an explicit zero when the first short-lived process exits before a
+    # metric sample is available.  This is an honest nonnegative observation
+    # (with the limitation string below), not an Xmx-derived estimate.
+    peak_rss: int | None = 0 if sample_rss else None
+    rss_contract = "run_with_heartbeat.process_tree_metrics-v1" if sample_rss else None
+    rss_limitation = "between-sample spikes may be missed" if sample_rss else None
+    next_sample = time.monotonic()
+    deadline = None if timeout is None else time.monotonic() + max(0.0, float(timeout))
+    if sample_rss:
+        rss, _cadence, rss_contract, rss_limitation = _stage3_process_tree_rss(process.pid)
+        if rss is not None:
+            peak_rss = max(peak_rss or 0, rss)
+        next_sample += _STAGE3_RSS_CADENCE_SECONDS
+    while process.poll() is None:
+        now = time.monotonic()
+        if sample_rss and now >= next_sample:
+            rss, _cadence, rss_contract, rss_limitation = _stage3_process_tree_rss(process.pid)
+            if rss is not None:
+                peak_rss = max(peak_rss or 0, rss)
+            next_sample = now + _STAGE3_RSS_CADENCE_SECONDS
+        if deadline is not None and now >= deadline:
+            timed_out = True
+            break
+        time.sleep(min(0.05, max(0.0, (deadline - now) if deadline is not None else 0.05)))
     census = supervisor.stop()
     # A successful parent exit does not prove that its process group is gone.
     # Detached descendants can otherwise keep mutating inputs after the
@@ -1910,19 +2370,30 @@ def _run_command(
         cleanup = _terminate_process_tree(process, observed_processes, marker)
         cleanup["survivors_detected"] = bool(observed_descendants or cleanup["group_alive"])
         cleanup["census_error"] = census.get("error")
-    try:
-        stdout, stderr = process.communicate(timeout=_PROCESS_KILL_GRACE_SECONDS)
-        stdout_text = _output_text(stdout)
-        stderr_text = _output_text(stderr)
-    except subprocess.TimeoutExpired as exc:
-        if cleanup is None:
-            cleanup = _terminate_process_tree(process, observed_processes, marker)
-        cleanup["output_complete"] = False
-        stdout_text = _output_text(exc.stdout)
-        stderr_text = _output_text(exc.stderr)
-        for stream in (process.stdout, process.stderr):
-            if stream is not None:
-                stream.close()
+    if sample_rss:
+        for thread in capture_threads:
+            thread.join(_PROCESS_KILL_GRACE_SECONDS)
+        output_complete = not any(thread.is_alive() for thread in capture_threads)
+        if cleanup is None and not output_complete:
+            cleanup = {"output_complete": False}
+        elif cleanup is not None:
+            cleanup["output_complete"] = output_complete
+        stdout_text = _bounded_stream_text(capture_states.get("stdout", {}))
+        stderr_text = _bounded_stream_text(capture_states.get("stderr", {}))
+    else:
+        try:
+            stdout, stderr = process.communicate(timeout=_PROCESS_KILL_GRACE_SECONDS)
+            stdout_text = _output_text(stdout)
+            stderr_text = _output_text(stderr)
+        except subprocess.TimeoutExpired as exc:
+            if cleanup is None:
+                cleanup = _terminate_process_tree(process, observed_processes, marker)
+            cleanup["output_complete"] = False
+            stdout_text = _output_text(exc.stdout)
+            stderr_text = _output_text(exc.stderr)
+            for stream in (process.stdout, process.stderr):
+                if stream is not None:
+                    stream.close()
     cleanup_safe = _cleanup_terminal_safe(cleanup)
     if cleanup is not None:
         cleanup["terminal_safe"] = cleanup_safe
@@ -1932,13 +2403,613 @@ def _run_command(
         "stderr": stderr_text,
         "timed_out": timed_out,
         "cleanup": cleanup,
-        "surviving_descendants": bool(not timed_out and cleanup is not None and (cleanup.get("survivors_detected") or cleanup.get("census_error"))),
+        # Retain the reviewed policy signal that a descendant was observed at
+        # the terminal census.  ``cleanup`` records whether it was then
+        # terminated; callers use this signal to fail forbidden daemonization
+        # even when no process remains alive by lease release.
+        "surviving_descendants": bool(
+            not timed_out
+            and cleanup is not None
+            and (cleanup.get("survivors_detected") or cleanup.get("census_error"))
+        ),
         "supervision_failed": bool(census.get("error") or not cleanup_safe),
         "supervisor": census,
+        "observed_peak_process_tree_rss_bytes": peak_rss,
+        "rss_sampling_cadence_seconds": _STAGE3_RSS_CADENCE_SECONDS if sample_rss else None,
+        "rss_sampling_contract": rss_contract,
+        "rss_sampling_limitation": rss_limitation,
     }
 
 
-def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -> dict[str, Any]:
+def _stage3_private_directory(root: Path, check_id: str, nonce: str, *, fresh: bool) -> Path:
+    """Create/validate a private 0700 directory for one Stage 3 invocation."""
+
+    safe_check = "".join(char if char.isalnum() or char in "_.-" else "_" for char in check_id)
+    if not safe_check:
+        safe_check = "check"
+    directory = _stage3._ensure_directory(  # type: ignore[attr-defined]
+        root,
+        root / ".cpcache" / "stage3-receipts" / f"{safe_check}.{nonce}",
+        "Stage 3 invocation",
+        mode=0o700,
+        fresh=fresh,
+    )
+    try:
+        info = os.lstat(directory)
+    except OSError as exc:
+        raise VerificationError("Stage 3 invocation directory cannot be inspected") from exc
+    if (not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid()
+            or stat.S_IMODE(info.st_mode) != 0o700):
+        raise VerificationError("Stage 3 invocation directory is not private and owned")
+    return directory
+
+
+def _stage3_receipt_path(root: Path, check_id: str, nonce: str) -> Path:
+    """Allocate a fresh root-contained path for one command-owned check."""
+
+    directory = _stage3_private_directory(root, check_id, nonce, fresh=True)
+    path = directory / "receipt.json"
+    try:
+        path.resolve(strict=False).relative_to(root.resolve())
+    except ValueError as exc:
+        raise VerificationError(f"Stage 3 receipt path escapes repository root: {path}") from exc
+    try:
+        info = os.lstat(path)
+    except FileNotFoundError:
+        return path
+    if stat.S_ISLNK(info.st_mode) or not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+        raise VerificationError(f"Stage 3 receipt path is unsafe or pre-existing: {path}")
+    raise VerificationError(f"Stage 3 receipt path already exists: {path}")
+
+
+def _stage3_runner_report_path(root: Path, check_id: str, nonce: str) -> Path:
+    """Allocate the root-contained fixed-runner report target."""
+
+    directory = _stage3_private_directory(root, check_id, nonce, fresh=False)
+    path = directory / "runner.json"
+    try:
+        path.resolve(strict=False).relative_to(root.resolve())
+    except ValueError as exc:
+        raise VerificationError(f"Stage 3 runner report path escapes repository root: {path}") from exc
+    parent_fd, leaf = _stage3._open_parent_dirfd(root, path, "report")  # type: ignore[attr-defined]
+    try:
+        try:
+            os.stat(leaf, dir_fd=parent_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            return path
+        raise VerificationError(f"Stage 3 runner report path already exists: {path}")
+    finally:
+        os.close(parent_fd)
+
+
+def _read_stage3_receipt(
+    path: Path, root: Path, *, with_hash: bool = False
+) -> dict[str, Any] | tuple[dict[str, Any], str]:
+    """Read one bounded, no-follow receipt and reject races/trailing values."""
+
+    try:
+        relative = Path(os.path.abspath(str(path))).relative_to(Path(os.path.abspath(str(root))))
+    except ValueError as exc:
+        raise VerificationError("Stage 3 receipt escapes repository root") from exc
+    descriptor = -1
+    try:
+        descriptor = _open_regular_fd(path, root=root, relative=relative.as_posix())
+        before = os.fstat(descriptor)
+        if before.st_nlink != 1 or before.st_uid != os.geteuid():
+            raise VerificationError("Stage 3 receipt is not one regular owned file")
+        if before.st_size > _MAX_OUTPUT_BYTES:
+            raise VerificationError("Stage 3 receipt has unsafe size")
+        payload = b""
+        while True:
+            chunk = os.read(descriptor, _MAX_OUTPUT_BYTES + 1 - len(payload))
+            payload += chunk
+            if not chunk or len(payload) > _MAX_OUTPUT_BYTES:
+                break
+        after = os.fstat(descriptor)
+    except OSError as exc:
+        raise VerificationError(f"cannot read Stage 3 receipt: {exc}") from exc
+    finally:
+        if descriptor != -1:
+            os.close(descriptor)
+    if (after.st_dev, after.st_ino, after.st_nlink, after.st_size) != (
+        before.st_dev, before.st_ino, before.st_nlink, before.st_size
+    ):
+        raise VerificationError("Stage 3 receipt changed after reading")
+    if len(payload) > _MAX_OUTPUT_BYTES:
+        raise VerificationError("Stage 3 receipt exceeds bounded size")
+    try:
+        text = payload.decode("utf-8")
+        decoder = json.JSONDecoder()
+        value, index = decoder.raw_decode(text)
+        # Whitespace is permitted after the one JSON value, but another value
+        # or arbitrary bytes are not.
+        if text[index:].strip():
+            raise VerificationError("Stage 3 receipt contains trailing data")
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise VerificationError("Stage 3 receipt is malformed JSON") from exc
+    if not isinstance(value, Mapping):
+        raise VerificationError("Stage 3 receipt must be a JSON object")
+    parsed = dict(value)
+    if with_hash:
+        return parsed, "sha256:" + hashlib.sha256(payload).hexdigest()
+    return parsed
+
+
+def _validate_stage3_receipt(
+    receipt: Mapping[str, Any],
+    *,
+    check: Mapping[str, Any],
+    identities: Mapping[str, Any],
+    root: Path,
+    receipt_path: Path,
+    runner_report_path: Path | None,
+    nonce: str,
+    expected_returncode: int | None,
+) -> dict[str, Any]:
+    """Validate wrapper evidence before accepting a command-owned result."""
+
+    errors: list[str] = []
+    if receipt.get("schema") != _stage3.SCHEMA:
+        errors.append("wrong receipt schema")
+    if receipt.get("receipt_path") != str(receipt_path):
+        errors.append("receipt path mismatch")
+    if receipt.get("root") != str(root):
+        errors.append("receipt root mismatch")
+    if receipt.get("nonce") != nonce:
+        errors.append("receipt nonce mismatch")
+    if receipt.get("check_id") != check.get("id"):
+        errors.append("receipt check id mismatch")
+    expected_mode = _stage3_mode(check)
+    expected_batch = str(check["stage3_batch"])
+    proof_policy = getattr(_stage3, "FIXED_MODULE_POLICIES", {}).get(expected_batch)
+    expected_proof_module = (
+        proof_policy.get("module")
+        if isinstance(proof_policy, Mapping) and isinstance(proof_policy.get("module"), str)
+        else None
+    )
+    expected_proof_scope = (
+        proof_policy.get("authority_scope")
+        if isinstance(proof_policy, Mapping) and isinstance(proof_policy.get("authority_scope"), str)
+        else None
+    )
+    if receipt.get("mode") != expected_mode or receipt.get("batch") != expected_batch:
+        errors.append("receipt mode or fixed batch mismatch")
+    if expected_mode in {_stage3.MODE_PROOF_CANDIDATE, _stage3.MODE_REVIEWED_ATTESTATION}:
+        if expected_proof_module is None:
+            errors.append("fixed proof policy is unavailable for receipt batch")
+        if receipt.get("proof_batch") != expected_batch:
+            errors.append("receipt proof batch binding mismatch")
+        if receipt.get("proof_module") != expected_proof_module:
+            errors.append("receipt proof module binding mismatch")
+    expected_command = ["python3", "tools/run_stage3_verification.py"]
+    if receipt.get("command") != expected_command:
+        errors.append("receipt command mismatch")
+    expected_hash = "sha256:" + _sha256_text(_canonical(identities["command"]))
+    if receipt.get("command_identity_sha256") != expected_hash:
+        errors.append("receipt command identity mismatch")
+    if receipt.get("mode") == _stage3.MODE_PURE:
+        if runner_report_path is None or receipt.get("runner_report_path") != str(runner_report_path):
+            errors.append("receipt fixed-runner report path mismatch")
+        if not isinstance(receipt.get("runner_report"), Mapping):
+            errors.append("receipt fixed-runner report evidence is missing")
+        else:
+            try:
+                _stage3._validate_runner_report(  # type: ignore[attr-defined]
+                    receipt["runner_report"],
+                    root=root,
+                    report_path=runner_report_path,
+                    batch=str(receipt.get("batch")),
+                    nonce=nonce,
+                    check_id=str(check.get("id")),
+                    command_identity_sha256=str(receipt.get("command_identity_sha256")),
+                )
+            except Exception as report_error:
+                errors.append(f"fixed-runner report revalidation failed: {report_error}")
+    lock = receipt.get("lock")
+    if not isinstance(lock, Mapping):
+        errors.append("receipt lock evidence is missing")
+    else:
+        if lock.get("path") != _stage3.CANONICAL_LOCK_TEXT or lock.get("canonical_path") != _stage3.CANONICAL_LOCK_TEXT:
+            errors.append("receipt lock path is not canonical")
+        if lock.get("protocol") != _sh07.SHARED_LOCK_PROTOCOL:
+            errors.append("receipt lock protocol mismatch")
+        for field in ("acquired", "validated", "released"):
+            if lock.get(field) is not True:
+                errors.append(f"receipt lock lifecycle missing {field}")
+        expected_owner = (
+            "authoritative-child"
+            if expected_mode == _stage3.MODE_PROOF_CANDIDATE
+            else "reviewed-attestation-wrapper"
+            if expected_mode == _stage3.MODE_REVIEWED_ATTESTATION
+            else None
+        )
+        if expected_owner is not None and lock.get("owner") != expected_owner:
+            errors.append("authority receipt does not identify the authoritative child lease owner")
+        if expected_mode in {_stage3.MODE_PURE, _stage3.MODE_REVIEWED_ATTESTATION} and (
+            not isinstance(lock.get("identity_before"), Mapping)
+            or not isinstance(lock.get("identity_after"), Mapping)
+        ):
+            errors.append("pure receipt lacks before/after lock identity")
+        if lock.get("identity_before") is not None and lock.get("identity_after") is not None:
+            before = lock.get("identity_before")
+            after = lock.get("identity_after")
+            if not isinstance(before, Mapping) or not isinstance(after, Mapping):
+                errors.append("receipt lock identity is malformed")
+            elif any(
+                type(identity.get(field)) is not int
+                for identity in (before, after)
+                for field in ("device", "inode", "uid", "nlink")
+            ):
+                errors.append("receipt lock identity fields are not strict integers")
+            elif (before.get("canonical_path") != _stage3.CANONICAL_LOCK_TEXT
+                  or after.get("canonical_path") != _stage3.CANONICAL_LOCK_TEXT
+                  or before.get("inode") != after.get("inode")
+                  or before.get("device") != after.get("device")
+                  or before.get("nlink") != 1
+                  or after.get("nlink") != 1
+                  or before.get("mode") != "0600"
+                  or after.get("mode") != "0600"):
+                errors.append("receipt lock identity is not stable")
+    if receipt.get("daemonization") != "forbidden":
+        errors.append("receipt daemonization policy mismatch")
+    top_no_survivors = receipt.get("no_surviving_descendants")
+    if type(top_no_survivors) is not bool:
+        errors.append("receipt descendant evidence is not a boolean")
+    peak = receipt.get("observed_peak_process_tree_rss_bytes")
+    cadence = receipt.get("rss_sampling_cadence_seconds")
+    if type(peak) is not int or peak <= 0:
+        errors.append("receipt lacks an observed process-tree RSS peak")
+    cadence_valid = type(cadence) in {int, float} and cadence > 0
+    if cadence_valid:
+        try:
+            cadence_valid = math.isfinite(float(cadence))
+        except (OverflowError, ValueError):
+            cadence_valid = False
+    if not cadence_valid:
+        errors.append("receipt RSS sampling cadence is missing")
+    if receipt.get("rss_sampling_contract") != "run_with_heartbeat.process_tree_metrics-v1":
+        errors.append("receipt RSS sampling contract mismatch")
+    if not isinstance(receipt.get("rss_sampling_limitation"), str) \
+            or "spike" not in receipt.get("rss_sampling_limitation", ""):
+        errors.append("receipt RSS sampling limitation is missing")
+    child = receipt.get("child")
+    if not isinstance(child, Mapping):
+        errors.append("receipt child evidence is missing")
+    else:
+        child_returncode = child.get("returncode")
+        child_timed_out = child.get("timed_out")
+        child_supervision_failed = child.get("supervision_failed")
+        survivors = child.get("survivors")
+        if type(child_returncode) is not int:
+            errors.append("receipt child returncode is malformed")
+        if type(child_timed_out) is not bool:
+            errors.append("receipt child timeout evidence is malformed")
+        if type(child_supervision_failed) is not bool:
+            errors.append("receipt child supervision evidence is malformed")
+        if not isinstance(survivors, list):
+            errors.append("receipt child survivor evidence is malformed")
+            survivors = []
+        if survivors:
+            errors.append("receipt child reports surviving descendants")
+        child_peak = child.get("observed_peak_process_tree_rss_bytes")
+        if type(child_peak) is not int or child_peak < 0 or child_peak != peak:
+            errors.append("receipt child/process-tree RSS peak mismatch")
+        if child.get("rss_sampling_cadence_seconds") != cadence:
+            errors.append("receipt child RSS cadence mismatch")
+        if child.get("rss_sampling_contract") != receipt.get("rss_sampling_contract"):
+            errors.append("receipt child RSS contract mismatch")
+        if child.get("rss_sampling_limitation") != receipt.get("rss_sampling_limitation"):
+            errors.append("receipt child RSS limitation mismatch")
+        cleanup = child.get("cleanup")
+        cleanup_safe = (
+            cleanup is None
+            or isinstance(cleanup, Mapping) and cleanup.get("terminal_safe") is True
+        )
+        if cleanup is not None and not isinstance(cleanup, Mapping):
+            errors.append("receipt child cleanup evidence is malformed")
+        elif isinstance(cleanup, Mapping) and type(cleanup.get("terminal_safe")) is not bool:
+            errors.append("receipt child terminal-safe evidence is malformed")
+        elif isinstance(cleanup, Mapping) and cleanup.get("output_complete") is not True:
+            errors.append("receipt child output-complete evidence is not true")
+        computed_no_survivors = bool(
+            not survivors and child_supervision_failed is False and cleanup_safe
+        )
+        if top_no_survivors is not computed_no_survivors:
+            errors.append("receipt top-level descendant evidence disagrees with child cleanup")
+        if receipt.get("mode") == _stage3.MODE_PURE and isinstance(receipt.get("runner_report"), Mapping):
+            if receipt["runner_report"].get("exit-code") != child_returncode:
+                errors.append("receipt runner report/child exit mismatch")
+        if receipt.get("mode") == _stage3.MODE_PURE:
+            report_path_value = receipt.get("runner_report_path")
+            try:
+                expected_child = _stage3.batch_command(
+                    str(receipt.get("batch")),
+                    report_path=Path(str(report_path_value)),
+                    nonce=nonce,
+                    check_id=str(check.get("id")),
+                    command_identity_sha256=str(receipt.get("command_identity_sha256")),
+                ) if isinstance(report_path_value, str) else None
+            except Exception:
+                expected_child = None
+            if expected_child is None or child.get("command") != expected_child:
+                errors.append("receipt fixed-runner child command mismatch")
+    wrapper_exit = receipt.get("exit_code")
+    wrapper_status = receipt.get("status")
+    if type(wrapper_exit) is not int or wrapper_exit not in {0, 1, 75, 124}:
+        errors.append("receipt exit code is malformed")
+    if expected_returncode is not None and (
+        type(expected_returncode) is not int or wrapper_exit != expected_returncode
+    ):
+        errors.append("receipt exit code mismatch")
+    if wrapper_status not in {"passed", "failed"}:
+        errors.append("receipt status is malformed")
+    elif wrapper_status == "passed" and wrapper_exit != 0:
+        errors.append("passed receipt has nonzero wrapper exit")
+    elif wrapper_status == "failed" and wrapper_exit == 0:
+        errors.append("failed receipt has zero wrapper exit")
+    if isinstance(child, Mapping) and type(child.get("returncode")) is int \
+            and type(child.get("timed_out")) is bool \
+            and type(child.get("supervision_failed")) is bool:
+        child_returncode = child["returncode"]
+        child_timed_out = child["timed_out"]
+        child_supervision_failed = child["supervision_failed"]
+        child_survivors = child.get("survivors") if isinstance(child.get("survivors"), list) else []
+        cleanup = child.get("cleanup")
+        cleanup_safe = cleanup is None or (
+            isinstance(cleanup, Mapping) and cleanup.get("terminal_safe") is True
+        )
+        if wrapper_exit == 0 and (
+            child_returncode != 0 or child_timed_out or child_supervision_failed
+            or child_survivors or not cleanup_safe
+        ):
+            errors.append("passed wrapper disagrees with child lifecycle")
+        if child_timed_out and wrapper_exit != 124:
+            errors.append("timed-out child does not map to wrapper exit 124")
+        if wrapper_exit == 124 and child_timed_out is not True:
+            errors.append("wrapper timeout exit lacks child timeout evidence")
+        infrastructure_failed = bool(
+            child_supervision_failed or child_survivors or not cleanup_safe
+        )
+        if infrastructure_failed and not child_timed_out and wrapper_exit != 75:
+            errors.append("child supervision failure does not map to wrapper exit 75")
+        if wrapper_exit == 75 and not infrastructure_failed:
+            errors.append("wrapper supervision exit lacks child failure evidence")
+        if wrapper_exit == 1 and (
+            child_timed_out or infrastructure_failed or child_returncode != 1
+        ):
+            errors.append("ordinary failure receipt disagrees with child exit")
+    if errors:
+        raise VerificationError("invalid command-owned Stage 3 receipt: " + "; ".join(errors))
+    result = dict(receipt)
+    if expected_mode == _stage3.MODE_REVIEWED_ATTESTATION:
+        try:
+            reviewed_values = _reviewed_stage3_values(check, root)
+        except VerificationError as input_error:
+            raise VerificationError(str(input_error)) from input_error
+        expected_bindings = {
+            "candidate_check_id": reviewed_values["candidate_check_id"],
+            "candidate_receipt_path": reviewed_values["candidate_receipt_path"],
+            "candidate_receipt_sha256": reviewed_values["candidate_receipt_sha256"],
+            "candidate_state_dir": reviewed_values["candidate_state_dir"],
+            "candidate_manifest_path": reviewed_values["candidate_manifest_path"],
+            "candidate_manifest_sha256": reviewed_values["candidate_manifest_sha256"],
+            "attestation_path": reviewed_values["attestation_path"],
+            "attestation_sha256": reviewed_values["attestation_sha256"],
+        }
+        for field, expected in expected_bindings.items():
+            if receipt.get(field) != expected:
+                raise VerificationError(f"reviewed receipt {field} binding mismatch")
+        evidence = receipt.get("authority_evidence")
+        if isinstance(evidence, Mapping):
+            if evidence.get("state_dir") != expected_bindings["candidate_state_dir"]:
+                raise VerificationError("reviewed authority state directory binding mismatch")
+            if evidence.get("manifest_sha256") != expected_bindings["candidate_manifest_sha256"]:
+                raise VerificationError("reviewed authority manifest hash binding mismatch")
+        # A genuinely failed authoritative child is valid negative evidence:
+        # preserve its failed/non-authoritative receipt for diagnostics.  An
+        # exit-0 child with an invalid authority manifest is different and is
+        # rejected as a mismatched receipt rather than silently downgraded.
+        if receipt.get("status") == "failed" and expected_returncode not in (None, 0):
+            result["authority"] = "non-authoritative"
+            result["lock_owner"] = "command"
+            return result
+        if (receipt.get("authority") != "scoped-proof-authority"
+                or receipt.get("non_authoritative") is not False
+                or receipt.get("authority_scope") != "individual-source-bound-derived"):
+            raise VerificationError("declared authority requires a validated scoped authority receipt")
+        if receipt.get("status") != "passed" or expected_returncode != 0:
+            raise VerificationError("declared authority receipt is not a matching pass")
+        evidence = receipt.get("authority_evidence")
+        if not isinstance(evidence, Mapping):
+            raise VerificationError("declared authority receipt lacks child manifest evidence")
+        if (evidence.get("state") != "completed"
+                or expected_proof_module is None
+                or evidence.get("module") != expected_proof_module
+                or evidence.get("selected_modules") != [expected_proof_module]
+                or evidence.get("aggregate_authoritative") is not False
+                or evidence.get("authority_scope") != expected_proof_scope):
+            raise VerificationError("declared authority manifest scope is not exact")
+        if (evidence.get("lock_path") != _stage3.CANONICAL_LOCK_TEXT
+                or evidence.get("lock_mode") != "0600"
+                or any(evidence.get(field) is not True for field in (
+                    "lock_acquired", "lock_validated", "lock_released"))):
+            raise VerificationError("declared authority manifest lease lifecycle is not exact")
+        record = evidence.get("module_record")
+        if not isinstance(record, Mapping) or record.get("state") != "passed":
+            raise VerificationError(
+                f"declared authority {expected_proof_module or 'fixed-proof'} module is not structurally passed"
+            )
+        for field in ("stdout_sha256", "proof_contract_sha256", "module_context_fingerprint"):
+            value = record.get(field)
+            if not isinstance(value, str) or not value.startswith("sha256:"):
+                raise VerificationError(f"declared authority evidence lacks {field}")
+        state_dir = evidence.get("state_dir")
+        if not isinstance(state_dir, str):
+            raise VerificationError("declared authority state directory is missing")
+        expected_state = Path(str(evidence.get("state_dir"))).resolve(strict=False)
+        try:
+            state_path = Path(state_dir)
+            info = os.lstat(state_path)
+            if (stat.S_ISLNK(info.st_mode) or not stat.S_ISDIR(info.st_mode)
+                    or info.st_nlink < 1 or state_path.resolve(strict=False) != expected_state):
+                raise VerificationError("declared authority state directory is not fresh and nonce-bound")
+        except OSError as exc:
+            raise VerificationError("declared authority state directory is invalid") from exc
+        result["authority"] = "scoped-proof-authority"
+        result["attestation_present"] = True
+    elif expected_mode == _stage3.MODE_PROOF_CANDIDATE:
+        if (receipt.get("status") != "passed"
+                or receipt.get("proof_candidate") is not True
+                or receipt.get("attestation_required") is not True
+                or receipt.get("authority") != "none"
+                or receipt.get("non_authoritative") is not True):
+            raise VerificationError(
+                "proof-candidate receipt is not a non-authoritative candidate"
+            )
+        evidence = receipt.get("authority_evidence")
+        if not isinstance(evidence, Mapping):
+            raise VerificationError("proof-candidate receipt lacks child manifest evidence")
+        if (evidence.get("state") != "completed"
+                or expected_proof_module is None
+                or evidence.get("module") != expected_proof_module
+                or evidence.get("selected_modules") != [expected_proof_module]
+                or evidence.get("aggregate_authoritative") is not False
+                or evidence.get("authority_scope") != expected_proof_scope
+                or evidence.get("lock_path") != _stage3.CANONICAL_LOCK_TEXT
+                or evidence.get("lock_mode") != "0600"
+                or any(evidence.get(field) is not True for field in (
+                    "lock_acquired", "lock_validated", "lock_released"))):
+            raise VerificationError("proof-candidate manifest scope/lifecycle is not exact")
+        candidate_record = evidence.get("module_record")
+        if not isinstance(candidate_record, Mapping):
+            raise VerificationError("proof-candidate module evidence is missing")
+        for field in ("stdout_sha256", "proof_contract_sha256", "module_context_fingerprint"):
+            value = candidate_record.get(field)
+            if not isinstance(value, str) or _stage3._SHA256.fullmatch(value) is None:
+                raise VerificationError(f"proof-candidate evidence lacks {field}")
+        if not isinstance(evidence.get("manifest_sha256"), str) \
+                or _stage3._SHA256.fullmatch(str(evidence["manifest_sha256"])) is None:
+            raise VerificationError("proof-candidate manifest hash is missing")
+        if not isinstance(receipt.get("candidate_manifest_path"), str):
+            raise VerificationError("proof-candidate state/manifest hand-off path is missing")
+        result["authority"] = "proof-candidate"
+        result["proof_candidate"] = True
+        result["attestation_required"] = True
+    else:
+        result["authority"] = "fresh-command-pass-non-authoritative" if receipt.get("status") == "passed" else "non-authoritative"
+    result["lock_owner"] = "command"
+    return result
+
+
+_STAGE3_REVIEW_INPUT_KEYS = {
+    "candidate_check_id": "stage3_candidate_check_id",
+    "candidate_receipt_path": "stage3_candidate_receipt_path",
+    "candidate_receipt_sha256": "stage3_candidate_receipt_sha256",
+    "candidate_state_dir": "stage3_candidate_state_dir",
+    "candidate_manifest_path": "stage3_candidate_manifest_path",
+    "candidate_manifest_sha256": "stage3_candidate_manifest_sha256",
+    "attestation_path": "stage3_attestation_path",
+    "attestation_sha256": "stage3_attestation_sha256",
+}
+
+
+def _apply_stage3_review_inputs(
+    check: Mapping[str, Any],
+    inputs: Mapping[str, object] | None,
+) -> dict[str, Any]:
+    """Overlay one explicit reviewed-attestation hand-off on a check copy."""
+
+    result = dict(check)
+    if not inputs:
+        return result
+    if _stage3_mode(result) != _stage3.MODE_REVIEWED_ATTESTATION:
+        raise VerificationError(
+            f"check {result.get('id')!r} does not select reviewed-attestation mode"
+        )
+    unknown = set(inputs) - set(_STAGE3_REVIEW_INPUT_KEYS)
+    if unknown:
+        raise VerificationError(f"unknown Stage 3 reviewed input(s): {sorted(unknown)}")
+    for public_name, manifest_name in _STAGE3_REVIEW_INPUT_KEYS.items():
+        if public_name in inputs and inputs[public_name] is not None:
+            result[manifest_name] = inputs[public_name]
+    return result
+
+
+def _reviewed_stage3_values(check: Mapping[str, Any], root: Path) -> dict[str, str]:
+    """Validate and normalize all invocation-bound reviewed artifacts."""
+
+    required = {
+        "stage3_candidate_check_id",
+        "stage3_candidate_receipt_path",
+        "stage3_candidate_receipt_sha256",
+        "stage3_candidate_state_dir",
+        "stage3_candidate_manifest_sha256",
+        "stage3_attestation_path",
+        "stage3_attestation_sha256",
+    }
+    missing = sorted(field for field in required if not check.get(field))
+    if missing:
+        raise VerificationError(
+            f"check {check.get('id')!r} reviewed-attestation inputs are missing: {missing}"
+        )
+    candidate_id = str(check["stage3_candidate_check_id"])
+    if candidate_id == str(check.get("id")) or _stage3._SAFE_SLUG.fullmatch(candidate_id) is None:
+        raise VerificationError("reviewed-attestation candidate check id is unsafe or not distinct")
+    values: dict[str, str] = {"candidate_check_id": candidate_id}
+    for key in (
+        "stage3_candidate_receipt_path",
+        "stage3_candidate_state_dir",
+        "stage3_attestation_path",
+    ):
+        raw = check[key]
+        if not isinstance(raw, (str, Path)):
+            raise VerificationError(f"{key} must be a safe repository-relative path")
+        raw_path = Path(raw)
+        if raw_path.is_absolute():
+            try:
+                normalized = raw_path.resolve(strict=False).relative_to(root.resolve()).as_posix()
+            except ValueError as exc:
+                raise VerificationError(f"{key} must stay inside repository root") from exc
+        else:
+            normalized = _normalise_declared_path(str(raw))
+        if not _is_safe_relative_path(normalized):
+            raise VerificationError(f"{key} must be a safe repository-relative path")
+        values[key.removeprefix("stage3_")] = str(root / normalized)
+    # The manifest pathname is derived from the candidate state directory;
+    # callers may provide one only as an equality assertion.
+    derived_manifest = Path(values["candidate_state_dir"]) / "manifest.json"
+    supplied_manifest = check.get("stage3_candidate_manifest_path")
+    if supplied_manifest not in (None, ""):
+        manifest_path_value = Path(supplied_manifest)
+        if manifest_path_value.is_absolute():
+            try:
+                normalized_manifest = manifest_path_value.resolve(strict=False).relative_to(root.resolve()).as_posix()
+            except ValueError as exc:
+                raise VerificationError("candidate manifest path must stay inside repository root") from exc
+        else:
+            normalized_manifest = _normalise_declared_path(str(supplied_manifest))
+        if not _is_safe_relative_path(normalized_manifest) or root / normalized_manifest != derived_manifest:
+            raise VerificationError("candidate manifest path must be candidate_state_dir/manifest.json")
+    values["candidate_manifest_path"] = str(derived_manifest)
+    for key in (
+        "stage3_candidate_receipt_sha256",
+        "stage3_candidate_manifest_sha256",
+        "stage3_attestation_sha256",
+    ):
+        value = str(check[key])
+        if _stage3._SHA256.fullmatch(value) is None:
+            raise VerificationError(f"{key} must be sha256:<64 lowercase hex>")
+        values[key.removeprefix("stage3_")] = value
+    return values
+
+
+def _run_one(
+    check: Mapping[str, Any],
+    root: Path,
+    identities: dict[str, Any],
+    *,
+    stage3_review_inputs: Mapping[str, object] | None = None,
+) -> dict[str, Any]:
     started = _now()
     started_clock = time.monotonic()
     command = identities["command"]["argv"]
@@ -1946,6 +3017,46 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
     cwd = root / _normalise_declared_path(str(cwd_value))
     env = os.environ.copy()
     env.update({str(k): str(v) for k, v in dict(check.get("env", {})).items()})
+    lock_owner = _lock_owner(check)
+    command_owned = lock_owner == "command"
+    stage3_nonce: str | None = None
+    stage3_receipt_path: Path | None = None
+    stage3_runner_report_path: Path | None = None
+    reviewed_values: dict[str, str] | None = None
+    if command_owned:
+        stage3_nonce = secrets.token_hex(16)
+        stage3_receipt_path = _stage3_receipt_path(root, str(check["id"]), stage3_nonce)
+        stage3_runner_report_path = _stage3_runner_report_path(root, str(check["id"]), stage3_nonce)
+        stage3_mode = _stage3_mode(check)
+        stage3_batch = str(check["stage3_batch"])
+        if stage3_mode == _stage3.MODE_REVIEWED_ATTESTATION:
+            reviewed_values = _reviewed_stage3_values(
+                _apply_stage3_review_inputs(check, stage3_review_inputs), root
+            )
+        env.update({
+            _stage3.RECEIPT_ENV: str(stage3_receipt_path),
+            _stage3.REPORT_ENV: str(stage3_runner_report_path),
+            _stage3.NONCE_ENV: stage3_nonce,
+            _stage3.CHECK_ID_ENV: str(check["id"]),
+            _stage3.ROOT_ENV: str(root.resolve()),
+            _stage3.MODE_ENV: stage3_mode,
+            _stage3.BATCH_ENV: stage3_batch,
+            _stage3.COMMAND_HASH_ENV: "sha256:" + _sha256_text(_canonical(identities["command"])),
+            _stage3.EXPECTED_COMMAND_ENV: json.dumps(command, ensure_ascii=True, separators=(",", ":")),
+            _stage3.TIMEOUT_ENV: str(check.get("timeout_seconds", 21600)),
+        })
+        if stage3_mode == _stage3.MODE_REVIEWED_ATTESTATION:
+            assert reviewed_values is not None
+            env.update({
+                _stage3.CANDIDATE_CHECK_ID_ENV: reviewed_values["candidate_check_id"],
+                _stage3.CANDIDATE_RECEIPT_ENV: reviewed_values["candidate_receipt_path"],
+                _stage3.CANDIDATE_RECEIPT_SHA_ENV: reviewed_values["candidate_receipt_sha256"],
+                _stage3.CANDIDATE_STATE_ENV: reviewed_values["candidate_state_dir"],
+                _stage3.CANDIDATE_MANIFEST_ENV: reviewed_values["candidate_manifest_path"],
+                _stage3.CANDIDATE_MANIFEST_SHA_ENV: reviewed_values["candidate_manifest_sha256"],
+                _stage3.ATTESTATION_PATH_ENV: reviewed_values["attestation_path"],
+                _stage3.ATTESTATION_SHA_ENV: reviewed_values["attestation_sha256"],
+            })
     record: dict[str, Any] = {
         "id": check["id"],
         "lane": check["lane"],
@@ -1953,6 +3064,7 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
         "command_identity": identities["command"],
         "inputs": identities["inputs"],
         "lock": check.get("lock"),
+        "lock_owner": lock_owner,
         "exclusive": bool(check.get("exclusive", False)),
         "cost": check.get("cost", "cheap"),
         "fresh": bool(check.get("fresh", False)),
@@ -1961,7 +3073,8 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
         "started_at": started,
     }
     try:
-        with _process_lock(_effective_lock(check)) as lock_path:
+        lock_context = contextlib.nullcontext(None) if command_owned else _process_lock(_effective_lock(check))
+        with lock_context as lock_path:
             if lock_path is not None:
                 record["lock_path"] = str(lock_path)
             monitor = _MutationMonitor(check, root)
@@ -1977,6 +3090,10 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
             finally:
                 monitor.stop()
         record["returncode"] = None if outcome["timed_out"] else outcome["returncode"]
+        record["observed_peak_process_tree_rss_bytes"] = outcome.get("observed_peak_process_tree_rss_bytes")
+        record["rss_sampling_cadence_seconds"] = outcome.get("rss_sampling_cadence_seconds")
+        record["rss_sampling_contract"] = outcome.get("rss_sampling_contract")
+        record["rss_sampling_limitation"] = outcome.get("rss_sampling_limitation")
         record["stdout"] = _trim_output(outcome["stdout"])
         record["stderr"] = _trim_output(outcome["stderr"])
         record["status"] = "timeout" if outcome["timed_out"] else ("passed" if outcome["returncode"] == 0 else "failed")
@@ -2017,6 +3134,51 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
             record["authority"] = "non-authoritative"
             suffix = "declared input or command identity changed during execution; result was not cached"
             record["stderr"] = _trim_output(record.get("stderr", "") + ("\n" if record.get("stderr") else "") + suffix)
+        if command_owned and record["status"] in {"passed", "failed", "timeout"}:
+            assert stage3_receipt_path is not None and stage3_nonce is not None
+            try:
+                stage3_receipt_value = _read_stage3_receipt(
+                    stage3_receipt_path, root, with_hash=True
+                )
+                assert isinstance(stage3_receipt_value, tuple)
+                stage3_receipt, stage3_receipt_sha256 = stage3_receipt_value
+                stage3_receipt = _validate_stage3_receipt(
+                    stage3_receipt,
+                    check=check,
+                    identities=identities,
+                    root=root.resolve(),
+                    receipt_path=stage3_receipt_path,
+                    runner_report_path=stage3_runner_report_path,
+                    nonce=stage3_nonce,
+                    expected_returncode=(
+                        124 if outcome.get("timed_out") else record.get("returncode")
+                    ),
+                )
+                record["stage3_receipt"] = stage3_receipt
+                record["stage3_receipt_sha256"] = stage3_receipt_sha256
+                record["lock_evidence"] = stage3_receipt.get("lock")
+                record["child_evidence"] = stage3_receipt.get("child")
+                record["observed_peak_process_tree_rss_bytes"] = stage3_receipt.get(
+                    "observed_peak_process_tree_rss_bytes"
+                )
+                record["rss_sampling_cadence_seconds"] = stage3_receipt.get(
+                    "rss_sampling_cadence_seconds"
+                )
+                record["rss_sampling_contract"] = stage3_receipt.get("rss_sampling_contract")
+                record["rss_sampling_limitation"] = stage3_receipt.get("rss_sampling_limitation")
+                if record["status"] == "passed" and stage3_receipt.get("authority") == "scoped-proof-authority":
+                    record["authority"] = "scoped-proof-authority"
+                elif record["status"] == "passed":
+                    record["authority"] = "fresh-command-pass-non-authoritative"
+            except VerificationError as exc:
+                record["status"] = "failed"
+                record["reason"] = "invalid-command-owned-receipt"
+                record["authority"] = "non-authoritative"
+                record["stderr"] = _trim_output(
+                    record.get("stderr", "")
+                    + ("\n" if record.get("stderr") else "")
+                    + str(exc)
+                )
     except LockUnavailable as exc:
         record["returncode"] = None
         record["stdout"] = ""
@@ -2030,7 +3192,7 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
         record["status"] = "failed"
     record["finished_at"] = _now()
     record["duration_ms"] = round((time.monotonic() - started_clock) * 1000, 3)
-    if record["status"] == "passed":
+    if record["status"] == "passed" and record.get("authority") != "scoped-proof-authority":
         # Exit status alone cannot establish a required output artifact or
         # bootstrap/release claim.  Keep the result explicitly non-authoritative
         # until a dedicated artifact validator is declared by the manifest.
@@ -2047,6 +3209,7 @@ def _reused_record(check: Mapping[str, Any], identities: dict[str, Any], entry: 
         "command_identity": identities["command"],
         "inputs": identities["inputs"],
         "lock": check.get("lock"),
+        "lock_owner": _lock_owner(check),
         "exclusive": bool(check.get("exclusive", False)),
         "cost": check.get("cost", "cheap"),
         "fresh": bool(check.get("fresh", False)),
@@ -2102,6 +3265,14 @@ def run_verification(
     resume: bool = False,
     cache_path: Path | str | None = None,
     fail_fast: bool = True,
+    candidate_check_id: str | None = None,
+    candidate_receipt_path: Path | str | None = None,
+    candidate_receipt_sha256: str | None = None,
+    candidate_state_dir: Path | str | None = None,
+    candidate_manifest_path: Path | str | None = None,
+    candidate_manifest_sha256: str | None = None,
+    attestation_path: Path | str | None = None,
+    attestation_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Plan and optionally execute checks, returning a JSON-serializable receipt."""
 
@@ -2127,6 +3298,38 @@ def run_verification(
     )
     by_id = checks_by_id(manifest_value)
     selected_ids = selection["selected_ids"]
+    explicit_review_inputs = {
+        key: value for key, value in {
+            "candidate_check_id": candidate_check_id,
+            "candidate_receipt_path": candidate_receipt_path,
+            "candidate_receipt_sha256": candidate_receipt_sha256,
+            "candidate_state_dir": candidate_state_dir,
+            "candidate_manifest_path": candidate_manifest_path,
+            "candidate_manifest_sha256": candidate_manifest_sha256,
+            "attestation_path": attestation_path,
+            "attestation_sha256": attestation_sha256,
+        }.items() if value is not None
+    }
+    reviewed_selected = [
+        check_id for check_id in selected_ids
+        if by_id[check_id].get("lock_owner", "runner") == "command"
+        and by_id[check_id].get("stage3_mode") == _stage3.MODE_REVIEWED_ATTESTATION
+    ]
+    if explicit_review_inputs and not reviewed_selected:
+        raise VerificationError(
+            "explicit Stage 3 candidate/attestation inputs require a selected reviewed-attestation check"
+        )
+    if explicit_review_inputs:
+        # Apply invocation-scoped hand-off values only to selected reviewed
+        # nodes.  The manifest identity/cache key remains the original
+        # manifest; these fields are not declared source/tool inputs.
+        for check_id in reviewed_selected:
+            by_id[check_id] = _apply_stage3_review_inputs(
+                by_id[check_id], explicit_review_inputs
+            )
+    if not (dry_run or explain):
+        for check_id in reviewed_selected:
+            _reviewed_stage3_values(by_id[check_id], root_path)
     groups = parallel_ready_groups(manifest_value, selected_ids)
     manifest_identity = {"path": _relpath(root_path, manifest_path) if manifest_path else None, "sha256": _sha256_text(_canonical(manifest_value))}
     run_started_clock = time.monotonic()
@@ -2197,6 +3400,7 @@ def run_verification(
                 "inputs": input_identities(by_id[check_id], root_path),
                 "depends_on": dependencies_of(by_id[check_id]),
                 "lock": by_id[check_id].get("lock"),
+                "lock_owner": _lock_owner(by_id[check_id]),
                 "exclusive": bool(by_id[check_id].get("exclusive", False)),
                 "cost": by_id[check_id].get("cost", "cheap"),
                 "fresh": bool(by_id[check_id].get("fresh", False)),
@@ -2232,6 +3436,7 @@ def run_verification(
                     "inputs": input_identities(by_id[check_id], root_path),
                     "depends_on": dependencies_of(by_id[check_id]),
                     "lock": by_id[check_id].get("lock"),
+                    "lock_owner": _lock_owner(by_id[check_id]),
                     "exclusive": bool(by_id[check_id].get("exclusive", False)),
                     "cost": by_id[check_id].get("cost", "cheap"),
                     "authority": "non-authoritative",
@@ -2258,6 +3463,7 @@ def run_verification(
                     "inputs": identity["inputs"],
                     "depends_on": dependencies_of(by_id[check_id]),
                     "lock": by_id[check_id].get("lock"),
+                    "lock_owner": _lock_owner(by_id[check_id]),
                     "exclusive": bool(by_id[check_id].get("exclusive", False)),
                     "cost": by_id[check_id].get("cost", "cheap"),
                     "authority": "non-authoritative",
@@ -2401,7 +3607,7 @@ def _print_human(receipt: Mapping[str, Any]) -> None:
             suffix = f" ({record['reason']})"
         print(f"  {record['id']}: {record['status']}{suffix}")
     if receipt.get("authoritative"):
-        print("authority: fresh-declared-authority")
+        print("authority: scoped-proof-authority")
     elif receipt.get("checks"):
         print("authority: non-authoritative")
 
@@ -2421,6 +3627,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dry-run", action="store_true", help="show the planned DAG without executing checks")
     parser.add_argument("--explain", action="store_true", help="explain impact, ordering, locks, and cache eligibility")
     parser.add_argument("--no-fail-fast", dest="fail_fast", action="store_false", help="continue independent checks after a failure")
+    parser.add_argument("--candidate-check-id", help="reviewed Stage 3 candidate check id")
+    parser.add_argument("--candidate-receipt", "--stage3-candidate-receipt", dest="candidate_receipt_path", type=Path)
+    parser.add_argument("--candidate-receipt-sha256", dest="candidate_receipt_sha256")
+    parser.add_argument("--candidate-state-dir", dest="candidate_state_dir", type=Path)
+    parser.add_argument("--candidate-manifest", dest="candidate_manifest_path", type=Path)
+    parser.add_argument("--candidate-manifest-sha256", dest="candidate_manifest_sha256")
+    parser.add_argument("--attestation", "--stage3-attestation", dest="attestation_path", type=Path)
+    parser.add_argument("--attestation-sha256", dest="attestation_sha256")
     parser.add_argument("--human", action="store_true", help="print a short human summary instead of JSON")
     parser.add_argument("--json", dest="force_json", action="store_true", help="explicitly request JSON output (the default)")
     return parser
@@ -2445,6 +3659,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             resume=args.resume,
             cache_path=args.cache,
             fail_fast=args.fail_fast,
+            candidate_check_id=args.candidate_check_id,
+            candidate_receipt_path=args.candidate_receipt_path,
+            candidate_receipt_sha256=args.candidate_receipt_sha256,
+            candidate_state_dir=args.candidate_state_dir,
+            candidate_manifest_path=args.candidate_manifest_path,
+            candidate_manifest_sha256=args.candidate_manifest_sha256,
+            attestation_path=args.attestation_path,
+            attestation_sha256=args.attestation_sha256,
         )
     except (ManifestError, VerificationError, OSError) as exc:
         error = {"kind": "development-verification-receipt", "schema_version": SCHEMA_VERSION, "status": "invalid", "error": str(exc)}

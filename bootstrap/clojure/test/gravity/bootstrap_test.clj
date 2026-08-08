@@ -34320,12 +34320,12 @@
               :provenance-binding-hash "sha256:semantic-binding"
               :actual-path-binding-hash "sha256:physical-binding"
               :actual-source-path "/checkout/physical/path"}))))
-    (is (= 113008 bootstrap/p15-s23-c11-mir-source-byte-count))
-    (is (= "sha256:95fd82d9484d0a1b7a93b3da10ed6c490c7b051e253da0eb1eb58f0f08334fe3"
+    (is (= 253588 bootstrap/p15-s23-c11-mir-source-byte-count))
+    (is (= "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"
            bootstrap/p15-s23-c11-mir-expected-source-content-hash))
-    (is (= "sha256:6012e4be9c87a786ae26cdcbc85a26eedae2c602e7a407932ec411e5634cd2ae"
+    (is (= "sha256:974d3949e224d136a2d95c0c348b11c8858becdddd47542ffd4ae24c0233fb39"
            bootstrap/p15-s23-c11-mir-expected-plan-semantic-hash))
-    (is (= "sha256:c6be9a17ccb1c6d160fcc2916ecf2ebba41ebf16259cf66cbf5ca6a004f59ef5"
+    (is (= "sha256:ece068d2c82e550798cb98e1b0ac9bd0c5e15b5c932c591b93b821411eed89a4"
            bootstrap/p15-s23-c11-mir-expected-functions-semantic-hash))
     (is (= "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
            bootstrap/p15-s23-c11-mir-expected-builder-semantic-hash))
@@ -34353,7 +34353,7 @@
              binding))))
     (is (= bootstrap/p15-s23-c11-mir-required-functions
            (:function-shapes binding)))
-    (is (= 139 (count (get-in binding [:plan :functions]))))
+    (is (= 237 (count (get-in binding [:plan :functions]))))
     (with-temp-directory
       "gravity-c11-unrelated-cwd-"
       (fn [directory]

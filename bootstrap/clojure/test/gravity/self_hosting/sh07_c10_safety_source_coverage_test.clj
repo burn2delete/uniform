@@ -457,6 +457,41 @@
      value)
     @found))
 
+(defn- invalid-source-if-forms
+  [forms]
+  (vec
+   (filter #(not= 4 (count %))
+           (mapcat #(collect-calls 'if %) forms))))
+
+(defn- undefined-exported-symbols
+  [forms]
+  (let [namespace-form (first forms)
+        export-clauses
+        (filter #(and (seq? %) (= :exports (first %)))
+                (drop 2 namespace-form))
+        export-clause (first export-clauses)
+        export-values (second export-clause)
+        valid-export-clause?
+        (and (seq? namespace-form)
+             (= 'ns (first namespace-form))
+             (symbol? (second namespace-form))
+             (= 1 (count export-clauses))
+             (= 2 (count export-clause))
+             (vector? export-values)
+             (every? symbol? export-values)
+             (= (count export-values) (count (set export-values))))
+        exported (set export-values)
+        defined
+        (set (keep (fn [form]
+                     (when (and (seq? form)
+                                (#{'def 'defn} (first form))
+                                (symbol? (second form)))
+                       (second form)))
+                   (rest forms)))]
+    (if valid-export-clause?
+      (set/difference exported defined)
+      #{::invalid-exports-clause})))
+
 (defn- symbols-in
   [value]
   (let [found (volatile! #{})]
@@ -614,6 +649,46 @@
              :sh11-complete :sh07-complete :seed-retirement
              :self-hosting-complete]]
       (is (contains? nonclaims nonclaim)))))
+
+(deftest sh07-b31-c10-source-control-form-arities-are-bounded
+  (let [forms (source-forms)
+        form-node-counts
+        (mapv #(count (tree-seq coll? seq %)) forms)]
+    (is (empty? (invalid-source-if-forms forms)))
+    (is (= '[(if true)]
+           (invalid-source-if-forms '[(if true)])))
+    (is (= '[(if true :then :else :extra)]
+           (invalid-source-if-forms
+            '[(if true :then :else :extra)])))
+    (is (<= (apply max form-node-counts) 1024)
+        "Conservative reader-tree admission is not the authoritative C6 form-id census")))
+
+(deftest sh07-b31-c10-source-export-definitions-are-complete
+  (let [forms (source-forms)]
+    (is (empty? (undefined-exported-symbols forms)))
+    (is (= '#{missing-export}
+           (undefined-exported-symbols
+            '[(ns example (:exports [defined-export missing-export]))
+              (defn defined-export [] :present)])))
+    (is (= #{::invalid-exports-clause}
+           (undefined-exported-symbols '[(ns example)])))
+    (is (= #{::invalid-exports-clause}
+           (undefined-exported-symbols
+            '[(not-ns example (:exports [defined]))
+              (def defined :present)])))
+    (is (= #{::invalid-exports-clause}
+           (undefined-exported-symbols
+            '[(ns example (:exports [defined] :trailing))
+              (def defined :present)])))
+    (is (= #{::invalid-exports-clause}
+           (undefined-exported-symbols
+            '[(ns example (:exports [duplicate duplicate]))
+              (def duplicate :present)])))
+    (is (empty?
+         (undefined-exported-symbols
+          '[(ns example (:exports [constant function]))
+            (def constant :present)
+            (defn function [] :present)])))))
 
 (deftest sh07-b31-c10-source-contracts-policy-outcomes-and-reasons-are-exact
   (let [forms (source-forms)
