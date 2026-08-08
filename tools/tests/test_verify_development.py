@@ -3050,6 +3050,173 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertIn("stage3-runner-unit", selection["selected_ids"])
         self.assertNotIn("stage3-c7-proof-candidate", selection["selected_ids"])
 
+    def test_real_manifest_p15_native_launcher_gate_contract_and_dry_runs(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        launcher = verifier.checks_by_id(manifest)["stage0-p15-native-launcher-prerequisite"]
+        self.assertEqual(
+            launcher["command"],
+            [
+                "clojure",
+                "-J-Xmx1g",
+                "-M:test",
+                "--namespace",
+                "gravity.p15-native-launcher-test",
+            ],
+        )
+        self.assertEqual(launcher["lane"], "heavy-candidate")
+        self.assertEqual(launcher["cost"], "heavy")
+        self.assertEqual(launcher["timeout_seconds"], 600)
+        self.assertEqual(launcher["jvm_heap"], "-J-Xmx1g")
+        self.assertEqual(launcher["minimum_heap_bytes"], 1073741824)
+        self.assertEqual(launcher["lock"], "/private/tmp/gravity-sh07-heavy.lock")
+        self.assertEqual(launcher["lock_owner"], "runner")
+        self.assertTrue(launcher["exclusive"])
+        self.assertEqual(launcher["capacity"], 1)
+        self.assertTrue(launcher["fresh"])
+        self.assertFalse(launcher["resume"])
+        self.assertTrue(launcher["no_resume"])
+        self.assertEqual(launcher["authority"], "none")
+        self.assertEqual(
+            launcher["resource_receipt"],
+            "observed-peak-process-tree-rss-and-wall-time",
+        )
+        self.assertEqual(launcher["depends_on"], ["stage0-orchestrator-unit"])
+        self.assertEqual(
+            launcher["inputs"],
+            [
+                "bootstrap/native/p15_public_native_launcher.c",
+                "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+                "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
+                "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
+                "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
+                "bootstrap/clojure/fixtures/p15-native-launcher/marker.c",
+                "bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c",
+                "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
+            ],
+        )
+        self.assertEqual(
+            launcher["tool_inputs"],
+            [
+                "deps.edn",
+                "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+            ],
+        )
+
+        expected_ids = {
+            "stage0-orchestrator-unit",
+            "stage0-p15-native-launcher-prerequisite",
+        }
+        for owned_path in launcher["inputs"]:
+            with self.subTest(owned_path=owned_path):
+                selection = verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[owned_path]
+                )
+                self.assertEqual(set(selection["selected_ids"]), expected_ids)
+                self.assertEqual(selection["unmatched_changes"], [])
+                self.assertNotIn("stage0-clojure-suite", selection["selected_ids"])
+                self.assertNotIn("stage0-bootstrap-authority", selection["selected_ids"])
+                self.assertFalse(
+                    any(
+                        check_id.startswith("stage3-")
+                        or check_id.startswith("stage4-")
+                        or check_id.startswith("stage5-")
+                        or check_id.startswith("stage6-")
+                        or check_id.startswith("stage7-")
+                        or check_id.endswith("-proof-candidate")
+                        for check_id in selection["selected_ids"]
+                    )
+                )
+                receipt = verifier.run_verification(
+                    manifest,
+                    ROOT,
+                    changed_paths=[owned_path],
+                    dry_run=True,
+                )
+                self.assertEqual(receipt["status"], "planned")
+                self.assertFalse(receipt["authoritative"])
+                self.assertEqual(
+                    {record["id"] for record in receipt["checks"]}, expected_ids
+                )
+                record = next(
+                    item
+                    for item in receipt["checks"]
+                    if item["id"] == "stage0-p15-native-launcher-prerequisite"
+                )
+                self.assertEqual(record["authority"], "non-authoritative")
+                self.assertEqual(record["lock_owner"], "runner")
+                self.assertEqual(record["lock"], "/private/tmp/gravity-sh07-heavy.lock")
+                self.assertEqual(record["command"], launcher["command"])
+
+        explicit = verifier.run_verification(
+            manifest,
+            ROOT,
+            requested_ids=["stage0-p15-native-launcher-prerequisite"],
+            dry_run=True,
+        )
+        self.assertEqual(explicit["status"], "planned")
+        self.assertFalse(explicit["authoritative"])
+        self.assertEqual(
+            explicit["plan"]["topological_order"],
+            ["stage0-orchestrator-unit", "stage0-p15-native-launcher-prerequisite"],
+        )
+        self.assertNotIn(
+            "stage0-clojure-suite",
+            {record["id"] for record in explicit["checks"]},
+        )
+
+        all_checks = verifier.select_impacted_checks(manifest, ROOT, all_checks=True)
+        self.assertIn("stage0-p15-native-launcher-prerequisite", all_checks["selected_ids"])
+
+    def test_real_manifest_p15_native_launcher_gate_rejects_contract_drift(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        check_id = "stage0-p15-native-launcher-prerequisite"
+        by_id = verifier.checks_by_id(manifest)
+
+        def check_in(manifest_value: dict) -> dict:
+            return next(item for item in manifest_value["checks"] if item["id"] == check_id)
+
+        cases = (
+            ("missing source", lambda item: item["inputs"].pop(0), "inputs drifted"),
+            (
+                "drifted fixture",
+                lambda item: item["inputs"].__setitem__(2, "bootstrap/clojure/fixtures/p15-native-launcher/argv.c"),
+                "inputs drifted",
+            ),
+            (
+                "wrong command",
+                lambda item: item["command"].__setitem__(4, "gravity.p15-native-launcher-proof"),
+                "exact direct Darwin launcher test command",
+            ),
+            (
+                "wrong heap",
+                lambda item: item.__setitem__("jvm_heap", "-J-Xmx2g"),
+                "jvm_heap",
+            ),
+            (
+                "wrong lock owner",
+                lambda item: item.__setitem__("lock_owner", "command"),
+                "lock_owner='runner'",
+            ),
+            (
+                "wrong resource capacity",
+                lambda item: item.__setitem__("capacity", 2),
+                "exclusive=true and capacity=1",
+            ),
+            (
+                "wrong artifact",
+                lambda item: item["inputs"].__setitem__(7, "docs/artifacts/phase-15/native-launcher/drift.edn"),
+                "inputs drifted",
+            ),
+        )
+        for label, mutate, message in cases:
+            with self.subTest(case=label):
+                value = json.loads(json.dumps(manifest))
+                mutate(check_in(value))
+                with self.assertRaisesRegex(verifier.ManifestError, message):
+                    verifier.validate_manifest(value)
+
+        self.assertEqual(by_id[check_id]["authority"], "none")
+
 
 if __name__ == "__main__":
     unittest.main()

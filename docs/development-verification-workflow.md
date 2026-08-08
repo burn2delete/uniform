@@ -86,6 +86,29 @@ on `stage1-sh01-unit`, and binds only
 helper, and its test file. Its pass is a unit signal, not permission to merge
 or proof authority.
 
+The bounded P15-S23 Darwin launcher prerequisite is a separate focused gate:
+`stage0-p15-native-launcher-prerequisite` runs the exact direct command
+`clojure -J-Xmx1g -M:test --namespace gravity.p15-native-launcher-test` with
+Xmx1g, a 600-second timeout, fresh/no-resume execution, and
+`authority: none`. It uses the canonical
+`/private/tmp/gravity-sh07-heavy.lock` with `exclusive: true`, `capacity: 1`,
+and `lock_owner: runner`; the parent verifier owns the lease because this is a
+direct Clojure command rather than a command-owned proof wrapper. Its resource
+receipt declaration is `observed-peak-process-tree-rss-and-wall-time`.
+The node owns the launcher C source, exact test, all five launcher fixtures,
+and the partial launcher artifact, with only `deps.edn` and
+`bootstrap/clojure/test/gravity/self_hosting_test_runner.clj` as tool inputs.
+Each owned source, test, fixture, or artifact path routes to this node plus
+`stage0-orchestrator-unit`; legacy Stage0 broad owners impact-exclude those
+paths, and no earlier/later proof candidate is selected.
+
+Coordinator evidence for this revision is exactly 8 tests/60 assertions in
+5.983s, peak RSS 213,712,896B, with Xmx1g, the canonical lock, and an approved
+independent review. The artifact status is `partial`. This remains bounded,
+non-authoritative development evidence and makes no public, self-hosted,
+release, or strict process-containment claim. Local validation does not rerun
+the JVM while coordinator C12 work is active.
+
 ## Stage1 SH-01 handoff and measured boundary
 
 The bounded alias ran 50 tests and 290 assertions in 1.98 seconds in the clean

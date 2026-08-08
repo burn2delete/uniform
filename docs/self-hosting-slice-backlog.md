@@ -130,6 +130,31 @@ Target-emission slices additionally require execution or validation by an
 independent target toolchain. Bootstrap slices additionally require canonical
 stage comparison, reproducible rebuild, and compiler-lineage evidence.
 
+### P15-S23 Darwin launcher prerequisite
+
+The bounded host-authored Darwin launcher is tracked as a prerequisite for the
+P15-S23 native/runtime boundary, not as completion of a self-hosting slice. Its
+development-verification node is `stage0-p15-native-launcher-prerequisite` and
+runs `clojure -J-Xmx1g -M:test --namespace gravity.p15-native-launcher-test`
+with Xmx1g, a 600-second timeout, fresh/no-resume execution, and
+`authority: none`. The parent verifier owns the canonical
+`/private/tmp/gravity-sh07-heavy.lock` (`exclusive: true`, `capacity: 1`,
+`lock_owner: runner`) and records the observed process-tree resource receipt.
+The node binds the launcher source, exact test, five C fixtures, and
+`docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn`,
+plus only the `deps.edn` and self-hosting test-runner tool inputs required by
+the command identity. Legacy Stage0 broad owners exclude these paths, so each
+source, test, fixture, or artifact change routes to the focused node and the
+cheap `stage0-orchestrator-unit` prerequisite without selecting the broad
+Stage0 suite or an earlier/later proof candidate.
+
+Coordinator evidence is exactly 8 tests/60 assertions in 5.983s with peak RSS
+213,712,896B under Xmx1g and the canonical lock; independent review is
+approved and the artifact status is `partial`. This evidence is bounded and
+non-authoritative. It makes no public native-run, self-hosted, release, or
+strict process-containment claim, and does not change the SH-19 or P15-S23
+completion state.
+
 ## Countable Backlog
 
 Status meanings:

@@ -357,6 +357,108 @@ _STAGE8_FIXED_NODE_POLICIES = {
 }
 
 
+_P15_NATIVE_LAUNCHER_CHECK_ID = "stage0-p15-native-launcher-prerequisite"
+_P15_NATIVE_LAUNCHER_COMMAND = [
+    "clojure",
+    "-J-Xmx1g",
+    "-M:test",
+    "--namespace",
+    "gravity.p15-native-launcher-test",
+]
+_P15_NATIVE_LAUNCHER_INPUTS = [
+    "bootstrap/native/p15_public_native_launcher.c",
+    "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+    "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
+    "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
+    "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
+    "bootstrap/clojure/fixtures/p15-native-launcher/marker.c",
+    "bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c",
+    "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
+]
+_P15_NATIVE_LAUNCHER_TOOL_INPUTS = [
+    "deps.edn",
+    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+]
+
+
+def _validate_p15_native_launcher_contract(check: Mapping[str, Any]) -> None:
+    """Keep the bounded Darwin launcher gate on its reviewed direct command.
+
+    Unlike fixed Stage3 nodes, this check runs the Clojure test namespace
+    directly.  It therefore keeps the parent verifier lock (``lock_owner``
+    ``runner``) and must not be silently widened into a generic Stage0 suite
+    or a command-owned proof boundary.
+    """
+
+    if check.get("id") != _P15_NATIVE_LAUNCHER_CHECK_ID:
+        return
+    check_id = _P15_NATIVE_LAUNCHER_CHECK_ID
+    if check.get("lane") != "heavy-candidate":
+        raise ManifestError(f"check {check_id!r} must use heavy-candidate lane")
+    if check.get("cost") != "heavy":
+        raise ManifestError(f"check {check_id!r} must use cost='heavy'")
+    if check.get("lock") != str(_stage3.CANONICAL_LOCK):
+        raise ManifestError(
+            f"check {check_id!r} must use canonical lock {str(_stage3.CANONICAL_LOCK)!r}"
+        )
+    if check.get("lock_owner") != "runner":
+        raise ManifestError(
+            f"check {check_id!r} direct command must retain lock_owner='runner'"
+        )
+    if (
+        check.get("exclusive") is not True
+        or type(check.get("capacity")) is not int
+        or check.get("capacity") != 1
+    ):
+        raise ManifestError(
+            f"check {check_id!r} must declare exclusive=true and capacity=1"
+        )
+    if check.get("authority") != "none":
+        raise ManifestError(f"check {check_id!r} must declare authority='none'")
+    if check.get("proof_candidate", False) is not False or check.get("attestation_required", False) is not False:
+        raise ManifestError(
+            f"check {check_id!r} must remain a non-proof, non-attestation gate"
+        )
+    if check.get("fresh") is not True:
+        raise ManifestError(f"check {check_id!r} must declare fresh=true")
+    if check.get("resume") is not False or check.get("no_resume") is not True:
+        raise ManifestError(
+            f"check {check_id!r} must declare resume=false and no_resume=true"
+        )
+    timeout = check.get("timeout_seconds")
+    if not isinstance(timeout, (int, float)) or timeout < 600:
+        raise ManifestError(f"check {check_id!r} timeout_seconds must be at least 600")
+    if check.get("jvm_heap") != "-J-Xmx1g":
+        raise ManifestError(f"check {check_id!r} must declare jvm_heap='-J-Xmx1g'")
+    if check.get("minimum_heap_bytes") != 1073741824:
+        raise ManifestError(
+            f"check {check_id!r} minimum_heap_bytes must equal 1073741824"
+        )
+    if check.get("resource_receipt") != "observed-peak-process-tree-rss-and-wall-time":
+        raise ManifestError(
+            f"check {check_id!r} must declare the observed process-tree resource receipt"
+        )
+    if _parse_command(check.get("command"), check_id) != _P15_NATIVE_LAUNCHER_COMMAND:
+        raise ManifestError(
+            f"check {check_id!r} command must be the exact direct Darwin launcher test command"
+        )
+    if check.get("inputs") != _P15_NATIVE_LAUNCHER_INPUTS:
+        raise ManifestError(
+            f"check {check_id!r} inputs drifted from the reviewed launcher source/fixture/artifact set"
+        )
+    if check.get("tool_inputs") != _P15_NATIVE_LAUNCHER_TOOL_INPUTS:
+        raise ManifestError(
+            f"check {check_id!r} tool_inputs drifted from deps.edn and the test runner"
+        )
+    dependencies = check.get("depends_on", check.get("dependencies", []))
+    if dependencies != ["stage0-orchestrator-unit"]:
+        raise ManifestError(
+            f"check {check_id!r} must depend only on stage0-orchestrator-unit"
+        )
+    if check.get("automatic", True) is not True:
+        raise ManifestError(f"check {check_id!r} must participate in change-impact routing")
+
+
 def _is_fixed_stage_check(check_id: str) -> bool:
     """Return whether a manifest node invokes the fixed stage wrapper.
 
@@ -612,6 +714,7 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
         if lane not in LANES:
             raise ManifestError(f"check {check_id!r} has invalid lane {lane!r}")
         _parse_command(check.get("command"), check_id)
+        _validate_p15_native_launcher_contract(check)
         _validate_stage3_resource_contract(check)
         _validate_stage3_runtime_inputs(check)
         _validate_stage8_node_contract(check)

@@ -2117,7 +2117,15 @@
         "bootstrap/gravity/p15_s23/emitter.gravity",
         "bootstrap/gravity/src/gravity/macro.gravity",
         "bootstrap/gravity/src/gravity/resolution.gravity",
-        "bootstrap/gravity/src/gravity/checked_core.gravity"
+        "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/native/p15_public_native_launcher.c",
+        "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+        "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/marker.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c",
+        "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn"
       ],
       "depends_on": []
     },
@@ -2155,7 +2163,15 @@
         "bootstrap/gravity/p15_s23/emitter.gravity",
         "bootstrap/gravity/src/gravity/macro.gravity",
         "bootstrap/gravity/src/gravity/resolution.gravity",
-        "bootstrap/gravity/src/gravity/checked_core.gravity"
+        "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/native/p15_public_native_launcher.c",
+        "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+        "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/marker.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c",
+        "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn"
       ],
       "depends_on": []
     },
@@ -2197,7 +2213,15 @@
         "bootstrap/gravity/p15_s23/emitter.gravity",
         "bootstrap/gravity/src/gravity/macro.gravity",
         "bootstrap/gravity/src/gravity/resolution.gravity",
-        "bootstrap/gravity/src/gravity/checked_core.gravity"
+        "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/native/p15_public_native_launcher.c",
+        "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+        "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/marker.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c",
+        "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn"
       ],
       "depends_on": []
     },
@@ -2317,11 +2341,62 @@
         "bootstrap/gravity/p15_s23/emitter.gravity",
         "bootstrap/gravity/src/gravity/macro.gravity",
         "bootstrap/gravity/src/gravity/resolution.gravity",
-        "bootstrap/gravity/src/gravity/checked_core.gravity"
+        "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/native/p15_public_native_launcher.c",
+        "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+        "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/marker.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c",
+        "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn"
       ],
       "depends_on": [
         "stage0-hosted-hello"
       ]
+    },
+    {
+      "id": "stage0-p15-native-launcher-prerequisite",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "runner",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "no_resume": true,
+      "timeout_seconds": 600,
+      "jvm_heap": "-J-Xmx1g",
+      "minimum_heap_bytes": 1073741824,
+      "resource_receipt": "observed-peak-process-tree-rss-and-wall-time",
+      "command": [
+        "clojure",
+        "-J-Xmx1g",
+        "-M:test",
+        "--namespace",
+        "gravity.p15-native-launcher-test"
+      ],
+      "inputs": [
+        "bootstrap/native/p15_public_native_launcher.c",
+        "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+        "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/marker.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c",
+        "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
+      ],
+      "depends_on": [
+        "stage0-orchestrator-unit"
+      ],
+      "automatic": true
     },
     {
       "id": "stage0-hosted-core-compiled-app",
@@ -2357,7 +2432,15 @@
         "bootstrap/gravity/p15_s23/emitter.gravity",
         "bootstrap/gravity/src/gravity/macro.gravity",
         "bootstrap/gravity/src/gravity/resolution.gravity",
-        "bootstrap/gravity/src/gravity/checked_core.gravity"
+        "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/native/p15_public_native_launcher.c",
+        "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+        "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/marker.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c",
+        "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn"
       ],
       "depends_on": [
         "stage0-hosted-core-app"
@@ -2399,6 +2482,14 @@
         "bootstrap/clojure/fixtures/self-hosting/sh-08/**",
         "bootstrap/clojure/fixtures/self-hosting/sh-10/**",
         "bootstrap/clojure/fixtures/self-hosting/sh-11/**",
+        "bootstrap/native/p15_public_native_launcher.c",
+        "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+        "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/marker.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c",
+        "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
         "bootstrap/gravity/p15_s23/compiler.gravity",
         "bootstrap/gravity/p15_s23/emitter.gravity",
         "bootstrap/gravity/src/gravity/macro.gravity",
@@ -2455,6 +2546,14 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/clojure/fixtures/self-hosting/sh-10/**",
+        "bootstrap/native/p15_public_native_launcher.c",
+        "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+        "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/marker.c",
+        "bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c",
+        "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
         "bootstrap/gravity/p15_s23/compiler.gravity",
         "bootstrap/gravity/p15_s23/emitter.gravity",
         "bootstrap/gravity/src/gravity/macro.gravity",

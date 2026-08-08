@@ -320,6 +320,43 @@ additional heavy routing is the safety cost of complete runtime fingerprinting;
 the proof candidate remains manual-only. Leaf changes still do not select
 `stage0-clojure-suite` or `stage0-bootstrap-authority`.
 
+### 4a. Focused P15-S23 Darwin launcher prerequisite
+
+The bounded host-authored launcher has its own fresh manifest node,
+`stage0-p15-native-launcher-prerequisite`. Its exact command is:
+
+```bash
+clojure -J-Xmx1g -M:test --namespace gravity.p15-native-launcher-test
+```
+
+The node is a serialized `heavy-candidate` check with a 600-second timeout,
+`fresh: true`, `resume: false`, `no_resume: true`, and `authority: none`. It
+uses the canonical `/private/tmp/gravity-sh07-heavy.lock` with
+`exclusive: true`, `capacity: 1`, and `lock_owner: runner`: the verifier parent
+owns the lock while the direct Clojure command runs. Its declared resource
+receipt is `observed-peak-process-tree-rss-and-wall-time`, and its heap contract
+is `-J-Xmx1g` / 1,073,741,824 bytes.
+
+The focused input set is the launcher C source, the exact launcher test, all
+five `p15-native-launcher` C fixtures, and
+`docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn`.
+The command identity also binds `deps.edn` and
+`bootstrap/clojure/test/gravity/self_hosting_test_runner.clj`; no unrelated
+report or roadmap is over-bound. Each source, test, fixture, or artifact change
+selects this node and the cheap `stage0-orchestrator-unit` prerequisite. Legacy
+Stage0 broad owners explicitly impact-exclude those paths, so the changed-path
+plan does not widen into the full Stage0 suite, a documentation gate, or an
+earlier/later proof-candidate node. A dry run is non-authoritative and the
+receipt's `authoritative` field remains false.
+
+Coordinator evidence for the current launcher revision is exactly 8 tests/60
+assertions in 5.983s, with peak RSS 213,712,896B under Xmx1g and the canonical
+lock. The independent review is approved and the artifact is `partial`. This
+is bounded development evidence only: it makes no public native-run,
+self-hosting, release, or strict process-containment claim. The coordinator
+receipt was not rerun in this gate; Python unit/static/JSON/docs validation is
+the local verification boundary while C12 work remains active.
+
 ### 5. Focused namespace or cached SH-07 feedback
 
 Use for a single changed test or a bounded shard. These runs are
