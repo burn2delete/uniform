@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
+            [gravity.c3-artifact-identity :as c3-artifact-identity]
             [gravity.c3-literal-projection :as c3-literal-projection]
             [gravity.c3-syntax-construction :as c3-syntax-construction]
             [gravity.c3-syntax-evidence :as c3-syntax-evidence]
@@ -10403,6 +10404,58 @@
         (is (nil? (bootstrap/c3-lossless-literal-descriptor
                    seed form-record artifact nil)))
         (is (= 1 @calls))))))
+
+(deftest c3-artifact-identity-compatibility-wrappers-preserve-interposition
+  (doseq [[wrapper-var expected]
+          [[#'bootstrap/c3-path-neutral-reader-artifact-view '([c2-view])]
+           [#'bootstrap/c3-path-neutral-syntax-object '([syntax])]
+           [#'bootstrap/c3-gravity-syntax-boundary-identity-view
+            '([boundary])]
+           [#'bootstrap/c3-artifact-identity-input '([artifact])]
+           [#'bootstrap/c3-artifact-id '([artifact])]]]
+    (is (= expected (:arglists (meta wrapper-var)))))
+  (let [syntax {:span {:primary {:source "source.gravity" :form-index 0}
+                       :all [{:source "source.gravity" :form-index 0}]}
+                :origin []}
+        expected
+        (c3-artifact-identity/with-operations
+         {:c2-path-neutral-span bootstrap/c2-path-neutral-span
+          :c3-path-neutral-origin bootstrap/c3-path-neutral-origin}
+         #(c3-artifact-identity/c3-path-neutral-syntax-object syntax))]
+    (is (= expected (bootstrap/c3-path-neutral-syntax-object syntax))))
+  (with-redefs [bootstrap/c3-path-neutral-reader-artifact-view
+                (constantly :reader-view)
+                bootstrap/c3-path-neutral-syntax-object
+                (constantly :syntax-view)]
+    (let [preimage
+          (bootstrap/c3-artifact-identity-input
+           {:artifact-id :old
+            :c2-reader-artifact :reader
+            :syntax-object-stream [:syntax]
+            :origin-chain-graph {:nodes []}
+            :gravity-origin-chain-graph {:nodes []}})]
+      (is (= :reader-view (:c2-reader-artifact preimage)))
+      (is (= [:syntax-view] (:syntax-object-stream preimage)))))
+  (with-redefs [bootstrap/c3-artifact-identity-input
+                (constantly {:identity :interposed})
+                bootstrap/reader-canonical-hash
+                (fn [value]
+                  (is (= {:identity :interposed} value))
+                  "sha256:interposed")]
+    (is (= "sha256:interposed" (bootstrap/c3-artifact-id {}))))
+  (with-redefs [bootstrap/c2-path-neutral-span
+                (fn [span] (assoc span :interposed true))]
+    (is (true? (get-in (bootstrap/c3-path-neutral-syntax-object
+                        {:span {:primary {} :all []} :origin []})
+                       [:span :primary :interposed]))))
+  (let [boundary {:slice :SH-04
+                  :owner :gravity-source
+                  :resolved-syntax-result {:status :accepted}}
+        expected
+        (c3-artifact-identity/c3-gravity-syntax-boundary-identity-view
+         boundary)]
+    (is (= expected
+           (bootstrap/c3-gravity-syntax-boundary-identity-view boundary)))))
 
 (deftest c4-macro-evidence-compatibility-wrappers-preserve-output-and-interposition
   (let [entry {:identity 'compat/macro

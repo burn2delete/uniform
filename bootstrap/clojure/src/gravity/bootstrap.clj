@@ -11,6 +11,7 @@
             [clojure.string :as str]
             [clojure.walk :as walk]
             [gravity.c2-pass-cache :as c2-pass-cache]
+            [gravity.c3-artifact-identity :as c3-artifact-identity]
             [gravity.c3-literal-projection :as c3-literal-projection]
             [gravity.c3-syntax-construction :as c3-syntax-construction]
             [gravity.c3-syntax-evidence :as c3-syntax-evidence]
@@ -147446,116 +147447,62 @@
        (assoc base :registered-literal-projection projection))
       base)))
 
+(declare c3-path-neutral-reader-artifact-view
+         c3-path-neutral-syntax-object
+         c3-gravity-syntax-boundary-identity-view
+         c3-artifact-identity-input
+         c3-artifact-id)
+
+(defn- c3-artifact-identity-ops
+  []
+  {:c2-token-hash-input c2-token-hash-input
+   :c2-form-hash-input c2-form-hash-input
+   :c2-syntax-seed-hash-input c2-syntax-seed-hash-input
+   :c2-extension-hash-input c2-extension-hash-input
+   :c2-path-neutral-span c2-path-neutral-span
+   :c3-path-neutral-origin c3-path-neutral-origin
+   :reader-canonical-hash reader-canonical-hash
+   :c3-path-neutral-reader-artifact-view c3-path-neutral-reader-artifact-view
+   :c3-path-neutral-syntax-object c3-path-neutral-syntax-object
+   :c3-gravity-syntax-boundary-identity-view
+   c3-gravity-syntax-boundary-identity-view
+   :c3-artifact-identity-input c3-artifact-identity-input
+   :c3-artifact-id c3-artifact-id})
+
+(def ^:private ^:dynamic *c3-artifact-identity-leaf-call?* false)
+
+(defn- c3-artifact-identity-call
+  [operation & args]
+  (if *c3-artifact-identity-leaf-call?*
+    (apply operation args)
+    (binding [*c3-artifact-identity-leaf-call?* true]
+      (c3-artifact-identity/with-operations
+       (c3-artifact-identity-ops)
+       #(apply operation args)))))
+
 (defn c3-path-neutral-reader-artifact-view
   [c2-view]
-  (-> c2-view
-      (update :sh03-reader-authentication
-              #(dissoc % :provenance-binding-id))
-      (update :source-unit-record
-              #(-> %
-                   (dissoc :path)
-                   (update :project-root-record dissoc :path)))
-      (update :token-stream c2-token-hash-input)
-      (update :form-tree c2-form-hash-input)
-      (update :syntax-seed-stream c2-syntax-seed-hash-input)
-      (update :reader-extension-invocation-records c2-extension-hash-input)
-      (update :reader-source-map
-              (fn [records]
-                (mapv #(update % :span c2-path-neutral-span) records)))
-      (update :literal-decoding-records
-              (fn [records]
-                (mapv #(update % :span c2-path-neutral-span) records)))
-      (update-in [:semantic-error-deferment-record
-                  :deferred-literal-records]
-                 (fn [records]
-                   (mapv #(update % :span c2-path-neutral-span) records)))))
+  (c3-artifact-identity-call
+   c3-artifact-identity/c3-path-neutral-reader-artifact-view c2-view))
 
 (defn c3-path-neutral-syntax-object
   [syntax]
-  (-> syntax
-      (update :span
-              (fn [span]
-                (-> span
-                    (update :primary c2-path-neutral-span)
-                    (update :all
-                            #(mapv c2-path-neutral-span (or % []))))))
-      (update :origin #(mapv c3-path-neutral-origin (or % [])))))
+  (c3-artifact-identity-call
+   c3-artifact-identity/c3-path-neutral-syntax-object syntax))
 
 (defn c3-gravity-syntax-boundary-identity-view
   [boundary]
-  (let [binding (:plan-binding boundary)
-        result (:resolved-syntax-result boundary)
-        envelope (:authenticated-envelope boundary)]
-    {:slice (:slice boundary)
-     :owner (:owner boundary)
-     :adapter-contract (:adapter-contract boundary)
-     :plan-binding
-     (select-keys
-      binding
-      [:artifact :status :semantic-authority :source-byte-count
-       :source-content-hash :plan-semantic-hash
-       :functions-semantic-hash :function-count
-       :function-names-hash :function-shapes-hash
-       :public-function-hashes :public-function-shapes])
-     :reader-semantic-binding (:reader-semantic-binding boundary)
-     :reader-source-revision (:reader-source-revision boundary)
-     :resolved-syntax-result
-     (select-keys
-      result
-      [:artifact :kind :schema-version :status :artifact-id
-       :semantic-source-id
-       :reader-binding :root-syntax-ids :graph-verification-report
-       :syntax-serialization :authority :trusted-boundary])
-     :semantic-envelope-id (:semantic-envelope-id envelope)
-     :resolved-stream-verification
-     (select-keys (:resolved-stream-verification boundary)
-                  [:artifact :schema-version :status :checks])
-     :stream-digest-requests (:stream-digest-requests boundary)
-     :stream-resolved-digests (:stream-resolved-digests boundary)
-     :gravity-syntax-serialization
-     (select-keys (:gravity-syntax-serialization boundary)
-                  [:artifact :schema-version :status :encoding
-                   :payload-id-request])
-     :gravity-syntax-deserialization
-     (select-keys (:gravity-syntax-deserialization boundary)
-                  [:artifact :schema-version :status :encoding])
-     :uncredited-compatibility-facade
-     (:uncredited-compatibility-facade boundary)
-     :target-source-reread? (:target-source-reread? boundary)
-     :clojure-adapter-residual? (:clojure-adapter-residual? boundary)
-     :self-hosted? (:self-hosted? boundary)}))
+  (c3-artifact-identity-call
+   c3-artifact-identity/c3-gravity-syntax-boundary-identity-view boundary))
 
 (defn c3-artifact-identity-input
   [artifact]
-  (let [boundary (:gravity-syntax-boundary artifact)]
-    (cond->
-     (-> artifact
-         (dissoc :artifact-id)
-         (update :c2-reader-artifact c3-path-neutral-reader-artifact-view)
-         (update :syntax-object-stream
-                 #(mapv c3-path-neutral-syntax-object (or % [])))
-         (update-in [:origin-chain-graph :nodes]
-                    (fn [nodes]
-                      (mapv #(update % :origin
-                                     (fn [origins]
-                                       (mapv c3-path-neutral-origin
-                                             (or origins []))))
-                            (or nodes []))))
-         (update-in [:gravity-origin-chain-graph :nodes]
-                    (fn [nodes]
-                      (mapv #(update % :origin
-                                     (fn [origins]
-                                       (mapv c3-path-neutral-origin
-                                             (or origins []))))
-                            (or nodes [])))))
-      boundary
-      (assoc :c2-reader-artifact (:reader-semantic-binding boundary)
-             :gravity-syntax-boundary
-             (c3-gravity-syntax-boundary-identity-view boundary)))))
+  (c3-artifact-identity-call
+   c3-artifact-identity/c3-artifact-identity-input artifact))
 
 (defn c3-artifact-id
   [artifact]
-  (reader-canonical-hash (c3-artifact-identity-input artifact)))
+  (c3-artifact-identity-call c3-artifact-identity/c3-artifact-id artifact))
 
 (defn- sh03-c3-precomputed-c2-verify!
   [candidate source-path c2-artifact]
