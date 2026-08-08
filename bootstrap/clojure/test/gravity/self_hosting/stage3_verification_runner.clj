@@ -1,9 +1,11 @@
 (ns gravity.self-hosting.stage3-verification-runner
   "Runs the fixed, non-authoritative Stage3--Stage7 development batches.
 
-  Stage7 currently exposes only the cheap C11 source preflight.  It is a
-  deliberately narrow source-only batch and does not claim to be the full
-  Stage7 graph or an authority/proof policy.
+  Stage7 currently exposes only two cheap C11 source-preflight profiles.  They
+  are deliberately narrow source-only batches and do not claim to be the full
+  Stage7 graph or an authority/proof policy.  The shape profile is an
+  execution-only alias of the complete source profile; it does not own a
+  second copy of the namespace catalog.
 
   This namespace intentionally has no compile-time dependency on the Clojure
   bootstrap, the C7 tests, or the SH-07 iteration runner.  The production
@@ -195,6 +197,19 @@
    'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-control-form-arities-are-exact
    'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions])
 
+;; This is a runner-only execution profile for the cheap shape/export gate.
+;; Its selectors intentionally overlap the complete three-test source profile;
+;; the profile is never a second catalog owner (see `execution-profile-batches`
+;; and `validate-fixed-catalog!`).
+(def stage7-c11-shape-preflight-selectors
+  ['gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-control-form-arities-are-exact
+   'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions])
+
+(def ^:private execution-profile-batches
+  {:stage7-c11-shape-preflight
+   {:owner :stage7-c11-source-preflight
+    :selectors stage7-c11-shape-preflight-selectors}})
+
 (def stage6-public-c10-selectors
   ['gravity.bootstrap-test/public-check-accepts-gravity-authored-c10-safety-analysis-pipeline])
 
@@ -221,7 +236,8 @@
    :stage6-c10-kernel
    :stage6-public-c10
    :stage6-sh11-c9-safety-adapter
-   :stage7-c11-source-preflight])
+   :stage7-c11-source-preflight
+   :stage7-c11-shape-preflight])
 
 (def ^:private batch-selectors
   (array-map
@@ -248,7 +264,8 @@
    :stage6-public-c10 stage6-public-c10-selectors
    :stage6-sh11-c9-safety-adapter
    stage6-sh11-c9-safety-adapter-selectors
-   :stage7-c11-source-preflight stage7-c11-source-preflight-selectors))
+   :stage7-c11-source-preflight stage7-c11-source-preflight-selectors
+   :stage7-c11-shape-preflight stage7-c11-shape-preflight-selectors))
 
 (def fixed-batch-ids
   "The complete CLI allowlist, in deterministic presentation order."
@@ -265,6 +282,12 @@
                  :selector-vector (get batch-selectors batch-id)
                  :maximum-entries maximum-cache-entries
                  :fail-fast? (> (count (get batch-selectors batch-id)) 1)
+                 ;; An execution profile may reuse selectors from its
+                 ;; complete source owner, but must never inflate ownership,
+                 ;; completeness, or duplicate-selector accounting.
+                 :catalog-owner? (not (contains? execution-profile-batches batch-id))
+                 :catalog-owner-batch (get-in execution-profile-batches
+                                              [batch-id :owner])
                  ;; Most partial namespaces retain source/deftest order.  C8
                  ;; source coverage is the reviewed exception: its vector is
                  ;; the exact execution order, while membership is checked
@@ -348,7 +371,10 @@
   ;; from source order.
   (reduce
    (fn [result batch-id]
-     (if (contains? batches batch-id)
+     (if (and (contains? batches batch-id)
+              ;; Execution-profile aliases are validated against their
+              ;; owner's source below, but do not become catalog owners.
+              (get-in batches [batch-id :catalog-owner?] true))
       (reduce
         (fn [result selector]
           (let [namespace-symbol (selector-namespace selector)]
@@ -373,6 +399,81 @@
       (recur (next expected) (next actual))
       :else
       (recur expected (next actual)))))
+
+(defn- validate-execution-profile-batches!
+  "Validate aliases without treating them as additional catalog owners.
+
+  An execution profile is allowed to select a strict subset of its owner's
+  source deftests (for example the C11 shape/export prefix), but every selected
+  var must still exist, be unique, and obey the profile's declared source or
+  explicit execution order.  Keeping this check separate from the ownership
+  reduction is what permits intentional overlap without weakening drift
+  detection.
+  "
+  [batches discovered loaded-namespaces]
+  (doseq [[batch-id batch] (sort-by (comp str key) batches)
+          :when (and (false? (:catalog-owner? batch))
+                     ;; A batch invocation loads only the namespaces selected
+                     ;; by that batch.  Validate an alias when its source is
+                     ;; in that invocation; the full catalog call validates
+                     ;; every profile by passing the complete namespace set.
+                     (contains? (set loaded-namespaces)
+                                (some-> (:test-vars batch)
+                                        first
+                                        selector-namespace)))]
+    (let [selectors (ensure-selector-vector!
+                     batch-id (:test-vars batch))
+          owner-id (:catalog-owner-batch batch)
+          owner (get batches owner-id)
+          declared-profile (get-in execution-profile-batches
+                                    [batch-id :selectors])
+          namespaces (set (map selector-namespace selectors))]
+      (when-not (and owner-id owner
+                     (not (false? (:catalog-owner? owner))))
+        (exception "STAGE3-CATALOG-PROFILE-OWNER"
+                   "An execution profile must name an existing catalog owner"
+                   {:batch-id batch-id :owner-batch owner-id}))
+      (when-not (= 1 (count namespaces))
+        (exception "STAGE3-CATALOG-PROFILE-NAMESPACE"
+                   "An execution profile must select one source namespace"
+                   {:batch-id batch-id :namespaces (vec (sort-by str namespaces))}))
+      (when-not (= declared-profile selectors)
+        (exception "STAGE3-CATALOG-PROFILE-ALLOWLIST"
+                   "An execution profile selector vector drifted"
+                   {:batch-id batch-id :expected declared-profile
+                    :actual selectors}))
+      (let [namespace-symbol (first namespaces)
+            actual (vec (get discovered namespace-symbol []))
+            actual-set (set actual)
+            missing (vec (remove actual-set selectors))
+            owner-selectors (set (:test-vars owner))
+            owner-missing (vec (remove owner-selectors selectors))
+            policy (get batch :catalog-order-policy :source-subsequence)]
+        (when-not (contains? (set loaded-namespaces) namespace-symbol)
+          (exception "STAGE3-CATALOG-PROFILE-NAMESPACE"
+                     "An execution profile source namespace was not loaded"
+                     {:batch-id batch-id :namespace namespace-symbol}))
+        (when (seq missing)
+          (exception "STAGE3-CATALOG-PROFILE-MISSING-TEST-VAR"
+                     "An execution profile selects a test var missing from its source"
+                     {:batch-id batch-id :namespace namespace-symbol
+                      :missing missing :actual actual}))
+        (when (seq owner-missing)
+          (exception "STAGE3-CATALOG-PROFILE-OWNER-COVERAGE"
+                     "An execution profile selects a var outside its catalog owner"
+                     {:batch-id batch-id :owner-batch owner-id
+                      :unexpected owner-missing}))
+        (if (= policy :explicit-execution-order)
+          (when-not (= (count selectors) (count (set selectors)))
+            (exception "STAGE3-CATALOG-PROFILE-ORDER"
+                       "An explicit execution profile contains duplicate selectors"
+                       {:batch-id batch-id :selectors selectors}))
+          (when-not (ordered-subsequence? selectors actual)
+            (exception "STAGE3-CATALOG-PROFILE-SOURCE-ORDER"
+                       "An execution profile no longer matches source order"
+                       {:batch-id batch-id :namespace namespace-symbol
+                        :expected selectors :actual actual
+                        :policy policy})))))))
 
 (defn validate-fixed-catalog!
   "Validate a fixed batch map against discovered deftest selectors.
@@ -407,6 +508,7 @@
                       "A fixed Stage3 selector belongs to an unexpected namespace"
                       {:batch-id batch-id :unexpected unexpected
                        :expected (vec (sort-by str catalog-source-namespaces))}))))
+     (validate-execution-profile-batches! batches discovered loaded-namespaces)
      (let [expected-batches (expected-batch-selectors-by-namespace batches)
            expected-all
            (into {}

@@ -8,8 +8,9 @@ an environment binding created by :mod:`verify_development`.  There is no
 public command passthrough or shell evaluation in this wrapper.
 
 The enabled modes are ``pure`` and ``proof-candidate``.  Stage7 currently
-exposes only the cheap C11 source preflight; it is not the complete Stage7
-graph or a proof policy.  A public/pure batch
+exposes only two cheap C11 source-preflight profiles; they are not the
+complete Stage7 graph or a proof policy.  The shape profile is an execution
+alias of the complete source profile and does not add catalog ownership.  A public/pure batch
 acquires the canonical SH-07 lease and runs one of the reviewed Clojure
 batches.  A proof-candidate batch starts a *new* checkpoint directory and
 invokes the existing SH-07 checkpoint runner with the module selected by the
@@ -108,6 +109,7 @@ FIXED_BATCHES = (
     "stage6-public-c10",
     "stage6-sh11-c9-safety-adapter",
     "stage7-c11-source-preflight",
+    "stage7-c11-shape-preflight",
     "authority",
     "c8-authority",
     "c9-authority",
@@ -145,6 +147,7 @@ _BATCH_HEAP = {
     "stage6-public-c10": "-J-Xmx2g",
     "stage6-sh11-c9-safety-adapter": "-J-Xmx8g",
     "stage7-c11-source-preflight": "-J-Xmx512m",
+    "stage7-c11-shape-preflight": "-J-Xmx512m",
     "c10-authority": "-J-Xmx8g",
 }
 _BATCH_COMMANDS: dict[str, tuple[str, ...]] = {
@@ -279,7 +282,18 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
         "gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-control-form-arities-are-exact",
         "gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions",
     ),
+    "stage7-c11-shape-preflight": (
+        "gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-control-form-arities-are-exact",
+        "gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions",
+    ),
 }
+
+# ``stage7-c11-shape-preflight`` is intentionally an execution-only alias of
+# the complete three-test source batch.  Keep this relationship explicit so a
+# selector overlap cannot be mistaken for a second catalog owner.
+EXECUTION_PROFILE_BATCH_OWNERS = MappingProxyType({
+    "stage7-c11-shape-preflight": "stage7-c11-source-preflight",
+})
 
 CANONICAL_LOCK = _sh07.canonical_shared_lock_path(_sh07.DEFAULT_LOCK)
 CANONICAL_LOCK_TEXT = str(CANONICAL_LOCK)

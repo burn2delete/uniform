@@ -6,6 +6,15 @@
 (defn- selectors-for
   [namespace-symbol]
   (->> runner/fixed-batch-ids
+       (filter #(get-in runner/fixed-batches [% :catalog-owner?] true))
+       (mapcat #(get runner/fixed-batch-selectors %))
+       (filter #(= namespace-symbol (symbol (namespace %))))
+       vec))
+
+(defn- execution-profile-selectors-for
+  [namespace-symbol]
+  (->> runner/fixed-batch-ids
+       (filter #(not (get-in runner/fixed-batches [% :catalog-owner?] true)))
        (mapcat #(get runner/fixed-batch-selectors %))
        (filter #(= namespace-symbol (symbol (namespace %))))
        vec))
@@ -51,6 +60,11 @@
   'gravity.self-hosting.sh11-c9-safety-adapter-test)
 (def ^:private bootstrap-ns
   'gravity.bootstrap-test)
+
+;; The profile fail-fast regression is kept beside the Stage7 catalog tests;
+;; its synthetic delegate helper is defined with the other receipt helpers
+;; below.
+(declare passing-result)
 
 (defn- bound-report-arguments
   [batch]
@@ -113,7 +127,8 @@
           :stage6-c10-kernel
           :stage6-public-c10
           :stage6-sh11-c9-safety-adapter
-          :stage7-c11-source-preflight]
+          :stage7-c11-source-preflight
+          :stage7-c11-shape-preflight]
          runner/fixed-batch-ids))
   (is (= runner/primitive-pure-selectors
          (get runner/fixed-batch-selectors :primitive-pure)))
@@ -178,6 +193,18 @@
   (is (= runner/stage7-c11-source-preflight-selectors
          (get runner/fixed-batch-selectors :stage7-c11-source-preflight)))
   (is (= 3 (count runner/stage7-c11-source-preflight-selectors)))
+  (is (= runner/stage7-c11-shape-preflight-selectors
+         (get runner/fixed-batch-selectors :stage7-c11-shape-preflight)))
+  (is (= ['gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-control-form-arities-are-exact
+          'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions]
+         runner/stage7-c11-shape-preflight-selectors))
+  (is (= 2 (count runner/stage7-c11-shape-preflight-selectors)))
+  (is (= false
+         (get-in runner/fixed-batches
+                 [:stage7-c11-shape-preflight :catalog-owner?])))
+  (is (= :stage7-c11-source-preflight
+         (get-in runner/fixed-batches
+                 [:stage7-c11-shape-preflight :catalog-owner-batch])))
   (is (= :source-subsequence
          (get-in runner/fixed-batches
                  [:stage7-c11-source-preflight :catalog-order-policy])))
@@ -292,6 +319,77 @@
             'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions]
            actual))
     (is (= runner/stage7-c11-source-preflight-selectors actual))))
+
+(deftest stage7-c11-shape-profile-overlaps-without-adding-an-owner
+  (let [actual (source-deftest-selectors
+                c11-source-ns
+                "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj")
+        profile (execution-profile-selectors-for c11-source-ns)]
+    ;; The complete source owner still has exactly the real three-test census;
+    ;; the runner-only profile is a strict, ordered two-test execution view.
+    (is (= runner/stage7-c11-source-preflight-selectors
+           (selectors-for c11-source-ns)))
+    (is (= actual (selectors-for c11-source-ns)))
+    (is (= runner/stage7-c11-shape-preflight-selectors profile))
+    (is (= #{(second actual) (nth actual 2)} (set profile)))
+    (is (= :stage7-c11-source-preflight
+           (get-in runner/fixed-batches
+                   [:stage7-c11-shape-preflight :catalog-owner-batch])))
+    (is (false? (get-in runner/fixed-batches
+                        [:stage7-c11-shape-preflight :catalog-owner?]))))
+  (let [discovered
+        {c11-source-ns
+         (source-deftest-selectors
+          c11-source-ns
+          "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj")}
+        result (runner/validate-fixed-catalog!
+                runner/fixed-batches discovered #{c11-source-ns})]
+    (is (= :passed (:status result)))
+    (is (= {} (:intentionally-unowned result))))
+  (let [shape-id :stage7-c11-shape-preflight
+        shape (get runner/fixed-batches shape-id)
+        reversed (assoc runner/fixed-batches
+                        shape-id
+                        (assoc shape :test-vars
+                               (vec (reverse (:test-vars shape)))))
+        discovered {c11-source-ns
+                    (source-deftest-selectors
+                     c11-source-ns
+                     "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj")}
+        error (try
+                (runner/validate-fixed-catalog!
+                 reversed discovered #{c11-source-ns})
+                nil
+                (catch clojure.lang.ExceptionInfo error error))]
+    (is (= "STAGE3-CATALOG-PROFILE-ALLOWLIST"
+           (:id (ex-data error))))))
+
+(deftest stage7-c11-shape-profile-preserves-fail-fast-skipped-tail
+  (let [selectors runner/stage7-c11-shape-preflight-selectors
+        calls (atom [])]
+    (binding [runner/*catalog-loader* nil
+              runner/*delegate-run-test-vars*
+              (fn [selection]
+                (swap! calls conj selection)
+                {:test-result {:test 1 :pass 0 :fail 1 :error 0 :type :summary}
+                 :test-var-results
+                 [(assoc (passing-result (first selectors) 0)
+                         :test-result {:test 1 :pass 0 :fail 1 :error 0})]
+                 :skipped-test-vars (subvec selectors 1)
+                 :cache {:sh06-hits 0 :sh06-misses 1
+                         :core-hits 0 :core-misses 0
+                         :verification-hits 0 :verification-misses 0}
+                 :elapsed-ms 3})]
+      (let [result (runner/run-batch :stage7-c11-shape-preflight)]
+        (is (= [{:test-vars selectors
+                 :maximum-entries 1
+                 :fail-fast? true}]
+               @calls))
+        (is (= selectors (:selection-order result)))
+        (is (= (subvec selectors 1) (:skipped-tail result)))
+        (is (= [:failed :skipped]
+               (mapv :status (:test-var-results result))))
+        (is (= :non-authoritative (:authority result)))))))
 
 (deftest c8-source-batch-keeps-explicit-arity-before-contract-order
   (is (= :explicit-execution-order

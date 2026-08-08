@@ -1469,6 +1469,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         # C11 source, proof binding, and complete ownership graph freeze.
         stage7_deferred_batches = {
             "stage7-c11-source-preflight",
+            "stage7-c11-shape-preflight",
         }
         # The fixed runner exposes this seed before the durable graph is
         # admitted, but the parsed production manifest must not route to it or
@@ -1479,6 +1480,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         stage7_runner_markers = (
             "stage7-",
             "stage7-c11-source-preflight",
+            "stage7-c11-shape-preflight",
             "sh07-c11-source-",
             "sh07_c11_mir_source_preflight_test",
             "sh07-c11-mir-source-preflight-test",
@@ -1499,7 +1501,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             collect_stage7_references(item, item["id"], "check")
         self.assertEqual([], manifest_stage7_references)
         self.assertEqual(
-            [batch for batch in verifier._stage3.FIXED_BATCHES if batch.startswith("stage7-")],
+            sorted(batch for batch in verifier._stage3.FIXED_BATCHES if batch.startswith("stage7-")),
             sorted(stage7_deferred_batches),
         )
         stage3_fixed_batches = (
@@ -1509,7 +1511,9 @@ class VerifyDevelopmentTests(unittest.TestCase):
             - stage6_batches
             - stage7_deferred_batches
         )
-        self.assertNotIn("stage7-c11-source-preflight", stage3_fixed_batches)
+        self.assertTrue(
+            stage7_deferred_batches.isdisjoint(stage3_fixed_batches)
+        )
         self.assertEqual(
             {item["stage3_batch"] for item in stage3.values()},
             stage3_fixed_batches,

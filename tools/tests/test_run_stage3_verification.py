@@ -85,6 +85,7 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage6-public-c10": "stage6-public-c10-selectors",
             "stage6-sh11-c9-safety-adapter": "stage6-sh11-c9-safety-adapter-selectors",
             "stage7-c11-source-preflight": "stage7-c11-source-preflight-selectors",
+            "stage7-c11-shape-preflight": "stage7-c11-shape-preflight-selectors",
         }
         for batch, definition in selector_definitions.items():
             self.assertEqual(
@@ -119,6 +120,7 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage6-public-c10": "-J-Xmx2g",
             "stage6-sh11-c9-safety-adapter": "-J-Xmx8g",
             "stage7-c11-source-preflight": "-J-Xmx512m",
+            "stage7-c11-shape-preflight": "-J-Xmx512m",
             "c10-authority": "-J-Xmx8g",
         }
         self.assertEqual(stage3._BATCH_HEAP, expected_heap)
@@ -165,6 +167,14 @@ class Stage3WrapperTests(unittest.TestCase):
         )
         self.assertEqual(3, len(c11))
         self.assertEqual(3, len(set(c11)))
+        c11_shape = list(stage3._FIXED_BATCH_SELECTORS["stage7-c11-shape-preflight"])
+        self.assertEqual(c11[1:], c11_shape)
+        self.assertEqual(2, len(c11_shape))
+        self.assertEqual(2, len(set(c11_shape)))
+        self.assertEqual(
+            {"stage7-c11-shape-preflight": "stage7-c11-source-preflight"},
+            dict(stage3.EXECUTION_PROFILE_BATCH_OWNERS),
+        )
 
     def test_retired_singleton_batch_ids_are_rejected(self) -> None:
         for retired in (
@@ -196,6 +206,13 @@ class Stage3WrapperTests(unittest.TestCase):
         )
         self.assertEqual(3, len(names))
         self.assertEqual(3, len(set(names)))
+
+    def test_stage7_c11_shape_profile_is_ordered_subset_of_source_owner(self) -> None:
+        source = list(stage3._FIXED_BATCH_SELECTORS["stage7-c11-source-preflight"])
+        shape = list(stage3._FIXED_BATCH_SELECTORS["stage7-c11-shape-preflight"])
+        self.assertEqual(source[1:], shape)
+        self.assertEqual(len(shape), len(set(shape)))
+        self.assertTrue(all(selector in source for selector in shape))
 
     @staticmethod
     def _hash(path: Path) -> str:
@@ -788,6 +805,56 @@ class Stage3WrapperTests(unittest.TestCase):
                 root=root,
                 report_path=report_path,
                 batch="stage4-sh09-adapter",
+                nonce=nonce,
+                check_id=check_id,
+                command_identity_sha256=command_hash,
+            )
+
+    def test_stage7_c11_shape_profile_preserves_exact_skipped_tail(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            report_path = root / "c11-shape-report.json"
+            nonce = "c11-shape-failure-nonce"
+            check_id = "c11-shape-failure-check"
+            command_hash = "sha256:" + "b" * 64
+            report = self._runner_report(
+                root,
+                report_path,
+                nonce,
+                check_id,
+                command_hash,
+                batch="stage7-c11-shape-preflight",
+                status="failed",
+                exit_code=1,
+            )
+            selectors = list(report["selection-order"])
+            report["executed-vars"] = selectors[:1]
+            report["executed"] = selectors[:1]
+            report["skipped-tail"] = selectors[1:]
+            report["skipped-vars"] = selectors[1:]
+            report["per-var-results"][0].update({
+                "status": "failed",
+                "counts": {"type": "summary", "test": 1, "pass": 0, "fail": 1, "error": 0},
+            })
+            report["per-var-results"][1].update({
+                "status": "skipped",
+                "counts": {"type": "summary", "test": 0, "pass": 0, "fail": 0, "error": 0},
+                "cache": {key: 0 for key in (
+                    "sh06-hits", "sh06-misses", "core-hits", "core-misses",
+                    "verification-hits", "verification-misses",
+                )},
+                "elapsed-ms": 0,
+                "completed?": False,
+                "skipped-tail?": True,
+            })
+            report["counts"] = {
+                "type": "summary", "test": 1, "pass": 0, "fail": 1, "error": 0,
+            }
+            stage3._validate_runner_report(  # type: ignore[attr-defined]
+                report,
+                root=root,
+                report_path=report_path,
+                batch="stage7-c11-shape-preflight",
                 nonce=nonce,
                 check_id=check_id,
                 command_identity_sha256=command_hash,
