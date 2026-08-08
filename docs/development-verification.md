@@ -542,31 +542,44 @@ stable-candidate/release lane because of its measured runtime and memory cost.
 
 The manifest's Stage3 graph is a fixed, serial development route. A cheap
 runner-unit node executes the complete
-`gravity.self-hosting.stage3-verification-runner-test` namespace. Capacity-one
-heavy candidate nodes then run the reviewed SH08 primitive, recursive, and
-authoritative higher-order selector batches. The exact source-control-form-
-arity selector runs before source-plan, census, fragment, public, and proof
-candidate nodes. Every Stage3 command uses
-`python3 tools/run_stage3_verification.py`, the `:stage3-verification` alias
-and a fixed `--batch` identity; generic `--namespace` and `--exact` selectors
-are not accepted by these production nodes.
+`gravity.self-hosting.stage3-verification-runner-test` namespace. The route
+then runs source-control-form-arity, coverage/source binding and fragment
+preflight, source-plan, all three pure SH08 semantic batches, all three
+authenticated boundaries (primitive bool, recursive integer+string, and
+higher-order parity+auth), public C7, and finally the proof candidate. The
+arity and fragment gates therefore precede every semantic/authentication node.
+Every production batch uses `python3 tools/run_stage3_verification.py`, the
+`:stage3-verification` alias, and a fixed `--batch` identity; generic
+`--namespace` and `--exact` selectors are not accepted by these nodes.
 
-The manifest fingerprints the complete execution boundary for every
-command-owned node: the Stage3 wrapper, verifier/process-supervisor, SH-07
-authoritative tool, Stage3 Clojure runner, iteration-cache runner, bootstrap
-source, and `deps.edn`. Authenticated SH08 selectors additionally bind the
-exact `sh08_function_call_type_test.clj` source and the `.gravity` fixtures they
+The manifest fingerprints the centralized
+`run_stage3_verification.STAGE3_RUNTIME_DEPENDENCIES` set for every
+command-owned production node: `deps.edn`, the Stage3 wrapper and verifier,
+the SH-07 authoritative tool, Stage3 and iteration-cache runners,
+`bootstrap/clojure/src/gravity/bootstrap.clj`, all five shared Gravity files,
+and the `bootstrap/clojure/src/**` tree. The runner-unit remains a narrow unit
+preflight and intentionally does not inherit that production set.
+Authenticated SH08 selectors additionally bind the exact
+`sh08_function_call_type_test.clj` source and the `.gravity` fixtures they
 load; parity selectors bind their paired `.qst` bytes. The proof candidate
 also binds `sh07_authoritative_runner.clj` and `sh07_proof_contract.edn`.
 
 All C7 nodes are fresh, exclusive, capacity one, and command-owned on the
-canonical `/private/tmp/gravity-sh07-heavy.lock`. The public C7 node records an
-explicit `-J-Xmx2g` child heap, a timeout of at least 900 seconds, and observed
-wall/RSS evidence. The final authority-shaped node is instead a
-`proof-candidate`: it is fresh, no-resume, uses a new invocation state
-directory, reports `authority: none`, and carries `attestation_required: true`.
-The separate reviewed-attestation mode is intentionally not enabled in this
-manifest.
+canonical `/private/tmp/gravity-sh07-heavy.lock`. Structural/source/public
+commands declare `-J-Xmx2g`; semantic/authentication/proof commands declare
+`-J-Xmx8g`, with verifier validation requiring equality to the fixed wrapper
+batch heap. The public C7 node records a timeout of at least 900 seconds and
+observed wall/RSS evidence. The final authority-shaped node is instead a
+`proof-candidate`: it is `automatic: false`, fresh, no-resume, uses a new
+invocation state directory, reports `authority: none`, and carries
+`attestation_required: true`. A changed C7 input therefore stops at public;
+explicit `--check` and `--all` still include the proof candidate. The separate
+reviewed-attestation mode is intentionally not enabled in this manifest.
+
+The two same-namespace authentication sibling pairs are fixed into the
+recursive and higher-order authentication batches. This removes two old cold
+semantic/authentication JVM boundaries (eight to six in the graph), a
+scheduling observation rather than a measured speed claim.
 
 For source ownership, primitive/recursive/higher-order and fragment files are
 covered by the union of their fixed selectors. The source-plan and census

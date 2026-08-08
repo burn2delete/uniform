@@ -343,6 +343,78 @@ def _stage3_mode(check: Mapping[str, Any]) -> str:
     return mode
 
 
+_STAGE3_HEAP_BYTES = {
+    "-J-Xmx2g": 2 * 1024 * 1024 * 1024,
+    "-J-Xmx8g": 8 * 1024 * 1024 * 1024,
+}
+
+
+def _validate_stage3_resource_contract(check: Mapping[str, Any]) -> None:
+    """Require a fixed heap declaration for every Stage3 process boundary."""
+
+    check_id = str(check.get("id", ""))
+    if not check_id.startswith("stage3-"):
+        return
+    declared = check.get("jvm_heap")
+    if check_id == "stage3-runner-unit":
+        expected = "-J-Xmx2g"
+        command = _parse_command(check.get("command"), check_id)
+        if len(command) < 2 or command[1] != expected:
+            raise ManifestError(
+                f"check {check_id!r} must pin {expected} immediately after clojure"
+            )
+    else:
+        batch = check.get("stage3_batch")
+        if batch == "authority":
+            # The proof-candidate wrapper launches the authoritative module
+            # child rather than the fixed Clojure batch command.  Its reviewed
+            # child contract still requires the semantic/authentication floor.
+            expected = "-J-Xmx8g"
+        else:
+            try:
+                expected = str(_stage3.batch_command(str(batch))[1])
+            except Exception as exc:
+                raise ManifestError(
+                    f"check {check_id!r} must declare a reviewed fixed Stage3 batch"
+                ) from exc
+    if declared != expected or expected not in _STAGE3_HEAP_BYTES:
+        raise ManifestError(
+            f"check {check_id!r} jvm_heap must equal the fixed wrapper heap {expected!r}"
+        )
+    minimum = check.get("minimum_heap_bytes")
+    if type(minimum) is not int or minimum != _STAGE3_HEAP_BYTES[expected]:
+        raise ManifestError(
+            f"check {check_id!r} minimum_heap_bytes must equal the declared {expected} floor"
+        )
+
+
+def _validate_stage3_runtime_inputs(check: Mapping[str, Any]) -> None:
+    """Keep every command-owned production node on the central runtime set.
+
+    The runner-unit is intentionally a narrow unit preflight and does not
+    launch the production wrapper, so it is exempt.  Production nodes must
+    carry the complete centralized set in their declared inputs/tool inputs;
+    otherwise a shared runtime edit could falsely reuse a receipt.
+    """
+
+    check_id = str(check.get("id", ""))
+    if (
+        not check_id.startswith("stage3-")
+        or check_id == "stage3-runner-unit"
+        or check.get("lock_owner", "runner") != "command"
+    ):
+        return
+    required = getattr(_stage3, "STAGE3_RUNTIME_DEPENDENCIES", None)
+    if not isinstance(required, (tuple, list)) or not required:
+        raise ManifestError("Stage3 wrapper runtime dependency contract is unavailable")
+    declared = set(check.get("inputs", [])) | set(check.get("tool_inputs", []))
+    missing = sorted(set(required) - declared)
+    if missing:
+        raise ManifestError(
+            f"check {check_id!r} omits centralized Stage3 runtime inputs: {missing}"
+        )
+
+
 def _lock_owner(check: Mapping[str, Any]) -> str:
     """Return the reviewed lock owner, defaulting to the verifier runner.
 
@@ -461,6 +533,8 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
         if lane not in LANES:
             raise ManifestError(f"check {check_id!r} has invalid lane {lane!r}")
         _parse_command(check.get("command"), check_id)
+        _validate_stage3_resource_contract(check)
+        _validate_stage3_runtime_inputs(check)
         if check.get("daemonization") != "forbidden":
             raise ManifestError(
                 f"check {check_id!r} must declare daemonization='forbidden'; "
@@ -500,6 +574,9 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
             raise ManifestError(f"check {check_id!r} exclusive must be boolean")
         if not isinstance(check.get("fresh", False), bool):
             raise ManifestError(f"check {check_id!r} fresh must be boolean")
+        automatic = check.get("automatic", True)
+        if not isinstance(automatic, bool):
+            raise ManifestError(f"check {check_id!r} automatic must be boolean")
         env = check.get("env", {})
         if not isinstance(env, Mapping):
             raise ManifestError(f"check {check_id!r} env must be an object")
@@ -650,6 +727,17 @@ def _impact_excludes_change(check: Mapping[str, Any], changed: str) -> bool:
     )
 
 
+def _automatic_check(check: Mapping[str, Any]) -> bool:
+    """Return whether a check participates in implicit change-impact routing.
+
+    The opt-out is intentionally ignored by explicit ``--check`` and
+    ``--all`` scopes.  Those callers have requested the exact graph scope;
+    only ambient changed-path routing is allowed to defer a manual check.
+    """
+
+    return check.get("automatic", True) is not False
+
+
 def select_impacted_checks(
     manifest: Mapping[str, Any],
     root: Path | str = ROOT,
@@ -695,7 +783,7 @@ def select_impacted_checks(
     else:
         direct = set()
         for check_id, check in by_id.items():
-            if check_id not in allowed:
+            if check_id not in allowed or not _automatic_check(check):
                 continue
             declared = list(check["inputs"]) + list(check.get("tool_inputs", []))
             # Exclusions are path patterns, not a check-wide veto.  A broad
@@ -722,7 +810,7 @@ def select_impacted_checks(
         while queue:
             current = queue.pop(0)
             for child in sorted(reverse[current]):
-                if child not in selected and child in allowed:
+                if child not in selected and child in allowed and _automatic_check(by_id[child]):
                     selected.add(child)
                     reasons[child].append("downstream-of:" + current)
                     queue.append(child)
@@ -732,7 +820,10 @@ def select_impacted_checks(
     while queue:
         current = queue.pop(0)
         for dep in dependencies_of(by_id[current]):
-            if dep not in selected:
+            # Change-impact plans never revive a manual-only node through
+            # dependency closure.  Explicit --check/--all retain the exact
+            # prerequisite graph, including manual-only checks.
+            if dep not in selected and (requested or _automatic_check(by_id[dep])):
                 selected.add(dep)
                 reasons[dep].append("dependency-of:" + current)
                 queue.append(dep)
@@ -742,6 +833,8 @@ def select_impacted_checks(
     selected_order = topological_order(manifest, selected)
     matches_by_path: dict[str, list[tuple[str, str]]] = {path: [] for path in changed}
     for check_id, check in by_id.items():
+        if not _automatic_check(check):
+            continue
         declared = list(check["inputs"]) + list(check.get("tool_inputs", []))
         for path in changed:
             if _impact_excludes_change(check, path):

@@ -201,31 +201,42 @@ replacing any canonical baseline.
 The Stage3 graph is a fixed, serial development route rather than generic
 namespace batching. It begins with the complete
 `gravity.self-hosting.stage3-verification-runner-test` unit namespace, then
-runs the reviewed SH08 primitive, recursive, and higher-order fixed batches.
-The exact source-control-form-arity batch precedes the source-plan contract,
-coverage-census contract, fragment-size preflight, public C7 check, and proof
-candidate. Each production node invokes
-`python3 tools/run_stage3_verification.py` with a reviewed `--batch` identity
-from the `:stage3-verification` alias. No generic `--namespace` or `--exact`
-selection is used by the production graph.
+runs source-control-form-arity, coverage/source binding and fragment
+preflight, source-plan, the three pure SH08 semantic batches, the three
+authenticated boundaries (primitive bool, recursive integer+string, and
+higher-order parity+auth), public C7, and finally the proof candidate. Arity
+and fragment are prerequisites of every semantic/authentication node. Each
+production node invokes `python3 tools/run_stage3_verification.py` with a
+reviewed `--batch` identity from the `:stage3-verification` alias. No generic
+`--namespace` or `--exact` selection is used by the production graph.
 
 Every C7 node is a fresh, exclusive, capacity-one heavy candidate using the
-command-owned canonical `/private/tmp/gravity-sh07-heavy.lock`. The public
-node fixes the child heap at `-J-Xmx2g`, uses a timeout of at least 900 seconds,
-and retains observed wall/RSS receipt evidence. The final authority-shaped
-node is only a fresh no-resume `proof-candidate` with a new invocation state
-directory, `authority: none`, and `attestation_required: true`. Reviewed
-attestation remains a separate disabled mode and is never inferred from an
-exit-0 proof candidate.
+command-owned canonical `/private/tmp/gravity-sh07-heavy.lock`. Structural,
+source, and public batches fix `-J-Xmx2g`; semantic, authenticated, and proof
+batches fix `-J-Xmx8g`, and manifest validation checks equality with the
+wrapper's fixed batch command. The public node uses a timeout of at least 900
+seconds and retains observed wall/RSS receipt evidence. The final
+authority-shaped node is only a fresh no-resume `proof-candidate` with a new
+invocation state directory, `automatic: false`, `authority: none`, and
+`attestation_required: true`. Changed C7 paths therefore stop at public;
+explicit `--check`/`--all` include proof. Reviewed attestation remains a
+separate disabled mode and is never inferred from an exit-0 proof candidate.
 
-Each command-owned node fingerprints all of the tools and delegates it can
-execute: `run_stage3_verification.py`, `verify_development.py`,
-`run_sh07_authoritative_modules.py`, the Stage3 and SH-07 iteration-cache
-Clojure runners, `gravity/bootstrap.clj`, and `deps.edn`. Authenticated SH08
-nodes bind `sh08_function_call_type_test.clj` plus the exact `.gravity` inputs
-they load (and paired `.qst` bytes for parity). The proof candidate additionally
-binds the authoritative runner and proof contract, so a changed delegate
-cannot be hidden behind an unchanged fixed selector.
+Combining the two same-namespace authentication sibling pairs removes two
+cold semantic/authentication JVM boundaries (eight to six in the graph). This
+is a scheduling observation, not a measured speedup claim.
+
+Each command-owned production node fingerprints the centralized
+`run_stage3_verification.STAGE3_RUNTIME_DEPENDENCIES` set: `deps.edn`,
+`run_stage3_verification.py`, `verify_development.py`,
+`run_sh07_authoritative_modules.py`, the Stage3 and iteration-cache Clojure
+runners, `gravity/bootstrap.clj`, all five shared Gravity files, and the
+`bootstrap/clojure/src/**` tree. The runner-unit is intentionally narrow and
+does not claim this production set. Authenticated SH08 nodes bind
+`sh08_function_call_test.clj` plus the exact `.gravity` inputs they load (and
+paired `.qst` bytes for parity). The proof candidate additionally binds the
+authoritative runner and proof contract, so a changed delegate cannot be
+hidden behind an unchanged fixed selector.
 
 The source-plan and census test files contain deftests outside their fixed
 selector sets. Their paths are impact-excluded and therefore fail closed as

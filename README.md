@@ -158,14 +158,24 @@ source bytes; a user-provided historical observation is 2416.213 seconds at
 speedup or regression is claimed. The backlog records 2411.35 seconds; resolve
 that against the raw receipt before replacing a canonical baseline.
 
-The fixed Stage3 development graph is now explicit and non-authoritative. It
-runs the checked SH08 primitive, recursive, and higher-order batches, then the
-source-control-form-arity gate, source/plan and census contracts, the exact
-fragment-size preflight, the public C7 check, and finally a fresh C7 proof
-candidate. Every C7 node is a capacity-one heavy candidate using the
+The fixed Stage3 development graph is now explicit and non-authoritative. Its
+minimum route is runner-unit, source-control-form-arity, coverage/source
+binding and fragment preflight, source-plan, the three pure SH08 semantic
+batches, the three authenticated boundaries (primitive bool, recursive
+integer+string, and higher-order parity+auth), public C7, and finally a fresh
+proof candidate. Every C7 node is a capacity-one heavy candidate using the
 command-owned canonical `/private/tmp/gravity-sh07-heavy.lock`; no generic
-namespace or batching path is admitted. The public check pins `-J-Xmx2g`, a
-timeout of at least 900 seconds, and observed wall/RSS receipt evidence.
+namespace or batching path is admitted. Structural/source/public commands pin
+`-J-Xmx2g`; semantic/authentication/proof commands pin `-J-Xmx8g`, and the
+manifest validates those declarations against the fixed wrapper batches and
+the centralized Stage3 runtime/shared-input contract. The public check uses a
+timeout of at least 900 seconds and observed wall/RSS receipt evidence.
+
+The proof candidate is `automatic: false`: a changed C7 source stops after the
+public check, while explicit `--check` or `--all` can request the fresh
+no-resume proof. Combining the two same-namespace authentication siblings
+reduces the old eight cold semantic/authentication JVM boundaries to six. That
+is a scheduling observation only; it is not a measured speedup claim.
 
 The successful proof candidate on `206e89f` is retained as stale-after-tool-
 integration evidence, not authority or a speed claim: wrapper/proof elapsed

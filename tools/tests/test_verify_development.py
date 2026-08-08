@@ -79,6 +79,42 @@ class VerifyDevelopmentTests(unittest.TestCase):
         with self.assertRaisesRegex(verifier.ManifestError, "daemonization='forbidden'"):
             verifier.validate_manifest(manifest_for(item))
 
+    def test_automatic_is_optional_boolean_and_manual_checks_are_explicit_only(self) -> None:
+        owner = check("owner", [sys.executable, "-c", "pass"], inputs=["src.txt"])
+        manual = check(
+            "manual-proof",
+            [sys.executable, "-c", "pass"],
+            inputs=["proof.edn"],
+            depends_on=["owner"],
+        )
+        manual["automatic"] = False
+        manifest = manifest_for(owner, manual)
+        verifier.validate_manifest(manifest)
+
+        changed_owner = verifier.select_impacted_checks(
+            manifest, Path("/tmp/project"), changed_paths=["src.txt"]
+        )
+        self.assertIn("owner", changed_owner["selected_ids"])
+        self.assertNotIn("manual-proof", changed_owner["selected_ids"])
+        self.assertEqual(changed_owner["unmatched_changes"], [])
+
+        changed_manual = verifier.select_impacted_checks(
+            manifest, Path("/tmp/project"), changed_paths=["proof.edn"]
+        )
+        self.assertEqual(changed_manual["selected_ids"], [])
+        self.assertEqual(changed_manual["unmatched_changes"], ["proof.edn"])
+
+        explicit = verifier.select_impacted_checks(
+            manifest, Path("/tmp/project"), requested_ids=["manual-proof"]
+        )
+        self.assertEqual(explicit["selected_ids"], ["owner", "manual-proof"])
+        all_checks = verifier.select_impacted_checks(manifest, Path("/tmp/project"), all_checks=True)
+        self.assertEqual(all_checks["selected_ids"], ["owner", "manual-proof"])
+
+        manual["automatic"] = "false"
+        with self.assertRaisesRegex(verifier.ManifestError, "automatic must be boolean"):
+            verifier.validate_manifest(manifest)
+
     def test_dag_order_and_parallel_ready_groups(self) -> None:
         command = [sys.executable, "-c", "pass"]
         manifest = manifest_for(
@@ -1217,13 +1253,16 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 ROOT,
                 changed_paths=[changed_path],
             )
-            self.assertEqual(
-                selection["selected_ids"],
-                ["stage0-project-structure-runner-unit", "stage0-project-structure-extraction"],
-            )
+            selected = set(selection["selected_ids"])
             self.assertIn("stage0-project-structure-extraction", selection["selected_ids"])
-            self.assertNotIn("stage0-clojure-suite", selection["selected_ids"])
-            self.assertNotIn("stage0-bootstrap-authority", selection["selected_ids"])
+            if changed_path.startswith("bootstrap/clojure/src/"):
+                self.assertIn("stage3-public-c7-check", selected)
+                self.assertNotIn("stage3-c7-proof-candidate", selected)
+            else:
+                self.assertNotIn("stage3-public-c7-check", selected)
+            self.assertNotIn("stage0-clojure-suite", selected)
+            self.assertNotIn("stage0-bootstrap-authority", selected)
+            self.assertEqual(selection["unmatched_changes"], [])
         runner_selection = verifier.select_impacted_checks(
             manifest,
             ROOT,
@@ -1338,6 +1377,14 @@ class VerifyDevelopmentTests(unittest.TestCase):
         with self.assertRaises(verifier.ManifestError):
             verifier.validate_manifest(manifest_for(value))
 
+    def test_production_stage3_nodes_require_central_runtime_inputs(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        broken = json.loads(json.dumps(manifest))
+        target = next(item for item in broken["checks"] if item["id"] == "stage3-public-c7-check")
+        target["tool_inputs"].remove("bootstrap/clojure/src/**")
+        with self.assertRaisesRegex(verifier.ManifestError, "centralized Stage3 runtime inputs"):
+            verifier.validate_manifest(broken)
+
     def test_declared_authority_cannot_use_runner_lock_owner(self) -> None:
         value = check(
             "authority",
@@ -1369,6 +1416,41 @@ class VerifyDevelopmentTests(unittest.TestCase):
             len(stage3),
             len(verifier._stage3.FIXED_BATCHES),
         )
+        self.assertEqual(len(stage3) + 1, 13)  # twelve fixed batches plus runner-unit
+        self.assertEqual(
+            [
+                item["id"]
+                for item in by_id.values()
+                if item["id"].startswith("stage3-")
+            ],
+            [
+                "stage3-runner-unit",
+                "stage3-source-control-form-arity",
+                "stage3-coverage-census-contract",
+                "stage3-fragment-size-preflight",
+                "stage3-source-plan-contract",
+                "stage3-primitive-pure",
+                "stage3-recursive-pure",
+                "stage3-authoritative-ho-pure",
+                "stage3-primitive-bool-authenticated",
+                "stage3-recursive-authenticated",
+                "stage3-authoritative-ho-authenticated",
+                "stage3-public-c7-check",
+                "stage3-c7-proof-candidate",
+            ],
+        )
+        self.assertEqual(
+            tuple(verifier._stage3.STAGE3_SHARED_RUNTIME_INPUTS),
+            tuple(verifier._stage3._sh07.SHARED_GRAVITY_FILES)
+            + tuple(f"{tree}/**" for tree in verifier._stage3._sh07.SHARED_REPOSITORY_TREES),
+        )
+        self.assertEqual(
+            tuple(verifier._stage3._sh07.SHARED_REPOSITORY_TREES),
+            ("bootstrap/clojure/src",),
+        )
+        runner_unit = by_id["stage3-runner-unit"]
+        self.assertEqual(runner_unit["tool_inputs"], ["deps.edn"])
+        required_runtime = set(verifier._stage3.STAGE3_RUNTIME_DEPENDENCIES)
         for item in stage3.values():
             self.assertEqual(item["lane"], "heavy-candidate")
             self.assertEqual(item["cost"], "heavy")
@@ -1394,6 +1476,42 @@ class VerifyDevelopmentTests(unittest.TestCase):
                     "bootstrap/clojure/src/gravity/bootstrap.clj",
                 }.issubset(item["tool_inputs"])
             )
+            expected_heap = (
+                verifier._stage3.batch_command(item["stage3_batch"])[1]
+                if item["stage3_batch"] != "authority"
+                else "-J-Xmx8g"
+            )
+            self.assertEqual(item["jvm_heap"], expected_heap)
+            self.assertEqual(
+                item["minimum_heap_bytes"],
+                2147483648 if expected_heap == "-J-Xmx2g" else 8589934592,
+            )
+            self.assertIsInstance(item.get("automatic", True), bool)
+            self.assertTrue(
+                required_runtime <= set(item["inputs"]) | set(item["tool_inputs"]),
+                msg=item["id"],
+            )
+        source_test = "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj"
+        for check_id in ("stage3-source-control-form-arity", "stage3-source-plan-contract"):
+            self.assertIn(source_test, by_id[check_id]["inputs"])
+            self.assertIn(source_test, by_id[check_id]["impact_excludes"])
+        census_test = "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj"
+        census = by_id["stage3-coverage-census-contract"]
+        self.assertTrue(
+            {
+                census_test,
+                "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj",
+                "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+            } <= set(census["inputs"])
+        )
+        self.assertIn(census_test, census["impact_excludes"])
+        public_partial = {
+            "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+            "bootstrap/clojure/test/gravity/cli_test.clj",
+            "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+        }
+        self.assertTrue(public_partial <= set(by_id["stage3-public-c7-check"]["inputs"]))
+        self.assertTrue(public_partial <= set(by_id["stage3-public-c7-check"]["impact_excludes"]))
         proof = by_id["stage3-c7-proof-candidate"]
         self.assertEqual(proof["stage3_batch"], "authority")
         self.assertEqual(proof["stage3_mode"], verifier._stage3.MODE_PROOF_CANDIDATE)
@@ -1401,6 +1519,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertTrue(proof["proof_candidate"])
         self.assertTrue(proof["attestation_required"])
         self.assertTrue(proof["no_resume"])
+        self.assertFalse(proof["automatic"])
         self.assertTrue(
             {
                 "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj",
@@ -1412,6 +1531,13 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertGreaterEqual(public["timeout_seconds"], 600)
         self.assertTrue(public["resource_receipt"].startswith("observed-peak"))
         self.assertIn("-J-Xmx2g", verifier._stage3.batch_command("public-c7-check"))
+        for old_id in (
+            "stage3-recursive-integer-authenticated",
+            "stage3-recursive-string-authenticated",
+            "stage3-authoritative-ho-fixture-parity",
+            "stage3-authoritative-ho2-authenticated",
+        ):
+            self.assertNotIn(old_id, by_id)
         self.assertEqual(
             verifier.checks_by_id(manifest)["stage3-runner-unit"]["depends_on"],
             ["stage2-authority-admission-unit"],
@@ -1429,21 +1555,15 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-self-recursive-type.gravity",
                 "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-self-recursive-type.qst",
             },
-            "recursive-integer-authenticated": {
+            "recursive-authenticated": {
                 "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
                 "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-self-recursive-type.gravity",
-            },
-            "recursive-string-authenticated": {
-                "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
                 "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-self-recursive-string-type.gravity",
             },
-            "authoritative-ho-fixture-parity": {
+            "authoritative-ho-authenticated": {
                 "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-value-typed-call.gravity",
                 "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-value-typed-call.qst",
-            },
-            "authoritative-ho2-authenticated": {
                 "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
-                "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-value-typed-call.gravity",
             },
         }
         for batch, paths in expected_batch_inputs.items():
@@ -1470,6 +1590,27 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertIn("stage3-public-c7-check", verifier.dependencies_of(
             verifier.checks_by_id(manifest)["stage3-c7-proof-candidate"]
         ))
+        pure = [
+            position[item]
+            for item in (
+                "stage3-primitive-pure",
+                "stage3-recursive-pure",
+                "stage3-authoritative-ho-pure",
+            )
+        ]
+        authenticated = [
+            position[item]
+            for item in (
+                "stage3-primitive-bool-authenticated",
+                "stage3-recursive-authenticated",
+                "stage3-authoritative-ho-authenticated",
+            )
+        ]
+        self.assertLess(max(pure), min(authenticated))
+        self.assertLess(
+            position["stage3-source-plan-contract"],
+            min(pure),
+        )
 
     def test_real_manifest_c7_impact_selects_downstream_without_legacy_stage0_heavy(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
@@ -1481,7 +1622,19 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertIn("stage3-coverage-census-contract", selected)
         self.assertIn("stage3-fragment-size-preflight", selected)
         self.assertIn("stage3-public-c7-check", selected)
-        self.assertIn("stage3-c7-proof-candidate", selected)
+        # The multi-hour proof candidate is manual-only under implicit
+        # change-impact routing; an explicit --check/--all remains available.
+        self.assertNotIn("stage3-c7-proof-candidate", selected)
+        self.assertFalse(
+            verifier.checks_by_id(manifest)["stage3-c7-proof-candidate"].get("automatic", True)
+        )
+        explicit = verifier.select_impacted_checks(
+            manifest,
+            ROOT,
+            requested_ids=["stage3-c7-proof-candidate"],
+        )
+        self.assertIn("stage3-c7-proof-candidate", explicit["selected_ids"])
+        self.assertIn("stage3-public-c7-check", explicit["selected_ids"])
         self.assertNotIn("stage0-clojure-suite", selected)
         self.assertNotIn("stage0-bootstrap-authority", selected)
         self.assertEqual(selection["unmatched_changes"], [])
@@ -1506,12 +1659,45 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj",
             "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
         }
-        for path in sorted(runtime_paths | proof_paths):
+        for path in sorted(runtime_paths):
             selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[path])
             self.assertTrue(
                 stage3_ids.intersection(selection["selected_ids"]),
                 msg=f"runtime dependency has no Stage3 owner: {path}",
             )
+        for path in sorted(proof_paths):
+            selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[path])
+            self.assertIn("stage3-public-c7-check", selection["selected_ids"])
+            self.assertNotIn("stage3-c7-proof-candidate", selection["selected_ids"])
+            self.assertEqual(selection["unmatched_changes"], [])
+        partial_stage3_paths = {
+            "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj",
+        }
+        for path in sorted(partial_stage3_paths):
+            selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[path])
+            self.assertFalse(
+                any(item.startswith("stage3-") for item in selection["selected_ids"]),
+                path,
+            )
+            self.assertEqual(selection["unmatched_changes"], [path])
+        for path in (
+            "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+            "bootstrap/clojure/test/gravity/cli_test.clj",
+            "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+        ):
+            selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[path])
+            self.assertNotIn("stage3-public-c7-check", selection["selected_ids"])
+        for path in list(verifier._stage3._sh07.SHARED_GRAVITY_FILES) + [
+            "bootstrap/clojure/src/gravity/diagnostics.clj",
+        ]:
+            selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[path])
+            selected = set(selection["selected_ids"])
+            self.assertIn("stage3-public-c7-check", selected, path)
+            self.assertNotIn("stage3-c7-proof-candidate", selected, path)
+            self.assertNotIn("stage0-clojure-suite", selected, path)
+            self.assertNotIn("stage0-bootstrap-authority", selected, path)
+            self.assertEqual(selection["unmatched_changes"], [], path)
         for path in (
             "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
             "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-value-typed-bool.gravity",
@@ -1541,7 +1727,13 @@ class VerifyDevelopmentTests(unittest.TestCase):
         runner = verifier.checks_by_id(manifest)["stage3-runner-unit"]
         self.assertEqual(
             runner["command"],
-            ["clojure", "-M:test", "--namespace", "gravity.self-hosting.stage3-verification-runner-test"],
+            [
+                "clojure",
+                "-J-Xmx2g",
+                "-M:test",
+                "--namespace",
+                "gravity.self-hosting.stage3-verification-runner-test",
+            ],
         )
         self.assertIn(
             "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner_test.clj",
@@ -1553,7 +1745,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             changed_paths=["bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner_test.clj"],
         )
         self.assertIn("stage3-runner-unit", selection["selected_ids"])
-        self.assertIn("stage3-c7-proof-candidate", selection["selected_ids"])
+        self.assertNotIn("stage3-c7-proof-candidate", selection["selected_ids"])
 
 
 if __name__ == "__main__":
