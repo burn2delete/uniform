@@ -457,6 +457,12 @@
      value)
     @found))
 
+(defn- invalid-source-if-forms
+  [forms]
+  (vec
+   (filter #(not= 4 (count %))
+           (mapcat #(collect-calls 'if %) forms))))
+
 (defn- symbols-in
   [value]
   (let [found (volatile! #{})]
@@ -614,6 +620,19 @@
              :sh11-complete :sh07-complete :seed-retirement
              :self-hosting-complete]]
       (is (contains? nonclaims nonclaim)))))
+
+(deftest sh07-b31-c10-source-control-form-arities-are-bounded
+  (let [forms (source-forms)
+        form-node-counts
+        (mapv #(count (tree-seq coll? seq %)) forms)]
+    (is (empty? (invalid-source-if-forms forms)))
+    (is (= '[(if true)]
+           (invalid-source-if-forms '[(if true)])))
+    (is (= '[(if true :then :else :extra)]
+           (invalid-source-if-forms
+            '[(if true :then :else :extra)])))
+    (is (<= (apply max form-node-counts) 1024)
+        "Conservative reader-tree admission is not the authoritative C6 form-id census")))
 
 (deftest sh07-b31-c10-source-contracts-policy-outcomes-and-reasons-are-exact
   (let [forms (source-forms)
