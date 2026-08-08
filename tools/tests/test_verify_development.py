@@ -3276,6 +3276,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
     def _run_mocked_resource_check(
         self,
         outcome: dict,
+        *,
+        resource_receipt: str | None = "observed-peak-process-tree-rss-and-wall-time",
     ) -> tuple[dict, mock.Mock]:
         with tempfile.TemporaryDirectory(prefix="gravity-resource-receipt-") as directory:
             root = Path(directory).resolve()
@@ -3285,7 +3287,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 [sys.executable, "-c", "pass"],
                 inputs=["input.txt"],
             )
-            item["resource_receipt"] = "observed-peak-process-tree-rss-and-wall-time"
+            if resource_receipt is not None:
+                item["resource_receipt"] = resource_receipt
             identities = verifier.check_identity(item, root)
             with mock.patch.object(
                 verifier,
@@ -3339,6 +3342,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "none peak": {"observed_peak_process_tree_rss_bytes": None},
             "zero peak": {"observed_peak_process_tree_rss_bytes": 0},
             "boolean peak": {"observed_peak_process_tree_rss_bytes": True},
+            "zero cadence": {"rss_sampling_cadence_seconds": 0},
+            "boolean cadence": {"rss_sampling_cadence_seconds": True},
             "missing cadence": {"_remove": "rss_sampling_cadence_seconds"},
             "missing contract": {"_remove": "rss_sampling_contract"},
         }
@@ -3354,8 +3359,29 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 self.assertTrue(run_command.call_args.kwargs["sample_rss"])
                 self.assertEqual(record["status"], "failed")
                 self.assertEqual(record["reason"], "invalid-resource-receipt")
-                self.assertFalse(record["cacheable"])
-                self.assertIn("resource receipt", record["stderr"])
+            self.assertFalse(record["cacheable"])
+            self.assertIn("resource receipt", record["stderr"])
+
+    def test_commands_without_observed_resource_receipt_do_not_sample_rss(self) -> None:
+        outcome = {
+            "timed_out": False,
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "",
+            "cleanup": None,
+            "surviving_descendants": False,
+            "supervision_failed": False,
+            "observed_peak_process_tree_rss_bytes": None,
+            "rss_sampling_cadence_seconds": None,
+            "rss_sampling_contract": None,
+            "rss_sampling_limitation": None,
+        }
+        record, run_command = self._run_mocked_resource_check(
+            outcome,
+            resource_receipt=None,
+        )
+        self.assertEqual(record["status"], "passed")
+        self.assertFalse(run_command.call_args.kwargs["sample_rss"])
 
 
 if __name__ == "__main__":

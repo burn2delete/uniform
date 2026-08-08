@@ -725,7 +725,12 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
     # additionally has one and only one reviewed P15 launcher gate.  Enforce
     # presence before per-check validation so removal, renaming, or replacement
     # by a widened arbitrary command cannot silently drop the focused owner.
-    if manifest.get("name") == "gravity-stage0-development-verification":
+    scope = manifest.get("scope")
+    requires_p15_launcher = (
+        manifest.get("name") == "gravity-stage0-development-verification"
+        or isinstance(scope, Mapping) and scope.get("stage") == "stage0"
+    )
+    if requires_p15_launcher:
         launcher_count = sum(
             1
             for item in checks
