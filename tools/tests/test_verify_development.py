@@ -2966,6 +2966,11 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage8-sh13-c11-domain-evidence",
             "stage8-public-c12",
         )
+        wrong_same_heap_batch = {
+            "stage8-c12-source-shape": "stage7-c11-shape-preflight",
+            "stage8-sh13-c11-domain-evidence": "stage7-sh12-c10-mir-adapter",
+            "stage8-public-c12": "stage7-public-c11",
+        }
         for check_id in check_ids:
             broken = json.loads(json.dumps(manifest))
             target = next(item for item in broken["checks"] if item["id"] == check_id)
@@ -3011,6 +3016,57 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 with self.assertRaisesRegex(verifier.ManifestError, error):
                     verifier.validate_manifest(broken)
 
+            for field, value in (
+                ("timeout_seconds", float(target["timeout_seconds"])),
+                ("fresh", 1),
+                ("resume", 0),
+                ("automatic", 1),
+                ("exclusive", 1),
+                ("capacity", True),
+            ):
+                broken = json.loads(json.dumps(manifest))
+                confused = next(
+                    item for item in broken["checks"] if item["id"] == check_id
+                )
+                confused[field] = value
+                with self.assertRaisesRegex(verifier.ManifestError, field):
+                    verifier.validate_manifest(broken)
+
+            for field, value in (
+                ("stage3_batch", wrong_same_heap_batch[check_id]),
+                ("depends_on", []),
+                ("depends_on", ["stage0-orchestrator-unit"]),
+                ("stage3_mode", verifier._stage3.MODE_PROOF_CANDIDATE),
+                ("command", [sys.executable, "-c", "pass"]),
+                ("authority", "declared"),
+            ):
+                broken = json.loads(json.dumps(manifest))
+                drifted = next(
+                    item for item in broken["checks"] if item["id"] == check_id
+                )
+                drifted[field] = value
+                with self.assertRaisesRegex(verifier.ManifestError, field):
+                    verifier.validate_manifest(broken)
+
+            broken = json.loads(json.dumps(manifest))
+            missing_authority = next(
+                item for item in broken["checks"] if item["id"] == check_id
+            )
+            missing_authority.pop("authority")
+            with self.assertRaisesRegex(verifier.ManifestError, "authority"):
+                verifier.validate_manifest(broken)
+
+            for required_input in verifier._STAGE8_FIXED_NODE_POLICIES[check_id][
+                "required_inputs"
+            ]:
+                broken = json.loads(json.dumps(manifest))
+                missing_input = next(
+                    item for item in broken["checks"] if item["id"] == check_id
+                )
+                missing_input["inputs"].remove(required_input)
+                with self.assertRaisesRegex(verifier.ManifestError, "required Stage8 inputs"):
+                    verifier.validate_manifest(broken)
+
         for missing in check_ids:
             broken = json.loads(json.dumps(manifest))
             broken["checks"] = [
@@ -3023,7 +3079,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             item for item in broken["checks"] if not item["id"].startswith("stage8-")
         ]
         with self.assertRaisesRegex(verifier.ManifestError, "Stage8 fixed graph ids"):
-            verifier.validate_manifest(broken)
+            verifier.validate_manifest(broken, require_production_contracts=True)
 
     def test_real_manifest_stage3_runner_unit_owns_its_complete_clojure_test_file(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
@@ -3193,6 +3249,16 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "jvm_heap",
             ),
             (
+                "minimum heap float",
+                lambda item: item.__setitem__("minimum_heap_bytes", 1073741824.0),
+                "minimum_heap_bytes",
+            ),
+            (
+                "minimum heap bool",
+                lambda item: item.__setitem__("minimum_heap_bytes", True),
+                "minimum_heap_bytes",
+            ),
+            (
                 "wrong lock owner",
                 lambda item: item.__setitem__("lock_owner", "command"),
                 "lock_owner='runner'",
@@ -3295,6 +3361,28 @@ class VerifyDevelopmentTests(unittest.TestCase):
 
         with mock.patch.object(Path, "read_text", return_value=json.dumps(drifted)):
             with self.assertRaisesRegex(verifier.ManifestError, "exactly one check id"):
+                verifier.load_manifest(manifest_path)
+
+        stage8_drifted = json.loads(json.dumps(manifest))
+        stage8_drifted["name"] = "test-development-verification"
+        stage8_drifted["scope"] = {"stage": "synthetic"}
+        stage8_drifted["checks"] = [
+            item
+            for item in stage8_drifted["checks"]
+            if not item["id"].startswith("stage8-")
+        ]
+        # A generic fixture may omit production Stage8.  Trusted explicit or
+        # canonical-path validation must require the exact set regardless of
+        # mutable name/scope metadata.
+        verifier.validate_manifest(stage8_drifted)
+        with self.assertRaisesRegex(verifier.ManifestError, "Stage8 fixed graph ids"):
+            verifier.validate_manifest(
+                stage8_drifted, require_production_contracts=True
+            )
+        with mock.patch.object(
+            Path, "read_text", return_value=json.dumps(stage8_drifted)
+        ):
+            with self.assertRaisesRegex(verifier.ManifestError, "Stage8 fixed graph ids"):
                 verifier.load_manifest(manifest_path)
 
     def _run_mocked_resource_check(

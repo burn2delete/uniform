@@ -351,9 +351,46 @@ _STAGE3_HEAP_BYTES = {
 }
 
 _STAGE8_FIXED_NODE_POLICIES = {
-    "stage8-c12-source-shape": {"timeout_seconds": 600},
-    "stage8-public-c12": {"timeout_seconds": 900},
-    "stage8-sh13-c11-domain-evidence": {"timeout_seconds": 1800},
+    "stage8-c12-source-shape": {
+        "timeout_seconds": 600,
+        "stage3_batch": "stage8-c12-source-shape",
+        "depends_on": ["stage3-runner-unit"],
+        "required_inputs": (
+            "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+            "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj",
+        ),
+    },
+    "stage8-public-c12": {
+        "timeout_seconds": 900,
+        "stage3_batch": "stage8-public-c12",
+        "depends_on": ["stage8-c12-source-shape"],
+        "required_inputs": (
+            "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+            "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+            "bootstrap/clojure/test/gravity/cli_test.clj",
+            "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+            "bin/gravity",
+            "target/phase-18/jvm-cli/gravity-jvm-cli.jar",
+            "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn",
+        ),
+    },
+    "stage8-sh13-c11-domain-evidence": {
+        "timeout_seconds": 1800,
+        "stage3_batch": "stage8-sh13-c11-domain-evidence",
+        "depends_on": ["stage8-c12-source-shape"],
+        "required_inputs": (
+            "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+            "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj",
+        ),
+    },
 }
 
 
@@ -432,7 +469,10 @@ def _validate_p15_native_launcher_contract(check: Mapping[str, Any]) -> None:
         raise ManifestError(f"check {check_id!r} timeout_seconds must be exactly 600")
     if check.get("jvm_heap") != "-J-Xmx1g":
         raise ManifestError(f"check {check_id!r} must declare jvm_heap='-J-Xmx1g'")
-    if check.get("minimum_heap_bytes") != 1073741824:
+    if (
+        type(check.get("minimum_heap_bytes")) is not int
+        or check.get("minimum_heap_bytes") != 1073741824
+    ):
         raise ManifestError(
             f"check {check_id!r} minimum_heap_bytes must equal 1073741824"
         )
@@ -588,25 +628,60 @@ def _validate_stage8_node_contract(check: Mapping[str, Any]) -> None:
     policy = _STAGE8_FIXED_NODE_POLICIES.get(check_id)
     if policy is None:
         raise ManifestError(f"unreviewed Stage8 check id: {check_id!r}")
-    if check.get("timeout_seconds") != policy["timeout_seconds"]:
+    timeout = check.get("timeout_seconds")
+    if type(timeout) is not int or timeout != policy["timeout_seconds"]:
         raise ManifestError(
             f"check {check_id!r} timeout_seconds must equal the fixed Stage8 bound"
         )
-    expected = {
+    expected_booleans = {
         "fresh": True,
         "resume": False,
-        "state_dir_policy": "new-per-invocation",
         "automatic": True,
-        "lock": "/private/tmp/gravity-sh07-heavy.lock",
-        "lock_owner": "command",
         "exclusive": True,
-        "capacity": 1,
     }
-    for field, value in expected.items():
-        if check.get(field) != value:
+    for field, value in expected_booleans.items():
+        if check.get(field) is not value:
             raise ManifestError(
                 f"check {check_id!r} {field} must equal fixed Stage8 value {value!r}"
             )
+    expected_strings = {
+        "state_dir_policy": "new-per-invocation",
+        "lock": "/private/tmp/gravity-sh07-heavy.lock",
+        "lock_owner": "command",
+    }
+    for field, value in expected_strings.items():
+        observed = check.get(field)
+        if not isinstance(observed, str) or observed != value:
+            raise ManifestError(
+                f"check {check_id!r} {field} must equal fixed Stage8 value {value!r}"
+            )
+    capacity = check.get("capacity")
+    if type(capacity) is not int or capacity != 1:
+        raise ManifestError(
+            f"check {check_id!r} capacity must equal fixed Stage8 value 1"
+        )
+    exact_values = {
+        "command": ["python3", "tools/run_stage3_verification.py"],
+        "stage3_mode": _stage3.MODE_PURE,
+        "stage3_batch": policy["stage3_batch"],
+        "depends_on": policy["depends_on"],
+        "authority": "none",
+    }
+    for field, value in exact_values.items():
+        if check.get(field) != value or type(check.get(field)) is not type(value):
+            raise ManifestError(
+                f"check {check_id!r} {field} must equal fixed Stage8 value {value!r}"
+            )
+    declared_inputs = check.get("inputs")
+    if not isinstance(declared_inputs, list) or not all(
+        isinstance(item, str) for item in declared_inputs
+    ):
+        raise ManifestError(f"check {check_id!r} inputs must be a Stage8 string list")
+    missing_inputs = sorted(set(policy["required_inputs"]) - set(declared_inputs))
+    if missing_inputs:
+        raise ManifestError(
+            f"check {check_id!r} omits required Stage8 inputs: {missing_inputs}"
+        )
 
 
 def _lock_owner(check: Mapping[str, Any]) -> str:
@@ -758,6 +833,19 @@ def validate_manifest(
                 "manifest must contain exactly one check id "
                 f"{_P15_NATIVE_LAUNCHER_CHECK_ID!r}"
             )
+        observed_stage8_ids = {
+            str(item.get("id"))
+            for item in checks
+            if isinstance(item, Mapping)
+            and str(item.get("id", "")).startswith("stage8-")
+        }
+        expected_stage8_ids = set(_STAGE8_FIXED_NODE_POLICIES)
+        if observed_stage8_ids != expected_stage8_ids:
+            raise ManifestError(
+                "Stage8 fixed graph ids must equal the reviewed production set: "
+                f"expected {sorted(expected_stage8_ids)}, "
+                f"observed {sorted(observed_stage8_ids)}"
+            )
 
     ids: set[str] = set()
     dependencies: dict[str, list[str]] = {}
@@ -885,8 +973,7 @@ def validate_manifest(
 
     stage8_ids = {check_id for check_id in ids if check_id.startswith("stage8-")}
     expected_stage8_ids = set(_STAGE8_FIXED_NODE_POLICIES)
-    production_manifest = manifest.get("name") == "gravity-stage0-development-verification"
-    if (production_manifest or stage8_ids) and stage8_ids != expected_stage8_ids:
+    if (require_production_contracts or stage8_ids) and stage8_ids != expected_stage8_ids:
         raise ManifestError(
             "Stage8 fixed graph ids must equal the reviewed set: "
             f"expected {sorted(expected_stage8_ids)}, observed {sorted(stage8_ids)}"
