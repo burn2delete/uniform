@@ -374,7 +374,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**",
-        "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj"
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
       ],
       "depends_on": [
         "stage3-runner-unit"
@@ -426,7 +426,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**",
-        "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj"
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
       ],
       "depends_on": [
         "stage3-source-control-form-arity"
@@ -473,7 +473,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**",
-        "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj"
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
       ],
       "depends_on": [
         "stage3-source-control-form-arity"
@@ -523,7 +523,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**",
-        "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj"
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
       ],
       "depends_on": [
         "stage3-coverage-census-contract",
@@ -573,7 +573,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**",
-        "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj"
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
       ],
       "depends_on": [
         "stage3-source-plan-contract"
@@ -622,7 +622,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**",
-        "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj"
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
       ],
       "depends_on": [
         "stage3-primitive-pure"
@@ -669,7 +669,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**",
-        "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj"
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
       ],
       "depends_on": [
         "stage3-recursive-pure"
@@ -718,7 +718,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**",
-        "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj"
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
       ],
       "depends_on": [
         "stage3-authoritative-ho-pure"
@@ -768,7 +768,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**",
-        "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj"
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
       ],
       "depends_on": [
         "stage3-primitive-bool-authenticated"
@@ -818,7 +818,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**",
-        "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj"
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
       ],
       "depends_on": [
         "stage3-recursive-authenticated"
@@ -875,7 +875,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**",
-        "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj"
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
       ],
       "depends_on": [
         "stage3-authoritative-ho-authenticated"
@@ -924,7 +924,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**",
-        "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj"
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
       ],
       "depends_on": [
         "stage3-public-c7-check"

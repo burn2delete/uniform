@@ -1385,6 +1385,42 @@ class VerifyDevelopmentTests(unittest.TestCase):
         with self.assertRaisesRegex(verifier.ManifestError, "centralized Stage3 runtime inputs"):
             verifier.validate_manifest(broken)
 
+        for relative in verifier._stage3.STAGE3_RUNTIME_DEPENDENCIES:
+            if verifier._contains_glob(relative):
+                continue
+            path = ROOT / relative
+            self.assertTrue(path.is_file(), relative)
+            self.assertFalse(path.is_symlink(), relative)
+
+        nonexistent = "bootstrap/clojure/test/gravity/nonexistent_stage3_helper.clj"
+        broken = json.loads(json.dumps(manifest))
+        for item in broken["checks"]:
+            if item.get("lock_owner") == "command" and item["id"].startswith("stage3-"):
+                item["tool_inputs"].append(nonexistent)
+        with mock.patch.object(
+            verifier._stage3,
+            "STAGE3_RUNTIME_DEPENDENCIES",
+            (*verifier._stage3.STAGE3_RUNTIME_DEPENDENCIES, nonexistent),
+        ):
+            with self.assertRaisesRegex(verifier.ManifestError, "not existing regular files"):
+                verifier.validate_manifest(broken)
+
+    def test_actual_inner_runner_bytes_change_stage3_production_identity(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        production = verifier.checks_by_id(manifest)["stage3-public-c7-check"]
+        relative = "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
+        self.assertIn(relative, production["tool_inputs"])
+        source = ROOT / relative
+        with tempfile.TemporaryDirectory() as directory:
+            temp_root = Path(directory)
+            target = temp_root / relative
+            target.parent.mkdir(parents=True)
+            target.write_bytes(source.read_bytes())
+            before = verifier.input_identities(production, temp_root)["sha256"]
+            target.write_bytes(target.read_bytes() + b"\n")
+            after = verifier.input_identities(production, temp_root)["sha256"]
+        self.assertNotEqual(before, after)
+
     def test_declared_authority_cannot_use_runner_lock_owner(self) -> None:
         value = check(
             "authority",

@@ -413,6 +413,22 @@ def _validate_stage3_runtime_inputs(check: Mapping[str, Any]) -> None:
         raise ManifestError(
             f"check {check_id!r} omits centralized Stage3 runtime inputs: {missing}"
         )
+    missing_exact: list[str] = []
+    for relative in required:
+        if _contains_glob(str(relative)):
+            continue
+        try:
+            info = os.lstat(ROOT / str(relative))
+        except OSError:
+            missing_exact.append(str(relative))
+            continue
+        if not stat.S_ISREG(info.st_mode):
+            missing_exact.append(str(relative))
+    if missing_exact:
+        raise ManifestError(
+            "centralized Stage3 runtime inputs are not existing regular files: "
+            f"{sorted(missing_exact)}"
+        )
 
 
 def _lock_owner(check: Mapping[str, Any]) -> str:

@@ -62,7 +62,7 @@ STAGE3_RUNTIME_DEPENDENCIES = (
     "tools/run_sh07_authoritative_modules.py",
     "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
     "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
-    "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj",
+    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
     "bootstrap/clojure/src/gravity/bootstrap.clj",
     *STAGE3_SHARED_RUNTIME_INPUTS,
 )
