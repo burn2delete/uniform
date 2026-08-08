@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
+            [gravity.c3-reader-integrity :as c3-reader-integrity]
             [gravity.c3-syntax-diagnostics :as c3-syntax-diagnostics]
             [gravity.c3-literal-projection :as c3-literal-projection]
             [gravity.c3-syntax-construction :as c3-syntax-construction]
@@ -10489,6 +10490,50 @@
                  :form-kind :interposed
                  :hygiene {:marks [] :captures []}}
                 {:missing-fields [:interposed]}]
+               @failure))))))
+
+(deftest c3-reader-integrity-compatibility-wrappers-preserve-interposition
+  (is (= '([c2-artifact])
+         (:arglists (meta #'bootstrap/c3-c2-reader-integrity-report))))
+  (is (= '([source-path c2-artifact])
+         (:arglists (meta #'bootstrap/c3-validate-c2-reader-artifact!))))
+  (let [expected
+        {:authentic? false
+         :failures [:reader-product-validation-exception]
+         :cause-class "java.lang.IllegalStateException"}
+        throwing-operation
+        (fn [& _] (throw (IllegalStateException. "interposed")))]
+    (is (= expected
+           (c3-reader-integrity/with-operations
+            {:c2-lexical-product-validation throwing-operation}
+            #(c3-reader-integrity/c3-c2-reader-integrity-report
+              {:token-stream [{:raw "x"}]}))))
+    (with-redefs [bootstrap/c2-lexical-product-validation throwing-operation]
+      (is (= expected
+             (bootstrap/c3-c2-reader-integrity-report
+              {:token-stream [{:raw "x"}]})))))
+  (let [failure (atom nil)
+        base-report {:authentic? false :failures [:interposed-integrity]}]
+    (with-redefs [bootstrap/c3-c2-reader-integrity-report
+                  (constantly base-report)
+                  bootstrap/source-span (fn [& _] :interposed-span)
+                  bootstrap/c3-syntax-fail!
+                  (fn [& args] (reset! failure args))]
+      (let [report
+            (bootstrap/c3-validate-c2-reader-artifact!
+             "source.gravity"
+             {:source-unit-record {:path "source.gravity"}
+              :form-tree []})]
+        (is (false? (:authentic? report)))
+        (is (true? (:source-path-binding-valid? report)))
+        (is (= [:interposed-integrity] (:failures report)))
+        (is (= ["C3-FACT-STALE"
+                "source.gravity"
+                {:source-span :interposed-span
+                 :producer :c2-reader-artifact
+                 :form-kind nil}
+                {:missing-fields [:interposed-integrity]
+                 :facts {:reader-product-integrity report}}]
                @failure))))))
 
 (deftest c3-literal-projection-compatibility-wrappers-preserve-interposition

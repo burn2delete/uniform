@@ -12,6 +12,7 @@
             [clojure.walk :as walk]
             [gravity.c2-pass-cache :as c2-pass-cache]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
+            [gravity.c3-reader-integrity :as c3-reader-integrity]
             [gravity.c3-syntax-diagnostics :as c3-syntax-diagnostics]
             [gravity.c3-literal-projection :as c3-literal-projection]
             [gravity.c3-syntax-construction :as c3-syntax-construction]
@@ -146349,211 +146350,48 @@
   [seed source-unit]
   (syntax-origin/c3-origin-chain seed source-unit))
 
+(declare c3-c2-reader-integrity-report
+         c3-validate-c2-reader-artifact!)
+
+(defn- c3-reader-integrity-ops
+  []
+  {:c2-lexical-product-validation c2-lexical-product-validation
+   :c2-incremental-hashes c2-incremental-hashes
+   :c2-literal-records c2-literal-records
+   :c2-deferred-semantic-literals c2-deferred-semantic-literals
+   :c3-deferred-ratio-descriptor-from-raw
+   c3-deferred-ratio-descriptor-from-raw
+   :c2-reader-product-integrity-record c2-reader-product-integrity-record
+   :reader-canonical-hash reader-canonical-hash
+   :sha256-hex sha256-hex
+   :c2-reader-artifact-id c2-reader-artifact-id
+   :c3-c2-reader-integrity-report c3-c2-reader-integrity-report
+   :c3-validate-c2-reader-artifact! c3-validate-c2-reader-artifact!
+   :c3-syntax-fail! c3-syntax-fail!
+   :source-span source-span
+   :max-reader-form-graph-depth max-reader-form-graph-depth})
+
+(def ^:private ^:dynamic *c3-reader-integrity-leaf-call?* false)
+
+(defn- c3-reader-integrity-call
+  [operation & args]
+  (if *c3-reader-integrity-leaf-call?*
+    (apply operation args)
+    (binding [*c3-reader-integrity-leaf-call?* true]
+      (c3-reader-integrity/with-operations
+       (c3-reader-integrity-ops)
+       #(apply operation args)))))
+
 (defn c3-c2-reader-integrity-report
   [c2-artifact]
-  (try
-    (let [source-unit (:source-unit-record c2-artifact)
-          token-stream (:token-stream c2-artifact)
-          form-tree (:form-tree c2-artifact)
-          top-level-form-ids (:top-level-form-ids c2-artifact)
-          syntax-seeds (:syntax-seed-stream c2-artifact)
-          extension-invocations
-          (or (:reader-extension-invocation-records c2-artifact) [])
-          diagnostics (or (:reader-diagnostics c2-artifact) [])
-          raw-source-available? (every? #(string? (:raw %)) token-stream)
-          source-text (when raw-source-available?
-                        (apply str (map :raw token-stream)))
-          lexical (when source-text
-                    (c2-lexical-product-validation
-                     source-text token-stream form-tree top-level-form-ids))
-          graph-valid? (true? (:graph-valid? lexical))
-          depth-valid? (and (integer? (:max-form-depth lexical))
-                            (<= (:max-form-depth lexical)
-                                max-reader-form-graph-depth))
-          recomputed-hashes
-          (when (and graph-valid? depth-valid?)
-            (c2-incremental-hashes source-unit token-stream form-tree
-                                   syntax-seeds extension-invocations
-                                   diagnostics))
-          literal-records (c2-literal-records form-tree)
-          deferred-records (c2-deferred-semantic-literals form-tree)
-          forms-by-id (into {} (map (juxt :form-id identity) form-tree))
-          canonical-form-ids
-          (loop [pending (vec (reverse top-level-form-ids))
-                 ordered []
-                 seen #{}]
-            (if-let [form-id (peek pending)]
-              (let [remaining (pop pending)
-                    form (forms-by-id form-id)]
-                (if (or (contains? seen form-id) (nil? form))
-                  (recur remaining ordered seen)
-                  (recur (into remaining (reverse (:children form)))
-                         (conj ordered form-id)
-                         (conj seen form-id))))
-              ordered))
-          deferred-descriptors-valid?
-          (every?
-           (fn [form]
-             (let [ratio-form
-                   (cond
-                     (= :ratio (:kind form)) form
-                     (= :metadata-wrapper (:kind form))
-                     (let [ratios (filterv #(= :ratio (:kind %))
-                                           (keep forms-by-id
-                                                 (:children form)))]
-                       (when (= 1 (count ratios)) (first ratios)))
-                     :else nil)]
-               (if (and ratio-form
-                        (= :gravity/deferred-ratio-literal
-                           (get-in ratio-form [:value :artifact])))
-                 (let [expected
-                       (c3-deferred-ratio-descriptor-from-raw
-                        (:raw ratio-form))]
-                   (and expected
-                        (= expected (:value ratio-form))
-                        (if (= :metadata-wrapper (:kind form))
-                          (= expected (:value form) (:expanded-form form))
-                          true)))
-                 true)))
-           form-tree)
-          expected-integrity
-          (when recomputed-hashes
-            (c2-reader-product-integrity-record
-             source-unit top-level-form-ids recomputed-hashes literal-records
-             deferred-records))
-          source-id (:source-id source-unit)
-          source-path (:path source-unit)
-          expected-source-map
-          (mapv #(select-keys % [:syntax-id :form-id :span]) syntax-seeds)
-          expected-parsed-values
-          (mapv #(get-in forms-by-id [% :value]) top-level-form-ids)
-          parsed-semantic-values-valid?
-          (and (= expected-parsed-values
-                  (:parsed-semantic-values c2-artifact))
-               (= expected-parsed-values (mapv :form syntax-seeds))
-               (= (count top-level-form-ids)
-                  (count (:parsed-semantic-values c2-artifact))
-                  (count syntax-seeds)))
-          stable-token-ids?
-          (= (mapv :token-id token-stream)
-             (mapv #(keyword (str "tok-" %)) (range (count token-stream))))
-          stable-form-ids?
-          (and (= (mapv :form-id form-tree) canonical-form-ids)
-               (= canonical-form-ids
-                  (mapv #(keyword (str "form-" %))
-                        (range (count form-tree)))))
-          stable-seed-ids?
-          (and (= (mapv :syntax-id syntax-seeds)
-                  (mapv #(str "stage0-syntax-" %)
-                        (range (count syntax-seeds))))
-               (= (mapv :form-id syntax-seeds)
-                  (vec top-level-form-ids))
-               (= (mapv #(get-in % [:span :form-index]) syntax-seeds)
-                  (vec (range (count syntax-seeds)))))
-          stable-literal-ids?
-          (= (mapv :literal-id (:literal-decoding-records c2-artifact))
-             (mapv #(keyword (str "lit-" %))
-                   (range (count (:literal-decoding-records c2-artifact)))))
-          source-id-valid?
-          (= source-id (reader-canonical-hash (:identity-inputs source-unit)))
-          source-bytes-valid?
-          (and source-text
-               (= (:bytes-hash source-unit)
-                  (str "sha256:" (sha256-hex source-text))))
-          product-provenance-valid?
-          (and
-           (every? #(and (= source-id (:source-id %))
-                         (= source-id (get-in % [:span :file]))
-                         (= source-path (:source-path %))
-                         (= source-path (get-in % [:span :source])))
-                   token-stream)
-           (every? #(and (= source-id (:source-id %))
-                         (= source-id (get-in % [:span :file]))
-                         (= source-path (:source-path %))
-                         (= source-path (get-in % [:span :source]))
-                         (= source-id (get-in % [:origin :source-id]))
-                         (= source-path (get-in % [:origin :source-path])))
-                   form-tree)
-           (every? #(and (:form-id %)
-                         (= source-id (get-in % [:span :file]))
-                         (= source-path (get-in % [:span :source])))
-                   syntax-seeds))
-          checks
-          {:artifact-kind-valid?
-           (= :gravity/stage0-c2-reader-document-artifact
-              (:kind c2-artifact))
-           :artifact-id-valid?
-           (= (:artifact-id c2-artifact)
-              (c2-reader-artifact-id (dissoc c2-artifact :artifact-id)))
-           :stable-token-ids? stable-token-ids?
-           :stable-form-ids? stable-form-ids?
-           :stable-seed-ids? stable-seed-ids?
-           :stable-literal-ids? stable-literal-ids?
-           :source-id-valid? source-id-valid?
-           :source-bytes-valid? (boolean source-bytes-valid?)
-           :lexical-graph-valid? graph-valid?
-           :reader-depth-valid? depth-valid?
-           :product-provenance-valid? product-provenance-valid?
-           :reader-source-map-valid?
-           (= expected-source-map (:reader-source-map c2-artifact))
-           :parsed-semantic-values-valid?
-           parsed-semantic-values-valid?
-           :incremental-hashes-valid?
-           (= recomputed-hashes (:incremental-reader-hashes c2-artifact))
-           :literal-records-valid?
-           (= literal-records (:literal-decoding-records c2-artifact))
-           :deferment-records-valid?
-           (= deferred-records
-              (get-in c2-artifact
-                      [:semantic-error-deferment-record
-                       :deferred-literal-records]))
-           :deferment-policy-valid?
-           (and (true? (get-in c2-artifact
-                               [:semantic-error-deferment-record :deferred?]))
-                (false? (get-in c2-artifact
-                                [:semantic-error-deferment-record
-                                 :semantic-analysis-in-reader?])))
-           :deferred-descriptors-valid? deferred-descriptors-valid?
-           :integrity-record-valid?
-           (= expected-integrity (:reader-product-integrity c2-artifact))}]
-      (assoc checks
-             :authentic? (every? true? (vals checks))
-             :failures (vec (keep (fn [[field passed?]]
-                                    (when-not passed? field))
-                                  checks))))
-    (catch StackOverflowError _
-      {:authentic? false
-       :failures [:reader-depth-stack-overflow-contained?]})
-    (catch Exception ex
-      {:authentic? false
-       :failures [:reader-product-validation-exception]
-       :cause-class (.getName (class ex))})))
+  (c3-reader-integrity-call
+   c3-reader-integrity/c3-c2-reader-integrity-report c2-artifact))
 
 (defn c3-validate-c2-reader-artifact!
   [source-path c2-artifact]
-  (let [base-report (c3-c2-reader-integrity-report c2-artifact)
-        source-path-binding-valid?
-        (= source-path (get-in c2-artifact [:source-unit-record :path]))
-        report (-> base-report
-                   (assoc :source-path-binding-valid?
-                          source-path-binding-valid?)
-                   (update :failures
-                           #(cond-> (vec %)
-                              (not source-path-binding-valid?)
-                              (conj :source-path-binding-valid?)))
-                   (assoc :authentic?
-                          (and (:authentic? base-report)
-                               source-path-binding-valid?)))]
-    (when-not (:authentic? report)
-      (c3-syntax-fail!
-       "C3-FACT-STALE" source-path
-       {:source-span (or (get-in c2-artifact [:form-tree 0 :span])
-                         (source-span source-path 0))
-        :producer :c2-reader-artifact
-        :form-kind (get-in c2-artifact [:form-tree 0 :kind])}
-       {:missing-fields (:failures report)
-        :facts {:reader-product-integrity report}}))
-    report))
+  (c3-reader-integrity-call
+   c3-reader-integrity/c3-validate-c2-reader-artifact!
+   source-path c2-artifact))
 
 (declare c3-deferred-ratio-descriptor-from-raw
          c3-ratio-descriptor-from-raw
