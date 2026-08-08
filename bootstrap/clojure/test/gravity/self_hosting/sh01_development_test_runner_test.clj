@@ -10,6 +10,17 @@
     c2-artifact-identity-load-order-initializes-standard-reader-options
     c2-artifact-identity-compatibility-wrappers-preserve-interposition])
 
+(def ^:private c3-test-names
+  '[syntax-object-stream-compatibility-wrapper-preserves-arity-and-output
+    c3-origin-chain-compatibility-wrapper-preserves-arity-and-output
+    c3-syntax-evidence-compatibility-wrappers-preserve-output-and-interposition
+    c3-syntax-construction-compatibility-wrappers-preserve-interposition
+    c3-syntax-verification-compatibility-wrappers-preserve-interposition
+    c3-syntax-diagnostics-compatibility-wrappers-preserve-interposition
+    c3-reader-integrity-compatibility-wrappers-preserve-interposition
+    c3-literal-projection-compatibility-wrappers-preserve-interposition
+    c3-artifact-identity-compatibility-wrappers-preserve-interposition])
+
 (defn- exception-data [thunk]
   (try
     (thunk)
@@ -21,7 +32,9 @@
   (is (= [{:namespace 'gravity.bootstrap-test
            :path "bootstrap/clojure/test/gravity/bootstrap_test.clj"}
           {:namespace 'gravity.bootstrap-compatibility.c2-test
-           :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj"}]
+           :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj"}
+          {:namespace 'gravity.bootstrap-compatibility.c3-test
+           :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"}]
          runner/namespace-catalog))
   (let [loads (atom [])
         reject-load (fn [records]
@@ -45,11 +58,13 @@
     (is (= ['gravity.bootstrap-test]
            (mapv :namespace (selected-namespaces (parse-args [])))))
     (is (= ['gravity.bootstrap-test
-            'gravity.bootstrap-compatibility.c2-test]
+            'gravity.bootstrap-compatibility.c2-test
+            'gravity.bootstrap-compatibility.c3-test]
            (mapv :namespace
                  (selected-namespaces
                   (parse-args
                    ["--namespace" "gravity.bootstrap-compatibility.c2-test"
+                    "--namespace" "gravity.bootstrap-compatibility.c3-test"
                     "--namespace" "gravity.bootstrap-test"
                     "--namespace" "gravity.bootstrap-compatibility.c2-test"])))))))
 
@@ -122,3 +137,13 @@
         (is (not (str/includes? central (str "(deftest " test-name))))
         (is (str/includes? compatibility (str "(deftest " test-name))))))
   (is (= 5 (count c2-test-names))))
+
+(deftest c3-compatibility-vars-moved-exactly-out-of-central-test
+  (let [central (slurp "bootstrap/clojure/test/gravity/bootstrap_test.clj")
+        compatibility
+        (slurp "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj")]
+    (doseq [test-name c3-test-names]
+      (testing (str test-name)
+        (is (not (str/includes? central (str "(deftest " test-name))))
+        (is (str/includes? compatibility (str "(deftest " test-name))))))
+    (is (= 9 (count c3-test-names)))))

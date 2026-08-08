@@ -287,6 +287,7 @@ class ProjectStructureValidationTests(unittest.TestCase):
         self.assertEqual(
             {
                 "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj",
                 "bootstrap/clojure/test/gravity/development_test_runner.clj",
             },
             validator.STAGE0_COORDINATOR_SUPPORT_PATHS,

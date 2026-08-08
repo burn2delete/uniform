@@ -10,7 +10,9 @@
   [{:namespace 'gravity.bootstrap-test
     :path "bootstrap/clojure/test/gravity/bootstrap_test.clj"}
    {:namespace 'gravity.bootstrap-compatibility.c2-test
-    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj"}])
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c3-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"}])
 
 (def ^:private default-test-namespace 'gravity.bootstrap-test)
 (def ^:private catalog-by-namespace

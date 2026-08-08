@@ -13,6 +13,7 @@
    "bootstrap/clojure/java/gravity/cli/Main.java"
    "bootstrap/clojure/src/gravity/bootstrap.clj"
    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj"
+   "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"
    "bootstrap/clojure/test/gravity/bootstrap_test.clj"
    "bootstrap/clojure/test/gravity/development_test_runner.clj"
    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
@@ -140,6 +141,7 @@
   "bootstrap/clojure/src/gravity/syntax_object_stream.clj" :sh-syntax
   "bootstrap/clojure/src/gravity/syntax_origin.clj" :sh-syntax
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/bootstrap_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/development_test_runner.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/c10_safety_analysis_test.clj" :sh-safety

@@ -1418,6 +1418,84 @@ class VerifyDevelopmentTests(unittest.TestCase):
                     )
                 finally:
                     target.write_bytes(original)
+
+    def test_c3_compatibility_check_batches_exact_qualified_vars_under_host_capacity(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(check for check in manifest["checks"] if check["id"] == "stage0-c3-compatibility")
+        qualified = [
+            "gravity.bootstrap-compatibility.c3-test/syntax-object-stream-compatibility-wrapper-preserves-arity-and-output",
+            "gravity.bootstrap-compatibility.c3-test/c3-origin-chain-compatibility-wrapper-preserves-arity-and-output",
+            "gravity.bootstrap-compatibility.c3-test/c3-syntax-evidence-compatibility-wrappers-preserve-output-and-interposition",
+            "gravity.bootstrap-compatibility.c3-test/c3-syntax-construction-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c3-test/c3-syntax-verification-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c3-test/c3-syntax-diagnostics-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c3-test/c3-reader-integrity-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c3-test/c3-literal-projection-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c3-test/c3-artifact-identity-compatibility-wrappers-preserve-interposition",
+        ]
+        self.assertEqual(
+            ["clojure", "-M:dev-test", "--namespace", "gravity.bootstrap-compatibility.c3-test"]
+            + [part for name in qualified for part in ("--exact", name)],
+            item["command"],
+        )
+        self.assertEqual("bootstrap-hosted", item["resource_class"])
+        self.assertEqual("none", item["authority"])
+        self.assertFalse(item["fresh"])
+        self.assertIsNone(item["lock"])
+        resource = verifier.check_resource_declaration(manifest, item)
+        self.assertEqual(verifier.CANONICAL_HEAVY_LOCK, resource["capacity_lock"])
+        self.assertEqual(1, resource["class_max_concurrency"])
+
+    def test_c3_compatibility_paths_route_and_invalidate_cache_identity(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(check for check in manifest["checks"] if check["id"] == "stage0-c3-compatibility")
+        for changed_path in (
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj",
+            "bootstrap/clojure/test/gravity/development_test_runner.clj",
+        ):
+            with self.subTest(path=changed_path):
+                selection = verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[changed_path]
+                )
+                self.assertIn("stage0-c3-compatibility", selection["selected_ids"])
+                self.assertIn("stage0-clojure-suite", selection["selected_ids"])
+                self.assertEqual([], selection["unmatched_changes"])
+
+        with tempfile.TemporaryDirectory(prefix="gravity-c3-compat-cache-") as directory:
+            temp_root = Path(directory)
+            copied = [
+                "deps.edn",
+                "contracts/project-structure.json",
+                "docs/self-hosting-slice-ownership.edn",
+                "bootstrap/clojure/src/gravity/bootstrap.clj",
+                "bootstrap/clojure/src/gravity/c3_artifact_identity.clj",
+                "bootstrap/clojure/src/gravity/c3_literal_projection.clj",
+                "bootstrap/clojure/src/gravity/c3_reader_integrity.clj",
+                "bootstrap/clojure/src/gravity/c3_syntax_construction.clj",
+                "bootstrap/clojure/src/gravity/c3_syntax_diagnostics.clj",
+                "bootstrap/clojure/src/gravity/c3_syntax_evidence.clj",
+                "bootstrap/clojure/src/gravity/c3_syntax_verification.clj",
+                "bootstrap/clojure/src/gravity/syntax_object_stream.clj",
+                "bootstrap/clojure/src/gravity/syntax_origin.clj",
+                "bootstrap/clojure/test/gravity/development_test_runner.clj",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj",
+                "tools/validate_project_structure.py",
+            ]
+            for relative in copied:
+                target = temp_root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / relative, target)
+            baseline = verifier.cache_key(manifest, item, temp_root)
+            for relative in copied[1:]:
+                target = temp_root / relative
+                original = target.read_bytes()
+                target.write_bytes(original + b"\ncompatibility-cache-change\n")
+                try:
+                    self.assertNotEqual(
+                        baseline, verifier.cache_key(manifest, item, temp_root), relative
+                    )
+                finally:
+                    target.write_bytes(original)
     def test_dependency_source_edits_route_to_every_consuming_leaf_group(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
         leaf_ids = {
@@ -1467,6 +1545,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage0-hosted-hello-qst",
                 "stage0-selective-smoke",
                 "stage0-c2-compatibility",
+                "stage0-c3-compatibility",
                 "stage0-hosted-core-app",
                 "stage0-hosted-core-compiled-app",
                 "stage0-clojure-suite",
@@ -1669,7 +1748,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             if item["command"]
             and item["command"][0] == "clojure"
             and not item["id"].startswith("stage0-leaf-")
-            and item["id"] != "stage0-c2-compatibility"
+            and item["id"] not in {"stage0-c2-compatibility", "stage0-c3-compatibility"}
         ]
         self.assertTrue(clojure_checks)
         self.assertTrue(all(item.get("fresh") is True for item in clojure_checks))
