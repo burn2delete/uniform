@@ -17,7 +17,11 @@
              sh10-verify-ownership-result
              sh10-authenticated-sh09-adapter-policy
              sh10-build-authenticated-ownership-core
-             sh10-verify-authenticated-ownership-core])
+             sh10-verify-authenticated-ownership-core
+             sh10-authenticated-ownership-identity-requests
+             sh10-authenticated-ownership-core-identity-request
+             sh10-bind-authenticated-ownership-identities
+             sh10-verify-authenticated-ownership-identities])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -1149,3 +1153,578 @@
               :separate-actual-path-provenance]
      :expected expected
      :candidate candidate}))
+
+; The legacy ownership template above deliberately remains coordinator-digest-
+; required. This additive seam introduces a sequential C9 identity boundary:
+; fact identities are resolved first, then the whole ownership-core request is
+; built from those resolved fact IDs. No digest is recomputed in Gravity.
+(defn sh10-authenticated-ownership-identity-pending []
+  [:owned-mutable-sh09-adapter
+   :persistent-aggregate-copy-semantics
+   :regions-arenas-and-linear-resources
+   :task-actor-and-ffi-transfer
+   :runtime-borrow-checks
+   :unsafe-audit-records
+   :mir-preservation
+   :trusted-digest-resolution
+   :independent-canonical-digest-verification])
+
+(defn sh10-identity-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (set? value))))
+
+(defn sh10-identity-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (if (vector? value)
+      value
+      (if (set? value) (vec value) []))))
+
+(defn sh10-identity-carrier-preflight [value]
+  (loop [frontier [[value 0]] cursor 0 nodes 0 enqueued 1]
+    (if (= cursor (count frontier))
+      {:status :accepted :nodes nodes}
+      (let [entry (get frontier cursor)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (> next-nodes 16384)
+          {:status :rejected :reason :identity-carrier-node-bound}
+          (if (> depth 16)
+            {:status :rejected :reason :identity-carrier-depth-bound}
+            (if (map? current)
+              (let [width (count current)]
+                (if (> width 512)
+                  {:status :rejected :reason :identity-carrier-width-bound}
+                  (let [next-enqueued (+ enqueued (* 2 width))]
+                    (if (> next-enqueued 16384)
+                      {:status :rejected
+                       :reason :identity-carrier-node-bound}
+                      (let [children
+                            (sh10-identity-components current)
+                            next-frontier
+                            (loop [remaining children result frontier]
+                              (if (= (count remaining) 0)
+                                result
+                                (recur
+                                 (rest remaining)
+                                 (conj result
+                                       [(first remaining) (+ depth 1)]))))]
+                        (recur next-frontier (+ cursor 1) next-nodes
+                               next-enqueued))))))
+              (if (vector? current)
+                (let [width (count current)]
+                  (if (> width 1024)
+                    {:status :rejected :reason :identity-carrier-width-bound}
+                    (let [next-enqueued (+ enqueued width)]
+                      (if (> next-enqueued 16384)
+                        {:status :rejected
+                         :reason :identity-carrier-node-bound}
+                        (let [children (sh10-identity-components current)
+                              next-frontier
+                              (loop [remaining children result frontier]
+                                (if (= (count remaining) 0)
+                                  result
+                                  (recur
+                                   (rest remaining)
+                                   (conj result
+                                         [(first remaining) (+ depth 1)]))))]
+                          (recur next-frontier (+ cursor 1) next-nodes
+                                 next-enqueued))))))
+                (if (set? current)
+                  (let [width (count current)]
+                    (if (> width 512)
+                      {:status :rejected
+                       :reason :identity-carrier-width-bound}
+                      (let [next-enqueued (+ enqueued width)]
+                        (if (> next-enqueued 16384)
+                          {:status :rejected
+                           :reason :identity-carrier-node-bound}
+                          (let [children (sh10-identity-components current)
+                                next-frontier
+                                (loop [remaining children result frontier]
+                                  (if (= (count remaining) 0)
+                                    result
+                                    (recur
+                                     (rest remaining)
+                                     (conj result
+                                           [(first remaining) (+ depth 1)]))))]
+                            (recur next-frontier (+ cursor 1) next-nodes
+                                   next-enqueued))))))
+                  (if (seq? current)
+                    {:status :rejected
+                     :reason :identity-carrier-seq-unsupported}
+                    (recur frontier (+ cursor 1) next-nodes enqueued)))))))))))
+
+(defn sh10-ownership-fact-records-in-result
+  [request ownership-result remaining-facts result]
+  (if (= (count remaining-facts) 0)
+    result
+    (let [fact (first remaining-facts)]
+      (sh10-ownership-fact-records-in-result
+       request ownership-result
+       (rest remaining-facts)
+       (conj
+        result
+        {:fact fact
+         :fact-id-request (get fact :fact-id-request)
+         :ownership-request request
+         :ownership-result ownership-result
+         :source-span (get fact :source-span)
+         :origin-chain (get fact :origin-chain)
+         :profile (get request :profile)
+         :target (get request :target)})))))
+
+(defn sh10-ownership-fact-records-loop
+  [remaining-requests remaining-results result]
+  (if (= (count remaining-requests) 0)
+    result
+    (let [request (first remaining-requests)
+          ownership-result (first remaining-results)]
+      (sh10-ownership-fact-records-loop
+       (rest remaining-requests)
+       (rest remaining-results)
+       (sh10-ownership-fact-records-in-result
+        request ownership-result
+        (get ownership-result :ownership-facts)
+        result)))))
+
+(defn sh10-ownership-fact-identity-request [record]
+  {:domain :gravity/sh10-ownership-fact-identity-v2
+   :kind :ownership-fact
+   :core-node-id (get (get record :fact) :value-id)
+   :identity-input
+   {:fact (get record :fact)
+    :fact-id-request (get record :fact-id-request)
+    :ownership-request (get record :ownership-request)
+    :ownership-result (get record :ownership-result)
+    :source-span (get record :source-span)
+    :origin-chain (get record :origin-chain)
+    :profile (get record :profile)
+    :target (get record :target)}})
+
+(defn sh10-ownership-fact-identity-requests-loop
+  [remaining result]
+  (if (= (count remaining) 0)
+    result
+    (sh10-ownership-fact-identity-requests-loop
+     (rest remaining)
+     (conj result
+           (sh10-ownership-fact-identity-request
+            (first remaining))))))
+
+(defn sh10-one-fact-per-ownership-result?
+  [remaining-requests remaining-results]
+  (if (= (count remaining-requests) 0)
+    true
+    (if (= (count remaining-results) 0)
+      false
+      (let [ownership-result (first remaining-results)
+            facts (get ownership-result :ownership-facts)]
+        (if (= :accepted (get ownership-result :status))
+          (if (vector? facts)
+            (if (= 1 (count facts))
+              (let [fact (first facts)]
+                (if (map? fact)
+                  (if (= :gravity/c9-ownership-fact
+                         (get fact :artifact))
+                    (if (map? (get fact :fact-id-request))
+                      (sh10-one-fact-per-ownership-result?
+                       (rest remaining-requests)
+                       (rest remaining-results))
+                      false)
+                    false)
+                  false))
+              false)
+            false)
+          false)))))
+
+(defn sh10-identity-public-input-preflight
+  [bound verification owned]
+  (let [bound-result (sh10-identity-carrier-preflight bound)]
+    (if (= :accepted (get bound-result :status))
+      (let [verification-result
+            (sh10-identity-carrier-preflight verification)]
+        (if (= :accepted (get verification-result :status))
+          (sh10-identity-carrier-preflight owned)
+          verification-result))
+      bound-result)))
+
+(defn sh10-identity-candidate-preflight [candidate]
+  (if (map? candidate)
+    (sh10-identity-carrier-preflight candidate)
+    {:status :rejected :reason :identity-candidate-not-map}))
+
+(defn sh10-authenticated-ownership-identity-requests
+  [bound verification owned]
+  (let [public-preflight
+        (sh10-identity-public-input-preflight
+         bound verification owned)
+        fresh
+        (if (= :accepted (get public-preflight :status))
+          (sh10-verify-authenticated-ownership-core
+           bound verification owned)
+          {:status :rejected
+           :diagnostics
+           [{:diagnostic-id "C9-UNSAFE"
+             :reason (get public-preflight :reason)}]})]
+    (if (= :passed (get fresh :status))
+      (if (sh10-and
+           (> (count (get owned :ownership-requests)) 0)
+           (sh10-and
+            (= (count (get owned :ownership-requests))
+               (count (get owned :ownership-results)))
+            (sh10-one-fact-per-ownership-result?
+             (get owned :ownership-requests)
+             (get owned :ownership-results))))
+        (let [records
+            (sh10-ownership-fact-records-loop
+             (get owned :ownership-requests)
+             (get owned :ownership-results)
+             [])
+            requests
+            (sh10-ownership-fact-identity-requests-loop records [])]
+        {:artifact :gravity/sh10-ownership-identity-request-template
+         :schema-version 2
+         :status :accepted
+         :scope (get owned :scope)
+         :fact-requests requests
+         :resolution :coordinator-digest-required
+         :next :resolve-fact-identities
+         :diagnostics []
+         :pending (sh10-authenticated-ownership-identity-pending)
+         :self-hosted? false
+         :clojure-seed-boundary? true})
+        {:artifact :gravity/sh10-ownership-identity-request-template
+         :schema-version 2
+         :status :rejected
+         :scope (get owned :scope)
+         :fact-requests []
+         :resolution :coordinator-digest-required
+         :next :resolve-fact-identities
+         :diagnostics
+         [(sh10-authenticated-adapter-diagnostic
+           bound :ownership-fact-cardinality-or-status)]
+         :pending (sh10-authenticated-ownership-identity-pending)
+         :self-hosted? false
+         :clojure-seed-boundary? true})
+      {:artifact :gravity/sh10-ownership-identity-request-template
+       :schema-version 2
+       :status :rejected
+       :scope (get owned :scope)
+       :fact-requests []
+       :resolution :coordinator-digest-required
+       :next :resolve-fact-identities
+       :diagnostics
+       [(sh10-authenticated-adapter-diagnostic
+         bound :unverified-authenticated-ownership-core)]
+       :pending (sh10-authenticated-ownership-identity-pending)
+       :self-hosted? false
+       :clojure-seed-boundary? true})))
+
+(defn sh10-identity-resolution-entry-valid?
+  [request entry]
+  (if (map? entry)
+    (if (= #{:request :digest} (set (keys entry)))
+      (if (= request (get entry :request))
+        (sh10-sha256-id? (get entry :digest))
+        false)
+      false)
+    false))
+
+(defn sh10-identity-digests-unique?
+  [remaining seen]
+  (if (= (count remaining) 0)
+    true
+    (let [digest (get (first remaining) :digest)]
+      (if (contains? seen digest)
+        false
+        (sh10-identity-digests-unique?
+         (rest remaining)
+         (conj seen digest))))))
+
+(defn sh10-resolved-ownership-facts-valid?
+  [requests resolved]
+  (if (= (count requests) (count resolved))
+    (if (sh10-identity-digests-unique? resolved #{})
+      (if (= (count requests) 0)
+        true
+        (if (sh10-identity-resolution-entry-valid?
+             (first requests) (first resolved))
+          (sh10-resolved-ownership-facts-valid?
+           (rest requests) (rest resolved))
+          false))
+      false)
+    false))
+
+(defn sh10-bound-ownership-fact-identities
+  [requests resolved result]
+  (if (= (count requests) 0)
+    result
+    (let [request (first requests)
+          entry (first resolved)
+          identity-input (get request :identity-input)]
+      (sh10-bound-ownership-fact-identities
+       (rest requests)
+       (rest resolved)
+       (conj result
+             {:fact-id-request (get identity-input :fact-id-request)
+              :ownership-fact-id (get entry :digest)})))))
+
+(defn sh10-ownership-core-identity-request
+  [owned ordered-fact-identities]
+  {:domain :gravity/sh10-ownership-core-identity-v2
+   :kind :ownership-core
+   :core-node-id :gravity/sh10-ownership-core
+   :identity-input
+   {:ownership-core-identity-input (get owned :identity-input)
+    :ordered-fact-identities ordered-fact-identities
+    :ownership-requests (get owned :ownership-requests)
+    :ownership-results (get owned :ownership-results)}})
+
+(defn sh10-authenticated-ownership-core-identity-request
+  [bound verification owned fact-resolutions]
+  (let [carrier-preflight
+        (sh10-identity-carrier-preflight fact-resolutions)
+        template
+        (if (= :accepted (get carrier-preflight :status))
+          (sh10-authenticated-ownership-identity-requests
+           bound verification owned)
+          {:status :rejected
+           :diagnostics
+           [{:diagnostic-id "C9-UNSAFE"
+             :reason :identity-carrier-bound
+             :preflight carrier-preflight}]})
+        fact-requests (get template :fact-requests)]
+    (if (= :accepted (get template :status))
+      (if (= :accepted (get carrier-preflight :status))
+        (if (vector? fact-resolutions)
+          (if (sh10-resolved-ownership-facts-valid?
+               fact-requests fact-resolutions)
+            (let [fact-identities
+                  (sh10-bound-ownership-fact-identities
+                   fact-requests fact-resolutions [])]
+              {:artifact
+               :gravity/sh10-ownership-core-identity-request
+               :schema-version 2
+               :status :accepted
+               :core-request
+               (sh10-ownership-core-identity-request
+                owned fact-identities)
+               :fact-identities fact-identities
+               :resolution :coordinator-digest-required
+               :diagnostics []
+               :pending (sh10-authenticated-ownership-identity-pending)
+               :self-hosted? false
+               :clojure-seed-boundary? true})
+            {:artifact
+             :gravity/sh10-ownership-core-identity-request
+             :schema-version 2
+             :status :rejected
+             :resolution :coordinator-digest-required
+             :diagnostics
+             [(sh10-authenticated-adapter-diagnostic
+               bound :ownership-fact-identity-resolution-substitution)]
+             :pending (sh10-authenticated-ownership-identity-pending)
+             :self-hosted? false
+             :clojure-seed-boundary? true})
+          {:artifact :gravity/sh10-ownership-core-identity-request
+           :schema-version 2
+           :status :rejected
+           :resolution :coordinator-digest-required
+           :diagnostics
+           [(sh10-authenticated-adapter-diagnostic
+             bound :malformed-ownership-fact-resolution)]
+           :pending (sh10-authenticated-ownership-identity-pending)
+           :self-hosted? false
+           :clojure-seed-boundary? true})
+        {:artifact :gravity/sh10-ownership-core-identity-request
+         :schema-version 2
+         :status :rejected
+         :resolution :coordinator-digest-required
+         :diagnostics
+         [(sh10-authenticated-adapter-diagnostic
+           bound :identity-carrier-bound)]
+         :pending (sh10-authenticated-ownership-identity-pending)
+         :self-hosted? false
+         :clojure-seed-boundary? true})
+      {:artifact :gravity/sh10-ownership-core-identity-request
+       :schema-version 2
+       :status :rejected
+       :resolution :coordinator-digest-required
+       :diagnostics (get template :diagnostics)
+       :pending (sh10-authenticated-ownership-identity-pending)
+       :self-hosted? false
+       :clojure-seed-boundary? true})))
+
+(defn sh10-identity-resolution-digests
+  [remaining result]
+  (if (= (count remaining) 0)
+    result
+    (sh10-identity-resolution-digests
+     (rest remaining)
+     (conj result (get (first remaining) :digest)))))
+
+(defn sh10-core-resolution-valid?
+  [request resolution fact-resolutions]
+  (if (map? resolution)
+    (if (= #{:request :digest} (set (keys resolution)))
+      (if (= request (get resolution :request))
+        (if (sh10-sha256-id? (get resolution :digest))
+          (if (contains? (set
+                         (sh10-identity-resolution-digests
+                          fact-resolutions []))
+                         (get resolution :digest))
+            false
+            true)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-bind-authenticated-ownership-identities
+  [bound verification owned resolved]
+  (let [resolved-preflight
+        (sh10-identity-carrier-preflight resolved)
+        template
+        (if (= :accepted (get resolved-preflight :status))
+          (sh10-authenticated-ownership-identity-requests
+           bound verification owned)
+          {:status :rejected
+           :diagnostics
+           [{:diagnostic-id "C9-UNSAFE"
+             :reason (get resolved-preflight :reason)}]})]
+    (if (= :accepted (get template :status))
+      (if (map? resolved)
+        (if (= #{:fact-resolutions :core-resolution}
+               (set (keys resolved)))
+          (let [fact-resolutions (get resolved :fact-resolutions)
+                core-resolution (get resolved :core-resolution)
+                core-template
+                (sh10-authenticated-ownership-core-identity-request
+                 bound verification owned fact-resolutions)]
+            (if (= :accepted (get core-template :status))
+              (if (sh10-core-resolution-valid?
+                   (get core-template :core-request)
+                   core-resolution fact-resolutions)
+                (let [core-id (get core-resolution :digest)
+                      identity-input
+                      {:domain :gravity/sh10-identity-bound-owned-core-v2
+                       :ownership-core-identity-input
+                       (get owned :identity-input)
+                       :ordered-fact-identities
+                       (get core-template :fact-identities)
+                       :ownership-core-identity-id core-id
+                       :pending
+                       (sh10-authenticated-ownership-identity-pending)}]
+                  {:artifact
+                   :gravity/sh10-identity-bound-owned-core-template
+                   :schema-version 2
+                   :status :accepted
+                   :scope (get owned :scope)
+                   :ownership-core owned
+                   :fact-identities (get core-template :fact-identities)
+                   :ownership-core-identity-id core-id
+                   :identity-input identity-input
+                   :identity-resolution :coordinator-digest-bound
+                   :identity-binding-status
+                   :coordinator-resolution-shape-checked
+                   :identity-resolutions resolved
+                   :provenance (get owned :provenance)
+                   :diagnostics []
+                   :pending (get identity-input :pending)
+                   :self-hosted? false
+                   :clojure-seed-boundary? true})
+                {:artifact
+                 :gravity/sh10-identity-bound-owned-core-template
+                 :schema-version 2
+                 :status :rejected
+                 :scope (get owned :scope)
+                 :diagnostics
+                 [(sh10-authenticated-adapter-diagnostic
+                   bound :ownership-core-identity-resolution-substitution)]
+                 :pending (sh10-authenticated-ownership-identity-pending)
+                 :self-hosted? false
+                 :clojure-seed-boundary? true})
+              {:artifact
+               :gravity/sh10-identity-bound-owned-core-template
+               :schema-version 2
+               :status :rejected
+               :scope (get owned :scope)
+               :diagnostics (get core-template :diagnostics)
+               :pending (sh10-authenticated-ownership-identity-pending)
+               :self-hosted? false
+               :clojure-seed-boundary? true}))
+          {:artifact
+           :gravity/sh10-identity-bound-owned-core-template
+           :schema-version 2
+           :status :rejected
+           :scope (get owned :scope)
+           :diagnostics
+           [(sh10-authenticated-adapter-diagnostic
+             bound :malformed-ownership-identity-carrier)]
+           :pending (sh10-authenticated-ownership-identity-pending)
+           :self-hosted? false
+           :clojure-seed-boundary? true})
+        {:artifact
+         :gravity/sh10-identity-bound-owned-core-template
+         :schema-version 2
+         :status :rejected
+         :scope (get owned :scope)
+         :diagnostics
+         [(sh10-authenticated-adapter-diagnostic
+           bound :malformed-ownership-identity-carrier)]
+         :pending (sh10-authenticated-ownership-identity-pending)
+         :self-hosted? false
+         :clojure-seed-boundary? true})
+      {:artifact :gravity/sh10-identity-bound-owned-core-template
+       :schema-version 2
+       :status :rejected
+       :scope (get owned :scope)
+       :diagnostics (get template :diagnostics)
+       :pending (sh10-authenticated-ownership-identity-pending)
+       :self-hosted? false
+       :clojure-seed-boundary? true})))
+
+(defn sh10-verify-authenticated-ownership-identities
+  [bound verification owned resolved candidate]
+  (let [candidate-preflight
+        (sh10-identity-candidate-preflight candidate)]
+    (if (= :accepted (get candidate-preflight :status))
+      (let [expected
+            (sh10-bind-authenticated-ownership-identities
+             bound verification owned resolved)]
+        {:artifact :gravity/sh10-ownership-identity-binding-verification
+         :status (if (= expected candidate) :passed :rejected)
+         :checks [:fresh-authenticated-ownership-core
+                  :exact-fact-request-order
+                  :sequential-core-request-from-resolved-facts
+                  :resolved-digest-shape
+                  :duplicate-digest-rejection
+                  :ownership-fact-linkage
+                  :path-neutral-identity-input
+                  :separate-actual-path-provenance
+                  :coordinator-binding-consistency-only]
+         :nonclaims [:trusted-digest-resolution
+                     :independent-canonical-digest-verification]
+         :expected expected
+         :candidate candidate})
+      {:artifact :gravity/sh10-ownership-identity-binding-verification
+       :status :rejected
+       :checks [:candidate-identity-carrier-bound]
+       :nonclaims [:trusted-digest-resolution
+                   :independent-canonical-digest-verification]
+       :diagnostics
+       [{:diagnostic-id "C9-UNSAFE"
+         :reason :candidate-identity-carrier-bound
+         :preflight candidate-preflight}]})))

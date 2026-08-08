@@ -1082,7 +1082,8 @@
    :accepted-upstream-schema-versions [1 3]
    :accepted-upstream-scopes
    [:primitive-literals-vector-map-set-definitions-equal-if-joins
-    :capture-free-higher-order-fixed-arity-one-hop]
+    :capture-free-higher-order-fixed-arity-one-hop
+    :first-order-fixed-arity-functions-locals-calls]
    :accepted-effect-scopes
    [:pure-typed-core
     :declared-pure-call-effects-with-thrown-effects-pending]
@@ -1101,7 +1102,7 @@
              :namespace-and-module-summaries
              :runtime-profile-policy
              :mir-preservation
-             :authenticated-sh09-sh10-adapter]
+             :authenticated-effectful-or-nonprimitive-sh09-adapter]
    :self-hosted? false
    :clojure-seed-boundary? true})
 
@@ -1479,55 +1480,97 @@
       false)
     false))
 
-(defn sh09-adapter-function-upstream-valid? [typed verification]
-  (if
-   (sh09-exact-keys?
-    typed
+(defn sh09-adapter-function-top-level-keys [scope]
+  (if (= :capture-free-higher-order-fixed-arity-one-hop scope)
     #{:artifact :schema-version :status :scope :authentication-status
       :module :sh07-shaped-artifact-id :function-products
       :function-type-table :local-binding-facts :call-type-facts
       :constraint-ledger :type-table :convergence :typed-core
       :diagnostics :artifact-id-request :identity-input
       :identity-resolution :provenance :pending
-      :higher-order-proof :higher-order-call-facts})
+      :higher-order-proof :higher-order-call-facts}
+    #{:artifact :schema-version :status :scope :authentication-status
+      :module :sh07-shaped-artifact-id :function-products
+      :function-type-table :local-binding-facts :call-type-facts
+      :constraint-ledger :type-table :convergence :typed-core
+      :diagnostics :artifact-id-request :identity-input
+      :identity-resolution :provenance :pending}))
+
+(defn sh09-adapter-function-typed-core [typed]
+  (let [base
+        {:artifact :gravity/typed-core
+         :core-input (get typed :sh07-shaped-artifact-id)
+         :module (get typed :module)
+         :types (get typed :type-table)
+         :constraints (get typed :constraint-ledger)
+         :function-types (get typed :function-type-table)
+         :local-bindings (get typed :local-binding-facts)
+         :calls (get typed :call-type-facts)
+         :diagnostics []}]
+    (if (= :capture-free-higher-order-fixed-arity-one-hop
+           (get typed :scope))
+      (assoc
+       (assoc base :higher-order-proof (get typed :higher-order-proof))
+       :higher-order-call-facts (get typed :higher-order-call-facts))
+      base)))
+
+(defn sh09-adapter-function-identity-domain [scope]
+  (if (= :capture-free-higher-order-fixed-arity-one-hop scope)
+    :gravity/sh08-authoritative-higher-order-type-v1
+    :gravity/sh08-function-typed-core-v3))
+
+(defn sh09-adapter-function-identity-input [typed]
+  (let [products (get typed :function-products)
+        base
+        {:domain (sh09-adapter-function-identity-domain (get typed :scope))
+         :sh07-shaped-artifact-id (get typed :sh07-shaped-artifact-id)
+         :module (get typed :module)
+         :function-records (get products :function-records)
+         :call-edges (get products :call-edges)
+         :recursion-components (get products :recursion-components)
+         :lexical-bindings (get products :lexical-bindings)
+         :function-type-table (get typed :function-type-table)
+         :local-binding-facts (get typed :local-binding-facts)
+         :call-type-facts (get typed :call-type-facts)
+         :constraint-ledger (get typed :constraint-ledger)
+         :type-table (get typed :type-table)
+         :convergence (get typed :convergence)
+         :pending (get typed :pending)}]
+    (if (= :capture-free-higher-order-fixed-arity-one-hop
+           (get typed :scope))
+      (assoc base :higher-order-proof (get typed :higher-order-proof))
+      base)))
+
+(defn sh09-adapter-function-upstream-valid? [typed verification]
+  (if
+   (sh09-exact-keys?
+    typed
+    (sh09-adapter-function-top-level-keys (get typed :scope)))
     (if (= :gravity/sh08-function-typed-core-template
            (get typed :artifact))
       (if (= 3 (get typed :schema-version))
         (if (= :accepted (get typed :status))
-          (if (= :capture-free-higher-order-fixed-arity-one-hop
-                 (get typed :scope))
+          (if (contains?
+               #{:capture-free-higher-order-fixed-arity-one-hop
+                 :first-order-fixed-arity-functions-locals-calls}
+               (get typed :scope))
             (if (= :host-resolved-b47-verification-boundary
                    (get typed :authentication-status))
               (if (sh09-adapter-module-valid? (get typed :module))
                 (if (= [] (get typed :diagnostics))
                   (if (= (get typed :artifact-id-request)
                          (get typed :identity-input))
-                    (if
-                     (sh09-adapter-function-facts-valid?
-                      (get typed :function-type-table)
-                      (get typed :module))
+                    (if (= (sh09-adapter-function-identity-input typed)
+                           (get typed :identity-input))
+                    (if (sh09-adapter-function-facts-valid?
+                         (get typed :function-type-table)
+                         (get typed :module))
                       (if
                        (sh09-adapter-call-facts-valid?
                         (get typed :call-type-facts)
                         (get typed :module))
-                        (if
-                         (=
-                          {:artifact :gravity/typed-core
-                           :core-input (get typed :sh07-shaped-artifact-id)
-                           :module (get typed :module)
-                           :types (get typed :type-table)
-                           :constraints (get typed :constraint-ledger)
-                           :function-types
-                           (get typed :function-type-table)
-                           :local-bindings
-                           (get typed :local-binding-facts)
-                           :calls (get typed :call-type-facts)
-                           :diagnostics []
-                           :higher-order-proof
-                           (get typed :higher-order-proof)
-                           :higher-order-call-facts
-                           (get typed :higher-order-call-facts)}
-                          (get typed :typed-core))
+                        (if (= (sh09-adapter-function-typed-core typed)
+                               (get typed :typed-core))
                           (if
                            (sh09-exact-keys?
                             (get typed :provenance)
@@ -1555,6 +1598,7 @@
                           false)
                         false)
                       false)
+                    false)
                     false)
                   false)
                 false)

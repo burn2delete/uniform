@@ -1,0 +1,24 @@
+; SH-11 adapter boundary: one authenticated Bool call and one ownership read.
+(ns self-hosting.sh08.function-single-bool-call
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh11-single-bool-identity
+             sh11-single-bool-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-11-C9-C10
+    :fixture :function-single-bool-call
+    :scope :one-first-order-bool-call-for-authenticated-safety-adaptation
+    :value-type :gravity.type/bool
+    :non-claims [:higher-order-functions :captures :recursion :multi-hop
+                 :polymorphism :generics :overloads :multi-arity
+                 :variadic-dispatch :protocol-dispatch :dynamic-dispatch
+                 :reflection :runtime-checks :unsafe-islands]}))
+
+(defn sh11-single-bool-identity [value]
+  value)
+
+(def sh11-single-bool-result
+  (sh11-single-bool-identity true))

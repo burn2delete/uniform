@@ -216,9 +216,27 @@
          :diagnostics []
          :higher-order-proof proof
          :higher-order-call-facts []}
+        function-products
+        {:function-records []
+         :call-edges []
+         :recursion-components []
+         :lexical-bindings []}
         identity
         {:domain :gravity/sh08-authoritative-higher-order-type-v1
-         :sh07-shaped-artifact-id sha-e}]
+         :sh07-shaped-artifact-id sha-e
+         :module module
+         :function-records (:function-records function-products)
+         :call-edges (:call-edges function-products)
+         :recursion-components (:recursion-components function-products)
+         :lexical-bindings (:lexical-bindings function-products)
+         :function-type-table functions
+         :local-binding-facts []
+         :call-type-facts calls
+         :constraint-ledger []
+         :type-table {sha-d :gravity.type/bool}
+         :convergence {:status :converged}
+         :pending [:records :unions]
+         :higher-order-proof proof}]
     {:artifact :gravity/sh08-function-typed-core-template
      :schema-version 3
      :status :accepted
@@ -226,7 +244,7 @@
      :authentication-status :host-resolved-b47-verification-boundary
      :module module
      :sh07-shaped-artifact-id sha-e
-     :function-products {}
+     :function-products function-products
      :function-type-table functions
      :local-binding-facts []
      :call-type-facts calls
@@ -293,8 +311,12 @@
     (is (some #{:pure-typed-core} (:accepted-effect-scopes policy)))
     (is (some #{:declared-pure-call-effects-with-thrown-effects-pending}
               (:accepted-effect-scopes policy)))
+    (is (some #{:first-order-fixed-arity-functions-locals-calls}
+              (:accepted-upstream-scopes policy)))
     (is (some #{:effectful-sh08-adapter} (:pending policy)))
     (is (some #{:trusted-digest-resolution} (:pending policy)))
+    (is (some #{:authenticated-effectful-or-nonprimitive-sh09-adapter}
+              (:pending policy)))
     (is (not-any? #{:authenticated-sh08-adapter}
                   (:pending (invoke-c8 'sh09-effect-policy []))))))
 
@@ -389,7 +411,33 @@
   (let [typed-a (function-typed-result "/checkout-a/function.gravity")
         typed-b (function-typed-result "/checkout-b/function.qst")
         result-a (build typed-a (function-verification typed-a))
-        result-b (build typed-b (function-verification typed-b))]
+        result-b (build typed-b (function-verification typed-b))
+        first-order-identity
+        (-> (:identity-input typed-a)
+            (assoc :domain :gravity/sh08-function-typed-core-v3)
+            (dissoc :higher-order-proof))
+        first-order-typed
+        (-> typed-a
+            (assoc :scope :first-order-fixed-arity-functions-locals-calls
+                   :identity-input first-order-identity
+                   :artifact-id-request first-order-identity)
+            (update :typed-core dissoc
+                    :higher-order-proof :higher-order-call-facts)
+            (dissoc :higher-order-proof :higher-order-call-facts))
+        first-order-verification (function-verification first-order-typed)
+        first-order-result (build first-order-typed first-order-verification)
+        unsupported-typed (assoc typed-a :scope :unsupported-function-scope)
+        unsupported-result
+        (build unsupported-typed (function-verification unsupported-typed))
+        forged-first-order
+        (assoc first-order-typed
+               :identity-input
+               (assoc first-order-identity :type-table {})
+               :artifact-id-request
+               (assoc first-order-identity :type-table {}))
+        forged-first-order-result
+        (build forged-first-order
+               (function-verification forged-first-order))]
     (is (= :accepted (:status result-a) (:status result-b)))
     (is (= :declared-pure-call-effects-with-thrown-effects-pending
            (:scope result-a)))
@@ -406,7 +454,18 @@
            (:status
             (invoke-c8
              'sh09-verify-authenticated-pure-effect-result
-             [typed-a (function-verification typed-a) result-a]))))))
+             [typed-a (function-verification typed-a) result-a]))))
+    (is (= :accepted (:status first-order-result)))
+    (is (= 1 (count (:call-type-facts first-order-typed))
+           (count (:effect-requests first-order-result))))
+    (is (= :passed
+           (:status
+            (invoke-c8
+             'sh09-verify-authenticated-pure-effect-result
+             [first-order-typed first-order-verification
+              first-order-result]))))
+    (is (= :rejected (:status unsupported-result)))
+    (is (= :rejected (:status forged-first-order-result)))))
 
 (deftest sh09-c7-adapter-binds-ordered-effect-identities
   (let [typed-a (function-typed-result "/checkout-a/function.gravity")

@@ -14,7 +14,16 @@
              verify-c10-safety-analysis
              sh11-safety-policy
              sh11-classify-operation
-             sh11-verify-safety-result])
+             sh11-verify-safety-result
+             sh11-authenticated-safety-adapter-policy
+             sh11-authenticated-c9-input-valid?
+             sh11-build-authenticated-safety-core
+             sh11-verify-authenticated-safety-core
+             sh11-authenticated-safety-identity-requests
+             sh11-authenticated-safety-result-identity-request
+             sh11-authenticated-safety-core-identity-request
+             sh11-bind-authenticated-safety-identities
+             sh11-verify-authenticated-safety-identities])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -345,9 +354,9 @@
                       :artifact-provenance]}))
 
 ; SH-11 begins with a bounded numeric and bounds classifier. It accepts one
-; normalized operation and produces exactly one SAFE1/D8 outcome. Authenticated
-; SH-09/SH-10 adaptation, nonnumeric safety families, and MIR integration remain
-; later work.
+; normalized operation and produces exactly one SAFE1/D8 outcome. The additive
+; authenticated load adapter below consumes only a C9 identity-bound
+; persistent-immutable read and does not broaden the numeric kernel.
 
 (defn sh11-safety-policy []
   {:artifact :gravity/sh11-safety-policy
@@ -407,8 +416,40 @@
              :generated-code-safety
              :elementary-and-floating-safety
              :optimization-invalidation
-             :authenticated-sh09-sh10-adapter
+             :authenticated-non-persistent-read-safety-families
              :mir-preservation]})
+
+(defn sh11-authenticated-safety-adapter-policy []
+  {:artifact :gravity/sh11-authenticated-safety-adapter-policy
+   :schema-version 1
+   :accepted-upstream-artifact
+   :gravity/sh10-identity-bound-owned-core-template
+   :accepted-upstream-scope
+   :persistent-immutable-pure-primitive-reads
+   :accepted-operation-kinds #{:load}
+   :accepted-value-types
+   #{:gravity.type/integer :gravity.type/bool :gravity.type/string}
+   :accepted-ownership-kind :persistent-immutable
+   :accepted-initialization :initialized
+   :accepted-availability :available
+   :accepted-event :read
+   :profile :meta
+   :target :jvm
+   :identity-resolution :coordinator-digest-bound
+   :diagnostics ["C10-NO-OUTCOME" "C10-PROOF" "C10-CHECK"
+                 "C10-UNSAFE" "C10-CAPABILITY"]
+   :pending [:owned-mutable-sh09-adapter
+             :persistent-aggregate-copy-semantics
+             :regions-arenas-and-linear-resources
+             :task-actor-and-ffi-transfer
+             :runtime-borrow-checks
+             :unsafe-audit-records
+             :mir-preservation
+             :runtime-checked-load-adapter
+             :unsafe-load-audit-adapter
+             :c10-mir-preservation]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
 
 (defn sh11-not [value]
   (if value false true))
@@ -675,6 +716,104 @@
                        (sh11-max observed-depth depth)
                        observed-width))))))))))))
 
+; The authenticated C9/C10 seam receives complete cross-stage carriers rather
+; than a selected projection.  Keep this admission separate from the legacy
+; numeric structural checker: maps, vectors, and persistent sets are finite
+; aggregates; arbitrary seqs/lazy seqs are never realized.  The enqueued bound
+; is checked before children are appended so a wide root cannot allocate an
+; unbounded frontier.
+(defn sh11-authenticated-identity-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (if (vector? value)
+      value
+      (if (set? value) (vec value) []))))
+
+(defn sh11-authenticated-identity-preflight [value]
+  (loop [frontier [[value 0]] cursor 0 nodes 0 enqueued 1]
+    (if (= cursor (count frontier))
+      {:status :accepted :nodes nodes}
+      (let [entry (get frontier cursor)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (> next-nodes 32768)
+          {:status :rejected :reason :authenticated-identity-node-bound}
+          (if (> depth 16)
+            {:status :rejected :reason :authenticated-identity-depth-bound}
+            (if (map? current)
+              (let [width (count current)]
+                (if (> width 512)
+                  {:status :rejected :reason :authenticated-identity-width-bound}
+                  (let [next-enqueued (+ enqueued (* 2 width))]
+                    (if (> next-enqueued 32768)
+                      {:status :rejected
+                       :reason :authenticated-identity-node-bound}
+                      (let [children
+                            (sh11-authenticated-identity-components current)
+                            next-frontier
+                            (loop [remaining children result frontier]
+                              (if (= (count remaining) 0)
+                                result
+                                (recur
+                                 (rest remaining)
+                                 (conj result
+                                       [(first remaining) (+ depth 1)]))))]
+                        (recur next-frontier (+ cursor 1) next-nodes
+                               next-enqueued))))))
+              (if (vector? current)
+                (let [width (count current)]
+                  (if (> width 1024)
+                    {:status :rejected :reason :authenticated-identity-width-bound}
+                    (let [next-enqueued (+ enqueued width)]
+                      (if (> next-enqueued 32768)
+                        {:status :rejected
+                         :reason :authenticated-identity-node-bound}
+                        (let [children
+                              (sh11-authenticated-identity-components current)
+                              next-frontier
+                              (loop [remaining children result frontier]
+                                (if (= (count remaining) 0)
+                                  result
+                                  (recur
+                                   (rest remaining)
+                                   (conj result
+                                         [(first remaining) (+ depth 1)]))))]
+                          (recur next-frontier (+ cursor 1) next-nodes
+                                 next-enqueued))))))
+                (if (set? current)
+                  (let [width (count current)]
+                    (if (> width 512)
+                      {:status :rejected
+                       :reason :authenticated-identity-width-bound}
+                      (let [next-enqueued (+ enqueued width)]
+                        (if (> next-enqueued 32768)
+                          {:status :rejected
+                           :reason :authenticated-identity-node-bound}
+                          (let [children
+                                (sh11-authenticated-identity-components current)
+                                next-frontier
+                                (loop [remaining children result frontier]
+                                  (if (= (count remaining) 0)
+                                    result
+                                    (recur
+                                     (rest remaining)
+                                     (conj result
+                                           [(first remaining) (+ depth 1)]))))]
+                            (recur next-frontier (+ cursor 1) next-nodes
+                                   next-enqueued))))))
+                  (if (seq? current)
+                    {:status :rejected
+                     :reason :authenticated-identity-seq-unsupported}
+                    (recur frontier (+ cursor 1) next-nodes enqueued)))))))))))
+
 (defn sh11-in-range? [value minimum maximum]
   (if (number? value)
     (if (number? minimum)
@@ -911,18 +1050,127 @@
      false)
    false))
 
+(defn sh11-authenticated-load-value-type? [value]
+  (sh11-member?
+   #{:gravity.type/integer :gravity.type/bool :gravity.type/string}
+   value))
+
+(defn sh11-load-fields-valid? [facts]
+  (if (sh11-authenticated-load-value-type? (get facts :value-type))
+    (if (= :persistent-immutable (get facts :ownership-kind))
+      (if (= :initialized (get facts :initialization))
+        (if (= :available (get facts :availability))
+          (if (= :read (get facts :event))
+            true
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh11-load-proof-request-valid? [proof-request]
+  (if (sh11-exact-keys?
+       proof-request
+       #{:domain :operation-id :core-node-id :value-type
+         :ownership-fact-id :fact-id-request :ownership-kind
+         :initialization :availability :event-id :event
+         :ownership-core-identity-id
+         :source-span :origin-chain :profile :target
+         :type-fact-id :effect-fact-id :capability-proof-id})
+    (if (= :gravity/sh11-persistent-read-proof-v2
+           (get proof-request :domain))
+      (if (= :load (get proof-request :operation-id))
+        (if (sh11-sha256-id? (get proof-request :core-node-id))
+          (if (sh11-authenticated-load-value-type?
+               (get proof-request :value-type))
+            (if (sh11-sha256-id? (get proof-request
+                                      :ownership-fact-id))
+              (if (map? (get proof-request :fact-id-request))
+                (if (sh11-sha256-id?
+                     (get proof-request :ownership-core-identity-id))
+                  (if (sh11-sha256-id? (get proof-request :event-id))
+                    (if (sh11-sha256-id? (get proof-request :type-fact-id))
+                    (if (sh11-sha256-id?
+                         (get proof-request :effect-fact-id))
+                      (if (sh11-sha256-id?
+                           (get proof-request :capability-proof-id))
+                        (if (sh11-load-fields-valid? proof-request)
+                          (if (map? (get proof-request :source-span))
+                            (if (vector? (get proof-request :origin-chain))
+                              (if (= :meta (get proof-request :profile))
+                                (= :jvm (get proof-request :target))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh11-load-facts-valid? [facts]
+  (if
+   (sh11-exact-keys?
+    facts #{:proof-id :value-type :ownership-kind
+            :initialization :availability :event :event-id
+            :fact-id-request :ownership-core-identity-id})
+   (if (sh11-sha256-id? (get facts :proof-id))
+     (if (map? (get facts :fact-id-request))
+       (if (sh11-sha256-id?
+            (get facts :ownership-core-identity-id))
+         (sh11-load-fields-valid? facts)
+         false)
+       false)
+     false)
+   false))
+
 (defn sh11-operation-facts-valid? [kind facts]
-  (if (= kind :index)
-    (sh11-index-facts-valid? facts)
-    (if (= kind :numeric-overflow)
-      (sh11-overflow-facts-valid? facts)
-      (if (= kind :division)
-        (sh11-division-facts-valid? facts)
-        (if (= kind :numeric-cast)
-          (sh11-cast-facts-valid? facts)
-          (if (= kind :shift)
-            (sh11-shift-facts-valid? facts)
-            false))))))
+  (if (= kind :load)
+    (sh11-load-facts-valid? facts)
+    (if (= kind :index)
+      (sh11-index-facts-valid? facts)
+      (if (= kind :numeric-overflow)
+        (sh11-overflow-facts-valid? facts)
+        (if (= kind :division)
+          (sh11-division-facts-valid? facts)
+          (if (= kind :numeric-cast)
+            (sh11-cast-facts-valid? facts)
+              (if (= kind :shift)
+                (sh11-shift-facts-valid? facts)
+                false)))))))
+
+(defn sh11-load-request-mode-valid? [request]
+  (if (= :load (get request :kind))
+    (if (= :safe (get request :safety-mode))
+      (if (= nil (get request :runtime-check))
+        (= nil (get request :unsafe-audit))
+        false)
+      false)
+    true))
+
+(defn sh11-request-runtime-support-valid? [request]
+  (if (= nil (get request :runtime-check))
+    (if (= nil (get request :runtime-check-support))
+      true
+      (map? (get request :runtime-check-support)))
+    (map? (get request :runtime-check-support))))
+
+(defn sh11-request-fact-links-valid? [request]
+  (if (sh11-sha256-id? (get request :type-fact-id))
+    (if (sh11-sha256-id? (get request :effect-fact-id))
+      (if (sh11-sha256-id? (get request :capability-proof-id))
+        (sh11-sha256-id? (get request :ownership-fact-id))
+        false)
+      false)
+    false))
 
 (defn sh11-valid-request-shape? [request]
   (if
@@ -937,59 +1185,36 @@
    (if (= :gravity/sh11-normalized-safety-operation
           (get request :artifact))
      (if (keyword? (get request :operation-id))
-       (if
-        (sh11-member?
-         #{:index :numeric-overflow :division
-           :numeric-cast :shift}
-         (get request :kind))
-        (if (sh11-sha256-id? (get request :core-node-id))
-          (if (sh11-valid-source-span? (get request :source-span))
-            (if (sh11-sha-vector? (get request :origin-chain))
-              (if (= :meta (get request :profile))
-                (if (= :jvm (get request :target))
-                  (if
-                   (sh11-member?
-                    #{:safe :safe-optimized :audited-unsafe
-                      :systems :trusted-runtime}
-                    (get request :safety-mode))
-                   (if (sh11-sha256-id?
-                        (get request :type-fact-id))
-                     (if (sh11-sha256-id?
-                          (get request :effect-fact-id))
-                       (if (sh11-sha256-id?
-                            (get request :capability-proof-id))
-                         (if (sh11-sha256-id?
-                              (get request :ownership-fact-id))
-                           (if
-                            (sh11-operation-facts-valid?
-                             (get request :kind)
-                            (get request :facts))
-                            (if (= nil (get request :runtime-check))
-                              (if
-                               (= nil
-                                  (get request
-                                       :runtime-check-support))
-                               true
-                               (map?
-                                (get request
-                                     :runtime-check-support)))
-                              (map?
-                               (get request
-                                    :runtime-check-support)))
-                            false)
+       (if (sh11-member?
+            #{:load :index :numeric-overflow :division
+              :numeric-cast :shift}
+            (get request :kind))
+         (if (sh11-load-request-mode-valid? request)
+           (if (sh11-sha256-id? (get request :core-node-id))
+             (if (sh11-valid-source-span? (get request :source-span))
+               (if (sh11-sha-vector? (get request :origin-chain))
+                 (if (= :meta (get request :profile))
+                   (if (= :jvm (get request :target))
+                     (if (sh11-member?
+                          #{:safe :safe-optimized :audited-unsafe
+                            :systems :trusted-runtime}
+                          (get request :safety-mode))
+                       (if (sh11-request-fact-links-valid? request)
+                         (if (sh11-operation-facts-valid?
+                              (get request :kind) (get request :facts))
+                           (sh11-request-runtime-support-valid? request)
                            false)
                          false)
                        false)
                      false)
                    false)
-                false)
-              false)
-            false)
-          false)
-        false)
-      false)
-    false)
-   false)
+                 false)
+               false)
+             false)
+           false)
+         false)
+       false)
+     false)
    false))
 
 (defn sh11-add-safe? [left right minimum maximum]
@@ -1051,19 +1276,23 @@
   (let [kind (get request :kind)
         facts (get request :facts)
         mode (get facts :numeric-mode)]
-    (if (= mode :unsafe-unchecked)
-      false
-      (if (= kind :index)
-      (let [index (get facts :index)
-            length (get facts :length)]
-        (if (integer? index)
-          (if (integer? length)
-            (if (>= index 0)
-              (< index length)
+      (if (= mode :unsafe-unchecked)
+        false
+      (if (= kind :load)
+        (if (= :safe (get request :safety-mode))
+          (sh11-load-facts-valid? facts)
+          false)
+        (if (= kind :index)
+        (let [index (get facts :index)
+              length (get facts :length)]
+          (if (integer? index)
+            (if (integer? length)
+              (if (>= index 0)
+                (< index length)
+                false)
               false)
-            false)
-          false))
-      (if (= kind :numeric-overflow)
+            false))
+        (if (= kind :numeric-overflow)
         (if (= mode :wrapping)
           true
           (if (= mode :saturating)
@@ -1101,11 +1330,13 @@
                   (if (>= shift-count 0)
                     (< shift-count bit-width)
                     false)))
-              false))))))))
+              false)))))))))
 
 (defn sh11-runtime-condition [kind]
-  (if (= kind :index)
-    :bounds
+  (if (= kind :load)
+    :persistent-immutable-read
+    (if (= kind :index)
+      :bounds
       (if (= kind :numeric-overflow)
       :overflow
       (if (= kind :division)
@@ -1114,7 +1345,7 @@
           :representable-cast
           (if (= kind :shift)
             :shift-range
-            nil))))))
+            nil)))))))
 
 (defn sh11-predicate-expression [kind]
   (if (= kind :index)
@@ -1241,9 +1472,11 @@
     false)))
 
 (defn sh11-specialized-rule [kind]
-  (if (= kind :index)
-    :bounds-safety
-    (if (= kind :numeric-overflow)
+  (if (= kind :load)
+    :SAFE-PERSISTENT-READ
+    (if (= kind :index)
+      :bounds-safety
+      (if (= kind :numeric-overflow)
       :SAFE9-OVERFLOW
       (if (= kind :division)
         :SAFE9-DIV-ZERO
@@ -1251,7 +1484,7 @@
           :SAFE9-NARROW
           (if (= kind :shift)
             :SAFE9-SHIFT
-            :SAFE1-NO-OUTCOME))))))
+            :SAFE1-NO-OUTCOME)))))))
 
 (defn sh11-runtime-check-valid? [request]
   (let [check (get request :runtime-check)
@@ -1506,6 +1739,11 @@
    :unsafe-audit unsafe-audit
    :diagnostic diagnostic})
 
+(defn sh11-result-scope [kind]
+  (if (= kind :load)
+    :authenticated-persistent-immutable-read
+    :bounds-overflow-division-narrowing-shift))
+
 (defn sh11-result
   [request outcome proof runtime-check unsafe-audit diagnostic]
   (let [record
@@ -1536,35 +1774,77 @@
      :identity-input
      {:request request
       :policy-version 2}
-     :scope :bounds-overflow-division-narrowing-shift
+     :scope (sh11-result-scope (get request :kind))
      :pending (get (sh11-safety-policy) :pending)}))
+
+(defn sh11-load-proof-id-request-from-operation [request]
+  (let [facts (get request :facts)]
+    {:domain :gravity/sh11-persistent-read-proof-v2
+     :operation-id (get request :operation-id)
+     :core-node-id (get request :core-node-id)
+     :value-type (get facts :value-type)
+     :ownership-fact-id (get request :ownership-fact-id)
+     :fact-id-request (get facts :fact-id-request)
+     :ownership-kind (get facts :ownership-kind)
+     :initialization (get facts :initialization)
+     :availability (get facts :availability)
+     :event-id (get facts :event-id)
+     :event (get facts :event)
+     :ownership-core-identity-id
+     (get facts :ownership-core-identity-id)
+     :source-span (get request :source-span)
+     :origin-chain (get request :origin-chain)
+     :profile (get request :profile)
+     :target (get request :target)
+     :type-fact-id (get request :type-fact-id)
+     :effect-fact-id (get request :effect-fact-id)
+     :capability-proof-id (get request :capability-proof-id)}))
+
+(defn sh11-proven-proof-assumptions [request]
+  (if (= :load (get request :kind))
+    #{:authenticated-c9-binding-consistency
+      :persistent-immutable-initialized-read
+      :coordinator-digest-shape-and-order-only}
+    #{:normalized-operation-schema
+      :typed-facts-linked
+      :numeric-mode-legal
+      :bounded-fact-evaluation}))
+
+(defn sh11-proven-proof-method [request]
+  (if (= :load (get request :kind))
+    :authenticated-ownership-fact-linkage
+    :bounded-fact-evaluation))
+
+(defn sh11-proven-proof-provider [request]
+  (if (= :load (get request :kind))
+    :external-coordinator-digest-boundary
+    "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))
+
+(defn sh11-proven-proof-id-request [request]
+  (if (= :load (get request :kind))
+    (sh11-load-proof-id-request-from-operation request)
+    {:domain :gravity/sh11-static-safety-proof-v1
+     :operation-id (get request :operation-id)
+     :core-node-id (get request :core-node-id)
+     :facts (get request :facts)
+     :profile (get request :profile)
+     :target (get request :target)}))
 
 (defn sh11-proven-result [request]
   (let [facts (get request :facts)
         proof
         {:artifact :gravity/sh11-static-safety-proof
          :proof-id (get facts :proof-id)
-         :proof-id-request
-         {:domain :gravity/sh11-static-safety-proof-v1
-          :operation-id (get request :operation-id)
-          :core-node-id (get request :core-node-id)
-          :facts facts
-          :profile (get request :profile)
-          :target (get request :target)}
+         :proof-id-request (sh11-proven-proof-id-request request)
          :operation-id (get request :operation-id)
          :core-node-id (get request :core-node-id)
          :source-span (get request :source-span)
          :generated-origin-chain (get request :origin-chain)
          :claim
          (sh11-runtime-condition (get request :kind))
-         :assumptions
-         #{:normalized-operation-schema
-           :typed-facts-linked
-           :numeric-mode-legal
-           :bounded-fact-evaluation}
-         :method :bounded-fact-evaluation
-         :provider
-         "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         :assumptions (sh11-proven-proof-assumptions request)
+         :method (sh11-proven-proof-method request)
+         :provider (sh11-proven-proof-provider request)
          :inputs
          [(get request :type-fact-id)
           (get request :effect-fact-id)
@@ -1647,7 +1927,7 @@
    {:operation-id (get request :operation-id)
     :policy-version 2
     :structural-preflight preflight}
-   :scope :bounds-overflow-division-narrowing-shift
+   :scope (sh11-result-scope (get request :kind))
    :pending (get (sh11-safety-policy) :pending)})
 
 (defn sh11-classify-operation [request]
@@ -1779,3 +2059,703 @@
                :safety-result-substitution
                :complete-recomputed-result
                :recompute-from-the-normalized-operation)]}))))))
+
+; This v2 adapter consumes only the current identity-bound C9 product. Digest
+; computation remains an explicit external coordinator boundary: Gravity checks
+; request equality, order, shape, and complete recomputation, but does not claim
+; independent canonical digest authority.
+(defn sh11-authenticated-adapter-pending []
+  [:owned-mutable-sh09-adapter
+   :persistent-aggregate-copy-semantics
+   :regions-arenas-and-linear-resources
+   :task-actor-and-ffi-transfer
+   :runtime-borrow-checks
+   :unsafe-audit-records
+   :runtime-checked-load-adapter
+   :unsafe-load-audit-adapter
+   :trusted-digest-resolution
+   :independent-canonical-digest-verification
+   :mir-preservation])
+
+(defn sh11-c9-binding-checks []
+  [:fresh-authenticated-ownership-core
+   :exact-fact-request-order
+   :sequential-core-request-from-resolved-facts
+   :resolved-digest-shape
+   :duplicate-digest-rejection
+   :ownership-fact-linkage
+   :path-neutral-identity-input
+   :separate-actual-path-provenance
+   :coordinator-binding-consistency-only])
+
+(defn sh11-c9-bound-shape-valid? [bound]
+  (if (sh11-exact-keys?
+       bound
+       #{:artifact :schema-version :status :scope :ownership-core
+         :fact-identities :ownership-core-identity-id :identity-input
+         :identity-resolution :identity-binding-status
+         :identity-resolutions :provenance :diagnostics :pending
+         :self-hosted? :clojure-seed-boundary?})
+    (if (= :gravity/sh10-identity-bound-owned-core-template
+           (get bound :artifact))
+      (if (= 2 (get bound :schema-version))
+        (if (= :accepted (get bound :status))
+          (if (= :persistent-immutable-pure-primitive-reads
+                 (get bound :scope))
+            (if (= :coordinator-digest-bound
+                   (get bound :identity-resolution))
+              (if (= :coordinator-resolution-shape-checked
+                     (get bound :identity-binding-status))
+                (if (sh11-sha256-id?
+                     (get bound :ownership-core-identity-id))
+                  (= [] (get bound :diagnostics))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh11-c9-binding-verification-valid? [bound verification]
+  (if (sh11-exact-keys?
+       verification
+       #{:artifact :status :checks :nonclaims :expected :candidate})
+    (if (= :gravity/sh10-ownership-identity-binding-verification
+           (get verification :artifact))
+      (if (= :passed (get verification :status))
+        (if (= (sh11-c9-binding-checks) (get verification :checks))
+          (if (= [:trusted-digest-resolution
+                  :independent-canonical-digest-verification]
+                 (get verification :nonclaims))
+            (if (= bound (get verification :expected))
+              (= bound (get verification :candidate))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh11-authenticated-c9-input-valid? [bound verification]
+  (let [bound-preflight (sh11-authenticated-identity-preflight bound)
+        verification-preflight
+        (sh11-authenticated-identity-preflight verification)]
+    (if (= :accepted (get bound-preflight :status))
+      (if (= :accepted (get verification-preflight :status))
+        (if (sh11-c9-bound-shape-valid? bound)
+          (sh11-c9-binding-verification-valid? bound verification)
+          false)
+        false)
+      false)))
+
+(defn sh11-single-c9-read-record [bound]
+  (let [owned (get bound :ownership-core)
+        requests (get owned :ownership-requests)
+        results (get owned :ownership-results)
+        identities (get bound :fact-identities)]
+    (if (vector? requests)
+      (if (= 1 (count requests))
+        (if (vector? results)
+          (if (= 1 (count results))
+            (if (vector? identities)
+              (if (= 1 (count identities))
+                (let [request (first requests)
+                      result (first results)
+                      facts (get result :ownership-facts)
+                      identity (first identities)]
+                  (if (vector? facts)
+                    (if (= 1 (count facts))
+                      {:status :accepted
+                       :owned owned
+                       :request request
+                       :result result
+                       :fact (first facts)
+                       :fact-identity identity}
+                      {:status :rejected :reason :ownership-fact-count})
+                    {:status :rejected :reason :ownership-facts-not-vector}))
+                {:status :rejected :reason :fact-identity-count})
+              {:status :rejected :reason :fact-identities-not-vector})
+            {:status :rejected :reason :ownership-result-count})
+          {:status :rejected :reason :ownership-results-not-vector})
+        {:status :rejected :reason :ownership-request-count})
+      {:status :rejected :reason :ownership-requests-not-vector})))
+
+(defn sh11-c9-upstream-value-type [record]
+  (let [owned (get record :owned)
+        c8-bound (get owned :effected-core)
+        effected (get c8-bound :effected-core)
+        request (get record :request)]
+    (get (get effected :type-table) (get request :value-id))))
+
+(defn sh11-c9-read-record-valid? [bound record]
+  (let [request (get record :request)
+        result (get record :result)
+        fact (get record :fact)
+        identity (get record :fact-identity)
+        state-before (get fact :state-before)
+        state-after (get fact :state-after)
+        value-type (sh11-c9-upstream-value-type record)]
+    (if (= :accepted (get record :status))
+      (if (= :gravity/sh10-normalized-ownership-request
+             (get request :artifact))
+        (if (= :persistent-immutable (get request :ownership-kind))
+          (if (= :initialized (get request :initialization))
+            (if (= :available (get request :availability))
+              (if (= :accepted (get result :status))
+                (if (= :gravity/c9-ownership-fact (get fact :artifact))
+                  (if (= :read (get fact :operation))
+                    (if (= (get request :value-id) (get fact :value-id))
+                      (if (= (get request :source-span)
+                             (get fact :source-span))
+                        (if (= (get request :origin-chain)
+                               (get fact :origin-chain))
+                          (if (= (get fact :fact-id-request)
+                                 (get identity :fact-id-request))
+                            (if (sh11-sha256-id?
+                                 (get identity :ownership-fact-id))
+                              (if (= state-before state-after)
+                                (if (= :initialized
+                                       (get state-before :initialization))
+                                  (if (= :available
+                                         (get state-before :availability))
+                                    (sh11-authenticated-load-value-type?
+                                     value-type)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh11-c9-read-proof-request [bound record]
+  (let [request (get record :request)
+        fact (get record :fact)
+        identity (get record :fact-identity)
+        state (get fact :state-before)]
+    {:domain :gravity/sh11-persistent-read-proof-v2
+     :operation-id :load
+     :core-node-id (get request :value-id)
+     :value-type (sh11-c9-upstream-value-type record)
+     :ownership-fact-id (get identity :ownership-fact-id)
+     :fact-id-request (get fact :fact-id-request)
+     :ownership-kind (get request :ownership-kind)
+     :initialization (get state :initialization)
+     :availability (get state :availability)
+     :event-id (get fact :event-id)
+     :event (get fact :operation)
+     :ownership-core-identity-id
+     (get bound :ownership-core-identity-id)
+     :source-span (get fact :source-span)
+     :origin-chain (get fact :origin-chain)
+     :profile (get fact :profile)
+     :target (get fact :target)
+     :type-fact-id (get request :type-fact-id)
+     :effect-fact-id (get request :effect-fact-id)
+     :capability-proof-id (get request :capability-proof-id)}))
+
+(defn sh11-authenticated-adapter-diagnostic [bound reason]
+  (let [record (sh11-single-c9-read-record bound)
+        request (get record :request)]
+    {:diagnostic-id "C10-NO-OUTCOME"
+     :rule "C10-NO-OUTCOME"
+     :severity :error
+     :stage :safety-analysis
+     :reason reason
+     :core-node-id (get request :value-id)
+     :source-span (get request :source-span)
+     :generated-origin-chain (get request :origin-chain)
+     :profile (get request :profile)
+     :target (get request :target)
+     :remediation :supply-one-identity-bound-persistent-immutable-read}))
+
+(defn sh11-build-authenticated-safety-core [bound verification]
+  (if (sh11-authenticated-c9-input-valid? bound verification)
+    (let [record (sh11-single-c9-read-record bound)]
+      (if (sh11-c9-read-record-valid? bound record)
+        (let [proof-request (sh11-c9-read-proof-request bound record)
+              identity-input
+              {:domain :gravity/sh11-authenticated-safety-core-v2
+               :ownership-core-identity-input (get bound :identity-input)
+               :ownership-core-identity-id
+               (get bound :ownership-core-identity-id)
+               :proof-id-request proof-request
+               :pending (sh11-authenticated-adapter-pending)}]
+          (if (sh11-load-proof-request-valid? proof-request)
+            {:artifact :gravity/sh11-authenticated-safety-core-template
+             :schema-version 2
+             :status :accepted
+             :scope :persistent-immutable-primitive-read-load
+             :ownership-core bound
+             :proof-id-request proof-request
+             :identity-input identity-input
+             :identity-resolution :coordinator-digest-required
+             :provenance (get bound :provenance)
+             :diagnostics []
+             :pending (get identity-input :pending)
+             :self-hosted? false
+             :clojure-seed-boundary? true}
+            {:artifact :gravity/sh11-authenticated-safety-core-template
+             :schema-version 2
+             :status :rejected
+             :scope :persistent-immutable-primitive-read-load
+             :diagnostics
+             [(sh11-authenticated-adapter-diagnostic
+               bound :malformed-persistent-read-proof-request)]
+             :pending (sh11-authenticated-adapter-pending)}))
+        {:artifact :gravity/sh11-authenticated-safety-core-template
+         :schema-version 2
+         :status :rejected
+         :scope :persistent-immutable-primitive-read-load
+         :diagnostics
+         [(sh11-authenticated-adapter-diagnostic
+           bound (get record :reason))]
+         :pending (sh11-authenticated-adapter-pending)}))
+    {:artifact :gravity/sh11-authenticated-safety-core-template
+     :schema-version 2
+     :status :rejected
+     :scope :persistent-immutable-primitive-read-load
+     :diagnostics
+     [(sh11-authenticated-adapter-diagnostic
+       bound :untrusted-or-malformed-c9-identity-bound-core)]
+     :pending (sh11-authenticated-adapter-pending)}))
+
+(defn sh11-verify-authenticated-safety-core
+  [bound verification candidate]
+  (let [candidate-preflight
+        (sh11-authenticated-identity-preflight candidate)]
+    (if (= :accepted (get candidate-preflight :status))
+      (let [expected
+            (sh11-build-authenticated-safety-core bound verification)]
+        {:artifact :gravity/sh11-authenticated-safety-core-verification
+         :status (if (= expected candidate) :passed :rejected)
+         :checks [:bounded-current-c9-input
+                  :unique-persistent-immutable-read
+                  :upstream-fact-identity-linkage
+                  :source-profile-target-preservation
+                  :unresolved-proof-not-classified
+                  :path-neutral-identity-input
+                  :separate-actual-path-provenance]
+         :expected expected
+         :candidate candidate})
+      {:artifact :gravity/sh11-authenticated-safety-core-verification
+       :status :rejected
+       :checks [:candidate-carrier-bound]
+       :diagnostics [{:diagnostic-id "C10-NO-OUTCOME"
+                      :reason :candidate-carrier-bound
+                      :preflight candidate-preflight}]})))
+
+(defn sh11-authenticated-safety-identity-requests
+  [bound verification safety]
+  (let [fresh (sh11-verify-authenticated-safety-core
+               bound verification safety)]
+    (if (= :passed (get fresh :status))
+      {:artifact :gravity/sh11-safety-identity-request-template
+       :schema-version 2
+       :status :accepted
+       :proof-request (get safety :proof-id-request)
+       :next :resolve-proof-identity
+       :resolution :coordinator-digest-required
+       :diagnostics []
+       :pending (sh11-authenticated-adapter-pending)}
+      {:artifact :gravity/sh11-safety-identity-request-template
+       :schema-version 2
+       :status :rejected
+       :next :resolve-proof-identity
+       :resolution :coordinator-digest-required
+       :diagnostics
+       [(sh11-authenticated-adapter-diagnostic
+         bound :unverified-authenticated-safety-core)]
+       :pending (sh11-authenticated-adapter-pending)})))
+
+(defn sh11-resolution-entry-valid? [request resolution]
+  (if (map? resolution)
+    (if (= #{:request :digest} (set (keys resolution)))
+      (if (= request (get resolution :request))
+        (sh11-sha256-id? (get resolution :digest))
+        false)
+      false)
+    false))
+
+(defn sh11-resolved-load-operation [proof-request proof-id]
+  {:artifact :gravity/sh11-normalized-safety-operation
+   :operation-id :load
+   :kind :load
+   :core-node-id (get proof-request :core-node-id)
+   :source-span (get proof-request :source-span)
+   :origin-chain (get proof-request :origin-chain)
+   :profile (get proof-request :profile)
+   :target (get proof-request :target)
+   :safety-mode :safe
+   :facts {:proof-id proof-id
+           :value-type (get proof-request :value-type)
+           :ownership-kind (get proof-request :ownership-kind)
+           :initialization (get proof-request :initialization)
+           :availability (get proof-request :availability)
+           :event-id (get proof-request :event-id)
+           :event (get proof-request :event)
+           :fact-id-request (get proof-request :fact-id-request)
+           :ownership-core-identity-id
+           (get proof-request :ownership-core-identity-id)}
+   :runtime-check-support nil
+   :runtime-check nil
+   :unsafe-audit nil
+   :type-fact-id (get proof-request :type-fact-id)
+   :effect-fact-id (get proof-request :effect-fact-id)
+   :capability-proof-id (get proof-request :capability-proof-id)
+   :ownership-fact-id (get proof-request :ownership-fact-id)})
+
+(defn sh11-authenticated-load-operation-valid?
+  [operation proof-request proof-resolution]
+  (if (sh11-resolution-entry-valid? proof-request proof-resolution)
+    (if (sh11-load-proof-request-valid? proof-request)
+      (if (sh11-exact-keys?
+           operation
+           #{:artifact :operation-id :kind :core-node-id
+             :source-span :origin-chain :profile :target
+             :safety-mode :facts :runtime-check-support
+             :runtime-check :unsafe-audit :type-fact-id
+             :effect-fact-id :capability-proof-id
+             :ownership-fact-id})
+        (if (= :gravity/sh11-normalized-safety-operation
+               (get operation :artifact))
+          (if (= :load (get operation :operation-id))
+            (if (= :load (get operation :kind))
+              (if (= :safe (get operation :safety-mode))
+                (if (= nil (get operation :runtime-check-support))
+                  (if (= nil (get operation :runtime-check))
+                    (if (= nil (get operation :unsafe-audit))
+                      (if (map? (get operation :source-span))
+                        (if (vector? (get operation :origin-chain))
+                          (if (sh11-request-fact-links-valid? operation)
+                            (if (sh11-load-facts-valid?
+                                 (get operation :facts))
+                              (if (= (get proof-resolution :digest)
+                                     (get (get operation :facts) :proof-id))
+                                (= proof-request
+                                   (sh11-load-proof-id-request-from-operation
+                                    operation))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh11-classify-authenticated-load
+  [operation proof-request proof-resolution]
+  (if (sh11-authenticated-load-operation-valid?
+       operation proof-request proof-resolution)
+    (sh11-proven-result operation)
+    (sh11-rejected-result
+     operation "C10-PROOF" :unresolved-or-substituted-load-proof
+     :exact-c9-bound-persistent-read-proof
+     :resolve-the-exact-authenticated-load-proof-request)))
+
+(defn sh11-verify-authenticated-load-result
+  [operation proof-request proof-resolution candidate]
+  (let [candidate-preflight
+        (sh11-authenticated-identity-preflight candidate)]
+    (if (= :accepted (get candidate-preflight :status))
+      (let [expected
+            (sh11-classify-authenticated-load
+             operation proof-request proof-resolution)]
+        {:artifact :gravity/sh11-authenticated-load-result-verification
+         :status (if (= expected candidate) :passed :rejected)
+         :checks [:exact-c9-bound-proof-resolution
+                  :persistent-read-classification-recomputation
+                  :exactly-one-proven-safe-outcome
+                  :source-and-fact-lineage]
+         :expected expected
+         :candidate candidate})
+      {:artifact :gravity/sh11-authenticated-load-result-verification
+       :status :rejected
+       :checks [:candidate-carrier-bound]
+       :diagnostics [{:diagnostic-id "C10-NO-OUTCOME"
+                      :reason :candidate-carrier-bound
+                      :preflight candidate-preflight}]})))
+
+(defn sh11-authenticated-safety-result-identity-request
+  [bound verification safety proof-resolution]
+  (let [resolution-preflight
+        (sh11-authenticated-identity-preflight proof-resolution)
+        template
+        (if (= :accepted (get resolution-preflight :status))
+          (sh11-authenticated-safety-identity-requests
+           bound verification safety)
+          {:status :rejected})]
+    (if (= :accepted (get template :status))
+      (if (sh11-resolution-entry-valid?
+           (get template :proof-request) proof-resolution)
+        (let [operation
+              (sh11-resolved-load-operation
+               (get template :proof-request)
+               (get proof-resolution :digest))
+              result
+              (sh11-classify-authenticated-load
+               operation (get template :proof-request) proof-resolution)
+              result-verification
+              (sh11-verify-authenticated-load-result
+               operation (get template :proof-request)
+               proof-resolution result)
+              result-request
+              {:domain :gravity/sh11-safety-result-identity-v2
+               :operation operation
+               :result result
+               :verification result-verification
+               :proof-id (get proof-resolution :digest)
+               :ownership-core-identity-id
+               (get bound :ownership-core-identity-id)}]
+          (if (= :proven-safe (get result :outcome))
+            (if (= :passed (get result-verification :status))
+              {:artifact :gravity/sh11-safety-result-identity-request
+               :schema-version 2
+               :status :accepted
+               :operation operation
+               :result result
+               :result-verification result-verification
+               :result-request result-request
+               :proof-id (get proof-resolution :digest)
+               :next :resolve-result-identity
+               :resolution :coordinator-digest-required
+               :diagnostics []
+               :pending (sh11-authenticated-adapter-pending)}
+              {:artifact :gravity/sh11-safety-result-identity-request
+               :schema-version 2 :status :rejected
+               :diagnostics
+               [(sh11-authenticated-adapter-diagnostic
+                 bound :safety-result-verification-failed)]
+               :pending (sh11-authenticated-adapter-pending)})
+            {:artifact :gravity/sh11-safety-result-identity-request
+             :schema-version 2 :status :rejected
+             :diagnostics
+             [(sh11-authenticated-adapter-diagnostic
+               bound :persistent-read-was-not-proven-safe)]
+             :pending (sh11-authenticated-adapter-pending)}))
+        {:artifact :gravity/sh11-safety-result-identity-request
+         :schema-version 2 :status :rejected
+         :diagnostics
+         [(sh11-authenticated-adapter-diagnostic
+           bound :proof-identity-resolution-substitution)]
+         :pending (sh11-authenticated-adapter-pending)})
+      {:artifact :gravity/sh11-safety-result-identity-request
+       :schema-version 2 :status :rejected
+       :diagnostics
+       [(sh11-authenticated-adapter-diagnostic
+         bound :proof-identity-carrier-or-template-rejected)]
+       :pending (sh11-authenticated-adapter-pending)})))
+
+(defn sh11-authenticated-safety-core-identity-request
+  [bound verification safety proof-resolution result-resolution]
+  (let [result-resolution-preflight
+        (sh11-authenticated-identity-preflight result-resolution)
+        result-template
+        (if (= :accepted (get result-resolution-preflight :status))
+          (sh11-authenticated-safety-result-identity-request
+           bound verification safety proof-resolution)
+          {:status :rejected})]
+    (if (= :accepted (get result-template :status))
+      (if (sh11-resolution-entry-valid?
+           (get result-template :result-request) result-resolution)
+        {:artifact :gravity/sh11-safety-core-identity-request
+         :schema-version 2
+         :status :accepted
+         :core-request
+         {:domain :gravity/sh11-safety-core-identity-v2
+          :safety-identity-input (get safety :identity-input)
+          :operation (get result-template :operation)
+          :result (get result-template :result)
+          :result-verification
+          (get result-template :result-verification)
+          :proof-id (get proof-resolution :digest)
+          :result-id (get result-resolution :digest)
+          :ownership-core-identity-id
+          (get bound :ownership-core-identity-id)
+          :pending (sh11-authenticated-adapter-pending)}
+         :operation (get result-template :operation)
+         :result (get result-template :result)
+         :result-verification (get result-template :result-verification)
+         :proof-id (get proof-resolution :digest)
+         :result-id (get result-resolution :digest)
+         :next :resolve-safety-core-identity
+         :resolution :coordinator-digest-required
+         :diagnostics []
+         :pending (sh11-authenticated-adapter-pending)}
+        {:artifact :gravity/sh11-safety-core-identity-request
+         :schema-version 2 :status :rejected
+         :diagnostics
+         [(sh11-authenticated-adapter-diagnostic
+           bound :result-identity-resolution-substitution)]
+         :pending (sh11-authenticated-adapter-pending)})
+      {:artifact :gravity/sh11-safety-core-identity-request
+       :schema-version 2 :status :rejected
+       :diagnostics
+       [(sh11-authenticated-adapter-diagnostic
+         bound :result-identity-carrier-or-template-rejected)]
+       :pending (sh11-authenticated-adapter-pending)})))
+
+(defn sh11-bind-authenticated-safety-identities
+  [bound verification safety resolved]
+  (let [resolved-preflight
+        (sh11-authenticated-identity-preflight resolved)]
+    (if (= :accepted (get resolved-preflight :status))
+      (if (map? resolved)
+        (if (= #{:proof-resolution :result-resolution :core-resolution}
+               (set (keys resolved)))
+          (let [proof-resolution (get resolved :proof-resolution)
+                result-resolution (get resolved :result-resolution)
+                core-resolution (get resolved :core-resolution)
+                core-template
+                (sh11-authenticated-safety-core-identity-request
+                 bound verification safety
+                 proof-resolution result-resolution)]
+            (if (= :accepted (get core-template :status))
+              (if (sh11-resolution-entry-valid?
+                   (get core-template :core-request) core-resolution)
+                (if (sh11-not (= (get proof-resolution :digest)
+                                 (get result-resolution :digest)))
+                  (if (sh11-not (= (get proof-resolution :digest)
+                                   (get core-resolution :digest)))
+                    (if (sh11-not (= (get result-resolution :digest)
+                                     (get core-resolution :digest)))
+                      (let [identity-input
+                            {:domain
+                             :gravity/sh11-identity-bound-safety-core-v2
+                             :ownership-core-identity-input
+                             (get bound :identity-input)
+                             :ownership-core-identity-id
+                             (get bound :ownership-core-identity-id)
+                             :proof-id (get proof-resolution :digest)
+                             :result-id (get result-resolution :digest)
+                             :safety-core-id (get core-resolution :digest)
+                             :pending (sh11-authenticated-adapter-pending)}]
+                        {:artifact
+                         :gravity/sh11-identity-bound-safety-core-template
+                         :schema-version 2
+                         :status :accepted
+                         :scope :persistent-immutable-primitive-read-load
+                         :ownership-core bound
+                         :operation (get core-template :operation)
+                         :safety-result (get core-template :result)
+                         :safety-verification
+                         (get core-template :result-verification)
+                         :proof-id (get proof-resolution :digest)
+                         :result-id (get result-resolution :digest)
+                         :safety-core-id (get core-resolution :digest)
+                         :identity-input identity-input
+                         :identity-resolution :coordinator-digest-bound
+                         :identity-binding-status
+                         :coordinator-resolution-shape-checked
+                         :identity-resolutions resolved
+                         :provenance (get safety :provenance)
+                         :diagnostics []
+                         :pending (get identity-input :pending)
+                         :nonclaims [:trusted-digest-resolution
+                                     :independent-canonical-digest-verification
+                                     :authoritative-safety-certificate]
+                         :self-hosted? false
+                         :clojure-seed-boundary? true})
+                      {:artifact
+                       :gravity/sh11-identity-bound-safety-core-template
+                       :schema-version 2 :status :rejected
+                       :diagnostics
+                       [(sh11-authenticated-adapter-diagnostic
+                         bound :duplicate-safety-identity-digest)]
+                       :pending (sh11-authenticated-adapter-pending)})
+                    {:artifact
+                     :gravity/sh11-identity-bound-safety-core-template
+                     :schema-version 2 :status :rejected
+                     :diagnostics
+                     [(sh11-authenticated-adapter-diagnostic
+                       bound :duplicate-safety-identity-digest)]
+                     :pending (sh11-authenticated-adapter-pending)})
+                  {:artifact
+                   :gravity/sh11-identity-bound-safety-core-template
+                   :schema-version 2 :status :rejected
+                   :diagnostics
+                   [(sh11-authenticated-adapter-diagnostic
+                     bound :duplicate-safety-identity-digest)]
+                   :pending (sh11-authenticated-adapter-pending)})
+                {:artifact
+                 :gravity/sh11-identity-bound-safety-core-template
+                 :schema-version 2 :status :rejected
+                 :diagnostics
+                 [(sh11-authenticated-adapter-diagnostic
+                   bound :safety-core-identity-resolution-substitution)]
+                 :pending (sh11-authenticated-adapter-pending)})
+              {:artifact :gravity/sh11-identity-bound-safety-core-template
+               :schema-version 2 :status :rejected
+               :diagnostics (get core-template :diagnostics)
+               :pending (sh11-authenticated-adapter-pending)}))
+          {:artifact :gravity/sh11-identity-bound-safety-core-template
+           :schema-version 2 :status :rejected
+           :diagnostics
+           [(sh11-authenticated-adapter-diagnostic
+             bound :malformed-safety-identity-carrier)]
+           :pending (sh11-authenticated-adapter-pending)})
+        {:artifact :gravity/sh11-identity-bound-safety-core-template
+         :schema-version 2 :status :rejected
+         :diagnostics
+         [(sh11-authenticated-adapter-diagnostic
+           bound :malformed-safety-identity-carrier)]
+         :pending (sh11-authenticated-adapter-pending)})
+      {:artifact :gravity/sh11-identity-bound-safety-core-template
+       :schema-version 2 :status :rejected
+       :diagnostics
+       [(sh11-authenticated-adapter-diagnostic
+         bound :safety-identity-carrier-bound)]
+       :pending (sh11-authenticated-adapter-pending)})))
+
+(defn sh11-verify-authenticated-safety-identities
+  [bound verification safety resolved candidate]
+  (let [candidate-preflight
+        (sh11-authenticated-identity-preflight candidate)]
+    (if (= :accepted (get candidate-preflight :status))
+      (let [expected
+            (sh11-bind-authenticated-safety-identities
+             bound verification safety resolved)]
+        {:artifact :gravity/sh11-safety-identity-binding-verification
+         :status (if (= expected candidate) :passed :rejected)
+         :checks [:bounded-current-c9-and-safety-inputs
+                  :unique-source-derived-persistent-read
+                  :sequential-proof-result-core-resolution
+                  :resolved-digest-shape-and-order
+                  :duplicate-digest-rejection
+                  :fresh-safety-classification-and-verification
+                  :path-neutral-identity-input
+                  :separate-actual-path-provenance
+                  :coordinator-binding-consistency-only]
+         :nonclaims [:trusted-digest-resolution
+                     :independent-canonical-digest-verification
+                     :authoritative-safety-certificate]
+         :expected expected
+         :candidate candidate})
+      {:artifact :gravity/sh11-safety-identity-binding-verification
+       :status :rejected
+       :checks [:candidate-carrier-bound]
+       :nonclaims [:trusted-digest-resolution
+                   :independent-canonical-digest-verification
+                   :authoritative-safety-certificate]
+       :diagnostics [{:diagnostic-id "C10-NO-OUTCOME"
+                      :reason :candidate-carrier-bound
+                      :preflight candidate-preflight}]})))
