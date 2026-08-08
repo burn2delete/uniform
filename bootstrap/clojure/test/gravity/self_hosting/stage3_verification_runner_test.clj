@@ -37,6 +37,8 @@
   'gravity.self-hosting.sh09-c7-effect-adapter-test)
 (def ^:private c9-source-ns
   'gravity.self-hosting.sh07-c9-ownership-source-coverage-test)
+(def ^:private c10-source-ns
+  'gravity.self-hosting.sh07-c10-safety-source-coverage-test)
 (def ^:private sh10-kernel-ns
   'gravity.self-hosting.sh10-ownership-transition-test)
 (def ^:private sh10-adapter-ns
@@ -97,7 +99,8 @@
           :stage5-c9-source-structural
           :stage5-c9-kernel
           :stage5-sh10-c8-adapter
-          :stage5-public-c9]
+          :stage5-public-c9
+          :stage6-c10-source-structural]
          runner/fixed-batch-ids))
   (is (= runner/primitive-pure-selectors
          (get runner/fixed-batch-selectors :primitive-pure)))
@@ -138,6 +141,7 @@
   (is (= 4 (count runner/stage5-c9-kernel-selectors)))
   (is (= 5 (count runner/stage5-sh10-c8-adapter-selectors)))
   (is (= 1 (count runner/stage5-public-c9-selectors)))
+  (is (= 5 (count runner/stage6-c10-source-structural-selectors)))
   (is (= runner/stage5-c9-source-structural-selectors
          (get runner/fixed-batch-selectors :stage5-c9-source-structural)))
   (is (= runner/stage5-c9-kernel-selectors
@@ -146,6 +150,8 @@
          (get runner/fixed-batch-selectors :stage5-sh10-c8-adapter)))
   (is (= runner/stage5-public-c9-selectors
          (get runner/fixed-batch-selectors :stage5-public-c9)))
+  (is (= runner/stage6-c10-source-structural-selectors
+         (get runner/fixed-batch-selectors :stage6-c10-source-structural)))
   (is (= :source-subsequence
          (get-in runner/fixed-batches
                  [:stage5-c9-source-structural :catalog-order-policy])))
@@ -186,6 +192,9 @@
          c9-source-ns (source-deftest-selectors
                        c9-source-ns
                        "bootstrap/clojure/test/gravity/self_hosting/sh07_c9_ownership_source_coverage_test.clj")
+         c10-source-ns (source-deftest-selectors
+                        c10-source-ns
+                        "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_safety_source_coverage_test.clj")
          sh09-adapter-ns (source-deftest-selectors
                           sh09-adapter-ns
                           "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj")
@@ -253,6 +262,20 @@
                           (str %))
                 runner/stage5-c9-source-structural-selectors)))
 
+(deftest c10-source-batch-stops-on-shape-and-exports-before-exact-contracts
+  (is (= :explicit-execution-order
+         (get-in runner/fixed-batches
+                 [:stage6-c10-source-structural :catalog-order-policy])))
+  (is (= ['gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-source-control-form-arities-are-bounded
+          'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-source-export-definitions-are-complete
+          'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-proof-contract-registers-c10-source-exactly
+          'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-source-contracts-policy-outcomes-and-reasons-are-exact
+          'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-static-lookup-and-residual-boundaries-are-exact]
+         runner/stage6-c10-source-structural-selectors))
+  (is (not-any? #(re-find #"c10-source-has-exact-authentic-coverage|c10-calls-lookups-and-quotes|c10-is-deterministic-path-neutral|c10-replay-and-high-value-alterations|existing-rejected-families|measured-carrier"
+                          (str %))
+                runner/stage6-c10-source-structural-selectors)))
+
 (deftest fixed-catalog-rejects-missing-extra-and-duplicate-drift
   (let [base
         {primitive-ns (selectors-for primitive-ns)
@@ -266,6 +289,9 @@
          c9-source-ns (source-deftest-selectors
                        c9-source-ns
                        "bootstrap/clojure/test/gravity/self_hosting/sh07_c9_ownership_source_coverage_test.clj")
+         c10-source-ns (source-deftest-selectors
+                        c10-source-ns
+                        "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_safety_source_coverage_test.clj")
          sh09-adapter-ns (source-deftest-selectors
                           sh09-adapter-ns
                           "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj")

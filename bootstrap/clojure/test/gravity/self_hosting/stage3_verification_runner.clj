@@ -1,5 +1,5 @@
 (ns gravity.self-hosting.stage3-verification-runner
-  "Runs the fixed, non-authoritative Stage3/Stage4/Stage5 development batches.
+  "Runs the fixed, non-authoritative Stage3--Stage6 development batches.
 
   This namespace intentionally has no compile-time dependency on the Clojure
   bootstrap, the C7 tests, or the SH-07 iteration runner.  The production
@@ -32,6 +32,8 @@
   'gravity.self-hosting.sh10-ownership-transition-test)
 (def ^:private sh10-c8-ownership-adapter-test-namespace
   'gravity.self-hosting.sh10-c8-ownership-adapter-test)
+(def ^:private c10-source-test-namespace
+  'gravity.self-hosting.sh07-c10-safety-source-coverage-test)
 (def ^:private public-test-namespace
   'gravity.bootstrap-test)
 
@@ -145,6 +147,16 @@
 (def stage5-public-c9-selectors
   ['gravity.bootstrap-test/public-check-accepts-gravity-authored-c9-ownership-checker-engine])
 
+;; C10 source admission is deliberately independent of the artifact-backed
+;; coverage tail.  Reader-shape and export completeness precede every exact
+;; policy/hash lookup so an unfinished or malformed adapter stops cheaply.
+(def stage6-c10-source-structural-selectors
+  ['gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-source-control-form-arities-are-bounded
+   'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-source-export-definitions-are-complete
+   'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-proof-contract-registers-c10-source-exactly
+   'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-source-contracts-policy-outcomes-and-reasons-are-exact
+   'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-static-lookup-and-residual-boundaries-are-exact])
+
 (def ^:private batch-order
   [:primitive-pure
    :primitive-bool-authenticated
@@ -163,7 +175,8 @@
    :stage5-c9-source-structural
    :stage5-c9-kernel
    :stage5-sh10-c8-adapter
-   :stage5-public-c9])
+   :stage5-public-c9
+   :stage6-c10-source-structural])
 
 (def ^:private batch-selectors
   (array-map
@@ -184,7 +197,8 @@
    :stage5-c9-source-structural stage5-c9-source-structural-selectors
    :stage5-c9-kernel stage5-c9-kernel-selectors
    :stage5-sh10-c8-adapter stage5-sh10-c8-adapter-selectors
-   :stage5-public-c9 stage5-public-c9-selectors))
+   :stage5-public-c9 stage5-public-c9-selectors
+   :stage6-c10-source-structural stage6-c10-source-structural-selectors))
 
 (def fixed-batch-ids
   "The complete CLI allowlist, in deterministic presentation order."
@@ -206,7 +220,8 @@
                  ;; the exact execution order, while membership is checked
                  ;; against the source independently of ordering.
                  :catalog-order-policy
-                 (if (= batch-id :stage4-c8-source-structural)
+                 (if (#{:stage4-c8-source-structural
+                        :stage6-c10-source-structural} batch-id)
                    :explicit-execution-order
                    :source-subsequence)
                  :authority :non-authoritative
@@ -231,6 +246,7 @@
     'gravity.self-hosting.sh07-c7-type-source-coverage-test
     c8-source-test-namespace
     c9-source-test-namespace
+    c10-source-test-namespace
     public-test-namespace})
 
 (def ^:private catalog-source-namespaces
