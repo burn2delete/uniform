@@ -11,6 +11,8 @@
             [gravity.c10-safety-analysis :as c10]
             [gravity.c11-mir :as c11]
             [gravity.c12-domain-ir :as c12]
+            [gravity.c13-optimization :as c13]
+            [gravity.optimization-lowering :as optimization-lowering]
             [gravity.cli-test]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.diagnostics-test]
@@ -15966,6 +15968,64 @@
     (is (= :complete (:plugin-policy-status conformance)))
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
+
+(deftest c13-optimization-compatibility-wrappers-preserve-interposition
+  (is (= '([record])
+         (:arglists (meta #'bootstrap/optimization-pass-contract-record))))
+  (is (= '([domain-ir-artifact input-id index contract])
+         (:arglists (meta #'bootstrap/optimization-decision-record))))
+  (is (= '([source-path source-text])
+         (:arglists
+          (meta #'bootstrap/compiler-c13-optimization-source-artifact))))
+  (is (= '([path])
+         (:arglists (meta #'bootstrap/compiler-c13-optimization-file-artifact))))
+  (let [bindings (atom 0)
+        with-operations c13/with-operations]
+    (with-redefs [c13/with-operations
+                  (fn [operations thunk]
+                    (swap! bindings inc)
+                    (with-operations operations thunk))]
+      (bootstrap/compiler-c13-optimization-file-artifact
+       (fixture "accepted/compiler-c13-optimization.gravity")))
+    (is (= 1 @bindings)))
+  (let [calls (atom 0)
+        original bootstrap/optimization-pass-contract-record
+        artifact
+        (with-redefs [bootstrap/optimization-pass-contract-record
+                      (fn [record]
+                        (swap! calls inc)
+                        (assoc (original record) :interposed? true))]
+          (bootstrap/compiler-c13-optimization-file-artifact
+           (fixture "accepted/compiler-c13-optimization.gravity")))]
+    (is (= 6 @calls))
+    (is (every? :interposed? (:optimization-pass-registry artifact))))
+  (let [sentinel {:kind :sentinel-c13-source}]
+    (is (= sentinel
+           (with-redefs [bootstrap/compiler-c13-optimization-source-artifact
+                         (fn [_ _] sentinel)]
+             (bootstrap/compiler-c13-optimization-file-artifact
+              (fixture "accepted/compiler-c13-optimization.gravity"))))))
+  (let [artifact
+        (with-redefs [bootstrap/c13-optimization-diagnostic-ids
+                      ["C13-SENTINEL"]
+                      bootstrap/optimization-lowering-diagnostic-messages
+                      {"C13-SENTINEL" "sentinel diagnostic"}
+                      bootstrap/c13-optimization-governing-document
+                      "docs/c13-sentinel.md"]
+          (bootstrap/compiler-c13-optimization-file-artifact
+           (fixture "accepted/compiler-c13-optimization.gravity")))]
+    (is (= "docs/c13-sentinel.md" (:governing-document artifact)))
+    (is (= ["C13-SENTINEL"]
+           (get-in artifact [:c13-optimization-results
+                             :required-diagnostic-ids])))
+    (is (= #{"C13-SENTINEL"}
+           (set (map :diagnostic
+                     (get-in artifact
+                             [:optimization-diagnostic-stream
+                              :diagnostics]))))))
+  (is (= (:public-api (c13/c13-engine-contract)) c13/public-api))
+  (is (= (:public-api (optimization-lowering/shared-engine-contract))
+         optimization-lowering/public-api)))
 
 (deftest c13-mir-optimization-artifact-preserves-p06-d092-contract
   (let [artifact (bootstrap/compiler-c13-optimization-file-artifact

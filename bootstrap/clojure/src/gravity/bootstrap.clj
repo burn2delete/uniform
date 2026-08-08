@@ -20,6 +20,8 @@
             [gravity.c10-safety-analysis :as c10]
             [gravity.c11-mir :as c11]
             [gravity.c12-domain-ir :as c12]
+            [gravity.c13-optimization :as c13]
+            [gravity.optimization-lowering :as optimization-lowering]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
@@ -24063,998 +24065,154 @@
   [path]
   (c12-call c12/compiler-c12-domain-ir-file-artifact path))
 
-(def c13-optimization-diagnostic-ids
-  ["C13-CONTRACT"
-   "C13-PRESERVE"
-   "C13-INVALIDATE"
-   "C13-PROOF"
-   "C13-CHECK-ELISION"
-   "C13-EFFECT"
-   "C13-SAFETY"
-   "C13-DOMAIN"
-   "C13-NONDETERMINISM"
-   "C13-VERIFY"])
+(def c13-optimization-diagnostic-ids optimization-lowering/c13-optimization-diagnostic-ids)
+(def c14-lowering-diagnostic-ids optimization-lowering/c14-lowering-diagnostic-ids)
+(def optimization-lowering-diagnostic-ids optimization-lowering/optimization-lowering-diagnostic-ids)
+(def optimization-lowering-diagnostic-messages optimization-lowering/optimization-lowering-diagnostic-messages)
+(def optimization-lowering-override-diagnostics optimization-lowering/optimization-lowering-override-diagnostics)
+(def optimization-pass-contract-seed optimization-lowering/optimization-pass-contract-seed)
 
-(def c14-lowering-diagnostic-ids
-  ["C14-INPUT"
-   "C14-PROFILE"
-   "C14-TARGET"
-   "C14-ABI"
-   "C14-RUNTIME"
-   "C14-PROVIDER"
-   "C14-PROOF-METADATA"
-   "C14-CAPABILITY"
-   "C14-UNSUPPORTED"
-   "C14-MANIFEST"])
+(declare optimization-lowering-source-overrides
+         optimization-lowering-fail!
+         optimization-pass-contract-record
+         optimization-decision-record
+         optimization-lowering-validate-overrides!
+         optimization-lowering-validate!
+         optimization-lowering-capability-proof
+         optimization-lowering-source-artifact)
 
-(def optimization-lowering-diagnostic-ids
-  (vec (concat c13-optimization-diagnostic-ids
-               c14-lowering-diagnostic-ids)))
+(defn- optimization-lowering-ops []
+  {:fail! fail!
+   :source-span source-span
+   :sha256-hex sha256-hex
+   :perf-present? perf-present?
+   :checked-core-source-artifact checked-core-source-artifact
+   :domain-ir-source-artifact domain-ir-source-artifact
+   :c13-optimization-diagnostic-ids c13-optimization-diagnostic-ids
+   :c14-lowering-diagnostic-ids c14-lowering-diagnostic-ids
+   :optimization-lowering-diagnostic-ids optimization-lowering-diagnostic-ids
+   :optimization-lowering-diagnostic-messages optimization-lowering-diagnostic-messages
+   :optimization-lowering-override-diagnostics optimization-lowering-override-diagnostics
+   :optimization-pass-contract-seed optimization-pass-contract-seed
+   :optimization-lowering-source-overrides optimization-lowering-source-overrides
+   :optimization-lowering-fail! optimization-lowering-fail!
+   :optimization-pass-contract-record optimization-pass-contract-record
+   :optimization-decision-record optimization-decision-record
+   :optimization-lowering-validate-overrides! optimization-lowering-validate-overrides!
+   :optimization-lowering-validate! optimization-lowering-validate!
+   :optimization-lowering-capability-proof optimization-lowering-capability-proof
+   :optimization-lowering-source-artifact optimization-lowering-source-artifact})
 
-(def optimization-lowering-diagnostic-messages
-  {"C13-CONTRACT" "MIR optimization pass contract is invalid"
-   "C13-PRESERVE" "optimization claimed to preserve a missing or changed fact"
-   "C13-INVALIDATE" "optimization is missing an invalidation record"
-   "C13-PROOF" "optimization transformation lacks required proof evidence"
-   "C13-CHECK-ELISION" "check elision violated PERF10 proof policy"
-   "C13-EFFECT" "optimization reordered effects without evidence"
-   "C13-SAFETY" "optimization left stale safety outcomes"
-   "C13-DOMAIN" "optimization corrupted a domain anchor"
-   "C13-NONDETERMINISM" "optimization choice is not replayable"
-   "C13-VERIFY" "post-optimization MIR verifier failed"
-   "C14-INPUT" "target lowering input is unverified or stale"
-   "C14-PROFILE" "backend is ineligible under the active profile"
-   "C14-TARGET" "target feature is missing or unsupported"
-   "C14-ABI" "ABI or layout cannot represent the artifact"
-   "C14-RUNTIME" "runtime service is missing or forbidden"
-   "C14-PROVIDER" "provider support is missing"
-   "C14-PROOF-METADATA" "target metadata lacks Gravity proof evidence"
-   "C14-CAPABILITY" "lowering would add or lose authority"
-   "C14-UNSUPPORTED" "MIR or domain feature lacks legal lowering"
-   "C14-MANIFEST" "target artifact manifest is incomplete"})
-
-(def optimization-lowering-override-diagnostics
-  {:contract ["C13-CONTRACT" :optimization-pass]
-   :preserve ["C13-PRESERVE" :optimization-decision]
-   :invalidate ["C13-INVALIDATE" :invalidation-ledger]
-   :proof ["C13-PROOF" :optimization-proof]
-   :check-elision ["C13-CHECK-ELISION" :check-elision]
-   :effect ["C13-EFFECT" :effect-scheduling]
-   :safety ["C13-SAFETY" :safety-outcome]
-   :domain ["C13-DOMAIN" :domain-anchor]
-   :nondeterminism ["C13-NONDETERMINISM" :replay]
-   :verify ["C13-VERIFY" :post-pass-verifier]
-   :input ["C14-INPUT" :lowering-input]
-   :profile ["C14-PROFILE" :target-eligibility]
-   :target ["C14-TARGET" :target-feature]
-   :abi ["C14-ABI" :abi-layout]
-   :runtime ["C14-RUNTIME" :runtime-provider]
-   :provider ["C14-PROVIDER" :provider-selection]
-   :proof-metadata ["C14-PROOF-METADATA" :target-metadata]
-   :capability ["C14-CAPABILITY" :capability-preservation]
-   :unsupported ["C14-UNSUPPORTED" :unsupported-feature]
-   :manifest ["C14-MANIFEST" :target-artifact-manifest]})
-
-(def optimization-pass-contract-seed
-  [{:pass :constant-fold
-    :requires #{:constant-table :type-table}
-    :preserves #{:types :effects :ownership :capabilities :source-origins
-                 :profile :safety-outcomes}
-    :invalidates #{}
-    :regenerates #{}
-    :proof-obligations #{:literal-equivalence}
-    :profiles #{:core :hosted :native :gpu}
-    :target-assumptions #{}
-    :emits #{:decision-log :verifier-report}}
-   {:pass :dead-code-eliminate
-    :requires #{:control-flow-graph :effect-table :liveness}
-    :preserves #{:types :effects :capabilities :source-origins :profile}
-    :invalidates #{:liveness :data-flow-cache}
-    :regenerates #{:liveness}
-    :proof-obligations #{:no-effectful-removal}
-    :profiles #{:hosted :native :gpu}
-    :target-assumptions #{}
-    :emits #{:decision-log :invalidation-ledger :verifier-report}}
-   {:pass :bounds-check-elide
-    :requires #{:dominator-tree :range-analysis :safety-outcomes}
-    :preserves #{:types :effects :source-origins :profile}
-    :invalidates #{:runtime-check-table :data-flow-cache}
-    :regenerates #{:runtime-check-table}
-    :proof-obligations #{:proof-dominates-check}
-    :profiles #{:native :hosted :gpu}
-    :target-assumptions #{}
-    :emits #{:decision-log :check-elision-record :verifier-report}}
-   {:pass :effect-aware-schedule
-    :requires #{:effect-table :capability-proof-table}
-    :preserves #{:types :capabilities :safety-outcomes :source-origins
-                 :profile}
-    :invalidates #{:control-flow-cache}
-    :regenerates #{:effect-table}
-    :proof-obligations #{:effect-order-equivalence}
-    :profiles #{:hosted :native :distributed}
-    :target-assumptions #{}
-    :emits #{:decision-log :effect-order-proof :verifier-report}}
-   {:pass :domain-ir-exit
-    :requires #{:domain-verifier-report :semantic-anchor-map}
-    :preserves #{:types :effects :ownership :capabilities :safety-outcomes
-                 :source-origins :profile}
-    :invalidates #{:domain-anchor-cache}
-    :regenerates #{:domain-anchor-table}
-    :proof-obligations #{:domain-translation-validation}
-    :profiles #{:hosted :native :distributed :gpu}
-    :target-assumptions #{}
-    :emits #{:decision-log :domain-verifier-report :verifier-report}}
-   {:pass :target-layout-prepare
-    :requires #{:layout-facts :ownership-table :safety-outcomes}
-    :preserves #{:types :effects :capabilities :source-origins :profile}
-    :invalidates #{:layout-cache}
-    :regenerates #{:layout-manifest}
-    :proof-obligations #{:layout-equivalence}
-    :profiles #{:hosted :native :gpu}
-    :target-assumptions #{}
-    :emits #{:decision-log :layout-decision-record :verifier-report}}])
+(def ^:private ^:dynamic *optimization-lowering-leaf-call?* false)
+(defn- optimization-lowering-call [operation & args]
+  (if *optimization-lowering-leaf-call?*
+    (apply operation args)
+    (binding [*optimization-lowering-leaf-call?* true]
+      (optimization-lowering/with-operations (optimization-lowering-ops)
+        #(apply operation args)))))
 
 (defn optimization-lowering-source-overrides
   [module]
-  (get-in module [:metadata :compiler :optimization-lowering] {}))
-
-(def c13-optimization-governing-document
-  "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md")
-
-(defn c13-optimization-source-overrides
-  [module]
-  (or (get-in module [:metadata :compiler :c13-optimization])
-      (get-in module [:metadata :compiler :optimization-lowering])
-      {}))
+  (optimization-lowering-call optimization-lowering/optimization-lowering-source-overrides module))
 
 (defn optimization-lowering-fail!
   [id source-path artifact subject extra]
-  (fail! id
-         (get optimization-lowering-diagnostic-messages id
-              "optimization or target lowering validation failed")
-         (merge {:source-span (or (:source-span subject)
-                                  (get-in subject [:source :span])
-                                  (source-span source-path 0))
-                 :diagnostic-family :optimization-lowering
-                 :stage :optimize-lower
-                 :pass-id (or (:pass subject) (:pass-id subject))
-                 :decision-id (:decision-id subject)
-                 :input-artifact-id (or (:input-mir subject)
-                                        (:input artifact))
-                 :output-artifact-id (:output-mir subject)
-                 :changed-operations (:changed-ops subject)
-                 :missing-fact (:missing-fact subject)
-                 :proof-id (or (:proof-id subject) (:proof-id extra))
-                 :profile (or (:profile subject)
-                              (get-in artifact [:lowering-request :profile]))
-                 :target (or (:target subject)
-                             (get-in artifact
-                                     [:lowering-request :target :backend]))
-                 :backend (get-in artifact [:lowering-request :target :backend])
-                 :missing-feature (:missing-feature subject)
-                 :fallback-status (:fallback-status subject)
-                 :remediation "Regenerate optimization and lowering records with pass contracts, invalidation, verifier, proof, provider, capability, fallback, and target artifact evidence."}
-                extra)))
+  (optimization-lowering-call optimization-lowering/optimization-lowering-fail! id source-path artifact subject extra))
 
 (defn optimization-pass-contract-record
   [record]
-  (assoc record
-         :artifact :gravity/mir-pass-contract
-         :input :gravity/mir
-         :output :gravity/mir
-         :version "stage0-c13"
-         :contract-status :accepted))
+  (optimization-lowering-call optimization-lowering/optimization-pass-contract-record record))
 
 (defn optimization-decision-record
   [domain-ir-artifact input-id index contract]
-  (let [changed? (odd? index)
-        pass (:pass contract)
-        decision-input {:pass pass
-                        :input input-id
-                        :index index
-                        :changed? changed?}
-        output-id (str "sha256:" (sha256-hex (pr-str decision-input)))]
-    {:artifact :gravity/optimization-decision
-     :pass pass
-     :decision-id (str "sha256:" (sha256-hex (pr-str decision-input)))
-     :input-mir input-id
-     :output-mir output-id
-     :changed-ops (if changed?
-                    [(str "mir-op-optimized-" (name pass))]
-                    [])
-     :reason (if changed? :stage0-evidence-gated :no-change-needed)
-     :preserved (:preserves contract)
-     :invalidated (:invalidates contract)
-     :regenerated (:regenerates contract)
-     :proofs-used [{:proof-id (keyword "proof" (str "c13-" (name pass)))
-                    :kind (if changed?
-                            :translation-validation
-                            :contract-replay)
-                    :status :accepted}]
-     :residual-checks (if (= :bounds-check-elide pass)
-                        []
-                        [:stage0-visible-residual])
-     :benchmarks []
-     :verifier-result :passed
-     :source (get-in domain-ir-artifact
-                     [:domain-ir-artifacts 0 :source])}))
+  (optimization-lowering-call optimization-lowering/optimization-decision-record domain-ir-artifact input-id index contract))
 
 (defn optimization-lowering-validate-overrides!
   [source-path artifact]
-  (when-let [fail-kind (get-in artifact [:source-overrides :fail])]
-    (let [[id subject-kind] (get optimization-lowering-override-diagnostics
-                                 fail-kind)]
-      (when id
-        (optimization-lowering-fail!
-         id source-path artifact
-         {:pass-id subject-kind
-          :decision-id (str "optimization-lowering-invalid-"
-                            (name fail-kind))
-          :source-span (source-span source-path 0)
-          :missing-fact fail-kind
-          :missing-feature fail-kind
-          :fallback-status :missing}
-         {:missing-fields [fail-kind]})))))
-
-(defn c13-optimization-validate-source-overrides!
-  [source-path overrides]
-  (optimization-lowering-validate-overrides!
-   source-path
-   {:source-overrides overrides
-    :lowering-request {:profile :hosted
-                       :target {:backend :jvm}}
-    :input "sha256:stage0-c13-source-override"}))
-
-(defn c13-optimization-diagnostic-catalog
-  [source-path]
-  (let [span (source-span source-path 0)]
-    {:artifact :gravity/c13-optimization-diagnostic-catalog
-     :status :complete
-     :diagnostics
-     (mapv (fn [id]
-             {:diagnostic id
-              :pass-id :stage0-optimization
-              :decision-id "c13-diagnostic-catalog"
-              :input-artifact-id "sha256:c13-diagnostic-input"
-              :output-artifact-id "sha256:c13-diagnostic-output"
-              :source-span span
-              :changed-operations []
-              :missing-fact :catalog-entry
-              :proof-id :proof/c13-diagnostic-catalog
-              :profile :hosted
-              :target :jvm
-              :remediation (get optimization-lowering-diagnostic-messages id)})
-           c13-optimization-diagnostic-ids)}))
-
-(defn c13-optimization-validate!
-  [source-path artifact]
-  (optimization-lowering-validate-overrides! source-path artifact)
-  (let [contracts (:optimization-pass-registry artifact)
-        pipeline (:optimization-pipeline-manifest artifact)
-        decisions (:optimization-decision-log artifact)
-        invalidations (:invalidated-fact-ledger artifact)
-        caches (:analysis-cache-records artifact)
-        proof-usage (:proof-and-certificate-usage artifact)
-        verifiers (:post-pass-verifier-reports artifact)
-        diagnostics (get-in artifact
-                            [:optimization-diagnostic-stream :diagnostics])]
-    (doseq [contract contracts]
-      (when-not (every? #(contains? contract %)
-                        [:artifact :pass :input :output :requires
-                         :preserves :invalidates :regenerates
-                         :proof-obligations :profiles :target-assumptions
-                         :emits])
-        (optimization-lowering-fail! "C13-CONTRACT" source-path artifact
-                                     contract
-                                     {:missing-fields [:pass :input :output
-                                                       :requires :preserves
-                                                       :proof-obligations]})))
-    (when-not (= (mapv :pass contracts) (:pass-order pipeline))
-      (optimization-lowering-fail! "C13-CONTRACT" source-path artifact
-                                   pipeline
-                                   {:missing-fields [:pass-order]}))
-    (when-not (= :deterministic (:ordering pipeline))
-      (optimization-lowering-fail! "C13-NONDETERMINISM" source-path artifact
-                                   pipeline
-                                   {:missing-fields [:ordering]}))
-    (when-not (every? #(perf-present? (:preserved %)) decisions)
-      (optimization-lowering-fail! "C13-PRESERVE" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:preserved]}))
-    (when-not (= (count contracts) (count invalidations))
-      (optimization-lowering-fail! "C13-INVALIDATE" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:invalidated-fact-ledger]}))
-    (when-not (= (count contracts) (count caches))
-      (optimization-lowering-fail! "C13-INVALIDATE" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:analysis-cache-records]}))
-    (when-not (= (count contracts) (count proof-usage))
-      (optimization-lowering-fail! "C13-PROOF" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:proof-usage]}))
-    (when-not (every? #(some (fn [proof] (= :accepted (:status proof)))
-                            (:proofs-used %))
-                      decisions)
-      (optimization-lowering-fail! "C13-PROOF" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:proofs-used]}))
-    (when-not (= :accepted (get-in artifact
-                                   [:check-elision-record :status]))
-      (optimization-lowering-fail! "C13-CHECK-ELISION" source-path artifact
-                                   (:check-elision-record artifact)
-                                   {:missing-fields [:check-elision-record]}))
-    (when-not (= :accepted (get-in artifact
-                                   [:effect-reordering-record :status]))
-      (optimization-lowering-fail! "C13-EFFECT" source-path artifact
-                                   (:effect-reordering-record artifact)
-                                   {:missing-fields [:effect-reordering-record]}))
-    (when-not (= :current (get-in artifact
-                                  [:safety-outcome-refresh-report :status]))
-      (optimization-lowering-fail! "C13-SAFETY" source-path artifact
-                                   (:safety-outcome-refresh-report artifact)
-                                   {:missing-fields [:safety-outcome-refresh-report]}))
-    (when-not (= :preserved (get-in artifact
-                                    [:domain-anchor-transform-report :status]))
-      (optimization-lowering-fail! "C13-DOMAIN" source-path artifact
-                                   (:domain-anchor-transform-report artifact)
-                                   {:missing-fields [:domain-anchor-transform-report]}))
-    (when-not (= :replayable (get-in artifact
-                                     [:optimization-replay-record :status]))
-      (optimization-lowering-fail! "C13-NONDETERMINISM" source-path artifact
-                                   (:optimization-replay-record artifact)
-                                   {:missing-fields [:optimization-replay-record]}))
-    (when-not (every? #(= :passed (:status %)) verifiers)
-      (optimization-lowering-fail! "C13-VERIFY" source-path artifact
-                                   (first verifiers)
-                                   {:missing-fields [:post-pass-verifier]}))
-    (when-not (= (set c13-optimization-diagnostic-ids)
-                 (set (map :diagnostic diagnostics)))
-      (optimization-lowering-fail! "C13-CONTRACT" source-path artifact
-                                   (:optimization-diagnostic-stream artifact)
-                                   {:missing-fields [:optimization-diagnostics]})))
-  :complete)
-
-(defn c13-optimization-capability-proof
-  [artifact]
-  (let [contracts (:optimization-pass-registry artifact)
-        decisions (:optimization-decision-log artifact)]
-    {:c12-domain-ir-input-verified?
-     (= :complete (get-in artifact
-                          [:c12-domain-ir-artifact
-                           :capability-based-proof :status]))
-     :pass-contracts-valid?
-     (every? #(= :gravity/mir-pass-contract (:artifact %)) contracts)
-     :pipeline-deterministic?
-     (= :deterministic (get-in artifact
-                               [:optimization-pipeline-manifest :ordering]))
-     :decisions-complete?
-     (= (count contracts) (count decisions))
-     :changed-and-unchanged-decisions-recorded?
-     (and (some seq (map :changed-ops decisions))
-          (some empty? (map :changed-ops decisions)))
-     :invalidations-recorded?
-     (= (count contracts) (count (:invalidated-fact-ledger artifact)))
-     :analysis-caches-recorded?
-     (= (count contracts) (count (:analysis-cache-records artifact)))
-     :proof-evidence-present?
-     (every? #(some (fn [proof] (= :accepted (:status proof)))
-                    (:proofs-used %))
-             decisions)
-     :residual-cost-visible?
-     (= :complete (get-in artifact [:residual-cost-report :status]))
-     :check-elision-proof?
-     (= :accepted (get-in artifact [:check-elision-record :status]))
-     :effect-order-preserved?
-     (= :accepted (get-in artifact [:effect-reordering-record :status]))
-     :safety-outcomes-current?
-     (= :current (get-in artifact
-                         [:safety-outcome-refresh-report :status]))
-     :domain-anchors-preserved?
-     (= :preserved (get-in artifact
-                           [:domain-anchor-transform-report :status]))
-     :replayable?
-     (= :replayable (get-in artifact
-                            [:optimization-replay-record :status]))
-     :post-pass-verifiers-passed?
-     (every? #(= :passed (:status %))
-             (:post-pass-verifier-reports artifact))
-     :diagnostics-covered?
-     (= (set c13-optimization-diagnostic-ids)
-        (set (map :diagnostic
-                  (get-in artifact
-                          [:optimization-diagnostic-stream
-                           :diagnostics]))))
-     :status :complete}))
+  (optimization-lowering-call optimization-lowering/optimization-lowering-validate-overrides! source-path artifact))
 
 (defn optimization-lowering-validate!
   [source-path artifact]
-  (optimization-lowering-validate-overrides! source-path artifact)
-  (let [contracts (:optimization-pass-registry artifact)
-        pipeline (:optimization-pipeline-manifest artifact)
-        decisions (:optimization-decision-log artifact)
-        invalidations (:invalidated-fact-ledger artifact)
-        verifiers (:post-pass-verifier-reports artifact)
-        lowering-request (:lowering-request artifact)
-        target-manifest (:target-artifact-manifest artifact)]
-    (doseq [contract contracts]
-      (when-not (every? #(perf-present? (get contract %))
-                        [:artifact :pass :input :output :requires
-                         :preserves :proof-obligations :profiles :emits])
-        (optimization-lowering-fail! "C13-CONTRACT" source-path artifact
-                                     contract
-                                     {:missing-fields [:pass :input :output
-                                                       :requires :preserves
-                                                       :proof-obligations]})))
-    (when-not (= (mapv :pass contracts) (:pass-order pipeline))
-      (optimization-lowering-fail! "C13-CONTRACT" source-path artifact
-                                   pipeline
-                                   {:missing-fields [:pass-order]}))
-    (when-not (every? #(perf-present? (:preserved %)) decisions)
-      (optimization-lowering-fail! "C13-PRESERVE" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:preserved]}))
-    (when-not (= (count contracts) (count invalidations))
-      (optimization-lowering-fail! "C13-INVALIDATE" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:invalidated-fact-ledger]}))
-    (when-not (every? #(some (fn [proof] (= :accepted (:status proof)))
-                            (:proofs-used %))
-                      decisions)
-      (optimization-lowering-fail! "C13-PROOF" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:proofs-used]}))
-    (when-not (= :accepted (get-in artifact
-                                   [:check-elision-record :status]))
-      (optimization-lowering-fail! "C13-CHECK-ELISION" source-path artifact
-                                   (:check-elision-record artifact)
-                                   {:missing-fields [:check-elision-record]}))
-    (when-not (= :accepted (get-in artifact
-                                   [:effect-reordering-record :status]))
-      (optimization-lowering-fail! "C13-EFFECT" source-path artifact
-                                   (:effect-reordering-record artifact)
-                                   {:missing-fields [:effect-reordering-record]}))
-    (when-not (= :current (get-in artifact
-                                  [:safety-outcome-refresh-report :status]))
-      (optimization-lowering-fail! "C13-SAFETY" source-path artifact
-                                   (:safety-outcome-refresh-report artifact)
-                                   {:missing-fields [:safety-outcome-refresh-report]}))
-    (when-not (= :preserved (get-in artifact
-                                    [:domain-anchor-transform-report :status]))
-      (optimization-lowering-fail! "C13-DOMAIN" source-path artifact
-                                   (:domain-anchor-transform-report artifact)
-                                   {:missing-fields [:domain-anchor-transform-report]}))
-    (when-not (= :replayable (get-in artifact
-                                     [:optimization-replay-record :status]))
-      (optimization-lowering-fail! "C13-NONDETERMINISM" source-path artifact
-                                   (:optimization-replay-record artifact)
-                                   {:missing-fields [:optimization-replay-record]}))
-    (when-not (every? #(= :passed (:status %)) verifiers)
-      (optimization-lowering-fail! "C13-VERIFY" source-path artifact
-                                   (first verifiers)
-                                   {:missing-fields [:post-pass-verifier]}))
-    (when-not (= :verified-domain-ir
-                 (get-in lowering-request [:input :kind]))
-      (optimization-lowering-fail! "C14-INPUT" source-path artifact
-                                   lowering-request
-                                   {:missing-fields [:input]}))
-    (when-not (= :eligible (get-in artifact
-                                   [:target-eligibility-report :status]))
-      (optimization-lowering-fail! "C14-PROFILE" source-path artifact
-                                   (:target-eligibility-report artifact)
-                                   {:missing-fields [:target-eligibility]}))
-    (when-not (perf-present? (get-in lowering-request [:target :features]))
-      (optimization-lowering-fail! "C14-TARGET" source-path artifact
-                                   lowering-request
-                                   {:missing-fields [:target :features]}))
-    (when-not (= :complete (get-in artifact [:abi-manifest :status]))
-      (optimization-lowering-fail! "C14-ABI" source-path artifact
-                                   (:abi-manifest artifact)
-                                   {:missing-fields [:abi-manifest]}))
-    (when-not (= :complete (get-in artifact
-                                   [:runtime-provider-manifest :status]))
-      (optimization-lowering-fail! "C14-RUNTIME" source-path artifact
-                                   (:runtime-provider-manifest artifact)
-                                   {:missing-fields [:runtime-provider-manifest]}))
-    (when-not (every? #(= :selected (:status %))
-                      (:provider-selection-records artifact))
-      (optimization-lowering-fail! "C14-PROVIDER" source-path artifact
-                                   (first (:provider-selection-records
-                                           artifact))
-                                   {:missing-fields [:provider-selection]}))
-    (when-not (every? #(perf-present? (:proof %))
-                      (get-in artifact
-                              [:proof-to-target-metadata-map :entries]))
-      (optimization-lowering-fail! "C14-PROOF-METADATA" source-path artifact
-                                   (:proof-to-target-metadata-map artifact)
-                                   {:missing-fields [:proof]}))
-    (when-not (= :preserved (get-in artifact
-                                    [:capability-preservation-report :status]))
-      (optimization-lowering-fail! "C14-CAPABILITY" source-path artifact
-                                   (:capability-preservation-report artifact)
-                                   {:missing-fields [:capability-preservation]}))
-    (when-not (every? #(= :available (:fallback-status %))
-                      (:unsupported-feature-report artifact))
-      (optimization-lowering-fail! "C14-UNSUPPORTED" source-path artifact
-                                   (first (:unsupported-feature-report
-                                           artifact))
-                                   {:missing-fields [:fallback-status]}))
-    (when-not (and (= :gravity/target-artifact-manifest
-                      (:artifact target-manifest))
-                   (every? #(perf-present? (get target-manifest %))
-                           [:input :backend :profile :target :artifacts
-                            :source-map :proof-map :effects :capabilities
-                            :safety :runtime :dependencies]))
-      (optimization-lowering-fail! "C14-MANIFEST" source-path artifact
-                                   target-manifest
-                                   {:missing-fields [:target-artifact-manifest]})))
-  :complete)
+  (optimization-lowering-call optimization-lowering/optimization-lowering-validate! source-path artifact))
 
 (defn optimization-lowering-capability-proof
   [artifact]
-  {:pass-contracts-valid?
-   (every? #(= :accepted (:contract-status %))
-           (:optimization-pass-registry artifact))
-   :pipeline-deterministic?
-   (= :deterministic
-      (get-in artifact [:optimization-pipeline-manifest :ordering]))
-   :decisions-complete?
-   (= (count (:optimization-pass-registry artifact))
-      (count (:optimization-decision-log artifact)))
-   :invalidations-recorded?
-   (= (count (:optimization-pass-registry artifact))
-      (count (:invalidated-fact-ledger artifact)))
-   :proof-evidence-present?
-   (every? #(some (fn [proof] (= :accepted (:status proof)))
-                  (:proofs-used %))
-           (:optimization-decision-log artifact))
-   :post-pass-verifiers-passed?
-   (every? #(= :passed (:status %)) (:post-pass-verifier-reports artifact))
-   :lowering-request-verified?
-   (= :verified-domain-ir (get-in artifact [:lowering-request :input :kind]))
-   :target-eligible?
-   (= :eligible (get-in artifact [:target-eligibility-report :status]))
-   :abi-runtime-provider-recorded?
-   (and (= :complete (get-in artifact [:abi-manifest :status]))
-        (= :complete (get-in artifact [:runtime-provider-manifest :status]))
-        (every? #(= :selected (:status %))
-                (:provider-selection-records artifact)))
-   :proof-metadata-linked?
-   (every? #(perf-present? (:proof %))
-           (get-in artifact [:proof-to-target-metadata-map :entries]))
-   :manifest-complete?
-   (= :gravity/target-artifact-manifest
-      (get-in artifact [:target-artifact-manifest :artifact]))
-   :status :complete})
+  (optimization-lowering-call optimization-lowering/optimization-lowering-capability-proof artifact))
 
 (defn optimization-lowering-source-artifact
   [source-path source-text]
-  (let [checked-core (checked-core-source-artifact source-path source-text)
-        source-overrides
-        (optimization-lowering-source-overrides (:module checked-core))
-        domain-ir-artifact (domain-ir-source-artifact source-path source-text)
-        input-id (str "sha256:" (sha256-hex (pr-str domain-ir-artifact)))
-        contracts (mapv optimization-pass-contract-record
-                        optimization-pass-contract-seed)
-        decisions (mapv #(optimization-decision-record domain-ir-artifact
-                                                       input-id %2 %1)
-                        contracts
-                        (range))
-        final-output-id (:output-mir (last decisions))
-        invalidations (mapv (fn [decision]
-                              {:pass (:pass decision)
-                               :decision-id (:decision-id decision)
-                               :invalidated (:invalidated decision)
-                               :regenerated (:regenerated decision)
-                               :runtime-checks-restored
-                               (:residual-checks decision)
-                               :status :recorded})
-                            decisions)
-        verifiers (mapv (fn [decision]
-                          {:artifact :gravity/post-pass-mir-verifier-report
-                           :pass (:pass decision)
-                           :decision-id (:decision-id decision)
-                           :input (:output-mir decision)
-                           :status :passed
-                           :checks [:module :dominance :types :effects
-                                    :safety :domain-anchors]})
-                        decisions)
-        target {:backend :jvm
-                :triple "jvm-17"
-                :features #{:objects :exceptions :threads}}
-        lowering-request
-        {:artifact :gravity/lowering-request
-         :input {:kind :verified-domain-ir
-                 :id input-id}
-         :profile :hosted
-         :target target
-         :abi :jvm-hosted-stage0
-         :runtime :hosted-jvm
-         :providers {:allocator :jvm/gc
-                     :panic :jvm/exception
-                     :io :jvm/stdout}
-         :required-evidence {:safety :mir/safety-table
-                             :proofs :proof/c13-stage0
-                             :capabilities :mir/capability-proof-table}}
-        proof-map
-        {:artifact :gravity/proof-target-metadata-map
-         :target :jvm
-         :entries [{:target-metadata :bounds-check-elided
-                    :operation "mir-op-optimized-bounds-check-elide"
-                    :proof :proof/c13-bounds-check-elision}
-                   {:target-metadata :noalias
-                    :operation "mir-op-optimized-target-layout-prepare"
-                    :proof :proof/c13-layout-ownership}
-                   {:target-metadata :nonnull
-                    :operation "mir-op-optimized-dead-code-eliminate"
-                    :proof :proof/c13-safety-preserved}]}
-        artifact
-        {:kind :gravity/stage0-optimization-lowering-artifact
-         :document-set ["C13" "C14"]
-         :pass {:name :optimization-and-target-lowering-api
-                :input :domain-ir-registry
-                :output :optimization-lowering-manifest
-                :requires [:verified-domain-ir :pass-contracts
-                           :semantic-anchors :proof-evidence
-                           :target-eligibility]
-                :preserves [:types :effects :ownership :capabilities
-                            :profile :target :safety :source-spans
-                            :origin-chain :domain-anchors]
-                :emits [:optimization-pass-registry
-                        :optimization-pipeline-manifest
-                        :optimization-decision-log
-                        :invalidated-fact-ledger
-                        :analysis-cache-records
-                        :proof-and-certificate-usage
-                        :residual-cost-report
-                        :post-pass-verifier-reports
-                        :lowering-request
-                        :target-eligibility-report
-                        :abi-manifest
-                        :runtime-provider-manifest
-                        :layout-decision-record
-                        :proof-to-target-metadata-map
-                        :source-generated-origin-map
-                        :target-artifact-manifest
-                        :unsupported-feature-report]
-                :rejects optimization-lowering-diagnostic-ids}
-         :source-overrides source-overrides
-         :domain-ir-artifact-kind (:kind domain-ir-artifact)
-         :domain-ir-artifact-hash input-id
-         :optimization-pass-registry contracts
-         :optimization-pipeline-manifest
-         {:artifact :gravity/optimization-pipeline-manifest
-          :pass-order (mapv :pass contracts)
-          :ordering :deterministic
-          :optimization-level :stage0-safe
-          :source-hash (str "sha256:" (sha256-hex source-text))
-          :profile :hosted
-          :target target
-          :feature-set (:features target)
-          :provider-set #{:jvm/gc :jvm/exception :jvm/stdout}
-          :replay-seed :none
-          :status :complete}
-         :optimization-decision-log decisions
-         :invalidated-fact-ledger invalidations
-         :analysis-cache-records
-         (mapv (fn [decision]
-                 {:pass (:pass decision)
-                  :cache-key (str "sha256:"
-                                  (sha256-hex (pr-str
-                                               [(:pass decision) input-id])))
-                  :status :complete})
-               decisions)
-         :proof-and-certificate-usage
-         (mapv (fn [decision]
-                 {:pass (:pass decision)
-                  :decision-id (:decision-id decision)
-                  :proofs (:proofs-used decision)
-                  :status :accepted})
-               decisions)
-         :residual-cost-report
-         {:artifact :gravity/residual-cost-report
-          :status :complete
-          :entries [{:pass :bounds-check-elide
-                     :claim :check-erased
-                     :residual-cost :none}
-                    {:pass :target-layout-prepare
-                     :claim :layout-prepared
-                     :residual-cost :manifest-only}]}
-         :check-elision-record
-         {:artifact :gravity/check-elision-record
-          :pass :bounds-check-elide
-          :status :accepted
-          :proof :proof/c13-bounds-check-elision
-          :policy :PERF10}
-         :effect-reordering-record
-         {:artifact :gravity/effect-order-proof
-          :pass :effect-aware-schedule
-          :status :accepted
-          :proof :proof/c13-effect-order-equivalence}
-         :safety-outcome-refresh-report
-         {:artifact :gravity/safety-outcome-refresh-report
-          :status :current
-          :source :mir/safety-table}
-         :domain-anchor-transform-report
-         {:artifact :gravity/domain-anchor-transform-report
-          :status :preserved
-          :anchors (:semantic-anchor-map domain-ir-artifact)}
-         :optimization-replay-record
-         {:artifact :gravity/optimization-replay-record
-          :status :replayable
-          :ordering :deterministic
-          :seed :none}
-         :post-pass-verifier-reports verifiers
-         :lowering-request lowering-request
-         :target-eligibility-report
-         {:artifact :gravity/target-eligibility-report
-          :status :eligible
-          :profile :hosted
-          :target target
-          :backend :jvm
-          :reason :profile-target-provider-compatible}
-         :abi-manifest
-         {:artifact :gravity/abi-manifest
-          :status :complete
-          :calling-convention :jvm-static
-          :data-layout :jvm-object
-          :closure-representation :jvm-function-object
-          :panic-strategy :exception}
-         :runtime-provider-manifest
-         {:artifact :gravity/runtime-provider-manifest
-          :status :complete
-          :runtime :hosted-jvm
-          :providers (:providers lowering-request)}
-         :provider-selection-records
-         [{:provider :jvm/gc
-           :capability :memory/allocator
-           :status :selected}
-          {:provider :jvm/stdout
-           :capability :io/stdout
-           :status :selected}
-          {:provider :jvm/exception
-           :capability :panic/raise
-           :status :selected}]
-         :layout-decision-record
-         {:artifact :gravity/layout-decision-record
-          :status :complete
-          :alignment :jvm-default
-          :proof :proof/c13-layout-ownership}
-         :proof-to-target-metadata-map proof-map
-         :source-generated-origin-map
-         {:artifact :gravity/source-generated-origin-map
-          :status :complete
-          :source-map (:semantic-anchor-map domain-ir-artifact)}
-         :capability-preservation-report
-         {:artifact :gravity/capability-preservation-report
-          :status :preserved
-          :denied-additions []}
-         :unsupported-feature-report
-         [{:feature :gpu-kernel
-           :backend :jvm
-           :profile :hosted
-           :fallback :mir-scalar-kernel
-           :fallback-status :available
-           :diagnostic-id nil}]
-         :target-artifact-manifest
-         {:artifact :gravity/target-artifact-manifest
-          :input final-output-id
-          :backend :jvm
-          :profile :hosted
-          :target (str "sha256:" (sha256-hex (pr-str target)))
-          :artifacts [{:kind :jvm-bytecode-plan
-                       :hash (str "sha256:"
-                                  (sha256-hex (pr-str final-output-id)))}]
-          :source-map :gravity/source-generated-origin-map
-          :proof-map :gravity/proof-target-metadata-map
-          :effects :mir/effect-table
-          :capabilities :mir/capability-proof-table
-          :safety :mir/safety-table
-          :runtime :gravity/runtime-provider-manifest
-          :dependencies input-id
-          :diagnostics []}
-         :diagnostics []}
-        _ (optimization-lowering-validate! source-path artifact)
-        capability-proof (optimization-lowering-capability-proof artifact)
-        conformance {:documents ["C13" "C14"]
-                     :task "P06-T05"
-                     :required-diagnostic-ids
-                     optimization-lowering-diagnostic-ids
-                     :optimization-contract-status :complete
-                     :optimization-decision-status :complete
-                     :invalidation-status :complete
-                     :proof-status :complete
-                     :post-pass-verifier-status :complete
-                     :lowering-request-status :complete
-                     :target-eligibility-status :complete
-                     :provider-status :complete
-                     :manifest-status :complete
-                     :status :complete}]
-    (assoc artifact
-           :capability-based-proof capability-proof
-           :optimization-lowering-results conformance)))
+  (optimization-lowering-call optimization-lowering/optimization-lowering-source-artifact source-path source-text))
+
+(def c13-optimization-governing-document c13/c13-optimization-governing-document)
+
+(declare c13-optimization-source-overrides
+         c13-optimization-validate-source-overrides!
+         c13-optimization-diagnostic-catalog
+         c13-optimization-validate!
+         c13-optimization-capability-proof
+         compiler-c13-optimization-source-artifact
+         compiler-c13-optimization-file-artifact)
+
+(defn- c13-optimization-ops []
+  {:source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :sha256-hex sha256-hex
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :perf-present? perf-present?
+   :compiler-c12-domain-ir-source-artifact compiler-c12-domain-ir-source-artifact
+   :optimization-lowering-validate-overrides! optimization-lowering-validate-overrides!
+   :optimization-pass-contract-record optimization-pass-contract-record
+   :optimization-decision-record optimization-decision-record
+   :optimization-lowering-fail! optimization-lowering-fail!
+   :c13-optimization-governing-document c13-optimization-governing-document
+   :c13-optimization-diagnostic-ids c13-optimization-diagnostic-ids
+   :optimization-lowering-diagnostic-messages optimization-lowering-diagnostic-messages
+   :optimization-pass-contract-seed optimization-pass-contract-seed
+   :c13-optimization-source-overrides c13-optimization-source-overrides
+   :c13-optimization-validate-source-overrides! c13-optimization-validate-source-overrides!
+   :c13-optimization-diagnostic-catalog c13-optimization-diagnostic-catalog
+   :c13-optimization-validate! c13-optimization-validate!
+   :c13-optimization-capability-proof c13-optimization-capability-proof
+   :compiler-c13-optimization-source-artifact compiler-c13-optimization-source-artifact
+   :compiler-c13-optimization-file-artifact compiler-c13-optimization-file-artifact})
+
+(def ^:private ^:dynamic *c13-leaf-call?* false)
+(defn- c13-call [operation & args]
+  (if *c13-leaf-call?*
+    (apply operation args)
+    (binding [*c13-leaf-call?* true]
+      (c13/with-operations (c13-optimization-ops)
+        #(apply operation args)))))
+
+(defn c13-optimization-source-overrides
+  [module]
+  (c13-call c13/c13-optimization-source-overrides module))
+
+(defn c13-optimization-validate-source-overrides!
+  [source-path overrides]
+  (c13-call c13/c13-optimization-validate-source-overrides! source-path overrides))
+
+(defn c13-optimization-diagnostic-catalog
+  [source-path]
+  (c13-call c13/c13-optimization-diagnostic-catalog source-path))
+
+(defn c13-optimization-validate!
+  [source-path artifact]
+  (c13-call c13/c13-optimization-validate! source-path artifact))
+
+(defn c13-optimization-capability-proof
+  [artifact]
+  (c13-call c13/c13-optimization-capability-proof artifact))
 
 (defn compiler-c13-optimization-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        source-overrides (c13-optimization-source-overrides module)
-        _ (c13-optimization-validate-source-overrides! source-path
-                                                       source-overrides)
-        domain-ir-artifact (compiler-c12-domain-ir-source-artifact
-                            source-path source-text)
-        input-id (:artifact-id domain-ir-artifact)
-        contracts (mapv optimization-pass-contract-record
-                        optimization-pass-contract-seed)
-        decisions (mapv #(optimization-decision-record domain-ir-artifact
-                                                       input-id %2 %1)
-                        contracts
-                        (range))
-        final-output-id (:output-mir (last decisions))
-        invalidations (mapv (fn [decision]
-                              {:pass (:pass decision)
-                               :decision-id (:decision-id decision)
-                               :invalidated (:invalidated decision)
-                               :regenerated (:regenerated decision)
-                               :runtime-checks-restored
-                               (:residual-checks decision)
-                               :caches-cleared [:data-flow-cache
-                                               :domain-anchor-cache]
-                               :diagnostics-affected []
-                               :status :recorded})
-                            decisions)
-        verifiers (mapv (fn [decision]
-                          {:artifact :gravity/post-pass-mir-verifier-report
-                           :pass (:pass decision)
-                           :decision-id (:decision-id decision)
-                           :input (:output-mir decision)
-                           :status :passed
-                           :checks [:module :dominance :types :effects
-                                    :safety :domain-anchors]})
-                        decisions)
-        diagnostics (c13-optimization-diagnostic-catalog source-path)
-        artifact-base
-        {:kind :gravity/stage0-c13-mir-optimization-artifact
-         :task "P06-D092"
-         :document-set ["C13"]
-         :governing-document c13-optimization-governing-document
-         :pass {:name :c13-mir-optimization-passes
-                :input :verified-domain-ir
-                :output :optimized-mir
-                :requires [:c12-domain-ir-architecture
-                           :pass-contracts :semantic-anchors
-                           :proof-evidence :mir-verifier]
-                :preserves [:types :effects :ownership :capabilities
-                            :profile :target :safety :source-spans
-                            :origin-chain :domain-anchors]
-                :emits [:optimization-pass-registry
-                        :optimization-pipeline-manifest
-                        :optimization-decision-log
-                        :invalidated-fact-ledger
-                        :analysis-cache-records
-                        :proof-and-certificate-usage
-                        :residual-cost-report
-                        :post-pass-verifier-reports
-                        :optimized-mir-artifact
-                        :optimization-diagnostic-stream]
-                :rejects c13-optimization-diagnostic-ids}
-         :source-overrides source-overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c12-domain-ir-artifact
-         (select-keys domain-ir-artifact [:kind :task :artifact-id
-                                          :governing-document
-                                          :domain-verifier-report
-                                          :semantic-anchor-map
-                                          :capability-based-proof])
-         :domain-ir-artifact-kind (:kind domain-ir-artifact)
-         :domain-ir-artifact-hash input-id
-         :optimization-pass-registry contracts
-         :optimization-pipeline-manifest
-         {:artifact :gravity/optimization-pipeline-manifest
-          :pass-order (mapv :pass contracts)
-          :ordering :deterministic
-          :optimization-level :stage0-safe
-          :source-hash (str "sha256:" (sha256-hex source-text))
-          :profile :hosted
-          :target :jvm
-          :feature-set #{:objects :exceptions :threads}
-          :package-graph :stage0-single-package
-          :provider-set #{:jvm/gc :jvm/exception :jvm/stdout}
-          :benchmark-inputs []
-          :replay-seed :none
-          :status :complete}
-         :optimization-decision-log decisions
-         :invalidated-fact-ledger invalidations
-         :analysis-cache-records
-         (mapv (fn [decision]
-                 {:pass (:pass decision)
-                  :cache-key (str "sha256:"
-                                  (sha256-hex (pr-str
-                                               [(:pass decision) input-id])))
-                  :invalidated-by (:invalidated decision)
-                  :status :complete})
-               decisions)
-         :proof-and-certificate-usage
-         (mapv (fn [decision]
-                 {:pass (:pass decision)
-                  :decision-id (:decision-id decision)
-                  :proofs (:proofs-used decision)
-                  :status :accepted})
-               decisions)
-         :residual-cost-report
-         {:artifact :gravity/residual-cost-report
-          :status :complete
-          :entries [{:pass :bounds-check-elide
-                     :claim :check-erased
-                     :residual-cost :none}
-                    {:pass :target-layout-prepare
-                     :claim :layout-prepared
-                     :residual-cost :manifest-only}]}
-         :check-elision-record
-         {:artifact :gravity/check-elision-record
-          :pass :bounds-check-elide
-          :status :accepted
-          :proof :proof/c13-bounds-check-elision
-          :policy :PERF10}
-         :effect-reordering-record
-         {:artifact :gravity/effect-order-proof
-          :pass :effect-aware-schedule
-          :status :accepted
-          :proof :proof/c13-effect-order-equivalence}
-         :safety-outcome-refresh-report
-         {:artifact :gravity/safety-outcome-refresh-report
-          :status :current
-          :source :mir/safety-table}
-         :domain-anchor-transform-report
-         {:artifact :gravity/domain-anchor-transform-report
-          :status :preserved
-          :anchors (:semantic-anchor-map domain-ir-artifact)}
-         :optimization-replay-record
-         {:artifact :gravity/optimization-replay-record
-          :status :replayable
-          :ordering :deterministic
-          :seed :none}
-         :post-pass-verifier-reports verifiers
-         :optimized-mir-artifact
-         {:artifact :gravity/optimized-mir
-          :input input-id
-          :output final-output-id
-          :passes (mapv :pass contracts)
-          :source-origin-map (:semantic-anchor-map domain-ir-artifact)
-          :domain-anchors (:semantic-anchor-map domain-ir-artifact)
-          :status :complete}
-         :optimization-diagnostic-stream diagnostics
-         :c13-optimization-results
-         {:documents ["C13"]
-          :task "P06-D092"
-          :required-diagnostic-ids c13-optimization-diagnostic-ids
-          :c12-input-status :complete
-          :pass-contract-status :complete
-          :pipeline-status :complete
-          :decision-log-status :complete
-          :invalidation-status :complete
-          :analysis-cache-status :complete
-          :proof-status :complete
-          :residual-cost-status :complete
-          :post-pass-verifier-status :complete
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c13-optimization-validate! source-path artifact-base)
-        capability-proof (c13-optimization-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+  (c13-call c13/compiler-c13-optimization-source-artifact source-path source-text))
 
 (defn compiler-c13-optimization-file-artifact
   [path]
-  (compiler-c13-optimization-source-artifact path (slurp path)))
+  (c13-call c13/compiler-c13-optimization-file-artifact path))
 
 (def c14-lowering-governing-document
   "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md")
