@@ -94,8 +94,7 @@ FIXED_BATCHES = (
     "fragment-size-preflight",
     "public-c7-check",
     "stage4-c8-source-structural",
-    "stage4-sh09-adapter-synthetic",
-    "stage4-sh09-authenticated",
+    "stage4-sh09-adapter",
     "stage4-public-c8",
     "authority",
     "c8-authority",
@@ -120,8 +119,7 @@ _BATCH_HEAP = {
     "coverage-census-contract": "-J-Xmx2g",
     "source-control-form-arity": "-J-Xmx2g",
     "stage4-c8-source-structural": "-J-Xmx2g",
-    "stage4-sh09-adapter-synthetic": "-J-Xmx8g",
-    "stage4-sh09-authenticated": "-J-Xmx8g",
+    "stage4-sh09-adapter": "-J-Xmx8g",
     "stage4-public-c8": "-J-Xmx2g",
 }
 _BATCH_COMMANDS: dict[str, tuple[str, ...]] = {
@@ -192,14 +190,12 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
         "gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-source-contracts-policy-and-boundaries-are-exact",
         "gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-structural-limitations-remain-explicit",
     ),
-    "stage4-sh09-adapter-synthetic": (
+    "stage4-sh09-adapter": (
         "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-source-structure-and-policy-are-exact",
         "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-derives-one-pure-effect-fact-per-type-fact",
         "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-rejects-upstream-and-candidate-substitution",
         "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-derives-declared-pure-function-call-effects",
         "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-binds-ordered-effect-identities",
-    ),
-    "stage4-sh09-authenticated": (
         "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-authenticated-gravity-boundary",
     ),
     "stage4-public-c8": (

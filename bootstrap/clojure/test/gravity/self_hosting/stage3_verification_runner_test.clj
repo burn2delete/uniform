@@ -84,8 +84,7 @@
           :fragment-size-preflight
           :public-c7-check
           :stage4-c8-source-structural
-          :stage4-sh09-adapter-synthetic
-          :stage4-sh09-authenticated
+          :stage4-sh09-adapter
           :stage4-public-c8]
          runner/fixed-batch-ids))
   (is (= runner/primitive-pure-selectors
@@ -102,10 +101,8 @@
          (get runner/fixed-batch-selectors :source-control-form-arity)))
   (is (= runner/stage4-c8-source-structural-selectors
          (get runner/fixed-batch-selectors :stage4-c8-source-structural)))
-  (is (= runner/stage4-sh09-adapter-synthetic-selectors
-         (get runner/fixed-batch-selectors :stage4-sh09-adapter-synthetic)))
-  (is (= runner/stage4-sh09-authenticated-selectors
-         (get runner/fixed-batch-selectors :stage4-sh09-authenticated)))
+  (is (= runner/stage4-sh09-adapter-selectors
+         (get runner/fixed-batch-selectors :stage4-sh09-adapter)))
   (is (= runner/stage4-public-c8-selectors
          (get runner/fixed-batch-selectors :stage4-public-c8)))
   (is (= runner/recursive-authenticated-selectors
@@ -121,8 +118,9 @@
   (is (= (count runner/coverage-census-contract-selectors) 2))
   (is (= (count runner/source-control-form-arity-selectors) 1))
   (is (= 4 (count runner/stage4-c8-source-structural-selectors)))
-  (is (= 5 (count runner/stage4-sh09-adapter-synthetic-selectors)))
-  (is (= 1 (count runner/stage4-sh09-authenticated-selectors)))
+  (is (= 6 (count runner/stage4-sh09-adapter-selectors)))
+  (is (= ['gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-authenticated-gravity-boundary]
+         (take-last 1 runner/stage4-sh09-adapter-selectors)))
   (is (= 1 (count runner/stage4-public-c8-selectors)))
   (is (not-any? #(re-find #"sh07-b29-(c8-source-has-exact-authentic-coverage|c8-calls-lookups-and-error-effect|c8-is-deterministic-path-neutral|c8-replay-and-alteration|existing-rejected-families)" (str %))
                 runner/stage4-c8-source-structural-selectors)))
@@ -137,7 +135,9 @@
   (doseq [old-id [:recursive-integer-authenticated
                   :recursive-string-authenticated
                   :authoritative-ho-fixture-parity
-                  :authoritative-ho2-authenticated]]
+                  :authoritative-ho2-authenticated
+                  :stage4-sh09-adapter-synthetic
+                  :stage4-sh09-authenticated]]
     (let [error (try
                   (runner/batch-definition old-id)
                   nil

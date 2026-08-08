@@ -99,15 +99,16 @@
    'gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-source-contracts-policy-and-boundaries-are-exact
    'gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-structural-limitations-remain-explicit])
 
-(def stage4-sh09-adapter-synthetic-selectors
+(def stage4-sh09-adapter-selectors
   ['gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-source-structure-and-policy-are-exact
    'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-derives-one-pure-effect-fact-per-type-fact
    'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-rejects-upstream-and-candidate-substitution
    'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-derives-declared-pure-function-call-effects
-   'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-binds-ordered-effect-identities])
-
-(def stage4-sh09-authenticated-selectors
-  ['gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-authenticated-gravity-boundary])
+   'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-binds-ordered-effect-identities
+   ;; Keep the authenticated boundary in this same namespace/JVM, after every
+   ;; cheap synthetic adapter check.  A failure in the synthetic prefix must
+   ;; still produce the exact remaining suffix as skipped evidence.
+   'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-authenticated-gravity-boundary])
 
 (def stage4-public-c8-selectors
   ['gravity.bootstrap-test/public-check-accepts-gravity-authored-c8-effect-checker-engine])
@@ -125,8 +126,7 @@
    :fragment-size-preflight
    :public-c7-check
    :stage4-c8-source-structural
-   :stage4-sh09-adapter-synthetic
-   :stage4-sh09-authenticated
+   :stage4-sh09-adapter
    :stage4-public-c8])
 
 (def ^:private batch-selectors
@@ -143,8 +143,7 @@
    :fragment-size-preflight fragment-size-preflight-selectors
    :public-c7-check public-c7-check-selectors
    :stage4-c8-source-structural stage4-c8-source-structural-selectors
-   :stage4-sh09-adapter-synthetic stage4-sh09-adapter-synthetic-selectors
-   :stage4-sh09-authenticated stage4-sh09-authenticated-selectors
+   :stage4-sh09-adapter stage4-sh09-adapter-selectors
    :stage4-public-c8 stage4-public-c8-selectors))
 
 (def fixed-batch-ids

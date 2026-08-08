@@ -74,8 +74,7 @@ class Stage3WrapperTests(unittest.TestCase):
             "fragment-size-preflight": "fragment-size-preflight-selectors",
             "public-c7-check": "public-c7-check-selectors",
             "stage4-c8-source-structural": "stage4-c8-source-structural-selectors",
-            "stage4-sh09-adapter-synthetic": "stage4-sh09-adapter-synthetic-selectors",
-            "stage4-sh09-authenticated": "stage4-sh09-authenticated-selectors",
+            "stage4-sh09-adapter": "stage4-sh09-adapter-selectors",
             "stage4-public-c8": "stage4-public-c8-selectors",
         }
         for batch, definition in selector_definitions.items():
@@ -97,8 +96,7 @@ class Stage3WrapperTests(unittest.TestCase):
             "fragment-size-preflight": "-J-Xmx2g",
             "public-c7-check": "-J-Xmx2g",
             "stage4-c8-source-structural": "-J-Xmx2g",
-            "stage4-sh09-adapter-synthetic": "-J-Xmx8g",
-            "stage4-sh09-authenticated": "-J-Xmx8g",
+            "stage4-sh09-adapter": "-J-Xmx8g",
             "stage4-public-c8": "-J-Xmx2g",
             "authority": "-J-Xmx8g",
             "c8-authority": "-J-Xmx8g",
@@ -118,6 +116,10 @@ class Stage3WrapperTests(unittest.TestCase):
                 "sh07-b29-existing-rejected-families",
             )
         ))
+        merged = list(stage3._FIXED_BATCH_SELECTORS["stage4-sh09-adapter"])
+        self.assertEqual(6, len(merged))
+        self.assertEqual(6, len(set(merged)))
+        self.assertTrue(merged[-1].endswith("/sh09-c7-adapter-authenticated-gravity-boundary"))
 
     def test_retired_singleton_batch_ids_are_rejected(self) -> None:
         for retired in (
@@ -125,6 +127,8 @@ class Stage3WrapperTests(unittest.TestCase):
             "recursive-string-authenticated",
             "authoritative-ho-fixture-parity",
             "authoritative-ho2-authenticated",
+            "stage4-sh09-adapter-synthetic",
+            "stage4-sh09-authenticated",
         ):
             with self.assertRaises(stage3.Stage3Error):
                 stage3.batch_command(retired)
@@ -667,6 +671,59 @@ class Stage3WrapperTests(unittest.TestCase):
                 root=root,
                 report_path=report_path,
                 batch="source-plan-contract",
+                nonce=nonce,
+                check_id=check_id,
+                command_identity_sha256=command_hash,
+            )
+
+    def test_merged_sh09_batch_preserves_fail_fast_skipped_tail(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            report_path = root / "sh09-report.json"
+            nonce = "sh09-failure-nonce"
+            check_id = "sh09-failure-check"
+            command_hash = "sha256:" + "a" * 64
+            report = self._runner_report(
+                root,
+                report_path,
+                nonce,
+                check_id,
+                command_hash,
+                batch="stage4-sh09-adapter",
+                status="failed",
+                exit_code=1,
+            )
+            selectors = list(report["selection-order"])
+            failed_index = len(selectors) - 2
+            report["executed-vars"] = selectors[: failed_index + 1]
+            report["executed"] = selectors[: failed_index + 1]
+            report["skipped-tail"] = selectors[failed_index + 1 :]
+            report["skipped-vars"] = selectors[failed_index + 1 :]
+            for index in range(failed_index + 1, len(selectors)):
+                report["per-var-results"][index].update({
+                    "status": "skipped",
+                    "counts": {"type": "summary", "test": 0, "pass": 0, "fail": 0, "error": 0},
+                    "cache": {key: 0 for key in (
+                        "sh06-hits", "sh06-misses", "core-hits", "core-misses",
+                        "verification-hits", "verification-misses",
+                    )},
+                    "elapsed-ms": 0,
+                    "completed?": False,
+                    "skipped-tail?": True,
+                })
+            report["per-var-results"][failed_index].update({
+                "status": "failed",
+                "counts": {"type": "summary", "test": 1, "pass": 0, "fail": 1, "error": 0},
+            })
+            report["counts"] = {
+                "type": "summary", "test": failed_index + 1,
+                "pass": failed_index, "fail": 1, "error": 0,
+            }
+            stage3._validate_runner_report(  # type: ignore[attr-defined]
+                report,
+                root=root,
+                report_path=report_path,
+                batch="stage4-sh09-adapter",
                 nonce=nonce,
                 check_id=check_id,
                 command_identity_sha256=command_hash,
