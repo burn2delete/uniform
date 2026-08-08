@@ -386,16 +386,28 @@ impact-exclude every exact path, so no broad Stage0, Stage3-8, or proof node is
 selected. Explicit `--check` closes over the orchestrator prerequisite, and
 `--all` includes the provider node.
 
-Coordinator evidence for the reviewed provider is 9 tests and 234 assertions
-in about 3.791 seconds, with a measured peak process-tree RSS of 163,463,168
-bytes under the canonical lock. The implementation is a host-authored C
-provider compiled for ARM64 macOS and is non-authoritative development
-evidence. On other hosts, or when the ARM64 macOS Clang/file toolchain is not
-available, the namespace records a platform skip with no native-runtime claim;
-the gate does not substitute another target or infer support. This internal
-prerequisite is a narrow exception to the general native-target exclusion: it
-does not claim public native execution, self-hosting, release readiness,
-seedless completion, or strict OS-level process containment.
+The manifest binds the exact environment entry
+`GRAVITY_P15_NATIVE_RUNTIME_REQUIRED=1`. The namespace always runs a bounded,
+no-follow source-only EDN check before the provider tests: it parses the
+artifact as exactly one form, recomputes the current C and Gravity contract
+SHA-256 values, and checks the complete reviewed set of 22 regular fixture
+files plus every accepted/rejected evidence path. This check runs on every
+host and does not make an artifact, public, self-hosting, or release claim.
+
+The reviewed host-authored C observation is historical evidence: 9 tests and
+234 assertions in about 3.791 seconds, with a measured peak process-tree RSS
+of 163,463,168 bytes under the canonical lock, on ARM64 macOS. An ordinary
+direct namespace invocation without the required environment keeps its
+explicit unsupported-platform/no-claim skip. The focused verifier invocation
+sets the required environment; an unavailable ARM64 macOS Clang/file
+toolchain then fails the namespace, while exit zero means the native provider
+was actually exercised. No target substitution or support inference is made.
+This internal prerequisite is a narrow exception to the general native-target
+exclusion: it does not claim public native execution, self-hosting, release
+readiness, seedless completion, or strict OS-level process containment.
+The refreshed provider artifact records the current source-only census as 10
+tests and 235 assertions and retains the prior 9-test timing/RSS hashes only
+under an explicitly historical receipt; it is not a new runtime measurement.
 
 ### 5. Focused namespace or cached SH-07 feedback
 

@@ -177,12 +177,20 @@ impact-exclude every exact provider path, so a provider edit selects only the
 provider node and the orchestrator prerequisite; explicit `--check` and
 `--all` retain the same fixed closure rules.
 
-The reviewed ARM64 macOS host-C observation passed 9 tests and 234 assertions
-in about 3.791 seconds with peak process-tree RSS 163,463,168 bytes under the
-canonical lock. Non-ARM64/macOS or missing-toolchain hosts record a platform
-skip with no native-runtime claim. This internal evidence does not grant
-public native execution, self-hosting, release, seedless, or strict
-OS-containment authority.
+The reviewed ARM64 macOS host-C observation is historical evidence: it passed
+9 tests and 234 assertions in about 3.791 seconds with peak process-tree RSS
+163,463,168 bytes under the canonical lock. The node binds exactly
+`GRAVITY_P15_NATIVE_RUNTIME_REQUIRED=1`; its namespace always performs a
+bounded, no-follow, single-form EDN identity check against the current C and
+Gravity contract hashes and the exact 22-file fixture set. A direct namespace
+run without that marker keeps an explicit unsupported-platform/no-claim skip.
+The focused verifier supplies the marker and fails when ARM64 macOS Clang/file
+is unavailable, so a focused exit zero means the provider was exercised.
+This internal evidence does not grant public native execution, self-hosting,
+release, seedless, or strict OS-containment authority.
+The refreshed artifact records a 10-test/235-assertion source-only census; its
+older 9-test timing/RSS hashes are explicitly historical and are not a new
+runtime measurement.
 
 ## Countable Backlog
 

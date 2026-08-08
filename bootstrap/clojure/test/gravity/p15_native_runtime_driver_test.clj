@@ -15,7 +15,8 @@
             [clojure.test :refer [deftest is testing run-tests]]
             [gravity.bootstrap :as bootstrap]
             [gravity.p15-native-packet-binding :as packet-binding])
-  (:import [java.nio ByteBuffer]
+  (:import [java.io PushbackReader StringReader]
+           [java.nio ByteBuffer]
            [java.nio.charset CodingErrorAction StandardCharsets]
            [java.nio.file Files LinkOption OpenOption Path Paths]
            [java.nio.file.attribute FileAttribute PosixFilePermissions]
@@ -25,10 +26,18 @@
 (def ^:private compiler "/usr/bin/cc")
 (def ^:private file-inspector "/usr/bin/file")
 (def ^:private source-relative "bootstrap/native/p15_native_runtime_driver.c")
+(def ^:private test-source-relative
+  "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj")
 (def ^:private contract-relative
   "bootstrap/gravity/p15_s23/native_runtime_driver.gravity")
 (def ^:private fixture-root-relative
   "bootstrap/clojure/fixtures/p15-native-runtime-driver")
+(def ^:private artifact-relative
+  "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn")
+(def ^:private artifact-read-limit 262144)
+(def ^:private bounded-source-read-limit 1048576)
+(def ^:private required-runtime-env-var
+  "GRAVITY_P15_NATIVE_RUNTIME_REQUIRED")
 (def ^:private source-fixture-relative
   (str fixture-root-relative "/accepted-print.gravity"))
 (def ^:private packet-limit 65536)
@@ -42,6 +51,88 @@
 (def ^:private c-flags
   ["-arch" "arm64" "-std=c11" "-O0" "-Wall" "-Wextra" "-Werror" "-pedantic"
    "-Wno-deprecated-declarations"])
+
+(def ^:private reviewed-fixture-relatives
+  ["accepted-branch.gravity"
+   "accepted-branch.payload"
+   "accepted-print.gravity"
+   "accepted-print.payload"
+   "accepted-print.qst"
+   "accepted-str.gravity"
+   "accepted-str.payload"
+   "rejected-halt.payload"
+   "rejected-int-leading-zero.payload"
+   "rejected-int-negative-zero.payload"
+   "rejected-int-plus.payload"
+   "rejected-invalid-utf8-ff.payload"
+   "rejected-invalid-utf8-overlong.payload"
+   "rejected-jump-leading-zero.payload"
+   "rejected-jump-negative-zero.payload"
+   "rejected-jump-plus.payload"
+   "rejected-missing-halt.payload"
+   "rejected-operand.payload"
+   "rejected-output-overflow.payload"
+   "rejected-underflow.payload"
+   "rejected-unsupported.payload"
+   "rejected-value-overflow.payload"])
+
+(def ^:private reviewed-accepted-evidence
+  [{:source (str fixture-root-relative "/accepted-print.gravity")
+    :extension ".gravity"
+    :payload (str fixture-root-relative "/accepted-print.payload")
+    :stdout "Hello Gravity\n"
+    :exit 0}
+   {:source (str fixture-root-relative "/accepted-print.qst")
+    :extension ".qst"
+    :payload (str fixture-root-relative "/accepted-print.payload")
+    :stdout "Hello Gravity\n"
+    :exit 0}
+   {:source (str fixture-root-relative "/accepted-branch.gravity")
+    :payload (str fixture-root-relative "/accepted-branch.payload")
+    :stdout "ok\n"
+    :exit 0}
+   {:source (str fixture-root-relative "/accepted-str.gravity")
+    :payload (str fixture-root-relative "/accepted-str.payload")
+    :stdout "name42\n"
+    :exit 0}])
+
+(def ^:private reviewed-rejected-evidence
+  {:stable-exit 125
+   :diagnostics ["P15NR001" "P15NR002" "P15NR003" "P15NR004" "P15NR005"
+                 "P15NR006" "P15NR007" "P15NR008" "P15NR009" "P15NR010"]
+   :families [:bad-cli-usage :packet-bound :embedded-nul :header-shape
+              :source-extension :runtime-rule-tamper :payload-hash-tamper
+              :unsupported-operation :invalid-utf8 :noncanonical-integer
+              :noncanonical-instruction-count :stack-underflow
+              :bounded-value-overflow :bounded-output-overflow :invalid-halt
+              :missing-halt]})
+
+(def ^:private reviewed-seed-boundary
+  {:selected-runtime-invokes-clojure? false
+   :selected-runtime-invokes-jvm? false
+   :selected-runtime-clojure-seed-boundary? false
+   :compiler-clojure-seed-boundary? true
+   :verifier-clojure-seed-boundary? true
+   :artifact-construction-clojure-seed-boundary? true
+   :process-and-file-io-clojure-seed-boundary? true
+   :public-wrapper-clojure-seed-boundary? true
+   :public-path-boundary-reduced? false
+   :clojure-seed-boundary? true})
+
+(def ^:private reviewed-limitations
+  {:public-command-route? false
+   :descriptor-relative-execution? false
+   :os-process-tree-containment? false
+   :packet-signature-verified? false
+   :source-content-hash-verified-by-provider? false
+   :compiler-authored-in-gravity? false
+   :provider-authored-in-gravity? false
+   :whole-language? false
+   :formal-language-complete? false
+   :full-language-completion-count 0
+   :self-hosted? false
+   :release-ready? false
+   :seedless-release? false})
 
 (defn- repository-root
   []
@@ -65,6 +156,134 @@
 (defn- path
   [relative]
   (.resolve ^Path @root relative))
+
+(defn- required-native-runtime?
+  []
+  (= "1" (System/getenv required-runtime-env-var)))
+
+(defn- require-artifact!
+  [condition details]
+  (when-not condition
+    (throw (ex-info "P15 native runtime artifact contract mismatch"
+                    (merge {:id "P15NR-ARTIFACT-CONTRACT"} details))))
+  true)
+
+(defn- read-bounded-regular-file
+  "Read one repository-relative regular file after a no-follow and size check.
+
+  The caller deliberately supplies a fixed relative path and a small bound;
+  this is source-only evidence, not a claim of race-free artifact attestation.
+  "
+  [relative maximum-bytes]
+  (let [target (path relative)]
+    (require-artifact! (not (Files/isSymbolicLink target))
+                       {:path relative :reason :symlink})
+    (require-artifact! (Files/isRegularFile target no-follow-options)
+                       {:path relative :reason :not-regular-file})
+    (let [before-size (Files/size target)
+          before-key (Files/getAttribute target "basic:fileKey" no-follow-options)]
+      (require-artifact! (<= before-size maximum-bytes)
+                         {:path relative :size before-size
+                          :maximum-bytes maximum-bytes})
+      (require-artifact! (some? before-key)
+                         {:path relative :reason :identity-unavailable})
+      (try
+        (with-open [channel (Files/newByteChannel
+                             target
+                             (into-array OpenOption
+                                         [java.nio.file.StandardOpenOption/READ
+                                          LinkOption/NOFOLLOW_LINKS]))]
+          (let [buffer (ByteBuffer/allocate (inc maximum-bytes))]
+            (loop []
+              (let [read (.read channel buffer)]
+                (cond
+                  (= -1 read)
+                  (let [after-size (.size channel)
+                        after-key (Files/getAttribute target "basic:fileKey"
+                                                      no-follow-options)
+                        size (.position buffer)]
+                    (require-artifact! (= before-size after-size)
+                                       {:path relative :before-size before-size
+                                        :after-size after-size})
+                    (require-artifact! (= before-key after-key)
+                                       {:path relative :reason :identity-changed})
+                    (require-artifact! (<= size maximum-bytes)
+                                       {:path relative :reason :read-exceeded-bound
+                                        :maximum-bytes maximum-bytes})
+                    (let [bytes (byte-array size)]
+                      (.flip buffer)
+                      (.get buffer bytes)
+                      bytes))
+
+                  (>= (.position buffer) (inc maximum-bytes))
+                  (throw (ex-info "P15 native runtime artifact exceeds read bound"
+                                  {:id "P15NR-ARTIFACT-BOUND"
+                                   :path relative
+                                   :maximum-bytes maximum-bytes}))
+
+                  :else
+                  (recur))))))
+        (catch Exception error
+          (throw (ex-info "P15 native runtime bounded read failed"
+                          {:id "P15NR-ARTIFACT-READ"
+                           :path relative}
+                          error)))))))
+
+(defn- strict-utf8
+  [^bytes bytes]
+  (let [decoder (doto (.newDecoder StandardCharsets/UTF_8)
+                  (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+                  (.onUnmappableCharacter java.nio.charset.CodingErrorAction/REPORT))]
+    (str (.decode decoder (ByteBuffer/wrap bytes)))))
+
+(defn- exact-map-keys
+  [value expected label]
+  (require-artifact! (map? value) {:label label :value value})
+  (require-artifact! (= expected (set (keys value)))
+                     {:label label :keys (set (keys value))}))
+
+(defn- read-artifact
+  []
+  (when-let [bytes (read-bounded-regular-file artifact-relative artifact-read-limit)]
+    (try
+      (let [sentinel (Object.)]
+        (with-open [reader (PushbackReader.
+                            (StringReader. (strict-utf8 bytes)))]
+          (let [value (edn/read {:eof sentinel} reader)
+                trailing (edn/read {:eof sentinel} reader)]
+            (require-artifact! (not (identical? value sentinel))
+                               {:path artifact-relative :reason :missing-edn-form})
+            (require-artifact! (identical? trailing sentinel)
+                               {:path artifact-relative :reason :trailing-edn-form})
+            value)))
+      (catch Exception error
+        (throw (ex-info "P15 native runtime artifact EDN parse failed"
+                        {:id "P15NR-ARTIFACT-EDN"
+                         :path artifact-relative}
+                        error))))))
+
+(defn- assert-reviewed-fixture-set
+  []
+  (let [directory (path fixture-root-relative)]
+    (require-artifact! (not (Files/isSymbolicLink directory))
+                       {:path fixture-root-relative :reason :symlink})
+    (require-artifact! (Files/isDirectory directory no-follow-options)
+                       {:path fixture-root-relative :reason :not-directory})
+    (let [entries (with-open [stream (Files/list directory)]
+                    (vec (iterator-seq (.iterator stream))))
+          actual (sort (mapv #(str fixture-root-relative "/" (.getFileName ^Path %))
+                             entries))
+          expected (sort (mapv #(str fixture-root-relative "/" %)
+                               reviewed-fixture-relatives))]
+      (doseq [entry entries]
+        (require-artifact! (not (Files/isSymbolicLink entry))
+                           {:path (str entry) :reason :symlink})
+        (require-artifact! (Files/isRegularFile entry no-follow-options)
+                           {:path (str entry) :reason :not-regular-file}))
+      (require-artifact! (= expected actual) {:expected expected :actual actual})
+      (doseq [relative reviewed-fixture-relatives]
+        (read-bounded-regular-file (str fixture-root-relative "/" relative)
+                                   bounded-source-read-limit)))))
 
 (defn- arm64-darwin-toolchain-available?
   []
@@ -107,6 +326,11 @@
   (let [digest (.digest (doto (MessageDigest/getInstance "SHA-256")
                           (.update bytes)))]
     (apply str (map #(format "%02x" (bit-and (int %) 0xff)) digest))))
+
+(defn- sha256-file
+  [relative]
+  (when-let [bytes (read-bounded-regular-file relative bounded-source-read-limit)]
+    (str "sha256:" (sha256-hex bytes))))
 
 (defn- hex-encode
   [^bytes bytes]
@@ -248,8 +472,13 @@
 (defn- with-provider
   [f]
   (if-not (arm64-darwin-toolchain-available?)
-    (is true (str "no native-runtime claim: an executable ARM64 macOS "
-                  "Clang/file toolchain is unavailable"))
+    (if (required-native-runtime?)
+      (throw (ex-info
+              "required native-runtime provider execution is unavailable"
+              {:id "P15NR-PLATFORM-UNSUPPORTED"
+               :required-environment required-runtime-env-var}))
+      (is true (str "no native-runtime claim: an executable ARM64 macOS "
+                    "Clang/file toolchain is unavailable")))
     (with-private-root
       (fn [directory]
         (let [compiled (compile-provider! directory)]
@@ -292,6 +521,179 @@
     nil
     (catch clojure.lang.ExceptionInfo ex
       (:id (ex-data ex)))))
+
+(defn- artifact-contract!
+  []
+  (let [artifact (read-artifact)
+        contract-hash (sha256-file contract-relative)
+        provider-hash (sha256-file source-relative)
+        test-source-hash (sha256-file test-source-relative)]
+    (require-artifact! (map? artifact) {:label :artifact :value artifact})
+    (exact-map-keys
+     artifact
+     #{:artifact :schema-version :status :scope :authority :semantic-contract :provider
+       :packet-contract :accepted-evidence :rejected-evidence
+       :focused-validation :seed-boundary :limitations}
+     :artifact)
+    (require-artifact! (= :gravity/p15-s23-bounded-native-runtime-provider-proof
+                          (:artifact artifact)) artifact)
+    (require-artifact! (= 1 (:schema-version artifact)) artifact)
+    (require-artifact!
+     (= :complete-for-internal-bounded-native-runtime-provider (:status artifact))
+     artifact)
+    (require-artifact! (= :content-bound-precompiled-packet-runtime (:scope artifact))
+                       artifact)
+    (require-artifact! (= :none (:authority artifact)) artifact)
+    (let [semantic-contract (:semantic-contract artifact)
+          provider (:provider artifact)
+          packet-contract (:packet-contract artifact)
+          focused (:focused-validation artifact)]
+      (exact-map-keys semantic-contract #{:path :content-hash :owner}
+                      :semantic-contract)
+      (require-artifact!
+       (= {:path contract-relative :content-hash contract-hash :owner :gravity-source}
+          semantic-contract)
+       semantic-contract)
+      (exact-map-keys
+       provider
+       #{:path :content-hash :implementation :target :profile
+         :runtime-provider :allocation-provider :packet-transport
+         :application-output :diagnostics :build-command :observed-binary-kind
+         :sample-binary-content-hash :reproducible-binary-proven?
+         :undefined-imports :process-imports? :filesystem-imports?
+         :network-imports? :dynamic-loader-imports?}
+       :provider)
+      (require-artifact! (= source-relative (:path provider)) provider)
+      (require-artifact! (= provider-hash (:content-hash provider)) provider)
+      (require-artifact!
+       (= {:implementation :host-authored-c
+           :target :arm64-macos
+           :profile :native
+           :runtime-provider :gravity.native/libsystem-stdio-v1
+           :allocation-provider :gravity.native/bounded-stack-storage-v1
+           :packet-transport :inherited-stdin
+           :application-output :inherited-stdout
+           :diagnostics :inherited-stderr
+           :observed-binary-kind "Mach-O 64-bit executable arm64"
+           :reproducible-binary-proven? false
+           :process-imports? false
+           :filesystem-imports? false
+           :network-imports? false
+           :dynamic-loader-imports? false}
+          (select-keys provider
+                       [:implementation :target :profile :runtime-provider
+                        :allocation-provider :packet-transport :application-output
+                        :diagnostics :observed-binary-kind
+                        :reproducible-binary-proven? :process-imports?
+                        :filesystem-imports? :network-imports?
+                        :dynamic-loader-imports?]))
+       provider)
+      (require-artifact!
+       (= ["/usr/bin/cc" "-arch" "arm64" "-std=c11" "-O0" "-Wall"
+           "-Wextra" "-Werror" "-pedantic" "-Wno-deprecated-declarations"
+           "bootstrap/native/p15_native_runtime_driver.c" "-o" "<private-output>"]
+          (:build-command provider))
+       provider)
+      (require-artifact!
+       (= "sha256:ebbcb45ad69700ca83588dc475bf6083b2606e5ce9981c40ffeb0873188b4879"
+          (:sample-binary-content-hash provider))
+       provider)
+      (require-artifact!
+       (= ["_CC_SHA256" "___chkstk_darwin" "___memcpy_chk" "___snprintf_chk"
+           "___stack_chk_fail" "___stack_chk_guard" "___stderrp" "___stdinp"
+           "___stdoutp" "_bzero" "_ferror" "_fflush" "_fprintf" "_fread"
+           "_fwrite" "_memchr" "_memcpy" "_printf" "_puts" "_strchr"
+           "_strcmp" "_strlen" "_strncmp" "_strstr"]
+          (:undefined-imports provider))
+       provider)
+      (exact-map-keys
+       packet-contract
+       #{:format :maximum-packet-bytes :maximum-instructions
+         :maximum-stack-values :maximum-value-bytes :maximum-output-bytes
+         :payload-content-binding :runtime-rule-binding
+         :source-path-and-extension-preserved? :source-sha256-declared?
+         :source-content-hash-verified-by-provider?
+         :trusted-packet-constructor :supported-operations
+         :canonical-integer-grammar? :strict-utf8? :embedded-nul-rejected?
+         :stdout-buffered-until-complete-halt?}
+       :packet-contract)
+      (require-artifact!
+       (= {:format "gravity-native-runtime-v1"
+           :maximum-packet-bytes 65536
+           :maximum-instructions 128
+           :maximum-stack-values 128
+           :maximum-value-bytes 1024
+           :maximum-output-bytes 8192
+           :payload-content-binding :sha256
+           :runtime-rule-binding :gravity-source-sha256
+           :source-path-and-extension-preserved? true
+           :source-sha256-declared? true
+           :source-content-hash-verified-by-provider? false
+           :trusted-packet-constructor :clojure-test-and-bootstrap-boundary
+           :supported-operations
+           (vec '(push-string push-int push-bool push-nil str println jump
+                  jump-if-false halt))
+           :canonical-integer-grammar? true
+           :strict-utf8? true
+           :embedded-nul-rejected? true
+           :stdout-buffered-until-complete-halt? true}
+          packet-contract)
+       packet-contract)
+      (exact-map-keys focused
+                      #{:test-namespace :tests :assertions :failures :errors
+                        :receipt-scope :test-source-content-hash
+                        :historical-receipt}
+                      :focused-validation)
+      (require-artifact! (= 'gravity.p15-native-runtime-driver-test
+                            (:test-namespace focused)) focused)
+      (require-artifact!
+       (= {:tests 10 :assertions 235 :failures 0 :errors 0}
+          (select-keys focused [:tests :assertions :failures :errors]))
+       focused)
+      (require-artifact!
+       (= test-source-hash (:test-source-content-hash focused))
+       {:expected test-source-hash
+        :actual (:test-source-content-hash focused)})
+      (require-artifact! (= :source-only-census (:receipt-scope focused)) focused)
+      (exact-map-keys (:historical-receipt focused)
+                      #{:tests :assertions :failures :errors :supervisor
+                        :canonical-lock :run-id
+                        :elapsed-seconds :peak-rss-bytes :peak-process-count
+                        :log-content-hash :status-content-hash
+                        :test-source-content-hash :coverage-audit
+                        :gravity-contract-check}
+                      :historical-receipt)
+      (require-artifact!
+       (= {:tests 9 :assertions 234 :failures 0 :errors 0}
+          (select-keys (:historical-receipt focused)
+                       [:tests :assertions :failures :errors]))
+       (:historical-receipt focused))
+      (require-artifact!
+       (= {:supervisor :gravity/hardened-shared-capacity-runner
+           :canonical-lock "/private/tmp/gravity-sh07-heavy.lock"}
+          (select-keys (:historical-receipt focused)
+                       [:supervisor :canonical-lock]))
+       (:historical-receipt focused))
+      (exact-map-keys (:coverage-audit (:historical-receipt focused))
+                      #{:documents :full-language-complete :without-executable-owner
+                        :public-accepted :accepted-total :public-rejected-specific
+                        :rejected-total}
+                      :coverage-audit)
+      (exact-map-keys (:gravity-contract-check (:historical-receipt focused))
+                      #{:verification-profile :verification-target :result
+                        :log-content-hash :status-content-hash}
+                      :gravity-contract-check))
+    (require-artifact! (= reviewed-accepted-evidence (:accepted-evidence artifact))
+                       artifact)
+    (require-artifact! (= reviewed-rejected-evidence (:rejected-evidence artifact))
+                       artifact)
+    (assert-reviewed-fixture-set)
+    (require-artifact! (= reviewed-seed-boundary (:seed-boundary artifact)) artifact)
+    (require-artifact! (= reviewed-limitations (:limitations artifact)) artifact)
+    true))
+
+(deftest p15-native-runtime-provider-artifact-identity-and-fixture-contract
+  (is (true? (artifact-contract!))))
 
 (deftest p15-native-runtime-provider-strict-compiles
   (with-provider

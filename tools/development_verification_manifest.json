@@ -2519,6 +2519,9 @@
       "jvm_heap": "-J-Xmx1g",
       "minimum_heap_bytes": 1073741824,
       "resource_receipt": "observed-peak-process-tree-rss-and-wall-time",
+      "env": {
+        "GRAVITY_P15_NATIVE_RUNTIME_REQUIRED": "1"
+      },
       "command": [
         "clojure",
         "-J-Xmx1g",

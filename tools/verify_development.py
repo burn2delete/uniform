@@ -456,6 +456,9 @@ _P15_NATIVE_RUNTIME_PROVIDER_TOOL_INPUTS = [
     "deps.edn",
     "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
 ]
+_P15_NATIVE_RUNTIME_REQUIRED_ENV = {
+    "GRAVITY_P15_NATIVE_RUNTIME_REQUIRED": "1",
+}
 _OBSERVED_PROCESS_TREE_RESOURCE_RECEIPT = "observed-peak-process-tree-rss-and-wall-time"
 _OBSERVED_PROCESS_TREE_RSS_CONTRACT = "run_with_heartbeat.process_tree_metrics-v1"
 
@@ -604,6 +607,10 @@ def _validate_p15_native_runtime_provider_contract(check: Mapping[str, Any]) -> 
     if check.get("resource_receipt") != _OBSERVED_PROCESS_TREE_RESOURCE_RECEIPT:
         raise ManifestError(
             f"check {check_id!r} must declare the observed process-tree resource receipt"
+        )
+    if check.get("env") != _P15_NATIVE_RUNTIME_REQUIRED_ENV:
+        raise ManifestError(
+            f"check {check_id!r} must bind the exact native-runtime required environment"
         )
     if (
         type(check.get("command")) is not list

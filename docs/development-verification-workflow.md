@@ -126,12 +126,25 @@ with only `deps.edn` and
 Each owned path routes to this node and `stage0-orchestrator-unit` only;
 legacy Stage0 broad owners impact-exclude those paths. Explicit `--check`
 includes the prerequisite closure and `--all` includes the node. The reviewed
-coordinator observation is 9 tests/234 assertions in about 3.791 seconds with
-peak process-tree RSS 163,463,168 bytes, using the host-authored C provider on
-ARM64 macOS. Toolchain-unavailable platforms record a skip/no-claim result.
-This is a narrow internal exception to the usual native-target exclusion and
-does not create public native, self-hosting, release, seedless, or strict
-containment authority.
+coordinator observation is historical evidence: 9 tests/234 assertions in
+about 3.791 seconds with peak process-tree RSS 163,463,168 bytes, using the
+host-authored C provider on ARM64 macOS. The manifest binds exactly
+`GRAVITY_P15_NATIVE_RUNTIME_REQUIRED=1`. The namespace's always-running
+source-only preflight performs a bounded no-follow single-form EDN parse of
+the provider artifact, recomputes both current source hashes, and checks every
+accepted/rejected evidence path against the exact 22-file fixture set.
+
+An ordinary direct namespace run without that environment retains an explicit
+unsupported-platform/no-claim skip. The focused verifier supplies the marker;
+if the ARM64 macOS Clang/file toolchain is unavailable, the namespace fails
+instead of producing an ordinary pass. Therefore a focused exit zero means
+the provider was exercised, while no host or toolchain substitution is
+allowed. This is a narrow internal exception to the usual native-target
+exclusion and does not create public native, self-hosting, release, seedless,
+or strict containment authority.
+The refreshed artifact's current source-only census is 10 tests/235 assertions;
+the embedded 9-test timing/RSS hashes are nested historical receipt data, not a
+new runtime measurement.
 
 ## Stage1 SH-01 handoff and measured boundary
 

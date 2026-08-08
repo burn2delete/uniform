@@ -3341,6 +3341,10 @@ class VerifyDevelopmentTests(unittest.TestCase):
             provider["resource_receipt"],
             "observed-peak-process-tree-rss-and-wall-time",
         )
+        self.assertEqual(
+            provider["env"],
+            {"GRAVITY_P15_NATIVE_RUNTIME_REQUIRED": "1"},
+        )
         expected_inputs = [
             "bootstrap/native/p15_native_runtime_driver.c",
             "bootstrap/gravity/p15_s23/native_runtime_driver.gravity",
@@ -3490,6 +3494,16 @@ class VerifyDevelopmentTests(unittest.TestCase):
             ("wrong automatic", lambda item: item.__setitem__("automatic", False), "automatic must be exactly True"),
             ("wrong authority", lambda item: item.__setitem__("authority", "declared"), "authority='none'"),
             ("wrong resource receipt", lambda item: item.__setitem__("resource_receipt", "none"), "resource receipt"),
+            (
+                "wrong required environment",
+                lambda item: item.__setitem__("env", {"GRAVITY_P15_NATIVE_RUNTIME_REQUIRED": "0"}),
+                "exact native-runtime required environment",
+            ),
+            (
+                "missing required environment",
+                lambda item: item.pop("env"),
+                "exact native-runtime required environment",
+            ),
         )
         for label, mutate, message in cases:
             with self.subTest(case=label):
