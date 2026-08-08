@@ -116,11 +116,13 @@
       invalid-export-clause
       (set (remove (definition-names forms) exports)))))
 
-(deftest sh07-c11-source-control-form-arities-are-exact
-  (let [bytes (source-bytes)
-        forms (source-forms)]
+(deftest sh07-c11-source-binding-is-exact
+  (let [bytes (source-bytes)]
     (is (= expected-source-byte-count (alength bytes)))
-    (is (= expected-source-revision-id (sha256-id bytes)))
+    (is (= expected-source-revision-id (sha256-id bytes)))))
+
+(deftest sh07-c11-source-control-form-arities-are-exact
+  (let [forms (source-forms)]
     (is (empty? (invalid-source-if-forms forms)))
     (testing "both under- and over-arity if forms fail the same source-only gate"
       (is (= 1 (count (invalid-source-if-forms '[(if true)]))))
