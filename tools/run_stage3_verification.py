@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the reviewed Stage 3--6 fixed verification boundary.
+"""Run the reviewed Stage 3--7 fixed verification boundary.
 
 The development verifier deliberately treats this file as the only command
 that may own the SH-07 heavy lock.  The command is intentionally boring: its
@@ -7,7 +7,9 @@ argv is fixed by the manifest and all per-invocation state is supplied through
 an environment binding created by :mod:`verify_development`.  There is no
 public command passthrough or shell evaluation in this wrapper.
 
-The enabled modes are ``pure`` and ``proof-candidate``.  A public/pure batch
+The enabled modes are ``pure`` and ``proof-candidate``.  Stage7 currently
+exposes only the cheap C11 source preflight; it is not the complete Stage7
+graph or a proof policy.  A public/pure batch
 acquires the canonical SH-07 lease and runs one of the reviewed Clojure
 batches.  A proof-candidate batch starts a *new* checkpoint directory and
 invokes the existing SH-07 checkpoint runner with the module selected by the
@@ -105,6 +107,7 @@ FIXED_BATCHES = (
     "stage6-c10-kernel",
     "stage6-public-c10",
     "stage6-sh11-c9-safety-adapter",
+    "stage7-c11-source-preflight",
     "authority",
     "c8-authority",
     "c9-authority",
@@ -141,6 +144,7 @@ _BATCH_HEAP = {
     "stage6-c10-kernel": "-J-Xmx2g",
     "stage6-public-c10": "-J-Xmx2g",
     "stage6-sh11-c9-safety-adapter": "-J-Xmx8g",
+    "stage7-c11-source-preflight": "-J-Xmx512m",
     "c10-authority": "-J-Xmx8g",
 }
 _BATCH_COMMANDS: dict[str, tuple[str, ...]] = {
@@ -269,6 +273,11 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
         "gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-safety-adapter-binds-one-real-read",
         "gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-generic-classifier-and-substitutions-fail-closed",
         "gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-safety-authenticated-gravity-boundary",
+    ),
+    "stage7-c11-source-preflight": (
+        "gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-binding-is-exact",
+        "gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-control-form-arities-are-exact",
+        "gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions",
     ),
 }
 

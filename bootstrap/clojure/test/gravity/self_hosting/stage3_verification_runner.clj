@@ -1,5 +1,9 @@
 (ns gravity.self-hosting.stage3-verification-runner
-  "Runs the fixed, non-authoritative Stage3--Stage6 development batches.
+  "Runs the fixed, non-authoritative Stage3--Stage7 development batches.
+
+  Stage7 currently exposes only the cheap C11 source preflight.  It is a
+  deliberately narrow source-only batch and does not claim to be the full
+  Stage7 graph or an authority/proof policy.
 
   This namespace intentionally has no compile-time dependency on the Clojure
   bootstrap, the C7 tests, or the SH-07 iteration runner.  The production
@@ -34,6 +38,8 @@
   'gravity.self-hosting.sh10-c8-ownership-adapter-test)
 (def ^:private c10-source-test-namespace
   'gravity.self-hosting.sh07-c10-safety-source-coverage-test)
+(def ^:private c11-source-test-namespace
+  'gravity.self-hosting.sh07-c11-mir-source-preflight-test)
 (def ^:private sh11-numeric-safety-test-namespace
   'gravity.self-hosting.sh11-numeric-safety-test)
 (def ^:private sh11-c9-safety-adapter-test-namespace
@@ -181,6 +187,14 @@
    'gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-generic-classifier-and-substitutions-fail-closed
    'gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-safety-authenticated-gravity-boundary])
 
+;; Stage7 currently exposes only this cheap, source-only C11 preflight.  Keep
+;; the exact source order and complete three-test census here; the broader
+;; Stage7 graph and any proof policy remain deliberately out of this runner.
+(def stage7-c11-source-preflight-selectors
+  ['gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-binding-is-exact
+   'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-control-form-arities-are-exact
+   'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions])
+
 (def stage6-public-c10-selectors
   ['gravity.bootstrap-test/public-check-accepts-gravity-authored-c10-safety-analysis-pipeline])
 
@@ -206,7 +220,8 @@
    :stage6-c10-source-structural
    :stage6-c10-kernel
    :stage6-public-c10
-   :stage6-sh11-c9-safety-adapter])
+   :stage6-sh11-c9-safety-adapter
+   :stage7-c11-source-preflight])
 
 (def ^:private batch-selectors
   (array-map
@@ -232,7 +247,8 @@
    :stage6-c10-kernel stage6-c10-kernel-selectors
    :stage6-public-c10 stage6-public-c10-selectors
    :stage6-sh11-c9-safety-adapter
-   stage6-sh11-c9-safety-adapter-selectors))
+   stage6-sh11-c9-safety-adapter-selectors
+   :stage7-c11-source-preflight stage7-c11-source-preflight-selectors))
 
 (def fixed-batch-ids
   "The complete CLI allowlist, in deterministic presentation order."
@@ -276,7 +292,8 @@
     sh10-ownership-transition-test-namespace
     sh10-c8-ownership-adapter-test-namespace
     sh11-numeric-safety-test-namespace
-    sh11-c9-safety-adapter-test-namespace})
+    sh11-c9-safety-adapter-test-namespace
+    c11-source-test-namespace})
 
 (def ^:private partial-selector-namespaces
   #{'gravity.self-hosting.sh07-authoritative-coverage-census-test

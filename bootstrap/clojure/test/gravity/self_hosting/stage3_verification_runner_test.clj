@@ -39,6 +39,8 @@
   'gravity.self-hosting.sh07-c9-ownership-source-coverage-test)
 (def ^:private c10-source-ns
   'gravity.self-hosting.sh07-c10-safety-source-coverage-test)
+(def ^:private c11-source-ns
+  'gravity.self-hosting.sh07-c11-mir-source-preflight-test)
 (def ^:private sh10-kernel-ns
   'gravity.self-hosting.sh10-ownership-transition-test)
 (def ^:private sh10-adapter-ns
@@ -68,7 +70,8 @@
    sh10-kernel-ns "bootstrap/clojure/test/gravity/self_hosting/sh10_ownership_transition_test.clj"
    sh10-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj"
    sh11-kernel-ns "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj"
-   sh11-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj"})
+   sh11-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj"
+   c11-source-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj"})
 
 (defn- source-deftest-selectors
   [namespace-symbol relative-path]
@@ -109,7 +112,8 @@
           :stage6-c10-source-structural
           :stage6-c10-kernel
           :stage6-public-c10
-          :stage6-sh11-c9-safety-adapter]
+          :stage6-sh11-c9-safety-adapter
+          :stage7-c11-source-preflight]
          runner/fixed-batch-ids))
   (is (= runner/primitive-pure-selectors
          (get runner/fixed-batch-selectors :primitive-pure)))
@@ -171,6 +175,12 @@
               :stage6-sh11-c9-safety-adapter)))
   (is (= runner/stage6-public-c10-selectors
          (get runner/fixed-batch-selectors :stage6-public-c10)))
+  (is (= runner/stage7-c11-source-preflight-selectors
+         (get runner/fixed-batch-selectors :stage7-c11-source-preflight)))
+  (is (= 3 (count runner/stage7-c11-source-preflight-selectors)))
+  (is (= :source-subsequence
+         (get-in runner/fixed-batches
+                 [:stage7-c11-source-preflight :catalog-order-policy])))
   (is (= :source-subsequence
          (get-in runner/fixed-batches
                  [:stage5-c9-source-structural :catalog-order-policy])))
@@ -229,6 +239,9 @@
          sh11-adapter-ns (source-deftest-selectors
                           sh11-adapter-ns
                           "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj")
+         c11-source-ns (source-deftest-selectors
+                        c11-source-ns
+                        "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}]
     (let [catalog-result
@@ -264,6 +277,21 @@
             (str "source-order coverage drift for " namespace-symbol)))
       (is (= (set expected) (set actual))
           (str "selector coverage drift for " namespace-symbol)))))
+
+(deftest stage7-c11-source-preflight-has-independent-three-test-census
+  ;; Keep a source-level census independent from the fixed vector literal:
+  ;; adding, removing, duplicating, or reordering a deftest must fail this
+  ;; cheap runner-unit check before any C11 implementation work runs.
+  (let [actual (source-deftest-selectors
+                c11-source-ns
+                "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj")]
+    (is (= 3 (count actual)))
+    (is (= 3 (count (set actual))))
+    (is (= ['gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-binding-is-exact
+            'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-control-form-arities-are-exact
+            'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions]
+           actual))
+    (is (= runner/stage7-c11-source-preflight-selectors actual))))
 
 (deftest c8-source-batch-keeps-explicit-arity-before-contract-order
   (is (= :explicit-execution-order
@@ -357,6 +385,9 @@
          sh11-adapter-ns (source-deftest-selectors
                           sh11-adapter-ns
                           "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj")
+         c11-source-ns (source-deftest-selectors
+                        c11-source-ns
+                        "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}
         missing (update base primitive-ns pop)

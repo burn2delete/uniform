@@ -84,6 +84,7 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage6-c10-kernel": "stage6-c10-kernel-selectors",
             "stage6-public-c10": "stage6-public-c10-selectors",
             "stage6-sh11-c9-safety-adapter": "stage6-sh11-c9-safety-adapter-selectors",
+            "stage7-c11-source-preflight": "stage7-c11-source-preflight-selectors",
         }
         for batch, definition in selector_definitions.items():
             self.assertEqual(
@@ -117,6 +118,7 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage6-c10-kernel": "-J-Xmx2g",
             "stage6-public-c10": "-J-Xmx2g",
             "stage6-sh11-c9-safety-adapter": "-J-Xmx8g",
+            "stage7-c11-source-preflight": "-J-Xmx512m",
             "c10-authority": "-J-Xmx8g",
         }
         self.assertEqual(stage3._BATCH_HEAP, expected_heap)
@@ -152,6 +154,17 @@ class Stage3WrapperTests(unittest.TestCase):
         self.assertTrue(
             c10_adapter[-1].endswith("/sh11-c9-safety-authenticated-gravity-boundary")
         )
+        c11 = list(stage3._FIXED_BATCH_SELECTORS["stage7-c11-source-preflight"])
+        self.assertEqual(
+            [
+                "gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-binding-is-exact",
+                "gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-control-form-arities-are-exact",
+                "gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions",
+            ],
+            c11,
+        )
+        self.assertEqual(3, len(c11))
+        self.assertEqual(3, len(set(c11)))
 
     def test_retired_singleton_batch_ids_are_rejected(self) -> None:
         for retired in (
@@ -164,6 +177,25 @@ class Stage3WrapperTests(unittest.TestCase):
         ):
             with self.assertRaises(stage3.Stage3Error):
                 stage3.batch_command(retired)
+
+    def test_stage7_c11_source_preflight_has_exact_three_test_census(self) -> None:
+        """The complete C11 source namespace cannot silently drift."""
+
+        source_path = (
+            Path(__file__).parents[2]
+            / "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj"
+        )
+        names = re.findall(r"\(deftest\s+([^\s\)]+)", source_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            [
+                "sh07-c11-source-binding-is-exact",
+                "sh07-c11-source-control-form-arities-are-exact",
+                "sh07-c11-source-exports-have-definitions",
+            ],
+            names,
+        )
+        self.assertEqual(3, len(names))
+        self.assertEqual(3, len(set(names)))
 
     @staticmethod
     def _hash(path: Path) -> str:
