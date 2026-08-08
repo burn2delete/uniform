@@ -19,7 +19,10 @@
              verify-c13-mir-optimization-passes
              sh16-optimization-policy
              sh16-optimize
-             sh16-verify])
+             sh16-verify
+             sh16-c13-evidence-input-valid?
+             sh16-build-c13-evidence-boundary
+             sh16-verify-c13-evidence-boundary])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -2452,3 +2455,630 @@
          :rule "C13-VERIFY"
          :reason :request-structural-bound
          :structural-preflight request-preflight}]})))
+
+; Evidence-only C12 -> C13 boundary. This records an unchanged optimization
+; decision without adapting the proof-reference carrier into generic MIR.
+(defn sh16-c13-evidence-pending []
+  [:exact-c12-evidence-validation
+   :c12-lineage-validation
+   :fact-semantic-validation
+   :semantic-anchor-validation
+   :trusted-c12-authority
+   :generic-c11-mir-verifier
+   :complete-c11-mir-adapter
+   :independent-canonical-digest-verification
+   :proof-certificate-validation
+   :translation-validation
+   :target-lowering
+   :self-hosting
+   :release])
+
+(defn sh16-c13-evidence-nonclaims []
+  [:c12-authority
+   :c12-domain-verifier
+   :proof-authority
+   :generic-c11-mir-verifier
+   :independent-digest-authority
+   :full-mir-adaptation
+   :mir-operation-semantics
+   :optimization
+   :optimized-mir
+   :optimization-credit
+   :check-elision
+   :proof-certificate-validation
+   :translation-validation
+   :backend-lowering
+   :target-lowering
+   :runtime-lowering
+   :executable-load
+   :self-hosting
+   :seed-retirement
+   :public-run
+   :public-compile
+   :full-path-neutral-identity
+   :exact-c12-evidence-validation
+   :c12-lineage-validation
+   :fact-semantic-validation
+   :semantic-anchor-validation
+   :release])
+
+(defn sh16-c13-evidence-checks []
+  [:bounded-persistent-carriers
+   :declared-c12-evidence-envelope
+   :declared-c12-verification-equality
+   :opaque-c12-carrier-preserved-by-value
+   :top-level-provenance-excluded-from-identity-projection
+   :separate-physical-provenance
+   :unchanged-decision-record
+   :empty-invalidation-ledger
+   :no-check-elision
+   :fresh-c13-recomputation])
+
+(defn sh16-c13-c12-checks []
+  [:bounded-c11-input-carriers
+   :exact-proof-reference-anchor-and-payload
+   :exact-c8-c9-c10-lineage
+   :path-neutral-semantic-identity
+   :separate-physical-provenance
+   :external-resolution-shape-checked
+   :fresh-c12-recomputation])
+
+(defn sh16-c13-c12-nonclaims []
+  [:generic-mir-verifier
+   :executable-load
+   :target-backend-lowering
+   :c12-authority
+   :proof-authority
+   :self-hosting
+   :release
+   :trusted-digest-resolution
+   :independent-canonical-digest-verification])
+
+(defn sh16-c13-evidence-exact-keys? [value expected]
+  (if (map? value)
+    (if (= (count value) (count expected))
+      (= (set (keys value)) expected)
+      false)
+    false))
+
+(defn sh16-c13-evidence-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        false))))
+
+(defn sh16-c13-evidence-children [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= 0 (count remaining))
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (if (vector? value)
+      value
+      (if (set? value) (vec value) []))))
+
+(defn sh16-c13-evidence-push
+  [frontier children depth]
+  (if (= 0 (count children))
+    frontier
+    (sh16-c13-evidence-push
+     (conj frontier [(first children) (+ depth 1)])
+     (rest children)
+     depth)))
+
+(defn sh16-c13-evidence-scalar? [value]
+  (if (= nil value)
+    true
+    (if (integer? value)
+      true
+      (if (string? value)
+        true
+        (if (keyword? value)
+          true
+          (if (symbol? value)
+            true
+            (contains? #{true false} value)))))))
+
+(defn sh16-c13-evidence-preflight [value]
+  (if (seq? value)
+    {:status :rejected :reason :carrier-sequence}
+    (loop [frontier [[value 0]] nodes 0 enqueued 1]
+      (if (= 0 (count frontier))
+        {:status :accepted :nodes nodes :enqueued enqueued}
+        (let [entry (first frontier)
+              remaining (subvec frontier 1 (count frontier))
+              current (first entry)
+              depth (second entry)
+              next-nodes (+ nodes 1)]
+          (if (> next-nodes 32768)
+            {:status :rejected :reason :carrier-node-bound}
+            (if (> depth 256)
+              {:status :rejected :reason :carrier-depth-bound}
+              (if (seq? current)
+                {:status :rejected :reason :carrier-sequence}
+                (if (map? current)
+                  (if (> (count current) 512)
+                    {:status :rejected :reason :carrier-map-width}
+                    (let [children (sh16-c13-evidence-children current)
+                          next-enqueued (+ enqueued (count children))]
+                      (if (> next-enqueued 32768)
+                        {:status :rejected :reason :carrier-frontier-bound}
+                        (recur
+                         (sh16-c13-evidence-push
+                          remaining children depth)
+                         next-nodes next-enqueued))))
+                  (if (vector? current)
+                    (if (> (count current) 1024)
+                      {:status :rejected :reason :carrier-vector-width}
+                      (let [children (sh16-c13-evidence-children current)
+                            next-enqueued (+ enqueued (count children))]
+                        (if (> next-enqueued 32768)
+                          {:status :rejected :reason :carrier-frontier-bound}
+                          (recur
+                           (sh16-c13-evidence-push
+                            remaining children depth)
+                           next-nodes next-enqueued))))
+                    (if (set? current)
+                      (if (> (count current) 512)
+                        {:status :rejected :reason :carrier-set-width}
+                        (let [children (sh16-c13-evidence-children current)
+                              next-enqueued (+ enqueued (count children))]
+                          (if (> next-enqueued 32768)
+                            {:status :rejected
+                             :reason :carrier-frontier-bound}
+                            (recur
+                             (sh16-c13-evidence-push
+                              remaining children depth)
+                             next-nodes next-enqueued))))
+                      (if (sh16-c13-evidence-scalar? current)
+                        (recur remaining next-nodes enqueued)
+                        {:status :rejected
+                         :reason :carrier-scalar}))))))))))))
+
+(defn sh16-c13-evidence-identity-input [evidence]
+  {:domain :gravity/sh16-c13-evidence-boundary-v1
+   :schema-version 1
+   :c12-artifact-id (get evidence :artifact-id)
+   :c11-module-id (get evidence :c11-module-id)
+   :c11-operation-id (get evidence :c11-operation-id)
+   :c11-token-id (get evidence :c11-token-id)
+   :source (get evidence :source)
+   :semantic-anchor (get evidence :semantic-anchor)
+   :facts (get evidence :facts)
+   :payload (get evidence :payload)
+   :scope (get evidence :scope)
+   :lowering-status (get evidence :lowering-status)
+   :fallback (get evidence :fallback)
+   :b1-preflight (get evidence :b1-preflight)
+   :pending (get evidence :pending)
+   :nonclaims (get evidence :nonclaims)})
+
+(defn sh16-c13-c12-evidence-valid? [evidence]
+  (if (sh16-c13-evidence-exact-keys?
+       evidence
+       #{:artifact :schema-version :status :domain :scope :source
+         :semantic-anchor :identity-input :operation-identity-input
+         :c11-module-id :c11-operation-id :c11-token-id :facts :payload
+         :verifier :lowering-status :fallback :b1-preflight :pending
+         :nonclaims :provenance :identity-resolution
+         :identity-binding-status :diagnostics :self-hosted?
+         :clojure-seed-boundary? :artifact-id :verification-status})
+    (if (= :gravity/sh13-c11-domain-evidence (get evidence :artifact))
+      (if (= 1 (get evidence :schema-version))
+        (if (= :accepted (get evidence :status))
+          (if (= :safety-proof-reference (get evidence :domain))
+            (if (= :proof-reference-shape-only (get evidence :scope))
+              (if (= :rejected (get evidence :lowering-status))
+                (if (= {:status :pending
+                        :kind :c11-mir-verifier-pending}
+                       (get evidence :fallback))
+                  (if (= {:status :blocked
+                          :reason :proof-reference-shape-only
+                          :executable-load? false}
+                         (get evidence :b1-preflight))
+                    (if (= :coordinator-resolution-shape-checked
+                           (get evidence :identity-binding-status))
+                      (if (= :pending-proof-reference-verifier
+                             (get evidence :verification-status))
+                        (if (= false (get evidence :self-hosted?))
+                          (if (= true (get evidence :clojure-seed-boundary?))
+                            (if (= [] (get evidence :diagnostics))
+                              (if (c13-sha256-id? (get evidence :artifact-id))
+                                (let [resolution
+                                      (get evidence :identity-resolution)
+                                      identity (get evidence :identity-input)
+                                      payload (get evidence :payload)
+                                      anchor (get evidence :semantic-anchor)]
+                                  (if (sh16-c13-evidence-exact-keys?
+                                       resolution #{:request :digest})
+                                    (if (= (get evidence :artifact-id)
+                                           (get resolution :digest))
+                                      (if (= (get evidence :artifact-id)
+                                             (get identity :c12-identity-id))
+                                        (if (= (get evidence :artifact-id)
+                                               (get payload :identity-id))
+                                          (if (= :gravity/sh13-semantic-anchor
+                                                 (get anchor :artifact))
+                                            (if (= :safety-proof-reference
+                                                   (get anchor :domain))
+                                              (if (= :gravity/sh13-safety-proof-reference-payload
+                                                     (get payload :artifact))
+                                                (if (map? (get evidence :facts))
+                                                  (if (map? (get evidence :provenance))
+                                                    true
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh16-c13-c12-verification-valid? [evidence verification]
+  (if (sh16-c13-evidence-exact-keys?
+       verification
+       #{:artifact :schema-version :status :scope :checks :nonclaims
+         :expected :candidate})
+    (if (= :gravity/sh13-c11-domain-evidence-verification
+           (get verification :artifact))
+      (if (= 1 (get verification :schema-version))
+        (if (= :passed (get verification :status))
+          (if (= :proof-reference-shape-only (get verification :scope))
+            (if (= (sh16-c13-c12-checks) (get verification :checks))
+              (if (= (sh16-c13-c12-nonclaims)
+                     (get verification :nonclaims))
+                (if (= evidence (get verification :expected))
+                  (= evidence (get verification :candidate))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh16-c13-evidence-request-valid? [request]
+  (if (sh16-c13-evidence-exact-keys?
+       request
+       #{:artifact :schema-version :status :c12-evidence
+         :c12-verification :profile :target :target-independent?
+         :executable-load? :identity-input :provenance :scope
+         :lowering-status :fallback :b1-preflight :pending :nonclaims})
+    (let [evidence (get request :c12-evidence)
+          verification (get request :c12-verification)
+          semantic (get evidence :identity-input)]
+      (if (= :gravity/sh16-c13-evidence-boundary-request
+             (get request :artifact))
+        (if (= 1 (get request :schema-version))
+          (if (= :requested (get request :status))
+            (if (sh16-c13-c12-evidence-valid? evidence)
+              (if (sh16-c13-c12-verification-valid?
+                   evidence verification)
+                (if (= (get semantic :profile) (get request :profile))
+                  (if (= (get semantic :target) (get request :target))
+                    (if (= true (get request :target-independent?))
+                      (if (= false (get request :executable-load?))
+                        (if (= (sh16-c13-evidence-identity-input evidence)
+                               (get request :identity-input))
+                          (if (= (get evidence :provenance)
+                                 (get request :provenance))
+                            (if (= :c12-evidence-preservation-only
+                                   (get request :scope))
+                              (if (= :rejected
+                                     (get request :lowering-status))
+                                (if (= {:status :pending
+                                        :kind :c13-bounded-identity-optimized-mir-pending}
+                                       (get request :fallback))
+                                  (if (= {:status :blocked
+                                          :reason :evidence-only-no-executable-load
+                                          :executable-load? false}
+                                         (get request :b1-preflight))
+                                    (if (= (sh16-c13-evidence-pending)
+                                           (get request :pending))
+                                      (= (sh16-c13-evidence-nonclaims)
+                                         (get request :nonclaims))
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      )
+    false))
+
+(defn sh16-c13-evidence-input-valid? [request]
+  (let [request-preflight (sh16-c13-evidence-preflight request)]
+    (if (= :accepted (get request-preflight :status))
+      (let [evidence (get request :c12-evidence)
+            verification (get request :c12-verification)
+            evidence-preflight (sh16-c13-evidence-preflight evidence)]
+        (if (= :accepted (get evidence-preflight :status))
+          (if (map? verification)
+            (if (= 8 (count verification))
+              (let [metadata
+                    {:artifact (get verification :artifact)
+                     :schema-version (get verification :schema-version)
+                     :status (get verification :status)
+                     :scope (get verification :scope)
+                     :checks (get verification :checks)
+                     :nonclaims (get verification :nonclaims)}
+                    metadata-preflight
+                    (sh16-c13-evidence-preflight metadata)
+                    expected-preflight
+                    (sh16-c13-evidence-preflight
+                     (get verification :expected))
+                    candidate-preflight
+                    (sh16-c13-evidence-preflight
+                     (get verification :candidate))]
+                (if (= :accepted (get metadata-preflight :status))
+                  (if (= :accepted (get expected-preflight :status))
+                    (if (= :accepted (get candidate-preflight :status))
+                      (sh16-c13-evidence-request-valid? request)
+                      false)
+                    false)
+                  false))
+              false)
+            false)
+          false))
+      false)))
+
+(defn sh16-c13-evidence-rejection [reason]
+  {:artifact :gravity/sh16-c13-evidence-boundary
+   :schema-version 1
+   :status :rejected
+   :scope :c12-evidence-preservation-only
+   :diagnostics [{:diagnostic-id "C13-CONTRACT" :reason reason}]
+   :semantic-authority :none
+   :pending (sh16-c13-evidence-pending)
+   :nonclaims (sh16-c13-evidence-nonclaims)})
+
+(defn sh16-c13-evidence-boundary-metadata [candidate]
+  {:artifact (get candidate :artifact)
+   :schema-version (get candidate :schema-version)
+   :status (get candidate :status)
+   :scope (get candidate :scope)
+   :preserved (get candidate :preserved)
+   :pass-contract (get candidate :pass-contract)
+   :decision-record (get candidate :decision-record)
+   :invalidation-ledger (get candidate :invalidation-ledger)
+   :residual-check-report (get candidate :residual-check-report)
+   :optimization-status (get candidate :optimization-status)
+   :lowering-status (get candidate :lowering-status)
+   :fallback (get candidate :fallback)
+   :b1-preflight (get candidate :b1-preflight)
+   :identity-resolution (get candidate :identity-resolution)
+   :identity-binding-status (get candidate :identity-binding-status)
+   :semantic-authority (get candidate :semantic-authority)
+   :execution-tcb (get candidate :execution-tcb)
+   :target-independent? (get candidate :target-independent?)
+   :executable-load? (get candidate :executable-load?)
+   :diagnostics (get candidate :diagnostics)
+   :checks (get candidate :checks)
+   :pending (get candidate :pending)
+   :nonclaims (get candidate :nonclaims)
+   :self-hosted? (get candidate :self-hosted?)
+   :seed-retired? (get candidate :seed-retired?)})
+
+(defn sh16-c13-evidence-boundary-member-valid? [candidate member]
+  (= :accepted
+     (get
+      (sh16-c13-evidence-preflight (get candidate member))
+      :status)))
+
+(defn sh16-c13-evidence-boundary-preflight [candidate]
+  (if (sh16-c13-evidence-exact-keys?
+       candidate
+       #{:artifact :schema-version :status :scope :input-request
+         :c12-evidence :c12-verification :identity-input :provenance
+         :semantic-anchor :facts :payload :source :preserved
+         :pass-contract :decision-record :invalidation-ledger
+         :residual-check-report :optimization-status :lowering-status
+         :fallback :b1-preflight :identity-resolution
+         :identity-binding-status :semantic-authority :execution-tcb
+         :target-independent? :executable-load? :diagnostics :checks
+         :pending :nonclaims :self-hosted? :seed-retired?})
+    (let [metadata-preflight
+          (sh16-c13-evidence-preflight
+           (sh16-c13-evidence-boundary-metadata candidate))]
+      (if (= :accepted (get metadata-preflight :status))
+        (if (sh16-c13-evidence-boundary-member-valid?
+             candidate :input-request)
+          (if (sh16-c13-evidence-boundary-member-valid?
+               candidate :c12-evidence)
+            (if (sh16-c13-evidence-boundary-member-valid?
+                 candidate :c12-verification)
+              (if (sh16-c13-evidence-boundary-member-valid?
+                   candidate :identity-input)
+                (if (sh16-c13-evidence-boundary-member-valid?
+                     candidate :provenance)
+                  (if (sh16-c13-evidence-boundary-member-valid?
+                       candidate :semantic-anchor)
+                    (if (sh16-c13-evidence-boundary-member-valid?
+                         candidate :facts)
+                      (if (sh16-c13-evidence-boundary-member-valid?
+                           candidate :payload)
+                        (if (sh16-c13-evidence-boundary-member-valid?
+                             candidate :source)
+                          {:status :accepted
+                           :reason :bounded-independent-members}
+                          {:status :rejected :reason :source-carrier-bound})
+                        {:status :rejected :reason :payload-carrier-bound})
+                      {:status :rejected :reason :facts-carrier-bound})
+                    {:status :rejected
+                     :reason :semantic-anchor-carrier-bound})
+                  {:status :rejected :reason :provenance-carrier-bound})
+                {:status :rejected :reason :identity-input-carrier-bound})
+              {:status :rejected :reason :c12-verification-carrier-bound})
+            {:status :rejected :reason :c12-evidence-carrier-bound})
+          {:status :rejected :reason :input-request-carrier-bound})
+        {:status :rejected :reason :boundary-metadata-carrier-bound}))
+    {:status :rejected :reason :boundary-shape}))
+
+(defn sh16-build-c13-evidence-boundary [request]
+  (if (sh16-c13-evidence-input-valid? request)
+    (let [evidence (get request :c12-evidence)]
+      {:artifact :gravity/sh16-c13-evidence-boundary
+       :schema-version 1
+       :status :accepted
+       :scope :c12-evidence-preservation-only
+       :input-request request
+       :c12-evidence evidence
+       :c12-verification (get request :c12-verification)
+       :identity-input (get request :identity-input)
+       :provenance (get request :provenance)
+       :semantic-anchor (get evidence :semantic-anchor)
+       :facts (get evidence :facts)
+       :payload (get evidence :payload)
+       :source (get evidence :source)
+       :preserved [:opaque-c12-evidence-value
+                   :opaque-c12-verification-value
+                   :physical-provenance-separation]
+       :pass-contract
+       {:artifact :gravity/c13-pass-contract
+        :pass-id :c13-c12-evidence-boundary
+        :family :identity-evidence
+        :version 1
+        :input-ir :gravity/c12-domain-evidence
+        :output-ir :gravity/c13-evidence-boundary
+        :required-analyses [:c12-declared-verification-envelope]
+        :preconditions [:bounded-evidence :declared-c12-equality]
+        :preserves [:opaque-c12-evidence-value
+                    :opaque-c12-verification-value
+                    :physical-provenance-separation]
+        :invalidates []
+        :regenerates []
+        :proof-obligations [:exact-c12-evidence-validation
+                            :trusted-c12-authority
+                            :complete-c11-mir-adapter]
+        :profile-constraints [(get request :profile)]
+        :target-assumptions []
+        :effect-ordering-policy :unchanged
+        :safety-policy :unchanged
+        :domain-policy :unchanged
+        :emits [:decision-record :invalidation-ledger
+                :residual-check-report]}
+       :decision-record
+       {:artifact :gravity/optimization-decision
+        :pass-id :c13-c12-evidence-boundary
+        :decision :admit-evidence-only
+        :changed? false
+        :changed-operations []
+        :reason :bounded-nonauthority-opaque-evidence-preservation
+        :proofs-used []
+        :verifier-result :shape-equality-only}
+       :invalidation-ledger
+       {:artifact :gravity/c13-invalidation-ledger
+        :analysis-invalidated []
+        :facts-invalidated []
+        :facts-regenerated []
+        :proofs-invalidated []
+        :runtime-checks-restored []
+        :passes-to-rerun []
+        :caches-cleared []
+        :diagnostics-affected []}
+       :residual-check-report
+       {:artifact :gravity/c13-residual-check-report
+        :status :incomplete-evidence-only
+        :retained-runtime-checks :not-carried
+        :elided-runtime-checks []
+        :open-proof-obligations [:exact-c12-evidence-validation
+                                 :c12-lineage-validation
+                                 :fact-semantic-validation
+                                 :semantic-anchor-validation
+                                 :trusted-c12-authority
+                                 :complete-c11-runtime-check-inventory
+                                 :complete-c11-mir-adapter]}
+       :optimization-status :unchanged-evidence-only
+       :lowering-status :rejected
+       :fallback (get request :fallback)
+       :b1-preflight (get request :b1-preflight)
+       :identity-resolution :coordinator-digest-required
+       :identity-binding-status :unbound
+       :semantic-authority :none
+       :execution-tcb :clojure-stage0-rule-runner
+       :target-independent? true
+       :executable-load? false
+       :diagnostics []
+       :checks (sh16-c13-evidence-checks)
+       :pending (sh16-c13-evidence-pending)
+       :nonclaims (sh16-c13-evidence-nonclaims)
+       :self-hosted? false
+       :seed-retired? false})
+    (sh16-c13-evidence-rejection :untrusted-or-malformed-c12-evidence)))
+
+(defn sh16-verify-c13-evidence-boundary [request candidate]
+  (let [request-preflight (sh16-c13-evidence-preflight request)
+        candidate-preflight
+        (sh16-c13-evidence-boundary-preflight candidate)]
+    (if (= :accepted (get request-preflight :status))
+      (if (= :accepted (get candidate-preflight :status))
+        (if (sh16-c13-evidence-input-valid? request)
+          (let [expected (sh16-build-c13-evidence-boundary request)]
+            (if (= expected candidate)
+              {:artifact :gravity/sh16-c13-evidence-boundary-verification
+               :schema-version 1
+               :status :passed
+               :scope :c12-evidence-preservation-only
+               :checks (sh16-c13-evidence-checks)
+               :nonclaims (sh16-c13-evidence-nonclaims)
+               :expected expected
+               :candidate candidate}
+              {:artifact :gravity/sh16-c13-evidence-boundary-verification
+               :schema-version 1
+               :status :rejected
+               :scope :c12-evidence-preservation-only
+               :diagnostics [{:diagnostic-id "C13-VERIFY"
+                              :reason :boundary-result-substitution}]}))
+          {:artifact :gravity/sh16-c13-evidence-boundary-verification
+           :schema-version 1
+           :status :rejected
+           :scope :c12-evidence-preservation-only
+           :diagnostics [{:diagnostic-id "C13-CONTRACT"
+                          :reason :untrusted-or-malformed-c12-evidence}]})
+        {:artifact :gravity/sh16-c13-evidence-boundary-verification
+         :schema-version 1
+         :status :rejected
+         :scope :c12-evidence-preservation-only
+         :diagnostics [{:diagnostic-id "C13-VERIFY"
+                        :reason :candidate-carrier-bound}]})
+      {:artifact :gravity/sh16-c13-evidence-boundary-verification
+       :schema-version 1
+       :status :rejected
+       :scope :c12-evidence-preservation-only
+       :diagnostics [{:diagnostic-id "C13-CONTRACT"
+                      :reason :request-carrier-bound}]})))
