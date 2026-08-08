@@ -123467,16 +123467,16 @@
 (def p15-s23-c11-mir-verifier-function
   'verify-c11-mir-module)
 
-(def p15-s23-c11-mir-source-byte-count 113008)
+(def p15-s23-c11-mir-source-byte-count 253588)
 
 (def p15-s23-c11-mir-expected-source-content-hash
-  "sha256:95fd82d9484d0a1b7a93b3da10ed6c490c7b051e253da0eb1eb58f0f08334fe3")
+  "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136")
 
 (def p15-s23-c11-mir-expected-plan-semantic-hash
-  "sha256:6012e4be9c87a786ae26cdcbc85a26eedae2c602e7a407932ec411e5634cd2ae")
+  "sha256:974d3949e224d136a2d95c0c348b11c8858becdddd47542ffd4ae24c0233fb39")
 
 (def p15-s23-c11-mir-expected-functions-semantic-hash
-  "sha256:c6be9a17ccb1c6d160fcc2916ecf2ebba41ebf16259cf66cbf5ca6a004f59ef5")
+  "sha256:ece068d2c82e550798cb98e1b0ac9bd0c5e15b5c932c591b93b821411eed89a4")
 
 (def p15-s23-c11-mir-expected-builder-semantic-hash
   "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8")

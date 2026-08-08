@@ -250,6 +250,26 @@ adapter branches only when explicitly requested. The current C10 source is
 5 tests/147 assertions in 69.470 seconds, with its authenticated boundary last.
 These are non-authoritative development receipts, not proof or speedup claims.
 
+The fixed Stage7 C11/SH12 graph owns the frozen C11 MIR source without falling
+back to the legacy broad Stage0 checks. A 512 MiB three-selector source gate
+runs exact source binding, control-form arity, and export-definition checks.
+It branches to one 8 GiB six-selector SH12 adapter batch (verification-envelope
+helper first, authenticated `.gravity` boundary last) and one 2 GiB public
+batch that checks semantic pins before CLI acceptance. The frozen C11 source is 253,588 bytes with SHA
+`sha256:34f0e797...4136`; its measured plan/functions hashes are
+`sha256:974d3949...fb39` and `sha256:ece068d2...89a4`, while the builder and
+verifier hashes remain unchanged. The final adapter lane passed 5 tests/182
+assertions in 86.284 seconds with a 1,569,554,432-byte observed peak. These are
+non-authoritative development and calibration receipts. The final two-selector
+public batch passed 2/39 in 319.494 seconds with a sampled 3,166,142,464-byte
+process-tree peak.
+
+The manual `stage7-c11-proof-candidate` is fixed to `c11-authority` / `c11-mir`,
+fresh, no-resume, new-state, `automatic: false`, `authority: none`, and
+`attestation_required: true`. It joins the adapter and public branches only
+when explicitly requested. No current C11 proof candidate or reviewed
+attestation is claimed by this graph.
+
 Every Stage 0 manifest check explicitly sets `daemonization: forbidden`.
 Commands run in a new process group; ordinary descendants are cleaned before a
 resource lock is released, with one bounded host-wide `ps eww` environment

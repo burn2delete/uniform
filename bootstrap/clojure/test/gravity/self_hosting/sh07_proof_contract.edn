@@ -317,7 +317,13 @@
     :source-binding
     {:source-byte-count 112712
      :source-bytes-sha256
-     "sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968"}}}}
+     "sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968"}}
+   :c11-mir
+   {:module-namespace gravity.compiler.c11-mir-specification
+    :source-binding
+    {:source-byte-count 253588
+     :source-bytes-sha256
+     "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"}}}}
  :required-request-products
  [:fragment-manifest :fragment-coverage :module-assembly-manifest]
  :required-core-products

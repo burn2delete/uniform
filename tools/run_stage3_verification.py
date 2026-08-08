@@ -7,15 +7,16 @@ argv is fixed by the manifest and all per-invocation state is supplied through
 an environment binding created by :mod:`verify_development`.  There is no
 public command passthrough or shell evaluation in this wrapper.
 
-The enabled modes are ``pure`` and ``proof-candidate``.  Stage7 currently
-exposes only two cheap C11 source-preflight profiles; they are not the
-complete Stage7 graph or a proof policy.  The shape profile is an execution
-alias of the complete source profile and does not add catalog ownership.  A public/pure batch
+The enabled modes are ``pure`` and ``proof-candidate``.  Stage7 exposes exact
+C11 source, cache-affine SH12 adapter, and public C11 batches.  The shape
+profile is an execution alias of the complete source profile and does not add
+catalog ownership.  A public/pure batch
 acquires the canonical SH-07 lease and runs one of the reviewed Clojure
 batches.  A proof-candidate batch starts a *new* checkpoint directory and
 invokes the existing SH-07 checkpoint runner with the module selected by the
-immutable fixed C7/C8/C9/C10 policy map (currently ``c7-types``, ``c8-effects``,
-``c9-ownership``, or ``c10-safety``) and ``--no-resume``; that child, rather than this
+immutable fixed C7/C8/C9/C10/C11 policy map (currently ``c7-types``,
+``c8-effects``, ``c9-ownership``, ``c10-safety``, or ``c11-mir``) and
+``--no-resume``; that child, rather than this
 process, owns the shared lease.  ``reviewed-attestation`` remains dormant and
 is intentionally not an enabled CLI mode; no candidate is promoted here.
 """
@@ -110,17 +111,21 @@ FIXED_BATCHES = (
     "stage6-sh11-c9-safety-adapter",
     "stage7-c11-source-preflight",
     "stage7-c11-shape-preflight",
+    "stage7-sh12-c10-mir-adapter",
+    "stage7-public-c11",
     "authority",
     "c8-authority",
     "c9-authority",
     "c10-authority",
+    "c11-authority",
 )
 
 _BATCH_ALIAS = "-M:stage3-verification"
 _BATCH_HEAP = {
     # Every fixed batch declares its JVM floor explicitly.  Structural/source
-    # checks and the public compatibility check have a reviewed 2 GiB floor;
-    # cold primitive/recursive/HO batches retain the measured 8 GiB bound.
+    # checks and public compatibility checks normally have a reviewed 2 GiB
+    # floor; the source-only C11 preflights are proven at 512 MiB.  Cold
+    # semantic/authenticated batches retain the measured 8 GiB bound.
     "primitive-pure": "-J-Xmx8g",
     "primitive-bool-authenticated": "-J-Xmx8g",
     "recursive-pure": "-J-Xmx8g",
@@ -148,7 +153,10 @@ _BATCH_HEAP = {
     "stage6-sh11-c9-safety-adapter": "-J-Xmx8g",
     "stage7-c11-source-preflight": "-J-Xmx512m",
     "stage7-c11-shape-preflight": "-J-Xmx512m",
+    "stage7-sh12-c10-mir-adapter": "-J-Xmx8g",
+    "stage7-public-c11": "-J-Xmx2g",
     "c10-authority": "-J-Xmx8g",
+    "c11-authority": "-J-Xmx8g",
 }
 _BATCH_COMMANDS: dict[str, tuple[str, ...]] = {
     # The Clojure writer owns this one alias.  Batch identity is passed only
@@ -156,7 +164,7 @@ _BATCH_COMMANDS: dict[str, tuple[str, ...]] = {
     # runner arguments are accepted at this boundary.
     batch: ("clojure", _BATCH_HEAP.get(batch, "-J-Xmx8g"), _BATCH_ALIAS, "--batch", batch)
     for batch in FIXED_BATCHES
-    if batch not in {"authority", "c8-authority", "c9-authority", "c10-authority"}
+    if batch not in {"authority", "c8-authority", "c9-authority", "c10-authority", "c11-authority"}
 }
 
 _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
@@ -286,6 +294,18 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
         "gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-control-form-arities-are-exact",
         "gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions",
     ),
+    "stage7-sh12-c10-mir-adapter": (
+        "gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-verification-envelope-preflight",
+        "gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-proof-reference-api-and-positive",
+        "gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-path-neutral-provenance-pair",
+        "gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-representative-mutation-rejections",
+        "gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-carrier-preflight-boundaries",
+        "gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-authenticated-gravity-boundary",
+    ),
+    "stage7-public-c11": (
+        "gravity.bootstrap-test/gravity-c11-source-and-builder-identities-are-pinned",
+        "gravity.bootstrap-test/public-check-accepts-gravity-authored-c11-mir-specification",
+    ),
 }
 
 # ``stage7-c11-shape-preflight`` is intentionally an execution-only alias of
@@ -353,7 +373,8 @@ def _fixed_authority_policy(
 
 # Exact proof candidates admitted by this wrapper.  ``authority`` preserves
 # the reviewed C7 behavior; ``c8-authority``, ``c9-authority``, and
-# ``c10-authority`` are the fixed Stage4--6 candidates. No other module or batch can reach the
+# ``c10-authority`` and ``c11-authority`` are the fixed Stage4--7 candidates.
+# No other module or batch can reach the
 # authority child path.
 FIXED_MODULE_POLICIES = MappingProxyType({
     "authority": _fixed_authority_policy(
@@ -386,6 +407,14 @@ FIXED_MODULE_POLICIES = MappingProxyType({
         source_size=112712,
         source_sha256="sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968",
     ),
+    "c11-authority": _fixed_authority_policy(
+        batch="c11-authority",
+        module="c11-mir",
+        source_path="bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+        heap="-J-Xmx8g",
+        source_size=253588,
+        source_sha256="sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136",
+    ),
 })
 
 # Compatibility names retained for callers and tests that inspect the C7
@@ -394,6 +423,7 @@ AUTHORITY_POLICY = FIXED_MODULE_POLICIES["authority"]
 C8_AUTHORITY_POLICY = FIXED_MODULE_POLICIES["c8-authority"]
 C9_AUTHORITY_POLICY = FIXED_MODULE_POLICIES["c9-authority"]
 C10_AUTHORITY_POLICY = FIXED_MODULE_POLICIES["c10-authority"]
+C11_AUTHORITY_POLICY = FIXED_MODULE_POLICIES["c11-authority"]
 
 
 class Stage3Error(RuntimeError):
@@ -1003,9 +1033,17 @@ def _finish_receipt(receipt: dict[str, object], result: ChildResult) -> None:
         not isinstance(result.cleanup, Mapping)
         or result.cleanup.get("terminal_safe", True) is True
     )
+    rss_sampling_failed = bool(
+        result.returncode == 0
+        and result.rss_sampling_contract == "run_with_heartbeat.process_tree_metrics-v1"
+        and (
+            type(result.observed_peak_process_tree_rss_bytes) is not int
+            or result.observed_peak_process_tree_rss_bytes <= 0
+        )
+    )
     if result.timed_out:
         wrapper_exit = 124
-    elif result.supervision_failed or result.survivors or not cleanup_safe:
+    elif result.supervision_failed or result.survivors or not cleanup_safe or rss_sampling_failed:
         wrapper_exit = 75
     else:
         wrapper_exit = result.returncode
@@ -1020,6 +1058,7 @@ def _finish_receipt(receipt: dict[str, object], result: ChildResult) -> None:
     receipt["rss_sampling_cadence_seconds"] = result.rss_sampling_cadence_seconds
     receipt["rss_sampling_contract"] = result.rss_sampling_contract
     receipt["rss_sampling_limitation"] = result.rss_sampling_limitation
+    receipt["rss_sampling_failed"] = rss_sampling_failed
     receipt["no_surviving_descendants"] = bool(
         not result.survivors
         and not result.supervision_failed
@@ -1032,6 +1071,7 @@ def _finish_receipt(receipt: dict[str, object], result: ChildResult) -> None:
         and not result.timed_out
         and not result.survivors
         and not result.supervision_failed
+        and not rss_sampling_failed
         else "failed"
     )
     receipt["finished_at"] = _now()

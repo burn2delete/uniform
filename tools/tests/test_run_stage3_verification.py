@@ -53,13 +53,29 @@ class Stage3WrapperTests(unittest.TestCase):
         self.lock_patch.stop()
         self.lock.unlink(missing_ok=True)
 
+    def test_successful_sampled_child_requires_positive_rss(self) -> None:
+        receipt: dict[str, object] = {}
+        stage3._finish_receipt(  # type: ignore[attr-defined]
+            receipt,
+            stage3.ChildResult(
+                0,
+                observed_peak_process_tree_rss_bytes=0,
+                rss_sampling_cadence_seconds=1.0,
+                rss_sampling_contract="run_with_heartbeat.process_tree_metrics-v1",
+                rss_sampling_limitation="RSS unavailable; between-sample spikes may be missed",
+            ),
+        )
+        self.assertEqual(receipt["status"], "failed")
+        self.assertEqual(receipt["exit_code"], 75)
+        self.assertTrue(receipt["rss_sampling_failed"])
+
     def test_fixed_batches_match_clojure_order_selectors_and_heap_contract(self) -> None:
         """Keep the Python command boundary identical to the Clojure allowlist."""
 
         self.assertEqual(
             list(stage3.FIXED_BATCHES),
             _clojure_vector_definition("batch-order")
-            + ["authority", "c8-authority", "c9-authority", "c10-authority"],
+            + ["authority", "c8-authority", "c9-authority", "c10-authority", "c11-authority"],
         )
         selector_definitions = {
             "primitive-pure": "primitive-pure-selectors",
@@ -86,6 +102,8 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage6-sh11-c9-safety-adapter": "stage6-sh11-c9-safety-adapter-selectors",
             "stage7-c11-source-preflight": "stage7-c11-source-preflight-selectors",
             "stage7-c11-shape-preflight": "stage7-c11-shape-preflight-selectors",
+            "stage7-sh12-c10-mir-adapter": "stage7-sh12-c10-mir-adapter-selectors",
+            "stage7-public-c11": "stage7-public-c11-selectors",
         }
         for batch, definition in selector_definitions.items():
             self.assertEqual(
@@ -121,7 +139,10 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage6-sh11-c9-safety-adapter": "-J-Xmx8g",
             "stage7-c11-source-preflight": "-J-Xmx512m",
             "stage7-c11-shape-preflight": "-J-Xmx512m",
+            "stage7-sh12-c10-mir-adapter": "-J-Xmx8g",
+            "stage7-public-c11": "-J-Xmx2g",
             "c10-authority": "-J-Xmx8g",
+            "c11-authority": "-J-Xmx8g",
         }
         self.assertEqual(stage3._BATCH_HEAP, expected_heap)
         for batch in stage3._BATCH_COMMANDS:
@@ -174,6 +195,25 @@ class Stage3WrapperTests(unittest.TestCase):
         self.assertEqual(
             {"stage7-c11-shape-preflight": "stage7-c11-source-preflight"},
             dict(stage3.EXECUTION_PROFILE_BATCH_OWNERS),
+        )
+        c11_adapter = list(
+            stage3._FIXED_BATCH_SELECTORS["stage7-sh12-c10-mir-adapter"]
+        )
+        self.assertEqual(6, len(c11_adapter))
+        self.assertEqual(6, len(set(c11_adapter)))
+        self.assertTrue(
+            c11_adapter[0].endswith("/sh12-c10-verification-envelope-preflight")
+        )
+        self.assertTrue(
+            c11_adapter[-1].endswith("/sh12-c10-authenticated-gravity-boundary")
+        )
+        self.assertEqual(
+            (
+                "gravity.bootstrap-test/gravity-c11-source-and-builder-identities-are-pinned",
+                "gravity.bootstrap-test/"
+                "public-check-accepts-gravity-authored-c11-mir-specification",
+            ),
+            stage3._FIXED_BATCH_SELECTORS["stage7-public-c11"],
         )
 
     def test_retired_singleton_batch_ids_are_rejected(self) -> None:
@@ -860,6 +900,63 @@ class Stage3WrapperTests(unittest.TestCase):
                 command_identity_sha256=command_hash,
             )
 
+    def test_stage7_public_c11_identity_failure_skips_public_check(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            report_path = root / "c11-public-report.json"
+            nonce = "c11-public-failure-nonce"
+            check_id = "c11-public-failure-check"
+            command_hash = "sha256:" + "c" * 64
+            report = self._runner_report(
+                root,
+                report_path,
+                nonce,
+                check_id,
+                command_hash,
+                batch="stage7-public-c11",
+                status="failed",
+                exit_code=1,
+            )
+            selectors = list(report["selection-order"])
+            self.assertEqual(
+                selectors,
+                [
+                    "gravity.bootstrap-test/gravity-c11-source-and-builder-identities-are-pinned",
+                    "gravity.bootstrap-test/public-check-accepts-gravity-authored-c11-mir-specification",
+                ],
+            )
+            report["executed-vars"] = selectors[:1]
+            report["executed"] = selectors[:1]
+            report["skipped-tail"] = selectors[1:]
+            report["skipped-vars"] = selectors[1:]
+            report["per-var-results"][0].update({
+                "status": "failed",
+                "counts": {"type": "summary", "test": 1, "pass": 0, "fail": 1, "error": 0},
+            })
+            report["per-var-results"][1].update({
+                "status": "skipped",
+                "counts": {"type": "summary", "test": 0, "pass": 0, "fail": 0, "error": 0},
+                "cache": {key: 0 for key in (
+                    "sh06-hits", "sh06-misses", "core-hits", "core-misses",
+                    "verification-hits", "verification-misses",
+                )},
+                "elapsed-ms": 0,
+                "completed?": False,
+                "skipped-tail?": True,
+            })
+            report["counts"] = {
+                "type": "summary", "test": 1, "pass": 0, "fail": 1, "error": 0,
+            }
+            stage3._validate_runner_report(  # type: ignore[attr-defined]
+                report,
+                root=root,
+                report_path=report_path,
+                batch="stage7-public-c11",
+                nonce=nonce,
+                check_id=check_id,
+                command_identity_sha256=command_hash,
+            )
+
     def test_runner_report_trailing_data_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1261,6 +1358,35 @@ class Stage3WrapperTests(unittest.TestCase):
             stage3._authority_policy_for_batch("c10-safety")
         with self.assertRaises(stage3.Stage3Error):
             stage3.batch_command("c10-authority")
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_relative = Path(str(policy["source_path"]))
+            source = root / source_relative
+            source.parent.mkdir(parents=True)
+            source.write_bytes((Path(__file__).parents[2] / source_relative).read_bytes())
+            self.assertEqual(source.stat().st_size, policy["source_size"])
+            self.assertEqual(self._hash(source), policy["source_sha256"])
+
+    def test_c11_fixed_policy_binds_module_source_and_fresh_child_command(self) -> None:
+        """C11 proof admission is fixed to the frozen MIR source."""
+
+        policy = stage3.C11_AUTHORITY_POLICY
+        self.assertEqual("c11-mir", policy["module"])
+        self.assertEqual(
+            "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+            policy["source_path"],
+        )
+        self.assertEqual(253588, policy["source_size"])
+        self.assertEqual(
+            "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136",
+            policy["source_sha256"],
+        )
+        self.assertEqual(("--fresh", "c11-mir"), policy["child_args"])
+        with self.assertRaises(stage3.Stage3Error):
+            stage3._authority_policy_for_batch("c11-mir")
+        with self.assertRaises(stage3.Stage3Error):
+            stage3.batch_command("c11-authority")
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

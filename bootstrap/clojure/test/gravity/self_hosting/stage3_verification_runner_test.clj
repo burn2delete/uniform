@@ -50,6 +50,8 @@
   'gravity.self-hosting.sh07-c10-safety-source-coverage-test)
 (def ^:private c11-source-ns
   'gravity.self-hosting.sh07-c11-mir-source-preflight-test)
+(def ^:private sh12-adapter-ns
+  'gravity.self-hosting.sh12-c10-mir-adapter-test)
 (def ^:private sh10-kernel-ns
   'gravity.self-hosting.sh10-ownership-transition-test)
 (def ^:private sh10-adapter-ns
@@ -85,7 +87,8 @@
    sh10-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj"
    sh11-kernel-ns "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj"
    sh11-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj"
-   c11-source-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj"})
+   c11-source-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj"
+   sh12-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj"})
 
 (defn- source-deftest-selectors
   [namespace-symbol relative-path]
@@ -128,7 +131,9 @@
           :stage6-public-c10
           :stage6-sh11-c9-safety-adapter
           :stage7-c11-source-preflight
-          :stage7-c11-shape-preflight]
+          :stage7-c11-shape-preflight
+          :stage7-sh12-c10-mir-adapter
+          :stage7-public-c11]
          runner/fixed-batch-ids))
   (is (= runner/primitive-pure-selectors
          (get runner/fixed-batch-selectors :primitive-pure)))
@@ -199,6 +204,18 @@
           'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions]
          runner/stage7-c11-shape-preflight-selectors))
   (is (= 2 (count runner/stage7-c11-shape-preflight-selectors)))
+  (is (= runner/stage7-sh12-c10-mir-adapter-selectors
+         (get runner/fixed-batch-selectors :stage7-sh12-c10-mir-adapter)))
+  (is (= 6 (count runner/stage7-sh12-c10-mir-adapter-selectors)))
+  (is (= runner/stage7-public-c11-selectors
+         (get runner/fixed-batch-selectors :stage7-public-c11)))
+  (is (= 2 (count runner/stage7-public-c11-selectors)))
+  (is (= ['gravity.bootstrap-test/gravity-c11-source-and-builder-identities-are-pinned
+          'gravity.bootstrap-test/public-check-accepts-gravity-authored-c11-mir-specification]
+         runner/stage7-public-c11-selectors))
+  (is (= :explicit-execution-order
+         (get-in runner/fixed-batches
+                 [:stage7-public-c11 :catalog-order-policy])))
   (is (= false
          (get-in runner/fixed-batches
                  [:stage7-c11-shape-preflight :catalog-owner?])))
@@ -269,6 +286,9 @@
          c11-source-ns (source-deftest-selectors
                         c11-source-ns
                         "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj")
+         sh12-adapter-ns (source-deftest-selectors
+                          sh12-adapter-ns
+                          "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}]
     (let [catalog-result
@@ -299,7 +319,7 @@
       ;; Stage6's C9->C10 adapter deliberately runs its API check first and its
       ;; authenticated boundary last; membership remains exact even though the
       ;; source declares the API check after the mutation matrix.
-      (when (not= sh11-adapter-ns namespace-symbol)
+      (when (not (#{sh11-adapter-ns sh12-adapter-ns} namespace-symbol))
         (is (= expected actual)
             (str "source-order coverage drift for " namespace-symbol)))
       (is (= (set expected) (set actual))
@@ -319,6 +339,22 @@
             'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions]
            actual))
     (is (= runner/stage7-c11-source-preflight-selectors actual))))
+
+(deftest stage7-sh12-adapter-has-exact-six-test-census-and-reviewed-order
+  (let [actual (source-deftest-selectors
+                sh12-adapter-ns
+                "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj")
+        selected runner/stage7-sh12-c10-mir-adapter-selectors]
+    (is (= 6 (count actual)))
+    (is (= 6 (count (set actual))))
+    (is (= (set actual) (set selected)))
+    (is (= 'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-verification-envelope-preflight
+           (first selected)))
+    (is (= 'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-authenticated-gravity-boundary
+           (last selected)))
+    (is (= :explicit-execution-order
+           (get-in runner/fixed-batches
+                   [:stage7-sh12-c10-mir-adapter :catalog-order-policy])))))
 
 (deftest stage7-c11-shape-profile-overlaps-without-adding-an-owner
   (let [actual (source-deftest-selectors

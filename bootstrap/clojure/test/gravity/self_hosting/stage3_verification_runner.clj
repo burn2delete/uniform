@@ -1,11 +1,11 @@
 (ns gravity.self-hosting.stage3-verification-runner
   "Runs the fixed, non-authoritative Stage3--Stage7 development batches.
 
-  Stage7 currently exposes only two cheap C11 source-preflight profiles.  They
-  are deliberately narrow source-only batches and do not claim to be the full
-  Stage7 graph or an authority/proof policy.  The shape profile is an
-  execution-only alias of the complete source profile; it does not own a
-  second copy of the namespace catalog.
+  Stage7 exposes the exact C11 source profiles, one cache-affine SH12 adapter
+  batch, and one public C11 check.  The shape profile remains an execution-only
+  alias of the complete source profile; it does not own a second copy of the
+  namespace catalog.  Proof candidates are launched only by the Python policy
+  boundary and remain non-authoritative pending independent attestation.
 
   This namespace intentionally has no compile-time dependency on the Clojure
   bootstrap, the C7 tests, or the SH-07 iteration runner.  The production
@@ -46,6 +46,8 @@
   'gravity.self-hosting.sh11-numeric-safety-test)
 (def ^:private sh11-c9-safety-adapter-test-namespace
   'gravity.self-hosting.sh11-c9-safety-adapter-test)
+(def ^:private sh12-c10-mir-adapter-test-namespace
+  'gravity.self-hosting.sh12-c10-mir-adapter-test)
 (def ^:private public-test-namespace
   'gravity.bootstrap-test)
 
@@ -189,9 +191,9 @@
    'gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-generic-classifier-and-substitutions-fail-closed
    'gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-safety-authenticated-gravity-boundary])
 
-;; Stage7 currently exposes only this cheap, source-only C11 preflight.  Keep
-;; the exact source order and complete three-test census here; the broader
-;; Stage7 graph and any proof policy remain deliberately out of this runner.
+;; Keep the exact source order and complete three-test census here.  The
+;; moving-source shape alias below may bypass the pin, but the durable Stage7
+;; graph always enters through this exact binding-first batch.
 (def stage7-c11-source-preflight-selectors
   ['gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-binding-is-exact
    'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-control-form-arities-are-exact
@@ -204,6 +206,22 @@
 (def stage7-c11-shape-preflight-selectors
   ['gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-control-form-arities-are-exact
    'gravity.self-hosting.sh07-c11-mir-source-preflight-test/sh07-c11-source-exports-have-definitions])
+
+;; One namespace, one C11 plan, one process-local SH07 cache.  Put the bounded
+;; envelope helper first so malformed verification members stop before the
+;; semantic matrix and real carrier build.  The authenticated .gravity
+;; boundary remains last; its paired .qst bytes are parity evidence only.
+(def stage7-sh12-c10-mir-adapter-selectors
+  ['gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-verification-envelope-preflight
+   'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-proof-reference-api-and-positive
+   'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-path-neutral-provenance-pair
+   'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-representative-mutation-rejections
+   'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-carrier-preflight-boundaries
+   'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-authenticated-gravity-boundary])
+
+(def stage7-public-c11-selectors
+  ['gravity.bootstrap-test/gravity-c11-source-and-builder-identities-are-pinned
+   'gravity.bootstrap-test/public-check-accepts-gravity-authored-c11-mir-specification])
 
 (def ^:private execution-profile-batches
   {:stage7-c11-shape-preflight
@@ -237,7 +255,9 @@
    :stage6-public-c10
    :stage6-sh11-c9-safety-adapter
    :stage7-c11-source-preflight
-   :stage7-c11-shape-preflight])
+   :stage7-c11-shape-preflight
+   :stage7-sh12-c10-mir-adapter
+   :stage7-public-c11])
 
 (def ^:private batch-selectors
   (array-map
@@ -265,7 +285,9 @@
    :stage6-sh11-c9-safety-adapter
    stage6-sh11-c9-safety-adapter-selectors
    :stage7-c11-source-preflight stage7-c11-source-preflight-selectors
-   :stage7-c11-shape-preflight stage7-c11-shape-preflight-selectors))
+   :stage7-c11-shape-preflight stage7-c11-shape-preflight-selectors
+   :stage7-sh12-c10-mir-adapter stage7-sh12-c10-mir-adapter-selectors
+   :stage7-public-c11 stage7-public-c11-selectors))
 
 (def fixed-batch-ids
   "The complete CLI allowlist, in deterministic presentation order."
@@ -288,14 +310,15 @@
                  :catalog-owner? (not (contains? execution-profile-batches batch-id))
                  :catalog-owner-batch (get-in execution-profile-batches
                                               [batch-id :owner])
-                 ;; Most partial namespaces retain source/deftest order.  C8
-                 ;; source coverage is the reviewed exception: its vector is
-                 ;; the exact execution order, while membership is checked
-                 ;; against the source independently of ordering.
+                 ;; Most partial namespaces retain source/deftest order.  The
+                 ;; reviewed exceptions use their vector as exact execution
+                 ;; order while membership is checked independently.
                  :catalog-order-policy
                  (if (#{:stage4-c8-source-structural
                         :stage6-c10-source-structural
-                        :stage6-sh11-c9-safety-adapter} batch-id)
+                        :stage6-sh11-c9-safety-adapter
+                        :stage7-sh12-c10-mir-adapter
+                        :stage7-public-c11} batch-id)
                    :explicit-execution-order
                    :source-subsequence)
                  :authority :non-authoritative
@@ -316,6 +339,7 @@
     sh10-c8-ownership-adapter-test-namespace
     sh11-numeric-safety-test-namespace
     sh11-c9-safety-adapter-test-namespace
+    sh12-c10-mir-adapter-test-namespace
     c11-source-test-namespace})
 
 (def ^:private partial-selector-namespaces

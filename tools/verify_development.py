@@ -345,6 +345,7 @@ def _stage3_mode(check: Mapping[str, Any]) -> str:
 
 
 _STAGE3_HEAP_BYTES = {
+    "-J-Xmx512m": 512 * 1024 * 1024,
     "-J-Xmx2g": 2 * 1024 * 1024 * 1024,
     "-J-Xmx8g": 8 * 1024 * 1024 * 1024,
 }
@@ -353,13 +354,13 @@ _STAGE3_HEAP_BYTES = {
 def _is_fixed_stage_check(check_id: str) -> bool:
     """Return whether a manifest node invokes the fixed stage wrapper.
 
-    Stage3, Stage4, and Stage5 all use the same command-owned
+    Stage3 through Stage7 all use the same command-owned
     ``run_stage3_verification.py`` boundary.  Keep this predicate centralized
     so a newly added fixed stage cannot accidentally bypass heap, runtime
     identity, lock-owner, or receipt validation.
     """
 
-    return check_id.startswith(("stage3-", "stage4-", "stage5-", "stage6-"))
+    return check_id.startswith(("stage3-", "stage4-", "stage5-", "stage6-", "stage7-"))
 
 
 def _validate_stage3_resource_contract(check: Mapping[str, Any]) -> None:
@@ -2191,7 +2192,10 @@ def _stage3_process_tree_rss(root_pid: int) -> tuple[int | None, float, str, str
     """Sample process-tree RSS using the reviewed heartbeat metric helper."""
 
     try:
-        from tools.run_with_heartbeat import process_tree_metrics
+        if __package__:
+            from .run_with_heartbeat import process_tree_metrics
+        else:  # Direct ``python3 tools/verify_development.py`` import graph.
+            from run_with_heartbeat import process_tree_metrics
 
         metrics = process_tree_metrics(root_pid)
         rss = metrics.get("rss_bytes")
@@ -2653,7 +2657,7 @@ def _validate_stage3_receipt(
         errors.append("receipt descendant evidence is not a boolean")
     peak = receipt.get("observed_peak_process_tree_rss_bytes")
     cadence = receipt.get("rss_sampling_cadence_seconds")
-    if type(peak) is not int or peak < 0:
+    if type(peak) is not int or peak <= 0:
         errors.append("receipt lacks an observed process-tree RSS peak")
     cadence_valid = type(cadence) in {int, float} and cadence > 0
     if cadence_valid:

@@ -384,6 +384,44 @@ timeout, `authority: none`, `proof_candidate: true`, and
 branches; ordinary change impact never selects it. An exit-0 proof candidate
 does not grant authority.
 
+## Fixed Stage7 C11 MIR graph
+
+Stage7 owns the frozen C11 source through a fixed non-authoritative graph. It
+depends only on `stage3-runner-unit` and branches as follows:
+
+`stage7-c11-source-structural` -> `stage7-sh12-c10-mir-adapter`
+
+and source -> `stage7-public-c11`. The source gate uses a 512 MiB JVM and runs
+exact binding, control-form arity, then export-definition checks. The moving-
+source `stage7-c11-shape-preflight` remains a runner-only alias and is not a
+durable manifest owner. The frozen source is 253,588 bytes with SHA
+`sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136`.
+Its calibrated plan and functions hashes are
+`sha256:974d3949e224d136a2d95c0c348b11c8858becdddd47542ffd4ae24c0233fb39`
+and
+`sha256:ece068d2c82e550798cb98e1b0ac9bd0c5e15b5c932c591b93b821411eed89a4`;
+the builder and verifier hashes remain pinned and unchanged.
+
+The adapter keeps six exact SH12 selectors in one 8 GiB JVM. The narrow
+verification-envelope helper runs first, four semantic checks follow, and the
+single authenticated `.gravity` boundary runs last. The final frozen-source
+receipt passed 5 tests/182 assertions in 86.284 seconds with an observed peak
+of 1,569,554,432 bytes. The public branch is one 2 GiB batch: exact C11
+source/builder semantic identity first, then the public compatibility selector.
+Its final receipt passed 2 tests/39 assertions in 319.494 seconds with a sampled
+3,166,142,464-byte process-tree peak. The source gate passed 3/62 in 5.278
+seconds with a sampled 492,797,952-byte peak.
+All three automatic nodes are fresh, exclusive, capacity-one, command-owned
+users of `/private/tmp/gravity-sh07-heavy.lock`. C11 source changes select all
+three; SH12 test changes select source plus adapter. The C11 source and Stage7
+tests are excluded from the legacy broad Stage0/Stage1 ownership matchers.
+
+`stage7-c11-proof-candidate` is manual-only and joins adapter plus public. It
+uses fixed `c11-authority` -> `c11-mir`, 8 GiB, a 21,600-second timeout,
+fresh/no-resume/new-state execution, `authority: none`, `proof_candidate:
+true`, and `attestation_required: true`. No current proof candidate or reviewed
+attestation exists; calibration and adapter receipts remain non-authoritative.
+
 ## Selection and execution flow
 
 1. Normalize changed paths and validate the manifest before starting a command.

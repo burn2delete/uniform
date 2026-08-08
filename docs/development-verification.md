@@ -828,7 +828,47 @@ fixed to `c10-authority` / `c10-safety`, fresh, no-resume, new-state, 8 GiB,
 routing, and an exit-0 candidate does not promote authority. No C10 proof was
 run as part of this graph integration.
 
-### 11. Full release gate
+### 11. Fixed Stage7 C11 MIR graph
+
+The C11 route is fixed, non-authoritative, and independent of Stage3--6
+production execution. It depends only on `stage3-runner-unit` and branches:
+
+1. `stage7-c11-source-structural` runs three source-only selectors in a
+   512 MiB JVM: exact source/proof-contract binding, control-form arity, and
+   exact ordered export definitions. It binds 253,588 bytes with SHA
+   `sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136`.
+   The corresponding plan/functions hashes are `sha256:974d3949...fb39` and
+   `sha256:ece068d2...89a4`; builder/verifier hashes remain unchanged. The
+   shape-only runner profile is deliberately absent from the durable manifest.
+2. `stage7-sh12-c10-mir-adapter` keeps the envelope helper, four semantic
+   checks, and the authenticated `.gravity` boundary in one 8 GiB JVM. Helper
+   placement first catches duplicated-carrier bounds before the cold carrier;
+   boundary placement last preserves fail-fast cache affinity. The frozen
+   receipt passed 5 tests/182 assertions in 86.284 seconds with an observed
+   process-tree peak of 1,569,554,432 bytes.
+3. `stage7-public-c11` is a 2 GiB two-selector batch. It validates the complete
+   source/plan/functions/builder/verifier tuple before the public compatibility
+   selector. It is a sibling of the adapter, so an SH12-only edit does not
+   force public work. The final receipt passed 2 tests/39 assertions in 319.494
+   seconds with a sampled process-tree peak of 3,166,142,464 bytes. The source
+   gate separately passed 3/62 in 5.278 seconds at a sampled 492,797,952-byte
+   peak.
+
+C11 source changes select all three automatic Stage7 nodes. SH12 test changes
+select source plus adapter. Legacy broad Stage0 ownership is impact-excluded,
+and both Stage7 test namespaces are excluded from the broad Stage1 test-file
+matcher while remaining exact declared inputs. Every production node is
+fresh, exclusive, capacity one, command-owned on the canonical heavy lock, and
+binds the centralized runtime/tool identity.
+
+`stage7-c11-proof-candidate` is manual-only and joins public plus adapter. It is
+fixed to `c11-authority` / `c11-mir`, fresh, no-resume, new-state, 8 GiB,
+21,600 seconds, `authority: none`, `proof_candidate: true`, and
+`attestation_required: true`. No current C11 proof candidate or reviewed
+attestation is claimed. The hash derivation and SH12 receipts are calibration
+and development evidence only.
+
+### 12. Full release gate
 
 Run only after the candidate is stable, the selected authoritative modules
 pass, and the worktree is ready for release review. This preserves every

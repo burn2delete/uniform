@@ -73,6 +73,27 @@ def check(
 
 
 class VerifyDevelopmentTests(unittest.TestCase):
+    def test_direct_script_import_graph_can_sample_process_tree_rss(self) -> None:
+        code = (
+            "import os,sys;"
+            f"sys.path.insert(0,{str(TOOLS)!r});"
+            "import verify_development as v;"
+            "r=v._stage3_process_tree_rss(os.getpid());"
+            "print(r[0],r[3])"
+        )
+        result = subprocess.run(
+            [sys.executable, "-I", "-c", code],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=10,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        peak, limitation = result.stdout.strip().split(" ", 1)
+        self.assertGreater(int(peak), 0)
+        self.assertNotIn("unavailable", limitation)
+
     def test_manifest_requires_explicit_daemonization_forbidden_policy(self) -> None:
         item = check("policy", [sys.executable, "-c", "pass"])
         item.pop("daemonization")
@@ -1464,56 +1485,27 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage6-sh11-c9-safety-adapter",
             "c10-authority",
         }
-        # Stage7 currently exposes only a reviewed runner/preflight seed.  It
-        # is deliberately absent from the durable manifest until the moving
-        # C11 source, proof binding, and complete ownership graph freeze.
-        stage7_deferred_batches = {
+        stage7_batches = {
             "stage7-c11-source-preflight",
-            "stage7-c11-shape-preflight",
+            "stage7-sh12-c10-mir-adapter",
+            "stage7-public-c11",
+            "c11-authority",
         }
-        # The fixed runner exposes this seed before the durable graph is
-        # admitted, but the parsed production manifest must not route to it or
-        # mention its selectors/namespace in any check metadata.  Walk the
-        # real JSON values rather than comparing a hand-written expected set
-        # to itself; this covers ids, batches, commands, dependencies, input
-        # ownership, and other execution metadata together.
-        stage7_runner_markers = (
-            "stage7-",
-            "stage7-c11-source-preflight",
-            "stage7-c11-shape-preflight",
-            "sh07-c11-source-",
-            "sh07_c11_mir_source_preflight_test",
-            "sh07-c11-mir-source-preflight-test",
-        )
-        manifest_stage7_references: list[tuple[str, str]] = []
-
-        def collect_stage7_references(value: object, check_id: str, path: str) -> None:
-            if isinstance(value, dict):
-                for key, child in value.items():
-                    collect_stage7_references(child, check_id, f"{path}.{key}")
-            elif isinstance(value, list):
-                for index, child in enumerate(value):
-                    collect_stage7_references(child, check_id, f"{path}[{index}]")
-            elif isinstance(value, str) and any(marker in value for marker in stage7_runner_markers):
-                manifest_stage7_references.append((check_id, f"{path}={value}"))
-
-        for item in manifest["checks"]:
-            collect_stage7_references(item, item["id"], "check")
-        self.assertEqual([], manifest_stage7_references)
+        stage7_runner_only_batches = {"stage7-c11-shape-preflight"}
         self.assertEqual(
-            sorted(batch for batch in verifier._stage3.FIXED_BATCHES if batch.startswith("stage7-")),
-            sorted(stage7_deferred_batches),
+            set(verifier._stage3.FIXED_BATCHES)
+            & (stage7_batches | stage7_runner_only_batches),
+            stage7_batches | stage7_runner_only_batches,
         )
         stage3_fixed_batches = (
             set(verifier._stage3.FIXED_BATCHES)
             - stage4_batches
             - stage5_batches
             - stage6_batches
-            - stage7_deferred_batches
+            - stage7_batches
+            - stage7_runner_only_batches
         )
-        self.assertTrue(
-            stage7_deferred_batches.isdisjoint(stage3_fixed_batches)
-        )
+        self.assertTrue(stage7_batches.isdisjoint(stage3_fixed_batches))
         self.assertEqual(
             {item["stage3_batch"] for item in stage3.values()},
             stage3_fixed_batches,
@@ -1912,6 +1904,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             ("stage4-c8-proof-candidate", "c8-authority", "c8-effects"),
             ("stage5-c9-proof-candidate", "c9-authority", "c9-ownership"),
             ("stage6-c10-proof-candidate", "c10-authority", "c10-safety"),
+            ("stage7-c11-proof-candidate", "c11-authority", "c11-mir"),
         ):
             with tempfile.TemporaryDirectory(prefix=f"gravity-{module}-receipt-") as directory:
                 root = Path(directory).resolve()
@@ -2361,6 +2354,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage6-c10-kernel",
                 "stage6-public-c10",
                 "stage6-sh11-c9-safety-adapter",
+                "stage7-c11-source-structural",
+                "stage7-sh12-c10-mir-adapter",
             },
         )
         kernel = selected(
@@ -2381,7 +2376,12 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertEqual(
             adapter,
             units
-            | {"stage6-c10-source-structural", "stage6-sh11-c9-safety-adapter"},
+            | {
+                "stage6-c10-source-structural",
+                "stage6-sh11-c9-safety-adapter",
+                "stage7-c11-source-structural",
+                "stage7-sh12-c10-mir-adapter",
+            },
         )
         for upstream in (
             "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -2619,6 +2619,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage5-sh10-c8-adapter",
             "stage6-c10-source-structural",
             "stage6-sh11-c9-safety-adapter",
+            "stage7-c11-source-structural",
+            "stage7-sh12-c10-mir-adapter",
         }
         self.assertEqual(source_selected, expected_c8_change_selection)
         self.assertTrue(
@@ -2718,6 +2720,108 @@ class VerifyDevelopmentTests(unittest.TestCase):
                     if item.get("stage3_batch") == batch
                 )]["stage3_batch"],
                 batch,
+            )
+
+    def test_real_manifest_stage7_fixed_graph_and_impact_are_exact(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        by_id = verifier.checks_by_id(manifest)
+        stage7_ids = {
+            "stage7-c11-source-structural",
+            "stage7-sh12-c10-mir-adapter",
+            "stage7-public-c11",
+            "stage7-c11-proof-candidate",
+        }
+        self.assertEqual(
+            {check_id for check_id in by_id if check_id.startswith("stage7-")},
+            stage7_ids,
+        )
+        source = by_id["stage7-c11-source-structural"]
+        adapter = by_id["stage7-sh12-c10-mir-adapter"]
+        public = by_id["stage7-public-c11"]
+        proof = by_id["stage7-c11-proof-candidate"]
+        self.assertEqual(source["stage3_batch"], "stage7-c11-source-preflight")
+        self.assertEqual(adapter["stage3_batch"], "stage7-sh12-c10-mir-adapter")
+        self.assertEqual(public["stage3_batch"], "stage7-public-c11")
+        self.assertEqual(proof["stage3_batch"], "c11-authority")
+        self.assertEqual(source["jvm_heap"], "-J-Xmx512m")
+        self.assertEqual(adapter["jvm_heap"], "-J-Xmx8g")
+        self.assertEqual(public["jvm_heap"], "-J-Xmx2g")
+        self.assertEqual(proof["jvm_heap"], "-J-Xmx8g")
+        self.assertEqual(adapter["depends_on"], [source["id"]])
+        self.assertEqual(public["depends_on"], [source["id"]])
+        self.assertEqual(proof["depends_on"], [adapter["id"], public["id"]])
+        self.assertFalse(proof["automatic"])
+        self.assertTrue(proof["fresh"])
+        self.assertTrue(proof["no_resume"])
+        self.assertTrue(proof["proof_candidate"])
+        self.assertTrue(proof["attestation_required"])
+        self.assertEqual(proof["authority"], "none")
+        self.assertEqual(proof["state_dir_policy"], "new-per-invocation")
+        for check in (source, adapter, public, proof):
+            self.assertEqual(check["lock"], "/private/tmp/gravity-sh07-heavy.lock")
+            self.assertEqual(check["lock_owner"], "command")
+            self.assertTrue(check["exclusive"])
+            self.assertEqual(check["capacity"], 1)
+
+        selectors = tuple(verifier._stage3._FIXED_BATCH_SELECTORS[adapter["stage3_batch"]])
+        self.assertEqual(len(selectors), 6)
+        self.assertEqual(len(selectors), len(set(selectors)))
+        self.assertTrue(selectors[0].endswith("/sh12-c10-verification-envelope-preflight"))
+        self.assertTrue(selectors[-1].endswith("/sh12-c10-authenticated-gravity-boundary"))
+
+        units = {
+            "stage0-orchestrator-unit",
+            "stage1-sh01-unit",
+            "stage2-authority-admission-unit",
+            "stage3-runner-unit",
+        }
+
+        def selected(path: str) -> set[str]:
+            return set(
+                verifier.select_impacted_checks(manifest, ROOT, changed_paths=[path])["selected_ids"]
+            )
+
+        self.assertEqual(
+            selected("bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"),
+            units | {source["id"], adapter["id"], public["id"]},
+        )
+        self.assertEqual(
+            selected("bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj"),
+            units | {source["id"], adapter["id"]},
+        )
+        self.assertEqual(
+            selected(
+                "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj"
+            ),
+            units | {source["id"], adapter["id"], public["id"]},
+        )
+        explicit = set(
+            verifier.select_impacted_checks(
+                manifest, ROOT, requested_ids=[proof["id"]]
+            )["selected_ids"]
+        )
+        self.assertEqual(explicit, units | stage7_ids)
+
+        legacy_ids = {
+            "stage0-hosted-hello",
+            "stage0-hosted-hello-qst",
+            "stage0-selective-smoke",
+            "stage0-hosted-core-app",
+            "stage0-hosted-core-compiled-app",
+            "stage0-clojure-suite",
+            "stage0-bootstrap-authority",
+        }
+        c11_path = "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+        for check_id in legacy_ids:
+            self.assertEqual(by_id[check_id]["impact_excludes"].count(c11_path), 1, check_id)
+        for test_path in (
+            "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
+        ):
+            self.assertEqual(
+                by_id["stage1-sh01-unit"]["impact_excludes"].count(test_path),
+                1,
+                test_path,
             )
 
     def test_real_manifest_stage3_runner_unit_owns_its_complete_clojure_test_file(self) -> None:

@@ -7,7 +7,8 @@
   the host reader; subsequent structural walks are iterative and have
   explicit limits.  This prevents stack growth in the supported lexical
   cases, while the host reader remains a separate bounded parsing step."
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]))
 
 (defn- repository-root
@@ -33,9 +34,43 @@
 (def ^:private root (delay (repository-root)))
 (def ^:private source-relative-path
   "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")
-(def ^:private expected-source-byte-count 113008)
+(def ^:private proof-contract-relative-path
+  "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
+(def ^:private expected-source-byte-count 253588)
 (def ^:private expected-source-revision-id
-  "sha256:95fd82d9484d0a1b7a93b3da10ed6c490c7b051e253da0eb1eb58f0f08334fe3")
+  "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136")
+(def ^:private expected-source-exports
+  '[c11-mir-contract
+    c11-build-mir-pass-contract
+    c11-mir-module-contract
+    c11-mir-function-contract
+    c11-mir-block-contract
+    c11-mir-terminator-contract
+    c11-mir-instruction-contract
+    c11-mir-value-contract
+    c11-mir-source-map-contract
+    c11-mir-verifier-contract
+    c11-mir-diagnostic-catalog
+    build-c11-mir-module
+    build-c11-mir-function
+    build-c11-mir-block
+    build-c11-mir-terminator
+    build-c11-mir-instruction
+    build-c11-mir-value
+    build-c11-mir-source-map
+    verify-c11-mir-module
+    c11-build-target-independent-mir
+    sh12-authenticated-c10-mir-adapter-policy
+    sh12-authenticated-c10-mir-carrier-preflight
+    sh12-authenticated-c10-mir-input-valid?
+    sh12-build-authenticated-c10-mir-template
+    sh12-authenticated-c10-mir-identity-request
+    sh12-authenticated-c10-mir-module-identity-request
+    sh12-bind-authenticated-c10-mir
+    sh12-verify-authenticated-c10-mir
+    sh13-control-flow-policy
+    sh13-run-module
+    sh13-verify-execution])
 (def ^:private invalid-export-clause ::invalid-export-clause)
 (def ^:private invalid-definition-duplicates ::invalid-definition-duplicates)
 
@@ -330,6 +365,12 @@
 
 (def ^:private source-snapshot (delay (load-source-snapshot)))
 
+(defn- proof-contract
+  []
+  (let [path (safe-contained-source-path @root proof-contract-relative-path)
+        snapshot (read-source-snapshot path)]
+    (edn/read-string (strict-utf8 (:bytes snapshot) "SH-07 proof contract"))))
+
 (defn- source-bytes
   []
   ;; Return a copy so callers cannot mutate the process-local bounded snapshot
@@ -584,10 +625,19 @@
 
 (deftest sh07-c11-source-binding-is-exact
   (let [bytes (source-bytes)
-        production-snapshot @source-snapshot]
+        production-snapshot @source-snapshot
+        contract (proof-contract)
+        expectation
+        (get-in contract
+                [:authoritative-coverage-census :module-expectations :c11-mir])]
     (is (= expected-source-byte-count (alength bytes)))
     (is (= expected-source-revision-id (sha256-id bytes)))
     (is (:authenticated? (validate-source-binding! production-snapshot)))
+    (is (= 'gravity.compiler.c11-mir-specification
+           (:module-namespace expectation)))
+    (is (= {:source-byte-count expected-source-byte-count
+            :source-bytes-sha256 expected-source-revision-id}
+           (:source-binding expectation)))
     (testing "injected source text cannot override strict bytes decoding"
       (let [loaded
             (binding [*source-snapshot-loader*
@@ -814,7 +864,13 @@
         exports (export-names forms)]
     (is (vector? exports))
     (is (seq exports))
+    (is (= expected-source-exports exports))
     (is (empty? (missing-export-definitions forms))))
+  (testing "the ordered export contract is exact"
+    (is (not= expected-source-exports
+              (vec (reverse expected-source-exports))))
+    (is (not= expected-source-exports
+              (conj expected-source-exports 'unreviewed-export))))
   (testing "malformed namespace and export clauses fail closed"
     (doseq [forms
             ['[(not-ns example (:exports [x])) (def x 1)]
