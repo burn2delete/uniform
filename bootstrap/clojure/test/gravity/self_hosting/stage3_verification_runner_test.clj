@@ -52,6 +52,10 @@
   'gravity.self-hosting.sh07-c11-mir-source-preflight-test)
 (def ^:private sh12-adapter-ns
   'gravity.self-hosting.sh12-c10-mir-adapter-test)
+(def ^:private c12-shape-ns
+  'gravity.self-hosting.sh07-c12-domain-ir-shape-preflight-test)
+(def ^:private sh13-adapter-ns
+  'gravity.self-hosting.sh13-c11-domain-evidence-adapter-test)
 (def ^:private sh10-kernel-ns
   'gravity.self-hosting.sh10-ownership-transition-test)
 (def ^:private sh10-adapter-ns
@@ -88,7 +92,9 @@
    sh11-kernel-ns "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj"
    sh11-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj"
    c11-source-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj"
-   sh12-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj"})
+   sh12-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj"
+   c12-shape-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj"
+   sh13-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj"})
 
 (defn- source-deftest-selectors
   [namespace-symbol relative-path]
@@ -133,7 +139,10 @@
           :stage7-c11-source-preflight
           :stage7-c11-shape-preflight
           :stage7-sh12-c10-mir-adapter
-          :stage7-public-c11]
+          :stage7-public-c11
+          :stage8-c12-source-shape
+          :stage8-public-c12
+          :stage8-sh13-c11-domain-evidence]
          runner/fixed-batch-ids))
   (is (= runner/primitive-pure-selectors
          (get runner/fixed-batch-selectors :primitive-pure)))
@@ -228,6 +237,15 @@
   (is (= :source-subsequence
          (get-in runner/fixed-batches
                  [:stage5-c9-source-structural :catalog-order-policy])))
+  (is (= runner/stage8-c12-source-shape-selectors
+         (get runner/fixed-batch-selectors :stage8-c12-source-shape)))
+  (is (= 2 (count runner/stage8-c12-source-shape-selectors)))
+  (is (= runner/stage8-sh13-c11-domain-evidence-selectors
+         (get runner/fixed-batch-selectors :stage8-sh13-c11-domain-evidence)))
+  (is (= 6 (count runner/stage8-sh13-c11-domain-evidence-selectors)))
+  (is (= runner/stage8-public-c12-selectors
+         (get runner/fixed-batch-selectors :stage8-public-c12)))
+  (is (= 1 (count runner/stage8-public-c12-selectors)))
   (is (not-any? #(re-find #"sh07-b29-(c8-source-has-exact-authentic-coverage|c8-calls-lookups-and-error-effect|c8-is-deterministic-path-neutral|c8-replay-and-alteration|existing-rejected-families)" (str %))
                 runner/stage4-c8-source-structural-selectors)))
 
@@ -289,6 +307,12 @@
          sh12-adapter-ns (source-deftest-selectors
                           sh12-adapter-ns
                           "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj")
+         c12-shape-ns (source-deftest-selectors
+                       c12-shape-ns
+                       "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj")
+         sh13-adapter-ns (source-deftest-selectors
+                          sh13-adapter-ns
+                          "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}]
     (let [catalog-result
@@ -355,6 +379,51 @@
     (is (= :explicit-execution-order
            (get-in runner/fixed-batches
                    [:stage7-sh12-c10-mir-adapter :catalog-order-policy])))))
+
+(deftest stage8-source-and-adapter-have-complete-exact-catalogs
+  (let [shape (source-deftest-selectors
+               c12-shape-ns
+               "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj")
+        adapter (source-deftest-selectors
+                 sh13-adapter-ns
+                 "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj")]
+    (is (= runner/stage8-c12-source-shape-selectors shape))
+    (is (= 2 (count shape)))
+    (is (= 2 (count (set shape))))
+    (is (= runner/stage8-sh13-c11-domain-evidence-selectors adapter))
+    (is (= 6 (count adapter)))
+    (is (= 6 (count (set adapter))))
+    (is (= :source-subsequence
+           (get-in runner/fixed-batches
+                   [:stage8-sh13-c11-domain-evidence :catalog-order-policy])))))
+
+(deftest stage8-adapter-preserves-fail-fast-skipped-tail
+  (let [selectors runner/stage8-sh13-c11-domain-evidence-selectors
+        calls (atom [])]
+    (binding [runner/*catalog-loader* nil
+              runner/*delegate-run-test-vars*
+              (fn [selection]
+                (swap! calls conj selection)
+                {:test-result {:test 2 :pass 1 :fail 1 :error 0 :type :summary}
+                 :test-var-results
+                 [(passing-result (first selectors) 0)
+                  (assoc (passing-result (second selectors) 1)
+                         :test-result {:test 1 :pass 0 :fail 1 :error 0})]
+                 :skipped-test-vars (subvec selectors 2)
+                 :cache {:sh06-hits 0 :sh06-misses 2
+                         :core-hits 0 :core-misses 0
+                         :verification-hits 0 :verification-misses 0}
+                 :elapsed-ms 4})]
+      (let [result (runner/run-batch :stage8-sh13-c11-domain-evidence)]
+        (is (= [{:test-vars selectors
+                 :maximum-entries 1
+                 :fail-fast? true}]
+               @calls))
+        (is (= selectors (:selection-order result)))
+        (is (= (subvec selectors 2) (:skipped-tail result)))
+        (is (= [:passed :failed :skipped :skipped :skipped :skipped]
+               (mapv :status (:test-var-results result))))
+        (is (= :non-authoritative (:authority result)))))))
 
 (deftest stage7-c11-shape-profile-overlaps-without-adding-an-owner
   (let [actual (source-deftest-selectors
@@ -522,6 +591,12 @@
          c11-source-ns (source-deftest-selectors
                         c11-source-ns
                         "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj")
+         c12-shape-ns (source-deftest-selectors
+                       c12-shape-ns
+                       "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj")
+         sh13-adapter-ns (source-deftest-selectors
+                          sh13-adapter-ns
+                          "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}
         missing (update base primitive-ns pop)

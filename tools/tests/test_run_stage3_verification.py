@@ -104,6 +104,9 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage7-c11-shape-preflight": "stage7-c11-shape-preflight-selectors",
             "stage7-sh12-c10-mir-adapter": "stage7-sh12-c10-mir-adapter-selectors",
             "stage7-public-c11": "stage7-public-c11-selectors",
+            "stage8-c12-source-shape": "stage8-c12-source-shape-selectors",
+            "stage8-public-c12": "stage8-public-c12-selectors",
+            "stage8-sh13-c11-domain-evidence": "stage8-sh13-c11-domain-evidence-selectors",
         }
         for batch, definition in selector_definitions.items():
             self.assertEqual(
@@ -141,6 +144,9 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage7-c11-shape-preflight": "-J-Xmx512m",
             "stage7-sh12-c10-mir-adapter": "-J-Xmx8g",
             "stage7-public-c11": "-J-Xmx2g",
+            "stage8-c12-source-shape": "-J-Xmx512m",
+            "stage8-public-c12": "-J-Xmx2g",
+            "stage8-sh13-c11-domain-evidence": "-J-Xmx8g",
             "c10-authority": "-J-Xmx8g",
             "c11-authority": "-J-Xmx8g",
         }
@@ -214,6 +220,21 @@ class Stage3WrapperTests(unittest.TestCase):
                 "public-check-accepts-gravity-authored-c11-mir-specification",
             ),
             stage3._FIXED_BATCH_SELECTORS["stage7-public-c11"],
+        )
+        c12_shape = stage3._FIXED_BATCH_SELECTORS["stage8-c12-source-shape"]
+        self.assertEqual(2, len(c12_shape))
+        self.assertEqual(2, len(set(c12_shape)))
+        self.assertTrue(c12_shape[0].endswith("/sh07-c12-domain-ir-source-shape-and-control"))
+        self.assertTrue(c12_shape[1].endswith("/sh07-c12-domain-ir-export-completeness"))
+        c12_adapter = stage3._FIXED_BATCH_SELECTORS["stage8-sh13-c11-domain-evidence"]
+        self.assertEqual(6, len(c12_adapter))
+        self.assertEqual(6, len(set(c12_adapter)))
+        self.assertTrue(c12_adapter[-1].endswith("/sh13-c11-domain-evidence-path-neutral-provenance"))
+        self.assertEqual(
+            (
+                "gravity.bootstrap-test/public-check-accepts-gravity-authored-c12-domain-ir-architecture",
+            ),
+            stage3._FIXED_BATCH_SELECTORS["stage8-public-c12"],
         )
 
     def test_retired_singleton_batch_ids_are_rejected(self) -> None:

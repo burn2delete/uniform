@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import fcntl
 import os
 import io
@@ -1492,10 +1493,15 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "c11-authority",
         }
         stage7_runner_only_batches = {"stage7-c11-shape-preflight"}
+        stage8_batches = {
+            "stage8-c12-source-shape",
+            "stage8-sh13-c11-domain-evidence",
+            "stage8-public-c12",
+        }
         self.assertEqual(
             set(verifier._stage3.FIXED_BATCHES)
-            & (stage7_batches | stage7_runner_only_batches),
-            stage7_batches | stage7_runner_only_batches,
+            & (stage7_batches | stage7_runner_only_batches | stage8_batches),
+            stage7_batches | stage7_runner_only_batches | stage8_batches,
         )
         stage3_fixed_batches = (
             set(verifier._stage3.FIXED_BATCHES)
@@ -1504,6 +1510,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             - stage6_batches
             - stage7_batches
             - stage7_runner_only_batches
+            - stage8_batches
         )
         self.assertTrue(stage7_batches.isdisjoint(stage3_fixed_batches))
         self.assertEqual(
@@ -2356,6 +2363,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage6-sh11-c9-safety-adapter",
                 "stage7-c11-source-structural",
                 "stage7-sh12-c10-mir-adapter",
+                "stage8-c12-source-shape",
+                "stage8-sh13-c11-domain-evidence",
             },
         )
         kernel = selected(
@@ -2381,6 +2390,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage6-sh11-c9-safety-adapter",
                 "stage7-c11-source-structural",
                 "stage7-sh12-c10-mir-adapter",
+                "stage8-c12-source-shape",
+                "stage8-sh13-c11-domain-evidence",
             },
         )
         for upstream in (
@@ -2621,6 +2632,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage6-sh11-c9-safety-adapter",
             "stage7-c11-source-structural",
             "stage7-sh12-c10-mir-adapter",
+            "stage8-c12-source-shape",
+            "stage8-sh13-c11-domain-evidence",
         }
         self.assertEqual(source_selected, expected_c8_change_selection)
         self.assertTrue(
@@ -2783,11 +2796,24 @@ class VerifyDevelopmentTests(unittest.TestCase):
 
         self.assertEqual(
             selected("bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"),
-            units | {source["id"], adapter["id"], public["id"]},
+            units
+            | {
+                source["id"],
+                adapter["id"],
+                public["id"],
+                "stage8-c12-source-shape",
+                "stage8-sh13-c11-domain-evidence",
+            },
         )
         self.assertEqual(
             selected("bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj"),
-            units | {source["id"], adapter["id"]},
+            units
+            | {
+                source["id"],
+                adapter["id"],
+                "stage8-c12-source-shape",
+                "stage8-sh13-c11-domain-evidence",
+            },
         )
         self.assertEqual(
             selected(
@@ -2823,6 +2849,181 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 1,
                 test_path,
             )
+
+    def test_real_manifest_stage8_fixed_graph_and_impact_are_exact(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        by_id = verifier.checks_by_id(manifest)
+        stage8_ids = {
+            "stage8-c12-source-shape",
+            "stage8-sh13-c11-domain-evidence",
+            "stage8-public-c12",
+        }
+        self.assertEqual(
+            {check_id for check_id in by_id if check_id.startswith("stage8-")},
+            stage8_ids,
+        )
+        source = by_id["stage8-c12-source-shape"]
+        adapter = by_id["stage8-sh13-c11-domain-evidence"]
+        public = by_id["stage8-public-c12"]
+        self.assertEqual(source["stage3_batch"], "stage8-c12-source-shape")
+        self.assertEqual(adapter["stage3_batch"], "stage8-sh13-c11-domain-evidence")
+        self.assertEqual(public["stage3_batch"], "stage8-public-c12")
+        self.assertEqual(source["jvm_heap"], "-J-Xmx512m")
+        self.assertEqual(adapter["jvm_heap"], "-J-Xmx8g")
+        self.assertEqual(public["jvm_heap"], "-J-Xmx2g")
+        self.assertEqual(adapter["depends_on"], [source["id"]])
+        self.assertEqual(public["depends_on"], [source["id"]])
+        for check in (source, adapter, public):
+            self.assertEqual(check["authority"], "none")
+            self.assertTrue(check["automatic"])
+            self.assertEqual(check["lock"], "/private/tmp/gravity-sh07-heavy.lock")
+            self.assertEqual(check["lock_owner"], "command")
+            self.assertTrue(check["exclusive"])
+            self.assertEqual(check["capacity"], 1)
+
+        units = {
+            "stage0-orchestrator-unit",
+            "stage1-sh01-unit",
+            "stage2-authority-admission-unit",
+            "stage3-runner-unit",
+        }
+
+        def selected(path: str) -> set[str]:
+            return set(
+                verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[path]
+                )["selected_ids"]
+            )
+
+        c12_path = "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+        self.assertEqual(selected(c12_path), units | stage8_ids)
+        self.assertEqual(
+            selected(
+                "bootstrap/clojure/test/gravity/self_hosting/"
+                "sh07_c12_domain_ir_shape_preflight_test.clj"
+            ),
+            units | stage8_ids,
+        )
+        self.assertEqual(
+            selected(
+                "bootstrap/clojure/test/gravity/self_hosting/"
+                "sh13_c11_domain_evidence_adapter_test.clj"
+            ),
+            units | {source["id"], adapter["id"]},
+        )
+        for unrelated in (
+            "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+            "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh08_primitive_function_type_test.clj",
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-single-bool-call.gravity",
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-single-bool-call.qst",
+        ):
+            self.assertTrue(
+                stage8_ids.isdisjoint(selected(unrelated)),
+                unrelated,
+            )
+        legacy_ids = {
+            "stage0-hosted-hello",
+            "stage0-hosted-hello-qst",
+            "stage0-selective-smoke",
+            "stage0-hosted-core-app",
+            "stage0-hosted-core-compiled-app",
+            "stage0-clojure-suite",
+            "stage0-bootstrap-authority",
+        }
+        for check_id in legacy_ids:
+            self.assertEqual(
+                by_id[check_id]["impact_excludes"].count(c12_path), 1, check_id
+            )
+        for test_path in (
+            "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+        ):
+            self.assertEqual(
+                by_id["stage1-sh01-unit"]["impact_excludes"].count(test_path),
+                1,
+                test_path,
+            )
+        c12_source = ROOT / c12_path
+        c12_sha = "sha256:" + hashlib.sha256(c12_source.read_bytes()).hexdigest()
+        self.assertEqual(
+            c12_sha,
+            "sha256:6d56e7a0484be3abdf395ef41d5ecae85c47f090c263c08010f08ce82a8348d9",
+        )
+        self.assertIn(
+            c12_sha,
+            (ROOT / "bootstrap/clojure/test/gravity/bootstrap_test.clj").read_text(),
+        )
+        self.assertFalse(any(check_id.endswith("proof-candidate") for check_id in stage8_ids))
+        self.assertNotIn("c12-authority", verifier._stage3.FIXED_MODULE_POLICIES)
+
+    def test_stage8_runtime_resource_lifecycle_and_node_drift_fail_closed(self) -> None:
+        manifest = verifier.load_manifest(
+            ROOT / "tools" / "development_verification_manifest.json"
+        )
+        check_ids = (
+            "stage8-c12-source-shape",
+            "stage8-sh13-c11-domain-evidence",
+            "stage8-public-c12",
+        )
+        for check_id in check_ids:
+            broken = json.loads(json.dumps(manifest))
+            target = next(item for item in broken["checks"] if item["id"] == check_id)
+            target["tool_inputs"].remove("bootstrap/clojure/src/**")
+            with self.assertRaisesRegex(
+                verifier.ManifestError, "centralized Stage3 runtime inputs"
+            ):
+                verifier.validate_manifest(broken)
+
+            broken = json.loads(json.dumps(manifest))
+            target = next(item for item in broken["checks"] if item["id"] == check_id)
+            target["minimum_heap_bytes"] += 1
+            with self.assertRaisesRegex(verifier.ManifestError, "minimum_heap_bytes"):
+                verifier.validate_manifest(broken)
+
+            broken = json.loads(json.dumps(manifest))
+            target = next(item for item in broken["checks"] if item["id"] == check_id)
+            target["jvm_heap"] = (
+                "-J-Xmx8g" if target["jvm_heap"] != "-J-Xmx8g" else "-J-Xmx2g"
+            )
+            target["minimum_heap_bytes"] = (
+                8589934592 if target["jvm_heap"] == "-J-Xmx8g" else 2147483648
+            )
+            with self.assertRaisesRegex(verifier.ManifestError, "jvm_heap"):
+                verifier.validate_manifest(broken)
+
+            for field, value, error in (
+                ("timeout_seconds", target["timeout_seconds"] + 1, "timeout_seconds"),
+                ("fresh", False, "fresh"),
+                ("resume", True, "resume"),
+                ("state_dir_policy", "reused", "state_dir_policy"),
+                ("automatic", False, "automatic"),
+                ("lock", "/private/tmp/gravity-stage8-wrong.lock", "lock"),
+                ("lock_owner", "runner", "lock_owner"),
+                ("exclusive", False, "exclusive"),
+                ("capacity", 2, "capacity"),
+            ):
+                broken = json.loads(json.dumps(manifest))
+                target = next(
+                    item for item in broken["checks"] if item["id"] == check_id
+                )
+                target[field] = value
+                with self.assertRaisesRegex(verifier.ManifestError, error):
+                    verifier.validate_manifest(broken)
+
+        for missing in check_ids:
+            broken = json.loads(json.dumps(manifest))
+            broken["checks"] = [
+                item for item in broken["checks"] if item["id"] != missing
+            ]
+            with self.assertRaisesRegex(verifier.ManifestError, "Stage8 fixed graph ids"):
+                verifier.validate_manifest(broken)
+        broken = json.loads(json.dumps(manifest))
+        broken["checks"] = [
+            item for item in broken["checks"] if not item["id"].startswith("stage8-")
+        ]
+        with self.assertRaisesRegex(verifier.ManifestError, "Stage8 fixed graph ids"):
+            verifier.validate_manifest(broken)
 
     def test_real_manifest_stage3_runner_unit_owns_its_complete_clojure_test_file(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")

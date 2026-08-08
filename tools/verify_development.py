@@ -350,17 +350,25 @@ _STAGE3_HEAP_BYTES = {
     "-J-Xmx8g": 8 * 1024 * 1024 * 1024,
 }
 
+_STAGE8_FIXED_NODE_POLICIES = {
+    "stage8-c12-source-shape": {"timeout_seconds": 600},
+    "stage8-public-c12": {"timeout_seconds": 900},
+    "stage8-sh13-c11-domain-evidence": {"timeout_seconds": 1800},
+}
+
 
 def _is_fixed_stage_check(check_id: str) -> bool:
     """Return whether a manifest node invokes the fixed stage wrapper.
 
-    Stage3 through Stage7 all use the same command-owned
+    Stage3 through Stage8 all use the same command-owned
     ``run_stage3_verification.py`` boundary.  Keep this predicate centralized
     so a newly added fixed stage cannot accidentally bypass heap, runtime
     identity, lock-owner, or receipt validation.
     """
 
-    return check_id.startswith(("stage3-", "stage4-", "stage5-", "stage6-", "stage7-"))
+    return check_id.startswith(
+        ("stage3-", "stage4-", "stage5-", "stage6-", "stage7-", "stage8-")
+    )
 
 
 def _validate_stage3_resource_contract(check: Mapping[str, Any]) -> None:
@@ -445,6 +453,36 @@ def _validate_stage3_runtime_inputs(check: Mapping[str, Any]) -> None:
             "centralized Stage3 runtime inputs are not existing regular files: "
             f"{sorted(missing_exact)}"
         )
+
+
+def _validate_stage8_node_contract(check: Mapping[str, Any]) -> None:
+    """Pin the bounded Stage8 lifecycle in addition to generic fixed-stage policy."""
+
+    check_id = str(check.get("id", ""))
+    if not check_id.startswith("stage8-"):
+        return
+    policy = _STAGE8_FIXED_NODE_POLICIES.get(check_id)
+    if policy is None:
+        raise ManifestError(f"unreviewed Stage8 check id: {check_id!r}")
+    if check.get("timeout_seconds") != policy["timeout_seconds"]:
+        raise ManifestError(
+            f"check {check_id!r} timeout_seconds must equal the fixed Stage8 bound"
+        )
+    expected = {
+        "fresh": True,
+        "resume": False,
+        "state_dir_policy": "new-per-invocation",
+        "automatic": True,
+        "lock": "/private/tmp/gravity-sh07-heavy.lock",
+        "lock_owner": "command",
+        "exclusive": True,
+        "capacity": 1,
+    }
+    for field, value in expected.items():
+        if check.get(field) != value:
+            raise ManifestError(
+                f"check {check_id!r} {field} must equal fixed Stage8 value {value!r}"
+            )
 
 
 def _lock_owner(check: Mapping[str, Any]) -> str:
@@ -576,6 +614,7 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
         _parse_command(check.get("command"), check_id)
         _validate_stage3_resource_contract(check)
         _validate_stage3_runtime_inputs(check)
+        _validate_stage8_node_contract(check)
         if check.get("daemonization") != "forbidden":
             raise ManifestError(
                 f"check {check_id!r} must declare daemonization='forbidden'; "
@@ -680,6 +719,15 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
         for item in tool_inputs:
             if not _is_safe_relative_path(_normalise_declared_path(item)):
                 raise ManifestError(f"check {check_id!r} tool input escapes repository root: {item!r}")
+
+    stage8_ids = {check_id for check_id in ids if check_id.startswith("stage8-")}
+    expected_stage8_ids = set(_STAGE8_FIXED_NODE_POLICIES)
+    production_manifest = manifest.get("name") == "gravity-stage0-development-verification"
+    if (production_manifest or stage8_ids) and stage8_ids != expected_stage8_ids:
+        raise ManifestError(
+            "Stage8 fixed graph ids must equal the reviewed set: "
+            f"expected {sorted(expected_stage8_ids)}, observed {sorted(stage8_ids)}"
+        )
 
     for check_id, deps in dependencies.items():
         missing = sorted(set(deps) - ids)

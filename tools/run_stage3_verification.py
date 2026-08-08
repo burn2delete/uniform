@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the reviewed Stage 3--7 fixed verification boundary.
+"""Run the reviewed Stage 3--8 fixed verification boundary.
 
 The development verifier deliberately treats this file as the only command
 that may own the SH-07 heavy lock.  The command is intentionally boring: its
@@ -8,9 +8,11 @@ an environment binding created by :mod:`verify_development`.  There is no
 public command passthrough or shell evaluation in this wrapper.
 
 The enabled modes are ``pure`` and ``proof-candidate``.  Stage7 exposes exact
-C11 source, cache-affine SH12 adapter, and public C11 batches.  The shape
-profile is an execution alias of the complete source profile and does not add
-catalog ownership.  A public/pure batch
+C11 source, cache-affine SH12 adapter, and public C11 batches.  Stage8 exposes
+a moving-source C12 shape gate, a cache-affine SH13 C11-domain evidence batch,
+and the exact C12 public compatibility check; it deliberately exposes no C12
+proof candidate.  The Stage7 shape profile is an execution alias of the
+complete source profile and does not add catalog ownership.  A public/pure batch
 acquires the canonical SH-07 lease and runs one of the reviewed Clojure
 batches.  A proof-candidate batch starts a *new* checkpoint directory and
 invokes the existing SH-07 checkpoint runner with the module selected by the
@@ -113,6 +115,9 @@ FIXED_BATCHES = (
     "stage7-c11-shape-preflight",
     "stage7-sh12-c10-mir-adapter",
     "stage7-public-c11",
+    "stage8-c12-source-shape",
+    "stage8-public-c12",
+    "stage8-sh13-c11-domain-evidence",
     "authority",
     "c8-authority",
     "c9-authority",
@@ -155,6 +160,9 @@ _BATCH_HEAP = {
     "stage7-c11-shape-preflight": "-J-Xmx512m",
     "stage7-sh12-c10-mir-adapter": "-J-Xmx8g",
     "stage7-public-c11": "-J-Xmx2g",
+    "stage8-c12-source-shape": "-J-Xmx512m",
+    "stage8-public-c12": "-J-Xmx2g",
+    "stage8-sh13-c11-domain-evidence": "-J-Xmx8g",
     "c10-authority": "-J-Xmx8g",
     "c11-authority": "-J-Xmx8g",
 }
@@ -305,6 +313,21 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
     "stage7-public-c11": (
         "gravity.bootstrap-test/gravity-c11-source-and-builder-identities-are-pinned",
         "gravity.bootstrap-test/public-check-accepts-gravity-authored-c11-mir-specification",
+    ),
+    "stage8-c12-source-shape": (
+        "gravity.self-hosting.sh07-c12-domain-ir-shape-preflight-test/sh07-c12-domain-ir-source-shape-and-control",
+        "gravity.self-hosting.sh07-c12-domain-ir-shape-preflight-test/sh07-c12-domain-ir-export-completeness",
+    ),
+    "stage8-public-c12": (
+        "gravity.bootstrap-test/public-check-accepts-gravity-authored-c12-domain-ir-architecture",
+    ),
+    "stage8-sh13-c11-domain-evidence": (
+        "gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-surface-and-policy",
+        "gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-input-admission",
+        "gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-positive",
+        "gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-fact-table-and-id-mutations",
+        "gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-hostile-carriers-and-recomputation",
+        "gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-path-neutral-provenance",
     ),
 }
 

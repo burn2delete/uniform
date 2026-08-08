@@ -883,7 +883,29 @@ fixed to `c11-authority` / `c11-mir`, fresh, no-resume, new-state, 8 GiB,
 attestation is claimed. The hash derivation and SH12 receipts are calibration
 and development evidence only.
 
-### 12. Full release gate
+### 12. Fixed Stage8 C12 domain-IR graph
+
+Stage8 is an automatic non-authoritative development boundary with no proof
+node. `stage8-c12-source-shape` uses a 512 MiB JVM for exactly two source-only
+checks: control-form shape and export-definition completeness. It branches to
+`stage8-sh13-c11-domain-evidence`, which runs six exact selectors in one 8 GiB
+JVM, and `stage8-public-c12`, which runs one exact public compatibility selector
+in a 2 GiB JVM. Keeping the six SH13 selectors together preserves namespace-
+local C12 plan affinity and exact fail-fast skipped-tail reporting.
+
+The bound C12 source is 140,951 bytes with SHA
+`sha256:6d56e7a0484be3abdf395ef41d5ecae85c47f090c263c08010f08ce82a8348d9`.
+Every production node is fresh, exclusive, capacity one, command-owned on the
+canonical heavy lock, and declares `authority: none`. C12 source changes select
+only the four cheap unit prerequisites plus the three Stage8 nodes. The C12
+source is excluded exactly once from all seven legacy broad Stage0 owners, and
+the two Stage8 test files are excluded from the broad Stage1 test glob while
+remaining exact declared inputs. No current Stage8 authority, proof candidate,
+reviewed attestation, or release evidence is claimed. The exact three-node
+closure must be rerun after final composition; earlier C12/SH13 runs are only
+historical non-authoritative planning evidence.
+
+### 13. Full release gate
 
 Run only after the candidate is stable, the selected authoritative modules
 pass, and the worktree is ready for release review. This preserves every

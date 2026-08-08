@@ -434,6 +434,31 @@ fresh/no-resume/new-state execution, `authority: none`, `proof_candidate:
 true`, and `attestation_required: true`. No current proof candidate or reviewed
 attestation exists; calibration and adapter receipts remain non-authoritative.
 
+## Fixed Stage8 C12 domain-IR graph
+
+Stage8 owns the current C12 source through a bounded non-authoritative graph:
+
+`stage8-c12-source-shape` -> `stage8-sh13-c11-domain-evidence`
+
+and source -> `stage8-public-c12`. The source node uses 512 MiB and runs only
+the source-only control-form and export-definition checks. The SH13 node keeps
+six exact selectors in one 8 GiB JVM so its namespace-local C12 plan and
+prepared evidence carrier are reused; its mutation and provenance checks retain
+an exact fail-fast skipped tail. The public sibling uses 2 GiB and one exact
+C12 compatibility selector. Every node is fresh, exclusive, capacity one,
+command-owned on `/private/tmp/gravity-sh07-heavy.lock`, and reports
+`authority: none`.
+
+The current C12 source is 140,951 bytes with SHA
+`sha256:6d56e7a0484be3abdf395ef41d5ecae85c47f090c263c08010f08ce82a8348d9`.
+C12 changes select the four cheap unit prerequisites and exactly these three
+Stage8 nodes, not legacy Stage0 or proof work. The two Stage8 test namespaces
+remain declared inputs but are excluded from Stage1's broad test glob. There
+is deliberately no C12 proof candidate or authority route in this graph. A
+fresh combined Stage8 closure on the final tool/input composition is still
+required; earlier source and six-selector semantic runs are planning evidence,
+not current admission, proof, attestation, or release evidence.
+
 ## Selection and execution flow
 
 1. Normalize changed paths and validate the manifest before starting a command.

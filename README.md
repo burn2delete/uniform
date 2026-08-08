@@ -283,6 +283,20 @@ fresh, no-resume, new-state, `automatic: false`, `authority: none`, and
 when explicitly requested. No current C11 proof candidate or reviewed
 attestation is claimed by this graph.
 
+The fixed Stage8 C12/SH13 graph replaces C12's legacy broad Stage0 fallback
+with three automatic, non-authoritative nodes. A 512 MiB two-selector source
+gate checks the moving C12 source's control-form shape and export completeness,
+then branches to an 8 GiB six-selector SH13 C11-domain evidence batch and a
+2 GiB exact public C12 compatibility selector. The semantic selectors remain
+in one namespace/JVM to reuse the C12 plan, preserve fail-fast skipped-tail
+evidence, and avoid six cold-plan launches. C12 source changes select only the
+four cheap unit prerequisites plus these three nodes; Stage8-owned test changes
+are excluded from the broad Stage1 matcher, and C12 is excluded exactly once
+from every legacy broad Stage0 owner. The current source is 140,951 bytes with
+SHA `sha256:6d56e7a0...a8348d9`. No Stage8 proof node exists, and the combined
+three-node graph has not yet been rerun on this exact tool/input composition;
+earlier C12/SH13 measurements remain non-authoritative planning evidence only.
+
 Every Stage 0 manifest check explicitly sets `daemonization: forbidden`.
 Commands run in a new process group; ordinary descendants are cleaned before a
 resource lock is released, with one bounded host-wide `ps eww` environment
