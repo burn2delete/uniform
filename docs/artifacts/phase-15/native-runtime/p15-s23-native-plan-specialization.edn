@@ -1,0 +1,111 @@
+{:artifact :gravity/p15-s23-native-plan-specialization-proof
+ :schema-version 1
+ :status :complete-for-internal-plan-specialized-native-child
+ :scope :authenticated-internal-plan-specialized-c-artifact
+ :implementation
+ {:path "bootstrap/clojure/src/gravity/p15_native_plan_specialization.clj"
+  :public-api gravity.p15-native-plan-specialization/specialize-native-runtime-plan
+  :content-hash "sha256:c2d6d84e122bd09b484e59da0d528174374c2ee7e85facb04769cbbb28fe2907"
+  :owner :clojure-bootstrap
+  :input :actual-target-neutral-stage2-runtime-packet-and-trusted-context
+  :authenticator gravity.bootstrap/p15-s23-closed-runtime-packet-authentic?
+  :authenticator-arity 2
+  :authentication-before-plan-traversal? true
+  :plan-validator gravity.bootstrap/c-backend-validate-runtime-plan!
+  :c-emitter gravity.bootstrap/c-backend-runtime-source
+  :runner-status :not-exposed
+  :runner-reason :public-c-backend-process-staging-not-reused-by-production-wrapper
+  :diagnostics
+  {"P15NS001" :packet-or-context-authentication
+   "P15NS002" :unsupported-authenticated-plan
+   "P15NS003" :generated-source-or-output-bound}}
+ :supported-slice
+ {:target :c
+  :single-zero-arity-entrypoint? true
+  :maximum-plan-instructions 128
+  :maximum-generated-source-bytes 65536
+  :maximum-reference-output-bytes 8192
+  :maximum-scalar-bytes 1024
+  :lowering :public-c-backend-runtime-source
+  :generic-host-c-packet-interpreter-used? false}
+ :accepted-evidence
+ [{:source "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.gravity"
+   :expected-output "Hello Gravity\n"
+   :execution :test-owned-private-c-compile-and-run
+   :status :passed}
+  {:source "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.qst"
+   :expected-output "Hello Gravity\n"
+   :execution :test-owned-private-c-compile-and-run
+   :status :passed}
+  {:source "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-str.gravity"
+   :expected-output "name42\n"
+   :execution :test-owned-private-c-compile-and-run
+   :status :passed}]
+ :rejected-evidence
+ [{:case :packet-envelope-tamper
+   :diagnostic "P15NS001"
+   :before :public-c-backend-runtime-plan-validation
+   :status :passed}
+  {:case :trusted-source-context-mismatch
+   :diagnostic "P15NS001"
+   :before :public-c-backend-runtime-plan-validation
+   :status :passed}
+  {:case :unsupported-authenticated-builtin
+   :source "bootstrap/clojure/fixtures/p15-native-plan-specialization/unsupported-builtin.gravity"
+   :diagnostic "P15NS002"
+   :before :public-c-backend-runtime-source
+   :status :passed}
+  {:case :overbound-packet-tamper
+   :diagnostic "P15NS001"
+   :note :contextual-authentication-rejects-before-specialization-bound-is-reached
+   :status :passed}]
+ :focused-validation
+ {:test-namespace gravity.p15-native-plan-specialization-test
+  :test-source-content-hash "sha256:4246e87266a555268621153d9900b18334058910836dae700e4113d425cc634f"
+  :command "clojure -J-Xmx1g -M:test --namespace gravity.p15-native-plan-specialization-test"
+  :status :passed
+  :tests 4
+  :assertions 48
+  :failures 0
+  :errors 0
+  :run-id "843e4758-6a93-4480-ba8b-7ec715e1b5ea"
+  :elapsed-seconds 783.481
+  :peak-rss-bytes 1379516416
+  :peak-process-count 2
+  :pre-post-input-hashes-match? true
+  :input-comparison "docs/artifacts/phase-15/native-runtime/p15-s23-native-plan-specialization-input-comparison.edn"
+  :input-comparison-sha256 "1e72ddd0ed84727d2c6cad67b38d921291a71dac9b5b3bc6a3f6d9227a61830c"
+  :receipt-status-sha256 "42b17fb73cf80382e3ecb7687a4325e1885fd56adc48933fce3b35f9a4546979"
+  :receipt-log-sha256 "4c7ffaf0727496f43ace086507af884f91fc60c13dcf97a643f3b72eb1dcc33d"
+  :authority :focused-integrated-semantic-evidence
+  :heavy-jvm-run-authorized? true}
+ :seed-boundary
+ {:selected-generated-child-clojure-seed-boundary? false
+  :selected-generated-child-jvm-available? false
+  :selected-runtime-clojure-seed-boundary? false
+  :selected-child-clojure-seed-boundary? false
+  :generic-host-c-packet-interpreter-used? false
+  :compiler-clojure-seed-boundary? true
+  :authentication-clojure-seed-boundary? true
+  :validator-clojure-seed-boundary? true
+  :c-emitter-clojure-seed-boundary? true
+  :artifact-clojure-seed-boundary? true
+  :artifact-construction-clojure-seed-boundary? true
+  :process-clojure-seed-boundary? true
+  :file-io-clojure-seed-boundary? true
+  :process-and-file-io-clojure-seed-boundary? true
+  :public-clojure-seed-boundary? true
+  :public-wrapper-clojure-seed-boundary? true
+  :global-clojure-seed-boundary? true
+  :clojure-seed-boundary? true}
+ :claims
+ {:provider-authored-in-gravity? false
+  :compiler-authored-in-gravity? false
+  :public-command-route? false
+  :backend-complete? false
+  :full-language? false
+  :formal-language-complete? false
+  :self-hosted? false
+  :release-ready? false
+  :seedless-release? false
+  :source-content-hash-verified-by-provider? false}}

@@ -1,0 +1,29 @@
+{:artifact :gravity/p15-s23-native-plan-specialization-input-comparison
+ :schema-version 1
+ :run-id "843e4758-6a93-4480-ba8b-7ec715e1b5ea"
+ :status :matched
+ :method :sha256-before-and-after-supervised-run
+ :inputs
+ [{:path "bootstrap/clojure/src/gravity/p15_native_plan_specialization.clj"
+   :before "sha256:c2d6d84e122bd09b484e59da0d528174374c2ee7e85facb04769cbbb28fe2907"
+   :after "sha256:c2d6d84e122bd09b484e59da0d528174374c2ee7e85facb04769cbbb28fe2907"}
+  {:path "bootstrap/clojure/test/gravity/p15_native_plan_specialization_test.clj"
+   :before "sha256:4246e87266a555268621153d9900b18334058910836dae700e4113d425cc634f"
+   :after "sha256:4246e87266a555268621153d9900b18334058910836dae700e4113d425cc634f"}
+  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.gravity"
+   :before "sha256:e48614803810895a3ad238eb196699a9fc95218ddb8d2507e3a3b498ef7caad4"
+   :after "sha256:e48614803810895a3ad238eb196699a9fc95218ddb8d2507e3a3b498ef7caad4"}
+  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.qst"
+   :before "sha256:e48614803810895a3ad238eb196699a9fc95218ddb8d2507e3a3b498ef7caad4"
+   :after "sha256:e48614803810895a3ad238eb196699a9fc95218ddb8d2507e3a3b498ef7caad4"}
+  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-str.gravity"
+   :before "sha256:c48b39e6a89b85925e4f3f5efcc03e82384f51b2ac7617e325c595ecfa35b7d4"
+   :after "sha256:c48b39e6a89b85925e4f3f5efcc03e82384f51b2ac7617e325c595ecfa35b7d4"}
+  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/unsupported-builtin.gravity"
+   :before "sha256:9c6e72bbb8f64165c039de9782e8509abf5c1d523815e6ceffb0459bb2824496"
+   :after "sha256:9c6e72bbb8f64165c039de9782e8509abf5c1d523815e6ceffb0459bb2824496"}
+  {:path "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
+   :before "sha256:ba8ff2bafa2d301bbe25a528c283211b30dc932002b71fc62e5027a73aaae669"
+   :after "sha256:ba8ff2bafa2d301bbe25a528c283211b30dc932002b71fc62e5027a73aaae669"}]
+ :scope :final-reviewed-focused-run
+ :note "The before snapshot was written before the supervised run and every listed path was rehashed after process cleanup."}

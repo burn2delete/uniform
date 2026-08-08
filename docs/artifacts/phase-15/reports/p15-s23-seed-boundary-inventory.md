@@ -46,6 +46,54 @@ conformance claim is added.
 The proof record preserves the supervised run, its first bounded timeout, the
 successful retry receipt, adapter/test hashes, and exact residual boundaries.
 
+## Completed internal plan-specialization prerequisite
+
+The next internal slice consumes a real target-neutral stage2 packet and its
+trusted context through
+`gravity.p15-native-plan-specialization/specialize-native-runtime-plan`. It
+authenticates the packet/context before plan traversal, invokes the existing
+bounded C-plan validator, and emits direct plan-specialized C. The generic
+host-C packet interpreter is unused on this selected evidence path. The
+production runner remains `:not-exposed`; compilation and execution are
+test-owned in a private root and do not establish a public process or file-I/O
+boundary.
+
+Accepted evidence compiles and runs real ARM64 macOS C for
+`accepted-print.gravity`, `accepted-print.qst`, and `accepted-str.gravity`,
+with exact `Hello Gravity\n` and `name42\n` output. Packet/context tamper and
+authenticated unsupported plans reject before the validator or emitter, with
+`P15NS001` and `P15NS002`; the overbound tamper case is authenticated as
+`P15NS001` and does not claim `P15NS003`. The stable-input supervised run
+passed 4 tests and 48 assertions in 783.481 seconds, peaked at
+1,379,516,416 bytes RSS and two processes, matched the tracked before/after input hashes, and
+had 0 failures/errors.
+
+This advances only the selected internal evidence path by removing use of the
+generic packet interpreter. The generated child and selected runtime record no
+Clojure/JVM availability, but authentication, plan validation, C emission,
+artifact construction, process/file I/O, compiler, public wrapper, and global
+boundaries remain Clojure-seed-bound. The provider and compiler are not
+authored in Gravity, the production runner is not exposed, and the public
+`P18T04002` / `:missing-fact :contained-public-native-run` admission block is
+unchanged. Self-hosting, release, backend-complete, full-language, and 0/240
+claims remain unchanged.
+
+The proof is
+`docs/artifacts/phase-15/native-runtime/p15-s23-native-plan-specialization.edn`,
+with report
+`docs/artifacts/phase-15/reports/p15-s23-native-plan-specialization-report.md`.
+Its boundary fields retain `:selected-generated-child-clojure-seed-boundary?
+false`, `:selected-generated-child-jvm-available? false`,
+`:selected-runtime-clojure-seed-boundary? false`,
+`:selected-child-clojure-seed-boundary? false`, while
+`:compiler-clojure-seed-boundary?`, `:authentication-clojure-seed-boundary?`,
+`:validator-clojure-seed-boundary?`, `:c-emitter-clojure-seed-boundary?`,
+`:artifact-clojure-seed-boundary?`, `:artifact-construction-clojure-seed-boundary?`,
+`:process-clojure-seed-boundary?`, `:file-io-clojure-seed-boundary?`,
+`:public-clojure-seed-boundary?`, and `:global-clojure-seed-boundary?` remain
+true. `:generic-host-c-packet-interpreter-used?` is false for this selected
+path, not a public boundary-reduction claim.
+
 ## Bounded LLVM gate evidence
 
 The integrated internal gate accepts verified C11 MIR, preserves the C13/C14,
