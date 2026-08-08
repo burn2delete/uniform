@@ -18,6 +18,7 @@
             [gravity.c8-effect-checker :as c8]
             [gravity.c9-ownership-checker :as c9]
             [gravity.c10-safety-analysis :as c10]
+            [gravity.c11-mir :as c11]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
@@ -2840,517 +2841,136 @@
   [path]
   (c10-call c10/compiler-c10-safety-file-artifact path))
 
-(def c11-mir-diagnostic-ids
-  ["C11-MODULE"
-   "C11-BLOCK"
-   "C11-DOMINANCE"
-   "C11-TYPE"
-   "C11-EFFECT"
-   "C11-SAFETY"
-   "C11-ORIGIN"
-   "C11-DOMAIN"
-   "C11-TARGET-LEAK"
-   "C11-VERIFY"])
+(def c11-mir-diagnostic-ids c11/c11-mir-diagnostic-ids)
+(def c11-mir-governing-document c11/c11-mir-governing-document)
+(def c11-mir-required-operation-families c11/c11-mir-required-operation-families)
+(def c11-mir-rejected-designs c11/c11-mir-rejected-designs)
+(def c11-mir-override-diagnostics c11/c11-mir-override-diagnostics)
 
-(def c11-mir-governing-document
-  "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md")
+(declare c11-mir-source-overrides
+         c11-mir-message
+         c11-mir-fail!
+         c11-mir-validate-overrides!
+         c11-family-opcode
+         c11-family-effects
+         c11-mir-operation
+         c11-mir-module-record
+         c11-data-flow-graph
+         c11-domain-anchor-table
+         c11-present?
+         c11-mir-diagnostics
+         c11-mir-verifier-report
+         c11-mir-capability-proof
+         c11-mir-validate!
+         compiler-c11-mir-source-artifact
+         compiler-c11-mir-file-artifact)
 
-(def c11-mir-required-operation-families
-  [:constant
-   :local
-   :call
-   :closure
-   :dispatch
-   :data-constructor
-   :field-index-buffer
-   :numeric
-   :memory
-   :region
-   :linear-resource
-   :control-flow
-   :error
-   :ffi
-   :concurrency
-   :workflow
-   :ai-tool
-   :domain-anchor
-   :runtime-check
-   :proof-reference])
+(defn- c11-mir-ops []
+  {:fail! fail!
+   :source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c10-safety-source-artifact compiler-c10-safety-source-artifact
+   :c11-mir-diagnostic-ids c11-mir-diagnostic-ids
+   :c11-mir-governing-document c11-mir-governing-document
+   :c11-mir-required-operation-families c11-mir-required-operation-families
+   :c11-mir-rejected-designs c11-mir-rejected-designs
+   :c11-mir-override-diagnostics c11-mir-override-diagnostics
+   :c11-mir-source-overrides c11-mir-source-overrides
+   :c11-mir-message c11-mir-message
+   :c11-mir-fail! c11-mir-fail!
+   :c11-mir-validate-overrides! c11-mir-validate-overrides!
+   :c11-family-opcode c11-family-opcode
+   :c11-family-effects c11-family-effects
+   :c11-mir-operation c11-mir-operation
+   :c11-mir-module-record c11-mir-module-record
+   :c11-data-flow-graph c11-data-flow-graph
+   :c11-domain-anchor-table c11-domain-anchor-table
+   :c11-present? c11-present?
+   :c11-mir-diagnostics c11-mir-diagnostics
+   :c11-mir-verifier-report c11-mir-verifier-report
+   :c11-mir-capability-proof c11-mir-capability-proof
+   :c11-mir-validate! c11-mir-validate!
+   :compiler-c11-mir-source-artifact compiler-c11-mir-source-artifact
+   :compiler-c11-mir-file-artifact compiler-c11-mir-file-artifact})
 
-(def c11-mir-rejected-designs
-  [{:diagnostic "C11-MODULE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-module.gravity"
-    :rejected-design :malformed-module}
-   {:diagnostic "C11-BLOCK"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-block.gravity"
-    :rejected-design :invalid-block}
-   {:diagnostic "C11-DOMINANCE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-dominance.gravity"
-    :rejected-design :use-before-definition}
-   {:diagnostic "C11-TYPE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-type.gravity"
-    :rejected-design :missing-type}
-   {:diagnostic "C11-EFFECT"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-effect.gravity"
-    :rejected-design :missing-effect-ordering}
-   {:diagnostic "C11-SAFETY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-safety.gravity"
-    :rejected-design :missing-safety-outcome}
-   {:diagnostic "C11-ORIGIN"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-origin.gravity"
-    :rejected-design :missing-origin}
-   {:diagnostic "C11-DOMAIN"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-domain.gravity"
-    :rejected-design :invalid-domain-anchor}
-   {:diagnostic "C11-TARGET-LEAK"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-target-leak.gravity"
-    :rejected-design :target-specific-generic-mir}
-   {:diagnostic "C11-VERIFY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-verify.gravity"
-    :rejected-design :verifier-failure}])
-
-(def c11-mir-override-diagnostics
-  {:module "C11-MODULE"
-   :block "C11-BLOCK"
-   :dominance "C11-DOMINANCE"
-   :type "C11-TYPE"
-   :effect "C11-EFFECT"
-   :safety "C11-SAFETY"
-   :origin "C11-ORIGIN"
-   :domain "C11-DOMAIN"
-   :target-leak "C11-TARGET-LEAK"
-   :verify "C11-VERIFY"})
+(def ^:private ^:dynamic *c11-leaf-call?* false)
+(defn- c11-call [operation & args]
+  (if *c11-leaf-call?*
+    (apply operation args)
+    (binding [*c11-leaf-call?* true]
+      (c11/with-operations (c11-mir-ops)
+        #(apply operation args)))))
 
 (defn c11-mir-source-overrides
   [module]
-  (or (get-in module [:metadata :compiler :c11-mir-spec])
-      (get-in module [:metadata :compiler :mir])
-      {}))
+  (c11-call c11/c11-mir-source-overrides module))
 
 (defn c11-mir-message
   [id]
-  (case id
-    "C11-MODULE" "MIR module record is malformed"
-    "C11-BLOCK" "MIR block is malformed or unterminated"
-    "C11-DOMINANCE" "MIR operation uses a value before definition"
-    "C11-TYPE" "MIR operation is missing type evidence"
-    "C11-EFFECT" "effectful MIR operation is missing ordering evidence"
-    "C11-SAFETY" "safety-sensitive MIR operation is missing outcome evidence"
-    "C11-ORIGIN" "MIR operation is missing source or generated origin"
-    "C11-DOMAIN" "MIR domain anchor is invalid"
-    "C11-TARGET-LEAK" "target-specific opcode appeared in generic MIR"
-    "C11-VERIFY" "MIR verifier failed"
-    "MIR validation failed"))
+  (c11-call c11/c11-mir-message id))
 
 (defn c11-mir-fail!
   [id source-path subject extra]
-  (fail! id
-         (c11-mir-message id)
-         (merge {:source-span (or (:source-span subject)
-                                  (get-in subject [:source :span])
-                                  (source-span source-path 0))
-                 :diagnostic-family :c11-mir-specification
-                 :stage :mir-construction
-                 :document-id "C11"
-                 :expected-document c11-mir-governing-document
-                 :mir-module (or (:mir-module subject) :fixture/mir-module)
-                 :function (or (:function subject) :fixture/function)
-                 :block (or (:block subject) :fixture/block)
-                 :operation-id (or (:operation-id subject)
-                                   (:op-id subject)
-                                   :fixture/operation)
-                 :origin-chain (or (:generated-origin subject)
-                                   (get-in subject [:source :origin-chain])
-                                   [])
-                 :profile (:profile subject)
-                 :target-request (or (:target-request subject)
-                                     (:target subject))
-                 :missing-fact (:missing-fact subject)
-                 :remediation "Regenerate target-independent MIR from C10 safety-checked core with type, effect, ownership, capability, safety, proof, profile, target, and source-origin facts."}
-                extra)))
+  (c11-call c11/c11-mir-fail! id source-path subject extra))
 
 (defn c11-mir-validate-overrides!
   [source-path module overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c11-mir-override-diagnostics fail-kind)]
-      (c11-mir-fail! id source-path
-                     {:source-span (source-span source-path 0)
-                      :operation-id (keyword "fixture" (name fail-kind))
-                      :profile (:profile module)
-                      :target-request (:target module)
-                      :missing-fact fail-kind}
-                     {:missing-fields [fail-kind]}))))
+  (c11-call c11/c11-mir-validate-overrides! source-path module overrides))
 
 (defn c11-family-opcode
   [family]
-  (case family
-    :constant :mir/constant
-    :local :mir/local
-    :call :mir/call
-    :closure :mir/closure
-    :dispatch :mir/dispatch
-    :data-constructor :mir/construct
-    :field-index-buffer :mir/index
-    :numeric :mir/add-checked
-    :memory :mir/load
-    :region :mir/region-alloc
-    :linear-resource :mir/resource-close
-    :control-flow :mir/branch
-    :error :mir/throw
-    :ffi :mir/ffi-call
-    :concurrency :mir/task-spawn
-    :workflow :mir/workflow-yield
-    :ai-tool :mir/ai-tool-call
-    :domain-anchor :mir/domain-anchor
-    :runtime-check :mir/runtime-check
-    :proof-reference :mir/proof-assert
-    :mir/unknown))
+  (c11-call c11/c11-family-opcode family))
 
 (defn c11-family-effects
   [family]
-  (case family
-    :call #{:runtime/dynamic-dispatch}
-    :dispatch #{:runtime/dynamic-dispatch}
-    :field-index-buffer #{:error/throw}
-    :numeric #{:error/throw}
-    :memory #{:memory/raw}
-    :region #{:memory/raw}
-    :linear-resource #{:io/write}
-    :error #{:error/throw}
-    :ffi #{:memory/raw}
-    :concurrency #{:runtime/dynamic-dispatch}
-    :workflow #{:runtime/dynamic-dispatch}
-    :ai-tool #{:runtime/dynamic-dispatch}
-    :runtime-check #{:error/throw}
-    #{}))
+  (c11-call c11/c11-family-effects family))
 
 (defn c11-mir-operation
   [module span outcome-by-index index family]
-  (let [effects (c11-family-effects family)
-        op-id (str "c11-mir-op-" (name family))
-        outcome (get outcome-by-index (mod index (count outcome-by-index)))]
-    {:op-id op-id
-     :opcode (c11-family-opcode family)
-     :family family
-     :operands (if (zero? index) [] [(str "c11-value-" (dec index))])
-     :result (when-not (contains? #{:control-flow :error} family)
-               (str "c11-value-" index))
-     :type (case family
-             :constant "I64"
-             :numeric "I64"
-             :field-index-buffer "Byte"
-             :runtime-check "Unit"
-             :proof-reference "Unit"
-             :domain-anchor "DomainAnchor"
-             "Unit")
-     :effects effects
-     :ordering (if (seq effects) :sequence :none)
-     :source {:core-node (str "c10:" (:operation outcome))
-              :span span
-              :origin-chain (get-in outcome [:source :origin-chain] [])}
-     :profile (:profile module)
-     :facts {:ownership "c9:ownership"
-             :capabilities "c8:capabilities"
-             :safety (:operation outcome)
-             :runtime-check (:runtime-check outcome)
-             :proofs (vec (remove nil? [(:proof outcome)]))}
-     :domain-anchor (when (= :domain-anchor family)
-                      "c11-domain-anchor-efir")
-     :verifier-status :passed}))
+  (c11-call c11/c11-mir-operation module span outcome-by-index index family))
 
 (defn c11-mir-module-record
   [module c10-artifact operations]
-  (let [fn-id (str "c11-mir-fn-" (name (:module module)) "-main")
-        op-ids (mapv :op-id operations)
-        entry-block {:block-id :entry
-                     :operations op-ids
-                     :terminator {:kind :return
-                                  :value (last (keep :result operations))}
-                     :successors []}]
-    {:artifact :gravity/mir-module
-     :module (:module module)
-     :source-core (:artifact-id c10-artifact)
-     :profile (:profile module)
-     :target-request (:target module)
-     :functions {fn-id {:fn-id fn-id
-                        :name (symbol (str (:module module)) "main")
-                        :params []
-                        :returns "Unit"
-                        :latent-effects (:effects module)
-                        :blocks {:entry entry-block}
-                        :entry :entry
-                        :source {:span (source-span (:source-path module) 0)
-                                 :origin-chain []}}}
-     :globals {}
-     :types :c11/type-table
-     :effects :c11/effect-table
-     :ownership :c11/ownership-table
-     :capabilities :c11/capability-table
-     :safety :c11/safety-table
-     :domain-anchors :c11/domain-anchor-table
-     :diagnostics []}))
+  (c11-call c11/c11-mir-module-record module c10-artifact operations))
 
 (defn c11-data-flow-graph
   [operations]
-  (mapv (fn [[from to]]
-          {:from (:op-id from)
-           :to (:op-id to)
-           :edge :sequence
-           :dominance-status :passed})
-        (partition 2 1 operations)))
+  (c11-call c11/c11-data-flow-graph operations))
 
 (defn c11-domain-anchor-table
   []
-  [{:domain :efir
-    :anchor-id "c11-domain-anchor-efir"
-    :mir-ops ["c11-mir-op-domain-anchor"]
-    :semantic-artifact "stage0-efir-graph"
-    :equivalence-proof "proof-domain-anchor-round-trip"
-    :fallback "c11-fallback-mir-subgraph"
-    :status :valid}])
+  (c11-call c11/c11-domain-anchor-table))
 
 (defn c11-present?
   [value]
-  (cond
-    (nil? value) false
-    (and (coll? value) (empty? value)) false
-    (and (string? value) (str/blank? value)) false
-    :else true))
+  (c11-call c11/c11-present? value))
 
 (defn c11-mir-diagnostics
   [source-path]
-  {:artifact :gravity/c11-mir-diagnostic-registry
-   :required-diagnostic-ids c11-mir-diagnostic-ids
-   :diagnostics
-   (mapv (fn [design]
-           {:diagnostic (:diagnostic design)
-            :fixture (:fixture design)
-            :mir-module :fixture/mir-module
-            :function :fixture/function
-            :block :fixture/block
-            :operation-id (keyword "fixture" (:diagnostic design))
-            :source-span (source-span source-path 0)
-            :origin-chain []
-            :profile :fixture/profile
-            :target-request :fixture/target
-            :missing-fact (:rejected-design design)
-            :remediation "Keep target-independent MIR typed, effected, safety-linked, source-mapped, and verifier-clean before optimization or target lowering."})
-         c11-mir-rejected-designs)
-   :status :complete})
+  (c11-call c11/c11-mir-diagnostics source-path))
 
 (defn c11-mir-verifier-report
   [module operations data-flow domain-anchors diagnostics]
-  (let [families (set (map :family operations))
-        diagnostics? (= (set c11-mir-diagnostic-ids)
-                        (set (map :diagnostic (:diagnostics diagnostics))))]
-    {:artifact :gravity/c11-mir-verifier-report
-     :module-shape-valid? (= :gravity/mir-module (:artifact module))
-     :blocks-terminate? (every? #(c11-present? (:terminator %))
-                                (mapcat (comp vals :blocks)
-                                        (vals (:functions module))))
-     :dominance-valid? (every? #(= :passed (:dominance-status %)) data-flow)
-     :types-present? (every? #(c11-present? (:type %)) operations)
-     :effect-ordering-present? (every? #(or (empty? (:effects %))
-                                            (not= :none (:ordering %)))
-                                       operations)
-     :safety-linked? (every? #(c11-present? (get-in % [:facts :safety]))
-                             operations)
-     :origins-linked? (every? #(c11-present? (get-in % [:source :span]))
-                              operations)
-     :domain-anchors-valid? (every? #(and (c11-present? (:anchor-id %))
-                                          (c11-present? (:fallback %)))
-                                    domain-anchors)
-     :target-independent? (not-any? #(= :target-specific (:family %))
-                                    operations)
-     :operation-family-coverage-complete?
-     (= (set c11-mir-required-operation-families) families)
-     :diagnostics-covered? diagnostics?
-     :status (if (and (= :gravity/mir-module (:artifact module))
-                      (every? #(c11-present? (:type %)) operations)
-                      (every? #(or (empty? (:effects %))
-                                   (not= :none (:ordering %)))
-                              operations)
-                      (every? #(c11-present? (get-in % [:facts :safety]))
-                              operations)
-                      (every? #(c11-present? (get-in % [:source :span]))
-                              operations)
-                      (every? #(and (c11-present? (:anchor-id %))
-                                    (c11-present? (:fallback %)))
-                              domain-anchors)
-                      (= (set c11-mir-required-operation-families) families)
-                      diagnostics?)
-               :passed
-               :failed)}))
+  (c11-call c11/c11-mir-verifier-report module operations data-flow domain-anchors diagnostics))
 
 (defn c11-mir-capability-proof
   [artifact]
-  (let [verifier (:mir-verifier-report artifact)]
-    {:module-serialized? (:module-shape-valid? verifier)
-     :blocks-terminated? (:blocks-terminate? verifier)
-     :operations-typed? (:types-present? verifier)
-     :effect-ordering-present? (:effect-ordering-present? verifier)
-     :safety-outcomes-linked? (:safety-linked? verifier)
-     :origins-linked? (:origins-linked? verifier)
-     :domain-anchors-valid? (:domain-anchors-valid? verifier)
-     :target-independent? (:target-independent? verifier)
-     :operation-family-coverage-complete?
-     (:operation-family-coverage-complete? verifier)
-     :diagnostics-covered? (:diagnostics-covered? verifier)
-     :verifier-passed? (= :passed (:status verifier))
-     :status :complete}))
+  (c11-call c11/c11-mir-capability-proof artifact))
 
 (defn c11-mir-validate!
   [source-path artifact]
-  (let [proof (c11-mir-capability-proof artifact)]
-    (doseq [[field id] [[:module-serialized? "C11-MODULE"]
-                        [:blocks-terminated? "C11-BLOCK"]
-                        [:operations-typed? "C11-TYPE"]
-                        [:effect-ordering-present? "C11-EFFECT"]
-                        [:safety-outcomes-linked? "C11-SAFETY"]
-                        [:origins-linked? "C11-ORIGIN"]
-                        [:domain-anchors-valid? "C11-DOMAIN"]
-                        [:target-independent? "C11-TARGET-LEAK"]
-                        [:operation-family-coverage-complete?
-                         "C11-VERIFY"]
-                        [:diagnostics-covered? "C11-VERIFY"]
-                        [:verifier-passed? "C11-VERIFY"]]]
-      (when-not (get proof field)
-        (c11-mir-fail! id source-path {:stage :mir-construction}
-                       {:missing-fields [field]}))))
-  :complete)
+  (c11-call c11/c11-mir-validate! source-path artifact))
 
 (defn compiler-c11-mir-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        overrides (c11-mir-source-overrides module)
-        _ (c11-mir-validate-overrides! source-path module overrides)
-        c10-artifact (compiler-c10-safety-source-artifact source-path source-text)
-        outcomes (vec (get-in c10-artifact [:safety-outcome-records :records]))
-        span (source-span source-path 0)
-        operations (mapv (fn [index family]
-                           (c11-mir-operation module span outcomes index family))
-                         (range)
-                         c11-mir-required-operation-families)
-        mir-module (c11-mir-module-record module c10-artifact operations)
-        data-flow (c11-data-flow-graph operations)
-        domain-anchors (c11-domain-anchor-table)
-        diagnostics (c11-mir-diagnostics source-path)
-        verifier (c11-mir-verifier-report mir-module operations data-flow
-                                          domain-anchors diagnostics)
-        artifact-base
-        {:kind :gravity/stage0-c11-mir-spec-artifact
-         :task "P06-D090"
-         :document-set ["C11"]
-         :governing-document c11-mir-governing-document
-         :pass {:name :c11-mir-specification
-                :input :safety-checked-core
-                :output :gravity/mir
-                :requires [:c10-safety-analysis :types :effects :ownership
-                           :capabilities :safety-outcomes :profile :target]
-                :preserves [:source-spans :origin-chain :profile :target
-                            :types :effects :ownership :capabilities
-                            :safety-outcomes :proofs :diagnostics]
-                :emits [:mir-module :mir-operations :control-flow-graph
-                        :data-flow-graph :metadata-tables
-                        :source-origin-map :domain-anchor-table
-                        :mir-verifier-report :mir-diagnostic-stream]
-                :rejects c11-mir-diagnostic-ids}
-         :source-overrides overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c10-safety-analysis-artifact
-         (select-keys c10-artifact [:kind :artifact-id
-                                    :safety-operation-inventory
-                                    :safety-outcome-records
-                                    :runtime-check-list
-                                    :capability-based-proof])
-         :mir-module mir-module
-         :mir-operations operations
-         :operation-family-coverage
-         (mapv (fn [family]
-                 {:family family
-                  :status :represented-by-operation})
-               c11-mir-required-operation-families)
-         :control-flow-graph {:entry :entry
-                              :blocks (get-in mir-module
-                                              [:functions
-                                               (first (keys (:functions mir-module)))
-                                               :blocks])
-                              :status :complete}
-         :data-flow-graph data-flow
-         :metadata-tables {:types :c11/type-table
-                           :effects :c11/effect-table
-                           :ownership :c11/ownership-table
-                           :capabilities :c11/capability-table
-                           :safety :c11/safety-table
-                           :runtime-checks :c11/runtime-check-table
-                           :proofs :c11/proof-table
-                           :source-origins :c11/source-origin-table
-                           :profile-target :c11/profile-target-table
-                           :domain-anchors :c11/domain-anchor-table
-                           :status :complete}
-         :type-table (into {}
-                           (map (fn [op] [(:result op) (:type op)]))
-                           (filter :result operations))
-         :effect-table (into {}
-                             (map (fn [op] [(:op-id op) (:effects op)]))
-                             operations)
-         :ownership-table (get-in c10-artifact
-                                  [:c9-ownership-checker-artifact
-                                   :ownership-graph])
-         :capability-proof-table
-         (get-in c10-artifact
-                 [:c9-ownership-checker-artifact
-                  :capability-based-proof])
-         :safety-outcome-table (:safety-outcome-records c10-artifact)
-         :runtime-check-table (:runtime-check-list c10-artifact)
-         :proof-certificate-table (:proof-certificate-references c10-artifact)
-         :source-origin-map (mapv #(select-keys % [:op-id :source])
-                                  operations)
-         :domain-anchor-table domain-anchors
-         :optimization-invalidation-hooks
-         [{:hook :c11-mir-fact-invalidation
-           :invalidates [:type-table :effect-table :ownership-table
-                         :safety-outcome-table :domain-anchor-table]
-           :requires [:mir-verifier-report :proof-certificate-table]
-           :status :recorded}]
-         :target-lowering-input-validation
-         {:input :gravity/mir
-          :requires [:mir-verifier-report :profile :target-request
-                     :runtime-check-table :safety-outcome-table]
-          :status :ready-for-target-lowering}
-         :mir-verifier-report verifier
-         :mir-diagnostic-stream diagnostics
-         :c11-mir-spec-results
-         {:documents ["C11"]
-          :task "P06-D090"
-          :required-diagnostic-ids c11-mir-diagnostic-ids
-          :module-status :complete
-          :function-block-operation-status :complete
-          :metadata-table-status :complete
-          :runtime-check-preservation-status :complete
-          :domain-anchor-status :complete
-          :optimization-invalidation-status :complete
-          :target-lowering-input-status :complete
-          :verifier-status (:status verifier)
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c11-mir-validate! source-path artifact-base)
-        capability-proof (c11-mir-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+  (c11-call c11/compiler-c11-mir-source-artifact source-path source-text))
 
 (defn compiler-c11-mir-file-artifact
   [path]
-  (compiler-c11-mir-source-artifact path (slurp path)))
+  (c11-call c11/compiler-c11-mir-file-artifact path))
 
 (def type-keywords
   {:Bottom "Bottom"

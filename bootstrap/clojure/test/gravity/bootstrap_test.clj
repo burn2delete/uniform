@@ -9,6 +9,7 @@
             [gravity.c8-effect-checker :as c8]
             [gravity.c9-ownership-checker :as c9]
             [gravity.c10-safety-analysis :as c10]
+            [gravity.c11-mir :as c11]
             [gravity.cli-test]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.diagnostics-test]
@@ -15711,6 +15712,54 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
+(deftest c11-mir-compatibility-wrappers-preserve-interposition
+  (is (= '([module span outcome-by-index index family])
+         (:arglists (meta #'bootstrap/c11-mir-operation))))
+  (is (= '([]) (:arglists (meta #'bootstrap/c11-domain-anchor-table))))
+  (is (= '([source-path source-text])
+         (:arglists (meta #'bootstrap/compiler-c11-mir-source-artifact))))
+  (is (= '([path])
+         (:arglists (meta #'bootstrap/compiler-c11-mir-file-artifact))))
+  (let [calls (atom [])
+        operation
+        (with-redefs [bootstrap/c11-family-effects
+                      (fn [family]
+                        (swap! calls conj family)
+                        #{:interposed/effect})]
+          (bootstrap/c11-mir-operation
+           {:profile :hosted}
+           {:source "c11-probe.gravity" :form-index 0}
+           [{:operation "op-safe" :proof "proof-safe"}]
+           0 :constant))]
+    (is (= #{:interposed/effect} (:effects operation)))
+    (is (= [:constant] @calls)))
+  (let [bindings (atom 0)
+        with-operations c11/with-operations]
+    (with-redefs [c11/with-operations
+                  (fn [operations thunk]
+                    (swap! bindings inc)
+                    (with-operations operations thunk))]
+      (bootstrap/compiler-c11-mir-file-artifact
+       (fixture "accepted/compiler-c11-mir-spec.gravity")))
+    (is (= 1 @bindings)))
+  (let [artifact
+        (with-redefs [bootstrap/c11-mir-diagnostic-ids ["C11-SENTINEL"]
+                      bootstrap/c11-mir-rejected-designs
+                      [{:diagnostic "C11-SENTINEL"}]
+                      bootstrap/c11-mir-governing-document
+                      "docs/c11-sentinel.md"]
+          (bootstrap/compiler-c11-mir-file-artifact
+           (fixture "accepted/compiler-c11-mir-spec.gravity")))]
+    (is (= "docs/c11-sentinel.md" (:governing-document artifact)))
+    (is (= ["C11-SENTINEL"]
+           (get-in artifact [:c11-mir-spec-results
+                             :required-diagnostic-ids])))
+    (is (= #{"C11-SENTINEL"}
+           (set (map :diagnostic
+                     (get-in artifact
+                             [:mir-diagnostic-stream :diagnostics]))))))
+  (is (= (:public-api (c11/c11-engine-contract)) c11/public-api)))
+
 (deftest c11-mir-spec-artifact-preserves-p06-d090-contract
   (let [artifact (bootstrap/compiler-c11-mir-file-artifact
                   (fixture "accepted/compiler-c11-mir-spec.gravity"))
@@ -15736,6 +15785,9 @@
            (get-in artifact [:c10-safety-analysis-artifact :artifact-id])))
     (is (= :hosted (:profile module)))
     (is (= :jvm (:target-request module)))
+    (is (= 20 (count operations)))
+    (is (= 19 (count (:data-flow-graph artifact))))
+    (is (= 1 (count (:domain-anchor-table artifact))))
     (is (= (count bootstrap/c11-mir-required-operation-families)
            (count operations)))
     (is (= (set bootstrap/c11-mir-required-operation-families)
