@@ -43,6 +43,10 @@
   'gravity.self-hosting.sh10-ownership-transition-test)
 (def ^:private sh10-adapter-ns
   'gravity.self-hosting.sh10-c8-ownership-adapter-test)
+(def ^:private sh11-kernel-ns
+  'gravity.self-hosting.sh11-numeric-safety-test)
+(def ^:private sh11-adapter-ns
+  'gravity.self-hosting.sh11-c9-safety-adapter-test)
 (def ^:private bootstrap-ns
   'gravity.bootstrap-test)
 
@@ -62,7 +66,9 @@
    fragment-ns "bootstrap/clojure/test/gravity/self_hosting/stage3_fragment_size_preflight_test.clj"
    sh09-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj"
    sh10-kernel-ns "bootstrap/clojure/test/gravity/self_hosting/sh10_ownership_transition_test.clj"
-   sh10-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj"})
+   sh10-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj"
+   sh11-kernel-ns "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj"
+   sh11-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj"})
 
 (defn- source-deftest-selectors
   [namespace-symbol relative-path]
@@ -100,7 +106,10 @@
           :stage5-c9-kernel
           :stage5-sh10-c8-adapter
           :stage5-public-c9
-          :stage6-c10-source-structural]
+          :stage6-c10-source-structural
+          :stage6-c10-kernel
+          :stage6-public-c10
+          :stage6-sh11-c9-safety-adapter]
          runner/fixed-batch-ids))
   (is (= runner/primitive-pure-selectors
          (get runner/fixed-batch-selectors :primitive-pure)))
@@ -142,6 +151,9 @@
   (is (= 5 (count runner/stage5-sh10-c8-adapter-selectors)))
   (is (= 1 (count runner/stage5-public-c9-selectors)))
   (is (= 5 (count runner/stage6-c10-source-structural-selectors)))
+  (is (= 7 (count runner/stage6-c10-kernel-selectors)))
+  (is (= 5 (count runner/stage6-sh11-c9-safety-adapter-selectors)))
+  (is (= 1 (count runner/stage6-public-c10-selectors)))
   (is (= runner/stage5-c9-source-structural-selectors
          (get runner/fixed-batch-selectors :stage5-c9-source-structural)))
   (is (= runner/stage5-c9-kernel-selectors
@@ -152,6 +164,13 @@
          (get runner/fixed-batch-selectors :stage5-public-c9)))
   (is (= runner/stage6-c10-source-structural-selectors
          (get runner/fixed-batch-selectors :stage6-c10-source-structural)))
+  (is (= runner/stage6-c10-kernel-selectors
+         (get runner/fixed-batch-selectors :stage6-c10-kernel)))
+  (is (= runner/stage6-sh11-c9-safety-adapter-selectors
+         (get runner/fixed-batch-selectors
+              :stage6-sh11-c9-safety-adapter)))
+  (is (= runner/stage6-public-c10-selectors
+         (get runner/fixed-batch-selectors :stage6-public-c10)))
   (is (= :source-subsequence
          (get-in runner/fixed-batches
                  [:stage5-c9-source-structural :catalog-order-policy])))
@@ -204,6 +223,12 @@
          sh10-adapter-ns (source-deftest-selectors
                           sh10-adapter-ns
                           "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj")
+         sh11-kernel-ns (source-deftest-selectors
+                         sh11-kernel-ns
+                         "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj")
+         sh11-adapter-ns (source-deftest-selectors
+                          sh11-adapter-ns
+                          "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}]
     (let [catalog-result
@@ -231,8 +256,12 @@
   (doseq [[namespace-symbol relative-path] complete-source-files]
     (let [actual (source-deftest-selectors namespace-symbol relative-path)
           expected (selectors-for namespace-symbol)]
-      (is (= expected actual)
-          (str "source-order coverage drift for " namespace-symbol))
+      ;; Stage6's C9->C10 adapter deliberately runs its API check first and its
+      ;; authenticated boundary last; membership remains exact even though the
+      ;; source declares the API check after the mutation matrix.
+      (when (not= sh11-adapter-ns namespace-symbol)
+        (is (= expected actual)
+            (str "source-order coverage drift for " namespace-symbol)))
       (is (= (set expected) (set actual))
           (str "selector coverage drift for " namespace-symbol)))))
 
@@ -276,6 +305,27 @@
                           (str %))
                 runner/stage6-c10-source-structural-selectors)))
 
+(deftest stage6-kernel-and-adapter-batches-preserve-cache-affine-order
+  (is (= ['gravity.self-hosting.sh11-numeric-safety-test/sh11-source-and-fixtures-compile-as-gravity
+          'gravity.self-hosting.sh11-numeric-safety-test/sh11-classifies-every-supported-operation-into-one-outcome
+          'gravity.self-hosting.sh11-numeric-safety-test/sh11-enforces-each-supported-mode-semantics
+          'gravity.self-hosting.sh11-numeric-safety-test/sh11-rejects-unresolved-and-invalid-numeric-safety
+          'gravity.self-hosting.sh11-numeric-safety-test/sh11-contains-i64-overflow-and-binds-index-and-shift-domains
+          'gravity.self-hosting.sh11-numeric-safety-test/sh11-fails-closed-on-schema-mode-lineage-and-structural-attacks
+          'gravity.self-hosting.sh11-numeric-safety-test/sh11-fails-closed-on-runtime-unsafe-and-result-attacks]
+         runner/stage6-c10-kernel-selectors))
+  (is (= :explicit-execution-order
+         (get-in runner/fixed-batches
+                 [:stage6-sh11-c9-safety-adapter :catalog-order-policy])))
+  (is (= ['gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-safety-source-api-is-complete
+          'gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-identity-binding-is-sequential-and-exact
+          'gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-safety-adapter-binds-one-real-read
+          'gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-generic-classifier-and-substitutions-fail-closed
+          'gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-safety-authenticated-gravity-boundary]
+         runner/stage6-sh11-c9-safety-adapter-selectors))
+  (is (= ['gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-safety-authenticated-gravity-boundary]
+         (take-last 1 runner/stage6-sh11-c9-safety-adapter-selectors))))
+
 (deftest fixed-catalog-rejects-missing-extra-and-duplicate-drift
   (let [base
         {primitive-ns (selectors-for primitive-ns)
@@ -301,6 +351,12 @@
          sh10-adapter-ns (source-deftest-selectors
                           sh10-adapter-ns
                           "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj")
+         sh11-kernel-ns (source-deftest-selectors
+                         sh11-kernel-ns
+                         "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj")
+         sh11-adapter-ns (source-deftest-selectors
+                          sh11-adapter-ns
+                          "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}
         missing (update base primitive-ns pop)
@@ -432,6 +488,35 @@
           (is (= (subvec selectors 1) (:skipped-tail result)))
           (is (= :non-authoritative (:authority result)))
           (is (false? (:authoritative? result))))))))
+
+(deftest stage6-adapter-prefix-failure-skips-the-cold-authenticated-tail
+  (let [selectors runner/stage6-sh11-c9-safety-adapter-selectors
+        calls (atom [])
+        delegate
+        (fn [selection]
+          (swap! calls conj selection)
+          {:test-result {:test 1 :pass 0 :fail 1 :error 0 :type :summary}
+           :test-var-results
+           [(assoc (passing-result (first selectors) 0)
+                   :test-result {:test 1 :pass 0 :fail 1 :error 0})]
+           :skipped-test-vars (subvec selectors 1)
+           :cache {:sh06-hits 0 :sh06-misses 1
+                   :core-hits 0 :core-misses 0
+                   :verification-hits 0 :verification-misses 0}
+           :elapsed-ms 3})]
+    (binding [runner/*catalog-loader* nil
+              runner/*delegate-run-test-vars* delegate]
+      (let [result (runner/run-batch :stage6-sh11-c9-safety-adapter)]
+        (is (= [{:test-vars selectors
+                 :maximum-entries 1
+                 :fail-fast? true}]
+               @calls))
+        (is (= (subvec selectors 1) (:skipped-tail result)))
+        (is (= :skipped
+               (get-in result [:test-var-results 4 :status])))
+        (is (= (last selectors)
+               (get-in result [:test-var-results 4 :test-var])))
+        (is (= :non-authoritative (:authority result)))))))
 
 (deftest singleton-batches-omit-generic-fail-fast
   (let [calls (atom [])

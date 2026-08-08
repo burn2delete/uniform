@@ -34,6 +34,10 @@
   'gravity.self-hosting.sh10-c8-ownership-adapter-test)
 (def ^:private c10-source-test-namespace
   'gravity.self-hosting.sh07-c10-safety-source-coverage-test)
+(def ^:private sh11-numeric-safety-test-namespace
+  'gravity.self-hosting.sh11-numeric-safety-test)
+(def ^:private sh11-c9-safety-adapter-test-namespace
+  'gravity.self-hosting.sh11-c9-safety-adapter-test)
 (def ^:private public-test-namespace
   'gravity.bootstrap-test)
 
@@ -157,6 +161,29 @@
    'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-source-contracts-policy-outcomes-and-reasons-are-exact
    'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-static-lookup-and-residual-boundaries-are-exact])
 
+(def stage6-c10-kernel-selectors
+  ['gravity.self-hosting.sh11-numeric-safety-test/sh11-source-and-fixtures-compile-as-gravity
+   'gravity.self-hosting.sh11-numeric-safety-test/sh11-classifies-every-supported-operation-into-one-outcome
+   'gravity.self-hosting.sh11-numeric-safety-test/sh11-enforces-each-supported-mode-semantics
+   'gravity.self-hosting.sh11-numeric-safety-test/sh11-rejects-unresolved-and-invalid-numeric-safety
+   'gravity.self-hosting.sh11-numeric-safety-test/sh11-contains-i64-overflow-and-binds-index-and-shift-domains
+   'gravity.self-hosting.sh11-numeric-safety-test/sh11-fails-closed-on-schema-mode-lineage-and-structural-attacks
+   'gravity.self-hosting.sh11-numeric-safety-test/sh11-fails-closed-on-runtime-unsafe-and-result-attacks])
+
+;; This is an explicit fail-fast order, not source order.  The source/API and
+;; four synthetic identity checks must all pass before the single authenticated
+;; .gravity carrier is built.  The co-canonical .qst fixture is byte-compared by
+;; the prefix but never artifact-built in this development batch.
+(def stage6-sh11-c9-safety-adapter-selectors
+  ['gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-safety-source-api-is-complete
+   'gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-identity-binding-is-sequential-and-exact
+   'gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-safety-adapter-binds-one-real-read
+   'gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-generic-classifier-and-substitutions-fail-closed
+   'gravity.self-hosting.sh11-c9-safety-adapter-test/sh11-c9-safety-authenticated-gravity-boundary])
+
+(def stage6-public-c10-selectors
+  ['gravity.bootstrap-test/public-check-accepts-gravity-authored-c10-safety-analysis-pipeline])
+
 (def ^:private batch-order
   [:primitive-pure
    :primitive-bool-authenticated
@@ -176,7 +203,10 @@
    :stage5-c9-kernel
    :stage5-sh10-c8-adapter
    :stage5-public-c9
-   :stage6-c10-source-structural])
+   :stage6-c10-source-structural
+   :stage6-c10-kernel
+   :stage6-public-c10
+   :stage6-sh11-c9-safety-adapter])
 
 (def ^:private batch-selectors
   (array-map
@@ -198,7 +228,11 @@
    :stage5-c9-kernel stage5-c9-kernel-selectors
    :stage5-sh10-c8-adapter stage5-sh10-c8-adapter-selectors
    :stage5-public-c9 stage5-public-c9-selectors
-   :stage6-c10-source-structural stage6-c10-source-structural-selectors))
+   :stage6-c10-source-structural stage6-c10-source-structural-selectors
+   :stage6-c10-kernel stage6-c10-kernel-selectors
+   :stage6-public-c10 stage6-public-c10-selectors
+   :stage6-sh11-c9-safety-adapter
+   stage6-sh11-c9-safety-adapter-selectors))
 
 (def fixed-batch-ids
   "The complete CLI allowlist, in deterministic presentation order."
@@ -221,7 +255,8 @@
                  ;; against the source independently of ordering.
                  :catalog-order-policy
                  (if (#{:stage4-c8-source-structural
-                        :stage6-c10-source-structural} batch-id)
+                        :stage6-c10-source-structural
+                        :stage6-sh11-c9-safety-adapter} batch-id)
                    :explicit-execution-order
                    :source-subsequence)
                  :authority :non-authoritative
@@ -239,7 +274,9 @@
     fragment-test-namespace
     sh09-adapter-test-namespace
     sh10-ownership-transition-test-namespace
-    sh10-c8-ownership-adapter-test-namespace})
+    sh10-c8-ownership-adapter-test-namespace
+    sh11-numeric-safety-test-namespace
+    sh11-c9-safety-adapter-test-namespace})
 
 (def ^:private partial-selector-namespaces
   #{'gravity.self-hosting.sh07-authoritative-coverage-census-test
@@ -397,7 +434,17 @@
                  missing (vec (remove (set actual-selectors) expected-selectors))
                  extra (vec (remove (set expected-selectors) actual-selectors))
                  expected-by-batch
-                 (group-by :batch-id (get expected-batches namespace-symbol))]
+                 (group-by :batch-id (get expected-batches namespace-symbol))
+                 complete-explicit-order?
+                 (and (not partial?)
+                      (seq expected-by-batch)
+                      (every?
+                       (fn [batch-id]
+                         (= :explicit-execution-order
+                            (get-in batches
+                                    [batch-id :catalog-order-policy]
+                                    :source-subsequence)))
+                       (keys expected-by-batch)))]
              (when (seq duplicate-actuals)
                (exception "STAGE3-CATALOG-DUPLICATE-TEST-VAR"
                           "Discovered Stage3 test catalog contains duplicates"
@@ -454,6 +501,7 @@
                                    :partial-namespace? true
                                    :policy policy}))))))
              (when (and (not partial?)
+                        (not complete-explicit-order?)
                         (seq expected-selectors)
                         (not= expected-selectors actual-selectors))
                (exception "STAGE3-CATALOG-SOURCE-ORDER"
