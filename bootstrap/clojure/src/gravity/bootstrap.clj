@@ -12,6 +12,7 @@
             [clojure.walk :as walk]
             [gravity.c2-artifact-identity :as c2-artifact-identity]
             [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
+            [gravity.c2-source-identity :as c2-source-identity]
             [gravity.c2-pass-cache :as c2-pass-cache]
             [gravity.c2-lexical-validation :as c2-lexical-validation]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
@@ -142099,37 +142100,7 @@
               (java.nio.file.Files/readAllBytes (.toPath manifest))))})
       (reader-canonical-hash {:project-root-kind :standalone-source-root}))))
 
-(defn reader-normalize-relative-path
-  [path]
-  (let [slash-path (str/replace (str path) "\\" "/")]
-    (->> (str/split slash-path #"/")
-         (reduce (fn [segments segment]
-                   (cond
-                     (or (str/blank? segment) (= "." segment))
-                     segments
-
-                     (= ".." segment)
-                     (if (and (seq segments) (not= ".." (peek segments)))
-                       (pop segments)
-                       (conj segments segment))
-
-                     :else
-                     (conj segments segment)))
-                 [])
-         (str/join "/"))))
-
-(defn reader-platform-neutral-absolute-path?
-  [path]
-  (let [slash-path (str/replace (str path) "\\" "/")]
-    (or (str/starts-with? slash-path "/")
-        (boolean (re-find #"(?i)^[a-z]:" slash-path)))))
-
-(defn reader-valid-project-relative-path?
-  [path]
-  (let [normalized-path (reader-normalize-relative-path path)]
-    (and (not (reader-platform-neutral-absolute-path? path))
-         (not (str/blank? normalized-path))
-         (not= ".." (first (str/split normalized-path #"/"))))))
+(declare reader-normalize-relative-path)
 
 (defn reader-project-context-for-source
   [source-path]
@@ -142142,182 +142113,131 @@
      :project-root-path (.getPath project-root)
      :project-relative-path (reader-normalize-relative-path relative-path)}))
 
+(declare reader-normalize-relative-path
+         reader-platform-neutral-absolute-path?
+         reader-valid-project-relative-path?
+         reader-explicit-project-context
+         reader-valid-options?
+         reader-validate-options!
+         reader-project-root-record
+         reader-source-identity-inputs
+         c2-source-unit-record
+         c2-token-record
+         c2-form-record
+         c2-literal-records
+         c2-trivia-records)
+
+(defn- c2-source-identity-ops
+  []
+  {:sha256-hex sha256-hex
+   :reader-canonical-hash reader-canonical-hash
+   :gravity-source-extension gravity-source-extension
+   :gravity-source-kind gravity-source-kind
+   :reader-normalize-relative-path reader-normalize-relative-path
+   :reader-platform-neutral-absolute-path?
+   reader-platform-neutral-absolute-path?
+   :reader-valid-project-relative-path? reader-valid-project-relative-path?
+   :reader-explicit-project-context reader-explicit-project-context
+   :reader-valid-options? reader-valid-options?
+   :reader-validate-options! reader-validate-options!
+   :reader-project-root-record reader-project-root-record
+   :reader-source-identity-inputs reader-source-identity-inputs
+   :c2-source-unit-record c2-source-unit-record
+   :c2-token-record c2-token-record
+   :c2-form-record c2-form-record
+   :c2-literal-records c2-literal-records
+   :c2-trivia-records c2-trivia-records})
+
+(def ^:private ^:dynamic *c2-source-identity-leaf-call?* false)
+
+(defn- c2-source-identity-call
+  [operation-key operation & args]
+  (if *c2-source-identity-leaf-call?*
+    (c2-source-identity/call-entrypoint-body
+     operation-key operation args)
+    (binding [*c2-source-identity-leaf-call?* true]
+      (c2-source-identity/with-operations
+       (c2-source-identity-ops)
+       #(c2-source-identity/call-entrypoint-body
+         operation-key operation args)))))
+
+(defn reader-normalize-relative-path
+  [path]
+  (c2-source-identity-call
+   :reader-normalize-relative-path
+   c2-source-identity/reader-normalize-relative-path path))
+
+(defn reader-platform-neutral-absolute-path?
+  [path]
+  (c2-source-identity-call
+   :reader-platform-neutral-absolute-path?
+   c2-source-identity/reader-platform-neutral-absolute-path? path))
+
+(defn reader-valid-project-relative-path?
+  [path]
+  (c2-source-identity-call
+   :reader-valid-project-relative-path?
+   c2-source-identity/reader-valid-project-relative-path? path))
+
 (defn reader-explicit-project-context
   [project-context]
-  (let [project-root-id (:project-root-id project-context)
-        project-relative-path (:project-relative-path project-context)
-        normalized-path (when (string? project-relative-path)
-                          (reader-normalize-relative-path
-                           project-relative-path))]
-    (when-not (and (string? project-root-id)
-                   (re-matches #"sha256:[0-9a-f]{64}" project-root-id)
-                   (string? normalized-path)
-                   (reader-valid-project-relative-path?
-                    project-relative-path))
-      (throw
-       (ex-info
-        "reader project context requires a project-root id and relative path"
-        {:id "C2-HASH"
-         :project-context project-context
-         :normalized-project-relative-path normalized-path
-         :missing-fields
-         (vec (remove #(get project-context %)
-                      [:project-root-id :project-relative-path]))})))
-    (assoc project-context
-           :project-relative-path
-           normalized-path)))
+  (c2-source-identity-call
+   :reader-explicit-project-context
+   c2-source-identity/reader-explicit-project-context project-context))
 
 (defn reader-valid-options?
   [reader-options]
-  (and (map? reader-options)
-       (boolean? (:retain-comments reader-options))
-       (set? (:enabled-features reader-options))
-       (string? (:extension-policy reader-options))
-       (boolean
-        (re-matches #"sha256:[0-9a-f]{64}"
-                    (:extension-policy reader-options)))))
+  (c2-source-identity-call
+   :reader-valid-options?
+   c2-source-identity/reader-valid-options? reader-options))
 
 (defn reader-validate-options!
   [reader-options]
-  (when-not (reader-valid-options? reader-options)
-    (throw
-     (ex-info
-      "reader options must be deterministic and content-addressed"
-      {:id "C2-HASH"
-       :reader-options reader-options
-       :required-fields
-       {:retain-comments :boolean
-        :enabled-features :set
-        :extension-policy :sha256-lowercase-hex}})))
-  reader-options)
+  (c2-source-identity-call
+   :reader-validate-options!
+   c2-source-identity/reader-validate-options! reader-options))
 
 (defn reader-project-root-record
   [project-context]
-  (let [context (reader-explicit-project-context project-context)]
-    {:path (:project-root-path context)
-     :project-root-id (:project-root-id context)}))
+  (c2-source-identity-call
+   :reader-project-root-record
+   c2-source-identity/reader-project-root-record project-context))
 
 (defn reader-source-identity-inputs
   [source-text reader-options project-context]
-  (let [context (reader-explicit-project-context project-context)
-        options (reader-validate-options! reader-options)]
-    {:project-root-id (:project-root-id context)
-     :project-relative-path (:project-relative-path context)
-     :encoding :utf-8
-     :bytes-hash (str "sha256:" (sha256-hex source-text))
-     :reader-options options
-     :enabled-features (:enabled-features options)
-     :extension-policy (:extension-policy options)}))
+  (c2-source-identity-call
+   :reader-source-identity-inputs
+   c2-source-identity/reader-source-identity-inputs
+   source-text reader-options project-context))
 
 (defn c2-source-unit-record
   ([source-path source-text reader-options]
    (c2-source-unit-record source-path source-text reader-options
                           (reader-project-context-for-source source-path)))
   ([source-path source-text reader-options project-context]
-   (let [context (reader-explicit-project-context project-context)
-         identity-inputs (reader-source-identity-inputs source-text
-                                                        reader-options
-                                                        context)
-         project-root (reader-project-root-record context)]
-     (merge
-      {:artifact :gravity/source-unit
-       :source-id (reader-canonical-hash identity-inputs)
-       :path source-path
-       :extension (gravity-source-extension source-path)
-       :source-kind (gravity-source-kind source-path)
-       :project-relative-path (:project-relative-path context)
-       :project-root (:project-root-id context)
-       :project-root-record project-root
-       :identity-inputs identity-inputs}
-      (select-keys identity-inputs
-                   [:encoding :bytes-hash :reader-options
-                    :enabled-features :extension-policy])))))
+   (c2-source-identity-call
+    :c2-source-unit-record c2-source-identity/c2-source-unit-record
+    source-path source-text reader-options project-context)))
 
 (defn c2-token-record
   [token source-unit]
-  (let [source-id (:source-id source-unit)]
-    (-> token
-        (assoc :token-id (keyword (str "tok-" (:index token)))
-               :source-id source-id
-               :source-path (:path source-unit)
-               :span (assoc (:span token) :file source-id)
-               :trivia-before []
-               :reader-origin :source)
-        (dissoc :index))))
+  (c2-source-identity-call
+   :c2-token-record c2-source-identity/c2-token-record token source-unit))
 
 (defn c2-form-record
   [record source-unit]
-  (let [source-id (:source-id source-unit)]
-    (-> record
-        (assoc :source-id source-id
-               :source-path (:path source-unit)
-               :span (assoc (:span record) :file source-id)
-               :origin (merge {:kind :source
-                               :source-id source-id
-                               :source-path (:path source-unit)}
-                              (when (map? (:origin record))
-                                (:origin record)))))))
+  (c2-source-identity-call
+   :c2-form-record c2-source-identity/c2-form-record record source-unit))
 
 (defn c2-literal-records
   [form-tree]
-  (let [literal-kinds #{:nil :boolean :integer :ratio :decimal :string
-                        :character :symbol :keyword :tagged-literal}
-        candidates (filter #(contains? literal-kinds (:kind %)) form-tree)]
-    (mapv
-     (fn [idx {:keys [kind raw value span tag form-id]}]
-       {:literal-id (keyword (str "lit-" idx))
-        :form-id form-id
-        :kind kind
-        :raw raw
-        :decoded value
-        :span span
-        :facts
-        (case kind
-          :integer
-          {:radix (cond
-                    (re-find #"^[+-]?0[xX]" raw) 16
-                    (re-find #"^[+-]?0[bB]" raw) 2
-                    :else 10)
-           :sign (cond
-                   (str/starts-with? raw "-") :negative
-                   (str/starts-with? raw "+") :explicit-positive
-                   :else :unsigned)
-           :exact? true}
-          :ratio
-          (let [[numerator denominator] (str/split raw #"/" 2)]
-            {:numerator-spelling numerator
-             :denominator-spelling denominator
-             :exact? true})
-          :decimal
-          {:exponent-spelling (second (re-find #"([eE][+-]?[0-9]+)" raw))
-           :exact? false}
-          :string
-          {:escapes (mapv (fn [[match offset]]
-                            {:raw match :character-offset offset})
-                          (map vector
-                               (re-seq #"\\(?:[btnfr\"\\]|u[0-9A-Fa-f]{4})"
-                                       raw)
-                               (keep-indexed (fn [offset ch]
-                                               (when (= \\ ch) offset))
-                                             raw)))}
-          :character {:escape raw}
-          :symbol {:namespace (namespace value)}
-          :keyword {:namespace (namespace value)}
-          :tagged-literal {:tag tag}
-          {})})
-     (range)
-     candidates)))
+  (c2-source-identity-call
+   :c2-literal-records c2-source-identity/c2-literal-records form-tree))
 
 (defn c2-trivia-records
   [token-stream]
-  (mapv (fn [token]
-          {:trivia-id (:token-id token)
-           :kind (:kind token)
-           :raw (:raw token)
-           :span (:span token)
-           :source-id (:source-id token)
-           :source-path (:source-path token)})
-        (filter :trivia? token-stream)))
+  (c2-source-identity-call
+   :c2-trivia-records c2-source-identity/c2-trivia-records token-stream))
 
 (defn c2-semantic-form-hash-input
   [form-tree]

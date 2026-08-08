@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
             [gravity.c2-artifact-identity :as c2-artifact-identity]
+            [gravity.c2-source-identity :as c2-source-identity]
             [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
             [gravity.c2-lexical-validation :as c2-lexical-validation]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
@@ -10153,6 +10154,248 @@
     (is (= "P15S23AD008" (:expected-diagnostic unsupported)))
     (is (contains? (set (map :diagnostic (:diagnostics unsupported)))
                    "P15S23AD008"))))
+
+(deftest c2-source-identity-compatibility-wrappers-preserve-interposition
+  (doseq [[wrapper-var expected]
+          [[#'bootstrap/reader-normalize-relative-path '([path])]
+           [#'bootstrap/reader-platform-neutral-absolute-path? '([path])]
+           [#'bootstrap/reader-valid-project-relative-path? '([path])]
+           [#'bootstrap/reader-explicit-project-context '([project-context])]
+           [#'bootstrap/reader-valid-options? '([reader-options])]
+           [#'bootstrap/reader-validate-options! '([reader-options])]
+           [#'bootstrap/reader-project-root-record '([project-context])]
+           [#'bootstrap/reader-source-identity-inputs
+            '([source-text reader-options project-context])]
+           [#'bootstrap/c2-source-unit-record
+            '([source-path source-text reader-options]
+              [source-path source-text reader-options project-context])]
+           [#'bootstrap/c2-token-record '([token source-unit])]
+           [#'bootstrap/c2-form-record '([record source-unit])]
+           [#'bootstrap/c2-literal-records '([form-tree])]
+           [#'bootstrap/c2-trivia-records '([token-stream])]]]
+    (is (= expected (:arglists (meta wrapper-var)))))
+  (is (= '([source-path])
+         (:arglists (meta #'bootstrap/reader-project-context-for-source))))
+  (is (nil? (get (ns-publics 'gravity.c2-source-identity)
+                 'reader-project-context-for-source)))
+  (let [source-path "/project/src/demo.gravity"
+        source-text "alpha"
+        project-root-id (str "sha256:" (apply str (repeat 64 "a")))
+        extension-policy (str "sha256:" (apply str (repeat 64 "b")))
+        context {:project-root-id project-root-id
+                 :project-root-path "/project"
+                 :project-relative-path "src/./demo.gravity"
+                 :retained :context}
+        normalized-context (assoc context
+                                  :project-relative-path "src/demo.gravity")
+        reader-options {:retain-comments true
+                        :enabled-features #{:standard-reader}
+                        :extension-policy extension-policy}
+        identity-operations
+        {:sha256-hex bootstrap/sha256-hex
+         :reader-canonical-hash bootstrap/reader-canonical-hash
+         :gravity-source-extension bootstrap/gravity-source-extension
+         :gravity-source-kind bootstrap/gravity-source-kind}
+        leaf-identity-inputs
+        (c2-source-identity/with-operations
+         {:sha256-hex bootstrap/sha256-hex}
+         #(c2-source-identity/reader-source-identity-inputs
+           source-text reader-options context))
+        wrapper-identity-inputs
+        (bootstrap/reader-source-identity-inputs
+         source-text reader-options context)
+        leaf-source-unit
+        (c2-source-identity/with-operations
+         identity-operations
+         #(c2-source-identity/c2-source-unit-record
+           source-path source-text reader-options context))
+        wrapper-source-unit
+        (bootstrap/c2-source-unit-record
+         source-path source-text reader-options context)
+        token {:index 7
+               :kind :symbol
+               :raw "alpha"
+               :decoded 'alpha
+               :span {:source source-path :byte-start 0 :byte-end 5}
+               :retained :token}
+        form {:form-id :form-0
+              :kind :symbol
+              :raw "alpha"
+              :value 'alpha
+              :span {:source source-path :byte-start 0 :byte-end 5}
+              :origin {:reader :synthetic}
+              :retained :form}
+        form-tree [form
+                   {:form-id :form-1
+                    :kind :integer
+                    :raw "0x10"
+                    :value 16
+                    :span {:source source-path :byte-start 6 :byte-end 10}}
+                   {:form-id :form-2 :kind :list :raw "()" :value '()}]
+        trivia-stream [{:token-id :tok-0
+                        :kind :whitespace
+                        :raw " "
+                        :span {:source source-path :byte-start 5 :byte-end 6}
+                        :source-id (:source-id wrapper-source-unit)
+                        :source-path source-path
+                        :trivia? true}
+                       {:token-id :tok-1
+                        :kind :symbol
+                        :raw "beta"
+                        :trivia? false}]]
+    (is (= {:policy :gravity/standard-reader
+            :version 1
+            :registered-tags ['inst 'uuid]
+            :ambient-authority :denied}
+           bootstrap/standard-reader-policy))
+    (is (= {:retain-comments true
+            :enabled-features #{:standard-reader}
+            :extension-policy
+            (bootstrap/reader-canonical-hash
+             bootstrap/standard-reader-policy)}
+           bootstrap/standard-reader-options))
+    (is (nil? (get (ns-publics 'gravity.c2-source-identity)
+                   'standard-reader-policy)))
+    (is (nil? (get (ns-publics 'gravity.c2-source-identity)
+                   'standard-reader-options)))
+    (is (= (c2-source-identity/reader-normalize-relative-path
+            "src/./nested/../demo.gravity")
+           (bootstrap/reader-normalize-relative-path
+            "src/./nested/../demo.gravity")))
+    (is (= (c2-source-identity/reader-platform-neutral-absolute-path?
+            "C:\\project\\demo.gravity")
+           (bootstrap/reader-platform-neutral-absolute-path?
+            "C:\\project\\demo.gravity")))
+    (is (= (c2-source-identity/reader-valid-project-relative-path?
+            "src/../src/demo.gravity")
+           (bootstrap/reader-valid-project-relative-path?
+            "src/../src/demo.gravity")))
+    (is (= (c2-source-identity/reader-explicit-project-context context)
+           (bootstrap/reader-explicit-project-context context)
+           normalized-context))
+    (is (= (c2-source-identity/reader-valid-options? reader-options)
+           (bootstrap/reader-valid-options? reader-options)))
+    (is (= (c2-source-identity/reader-validate-options! reader-options)
+           (bootstrap/reader-validate-options! reader-options)))
+    (is (= (c2-source-identity/reader-project-root-record context)
+           (bootstrap/reader-project-root-record context)))
+    (is (= leaf-identity-inputs wrapper-identity-inputs))
+    (is (= leaf-source-unit wrapper-source-unit))
+    (is (= (c2-source-identity/c2-token-record token wrapper-source-unit)
+           (bootstrap/c2-token-record token wrapper-source-unit)))
+    (is (= (c2-source-identity/c2-form-record form wrapper-source-unit)
+           (bootstrap/c2-form-record form wrapper-source-unit)))
+    (is (= (c2-source-identity/c2-literal-records form-tree)
+           (bootstrap/c2-literal-records form-tree)))
+    (is (= (c2-source-identity/c2-trivia-records trivia-stream)
+           (bootstrap/c2-trivia-records trivia-stream)))
+    (let [normalize-calls (atom [])
+          absolute-calls (atom [])]
+      (with-redefs [bootstrap/reader-normalize-relative-path
+                    (fn [path]
+                      (swap! normalize-calls conj path)
+                      "interposed/path.gravity")
+                    bootstrap/reader-platform-neutral-absolute-path?
+                    (fn [path]
+                      (swap! absolute-calls conj path)
+                      false)]
+        (is (true?
+             (bootstrap/reader-valid-project-relative-path?
+              "raw/path.gravity"))))
+      (is (= ["raw/path.gravity"] @normalize-calls))
+      (is (= ["raw/path.gravity"] @absolute-calls)))
+    (let [context-calls (atom [])
+          options-calls (atom [])
+          hash-calls (atom [])]
+      (with-redefs [bootstrap/reader-explicit-project-context
+                    (fn [value]
+                      (swap! context-calls conj value)
+                      normalized-context)
+                    bootstrap/reader-validate-options!
+                    (fn [value]
+                      (swap! options-calls conj value)
+                      reader-options)
+                    bootstrap/sha256-hex
+                    (fn [value]
+                      (swap! hash-calls conj value)
+                      (apply str (repeat 64 "c")))]
+        (is (= (str "sha256:" (apply str (repeat 64 "c")))
+               (:bytes-hash
+                (bootstrap/reader-source-identity-inputs
+                 source-text reader-options context)))))
+      (is (= [context] @context-calls))
+      (is (= [reader-options] @options-calls))
+      (is (= [source-text] @hash-calls)))
+    (let [context-calls (atom [])
+          identity-calls (atom [])
+          root-calls (atom [])
+          canonical-calls (atom [])
+          extension-calls (atom [])
+          kind-calls (atom [])
+          interposed-inputs
+          (assoc leaf-identity-inputs :bytes-hash "sha256:interposed-bytes")]
+      (with-redefs [bootstrap/reader-explicit-project-context
+                    (fn [value]
+                      (swap! context-calls conj value)
+                      normalized-context)
+                    bootstrap/reader-source-identity-inputs
+                    (fn [& args]
+                      (swap! identity-calls conj args)
+                      interposed-inputs)
+                    bootstrap/reader-project-root-record
+                    (fn [value]
+                      (swap! root-calls conj value)
+                      {:path "/interposed"
+                       :project-root-id project-root-id})
+                    bootstrap/reader-canonical-hash
+                    (fn [value]
+                      (swap! canonical-calls conj value)
+                      "sha256:interposed-source")
+                    bootstrap/gravity-source-extension
+                    (fn [path]
+                      (swap! extension-calls conj path)
+                      ".interposed")
+                    bootstrap/gravity-source-kind
+                    (fn [path]
+                      (swap! kind-calls conj path)
+                      :interposed-source)]
+        (let [unit (bootstrap/c2-source-unit-record
+                    source-path source-text reader-options context)]
+          (is (= "sha256:interposed-source" (:source-id unit)))
+          (is (= ".interposed" (:extension unit)))
+          (is (= :interposed-source (:source-kind unit)))
+          (is (= "sha256:interposed-bytes" (:bytes-hash unit)))))
+      (is (= [context] @context-calls))
+      (is (= [[source-text reader-options normalized-context]]
+             @identity-calls))
+      (is (= [normalized-context] @root-calls))
+      (is (= [interposed-inputs] @canonical-calls))
+      (is (= [source-path] @extension-calls))
+      (is (= [source-path] @kind-calls)))
+    (let [original bootstrap/c2-source-unit-record
+          visited-arities (atom [])]
+      (with-redefs [bootstrap/reader-project-context-for-source
+                    (fn [path]
+                      (is (= source-path path))
+                      context)
+                    bootstrap/c2-source-unit-record
+                    (fn [& args]
+                      (swap! visited-arities conj (count args))
+                      (apply original args))]
+        (is (= wrapper-source-unit
+               (bootstrap/c2-source-unit-record
+                source-path source-text reader-options))))
+      (is (= [3 4] @visited-arities)))
+    (let [original bootstrap/reader-normalize-relative-path
+          calls (atom [])]
+      (with-redefs [bootstrap/reader-normalize-relative-path
+                    (fn [path]
+                      (swap! calls conj path)
+                      (original path))]
+        (is (true?
+             (bootstrap/reader-valid-project-relative-path?
+              "src/./demo.gravity"))))
+      (is (= ["src/./demo.gravity"] @calls)))))
 
 (deftest c2-reader-diagnostics-compatibility-wrappers-preserve-interposition
   (is (= c2-reader-diagnostics/c2-reader-diagnostic-ids
