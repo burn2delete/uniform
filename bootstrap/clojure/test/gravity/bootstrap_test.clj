@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
             [gravity.c2-artifact-identity :as c2-artifact-identity]
+            [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
             [gravity.c2-lexical-validation :as c2-lexical-validation]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
             [gravity.c3-reader-integrity :as c3-reader-integrity]
@@ -10152,6 +10153,300 @@
     (is (= "P15S23AD008" (:expected-diagnostic unsupported)))
     (is (contains? (set (map :diagnostic (:diagnostics unsupported)))
                    "P15S23AD008"))))
+
+(deftest c2-reader-diagnostics-compatibility-wrappers-preserve-interposition
+  (is (= c2-reader-diagnostics/c2-reader-diagnostic-ids
+         bootstrap/c2-reader-diagnostic-ids))
+  (is (= c2-reader-diagnostics/c2-reader-governing-document
+         bootstrap/c2-reader-governing-document))
+  (is (= c2-reader-diagnostics/c2-reader-rejected-designs
+         bootstrap/c2-reader-rejected-designs))
+  (is (= c2-reader-diagnostics/c2-reader-override-diagnostics
+         bootstrap/c2-reader-override-diagnostics))
+  (doseq [[wrapper-var expected]
+          [[#'bootstrap/c2-reader-source-overrides '([module])]
+           [#'bootstrap/c2-reader-message '([id])]
+           [#'bootstrap/c2-reader-fail!
+            '([id source-path subject extra])]
+           [#'bootstrap/c2-reader-remap-exception! '([source-path ex])]
+           [#'bootstrap/c2-reader-validate-overrides!
+            '([source-path overrides source-unit token-stream])]]]
+    (is (= expected (:arglists (meta wrapper-var)))))
+  (let [source-path "compatibility.gravity"
+        source-id "sha256:compatibility-source"
+        reader-options {:retain-comments true
+                        :enabled-features #{:standard-reader}
+                        :extension-policy "sha256:compatibility-policy"}
+        fallback-span {:source source-path
+                       :byte-start 0
+                       :byte-end 1
+                       :start {:line 1 :column 1}
+                       :end {:line 1 :column 2}}
+        subject {:source-id source-id
+                 :token-id :tok-0
+                 :raw "x"
+                 :reader-options reader-options
+                 :facts {:subject true}}
+        extra {:facts {:extra true}}
+        module {:metadata {:compiler {:c2-reader {:fail :hash}}}}]
+    (is (= (c2-reader-diagnostics/c2-reader-source-overrides module)
+           (bootstrap/c2-reader-source-overrides module)))
+    (is (= (c2-reader-diagnostics/c2-reader-message "C2-HASH")
+           (bootstrap/c2-reader-message "C2-HASH")))
+    (let [leaf-failure (atom nil)
+          wrapper-failure (atom nil)
+          operations {:fail! (fn [& args]
+                               (reset! leaf-failure args)
+                               :leaf-failed)
+                      :source-span (fn [& _] fallback-span)
+                      :reader-canonical-hash
+                      (constantly "sha256:compatibility-diagnostic")}
+          leaf-result
+          (c2-reader-diagnostics/with-operations
+           operations
+           #(c2-reader-diagnostics/c2-reader-fail!
+             "C2-HASH" source-path subject extra))
+          wrapper-result
+          (with-redefs [bootstrap/fail!
+                        (fn [& args]
+                          (reset! wrapper-failure args)
+                          :leaf-failed)
+                        bootstrap/source-span (fn [& _] fallback-span)
+                        bootstrap/reader-canonical-hash
+                        (constantly "sha256:compatibility-diagnostic")]
+            (bootstrap/c2-reader-fail!
+             "C2-HASH" source-path subject extra))]
+      (is (= leaf-result wrapper-result))
+      (is (= @leaf-failure @wrapper-failure)))
+    (let [upstream
+          (ex-info
+           "malformed string"
+           {:id "STAGE1READER003"
+            :message "malformed string"
+            :source-id source-id
+            :source-span fallback-span
+            :token-id :tok-0
+            :raw "bad"
+            :facts {:reason :malformed-string}})
+          leaf-call (atom nil)
+          wrapper-call (atom nil)
+          leaf-result
+          (c2-reader-diagnostics/with-operations
+           {:standard-reader-options reader-options
+            :c2-reader-fail!
+            (fn [& args]
+              (reset! leaf-call args)
+              :remapped)}
+           #(c2-reader-diagnostics/c2-reader-remap-exception!
+             source-path upstream))
+          wrapper-result
+          (with-redefs [bootstrap/standard-reader-options reader-options
+                        bootstrap/c2-reader-fail!
+                        (fn [& args]
+                          (reset! wrapper-call args)
+                          :remapped)]
+            (bootstrap/c2-reader-remap-exception! source-path upstream))]
+      (is (= leaf-result wrapper-result))
+      (is (= @leaf-call @wrapper-call)))
+    (let [overrides {:fail :hash}
+          source-unit {:source-id source-id :reader-options reader-options}
+          token-stream [{:token-id :tok-0
+                         :decoded :hash
+                         :raw ":hash"
+                         :span fallback-span}]
+          leaf-call (atom nil)
+          wrapper-call (atom nil)
+          leaf-result
+          (c2-reader-diagnostics/with-operations
+           {:c2-reader-fail!
+            (fn [& args]
+              (reset! leaf-call args)
+              :override-rejected)}
+           #(c2-reader-diagnostics/c2-reader-validate-overrides!
+             source-path overrides source-unit token-stream))
+          wrapper-result
+          (with-redefs [bootstrap/c2-reader-fail!
+                        (fn [& args]
+                          (reset! wrapper-call args)
+                          :override-rejected)]
+            (bootstrap/c2-reader-validate-overrides!
+             source-path overrides source-unit token-stream))]
+      (is (= leaf-result wrapper-result))
+      (is (= @leaf-call @wrapper-call)))
+    (let [failure (atom nil)
+          message-calls (atom [])
+          hash-calls (atom [])
+          span-calls (atom [])]
+      (with-redefs [bootstrap/c2-reader-message
+                    (fn [id]
+                      (swap! message-calls conj id)
+                      "interposed C2 message")
+                    bootstrap/c2-reader-governing-document
+                    "docs/interposed-c2.md"
+                    bootstrap/source-span
+                    (fn [& args]
+                      (swap! span-calls conj args)
+                      fallback-span)
+                    bootstrap/reader-canonical-hash
+                    (fn [value]
+                      (swap! hash-calls conj value)
+                      "sha256:interposed-diagnostic")
+                    bootstrap/fail!
+                    (fn [& args]
+                      (reset! failure args)
+                      :failed)]
+        (is (= :failed
+               (bootstrap/c2-reader-fail!
+                "C2-HASH" source-path subject extra))))
+      (is (= ["C2-HASH"] @message-calls))
+      (is (= [[source-path 0]] @span-calls))
+      (is (= 1 (count @hash-calls)))
+      (let [[id message payload] @failure]
+        (is (= "C2-HASH" id))
+        (is (= "interposed C2 message" message))
+        (is (= "sha256:interposed-diagnostic" (:diagnostic-id payload)))
+        (is (= "docs/interposed-c2.md" (:expected-document payload)))
+        (is (= reader-options (:reader-options payload)))
+        (is (= {:subject true :extra true} (:facts payload)))
+        (is (= source-id (get-in payload [:source-span :file])))))
+    (let [interposed-options {:retain-comments false
+                              :enabled-features #{:standard-reader}
+                              :extension-policy "sha256:interposed-policy"}
+          remap-call (atom nil)
+          upstream
+          (ex-info "interposed"
+                   {:id "C2-INTERPOSED"
+                    :message "interposed"
+                    :source-span fallback-span})]
+      (with-redefs [bootstrap/c2-reader-diagnostic-ids ["C2-INTERPOSED"]
+                    bootstrap/standard-reader-options interposed-options
+                    bootstrap/c2-reader-fail!
+                    (fn [& args]
+                      (reset! remap-call args)
+                      :remapped)]
+        (is (= :remapped
+               (bootstrap/c2-reader-remap-exception!
+                source-path upstream))))
+      (is (= "C2-INTERPOSED" (first @remap-call)))
+      (is (= interposed-options (get-in @remap-call [3 :reader-options]))))
+    (let [validate-call (atom nil)]
+      (with-redefs [bootstrap/c2-reader-override-diagnostics
+                    {:interposed "C2-HASH"}
+                    bootstrap/c2-reader-fail!
+                    (fn [& args]
+                      (reset! validate-call args)
+                      :validated)]
+        (is (= :validated
+               (bootstrap/c2-reader-validate-overrides!
+                source-path
+                {:fail :interposed :extension-tag 'demo/tag}
+                {:source-id source-id :reader-options reader-options}
+                [{:token-id :tok-interposed
+                  :decoded :interposed
+                  :raw ":interposed"
+                  :span fallback-span}]))))
+      (is (= ["C2-HASH" source-path]
+             (subvec (vec @validate-call) 0 2)))
+      (is (= :tok-interposed (get-in @validate-call [2 :token-id])))
+      (is (= [:interposed] (get-in @validate-call [3 :missing-fields]))))
+    (let [original bootstrap/c2-reader-fail!
+          replacement-calls (atom 0)
+          failure (atom nil)]
+      (with-redefs [bootstrap/c2-reader-fail!
+                    (fn [& args]
+                      (swap! replacement-calls inc)
+                      (apply original args))
+                    bootstrap/source-span (fn [& _] fallback-span)
+                    bootstrap/reader-canonical-hash
+                    (constantly "sha256:captured-original")
+                    bootstrap/fail!
+                    (fn [& args]
+                      (reset! failure args)
+                      :delegated)]
+        (is (= :delegated
+               (bootstrap/c2-reader-fail!
+                "C2-HASH" source-path subject extra))))
+      (is (= 1 @replacement-calls))
+      (is (= "sha256:captured-original"
+             (get-in @failure [2 :diagnostic-id]))))
+    (let [original-remap bootstrap/c2-reader-remap-exception!
+          replacement-calls (atom 0)
+          failure-call (atom nil)
+          upstream
+          (ex-info "delimiter"
+                   {:id "STAGE1READER001"
+                    :message "delimiter"
+                    :source-span fallback-span})]
+      (with-redefs [bootstrap/c2-reader-remap-exception!
+                    (fn [& args]
+                      (swap! replacement-calls inc)
+                      (apply original-remap args))
+                    bootstrap/c2-reader-fail!
+                    (fn [& args]
+                      (reset! failure-call args)
+                      :remapped)]
+        (is (= :remapped
+               (bootstrap/c2-reader-remap-exception!
+                source-path upstream))))
+      (is (= 1 @replacement-calls))
+      (is (= "C2-DELIMITER" (first @failure-call))))
+    (let [original-validate bootstrap/c2-reader-validate-overrides!
+          replacement-calls (atom 0)
+          failure-call (atom nil)]
+      (with-redefs [bootstrap/c2-reader-validate-overrides!
+                    (fn [& args]
+                      (swap! replacement-calls inc)
+                      (apply original-validate args))
+                    bootstrap/c2-reader-fail!
+                    (fn [& args]
+                      (reset! failure-call args)
+                      :validated)]
+        (is (= :validated
+               (bootstrap/c2-reader-validate-overrides!
+                source-path {:fail :hash}
+                {:source-id source-id :reader-options reader-options}
+                [{:token-id :tok-0 :decoded :hash
+                  :raw ":hash" :span fallback-span}]))))
+      (is (= 1 @replacement-calls))
+      (is (= "C2-HASH" (first @failure-call))))
+    (let [subject-options {:reader-policy :subject}
+          extra-options {:reader-policy :extra}
+          standard-options {:retain-comments false
+                            :enabled-features #{:standard-reader}
+                            :extension-policy "sha256:precedence-policy"}
+          failure (atom nil)]
+      (with-redefs [bootstrap/reader-canonical-hash
+                    (constantly "sha256:reader-options-precedence")
+                    bootstrap/fail!
+                    (fn [& args]
+                      (reset! failure args)
+                      :failed)]
+        (is (= :failed
+               (bootstrap/c2-reader-fail!
+                "C2-HASH" source-path
+                {:source-id source-id
+                 :source-span fallback-span
+                 :reader-options subject-options}
+                {:reader-options extra-options}))))
+      (is (= subject-options (get-in @failure [2 :reader-options])))
+      (reset! failure nil)
+      (with-redefs [bootstrap/standard-reader-options standard-options
+                    bootstrap/reader-canonical-hash
+                    (constantly "sha256:remapped-reader-options-precedence")
+                    bootstrap/fail!
+                    (fn [& args]
+                      (reset! failure args)
+                      :failed)]
+        (is (= :failed
+               (bootstrap/c2-reader-remap-exception!
+                source-path
+                (ex-info "source extension"
+                         {:id "L1-SOURCE-EXTENSION"
+                          :message "source extension"
+                          :source-id source-id
+                          :source-span fallback-span
+                          :reader-options subject-options})))))
+      (is (= subject-options (get-in @failure [2 :reader-options]))))))
 
 (deftest c2-lexical-validation-compatibility-wrappers-preserve-interposition
   (doseq [[wrapper-var expected]

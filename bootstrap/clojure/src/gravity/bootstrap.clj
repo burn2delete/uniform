@@ -11,6 +11,7 @@
             [clojure.string :as str]
             [clojure.walk :as walk]
             [gravity.c2-artifact-identity :as c2-artifact-identity]
+            [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
             [gravity.c2-pass-cache :as c2-pass-cache]
             [gravity.c2-lexical-validation :as c2-lexical-validation]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
@@ -141926,250 +141927,83 @@
   (compiler-c1-architecture-source-artifact path (slurp path)))
 
 (def c2-reader-diagnostic-ids
-  ["C2-ENCODING"
-   "C2-DELIMITER"
-   "C2-STRING"
-   "C2-NUMERIC"
-   "C2-IDENTIFIER"
-   "C2-NS-SHAPE"
-   "C2-MAP"
-   "C2-SET"
-   "C2-METADATA"
-   "C2-ABBREV"
-   "C2-EXTENSION"
-   "C2-HASH"])
+  c2-reader-diagnostics/c2-reader-diagnostic-ids)
 
 (def c2-reader-governing-document
-  "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md")
+  c2-reader-diagnostics/c2-reader-governing-document)
 
 (def c2-reader-rejected-designs
-  [{:diagnostic "C2-ENCODING"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-encoding.gravity"
-    :rejected-design :nondeterministic-source-decoding}
-   {:diagnostic "C2-DELIMITER"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-delimiter.gravity"
-    :rejected-design :malformed-delimiter-tree}
-   {:diagnostic "C2-STRING"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-string.gravity"
-    :rejected-design :lost-string-escape-facts}
-   {:diagnostic "C2-NUMERIC"
-    :fixture "bootstrap/clojure/fixtures/self-hosting/sh-03/rejected/malformed-numeric.gravity"
-    :rejected-design :malformed-numeric-reclassified-or-host-parsed}
-   {:diagnostic "C2-IDENTIFIER"
-    :fixture "bootstrap/clojure/fixtures/self-hosting/sh-03/rejected/malformed-identifier.gravity"
-    :rejected-design :malformed-symbol-or-keyword-spelling}
-   {:diagnostic "C2-NS-SHAPE"
-    :fixture "bootstrap/clojure/fixtures/self-hosting/sh-03/rejected/namespace-missing-name.gravity"
-    :rejected-design :host-owned-or-malformed-namespace-clause-shape}
-   {:diagnostic "C2-MAP"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-map.gravity"
-    :rejected-design :odd-map-literal}
-   {:diagnostic "C2-SET"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-set.gravity"
-    :rejected-design :duplicate-literal-set-entry}
-   {:diagnostic "C2-METADATA"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-metadata.gravity"
-    :rejected-design :unattached-or-invalid-metadata}
-   {:diagnostic "C2-ABBREV"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-abbrev.gravity"
-    :rejected-design :invalid-reader-abbreviation}
-   {:diagnostic "C2-EXTENSION"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-extension.gravity"
-    :rejected-design :ambient-reader-extension-authority}
-   {:diagnostic "C2-HASH"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-hash.gravity"
-    :rejected-design :unstable-reader-artifact-identity}])
+  c2-reader-diagnostics/c2-reader-rejected-designs)
 
 (def c2-reader-override-diagnostics
-  {:encoding "C2-ENCODING"
-   :abbrev "C2-ABBREV"
-   :hash "C2-HASH"})
+  c2-reader-diagnostics/c2-reader-override-diagnostics)
+
+(declare standard-reader-options
+         reader-canonical-hash
+         c2-reader-source-overrides
+         c2-reader-message
+         c2-reader-fail!
+         c2-reader-remap-exception!
+         c2-reader-validate-overrides!)
+
+(defn- c2-reader-diagnostics-ops
+  []
+  {:fail! fail!
+   :source-span source-span
+   :reader-canonical-hash reader-canonical-hash
+   :standard-reader-options standard-reader-options
+   :c2-reader-source-overrides c2-reader-source-overrides
+   :c2-reader-message c2-reader-message
+   :c2-reader-fail! c2-reader-fail!
+   :c2-reader-remap-exception! c2-reader-remap-exception!
+   :c2-reader-validate-overrides! c2-reader-validate-overrides!
+   :c2-reader-diagnostic-ids c2-reader-diagnostic-ids
+   :c2-reader-governing-document c2-reader-governing-document
+   :c2-reader-rejected-designs c2-reader-rejected-designs
+   :c2-reader-override-diagnostics c2-reader-override-diagnostics})
+
+(def ^:private ^:dynamic *c2-reader-diagnostics-leaf-call?* false)
+
+(defn- c2-reader-diagnostics-call
+  [operation-key operation & args]
+  (if *c2-reader-diagnostics-leaf-call?*
+    (c2-reader-diagnostics/call-entrypoint-body
+     operation-key operation args)
+    (binding [*c2-reader-diagnostics-leaf-call?* true]
+      (c2-reader-diagnostics/with-operations
+       (c2-reader-diagnostics-ops)
+       #(c2-reader-diagnostics/call-entrypoint-body
+         operation-key operation args)))))
 
 (defn c2-reader-source-overrides
   [module]
-  (get-in module [:metadata :compiler :c2-reader] {}))
+  (c2-reader-diagnostics-call
+   :c2-reader-source-overrides
+   c2-reader-diagnostics/c2-reader-source-overrides module))
 
 (defn c2-reader-message
   [id]
-  (case id
-    "C2-ENCODING" "source decoding failed or used an undeclared encoding"
-    "C2-DELIMITER" "reader delimiter structure is malformed"
-    "C2-STRING" "string or character literal is malformed"
-    "C2-NUMERIC" "numeric candidate fails every enabled numeric literal grammar"
-    "C2-IDENTIFIER" "symbol or keyword has an invalid surface spelling"
-    "C2-NS-SHAPE" "namespace clause has invalid reader-level syntax shape"
-    "C2-MAP" "map literal has odd arity"
-    "C2-SET" "literal set contains duplicate entries decidable at read time"
-    "C2-METADATA" "metadata is unattached or has invalid reader shape"
-    "C2-ABBREV" "reader abbreviation placement is invalid"
-    "C2-EXTENSION" "source extension is noncanonical or reader extension is unknown, disallowed, or effect-violating"
-    "C2-HASH" "reader artifact identity is unstable or incomplete"
-    "reader document coverage failed"))
+  (c2-reader-diagnostics-call
+   :c2-reader-message c2-reader-diagnostics/c2-reader-message id))
 
 (defn c2-reader-fail!
   [id source-path subject extra]
-  (let [raw-span (or (:source-span subject)
-                     (:source-span extra)
-                     (source-span source-path 0))
-        source-id (or (:source-id subject)
-                      (:source-id extra)
-                      (get-in subject [:primary :artifact])
-                      (get-in extra [:primary :artifact]))
-        span (cond-> raw-span
-               (and source-id (not (:file raw-span)))
-               (assoc :file source-id))
-        raw (or (:raw subject) (:raw-spelling subject)
-                (:raw extra) (:raw-spelling extra))
-        token-id (or (:token-id subject) (:token-id extra))
-        form-id (or (:form-id subject) (:form-id extra))
-        facts (merge (or (:facts subject) {})
-                     (or (:facts extra) {}))
-        remediation
-        "Regenerate reader artifacts with deterministic decoding, spans, raw literal facts, extension policy, and stable incremental hashes."
-        defaults
-        {:artifact :gravity/diagnostic
-         :diagnostic-id
-         (reader-canonical-hash
-          {:rule (keyword id)
-           :primary-artifact source-id
-           :stage :read-source
-           :span (dissoc span :source)
-           :token-id token-id
-           :form-id form-id
-           :facts facts})
-         :rule (keyword id)
-         :severity :error
-         :source-id source-id
-         :source-span span
-         :primary {:span span :artifact source-id}
-         :related []
-         :origin-chain [{:kind :source
-                         :source-id source-id
-                         :path source-path}]
-         :profile nil
-         :target nil
-         :facts facts
-         :diagnostic-family :c2-reader
-         :stage :read-source
-         :document-id "C2"
-         :expected-document c2-reader-governing-document
-         :involved-artifacts (cond-> [] source-id (conj source-id))
-         :token-id token-id
-         :form-id form-id
-         :raw-spelling raw
-         :reader-options (or (:reader-options subject)
-                             (:reader-options extra))
-         :extension-tag (or (:extension-tag subject)
-                            (:extension-tag extra))
-         :reader-state {:artifact :gravity/reader-state
-                        :stage :read-source
-                        :byte-offset (:byte-start span)
-                        :line (get-in span [:start :line])
-                        :column (get-in span [:start :column])
-                        :token-id token-id
-                        :form-id form-id}
-         :redactions []
-         :lifecycle :active
-         :remediation remediation
-         :remediation-records [{:kind :fix-reader-source}]}
-        payload (-> (merge defaults extra)
-                    (assoc :artifact (:artifact defaults)
-                           :diagnostic-id (:diagnostic-id defaults)
-                           :rule (:rule defaults)
-                           :severity (:severity defaults)
-                           :source-id source-id
-                           :source-span span
-                           :primary (:primary defaults)
-                           :facts facts
-                           :diagnostic-family :c2-reader
-                           :stage :read-source
-                           :document-id "C2"
-                           :expected-document c2-reader-governing-document
-                           :token-id (:token-id defaults)
-                           :form-id (:form-id defaults)
-                           :raw-spelling raw
-                           :reader-options (:reader-options defaults)
-                           :extension-tag (:extension-tag defaults)
-                           :remediation remediation
-                           :remediation-records
-                           [{:kind :fix-reader-source}]))]
-    (fail! id (c2-reader-message id) payload)))
+  (c2-reader-diagnostics-call
+   :c2-reader-fail! c2-reader-diagnostics/c2-reader-fail!
+   id source-path subject extra))
 
 (defn c2-reader-remap-exception!
   [source-path ex]
-  (let [data (ex-data ex)
-        old-id (:id data)
-        cause (str (or (:cause-message data) (:message data)))
-        reader-engine-diagnostic
-        (when (and (string? old-id) (str/starts-with? old-id "STAGE1"))
-          old-id)
-        owner-id (case old-id
-                   ("STAGE1READER001" "STAGE1READER002") "L1-DELIMITER"
-                   "STAGE1READER003" "L1-STRING"
-                   "STAGE1READER004" "L1-READER-EXTENSION"
-                   "STAGE1READER005" "L1-MAP-ARITY"
-                   "STAGE1READER007" "L1-NUMERIC"
-                   old-id)
-        id (cond
-             (= "L1-SOURCE-ENCODING" owner-id) "C2-ENCODING"
-             (= "L1-SOURCE-EXTENSION" owner-id) "C2-EXTENSION"
-             (= "L1-DELIMITER" owner-id) "C2-DELIMITER"
-             (= "L1-STRING" owner-id) "C2-STRING"
-             (= "L1-NUMERIC" owner-id) "C2-NUMERIC"
-             (= "L1-IDENTIFIER" owner-id) "C2-IDENTIFIER"
-             (= "L1-NS-SHAPE" owner-id) "C2-NS-SHAPE"
-             (= "L1-MAP-ARITY" owner-id) "C2-MAP"
-             (= "L1-METADATA" owner-id) "C2-METADATA"
-             (= "L1-READER-EXTENSION" owner-id) "C2-EXTENSION"
-             (str/includes? cause "Duplicate key") "C2-SET"
-             :else owner-id)
-        span (:source-span data)
-        reader-state
-        (or (:reader-state data)
-            {:artifact :gravity/reader-state
-             :stage (if (contains? #{"STAGE1READER003"
-                                     "STAGE1READER004"
-                                     "STAGE1READER007"}
-                                   old-id)
-                      :lexical-tokenization
-                      :recursive-form-building)
-             :byte-offset (:byte-start span)
-             :line (get-in span [:start :line])
-             :column (get-in span [:start :column])
-             :token-id (:token-id data)
-             :form-id (:form-id data)})]
-    (if (contains? (set c2-reader-diagnostic-ids) id)
-      (let [preserved-fields
-            (dissoc data :id :message :diagnostic-family :reader-options)]
-        (c2-reader-fail!
-         id source-path data
-         (cond-> (assoc preserved-fields
-                        :cause-message (or (:cause-message data)
-                                           (:message data))
-                        :reader-options standard-reader-options
-                        :reader-state reader-state)
-           (and owner-id (not= owner-id id))
-           (assoc :remapped-from owner-id)
-
-           reader-engine-diagnostic
-           (assoc :reader-engine-diagnostic reader-engine-diagnostic))))
-      (throw ex))))
+  (c2-reader-diagnostics-call
+   :c2-reader-remap-exception!
+   c2-reader-diagnostics/c2-reader-remap-exception! source-path ex))
 
 (defn c2-reader-validate-overrides!
   [source-path overrides source-unit token-stream]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c2-reader-override-diagnostics fail-kind)]
-      (let [failure-token (or (some #(when (= fail-kind (:decoded %)) %)
-                                    token-stream)
-                              (first token-stream))]
-        (c2-reader-fail! id source-path
-                         {:source-id (:source-id source-unit)
-                          :source-span (:span failure-token)
-                          :token-id (:token-id failure-token)
-                          :raw (:raw failure-token)
-                          :reader-options (:reader-options source-unit)
-                          :extension-tag (:extension-tag overrides)}
-                         {:missing-fields [fail-kind]})))))
+  (c2-reader-diagnostics-call
+   :c2-reader-validate-overrides!
+   c2-reader-diagnostics/c2-reader-validate-overrides!
+   source-path overrides source-unit token-stream))
 
 (declare reader-canonical-value
          reader-canonical-hash
