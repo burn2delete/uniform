@@ -19,6 +19,13 @@ import run_with_heartbeat as runner  # noqa: E402
 
 
 class LongRunHeartbeatTests(unittest.TestCase):
+    def private_lock_path(self) -> Path:
+        path = Path("/private/tmp") / (
+            f"gravity-heartbeat-{os.getpid()}-{time.time_ns()}.lock"
+        )
+        self.addCleanup(path.unlink, missing_ok=True)
+        return path
+
     def run_in_temp(self, command: list[str], *options: str) -> tuple[int, bytes, dict]:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -198,7 +205,7 @@ class LongRunHeartbeatTests(unittest.TestCase):
     def test_held_cross_process_lock_fails_fast(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            lock_path = root / "heavy.lock"
+            lock_path = self.private_lock_path()
             with lock_path.open("a+", encoding="utf-8") as lock_stream:
                 fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
                 lock_stream.write('{"runner_pid": 42}\n')
@@ -222,8 +229,80 @@ class LongRunHeartbeatTests(unittest.TestCase):
             status = json.loads((root / "status.json").read_text())
             self.assertEqual(75, exit_code)
             self.assertEqual("lock-unavailable", status["state"])
-            self.assertIn("runner_pid", status["lock_owner"])
+            self.assertIn("runner_pid", status["legacy_untrusted_lock_payload"])
+            self.assertNotIn("lock_owner", status)
             self.assertLess(time.monotonic() - started, 1)
+
+    def test_lock_lease_is_no_follow_owned_0600_and_no_write(self) -> None:
+        lock_path = self.private_lock_path()
+        descriptor = os.open(lock_path, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600)
+        os.write(descriptor, b"preserve lock payload\n")
+        os.close(descriptor)
+        before = lock_path.stat()
+        exit_code, _, status = self.run_in_temp(
+            [sys.executable, "-c", "print('ok')"], "--lock", str(lock_path)
+        )
+        after = lock_path.stat()
+        self.assertEqual(0, exit_code)
+        self.assertEqual(b"preserve lock payload\n", lock_path.read_bytes())
+        self.assertEqual(0o600, after.st_mode & 0o777)
+        self.assertEqual((before.st_dev, before.st_ino), (after.st_dev, after.st_ino))
+        self.assertEqual(runner.locks.SHARED_LOCK_PROTOCOL, status["lock_protocol"])
+        self.assertFalse(status["durable_telemetry_authoritative"])
+
+    def test_free_legacy_lock_is_migrated_without_replacing_or_writing(self) -> None:
+        lock_path = self.private_lock_path()
+        lock_path.write_bytes(b"legacy payload\n")
+        os.chmod(lock_path, 0o644)
+        before = lock_path.stat()
+        exit_code, _, status = self.run_in_temp(
+            [sys.executable, "-c", "print('ok')"], "--lock", str(lock_path)
+        )
+        after = lock_path.stat()
+        self.assertEqual(0, exit_code)
+        self.assertEqual(b"legacy payload\n", lock_path.read_bytes())
+        self.assertEqual((before.st_dev, before.st_ino), (after.st_dev, after.st_ino))
+        self.assertEqual(0o600, after.st_mode & 0o777)
+        self.assertTrue(status["lock_mode_migrated"])
+
+    def test_symlink_lock_is_rejected_without_touching_target(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            victim = Path(directory) / "victim.txt"
+            victim.write_text("KEEP\n", encoding="utf-8")
+            lock_path = self.private_lock_path()
+            lock_path.symlink_to(victim)
+            exit_code, _, status = self.run_in_temp(
+                [sys.executable, "-c", "raise SystemExit('must not run')"],
+                "--lock", str(lock_path),
+            )
+            self.assertEqual(75, exit_code)
+            self.assertEqual("lock-unavailable", status["state"])
+            self.assertEqual("KEEP\n", victim.read_text(encoding="utf-8"))
+
+    def test_in_body_lock_replacement_rewrites_success_as_lock_unsafe(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lock_path = self.private_lock_path()
+            descriptor = os.open(lock_path, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600)
+            os.close(descriptor)
+            replacement = lock_path.with_suffix(".replacement")
+            self.addCleanup(replacement.unlink, missing_ok=True)
+            code = (
+                "import os, pathlib; target=pathlib.Path(" + repr(str(lock_path)) + "); "
+                "replacement=pathlib.Path(" + repr(str(replacement)) + "); "
+                "fd=os.open(replacement, os.O_RDWR|os.O_CREAT|os.O_EXCL, 0o600); "
+                "os.close(fd); os.replace(replacement, target); print('ran')"
+            )
+            status_path = root / "status.json"
+            exit_code = runner.run([
+                "--log", str(root / "run.log"), "--status", str(status_path),
+                "--lock", str(lock_path), "--quiet", "--",
+                sys.executable, "-c", code,
+            ])
+            status = json.loads(status_path.read_text())
+            self.assertEqual(75, exit_code)
+            self.assertEqual("lock-unsafe", status["state"])
+            self.assertFalse(status["proof_authority_granted"])
 
 
 if __name__ == "__main__":

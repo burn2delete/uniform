@@ -22,6 +22,31 @@ import time
 import uuid
 from collections.abc import Callable, Mapping, Sequence
 
+try:
+    from tools.shared_heavy_lock import (
+        CheckpointError,
+        SHARED_LOCK_MODE,
+        SHARED_LOCK_PROTOCOL,
+        SharedLockFile,
+        SharedLockUnavailable,
+        SharedLockValidationError,
+        canonical_shared_lock_path,
+        open_lock_file,
+        shared_lock_lease,
+    )
+except ImportError:
+    from shared_heavy_lock import (
+        CheckpointError,
+        SHARED_LOCK_MODE,
+        SHARED_LOCK_PROTOCOL,
+        SharedLockFile,
+        SharedLockUnavailable,
+        SharedLockValidationError,
+        canonical_shared_lock_path,
+        open_lock_file,
+        shared_lock_lease,
+    )
+
 
 SCHEMA = "gravity/sh07-authoritative-module-checkpoints-v2"
 TOOL_VERSION = 3
@@ -33,10 +58,6 @@ PROOF_CONTRACT_RELATIVE = (
 )
 MODULE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 SOURCE_SHA_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
-
-
-class CheckpointError(RuntimeError):
-    pass
 
 
 @dataclasses.dataclass(frozen=True)
@@ -910,32 +931,7 @@ def load_manifest(path: Path) -> dict[str, object] | None:
     return value
 
 
-def open_lock_file(lock_path: Path):
-    if not hasattr(os, "O_NOFOLLOW"):
-        raise CheckpointError("platform cannot open the shared lock without following symlinks")
-    absolute = Path(os.path.abspath(lock_path.expanduser()))
-    absolute.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        descriptor = os.open(
-            absolute,
-            os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW,
-            0o600,
-        )
-    except OSError as error:
-        raise CheckpointError(f"shared heavy lock cannot be opened safely: {absolute}") from error
-    try:
-        metadata = os.fstat(descriptor)
-        if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != os.geteuid():
-            raise CheckpointError(
-                "shared heavy lock must be a regular file owned by the current user"
-            )
-        return absolute, os.fdopen(descriptor, "r+", encoding="utf-8")
-    except BaseException:
-        os.close(descriptor)
-        raise
-
-
-def run_modules(
+def _run_modules_without_lock(
     *,
     root: Path,
     state_dir: Path,
@@ -949,7 +945,6 @@ def run_modules(
     catalog_provider: CatalogProvider | None = None,
     source_contracts: SourceContracts | None = None,
     source_contract_proof_sha256: str | None = None,
-    lock_path: Path | None = DEFAULT_LOCK,
 ) -> tuple[int, dict[str, object]]:
     if (
         not modules
@@ -1060,20 +1055,6 @@ def run_modules(
         return 75, manifest
 
     lock_stream = None
-    if lock_path is not None:
-        lock_path, lock_stream = open_lock_file(lock_path)
-        try:
-            fcntl.flock(lock_stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as error:
-            lock_stream.close()
-            raise CheckpointError(f"shared heavy lock is unavailable: {lock_path}") from error
-        lock_stream.seek(0)
-        lock_stream.truncate()
-        json.dump({"pid": os.getpid(), "acquired_at": utc_now()}, lock_stream)
-        lock_stream.write("\n")
-        lock_stream.flush()
-        os.fsync(lock_stream.fileno())
-
     try:
         previous = load_manifest(manifest_path)
         same_shared_context = bool(
@@ -1081,7 +1062,13 @@ def run_modules(
             and previous.get("shared_context_fingerprint") == shared_fingerprint
         )
         previous_modules = (
-            previous.get("modules", {}) if same_shared_context and resume else {}
+            previous.get("modules", {})
+            if (
+                same_shared_context
+                and resume
+                and previous.get("resumable", True) is not False
+            )
+            else {}
         )
         if not isinstance(previous_modules, dict):
             previous_modules = {}
@@ -1310,6 +1297,48 @@ def run_modules(
             lock_stream.close()
 
 
+def run_modules(
+    *,
+    root: Path,
+    state_dir: Path,
+    modules: Sequence[str],
+    module_catalog: Mapping[str, str],
+    base_command: Sequence[str] | None = None,
+    timeout_seconds: float = 21600,
+    resume: bool = True,
+    launcher: Launcher = default_launcher,
+    output_validator: OutputValidator | None = None,
+    catalog_provider: CatalogProvider | None = None,
+    source_contracts: SourceContracts | None = None,
+    source_contract_proof_sha256: str | None = None,
+    lock_path: Path | None = DEFAULT_LOCK,
+) -> tuple[int, dict[str, object]]:
+    arguments = {
+        "root": root,
+        "state_dir": state_dir,
+        "modules": modules,
+        "module_catalog": module_catalog,
+        "base_command": base_command,
+        "timeout_seconds": timeout_seconds,
+        "resume": resume,
+        "launcher": launcher,
+        "output_validator": output_validator,
+        "catalog_provider": catalog_provider,
+        "source_contracts": source_contracts,
+        "source_contract_proof_sha256": source_contract_proof_sha256,
+    }
+    if lock_path is None:
+        return _run_modules_without_lock(**arguments)
+    try:
+        with shared_lock_lease(lock_path):
+            return _run_modules_without_lock(**arguments)
+    except SharedLockValidationError as error:
+        manifest = _invalidate_manifest_after_lock_failure(state_dir, error)
+        if manifest is None:
+            raise
+        return 75, manifest
+
+
 def discover_module_catalog(
     root: Path, base_command: Sequence[str], timeout: float
 ) -> dict[str, str]:
@@ -1402,9 +1431,7 @@ def parser() -> argparse.ArgumentParser:
     return value
 
 
-def main(arguments: list[str] | None = None) -> int:
-    values = parser().parse_args(arguments)
-    base = default_base_command()
+def _main_under_lease(values: argparse.Namespace, base: Sequence[str]) -> int:
     try:
         catalog = discover_module_catalog(
             values.cwd, base, min(values.timeout_seconds, 120)
@@ -1435,7 +1462,7 @@ def main(arguments: list[str] | None = None) -> int:
             ),
             source_contracts=source_contracts,
             source_contract_proof_sha256=source_contract_proof_sha256,
-            lock_path=values.lock,
+            lock_path=None,
         )
         print(json.dumps({
             "state": manifest["state"],
@@ -1449,6 +1476,46 @@ def main(arguments: list[str] | None = None) -> int:
             marker in str(error)
             for marker in ["lock is unavailable", "source contract mismatch"]
         ) else 2
+
+
+def _invalidate_manifest_after_lock_failure(
+    state_dir: Path, error: SharedLockValidationError
+) -> dict[str, object] | None:
+    manifest_path = state_dir.resolve() / "manifest.json"
+    if not manifest_path.exists():
+        return None
+    try:
+        manifest = load_manifest(manifest_path)
+    except CheckpointError:
+        return None
+    if manifest is None:
+        return None
+    manifest.update(
+        state="lock-unsafe",
+        aggregate_authoritative=False,
+        authority_scope="none",
+        resumable=False,
+        lock_validation_error=str(error),
+        finished_at=utc_now(),
+        updated_at=utc_now(),
+    )
+    atomic_json_write(manifest_path, manifest)
+    return manifest
+
+
+def main(arguments: list[str] | None = None) -> int:
+    values = parser().parse_args(arguments)
+    base = default_base_command()
+    try:
+        with shared_lock_lease(values.lock):
+            return _main_under_lease(values, base)
+    except SharedLockValidationError as error:
+        _invalidate_manifest_after_lock_failure(values.state_dir, error)
+        print(f"SH-07 checkpoint runner failed: {error}", file=sys.stderr)
+        return 75
+    except SharedLockUnavailable as error:
+        print(f"SH-07 checkpoint runner failed: {error}", file=sys.stderr)
+        return 75
 
 
 if __name__ == "__main__":

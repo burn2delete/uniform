@@ -136,6 +136,12 @@ class Sh07CheckpointTests(unittest.TestCase):
             for module in ["alpha", "beta", "gamma"]
         }
 
+    def shared_lock_path(self, root: Path) -> Path:
+        token = runner.hashlib.sha256(str(root).encode("utf-8")).hexdigest()[:20]
+        path = Path("/private/tmp") / f"gravity-sh07-test-{os.getpid()}-{token}.lock"
+        self.addCleanup(path.unlink, missing_ok=True)
+        return path
+
     def make_repository(self, root: Path) -> None:
         files = {
             "deps.edn": "{:paths []}\n",
@@ -199,7 +205,7 @@ class Sh07CheckpointTests(unittest.TestCase):
             source_contract_proof_sha256=(
                 runner.sha256_file(proof_contract) if source_contracts else None
             ),
-            lock_path=root / "heavy.lock",
+            lock_path=self.shared_lock_path(root),
         )
 
     def source_contract(self, root: Path, module: str) -> dict[str, dict[str, object]]:
@@ -261,7 +267,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                     launcher=FakeLauncher(),
                     output_validator=fixture_output_validator,
                     source_contracts=self.source_contract(root, "alpha"),
-                    lock_path=root / "heavy.lock",
+                    lock_path=self.shared_lock_path(root),
                 )
 
     def test_source_contract_discovery_binds_exact_contract_hash(self) -> None:
@@ -448,7 +454,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                 timeout_seconds=1,
                 launcher=mutating_launcher,
                 output_validator=fixture_output_validator,
-                lock_path=root / "heavy.lock",
+                lock_path=self.shared_lock_path(root),
             )
             self.assertEqual(75, code)
             self.assertEqual(["alpha"], delegate.calls)
@@ -485,7 +491,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                 timeout_seconds=1,
                 launcher=mutating_launcher,
                 output_validator=fixture_output_validator,
-                lock_path=root / "heavy.lock",
+                lock_path=self.shared_lock_path(root),
             )
             self.assertEqual(75, code)
             self.assertEqual(["alpha"], delegate.calls)
@@ -523,7 +529,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                 timeout_seconds=1,
                 launcher=transient_launcher,
                 output_validator=fixture_output_validator,
-                lock_path=root / "heavy.lock",
+                lock_path=self.shared_lock_path(root),
             )
             self.assertEqual(1, code)
             self.assertEqual("failed", manifest["state"])
@@ -551,7 +557,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                 "timeout_seconds": 1,
                 "launcher": launcher,
                 "output_validator": fixture_output_validator,
-                "lock_path": root / "heavy.lock",
+                "lock_path": self.shared_lock_path(root),
             }
             code, _ = runner.run_modules(**arguments)
             self.assertEqual(0, code)
@@ -594,7 +600,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                 timeout_seconds=1,
                 launcher=mutating_launcher,
                 output_validator=fixture_output_validator,
-                lock_path=root / "heavy.lock",
+                lock_path=self.shared_lock_path(root),
             )
             self.assertEqual(0, code)
             self.assertEqual(["alpha", "beta"], delegate.calls)
@@ -630,7 +636,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                 timeout_seconds=1,
                 launcher=mutating_launcher,
                 output_validator=fixture_output_validator,
-                lock_path=root / "heavy.lock",
+                lock_path=self.shared_lock_path(root),
             )
             self.assertEqual(75, code)
             self.assertEqual(["alpha", "beta"], delegate.calls)
@@ -671,7 +677,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                 timeout_seconds=1,
                 launcher=mutating_launcher,
                 output_validator=fixture_output_validator,
-                lock_path=root / "heavy.lock",
+                lock_path=self.shared_lock_path(root),
             )
             self.assertEqual(75, code)
             self.assertEqual("context-changed", manifest["state"])
@@ -777,7 +783,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                 "timeout_seconds": 10,
                 "launcher": launcher,
                 "output_validator": validator,
-                "lock_path": root / "heavy.lock",
+                "lock_path": self.shared_lock_path(root),
             }
             code, _ = runner.run_modules(**arguments)
             self.assertEqual(0, code)
@@ -915,7 +921,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                 timeout_seconds=1,
                 launcher=incomplete_output,
                 output_validator=fixture_output_validator,
-                lock_path=root / "heavy.lock",
+                lock_path=self.shared_lock_path(root),
             )
             self.assertEqual(1, code)
             self.assertEqual("failed", manifest["state"])
@@ -956,7 +962,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                 timeout_seconds=1,
                 launcher=misleading_output,
                 output_validator=fixture_output_validator,
-                lock_path=root / "heavy.lock",
+                lock_path=self.shared_lock_path(root),
             )
             self.assertEqual(1, code)
             self.assertEqual("failed", manifest["state"])
@@ -1150,7 +1156,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                         timeout_seconds=1,
                         launcher=FakeLauncher(),
                         output_validator=fixture_output_validator,
-                        lock_path=root / "heavy.lock",
+                        lock_path=self.shared_lock_path(root),
                     )
 
     def test_catalog_handshake_parses_exact_tab_delimited_rows(self) -> None:
@@ -1437,7 +1443,7 @@ class Sh07CheckpointTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.make_repository(root)
-            lock_path = root / "heavy.lock"
+            lock_path = self.shared_lock_path(root)
             launcher = FakeLauncher()
             with lock_path.open("a+", encoding="utf-8") as held:
                 fcntl.flock(held.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -1445,13 +1451,227 @@ class Sh07CheckpointTests(unittest.TestCase):
                     self.run_in_repository(root, launcher, ["alpha"])
             self.assertEqual([], launcher.calls)
 
+    def test_busy_lock_precedes_provider_and_state_creation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            lock_path = self.shared_lock_path(root)
+            descriptor = os.open(
+                lock_path, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600
+            )
+            provider = mock.Mock(return_value=self.module_catalog())
+            state_dir = root / "absent-state"
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                with self.assertRaises(runner.SharedLockUnavailable):
+                    runner.run_modules(
+                        root=root,
+                        state_dir=state_dir,
+                        modules=["alpha"],
+                        module_catalog=self.module_catalog(),
+                        launcher=FakeLauncher(),
+                        catalog_provider=provider,
+                        lock_path=lock_path,
+                    )
+            finally:
+                fcntl.flock(descriptor, fcntl.LOCK_UN)
+                os.close(descriptor)
+            provider.assert_not_called()
+            self.assertFalse(state_dir.exists())
+
+    def test_shared_lock_lease_preserves_one_owned_inode_and_payload(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lock_path = self.shared_lock_path(root)
+            lock_path.write_bytes(b"reviewed shared payload\n")
+            os.chmod(lock_path, 0o644)
+            before = lock_path.stat()
+            with runner.shared_lock_lease(lock_path) as (handle, receipt):
+                during = lock_path.stat()
+                opened = os.fstat(handle.descriptor)
+                self.assertEqual((opened.st_dev, opened.st_ino),
+                                 (during.st_dev, during.st_ino))
+                self.assertEqual((before.st_dev, before.st_ino),
+                                 (during.st_dev, during.st_ino))
+                self.assertEqual(b"reviewed shared payload\n", lock_path.read_bytes())
+                self.assertEqual("0600", receipt["lock_mode"])
+                self.assertTrue(receipt["lock_mode_migrated"])
+                self.assertEqual(runner.SHARED_LOCK_PROTOCOL,
+                                 receipt["lock_protocol"])
+            after = lock_path.stat()
+            self.assertEqual((before.st_dev, before.st_ino),
+                             (after.st_dev, after.st_ino))
+            self.assertEqual(0o600, after.st_mode & 0o777)
+
+    def test_shared_lock_replacement_fails_closed_before_release(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lock_path = self.shared_lock_path(root)
+            replacement = lock_path.with_suffix(".replacement")
+            self.addCleanup(replacement.unlink, missing_ok=True)
+            with self.assertRaises(runner.SharedLockValidationError):
+                with runner.shared_lock_lease(lock_path):
+                    descriptor = os.open(
+                        replacement,
+                        os.O_RDWR | os.O_CREAT | os.O_EXCL,
+                        0o600,
+                    )
+                    os.close(descriptor)
+                    os.replace(replacement, lock_path)
+
+    def test_cli_lock_replacement_invalidates_completed_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            state_dir = root / "state"
+            lock_path = self.shared_lock_path(root)
+            replacement = lock_path.with_suffix(".replacement")
+            self.addCleanup(replacement.unlink, missing_ok=True)
+
+            def publish_then_replace(
+                _values: object, _base: object
+            ) -> int:
+                state_dir.mkdir(parents=True)
+                runner.atomic_json_write(
+                    state_dir / "manifest.json",
+                    {
+                        "schema": runner.SCHEMA,
+                        "state": "completed",
+                        "aggregate_authoritative": False,
+                        "authority_scope":
+                        "individual-existing-runner-outputs-only",
+                    },
+                )
+                descriptor = os.open(
+                    replacement,
+                    os.O_RDWR | os.O_CREAT | os.O_EXCL,
+                    0o600,
+                )
+                os.close(descriptor)
+                os.replace(replacement, lock_path)
+                return 0
+
+            with mock.patch.object(
+                runner, "_main_under_lease", side_effect=publish_then_replace
+            ):
+                exit_code = runner.main([
+                    "--list",
+                    "--cwd", str(root),
+                    "--state-dir", str(state_dir),
+                    "--lock", str(lock_path),
+                ])
+            manifest = json.loads((state_dir / "manifest.json").read_text())
+            self.assertEqual(75, exit_code)
+            self.assertEqual("lock-unsafe", manifest["state"])
+            self.assertFalse(manifest["aggregate_authoritative"])
+            self.assertFalse(manifest["resumable"])
+            self.assertEqual("none", manifest["authority_scope"])
+
+    def test_programmatic_release_tamper_invalidates_and_cannot_resume(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            lock_path = self.shared_lock_path(root)
+            replacement = lock_path.with_suffix(".replacement")
+            self.addCleanup(replacement.unlink, missing_ok=True)
+            delegate = FakeLauncher()
+
+            def replacing_launcher(
+                command: list[str],
+                cwd: Path,
+                stdout_path: Path,
+                stderr_path: Path,
+                timeout_seconds: float,
+            ) -> runner.ProcessOutcome:
+                outcome = delegate(
+                    command, cwd, stdout_path, stderr_path, timeout_seconds
+                )
+                descriptor = os.open(
+                    replacement,
+                    os.O_RDWR | os.O_CREAT | os.O_EXCL,
+                    0o600,
+                )
+                os.close(descriptor)
+                os.replace(replacement, lock_path)
+                return outcome
+
+            code, manifest = runner.run_modules(
+                root=root,
+                state_dir=root / "checkpoints",
+                modules=["alpha"],
+                module_catalog=self.module_catalog(),
+                base_command=["fake-runner"],
+                timeout_seconds=1,
+                launcher=replacing_launcher,
+                output_validator=fixture_output_validator,
+                lock_path=lock_path,
+            )
+            persisted = json.loads(
+                (root / "checkpoints/manifest.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(75, code)
+            self.assertEqual("lock-unsafe", manifest["state"])
+            self.assertEqual(manifest, persisted)
+            self.assertFalse(persisted["aggregate_authoritative"])
+            self.assertEqual("none", persisted["authority_scope"])
+            self.assertFalse(persisted["resumable"])
+            self.assertIn("lock_validation_error", persisted)
+            self.assertEqual(["alpha"], delegate.calls)
+
+            rerun = FakeLauncher()
+            code, resumed = self.run_in_repository(root, rerun, ["alpha"])
+            self.assertEqual(0, code)
+            self.assertEqual(["alpha"], rerun.calls)
+            self.assertEqual([], resumed["resumed_modules"])
+
+    def test_programmatic_inner_checkpoint_error_is_not_relabelled_lock_unsafe(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lock_path = self.shared_lock_path(root)
+            state_dir = root / "absent-state"
+            with mock.patch.object(
+                runner,
+                "_run_modules_without_lock",
+                side_effect=runner.CheckpointError("ordinary inner failure"),
+            ):
+                with self.assertRaisesRegex(
+                    runner.CheckpointError, "ordinary inner failure"
+                ):
+                    runner.run_modules(
+                        root=root,
+                        state_dir=state_dir,
+                        modules=["alpha"],
+                        module_catalog=self.module_catalog(),
+                        lock_path=lock_path,
+                    )
+            self.assertFalse((state_dir / "manifest.json").exists())
+
+    def test_shared_lock_hardlink_and_noncanonical_path_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lock_path = self.shared_lock_path(root)
+            lock_path.touch(mode=0o600)
+            alias = root / "hardlink.lock"
+            os.link(lock_path, alias)
+            with self.assertRaises(runner.SharedLockValidationError):
+                with runner.shared_lock_lease(lock_path):
+                    self.fail("unsafe hard-linked lock was admitted")
+            with self.assertRaisesRegex(runner.CheckpointError,
+                                        "direct child of /private/tmp"):
+                runner.canonical_shared_lock_path(root / "not-canonical.lock")
+
+    def test_default_tmp_spelling_resolves_to_canonical_shared_inode_path(self) -> None:
+        self.assertEqual(
+            Path("/private/tmp/gravity-sh07-heavy.lock"),
+            runner.canonical_shared_lock_path(Path("/tmp/gravity-sh07-heavy.lock")),
+        )
+
     def test_symlinked_lock_is_rejected_without_touching_target(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.make_repository(root)
             victim = root / "victim.txt"
             victim.write_text("KEEP-ME\n", encoding="utf-8")
-            (root / "heavy.lock").symlink_to(victim)
+            (self.shared_lock_path(root)).symlink_to(victim)
             with self.assertRaisesRegex(runner.CheckpointError, "safely"):
                 self.run_in_repository(root, FakeLauncher(), ["alpha"])
             self.assertEqual("KEEP-ME\n", victim.read_text(encoding="utf-8"))

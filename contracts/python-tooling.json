@@ -5,10 +5,10 @@
   "scope": {
     "roots": ["src/gravity", "tools"],
     "excluded_segments": ["__pycache__"],
-    "inventory_count": 151,
-    "inventory_sha256": "sha256:be42a9a3c279bc2233a6c627a7d51b5635f9dbab6a3dbb4775a04fabb57f1df7",
-    "dependency_edge_count": 173,
-    "dependency_edge_sha256": "sha256:f7c20260def8c09f365d6d5e024999356044bca8c52717b7d733c1b21f1fa3e8"
+    "inventory_count": 152,
+    "inventory_sha256": "sha256:92052c1f5013db88e3f0d8ddaea8702eef0a1f3fca19883a97d7236df419294f",
+    "dependency_edge_count": 175,
+    "dependency_edge_sha256": "sha256:24748d295339dc917c577ab2aba63c056484ba36dac0e6c2560e788a0b90dccc"
   },
   "enums": {
     "categories": [
@@ -26,6 +26,7 @@
       "semantic-library",
       "semantic-coverage-library",
       "publication-library",
+      "resource-lock-library",
       "read-only-development-tool",
       "nonauthoritative-evidence-composer",
       "bounded-development-runner",
@@ -213,6 +214,22 @@
       "authority_ceiling": "none",
       "source_path_policy_refs": ["reviewed-central-routing"],
       "output_path_policy_refs": ["generated-evidence", "generated-coverage"],
+      "import_safety": "library",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "unit-test"]
+    },
+    {
+      "id": "resource-lock-support",
+      "includes": ["tools/shared_heavy_lock.py"],
+      "excludes": [],
+      "category": "tooling-support",
+      "role": "resource-lock-library",
+      "allowed_dependency_categories": [],
+      "effects": ["filesystem-read", "filesystem-write"],
+      "output_classes": ["none"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
       "import_safety": "library",
       "execution_mode": "parallel-safe",
       "test_surfaces": ["import-smoke", "unit-test"]

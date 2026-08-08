@@ -50,6 +50,16 @@ class PythonToolingContractTests(unittest.TestCase):
     def test_repository_contract_passes(self) -> None:
         self.assertEqual([], self.validate())
 
+    def test_shared_heavy_lock_is_one_least_privilege_support_component(self) -> None:
+        support = self.component(self.contract, "resource-lock-support")
+        process = self.component(self.contract, "process-development-tools")
+        self.assertEqual(["tools/shared_heavy_lock.py"], support["includes"])
+        self.assertEqual("tooling-support", support["category"])
+        self.assertEqual("none", support["authority_ceiling"])
+        self.assertEqual([], support["allowed_dependency_categories"])
+        self.assertEqual(["filesystem-read", "filesystem-write"], support["effects"])
+        self.assertEqual(["tooling-support"], process["allowed_dependency_categories"])
+
     def test_duplicate_json_key_is_rejected(self) -> None:
         with self.assertRaises(validator.DuplicateKeyError):
             json.loads('{"schema_version": 1, "schema_version": 2}', object_pairs_hook=validator._object_no_duplicates)
