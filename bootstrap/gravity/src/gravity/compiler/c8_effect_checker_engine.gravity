@@ -13,7 +13,10 @@
              verify-c8-effect-checker
              sh09-effect-policy
              sh09-check-effect-request
-             sh09-verify-effect-result])
+             sh09-verify-effect-result
+             sh09-authenticated-sh08-adapter-policy
+             sh09-build-authenticated-pure-effect-result
+             sh09-verify-authenticated-pure-effect-result])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -395,7 +398,7 @@
              :handled-effects
              :namespace-and-module-summaries
              :runtime-profile-policy
-             :authenticated-sh08-adapter
+             :authenticated-sh08-function-and-effectful-adapters
              :mir-preservation]})
 
 (defn sh09-diagnostic
@@ -1066,6 +1069,741 @@
                              :unexpected-replay-record
                              :request-shape
                              :remove-replay-data-from-deterministic-effect)))))))))))))))))))))))))))
+
+(defn sh09-authenticated-sh08-adapter-policy []
+  {:artifact :gravity/sh09-authenticated-sh08-adapter-policy
+   :schema-version 1
+   :accepted-upstream-artifacts
+   [:gravity/sh08-authenticated-typed-core
+    :gravity/sh08-function-typed-core-template]
+   :accepted-upstream-schema-versions [1 3]
+   :accepted-upstream-scopes
+   [:primitive-literals-vector-map-set-definitions-equal-if-joins
+    :capture-free-higher-order-fixed-arity-one-hop]
+   :accepted-effect-scopes
+   [:pure-typed-core
+    :declared-pure-call-effects-with-thrown-effects-pending]
+   :profile :meta
+   :target :jvm
+   :phase :build
+   :required-upstream-verification
+   :gravity/sh08-authenticated-type-verification
+   :diagnostics ["C8-VERIFY" "C8-PROFILE" "C8-UNDECLARED"]
+   :pending [:effectful-sh08-adapter
+             :effect-inference-beyond-declared-pure
+             :function-latent-effects
+             :transitive-call-effects
+             :handled-effects
+             :namespace-and-module-summaries
+             :runtime-profile-policy
+             :mir-preservation
+             :authenticated-sh09-sh10-adapter]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh09-adapter-type-fact-valid? [fact module]
+  (if
+   (sh09-exact-keys?
+    fact
+    #{:artifact :fact-id-request :core-node-id :type :producer-rule
+      :dependencies :syntax-id :source-span :origin-chain
+      :generated-origin :binding-id :profile :target :effects
+      :capabilities :ownership :status})
+    (if (= :gravity/c7-type-fact (get fact :artifact))
+      (if
+       (=
+        {:domain :gravity/sh08-primitive-type-fact-v1
+         :core-node-id (get fact :core-node-id)
+         :type (get fact :type)
+         :producer (get fact :producer-rule)
+         :dependencies (get fact :dependencies)
+         :profile (get fact :profile)
+         :target (get fact :target)
+         :effects (get fact :effects)
+         :capabilities (get fact :capabilities)
+         :origin-chain (get fact :origin-chain)
+         :generated-origin (get fact :generated-origin)}
+        (get fact :fact-id-request))
+        (if (sh09-sha256-id? (get fact :core-node-id))
+          (if (sh09-sha256-id? (get fact :syntax-id))
+            (if (map? (get fact :source-span))
+              (if (vector? (get fact :origin-chain))
+                (if (= (get fact :profile) (get module :profile))
+                  (if (= (get fact :target) (get module :target))
+                    (if (= [] (get fact :effects))
+                      (if (= [] (get fact :capabilities))
+                        (= :inferred (get fact :status))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-adapter-type-table-valid? [type-table facts]
+  (if (map? type-table)
+    (if (= (count type-table) (count facts))
+      (loop [remaining facts]
+        (if (= (count remaining) 0)
+          true
+          (let [fact (first remaining)]
+            (if (= (get fact :type)
+                   (get type-table (get fact :core-node-id)))
+              (recur (rest remaining))
+              false))))
+      false)
+    false))
+
+(defn sh09-adapter-type-facts-valid? [facts module]
+  (if (vector? facts)
+    (if (> (count facts) 0)
+      (loop [remaining facts seen #{}]
+        (if (= (count remaining) 0)
+          true
+          (let [fact (first remaining)
+                node-id (get fact :core-node-id)]
+            (if (sh09-adapter-type-fact-valid? fact module)
+              (if (contains? seen node-id)
+                false
+                (recur (rest remaining) (conj seen node-id)))
+              false))))
+      false)
+    false))
+
+(defn sh09-adapter-module-valid? [module]
+  (if (map? module)
+    (if (symbol? (get module :namespace))
+      (if (= :meta (get module :profile))
+        (if (= :jvm (get module :target))
+          (if (= [] (get module :effects))
+            (= [] (get module :capabilities))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-adapter-upstream-identity-valid? [typed]
+  (let [identity (get typed :identity-input)]
+    (if (map? identity)
+      (if (sh09-sha256-id? (get identity :semantic-envelope-id))
+        (=
+         {:artifact :gravity/sh08-authenticated-typed-core
+          :scope (get typed :scope)
+          :sh07-artifact-id (get typed :sh07-artifact-id)
+          :typed-artifact-id (get typed :artifact-id)
+          :module (get typed :module)
+          :type-table (get typed :type-table)
+          :type-facts (get typed :type-facts)
+          :typed-core (get typed :typed-core)
+          :diagnostics (get typed :diagnostics)
+          :semantic-envelope-id (get identity :semantic-envelope-id)}
+         identity)
+        false)
+      false)))
+
+(defn sh09-adapter-upstream-valid? [typed verification]
+  (if
+   (sh09-exact-keys?
+    typed
+    #{:artifact :schema-version :status :scope :artifact-id
+      :sh07-artifact-id :module :type-table :type-facts :typed-core
+      :identity-input :provenance :diagnostics :pending
+      :self-hosted? :clojure-seed-boundary?})
+    (if (= :gravity/sh08-authenticated-typed-core (get typed :artifact))
+      (if (= 1 (get typed :schema-version))
+        (if (= :accepted (get typed :status))
+          (if
+           (=
+            :primitive-literals-vector-map-set-definitions-equal-if-joins
+            (get typed :scope))
+            (if (sh09-sha256-id? (get typed :artifact-id))
+              (if (sh09-sha256-id? (get typed :sh07-artifact-id))
+                (if (sh09-adapter-module-valid? (get typed :module))
+                  (if
+                   (sh09-adapter-type-table-valid?
+                    (get typed :type-table) (get typed :type-facts))
+                    (if
+                     (sh09-adapter-type-facts-valid?
+                      (get typed :type-facts) (get typed :module))
+                      (if
+                       (=
+                        {:artifact :gravity/typed-core
+                         :core-input (get typed :sh07-artifact-id)
+                         :module (get typed :module)
+                         :types (get typed :type-table)
+                         :constraints []
+                         :dynamic-boundaries []
+                         :casts []
+                         :diagnostics []}
+                        (get typed :typed-core))
+                        (if (= [] (get typed :diagnostics))
+                          (if
+                           (sh09-exact-keys?
+                            (get typed :provenance)
+                            #{:actual-source-path :provenance-binding-id})
+                            (if
+                             (sh09-sha256-id?
+                              (get (get typed :provenance)
+                                   :provenance-binding-id))
+                              (if (= false (get typed :self-hosted?))
+                                (if (= true
+                                       (get typed :clojure-seed-boundary?))
+                              (if
+                               (sh09-adapter-upstream-identity-valid? typed)
+                                (if
+                                 (sh09-exact-keys?
+                                  verification
+                                  #{:artifact :status :checks
+                                    :expected :candidate})
+                                  (if
+                                   (=
+                                    :gravity/sh08-authenticated-type-verification
+                                    (get verification :artifact))
+                                    (if
+                                     (=
+                                      [:verified-sh07-canonical-core
+                                       :authenticated-input-and-output-identities
+                                       :fresh-c7-result-replay
+                                       :exact-typed-result
+                                       :path-neutral-identity
+                                       :separate-actual-path-provenance]
+                                      (get verification :checks))
+                                      (if (= :passed
+                                             (get verification :status))
+                                        (if (= typed
+                                             (get verification :expected))
+                                          (= typed
+                                             (get verification :candidate))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-adapter-pure-request [typed fact]
+  (let [module (get typed :module)]
+    {:artifact :gravity/sh09-normalized-effect-request
+     :request-id (get fact :fact-id-request)
+     :core-node-id (get fact :core-node-id)
+     :syntax-id (get fact :syntax-id)
+     :source-span (get fact :source-span)
+     :origin-chain (get fact :origin-chain)
+     :function (get module :namespace)
+     :namespace (get module :namespace)
+     :profile (get module :profile)
+     :target (get module :target)
+     :phase :build
+     :effect nil
+     :required-capability nil
+     :declared-effects #{}
+     :package-effects #{}
+     :deployment-effects #{}
+     :declared-capabilities #{}
+     :package-capabilities #{}
+     :deployment-capabilities #{}
+     :provider nil
+     :grant nil
+     :resource-subject nil
+     :build-policy {:hermetic true :allowed-effects #{}}
+     :safety-allowed true
+     :authority-mode :none
+     :replay-record nil
+     :ordering nil}))
+
+(defn sh09-adapter-pure-products [typed]
+  (loop [remaining (get typed :type-facts)
+         requests []
+         legality-results []
+         nodes {}]
+    (if (= (count remaining) 0)
+      {:status :accepted
+       :requests requests
+       :legality-results legality-results
+       :nodes nodes}
+      (let [fact (first remaining)
+            request (sh09-adapter-pure-request typed fact)
+            legality (sh09-check-effect-request request)]
+        (if (= :accepted (get legality :status))
+          (recur
+           (rest remaining)
+           (conj requests request)
+           (conj legality-results legality)
+           (assoc
+            nodes
+            (get fact :core-node-id)
+            {:artifact :gravity/c8-effect-node
+             :core-node-id (get fact :core-node-id)
+             :direct #{}
+             :latent #{}
+             :transitive #{}
+             :ordering :pure
+             :source-span (get fact :source-span)
+             :syntax-id (get fact :syntax-id)
+             :origin-chain (get fact :origin-chain)
+             :generated-origin (get fact :generated-origin)
+             :type-fact-id
+             {:resolution :coordinator-digest-required
+              :identity-input (get fact :fact-id-request)}}))
+          {:status :rejected
+           :requests (conj requests request)
+           :legality-results (conj legality-results legality)
+           :nodes nodes
+           :diagnostics (get legality :diagnostics)})))))
+
+(defn sh09-adapter-diagnostic [typed reason]
+  (let [fact (first (get typed :type-facts))
+        module (get typed :module)]
+    {:diagnostic-id "C8-VERIFY"
+     :rule "C8-VERIFY"
+     :severity :error
+     :stage :effect-checking
+     :reason reason
+     :denied-layer :authenticated-sh08-adapter
+     :core-node-id (get fact :core-node-id)
+     :syntax-id (get fact :syntax-id)
+     :source-span (get fact :source-span)
+     :generated-origin-chain (get fact :origin-chain)
+     :function (get module :namespace)
+     :namespace (get module :namespace)
+     :effect nil
+     :capability nil
+     :profile (get module :profile)
+     :target (get module :target)
+     :provider nil
+     :grant nil
+     :remediation :supply-a-fresh-passed-authenticated-sh08-typed-core}))
+
+(defn sh09-adapter-function-fact-valid? [function module]
+  (if (= :gravity/c7-function-type (get function :artifact))
+    (if (sh09-sha256-id? (get function :function-id))
+      (if (sh09-sha256-id? (get function :function-core-node-id))
+        (if (sh09-sha256-id? (get function :body-core-node-id))
+          (if (= [] (get function :latent-effects))
+            (if (= [] (get function :capabilities))
+              (if (= [:pending-sh09]
+                     (get function :thrown-error-effects))
+                (if (= (get module :profile) (get function :profile))
+                  (if (= (get module :target) (get function :target))
+                    (if (map? (get function :source-span))
+                      (= :inferred (get function :status))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-adapter-function-facts-valid? [functions module]
+  (if (vector? functions)
+    (if (> (count functions) 0)
+      (loop [remaining functions seen #{}]
+        (if (= (count remaining) 0)
+          true
+          (let [function (first remaining)
+                function-id (get function :function-id)]
+            (if (sh09-adapter-function-fact-valid? function module)
+              (if (contains? seen function-id)
+                false
+                (recur (rest remaining) (conj seen function-id)))
+              false))))
+      false)
+    false))
+
+(defn sh09-adapter-call-fact-valid? [fact module]
+  (if (= :gravity/c7-call-type-fact (get fact :artifact))
+    (if (map? (get fact :fact-id-request))
+      (if (sh09-sha256-id? (get fact :call-core-node-id))
+        (if (sh09-sha256-id? (get fact :syntax-id))
+          (if (map? (get fact :source-span))
+            (if (vector? (get fact :origin-chain))
+              (if (= [] (get fact :effects))
+                (if (= [] (get fact :capabilities))
+                  (if (= (get module :profile) (get fact :profile))
+                    (if (= (get module :target) (get fact :target))
+                      (= :inferred (get fact :status))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-adapter-call-facts-valid? [facts module]
+  (if (vector? facts)
+    (if (> (count facts) 0)
+      (loop [remaining facts seen #{}]
+        (if (= (count remaining) 0)
+          true
+          (let [fact (first remaining)
+                node-id (get fact :call-core-node-id)]
+            (if (sh09-adapter-call-fact-valid? fact module)
+              (if (contains? seen node-id)
+                false
+                (recur (rest remaining) (conj seen node-id)))
+              false))))
+      false)
+    false))
+
+(defn sh09-adapter-function-upstream-valid? [typed verification]
+  (if
+   (sh09-exact-keys?
+    typed
+    #{:artifact :schema-version :status :scope :authentication-status
+      :module :sh07-shaped-artifact-id :function-products
+      :function-type-table :local-binding-facts :call-type-facts
+      :constraint-ledger :type-table :convergence :typed-core
+      :diagnostics :artifact-id-request :identity-input
+      :identity-resolution :provenance :pending
+      :higher-order-proof :higher-order-call-facts})
+    (if (= :gravity/sh08-function-typed-core-template
+           (get typed :artifact))
+      (if (= 3 (get typed :schema-version))
+        (if (= :accepted (get typed :status))
+          (if (= :capture-free-higher-order-fixed-arity-one-hop
+                 (get typed :scope))
+            (if (= :host-resolved-b47-verification-boundary
+                   (get typed :authentication-status))
+              (if (sh09-adapter-module-valid? (get typed :module))
+                (if (= [] (get typed :diagnostics))
+                  (if (= (get typed :artifact-id-request)
+                         (get typed :identity-input))
+                    (if
+                     (sh09-adapter-function-facts-valid?
+                      (get typed :function-type-table)
+                      (get typed :module))
+                      (if
+                       (sh09-adapter-call-facts-valid?
+                        (get typed :call-type-facts)
+                        (get typed :module))
+                        (if
+                         (=
+                          {:artifact :gravity/typed-core
+                           :core-input (get typed :sh07-shaped-artifact-id)
+                           :module (get typed :module)
+                           :types (get typed :type-table)
+                           :constraints (get typed :constraint-ledger)
+                           :function-types
+                           (get typed :function-type-table)
+                           :local-bindings
+                           (get typed :local-binding-facts)
+                           :calls (get typed :call-type-facts)
+                           :diagnostics []
+                           :higher-order-proof
+                           (get typed :higher-order-proof)
+                           :higher-order-call-facts
+                           (get typed :higher-order-call-facts)}
+                          (get typed :typed-core))
+                          (if
+                           (sh09-exact-keys?
+                            (get typed :provenance)
+                            #{:actual-source-path})
+                            (if
+                               (sh09-exact-keys?
+                                verification
+                                #{:artifact :status :checks
+                                  :expected :candidate})
+                                (if
+                                 (=
+                                  :gravity/sh08-function-type-verification
+                                  (get verification :artifact))
+                                  (if (= :passed
+                                         (get verification :status))
+                                    (if (= typed
+                                           (get verification :expected))
+                                      (= typed
+                                         (get verification :candidate))
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-adapter-function-request [typed fact]
+  (let [module (get typed :module)
+        function-id
+        (if (= nil (get fact :caller-function-syntax-id))
+          (get fact :callee-function-syntax-id)
+          (get fact :caller-function-syntax-id))]
+    {:artifact :gravity/sh09-normalized-effect-request
+     :request-id (get fact :fact-id-request)
+     :core-node-id (get fact :call-core-node-id)
+     :syntax-id (get fact :syntax-id)
+     :source-span (get fact :source-span)
+     :origin-chain (get fact :origin-chain)
+     :function function-id
+     :namespace (get module :namespace)
+     :profile (get module :profile)
+     :target (get module :target)
+     :phase :build
+     :effect nil
+     :required-capability nil
+     :declared-effects #{}
+     :package-effects #{}
+     :deployment-effects #{}
+     :declared-capabilities #{}
+     :package-capabilities #{}
+     :deployment-capabilities #{}
+     :provider nil
+     :grant nil
+     :resource-subject nil
+     :build-policy {:hermetic true :allowed-effects #{}}
+     :safety-allowed true
+     :authority-mode :none
+     :replay-record nil
+     :ordering nil}))
+
+(defn sh09-adapter-function-products [typed]
+  (loop [remaining (get typed :call-type-facts)
+         requests []
+         legality-results []
+         nodes {}]
+    (if (= (count remaining) 0)
+      {:status :accepted
+       :requests requests
+       :legality-results legality-results
+       :nodes nodes}
+      (let [fact (first remaining)
+            request (sh09-adapter-function-request typed fact)
+            legality (sh09-check-effect-request request)]
+        (if (= :accepted (get legality :status))
+          (recur
+           (rest remaining)
+           (conj requests request)
+           (conj legality-results legality)
+           (assoc
+            nodes (get fact :call-core-node-id)
+            {:artifact :gravity/c8-effect-node
+             :core-node-id (get fact :call-core-node-id)
+             :direct #{}
+             :latent #{}
+             :transitive #{}
+             :ordering :pure
+             :source-span (get fact :source-span)
+             :syntax-id (get fact :syntax-id)
+             :origin-chain (get fact :origin-chain)
+             :generated-origin (get fact :generated-origin)
+             :type-fact-id
+             {:resolution :coordinator-digest-required
+              :identity-input (get fact :fact-id-request)}}))
+          {:status :rejected
+           :requests (conj requests request)
+           :legality-results (conj legality-results legality)
+           :nodes nodes
+           :diagnostics (get legality :diagnostics)})))))
+
+(defn sh09-adapter-function-effect-table [functions]
+  (loop [remaining functions result {}]
+    (if (= (count remaining) 0)
+      result
+      (let [function (first remaining)]
+        (recur
+         (rest remaining)
+         (assoc
+          result (get function :function-id)
+          {:function-id (get function :function-id)
+           :declared #{}
+           :inferred #{}
+           :latent #{}
+           :throws (get function :thrown-error-effects)
+           :capabilities #{}
+           :source-span (get function :source-span)}))))))
+
+(defn sh09-build-authenticated-function-effect-result [typed verification]
+  (let [products (sh09-adapter-function-products typed)
+        function-table
+        (sh09-adapter-function-effect-table
+         (get typed :function-type-table))]
+    (if (= :accepted (get products :status))
+      (let [effect-graph
+            {:artifact :gravity/c8-effect-graph
+             :module (get typed :module)
+             :nodes (get products :nodes)
+             :functions function-table
+             :namespace
+             {:declared #{} :inferred #{} :escaping #{} :handled []}
+             :build-effects []
+             :replay-required #{}
+             :ordering-constraints []
+             :residual-effects #{}
+             :diagnostics []}
+            identity-input
+            {:domain :gravity/sh09-authenticated-function-effected-core-v1
+             :sh08-shaped-artifact-id
+             (get typed :sh07-shaped-artifact-id)
+             :sh08-identity-input (get typed :identity-input)
+             :module (get typed :module)
+             :type-table (get typed :type-table)
+             :function-type-table (get typed :function-type-table)
+             :local-binding-facts (get typed :local-binding-facts)
+             :call-type-facts (get typed :call-type-facts)
+             :effect-requests (get products :requests)
+             :effect-legality-results (get products :legality-results)
+             :effect-graph effect-graph
+             :sh08-verification-checks (get verification :checks)
+             :pending
+             (get (sh09-authenticated-sh08-adapter-policy) :pending)}]
+        {:artifact :gravity/sh09-authenticated-effected-core-template
+         :schema-version 1
+         :status :accepted
+         :scope
+         :declared-pure-call-effects-with-thrown-effects-pending
+         :authentication-status :host-resolved-sh08-verification-boundary
+         :sh08-shaped-artifact-id (get typed :sh07-shaped-artifact-id)
+         :module (get typed :module)
+         :typed-core (get typed :typed-core)
+         :type-table (get typed :type-table)
+         :function-type-table (get typed :function-type-table)
+         :local-binding-facts (get typed :local-binding-facts)
+         :call-type-facts (get typed :call-type-facts)
+         :effect-requests (get products :requests)
+         :effect-legality-results (get products :legality-results)
+         :effect-graph effect-graph
+         :identity-input identity-input
+         :identity-resolution :coordinator-digest-required
+         :upstream-verification
+         {:artifact (get verification :artifact)
+          :status (get verification :status)
+          :checks (get verification :checks)}
+         :provenance (get typed :provenance)
+         :diagnostics []
+         :pending (get identity-input :pending)
+         :self-hosted? false
+         :clojure-seed-boundary? true})
+      {:artifact :gravity/sh09-authenticated-effected-core-template
+       :schema-version 1
+       :status :rejected
+       :scope :declared-pure-call-effects-with-thrown-effects-pending
+       :diagnostics (get products :diagnostics)
+       :pending
+       (get (sh09-authenticated-sh08-adapter-policy) :pending)})))
+
+(defn sh09-build-authenticated-pure-effect-result [typed verification]
+  (if (sh09-adapter-function-upstream-valid? typed verification)
+    (sh09-build-authenticated-function-effect-result typed verification)
+    (if (sh09-adapter-upstream-valid? typed verification)
+    (let [products (sh09-adapter-pure-products typed)]
+      (if (= :accepted (get products :status))
+        (let [effect-graph
+              {:artifact :gravity/c8-effect-graph
+               :module (get typed :module)
+               :nodes (get products :nodes)
+               :functions {}
+               :namespace
+               {:declared #{} :inferred #{} :escaping #{} :handled []}
+               :build-effects []
+               :replay-required #{}
+               :ordering-constraints []
+               :residual-effects #{}
+               :diagnostics []}
+              identity-input
+              {:domain :gravity/sh09-authenticated-pure-effected-core-v1
+               :sh08-artifact-id (get typed :artifact-id)
+               :sh08-identity-input (get typed :identity-input)
+               :module (get typed :module)
+               :type-table (get typed :type-table)
+               :type-facts (get typed :type-facts)
+               :effect-requests (get products :requests)
+               :effect-legality-results (get products :legality-results)
+               :effect-graph effect-graph
+               :sh08-verification-checks (get verification :checks)
+               :pending
+               (get (sh09-authenticated-sh08-adapter-policy) :pending)}]
+          {:artifact :gravity/sh09-authenticated-effected-core-template
+           :schema-version 1
+           :status :accepted
+           :scope :pure-authenticated-sh08-primitive-typed-core
+           :authentication-status :host-resolved-sh08-verification-boundary
+           :sh08-artifact-id (get typed :artifact-id)
+           :module (get typed :module)
+           :typed-core (get typed :typed-core)
+           :type-table (get typed :type-table)
+           :type-facts (get typed :type-facts)
+           :effect-requests (get products :requests)
+           :effect-legality-results (get products :legality-results)
+           :effect-graph effect-graph
+           :identity-input identity-input
+           :identity-resolution :coordinator-digest-required
+           :upstream-verification
+           {:artifact (get verification :artifact)
+            :status (get verification :status)
+            :checks (get verification :checks)}
+           :provenance (get typed :provenance)
+           :diagnostics []
+           :pending (get identity-input :pending)
+           :self-hosted? false
+           :clojure-seed-boundary? true})
+        {:artifact :gravity/sh09-authenticated-effected-core-template
+         :schema-version 1
+         :status :rejected
+         :scope :pure-authenticated-sh08-primitive-typed-core
+         :diagnostics (get products :diagnostics)
+         :pending
+         (get (sh09-authenticated-sh08-adapter-policy) :pending)}))
+    {:artifact :gravity/sh09-authenticated-effected-core-template
+     :schema-version 1
+     :status :rejected
+     :scope :pure-authenticated-sh08-primitive-typed-core
+     :diagnostics
+     [(sh09-adapter-diagnostic typed :untrusted-or-effectful-sh08-typed-core)]
+     :pending (get (sh09-authenticated-sh08-adapter-policy) :pending)})))
+
+(defn sh09-verify-authenticated-pure-effect-result
+  [typed verification candidate]
+  (let [expected
+        (sh09-build-authenticated-pure-effect-result typed verification)]
+    {:artifact :gravity/sh09-authenticated-effect-result-verification
+     :status (if (= expected candidate) :passed :rejected)
+     :checks [:fresh-sh08-verification-boundary
+              :exact-type-fact-preservation
+              :pure-effect-request-recomputation
+              :pure-effect-graph-recomputation
+              :path-neutral-identity-input
+              :separate-actual-path-provenance]
+     :expected expected
+     :candidate candidate}))
 
 (defn sh09-verify-effect-result [request candidate]
   (let [request-preflight (sh09-structural-preflight request)

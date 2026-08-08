@@ -8,9 +8,17 @@ The accepted fixture covers a pure operation, an explicitly authorized compiler
 IR read, and a replay-recorded hermetic build input. The rejected fixture
 constructs one request for each diagnostic family exercised by this slice.
 
-The fixtures do not claim transitive effect inference, handler checking,
-function summaries, runtime enforcement, an authenticated SH-08 adapter, or MIR
-preservation.
+The stage-owned adapter now accepts two narrow authenticated SH-08 inputs: the
+legacy primitive typed-core shape with pure type facts, and the current C7
+capture-free one-hop function-typed core when every declared call and latent
+effect set is empty. The latter preserves `[:pending-sh09]` thrown effects
+rather than treating them as discharged. Both paths recompute normalized pure
+C8 legality products and keep physical source paths outside semantic identity.
+
+The fixtures do not claim effectful adaptation, general effect inference,
+completed thrown effects, transitive effect inference, handler checking,
+function or module summaries, runtime enforcement, MIR preservation, or an
+authenticated C8-to-C9 adapter.
 
 The legality request and recomputed candidate are bounded before identity
 comparison: 8,192 nodes, depth 32, width 256, 32,768 scalar serialization

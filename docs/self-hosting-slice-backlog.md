@@ -511,7 +511,7 @@ and zero keyword-lookup products. Counts were derived rather than precommitted,
 the result requires a separate attestation, and no trusted reviewed attestation
 was created. It is therefore source-bound proof-candidate evidence only, not
 exact-authentic-coverage, aggregate, release, or seed-retirement authority.
-The C8 effect-checker source adds 44,102 authenticated bytes in 40 fragments
+The historical C8 effect-checker source added 44,102 authenticated bytes in 40 fragments
 containing 3,301 forms, 410 bindings, and 1,078 resolutions. It lowers to 2,788
 canonical core nodes with 40 definitions: 34 executable SH-09 functions and
 three quoted source-model functions. Its 178 `get` calls divide into 169
@@ -522,11 +522,25 @@ proof passed with exact source revision
 `sha256:8be72ed8adbe830992ee990ba0cb23bb06ce7d29859360afa7d937f0833e0096`,
 complete capability proof, and no failed checks. The bounded source recognizes
 `:error/raise` as a declared language-level effect with no capability,
-provider, grant, or resource subject. This does not establish a production
-effect checker, complete schema enforcement, an authenticated SH-08 adapter,
-effect inference, latent or transitive call effects, handlers, namespace or
-module summaries, complete runtime-profile policy, MIR preservation, or SH-09
-completion.
+provider, grant, or resource subject. That receipt is historical evidence for
+the 44,102-byte revision, not current evidence for the adapter revision.
+
+The current stage-owned C8 source is 73,997 bytes with hash
+`sha256:6f4a16abc758f47c9598ff211c3e465839990bba3dd75d74da49de907a78b080`.
+It adds a bounded authenticated SH-08 adapter for legacy pure primitive typed
+cores and the current capture-free one-hop function-typed core when all
+declared call and latent effect sets are empty. The adapter preserves
+`[:pending-sh09]` thrown effects, recomputes the existing C8 legality kernel,
+keeps physical path provenance out of semantic identity, and rejects altered
+upstream identities, facts, requests, or results. Four synthetic tests passed
+64 assertions, and one authenticated `.gravity` function-typed boundary passed
+27 assertions in 65.918 seconds with one cold carrier; its `.qst` twin was not
+built. These are non-authoritative development results. A fresh source-bound
+C8 proof candidate and derived census remain required. This does not establish
+a production effect checker, complete schema enforcement, effectful adaptation,
+general effect inference, completed thrown effects, latent or transitive call
+effects, handlers, namespace or module summaries, complete runtime-profile
+policy, MIR preservation, C8-to-C9 adaptation, or SH-09 completion.
 The C9 ownership-checker source adds 35,894 authenticated bytes in 31
 fragments containing 2,320 forms, 370 bindings, and 741 resolutions. It lowers
 to 1,964 canonical core nodes with 31 definitions: 21 executable SH-10

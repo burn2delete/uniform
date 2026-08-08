@@ -94,27 +94,42 @@
     (is (runner/authoritative-coverage-census-valid?
          (matching-contract value) "c7-types" value))))
 
-(deftest proof-contract-binds-the-measured-c7-census
+(deftest proof-contract-binds-current-source-bound-modules
   (let [contract
         (edn/read-string
          (slurp
           (io/resource "gravity/self_hosting/sh07_proof_contract.edn")))
-        expectation
+        c7-expectation
         (get-in contract
                 [:authoritative-coverage-census
-                 :module-expectations :c7-types])]
+                 :module-expectations :c7-types])
+        c8-expectation
+        (get-in contract
+                [:authoritative-coverage-census
+                 :module-expectations :c8-effects])
+        source-contracts (runner/module-source-contracts)]
     (is (= :source-bound-derived
            (:coverage-census-policy contract)))
     (is (= {:source-byte-count 210220
             :source-bytes-sha256
             "sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4"}
-           (:source-binding expectation)))
-    (is (not (contains? expectation :request-counts)))
-    (is (not (contains? expectation :core-counts)))
+           (:source-binding c7-expectation)))
+    (is (not (contains? c7-expectation :request-counts)))
+    (is (not (contains? c7-expectation :core-counts)))
     (is (= {:source-path
             "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
-            :source-binding (:source-binding expectation)}
-           (get (runner/module-source-contracts) "c7-types")))))
+            :source-binding (:source-binding c7-expectation)}
+           (get source-contracts "c7-types")))
+    (is (= {:source-byte-count 73997
+            :source-bytes-sha256
+            "sha256:6f4a16abc758f47c9598ff211c3e465839990bba3dd75d74da49de907a78b080"}
+           (:source-binding c8-expectation)))
+    (is (not (contains? c8-expectation :request-counts)))
+    (is (not (contains? c8-expectation :core-counts)))
+    (is (= {:source-path
+            "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+            :source-binding (:source-binding c8-expectation)}
+           (get source-contracts "c8-effects")))))
 
 (deftest source-contract-mismatch-stops-before-authoritative-proof
   (let [source-reader

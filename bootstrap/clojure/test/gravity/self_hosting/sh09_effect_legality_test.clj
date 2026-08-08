@@ -153,7 +153,9 @@
            (:structural-bounds policy)))
     (is (contains? (:effects policy) :compiler/read-ir))
     (is (contains? (:effects policy) :build/read-file))
-    (is (some #{:authenticated-sh08-adapter} (:pending policy))))
+    (is (not-any? #{:authenticated-sh08-adapter} (:pending policy)))
+    (is (some #{:authenticated-sh08-function-and-effectful-adapters}
+              (:pending policy))))
   (is (= (slurp
           (path
            (fixture-relative-path

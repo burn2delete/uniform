@@ -46,6 +46,20 @@ clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M 
   upgrading those claims. Missing, unknown, or mixed policy fields fail before
   an expensive proof transaction starts.
 
+The current C8 adapter revision is 73,997 bytes with source hash
+`sha256:6f4a16abc758f47c9598ff211c3e465839990bba3dd75d74da49de907a78b080`.
+Its cheap synthetic lane passed four tests and 64 assertions; its single
+authenticated SH-08 function-typed `.gravity` boundary passed 27 assertions in
+65.918 seconds with one cold carrier. These are non-authoritative development
+receipts. The adapter is limited to legacy pure primitive typed cores and the
+current capture-free one-hop function-typed core with empty declared call and
+latent effects; thrown effects remain `[:pending-sh09]`. Keep `.qst` to byte
+parity, do not rerun C7 authority for this C8-only change, and require a new
+`c8-effects` source-bound-derived proof candidate after source and contract
+freeze. That candidate still requires a separately trusted reviewed
+attestation and cannot claim exact-authentic coverage, aggregate, or release
+authority.
+
 ## Lane order
 
 Use the first lane that answers the question. Re-run the routing/plan check

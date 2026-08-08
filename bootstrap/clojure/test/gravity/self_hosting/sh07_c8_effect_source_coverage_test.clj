@@ -32,9 +32,9 @@
   "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 44102)
+(def ^:private expected-source-byte-count 73997)
 (def ^:private expected-source-revision-id
-  "sha256:8be72ed8adbe830992ee990ba0cb23bb06ce7d29859360afa7d937f0833e0096")
+  "sha256:6f4a16abc758f47c9598ff211c3e465839990bba3dd75d74da49de907a78b080")
 (def ^:private expected-coverage
   {:fragment-count 40
    :root-form-count 40
@@ -71,7 +71,10 @@
     verify-c8-effect-checker
     sh09-effect-policy
     sh09-check-effect-request
-    sh09-verify-effect-result])
+    sh09-verify-effect-result
+    sh09-authenticated-sh08-adapter-policy
+    sh09-build-authenticated-pure-effect-result
+    sh09-verify-authenticated-pure-effect-result])
 (def ^:private expected-definition-names
   '#{c8-effect-graph-contract
      c8-effect-legality-contract
@@ -112,6 +115,27 @@
      sh09-replay-record-valid?
      sh09-accepted
      sh09-check-effect-request
+     sh09-authenticated-sh08-adapter-policy
+     sh09-adapter-type-fact-valid?
+     sh09-adapter-type-table-valid?
+     sh09-adapter-type-facts-valid?
+     sh09-adapter-module-valid?
+     sh09-adapter-upstream-identity-valid?
+     sh09-adapter-upstream-valid?
+     sh09-adapter-pure-request
+     sh09-adapter-pure-products
+     sh09-adapter-diagnostic
+     sh09-adapter-function-fact-valid?
+     sh09-adapter-function-facts-valid?
+     sh09-adapter-call-fact-valid?
+     sh09-adapter-call-facts-valid?
+     sh09-adapter-function-upstream-valid?
+     sh09-adapter-function-request
+     sh09-adapter-function-products
+     sh09-adapter-function-effect-table
+     sh09-build-authenticated-function-effect-result
+     sh09-build-authenticated-pure-effect-result
+     sh09-verify-authenticated-pure-effect-result
      sh09-verify-effect-result})
 (def ^:private quoted-definition-names
   '#{build-c8-effect-node
@@ -172,7 +196,7 @@
     :handled-effects
     :namespace-and-module-summaries
     :runtime-profile-policy
-    :authenticated-sh08-adapter
+    :authenticated-sh08-function-and-effectful-adapters
     :mir-preservation]})
 (def ^:private expected-registry
   {:error/raise
@@ -374,7 +398,7 @@
 (def ^:private expected-nonclaims
   #{:c8-production-effect-checker-execution
     :c8-contract-and-diagnostic-schema-enforcement
-    :sh09-authenticated-sh08-adapter
+    :sh09-authenticated-sh08-function-and-effectful-adapters
     :sh09-effect-inference-and-transitive-call-effects
     :sh09-handled-effects-and-module-summaries
     :sh09-runtime-profile-policy
@@ -455,6 +479,12 @@
        entry)
      value)
     @found))
+
+(defn- invalid-source-if-forms
+  [forms]
+  (vec
+   (filter #(not= 4 (count %))
+           (mapcat #(collect-calls 'if %) forms))))
 
 (defn- parse-registry
   [form]
@@ -612,7 +642,7 @@
         source-text
         (String. (source-bytes (path c8-relative-path))
                  java.nio.charset.StandardCharsets/UTF_8)]
-    (is (= "SH-07-B29" (:coverage-milestone contract)))
+    (is (= "SH-07-B47" (:coverage-milestone contract)))
     (is (= c8-relative-path
            (get-in contract [:authoritative-modules :c8-effects])))
     (is (= {:keyword-lookups 0}
@@ -701,7 +731,7 @@
           #(filter keyword?
                    (tree-seq coll? seq (nth % 3)))
           rejection-calls))]
-    (is (= 41 (count forms)))
+    (is (= 62 (count forms)))
     (is (= 'gravity.compiler.c8-effect-checker-engine
            (second namespace-form)))
     (is (= :meta (:profile namespace-clauses)))
@@ -753,7 +783,7 @@
     (is (= expected-definition-names (set (keys definition-forms))))
     (is (= 6 (count (filter #(= 'def (first %))
                             (vals definition-forms)))))
-    (is (= 34 (count (filter #(= 'defn (first %))
+    (is (= 55 (count (filter #(= 'defn (first %))
                              (vals definition-forms)))))
     (is (= quoted-definition-names
            (set
@@ -761,7 +791,7 @@
                   :when (quoted-body form)]
               name))))
     (is (= expected-executable-sh09-names executable-names))
-    (is (= 31 (count executable-names)))
+    (is (= 52 (count executable-names)))
     (is (= expected-policy (nth policy-form 3)))
     (is (= expected-registry (parse-registry registry-form)))
     (is (= expected-diagnostic-catalog
@@ -798,6 +828,19 @@
                           ":effect-result-substitution"))
     (is (string/includes? (pr-str verifier-form)
                           ":effect-result-structural-bound"))))
+
+(deftest sh07-b29-c8-source-control-form-arities-are-bounded
+  (let [forms (source-forms)
+        form-node-counts
+        (mapv #(count (tree-seq coll? seq %)) forms)]
+    (is (empty? (invalid-source-if-forms forms)))
+    (is (= '[(if true)]
+           (invalid-source-if-forms '[(if true)])))
+    (is (= '[(if true :then :else :extra)]
+           (invalid-source-if-forms
+            '[(if true :then :else :extra)])))
+    (is (<= (apply max form-node-counts) 1024)
+        "Conservative reader-tree admission is not the authoritative C6 form-id census")))
 
 (deftest sh07-b29-c8-structural-limitations-remain-explicit
   (let [forms (source-forms)

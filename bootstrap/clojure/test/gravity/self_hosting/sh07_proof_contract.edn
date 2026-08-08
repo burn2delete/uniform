@@ -299,7 +299,13 @@
     :source-binding
     {:source-byte-count 210220
      :source-bytes-sha256
-     "sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4"}}}}
+     "sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4"}}
+   :c8-effects
+   {:module-namespace gravity.compiler.c8-effect-checker-engine
+    :source-binding
+    {:source-byte-count 73997
+     :source-bytes-sha256
+     "sha256:6f4a16abc758f47c9598ff211c3e465839990bba3dd75d74da49de907a78b080"}}}}
  :required-request-products
  [:fragment-manifest :fragment-coverage :module-assembly-manifest]
  :required-core-products
@@ -384,7 +390,7 @@
   :sh08-complete
   :c8-production-effect-checker-execution
   :c8-contract-and-diagnostic-schema-enforcement
-  :sh09-authenticated-sh08-adapter
+  :sh09-authenticated-sh08-function-and-effectful-adapters
   :sh09-effect-inference-and-transitive-call-effects
   :sh09-handled-effects-and-module-summaries
   :sh09-runtime-profile-policy
