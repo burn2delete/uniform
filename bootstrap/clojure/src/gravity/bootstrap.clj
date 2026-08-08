@@ -142069,11 +142069,6 @@
    :registered-tags ['inst 'uuid]
    :ambient-authority :denied})
 
-(def standard-reader-options
-  {:retain-comments true
-   :enabled-features #{:standard-reader}
-   :extension-policy (reader-canonical-hash standard-reader-policy)})
-
 (defn reader-project-root-path
   [source-path]
   (let [source-file (.getCanonicalFile (java.io.File. source-path))
@@ -142304,6 +142299,7 @@
   (c2-artifact-identity-call
    :c2-reader-artifact-id
    c2-artifact-identity/c2-reader-artifact-id artifact))
+
 (defn c2-prevalidate-token-depth!
   [source-path source-unit token-stream]
   (loop [tokens token-stream
@@ -144792,6 +144788,15 @@
   (c2-lexical-validation-call
    c2-lexical-validation/c2-lexical-product-validation
    source-text token-stream form-tree root-form-ids))
+
+;; Keep the reader policy value after all C2 artifact-identity operation Vars
+;; used by its strict validation boundary are bound.  The policy hash is
+;; computed while this namespace is loading; defining it earlier would pass an
+;; unbound c2-form-graph-metrics Var into c2-artifact-identity/with-operations.
+(def standard-reader-options
+  {:retain-comments true
+   :enabled-features #{:standard-reader}
+   :extension-policy (reader-canonical-hash standard-reader-policy)})
 
 (defn c2-reader-capability-proof
   [artifact]

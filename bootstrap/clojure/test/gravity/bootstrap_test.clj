@@ -10729,6 +10729,24 @@
         (is (false? (:acyclic? report)))
         (is (= [[]] @calls))))))
 
+(deftest c2-artifact-identity-load-order-initializes-standard-reader-options
+  (testing "the policy hash is initialized only after strict C2 ops are bound"
+    (is (bound? #'bootstrap/standard-reader-options))
+    (is (= {:retain-comments true
+            :enabled-features #{:standard-reader}}
+           (select-keys bootstrap/standard-reader-options
+                        [:retain-comments :enabled-features])))
+    (is (= (c2-artifact-identity/with-operations
+             {:sha256-hex bootstrap/sha256-hex}
+             #(c2-artifact-identity/reader-canonical-hash
+               bootstrap/standard-reader-policy))
+           (:extension-policy bootstrap/standard-reader-options)))
+    ;; The load-order fix must not relax the leaf's eager operation contract.
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (c2-artifact-identity/with-operations
+                  {:c2-incremental-hashes :not-a-function}
+                  (constantly :unreachable))))))
+
 (deftest c2-artifact-identity-compatibility-wrappers-preserve-interposition
   (doseq [[wrapper-var expected]
           [[#'bootstrap/reader-canonical-value '([value])]
@@ -10961,11 +10979,16 @@
                     (fn [& args]
                       (swap! failure-calls conj args))]
         (bootstrap/c2-incremental-hashes source-unit [] [] [] [] []))
-      (is (= :reader-resource-depth-limit
-             (get-in (first @failure-calls) [3 :facts :failure-kind])))
-      (is (= bootstrap/max-reader-form-graph-depth
-             (get-in (first @failure-calls)
-                     [3 :facts :maximum-form-depth]))))))
+      (is (= 1 (count @failure-calls)))
+      (let [[id path _ extra] (first @failure-calls)]
+        (is (= "C2-HASH" id))
+        (is (= source-path path))
+        (is (= :reader-resource-depth-limit
+               (get-in extra [:facts :failure-kind])))
+        (is (= (inc bootstrap/max-reader-form-graph-depth)
+               (get-in extra [:facts :observed-form-depth])))
+        (is (= bootstrap/max-reader-form-graph-depth
+               (get-in extra [:facts :maximum-form-depth])))))))
 
 (deftest reader-artifact-preserves-l1-syntax-data
   (let [artifact (bootstrap/read-file-artifact (fixture "accepted/surface-syntax.gravity"))
