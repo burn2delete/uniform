@@ -279,6 +279,244 @@ class VerifyDevelopmentTests(unittest.TestCase):
                     record["resource"]["authority"],
                     "non-authoritative-admission-estimate",
                 )
+            self.assertEqual("process-tree-sampling", executed["checks"][0]["resource_observation"]["source"])
+            self.assertEqual(0.25, executed["checks"][0]["resource_observation"]["sample_interval_seconds"])
+            self.assertFalse(executed["checks"][0]["resource_observation"]["authoritative"])
+            for record in (planned["checks"][0], reused["checks"][0], records[-1]):
+                self.assertEqual("not-executed", record["resource_observation"]["source"])
+                self.assertEqual(0, record["resource_observation"]["sample_count"])
+
+    def test_observed_resource_exceedance_fails_and_is_not_cached(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-resource-exceeded-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            cache = root / "cache.json"
+            manifest = manifest_for(check("over", [sys.executable, "-c", "pass"]))
+            measurement = {
+                "process_count": 2, "rss_bytes": 129 * 1024 * 1024,
+                "cpu_percent": 0.0, "telemetry_available": True,
+                "telemetry_error": None,
+            }
+            with mock.patch.object(verifier, "process_tree_metrics", return_value=measurement):
+                receipt = verifier.run_verification(manifest, root, all_checks=True, cache_path=cache)
+            record = receipt["checks"][0]
+            self.assertEqual("failed", record["status"])
+            self.assertEqual("resource-budget-exceeded", record["reason"])
+            self.assertFalse(record["cacheable"])
+            self.assertTrue(record["resource_observation"]["rss_exceeded"])
+            self.assertTrue(record["resource_observation"]["processes_exceeded"])
+            self.assertFalse(cache.exists())
+
+    def test_unavailable_resource_telemetry_is_explicit_and_non_authoritative(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-resource-unavailable-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            manifest = manifest_for(check("unknown", [sys.executable, "-c", "pass"]))
+            unavailable = {
+                "process_count": None, "rss_bytes": None, "cpu_percent": None,
+                "telemetry_available": False, "telemetry_error": "ps unavailable",
+            }
+            with mock.patch.object(verifier, "process_tree_metrics", return_value=unavailable):
+                receipt = verifier.run_verification(manifest, root, all_checks=True)
+            record = receipt["checks"][0]
+            self.assertEqual("passed", record["status"])
+            observation = record["resource_observation"]
+            self.assertEqual(
+                {
+                    "source", "sample_count", "sample_interval_seconds", "peak_rss_bytes",
+                    "peak_process_count", "telemetry_available", "telemetry_error",
+                    "declared_reserved_rss_bytes", "declared_reserved_processes",
+                    "rss_exceeded", "processes_exceeded", "authoritative",
+                },
+                set(observation),
+            )
+            self.assertFalse(observation["telemetry_available"])
+            self.assertEqual("ps unavailable", observation["telemetry_error"])
+            self.assertIsNone(observation["rss_exceeded"])
+            self.assertIsNone(observation["processes_exceeded"])
+            self.assertFalse(observation["authoritative"])
+            self.assertFalse(any(thread.name == "gravity-resource-sampler" for thread in verifier.threading.enumerate()))
+
+    def test_slow_initial_telemetry_cannot_extend_command_execution_deadline(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-slow-telemetry-") as directory:
+            root = Path(directory)
+            side_effect = root / "too-late"
+            command = [
+                sys.executable, "-c",
+                f"import time; from pathlib import Path; time.sleep(0.2); Path({str(side_effect)!r}).write_text('bad')",
+            ]
+
+            def slow_metrics(_pid: int) -> dict[str, object]:
+                time.sleep(0.3)
+                return {
+                    "process_count": None, "rss_bytes": None, "cpu_percent": None,
+                    "telemetry_available": False, "telemetry_error": "slow test sampler",
+                }
+
+            started = time.monotonic()
+            with mock.patch.object(verifier, "process_tree_metrics", side_effect=slow_metrics):
+                outcome = verifier._run_command(
+                    command, cwd=root, env=os.environ.copy(), timeout=0.1,
+                    marker="slow-telemetry-deadline-test",
+                )
+            elapsed = time.monotonic() - started
+            time.sleep(0.25)
+            self.assertTrue(outcome["timed_out"])
+            self.assertFalse(side_effect.exists())
+            self.assertLess(elapsed, 1.5)
+            self.assertFalse(any(thread.name == "gravity-resource-sampler" for thread in verifier.threading.enumerate()))
+
+    @unittest.skipUnless(os.name == "posix", "process-group escalation requires POSIX")
+    def test_timeout_sigterm_ignoring_group_is_killed_reaped_and_terminal_safe(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-ignore-term-") as directory:
+            root = Path(directory)
+            outcome = verifier._run_command(
+                [
+                    sys.executable,
+                    "-c",
+                    "import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(10)",
+                ],
+                cwd=root,
+                env=os.environ.copy(),
+                timeout=0.2,
+                marker="ignore-term-deadline-test",
+            )
+            cleanup = outcome["cleanup"]
+            self.assertTrue(outcome["timed_out"])
+            self.assertIsNotNone(outcome["returncode"])
+            self.assertTrue(cleanup["term_sent"])
+            self.assertTrue(cleanup["kill_sent"])
+            self.assertFalse(cleanup["group_alive"])
+            self.assertEqual(cleanup["escaped_alive"], [])
+            self.assertEqual(cleanup["marker_alive"], [])
+            self.assertTrue(cleanup["terminal_safe"])
+            self.assertFalse(verifier._process_group_alive(cleanup["process_group"]))
+
+    def test_terminal_census_exception_joins_sampler_and_preserves_exception(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-census-exception-") as directory:
+            root = Path(directory)
+            with mock.patch.object(
+                verifier,
+                "_marker_processes",
+                side_effect=RuntimeError("injected terminal census exception"),
+            ):
+                with self.assertRaisesRegex(RuntimeError, "injected terminal census exception"):
+                    verifier._run_command(
+                        [sys.executable, "-c", "import time; time.sleep(0.05)"],
+                        cwd=root,
+                        env=os.environ.copy(),
+                        timeout=1.0,
+                        marker="terminal-census-exception-test",
+                    )
+            self.assertFalse(
+                any(thread.name == "gravity-resource-sampler" for thread in verifier.threading.enumerate())
+            )
+
+    def test_terminal_census_error_refreshes_cleanup_safety(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-census-error-") as directory:
+            root = Path(directory)
+            with mock.patch.object(
+                verifier,
+                "_marker_processes",
+                return_value=({}, "injected terminal census failure"),
+            ):
+                outcome = verifier._run_command(
+                    [sys.executable, "-c", "pass"],
+                    cwd=root,
+                    env=os.environ.copy(),
+                    timeout=1.0,
+                    marker="terminal-census-error-test",
+                )
+            self.assertEqual(
+                outcome["cleanup"]["census_error"],
+                "injected terminal census failure",
+            )
+            self.assertFalse(outcome["cleanup"]["terminal_safe"])
+            self.assertTrue(outcome["supervision_failed"])
+
+    def test_expired_supervisor_setup_deadline_never_releases_target(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-slow-supervisor-") as directory:
+            root = Path(directory)
+            side_effect = root / "must-not-run"
+            command = [sys.executable, "-c", f"from pathlib import Path; Path({str(side_effect)!r}).write_text('bad')"]
+            original_start = verifier._ProcessSupervisor.start
+
+            def slow_start(supervisor: verifier._ProcessSupervisor) -> bool:
+                time.sleep(0.1)
+                return original_start(supervisor)
+
+            with mock.patch.object(verifier._ProcessSupervisor, "start", slow_start):
+                outcome = verifier._run_command(
+                    command, cwd=root, env=os.environ.copy(), timeout=0.05,
+                    marker="slow-supervisor-deadline-test",
+                )
+            self.assertTrue(outcome["timed_out"])
+            self.assertFalse(outcome["supervision_failed"])
+            self.assertFalse(side_effect.exists())
+            self.assertEqual("not-executed", outcome["resource_sample"]["source"])
+
+    @unittest.skipUnless(os.name == "posix", "launch barriers require POSIX")
+    def test_barrier_release_exception_reaps_child_closes_fds_and_preserves_error(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-barrier-release-error-") as directory:
+            root = Path(directory)
+            side_effect = root / "must-not-run"
+            command = [
+                sys.executable,
+                "-c",
+                f"from pathlib import Path; Path({str(side_effect)!r}).write_text('bad')",
+            ]
+            original_pipe = os.pipe
+            original_write = os.write
+            original_popen = subprocess.Popen
+            launch_fds: dict[str, int] = {}
+            launched: list[subprocess.Popen[str]] = []
+
+            def tracked_pipe() -> tuple[int, int]:
+                read_fd, write_fd = original_pipe()
+                if not launch_fds:
+                    launch_fds.update(read=read_fd, write=write_fd)
+                return read_fd, write_fd
+
+            def fail_barrier_release(fd: int, data: bytes) -> int:
+                if fd == launch_fds.get("write"):
+                    raise BrokenPipeError("injected barrier release failure")
+                return original_write(fd, data)
+
+            def tracked_popen(*args, **kwargs):
+                process = original_popen(*args, **kwargs)
+                if kwargs.get("env", {}).get("_GRAVITY_VERIFIER_RUN") == "barrier-release-error-test":
+                    launched.append(process)
+                return process
+
+            with (
+                mock.patch.object(verifier.os, "pipe", side_effect=tracked_pipe),
+                mock.patch.object(verifier.os, "write", side_effect=fail_barrier_release),
+                mock.patch.object(verifier.subprocess, "Popen", side_effect=tracked_popen),
+            ):
+                with self.assertRaisesRegex(BrokenPipeError, "injected barrier release failure"):
+                    verifier._run_command(
+                        command,
+                        cwd=root,
+                        env=os.environ.copy(),
+                        timeout=1.0,
+                        marker="barrier-release-error-test",
+                    )
+
+            self.assertEqual(len(launched), 1)
+            process = launched[0]
+            self.assertIsNotNone(process.poll())
+            self.assertTrue(process.stdout is not None and process.stdout.closed)
+            self.assertTrue(process.stderr is not None and process.stderr.closed)
+            for launch_fd in launch_fds.values():
+                with self.assertRaises(OSError):
+                    os.fstat(launch_fd)
+            self.assertFalse(side_effect.exists())
+            marker_processes, marker_error = verifier._marker_processes("barrier-release-error-test")
+            self.assertIsNone(marker_error)
+            self.assertEqual(marker_processes, {})
+            self.assertFalse(
+                any(thread.name == "gravity-resource-sampler" for thread in verifier.threading.enumerate())
+            )
 
     def test_capacity_lock_busy_blocks_before_any_subprocess_launch(self) -> None:
         with tempfile.TemporaryDirectory(prefix="gravity-capacity-busy-") as directory:
@@ -973,7 +1211,12 @@ class VerifyDevelopmentTests(unittest.TestCase):
             def counting_run(*args, **kwargs):
                 nonlocal census_calls
                 argv = args[0] if args else kwargs.get("args", [])
-                if argv and Path(str(argv[0])).name == "ps":
+                if (
+                    argv
+                    and Path(str(argv[0])).name == "ps"
+                    and "eww" in argv
+                    and "-axo" in argv
+                ):
                     census_calls += 1
                 return original_run(*args, **kwargs)
 

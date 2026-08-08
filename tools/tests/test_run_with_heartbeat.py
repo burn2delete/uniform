@@ -14,11 +14,16 @@ import unittest
 
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
+sys.path.insert(0, str(TOOLS.parent))
 
 import run_with_heartbeat as runner  # noqa: E402
+from tools import process_tree_telemetry as telemetry  # noqa: E402
 
 
 class LongRunHeartbeatTests(unittest.TestCase):
+    def test_process_tree_metrics_is_reexported_from_shared_library(self) -> None:
+        self.assertIs(runner.process_tree_metrics, telemetry.process_tree_metrics)
+
     def private_lock_path(self) -> Path:
         path = Path("/private/tmp") / (
             f"gravity-heartbeat-{os.getpid()}-{time.time_ns()}.lock"

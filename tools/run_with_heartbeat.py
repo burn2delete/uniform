@@ -18,8 +18,10 @@ import uuid
 
 try:
     from tools import shared_heavy_lock as locks
+    from tools.process_tree_telemetry import process_tree_metrics
 except ImportError:
     import shared_heavy_lock as locks
+    from process_tree_telemetry import process_tree_metrics
 
 
 SCHEMA = "gravity/long-running-command-status-v1"
@@ -38,40 +40,6 @@ def atomic_json_write(path: Path, value: dict[str, object]) -> None:
         stream.flush()
         os.fsync(stream.fileno())
     os.replace(temporary, path)
-
-
-def process_tree_metrics(root_pid: int) -> dict[str, object]:
-    """Return best-effort aggregate RSS and CPU for a local process tree."""
-    try:
-        result = subprocess.run(
-            ["ps", "-axo", "pid=,ppid=,rss=,%cpu="],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        rows: dict[int, tuple[int, int, float]] = {}
-        for line in result.stdout.splitlines():
-            fields = line.split()
-            if len(fields) != 4:
-                continue
-            pid, ppid, rss_kib = map(int, fields[:3])
-            rows[pid] = (ppid, rss_kib, float(fields[3]))
-        descendants = {root_pid}
-        changed = True
-        while changed:
-            changed = False
-            for pid, (ppid, _, _) in rows.items():
-                if pid not in descendants and ppid in descendants:
-                    descendants.add(pid)
-                    changed = True
-        present = [rows[pid] for pid in descendants if pid in rows]
-        return {
-            "process_count": len(present),
-            "rss_bytes": sum(row[1] for row in present) * 1024,
-            "cpu_percent": round(sum(row[2] for row in present), 2),
-        }
-    except (OSError, subprocess.SubprocessError, ValueError):
-        return {"process_count": None, "rss_bytes": None, "cpu_percent": None}
 
 
 class DurableLog:

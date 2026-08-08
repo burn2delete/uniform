@@ -60,6 +60,14 @@ class PythonToolingContractTests(unittest.TestCase):
         self.assertEqual(["filesystem-read", "filesystem-write"], support["effects"])
         self.assertEqual(["tooling-support"], process["allowed_dependency_categories"])
 
+    def test_process_tree_telemetry_is_one_nonauthoritative_support_component(self) -> None:
+        support = self.component(self.contract, "process-tree-telemetry-support")
+        self.assertEqual(["tools/process_tree_telemetry.py"], support["includes"])
+        self.assertEqual("tooling-support", support["category"])
+        self.assertEqual("none", support["authority_ceiling"])
+        self.assertEqual([], support["allowed_dependency_categories"])
+        self.assertEqual(["process", "host-metrics"], support["effects"])
+
     def test_duplicate_json_key_is_rejected(self) -> None:
         with self.assertRaises(validator.DuplicateKeyError):
             json.loads('{"schema_version": 1, "schema_version": 2}', object_pairs_hook=validator._object_no_duplicates)

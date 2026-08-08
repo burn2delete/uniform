@@ -41,6 +41,11 @@ import threading
 import time
 from typing import Any, Iterable, Mapping, Sequence
 
+try:
+    from tools.process_tree_telemetry import process_tree_metrics
+except ImportError:
+    from process_tree_telemetry import process_tree_metrics
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = Path(__file__).with_name("development_verification_manifest.json")
@@ -55,6 +60,7 @@ CANONICAL_HEAVY_LOCK = "/tmp/gravity-sh07-heavy.lock"
 _GLOB_CHARS = frozenset("*?[")
 _MAX_OUTPUT_BYTES = 64 * 1024
 _MUTATION_POLL_SECONDS = 0.05
+_RESOURCE_SAMPLE_SECONDS = 0.25
 _PROCESS_TERM_GRACE_SECONDS = 0.5
 _PROCESS_KILL_GRACE_SECONDS = 0.5
 _LAUNCH_WRAPPER = (
@@ -1905,9 +1911,25 @@ class _ProcessSupervisor:
         except OSError as exc:
             self._error = f"launch process group could not be captured: {exc}"
             return False
+        record, record_error = _target_process_record(self.root_pid)
+        if record_error:
+            self._error = record_error
+            return False
+        if record is None:
+            self._error = "launch process identity could not be captured"
+            return False
+        if int(record.get("pgid", 0)) != pgid:
+            self._error = "launch process group identity changed during capture"
+            return False
         self._observed[self.root_pid] = {
             "pgid": pgid,
-            "start_identity": None,
+            "start_identity": record.get("start_identity"),
+            # The Popen PID was captured while its private launch pipe still
+            # blocked exec. Exact start/PGID revalidation is therefore enough
+            # to authenticate this root even if a host truncates ``ps eww``
+            # before the environment marker. Descendants do not receive this
+            # exemption and must still expose the marker.
+            "launch_barrier_authenticated": True,
         }
         return True
 
@@ -1915,15 +1937,120 @@ class _ProcessSupervisor:
         return {"processes": {pid: dict(value) for pid, value in self._observed.items()}, "error": self._error}
 
 
+class _ResourceSampler:
+    """Bounded best-effort sampler for one already-launched process tree."""
+
+    def __init__(self, root_pid: int, interval: float = _RESOURCE_SAMPLE_SECONDS):
+        self.root_pid = root_pid
+        self.interval = interval
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._lock = threading.Lock()
+        self._sample_count = 0
+        self._peak_rss_bytes: int | None = None
+        self._peak_process_count: int | None = None
+        self._error: str | None = None
+        self._shutdown_complete = False
+
+    def _sample(self) -> None:
+        metrics = process_tree_metrics(self.root_pid)
+        available = metrics.get("telemetry_available") is True
+        rss_bytes = metrics.get("rss_bytes")
+        process_count = metrics.get("process_count")
+        with self._lock:
+            if available and type(rss_bytes) is int and type(process_count) is int:
+                self._sample_count += 1
+                self._peak_rss_bytes = max(self._peak_rss_bytes or 0, rss_bytes)
+                self._peak_process_count = max(self._peak_process_count or 0, process_count)
+            elif self._sample_count == 0:
+                error = metrics.get("telemetry_error")
+                self._error = str(error) if error else "process-tree telemetry unavailable"
+
+    def start(self) -> None:
+        def sample_until_stopped() -> None:
+            self._sample()
+            while not self._stop.wait(self.interval):
+                self._sample()
+
+        self._thread = threading.Thread(
+            target=sample_until_stopped,
+            name="gravity-resource-sampler",
+            daemon=True,
+        )
+        self._thread.start()
+
+    def shutdown(self) -> None:
+        """Stop and join the sampler without taking a terminal sample."""
+
+        if self._shutdown_complete:
+            return
+        self._stop.set()
+        if self._thread is not None:
+            self._thread.join(timeout=max(1.0, self.interval * 4))
+        self._shutdown_complete = True
+
+    def stop(self) -> dict[str, Any]:
+        self.shutdown()
+        self._sample()
+        with self._lock:
+            available = self._sample_count > 0
+            return {
+                "source": "process-tree-sampling",
+                "sample_count": self._sample_count,
+                "sample_interval_seconds": self.interval,
+                "peak_rss_bytes": self._peak_rss_bytes,
+                "peak_process_count": self._peak_process_count,
+                "telemetry_available": available,
+                "telemetry_error": None if available else self._error,
+            }
+
+
+def _not_executed_resource_observation(resource: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "source": "not-executed",
+        "sample_count": 0,
+        "sample_interval_seconds": None,
+        "peak_rss_bytes": None,
+        "peak_process_count": None,
+        "telemetry_available": False,
+        "telemetry_error": None,
+        "declared_reserved_rss_bytes": int(resource["reserved_rss_mb"]) * 1024 * 1024,
+        "declared_reserved_processes": int(resource["reserved_processes"]),
+        "rss_exceeded": None,
+        "processes_exceeded": None,
+        "authoritative": False,
+    }
+
+
+def _resource_observation(
+    sampled: Mapping[str, Any], resource: Mapping[str, Any]
+) -> dict[str, Any]:
+    reserved_rss = int(resource["reserved_rss_mb"]) * 1024 * 1024
+    reserved_processes = int(resource["reserved_processes"])
+    available = sampled.get("telemetry_available") is True
+    peak_rss = sampled.get("peak_rss_bytes") if available else None
+    peak_processes = sampled.get("peak_process_count") if available else None
+    return {
+        **sampled,
+        "declared_reserved_rss_bytes": reserved_rss,
+        "declared_reserved_processes": reserved_processes,
+        "rss_exceeded": peak_rss > reserved_rss if type(peak_rss) is int else None,
+        "processes_exceeded": peak_processes > reserved_processes if type(peak_processes) is int else None,
+        "authoritative": False,
+    }
+
+
 def _terminate_process_tree(
     process: subprocess.Popen[str], extra_processes: Mapping[int, Mapping[str, Any]] | None = None,
     marker: str | None = None,
+    *,
+    term_already_sent: bool = False,
 ) -> dict[str, Any]:
     """Terminate a process group and prove the group is gone before returning."""
 
     cleanup: dict[str, Any] = {
         "process_group": process.pid if os.name == "posix" else None,
-        "term_sent": False,
+        "term_sent": term_already_sent,
         "kill_sent": False,
         "group_alive": False,
         "output_complete": True,
@@ -1939,6 +2066,26 @@ def _terminate_process_tree(
     cleanup["error"] = None
     def group_signal_is_safe() -> bool:
         for saved_pid, saved in saved_processes.items():
+            if (
+                saved_pid == process.pid
+                and saved.get("launch_barrier_authenticated") is True
+                and process.poll() is None
+            ):
+                # A still-live, unreaped Popen PID cannot have been reused.
+                # Revalidate its captured start and PGID, but do not depend on
+                # hosts including the marker in bounded ``ps eww`` output.
+                record, validation_error = _target_process_record(saved_pid)
+                if validation_error:
+                    cleanup["error"] = validation_error
+                    continue
+                if (
+                    record is not None
+                    and record.get("start_identity") == saved.get("start_identity")
+                    and int(record.get("pgid", 0)) == int(saved.get("pgid", 0))
+                    and int(saved.get("pgid", 0)) == process.pid
+                ):
+                    return True
+                continue
             valid, validation_error = _validated_saved_process(saved_pid, saved, marker or "")
             if validation_error:
                 cleanup["error"] = validation_error
@@ -1947,7 +2094,7 @@ def _terminate_process_tree(
                 return True
         return False
 
-    if os.name == "posix" and group_signal_is_safe():
+    if os.name == "posix" and not term_already_sent and group_signal_is_safe():
         try:
             os.killpg(process.pid, signal.SIGTERM)
             cleanup["term_sent"] = True
@@ -1964,7 +2111,7 @@ def _terminate_process_tree(
                 os.kill(pid, signal.SIGTERM)
             except ProcessLookupError:
                 pass
-    elif os.name != "posix":  # pragma: no cover - the project currently targets POSIX hosts
+    elif os.name != "posix" and not term_already_sent:  # pragma: no cover - the project currently targets POSIX hosts
         try:
             process.terminate()
             cleanup["term_sent"] = True
@@ -2033,6 +2180,34 @@ def _cleanup_terminal_safe(cleanup: Mapping[str, Any] | None) -> bool:
     )
 
 
+def _best_effort_exception_cleanup(
+    process: subprocess.Popen[str],
+    observed_processes: Mapping[int, Mapping[str, Any]],
+    marker: str,
+) -> None:
+    """Bound and reap a launched command without replacing its original error."""
+
+    try:
+        _terminate_process_tree(process, observed_processes, marker)
+    except BaseException:
+        # If the structured cleanup itself is the failure source, a live,
+        # unreaped Popen leader still authenticates its start_new_session
+        # process group. Use that handle for the last bounded fail-safe.
+        with contextlib.suppress(BaseException):
+            if process.poll() is None:
+                if os.name == "posix":
+                    os.killpg(process.pid, signal.SIGKILL)
+                else:  # pragma: no cover
+                    process.kill()
+                process.wait(timeout=_PROCESS_KILL_GRACE_SECONDS)
+    with contextlib.suppress(BaseException):
+        process.communicate(timeout=_PROCESS_KILL_GRACE_SECONDS)
+    for stream in (process.stdout, process.stderr):
+        if stream is not None:
+            with contextlib.suppress(BaseException):
+                stream.close()
+
+
 def _run_command(
     command: list[str],
     *,
@@ -2043,8 +2218,15 @@ def _run_command(
 ) -> dict[str, Any]:
     """Run one command in an isolated process group with bounded timeout cleanup."""
 
-    child_env = dict(env)
-    child_env["_GRAVITY_VERIFIER_RUN"] = marker
+    # Keep the supervision marker first in the environment block. Some hosts
+    # bound ``ps eww`` output; placing it first keeps targeted identity probes
+    # authentic even when the inherited environment is unusually large.
+    child_env = {"_GRAVITY_VERIFIER_RUN": marker}
+    child_env.update(
+        (str(key), str(value))
+        for key, value in env.items()
+        if str(key) != "_GRAVITY_VERIFIER_RUN"
+    )
     barrier_read: int | None = None
     barrier_write: int | None = None
     launch_command = list(command)
@@ -2072,21 +2254,52 @@ def _run_command(
         process = subprocess.Popen(launch_command, **popen_kwargs)
     except BaseException:
         if barrier_read is not None:
-            os.close(barrier_read)
+            with contextlib.suppress(BaseException):
+                os.close(barrier_read)
         if barrier_write is not None:
-            os.close(barrier_write)
+            with contextlib.suppress(BaseException):
+                os.close(barrier_write)
         raise
-    if barrier_read is not None:
-        os.close(barrier_read)
-    supervisor = _ProcessSupervisor(process.pid, marker)
-    supervisor_armed = supervisor.start()
-    if barrier_write is not None and supervisor_armed:
-        os.write(barrier_write, b"1")
-        os.close(barrier_write)
-        barrier_write = None
-    if not supervisor_armed:
-        # A failed first census is fail-closed: do not release the target into
-        # an unsupervised run. Kill the blocked wrapper and drain its pipes.
+    supervisor: _ProcessSupervisor | None = None
+    resource_sampler: _ResourceSampler | None = None
+    try:
+        # Every operation after a successful Popen belongs inside this setup
+        # boundary. In particular, a failed barrier release must not strand a
+        # blocked child or its captured pipes before normal supervision starts.
+        deadline = None if timeout is None else time.monotonic() + float(timeout)
+        if barrier_read is not None:
+            os.close(barrier_read)
+            barrier_read = None
+        supervisor = _ProcessSupervisor(process.pid, marker)
+        supervisor_armed = supervisor.start()
+        setup_deadline_expired = deadline is not None and time.monotonic() >= deadline
+        if barrier_write is not None and supervisor_armed and not setup_deadline_expired:
+            os.write(barrier_write, b"1")
+            os.close(barrier_write)
+            barrier_write = None
+        if supervisor_armed and not setup_deadline_expired:
+            resource_sampler = _ResourceSampler(process.pid)
+            resource_sampler.start()
+    except BaseException:
+        # Cleanup is deliberately best-effort so the setup exception remains
+        # the exception observed by the caller.
+        for launch_fd in (barrier_read, barrier_write):
+            if launch_fd is not None:
+                with contextlib.suppress(BaseException):
+                    os.close(launch_fd)
+        if resource_sampler is not None:
+            with contextlib.suppress(BaseException):
+                resource_sampler.shutdown()
+        observed_processes: Mapping[int, Mapping[str, Any]] = {}
+        if supervisor is not None:
+            with contextlib.suppress(BaseException):
+                observed_processes = supervisor.stop().get("processes", {})
+        with contextlib.suppress(BaseException):
+            _best_effort_exception_cleanup(process, observed_processes, marker)
+        raise
+    if not supervisor_armed or setup_deadline_expired:
+        # Failed supervision and an exhausted setup deadline are both
+        # fail-closed: do not release the target from its launch barrier.
         census = supervisor.stop()
         # The launch barrier proves this is still our blocked child. Kill and
         # reap through the live Popen handle; no PID lookup or saved identity
@@ -2118,66 +2331,128 @@ def _run_command(
             "returncode": process.returncode,
             "stdout": stdout_text,
             "stderr": stderr_text,
-            "timed_out": False,
+            "timed_out": setup_deadline_expired,
             "cleanup": cleanup,
             "surviving_descendants": False,
-            "supervision_failed": True,
+            "supervision_failed": not supervisor_armed,
             "supervisor": census,
+            "resource_sample": {
+                "source": "not-executed", "sample_count": 0,
+                "sample_interval_seconds": None, "peak_rss_bytes": None,
+                "peak_process_count": None, "telemetry_available": False,
+                "telemetry_error": None,
+            },
         }
-    timed_out = False
-    # Wait for the leader only.  ``communicate`` waits for inherited pipe
-    # descriptors held by a detached child, which would delay supervision
-    # until after the child had already mutated files.
+    assert resource_sampler is not None
     try:
-        process.wait(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        timed_out = True
-    census = supervisor.stop()
-    # A successful parent exit does not prove that its process group is gone.
-    # Detached descendants can otherwise keep mutating inputs after the
-    # resource lock is released.  Drain/terminate the group before returning
-    # and let the caller fail the check when one was found.
-    cleanup = None
-    observed_processes = census.get("processes", {})
-    observed_descendants = [pid for pid in observed_processes if int(pid) != process.pid]
-    group_alive = _process_group_alive(process.pid)
-    # Exactly one terminal whole-system marker census closes the normal-exit
-    # setsid/double-fork gap without duration-scaled polling. Saved identities
-    # from this census are revalidated with targeted probes before signaling.
-    marker_processes, marker_error = _marker_processes(marker)
-    observed_processes.update(marker_processes)
-    census["error"] = census.get("error") or marker_error
-    observed_descendants = [pid for pid in observed_processes if int(pid) != process.pid]
-    if timed_out or observed_descendants or group_alive or census.get("error"):
-        cleanup = _terminate_process_tree(process, observed_processes, marker)
-        cleanup["survivors_detected"] = bool(observed_descendants or cleanup["group_alive"])
-        cleanup["census_error"] = census.get("error")
-    try:
-        stdout, stderr = process.communicate(timeout=_PROCESS_KILL_GRACE_SECONDS)
-        stdout_text = _output_text(stdout)
-        stderr_text = _output_text(stderr)
-    except subprocess.TimeoutExpired as exc:
-        if cleanup is None:
-            cleanup = _terminate_process_tree(process, observed_processes, marker)
-        cleanup["output_complete"] = False
-        stdout_text = _output_text(exc.stdout)
-        stderr_text = _output_text(exc.stderr)
-        for stream in (process.stdout, process.stderr):
-            if stream is not None:
-                stream.close()
-    cleanup_safe = _cleanup_terminal_safe(cleanup)
-    if cleanup is not None:
-        cleanup["terminal_safe"] = cleanup_safe
-    return {
-        "returncode": process.returncode,
-        "stdout": stdout_text,
-        "stderr": stderr_text,
-        "timed_out": timed_out,
-        "cleanup": cleanup,
-        "surviving_descendants": bool(not timed_out and cleanup is not None and (cleanup.get("survivors_detected") or cleanup.get("census_error"))),
-        "supervision_failed": bool(census.get("error") or not cleanup_safe),
-        "supervisor": census,
-    }
+        try:
+            timed_out = False
+            # Wait for the leader only.  ``communicate`` waits for inherited
+            # pipe descriptors held by a detached child, which would delay
+            # supervision until after the child had already mutated files.
+            try:
+                remaining = None if deadline is None else max(0.0, deadline - time.monotonic())
+                process.wait(timeout=remaining)
+            except subprocess.TimeoutExpired:
+                timed_out = True
+            census = supervisor.stop()
+            # A successful parent exit does not prove that its process group is
+            # gone. Detached descendants can otherwise keep mutating inputs
+            # after the resource lock is released.
+            cleanup = None
+            observed_processes = census.get("processes", {})
+            observed_descendants = [pid for pid in observed_processes if int(pid) != process.pid]
+            group_alive = _process_group_alive(process.pid)
+            deadline_term_sent = False
+            if timed_out:
+                # The execution deadline has expired. The still-live, unreaped
+                # Popen leader authenticates this immediate group signal; the
+                # saved start identity then authorizes bounded SIGKILL
+                # escalation if the command ignores SIGTERM.
+                try:
+                    if os.name == "posix":
+                        os.killpg(process.pid, signal.SIGTERM)
+                    else:  # pragma: no cover
+                        process.terminate()
+                    deadline_term_sent = True
+                except ProcessLookupError:
+                    pass
+                cleanup = _terminate_process_tree(
+                    process,
+                    observed_processes,
+                    marker,
+                    term_already_sent=deadline_term_sent,
+                )
+                cleanup["survivors_detected"] = bool(observed_descendants or cleanup["group_alive"])
+                cleanup["census_error"] = census.get("error")
+            # Exactly one terminal whole-system marker census closes the
+            # normal-exit setsid/double-fork gap. Saved identities are
+            # revalidated with targeted probes before signaling.
+            marker_processes, marker_error = _marker_processes(marker)
+            observed_processes.update(marker_processes)
+            census["error"] = census.get("error") or marker_error
+            observed_descendants = [pid for pid in observed_processes if int(pid) != process.pid]
+            if timed_out and observed_descendants:
+                cleanup = _terminate_process_tree(process, observed_processes, marker)
+                cleanup["term_sent"] = cleanup["term_sent"] or deadline_term_sent
+                cleanup["survivors_detected"] = True
+            elif not timed_out and (observed_descendants or group_alive or census.get("error")):
+                cleanup = _terminate_process_tree(process, observed_processes, marker)
+                cleanup["survivors_detected"] = bool(observed_descendants or cleanup["group_alive"])
+            # The terminal census is authoritative for cleanup completeness.
+            # Refresh both its error and the derived policy after it runs so an
+            # error cannot leave a stale safe result from pre-census cleanup.
+            if cleanup is not None:
+                cleanup["census_error"] = census.get("error")
+                cleanup["terminal_safe"] = _cleanup_terminal_safe(cleanup)
+            try:
+                stdout, stderr = process.communicate(timeout=_PROCESS_KILL_GRACE_SECONDS)
+                stdout_text = _output_text(stdout)
+                stderr_text = _output_text(stderr)
+            except subprocess.TimeoutExpired as exc:
+                if cleanup is None:
+                    cleanup = _terminate_process_tree(process, observed_processes, marker)
+                    cleanup["census_error"] = census.get("error")
+                cleanup["output_complete"] = False
+                stdout_text = _output_text(exc.stdout)
+                stderr_text = _output_text(exc.stderr)
+                for stream in (process.stdout, process.stderr):
+                    if stream is not None:
+                        stream.close()
+            resource_sample = resource_sampler.stop()
+            cleanup_safe = _cleanup_terminal_safe(cleanup)
+            if cleanup is not None:
+                cleanup["terminal_safe"] = cleanup_safe
+            return {
+                "returncode": process.returncode,
+                "stdout": stdout_text,
+                "stderr": stderr_text,
+                "timed_out": timed_out,
+                "cleanup": cleanup,
+                "surviving_descendants": bool(not timed_out and cleanup is not None and (cleanup.get("survivors_detected") or cleanup.get("census_error"))),
+                "supervision_failed": bool(census.get("error") or not cleanup_safe),
+                "supervisor": census,
+                "resource_sample": resource_sample,
+            }
+        finally:
+            if sys.exc_info()[0] is None:
+                resource_sampler.shutdown()
+            else:
+                # Cleanup must not replace a terminal census/signaling error,
+                # but the resource lock still cannot be returned while the
+                # launched group or its pipes remain live.
+                with contextlib.suppress(BaseException):
+                    resource_sampler.shutdown()
+                exception_census = supervisor.stop()
+                _best_effort_exception_cleanup(
+                    process,
+                    exception_census.get("processes", {}),
+                    marker,
+                )
+    except BaseException:
+        # If terminal census, signaling, communication, or policy code raises,
+        # sampler shutdown must not replace the original exception.
+        raise
 
 
 def _run_one(
@@ -2193,6 +2468,7 @@ def _run_one(
     cwd = root / _normalise_declared_path(str(cwd_value))
     env = os.environ.copy()
     env.update({str(k): str(v) for k, v in dict(check.get("env", {})).items()})
+    resource = check_resource_declaration(manifest, check)
     record: dict[str, Any] = {
         "id": check["id"],
         "lane": check["lane"],
@@ -2202,7 +2478,8 @@ def _run_one(
         "lock": check.get("lock"),
         "exclusive": bool(check.get("exclusive", False)),
         "cost": check.get("cost", "cheap"),
-        "resource": check_resource_declaration(manifest, check),
+        "resource": resource,
+        "resource_observation": _not_executed_resource_observation(resource),
         "fresh": bool(check.get("fresh", False)),
         "timeout_seconds": identities["timeout_seconds"],
         "authority": "non-authoritative",
@@ -2238,6 +2515,9 @@ def _run_one(
             "observations": monitor.observations,
         }
         record["cacheable"] = monitor.cacheable
+        record["resource_observation"] = _resource_observation(
+            outcome["resource_sample"], resource
+        )
         if outcome.get("surviving_descendants"):
             record["status"] = "failed"
             record["reason"] = "surviving-descendant"
@@ -2266,6 +2546,18 @@ def _run_one(
             record["authority"] = "non-authoritative"
             suffix = "declared input or command identity changed during execution; result was not cached"
             record["stderr"] = _trim_output(record.get("stderr", "") + ("\n" if record.get("stderr") else "") + suffix)
+        observation = record["resource_observation"]
+        if observation["rss_exceeded"] is True or observation["processes_exceeded"] is True:
+            if record["status"] == "passed":
+                record["status"] = "failed"
+                record["reason"] = "resource-budget-exceeded"
+            record["cacheable"] = False
+            record["authority"] = "non-authoritative"
+            record["stderr"] = _trim_output(
+                record.get("stderr", "")
+                + ("\n" if record.get("stderr") else "")
+                + "observed process-tree resources exceeded the declared reservation; result was not cached"
+            )
     except LockUnavailable as exc:
         record["returncode"] = None
         record["stdout"] = ""
@@ -2295,6 +2587,7 @@ def _reused_record(
     key: str,
 ) -> dict[str, Any]:
     timestamp = _now()
+    resource = check_resource_declaration(manifest, check)
     return {
         "id": check["id"],
         "lane": check["lane"],
@@ -2304,7 +2597,8 @@ def _reused_record(
         "lock": check.get("lock"),
         "exclusive": bool(check.get("exclusive", False)),
         "cost": check.get("cost", "cheap"),
-        "resource": check_resource_declaration(manifest, check),
+        "resource": resource,
+        "resource_observation": _not_executed_resource_observation(resource),
         "fresh": bool(check.get("fresh", False)),
         "timeout_seconds": identities["timeout_seconds"],
         "authority": "non-authoritative",
@@ -2459,6 +2753,9 @@ def run_verification(
                 "exclusive": bool(by_id[check_id].get("exclusive", False)),
                 "cost": by_id[check_id].get("cost", "cheap"),
                 "resource": check_resource_declaration(manifest_value, by_id[check_id]),
+                "resource_observation": _not_executed_resource_observation(
+                    check_resource_declaration(manifest_value, by_id[check_id])
+                ),
                 "fresh": bool(by_id[check_id].get("fresh", False)),
                 "timeout_seconds": check_semantic_declaration(by_id[check_id], manifest_value)["timeout_seconds"],
                 "authority": "non-authoritative",
@@ -2496,6 +2793,9 @@ def run_verification(
                     "exclusive": bool(by_id[check_id].get("exclusive", False)),
                     "cost": by_id[check_id].get("cost", "cheap"),
                     "resource": check_resource_declaration(manifest_value, by_id[check_id]),
+                    "resource_observation": _not_executed_resource_observation(
+                        check_resource_declaration(manifest_value, by_id[check_id])
+                    ),
                     "fresh": bool(by_id[check_id].get("fresh", False)),
                     "timeout_seconds": check_semantic_declaration(by_id[check_id], manifest_value)["timeout_seconds"],
                     "authority": "non-authoritative",
@@ -2525,6 +2825,9 @@ def run_verification(
                     "exclusive": bool(by_id[check_id].get("exclusive", False)),
                     "cost": by_id[check_id].get("cost", "cheap"),
                     "resource": check_resource_declaration(manifest_value, by_id[check_id]),
+                    "resource_observation": _not_executed_resource_observation(
+                        check_resource_declaration(manifest_value, by_id[check_id])
+                    ),
                     "fresh": bool(by_id[check_id].get("fresh", False)),
                     "timeout_seconds": identity["timeout_seconds"],
                     "authority": "non-authoritative",
@@ -2592,6 +2895,9 @@ def run_verification(
                     "exclusive": bool(by_id[check_id].get("exclusive", False)),
                     "cost": by_id[check_id].get("cost", "cheap"),
                     "resource": check_resource_declaration(manifest_value, by_id[check_id]),
+                    "resource_observation": _not_executed_resource_observation(
+                        check_resource_declaration(manifest_value, by_id[check_id])
+                    ),
                     "capacity_lock": _batch_capacity_lock(manifest_value, batch),
                     "fresh": bool(by_id[check_id].get("fresh", False)),
                     "timeout_seconds": identity["timeout_seconds"],

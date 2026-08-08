@@ -243,8 +243,8 @@ def _validate_inputs(check: Mapping[str, Any], value: Any, root: Path, expected:
     return value
 
 
-def _declaration(check: Mapping[str, Any]) -> dict[str, Any]:
-    semantic = check_semantic_declaration(check)
+def _declaration(check: Mapping[str, Any], manifest: Mapping[str, Any]) -> dict[str, Any]:
+    semantic = check_semantic_declaration(check, manifest)
     return {
         "id": check["id"],
         "lane": check["lane"],
@@ -255,6 +255,7 @@ def _declaration(check: Mapping[str, Any]) -> dict[str, Any]:
         "cost": check.get("cost", "cheap"),
         "fresh": bool(check.get("fresh", False)),
         "timeout_seconds": semantic["timeout_seconds"],
+        "resource": semantic["resource"],
     }
 
 
@@ -273,7 +274,7 @@ def _record_declaration(record: Mapping[str, Any]) -> dict[str, Any]:
     return {
         key: record.get(key)
         for key in (
-            "id", "lane", "command", "depends_on", "lock", "exclusive", "cost", "fresh", "timeout_seconds"
+            "id", "lane", "command", "depends_on", "lock", "exclusive", "cost", "fresh", "timeout_seconds", "resource"
         )
     }
 
@@ -286,11 +287,13 @@ def _immutable(record: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _check_identity(check: Mapping[str, Any], record: Mapping[str, Any]) -> dict[str, Any]:
+def _check_identity(
+    manifest: Mapping[str, Any], check: Mapping[str, Any], record: Mapping[str, Any]
+) -> dict[str, Any]:
     """Reconstruct the verifier cache identity without reading current inputs."""
 
     return {
-        **check_semantic_declaration(check),
+        **check_semantic_declaration(check, manifest),
         "command": record.get("command_identity"),
         "inputs": record.get("inputs"),
     }
@@ -345,6 +348,133 @@ def _validate_result_record(record: Mapping[str, Any], check: Mapping[str, Any])
     if isinstance(duration, bool) or not isinstance(duration, (int, float)) or not math.isfinite(duration) or duration < 0:
         raise CompositionError(f"check {check_id!r} duration_ms must be finite and nonnegative")
     return status
+
+
+_OBSERVATION_KEYS = {
+    "source", "sample_count", "sample_interval_seconds", "peak_rss_bytes",
+    "peak_process_count", "telemetry_available", "telemetry_error",
+    "declared_reserved_rss_bytes", "declared_reserved_processes",
+    "rss_exceeded", "processes_exceeded", "authoritative",
+}
+
+
+def _validate_resource_observation(
+    record: Mapping[str, Any], resource: Mapping[str, Any], status: str
+) -> dict[str, Any]:
+    check_id = str(record.get("id"))
+    value = record.get("resource_observation")
+    if not isinstance(value, dict) or set(value) != _OBSERVATION_KEYS:
+        raise CompositionError(f"check {check_id!r} resource_observation has invalid keys")
+    if value["authoritative"] is not False:
+        raise CompositionError(f"check {check_id!r} resource_observation must be non-authoritative")
+    expected_rss = int(resource["reserved_rss_mb"]) * 1024 * 1024
+    expected_processes = int(resource["reserved_processes"])
+    declared_rss = value["declared_reserved_rss_bytes"]
+    declared_processes = value["declared_reserved_processes"]
+    if (
+        type(declared_rss) is not int or declared_rss <= 0
+        or type(declared_processes) is not int or declared_processes <= 0
+        or declared_rss != expected_rss or declared_processes != expected_processes
+    ):
+        raise CompositionError(f"check {check_id!r} resource_observation reservation does not match the manifest")
+    sample_count = value["sample_count"]
+    if type(sample_count) is not int or sample_count < 0:
+        raise CompositionError(f"check {check_id!r} resource_observation sample_count is invalid")
+    available = value["telemetry_available"]
+    if type(available) is not bool:
+        raise CompositionError(f"check {check_id!r} resource_observation telemetry_available is invalid")
+    if status == "reused":
+        if value["source"] != "not-executed" or value["sample_interval_seconds"] is not None:
+            raise CompositionError(f"check {check_id!r} reused resource_observation must be not-executed")
+        expected = {
+            "source": "not-executed", "sample_count": 0,
+            "sample_interval_seconds": None, "peak_rss_bytes": None,
+            "peak_process_count": None, "telemetry_available": False,
+            "telemetry_error": None, "declared_reserved_rss_bytes": expected_rss,
+            "declared_reserved_processes": expected_processes, "rss_exceeded": None,
+            "processes_exceeded": None, "authoritative": False,
+        }
+        if value != expected:
+            raise CompositionError(f"check {check_id!r} reused resource_observation must be not-executed")
+        return value
+    if value["source"] != "process-tree-sampling" or value["sample_interval_seconds"] != 0.25:
+        raise CompositionError(f"check {check_id!r} passed resource_observation must be a process-tree 0.25s sample")
+    if available:
+        peaks = (value["peak_rss_bytes"], value["peak_process_count"])
+        if (
+            sample_count < 1
+            or type(peaks[0]) is not int or peaks[0] <= 0
+            or type(peaks[1]) is not int or peaks[1] < 1
+        ):
+            raise CompositionError(f"check {check_id!r} available resource_observation has invalid measurements")
+        if value["telemetry_error"] is not None:
+            raise CompositionError(f"check {check_id!r} available resource_observation cannot have an error")
+        expected_exceeded = (peaks[0] > expected_rss, peaks[1] > expected_processes)
+        if (
+            type(value["rss_exceeded"]) is not bool
+            or type(value["processes_exceeded"]) is not bool
+            or (value["rss_exceeded"], value["processes_exceeded"]) != expected_exceeded
+        ):
+            raise CompositionError(f"check {check_id!r} resource_observation exceeded flags are invalid")
+        if any(expected_exceeded):
+            raise CompositionError(f"check {check_id!r} passed despite a resource reservation exceedance")
+    else:
+        if sample_count != 0 or value["peak_rss_bytes"] is not None or value["peak_process_count"] is not None:
+            raise CompositionError(f"check {check_id!r} unavailable resource_observation invents measurements")
+        if not isinstance(value["telemetry_error"], str) or not value["telemetry_error"]:
+            raise CompositionError(f"check {check_id!r} unavailable resource_observation requires an error")
+        if value["rss_exceeded"] is not None or value["processes_exceeded"] is not None:
+            raise CompositionError(f"check {check_id!r} unavailable resource_observation invents exceeded flags")
+    return value
+
+
+def _merge_resource_observations(
+    first: Mapping[str, Any], second: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Conservatively compose duplicate observations without hiding maxima."""
+
+    if first["source"] == "not-executed":
+        return dict(second)
+    if second["source"] == "not-executed":
+        return dict(first)
+    reserved_rss = first["declared_reserved_rss_bytes"]
+    reserved_processes = first["declared_reserved_processes"]
+    available = [item for item in (first, second) if item["telemetry_available"]]
+    had_unavailable = any(
+        not item["telemetry_available"] or item["telemetry_error"] is not None
+        for item in (first, second)
+    )
+    if available:
+        peak_rss = max(int(item["peak_rss_bytes"]) for item in available)
+        peak_processes = max(int(item["peak_process_count"]) for item in available)
+        error = (
+            "one or more composed observations reported unavailable telemetry"
+            if had_unavailable else None
+        )
+        rss_exceeded: bool | None = peak_rss > reserved_rss
+        processes_exceeded: bool | None = peak_processes > reserved_processes
+    else:
+        peak_rss = None
+        peak_processes = None
+        error = "all composed observations reported unavailable telemetry"
+        rss_exceeded = None
+        processes_exceeded = None
+    return {
+        "source": "composed-process-tree-maxima",
+        # Duplicate receipts can repeat one execution, so summing would
+        # overstate evidence. The maximum is deterministic and conservative.
+        "sample_count": max(int(first["sample_count"]), int(second["sample_count"])),
+        "sample_interval_seconds": 0.25,
+        "peak_rss_bytes": peak_rss,
+        "peak_process_count": peak_processes,
+        "telemetry_available": bool(available),
+        "telemetry_error": error,
+        "declared_reserved_rss_bytes": reserved_rss,
+        "declared_reserved_processes": reserved_processes,
+        "rss_exceeded": rss_exceeded,
+        "processes_exceeded": processes_exceeded,
+        "authoritative": False,
+    }
 
 
 def compose_receipts(
@@ -429,16 +559,19 @@ def compose_receipts(
             if check_id in receipt_check_ids:
                 raise CompositionError(f"{label} contains duplicate check id {check_id!r}")
             receipt_check_ids.add(check_id)
-            if _record_declaration(record) != _declaration(by_id[check_id]):
+            if _record_declaration(record) != _declaration(by_id[check_id], manifest_value):
                 raise CompositionError(f"check {check_id!r} declaration does not match the manifest")
-            _validate_result_record(record, by_id[check_id])
+            result_status = _validate_result_record(record, by_id[check_id])
+            observation = _validate_resource_observation(
+                record, check_semantic_declaration(by_id[check_id], manifest_value)["resource"], result_status
+            )
             key = record.get("cache_key")
             if not isinstance(key, str) or _CACHE_KEY.fullmatch(key) is None:
                 raise CompositionError(f"check {check_id!r} has an invalid cache_key")
             _validate_command_identity(by_id[check_id], record.get("command_identity"), str(root_path))
             _validate_inputs(by_id[check_id], record.get("inputs"), root_path, expected_inputs)
             immutable = _immutable(record)
-            semantic_identity = _check_identity(by_id[check_id], record)
+            semantic_identity = _check_identity(manifest_value, by_id[check_id], record)
             unbound_identity = json.loads(_canonical(semantic_identity))
             unbound_identity["command"]["runtime"].pop("supervision_environment")
             marker = hashlib.sha256(("gravity-supervision:" + _canonical(unbound_identity)).encode("utf-8")).hexdigest()[:32]
@@ -458,12 +591,16 @@ def compose_receipts(
             immutable_by_id[check_id] = immutable
             immutable_by_key[key] = immutable
             id_by_key[key] = check_id
+            if check_id in records_by_id:
+                prior_observation = records_by_id[check_id]["resource_observation"]
+                observation = _merge_resource_observations(prior_observation, observation)
             records_by_id[check_id] = {
                 **immutable["declaration"],
                 "cache_key": key,
                 "semantic_identity_sha256": _sha256(semantic_identity),
                 "status": "satisfied",
                 "authority": "non-authoritative",
+                "resource_observation": observation,
             }
 
     present = set(records_by_id)
@@ -474,6 +611,8 @@ def compose_receipts(
     present_order = topological_order(manifest_value, present) if present else []
     expected_order = [check_id for check_id in all_order if check_id in expected]
     missing_order = [check_id for check_id in expected_order if check_id not in present]
+    observations = [records_by_id[check_id]["resource_observation"] for check_id in present_order]
+    measured = [item for item in observations if item["telemetry_available"]]
     aggregate: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "kind": "development-verification-composition",
@@ -489,6 +628,34 @@ def compose_receipts(
             "receipt_count": len(receipt_values),
             "check_count": len(present_order),
             "input_check_count": input_check_count,
+        },
+        "resource_summary": {
+            "authoritative": False,
+            "check_count": len(observations),
+            "executed_count": sum(item["source"] != "not-executed" for item in observations),
+            "not_executed_count": sum(item["source"] == "not-executed" for item in observations),
+            "composed_count": sum(item["source"] == "composed-process-tree-maxima" for item in observations),
+            "composed_with_unavailable_count": sum(
+                item["source"] == "composed-process-tree-maxima"
+                and item["telemetry_error"] is not None
+                for item in observations
+            ),
+            "telemetry_available_count": len(measured),
+            "telemetry_unavailable_count": sum(
+                item["source"] != "not-executed" and not item["telemetry_available"]
+                for item in observations
+            ),
+            "total_sample_count": sum(item["sample_count"] for item in observations),
+            "peak_rss_bytes": max((item["peak_rss_bytes"] for item in measured), default=None),
+            "peak_process_count": max((item["peak_process_count"] for item in measured), default=None),
+            "rss_exceeded_checks": sorted(
+                records_by_id[check_id]["id"] for check_id in present_order
+                if records_by_id[check_id]["resource_observation"]["rss_exceeded"] is True
+            ),
+            "processes_exceeded_checks": sorted(
+                records_by_id[check_id]["id"] for check_id in present_order
+                if records_by_id[check_id]["resource_observation"]["processes_exceeded"] is True
+            ),
         },
     }
     aggregate["composition_sha256"] = _sha256(aggregate)

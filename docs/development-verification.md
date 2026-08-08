@@ -44,6 +44,23 @@ estimates. They are not runtime measurements, resource enforcement, benchmark
 evidence, or authority claims. Every planned, executed, reused, or blocked
 check receipt records the resolved non-authoritative reservation.
 
+Executed checks also record bounded best-effort process-tree observations at a
+0.25-second interval, including sampled peak RSS and process count. These
+measurements are non-authoritative sampled high-water observations, not OS
+enforcement or benchmark evidence. An observed reservation exceedance fails
+the check and prevents caching. If host telemetry is unavailable, the receipt
+records that error and leaves measurements and exceedance decisions unknown;
+it does not manufacture a zero measurement. Planned, reused, and blocked
+checks record an explicit `not-executed` observation. Receipt composition
+validates these shapes and reports a deterministic non-authoritative resource
+summary without promoting any development evidence. When multiple receipts
+provide fresh observations for the same semantic check, composition emits an
+explicit `composed-process-tree-maxima` observation: RSS and process peaks are
+merged independently by maximum, sample count is the maximum reported count
+rather than a sum that could double-count one execution, and any unavailable
+input telemetry remains disclosed. A reused `not-executed` observation never
+replaces a fresh measurement.
+
 The canonical classes are `python-cheap`, `leaf-jvm`, `bootstrap-hosted`, and
 `memory-heavy`. Ready unlocked checks are considered in stable check-id order
 and admitted only while the requested `--jobs` limit, their class limit, and

@@ -5,10 +5,10 @@
   "scope": {
     "roots": ["src/gravity", "tools"],
     "excluded_segments": ["__pycache__"],
-    "inventory_count": 152,
-    "inventory_sha256": "sha256:92052c1f5013db88e3f0d8ddaea8702eef0a1f3fca19883a97d7236df419294f",
-    "dependency_edge_count": 175,
-    "dependency_edge_sha256": "sha256:24748d295339dc917c577ab2aba63c056484ba36dac0e6c2560e788a0b90dccc"
+    "inventory_count": 154,
+    "inventory_sha256": "sha256:ea1678e86f2f6ba0fe8ab9ff4ba1a13dff375b6f56a7f4ebba6dfb40a7284226",
+    "dependency_edge_count": 178,
+    "dependency_edge_sha256": "sha256:a2e74d7f3eb086845aacec3212a4116536ec4253faead8d2fc25e18ff71b44a0"
   },
   "enums": {
     "categories": [
@@ -27,6 +27,7 @@
       "semantic-coverage-library",
       "publication-library",
       "resource-lock-library",
+      "process-tree-telemetry-library",
       "read-only-development-tool",
       "nonauthoritative-evidence-composer",
       "bounded-development-runner",
@@ -226,6 +227,22 @@
       "role": "resource-lock-library",
       "allowed_dependency_categories": [],
       "effects": ["filesystem-read", "filesystem-write"],
+      "output_classes": ["none"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
+      "import_safety": "library",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "unit-test"]
+    },
+    {
+      "id": "process-tree-telemetry-support",
+      "includes": ["tools/process_tree_telemetry.py"],
+      "excludes": [],
+      "category": "tooling-support",
+      "role": "process-tree-telemetry-library",
+      "allowed_dependency_categories": [],
+      "effects": ["process", "host-metrics"],
       "output_classes": ["none"],
       "authority_ceiling": "none",
       "source_path_policy_refs": ["reviewed-central-routing"],
