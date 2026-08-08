@@ -67,6 +67,113 @@
          #{'gravity.self-hosting.sh07-checked-core-test}
          (:namespaces plan)))))
 
+(deftest stage0-c2-module-maps-to-reader-slice-and-downstream-closure
+  (let [source "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"
+        plan
+        (planner/build-plan
+         {:changed-paths [source]
+          :expand-dependants? true})
+        classification (first (:classifications plan))]
+    (is (= :module (:classification classification)))
+    (is (= ["SH-03"] (:slices classification)))
+    (is (= "c2-artifact-identity" (:component-id classification)))
+    (is (= 'gravity.c2-artifact-identity-test
+           (:test-namespace classification)))
+    (is (= ["SH-03"] (:direct-slices plan)))
+    (is (contains? (set (:affected-slices plan)) "SH-04"))
+    (is (contains? (set (:affected-slices plan)) "SH-29"))
+    (is (= ["c2-artifact-identity"]
+           (mapv :component-id (:component-identities plan))))
+    (is (= ['gravity.c2-artifact-identity-test]
+           (:component-test-namespaces plan)))))
+
+(deftest stage0-c7-test-maps-to-type-checker-slice
+  (let [test-path "bootstrap/clojure/test/gravity/c7_type_checker_test.clj"
+        plan
+        (planner/build-plan
+         {:changed-paths [test-path]
+          :expand-dependants? false})
+        classification (first (:classifications plan))]
+    (is (= :module (:classification classification)))
+    (is (= ["SH-08"] (:slices classification)))
+    (is (= "c7-type-checker" (:component-id classification)))
+    (is (= "bootstrap/clojure/src/gravity/c7_type_checker.clj"
+           (:component-source-path classification)))
+    (is (= 'gravity.c7-type-checker-test
+           (:test-namespace classification)))
+    (is (= ["SH-08"] (:direct-slices plan)))
+    (is (= ['gravity.c7-type-checker-test]
+           (:component-test-namespaces plan)))))
+
+(deftest stage0-owned-test-path-preserves-owner-slice-closure
+  (let [path "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj"
+        plan (planner/build-plan {:changed-paths [path]
+                                  :expand-dependants? true})
+        classification (first (:classifications plan))]
+    (is (= :module (:classification classification)))
+    (is (= ["SH-03"] (:slices classification)))
+    (is (= "c2-pass-cache" (:component-id classification)))
+    (is (= 'gravity.c2-pass-cache-test (:test-namespace classification)))
+    (is (= [path] (:changed-paths plan)))
+    (is (contains? (set (:affected-slices plan)) "SH-07"))))
+
+(deftest stage0-c16-without-a-slice-owner-selects-the-full-non-authoritative-plan
+  (let [path "bootstrap/clojure/src/gravity/c16_incremental.clj"
+        plan (planner/build-plan {:changed-paths [path]
+                                  :expand-dependants? true})
+        classification (first (:classifications plan))]
+    (is (= :module (:classification classification)))
+    (is (= 30 (count (:slices classification))))
+    (is (= :non-authoritative (:authority classification)))
+    (is (false? (:authoritative? classification)))
+    (is (true? (:component-cross-cutting? classification)))
+    (is (= :reserved-component-owner-has-no-slice
+           (:component-cross-cutting-reason classification)))
+    (is (= "c16-incremental" (:component-id classification)))
+    (is (= :sh-incremental (:component-owner classification)))
+    (is (= 'gravity.c16-incremental-test
+           (:test-namespace classification)))
+    (is (= 30 (count (:direct-slices plan))))
+    (is (= 30 (count (:affected-slices plan))))
+    (is (= :non-authoritative (:authority plan)))
+    (is (false? (:authoritative? plan)))
+    (is (= [path] (:component-cross-cutting-paths plan)))))
+
+(deftest stage0-c17-owned-test-without-a-slice-owner-is-cross-cutting
+  (let [path "bootstrap/clojure/test/gravity/c17_plugin_test.clj"
+        plan (planner/build-plan {:changed-paths [path]})
+        classification (first (:classifications plan))]
+    (is (= :module (:classification classification)))
+    (is (= 30 (count (:slices classification))))
+    (is (true? (:component-cross-cutting? classification)))
+    (is (= "c17-plugin" (:component-id classification)))
+    (is (= :sh-pass-api (:component-owner classification)))
+    (is (= 'gravity.c17-plugin-test (:test-namespace classification)))
+    (is (= 30 (count (:direct-slices plan))))
+    (is (= :non-authoritative (:authority plan)))))
+
+(deftest stage0-verification-components-without-slice-owners-are-cross-cutting
+  (doseq [[path component-id test-namespace]
+          [["bootstrap/clojure/src/gravity/c18_verification.clj"
+            "c18-verification"
+            'gravity.c18-verification-test]
+           ["bootstrap/clojure/test/gravity/compiler_verification_shared_test.clj"
+            "compiler-verification-shared"
+            'gravity.compiler-verification-shared-test]]]
+    (let [plan (planner/build-plan {:changed-paths [path]})
+          classification (first (:classifications plan))]
+      (is (= :module (:classification classification)) path)
+      (is (= 30 (count (:slices classification))) path)
+      (is (true? (:component-cross-cutting? classification)) path)
+      (is (= :reserved-component-owner-has-no-slice
+             (:component-cross-cutting-reason classification)) path)
+      (is (= component-id (:component-id classification)) path)
+      (is (= :sh-verification (:component-owner classification)) path)
+      (is (= test-namespace (:test-namespace classification)) path)
+      (is (= 30 (count (:direct-slices plan))) path)
+      (is (= 30 (count (:affected-slices plan))) path)
+      (is (= :non-authoritative (:authority plan)) path))))
+
 (deftest coordinator-path-selects-the-conservative-full-plan
   (let [plan
         (planner/build-plan
@@ -75,7 +182,10 @@
     (is (= 30 (count (:direct-slices plan))))
     (is (= 30 (count (:affected-slices plan))))
     (is (= :coordinator
-           (get-in plan [:classifications 0 :classification])))))
+           (get-in plan [:classifications 0 :classification])))
+    (is (= "bootstrap" (get-in plan [:classifications 0 :component-id])))
+    (is (= 'gravity.bootstrap-test
+           (get-in plan [:classifications 0 :test-namespace])))))
 
 (deftest unrelated-paths-are-reported-but-do-not-select-tests
   (let [plan
@@ -85,6 +195,20 @@
     (is (empty? (:affected-slices plan)))
     (is (empty? (:namespaces plan)))
     (is (= ["README.md"] (:ignored-paths plan)))))
+
+(deftest unknown-stage0-top-level-source-and-test-fail-closed
+  (doseq [relative
+          ["bootstrap/clojure/src/gravity/not_registered.clj"
+           "bootstrap/clojure/test/gravity/not_registered_test.clj"]]
+    (let [exception
+          (try
+            (planner/build-plan
+             {:changed-paths [relative]
+              :expand-dependants? true})
+            nil
+            (catch clojure.lang.ExceptionInfo exception exception))]
+      (is (= "SH01-IMPACT-UNOWNED" (:id (ex-data exception))) relative)
+      (is (= [relative] (:paths (ex-data exception))) relative))))
 
 (deftest changed-path-plans-are-canonical
   (let [first-path

@@ -16,6 +16,7 @@ import validate_project_structure as validator  # noqa: E402
 
 
 MANIFEST_PATH = ROOT / "contracts" / "project-structure.json"
+STAGE0_COMPONENT_PATH = ROOT / "contracts" / "stage0-clojure-components.json"
 
 
 class ProjectStructureValidationTests(unittest.TestCase):
@@ -28,8 +29,105 @@ class ProjectStructureValidationTests(unittest.TestCase):
         mutate(candidate)
         return validator.validate_manifest(candidate)
 
+    def stage0_errors_for(self, mutate) -> list[str]:
+        contract = json.loads(STAGE0_COMPONENT_PATH.read_text(encoding="utf-8"))
+        mutate(contract)
+        errors: list[str] = []
+        validator._validate_stage0_component_contract(self.manifest, errors, contract)
+        return errors
+
     def test_canonical_manifest_is_valid(self) -> None:
         self.assertEqual([], validator.validate_manifest(self.manifest))
+
+    def test_stage0_component_contract_projection_is_valid(self) -> None:
+        contract = validator.load_stage0_component_contract()
+        errors: list[str] = []
+        validator._validate_stage0_component_contract(self.manifest, errors, contract)
+        self.assertEqual([], errors)
+
+    def test_strict_json_rejects_duplicate_object_keys(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "duplicate.json"
+            path.write_text('{"schema_version": 1, "schema_version": 1}', encoding="utf-8")
+            with self.assertRaises(validator.ManifestError):
+                validator.load_manifest(path)
+
+    def test_strict_json_rejects_nonstandard_constants(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "nan.json"
+            path.write_text('{"schema_version": NaN}', encoding="utf-8")
+            with self.assertRaises(validator.ManifestError):
+                validator.load_manifest(path)
+
+    def test_stage0_component_duplicate_id_is_rejected(self) -> None:
+        errors = self.stage0_errors_for(
+            lambda contract: contract["components"][1].__setitem__(
+                "id", contract["components"][2]["id"]
+            )
+        )
+        self.assertTrue(any("duplicate component id" in error for error in errors), errors)
+
+    def test_stage0_component_static_source_dependency_drift_is_rejected(self) -> None:
+        errors = self.stage0_errors_for(
+            lambda contract: contract["components"][1].__setitem__(
+                "direct_source_dependencies", []
+            )
+        )
+        self.assertTrue(any("static ns :require dependencies" in error for error in errors), errors)
+
+    def test_stage0_leaf_bootstrap_source_dependency_is_rejected(self) -> None:
+        def mutate(contract: dict) -> None:
+            dependencies = contract["components"][1]["direct_source_dependencies"]
+            dependencies.append("bootstrap")
+            dependencies.sort()
+
+        errors = self.stage0_errors_for(mutate)
+        self.assertTrue(any("may not depend on bootstrap" in error for error in errors), errors)
+
+    def test_stage0_namespace_compatibility_authority_drift_is_rejected(self) -> None:
+        def mutate(contract: dict) -> None:
+            for component in contract["components"]:
+                if component["id"] == "c5-name-resolution":
+                    component["authority"]["compatibility_only"] = False
+                    component["authority"]["ceiling"] = "none"
+                    return
+            self.fail("c5 component not found")
+
+        errors = self.stage0_errors_for(mutate)
+        self.assertTrue(any("reviewed namespace contract" in error for error in errors), errors)
+
+    def test_stage0_module_owner_must_match_component_and_policy(self) -> None:
+        def mutate(manifest: dict) -> None:
+            path = "bootstrap/clojure/src/gravity/c10_safety_analysis.clj"
+            manifest["ownership"]["module_paths"][path] = "sh-reader"
+
+        errors = self.errors_for(mutate)
+        self.assertTrue(any("project module_paths owner mismatch" in error for error in errors), errors)
+
+    def test_stage0_edn_projection_has_exact_reserved_and_compatibility_shapes(self) -> None:
+        reserved, compatibility, errors = validator.parse_stage0_component_ownership()
+        self.assertEqual([], errors)
+        self.assertEqual(44, len(reserved))
+        self.assertEqual(5, len(compatibility))
+        self.assertEqual(sorted(compatibility), compatibility)
+
+    def test_stage0_edn_projection_rejects_duplicate_reserved_leaf(self) -> None:
+        source = validator.NORMATIVE_OWNERSHIP.read_text(encoding="utf-8")
+        source = source.replace(
+            '  "bootstrap" :master-coordinator\n',
+            '  "bootstrap" :master-coordinator\n  "bootstrap" :master-coordinator\n',
+            1,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "ownership.edn"
+            path.write_text(source, encoding="utf-8")
+            reserved, compatibility, errors = validator.parse_stage0_component_ownership(path)
+        self.assertEqual(
+            {"bootstrap": "master-coordinator"},
+            {key: value for key, value in reserved.items() if key == "bootstrap"},
+        )
+        self.assertEqual(5, len(compatibility))
+        self.assertTrue(any("repeats key" in error for error in errors), errors)
 
     def test_canonical_pass_order_is_enforced(self) -> None:
         errors = self.errors_for(

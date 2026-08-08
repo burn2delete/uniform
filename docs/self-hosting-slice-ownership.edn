@@ -90,9 +90,150 @@
   "bootstrap/gravity/src/gravity/resolution.gravity" :sh-resolution
   "bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity" :sh-package-build
   "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity" :sh-meta-compiler
-  "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity" :sh-standard-library}
+  "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity" :sh-standard-library
 
- :reserved-leaf-modules {}
+  "bootstrap/clojure/src/gravity/bootstrap.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/c10_safety_analysis.clj" :sh-safety
+  "bootstrap/clojure/src/gravity/c11_mir.clj" :sh-mir
+  "bootstrap/clojure/src/gravity/c12_domain_ir.clj" :sh-domain-ir
+  "bootstrap/clojure/src/gravity/c13_optimization.clj" :sh-optimization
+  "bootstrap/clojure/src/gravity/c14_lowering.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/c15_diagnostics.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/c16_incremental.clj" :sh-incremental
+  "bootstrap/clojure/src/gravity/c17_plugin.clj" :sh-pass-api
+  "bootstrap/clojure/src/gravity/c18_verification.clj" :sh-verification
+  "bootstrap/clojure/src/gravity/c2_artifact_identity.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/c2_lexical_validation.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/c2_pass_cache.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/c2_reader_diagnostics.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/c2_source_identity.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/c3_artifact_identity.clj" :sh-syntax
+  "bootstrap/clojure/src/gravity/c3_literal_projection.clj" :sh-syntax
+  "bootstrap/clojure/src/gravity/c3_reader_integrity.clj" :sh-syntax
+  "bootstrap/clojure/src/gravity/c3_syntax_construction.clj" :sh-syntax
+  "bootstrap/clojure/src/gravity/c3_syntax_diagnostics.clj" :sh-syntax
+  "bootstrap/clojure/src/gravity/c3_syntax_evidence.clj" :sh-syntax
+  "bootstrap/clojure/src/gravity/c3_syntax_verification.clj" :sh-syntax
+  "bootstrap/clojure/src/gravity/c4_macro_evidence.clj" :sh-macro
+  "bootstrap/clojure/src/gravity/c5_name_resolution.clj" :sh-resolution
+  "bootstrap/clojure/src/gravity/c6_core_lowering.clj" :sh-core
+  "bootstrap/clojure/src/gravity/c7_type_checker.clj" :sh-types
+  "bootstrap/clojure/src/gravity/c8_effect_checker.clj" :sh-effects
+  "bootstrap/clojure/src/gravity/c9_ownership_checker.clj" :sh-ownership
+  "bootstrap/clojure/src/gravity/cli.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/compiler_verification_shared.clj" :sh-verification
+  "bootstrap/clojure/src/gravity/darwin_publication.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/diagnostics.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/digest.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/macro_expansion.clj" :sh-macro
+  "bootstrap/clojure/src/gravity/optimization_lowering.clj" :sh-optimization
+  "bootstrap/clojure/src/gravity/reader_cursor.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/reader_host_oracle.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/reader_namespace.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/reader_primitives.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/source_span.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/source_unit.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/syntax_object_stream.clj" :sh-syntax
+  "bootstrap/clojure/src/gravity/syntax_origin.clj" :sh-syntax
+  "bootstrap/clojure/test/gravity/bootstrap_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/c10_safety_analysis_test.clj" :sh-safety
+  "bootstrap/clojure/test/gravity/c11_mir_test.clj" :sh-mir
+  "bootstrap/clojure/test/gravity/c12_domain_ir_test.clj" :sh-domain-ir
+  "bootstrap/clojure/test/gravity/c13_optimization_test.clj" :sh-optimization
+  "bootstrap/clojure/test/gravity/c14_lowering_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/c15_diagnostics_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/c16_incremental_test.clj" :sh-incremental
+  "bootstrap/clojure/test/gravity/c17_plugin_test.clj" :sh-pass-api
+  "bootstrap/clojure/test/gravity/c18_verification_test.clj" :sh-verification
+  "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/c2_lexical_validation_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/c2_reader_diagnostics_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/c2_source_identity_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/c3_artifact_identity_test.clj" :sh-syntax
+  "bootstrap/clojure/test/gravity/c3_literal_projection_test.clj" :sh-syntax
+  "bootstrap/clojure/test/gravity/c3_reader_integrity_test.clj" :sh-syntax
+  "bootstrap/clojure/test/gravity/c3_syntax_construction_test.clj" :sh-syntax
+  "bootstrap/clojure/test/gravity/c3_syntax_diagnostics_test.clj" :sh-syntax
+  "bootstrap/clojure/test/gravity/c3_syntax_evidence_test.clj" :sh-syntax
+  "bootstrap/clojure/test/gravity/c3_syntax_verification_test.clj" :sh-syntax
+  "bootstrap/clojure/test/gravity/c4_macro_evidence_test.clj" :sh-macro
+  "bootstrap/clojure/test/gravity/c5_name_resolution_test.clj" :sh-resolution
+  "bootstrap/clojure/test/gravity/c6_core_lowering_test.clj" :sh-core
+  "bootstrap/clojure/test/gravity/c7_type_checker_test.clj" :sh-types
+  "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj" :sh-effects
+  "bootstrap/clojure/test/gravity/c9_ownership_checker_test.clj" :sh-ownership
+  "bootstrap/clojure/test/gravity/cli_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/compiler_verification_shared_test.clj" :sh-verification
+  "bootstrap/clojure/test/gravity/darwin_publication_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/diagnostics_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/digest_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/macro_expansion_test.clj" :sh-macro
+  "bootstrap/clojure/test/gravity/optimization_lowering_test.clj" :sh-optimization
+  "bootstrap/clojure/test/gravity/reader_cursor_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/reader_diagnostic_policy_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/reader_host_oracle_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/reader_namespace_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/reader_primitives_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/source_span_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/source_unit_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/syntax_object_stream_test.clj" :sh-syntax
+  "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
+ :reserved-leaf-modules
+ {
+  "bootstrap" :master-coordinator
+  "c10-safety-analysis" :sh-safety
+  "c11-mir" :sh-mir
+  "c12-domain-ir" :sh-domain-ir
+  "c13-optimization" :sh-optimization
+  "c14-lowering" :master-coordinator
+  "c15-diagnostics" :master-coordinator
+  "c16-incremental" :sh-incremental
+  "c17-plugin" :sh-pass-api
+  "c18-verification" :sh-verification
+  "c2-artifact-identity" :sh-reader
+  "c2-lexical-validation" :sh-reader
+  "c2-pass-cache" :sh-reader
+  "c2-reader-diagnostics" :sh-reader
+  "c2-source-identity" :sh-reader
+  "c3-artifact-identity" :sh-syntax
+  "c3-literal-projection" :sh-syntax
+  "c3-reader-integrity" :sh-syntax
+  "c3-syntax-construction" :sh-syntax
+  "c3-syntax-diagnostics" :sh-syntax
+  "c3-syntax-evidence" :sh-syntax
+  "c3-syntax-verification" :sh-syntax
+  "c4-macro-evidence" :sh-macro
+  "c5-name-resolution" :sh-resolution
+  "c6-core-lowering" :sh-core
+  "c7-type-checker" :sh-types
+  "c8-effect-checker" :sh-effects
+  "c9-ownership-checker" :sh-ownership
+  "cli" :master-coordinator
+  "compiler-verification-shared" :sh-verification
+  "darwin-publication" :master-coordinator
+  "diagnostics" :master-coordinator
+  "digest" :master-coordinator
+  "macro-expansion" :sh-macro
+  "optimization-lowering" :sh-optimization
+  "reader-cursor" :sh-reader
+  "reader-diagnostic-policy" :sh-reader
+  "reader-host-oracle" :sh-reader
+  "reader-namespace" :sh-reader
+  "reader-primitives" :sh-reader
+  "source-span" :sh-reader
+  "source-unit" :sh-reader
+  "syntax-object-stream" :sh-syntax
+  "syntax-origin" :sh-syntax
+ }
+
+ :bootstrap-compatibility-tests
+ ["bootstrap/clojure/test/gravity/c2_pass_cache_test.clj"
+  "bootstrap/clojure/test/gravity/cli_test.clj"
+  "bootstrap/clojure/test/gravity/diagnostics_test.clj"
+  "bootstrap/clojure/test/gravity/reader_primitives_test.clj"
+  "bootstrap/clojure/test/gravity/source_span_test.clj"]
 
  :future-path-conventions
  {:fixture-root-template
