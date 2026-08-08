@@ -32,12 +32,13 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Build and independently verify an authenticated pure closed checked-core artifact for literal, quote, local, do, if, and let, with canonical C6-C10 pass artifacts and an exact plan-to-C2/C3 origin sidecar.
 - [completed] Repair the pinned Gravity runtime module's allocation, failure, effect, capability, and provider contract, then extend checked-core admission to `str` and `println` only after the C8/R11 gates pass.
 - [completed] Consume only the resulting verified checked-core artifact in a pinned Gravity-authored C11 MIR builder, preserving real operands/results/CFG/definitions/uses and recomputing verifier facts.
-- [pending] Consume only that verified MIR in an internal executable LLVM slice through the pinned ARM64 macOS target and real Clang execution.
-- [pending] Retire the next high-leverage Clojure seed boundary while preserving target-neutral evidence and honest non-self-hosted claims.
+- [completed] Consume only that verified MIR in a bounded internal executable LLVM slice through the pinned ARM64 macOS target and real Clang execution, with standalone accepted/rejected co-canonical fixtures and fail-closed publication.
+- [pending] Build the first Gravity-authored executable driver/runtime that the tracked public `bin/gravity` path invokes, then retire only the public component boundary it actually replaces.
 
-## Baseline snapshot (2026-07-12)
+## Baseline snapshot (2026-08-08)
 
 - Parent implementation baseline for the authenticated C11 candidate: `6410068` (`Authenticate checked-core reference runtime replay`).
+- Verified integration baseline for this slice: `920723b26242eec749171c0216b96874df0502e2`; generated `target/` and `validation/` directories are in-flight evidence only and are not completion authority.
 - Current code proves a genuine lexical/C2/C3/P15 reader slice; C2/C3/P15 remain partial and FL-P01-T01 remains unchecked.
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
 - `bootstrap/gravity/p15_s23/compiler.gravity` passes the bootstrap-only public check after executable-symbol analysis was corrected; whole-language self-hosting remains partial.
@@ -69,10 +70,10 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 
 ## Active slice
 
-- Owner: master coordinator; writer ownership will be frozen to the smallest verified-MIR/LLVM surface before edits.
-- Completed proof: the repaired runtime contract authenticates allocation and output effects, capabilities, providers, grants, failures, principals, audit records, and checked-core authority. The bounded Gravity-authored C11 builder consumes only that authenticated product and emits independently reconstructed MIR/CFG/SSA/use-def/effect/check/fact/proof/source-map/pass/B1 artifacts. Focused, historical, hostile, routing, compatibility, predecessor, public, validator, diff, and adversarial-review gates pass.
-- Honest boundary: C11 supports one function, at most one conditional, and the currently authenticated literal/implicit-nil/quote/local/let-binding/truthy/`do`/`if`/`let`/`str`/`println`/function operation set plus derived runtime checks. Clojure stage0 remains the compiler/runner/verifier TCB; whole C11, backend, LLVM, target-lowering, release, whole-language, and self-hosting claims remain false.
-- Next gate: consume only verified MIR in an internal ARM64 macOS LLVM slice, preserve the authenticated B1/pass/fact/proof closure, execute a real Clang-produced binary, and reject unsupported MIR or target leakage before backend execution.
+- Owner: master coordinator; the current patch is restricted to standalone fixtures, their focused gate wiring, and seed-boundary accounting.
+- Completed proof: authenticated C11 MIR reaches a pinned Gravity-authored B3 lowering for exactly one closed scalar/control-flow subset. Independent reconstruction preserves the C13/C14/B1 pass, fact, proof, target, ABI, source-map, and provenance closure; Apple Clang emits an ARM64 Mach-O executable that runs with the expected exit code. Unsupported MIR, declared-target leakage, evidence tampering, hostile output paths, and failed publication reject with stable diagnostics before toolchain execution or final publication.
+- Honest boundary: the LLVM slice is internal, bounded, and Clojure-seed-bound. Clojure still reconstructs and verifies the Gravity rules and owns process/file I/O and publication; Apple Clang/linker and the Darwin runtime remain trusted. The slice has no public-target, release, full-B3, whole-language, or self-hosting credit. Formal-language completion remains 0/240.
+- Next gate: produce a Gravity-authored executable driver/runtime that consumes a source-bound artifact and is actually invoked by tracked `bin/gravity`; prove an accepted public execution and a stable rejected diagnostic without a Clojure invocation in the selected component. Replays, manifests, source models, and Clojure-hosted comparisons cannot satisfy this gate.
 
 ## Completion gates
 

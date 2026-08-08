@@ -1,0 +1,2 @@
+(ns checked.small (:profile :hosted) (:target :llvm) (:safety :safe) (:effects #{}) (:capabilities #{}) (:exports [main]))
+(defn main [] 7)

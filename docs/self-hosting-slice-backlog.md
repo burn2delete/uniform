@@ -789,11 +789,19 @@ surface validates a pinned ARM64 macOS LLVM subset, constructs deterministic
 textual LLVM for supported scalar and control-flow MIR, preserves target and
 source lineage, and rejects malformed envelopes, unsupported operations,
 invalid data-flow or CFG structure, unsafe target assumptions, and altered
-artifacts through structured diagnostics and contextual verification. Complete
-B3 MIR and domain-IR coverage, production backend execution, object or
-executable emission, external target execution, backend conformance completion,
-public Gravity routing, Clojure seed retirement, SH-07 completion, SH-17
-completion, and self-hosting completion remain pending.
+artifacts through structured diagnostics and contextual verification. The
+subsequent authenticated internal gate consumes only verified C11 MIR, preserves
+the C13/C14/B1/pass/fact/proof closure, emits an ARM64 Mach-O object and
+executable with the pinned Apple Clang/linker, inspects the result with `file`
+and `otool`, and executes the binary with the expected scalar exit code.
+Standalone accepted `.gravity`/`.qst` fixtures and declared-target rejection
+fixtures retain cross-root and extension evidence; target leakage and evidence
+tamper reject before Clang, and hostile publication rejects before the final
+artifact is visible. Complete B3 MIR and domain-IR coverage, a production or
+public LLVM target, backend conformance completion, public Gravity routing,
+Clojure seed retirement, SH-07 completion, SH-17 completion, and self-hosting
+completion remain pending. The internal gate remains Clojure-seed-bound and
+records no public, release, whole-backend, or self-hosting credit.
 The B4 Wasm backend source adds 118,298 authenticated bytes in 72 fragments
 containing 8,189 forms, 629 bindings, and 2,900 resolutions. Its calibrated
 lowering contains 6,830 canonical core nodes with 72 definitions: 61 functions

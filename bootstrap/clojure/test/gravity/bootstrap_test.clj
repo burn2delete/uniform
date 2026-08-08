@@ -34767,25 +34767,43 @@
     (is (some? (ns-resolve 'gravity.bootstrap
                            'p15-s23-b3-llvm-require-authority!)))))
 
+(def ^:private authenticated-llvm-accepted-gravity-path
+  "bootstrap/clojure/fixtures/accepted/p15-s23-b3-llvm-arm64-macos.gravity")
+
+(def ^:private authenticated-llvm-accepted-qst-path
+  "bootstrap/clojure/fixtures/accepted/p15-s23-b3-llvm-arm64-macos.qst")
+
+(def ^:private authenticated-llvm-live-source
+  (slurp authenticated-llvm-accepted-gravity-path))
+
+(def ^:private authenticated-llvm-rejected-gravity-path
+  "bootstrap/clojure/fixtures/rejected/p15-s23-b3-llvm-declared-target.gravity")
+
+(def ^:private authenticated-llvm-rejected-qst-path
+  "bootstrap/clojure/fixtures/rejected/p15-s23-b3-llvm-declared-target.qst")
+
+(def ^:private authenticated-llvm-rejected-source
+  (slurp authenticated-llvm-rejected-gravity-path))
+
 (deftest authenticated-llvm-source-declared-target-is-preserved-as-c6
-  (let [source
-        (closed-pure-source-with-main
-         "7" {:target :llvm :exports '[main]})
+  (let [source authenticated-llvm-rejected-source
         before (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
         observations
         (into
          (sorted-map)
          (map
-          (fn [extension]
-            (let [path (str "source-declared-llvm" extension)]
-              [extension
-               [(diagnostic-data
-                 #(bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
-                   path source))
-                (diagnostic-data
-                 #(bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
-                   path source))]])))
-         [".gravity" ".qst"])
+          (fn [[extension path candidate-source]]
+            [extension
+             [(diagnostic-data
+               #(bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+                 path candidate-source))
+              (diagnostic-data
+               #(bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+                 path candidate-source))]]))
+         [[".gravity" authenticated-llvm-rejected-gravity-path
+           authenticated-llvm-rejected-source]
+          [".qst" authenticated-llvm-rejected-qst-path
+           (slurp authenticated-llvm-rejected-qst-path)]])
         forged-record
         (diagnostic-data
          #(with-redefs
@@ -34877,11 +34895,6 @@
            ((juxt :id :missing-fact) ordinary-record)))
     (is (not (str/includes? (pr-str ordinary-record)
                             "ordinary-source-secret")))))
-
-(def ^:private authenticated-llvm-live-source
-  (closed-pure-source-with-main
-   "(let [x 7] (if true (do x) 9))"
-   {:exports '[main]}))
 
 (defn- authenticated-llvm-private-var
   [symbol]
@@ -35461,10 +35474,40 @@
               _ (java.nio.file.Files/createDirectories
                  right-directory
                  (make-array java.nio.file.attribute.FileAttribute 0))
+              gravity-fixture-path
+              (.toRealPath
+               (java.nio.file.Paths/get
+                authenticated-llvm-accepted-gravity-path
+                (make-array String 0))
+               (make-array java.nio.file.LinkOption 0))
+              qst-fixture-path
+              (.toRealPath
+               (java.nio.file.Paths/get
+                authenticated-llvm-accepted-qst-path
+                (make-array String 0))
+               (make-array java.nio.file.LinkOption 0))
               left-path (.resolve left-directory "program.gravity")
               right-path (.resolve right-directory "program.qst")
-              _ (spit (.toFile left-path) authenticated-llvm-live-source)
-              _ (spit (.toFile right-path) authenticated-llvm-live-source)
+              left-source (slurp (.toFile gravity-fixture-path))
+              right-source (slurp (.toFile qst-fixture-path))
+              _ (java.nio.file.Files/copy
+                 gravity-fixture-path left-path
+                 (into-array
+                  java.nio.file.CopyOption
+                  [java.nio.file.StandardCopyOption/REPLACE_EXISTING]))
+              _ (java.nio.file.Files/copy
+                 qst-fixture-path right-path
+                 (into-array
+                  java.nio.file.CopyOption
+                  [java.nio.file.StandardCopyOption/REPLACE_EXISTING]))
+              left-source-path
+              (.toString
+               (.toRealPath left-path
+                            (make-array java.nio.file.LinkOption 0)))
+              right-source-path
+              (.toString
+               (.toRealPath right-path
+                            (make-array java.nio.file.LinkOption 0)))
               left-output (.resolve root "left-bundle")
               right-output (.resolve root "right-bundle")
               mirror-root (.resolve root "copied-compiler-root")
@@ -35524,16 +35567,20 @@
                 (fn []
                   (let [left
                         (bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
-                         (.toString left-path) authenticated-llvm-live-source
+                         left-source-path left-source
                          {:output-directory (.toString left-output)})
                         right
                         (with-redefs
                           [bootstrap/p15-s23-c11-mir-resolve-source-path
                            (fn [] (.toString copied-c11-path))]
                           (bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
-                           (.toString right-path) authenticated-llvm-live-source
+                           right-source-path right-source
                            {:output-directory (.toString right-output)}))
-                        left-observation (first @c11-observations)
+                        left-observation
+                        (first
+                         (filter #(= left-source-path
+                                     (get-in % [:context :source-path]))
+                                 @c11-observations))
                         contextual-report
                         (bootstrap/p15-s23-stage2-b3-llvm-verification-report
                          left (:checked-core left-observation)
@@ -35545,12 +35592,22 @@
               right (:right live-results)
               contextual-report (:contextual-report live-results)
               c11-values (:c11-observations live-results)
-              left-core (:checked-core (nth c11-values 0))
-              left-context (:context (nth c11-values 0))
-              left-c11 (:c11 (nth c11-values 0))
-              right-core (:checked-core (nth c11-values 1))
-              right-context (:context (nth c11-values 1))
-              right-c11 (:c11 (nth c11-values 1))
+              left-observations
+              (filterv #(= left-source-path
+                            (get-in % [:context :source-path]))
+                       c11-values)
+              right-observations
+              (filterv #(= right-source-path
+                            (get-in % [:context :source-path]))
+                       c11-values)
+              left-observation (first left-observations)
+              right-observation (first right-observations)
+              left-core (:checked-core left-observation)
+              left-context (:context left-observation)
+              left-c11 (:c11 left-observation)
+              right-core (:checked-core right-observation)
+              right-context (:context right-observation)
+              right-c11 (:c11 right-observation)
               tool-after-live
               (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
               transaction-values @transaction-observations
@@ -35584,13 +35641,13 @@
               left-b3-binding
               (with-redefs-fn
                 {authority-var (fn [& _] nil)}
-                #(source-binding nil (.toString left-path)))
+                #(source-binding nil left-source-path))
               diamond-lowering
               (with-redefs-fn
                 {authority-var (fn [& _] nil)}
                 #(invoke-builder nil left-b3-binding
                                  (:mir-module left-c11)
-                                 (.toString left-path)))
+                                 left-source-path))
               logical-names
               ["program.ll" "program.o" "program"
                "manifest.edn" "provenance.edn" "conformance.edn"]
@@ -35845,7 +35902,7 @@
               (diagnostic-data
                #(context-binding-verifier
                  dynamic-binding-tamper (:c13-c14-b1-packet left)
-                 (.toString left-path)))
+                 left-source-path))
               carried-b1-tamper
               (-> left
                   (assoc-in [:b1-packet :proofs :capability :proof-ids]
@@ -35855,11 +35912,11 @@
               (diagnostic-data
                #(context-binding-verifier
                  carried-b1-tamper (:c13-c14-b1-packet left)
-                 (.toString left-path)))
+                 left-source-path))
               context-binding-genuine
               (context-binding-verifier
                left (:c13-c14-b1-packet left)
-               (.toString left-path))
+               left-source-path)
               context-provenance-genuine
               (context-provenance-verifier
                left left-c11 left-context left-b3-binding)
@@ -35969,7 +36026,7 @@
               original-inventory (var-get inventory-var)
               race-preflight
               (output-preflight first-candidate (.toString race-output)
-                                (.toString left-path))
+                                left-source-path)
               race-triggered? (atom false)
               race-data
               (diagnostic-data
@@ -36064,7 +36121,7 @@
               (authenticated-llvm-interrupt-probe root)
               b3-complete
               (bootstrap/p15-s23-b3-llvm-diagnostic-record
-               "B3-MANIFEST" (.toString left-path) {}
+               "B3-MANIFEST" left-source-path {}
                {:bounded-reason :legitimate})
               b3-forged-base
               (assoc-in b3-complete [:facts :bounded-reason]
@@ -36081,7 +36138,7 @@
               b3-contained
               (diagnostic-data
                #(bootstrap/p15-s23-b3-llvm-contain-exception!
-                 (.toString left-path) :forged-b3-diagnostic
+                 left-source-path :forged-b3-diagnostic
                  (ex-info "B3-TOP-SECRET"
                           (merge b3-forged
                                  {:id "B3-MANIFEST"
@@ -36090,7 +36147,11 @@
               (set (filter #(str/starts-with?
                              % ".gravity-b3-final-publish-")
                            (seq (.list (.toFile root)))))]
-          {:source authenticated-llvm-live-source
+          {:source left-source
+           :fixture-sources {:gravity left-source :qst right-source}
+           :source-paths {:left left-source-path :right right-source-path}
+           :source-observations {:left left-observations
+                                 :right right-observations}
            :root (.toString root)
            :left {:artifact left :checked-core left-core
                   :c11 left-c11 :context left-context
@@ -36387,10 +36448,15 @@
       (is (false? b3-authentic?)))))
 
 (deftest authenticated-llvm-arm64-macos-emits-runs-and-is-reproducible
-  (let [{:keys [root left right contextual-report diamond-lowering transactions]}
+  (let [{:keys [root left right contextual-report diamond-lowering transactions
+                fixture-sources source-paths source-observations]}
         @authenticated-llvm-live-proof
         left-artifact (:artifact left)
         right-artifact (:artifact right)
+        left-context (:context left)
+        right-context (:context right)
+        left-c11 (:c11 left)
+        right-c11 (:c11 right)
         left-packet (:c13-c14-b1-packet left-artifact)
         right-packet (:c13-c14-b1-packet right-artifact)
         left-projection
@@ -36451,6 +36517,40 @@
         physical-tool-record
         (get-in left-artifact
                 [:actual-path-provenance :tool-installation-record])]
+    (is (= (:gravity fixture-sources)
+           (:qst fixture-sources)))
+    (is (str/ends-with? (:left source-paths) ".gravity"))
+    (is (str/ends-with? (:right source-paths) ".qst"))
+    (doseq [[label observations] source-observations]
+      (is (seq observations) label)
+      (is (= 1
+             (count
+              (set
+               (map
+                (fn [{:keys [checked-core context c11]}]
+                  {:context
+                   (select-keys context
+                                [:kind :source-path :requested-target])
+                   :checked-core
+                   (select-keys checked-core
+                                [:artifact-id :mapping-id
+                                 :provenance-binding-id])
+                   :c11
+                   (select-keys c11
+                                [:artifact-id :mir-id
+                                 :actual-path-binding-id
+                                 :source-core-artifact-id])})
+                observations))))
+          label))
+    (doseq [[label source-path artifact context c11]
+            [[:left (:left source-paths) left-artifact left-context left-c11]
+             [:right (:right source-paths) right-artifact right-context
+              right-c11]]]
+      (is (= source-path (:source-path context)) label)
+      (is (= source-path
+             (get-in artifact [:actual-path-provenance :source])) label)
+      (is (= source-path
+             (get-in c11 [:provenance :actual-paths :source])) label))
     (is (= :gravity/p15-s23-b3-authenticated-llvm-artifact
            (:kind left-artifact) (:kind right-artifact)))
     (is (= :gravity/p15-s23-stage2-gravity-checked-core-artifact
