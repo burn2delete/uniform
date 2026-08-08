@@ -336,19 +336,19 @@
   replacement for the Clojure reader."
   [source]
   (let [length (.length ^String source)
-        opening #{\( \[ \{}
+        matching-delimiter {\( \) \[ \] \{ \}}
         closing #{\) \] \}}]
     (loop [index 0
-           depth 0
+           delimiters []
            maximum-seen 0
            mode :normal
            escaped? false]
       (if (= index length)
         (do
-          (when (not= :normal mode)
+          (when-not (#{:normal :comment} mode)
             (failure "SH07-C11-PREFLIGHT-LEXICAL-DELIMITERS"
                      "C11 source has an unterminated lexical literal"))
-          (when (pos? depth)
+          (when (seq delimiters)
             (failure "SH07-C11-PREFLIGHT-LEXICAL-DELIMITERS"
                      "C11 source has unclosed delimiters"))
           maximum-seen)
@@ -358,50 +358,53 @@
           (case mode
             :comment
             (if (or (= character \newline) (= character \return))
-              (recur (inc index) depth maximum-seen :normal false)
-              (recur (inc index) depth maximum-seen :comment false))
+              (recur (inc index) delimiters maximum-seen :normal false)
+              (recur (inc index) delimiters maximum-seen :comment false))
 
             :string
             (cond
-              escaped? (recur (inc index) depth maximum-seen :string false)
-              (= character \\) (recur (inc index) depth maximum-seen :string true)
-              (= character \") (recur (inc index) depth maximum-seen :normal false)
-              :else (recur (inc index) depth maximum-seen :string false))
+              escaped? (recur (inc index) delimiters maximum-seen :string false)
+              (= character \\) (recur (inc index) delimiters maximum-seen :string true)
+              (= character \") (recur (inc index) delimiters maximum-seen :normal false)
+              :else (recur (inc index) delimiters maximum-seen :string false))
 
             :regex
             (cond
-              escaped? (recur (inc index) depth maximum-seen :regex false)
-              (= character \\) (recur (inc index) depth maximum-seen :regex true)
-              (= character \") (recur (inc index) depth maximum-seen :normal false)
-              :else (recur (inc index) depth maximum-seen :regex false))
+              escaped? (recur (inc index) delimiters maximum-seen :regex false)
+              (= character \\) (recur (inc index) delimiters maximum-seen :regex true)
+              (= character \") (recur (inc index) delimiters maximum-seen :normal false)
+              :else (recur (inc index) delimiters maximum-seen :regex false))
 
             :character
             ;; The first codepoint is enough to hide delimiter characters;
             ;; named literals such as \\newline then continue as ordinary
             ;; non-delimiter letters, which is conservative for this bound.
-            (recur (inc index) depth maximum-seen :normal false)
+            (recur (inc index) delimiters maximum-seen :normal false)
 
             ;; :normal
             (cond
-              (= character \;) (recur (inc index) depth maximum-seen :comment false)
-              (= character \"") (recur (inc index) depth maximum-seen :string false)
+              (= character \;) (recur (inc index) delimiters maximum-seen :comment false)
+              (= character \") (recur (inc index) delimiters maximum-seen :string false)
               (and (= character \#) (= next-character \"))
-              (recur (+ index 2) depth maximum-seen :regex false)
-              (= character \\) (recur (inc index) depth maximum-seen :character false)
-              (contains? opening character)
-              (let [next-depth (inc depth)]
+              (recur (+ index 2) delimiters maximum-seen :regex false)
+              (= character \\) (recur (inc index) delimiters maximum-seen :character false)
+              (contains? matching-delimiter character)
+              (let [next-delimiters (conj delimiters character)
+                    next-depth (count next-delimiters)]
                 (when (> next-depth maximum-form-depth)
                   (failure "SH07-C11-PREFLIGHT-FORM-DEPTH"
                            "C11 source exceeds bounded lexical delimiter depth"
                            {:maximum maximum-form-depth}))
-                (recur (inc index) next-depth (max maximum-seen next-depth)
+                (recur (inc index) next-delimiters (max maximum-seen next-depth)
                        :normal false))
               (contains? closing character)
-              (if (zero? depth)
+              (if (or (empty? delimiters)
+                      (not= character
+                            (matching-delimiter (peek delimiters))))
                 (failure "SH07-C11-PREFLIGHT-LEXICAL-DELIMITERS"
-                         "C11 source closes a delimiter before opening it")
-                (recur (inc index) (dec depth) maximum-seen :normal false))
-              :else (recur (inc index) depth maximum-seen :normal false))))))))
+                         "C11 source has an unmatched or mismatched delimiter")
+                (recur (inc index) (pop delimiters) maximum-seen :normal false))
+              :else (recur (inc index) delimiters maximum-seen :normal false))))))))
 
 (defn- read-forms
   [source]
@@ -668,6 +671,24 @@
       (is (= 1
              (lexical-delimiter-depth!
               "(\"}\" #\"[\" ; )\n \\( )"))))
+    (testing "lexical modes handle escaped quotes and backslashes exactly"
+      (is (= 1
+             (lexical-delimiter-depth!
+              "(\"escaped \\\" quote and \\\\ slash )\" #\"escaped \\\" quote and \\\\ slash [\" \\) )"))))
+    (testing "a trailing comment may terminate at EOF"
+      (is (= 1
+             (count (read-forms
+                     "(ns synthetic) ; trailing comment")))))
+    (testing "unterminated string, regex, and character modes fail closed"
+      (doseq [unterminated ["\"unterminated"
+                            "#\"unterminated"
+                            "\\"]]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (lexical-delimiter-depth! unterminated)))))
+    (testing "unmatched, mismatched, and unclosed delimiters fail closed"
+      (doseq [invalid [")" "([)]" "("]]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (lexical-delimiter-depth! invalid)))))
     (testing "lexical delimiter depth rejects actual over-deep text before reader entry"
       (let [deep-text
             (str (apply str (repeat (inc maximum-form-depth) "("))
