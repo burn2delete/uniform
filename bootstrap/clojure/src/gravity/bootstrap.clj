@@ -145094,6 +145094,15 @@
 (def ^:private c-backend-process-max-output-bytes (* 8 1024 1024))
 (def ^:private c-backend-process-max-descendants 64)
 (def ^:private c-backend-process-max-staging-entries 16)
+(def ^:dynamic *c-backend-process-timeout-ms*
+  c-backend-process-timeout-ms)
+(def ^:dynamic *c-backend-process-max-output-bytes*
+  c-backend-process-max-output-bytes)
+(def ^:dynamic *c-backend-process-max-descendants*
+  c-backend-process-max-descendants)
+(def ^:dynamic *c-backend-process-start-fn*
+  (fn [^java.lang.ProcessBuilder builder]
+    (.start builder)))
 (def ^:private c-backend-private-directory-permissions
   #{java.nio.file.attribute.PosixFilePermission/OWNER_READ
     java.nio.file.attribute.PosixFilePermission/OWNER_WRITE
@@ -145248,35 +145257,100 @@
             (throw error)))))))
 
 (defn- c-backend-process-descendants
+  "Take one bounded descendant snapshot without retaining a handle past the cap.
+
+  The stream is allowed to expose one candidate beyond the bound, but that
+  candidate is checked before it can enter the returned vector.  Callers merge
+  snapshots through `c-backend-merge-census-handles`, which applies the same
+  check to the global set accumulated across process churn."
   [process]
-  (let [root (.toHandle process)]
+  (let [root (.toHandle process)
+        maximum (long *c-backend-process-max-descendants*)]
+    (when (neg? maximum)
+      (throw (ex-info "negative native process descendant bound"
+                      {:maximum maximum})))
     (with-open [stream (.descendants root)]
-      (vec (iterator-seq
-            (.iterator (.limit stream
-                               (long (inc c-backend-process-max-descendants)))))))))
+      (let [iterator (.iterator stream)]
+        (loop [handles []
+               seen #{}]
+          (if-not (.hasNext iterator)
+            {:handles handles :overflow? false :snapshot-ok? true}
+            (let [handle (.next iterator)
+                  pid (.pid ^java.lang.ProcessHandle handle)]
+              (cond
+                (contains? seen pid)
+                (recur handles seen)
+
+                (>= (count seen) maximum)
+                ;; Do not retain the over-cap handle.  The global merge helper
+                ;; performs the equivalent check for sequential snapshots.
+                {:handles handles :overflow? true :snapshot-ok? true}
+
+                :else
+                (recur (conj handles handle) (conj seen pid))))))))))
+
+(defn- c-backend-census-merge-ids
+  "Pure global-cap check used by the process-handle merge.
+
+  Returning the old retained set on overflow is intentional: a churned
+  process cannot cause unbounded retention before the caller fails closed."
+  [captured-ids candidate-ids maximum]
+  (let [captured-ids (set captured-ids)
+        new-ids (vec (remove captured-ids candidate-ids))]
+    {:new-ids new-ids
+     :retained-ids (if (> (+ (count captured-ids) (count new-ids))
+                         (long maximum))
+                     captured-ids
+                     (into captured-ids new-ids))
+     :overflow? (> (+ (count captured-ids) (count new-ids))
+                   (long maximum))}))
+
+(defn- c-backend-merge-census-handles
+  "Merge HANDLES into CAPTURED only after checking the global unique bound.
+
+  CAPTURED is a PID->ProcessHandle map for descendants only; the process root
+  is tracked separately.  On overflow the returned map is unchanged, so a
+  churn-heavy process cannot make retention grow without bound before the
+  supervision failure is reported."
+  [captured handles maximum]
+  (let [captured (or captured {})
+        candidate-by-id
+        (reduce (fn [acc handle]
+                  (assoc acc (.pid ^java.lang.ProcessHandle handle) handle))
+                {}
+                handles)
+        {:keys [new-ids overflow?]}
+        (c-backend-census-merge-ids (keys captured)
+                                    (keys candidate-by-id)
+                                    maximum)
+        new-handles (select-keys candidate-by-id new-ids)]
+    {:captured (if overflow?
+                 captured
+                 (merge captured new-handles))
+     :new-handles new-handles
+     :overflow? overflow?}))
 
 (defn- c-backend-terminate-process-tree!
   [process source-path target]
   (let [root (.toHandle process)
-        captured (atom {(.pid root) root})
+        captured (atom {})
+        observation-overflow? (atom false)
         deadline (+ (System/nanoTime) 2000000000)]
     (loop []
-      (let [descendants
+      (let [snapshot
             (try
               (c-backend-process-descendants process)
               (catch InterruptedException interrupted
                 (.interrupt (Thread/currentThread))
                 (throw interrupted)))
-            _ (swap! captured
-                     into
-                     (into {}
-                           (map (fn [handle] [(.pid ^java.lang.ProcessHandle handle)
-                                              handle])
-                                descendants)))]
-        (let [descendant-overflow?
-              (> (count @captured)
-                 (inc c-backend-process-max-descendants))]
-        (doseq [handle (vals @captured)]
+            merge-result
+            (c-backend-merge-census-handles
+             @captured (:handles snapshot) *c-backend-process-max-descendants*)
+            _ (when (or (:overflow? snapshot) (:overflow? merge-result))
+                (reset! observation-overflow? true))
+            _ (when-not @observation-overflow?
+                (reset! captured (:captured merge-result)))]
+        (doseq [handle (cons root (vals @captured))]
           (try
             (.destroyForcibly ^java.lang.ProcessHandle handle)
             (catch Exception _ nil)))
@@ -145284,17 +145358,18 @@
         ;; handles that were already captured.  More descendants may exist
         ;; beyond the bounded snapshot, so this remains a fail-closed error
         ;; rather than process-tree proof.
-        (when descendant-overflow?
+        (when @observation-overflow?
           (c-backend-fail!
            "B2-DIALECT" "C backend process descendant set exceeded its bound"
            source-path target nil
            {:missing-fact :bounded-c-backend-process-descendants
-            :maximum-descendants c-backend-process-max-descendants
-            :observed-descendants (dec (count @captured))
+            :maximum-descendants *c-backend-process-max-descendants*
+            :observed-descendants (count @captured)
             :captured-kill-requested? true
             :whole-process-tree-reaping-proved? false})))
         (let [alive
-              (filter #(.isAlive ^java.lang.ProcessHandle %) (vals @captured))]
+              (filter #(.isAlive ^java.lang.ProcessHandle %)
+                      (cons root (vals @captured)))]
           (if (and (seq alive) (< (System/nanoTime) deadline))
             (do
               (try
@@ -145304,20 +145379,30 @@
                   (throw interrupted)))
               (recur))
             (let [final-descendants (c-backend-process-descendants process)
+                  final-merge
+                  (c-backend-merge-census-handles
+                   @captured (:handles final-descendants)
+                   *c-backend-process-max-descendants*)
+                  _ (when (or (:overflow? final-descendants)
+                              (:overflow? final-merge))
+                      (reset! observation-overflow? true))
+                  _ (when-not @observation-overflow?
+                      (reset! captured (:captured final-merge)))
                   final-handles
                   (vals
                    (into
                     {}
                     (map (fn [handle]
                            [(.pid ^java.lang.ProcessHandle handle) handle]))
-                    (concat (vals @captured) final-descendants [root])))
+                    (concat (vals @captured) (:handles final-descendants)
+                            [root])))
                   final-alive
                   (filter #(.isAlive ^java.lang.ProcessHandle %)
                           final-handles)
                   result
                   {:kill-requested? true
-                   :captured-process-count (count @captured)
-                   :descendant-count (dec (count @captured))
+                   :captured-process-count (inc (count @captured))
+                   :descendant-count (count @captured)
                    :alive-process-count (count final-alive)
                    :root-alive-after-kill? (.isAlive root)
                    :captured-process-set-reaped? (empty? final-alive)
@@ -145334,7 +145419,131 @@
                  source-path target nil
                  {:missing-fact :c-backend-process-tree-reaping
                   :termination result}))
-              result)))))))
+              result))))))
+
+(defn- c-backend-process-read-stream
+  "Drain INPUT completely while retaining a strict UTF-8 prefix.
+
+  Every wire byte is hashed and consumed, including bytes beyond the bounded
+  evidence prefix.  UTF-8 decoding uses REPORT mode; malformed input is
+  remembered while the drain continues so a child cannot remain blocked on a
+  full pipe merely because its output was invalid."
+  [^java.io.InputStream input capture-limit-bytes]
+  (with-open [input input]
+    (let [limit (long capture-limit-bytes)
+          _ (when (neg? limit)
+              (throw (ex-info "negative native process capture limit"
+                              {:limit limit})))
+          digest (java.security.MessageDigest/getInstance "SHA-256")
+          decoder (-> java.nio.charset.StandardCharsets/UTF_8
+                      (.newDecoder)
+                      (.onMalformedInput
+                       java.nio.charset.CodingErrorAction/REPORT)
+                      (.onUnmappableCharacter
+                       java.nio.charset.CodingErrorAction/REPORT))
+          retained (StringBuilder.)
+          retained-bytes (atom 0)
+          retained-complete? (atom true)
+          append-output!
+          (fn [^java.nio.CharBuffer output]
+            (.flip output)
+            (let [chunk (.toString output)]
+              (loop [index 0]
+                (when (and @retained-complete?
+                           (< index (.length chunk)))
+                  (let [code-point (Character/codePointAt chunk index)
+                        code-point-text (String. (Character/toChars code-point))
+                        code-point-bytes
+                        (.getBytes code-point-text
+                                   java.nio.charset.StandardCharsets/UTF_8)
+                        next-bytes (+ @retained-bytes
+                                      (alength code-point-bytes))]
+                    (if (<= next-bytes limit)
+                      (do
+                        (.append retained code-point-text)
+                        (reset! retained-bytes next-bytes)
+                        (recur (+ index (Character/charCount code-point))))
+                      ;; Do not retain a partial code point at the cap.  The
+                      ;; decoder still consumes it and subsequent bytes.
+                      (reset! retained-complete? false))))))
+            (.clear output))
+          decode-chunk!
+          (fn [^bytes bytes end-of-input?]
+            (let [input-buffer (java.nio.ByteBuffer/wrap bytes)]
+              (loop []
+                (let [output (java.nio.CharBuffer/allocate 4096)
+                      result (.decode decoder input-buffer output end-of-input?)]
+                  (append-output! output)
+                  (cond
+                    (.isError result) (.throwException result)
+                    (.isOverflow result) (recur)
+                    :else
+                    (let [remaining (.remaining input-buffer)
+                          carry (byte-array remaining)]
+                      (when (pos? remaining)
+                        (.get input-buffer carry))
+                      carry))))))
+          flush-decoder!
+          (fn []
+            (loop []
+              (let [output (java.nio.CharBuffer/allocate 4096)
+                    result (.flush decoder output)]
+                (append-output! output)
+                (cond
+                  (.isError result) (.throwException result)
+                  (.isOverflow result) (recur)
+                  :else nil))))
+          buffer (byte-array 8192)]
+      (loop [total 0
+             carry (byte-array 0)
+             decode-error nil]
+        (let [read-count (.read input buffer)]
+          (if (neg? read-count)
+            (let [decode-error
+                  (if decode-error
+                    decode-error
+                    (try
+                      (let [final-carry (decode-chunk! carry true)]
+                        (when (pos? (alength final-carry))
+                          ;; An incomplete sequence at EOF must take the
+                          ;; decoder's REPORT error path.
+                          (decode-chunk! final-carry true))
+                        (flush-decoder!)
+                        nil)
+                      (catch java.nio.charset.CharacterCodingException error
+                        error)))]
+              {:text (.toString retained)
+               :byte-count total
+               :total-byte-count total
+               :retained-byte-count @retained-bytes
+               :truncated? (or (> total limit)
+                               (not @retained-complete?))
+               :limit-exceeded? (> total limit)
+               :stream-read-complete? true
+               :decode-error decode-error
+               :hash (str "sha256:"
+                          (apply str
+                                 (map #(format "%02x" (bit-and % 0xff))
+                                      (.digest digest))))})
+            (let [next-total (+ total read-count)
+                  combined (byte-array (+ (alength carry) read-count))
+                  _ (when (pos? (alength carry))
+                      (System/arraycopy carry 0 combined 0 (alength carry)))
+                  _ (System/arraycopy buffer 0 combined (alength carry)
+                                       read-count)
+                  ;; Hash the original wire bytes, not the retained prefix.
+                  _ (.update digest buffer 0 read-count)
+                  decode-state
+                  (if decode-error
+                    {:carry carry :error decode-error}
+                    (try
+                      {:carry (decode-chunk! combined false)
+                       :error nil}
+                      (catch java.nio.charset.CharacterCodingException error
+                        ;; Stop decoding after the first malformed sequence,
+                        ;; but continue consuming and hashing the wire stream.
+                        {:carry (byte-array 0) :error error})))]
+              (recur next-total (:carry decode-state) (:error decode-state)))))))))
 
 (defn- c-backend-start-output-pump!
   [input-stream stream-kind]
@@ -145343,30 +145552,10 @@
         (Thread.
          (fn []
            (try
-             (with-open [input ^java.io.InputStream input-stream
-                         output (java.io.ByteArrayOutputStream.)]
-               (let [buffer (byte-array 8192)]
-                 (loop [byte-count 0]
-                   (let [read-count (.read input buffer)]
-                     (if (neg? read-count)
-                       (deliver outcome
-                                {:stream stream-kind
-                                 :byte-count byte-count
-                                 :text (.toString
-                                        output
-                                        (.name
-                                         java.nio.charset.StandardCharsets/UTF_8))})
-                       (let [next-count (+ byte-count read-count)]
-                         (if (> next-count c-backend-process-max-output-bytes)
-                           (deliver outcome
-                                    {:stream stream-kind
-                                     :overflow? true
-                                     :maximum-byte-count
-                                     c-backend-process-max-output-bytes
-                                     :observed-byte-count next-count})
-                           (do
-                             (.write output buffer 0 read-count)
-                             (recur next-count)))))))))
+             (deliver outcome
+                      (assoc (c-backend-process-read-stream
+                              input-stream *c-backend-process-max-output-bytes*)
+                             :stream stream-kind))
              (catch Throwable error
                (deliver outcome
                         {:stream stream-kind
@@ -145389,13 +145578,14 @@
   [pump]
   (when (realized? (:outcome pump))
     (let [outcome @(:outcome pump)]
-      (when (or (:overflow? outcome) (:read-error outcome))
+      (when (or (:decode-error outcome)
+                (:read-error outcome))
         outcome))))
 
 (defn- c-backend-await-process!
   [process pumps]
   (let [deadline (+ (System/nanoTime)
-                    (* c-backend-process-timeout-ms 1000000))]
+                    (* *c-backend-process-timeout-ms* 1000000))]
     (loop []
       (if-let [failure (some c-backend-output-pump-failure pumps)]
         {:status :output-failure :failure failure}
@@ -145413,11 +145603,13 @@
   [process failure source-path target role]
   (let [termination
         (c-backend-terminate-process-tree! process source-path target)]
-    (if (:overflow? failure)
+    (if (:limit-exceeded? failure)
       (c-backend-fail!
        "B2-DIALECT" "C backend process output exceeded its bound"
        source-path target nil
-       (assoc (dissoc failure :overflow?)
+       (assoc (dissoc failure :limit-exceeded?)
+              :maximum-byte-count *c-backend-process-max-output-bytes*
+              :observed-byte-count (:total-byte-count failure)
               :missing-fact :bounded-c-backend-process-output
               :role role
               :termination termination))
@@ -145427,7 +145619,13 @@
        {:missing-fact :c-backend-process-output-read
         :stream (:stream failure)
         :role role
-        :cause-message (.getMessage ^Throwable (:read-error failure))
+        :decode-error? (boolean (:decode-error failure))
+        :cause-message
+        (some-> (or (:read-error failure) (:decode-error failure))
+                ^Throwable
+                .getMessage)
+        :stream-read-complete? (:stream-read-complete? failure)
+        :hash (:hash failure)
         :termination termination}))))
 
 (defn- c-backend-finish-output-pump!
@@ -145512,7 +145710,7 @@
         pumps-holder (atom [])
         primary-failure (atom nil)]
     (try
-      (let [process (.start builder)
+      (let [process (*c-backend-process-start-fn* builder)
             _ (reset! process-holder process)
             _ (.close (.getOutputStream process))
             stdout-pump (c-backend-start-output-pump!
@@ -145532,7 +145730,7 @@
              source-path target nil
              {:missing-fact :c-backend-process-timeout
               :role role
-              :timeout-ms c-backend-process-timeout-ms
+              :timeout-ms *c-backend-process-timeout-ms*
               :timed-out? true
               :termination termination})))
         (when (= :output-failure (:status wait-result))
@@ -145554,7 +145752,8 @@
             (c-backend-fail-output-pump!
              process failure source-path target role)))
         (let [descendants (c-backend-process-descendants process)]
-          (when (seq descendants)
+          (when (or (:overflow? descendants)
+                    (seq (:handles descendants)))
             (let [termination
                   (c-backend-terminate-process-tree!
                    process source-path target)]
@@ -145563,6 +145762,7 @@
                source-path target nil
                {:missing-fact :c-backend-process-descendants
                 :role role
+                :snapshot-overflow? (:overflow? descendants)
                 :termination termination}))))
         (let [stdout (c-backend-finish-output-pump!
                       stdout-pump source-path target)
@@ -145570,7 +145770,8 @@
                       stderr-pump source-path target)
               failure
               (some (fn [outcome]
-                      (when (or (:overflow? outcome)
+                      (when (or (:limit-exceeded? outcome)
+                                (:decode-error outcome)
                                 (:read-error outcome))
                         outcome))
                     [stdout stderr])]
@@ -145585,6 +145786,10 @@
            :err (:text stderr)
            :stdout-byte-count (:byte-count stdout)
            :stderr-byte-count (:byte-count stderr)
+           :stdout-total-byte-count (:total-byte-count stdout)
+           :stderr-total-byte-count (:total-byte-count stderr)
+           :stdout-hash (:hash stdout)
+           :stderr-hash (:hash stderr)
            :finished? true
            :timed-out? false
            :role role}))
@@ -145597,16 +145802,16 @@
             (catch Throwable cleanup
               (.addSuppressed ^Throwable interrupted ^Throwable cleanup))))
         (.interrupt (Thread/currentThread))
-        (try
-          (c-backend-fail!
-           "B2-DIALECT" "C backend process operation was interrupted"
-           source-path target nil
-           {:missing-fact :c-backend-process-interrupted
-            :role role
-            :interrupted? true})
-          (catch clojure.lang.ExceptionInfo diagnostic
-            (reset! primary-failure diagnostic)
-            (throw diagnostic))))
+        ;; Preserve the exact main-thread InterruptedException.  Cleanup
+        ;; evidence is attached as suppressed rather than replacing it with a
+        ;; diagnostic wrapper.
+        (throw interrupted))
+      (catch Error fatal
+        ;; OOME and ThreadDeath are fatal control flow, not ordinary process
+        ;; failures.  The finally block may add bounded cleanup evidence, but
+        ;; it must never replace the original object.
+        (reset! primary-failure fatal)
+        (throw fatal))
       (catch clojure.lang.ExceptionInfo ex
         (reset! primary-failure ex)
         (throw ex))
