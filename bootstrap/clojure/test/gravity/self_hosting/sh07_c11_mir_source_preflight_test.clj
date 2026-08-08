@@ -297,6 +297,11 @@
     (when-not (bytes? bytes)
       (failure "SH07-C11-PREFLIGHT-SOURCE-BYTES"
                "C11 source snapshot did not provide byte data"))
+    (when (> (alength ^bytes bytes) maximum-source-bytes)
+      (failure "SH07-C11-PREFLIGHT-SOURCE-BYTES"
+               "C11 source snapshot exceeds bounded input"
+               {:observed (alength ^bytes bytes)
+                :maximum maximum-source-bytes}))
     ;; Ignore any injected :source-text: all parsing must use the bytes from
     ;; the bounded, coherent snapshot and the strict UTF-8 decoder.
     (assoc snapshot
