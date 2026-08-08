@@ -11,6 +11,7 @@
             [clojure.string :as str]
             [clojure.walk :as walk]
             [gravity.c2-pass-cache :as c2-pass-cache]
+            [gravity.c3-literal-projection :as c3-literal-projection]
             [gravity.c3-syntax-construction :as c3-syntax-construction]
             [gravity.c3-syntax-evidence :as c3-syntax-evidence]
             [gravity.c4-macro-evidence :as c4-macro-evidence]
@@ -146595,209 +146596,69 @@
         :facts {:reader-product-integrity report}}))
     report))
 
+(declare c3-deferred-ratio-descriptor-from-raw
+         c3-ratio-descriptor-from-raw
+         c3-lossless-literal-descriptor
+         c3-tagged-literal-descriptor
+         c3-source-form-kind
+         c3-source-facts)
+
+(defn- c3-literal-projection-ops
+  []
+  {:c3-c2-reader-integrity-report c3-c2-reader-integrity-report
+   :form-kind form-kind
+   :c3-deferred-ratio-descriptor-from-raw
+   c3-deferred-ratio-descriptor-from-raw
+   :c3-ratio-descriptor-from-raw c3-ratio-descriptor-from-raw
+   :c3-lossless-literal-descriptor c3-lossless-literal-descriptor
+   :c3-tagged-literal-descriptor c3-tagged-literal-descriptor
+   :c3-source-form-kind c3-source-form-kind
+   :c3-source-facts c3-source-facts})
+
+(def ^:private ^:dynamic *c3-literal-projection-leaf-call?* false)
+
+(defn- c3-literal-projection-call
+  [operation & args]
+  (if *c3-literal-projection-leaf-call?*
+    (apply operation args)
+    (binding [*c3-literal-projection-leaf-call?* true]
+      (c3-literal-projection/with-operations
+       (c3-literal-projection-ops)
+       #(apply operation args)))))
+
 (defn c3-deferred-ratio-descriptor-from-raw
   [raw]
-  (when-let [[_ numerator-spelling denominator-spelling]
-             (and (string? raw)
-                  (re-matches #"([+-]?[0-9]+)/([+-]?[0-9]+)" raw))]
-    (try
-      (let [numerator (bigint numerator-spelling)
-            denominator (bigint denominator-spelling)]
-        (when (zero? denominator)
-          {:artifact :gravity/deferred-ratio-literal
-           :kind :ratio
-           :raw raw
-           :numerator-spelling numerator-spelling
-           :denominator-spelling denominator-spelling
-           :numerator numerator
-           :denominator denominator
-           :semantic-validation :deferred
-           :reason :zero-denominator}))
-      (catch NumberFormatException _ nil))))
+  (c3-literal-projection-call
+   c3-literal-projection/c3-deferred-ratio-descriptor-from-raw raw))
 
 (defn c3-ratio-descriptor-from-raw
   [raw]
-  (when-let [[_ numerator-spelling denominator-spelling]
-             (and (string? raw)
-                  (re-matches #"([+-]?[0-9]+)/([+-]?[0-9]+)" raw))]
-    (try
-      (let [numerator (bigint numerator-spelling)
-            denominator (bigint denominator-spelling)]
-        (if (zero? denominator)
-          {:artifact :gravity/deferred-ratio-literal
-           :kind :ratio
-           :raw raw
-           :numerator-spelling numerator-spelling
-           :denominator-spelling denominator-spelling
-           :numerator numerator
-           :denominator denominator
-           :semantic-validation :deferred
-           :reason :zero-denominator}
-          {:artifact :gravity/ratio-literal
-           :kind :ratio
-           :raw raw
-           :numerator-spelling numerator-spelling
-           :denominator-spelling denominator-spelling
-           :numerator numerator
-           :denominator denominator
-           :semantic-validation :accepted}))
-      (catch NumberFormatException _ nil))))
+  (c3-literal-projection-call
+   c3-literal-projection/c3-ratio-descriptor-from-raw raw))
 
 (defn c3-lossless-literal-descriptor
   [seed form-record c2-artifact integrity-report]
-  (let [integrity-report (or integrity-report
-                             (c3-c2-reader-integrity-report c2-artifact))
-        forms-by-id (into {} (map (juxt :form-id identity)
-                                  (:form-tree c2-artifact)))
-        tokens-by-id (into {} (map (juxt :token-id identity)
-                                   (:token-stream c2-artifact)))
-        root-form-id (:form-id form-record)
-        ratio-form
-        (case (:kind form-record)
-          :ratio form-record
-          :metadata-wrapper
-          (let [ratio-children
-                (filterv #(= :ratio (:kind %))
-                         (keep forms-by-id (:children form-record)))]
-            (when (= 1 (count ratio-children)) (first ratio-children)))
-          nil)
-        ratio-token (when ratio-form
-                      (tokens-by-id (:open-token ratio-form)))
-        descriptor (when ratio-token
-                     (c3-ratio-descriptor-from-raw (:raw ratio-token)))
-        literal-records
-        (filterv #(= (:form-id ratio-form) (:form-id %))
-                 (:literal-decoding-records c2-artifact))
-        deferred-records
-        (filterv #(= (:form-id ratio-form) (:form-id %))
-                 (get-in c2-artifact
-                         [:semantic-error-deferment-record
-                          :deferred-literal-records]))
-        wrapper? (= :metadata-wrapper (:kind form-record))
-        expected-seed-span (when form-record
-                             (assoc (:span form-record)
-                                    :form-index
-                                    (get-in seed [:span :form-index])))]
-    (when
-     (and (:authentic? integrity-report)
-          descriptor ratio-form ratio-token
-          (= root-form-id (:form-id seed))
-          (if (= :deferred (:semantic-validation descriptor))
-            (and (= descriptor (:form seed))
-                 (= descriptor (:value ratio-form) (:decoded ratio-token)))
-            (= (:form seed) (:value ratio-form) (:decoded ratio-token)))
-          (= :ratio (:kind ratio-form) (:kind ratio-token))
-          (= (:open-token ratio-form) (:close-token ratio-form)
-             (:token-id ratio-token))
-          (= (:raw ratio-form) (:raw ratio-token) (:lexeme ratio-token)
-             (:raw descriptor))
-          (= (:span ratio-form) (:span ratio-token))
-          (= 1 (count literal-records))
-          (= (if (= :deferred (:semantic-validation descriptor))
-               descriptor
-               (:form seed))
-             (:decoded (first literal-records)))
-          (= (:raw descriptor) (:raw (first literal-records)))
-          (= (:span ratio-form) (:span (first literal-records)))
-          (= {:numerator-spelling (:numerator-spelling descriptor)
-              :denominator-spelling (:denominator-spelling descriptor)
-              :exact? true}
-             (:facts (first literal-records)))
-          (if (= :deferred (:semantic-validation descriptor))
-            (and (= 1 (count deferred-records))
-                 (= descriptor (:value (first deferred-records)))
-                 (= (:raw descriptor) (:raw (first deferred-records)))
-                 (= (:span ratio-form) (:span (first deferred-records))))
-            (and (empty? deferred-records)
-                 (= (:form seed) (:decoded (first literal-records))
-                    (:value ratio-form) (:decoded ratio-token))))
-          (= expected-seed-span (:span seed))
-          (= (:raw form-record) (get-in seed [:reader-origin :raw-excerpt]))
-          (= (:kind form-record)
-             (get-in seed [:reader-origin :raw-form-kind]))
-          (if wrapper?
-            (and (= :metadata (:abbrev form-record)
-                    (get-in seed [:reader-origin :abbreviation]))
-                 (= (if (= :deferred (:semantic-validation descriptor))
-                      descriptor
-                      (:form seed))
-                    (:value form-record)
-                    (:expanded-form form-record)
-                    (get-in seed [:generated-origin 0 :expanded-form]))
-                 (= :metadata
-                    (get-in seed [:generated-origin 0
-                                  :reader-abbreviation]))
-                 (= (:surface-span form-record)
-                    (get-in seed [:generated-origin 0 :from]))
-                 (= (:form-id ratio-form)
-                    (get-in form-record
-                            [:generated-origin 0 :child-form-id])))
-            (and (= (if (= :deferred (:semantic-validation descriptor))
-                      descriptor
-                      (:form seed))
-                    (:value form-record))
-                 (nil? (:abbrev form-record))
-                 (empty? (:generated-origin seed)))))
-     descriptor)))
+  (c3-literal-projection-call
+   c3-literal-projection/c3-lossless-literal-descriptor
+   seed form-record c2-artifact integrity-report))
 
 (defn c3-tagged-literal-descriptor
   [seed form-record c2-artifact integrity-report]
-  (when (= :tagged-literal (:kind form-record))
-    (let [integrity-report
-          (or integrity-report (c3-c2-reader-integrity-report c2-artifact))
-          forms-by-id
-          (into {} (map (juxt :form-id identity) (:form-tree c2-artifact)))
-          payload-record (get forms-by-id (first (:children form-record)))
-          literal-record
-          (first
-           (filter #(= (:form-id form-record) (:form-id %))
-                   (:literal-decoding-records c2-artifact)))
-          tag (:tag form-record)]
-      (when (and (:authentic? integrity-report)
-                 (= (:form-id seed) (:form-id form-record))
-                 (= 1 (count (:children form-record)))
-                 (= :string (:kind payload-record))
-                 (= tag (get-in literal-record [:facts :tag]))
-                 (= (:raw form-record) (:raw literal-record))
-                 (= (:span form-record) (:span literal-record)))
-        {:artifact :gravity/tagged-literal-descriptor
-         :kind :tagged-literal
-         :tag tag
-         :raw (:raw form-record)
-         :payload (:value payload-record)
-         :semantic-validation :accepted}))))
+  (c3-literal-projection-call
+   c3-literal-projection/c3-tagged-literal-descriptor
+   seed form-record c2-artifact integrity-report))
 
 (defn c3-source-form-kind
   [seed form-record c2-artifact integrity-report]
-  (if (or (c3-lossless-literal-descriptor seed form-record c2-artifact
-                                          integrity-report)
-          (c3-tagged-literal-descriptor seed form-record c2-artifact
-                                        integrity-report))
-    (:kind form-record)
-    (form-kind (:form seed))))
+  (c3-literal-projection-call
+   c3-literal-projection/c3-source-form-kind
+   seed form-record c2-artifact integrity-report))
 
 (defn c3-source-facts
   [seed form-record c2-artifact integrity-report]
-  (if-let [descriptor
-           (or (c3-lossless-literal-descriptor
-                seed form-record c2-artifact integrity-report)
-               (c3-tagged-literal-descriptor
-                seed form-record c2-artifact integrity-report))]
-    {:reader-literal-kind (:kind descriptor)
-     :reader-literal-descriptor descriptor
-     :reader-product-integrity-hash
-     (get-in c2-artifact [:reader-product-integrity :integrity-hash])
-     :reader-source-id (get-in c2-artifact [:source-unit-record :source-id])
-     :reader-form-id (:form-id form-record)
-     :reader-seed-id (:syntax-id seed)
-     :reader-container-kind
-     (when (= :metadata-wrapper (:kind form-record)) :metadata-wrapper)
-     :reader-literal-facts
-     (select-keys descriptor
-                  [:raw :numerator-spelling :denominator-spelling
-                   :numerator :denominator :tag :payload
-                   :semantic-validation :reason])}
-    {}))
+  (c3-literal-projection-call
+   c3-literal-projection/c3-source-facts
+   seed form-record c2-artifact integrity-report))
 
 (declare c3-path-neutral-origin
          c3-identity-input

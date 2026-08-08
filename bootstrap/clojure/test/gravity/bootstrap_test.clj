@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
+            [gravity.c3-literal-projection :as c3-literal-projection]
             [gravity.c3-syntax-construction :as c3-syntax-construction]
             [gravity.c3-syntax-evidence :as c3-syntax-evidence]
             [gravity.c4-macro-evidence :as c4-macro-evidence]
@@ -10310,6 +10311,84 @@
              (:path-neutral
               (:span (bootstrap/c3-identity-input
                       seed [] {} {} :list))))))))
+
+(deftest c3-literal-projection-compatibility-wrappers-preserve-interposition
+  (let [span {:source "ratio.gravity" :byte-start 0 :byte-end 3}
+        value 1/2
+        form-record {:form-id :form-0
+                     :kind :ratio
+                     :open-token :tok-0
+                     :close-token :tok-0
+                     :raw "1/2"
+                     :value value
+                     :span span}
+        token-record {:token-id :tok-0
+                      :kind :ratio
+                      :raw "1/2"
+                      :lexeme "1/2"
+                      :decoded value
+                      :span span}
+        seed {:syntax-id :seed
+              :form-id :form-0
+              :form value
+              :span (assoc span :form-index 0)
+              :reader-origin {:raw-excerpt "1/2" :raw-form-kind :ratio}
+              :generated-origin []}
+        artifact {:form-tree [form-record]
+                  :token-stream [token-record]
+                  :literal-decoding-records
+                  [{:form-id :form-0
+                    :decoded value
+                    :raw "1/2"
+                    :span span
+                    :facts {:numerator-spelling "1"
+                            :denominator-spelling "2"
+                            :exact? true}}]
+                  :semantic-error-deferment-record
+                  {:deferred-literal-records []}
+                  :reader-product-integrity {:integrity-hash :integrity}
+                  :source-unit-record {:source-id :source}}
+        integrity {:authentic? true}]
+    (doseq [[wrapper-var expected]
+            [[#'bootstrap/c3-deferred-ratio-descriptor-from-raw '([raw])]
+             [#'bootstrap/c3-ratio-descriptor-from-raw '([raw])]
+             [#'bootstrap/c3-lossless-literal-descriptor
+              '([seed form-record c2-artifact integrity-report])]
+             [#'bootstrap/c3-tagged-literal-descriptor
+              '([seed form-record c2-artifact integrity-report])]
+             [#'bootstrap/c3-source-form-kind
+              '([seed form-record c2-artifact integrity-report])]
+             [#'bootstrap/c3-source-facts
+              '([seed form-record c2-artifact integrity-report])]]]
+      (is (= expected (:arglists (meta wrapper-var)))))
+    (is (= (c3-literal-projection/c3-ratio-descriptor-from-raw "1/2")
+           (bootstrap/c3-ratio-descriptor-from-raw "1/2")))
+    (is (= (c3-literal-projection/c3-lossless-literal-descriptor
+            seed form-record artifact integrity)
+           (bootstrap/c3-lossless-literal-descriptor
+            seed form-record artifact integrity)))
+    (is (= :ratio
+           (bootstrap/c3-source-form-kind
+            seed form-record artifact integrity)))
+    (is (= :ratio
+           (:reader-literal-kind
+            (bootstrap/c3-source-facts
+             seed form-record artifact integrity))))
+    (with-redefs [bootstrap/c3-lossless-literal-descriptor
+                  (fn [& _] {:kind :interposed :raw "x"})]
+      (is (= :record-kind
+             (bootstrap/c3-source-form-kind
+              seed {:kind :record-kind} artifact integrity)))
+      (is (= :interposed
+             (:reader-literal-kind
+              (bootstrap/c3-source-facts
+               seed form-record artifact integrity)))))
+    (let [calls (atom 0)]
+      (with-redefs [bootstrap/c3-c2-reader-integrity-report
+                    (fn [_] (swap! calls inc) {:authentic? false})]
+        (is (nil? (bootstrap/c3-lossless-literal-descriptor
+                   seed form-record artifact nil)))
+        (is (= 1 @calls))))))
 
 (deftest c4-macro-evidence-compatibility-wrappers-preserve-output-and-interposition
   (let [entry {:identity 'compat/macro
