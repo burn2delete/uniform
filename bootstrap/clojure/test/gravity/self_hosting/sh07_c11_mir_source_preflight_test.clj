@@ -3,9 +3,10 @@
 
   The three fixed selectors share one authenticated source snapshot.  The
   preflight deliberately stops at reader data: it does not invoke compiler,
-  artifact, or authority code.  All structural walks are iterative and have
-  explicit limits so malformed source cannot turn a cheap gate into an
-  unbounded allocation or a stack overflow."
+  artifact, or authority code.  A bounded lexical delimiter pass runs before
+  the host reader; subsequent structural walks are iterative and have
+  explicit limits.  This prevents stack growth in the supported lexical
+  cases, while the host reader remains a separate bounded parsing step."
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing thrown?]]))
 
@@ -57,6 +58,8 @@
 (def ^:dynamic *snapshot-before-open-hook*
   "Test seam invoked after initial stat and before descriptor opening."
   nil)
+
+(def ^:private reader-eof-marker (Object.))
 
 (defn- bounded-message
   [message]
@@ -124,9 +127,10 @@
 (defn- safe-contained-source-path
   "Resolve a source path while rejecting symlinked final/intermediate parts.
 
-  The returned map includes every component's descriptor state.  The caller
-  compares those states before and after its descriptor read, closing the
-  parent replacement window that a final-path check alone would leave."
+  The returned map includes repeated-observation state for every component.
+  The caller rechecks those states around the descriptor read; this is a
+  pathname integrity check, not a held-dirfd or SecureDirectoryStream race
+  proof."
   [repository relative]
   (let [root-path (.toAbsolutePath (.normalize ^java.nio.file.Path repository))
         relative-path (relative-path-components relative)
@@ -294,7 +298,13 @@
     (when (not= expected-source-revision-id (sha256-id bytes))
       (failure "SH07-C11-PREFLIGHT-SOURCE-BINDING"
                "C11 source digest does not match the authenticated pin"))
-    (assoc snapshot :authenticated? true)))
+    (let [source-text (strict-utf8 bytes "authenticated C11 snapshot")]
+      ;; Ignore any injected :source-text: all parsing must use the bytes
+      ;; whose digest and metadata were authenticated above.
+      (assoc snapshot
+             :source-text source-text
+             :source-sha256 (sha256-id bytes)
+             :authenticated? true))))
 
 (def ^:private source-snapshot (delay (load-source-snapshot)))
 
@@ -314,19 +324,95 @@
          result []]
     (cond
       (nil? remaining) result
-      (> (count result) maximum)
+      (>= (count result) maximum)
       (failure id message {:maximum maximum})
       :else (recur (next remaining) (conj result (first remaining))))))
+
+(defn- lexical-delimiter-depth!
+  "Validate delimiter balance/depth without recursively entering source text.
+
+  Strings, regex strings, comments, and one-character/named character
+  literals are skipped conservatively.  This is a lexical guard, not a
+  replacement for the Clojure reader."
+  [source]
+  (let [length (.length ^String source)
+        opening #{\( \[ \{}
+        closing #{\) \] \}}]
+    (loop [index 0
+           depth 0
+           maximum-seen 0
+           mode :normal
+           escaped? false]
+      (if (= index length)
+        (do
+          (when (not= :normal mode)
+            (failure "SH07-C11-PREFLIGHT-LEXICAL-DELIMITERS"
+                     "C11 source has an unterminated lexical literal"))
+          (when (pos? depth)
+            (failure "SH07-C11-PREFLIGHT-LEXICAL-DELIMITERS"
+                     "C11 source has unclosed delimiters"))
+          maximum-seen)
+        (let [character (.charAt ^String source index)
+              next-character (when (< (inc index) length)
+                               (.charAt ^String source (inc index)))]
+          (case mode
+            :comment
+            (if (or (= character \newline) (= character \return))
+              (recur (inc index) depth maximum-seen :normal false)
+              (recur (inc index) depth maximum-seen :comment false))
+
+            :string
+            (cond
+              escaped? (recur (inc index) depth maximum-seen :string false)
+              (= character \\) (recur (inc index) depth maximum-seen :string true)
+              (= character \") (recur (inc index) depth maximum-seen :normal false)
+              :else (recur (inc index) depth maximum-seen :string false))
+
+            :regex
+            (cond
+              escaped? (recur (inc index) depth maximum-seen :regex false)
+              (= character \\) (recur (inc index) depth maximum-seen :regex true)
+              (= character \") (recur (inc index) depth maximum-seen :normal false)
+              :else (recur (inc index) depth maximum-seen :regex false))
+
+            :character
+            ;; The first codepoint is enough to hide delimiter characters;
+            ;; named literals such as \\newline then continue as ordinary
+            ;; non-delimiter letters, which is conservative for this bound.
+            (recur (inc index) depth maximum-seen :normal false)
+
+            ;; :normal
+            (cond
+              (= character \;) (recur (inc index) depth maximum-seen :comment false)
+              (= character \"") (recur (inc index) depth maximum-seen :string false)
+              (and (= character \#) (= next-character \"))
+              (recur (+ index 2) depth maximum-seen :regex false)
+              (= character \\) (recur (inc index) depth maximum-seen :character false)
+              (contains? opening character)
+              (let [next-depth (inc depth)]
+                (when (> next-depth maximum-form-depth)
+                  (failure "SH07-C11-PREFLIGHT-FORM-DEPTH"
+                           "C11 source exceeds bounded lexical delimiter depth"
+                           {:maximum maximum-form-depth}))
+                (recur (inc index) next-depth (max maximum-seen next-depth)
+                       :normal false))
+              (contains? closing character)
+              (if (zero? depth)
+                (failure "SH07-C11-PREFLIGHT-LEXICAL-DELIMITERS"
+                         "C11 source closes a delimiter before opening it")
+                (recur (inc index) (dec depth) maximum-seen :normal false))
+              :else (recur (inc index) depth maximum-seen :normal false))))))))
 
 (defn- read-forms
   [source]
   (binding [*read-eval* false]
+    (lexical-delimiter-depth! source)
     (with-open [reader
                 (clojure.lang.LineNumberingPushbackReader.
                  (java.io.StringReader. ^String source))]
       (loop [forms []]
-        (let [form (read {:eof ::eof} reader)]
-          (if (= ::eof form)
+        (let [form (read {:eof reader-eof-marker} reader)]
+          (if (identical? reader-eof-marker form)
             forms
             (do
               (when (>= (count forms) maximum-top-level-forms)
@@ -362,14 +448,12 @@
                            (reverse roots))
            node-count 0
            invalid-if-forms []
-           duplicate-diagnostics []
            maximum-depth-seen 0]
       (if (empty? pending)
         {:forms roots
          :node-count node-count
          :maximum-depth maximum-depth-seen
-         :invalid-if-forms invalid-if-forms
-         :diagnostics duplicate-diagnostics}
+         :invalid-if-forms invalid-if-forms}
         (let [[form depth] (peek pending)
               pending (pop pending)]
           (when (>= node-count maximum-form-nodes)
@@ -403,7 +487,6 @@
             (recur pending
                    (inc node-count)
                    invalid-if-forms
-                   duplicate-diagnostics
                    (max maximum-depth-seen depth))))))))
 
 (def ^:private source-analysis-cache
@@ -477,7 +560,14 @@
 (deftest sh07-c11-source-binding-is-exact
   (let [bytes (source-bytes)]
     (is (= expected-source-byte-count (alength bytes)))
-    (is (= expected-source-revision-id (sha256-id bytes))))
+    (is (= expected-source-revision-id (sha256-id bytes)))
+    (testing "injected source text cannot override strict bytes decoding"
+      (let [loaded
+            (binding [*source-snapshot-loader*
+                      (fn [] {:bytes bytes :source-text "wrong text"})]
+              (load-source-snapshot))]
+        (is (= (strict-utf8 bytes "expected")
+               (:source-text loaded))))))
   (testing "strict UTF-8 rejects malformed bytes without a platform decoder"
     (is (try
           (strict-utf8 (byte-array [(unchecked-byte 0xc3) (byte 0x28)])
@@ -494,7 +584,10 @@
           link-file (.resolve temporary "link.gravity")
           oversized-file (.resolve temporary "oversized.gravity")
           replacement-file (.resolve temporary "replacement.gravity")
-          moved-original (.resolve temporary "original.gravity")]
+          moved-original (.resolve temporary "original.gravity")
+          real-directory (.resolve temporary "real-directory")
+          intermediate-link (.resolve temporary "intermediate-link")
+          nested-file (.resolve real-directory "nested.gravity")]
       (try
         (java.nio.file.Files/write
          real-file
@@ -518,6 +611,24 @@
             (is true))
           (catch UnsupportedOperationException _
             (is true)))
+        (java.nio.file.Files/createDirectory
+         real-directory
+         (make-array java.nio.file.attribute.FileAttribute 0))
+        (java.nio.file.Files/write
+         nested-file
+         (.getBytes "(ns nested)" "UTF-8")
+         (make-array java.nio.file.OpenOption 0))
+        (try
+          (java.nio.file.Files/createSymbolicLink
+           intermediate-link real-directory
+           (make-array java.nio.file.attribute.FileAttribute 0))
+          (is (thrown? clojure.lang.ExceptionInfo
+                       (safe-contained-source-path
+                        temporary "intermediate-link/nested.gravity")))
+          (catch java.nio.file.FileSystemException _
+            (is true))
+          (catch UnsupportedOperationException _
+            (is true)))
         (java.nio.file.Files/write
          replacement-file
          (.getBytes "(ns replacement (:exports [x])) (def x 1)" "UTF-8")
@@ -534,6 +645,9 @@
           (java.nio.file.Files/deleteIfExists replacement-file)
           (java.nio.file.Files/deleteIfExists moved-original)
           (java.nio.file.Files/deleteIfExists oversized-file)
+          (java.nio.file.Files/deleteIfExists intermediate-link)
+          (java.nio.file.Files/deleteIfExists nested-file)
+          (java.nio.file.Files/deleteIfExists real-directory)
           (java.nio.file.Files/deleteIfExists temporary))))))
 
 (deftest sh07-c11-source-control-form-arities-are-exact
@@ -546,6 +660,75 @@
              (count
               (invalid-source-if-forms
                '[(if true :then :else :extra)])))))
+    (testing "a literal namespaced eof-like value cannot truncate later forms"
+      (is (= 3
+             (count (read-forms
+                     "(ns synthetic) ::eof (def later 1)")))))
+    (testing "the lexical guard ignores delimiters in strings, regexes, comments, and chars"
+      (is (= 1
+             (lexical-delimiter-depth!
+              "(\"}\" #\"[\" ; )\n \\( )"))))
+    (testing "lexical delimiter depth rejects actual over-deep text before reader entry"
+      (let [deep-text
+            (str (apply str (repeat (inc maximum-form-depth) "("))
+                 (apply str (repeat (inc maximum-form-depth) ")")))]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (lexical-delimiter-depth! deep-text)))))
+    (testing "top-level and collection bounds reject only the first over-limit item"
+      (let [top-level-at-limit
+            (vec (repeat maximum-top-level-forms 'nil))
+            top-level-over-limit (conj top-level-at-limit 'nil)
+            collection-at-limit
+            (vec (repeat maximum-collection-width :value))
+            collection-over-limit (conj collection-at-limit :value)]
+        (is (= maximum-top-level-forms
+               (count (bounded-elements
+                       top-level-at-limit maximum-top-level-forms
+                       "C11-TEST-TOP" "top"))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (bounded-elements
+                      top-level-over-limit maximum-top-level-forms
+                      "C11-TEST-TOP" "top")))
+        (is (= maximum-collection-width
+               (count (bounded-elements
+                       collection-at-limit maximum-collection-width
+                       "C11-TEST-WIDTH" "width"))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (bounded-elements
+                      collection-over-limit maximum-collection-width
+                      "C11-TEST-WIDTH" "width")))))
+    (testing "node and diagnostic bounds reject the first over-limit item"
+      (let [base-root-count 4095
+            leaves-per-base-root 60
+            base-roots
+            (vec (repeat base-root-count
+                          (apply list
+                                 (cons 'branch
+                                       (repeat leaves-per-base-root 'leaf)))))
+            exact-remainder
+            (- maximum-form-nodes
+               (* base-root-count (inc leaves-per-base-root)))
+            exact-forms
+            (conj base-roots
+                  (apply list
+                         (cons 'branch
+                               (repeat (dec exact-remainder) 'leaf))))
+            over-forms
+            (conj base-roots
+                  (apply list
+                         (cons 'branch
+                               (repeat exact-remainder 'leaf))))
+            diagnostic-at-limit
+            (vec (repeat maximum-diagnostics '(if true)))
+            diagnostic-over-limit (conj diagnostic-at-limit '(if true))]
+        (is (= maximum-form-nodes
+               (:node-count (analyze-form-sequence exact-forms))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (analyze-form-sequence over-forms)))
+        (is (= maximum-diagnostics
+               (count (invalid-source-if-forms diagnostic-at-limit))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (invalid-source-if-forms diagnostic-over-limit)))))
     (testing "deep and wide synthetic carriers fail closed before recursion grows"
       (let [deep (reduce (fn [form _] (list form))
                          'leaf
