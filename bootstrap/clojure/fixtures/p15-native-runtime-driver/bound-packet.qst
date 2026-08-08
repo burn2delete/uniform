@@ -1,0 +1,8 @@
+(ns gravity.p15-s23.native-runtime-driver.bound-packet-qst
+  (:profile :hosted)
+  (:target :c)
+  (:effects #{:memory/allocate :io/write})
+  (:capabilities #{:memory/allocator :io/stdout})
+  (:safety :safe))
+
+(defn main [] (println "Hello" (str "Grav" "ity")))

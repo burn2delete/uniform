@@ -12,8 +12,11 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is testing run-tests]])
-  (:import [java.nio.charset StandardCharsets]
+            [clojure.test :refer [deftest is testing run-tests]]
+            [gravity.bootstrap :as bootstrap]
+            [gravity.p15-native-packet-binding :as packet-binding])
+  (:import [java.nio ByteBuffer]
+           [java.nio.charset CodingErrorAction StandardCharsets]
            [java.nio.file Files LinkOption OpenOption Path Paths]
            [java.nio.file.attribute FileAttribute PosixFilePermissions]
            [java.security MessageDigest]
@@ -254,6 +257,42 @@
           (when (:accepted? compiled)
             (f directory (:output compiled) compiled)))))))
 
+(def ^:private real-stage2-packet-cache (atom {}))
+
+(defn- real-stage2-packet
+  [relative]
+  (or (get @real-stage2-packet-cache relative)
+      (let [source-bytes (Files/readAllBytes (path relative))
+            decoder (doto (.newDecoder StandardCharsets/UTF_8)
+                      (.onMalformedInput CodingErrorAction/REPORT)
+                      (.onUnmappableCharacter CodingErrorAction/REPORT))
+            source-text (str (.decode decoder (ByteBuffer/wrap source-bytes)))
+            context (bootstrap/p15-s23-closed-runtime-packet-context
+                     relative source-text :c)
+            result
+            {:packet (bootstrap/stage2-runtime-derived-packet
+                      relative source-text :c)
+             :context context}]
+        (get (swap! real-stage2-packet-cache
+                    #(if (contains? % relative) % (assoc % relative result)))
+             relative))))
+
+(defn- bind-and-run-provider!
+  [counter directory binary packet context]
+  (let [binding (packet-binding/bind-native-runtime-packet packet context)]
+    (swap! counter inc)
+    {:binding binding
+     :execution (run-process! directory [(str binary)]
+                              (get-in binding [:wire :bytes]))}))
+
+(defn- diagnostic-id
+  [f]
+  (try
+    (f)
+    nil
+    (catch clojure.lang.ExceptionInfo ex
+      (:id (ex-data ex)))))
+
 (deftest p15-native-runtime-provider-strict-compiles
   (with-provider
     (fn [directory binary compiled]
@@ -466,6 +505,128 @@
                                  (byte-array (inc packet-limit)))]
         (assert-minimal-environment result)
         (assert-rejected result "P15NR002" nil)))))
+
+(deftest p15-native-runtime-real-stage2-packets-bind-and-execute
+  (with-provider
+    (fn [directory binary _]
+      (doseq [relative
+              [(str fixture-root-relative "/bound-packet.gravity")
+               (str fixture-root-relative "/bound-packet.qst")]]
+        (testing relative
+          (let [{:keys [packet context]} (real-stage2-packet relative)
+                provider-calls (atom 0)
+                {:keys [binding execution]}
+                (bind-and-run-provider! provider-calls directory binary
+                                        packet context)]
+            (assert-minimal-environment execution)
+            (is (= 1 @provider-calls))
+            (is (= :complete-for-internal-bounded-native-runtime-provider
+                   (:status binding)))
+            (is (= "gravity-native-runtime-v1"
+                   (get-in binding [:wire :format])))
+            (is (= (:source-content-hash context)
+                   (get-in binding [:source :content-hash])))
+            (is (= #{:memory/allocate :io/write}
+                   (get-in binding [:effects :required-effects])))
+            (is (= #{:io/write}
+                   (get-in binding [:effects :required-inferred-effects])))
+            (is (= #{:memory/allocator :io/stdout}
+                   (get-in binding [:capabilities :required-capabilities])))
+            (is (false? (:source-content-hash-verified-by-provider?
+                         binding)))
+            (is (false? (get-in binding
+                                [:provenance
+                                 :selected-runtime-clojure-seed-boundary?])))
+            (is (false? (get-in binding
+                                [:provenance
+                                 :selected-child-clojure-seed-boundary?])))
+            (doseq [flag [:adapter-clojure-seed-boundary?
+                          :compiler-clojure-seed-boundary?
+                          :verifier-clojure-seed-boundary?
+                          :artifact-clojure-seed-boundary?
+                          :artifact-construction-clojure-seed-boundary?
+                          :process-clojure-seed-boundary?
+                          :file-io-clojure-seed-boundary?
+                          :process-and-file-io-clojure-seed-boundary?
+                          :public-clojure-seed-boundary?
+                          :public-wrapper-clojure-seed-boundary?
+                          :global-clojure-seed-boundary?]]
+              (is (true? (get-in binding [:provenance flag])) flag))
+            (is (= 0 (:exit execution)) execution)
+            (is (= "Hello Gravity\n" (:out execution)) execution)
+            (is (= "" (:err execution)) execution)
+            (is (= (:expected-stdout binding) (:out execution)))
+            (is (= (str "sha256:" (sha256-hex (utf8-bytes (:out execution))))
+                   (:expected-stdout-hash binding)))))))))
+
+(deftest p15-native-runtime-binding-rejects-tamper-before-provider
+  (with-provider
+    (fn [directory binary _]
+      (let [relative (str fixture-root-relative "/bound-packet.gravity")
+            {:keys [packet context]} (real-stage2-packet relative)
+            provider-calls (atom 0)
+            changed-source (str (:source-text context) "\n")
+            changed-context
+            (bootstrap/p15-s23-closed-runtime-packet-context
+             relative changed-source :c)
+            changed-path-context
+            (bootstrap/p15-s23-closed-runtime-packet-context
+             (str relative ".qst") (:source-text context) :c)
+            wrong-hash (str "sha256:" (apply str (repeat 64 "0")))
+            cases
+            [[:packet (assoc packet :status :tampered) context]
+             [:coherent-source-context packet changed-context]
+             [:coherent-path-context packet changed-path-context]
+             [:rule (assoc-in packet [:stage2-runtime-rule :runtime-rule-hash]
+                             wrong-hash) context]
+             [:plan (assoc-in packet
+                              [:plan :functions (:entrypoint (:plan packet))
+                               :instructions 0 :args 0 :value]
+                              "tampered") context]]]
+        (doseq [[label candidate candidate-context] cases]
+          (testing (name label)
+            (is (= "P15NP001"
+                   (diagnostic-id
+                    #(bind-and-run-provider! provider-calls directory binary
+                                             candidate candidate-context))))))
+        (is (zero? @provider-calls))))))
+
+(deftest p15-native-runtime-binding-rejects-wire-bound-before-provider
+  (with-provider
+    (fn [directory binary _]
+      (let [relative (str fixture-root-relative "/bound-packet.gravity")
+            source-bytes (Files/readAllBytes (path relative))
+            decoder (doto (.newDecoder StandardCharsets/UTF_8)
+                      (.onMalformedInput CodingErrorAction/REPORT)
+                      (.onUnmappableCharacter CodingErrorAction/REPORT))
+            source-text (str (.decode decoder (ByteBuffer/wrap source-bytes)))
+            unrepresentable-path
+            (str fixture-root-relative "/bound packet.gravity")
+            context (bootstrap/p15-s23-closed-runtime-packet-context
+                     unrepresentable-path source-text :c)
+            packet (bootstrap/stage2-runtime-derived-packet
+                    unrepresentable-path source-text :c)
+            provider-calls (atom 0)]
+        (is (= "P15NP003"
+               (diagnostic-id
+                #(bind-and-run-provider! provider-calls directory binary
+                                         packet context))))
+        (is (zero? @provider-calls))))))
+
+(deftest p15-native-runtime-binding-rejects-real-unsupported-plans-before-provider
+  (with-provider
+    (fn [directory binary _]
+      (let [provider-calls (atom 0)]
+        (doseq [relative
+                [(str fixture-root-relative "/rejected-bound-if.gravity")
+                 (str fixture-root-relative "/rejected-bound-let.gravity")]]
+          (testing relative
+            (let [{:keys [packet context]} (real-stage2-packet relative)]
+              (is (= "P15NP002"
+                     (diagnostic-id
+                      #(bind-and-run-provider! provider-calls directory binary
+                                               packet context)))))))
+        (is (zero? @provider-calls))))))
 
 (defn -main
   [& _]

@@ -1,6 +1,6 @@
 # P15-S23 Seed-Boundary Inventory
 
-Status: partial boundary accounting after the bounded public native-run admission, internal Darwin launcher-prerequisite, and bounded internal native runtime-provider slices.
+Status: partial boundary accounting after the bounded public native-run admission, internal Darwin launcher-prerequisite, bounded internal native runtime-provider, and authenticated packet-binding adapter slices.
 
 This inventory describes the executable public `bin/gravity` path. It does not
 promote source-model, replay, comparison, or attestation records into
@@ -14,6 +14,37 @@ self-hosting evidence. The formal-language completion count remains 0/240.
 | Artifact construction | Clojure constructs manifests and sidecars and drives the bounded Clang transaction. | Nothing on the public path. | Clojure/JVM file APIs, Apple `xcrun`, Clang, linker, `file`, and `otool`. | Clojure-seed-bound. |
 | Process and file I/O | The thin wrapper, Clojure `ProcessBuilder`, Java file APIs, and host shell perform all public and gate I/O. A new unwired host-authored C primitive verifies one suspended Darwin child's mapped vnode and removes live same-process-group members. It explicitly does not provide descriptor-relative execution or full-tree containment. | Nothing from the public path. | Bash, Clojure/JVM, host filesystem, Apple toolchain, Darwin private `libproc` APIs, and the host-authored C launcher. | Clojure-seed-bound; OS-contained descriptor-relative execution remains required. |
 | Release wrapper | Tracked `bin/gravity` rejects seedless selection unless the final proof is complete and records `:clojure-seed-boundary? false`. That proof is currently incomplete/true. | Nothing. `bin/gravity-bootstrap` remains the explicit recovery entry point. | Bash selector, packaged Clojure classpath, JVM/Clojure entry point. | `:clojure-seed-boundary? true`, `:self-hosted? false`. |
+
+## Completed internal packet-binding slice
+
+The bounded internal slice is a Clojure-hosted adapter, not a new public
+runtime or compiler boundary. It consumes the existing
+target-neutral stage2 compiler packet and perform contextual authentication
+before producing the native-provider wire:
+
+- binds the packet to strictly decoded `.gravity` or `.qst` source text, its
+  re-encoded UTF-8 hash, and the
+  pinned Gravity rule identities;
+- lowers only the supported scalar `str` and `println` operations into the
+  existing provider wire;
+- executes accepted co-canonical source extensions through that wire; and
+- rejects packet tamper, source/context mismatch, pinned-rule tamper, and
+  unsupported forms before a child is launched.
+
+The supervised focused namespace passed 13 tests and 303 assertions. This
+slice removes only hand-authored-payload evidence and establishes actual
+packet consumption. It does not reduce the public or global Clojure boundary.
+The provider remains host-authored C; compiler, verifier, adapter, artifact
+construction, process/file I/O, and release-wrapper boundaries remain trusted.
+The only selected-child reduction remains
+`:selected-runtime-clojure-seed-boundary? false`; the public route remains
+blocked by `P18T04002` / `:missing-fact :contained-public-native-run`, and
+`:full-language-compiler-self-hosted?`, `:clojure-seed-retired?`,
+`:clojure-seed-boundary?`, `:self-hosted?`, `:release-credit?`, and formal
+language completion remain unchanged; no backend-boundary or backend-
+conformance claim is added.
+The proof record preserves the supervised run, its first bounded timeout, the
+successful retry receipt, adapter/test hashes, and exact residual boundaries.
 
 ## Bounded LLVM gate evidence
 
