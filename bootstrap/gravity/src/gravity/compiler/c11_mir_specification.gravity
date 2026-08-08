@@ -22,6 +22,14 @@
              build-c11-mir-source-map
              verify-c11-mir-module
              c11-build-target-independent-mir
+             sh12-authenticated-c10-mir-adapter-policy
+             sh12-authenticated-c10-mir-carrier-preflight
+             sh12-authenticated-c10-mir-input-valid?
+             sh12-build-authenticated-c10-mir-template
+             sh12-authenticated-c10-mir-identity-request
+             sh12-authenticated-c10-mir-module-identity-request
+             sh12-bind-authenticated-c10-mir
+             sh12-verify-authenticated-c10-mir
              sh13-control-flow-policy
              sh13-run-module
              sh13-verify-execution])
@@ -1862,6 +1870,3073 @@
         :self-hosted? false}
        :clojure-seed-boundary? true
        :self-hosted? false})))
+
+; C11 owns this additive proof-reference adapter.  It is intentionally not an
+; executable load and does not route through the legacy SH12 checked-core
+; bridge.  The adapter consumes only the identity-bound C10 persistent-read
+; safety product and exposes one proof token to later MIR consumers.
+(defn sh12-authenticated-c10-mir-adapter-policy []
+  {:artifact :gravity/sh12-authenticated-c10-mir-adapter-policy
+   :schema-version 2
+   :scope :authenticated-persistent-read-safety-evidence-only
+   :accepted-value-type :gravity.type/bool
+   :accepted-upstream
+   [:gravity/sh11-identity-bound-safety-core-template
+    :gravity/sh11-safety-identity-binding-verification]
+   :accepted-operation :proof-reference
+   :accepted-safety-outcome :proven-safe
+   :executable-load? false
+   :target-independent? true
+   :b1-preflight :blocked
+   :pending [:trusted-digest-resolution
+             :independent-canonical-digest-verification
+             :safety-certificate-authority
+             :mir-verifier
+             :mir-optimization
+             :backend-lowering
+             :target-authority
+             :executable-load
+             :program-lowering
+             :generic-c11-operation-families
+             :self-hosted-execution]
+   :nonclaims [:executable-load
+               :program-lowering
+               :generic-c11-verifier
+               :optimizer-credit
+               :backend-credit
+               :target-authority
+               :trusted-digest-resolution
+               :independent-canonical-digest-verification
+               :safety-certificate-authority
+               :self-hosted?]})
+
+(defn sh12-c10-mir-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh12-c10-mir-member? [values value]
+  (if (= (count values) 0)
+    false
+    (if (= (first values) value)
+      true
+      (sh12-c10-mir-member? (rest values) value))))
+
+(defn sh12-c10-mir-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if (sh12-c10-mir-member?
+         [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f]
+         (first characters))
+      (sh12-c10-mir-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh12-c10-mir-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (let [characters (vec value)]
+        (if (= [\s \h \a \2 \5 \6 \:] (subvec characters 0 7))
+          (sh12-c10-mir-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh12-c10-mir-persistent-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        false))))
+
+(defn sh12-c10-mir-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (if (vector? value)
+      value
+      (if (set? value) (vec value) []))))
+
+(defn sh12-c10-mir-carrier-rejection [reason nodes enqueued]
+  {:status :rejected
+   :reason reason
+   :nodes nil
+   :observed-nodes nodes
+   :enqueued enqueued
+   :nodes-exact? false})
+
+; Complete-carrier admission follows the proven C10 carrier envelope.  O(1)
+; widths are checked before children are appended; arbitrary seq/lazy-seq
+; values are rejected and never realized.  The adapter still has a strictly
+; bounded, non-authoritative evidence scope; these limits merely admit the
+; exact schema-2 C10/C9 lineage carrier without forcing a second shape.
+(defn sh12-authenticated-c10-mir-carrier-preflight [value]
+  (loop [frontier [[value 0]] cursor 0 nodes 0 enqueued 1]
+    (if (= cursor (count frontier))
+      {:status :accepted
+       :nodes nodes
+       :enqueued enqueued
+       :nodes-exact? true}
+      (let [entry (get frontier cursor)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (> next-nodes 32768)
+          (sh12-c10-mir-carrier-rejection
+           :c10-mir-carrier-node-bound nodes enqueued)
+          (if (> depth 256)
+            (sh12-c10-mir-carrier-rejection
+             :c10-mir-carrier-depth-bound nodes enqueued)
+            (if (map? current)
+              (let [width (count current)]
+                (if (> width 512)
+                  (sh12-c10-mir-carrier-rejection
+                   :c10-mir-carrier-width-bound nodes enqueued)
+                  (let [next-enqueued (+ enqueued (* 2 width))]
+                    (if (> next-enqueued 32768)
+                      (sh12-c10-mir-carrier-rejection
+                       :c10-mir-carrier-node-bound nodes enqueued)
+                      (let [children (sh12-c10-mir-aggregate-components current)
+                            next-frontier
+                            (loop [remaining children result frontier]
+                              (if (= (count remaining) 0)
+                                result
+                                (recur
+                                 (rest remaining)
+                                 (conj result
+                                       [(first remaining) (+ depth 1)]))))]
+                        (recur next-frontier (+ cursor 1) next-nodes
+                               next-enqueued))))))
+              (if (vector? current)
+                (let [width (count current)]
+                  (if (> width 1024)
+                    (sh12-c10-mir-carrier-rejection
+                     :c10-mir-carrier-width-bound nodes enqueued)
+                    (let [next-enqueued (+ enqueued width)]
+                      (if (> next-enqueued 32768)
+                        (sh12-c10-mir-carrier-rejection
+                         :c10-mir-carrier-node-bound nodes enqueued)
+                        (let [children (sh12-c10-mir-aggregate-components current)
+                              next-frontier
+                              (loop [remaining children result frontier]
+                                (if (= (count remaining) 0)
+                                  result
+                                  (recur
+                                   (rest remaining)
+                                   (conj result
+                                         [(first remaining) (+ depth 1)]))))]
+                          (recur next-frontier (+ cursor 1) next-nodes
+                                 next-enqueued))))))
+                (if (set? current)
+                  (let [width (count current)]
+                    (if (> width 512)
+                      (sh12-c10-mir-carrier-rejection
+                       :c10-mir-carrier-width-bound nodes enqueued)
+                      (let [next-enqueued (+ enqueued width)]
+                        (if (> next-enqueued 32768)
+                          (sh12-c10-mir-carrier-rejection
+                           :c10-mir-carrier-node-bound nodes enqueued)
+                          (let [children (sh12-c10-mir-aggregate-components current)
+                                next-frontier
+                                (loop [remaining children result frontier]
+                                  (if (= (count remaining) 0)
+                                    result
+                                    (recur
+                                     (rest remaining)
+                                     (conj result
+                                           [(first remaining) (+ depth 1)]))))]
+                            (recur next-frontier (+ cursor 1) next-nodes
+                                   next-enqueued))))))
+                  (if (seq? current)
+                    (sh12-c10-mir-carrier-rejection
+                     :c10-mir-carrier-seq-unsupported nodes enqueued)
+                    (recur frontier (+ cursor 1) next-nodes enqueued)))))))))))
+
+(defn sh12-c10-mir-verification-member [verification key]
+  (if (map? verification)
+    (get verification key)
+    nil))
+
+(defn sh12-c10-mir-verification-metadata [verification]
+  (if (map? verification)
+    {:artifact (get verification :artifact)
+     :status (get verification :status)
+     :checks (get verification :checks)
+     :nonclaims (get verification :nonclaims)}
+    {}))
+
+(defn sh12-c10-mir-preflight-node-count [receipt]
+  (if (integer? (get receipt :nodes))
+    (get receipt :nodes)
+    0))
+
+(defn sh12-c10-mir-preflight-node-count-exact? [receipt]
+  (if (= true (get receipt :nodes-exact?))
+    (integer? (get receipt :nodes))
+    false))
+
+(defn sh12-c10-mir-verification-metadata-values-valid? [metadata]
+  (if (keyword? (get metadata :artifact))
+    (if (= :gravity/sh11-safety-identity-binding-verification
+           (get metadata :artifact))
+      (if (keyword? (get metadata :status))
+        (if (= :passed (get metadata :status))
+          (if (vector? (get metadata :checks))
+            (if (vector? (get metadata :nonclaims))
+              (if (= (sh12-c10-mir-binding-checks)
+                     (get metadata :checks))
+                (= (sh12-c10-mir-binding-nonclaims)
+                   (get metadata :nonclaims))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-c10-mir-verification-envelope-preflight [verification]
+  (let [metadata (sh12-c10-mir-verification-metadata verification)
+        expected (sh12-c10-mir-verification-member verification :expected)
+        candidate (sh12-c10-mir-verification-member verification :candidate)
+        metadata-preflight
+        (sh12-authenticated-c10-mir-carrier-preflight metadata)
+        expected-preflight
+        (sh12-authenticated-c10-mir-carrier-preflight expected)
+        candidate-preflight
+        (sh12-authenticated-c10-mir-carrier-preflight candidate)
+        nodes-exact?
+        (if (sh12-c10-mir-preflight-node-count-exact?
+             metadata-preflight)
+          (if (sh12-c10-mir-preflight-node-count-exact?
+               expected-preflight)
+            (sh12-c10-mir-preflight-node-count-exact?
+             candidate-preflight)
+            false)
+          false)
+        nodes
+        (if nodes-exact?
+          (+ (sh12-c10-mir-preflight-node-count metadata-preflight)
+             (sh12-c10-mir-preflight-node-count expected-preflight)
+             (sh12-c10-mir-preflight-node-count candidate-preflight))
+          nil)
+        envelope-keys?
+        (sh12-c10-mir-exact-keys?
+         verification
+         #{:artifact :status :checks :nonclaims :expected :candidate})
+        metadata-keys?
+        (sh12-c10-mir-exact-keys?
+         metadata
+         #{:artifact :status :checks :nonclaims})]
+    (if envelope-keys?
+      (if metadata-keys?
+        (if (= :accepted (get metadata-preflight :status))
+          (if (sh12-c10-mir-verification-metadata-values-valid? metadata)
+            (if (= :accepted (get expected-preflight :status))
+              (if (= :accepted (get candidate-preflight :status))
+                {:status :accepted
+                 :nodes nodes
+                 :nodes-exact? nodes-exact?
+                 :reason nil
+                 :metadata-preflight metadata-preflight
+                 :expected-preflight expected-preflight
+                 :candidate-preflight candidate-preflight}
+                {:status :rejected
+                 :nodes nodes
+                 :nodes-exact? nodes-exact?
+                 :reason :c10-mir-verification-candidate-bound
+                 :metadata-preflight metadata-preflight
+                 :expected-preflight expected-preflight
+                 :candidate-preflight candidate-preflight})
+              {:status :rejected
+               :nodes nodes
+               :nodes-exact? nodes-exact?
+               :reason :c10-mir-verification-expected-bound
+               :metadata-preflight metadata-preflight
+               :expected-preflight expected-preflight
+               :candidate-preflight candidate-preflight})
+            {:status :rejected
+             :nodes nodes
+             :nodes-exact? nodes-exact?
+             :reason :c10-mir-verification-metadata-values
+             :metadata-preflight metadata-preflight
+             :expected-preflight expected-preflight
+             :candidate-preflight candidate-preflight})
+          {:status :rejected
+           :nodes nodes
+           :nodes-exact? nodes-exact?
+           :reason :c10-mir-verification-metadata-bound
+           :metadata-preflight metadata-preflight
+           :expected-preflight expected-preflight
+           :candidate-preflight candidate-preflight})
+        {:status :rejected
+         :nodes nodes
+         :nodes-exact? nodes-exact?
+         :reason :c10-mir-verification-metadata-shape
+         :metadata-preflight metadata-preflight
+         :expected-preflight expected-preflight
+         :candidate-preflight candidate-preflight})
+      {:status :rejected
+       :nodes nodes
+       :nodes-exact? nodes-exact?
+       :reason :c10-mir-verification-envelope-shape
+       :metadata-preflight metadata-preflight
+       :expected-preflight expected-preflight
+       :candidate-preflight candidate-preflight})))
+
+(defn sh12-c10-mir-diagnostic [bound reason]
+  (let [operation (get bound :operation)]
+    {:diagnostic-id "C11-C10-ADAPTER"
+     :rule "C11-C10-ADAPTER"
+     :severity :error
+     :stage :mir-proof-reference-adapter
+     :reason reason
+     :operation-id (get operation :operation-id)
+     :core-node-id (get operation :core-node-id)
+     :source-span (get operation :source-span)
+     :origin-chain (get operation :origin-chain)
+     :profile (get operation :profile)
+     :target (get operation :target)
+     :remediation :supply-one-bound-current-c10-persistent-bool-read}))
+
+(defn sh12-c10-mir-source-valid? [operation]
+  (if (map? (get operation :source-span))
+    (if (vector? (get operation :origin-chain))
+      (if (keyword? (get operation :profile))
+        (keyword? (get operation :target))
+        false)
+      false)
+    false))
+
+(defn sh12-c10-mir-fact-linkage-valid? [bound operation facts]
+  (let [ownership-core (get bound :ownership-core)
+        identities (get ownership-core :fact-identities)]
+    (if (vector? identities)
+      (if (= 1 (count identities))
+        (let [identity (first identities)
+              fact-request (get facts :fact-id-request)]
+          (if (map? fact-request)
+            (if (= fact-request (get identity :fact-id-request))
+              (if (= (get operation :ownership-fact-id)
+                     (get identity :ownership-fact-id))
+                true
+                false)
+              false)
+            false))
+        false)
+      false)))
+
+(defn sh12-c10-mir-operation-valid? [bound]
+  (let [operation (get bound :operation)
+        facts (get operation :facts)
+        identity-input (get bound :identity-input)
+        ownership-core-id (get identity-input :ownership-core-identity-id)]
+    (if (sh12-c10-mir-exact-keys?
+         operation
+         #{:artifact :operation-id :kind :core-node-id
+           :source-span :origin-chain :profile :target
+           :safety-mode :facts :runtime-check-support
+           :runtime-check :unsafe-audit :type-fact-id
+           :effect-fact-id :capability-proof-id
+           :ownership-fact-id})
+      (if (= :gravity/sh11-normalized-safety-operation
+             (get operation :artifact))
+        (if (= :load (get operation :operation-id))
+          (if (= :load (get operation :kind))
+            (if (= :safe (get operation :safety-mode))
+              (if (= nil (get operation :runtime-check-support))
+                (if (= nil (get operation :runtime-check))
+                  (if (= nil (get operation :unsafe-audit))
+                    (if (sh12-c10-mir-source-valid? operation)
+                      (if (= (set (keys facts))
+                             #{:proof-id :value-type :ownership-kind
+                               :initialization :availability :event-id :event
+                               :fact-id-request
+                               :ownership-core-identity-id})
+                        (if (= :gravity.type/bool (get facts :value-type))
+                          (if (= :persistent-immutable
+                                 (get facts :ownership-kind))
+                            (if (= :initialized (get facts :initialization))
+                              (if (= :available (get facts :availability))
+                                (if (= :read (get facts :event))
+                                  (if (sh12-c10-mir-sha256-id?
+                                       (get facts :proof-id))
+                                    (if (sh12-c10-mir-fact-linkage-valid?
+                                         bound operation facts)
+                                      (if (= ownership-core-id
+                                             (get facts
+                                                  :ownership-core-identity-id))
+                                        (if (sh12-c10-mir-sha256-id?
+                                             (get operation :type-fact-id))
+                                          (if (sh12-c10-mir-sha256-id?
+                                               (get operation :effect-fact-id))
+                                            (if (sh12-c10-mir-sha256-id?
+                                                 (get operation
+                                                      :capability-proof-id))
+                                              (sh12-c10-mir-sha256-id?
+                                               (get operation
+                                                    :ownership-fact-id))
+                false)
+                false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn sh12-c10-mir-proof-request-expected [bound]
+  (let [operation (get bound :operation)
+        facts (get operation :facts)]
+    {:domain :gravity/sh11-persistent-read-proof-v2
+     :operation-id (get operation :operation-id)
+     :core-node-id (get operation :core-node-id)
+     :value-type (get facts :value-type)
+     :ownership-fact-id (get operation :ownership-fact-id)
+     :fact-id-request (get facts :fact-id-request)
+     :ownership-kind (get facts :ownership-kind)
+     :initialization (get facts :initialization)
+     :availability (get facts :availability)
+     :event-id (get facts :event-id)
+     :event (get facts :event)
+     :ownership-core-identity-id (get facts :ownership-core-identity-id)
+     :source-span (get operation :source-span)
+     :origin-chain (get operation :origin-chain)
+     :profile (get operation :profile)
+     :target (get operation :target)
+     :type-fact-id (get operation :type-fact-id)
+     :effect-fact-id (get operation :effect-fact-id)
+     :capability-proof-id (get operation :capability-proof-id)}))
+
+(defn sh12-c10-mir-expected-proof [bound]
+  (let [operation (get bound :operation)
+        facts (get operation :facts)]
+    {:artifact :gravity/sh11-static-safety-proof
+     :proof-id (get bound :proof-id)
+     :proof-id-request (sh12-c10-mir-proof-request-expected bound)
+     :operation-id (get operation :operation-id)
+     :core-node-id (get operation :core-node-id)
+     :source-span (get operation :source-span)
+     :generated-origin-chain (get operation :origin-chain)
+     :claim :persistent-immutable-read
+     :assumptions #{:authenticated-c9-binding-consistency
+                    :persistent-immutable-initialized-read
+                    :coordinator-digest-shape-and-order-only}
+     :method :authenticated-ownership-fact-linkage
+     :provider :external-coordinator-digest-boundary
+     :inputs [(get operation :type-fact-id)
+              (get operation :effect-fact-id)
+              (get operation :capability-proof-id)
+              (get operation :ownership-fact-id)]
+     :facts facts
+     :profile (get operation :profile)
+     :target (get operation :target)
+     :invalidation-conditions
+     [:source-change :fact-link-change :profile-change
+      :target-change :numeric-mode-change :operand-change
+      :compiler-change]
+     :result :proven-safe}))
+
+(defn sh12-c10-mir-expected-outcome [bound proof]
+  (let [operation (get bound :operation)]
+    {:artifact :gravity/safety-outcome
+     :operation-id (get operation :operation-id)
+     :kind :load
+     :source {:core-node-id (get operation :core-node-id)
+              :source-span (get operation :source-span)
+              :origin-chain (get operation :origin-chain)}
+     :profile (get operation :profile)
+     :target (get operation :target)
+     :safety-mode :safe
+     :specialized-safe-rule :SAFE-PERSISTENT-READ
+     :facts (get operation :facts)
+     :outcome :proven-safe
+     :proof proof
+     :runtime-check nil
+     :unsafe-audit nil
+     :diagnostic nil}))
+
+(defn sh12-c10-mir-safety-result-policy-valid? [bound result]
+  (if (= [] (get result :runtime-checks))
+    (if (= [] (get result :unsafe-islands))
+      (if (= [] (get result :diagnostics))
+        (if (= :authenticated-persistent-immutable-read
+               (get result :scope))
+          (= (get result :pending)
+             [:memory-safety
+              :ownership-and-lifetime-safety
+              :region-and-arena-safety
+              :linear-resource-safety
+              :ffi-safety
+              :concurrency-and-race-safety
+              :capability-and-taint-safety
+              :generated-code-safety
+              :elementary-and-floating-safety
+              :optimization-invalidation
+              :authenticated-non-persistent-read-safety-families
+              :mir-preservation])
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-c10-mir-safety-result-valid? [bound]
+  (let [result (get bound :safety-result)
+        operation (get bound :operation)
+        proofs (get result :proofs)
+        outcomes (get result :outcomes)
+        proof (first proofs)
+        outcome (first outcomes)]
+    (if (sh12-c10-mir-safety-result-policy-valid? bound result)
+      (if (sh12-c10-mir-exact-keys?
+         result
+         #{:artifact :status :operation-id :outcome :outcomes :proofs
+           :runtime-checks :unsafe-islands :diagnostics :preserves
+           :identity-input :scope :pending})
+      (if (= :gravity/sh11-safety-classification-result
+             (get result :artifact))
+        (if (= :accepted (get result :status))
+          (if (= :proven-safe (get result :outcome))
+            (if (= :load (get result :operation-id))
+              (if (vector? proofs)
+                (if (= 1 (count proofs))
+                  (if (vector? outcomes)
+                    (if (= 1 (count outcomes))
+                      (let [proof (first proofs)
+                            outcome (first outcomes)
+                            preserves (get result :preserves)
+                            identity-input (get result :identity-input)]
+                        (if (sh12-c10-mir-exact-keys?
+                             identity-input #{:request :policy-version})
+                          (if (= (get identity-input :request) operation)
+                            (if (= 2 (get identity-input :policy-version))
+                              (if (sh12-c10-mir-exact-keys?
+                                   preserves
+                                   #{:core-node-id :type-fact-id
+                                     :effect-fact-id :capability-proof-id
+                                     :ownership-fact-id :source-span
+                                     :origin-chain :profile :target})
+                                (if (= (get preserves :core-node-id)
+                                       (get operation :core-node-id))
+                                  (if (= (get preserves :type-fact-id)
+                                         (get operation :type-fact-id))
+                                    (if (= (get preserves :effect-fact-id)
+                                           (get operation :effect-fact-id))
+                                      (if (= (get preserves
+                                                   :capability-proof-id)
+                                             (get operation
+                                                  :capability-proof-id))
+                                        (if (= (get preserves
+                                                     :ownership-fact-id)
+                                               (get operation
+                                                    :ownership-fact-id))
+                                          (if (= (get preserves :source-span)
+                                                 (get operation :source-span))
+                                            (if (= (get preserves :origin-chain)
+                                                   (get operation :origin-chain))
+                                              (if (= (get preserves :profile)
+                                                     (get operation :profile))
+                                                (if (= (get preserves :target)
+                                                       (get operation :target))
+                                                  (if (sh12-c10-mir-exact-keys?
+                                                       proof
+                                                       #{:artifact :proof-id
+                                                         :proof-id-request
+                                                         :operation-id
+                                                         :core-node-id
+                                                         :source-span
+                                                         :generated-origin-chain
+                                                         :claim :assumptions
+                                                         :method :provider
+                                                         :inputs :facts
+                                                         :profile :target
+                                                         :invalidation-conditions
+                                                         :result})
+                                                    (if (= :gravity/sh11-static-safety-proof
+                                                           (get proof :artifact))
+                                                      (if (= (get proof :proof-id)
+                                                             (get bound :proof-id))
+                                                        (if (= (get proof :operation-id)
+                                                               (get operation :operation-id))
+                                                          (if (= (get proof :core-node-id)
+                                                                 (get operation :core-node-id))
+                                                            (if (= (get proof :source-span)
+                                                                   (get operation :source-span))
+                                                              (if (= (get proof
+                                                                          :generated-origin-chain)
+                                                                     (get operation
+                                                                          :origin-chain))
+                                                                (if (= :persistent-immutable-read
+                                                                       (get proof :claim))
+                                                                  (if (= :external-coordinator-digest-boundary
+                                                                         (get proof :provider))
+                                                                    (if (= :proven-safe
+                                                                           (get proof :result))
+                                                                      (if (= (get proof :facts)
+                                                                             (get operation :facts))
+                                                                        (if (= [(get operation :type-fact-id)
+                                                                               (get operation :effect-fact-id)
+                                                                               (get operation :capability-proof-id)
+                                                                               (get operation :ownership-fact-id)]
+                                                                               (get proof :inputs))
+                                                                          (if (= (get proof :profile)
+                                                                                 (get operation :profile))
+                                                                            (if (= (get proof :target)
+                                                                                   (get operation :target))
+                                                                              (if (= (get outcome :proof)
+                                                                                     proof)
+                                                                                (if (= :proven-safe
+                                                                                       (get outcome :outcome))
+                                                                                  (if (= nil (get outcome :runtime-check))
+                                                                                    (if (= nil (get outcome :unsafe-audit))
+                                                                                      (if (= proof
+                                                                                             (sh12-c10-mir-expected-proof
+                                                                                              bound))
+                                                                                        (if (= outcome
+                                                                                               (sh12-c10-mir-expected-outcome
+                                                                                                bound proof))
+                                                                                          true
+                                                                                          false)
+                                                                                        false)
+                                                                                      false)
+                                                                                    false)
+                                                                                  false)
+                                                                                false)
+                                                                              false)
+                                                                            false)
+                                                                          false)
+                                                                        false)
+                                                                      false)
+                                                                    false)
+                                                                  false)
+                                                                false)
+                                                              false)
+                                                            false)
+                                                          false)
+                                                        false)
+                                                      false)
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        )
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-safety-verification-valid? [bound]
+  (let [verification (get bound :safety-verification)
+        expected (get verification :expected)
+        candidate (get verification :candidate)]
+    (if (sh12-c10-mir-exact-keys?
+         verification #{:artifact :status :checks :expected :candidate})
+      (if (= :gravity/sh11-authenticated-load-result-verification
+             (get verification :artifact))
+        (if (= :passed (get verification :status))
+          (if (= [:exact-c9-bound-proof-resolution
+                  :persistent-read-classification-recomputation
+                  :exactly-one-proven-safe-outcome
+                  :source-and-fact-lineage]
+                 (get verification :checks))
+            (if (= expected (get bound :safety-result))
+              (= candidate (get bound :safety-result))
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-binding-checks []
+  [:bounded-current-c9-and-safety-inputs
+   :unique-source-derived-persistent-read
+   :sequential-proof-result-core-resolution
+   :resolved-digest-shape-and-order
+   :duplicate-digest-rejection
+   :fresh-safety-classification-and-verification
+   :path-neutral-identity-input
+   :separate-actual-path-provenance
+   :coordinator-binding-consistency-only])
+
+(defn sh12-c10-mir-adapter-pending []
+  [:owned-mutable-sh09-adapter
+   :persistent-aggregate-copy-semantics
+   :regions-arenas-and-linear-resources
+   :task-actor-and-ffi-transfer
+   :runtime-borrow-checks
+   :unsafe-audit-records
+   :runtime-checked-load-adapter
+   :unsafe-load-audit-adapter
+   :trusted-digest-resolution
+   :independent-canonical-digest-verification
+   :mir-preservation])
+
+(defn sh12-c10-mir-bound-pending-valid? [bound identity-input]
+  (if (= (sh12-c10-mir-adapter-pending) (get bound :pending))
+    (if (= (get identity-input :pending) (get bound :pending))
+      true
+      false)
+    false))
+
+(defn sh12-c10-mir-safety-pending []
+  [:memory-safety
+   :ownership-and-lifetime-safety
+   :region-and-arena-safety
+   :linear-resource-safety
+   :ffi-safety
+   :concurrency-and-race-safety
+   :capability-and-taint-safety
+   :generated-code-safety
+   :elementary-and-floating-safety
+   :optimization-invalidation
+   :authenticated-non-persistent-read-safety-families
+   :mir-preservation])
+
+(defn sh12-c10-mir-binding-nonclaims []
+  [:trusted-digest-resolution
+   :independent-canonical-digest-verification
+   :authoritative-safety-certificate])
+
+(defn sh12-c10-mir-proof-request-from-bound [bound]
+  (let [operation (get bound :operation)
+        facts (get operation :facts)]
+    {:domain :gravity/sh11-persistent-read-proof-v2
+     :operation-id (get operation :operation-id)
+     :core-node-id (get operation :core-node-id)
+     :value-type (get facts :value-type)
+     :ownership-fact-id (get operation :ownership-fact-id)
+     :fact-id-request (get facts :fact-id-request)
+     :ownership-kind (get facts :ownership-kind)
+     :initialization (get facts :initialization)
+     :availability (get facts :availability)
+     :event-id (get facts :event-id)
+     :event (get facts :event)
+     :ownership-core-identity-id
+     (get facts :ownership-core-identity-id)
+     :source-span (get operation :source-span)
+     :origin-chain (get operation :origin-chain)
+     :profile (get operation :profile)
+     :target (get operation :target)
+     :type-fact-id (get operation :type-fact-id)
+     :effect-fact-id (get operation :effect-fact-id)
+     :capability-proof-id (get operation :capability-proof-id)}))
+
+(defn sh12-c10-mir-safety-identity-input-from-bound [bound]
+  {:domain :gravity/sh11-authenticated-safety-core-v2
+   :ownership-core-identity-input
+   (get (get bound :identity-input) :ownership-core-identity-input)
+   :ownership-core-identity-id
+   (get (get bound :identity-input) :ownership-core-identity-id)
+   :proof-id-request (sh12-c10-mir-proof-request-from-bound bound)
+   :pending (get bound :pending)})
+
+(defn sh12-c10-mir-result-request-from-bound [bound]
+  {:domain :gravity/sh11-safety-result-identity-v2
+   :operation (get bound :operation)
+   :result (get bound :safety-result)
+   :verification (get bound :safety-verification)
+   :proof-id (get bound :proof-id)
+   :ownership-core-identity-id
+   (get (get bound :identity-input) :ownership-core-identity-id)})
+
+(defn sh12-c10-mir-core-request-from-bound [bound]
+  {:domain :gravity/sh11-safety-core-identity-v2
+   :safety-identity-input
+   (sh12-c10-mir-safety-identity-input-from-bound bound)
+   :operation (get bound :operation)
+   :result (get bound :safety-result)
+   :result-verification (get bound :safety-verification)
+   :proof-id (get bound :proof-id)
+   :result-id (get bound :result-id)
+   :ownership-core-identity-id
+   (get (get bound :identity-input) :ownership-core-identity-id)
+   :pending (get bound :pending)})
+
+(defn sh12-c10-mir-resolutions-valid? [bound]
+  (let [resolutions (get bound :identity-resolutions)
+        proof-resolution (get resolutions :proof-resolution)
+        result-resolution (get resolutions :result-resolution)
+        core-resolution (get resolutions :core-resolution)
+        proof-digest (get proof-resolution :digest)
+        result-digest (get result-resolution :digest)
+        core-digest (get core-resolution :digest)]
+    (if (sh12-c10-mir-exact-keys?
+         resolutions #{:proof-resolution :result-resolution :core-resolution})
+      (if (sh12-c10-mir-exact-keys?
+           proof-resolution #{:request :digest})
+        (if (sh12-c10-mir-exact-keys?
+             result-resolution #{:request :digest})
+          (if (sh12-c10-mir-exact-keys?
+               core-resolution #{:request :digest})
+            (if (sh12-c10-mir-sha256-id? proof-digest)
+              (if (sh12-c10-mir-sha256-id? result-digest)
+                (if (sh12-c10-mir-sha256-id? core-digest)
+                  (if (= proof-digest (get bound :proof-id))
+                    (if (= result-digest (get bound :result-id))
+                      (if (= core-digest (get bound :safety-core-id))
+                        (if (= (get proof-resolution :request)
+                               (sh12-c10-mir-proof-request-from-bound bound))
+                          (if (= (get result-resolution :request)
+                                 (sh12-c10-mir-result-request-from-bound bound))
+                            (if (= (get core-resolution :request)
+                                   (sh12-c10-mir-core-request-from-bound bound))
+                              (if (= proof-digest result-digest)
+                                false
+                                (if (= proof-digest core-digest)
+                                  false
+                                  (if (= result-digest core-digest)
+                                    false
+                                    true)))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-c9-core-request-expected
+  [ownership-core fact-identities]
+  (let [owned (get ownership-core :ownership-core)]
+    {:domain :gravity/sh10-ownership-core-identity-v2
+     :kind :ownership-core
+     :core-node-id :gravity/sh10-ownership-core
+     :identity-input
+     {:ownership-core-identity-input (get owned :identity-input)
+      :ordered-fact-identities fact-identities
+      :ownership-requests (get owned :ownership-requests)
+      :ownership-results (get owned :ownership-results)}}))
+
+(defn sh12-c10-mir-c9-fact-source-valid? [fact identity-body]
+  (if (= fact (get identity-body :fact))
+    (if (= (get fact :source-span) (get identity-body :source-span))
+      (if (= (get fact :origin-chain) (get identity-body :origin-chain))
+        (if (= (get fact :profile) (get identity-body :profile))
+          (if (= (get fact :target) (get identity-body :target))
+            true
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-c10-mir-c9-resolution-valid? [request resolution]
+  (if (map? resolution)
+    (if (sh12-c10-mir-exact-keys? resolution #{:request :digest})
+      (if (= request (get resolution :request))
+        (sh12-c10-mir-sha256-id? (get resolution :digest))
+        false)
+      false)
+    false))
+
+(defn sh12-c10-mir-c9-event-valid? [event]
+  (if (map? event)
+    (if (sh12-c10-mir-exact-keys?
+         event #{:event-id :op :source-span :origin-chain :control-path})
+      (if (= :read (get event :op))
+        (if (map? (get event :source-span))
+          (if (vector? (get event :origin-chain))
+            (= [:authenticated-pure-effect-read]
+               (get event :control-path))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-c10-mir-c9-request-valid? [request]
+  (if (map? request)
+    (if (sh12-c10-mir-exact-keys?
+         request
+         #{:artifact :request-id :value-id :owner-id :ownership-kind
+           :initialization :availability :events :owner-lifetime-end
+           :type-fact-id :effect-fact-id :capability-proof-id :source-span
+           :origin-chain :profile :target})
+      (if (= :gravity/sh10-normalized-ownership-request
+             (get request :artifact))
+        (if (= :persistent-immutable (get request :ownership-kind))
+          (if (= :initialized (get request :initialization))
+            (if (= :available (get request :availability))
+              (if (vector? (get request :events))
+                (if (= 1 (count (get request :events)))
+                  (if (sh12-c10-mir-c9-event-valid?
+                       (first (get request :events)))
+                    (if (= 1 (get request :owner-lifetime-end))
+                      (if (map? (get request :source-span))
+                        (if (vector? (get request :origin-chain))
+                          true
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-c10-mir-c9-result-valid? [request result]
+  (let [expected-state
+        {:initialization (get request :initialization)
+         :availability (get request :availability)
+         :current-owner (get request :owner-id)
+         :immutable-borrow-count 0
+         :immutable-borrows {}
+         :mutable-borrow-id nil}
+        expected-preserves
+        {:value-id (get request :value-id)
+         :owner-id (get request :owner-id)
+         :type-fact-id (get request :type-fact-id)
+         :effect-fact-id (get request :effect-fact-id)
+         :capability-proof-id (get request :capability-proof-id)
+         :source-span (get request :source-span)
+         :origin-chain (get request :origin-chain)
+         :profile (get request :profile)
+         :target (get request :target)}
+        expected-pending
+        [:field-and-range-splitting
+         :region-lifetimes
+         :arena-generations
+         :linear-resources
+         :task-actor-and-ffi-transfer
+         :runtime-borrow-checks
+         :unsafe-audit-records
+         :persistent-aggregate-copy-semantics
+         :authenticated-effectful-or-nonprimitive-sh09-adapter
+         :mir-preservation]]
+    (if (map? result)
+      (if (sh12-c10-mir-exact-keys?
+           result
+           #{:artifact :status :request-id :value-id :owner-id :state
+             :ownership-facts :diagnostics :preserves :identity-input
+             :scope :pending})
+        (if (= :gravity/sh10-ownership-analysis-result
+               (get result :artifact))
+          (if (= :accepted (get result :status))
+            (if (= (get request :request-id) (get result :request-id))
+              (if (= (get request :value-id) (get result :value-id))
+                (if (= (get request :owner-id) (get result :owner-id))
+                  (if (= expected-state (get result :state))
+                    (if (= expected-preserves (get result :preserves))
+                      (if (= :persistent-immutable-read-only
+                             (get result :scope))
+                        (if (= expected-pending (get result :pending))
+                          (if (= [] (get result :diagnostics))
+                            (if (= {:request request :policy-version 1}
+                                   (get result :identity-input))
+                              true
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-c9-state-valid? [state request]
+  (if (map? state)
+    (if (sh12-c10-mir-exact-keys?
+         state
+         #{:initialization :availability :current-owner
+           :immutable-borrow-count :immutable-borrows :mutable-borrow-id})
+      (if (= :initialized (get state :initialization))
+        (if (= :available (get state :availability))
+          (if (= (get request :owner-id) (get state :current-owner))
+            (if (= 0 (get state :immutable-borrow-count))
+              (if (= {} (get state :immutable-borrows))
+                (= nil (get state :mutable-borrow-id))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-c10-mir-c9-fact-shape-valid?
+  [request event fact fact-id-request]
+  (if (map? fact)
+    (if (sh12-c10-mir-exact-keys?
+         fact
+         #{:artifact :fact-id-request :event-id :operation :value-id
+           :owner-id :borrow-id :destination-owner :escape-destination
+           :state-before :state-after :source-span :origin-chain
+           :profile :target})
+      (if (= :gravity/c9-ownership-fact (get fact :artifact))
+        (if (= :read (get fact :operation))
+          (if (= nil (get fact :borrow-id))
+            (if (= nil (get fact :destination-owner))
+              (if (= nil (get fact :escape-destination))
+                (if (= (get event :event-id) (get fact :event-id))
+                  (if (= (get request :value-id) (get fact :value-id))
+                    (if (= (get request :owner-id) (get fact :owner-id))
+                      (if (= (get request :source-span)
+                             (get fact :source-span))
+                        (if (= (get request :origin-chain)
+                               (get fact :origin-chain))
+                          (if (= (get request :profile)
+                                 (get fact :profile))
+                            (if (= (get request :target)
+                                   (get fact :target))
+                              (= fact-id-request
+                                 (get fact :fact-id-request))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-c10-mir-c9-fact-state-identity-valid?
+  [request fact fact-identity fact-id-request]
+  (if (= (get fact :state-before) (get fact :state-after))
+    (if (sh12-c10-mir-c9-state-valid?
+         (get fact :state-before) request)
+      (if (sh12-c10-mir-c9-state-valid?
+           (get fact :state-after) request)
+        (if (map? fact-identity)
+          (if (sh12-c10-mir-exact-keys?
+               fact-identity #{:fact-id-request :ownership-fact-id})
+            (if (= fact-id-request (get fact-identity :fact-id-request))
+              (sh12-c10-mir-sha256-id?
+               (get fact-identity :ownership-fact-id))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-c10-mir-c9-fact-valid?
+  [request result fact fact-identity]
+  (let [event (first (get request :events))
+        fact-id-request
+        {:domain :gravity/sh10-ownership-fact-v1
+         :request-id (get request :request-id)
+         :event-id (get event :event-id)
+         :value-id (get request :value-id)}]
+    (if (sh12-c10-mir-c9-fact-shape-valid?
+         request event fact fact-id-request)
+      (if (sh12-c10-mir-c9-fact-state-identity-valid?
+           request fact fact-identity fact-id-request)
+        true
+        false)
+      false)))
+
+(defn sh12-c10-mir-c8-type-fact-find [remaining value-id]
+  (if (= (count remaining) 0)
+    nil
+    (let [fact (first remaining)]
+      (if (= value-id (get fact :core-node-id))
+        fact
+        (sh12-c10-mir-c8-type-fact-find (rest remaining) value-id)))))
+
+(defn sh12-c10-mir-c8-effect-request-find [remaining value-id]
+  (if (= (count remaining) 0)
+    nil
+    (let [request (first remaining)]
+      (if (= value-id (get request :core-node-id))
+        request
+        (sh12-c10-mir-c8-effect-request-find (rest remaining) value-id)))))
+
+(defn sh12-c10-mir-c8-effect-legality-find
+  [remaining request-id]
+  (if (= (count remaining) 0)
+    nil
+    (let [legality (first remaining)]
+      (if (= request-id (get legality :request-id))
+        legality
+        (sh12-c10-mir-c8-effect-legality-find
+         (rest remaining) request-id)))))
+
+(defn sh12-c10-mir-c8-call-fact-find [remaining value-id]
+  (if (= (count remaining) 0)
+    nil
+    (let [fact (first remaining)]
+      (if (= value-id (get fact :call-core-node-id))
+        fact
+        (sh12-c10-mir-c8-call-fact-find (rest remaining) value-id)))))
+
+(defn sh12-c10-mir-c8-function-valid?
+  [effected effect-request module]
+  (let [call-fact
+        (sh12-c10-mir-c8-call-fact-find
+         (get effected :call-type-facts)
+         (get effect-request :core-node-id))
+        expected-function
+        (if (map? call-fact)
+          (if (= nil (get call-fact :caller-function-syntax-id))
+            (get call-fact :callee-function-syntax-id)
+            (get call-fact :caller-function-syntax-id))
+          (get module :namespace))]
+    (if (= expected-function (get effect-request :function))
+      true
+      false)))
+
+(defn sh12-c10-mir-c9-request-from-c8 [bound value-id]
+  (let [owned (get (get bound :ownership-core) :ownership-core)
+        c8-bound (get owned :effected-core)
+        effected (get c8-bound :effected-core)
+        module (get effected :module)
+        identities (get c8-bound :fact-identities)
+        identity (get identities value-id)
+        effect-request
+        (sh12-c10-mir-c8-effect-request-find
+         (get effected :effect-requests) value-id)]
+    {:artifact :gravity/sh10-normalized-ownership-request
+     :request-id (get identity :effect-fact-id)
+     :value-id value-id
+     :owner-id (get module :namespace)
+     :ownership-kind :persistent-immutable
+     :initialization :initialized
+     :availability :available
+     :events
+     [{:event-id value-id
+       :op :read
+       :source-span (get effect-request :source-span)
+       :origin-chain (get effect-request :origin-chain)
+       :control-path [:authenticated-pure-effect-read]}]
+     :owner-lifetime-end 1
+     :type-fact-id (get identity :type-fact-id)
+     :effect-fact-id (get identity :effect-fact-id)
+     :capability-proof-id (get identity :capability-proof-id)
+     :source-span (get effect-request :source-span)
+     :origin-chain (get effect-request :origin-chain)
+     :profile (get module :profile)
+     :target (get module :target)}))
+
+(defn sh12-c10-mir-c8-effect-request-valid?
+  [effected effect-request request type-fact module]
+  (if (map? effect-request)
+    (if (sh12-c10-mir-exact-keys?
+         effect-request
+         #{:artifact :request-id :core-node-id :syntax-id :source-span
+           :origin-chain :function :namespace :profile :target :phase
+           :effect :required-capability :declared-effects
+           :package-effects :deployment-effects :declared-capabilities
+           :package-capabilities :deployment-capabilities :provider :grant
+           :resource-subject :build-policy :safety-allowed :authority-mode
+           :replay-record :ordering})
+      (if (= :gravity/sh09-normalized-effect-request
+             (get effect-request :artifact))
+        (if (= (get request :value-id)
+               (get effect-request :core-node-id))
+          (if (= (get request :source-span)
+                 (get effect-request :source-span))
+            (if (= (get request :origin-chain)
+                   (get effect-request :origin-chain))
+              (if (= (get request :profile) (get effect-request :profile))
+                (if (= (get request :target) (get effect-request :target))
+                  (if (= (get type-fact :syntax-id)
+                         (get effect-request :syntax-id))
+                    (if (= (get type-fact :fact-id-request)
+                           (get effect-request :request-id))
+                      (if (= (get module :namespace)
+                             (get effect-request :namespace))
+                        (if (sh12-c10-mir-c8-function-valid?
+                             effected effect-request module)
+                          (if (= :build (get effect-request :phase))
+                            (if (= nil (get effect-request :effect))
+                              (if (= nil
+                                     (get effect-request
+                                          :required-capability))
+                                (if (= #{}
+                                       (get effect-request :declared-effects))
+                                  (if (= #{}
+                                         (get effect-request
+                                              :package-effects))
+                                    (if (= #{}
+                                           (get effect-request
+                                                :deployment-effects))
+                                      (if (= #{}
+                                             (get effect-request
+                                                  :declared-capabilities))
+                                        (if (= #{}
+                                               (get effect-request
+                                                    :package-capabilities))
+                                          (if (= #{}
+                                                 (get effect-request
+                                                      :deployment-capabilities))
+                                            (if (= nil
+                                                   (get effect-request
+                                                        :provider))
+                                              (if (= nil
+                                                     (get effect-request :grant))
+                                                (if (= nil
+                                                       (get effect-request
+                                                           :resource-subject))
+                                                  (if (= {:hermetic true
+                                                          :allowed-effects #{}}
+                                                         (get effect-request
+                                                              :build-policy))
+                                                    (if (= true
+                                                           (get effect-request
+                                                               :safety-allowed))
+                                                      (if (= :none
+                                                             (get effect-request
+                                                                 :authority-mode))
+                                                        (if (= nil
+                                                               (get effect-request
+                                                                    :replay-record))
+                                                          (= nil
+                                                             (get effect-request
+                                                                  :ordering))
+                                                          false)
+                                                        false)
+                                                      false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+      false)
+    false))
+
+(defn sh12-c10-mir-c8-type-ref-valid? [effect-node type-fact]
+  (let [type-ref (get effect-node :type-fact-id)]
+    (if (map? type-ref)
+      (if (sh12-c10-mir-exact-keys?
+           type-ref #{:resolution :identity-input})
+        (if (= :coordinator-digest-required
+               (get type-ref :resolution))
+          (= (get type-fact :fact-id-request)
+             (get type-ref :identity-input))
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-caller-syntax-id-valid? [caller-syntax-id]
+  (if (= nil caller-syntax-id)
+    true
+    (sh12-c10-mir-sha256-id? caller-syntax-id)))
+
+(defn sh12-c10-mir-c8-call-fact-exact-valid?
+  [call-fact c8-identity effect-request effect-node value-id
+   type-id effect-id capability-id module]
+  (let [fact-id-request (get call-fact :fact-id-request)
+        expected-fact-id-request
+        {:domain :gravity/sh08-call-type-fact-v1
+         :call-core-node-id value-id
+         :callee-function-syntax-id
+         (get call-fact :callee-function-syntax-id)
+         :argument-types (get call-fact :argument-types)
+         :result-type :gravity.type/bool}]
+    (if (map? call-fact)
+      (if (sh12-c10-mir-exact-keys?
+           call-fact
+           #{:artifact :fact-id-request :call-core-node-id
+             :caller-function-syntax-id :callee-function-syntax-id
+             :argument-types :result-type :evaluation-order :source-span
+             :syntax-id :origin-chain :generated-origin :profile :target
+             :effects :capabilities :status})
+        (if (= :gravity/c7-call-type-fact (get call-fact :artifact))
+          (if (= value-id (get call-fact :call-core-node-id))
+            (if (sh12-c10-mir-sha256-id?
+                 (get call-fact :call-core-node-id))
+              (if (sh12-c10-mir-caller-syntax-id-valid?
+                   (get call-fact :caller-function-syntax-id))
+                (if (sh12-c10-mir-sha256-id?
+                     (get call-fact :callee-function-syntax-id))
+                  (if (vector? (get call-fact :argument-types))
+                    (if (= :gravity.type/bool (get call-fact :result-type))
+                      (if (= :operator-then-arguments
+                             (get call-fact :evaluation-order))
+                        (if (map? (get call-fact :source-span))
+                          (if (sh12-c10-mir-sha256-id?
+                               (get call-fact :syntax-id))
+                            (if (vector? (get call-fact :origin-chain))
+                              (if (vector? (get call-fact
+                                                   :generated-origin))
+                                (if (= (get module :profile)
+                                       (get call-fact :profile))
+                                  (if (= (get module :target)
+                                         (get call-fact :target))
+                                    (if (= [] (get call-fact :effects))
+                                      (if (= []
+                                             (get call-fact :capabilities))
+                                        (if (= :inferred
+                                               (get call-fact :status))
+                                          (if (= fact-id-request
+                                                 expected-fact-id-request)
+                                            (if (= (get call-fact :syntax-id)
+                                                   (get effect-request
+                                                        :syntax-id))
+                                              (if (= (get call-fact
+                                                          :source-span)
+                                                     (get effect-request
+                                                          :source-span))
+                                                (if (= (get call-fact
+                                                            :origin-chain)
+                                                       (get effect-request
+                                                            :origin-chain))
+                                                  (if (= (get call-fact
+                                                              :generated-origin)
+                                                         (get effect-node
+                                                              :generated-origin))
+                                                    (if (sh12-c10-mir-c8-type-ref-valid?
+                                                         effect-node call-fact)
+                                                      (if (sh12-c10-mir-exact-keys?
+                                                           c8-identity
+                                                           #{:type-fact-id
+                                                             :effect-fact-id
+                                                             :capability-proof-id})
+                                                        (if (sh12-c10-mir-sha256-id?
+                                                             (get c8-identity
+                                                                  :type-fact-id))
+                                                          (if (sh12-c10-mir-sha256-id?
+                                                               (get c8-identity
+                                                                    :effect-fact-id))
+                                                            (if (sh12-c10-mir-sha256-id?
+                                                                 (get c8-identity
+                                                                      :capability-proof-id))
+                                                              (if (= type-id
+                                                                     (get c8-identity
+                                                                          :type-fact-id))
+                                                                (if (= effect-id
+                                                                       (get c8-identity
+                                                                            :effect-fact-id))
+                                                                  (= capability-id
+                                                                     (get c8-identity
+                                                                          :capability-proof-id))
+                                                                  false)
+                                                                false)
+                                                              false)
+                                                            false)
+                                                          false)
+                                                        false)
+                                                      false)
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    ))
+
+(defn sh12-c10-mir-c8-node-valid?
+  [effect-node effect-request type-fact]
+  (if (map? effect-node)
+    (if (sh12-c10-mir-exact-keys?
+         effect-node
+         #{:artifact :core-node-id :direct :latent :transitive :ordering
+           :source-span :syntax-id :origin-chain :generated-origin
+           :type-fact-id})
+      (if (= :gravity/c8-effect-node (get effect-node :artifact))
+        (if (= (get effect-request :core-node-id)
+               (get effect-node :core-node-id))
+          (if (= (get effect-request :source-span)
+                 (get effect-node :source-span))
+            (if (= (get effect-request :origin-chain)
+                   (get effect-node :origin-chain))
+              (if (= (get effect-request :syntax-id)
+                     (get effect-node :syntax-id))
+                (if (= (get type-fact :generated-origin)
+                       (get effect-node :generated-origin))
+                  (if (sh12-c10-mir-c8-type-ref-valid?
+                       effect-node type-fact)
+                    (if (= #{} (get effect-node :direct))
+                      (if (= #{} (get effect-node :latent))
+                        (if (= #{} (get effect-node :transitive))
+                          (= :pure (get effect-node :ordering))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false))
+
+(defn sh12-c10-mir-c8-pure-legality-exact-valid?
+  [legality entry-legality effect-request call-fact module]
+  (let [expected
+        {:artifact :gravity/sh09-effect-legality-result
+         :status :accepted
+         :request-id (get effect-request :request-id)
+         :effect nil
+         :direct-effects #{}
+         :residual-effects #{}
+         :legality
+         {:effect nil
+          :source (get effect-request :core-node-id)
+          :allowed-by
+          {:source-declaration true
+           :profile true
+           :package true
+           :deployment true
+           :build-policy true
+           :provider true
+           :grant true
+           :phase true
+           :safety true}
+          :required-capability nil
+          :result :accepted}
+         :capability-proof nil
+         :replay-obligation nil
+         :ordering
+         {:effect nil
+          :core-node-id (get effect-request :core-node-id)
+          :mode nil}
+         :preserves
+         {:core-node-id (get effect-request :core-node-id)
+          :syntax-id (get effect-request :syntax-id)
+          :source-span (get effect-request :source-span)
+          :origin-chain (get effect-request :origin-chain)
+          :profile (get effect-request :profile)
+          :target (get effect-request :target)}
+         :diagnostics []
+         :identity-input
+         {:request effect-request
+          :policy-version 2}
+         :scope :single-normalized-typed-operation
+         :pending [:effect-inference
+                   :function-latent-effects
+                   :transitive-call-effects
+                   :handled-effects
+                   :namespace-and-module-summaries
+                   :runtime-profile-policy
+                   :authenticated-sh08-function-and-effectful-adapters
+                   :mir-preservation]}]
+    (if (= legality entry-legality)
+      (if (= (get effect-request :core-node-id)
+             (get call-fact :call-core-node-id))
+        (if (= (get effect-request :profile)
+               (get module :profile))
+          (if (= (get effect-request :target)
+                 (get module :target))
+            (= expected legality)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-c9-c8-admission-valid? [bound request]
+  (let [owned (get (get bound :ownership-core) :ownership-core)
+        c8-bound (get owned :effected-core)
+        effected (get c8-bound :effected-core)
+        module (get effected :module)
+        value-id (get request :value-id)
+        identities (get c8-bound :fact-identities)
+        identity (get identities value-id)
+        call-fact
+        (sh12-c10-mir-c8-call-fact-find
+         (get effected :call-type-facts) value-id)
+        effect-request
+        (sh12-c10-mir-c8-effect-request-find
+         (get effected :effect-requests) value-id)
+        effect-node
+        (get (get (get effected :effect-graph) :nodes) value-id)
+        type-table (get effected :type-table)
+        expected-request
+        (sh12-c10-mir-c9-request-from-c8 bound value-id)]
+    (if (= :declared-pure-call-effects-with-thrown-effects-pending
+           (get effected :scope))
+      (if (= request expected-request)
+        (if (= :gravity.type/bool (get type-table value-id))
+          (if (map? identity)
+            (if (sh12-c10-mir-sha256-id? (get identity :type-fact-id))
+              (if (sh12-c10-mir-sha256-id?
+                   (get identity :effect-fact-id))
+                (if (sh12-c10-mir-sha256-id?
+                     (get identity :capability-proof-id))
+                  (if (sh12-c10-mir-c8-effect-request-valid?
+                       effected effect-request request call-fact module)
+                    (if (sh12-c10-mir-c8-node-valid?
+                         effect-node effect-request call-fact)
+                      true
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-c9-identity-order-valid?
+  [ownership-core owned identities request result fact fact-identity]
+  (let [identity-input (get ownership-core :identity-input)
+        resolutions (get ownership-core :identity-resolutions)
+        fact-resolutions (get resolutions :fact-resolutions)
+        core-resolution (get resolutions :core-resolution)
+        fact-digest (get fact-identity :ownership-fact-id)
+        core-digest (get ownership-core :ownership-core-identity-id)
+        identity-request
+        {:domain :gravity/sh10-ownership-fact-identity-v2
+         :kind :ownership-fact
+         :core-node-id (get fact :value-id)
+         :identity-input
+         {:fact fact
+          :fact-id-request (get fact :fact-id-request)
+          :ownership-request request
+          :ownership-result result
+          :source-span (get fact :source-span)
+          :origin-chain (get fact :origin-chain)
+          :profile (get request :profile)
+          :target (get request :target)}}]
+    (if (= identities (get identity-input :ordered-fact-identities))
+      (if (= (get identity-input :ownership-core-identity-input)
+             (get owned :identity-input))
+        (if (sh12-c10-mir-exact-keys?
+             resolutions #{:fact-resolutions :core-resolution})
+          (if (vector? fact-resolutions)
+            (if (= 1 (count fact-resolutions))
+              (if (sh12-c10-mir-c9-resolution-valid?
+                   identity-request
+                   (first fact-resolutions))
+                (if (sh12-c10-mir-c9-resolution-valid?
+                     (sh12-c10-mir-c9-core-request-expected
+                      ownership-core identities)
+                     core-resolution)
+                  (if (= fact-digest
+                         (get (first fact-resolutions) :digest))
+                    (if (= core-digest (get core-resolution :digest))
+                      (if (= fact-digest core-digest)
+                        false
+                        true)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-c9-proof-request-expected
+  [ownership-core request fact fact-identity]
+  (let [state (get fact :state-before)]
+    {:domain :gravity/sh11-persistent-read-proof-v2
+     :operation-id :load
+     :core-node-id (get request :value-id)
+     :value-type :gravity.type/bool
+     :ownership-fact-id (get fact-identity :ownership-fact-id)
+     :fact-id-request (get fact :fact-id-request)
+     :ownership-kind (get request :ownership-kind)
+     :initialization (get state :initialization)
+     :availability (get state :availability)
+     :event-id (get fact :event-id)
+     :event (get fact :operation)
+     :ownership-core-identity-id
+     (get ownership-core :ownership-core-identity-id)
+     :source-span (get fact :source-span)
+     :origin-chain (get fact :origin-chain)
+     :profile (get fact :profile)
+     :target (get fact :target)
+     :type-fact-id (get request :type-fact-id)
+     :effect-fact-id (get request :effect-fact-id)
+     :capability-proof-id (get request :capability-proof-id)}))
+
+(defn sh12-c10-mir-c9-read-admission-valid? [bound]
+  (let [ownership-core (get bound :ownership-core)
+        owned (get ownership-core :ownership-core)
+        requests (get owned :ownership-requests)
+        results (get owned :ownership-results)
+        identities (get ownership-core :fact-identities)]
+    (if (vector? requests)
+      (if (= 1 (count requests))
+        (if (vector? results)
+          (if (= 1 (count results))
+            (if (vector? identities)
+              (if (= 1 (count identities))
+                (let [request (first requests)
+                      result (first results)
+                      facts (get result :ownership-facts)
+                      fact-identity (first identities)]
+                  (if (vector? facts)
+                    (if (= 1 (count facts))
+                      (let [fact (first facts)]
+                        (if (sh12-c10-mir-c9-request-valid? request)
+                          (if (sh12-c10-mir-c9-result-valid? request result)
+                            (if (sh12-c10-mir-c9-fact-valid?
+                                 request result fact fact-identity)
+                              (if (sh12-c10-mir-c9-c8-admission-valid?
+                                   bound request)
+                                (if (sh12-c10-mir-c9-identity-order-valid?
+                                     ownership-core owned identities request
+                                     result fact fact-identity)
+                                  (if (= (sh12-c10-mir-proof-request-from-bound
+                                          bound)
+                                         (sh12-c10-mir-c9-proof-request-expected
+                                          ownership-core request fact
+                                          fact-identity))
+                                    true
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false))
+                      false)
+                    false))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-c9-lineage-extras-valid? [bound]
+  (let [ownership-core (get bound :ownership-core)
+        owned (get ownership-core :ownership-core)
+        identities (get ownership-core :fact-identities)
+        identity (first identities)
+        fact-request (get identity :fact-id-request)
+        requests (get owned :ownership-requests)
+        results (get owned :ownership-results)
+        result (first results)
+        facts (get result :ownership-facts)
+        fact (first facts)
+        identity-request
+        {:domain :gravity/sh10-ownership-fact-identity-v2
+         :kind :ownership-fact
+         :core-node-id (get fact :value-id)
+         :identity-input
+         {:fact fact
+          :fact-id-request (get fact :fact-id-request)
+          :ownership-request (first requests)
+          :ownership-result result
+          :source-span (get fact :source-span)
+          :origin-chain (get fact :origin-chain)
+          :profile (get (first requests) :profile)
+          :target (get (first requests) :target)}}
+        identity-body (get identity-request :identity-input)
+        resolutions (get ownership-core :identity-resolutions)
+        fact-resolutions (get resolutions :fact-resolutions)
+        core-resolution (get resolutions :core-resolution)
+        expected-core-request
+        (sh12-c10-mir-c9-core-request-expected
+         ownership-core identities)]
+    (if (= :persistent-immutable-pure-primitive-reads
+           (get ownership-core :scope))
+      (if (= :coordinator-digest-bound
+             (get ownership-core :identity-resolution))
+        (if (= :coordinator-resolution-shape-checked
+               (get ownership-core :identity-binding-status))
+          (if (= [] (get ownership-core :diagnostics))
+            (if (= false (get ownership-core :self-hosted?))
+              (if (= true (get ownership-core :clojure-seed-boundary?))
+                (if (sh12-c10-mir-sha256-id?
+                     (get ownership-core :ownership-core-identity-id))
+                  (if (= (get ownership-core :pending)
+                         (get (get ownership-core :identity-input)
+                              :pending))
+                    (if (vector? requests)
+                      (if (= 1 (count requests))
+                        (if (vector? results)
+                          (if (= 1 (count results))
+                            (if (= :accepted (get result :status))
+                              (if (vector? facts)
+                                (if (= 1 (count facts))
+                                  (if (= :gravity/c9-ownership-fact
+                                         (get fact :artifact))
+                                    (if (map? (get fact :fact-id-request))
+                                      (if (= fact-request
+                                             (get fact :fact-id-request))
+                                        (if (map? identity-body)
+                                          (if (sh12-c10-mir-c9-fact-source-valid?
+                                               fact identity-body)
+                                            (if (= (first requests)
+                                                   (get identity-body
+                                                       :ownership-request))
+                                              (if (= result
+                                                     (get identity-body
+                                                         :ownership-result))
+                                                (if (vector? fact-resolutions)
+                                                  (if (= 1
+                                                         (count fact-resolutions))
+                                                    (if (sh12-c10-mir-c9-resolution-valid?
+                                                         identity-request
+                                                         (first fact-resolutions))
+                                                      (if (= (get identity
+                                                                  :ownership-fact-id)
+                                                             (get (first fact-resolutions)
+                                                                  :digest))
+                                                        (if (sh12-c10-mir-c9-resolution-valid?
+                                                             expected-core-request
+                                                             core-resolution)
+                                                          (if (= (get ownership-core
+                                                                      :ownership-core-identity-id)
+                                                                 (get core-resolution
+                                                                      :digest))
+                                                            (if (= (get bound :proof-id)
+                                                                   (get (get (get bound
+                                                                                 :operation)
+                                                                            :facts)
+                                                                       :proof-id))
+                                                              (if (sh12-c10-mir-c9-read-admission-valid?
+                                                                   bound)
+                                                                true
+                                                                false)
+                                                              false)
+                                                            false)
+                                                          false)
+                                                        false)
+                                                      false)
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+                false)
+              false)
+            false)
+          false)
+        false)))
+
+(defn sh12-c10-mir-c9-lineage-valid? [bound]
+  (let [ownership-core (get bound :ownership-core)
+        c9-identity-input (get ownership-core :identity-input)
+        c10-identity-input (get bound :identity-input)
+        identities (get ownership-core :fact-identities)
+        operation (get bound :operation)]
+    (if (sh12-c10-mir-exact-keys?
+         ownership-core
+         #{:artifact :schema-version :status :scope :ownership-core
+           :fact-identities :ownership-core-identity-id :identity-input
+           :identity-resolution :identity-binding-status
+           :identity-resolutions :provenance :diagnostics :pending
+           :self-hosted? :clojure-seed-boundary?})
+      (if (= :gravity/sh10-identity-bound-owned-core-template
+             (get ownership-core :artifact))
+        (if (= 2 (get ownership-core :schema-version))
+          (if (= :accepted (get ownership-core :status))
+            (if (sh12-c10-mir-exact-keys?
+                 c9-identity-input
+                 #{:domain :ownership-core-identity-input
+                   :ordered-fact-identities :ownership-core-identity-id
+                   :pending})
+              (if (= :gravity/sh10-identity-bound-owned-core-v2
+                     (get c9-identity-input :domain))
+                (if (= (get ownership-core :pending)
+                       (get c9-identity-input :pending))
+                  (if (= (get c9-identity-input :ownership-core-identity-id)
+                         (get ownership-core
+                              :ownership-core-identity-id))
+                    (if (= (get c9-identity-input
+                                :ownership-core-identity-id)
+                           (get c10-identity-input
+                                :ownership-core-identity-id))
+                      (if (= c9-identity-input
+                             (get c10-identity-input
+                                  :ownership-core-identity-input))
+                        (if (vector? identities)
+                          (if (= 1 (count identities))
+                            (if (= (get (first identities)
+                                         :ownership-fact-id)
+                                   (get operation :ownership-fact-id))
+                              (sh12-c10-mir-c9-lineage-extras-valid? bound)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-provenance-chain-valid? [bound]
+  (let [c10-provenance (get bound :provenance)
+        c9-bound (get bound :ownership-core)
+        owned (get c9-bound :ownership-core)
+        c8-bound (get owned :effected-core)
+        effected (get c8-bound :effected-core)
+        c9-provenance (get c9-bound :provenance)
+        owned-provenance (get owned :provenance)
+        c8-provenance (get c8-bound :provenance)
+        effected-provenance (get effected :provenance)]
+    (if (map? c10-provenance)
+      (if (map? c9-provenance)
+        (if (map? owned-provenance)
+          (if (map? c8-provenance)
+            (if (map? effected-provenance)
+              (if (= c10-provenance c9-provenance)
+                (if (= c10-provenance owned-provenance)
+                  (if (= c10-provenance c8-provenance)
+                    (= c10-provenance effected-provenance)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-bound-shape-valid? [bound]
+  (if (sh12-c10-mir-exact-keys?
+       bound
+       #{:artifact :schema-version :status :scope :ownership-core
+         :operation :safety-result :safety-verification :proof-id :result-id
+         :safety-core-id :identity-input :identity-resolution
+         :identity-binding-status :identity-resolutions :provenance
+         :diagnostics :pending :nonclaims :self-hosted?
+         :clojure-seed-boundary?})
+    (if (= :gravity/sh11-identity-bound-safety-core-template
+           (get bound :artifact))
+      (if (= 2 (get bound :schema-version))
+        (if (= :accepted (get bound :status))
+          (if (= :persistent-immutable-primitive-read-load
+                 (get bound :scope))
+            (if (= :coordinator-digest-bound
+                   (get bound :identity-resolution))
+              (if (= :coordinator-resolution-shape-checked
+                     (get bound :identity-binding-status))
+                (if (sh12-c10-mir-sha256-id? (get bound :proof-id))
+                  (if (sh12-c10-mir-sha256-id? (get bound :result-id))
+                    (if (sh12-c10-mir-sha256-id? (get bound :safety-core-id))
+                      (let [identity-input (get bound :identity-input)]
+                        (if (sh12-c10-mir-exact-keys?
+                             identity-input
+                             #{:domain :ownership-core-identity-input
+                               :ownership-core-identity-id :proof-id
+                               :result-id :safety-core-id :pending})
+                          (if (= :gravity/sh11-identity-bound-safety-core-v2
+                                 (get identity-input :domain))
+                            (if (= (get identity-input :proof-id)
+                                 (get bound :proof-id))
+                            (if (= (get identity-input :result-id)
+                                   (get bound :result-id))
+                              (if (= (get identity-input :safety-core-id)
+                                     (get bound :safety-core-id))
+                                (if (sh12-c10-mir-bound-pending-valid?
+                                     bound identity-input)
+                                  (if (sh12-c10-mir-resolutions-valid? bound)
+                                    (if (= (sh12-c10-mir-binding-nonclaims)
+                                           (get bound :nonclaims))
+                                      (if (= (get bound :self-hosted?) false)
+                                        (if (= (get bound :clojure-seed-boundary?) true)
+                                          (if (= (get bound :pending)
+                                                 (get identity-input :pending))
+                                            (if (sh12-c10-mir-c9-lineage-valid?
+                                                 bound)
+                                              (if (sh12-c10-mir-safety-result-valid?
+                                                   bound)
+                                              (if (sh12-c10-mir-safety-verification-valid?
+                                                     bound)
+                                                  (if (= [] (get bound :diagnostics))
+                                                    (if (sh12-c10-mir-provenance-chain-valid?
+                                                         bound)
+                                                      true
+                                                      false)
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                            false)
+                          false))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-c10-mir-verification-valid? [bound verification]
+  (if (sh12-c10-mir-exact-keys?
+       verification
+       #{:artifact :status :checks :nonclaims :expected :candidate})
+    (if (= :gravity/sh11-safety-identity-binding-verification
+           (get verification :artifact))
+      (if (= :passed (get verification :status))
+        (if (= (sh12-c10-mir-binding-checks) (get verification :checks))
+          (if (= (sh12-c10-mir-binding-nonclaims)
+                 (get verification :nonclaims))
+            (if (= bound (get verification :expected))
+              (if (= bound (get verification :candidate))
+                true
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-authenticated-c10-mir-input-valid? [bound verification]
+  (let [bound-preflight (sh12-authenticated-c10-mir-carrier-preflight bound)
+        verification-preflight
+        (sh12-c10-mir-verification-envelope-preflight verification)]
+    (if (= :accepted (get bound-preflight :status))
+      (if (= :accepted (get verification-preflight :status))
+        (if (sh12-c10-mir-bound-shape-valid? bound)
+          (if (sh12-c10-mir-c8-fact-tables-valid? bound)
+            (sh12-c10-mir-verification-valid? bound verification)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-operation-identity-input [template]
+  (let [semantic (get template :identity-input)]
+    {:domain :gravity/sh12-c10-proof-reference-operation-v2
+     :schema-version 2
+     :scope :authenticated-persistent-read-safety-evidence-only
+     :mir-operation :proof-reference
+     :source-operation :load
+     :core-node-id (get semantic :core-node-id)
+     :value-type (get semantic :value-type)
+     :type-fact-id (get semantic :type-fact-id)
+     :effect-fact-id (get semantic :effect-fact-id)
+     :capability-proof-id (get semantic :capability-proof-id)
+     :c9-ownership-core-id (get semantic :c9-ownership-core-id)
+     :c9-ownership-fact-id (get semantic :c9-ownership-fact-id)
+     :c10-proof-id (get semantic :c10-proof-id)
+     :c10-result-id (get semantic :c10-result-id)
+     :c10-safety-core-id (get semantic :c10-safety-core-id)
+     :safety-outcome-id (get semantic :safety-outcome-id)
+     :safety-proof-id (get semantic :safety-proof-id)
+     :source-span (get semantic :source-span)
+     :origin-chain (get semantic :origin-chain)
+     :profile (get semantic :profile)
+     :target (get semantic :target)
+     :syntax-id (get semantic :syntax-id)
+     :operation-template (get template :operation)
+     :proof-token-values (get template :values)
+     :capability-table (get template :capability-table)
+     :source-map (get template :source-map)}))
+
+(defn sh12-c10-mir-operation-identity-request [bound verification template]
+  (let [template-preflight
+        (sh12-authenticated-c10-mir-carrier-preflight template)
+        canonical-template
+        (sh12-build-authenticated-c10-mir-template bound verification)]
+    (if (= :accepted (get template-preflight :status))
+      (if (sh12-authenticated-c10-mir-input-valid? bound verification)
+        (if (= template canonical-template)
+          {:artifact :gravity/sh12-c10-proof-reference-operation-identity-request
+           :schema-version 2
+           :status :accepted
+           :request
+           (sh12-c10-mir-operation-identity-input canonical-template)
+           :next :resolve-mir-operation-identity
+           :resolution :coordinator-digest-required
+           :diagnostics []
+           :pending (get template :pending)}
+          {:artifact :gravity/sh12-c10-proof-reference-operation-identity-request
+           :schema-version 2
+           :status :rejected
+           :diagnostics [(sh12-c10-mir-diagnostic
+                          bound :template-recomputation-mismatch)]})
+        {:artifact :gravity/sh12-c10-proof-reference-operation-identity-request
+         :schema-version 2
+         :status :rejected
+         :diagnostics [(sh12-c10-mir-diagnostic
+                        bound :untrusted-or-malformed-c10-input)]})
+      {:artifact :gravity/sh12-c10-proof-reference-operation-identity-request
+       :schema-version 2
+       :status :rejected
+       :diagnostics [{:diagnostic-id "C11-C10-ADAPTER"
+                      :rule "C11-C10-ADAPTER"
+                      :reason :template-carrier-bound
+                      :preflight template-preflight}]})))
+
+(defn sh12-c10-mir-resolution-entry-valid? [request resolution]
+  (if (map? resolution)
+    (if (sh12-c10-mir-exact-keys? resolution #{:request :digest})
+      (if (= request (get resolution :request))
+        (sh12-c10-mir-sha256-id? (get resolution :digest))
+        false)
+      false)
+    false))
+
+(defn sh12-c10-mir-upstream-digest? [bound digest]
+  (let [operation (get bound :operation)
+        facts (get operation :facts)
+        ownership-core (get bound :ownership-core)
+        identities (get ownership-core :fact-identities)
+        fact-identity (first identities)]
+    (if (= digest (get bound :proof-id))
+      true
+      (if (= digest (get bound :result-id))
+        true
+        (if (= digest (get bound :safety-core-id))
+          true
+          (if (= digest
+                 (get (get bound :identity-input)
+                      :ownership-core-identity-id))
+            true
+            (if (= digest (get operation :type-fact-id))
+              true
+              (if (= digest (get operation :effect-fact-id))
+                true
+                (if (= digest (get operation :capability-proof-id))
+                  true
+                  (if (= digest (get operation :ownership-fact-id))
+                    true
+                    (if (= digest
+                           (get facts :ownership-core-identity-id))
+                      true
+                      (if (= digest
+                             (get fact-identity :ownership-fact-id))
+                        true
+                        false))))))))))))
+
+(defn sh12-c10-mir-module-identity-input
+  [template operation-resolution]
+  {:domain :gravity/sh12-c10-proof-reference-module-v2
+   :schema-version 2
+   :scope :authenticated-persistent-read-safety-evidence-only
+   :operation-identity-id (get operation-resolution :digest)
+   :operation-identity-input
+   (get template :operation-identity-input)
+   :operation-template (get template :operation)
+   :functions (get template :functions)
+   :type-table (get template :type-table)
+   :effect-table (get template :effect-table)
+   :ownership-table (get template :ownership-table)
+   :capability-proof-table (get template :capability-proof-table)
+   :safety-table (get template :safety-table)
+   :proof-certificate-table (get template :proof-certificate-table)
+   :source-map (get template :source-map)
+   :function-shape {:parameters [] :returns :gravity/proof-token}
+   :block-shape {:instructions 1 :terminator :return}
+   :proof-token-shape {:kind :proof-token :defined-by :proof-reference}
+   :values (get template :values)
+   :capability-table (get template :capability-table)
+   :target-independent? true
+   :syntax-id :not-applicable})
+
+(defn sh12-c10-mir-module-identity-request
+  [bound verification template operation-resolution]
+  (let [template-preflight
+        (sh12-authenticated-c10-mir-carrier-preflight template)
+        resolution-preflight
+        (sh12-authenticated-c10-mir-carrier-preflight operation-resolution)
+        canonical-template
+        (sh12-build-authenticated-c10-mir-template bound verification)]
+    (if (= :accepted (get template-preflight :status))
+      (if (= :accepted (get resolution-preflight :status))
+        (let [operation-request
+              (sh12-c10-mir-operation-identity-input canonical-template)
+              operation-digest (get operation-resolution :digest)]
+          (if (sh12-authenticated-c10-mir-input-valid? bound verification)
+            (if (= template canonical-template)
+              (if (sh12-c10-mir-resolution-entry-valid?
+                   operation-request operation-resolution)
+                (if (= (sh12-c10-mir-upstream-digest? bound operation-digest)
+                       false)
+                  {:artifact :gravity/sh12-c10-proof-reference-module-identity-request
+                   :schema-version 2
+                   :status :accepted
+                   :request
+                   (sh12-c10-mir-module-identity-input
+                    template operation-resolution)
+                   :next :resolve-mir-module-identity
+                   :resolution :coordinator-digest-required
+                   :diagnostics []
+                   :pending (get template :pending)}
+                  {:artifact :gravity/sh12-c10-proof-reference-module-identity-request
+                   :schema-version 2
+                   :status :rejected
+                   :diagnostics [(sh12-c10-mir-diagnostic
+                                  bound :upstream-digest-reused-for-mir-operation)]})
+                {:artifact :gravity/sh12-c10-proof-reference-module-identity-request
+                 :schema-version 2
+                 :status :rejected
+                 :diagnostics [(sh12-c10-mir-diagnostic
+                                bound :operation-identity-resolution-substitution)]})
+              {:artifact :gravity/sh12-c10-proof-reference-module-identity-request
+               :schema-version 2
+               :status :rejected
+               :diagnostics [(sh12-c10-mir-diagnostic bound :template-rejected)]})
+            {:artifact :gravity/sh12-c10-proof-reference-module-identity-request
+             :schema-version 2
+             :status :rejected
+             :diagnostics [(sh12-c10-mir-diagnostic
+                            bound :untrusted-or-malformed-c10-input)]}))
+        {:artifact :gravity/sh12-c10-proof-reference-module-identity-request
+         :schema-version 2
+         :status :rejected
+         :diagnostics [{:diagnostic-id "C11-C10-ADAPTER"
+                        :rule "C11-C10-ADAPTER"
+                        :reason :operation-resolution-carrier-bound
+                        :preflight resolution-preflight}]})
+      {:artifact :gravity/sh12-c10-proof-reference-module-identity-request
+       :schema-version 2
+       :status :rejected
+       :diagnostics [{:diagnostic-id "C11-C10-ADAPTER"
+                      :rule "C11-C10-ADAPTER"
+                      :reason :template-carrier-bound
+       :preflight template-preflight}]})))
+
+; Public names are intentionally distinct from the private constructors so the
+; exported boundary cannot be confused with an unbound request preimage.
+(defn sh12-authenticated-c10-mir-identity-request
+  [bound verification template]
+  (sh12-c10-mir-operation-identity-request bound verification template))
+
+(defn sh12-authenticated-c10-mir-module-identity-request
+  [bound verification template operation-resolution]
+  (sh12-c10-mir-module-identity-request
+   bound verification template operation-resolution))
+
+(defn sh12-c10-mir-upstream-identity [bound]
+  (get bound :identity-input))
+
+(defn sh12-c10-mir-semantic-input [bound]
+  (let [operation (get bound :operation)
+        facts (get operation :facts)
+        upstream (sh12-c10-mir-upstream-identity bound)]
+    {:domain :gravity/sh12-c10-proof-reference-mir-v2
+     :schema-version 2
+     :scope :authenticated-persistent-read-safety-evidence-only
+     :c10-safety-core-id (get bound :safety-core-id)
+     :c10-proof-id (get bound :proof-id)
+     :c10-result-id (get bound :result-id)
+     :c9-ownership-core-id
+     (get upstream :ownership-core-identity-id)
+     :c9-ownership-fact-id (get operation :ownership-fact-id)
+     :c10-identity-input (get bound :identity-input)
+     :core-node-id (get operation :core-node-id)
+     :operation-id (get operation :operation-id)
+     :source-operation :load
+     :mir-operation :proof-reference
+     :value-type (get facts :value-type)
+     :type-fact-id (get operation :type-fact-id)
+     :effect-fact-id (get operation :effect-fact-id)
+     :capability-proof-id (get operation :capability-proof-id)
+     :fact-id-request (get facts :fact-id-request)
+     :safety-outcome-id (get bound :result-id)
+     :safety-proof-id (get bound :proof-id)
+     :source-span (get operation :source-span)
+     :origin-chain (get operation :origin-chain)
+     :profile (get operation :profile)
+     :target (get operation :target)
+     ; C10 currently exposes core-node identity but not a distinct syntax id.
+     ; Preserve that absence instead of inventing a syntax identity.
+     :syntax-id :not-applicable}))
+
+(defn sh12-c10-mir-source [bound operation-id]
+  (let [operation (get bound :operation)
+        proof-id (get bound :proof-id)]
+    {:core-node (get operation :core-node-id)
+     :syntax-id :not-applicable
+     :source-span (get operation :source-span)
+     :origin-chain (get operation :origin-chain)
+     :generated-origin
+     [{:role :proof-generated
+       :producer :sh12-build-authenticated-c10-mir-template
+       :operation-id operation-id
+       :proof-id proof-id}]}))
+
+(defn sh12-c10-mir-fact-refs [bound operation-id]
+  (let [operation (get bound :operation)
+        facts (get operation :facts)]
+    {:type-fact-id (get operation :type-fact-id)
+     :effect-fact-id (get operation :effect-fact-id)
+     :capability-proof-ids [(get operation :capability-proof-id)]
+     :capability-proof-id (get operation :capability-proof-id)
+     :ownership-fact-id (get operation :ownership-fact-id)
+     :safety-outcome-id (get bound :result-id)
+     :safety-proof-id (get bound :proof-id)
+     :proof-certificate-ids [(get bound :proof-id)]
+     :c10-safety-core-id (get bound :safety-core-id)
+     :c9-ownership-core-id
+     (get facts :ownership-core-identity-id)
+     :c9-fact-id-request (get facts :fact-id-request)
+     :read-value-type (get facts :value-type)
+     :source-origin-id (get operation :core-node-id)
+     :operation-id operation-id}))
+
+(defn sh12-c10-mir-operation-label [bound]
+  (str (get (get bound :operation) :core-node-id)
+       ":c11:c10-proof-reference"))
+
+(defn sh12-c10-mir-function-label [bound]
+  (str (sh12-c10-mir-operation-label bound) ":function"))
+
+(defn sh12-c10-mir-block-label [bound]
+  (str (sh12-c10-mir-operation-label bound) ":entry"))
+
+(defn sh12-c10-mir-token-label [bound]
+  (str (sh12-c10-mir-operation-label bound) ":proof-token"))
+
+(defn sh12-c10-mir-operation-template [bound]
+  (let [operation-label (sh12-c10-mir-operation-label bound)
+        token-label (sh12-c10-mir-token-label bound)
+        operation (get bound :operation)]
+    {:artifact :gravity/mir-operation
+     :op-id operation-label
+     :opcode :proof-reference
+     :source-operation :load
+     :block-id (sh12-c10-mir-block-label bound)
+     :operands []
+     :result token-label
+     :result-kind :proof-token
+     :constant-payload :not-applicable
+     :type :gravity/proof-token
+     :effects #{}
+     :capabilities #{}
+     :ordering :none
+     :source (sh12-c10-mir-source bound operation-label)
+     :profile (get operation :profile)
+     :target (get operation :target)
+     :facts (sh12-c10-mir-fact-refs bound operation-label)
+     :domain-anchor nil
+     :verifier-status :pending}))
+
+(defn sh12-c10-mir-proof-token-template [bound operation-id token-id]
+  (let [operation (get bound :operation)]
+    {:artifact :gravity/mir-value
+     :value-id token-id
+     :kind :proof-token
+     :type :gravity/proof-token
+     :constant-payload :not-applicable
+     :defined-by operation-id
+     :uses [{:consumer-kind :terminator
+             :consumer-id (str (sh12-c10-mir-block-label bound) ":return")
+             :consumer-block (sh12-c10-mir-block-label bound)
+             :operand-index 0
+             :edge-kind :proof-token-return}]
+     :source (sh12-c10-mir-source bound operation-id)
+     :ownership :not-applicable
+     :effects #{}
+     :safety :proven-safe}))
+
+(defn sh12-c10-mir-terminator-template [bound token-id]
+  (let [operation (get bound :operation)
+        block-id (sh12-c10-mir-block-label bound)
+        terminator-id (str block-id ":return")]
+    {:artifact :gravity/mir-terminator
+     :terminator-id terminator-id
+     :kind :return
+     :operands [token-id]
+     :successors []
+     :effects #{}
+     :ordering :none
+     :source (sh12-c10-mir-source bound terminator-id)
+     :profile (get operation :profile)
+     :target (get operation :target)
+     :facts {:returned-proof-token token-id
+             :safety-outcome-id (get bound :result-id)
+             :safety-proof-id (get bound :proof-id)}
+     :verifier-status :pending}))
+
+(defn sh12-c10-mir-function-template [bound]
+  (let [operation-id (sh12-c10-mir-operation-label bound)
+        token-id (sh12-c10-mir-token-label bound)
+        block-id (sh12-c10-mir-block-label bound)
+        operation (sh12-c10-mir-operation-template bound)
+        token (sh12-c10-mir-proof-token-template bound operation-id token-id)
+        terminator (sh12-c10-mir-terminator-template bound token-id)
+        block
+        {:artifact :gravity/mir-block
+         :block-id block-id
+         :arguments []
+         :instructions [operation]
+         :terminator terminator
+         :predecessors []
+         :successors []
+         :dominators [block-id]
+         :data-flow {:definitions [token-id]
+                     :uses [{:value-id token-id
+                             :consumer-kind :terminator
+                             :consumer-id (get terminator :terminator-id)}]}
+         :source (sh12-c10-mir-source bound block-id)}]
+    {:artifact :gravity/mir-function
+     :fn-id (sh12-c10-mir-function-label bound)
+     :name (str "c10-proof-reference/"
+                (get (get bound :operation) :core-node-id))
+     :params []
+     :returns :gravity/proof-token
+     :latent-effects #{}
+     :capabilities #{}
+     :values {token-id token}
+     :blocks {block-id block}
+     :entry block-id
+     :source (sh12-c10-mir-source bound operation-id)
+     :facts {:type-fact-id (get (get bound :operation) :type-fact-id)
+             :effect-fact-id (get (get bound :operation) :effect-fact-id)
+             :ownership-fact-id (get (get bound :operation)
+                                     :ownership-fact-id)
+             :safety-outcome-id (get bound :result-id)
+             :safety-proof-id (get bound :proof-id)}
+     :provenance {:c10-safety-core-id (get bound :safety-core-id)
+                  :c9-ownership-core-id
+                  (get (get bound :identity-input)
+                       :ownership-core-identity-id)}
+     :contract :c11-c10-proof-reference-function}))
+
+(defn sh12-c10-mir-table-refs [bound]
+  (let [operation (get bound :operation)
+        facts (get operation :facts)
+        ownership-core (get bound :ownership-core)
+        owned (get ownership-core :ownership-core)
+        c8-bound (get owned :effected-core)
+        effected (get c8-bound :effected-core)
+        value-id (get operation :core-node-id)
+        c8-identity (get (get c8-bound :fact-identities) value-id)
+        call-fact
+        (sh12-c10-mir-c8-call-fact-find
+         (get effected :call-type-facts) value-id)
+        effect-request
+        (sh12-c10-mir-c8-effect-request-find
+         (get effected :effect-requests) value-id)
+        legality
+        (sh12-c10-mir-c8-effect-legality-find
+         (get effected :effect-legality-results)
+         (get effect-request :request-id))
+        effect-node
+        (get (get (get effected :effect-graph) :nodes) value-id)
+        capability-input
+        {:authority-mode :none
+         :declared-capabilities #{}
+         :required-capability nil}
+        capability-request
+        {:domain :gravity/sh09-effect-fact-identity-v1
+         :kind :capability-proof
+         :core-node-id value-id
+         :identity-input capability-input}
+        ownership-results (get owned :ownership-results)
+        ownership-result (first ownership-results)
+        ownership-facts (get ownership-result :ownership-facts)
+        ownership-fact (first ownership-facts)
+        fact-identities (get ownership-core :fact-identities)
+        fact-identity (first fact-identities)
+        safety-result (get bound :safety-result)
+        safety-verification (get bound :safety-verification)
+        proofs (get safety-result :proofs)
+        outcomes (get safety-result :outcomes)
+        proof (first proofs)
+        outcome (first outcomes)]
+    {:type-table
+     {(get operation :type-fact-id)
+      {:call-type-fact call-fact
+       :fact-identity c8-identity}}
+     :effect-table
+     {(get operation :effect-fact-id)
+      {:effect-request effect-request
+       :legality-result legality
+       :effect-node effect-node}}
+     :ownership-table
+     {(get operation :ownership-fact-id)
+      {:fact-id (get operation :ownership-fact-id)
+       :fact ownership-fact
+       :fact-identity fact-identity
+       :ownership-result ownership-result
+       :ownership-fact-request (get fact-identity :fact-id-request)
+       :ownership-core-identity-id
+       (get (get operation :facts) :ownership-core-identity-id)
+       :source-stage :c9
+       :source-kind :authenticated-record}}
+     :capability-proof-table
+     {(get operation :capability-proof-id)
+      {:proof-id (get operation :capability-proof-id)
+       :source-stage :c8
+       :source-kind :authenticated-upstream-reference
+       :operation-facts facts}}
+     :capability-table
+     {(get operation :capability-proof-id)
+     {:identity-request capability-request
+       :identity-input capability-input
+       :effect-fact-id (get operation :effect-fact-id)
+       :capability-proof (get legality :capability-proof)}}
+     :safety-table
+     {(get bound :result-id)
+      {:outcome-id (get bound :result-id)
+       :result safety-result
+       :outcome-record outcome
+       :proof-id (get bound :proof-id)
+       :proof proof
+       :verification safety-verification
+       :source-stage :c10
+       :source-kind :authenticated-record}}
+     :proof-certificate-table
+     {(get bound :proof-id)
+     {:proof-id (get bound :proof-id)
+       :proof proof
+       :proof-id-request (get proof :proof-id-request)
+       :result-id (get bound :result-id)
+       :safety-core-id (get bound :safety-core-id)
+       :source-stage :c10
+       :source-kind :authenticated-record}}}))
+
+(defn sh12-c10-mir-c8-fact-tables-valid? [bound]
+  (let [operation (get bound :operation)
+        value-id (get operation :core-node-id)
+        type-id (get operation :type-fact-id)
+        effect-id (get operation :effect-fact-id)
+        capability-id (get operation :capability-proof-id)
+        ownership-core (get bound :ownership-core)
+        owned (get ownership-core :ownership-core)
+        c8-bound (get owned :effected-core)
+        effected (get c8-bound :effected-core)
+        c8-identity (get (get c8-bound :fact-identities) value-id)
+        call-fact
+        (sh12-c10-mir-c8-call-fact-find
+         (get effected :call-type-facts) value-id)
+        effect-request
+        (sh12-c10-mir-c8-effect-request-find
+         (get effected :effect-requests) value-id)
+        legality
+        (sh12-c10-mir-c8-effect-legality-find
+         (get effected :effect-legality-results)
+         (get effect-request :request-id))
+        effect-node
+        (get (get (get effected :effect-graph) :nodes) value-id)
+        capability-input
+        {:authority-mode :none
+         :declared-capabilities #{}
+         :required-capability nil}
+        capability-request
+        {:domain :gravity/sh09-effect-fact-identity-v1
+         :kind :capability-proof
+         :core-node-id value-id
+         :identity-input capability-input}
+        tables (sh12-c10-mir-table-refs bound)
+        type-table (get tables :type-table)
+        effect-table (get tables :effect-table)
+        capability-table (get tables :capability-table)
+        type-entry (get type-table type-id)
+        effect-entry (get effect-table effect-id)
+        capability-entry (get capability-table capability-id)]
+    (if (= :declared-pure-call-effects-with-thrown-effects-pending
+           (get effected :scope))
+      (if (sh12-c10-mir-exact-keys? type-table #{type-id})
+        (if (sh12-c10-mir-exact-keys? effect-table #{effect-id})
+            (if (sh12-c10-mir-exact-keys? capability-table #{capability-id})
+              (if (= {:call-type-fact call-fact
+                      :fact-identity c8-identity}
+                     type-entry)
+                (if (sh12-c10-mir-c8-call-fact-exact-valid?
+                     call-fact c8-identity effect-request effect-node value-id
+                     type-id effect-id capability-id (get effected :module))
+                (if (sh12-c10-mir-exact-keys?
+                 effect-entry
+                 #{:effect-request :legality-result :effect-node})
+              (if (= effect-request (get effect-entry :effect-request))
+                (if (sh12-c10-mir-c8-pure-legality-exact-valid?
+                     legality (get effect-entry :legality-result)
+                     effect-request call-fact (get effected :module))
+                  (if (= effect-node (get effect-entry :effect-node))
+                    (if (= (get effect-request :core-node-id) value-id)
+                      (if (= (get legality :request-id)
+                             (get effect-request :request-id))
+                        (if (= :gravity/sh09-effect-legality-result
+                               (get legality :artifact))
+                          (if (= :accepted (get legality :status))
+                            (if (= #{} (get effect-node :direct))
+                              (if (= #{} (get effect-node :latent))
+                                (if (= #{} (get effect-node :transitive))
+                                  (if (= :pure (get effect-node :ordering))
+                                      (if (sh12-c10-mir-exact-keys?
+                                         capability-entry
+                                         #{:identity-request :identity-input
+                                           :effect-fact-id
+                                           :capability-proof})
+                                      (if (= capability-request
+                                             (get capability-entry
+                                                  :identity-request))
+                                        (if (= capability-input
+                                               (get capability-entry
+                                                    :identity-input))
+                                          (if (= effect-id
+                                                 (get capability-entry
+                                                      :effect-fact-id))
+                                            (= nil
+                                               (get capability-entry
+                                                    :capability-proof))
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+                  false)
+                false)
+            false)
+          false)
+        false)
+      false)))
+
+
+
+ (defn sh12-build-authenticated-c10-mir-template [bound verification]
+  (if (sh12-authenticated-c10-mir-input-valid? bound verification)
+    (let [semantic (sh12-c10-mir-semantic-input bound)
+          operation (sh12-c10-mir-operation-template bound)
+          function (sh12-c10-mir-function-template bound)
+          token
+          (sh12-c10-mir-proof-token-template
+           bound (get operation :op-id) (get operation :result))
+          tables (sh12-c10-mir-table-refs bound)
+          values {(get token :value-id) token}
+          source-map
+          {(get operation :op-id) (get operation :source)
+           (get function :fn-id) (get function :source)
+           (get function :entry)
+           (get (get (get function :blocks) (get function :entry)) :source)
+           (get (get (get (get function :blocks) (get function :entry))
+                     :terminator)
+                :terminator-id)
+           (get (get (get (get function :blocks) (get function :entry))
+                     :terminator)
+                :source)
+           (get operation :result) (get token :source)}
+          operation-input
+          (sh12-c10-mir-operation-identity-input
+           {:identity-input semantic
+            :operation operation
+            :values values
+            :capability-table (get tables :capability-table)
+            :source-map source-map})
+          policy (sh12-authenticated-c10-mir-adapter-policy)]
+      {:artifact :gravity/sh12-authenticated-c10-proof-reference-mir-template
+       :schema-version 2
+       :status :accepted
+       :scope :authenticated-persistent-read-safety-evidence-only
+       :module-id :pending-c10-mir-identity
+       :source-core (get bound :safety-core-id)
+       :profile (get (get bound :operation) :profile)
+       :target-request (get (get bound :operation) :target)
+       :target-independent? true
+       :executable-load? false
+       :source-operation :load
+       :mir-operation :proof-reference
+       :identity-input semantic
+       :operation-identity-input
+       operation-input
+       :operation-identity-request nil
+       :module-identity-request nil
+       :operation operation
+       :functions {(get function :fn-id) function}
+       :globals {}
+       :type-table (get tables :type-table)
+       :effect-table (get tables :effect-table)
+       :ownership-table (get tables :ownership-table)
+       :capability-proof-table (get tables :capability-proof-table)
+       :safety-table (get tables :safety-table)
+       :proof-certificate-table (get tables :proof-certificate-table)
+       :capability-table (get tables :capability-table)
+       :values values
+       :runtime-check-table {}
+       :profile-target-table
+       {(get (get bound :operation) :core-node-id)
+        {:core-node-id (get (get bound :operation) :core-node-id)
+         :profile (get (get bound :operation) :profile)
+         :target (get (get bound :operation) :target)}}
+       :source-map source-map
+       :domain-anchors {}
+       :diagnostics []
+       :provenance (get bound :provenance)
+       :upstream
+       {:c10-safety-core-id (get bound :safety-core-id)
+        :c10-safety-result-id (get bound :result-id)
+        :c10-safety-proof-id (get bound :proof-id)
+        :c10-safety-verification-ref
+        {:artifact (get (get bound :safety-verification) :artifact)
+         :status (get (get bound :safety-verification) :status)
+         :checks (get (get bound :safety-verification) :checks)
+         :nonclaims (get (get bound :safety-verification) :nonclaims)}
+        :c9-ownership-core-id
+        (get (get bound :identity-input)
+             :ownership-core-identity-id)
+        :c9-ownership-fact-id
+        (get (get bound :operation) :ownership-fact-id)
+        :c9-ownership-fact-identity-id
+        (get (first (get (get bound :ownership-core)
+                         :fact-identities))
+             :ownership-fact-id)
+        :c8-type-fact-id (get (get bound :operation) :type-fact-id)
+        :c8-effect-fact-id (get (get bound :operation) :effect-fact-id)
+        :c8-capability-proof-id
+        (get (get bound :operation) :capability-proof-id)}
+       :verification-status :pending-proof-reference-verifier
+       :operation-identity-resolution :coordinator-digest-required
+       :module-identity-resolution :coordinator-digest-required
+       :identity-binding-status :unbound
+       :b1-preflight {:status :blocked
+                      :reason :proof-reference-only-adapter
+                      :executable-load? false}
+       :pending (get policy :pending)
+       :nonclaims (get policy :nonclaims)
+       :self-hosted? false
+       :clojure-seed-boundary? true})
+    {:artifact :gravity/sh12-authenticated-c10-proof-reference-mir-template
+     :schema-version 2
+     :status :rejected
+     :scope :authenticated-persistent-read-safety-evidence-only
+     :diagnostics [(sh12-c10-mir-diagnostic
+                    bound :untrusted-or-malformed-c10-input)]
+     :pending (get (sh12-authenticated-c10-mir-adapter-policy) :pending)
+ :nonclaims (get (sh12-authenticated-c10-mir-adapter-policy) :nonclaims)}))
+
+(defn sh12-c10-mir-bound-operation
+  [bound operation-id block-id token-id]
+  (let [operation (sh12-c10-mir-operation-template bound)]
+    (assoc
+     (assoc
+      (assoc
+       (assoc
+        (assoc operation :op-id operation-id)
+        :block-id block-id)
+       :result token-id)
+      :source (sh12-c10-mir-source bound operation-id))
+     :facts
+     (assoc (get operation :facts) :operation-id operation-id))))
+
+(defn sh12-c10-mir-bound-token
+  [bound operation-id block-id token-id]
+  (assoc
+   (sh12-c10-mir-proof-token-template
+    bound operation-id token-id)
+   :uses [{:consumer-kind :terminator
+           :consumer-id (str block-id ":return")
+           :consumer-block block-id
+           :operand-index 0
+           :edge-kind :proof-token-return}]
+   :source (sh12-c10-mir-source bound operation-id)))
+
+(defn sh12-c10-mir-bound-terminator
+  [bound operation-id block-id token-id]
+  (assoc
+   (assoc
+    (assoc
+     (sh12-c10-mir-terminator-template bound token-id)
+     :terminator-id (str block-id ":return")
+     :operands [token-id])
+    :source (sh12-c10-mir-source bound operation-id))
+   :facts {:returned-proof-token token-id
+           :safety-outcome-id (get bound :result-id)
+           :safety-proof-id (get bound :proof-id)}))
+
+(defn sh12-c10-mir-bound-function
+  [bound operation-id module-id]
+  (let [block-id (str module-id ":entry")
+        token-id (str operation-id ":proof-token")
+        operation
+        (sh12-c10-mir-bound-operation
+         bound operation-id block-id token-id)
+        token (sh12-c10-mir-bound-token
+               bound operation-id block-id token-id)
+        terminator
+        (sh12-c10-mir-bound-terminator
+         bound operation-id block-id token-id)
+        block
+        {:artifact :gravity/mir-block
+         :block-id block-id
+         :arguments []
+         :instructions [operation]
+         :terminator terminator
+         :predecessors []
+         :successors []
+         :dominators [block-id]
+         :data-flow {:definitions [token-id]
+                     :uses [{:value-id token-id
+                             :consumer-kind :terminator
+                             :consumer-id (get terminator :terminator-id)}]}
+         :source (sh12-c10-mir-source bound operation-id)}]
+    {:artifact :gravity/mir-function
+     :fn-id (str module-id ":function")
+     :name (str "c10-proof-reference/"
+                (get (get bound :operation) :core-node-id))
+     :params []
+     :returns :gravity/proof-token
+     :latent-effects #{}
+     :capabilities #{}
+     :values {token-id token}
+     :blocks {block-id block}
+     :entry block-id
+     :source (sh12-c10-mir-source bound operation-id)
+     :facts {:type-fact-id (get (get bound :operation) :type-fact-id)
+             :effect-fact-id (get (get bound :operation) :effect-fact-id)
+             :ownership-fact-id (get (get bound :operation)
+                                     :ownership-fact-id)
+             :safety-outcome-id (get bound :result-id)
+             :safety-proof-id (get bound :proof-id)}
+     :provenance {:c10-safety-core-id (get bound :safety-core-id)
+                  :c9-ownership-core-id
+                  (get (get bound :identity-input)
+                       :ownership-core-identity-id)}
+     :proof-token token
+     :contract :c11-c10-proof-reference-function}))
+
+(defn sh12-c10-mir-resolved-valid?
+  [bound verification template resolved]
+  (let [operation-request
+        (if (= nil (get template :operation-identity-request))
+          (sh12-c10-mir-operation-identity-input template)
+          (get template :operation-identity-request))
+        operation-resolution (get resolved :operation-resolution)
+        module-resolution (get resolved :module-resolution)
+        operation-digest (get operation-resolution :digest)
+        module-digest (get module-resolution :digest)
+        module-request
+        (sh12-c10-mir-module-identity-input
+         template operation-resolution)]
+    (if (sh12-c10-mir-exact-keys?
+         resolved #{:operation-resolution :module-resolution})
+      (if (sh12-c10-mir-resolution-entry-valid?
+           operation-request operation-resolution)
+        (if (sh12-c10-mir-resolution-entry-valid?
+             module-request module-resolution)
+          (if (= (sh12-c10-mir-upstream-digest? bound operation-digest)
+                 false)
+            (if (= (sh12-c10-mir-upstream-digest? bound module-digest)
+                   false)
+              (if (= operation-digest module-digest)
+                false
+                true)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-mir-bound-module
+  [bound verification template resolved]
+  (let [operation-resolution (get resolved :operation-resolution)
+        module-resolution (get resolved :module-resolution)
+        operation-id (get operation-resolution :digest)
+        module-id (get module-resolution :digest)
+        function (sh12-c10-mir-bound-function bound operation-id module-id)
+        block-id (str module-id ":entry")
+        token-id (str operation-id ":proof-token")
+        operation
+        (sh12-c10-mir-bound-operation
+         bound operation-id block-id token-id)
+        token (sh12-c10-mir-bound-token
+               bound operation-id block-id token-id)
+        terminator
+        (sh12-c10-mir-bound-terminator
+         bound operation-id block-id token-id)
+        template-identity (get template :identity-input)
+        identity-input
+        (assoc
+         (assoc template-identity :operation-identity-id operation-id)
+         :mir-identity-id module-id)
+        tables (sh12-c10-mir-table-refs bound)]
+    {:artifact :gravity/sh12-authenticated-c10-proof-reference-mir
+     :schema-version 2
+     :status :accepted
+     :scope :authenticated-persistent-read-safety-evidence-only
+     :module-id module-id
+     :operation-identity-id operation-id
+     :source-core (get bound :safety-core-id)
+     :profile (get (get bound :operation) :profile)
+     :target-request (get (get bound :operation) :target)
+     :target-independent? true
+     :executable-load? false
+     :source-operation :load
+     :mir-operation :proof-reference
+     :identity-input identity-input
+     :operation-identity-input (get template :operation-identity-input)
+     :operation-identity-request
+     (get operation-resolution :request)
+     :module-identity-request (get module-resolution :request)
+     :operation
+     operation
+     :functions {(get function :fn-id) function}
+     :globals {}
+     :type-table (get tables :type-table)
+     :effect-table (get tables :effect-table)
+     :ownership-table (get tables :ownership-table)
+     :capability-proof-table (get tables :capability-proof-table)
+     :safety-table (get tables :safety-table)
+     :proof-certificate-table (get tables :proof-certificate-table)
+     :capability-table (get tables :capability-table)
+     :values {token-id token}
+     :runtime-check-table {}
+     :profile-target-table
+     {(get (get bound :operation) :core-node-id)
+      {:core-node-id (get (get bound :operation) :core-node-id)
+       :profile (get (get bound :operation) :profile)
+       :target (get (get bound :operation) :target)}}
+     :source-map
+     {(get function :fn-id) (get function :source)
+      block-id (get (get (get function :blocks) block-id) :source)
+      (get operation :op-id) (get operation :source)
+      token-id (get token :source)
+      (get terminator :terminator-id) (get terminator :source)}
+     :domain-anchors {}
+     :diagnostics []
+     :provenance (get bound :provenance)
+     :upstream (get template :upstream)
+     :verification-status :pending-proof-reference-verifier
+     :identity-resolution :coordinator-digest-bound
+     :identity-binding-status :coordinator-resolution-shape-checked
+     :identity-resolutions resolved
+     :b1-preflight {:status :blocked
+                    :reason :proof-reference-only-adapter
+                    :executable-load? false}
+     :pending (get template :pending)
+     :nonclaims (get template :nonclaims)
+     :self-hosted? false
+     :clojure-seed-boundary? true}))
+
+(defn sh12-bind-authenticated-c10-mir
+  [bound verification template resolved]
+  (let [bound-preflight (sh12-authenticated-c10-mir-carrier-preflight bound)
+        verification-preflight
+        (sh12-c10-mir-verification-envelope-preflight verification)
+        template-preflight
+        (sh12-authenticated-c10-mir-carrier-preflight template)
+        resolved-preflight
+        (sh12-authenticated-c10-mir-carrier-preflight resolved)
+        canonical-template
+        (sh12-build-authenticated-c10-mir-template bound verification)]
+    (if (= :accepted (get bound-preflight :status))
+      (if (= :accepted (get verification-preflight :status))
+        (if (= :accepted (get template-preflight :status))
+          (if (= :accepted (get resolved-preflight :status))
+            (if (sh12-authenticated-c10-mir-input-valid?
+                 bound verification)
+              (if (= template canonical-template)
+                (if (sh12-c10-mir-resolved-valid?
+                     bound verification template resolved)
+                  (sh12-c10-mir-bound-module
+                   bound verification template resolved)
+                  {:artifact :gravity/sh12-authenticated-c10-proof-reference-mir
+                   :schema-version 2
+                   :status :rejected
+                   :diagnostics [(sh12-c10-mir-diagnostic
+                                  bound :identity-resolution-substitution)]})
+                {:artifact :gravity/sh12-authenticated-c10-proof-reference-mir
+                 :schema-version 2
+                 :status :rejected
+                 :diagnostics [(sh12-c10-mir-diagnostic bound :template-rejected)]})
+              {:artifact :gravity/sh12-authenticated-c10-proof-reference-mir
+               :schema-version 2
+               :status :rejected
+               :diagnostics [(sh12-c10-mir-diagnostic
+                              bound :untrusted-or-malformed-c10-input)]})
+            {:artifact :gravity/sh12-authenticated-c10-proof-reference-mir
+             :schema-version 2
+             :status :rejected
+             :diagnostics [{:diagnostic-id "C11-C10-ADAPTER"
+                            :rule "C11-C10-ADAPTER"
+                            :reason :resolved-carrier-bound
+                            :preflight resolved-preflight}]})
+          {:artifact :gravity/sh12-authenticated-c10-proof-reference-mir
+           :schema-version 2
+           :status :rejected
+           :diagnostics [{:diagnostic-id "C11-C10-ADAPTER"
+                          :rule "C11-C10-ADAPTER"
+                          :reason :template-carrier-bound
+                          :preflight template-preflight}]})
+        {:artifact :gravity/sh12-authenticated-c10-proof-reference-mir
+         :schema-version 2
+         :status :rejected
+         :diagnostics [{:diagnostic-id "C11-C10-ADAPTER"
+                        :rule "C11-C10-ADAPTER"
+                        :reason :verification-carrier-bound
+                        :preflight verification-preflight}]})
+      {:artifact :gravity/sh12-authenticated-c10-proof-reference-mir
+       :schema-version 2
+       :status :rejected
+       :diagnostics [{:diagnostic-id "C11-C10-ADAPTER"
+                      :rule "C11-C10-ADAPTER"
+                      :reason :bound-carrier-bound
+                      :preflight bound-preflight}]})))
+
+(defn sh12-verify-authenticated-c10-mir
+  [bound verification template resolved candidate]
+  (let [bound-preflight (sh12-authenticated-c10-mir-carrier-preflight bound)
+        verification-preflight
+        (sh12-c10-mir-verification-envelope-preflight verification)
+        template-preflight
+        (sh12-authenticated-c10-mir-carrier-preflight template)
+        resolved-preflight
+        (sh12-authenticated-c10-mir-carrier-preflight resolved)
+        candidate-preflight
+        (sh12-authenticated-c10-mir-carrier-preflight candidate)]
+    (if (= :accepted (get bound-preflight :status))
+      (if (= :accepted (get verification-preflight :status))
+        (if (= :accepted (get template-preflight :status))
+          (if (= :accepted (get resolved-preflight :status))
+            (if (= :accepted (get candidate-preflight :status))
+              (let [expected
+                    (if (= template
+                           (sh12-build-authenticated-c10-mir-template
+                            bound verification))
+                      (sh12-bind-authenticated-c10-mir
+                       bound verification template resolved)
+                      {:artifact :gravity/sh12-authenticated-c10-proof-reference-mir
+                       :schema-version 2
+                       :status :rejected
+                       :diagnostics [(sh12-c10-mir-diagnostic
+                                      bound :template-recomputation-mismatch)]})]
+                {:artifact :gravity/sh12-c10-proof-reference-mir-verification
+                 :status (if (= expected candidate) :passed :rejected)
+                 :checks [:bounded-all-input-carriers
+                          :exact-c10-bound-and-result-lineage
+                          :exact-proof-reference-operation
+                          :explicit-proof-token-definition-and-use
+                          :sequential-operation-and-module-resolution
+                          :fresh-module-recomputation
+                          :path-neutral-identity-input
+                          :separate-actual-path-provenance]
+                 :nonclaims [:trusted-digest-resolution
+                             :independent-canonical-digest-verification
+                             :generic-c11-verifier
+                             :executable-load
+                             :program-lowering]
+                 :expected expected
+                 :candidate candidate})
+              {:artifact :gravity/sh12-c10-proof-reference-mir-verification
+               :status :rejected
+               :checks [:candidate-carrier-bound]
+               :candidate-preflight candidate-preflight})
+            {:artifact :gravity/sh12-c10-proof-reference-mir-verification
+             :status :rejected
+             :checks [:resolved-carrier-bound]
+             :resolved-preflight resolved-preflight})
+          {:artifact :gravity/sh12-c10-proof-reference-mir-verification
+           :status :rejected
+           :checks [:template-carrier-bound]
+           :template-preflight template-preflight})
+        {:artifact :gravity/sh12-c10-proof-reference-mir-verification
+         :status :rejected
+         :checks [:verification-carrier-bound]
+         :verification-preflight verification-preflight})
+      {:artifact :gravity/sh12-c10-proof-reference-mir-verification
+       :status :rejected
+       :checks [:bound-carrier-bound]
+       :bound-preflight bound-preflight})))
 
 ; SH-13 bounded executable function and control-flow leaf. Authenticated SH-12
 ; adaptation remains pending; this engine consumes normalized verified MIR.

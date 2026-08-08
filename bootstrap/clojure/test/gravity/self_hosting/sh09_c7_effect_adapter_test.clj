@@ -189,15 +189,21 @@
         [{:artifact :gravity/c7-call-type-fact
           :fact-id-request
           {:domain :gravity/sh08-call-type-fact-v1
-           :call-core-node-id sha-d}
+           :call-core-node-id sha-d
+           :callee-function-syntax-id sha-a
+           :argument-types [:gravity.type/bool]
+           :result-type :gravity.type/bool}
           :call-core-node-id sha-d
           :caller-function-syntax-id sha-a
           :callee-function-syntax-id sha-a
+          :argument-types [:gravity.type/bool]
+          :result-type :gravity.type/bool
+          :evaluation-order :operator-then-arguments
           :syntax-id sha-e
           :source-span {:source "function.gravity"
                         :start-byte 2 :end-byte 3}
           :origin-chain []
-          :generated-origin nil
+          :generated-origin []
           :profile :meta
           :target :jvm
           :effects []
