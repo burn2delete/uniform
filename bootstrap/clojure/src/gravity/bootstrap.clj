@@ -19,6 +19,7 @@
             [gravity.c9-ownership-checker :as c9]
             [gravity.c10-safety-analysis :as c10]
             [gravity.c11-mir :as c11]
+            [gravity.c12-domain-ir :as c12]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
@@ -24003,204 +24004,64 @@
            :capability-based-proof capability-proof
            :domain-ir-results conformance)))
 
-(def c12-domain-ir-governing-document
-  "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md")
+(def c12-domain-ir-governing-document c12/c12-domain-ir-governing-document)
+
+(declare c12-domain-ir-source-overrides
+         c12-domain-ir-validate-source-overrides!
+         c12-domain-ir-diagnostic-catalog
+         compiler-c12-domain-ir-source-artifact
+         compiler-c12-domain-ir-file-artifact)
+
+(defn- c12-domain-ir-ops []
+  {:source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c11-mir-source-artifact compiler-c11-mir-source-artifact
+   :domain-ir-validate-overrides! domain-ir-validate-overrides!
+   :domain-ir-registration-record domain-ir-registration-record
+   :domain-ir-artifact-record domain-ir-artifact-record
+   :domain-ir-validate! domain-ir-validate!
+   :domain-ir-capability-proof domain-ir-capability-proof
+   :c12-domain-ir-governing-document c12-domain-ir-governing-document
+   :domain-ir-diagnostic-ids domain-ir-diagnostic-ids
+   :domain-ir-diagnostic-messages domain-ir-diagnostic-messages
+   :domain-ir-required-families domain-ir-required-families
+   :domain-ir-registry-seed domain-ir-registry-seed
+   :c12-domain-ir-source-overrides c12-domain-ir-source-overrides
+   :c12-domain-ir-validate-source-overrides! c12-domain-ir-validate-source-overrides!
+   :c12-domain-ir-diagnostic-catalog c12-domain-ir-diagnostic-catalog
+   :compiler-c12-domain-ir-source-artifact compiler-c12-domain-ir-source-artifact
+   :compiler-c12-domain-ir-file-artifact compiler-c12-domain-ir-file-artifact})
+
+(def ^:private ^:dynamic *c12-leaf-call?* false)
+(defn- c12-call [operation & args]
+  (if *c12-leaf-call?*
+    (apply operation args)
+    (binding [*c12-leaf-call?* true]
+      (c12/with-operations (c12-domain-ir-ops)
+        #(apply operation args)))))
 
 (defn c12-domain-ir-source-overrides
   [module]
-  (or (get-in module [:metadata :compiler :c12-domain-ir])
-      (get-in module [:metadata :compiler :domain-ir])
-      {}))
+  (c12-call c12/c12-domain-ir-source-overrides module))
 
 (defn c12-domain-ir-validate-source-overrides!
   [source-path overrides]
-  (domain-ir-validate-overrides!
-   source-path
-   {:source-overrides overrides
-    :domain-ir-registry [{:schema "sha256:stage0-c12-source-override"}]}))
+  (c12-call c12/c12-domain-ir-validate-source-overrides! source-path overrides))
 
 (defn c12-domain-ir-diagnostic-catalog
   [source-path]
-  (let [span (source-span source-path 0)]
-    {:artifact :gravity/c12-domain-diagnostic-catalog
-     :status :complete
-     :diagnostics
-     (mapv (fn [id]
-             {:diagnostic id
-              :domain :stage0-domain-ir
-              :artifact-id "c12-domain-diagnostic-catalog"
-              :source-span span
-              :semantic-anchor {:mir-ops [] :typed-core []}
-              :owner-doc "C12"
-              :profile :hosted
-              :target :jvm
-              :verifier :gravity.domain-ir/verify
-              :missing-fact :catalog-entry
-              :remediation (get domain-ir-diagnostic-messages id)})
-           domain-ir-diagnostic-ids)}))
+  (c12-call c12/c12-domain-ir-diagnostic-catalog source-path))
 
 (defn compiler-c12-domain-ir-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        source-overrides (c12-domain-ir-source-overrides module)
-        _ (c12-domain-ir-validate-source-overrides! source-path
-                                                    source-overrides)
-        c11-artifact (compiler-c11-mir-source-artifact source-path source-text)
-        registrations (mapv domain-ir-registration-record
-                            domain-ir-registry-seed)
-        domain-artifacts (mapv #(domain-ir-artifact-record c11-artifact %1 %2)
-                               registrations
-                               (range))
-        semantic-anchor-map (mapv #(select-keys %
-                                                [:domain :artifact-id
-                                                 :semantic-anchor :source])
-                                  domain-artifacts)
-        entry-pass-records
-        (mapv (fn [registration]
-                {:domain (:domain registration)
-                 :entry-passes (:entry-passes registration)
-                 :consumes [:source-forms :typed-core :gravity/mir]
-                 :input-artifact (:artifact-id c11-artifact)
-                 :preserves [:types :effects :ownership :capabilities
-                             :profile :target :safety :provenance]
-                 :status :complete})
-              registrations)
-        exit-pass-records
-        (mapv (fn [registration]
-                {:domain (:domain registration)
-                 :exit-passes (:exit-passes registration)
-                 :requires [:domain-verifier-report :proof-or-certificate
-                            :fallback-record]
-                 :emits [:mir-subgraph :target-provider-call
-                         :runtime-manifest :verification-artifact]
-                 :status :complete})
-              registrations)
-        proof-records (mapv (fn [domain-artifact]
-                              {:domain (:domain domain-artifact)
-                               :artifact-id (:artifact-id domain-artifact)
-                               :evidence-kind :translation-validation
-                               :proofs (:proofs domain-artifact)
-                               :status :accepted})
-                            domain-artifacts)
-        lowering-matrix
-        (mapv (fn [registration]
-                (let [target (get-in c11-artifact
-                                     [:mir-module :target-request])
-                      direct? (contains? (:target-lowerings registration)
-                                         target)]
-                  {:domain (:domain registration)
-                   :target-request target
-                   :supported-targets (:target-lowerings registration)
-                   :status (if direct? :eligible :fallback)
-                   :fallback (:fallback registration)}))
-              registrations)
-        fallback-records (mapv (fn [registration]
-                                 {:domain (:domain registration)
-                                  :fallback (:fallback registration)
-                                  :status :available
-                                  :residual :gravity/mir})
-                               registrations)
-        diagnostics (c12-domain-ir-diagnostic-catalog source-path)
-        artifact-base
-        {:kind :gravity/stage0-c12-domain-ir-architecture-artifact
-         :task "P06-D091"
-         :document-set ["C12"]
-         :governing-document c12-domain-ir-governing-document
-         :pass {:name :c12-domain-ir-architecture
-                :input :gravity/mir
-                :output :domain-ir-registry
-                :requires [:c11-mir-specification :semantic-anchors
-                           :type-facts :effect-facts :ownership-facts
-                           :capability-proofs :safety-outcomes
-                           :source-provenance]
-                :preserves [:types :effects :ownership :capabilities
-                            :profile :target :safety :source-spans
-                            :origin-chain]
-                :emits [:domain-ir-registry :domain-ir-artifacts
-                        :semantic-anchor-map :entry-pass-records
-                        :exit-pass-records :domain-verifier-report
-                        :proof-and-certificate-references
-                        :lowering-eligibility-matrix :fallback-records
-                        :domain-ir-diagnostic-stream]
-                :rejects domain-ir-diagnostic-ids}
-         :source-overrides source-overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c11-mir-spec-artifact
-         (select-keys c11-artifact [:kind :task :artifact-id
-                                    :governing-document :mir-module
-                                    :mir-verifier-report
-                                    :capability-based-proof])
-         :mir-artifact-kind (:kind c11-artifact)
-         :mir-artifact-hash (:artifact-id c11-artifact)
-         :mir-artifact c11-artifact
-         :domain-ir-registry registrations
-         :domain-ir-artifact-schema
-         {:artifact :gravity/domain-ir-artifact-schema
-          :required-fields [:artifact :domain :artifact-id :source
-                            :semantic-anchor :profile :target-request
-                            :facts :verifier :proofs :lowering-status]
-          :required-domain-families domain-ir-required-families
-          :status :complete}
-         :domain-ir-artifacts domain-artifacts
-         :semantic-anchor-map semantic-anchor-map
-         :entry-pass-records entry-pass-records
-         :exit-pass-records exit-pass-records
-         :domain-verifier-report
-         {:artifact :gravity/domain-verifier-report
-          :status :passed
-          :domains (mapv :domain domain-artifacts)
-          :checks [:registration :schema :semantic-anchor
-                   :source-provenance :facts :proof-obligations
-                   :lowering :fallback :plugin-policy]
-          :diagnostics []}
-         :proof-and-certificate-references proof-records
-         :lowering-eligibility-matrix lowering-matrix
-         :fallback-records fallback-records
-         :plugin-registration-policy
-         {:status :enforced
-          :requires [:schema :owner-doc :verifier :semantic-anchor
-                     :non-opaque-payload]
-          :visibility :package-visible}
-         :domain-ir-diagnostic-stream diagnostics
-         :c12-domain-ir-results
-         {:documents ["C12"]
-          :task "P06-D091"
-          :required-diagnostic-ids domain-ir-diagnostic-ids
-          :c11-input-status :complete
-          :registration-status :complete
-          :artifact-schema-status :complete
-          :anchor-status :complete
-          :verifier-status :complete
-          :proof-evidence-status :complete
-          :lowering-and-fallback-status :complete
-          :plugin-policy-status :complete
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (domain-ir-validate! source-path artifact-base)
-        capability-proof (assoc (domain-ir-capability-proof artifact-base)
-                                :c11-mir-input-verified?
-                                (= :passed
-                                   (get-in c11-artifact
-                                           [:mir-verifier-report :status]))
-                                :diagnostics-covered?
-                                (= (set domain-ir-diagnostic-ids)
-                                   (set (map :diagnostic
-                                             (:diagnostics diagnostics)))))]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+  (c12-call c12/compiler-c12-domain-ir-source-artifact source-path source-text))
 
 (defn compiler-c12-domain-ir-file-artifact
   [path]
-  (compiler-c12-domain-ir-source-artifact path (slurp path)))
+  (c12-call c12/compiler-c12-domain-ir-file-artifact path))
 
 (def c13-optimization-diagnostic-ids
   ["C13-CONTRACT"
