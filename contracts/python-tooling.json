@@ -5,10 +5,10 @@
   "scope": {
     "roots": ["src/gravity", "tools"],
     "excluded_segments": ["__pycache__"],
-    "inventory_count": 147,
-    "inventory_sha256": "sha256:41faa34314109e75537f537eb0ca4f5cd69b69a1446521e9dc918aac55d4f5f4",
-    "dependency_edge_count": 167,
-    "dependency_edge_sha256": "sha256:cdef2824d1e7dd57cc933633e27a8c4d86cc7e58a05381e7ab5982eb807515fa"
+    "inventory_count": 149,
+    "inventory_sha256": "sha256:e410eae441b806c4686e336dbc7d1635aa84a5cedf241d649ba307715ac89a9d",
+    "dependency_edge_count": 172,
+    "dependency_edge_sha256": "sha256:dc3daddbaa7f3ea2c8cf79fbceab7958856674dc90f5998810506ce47981aec3"
   },
   "enums": {
     "categories": [
@@ -27,6 +27,7 @@
       "semantic-coverage-library",
       "publication-library",
       "read-only-development-tool",
+      "nonauthoritative-evidence-composer",
       "bounded-development-runner",
       "reviewed-source-generator",
       "isolated-coverage-generator",
@@ -224,6 +225,35 @@
       "import_safety": "guarded-cli",
       "execution_mode": "parallel-safe",
       "test_surfaces": ["import-smoke", "unit-test"]
+    },
+    {
+      "id": "authoritative-evidence-composition",
+      "includes": ["tools/compose_authoritative_evidence.py"],
+      "excludes": [],
+      "category": "orchestration",
+      "role": "nonauthoritative-evidence-composer",
+      "allowed_dependency_categories": [
+        "tooling-support",
+        "orchestration",
+        "validator"
+      ],
+      "effects": [
+        "filesystem-read",
+        "filesystem-write",
+        "process",
+        "environment",
+        "stdout"
+      ],
+      "output_classes": [
+        "stdout-diagnostic",
+        "development-state-isolated"
+      ],
+      "authority_ceiling": "non-authoritative-observation",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": ["generated-evidence"],
+      "import_safety": "guarded-cli",
+      "execution_mode": "coordinator-reviewed-serial",
+      "test_surfaces": ["import-smoke", "unit-test", "coordinator-review"]
     },
     {
       "id": "process-development-tools",
@@ -459,7 +489,8 @@
       "Reviewed-source generators require coordinator review and nonparallel execution; this contract does not authorize running them or admitting their output.",
       "Static-analysis limit: AST checks cannot prove dynamically constructed imports, calls, or runtime behavior; such behavior requires separate execution evidence and review.",
       "Alias-analysis limit: direct imports and simple module-level aliases are checked, but dynamic `getattr`, monkey-patching, and runtime alias construction require separate review.",
-      "Output-policy limit: custom or dynamically constructed argument parsing and writers are outside this static check and require separate review."
+      "Output-policy limit: custom or dynamically constructed argument parsing and writers are outside this static check and require separate review.",
+      "Authoritative evidence composition: Python candidates and reviewed-promotion candidates remain non-authoritative; pass/slice/artifact/policy/check data is nonclaim context; no digest is a signature; v1 has no trusted admission root and cannot mint authority."
     ]
   }
 }

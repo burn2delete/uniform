@@ -52,6 +52,21 @@ isolated evidence generators.
 Development receipts, baselines, logs, and checkpoints are isolated working
 state. They are not authoritative compiler-pass evidence or release evidence.
 
+Authoritative evidence composition: Python candidates and reviewed-promotion candidates remain non-authoritative; pass/slice/artifact/policy/check data is nonclaim context; no digest is a signature; v1 has no trusted admission root and cannot mint authority.
+
+`tools/compose_authoritative_evidence.py` writes only beneath
+`target/validation/`. It binds current project-structure and verification
+semantics, exact pass/slice/artifact/policy/check scopes, dependency and impact
+closures, non-authoritative development and C2 cache references, and fresh
+SH07 source/runtime/output identities. The module IDs are the only evidence
+subject; pass, slice, artifact, policy, and check sets are dependency context
+and never authority claims. Promotion revalidates one coherent candidate
+snapshot and records reviewed material below `contracts/` or `docs/`, but v1
+always emits another non-authoritative, release-blocked candidate because the
+repository has no trusted admission root. Weak or unrecomputed child IDs,
+proof-receipt reuse, and a legacy launcher symlink without a checkpointed
+canonical target are explicit promotion blockers.
+
 ## Validation limits
 
 Static-analysis limit: AST checks cannot prove dynamically constructed imports, calls, or runtime behavior; such behavior requires separate execution evidence and review.
