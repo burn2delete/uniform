@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
+            [gravity.c2-lexical-validation :as c2-lexical-validation]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
             [gravity.c3-reader-integrity :as c3-reader-integrity]
             [gravity.c3-syntax-diagnostics :as c3-syntax-diagnostics]
@@ -10150,6 +10151,44 @@
     (is (= "P15S23AD008" (:expected-diagnostic unsupported)))
     (is (contains? (set (map :diagnostic (:diagnostics unsupported)))
                    "P15S23AD008"))))
+
+(deftest c2-lexical-validation-compatibility-wrappers-preserve-interposition
+  (doseq [[wrapper-var expected]
+          [[#'bootstrap/c2-utf8-slice
+            '([source-bytes byte-start byte-end])]
+           [#'bootstrap/c2-span-encloses? '([parent child])]
+           [#'bootstrap/c2-spans-source-ordered? '([spans])]
+           [#'bootstrap/c2-form-graph-metrics '([form-tree])]
+           [#'bootstrap/c2-lexical-product-validation
+            '([source-text token-stream form-tree root-form-ids])]]]
+    (is (= expected (:arglists (meta wrapper-var)))))
+  (let [bytes (.getBytes "λx" java.nio.charset.StandardCharsets/UTF_8)
+        parent {:byte-start 0 :byte-end 3}
+        child {:byte-start 1 :byte-end 2}
+        forms [{:form-id :form-0 :children [:form-1]}
+               {:form-id :form-1 :children []}]]
+    (is (= (c2-lexical-validation/c2-utf8-slice bytes 0 2)
+           (bootstrap/c2-utf8-slice bytes 0 2)))
+    (is (= (c2-lexical-validation/c2-span-encloses? parent child)
+           (bootstrap/c2-span-encloses? parent child)))
+    (is (= (c2-lexical-validation/c2-spans-source-ordered?
+            [parent {:byte-start 3 :byte-end 4}])
+           (bootstrap/c2-spans-source-ordered?
+            [parent {:byte-start 3 :byte-end 4}])))
+    (is (= (c2-lexical-validation/c2-form-graph-metrics forms)
+           (bootstrap/c2-form-graph-metrics forms))))
+  (let [calls (atom [])]
+    (with-redefs [bootstrap/c2-form-graph-metrics
+                  (fn [forms]
+                    (swap! calls conj forms)
+                    {:acyclic? false
+                     :processed-form-count 0
+                     :max-form-depth 0})]
+      (let [report
+            (bootstrap/c2-lexical-product-validation "" [] [] [])]
+        (is (= :failed (:status report)))
+        (is (false? (:acyclic? report)))
+        (is (= [[]] @calls))))))
 
 (deftest reader-artifact-preserves-l1-syntax-data
   (let [artifact (bootstrap/read-file-artifact (fixture "accepted/surface-syntax.gravity"))
