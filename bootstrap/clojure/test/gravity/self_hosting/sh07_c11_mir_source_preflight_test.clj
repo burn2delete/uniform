@@ -39,11 +39,12 @@
 (def ^:private invalid-export-clause ::invalid-export-clause)
 (def ^:private invalid-definition-duplicates ::invalid-definition-duplicates)
 
-;; These limits are intentionally independent of the moving C10 export list.
-;; The current C11 source is substantially below each bound.  The byte bound
-;; is one byte over the pinned size so a changed file is still authenticated by
-;; the exact SHA check rather than being read without a finite ceiling.
-(def ^:private maximum-source-bytes (inc expected-source-byte-count))
+;; These limits are intentionally independent of the moving C11 source and
+;; export list.  The source snapshot has a finite 512 KiB ceiling so structural
+;; selectors can inspect a moving source before the exact pin is refreshed.
+;; The binding selector below remains the sole owner of the exact byte/SHA
+;; contract.
+(def ^:private maximum-source-bytes (* 512 1024))
 (def ^:private maximum-top-level-forms 4096)
 (def ^:private maximum-form-nodes 250000)
 (def ^:private maximum-form-depth 512)
@@ -293,6 +294,20 @@
           (read-source-snapshot
            (safe-contained-source-path @root source-relative-path)))
         bytes (:bytes snapshot)]
+    (when-not (bytes? bytes)
+      (failure "SH07-C11-PREFLIGHT-SOURCE-BYTES"
+               "C11 source snapshot did not provide byte data"))
+    ;; Ignore any injected :source-text: all parsing must use the bytes from
+    ;; the bounded, coherent snapshot and the strict UTF-8 decoder.
+    (assoc snapshot
+           :source-text (strict-utf8 bytes "C11 source snapshot")
+           :source-sha256 (sha256-id bytes)
+           :authenticated? false)))
+
+(defn- validate-source-binding!
+  "Enforce the exact source pin for the dedicated binding selector only."
+  [snapshot]
+  (let [bytes (:bytes snapshot)]
     (when (or (not (bytes? bytes))
               (not= expected-source-byte-count (alength ^bytes bytes)))
       (failure "SH07-C11-PREFLIGHT-SOURCE-BINDING"
@@ -300,20 +315,16 @@
     (when (not= expected-source-revision-id (sha256-id bytes))
       (failure "SH07-C11-PREFLIGHT-SOURCE-BINDING"
                "C11 source digest does not match the authenticated pin"))
-    (let [source-text (strict-utf8 bytes "authenticated C11 snapshot")]
-      ;; Ignore any injected :source-text: all parsing must use the bytes
-      ;; whose digest and metadata were authenticated above.
-      (assoc snapshot
-             :source-text source-text
-             :source-sha256 (sha256-id bytes)
-             :authenticated? true))))
+    (assoc snapshot
+           :source-sha256 (sha256-id bytes)
+           :authenticated? true)))
 
 (def ^:private source-snapshot (delay (load-source-snapshot)))
 
 (defn- source-bytes
   []
-  ;; Return a copy so callers cannot mutate the process-local authenticated
-  ;; snapshot held by the delay.
+  ;; Return a copy so callers cannot mutate the process-local bounded snapshot
+  ;; held by the delay; exact source binding is enforced by its own selector.
   (aclone ^bytes (:bytes @source-snapshot)))
 
 (defn- source-text
@@ -563,9 +574,11 @@
         (set (remove definitions exports))))))
 
 (deftest sh07-c11-source-binding-is-exact
-  (let [bytes (source-bytes)]
+  (let [bytes (source-bytes)
+        production-snapshot @source-snapshot]
     (is (= expected-source-byte-count (alength bytes)))
     (is (= expected-source-revision-id (sha256-id bytes)))
+    (is (:authenticated? (validate-source-binding! production-snapshot)))
     (testing "injected source text cannot override strict bytes decoding"
       (let [loaded
             (binding [*source-snapshot-loader*
@@ -573,6 +586,18 @@
               (load-source-snapshot))]
         (is (= (strict-utf8 bytes "expected")
                (:source-text loaded))))))
+  (testing "structural selectors can inspect a moving pin, but binding rejects it"
+    (let [text "(ns synthetic (:exports [x])) (def x 1)"
+          bytes (.getBytes text "UTF-8")
+          loaded (binding [*source-snapshot-loader*
+                           (fn [] {:bytes bytes :source-text "wrong text"})]
+                   (load-source-snapshot))
+          forms (read-forms (:source-text loaded))]
+      (is (= text (:source-text loaded)))
+      (is (empty? (invalid-source-if-forms forms)))
+      (is (empty? (missing-export-definitions forms)))
+      (is (thrown? clojure.lang.ExceptionInfo
+                   (validate-source-binding! loaded)))))
   (testing "strict UTF-8 rejects malformed bytes without a platform decoder"
     (is (try
           (strict-utf8 (byte-array [(unchecked-byte 0xc3) (byte 0x28)])
@@ -600,7 +625,7 @@
          (make-array java.nio.file.OpenOption 0))
         (java.nio.file.Files/write
          oversized-file
-         (byte-array maximum-source-bytes)
+         (byte-array (inc maximum-source-bytes))
          (make-array java.nio.file.OpenOption 0))
         (is (thrown? clojure.lang.ExceptionInfo
                      (read-source-snapshot oversized-file)))
