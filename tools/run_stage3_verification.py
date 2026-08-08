@@ -7,13 +7,14 @@ argv is fixed by the manifest and all per-invocation state is supplied through
 an environment binding created by :mod:`verify_development`.  There is no
 public command passthrough or shell evaluation in this wrapper.
 
-Three explicit modes are supported.  A public/pure batch acquires the
-canonical SH-07 lease and runs one of the reviewed Clojure batches.  A
-proof-candidate authority batch starts a *new* checkpoint directory and
-invokes the existing SH-07 checkpoint runner with exactly ``c7-types`` and
-``--no-resume``; that child, rather than this process, owns the shared lease.
-A reviewed-attestation batch acquires its own current lease and promotes only
-a separately supplied, hash-bound candidate.
+The enabled modes are ``pure`` and ``proof-candidate``.  A public/pure batch
+acquires the canonical SH-07 lease and runs one of the reviewed Clojure
+batches.  A proof-candidate batch starts a *new* checkpoint directory and
+invokes the existing SH-07 checkpoint runner with the module selected by the
+immutable fixed C7/C8/C9 policy map (currently ``c7-types``, ``c8-effects``,
+or ``c9-ownership``) and ``--no-resume``; that child, rather than this
+process, owns the shared lease.  ``reviewed-attestation`` remains dormant and
+is intentionally not an enabled CLI mode; no candidate is promoted here.
 """
 
 from __future__ import annotations
