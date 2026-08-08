@@ -1,7 +1,7 @@
 (ns gravity.self-hosting.sh01-stage0-leaf-test-runner-test
   "Contract tests for the bootstrap-free Stage 0 leaf catalog and CLI.
 
-  Running all 38 leaf namespaces remains the :leaf-test command's aggregate
+  Running all 39 leaf namespaces remains the :leaf-test command's aggregate
   acceptance check; this namespace also exercises its adversarial boundaries."
   (:require [clojure.string :as str]
             [clojure.test :as test]
@@ -114,9 +114,9 @@
                      runner/catalog)]
     (is (= "gravity/stage0-clojure-components-v1"
            (get contract "schema")))
-    (is (= 38 (count expected)))
+    (is (= 39 (count expected)))
     (is (= expected actual))
-    (is (= {:foundation-reader 8 :c2-c3 11 :compiler 19}
+    (is (= {:foundation-reader 8 :c2-c3 12 :compiler 19}
            (frequencies (map :group expected))))))
 
 (deftest component-contract-json-is-strict
@@ -172,7 +172,7 @@
   (testing "groups retain catalog order"
     (let [selected (runner/select-entries
                     (runner/parse-args ["--group" "c2-c3"]))]
-      (is (= 11 (count selected)))
+      (is (= 12 (count selected)))
       (is (= selected (vec (sort-by (comp str :namespace) selected))))
       (is (every? #(= :c2-c3 (:group %)) selected))))
   (testing "listing does not run selected tests"
@@ -182,7 +182,7 @@
           lines (->> (str/split-lines output)
                      (remove str/blank?)
                      vec)]
-      (is (= 11 (count lines)))
+      (is (= 12 (count lines)))
       (is (= lines (vec (sort lines))))))
   (is (nil? (find-ns 'gravity.bootstrap))))
 

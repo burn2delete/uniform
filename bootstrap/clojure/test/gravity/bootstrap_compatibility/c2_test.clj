@@ -4,7 +4,49 @@
             [gravity.c2-artifact-identity :as c2-artifact-identity]
             [gravity.c2-source-identity :as c2-source-identity]
             [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
+            [gravity.c2-reader-product-projection :as c2-reader-product-projection]
             [gravity.c2-lexical-validation :as c2-lexical-validation]))
+
+(deftest c2-reader-product-projection-compatibility-wrappers-preserve-interposition
+  (doseq [[wrapper-var expected]
+          [[#'bootstrap/c2-syntax-seed-stream
+            '([source-path products module-context])]
+           [#'bootstrap/c2-deferred-semantic-literals '([form-tree])]
+           [#'bootstrap/c2-top-level-products '([artifact])]
+           [#'bootstrap/c2-reader-capability-proof '([artifact])]
+           [#'bootstrap/c2-reader-overrides-from-forms '([forms])]
+           [#'bootstrap/c2-reader-extension-invocations '([form-tree])]]]
+    (is (= expected (:arglists (meta wrapper-var)))))
+  (let [span {:byte-start 0 :byte-end 1}
+        form-tree [{:form-id :n :kind :integer :raw "1" :span span
+                    :value {:semantic-validation :deferred
+                            :artifact :gravity/deferred-numeric-literal}}]
+        artifact {:form-tree [{:form-id :f :open-token :t}]
+                  :token-stream [{:token-id :t}]
+                  :top-level-form-ids [:f]}
+        forms [(list 'ns 'demo
+                     (list :metadata {:compiler {:c2-reader {:mode :strict}}}))]]
+    (is (= (c2-reader-product-projection/c2-deferred-semantic-literals form-tree)
+           (bootstrap/c2-deferred-semantic-literals form-tree)))
+    (is (= (c2-reader-product-projection/c2-top-level-products artifact)
+           (bootstrap/c2-top-level-products artifact)))
+    (is (= (c2-reader-product-projection/c2-reader-overrides-from-forms forms)
+           (bootstrap/c2-reader-overrides-from-forms forms))))
+  (doseq [[leaf-var invoke]
+          [[#'c2-reader-product-projection/c2-syntax-seed-stream
+            #(bootstrap/c2-syntax-seed-stream "src.g" {} {})]
+           [#'c2-reader-product-projection/c2-deferred-semantic-literals
+            #(bootstrap/c2-deferred-semantic-literals [])]
+           [#'c2-reader-product-projection/c2-top-level-products
+            #(bootstrap/c2-top-level-products {})]
+           [#'c2-reader-product-projection/c2-reader-capability-proof
+            #(bootstrap/c2-reader-capability-proof {})]
+           [#'c2-reader-product-projection/c2-reader-overrides-from-forms
+            #(bootstrap/c2-reader-overrides-from-forms [])]
+           [#'c2-reader-product-projection/c2-reader-extension-invocations
+            #(bootstrap/c2-reader-extension-invocations [])]]]
+    (with-redefs-fn {leaf-var (fn [& _] :interposed)}
+      #(is (= :interposed (invoke))))))
 
 (deftest c2-source-identity-compatibility-wrappers-preserve-interposition
   (doseq [[wrapper-var expected]

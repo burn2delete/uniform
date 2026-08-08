@@ -1309,7 +1309,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         )
         components = {component["id"]: component for component in contract["components"]}
         checks = {item["id"]: item for item in manifest["checks"]}
-        expected_counts = {"foundation-reader": 8, "c2-c3": 11, "compiler": 19}
+        expected_counts = {"foundation-reader": 8, "c2-c3": 12, "compiler": 19}
         all_roots: set[str] = set()
         for group, expected_count in expected_counts.items():
             roots = {
@@ -1343,7 +1343,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             expected_tests = {components[component_id]["test"]["path"] for component_id in roots}
             self.assertEqual(expected_sources, actual_sources, group)
             self.assertEqual(expected_tests, actual_tests, group)
-        self.assertEqual(38, len(all_roots))
+        self.assertEqual(39, len(all_roots))
         self.assertEqual(
             {
                 component_id
@@ -1358,6 +1358,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         item = next(check for check in manifest["checks"] if check["id"] == "stage0-c2-compatibility")
         qualified = [
             "gravity.bootstrap-compatibility.c2-test/c2-source-identity-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c2-test/c2-reader-product-projection-compatibility-wrappers-preserve-interposition",
             "gravity.bootstrap-compatibility.c2-test/c2-reader-diagnostics-compatibility-wrappers-preserve-interposition",
             "gravity.bootstrap-compatibility.c2-test/c2-lexical-validation-compatibility-wrappers-preserve-interposition",
             "gravity.bootstrap-compatibility.c2-test/c2-artifact-identity-load-order-initializes-standard-reader-options",

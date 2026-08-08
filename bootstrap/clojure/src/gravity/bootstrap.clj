@@ -11,6 +11,7 @@
             [clojure.string :as str]
             [clojure.walk :as walk]
             [gravity.c2-artifact-identity :as c2-artifact-identity]
+            [gravity.c2-reader-product-projection :as c2-reader-product-projection]
             [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
             [gravity.c2-source-identity :as c2-source-identity]
             [gravity.c2-pass-cache :as c2-pass-cache]
@@ -144677,58 +144678,59 @@
       source-path source-text source-bytes reader-options project-context
       resolved))))
 
+(declare c2-syntax-seed-stream
+         c2-deferred-semantic-literals
+         c2-top-level-products
+         c2-reader-capability-proof
+         c2-reader-overrides-from-forms
+         c2-reader-extension-invocations)
+
+(defn- c2-reader-product-projection-ops
+  []
+  {:syntax-object-stream syntax-object-stream
+   :c2-literal-records c2-literal-records
+   :c2-reader-diagnostic-ids c2-reader-diagnostic-ids
+   :standard-reader-policy standard-reader-policy
+   :c2-syntax-seed-stream c2-syntax-seed-stream
+   :c2-deferred-semantic-literals c2-deferred-semantic-literals
+   :c2-top-level-products c2-top-level-products
+   :c2-reader-capability-proof c2-reader-capability-proof
+   :c2-reader-overrides-from-forms c2-reader-overrides-from-forms
+   :c2-reader-extension-invocations c2-reader-extension-invocations})
+
+(def ^:private ^:dynamic *c2-reader-product-projection-leaf-call?* false)
+
+(defn- c2-reader-product-projection-call
+  [operation-key operation & args]
+  (if *c2-reader-product-projection-leaf-call?*
+    (c2-reader-product-projection/call-entrypoint-body
+     operation-key operation args)
+    (binding [*c2-reader-product-projection-leaf-call?* true]
+      (c2-reader-product-projection/with-operations
+       (c2-reader-product-projection-ops)
+       #(c2-reader-product-projection/call-entrypoint-body
+         operation-key operation args)))))
+
 (defn c2-syntax-seed-stream
   [source-path products module-context]
-  (let [forms-by-id (into {} (map (juxt :form-id identity)
-                                  (:form-tree products)))
-        seed-records
-        (mapv
-         (fn [idx record]
-           (let [node (forms-by-id (:form-id record))
-                 generated-origins
-                 (mapv (fn [origin]
-                         {:from (:from origin)
-                          :reader-abbreviation (:reason origin)
-                          :expanded-form (:value node)})
-                       (:generated-origin node))]
-             {:form (:form record)
-              :form-id (:form-id node)
-              :span (assoc (:span node) :form-index idx)
-              :metadata (or (:metadata node) {})
-              :reader-origin {:kind :source
-                              :raw-form-kind (:kind node)
-                              :raw-excerpt (:raw node)
-                              :abbreviation (:abbrev node)}
-              :generated-origin generated-origins}))
-         (range)
-         (:parsed-records products))]
-    (syntax-object-stream source-path seed-records module-context)))
+  (c2-reader-product-projection-call
+   :c2-syntax-seed-stream
+   c2-reader-product-projection/c2-syntax-seed-stream
+   source-path products module-context))
 
 (defn c2-deferred-semantic-literals
   [form-tree]
-  (mapv #(select-keys % [:form-id :kind :raw :value :span])
-        (filter (fn [form]
-                  (and (contains? #{:integer :ratio :decimal} (:kind form))
-                       (= :deferred
-                          (get-in form [:value :semantic-validation]))
-                       (contains?
-                        #{:gravity/deferred-ratio-literal
-                          :gravity/decimal-literal
-                          :gravity/deferred-numeric-literal}
-                        (get-in form [:value :artifact]))))
-                form-tree)))
+  (c2-reader-product-projection-call
+   :c2-deferred-semantic-literals
+   c2-reader-product-projection/c2-deferred-semantic-literals
+   form-tree))
 
 (defn c2-top-level-products
   [artifact]
-  (let [forms-by-id (into {} (map (juxt :form-id identity)
-                                  (:form-tree artifact)))
-        tokens-by-id (into {} (map (juxt :token-id identity)
-                                   (:token-stream artifact)))]
-    (mapv (fn [form-id]
-            (let [form-record (forms-by-id form-id)]
-              {:form-record form-record
-               :token-record (tokens-by-id (:open-token form-record))}))
-          (:top-level-form-ids artifact))))
+  (c2-reader-product-projection-call
+   :c2-top-level-products
+   c2-reader-product-projection/c2-top-level-products
+   artifact))
 
 (defn l1-source-unit-artifacts
   [source-path source-text reader-options project-context]
@@ -144800,74 +144802,10 @@
 
 (defn c2-reader-capability-proof
   [artifact]
-  (let [diagnostics (set (map :diagnostic (:rejected-design-coverage artifact)))
-        hashes (:incremental-reader-hashes artifact)
-        lexical (:lexical-product-validation artifact)
-        abbreviation-forms (filter #(contains? #{:abbreviation
-                                                  :metadata-wrapper}
-                                                (:kind %))
-                                   (:form-tree artifact))]
-    {:source-unit-hash-stable?
-     (boolean
-      (re-find #"^sha256:" (get-in artifact [:source-unit-record
-                                             :source-id])))
-     :token-and-form-spans-present?
-     (and (every? #(and (:token-id %) (get-in % [:span :byte-start])
-                        (get-in % [:span :byte-end]))
-                  (:token-stream artifact))
-          (every? #(and (:form-id %) (get-in % [:span :byte-start])
-                        (get-in % [:span :byte-end]))
-                  (:form-tree artifact)))
-     :abbreviation-origins-present?
-     (every? #(seq (:generated-origin %)) abbreviation-forms)
-     :literal-facts-present?
-     (let [records (:literal-decoding-records artifact)
-           expected-records (c2-literal-records (:form-tree artifact))]
-       (and (= (count expected-records) (count records))
-            (every? #(and (:literal-id %)
-                          (:form-id %)
-                          (:kind %)
-                          (string? (:raw %))
-                          (:span %)
-                          (contains? % :decoded)
-                          (map? (:facts %)))
-                    records)))
-     :trivia-retained?
-     (and (true? (get-in artifact [:source-unit-record :reader-options
-                                   :retain-comments]))
-          (= (mapv :token-id (filter :trivia? (:token-stream artifact)))
-             (mapv :trivia-id (:trivia-retention-records artifact))))
-     :extension-policy-recorded?
-     (= :registered (get-in artifact [:reader-extension-policy :status]))
-     :incremental-hashes-stable?
-     (and (= :stable (:status hashes))
-          (every? #(re-find #"^sha256:" (str (get hashes %)))
-                  [:source-unit :token-stream :form-tree
-                   :syntax-seed-stream :extension-invocation-set
-                   :reader-diagnostics]))
-     :diagnostics-covered?
-     (= (set c2-reader-diagnostic-ids) diagnostics)
-     :semantic-errors-deferred?
-     (true? (get-in artifact [:semantic-error-deferment-record :deferred?]))
-     :lexical-token-stream?
-     (every? true?
-             (map lexical
-                  [:ordered-token-ids-unique?
-                   :token-raw-slices-exact?
-                   :token-provenance-complete?
-                   :no-token-contains-top-level-form?]))
-     :nested-form-tree?
-     (every? true?
-             (map lexical
-                  [:form-ids-unique?
-                   :graph-valid?
-                   :root-form-ids-resolve?
-                   :form-raw-slices-exact?
-                   :form-links-resolve?
-                   :parent-spans-enclose-children?
-                   :collection-delimiters-resolve?]))
-     :representation-status :genuine-lexical-token-and-recursive-form-tree
-     :status :partial}))
+  (c2-reader-product-projection-call
+   :c2-reader-capability-proof
+   c2-reader-product-projection/c2-reader-capability-proof
+   artifact))
 
 (defn c2-reader-validate!
   [source-path artifact]
@@ -144898,30 +144836,17 @@
 
 (defn c2-reader-overrides-from-forms
   [forms]
-  (let [ns-form (first forms)
-        metadata-clause (when (and (seq? ns-form) (= 'ns (first ns-form)))
-                          (first (filter #(and (seq? %)
-                                               (= :metadata (first %)))
-                                         (drop 2 ns-form))))
-        metadata (second metadata-clause)]
-    (get-in metadata [:compiler :c2-reader] {})))
+  (c2-reader-product-projection-call
+   :c2-reader-overrides-from-forms
+   c2-reader-product-projection/c2-reader-overrides-from-forms
+   forms))
 
 (defn c2-reader-extension-invocations
   [form-tree]
-  (mapv
-   (fn [tag]
-     (let [forms (filterv #(= tag (:tag %)) form-tree)]
-       {:artifact :gravity/reader-extension-invocation
-        :tag tag
-        :handler ({'inst 'gravity.reader.standard/read-inst
-                   'uuid 'gravity.reader.standard/read-uuid}
-                  tag)
-        :build-effects #{}
-        :capabilities #{}
-        :profiles #{:kernel :core :hosted :meta}
-        :invocations (mapv #(select-keys % [:form-id :span :raw]) forms)
-        :status (if (seq forms) :invoked :registered-not-invoked)}))
-   (:registered-tags standard-reader-policy)))
+  (c2-reader-product-projection-call
+   :c2-reader-extension-invocations
+   c2-reader-product-projection/c2-reader-extension-invocations
+   form-tree))
 
 (def ^:private sh03-reader-internal-product-authority (Object.))
 

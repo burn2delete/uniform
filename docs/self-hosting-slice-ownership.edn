@@ -108,6 +108,7 @@
   "bootstrap/clojure/src/gravity/c2_lexical_validation.clj" :sh-reader
   "bootstrap/clojure/src/gravity/c2_pass_cache.clj" :sh-reader
   "bootstrap/clojure/src/gravity/c2_reader_diagnostics.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/c2_reader_product_projection.clj" :sh-reader
   "bootstrap/clojure/src/gravity/c2_source_identity.clj" :sh-reader
   "bootstrap/clojure/src/gravity/c3_artifact_identity.clj" :sh-syntax
   "bootstrap/clojure/src/gravity/c3_literal_projection.clj" :sh-syntax
@@ -154,6 +155,7 @@
   "bootstrap/clojure/test/gravity/c2_lexical_validation_test.clj" :sh-reader
   "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj" :sh-reader
   "bootstrap/clojure/test/gravity/c2_reader_diagnostics_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/c2_reader_product_projection_test.clj" :sh-reader
   "bootstrap/clojure/test/gravity/c2_source_identity_test.clj" :sh-reader
   "bootstrap/clojure/test/gravity/c3_artifact_identity_test.clj" :sh-syntax
   "bootstrap/clojure/test/gravity/c3_literal_projection_test.clj" :sh-syntax
@@ -200,6 +202,7 @@
   "c2-lexical-validation" :sh-reader
   "c2-pass-cache" :sh-reader
   "c2-reader-diagnostics" :sh-reader
+  "c2-reader-product-projection" :sh-reader
   "c2-source-identity" :sh-reader
   "c3-artifact-identity" :sh-syntax
   "c3-literal-projection" :sh-syntax

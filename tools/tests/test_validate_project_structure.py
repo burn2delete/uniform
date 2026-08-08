@@ -49,7 +49,7 @@ class ProjectStructureValidationTests(unittest.TestCase):
         contract = validator.load_stage0_component_contract()
         by_id = {component["id"]: component for component in contract["components"]}
         expected_by_id = validator.STAGE0_LEAF_EXECUTION_GROUP_BY_COMPONENT
-        self.assertEqual(38, len(expected_by_id))
+        self.assertEqual(39, len(expected_by_id))
         self.assertEqual(
             validator.STAGE0_LEAF_EXECUTION_GROUP_COUNTS,
             {
@@ -175,7 +175,7 @@ class ProjectStructureValidationTests(unittest.TestCase):
     def test_stage0_edn_projection_has_exact_reserved_and_compatibility_shapes(self) -> None:
         reserved, compatibility, errors = validator.parse_stage0_component_ownership()
         self.assertEqual([], errors)
-        self.assertEqual(44, len(reserved))
+        self.assertEqual(45, len(reserved))
         self.assertEqual(5, len(compatibility))
         self.assertEqual(sorted(compatibility), compatibility)
 
