@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
+            [gravity.c3-syntax-construction :as c3-syntax-construction]
             [gravity.c3-syntax-evidence :as c3-syntax-evidence]
             [gravity.c4-macro-evidence :as c4-macro-evidence]
             [gravity.c6-core-lowering :as c6]
@@ -10242,6 +10243,73 @@
     (with-redefs [bootstrap/c3-required-form-kinds [:interposed-kind]]
       (is (= [:interposed-kind]
              (:form-kinds (bootstrap/c3-syntax-schema)))))))
+
+(deftest c3-syntax-construction-compatibility-wrappers-preserve-interposition
+  (let [seed {:syntax-id :seed
+              :form '(demo x)
+              :span {:source "demo.gravity" :form-index 0}
+              :namespace 'demo.core
+              :phase :read
+              :profile :hosted
+              :metadata {}
+              :reader-origin {:raw-excerpt "(demo x)"}
+              :generated-origin []}
+        form-record {:form-id :form-0
+                     :kind :list
+                     :open-token :tok-0
+                     :close-token :tok-2}
+        token-record {:token-id :tok-0}
+        source-unit {:source-id "sha256:source"}
+        integrity-report {:authentic? false}
+        c2-artifact {}
+        object (bootstrap/c3-syntax-object
+                seed form-record token-record source-unit c2-artifact
+                integrity-report)]
+    (doseq [[wrapper-var expected]
+            [[#'bootstrap/c3-path-neutral-origin '([origin])]
+             [#'bootstrap/c3-identity-input
+              '([seed origin namespace-context hygiene-context source-form-kind])]
+             [#'bootstrap/c3-stable-syntax-id '([identity-input])]
+             [#'bootstrap/c3-syntax-object
+              '([seed form-record token-record source-unit c2-artifact
+                 integrity-report])]
+             [#'bootstrap/c3-generated-syntax-object '([base-object])]]]
+      (is (= expected (:arglists (meta wrapper-var)))))
+    (is (= :gravity/syntax-object (:artifact object)))
+    (is (= :list (get-in object [:form :kind])))
+    (is (= "sha256:source" (get-in object [:source :source-id])))
+    (let [expected
+          (c3-syntax-construction/with-operations
+           {:c2-path-neutral-span bootstrap/c2-path-neutral-span
+            :sha256-hex bootstrap/sha256-hex
+            :c3-origin-chain bootstrap/c3-origin-chain
+            :c3-source-form-kind bootstrap/c3-source-form-kind
+            :c3-source-facts bootstrap/c3-source-facts}
+           #(c3-syntax-construction/c3-syntax-object
+             seed form-record token-record source-unit c2-artifact
+             integrity-report))]
+      (is (= expected object)))
+    (with-redefs [bootstrap/c3-origin-chain (fn [& _] [:origin])
+                  bootstrap/c3-source-form-kind (fn [& _] :interposed-kind)
+                  bootstrap/c3-source-facts (fn [& _] {:interposed true})
+                  bootstrap/c3-identity-input (fn [& _] {:identity :interposed})
+                  bootstrap/c3-stable-syntax-id (fn [_] "syntax:interposed")
+                  bootstrap/sha256-hex (constantly "input-hash")]
+      (let [interposed (bootstrap/c3-syntax-object
+                        seed form-record token-record source-unit c2-artifact
+                        integrity-report)]
+        (is (= "syntax:interposed" (:syntax/id interposed)))
+        (is (= "sha256:input-hash"
+               (get-in interposed [:identity :input-hash])))
+        (is (= :interposed-kind (get-in interposed [:form :kind])))
+        (is (= {:interposed true} (:facts interposed)))
+        (is (= [:origin] (:origin interposed)))))
+    (with-redefs [bootstrap/c2-path-neutral-span
+                  (fn [span] (assoc span :path-neutral :interposed))]
+      (is (= :interposed
+             (:path-neutral
+              (:span (bootstrap/c3-identity-input
+                      seed [] {} {} :list))))))))
 
 (deftest c4-macro-evidence-compatibility-wrappers-preserve-output-and-interposition
   (let [entry {:identity 'compat/macro

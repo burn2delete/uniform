@@ -11,6 +11,7 @@
             [clojure.string :as str]
             [clojure.walk :as walk]
             [gravity.c2-pass-cache :as c2-pass-cache]
+            [gravity.c3-syntax-construction :as c3-syntax-construction]
             [gravity.c3-syntax-evidence :as c3-syntax-evidence]
             [gravity.c4-macro-evidence :as c4-macro-evidence]
             [gravity.cli :as cli]
@@ -146798,139 +146799,62 @@
                    :semantic-validation :reason])}
     {}))
 
+(declare c3-path-neutral-origin
+         c3-identity-input
+         c3-stable-syntax-id
+         c3-syntax-object
+         c3-generated-syntax-object)
+
+(defn- c3-syntax-construction-ops
+  []
+  {:c2-path-neutral-span c2-path-neutral-span
+   :sha256-hex sha256-hex
+   :c3-origin-chain c3-origin-chain
+   :c3-source-form-kind c3-source-form-kind
+   :c3-source-facts c3-source-facts
+   :c3-path-neutral-origin c3-path-neutral-origin
+   :c3-identity-input c3-identity-input
+   :c3-stable-syntax-id c3-stable-syntax-id
+   :c3-syntax-object c3-syntax-object
+   :c3-generated-syntax-object c3-generated-syntax-object})
+
+(def ^:private ^:dynamic *c3-syntax-construction-leaf-call?* false)
+
+(defn- c3-syntax-construction-call
+  [operation & args]
+  (if *c3-syntax-construction-leaf-call?*
+    (apply operation args)
+    (binding [*c3-syntax-construction-leaf-call?* true]
+      (c3-syntax-construction/with-operations
+       (c3-syntax-construction-ops)
+       #(apply operation args)))))
+
 (defn c3-path-neutral-origin
   [origin]
-  (cond-> origin
-    (contains? origin :span) (update :span c2-path-neutral-span)
-    (contains? origin :source-span) (update :source-span c2-path-neutral-span)
-    (contains? origin :from) (update :from c2-path-neutral-span)))
+  (c3-syntax-construction-call
+   c3-syntax-construction/c3-path-neutral-origin origin))
 
 (defn c3-identity-input
   [seed origin namespace-context hygiene-context source-form-kind]
-  {:form-kind source-form-kind
-   :form (pr-str (:form seed))
-   :span (c2-path-neutral-span (:span seed))
-   :origin (mapv c3-path-neutral-origin origin)
-   :namespace namespace-context
-   :phase (:phase seed)
-   :profile (:profile seed)
-   :metadata (:metadata seed)
-   :hygiene hygiene-context
-   :version 1})
+  (c3-syntax-construction-call
+   c3-syntax-construction/c3-identity-input
+   seed origin namespace-context hygiene-context source-form-kind))
 
 (defn c3-stable-syntax-id
   [identity-input]
-  (str "sha256:" (sha256-hex (pr-str identity-input))))
+  (c3-syntax-construction-call
+   c3-syntax-construction/c3-stable-syntax-id identity-input))
 
 (defn c3-syntax-object
   [seed form-record token-record source-unit c2-artifact integrity-report]
-  (let [namespace-context {:current (:namespace seed)
-                           :aliases {}
-                           :imports []}
-        hygiene-context {:marks []
-                         :lexical-scopes []
-                         :renames {}
-                         :captures []
-                         :introduced-identifiers []
-                         :macro-definition-namespace nil
-                         :macro-call-site-namespace (:namespace seed)}
-        origin (c3-origin-chain seed source-unit)
-        source-form-kind (c3-source-form-kind seed form-record c2-artifact
-                                              integrity-report)
-        identity-input (c3-identity-input seed origin namespace-context
-                                          hygiene-context source-form-kind)
-        syntax-id (c3-stable-syntax-id identity-input)]
-    {:artifact :gravity/syntax-object
-     :syntax/id syntax-id
-     :identity {:algorithm :sha256
-                :semantic-fields [:form-kind :form :span :origin
-                                  :namespace :phase :profile :metadata
-                                  :hygiene :version]
-                :input-hash (str "sha256:" (sha256-hex (pr-str identity-input)))}
-     :form {:kind source-form-kind
-            :value (:form seed)
-            :raw (get-in seed [:reader-origin :raw-excerpt])}
-     :span {:primary (:span seed)
-            :all [(:span seed)]}
-     :source {:source-id (:source-id source-unit)
-              :form-id (:form-id form-record)
-              :token-range [(:open-token form-record)
-                            (:close-token form-record)]
-              :token-id (:token-id token-record)}
-     :namespace namespace-context
-     :phase (:phase seed)
-     :profile (:profile seed)
-     :metadata (:metadata seed)
-     :hygiene hygiene-context
-     :origin origin
-     :facts (c3-source-facts seed form-record c2-artifact integrity-report)
-     :version 1
-     :prior-syntax-ids []
-     :immutable? true}))
+  (c3-syntax-construction-call
+   c3-syntax-construction/c3-syntax-object
+   seed form-record token-record source-unit c2-artifact integrity-report))
 
 (defn c3-generated-syntax-object
   [base-object]
-  (let [origin [{:kind :generated
-                 :producer {:kind :macro
-                            :name 'compiler.c3/with-capture-demo
-                            :version "stage0"}
-                 :inputs [(:syntax/id base-object)]
-                 :generated-span "generated:compiler.c3/with-capture-demo:1"
-                 :reason :generated-syntax-conformance
-                 :build-effects []}]
-        hygiene-context {:marks [:c3/generated-mark]
-                         :lexical-scopes [:caller-scope :introduced-scope]
-                         :renames {'tmp__auto__ 'tmp__c3__1}
-                         :captures [{:identifier 'captured-binding
-                                     :macro-api 'gravity.syntax/capture
-                                     :call-site-namespace (get-in base-object
-                                                                  [:namespace :current])
-                                     :intentional? true
-                                     :authority-bearing? false}]
-                         :introduced-identifiers ['tmp__c3__1]
-                         :macro-definition-namespace 'compiler.c3
-                         :macro-call-site-namespace (get-in base-object
-                                                            [:namespace :current])}
-        namespace-context (:namespace base-object)
-        identity-input {:form-kind :generated-form
-                        :form "(do tmp__c3__1)"
-                        :span "generated:compiler.c3/with-capture-demo:1"
-                        :origin origin
-                        :namespace namespace-context
-                        :phase :macro-expanded
-                        :profile (:profile base-object)
-                        :metadata {:generated true}
-                        :hygiene hygiene-context
-                        :version 1}
-        syntax-id (c3-stable-syntax-id identity-input)]
-    {:artifact :gravity/syntax-object
-     :syntax/id syntax-id
-     :identity {:algorithm :sha256
-                :semantic-fields [:form-kind :form :span :origin
-                                  :namespace :phase :profile :metadata
-                                  :hygiene :version]
-                :input-hash (str "sha256:" (sha256-hex (pr-str identity-input)))}
-     :form {:kind :generated-form
-            :value '(do tmp__c3__1)
-            :raw "(do tmp__c3__1)"}
-     :span {:primary "generated:compiler.c3/with-capture-demo:1"
-            :all ["generated:compiler.c3/with-capture-demo:1"
-                  (get-in base-object [:span :primary])]}
-     :source {:source-id (get-in base-object [:source :source-id])
-              :form-id :generated-form-0
-              :token-range []
-              :token-id nil}
-     :namespace namespace-context
-     :phase :macro-expanded
-     :profile (:profile base-object)
-     :metadata {:generated true
-                :source-metadata (:metadata base-object)}
-     :hygiene hygiene-context
-     :origin origin
-     :facts {}
-     :version 1
-     :prior-syntax-ids [(:syntax/id base-object)]
-     :immutable? true}))
+  (c3-syntax-construction-call
+   c3-syntax-construction/c3-generated-syntax-object base-object))
 
 (def c3-required-form-kinds c3-syntax-evidence/c3-required-form-kinds)
 
