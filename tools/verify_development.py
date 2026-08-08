@@ -379,6 +379,8 @@ _P15_NATIVE_LAUNCHER_TOOL_INPUTS = [
     "deps.edn",
     "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
 ]
+_OBSERVED_PROCESS_TREE_RESOURCE_RECEIPT = "observed-peak-process-tree-rss-and-wall-time"
+_OBSERVED_PROCESS_TREE_RSS_CONTRACT = "run_with_heartbeat.process_tree_metrics-v1"
 
 
 def _validate_p15_native_launcher_contract(check: Mapping[str, Any]) -> None:
@@ -426,15 +428,15 @@ def _validate_p15_native_launcher_contract(check: Mapping[str, Any]) -> None:
             f"check {check_id!r} must declare resume=false and no_resume=true"
         )
     timeout = check.get("timeout_seconds")
-    if not isinstance(timeout, (int, float)) or timeout < 600:
-        raise ManifestError(f"check {check_id!r} timeout_seconds must be at least 600")
+    if type(timeout) is not int or timeout != 600:
+        raise ManifestError(f"check {check_id!r} timeout_seconds must be exactly 600")
     if check.get("jvm_heap") != "-J-Xmx1g":
         raise ManifestError(f"check {check_id!r} must declare jvm_heap='-J-Xmx1g'")
     if check.get("minimum_heap_bytes") != 1073741824:
         raise ManifestError(
             f"check {check_id!r} minimum_heap_bytes must equal 1073741824"
         )
-    if check.get("resource_receipt") != "observed-peak-process-tree-rss-and-wall-time":
+    if check.get("resource_receipt") != _OBSERVED_PROCESS_TREE_RESOURCE_RECEIPT:
         raise ManifestError(
             f"check {check_id!r} must declare the observed process-tree resource receipt"
         )
@@ -457,6 +459,26 @@ def _validate_p15_native_launcher_contract(check: Mapping[str, Any]) -> None:
         )
     if check.get("automatic", True) is not True:
         raise ManifestError(f"check {check_id!r} must participate in change-impact routing")
+
+
+def _resource_receipt_error(record: Mapping[str, Any]) -> str | None:
+    """Return a fail-closed diagnostic for an observed process-tree receipt."""
+
+    peak = record.get("observed_peak_process_tree_rss_bytes")
+    if type(peak) is not int or peak <= 0:
+        return "resource receipt requires a strict positive integer RSS peak"
+    cadence = record.get("rss_sampling_cadence_seconds")
+    cadence_valid = type(cadence) in {int, float} and cadence > 0
+    if cadence_valid:
+        try:
+            cadence_valid = math.isfinite(float(cadence))
+        except (OverflowError, ValueError):
+            cadence_valid = False
+    if not cadence_valid:
+        return "resource receipt requires a positive finite sampling cadence"
+    if record.get("rss_sampling_contract") != _OBSERVED_PROCESS_TREE_RSS_CONTRACT:
+        return "resource receipt sampling contract mismatch"
+    return None
 
 
 def _is_fixed_stage_check(check_id: str) -> bool:
@@ -698,6 +720,23 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
     checks = manifest.get("checks")
     if not isinstance(checks, list) or not checks:
         raise ManifestError("manifest checks must be a non-empty list")
+    # Synthetic manifests used by the unit tests exercise the generic graph
+    # contract.  The shipped Stage0 manifest, identified by its stable name,
+    # additionally has one and only one reviewed P15 launcher gate.  Enforce
+    # presence before per-check validation so removal, renaming, or replacement
+    # by a widened arbitrary command cannot silently drop the focused owner.
+    if manifest.get("name") == "gravity-stage0-development-verification":
+        launcher_count = sum(
+            1
+            for item in checks
+            if isinstance(item, Mapping)
+            and item.get("id") == _P15_NATIVE_LAUNCHER_CHECK_ID
+        )
+        if launcher_count != 1:
+            raise ManifestError(
+                "manifest must contain exactly one check id "
+                f"{_P15_NATIVE_LAUNCHER_CHECK_ID!r}"
+            )
 
     ids: set[str] = set()
     dependencies: dict[str, list[str]] = {}
@@ -3166,6 +3205,8 @@ def _run_one(
     command = identities["command"]["argv"]
     cwd_value = check.get("cwd", ".")
     cwd = root / _normalise_declared_path(str(cwd_value))
+    resource_receipt = check.get("resource_receipt")
+    sample_rss = resource_receipt == _OBSERVED_PROCESS_TREE_RESOURCE_RECEIPT
     env = os.environ.copy()
     env.update({str(k): str(v) for k, v in dict(check.get("env", {})).items()})
     lock_owner = _lock_owner(check)
@@ -3219,6 +3260,7 @@ def _run_one(
         "exclusive": bool(check.get("exclusive", False)),
         "cost": check.get("cost", "cheap"),
         "fresh": bool(check.get("fresh", False)),
+        "resource_receipt": resource_receipt,
         "authority": "non-authoritative",
         "depends_on": dependencies_of(check),
         "started_at": started,
@@ -3237,6 +3279,7 @@ def _run_one(
                     env=env,
                     timeout=check.get("timeout_seconds"),
                     marker=_marker_from_bound_identity(identities),
+                    sample_rss=sample_rss,
                 )
             finally:
                 monitor.stop()
@@ -3329,6 +3372,18 @@ def _run_one(
                     record.get("stderr", "")
                     + ("\n" if record.get("stderr") else "")
                     + str(exc)
+                )
+        if record["status"] == "passed" and sample_rss:
+            resource_error = _resource_receipt_error(record)
+            if resource_error is not None:
+                record["status"] = "failed"
+                record["reason"] = "invalid-resource-receipt"
+                record["cacheable"] = False
+                record["authority"] = "non-authoritative"
+                record["stderr"] = _trim_output(
+                    record.get("stderr", "")
+                    + ("\n" if record.get("stderr") else "")
+                    + resource_error
                 )
     except LockUnavailable as exc:
         record["returncode"] = None

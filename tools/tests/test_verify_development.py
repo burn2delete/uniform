@@ -3207,6 +3207,31 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 lambda item: item["inputs"].__setitem__(7, "docs/artifacts/phase-15/native-launcher/drift.edn"),
                 "inputs drifted",
             ),
+            (
+                "timeout bool",
+                lambda item: item.__setitem__("timeout_seconds", True),
+                "timeout_seconds must be exactly 600",
+            ),
+            (
+                "timeout 601",
+                lambda item: item.__setitem__("timeout_seconds", 601),
+                "timeout_seconds must be exactly 600",
+            ),
+            (
+                "timeout NaN",
+                lambda item: item.__setitem__("timeout_seconds", float("nan")),
+                "timeout_seconds must be exactly 600",
+            ),
+            (
+                "timeout infinity",
+                lambda item: item.__setitem__("timeout_seconds", float("inf")),
+                "timeout_seconds must be exactly 600",
+            ),
+            (
+                "timeout missing",
+                lambda item: item.pop("timeout_seconds"),
+                "timeout_seconds must be exactly 600",
+            ),
         )
         for label, mutate, message in cases:
             with self.subTest(case=label):
@@ -3216,6 +3241,121 @@ class VerifyDevelopmentTests(unittest.TestCase):
                     verifier.validate_manifest(value)
 
         self.assertEqual(by_id[check_id]["authority"], "none")
+
+    def test_real_manifest_requires_exact_p15_native_launcher_node_once(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        check_id = "stage0-p15-native-launcher-prerequisite"
+
+        removed = json.loads(json.dumps(manifest))
+        removed["checks"] = [
+            item for item in removed["checks"] if item["id"] != check_id
+        ]
+        with self.assertRaisesRegex(verifier.ManifestError, "exactly one check id"):
+            verifier.validate_manifest(removed)
+
+        renamed = json.loads(json.dumps(manifest))
+        renamed_item = next(item for item in renamed["checks"] if item["id"] == check_id)
+        renamed_item.update(
+            {
+                "id": "stage0-p15-native-launcher-prerequisite-widened",
+                "lane": "focused",
+                "cost": "cheap",
+                "lock": None,
+                "exclusive": False,
+                "command": [sys.executable, "-c", "pass"],
+                "inputs": ["input.txt"],
+                "tool_inputs": [],
+                "depends_on": [],
+                "fresh": False,
+                "automatic": True,
+            }
+        )
+        with self.assertRaisesRegex(verifier.ManifestError, "exactly one check id"):
+            verifier.validate_manifest(renamed)
+
+    def _run_mocked_resource_check(
+        self,
+        outcome: dict,
+    ) -> tuple[dict, mock.Mock]:
+        with tempfile.TemporaryDirectory(prefix="gravity-resource-receipt-") as directory:
+            root = Path(directory).resolve()
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            item = check(
+                "non-jvm-resource-check",
+                [sys.executable, "-c", "pass"],
+                inputs=["input.txt"],
+            )
+            item["resource_receipt"] = "observed-peak-process-tree-rss-and-wall-time"
+            identities = verifier.check_identity(item, root)
+            with mock.patch.object(
+                verifier,
+                "_run_command",
+                return_value=outcome,
+            ) as run_command:
+                record = verifier._run_one(item, root, identities)
+            return record, run_command
+
+    def test_resource_receipt_sampling_is_enabled_and_parent_fields_are_preserved(self) -> None:
+        outcome = {
+            "timed_out": False,
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "",
+            "cleanup": None,
+            "surviving_descendants": False,
+            "supervision_failed": False,
+            "observed_peak_process_tree_rss_bytes": 123,
+            "rss_sampling_cadence_seconds": 1.0,
+            "rss_sampling_contract": "run_with_heartbeat.process_tree_metrics-v1",
+            "rss_sampling_limitation": "between-sample spikes may be missed",
+        }
+        record, run_command = self._run_mocked_resource_check(outcome)
+        self.assertEqual(record["status"], "passed")
+        self.assertEqual(record["command"][0], sys.executable)
+        self.assertTrue(run_command.call_args.kwargs["sample_rss"])
+        self.assertEqual(record["resource_receipt"], "observed-peak-process-tree-rss-and-wall-time")
+        self.assertEqual(record["observed_peak_process_tree_rss_bytes"], 123)
+        self.assertEqual(record["rss_sampling_cadence_seconds"], 1.0)
+        self.assertEqual(
+            record["rss_sampling_contract"],
+            "run_with_heartbeat.process_tree_metrics-v1",
+        )
+
+    def test_resource_receipt_sampling_invalid_observations_fail_closed(self) -> None:
+        base = {
+            "timed_out": False,
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "",
+            "cleanup": None,
+            "surviving_descendants": False,
+            "supervision_failed": False,
+            "observed_peak_process_tree_rss_bytes": 123,
+            "rss_sampling_cadence_seconds": 1.0,
+            "rss_sampling_contract": "run_with_heartbeat.process_tree_metrics-v1",
+            "rss_sampling_limitation": "between-sample spikes may be missed",
+        }
+        cases = {
+            "none peak": {"observed_peak_process_tree_rss_bytes": None},
+            "zero peak": {"observed_peak_process_tree_rss_bytes": 0},
+            "boolean peak": {"observed_peak_process_tree_rss_bytes": True},
+            "missing cadence": {"_remove": "rss_sampling_cadence_seconds"},
+            "missing contract": {"_remove": "rss_sampling_contract"},
+        }
+        for label, changes in cases.items():
+            with self.subTest(case=label):
+                outcome = dict(base)
+                remove = changes.get("_remove")
+                if remove is not None:
+                    outcome.pop(remove)
+                else:
+                    outcome.update(changes)
+                record, run_command = self._run_mocked_resource_check(outcome)
+                self.assertTrue(run_command.call_args.kwargs["sample_rss"])
+                self.assertEqual(record["status"], "failed")
+                self.assertEqual(record["reason"], "invalid-resource-receipt")
+                self.assertFalse(record["cacheable"])
+                self.assertIn("resource receipt", record["stderr"])
 
 
 if __name__ == "__main__":
