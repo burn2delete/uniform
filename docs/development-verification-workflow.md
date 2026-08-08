@@ -262,6 +262,39 @@ or release authority. Since the run used the pre-Stage2 wrapper, queued
 tool/dependency fingerprint changes invalidate it; exactly one fresh no-resume
 candidate rerun is required after integration and freeze.
 
+## Fixed Stage4 C8/SH09 candidate graph
+
+The C8/SH09 route is another fixed graph, not a generic namespace or module
+passthrough. It begins with the narrow Stage3 runner-unit prerequisite, then
+runs `stage4-c8-source-structural`, the combined
+`stage4-sh09-adapter`, and `stage4-public-c8` in order. The source batch
+deliberately executes proof-contract registration, control-form arity, broader
+contracts/policy, and structural limitations. The synthetic adapter batch has
+five exact selectors, including the ordered-effect-identity seam from
+`eefb20d`; its final selector is the authenticated boundary, keeping all six
+same-namespace selectors in one 8 GiB JVM.
+
+The source coverage file is partial: later coverage vars 5--9 are not owned by
+this graph, so the file is fingerprinted and impact-excluded. An implicit edit
+fails closed as deferred. The public node binds the exact bootstrap/CLI/
+diagnostics partial chain, `bin/gravity`, the packaged JVM jar, and the P15-S23
+seed-retirement artifact. Every production node inherits the centralized Stage3
+runtime identity and uses the command-owned canonical heavy lock with fresh,
+exclusive, capacity-one execution. Structural/public nodes pin `-J-Xmx2g`;
+synthetic/authenticated nodes pin `-J-Xmx8g`; public timeout is at least 600
+seconds and records observed wall/RSS telemetry.
+
+`stage4-c8-proof-candidate` is manual-only (`automatic: false`), fresh/no-
+resume, and uses only the fixed `c8-authority`/`c8-effects` policy. It reports
+`authority: none`, `proof_candidate: true`, and `attestation_required: true`;
+it is not selected by ordinary C8 change impact and cannot promote authority.
+The `eefb20d` evidence is 80,761 source bytes
+(`sha256:ff072574...`), source/contract 4 tests/96 assertions, synthetic 5/82,
+and public 108.627 seconds at `-J-Xmx2g` with an observed peak near 2.84 GB.
+The prior `f3729a5` proof (artifact `ed0a4e...`, census `78ea0c...`) remains
+stale historical evidence only; no new proof ran during this integration and
+no speedup or equivalence claim is made.
+
 ## Selection and execution flow
 
 1. Normalize changed paths and validate the manifest before starting a command.

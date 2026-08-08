@@ -190,6 +190,23 @@ the run used the pre-Stage2 wrapper, the queued tool/dependency fingerprint
 changes invalidate it; exactly one fresh no-resume proof candidate is expected
 after integration and freeze.
 
+The fixed Stage4 C8/SH09 graph is layered after the narrow Stage3 runner-unit
+prerequisite: C8 source structure (proof-contract, control-form arity,
+contracts/policy, limitations), one six-selector SH-09 adapter batch (five
+synthetic checks followed by its authenticated boundary), and public C8. It uses the same
+command-owned canonical heavy lock, fresh capacity-one execution, and complete
+central runtime identity. Structural/public commands pin `-J-Xmx2g`; synthetic,
+authenticated, and proof candidates pin `-J-Xmx8g`. The public timeout is at
+least 600 seconds and records sampled wall/RSS telemetry. The source coverage
+file is partial and impact-excluded for deferred vars 5--9, so edits fail
+closed. The manual-only `c8-authority` proof candidate is fresh/no-resume,
+`authority: none`, and `attestation_required: true`; it is never inferred from
+an exit-0 candidate. Frozen `eefb20d` evidence is 80,761 bytes with source /
+contract 4 tests/96 assertions, synthetic 5/82, and public 108.627 seconds at
+2 GiB with about 2.84 GB observed peak RSS. The prior `f3729a5` proof is stale
+historical evidence only; no new proof, speedup, equivalence, or authority
+claim is made by this graph.
+
 Every Stage 0 manifest check explicitly sets `daemonization: forbidden`.
 Commands run in a new process group; ordinary descendants are cleaned before a
 resource lock is released, with one bounded host-wide `ps eww` environment

@@ -693,7 +693,52 @@ aggregate proof. They explicitly report `aggregate_authoritative: false` and
 `authority_scope: individual-existing-runner-outputs-only`; only the individual
 fresh runner outputs can satisfy module-scoped authoritative evidence.
 
-### 7. Full release gate
+### 8. Fixed Stage4 C8/SH09 candidate graph
+
+The manifest extends the fixed Stage3 runner policy with an exact C8/SH09
+graph; it does not add a generic namespace or module passthrough. After the
+narrow Stage3 runner-unit prerequisite (without pulling the C7 heavy chain),
+the route is:
+
+1. `stage4-c8-source-structural`, using the four fixed selectors in deliberate
+   fail-fast order: proof-contract registration, control-form arity, broader
+   source contracts/policy, and explicit structural limitations. The first
+   selector binds the C8 source, `sh07_proof_contract.edn`, and the 29
+   governing documents it reads. The source coverage file is partial: edits to
+   that file are fingerprinted but impact-excluded and therefore fail closed
+   as deferred because coverage selectors 5--9 remain outside this graph.
+2. `stage4-sh09-adapter`, one fixed six-selector batch in source order,
+   combining five synthetic checks with the authenticated C8-to-SH09
+   `.gravity` boundary, including the ordered-effect-identity seam added by
+   `eefb20d`.
+3. `stage4-public-c8`, the fixed bootstrap compatibility selector.
+4. `stage4-c8-proof-candidate`, a manual-only fresh `c8-authority` candidate
+   for module `c8-effects`; it is never selected by ordinary C8 change impact.
+
+Every production Stage4 node is fresh, exclusive, capacity one, and
+command-owned on `/private/tmp/gravity-sh07-heavy.lock`. Structural and public
+nodes pin `-J-Xmx2g`; synthetic, authenticated, and proof nodes pin
+`-J-Xmx8g`. The public timeout is at least 600 seconds and its receipt records
+observed wall time and sampled process-tree RSS. The proof node uses a new
+state directory, `--no-resume`, `authority: none`,
+`proof_candidate: true`, and `attestation_required: true`; it is a candidate,
+not an authority grant.
+
+All Stage4 production nodes inherit the complete centralized Stage3 runtime
+identity (`deps.edn`, both Python wrappers, the Clojure runners, `bootstrap.clj`,
+the five shared Gravity files, and `bootstrap/clojure/src/**`). The public node
+also binds `bin/gravity`, the packaged
+`target/phase-18/jvm-cli/gravity-jvm-cli.jar`, the P15-S23 seed-retirement
+artifact, and the partial bootstrap/CLI/diagnostics test chain. The combined
+SH-09 adapter node binds only the C8 source, its adapter test, the SH-08
+function/primitive test helpers, the C7 source, and the
+`function-value-typed-bool.gravity` fixture it actually loads.
+
+The graph is non-authoritative and makes no speedup or equivalence claim. The
+historical `f3729a5` proof evidence remains stale after the `eefb20d` source
+seam; no new C8 proof was run as part of this manifest update.
+
+### 9. Full release gate
 
 Run only after the candidate is stable, the selected authoritative modules
 pass, and the worktree is ready for release review. This preserves every

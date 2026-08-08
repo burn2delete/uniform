@@ -329,12 +329,13 @@ def _stage3_mode(check: Mapping[str, Any]) -> str:
     mode = str(raw)
     batch = check.get("stage3_batch")
     authority = check.get("authority", "none")
-    if mode == _stage3.MODE_PURE and batch == "authority":
+    proof_batches = frozenset(getattr(_stage3, "FIXED_MODULE_POLICIES", {"authority": None}))
+    if mode == _stage3.MODE_PURE and batch in proof_batches:
         raise ManifestError("pure Stage 3 mode cannot select the authority batch")
     if mode in {_stage3.MODE_PROOF_CANDIDATE, _stage3.MODE_REVIEWED_ATTESTATION} \
-            and batch != "authority":
+            and batch not in proof_batches:
         raise ManifestError(
-            f"{mode} Stage 3 mode requires stage3_batch='authority'"
+            f"{mode} Stage 3 mode requires an exact fixed proof batch"
         )
     if mode == _stage3.MODE_REVIEWED_ATTESTATION and authority != "declared":
         raise ManifestError("reviewed-attestation mode requires authority='declared'")
@@ -349,11 +350,17 @@ _STAGE3_HEAP_BYTES = {
 }
 
 
+def _is_fixed_stage_check(check_id: str) -> bool:
+    """Return whether a manifest node invokes the fixed Stage3/Stage4 wrapper."""
+
+    return check_id.startswith(("stage3-", "stage4-"))
+
+
 def _validate_stage3_resource_contract(check: Mapping[str, Any]) -> None:
     """Require a fixed heap declaration for every Stage3 process boundary."""
 
     check_id = str(check.get("id", ""))
-    if not check_id.startswith("stage3-"):
+    if not _is_fixed_stage_check(check_id):
         return
     declared = check.get("jvm_heap")
     if check_id == "stage3-runner-unit":
@@ -365,11 +372,13 @@ def _validate_stage3_resource_contract(check: Mapping[str, Any]) -> None:
             )
     else:
         batch = check.get("stage3_batch")
-        if batch == "authority":
+        proof_batches = frozenset(getattr(_stage3, "FIXED_MODULE_POLICIES", {"authority": None}))
+        if batch in proof_batches:
             # The proof-candidate wrapper launches the authoritative module
             # child rather than the fixed Clojure batch command.  Its reviewed
             # child contract still requires the semantic/authentication floor.
-            expected = "-J-Xmx8g"
+            policy = getattr(_stage3, "FIXED_MODULE_POLICIES", {}).get(batch)
+            expected = str(policy.get("heap", "-J-Xmx8g")) if isinstance(policy, Mapping) else "-J-Xmx8g"
         else:
             try:
                 expected = str(_stage3.batch_command(str(batch))[1])
@@ -399,7 +408,7 @@ def _validate_stage3_runtime_inputs(check: Mapping[str, Any]) -> None:
 
     check_id = str(check.get("id", ""))
     if (
-        not check_id.startswith("stage3-")
+        not _is_fixed_stage_check(check_id)
         or check_id == "stage3-runner-unit"
         or check.get("lock_owner", "runner") != "command"
     ):
@@ -497,9 +506,10 @@ def _lock_owner(check: Mapping[str, Any]) -> str:
         raise ManifestError(
             f"check {check_id!r} stage3_batch must name a reviewed fixed Stage 3 batch"
         )
+    proof_batches = frozenset(getattr(_stage3, "FIXED_MODULE_POLICIES", {"authority": None}))
     if mode in {_stage3.MODE_PROOF_CANDIDATE, _stage3.MODE_REVIEWED_ATTESTATION} \
-            and batch != "authority":
-        raise ManifestError(f"check {check_id!r} Stage 3 authority mode requires authority batch")
+            and batch not in proof_batches:
+        raise ManifestError(f"check {check_id!r} Stage 3 authority mode requires an exact fixed proof batch")
     return owner
 
 

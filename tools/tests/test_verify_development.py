@@ -1444,15 +1444,22 @@ class VerifyDevelopmentTests(unittest.TestCase):
             for check_id, item in by_id.items()
             if check_id.startswith("stage3-") and check_id != "stage3-runner-unit"
         }
+        stage4_batches = {
+            "stage4-c8-source-structural",
+            "stage4-sh09-adapter",
+            "stage4-public-c8",
+            "c8-authority",
+        }
+        stage3_fixed_batches = set(verifier._stage3.FIXED_BATCHES) - stage4_batches
         self.assertEqual(
             {item["stage3_batch"] for item in stage3.values()},
-            set(verifier._stage3.FIXED_BATCHES),
+            stage3_fixed_batches,
         )
         self.assertEqual(
             len(stage3),
-            len(verifier._stage3.FIXED_BATCHES),
+            len(stage3_fixed_batches),
         )
-        self.assertEqual(len(stage3) + 1, 13)  # twelve fixed batches plus runner-unit
+        self.assertEqual(len(stage3) + 1, 13)  # twelve C7 fixed batches plus runner-unit
         self.assertEqual(
             [
                 item["id"]
@@ -1555,6 +1562,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertTrue(proof["proof_candidate"])
         self.assertTrue(proof["attestation_required"])
         self.assertTrue(proof["no_resume"])
+        self.assertEqual(proof["state_dir_policy"], "new-per-invocation")
         self.assertFalse(proof["automatic"])
         self.assertTrue(
             {
@@ -1757,6 +1765,259 @@ class VerifyDevelopmentTests(unittest.TestCase):
             self.assertEqual(selection["selected_ids"], [])
             self.assertEqual(selection["unmatched_changes"], [changed])
             self.assertFalse(any(item.startswith("stage3-") for item in selection["selected_ids"]))
+
+    def test_real_manifest_stage4_fixed_graph_matches_runner_policy(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        by_id = verifier.checks_by_id(manifest)
+        stage4_ids = [
+            "stage4-c8-source-structural",
+            "stage4-sh09-adapter",
+            "stage4-public-c8",
+            "stage4-c8-proof-candidate",
+        ]
+        self.assertEqual(
+            [item["id"] for item in manifest["checks"] if item["id"].startswith("stage4-")],
+            stage4_ids,
+        )
+        self.assertEqual(
+            {by_id[item]["stage3_batch"] for item in stage4_ids},
+            {
+                "stage4-c8-source-structural",
+                "stage4-sh09-adapter",
+                "stage4-public-c8",
+                "c8-authority",
+            },
+        )
+        runner_batches = verifier._stage3._FIXED_BATCH_SELECTORS
+        expected_selectors = {
+            "stage4-c8-source-structural": (
+                "gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-proof-contract-registers-c8-source-exactly",
+                "gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-source-control-form-arities-are-bounded",
+                "gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-source-contracts-policy-and-boundaries-are-exact",
+                "gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-structural-limitations-remain-explicit",
+            ),
+            "stage4-sh09-adapter": (
+                "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-source-structure-and-policy-are-exact",
+                "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-derives-one-pure-effect-fact-per-type-fact",
+                "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-rejects-upstream-and-candidate-substitution",
+                "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-derives-declared-pure-function-call-effects",
+                "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-binds-ordered-effect-identities",
+                "gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-authenticated-gravity-boundary",
+            ),
+            "stage4-public-c8": (
+                "gravity.bootstrap-test/public-check-accepts-gravity-authored-c8-effect-checker-engine",
+            ),
+        }
+        for check_id in stage4_ids[:-1]:
+            check_item = by_id[check_id]
+            batch = check_item["stage3_batch"]
+            self.assertEqual(tuple(runner_batches[batch]), expected_selectors[batch], batch)
+            self.assertEqual(
+                check_item["command"],
+                ["python3", "tools/run_stage3_verification.py"],
+            )
+            self.assertEqual(check_item["lock_owner"], "command")
+            self.assertEqual(check_item["lock"], str(verifier._stage3.CANONICAL_LOCK))
+            self.assertTrue(check_item["exclusive"])
+            self.assertEqual(check_item["capacity"], 1)
+            self.assertTrue(check_item["fresh"])
+            self.assertFalse(check_item["resume"])
+            self.assertEqual(check_item["stage3_mode"], verifier._stage3.MODE_PURE)
+            expected_heap = verifier._stage3.batch_command(batch)[1]
+            self.assertEqual(check_item["jvm_heap"], expected_heap)
+            self.assertEqual(
+                check_item["minimum_heap_bytes"],
+                2147483648 if expected_heap == "-J-Xmx2g" else 8589934592,
+            )
+            self.assertTrue(
+                set(verifier._stage3.STAGE3_RUNTIME_DEPENDENCIES)
+                <= set(check_item["inputs"]) | set(check_item["tool_inputs"]),
+                msg=check_id,
+            )
+        source = by_id["stage4-c8-source-structural"]
+        self.assertEqual(
+            source["inputs"][0],
+            "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+        )
+        self.assertIn(
+            "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj",
+            source["impact_excludes"],
+        )
+        self.assertEqual(
+            len(
+                [item for item in source["inputs"] if item.startswith("docs/")]
+            ),
+            29,
+        )
+        self.assertTrue(
+            {
+                "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+                "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+            } <= set(source["inputs"])
+        )
+        synthetic = by_id["stage4-sh09-adapter"]
+        self.assertIn(
+            "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj",
+            synthetic["inputs"],
+        )
+        authenticated = by_id["stage4-sh09-adapter"]
+        self.assertTrue(
+            {
+                "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+                "bootstrap/clojure/test/gravity/self_hosting/sh08_primitive_function_type_test.clj",
+                "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+                "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-value-typed-bool.gravity",
+            } <= set(authenticated["inputs"])
+        )
+        public = by_id["stage4-public-c8"]
+        self.assertGreaterEqual(public["timeout_seconds"], 600)
+        self.assertEqual(public["jvm_heap"], "-J-Xmx2g")
+        self.assertTrue(
+            {
+                "bin/gravity",
+                "target/phase-18/jvm-cli/gravity-jvm-cli.jar",
+                "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn",
+            } <= set(public["inputs"])
+        )
+        proof = by_id["stage4-c8-proof-candidate"]
+        self.assertEqual(proof["stage3_batch"], "c8-authority")
+        self.assertEqual(proof["stage3_mode"], verifier._stage3.MODE_PROOF_CANDIDATE)
+        self.assertFalse(proof["automatic"])
+        self.assertTrue(proof["proof_candidate"])
+        self.assertTrue(proof["attestation_required"])
+        self.assertTrue(proof["no_resume"])
+        self.assertEqual(proof["jvm_heap"], "-J-Xmx8g")
+        self.assertTrue(
+            {
+                "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj",
+                "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+            } <= set(proof["tool_inputs"])
+        )
+        self.assertEqual(
+            proof["depends_on"],
+            ["stage4-public-c8"],
+        )
+
+    def test_real_manifest_stage4_dependency_order_is_sequential_and_proof_manual(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        by_id = verifier.checks_by_id(manifest)
+        order = verifier.topological_order(manifest)
+        position = {check_id: index for index, check_id in enumerate(order)}
+        chain = [
+            "stage3-runner-unit",
+            "stage4-c8-source-structural",
+            "stage4-sh09-adapter",
+            "stage4-public-c8",
+            "stage4-c8-proof-candidate",
+        ]
+        self.assertEqual(chain, sorted(chain, key=position.__getitem__))
+        for left, right in zip(chain, chain[1:]):
+            self.assertIn(left, verifier.dependencies_of(by_id[right]))
+        self.assertFalse(by_id["stage4-c8-proof-candidate"]["automatic"])
+        self.assertEqual(by_id["stage4-c8-proof-candidate"]["authority"], "none")
+
+    def test_real_manifest_stage4_change_impact_routes_and_defers_partial_coverage(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        source_path = "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+        source_selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[source_path])
+        source_selected = set(source_selection["selected_ids"])
+        self.assertTrue(
+            {
+                "stage4-c8-source-structural",
+                "stage4-sh09-adapter",
+                "stage4-public-c8",
+            } <= source_selected
+        )
+        self.assertNotIn("stage4-c8-proof-candidate", source_selected)
+        self.assertNotIn("stage0-clojure-suite", source_selected)
+        self.assertNotIn("stage0-bootstrap-authority", source_selected)
+        self.assertFalse(
+            {
+                "stage3-source-control-form-arity",
+                "stage3-coverage-census-contract",
+                "stage3-fragment-size-preflight",
+                "stage3-source-plan-contract",
+                "stage3-primitive-pure",
+                "stage3-recursive-pure",
+                "stage3-authoritative-ho-pure",
+                "stage3-primitive-bool-authenticated",
+                "stage3-recursive-authenticated",
+                "stage3-authoritative-ho-authenticated",
+                "stage3-public-c7-check",
+                "stage3-c7-proof-candidate",
+            } & source_selected
+        )
+        adapter_path = "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj"
+        adapter_selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[adapter_path])
+        adapter_selected = set(adapter_selection["selected_ids"])
+        self.assertTrue(
+            {
+                "stage4-sh09-adapter",
+                "stage4-public-c8",
+            } <= adapter_selected
+        )
+        self.assertNotIn("stage4-c8-proof-candidate", adapter_selected)
+        self.assertFalse("stage3-public-c7-check" in adapter_selected)
+        partial_path = "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj"
+        partial_selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[partial_path])
+        self.assertEqual(partial_selection["selected_ids"], [])
+        self.assertEqual(partial_selection["unmatched_changes"], [partial_path])
+        explicit = verifier.select_impacted_checks(
+            manifest,
+            ROOT,
+            requested_ids=["stage4-c8-proof-candidate"],
+        )
+        self.assertIn("stage4-c8-proof-candidate", explicit["selected_ids"])
+        self.assertIn("stage4-public-c8", explicit["selected_ids"])
+        all_selected = verifier.select_impacted_checks(
+            manifest,
+            ROOT,
+            all_checks=True,
+        )
+        self.assertIn("stage4-c8-proof-candidate", all_selected["selected_ids"])
+
+        # Every Stage3/SH07 runtime identity input is also consumed by the
+        # automatic Stage4 production nodes.  A shared-runtime edit therefore
+        # refreshes both fixed graphs, while the multi-hour proof remains
+        # manual-only under change-impact routing.
+        for runtime_path in list(verifier._stage3._sh07.SHARED_GRAVITY_FILES) + [
+            "bootstrap/clojure/src/gravity/diagnostics.clj",
+        ]:
+            runtime_selection = verifier.select_impacted_checks(
+                manifest,
+                ROOT,
+                changed_paths=[runtime_path],
+            )
+            runtime_selected = set(runtime_selection["selected_ids"])
+            self.assertTrue(
+                {
+                    "stage4-c8-source-structural",
+                    "stage4-sh09-adapter",
+                    "stage4-public-c8",
+                } <= runtime_selected,
+                runtime_path,
+            )
+            self.assertNotIn("stage4-c8-proof-candidate", runtime_selected, runtime_path)
+
+    def test_real_manifest_stage4_fixed_selector_membership_is_unique(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        expected = {
+            "stage4-c8-source-structural",
+            "stage4-sh09-adapter",
+            "stage4-public-c8",
+        }
+        fixed = verifier._stage3._FIXED_BATCH_SELECTORS
+        for batch in expected:
+            selectors = tuple(fixed[batch])
+            self.assertEqual(len(selectors), len(set(selectors)), batch)
+            self.assertTrue(all("/" in selector for selector in selectors), batch)
+            self.assertEqual(
+                verifier.checks_by_id(manifest)[next(
+                    item["id"] for item in manifest["checks"]
+                    if item.get("stage3_batch") == batch
+                )]["stage3_batch"],
+                batch,
+            )
 
     def test_real_manifest_stage3_runner_unit_owns_its_complete_clojure_test_file(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
