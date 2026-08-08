@@ -6,6 +6,7 @@
             [gravity.bootstrap :as bootstrap]
             [gravity.c6-core-lowering :as c6]
             [gravity.c7-type-checker :as c7]
+            [gravity.c8-effect-checker :as c8]
             [gravity.cli-test]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.diagnostics-test]
@@ -15325,6 +15326,48 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
+(deftest c8-effect-checker-compatibility-wrappers-preserve-interposition
+  (is (= '([module type-facts functions])
+         (:arglists (meta #'bootstrap/c8-effect-graph))))
+  (is (= '([source-path source-text])
+         (:arglists (meta #'bootstrap/compiler-c8-effect-source-artifact))))
+  (is (= '([path])
+         (:arglists (meta #'bootstrap/compiler-c8-effect-file-artifact))))
+  (let [calls (atom [])
+        fact {:core-node "probe" :effects #{}}]
+    (is (= [fact]
+           (with-redefs [bootstrap/c8-fact-direct-effects
+                         (fn [value]
+                           (swap! calls conj value)
+                           #{:interposed/effect})]
+             (vec (bootstrap/c8-effectful-facts [fact])))))
+    (is (= 1 (count @calls))))
+  (let [bindings (atom 0)
+        with-operations c8/with-operations]
+    (with-redefs [c8/with-operations
+                  (fn [operations thunk]
+                    (swap! bindings inc)
+                    (with-operations operations thunk))]
+      (bootstrap/compiler-c8-effect-file-artifact
+       (fixture "accepted/compiler-c8-effect-checker.gravity")))
+    (is (= 1 @bindings)))
+  (let [artifact
+        (with-redefs [bootstrap/c8-effect-diagnostic-ids ["C8-SENTINEL"]
+                      bootstrap/c8-effect-rejected-designs
+                      [{:diagnostic "C8-SENTINEL"}]
+                      bootstrap/c8-effect-governing-document
+                      "docs/c8-sentinel.md"]
+          (bootstrap/compiler-c8-effect-file-artifact
+           (fixture "accepted/compiler-c8-effect-checker.gravity")))]
+    (is (= "docs/c8-sentinel.md" (:governing-document artifact)))
+    (is (= ["C8-SENTINEL"]
+           (get-in artifact [:c8-effect-check-results
+                             :required-diagnostic-ids])))
+    (is (= #{"C8-SENTINEL"}
+           (set (map :diagnostic
+                     (get-in artifact [:effect-diagnostics :diagnostics]))))))
+  (is (= (:public-api (c8/c8-engine-contract)) c8/public-api)))
+
 (deftest c8-effect-checker-artifact-preserves-p06-d087-contract
   (let [artifact (bootstrap/compiler-c8-effect-file-artifact
                   (fixture "accepted/compiler-c8-effect-checker.gravity"))
@@ -15348,6 +15391,15 @@
     (is (= :gravity/stage0-c7-type-checker-artifact
            (get-in artifact [:c7-type-checker-artifact :kind])))
     (is (= :gravity/c8-effect-graph (:artifact graph)))
+    (is (= 76 (count (:nodes graph))))
+    (is (= 4 (count (get-in graph [:namespace :inferred]))))
+    (is (= 2 (count (:functions graph))))
+    (is (= 4 (count (:records legality))))
+    (is (= 4 (count (:records capability))))
+    (is (= 1 (count (:records build))))
+    (is (= 1 (count (:records replay))))
+    (is (= 10 (count (:records ordering))))
+    (is (= 3 (count (:records residual))))
     (is (seq (:nodes graph)))
     (is (seq (get-in graph [:namespace :inferred])))
     (is (= :complete (:status graph)))

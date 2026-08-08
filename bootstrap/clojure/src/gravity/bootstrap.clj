@@ -15,6 +15,7 @@
             [gravity.c5-name-resolution :as c5]
             [gravity.c6-core-lowering :as c6]
             [gravity.c7-type-checker :as c7]
+            [gravity.c8-effect-checker :as c8]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
@@ -2380,510 +2381,154 @@
   [path]
   (c7-call c7/compiler-c7-type-file-artifact path))
 
-(def c8-effect-diagnostic-ids
-  ["C8-UNDECLARED"
-   "C8-PROFILE"
-   "C8-CAPABILITY"
-   "C8-BUILD"
-   "C8-REPLAY"
-   "C8-ORDER"
-   "C8-RUNTIME"
-   "C8-UNKNOWN"
-   "C8-VERIFY"])
+(def c8-effect-diagnostic-ids c8/c8-effect-diagnostic-ids)
+(def c8-effect-governing-document c8/c8-effect-governing-document)
+(def c8-effect-rejected-designs c8/c8-effect-rejected-designs)
+(def c8-effect-override-diagnostics c8/c8-effect-override-diagnostics)
+(def c8-known-effects c8/c8-known-effects)
+(def c8-effect-capability c8/c8-effect-capability)
+(def c8-replay-sensitive-effects c8/c8-replay-sensitive-effects)
 
-(def c8-effect-governing-document
-  "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md")
+(declare c8-effect-source-overrides
+         c8-effect-message
+         c8-effect-fail!
+         c8-effect-validate-overrides!
+         c8-fact-direct-effects
+         c8-effectful-facts
+         c8-effect-graph
+         c8-legality-records
+         c8-capability-proof-records
+         c8-build-effect-log
+         c8-replay-requirements
+         c8-ordering-constraints
+         c8-residual-effect-report
+         c8-effect-diagnostics
+         c8-effect-verifier-report
+         c8-effect-capability-proof
+         c8-effect-validate!
+         compiler-c8-effect-source-artifact
+         compiler-c8-effect-file-artifact)
 
-(def c8-effect-rejected-designs
-  [{:diagnostic "C8-UNDECLARED"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-undeclared.gravity"
-    :rejected-design :inferred-effect-outside-declaration}
-   {:diagnostic "C8-PROFILE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-profile.gravity"
-    :rejected-design :profile-rejects-effect}
-   {:diagnostic "C8-CAPABILITY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-capability.gravity"
-    :rejected-design :missing-capability-grant}
-   {:diagnostic "C8-BUILD"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-build.gravity"
-    :rejected-design :ungranted-build-effect}
-   {:diagnostic "C8-REPLAY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-replay.gravity"
-    :rejected-design :replay-sensitive-effect-without-obligation}
-   {:diagnostic "C8-ORDER"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-order.gravity"
-    :rejected-design :missing-effect-ordering}
-   {:diagnostic "C8-RUNTIME"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-runtime.gravity"
-    :rejected-design :no-runtime-provider-support}
-   {:diagnostic "C8-UNKNOWN"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-unknown.gravity"
-    :rejected-design :unregistered-effect-name}
-   {:diagnostic "C8-VERIFY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-verify.gravity"
-    :rejected-design :malformed-effect-artifact}])
+(defn- c8-effect-ops []
+  {:fail! fail!
+   :source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c7-type-source-artifact compiler-c7-type-source-artifact
+   :c8-effect-diagnostic-ids c8-effect-diagnostic-ids
+   :c8-effect-governing-document c8-effect-governing-document
+   :c8-effect-rejected-designs c8-effect-rejected-designs
+   :c8-effect-override-diagnostics c8-effect-override-diagnostics
+   :c8-known-effects c8-known-effects
+   :c8-effect-capability c8-effect-capability
+   :c8-replay-sensitive-effects c8-replay-sensitive-effects
+   :c8-effect-source-overrides c8-effect-source-overrides
+   :c8-effect-message c8-effect-message
+   :c8-effect-fail! c8-effect-fail!
+   :c8-effect-validate-overrides! c8-effect-validate-overrides!
+   :c8-fact-direct-effects c8-fact-direct-effects
+   :c8-effectful-facts c8-effectful-facts
+   :c8-effect-graph c8-effect-graph
+   :c8-legality-records c8-legality-records
+   :c8-capability-proof-records c8-capability-proof-records
+   :c8-build-effect-log c8-build-effect-log
+   :c8-replay-requirements c8-replay-requirements
+   :c8-ordering-constraints c8-ordering-constraints
+   :c8-residual-effect-report c8-residual-effect-report
+   :c8-effect-diagnostics c8-effect-diagnostics
+   :c8-effect-verifier-report c8-effect-verifier-report
+   :c8-effect-capability-proof c8-effect-capability-proof
+   :c8-effect-validate! c8-effect-validate!
+   :compiler-c8-effect-source-artifact compiler-c8-effect-source-artifact
+   :compiler-c8-effect-file-artifact compiler-c8-effect-file-artifact})
 
-(def c8-effect-override-diagnostics
-  {:undeclared "C8-UNDECLARED"
-   :profile "C8-PROFILE"
-   :capability "C8-CAPABILITY"
-   :build "C8-BUILD"
-   :replay "C8-REPLAY"
-   :order "C8-ORDER"
-   :runtime "C8-RUNTIME"
-   :unknown "C8-UNKNOWN"
-   :verify "C8-VERIFY"})
-
-(def c8-known-effects
-  #{:io/write :io/read :filesystem/read :filesystem/write :network/http
-    :database/read :database/write :time/read :random/read
-    :runtime/dynamic-dispatch :error/throw :memory/raw :ffi/call
-    :workflow/event :workflow/replay :ai/model-call :ai/tool-call
-    :ai/human-review :build/read-file :build/write-artifact
-    :build/network :build/exec :build/model-call :build/tool-call})
-
-(def c8-effect-capability
-  {:io/write :io/stdout
-   :filesystem/read :fs/read
-   :filesystem/write :fs/write
-   :network/http :http/client
-   :database/read :db/read
-   :database/write :db/write
-   :memory/raw :memory/raw
-   :ffi/call :ffi/call
-   :workflow/event :workflow/event
-   :ai/model-call :model/call
-   :ai/tool-call :tool/invoke
-   :ai/human-review :ai/human-review
-   :build/read-file :fs/read
-   :build/write-artifact :artifact/write
-   :build/network :http/client
-   :build/exec :process/exec
-   :build/model-call :model/call
-   :build/tool-call :tool/invoke})
-
-(def c8-replay-sensitive-effects
-  #{:time/read :random/read :network/http :database/read :workflow/event
-    :workflow/replay :ai/model-call :ai/tool-call :ai/human-review
-    :runtime/dynamic-dispatch})
+(def ^:private ^:dynamic *c8-leaf-call?* false)
+(defn- c8-call [operation & args]
+  (if *c8-leaf-call?*
+    (apply operation args)
+    (binding [*c8-leaf-call?* true]
+      (c8/with-operations (c8-effect-ops)
+        #(apply operation args)))))
 
 (defn c8-effect-source-overrides
   [module]
-  (get-in module [:metadata :compiler :c8-effect-check] {}))
+  (c8-call c8/c8-effect-source-overrides module))
 
 (defn c8-effect-message
   [id]
-  (case id
-    "C8-UNDECLARED" "inferred effects exceed the declared effect allowance"
-    "C8-PROFILE" "active profile rejects the inferred effect"
-    "C8-CAPABILITY" "effect lacks a required capability grant"
-    "C8-BUILD" "build effect lacks a build grant"
-    "C8-REPLAY" "replay-sensitive effect lacks replay or audit obligation"
-    "C8-ORDER" "effect ordering constraints are missing"
-    "C8-RUNTIME" "no legal runtime or provider supports the effect"
-    "C8-UNKNOWN" "effect name is unregistered"
-    "C8-VERIFY" "effect verifier rejected the artifact"
-    "Effect checking failed"))
+  (c8-call c8/c8-effect-message id))
 
 (defn c8-effect-fail!
   [id source-path subject extra]
-  (fail! id
-         (c8-effect-message id)
-         (merge {:source-span (or (:source-span subject)
-                                  (get-in subject [:source :span])
-                                  (:span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :c8-effect-checker
-                 :stage :effect-check
-                 :document-id "C8"
-                 :expected-document c8-effect-governing-document
-                 :core-node-id (or (:core-node-id subject) (:core-node subject))
-                 :generated-origin-chain (or (:generated-origin subject)
-                                             (get-in subject
-                                                     [:source :origin-chain]))
-                 :function (:function subject)
-                 :namespace (:namespace subject)
-                 :effect (or (:effect subject) :unknown/effect)
-                 :capability (:capability subject)
-                 :profile (:profile subject)
-                 :target (:target subject)
-                 :provider (:provider subject)
-                 :grant (:grant subject)
-                 :remediation "Emit effect graph facts, legality intersection records, capability proofs, build/replay obligations, ordering constraints, residual effect records, and verifier-accepted diagnostics before MIR construction."}
-                extra)))
+  (c8-call c8/c8-effect-fail! id source-path subject extra))
 
 (defn c8-effect-validate-overrides!
   [source-path module overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c8-effect-override-diagnostics fail-kind)]
-      (c8-effect-fail! id source-path
-                       {:source-span (source-span source-path 0)
-                        :core-node "fixture-override"
-                        :function "fixture"
-                        :namespace (:module module)
-                        :effect fail-kind
-                        :capability (get c8-effect-capability fail-kind)
-                        :profile (:profile module)
-                        :target (:target module)
-                        :provider :fixture/provider
-                        :grant :fixture/grant
-                        :generated-origin []}
-                       {:missing-fields [fail-kind]}))))
+  (c8-call c8/c8-effect-validate-overrides! source-path module overrides))
 
 (defn c8-fact-direct-effects
   [fact]
-  (set/union (set (:effects fact))
-             (case (:type fact)
-               "CheckedCast[String]" #{:runtime/dynamic-dispatch}
-               "ProtocolValue" #{:runtime/dynamic-dispatch}
-               "SchemaDerived" #{:runtime/dynamic-dispatch}
-               "UnsafeIsland[Dynamic]" #{:memory/raw}
-               "Never" #{:error/throw}
-               #{})))
+  (c8-call c8/c8-fact-direct-effects fact))
 
 (defn c8-effectful-facts
   [type-facts]
-  (filter #(seq (c8-fact-direct-effects %)) type-facts))
+  (c8-call c8/c8-effectful-facts type-facts))
 
 (defn c8-effect-graph
   [module type-facts functions]
-  (let [effectful (c8-effectful-facts type-facts)]
-    {:artifact :gravity/c8-effect-graph
-     :module (:module module)
-     :nodes (into (sorted-map)
-                  (map (fn [fact]
-                         (let [direct (c8-fact-direct-effects fact)]
-                           [(:core-node fact)
-                            {:direct direct
-                             :latent #{}
-                             :transitive direct
-                             :ordering (if (seq direct) :sequence :pure)
-                             :source (:source fact)}]))
-                       type-facts))
-     :functions (into (sorted-map)
-                      (map (fn [fn-record]
-                             [(:fn-id fn-record)
-                              {:declared (set (:latent-effects fn-record))
-                               :inferred (set (:latent-effects fn-record))
-                               :latent (set (:latent-effects fn-record))
-                               :throws (:throws fn-record)}])
-                           (:functions functions)))
-     :namespace {:declared (:effects module)
-                 :inferred (set (mapcat c8-fact-direct-effects type-facts))}
-     :build-effects (vec (sort-by str
-                                  (get-in module
-                                          [:metadata :build-grants] #{})))
-     :replay-required (set/intersection
-                       c8-replay-sensitive-effects
-                       (set (mapcat c8-fact-direct-effects effectful)))
-     :diagnostics []
-     :status :complete}))
+  (c8-call c8/c8-effect-graph module type-facts functions))
 
 (defn c8-legality-records
   [module effect-graph]
-  (let [effects (get-in effect-graph [:namespace :inferred])]
-    {:artifact :gravity/c8-effect-legality-report
-     :records
-     (mapv (fn [effect]
-             (let [capability (get c8-effect-capability effect)]
-               {:effect effect
-                :source :namespace
-                :allowed-by {:function true
-                             :namespace (contains? (:effects module) effect)
-                             :profile true
-                             :package true
-                             :deployment true
-                             :runtime true
-                             :safety true}
-                :required-capabilities (if capability #{capability} #{})
-                :granted-capabilities (set/intersection
-                                       (if capability #{capability} #{})
-                                       (:capabilities module))
-                :result :accepted}))
-           (sort-by str effects))
-     :status :accepted}))
+  (c8-call c8/c8-legality-records module effect-graph))
 
 (defn c8-capability-proof-records
   [module effect-graph]
-  {:artifact :gravity/c8-capability-proof-records
-   :records
-   (mapv (fn [effect]
-           (let [capability (get c8-effect-capability effect)]
-             {:artifact :gravity/capability-proof
-              :effect effect
-              :source :namespace
-              :capability capability
-              :grant (when capability
-                       {:grant/id (keyword "stage0" (name capability))
-                        :scope :namespace
-                        :principal (:module module)
-                        :phase :runtime})
-              :provider (keyword "gravity.runtime" (name effect))
-              :profile (:profile module)
-              :target (:target module)
-              :status (if (or (nil? capability)
-                              (contains? (:capabilities module) capability))
-                        :accepted
-                        :rejected)}))
-         (sort-by str (get-in effect-graph [:namespace :inferred])))
-   :status :complete})
+  (c8-call c8/c8-capability-proof-records module effect-graph))
 
 (defn c8-build-effect-log
   [module]
-  (let [grants (get-in module [:metadata :build-grants] #{})]
-    {:artifact :gravity/c8-build-effect-log
-     :records (mapv (fn [effect]
-                      {:effect effect
-                       :phase :build
-                       :granted? (contains? grants effect)
-                       :capability (get c8-effect-capability effect)
-                       :status (if (contains? grants effect)
-                                 :accepted
-                                 :rejected)})
-                    (sort-by str grants))
-     :status :complete}))
+  (c8-call c8/c8-build-effect-log module))
 
 (defn c8-replay-requirements
   [effect-graph]
-  {:artifact :gravity/c8-replay-effect-requirements
-   :records (mapv (fn [effect]
-                    {:effect effect
-                     :mode :audit-record
-                     :record-id (str "c8-replay-" (name effect))
-                     :status :recorded})
-                  (sort-by str (:replay-required effect-graph)))
-   :status :complete})
+  (c8-call c8/c8-replay-requirements effect-graph))
 
 (defn c8-ordering-constraints
   [effect-graph]
-  {:artifact :gravity/c8-effect-ordering-constraints
-   :records
-   (mapv (fn [[node-id node]]
-           {:constraint-id (str "c8-order-" node-id)
-            :core-node node-id
-            :effects (:direct node)
-            :ordering (:ordering node)
-            :preserves [:sequence :no-duplicate :no-eliminate]
-            :status :recorded})
-         (filter (fn [[_ node]] (seq (:direct node)))
-                 (:nodes effect-graph)))
-   :status :complete})
+  (c8-call c8/c8-ordering-constraints effect-graph))
 
 (defn c8-residual-effect-report
   [effect-graph]
-  (let [effects (get-in effect-graph [:namespace :inferred])
-        residuals (set/intersection effects
-                                    #{:runtime/dynamic-dispatch :error/throw
-                                      :memory/raw})]
-    {:artifact :gravity/c8-residual-effect-report
-     :records (mapv (fn [effect]
-                      {:effect effect
-                       :reason :preserved-for-runtime-or-safety
-                       :mir-preservation :required
-                       :status :recorded})
-                    (sort-by str residuals))
-     :status :complete}))
+  (c8-call c8/c8-residual-effect-report effect-graph))
 
 (defn c8-effect-diagnostics
   [source-path type-facts]
-  {:artifact :gravity/c8-effect-diagnostic-registry
-   :required-diagnostic-ids c8-effect-diagnostic-ids
-   :diagnostics
-   (mapv (fn [design]
-           (let [fact (first type-facts)
-                 effect (keyword "fixture" (:diagnostic design))]
-             {:diagnostic (:diagnostic design)
-              :fixture (:fixture design)
-              :core-node-id (:core-node fact)
-              :source-span (get-in fact [:source :span]
-                                   (source-span source-path 0))
-              :generated-origin-chain (get-in fact [:source :origin-chain])
-              :function :fixture
-              :namespace :fixture
-              :effect effect
-              :capability (get c8-effect-capability effect)
-              :profile (:profile fact)
-              :target (:target fact)
-              :provider :fixture/provider
-              :grant :fixture/grant
-              :remediation "Keep effect legality explicit before MIR construction."}))
-         c8-effect-rejected-designs)
-   :status :complete})
+  (c8-call c8/c8-effect-diagnostics source-path type-facts))
 
 (defn c8-effect-verifier-report
-  [module effect-graph legality capability-proof build-log replay ordering residual diagnostics]
-  (let [inferred (get-in effect-graph [:namespace :inferred])
-        declared (:effects module)
-        known? (set/subset? inferred c8-known-effects)
-        declared? (set/subset? inferred declared)
-        legality? (every? #(= :accepted (:result %)) (:records legality))
-        capabilities? (every? #(= :accepted (:status %))
-                              (:records capability-proof))
-        build? (every? #(= :accepted (:status %)) (:records build-log))
-        replay? (or (empty? (:replay-required effect-graph))
-                    (seq (:records replay)))
-        order? (seq (:records ordering))
-        residual? (= :complete (:status residual))
-        diagnostics? (= (set c8-effect-diagnostic-ids)
-                        (set (map :diagnostic (:diagnostics diagnostics))))]
-    {:artifact :gravity/c8-effect-verifier-report
-     :every-effectful-node-recorded? (boolean (seq (:nodes effect-graph)))
-     :known-effects? known?
-     :declarations-cover-inferred-effects? declared?
-     :legality-intersections-accepted? legality?
-     :capability-proofs-accepted? capabilities?
-     :build-effects-authorized? build?
-     :replay-obligations-recorded? (boolean replay?)
-     :ordering-constraints-recorded? (boolean order?)
-     :residual-effects-recorded? residual?
-     :diagnostics-covered? diagnostics?
-     :status (if (and known? declared? legality? capabilities? build?
-                      replay? order? residual? diagnostics?)
-               :passed
-               :failed)}))
+  [module effect-graph legality capability-proof build-log replay ordering
+   residual diagnostics]
+  (c8-call c8/c8-effect-verifier-report module effect-graph legality
+           capability-proof build-log replay ordering residual diagnostics))
 
 (defn c8-effect-capability-proof
   [artifact]
-  (let [verifier (:effect-verifier-report artifact)]
-    {:effect-graph-complete?
-     (:every-effectful-node-recorded? verifier)
-     :declared-effect-allowance-checked?
-     (:declarations-cover-inferred-effects? verifier)
-     :legality-intersection-recorded?
-     (:legality-intersections-accepted? verifier)
-     :capability-proofs-accepted?
-     (:capability-proofs-accepted? verifier)
-     :build-effects-separated-and-authorized?
-     (:build-effects-authorized? verifier)
-     :replay-obligations-recorded?
-     (:replay-obligations-recorded? verifier)
-     :ordering-constraints-recorded?
-     (:ordering-constraints-recorded? verifier)
-     :residual-effects-recorded?
-     (:residual-effects-recorded? verifier)
-     :diagnostics-covered?
-     (:diagnostics-covered? verifier)
-     :verifier-passed?
-     (= :passed (:status verifier))
-     :status :complete}))
+  (c8-call c8/c8-effect-capability-proof artifact))
 
 (defn c8-effect-validate!
   [source-path artifact]
-  (let [proof (c8-effect-capability-proof artifact)]
-    (doseq [[field id] [[:effect-graph-complete? "C8-VERIFY"]
-                        [:declared-effect-allowance-checked?
-                         "C8-UNDECLARED"]
-                        [:legality-intersection-recorded? "C8-PROFILE"]
-                        [:capability-proofs-accepted? "C8-CAPABILITY"]
-                        [:build-effects-separated-and-authorized?
-                         "C8-BUILD"]
-                        [:replay-obligations-recorded? "C8-REPLAY"]
-                        [:ordering-constraints-recorded? "C8-ORDER"]
-                        [:residual-effects-recorded? "C8-RUNTIME"]
-                        [:diagnostics-covered? "C8-VERIFY"]
-                        [:verifier-passed? "C8-VERIFY"]]]
-      (when-not (get proof field)
-        (c8-effect-fail! id source-path {:stage :effect-check}
-                         {:missing-fields [field]}))))
-  :complete)
+  (c8-call c8/c8-effect-validate! source-path artifact))
 
 (defn compiler-c8-effect-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        overrides (c8-effect-source-overrides module)
-        _ (c8-effect-validate-overrides! source-path module overrides)
-        c7-artifact (compiler-c7-type-source-artifact source-path source-text)
-        type-facts (:type-facts c7-artifact)
-        functions (:function-type-table c7-artifact)
-        effect-graph (c8-effect-graph module type-facts functions)
-        legality (c8-legality-records module effect-graph)
-        capability-proof-records (c8-capability-proof-records module effect-graph)
-        build-log (c8-build-effect-log module)
-        replay (c8-replay-requirements effect-graph)
-        ordering (c8-ordering-constraints effect-graph)
-        residual (c8-residual-effect-report effect-graph)
-        diagnostics (c8-effect-diagnostics source-path type-facts)
-        verifier (c8-effect-verifier-report module effect-graph legality
-                                            capability-proof-records build-log
-                                            replay ordering residual
-                                            diagnostics)
-        artifact-base
-        {:kind :gravity/stage0-c8-effect-checker-artifact
-         :task "P06-D087"
-         :document-set ["C8"]
-         :governing-document c8-effect-governing-document
-         :pass {:name :c8-effect-checker
-                :input :typed-core
-                :output :effected-core
-                :requires [:typed-core-module :type-facts :function-types
-                           :profile :capabilities :build-grants]
-                :preserves [:source-spans :generated-origin :types
-                            :profile :target :capabilities]
-                :emits [:effect-graph :function-latent-effect-table
-                        :namespace-effect-summary :module-effect-summary
-                        :capability-proof-records :build-effect-log
-                        :replay-effect-requirements
-                        :effect-ordering-constraints
-                        :residual-effect-report
-                        :effect-diagnostics]
-                :rejects c8-effect-diagnostic-ids}
-         :source-overrides overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c7-type-checker-artifact
-         (select-keys c7-artifact [:kind :artifact-id :typed-core-module
-                                   :type-environment :function-type-table
-                                   :capability-based-proof])
-         :effect-graph effect-graph
-         :function-latent-effect-table
-         {:artifact :gravity/c8-function-latent-effect-table
-          :functions (get-in effect-graph [:functions])
-          :status :complete}
-         :namespace-effect-summary (:namespace effect-graph)
-         :module-effect-summary {:declared (:effects module)
-                                 :inferred (get-in effect-graph
-                                                   [:namespace :inferred])
-                                 :status :complete}
-         :effect-legality-report legality
-         :capability-proof-records capability-proof-records
-         :build-effect-log build-log
-         :replay-effect-requirements replay
-         :effect-ordering-constraints ordering
-         :residual-effect-report residual
-         :effect-verifier-report verifier
-         :effect-diagnostics diagnostics
-         :c8-effect-check-results
-         {:documents ["C8"]
-          :task "P06-D087"
-          :required-diagnostic-ids c8-effect-diagnostic-ids
-          :effect-graph-status :complete
-          :function-latent-status :complete
-          :namespace-summary-status :complete
-          :module-summary-status :complete
-          :capability-proof-status :accepted
-          :build-effect-status :complete
-          :replay-status :complete
-          :ordering-status :complete
-          :residual-status :complete
-          :verifier-status (:status verifier)
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c8-effect-validate! source-path artifact-base)
-        capability-proof (c8-effect-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+  (c8-call c8/compiler-c8-effect-source-artifact source-path source-text))
 
 (defn compiler-c8-effect-file-artifact
   [path]
-  (compiler-c8-effect-source-artifact path (slurp path)))
+  (c8-call c8/compiler-c8-effect-file-artifact path))
 
 (def c9-ownership-diagnostic-ids
   ["C9-USE-AFTER-MOVE"
