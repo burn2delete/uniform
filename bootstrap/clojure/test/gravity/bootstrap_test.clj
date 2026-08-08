@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
+            [gravity.c2-artifact-identity :as c2-artifact-identity]
             [gravity.c2-lexical-validation :as c2-lexical-validation]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
             [gravity.c3-reader-integrity :as c3-reader-integrity]
@@ -10189,6 +10190,244 @@
         (is (= :failed (:status report)))
         (is (false? (:acyclic? report)))
         (is (= [[]] @calls))))))
+
+(deftest c2-artifact-identity-compatibility-wrappers-preserve-interposition
+  (doseq [[wrapper-var expected]
+          [[#'bootstrap/reader-canonical-value '([value])]
+           [#'bootstrap/reader-canonical-hash '([value])]
+           [#'bootstrap/c2-semantic-form-hash-input '([form-tree])]
+           [#'bootstrap/c2-path-neutral-span '([span])]
+           [#'bootstrap/c2-token-hash-input '([token-stream])]
+           [#'bootstrap/c2-form-hash-input '([form-tree])]
+           [#'bootstrap/c2-syntax-seed-hash-input '([syntax-seeds])]
+           [#'bootstrap/c2-extension-hash-input
+            '([extension-invocations])]
+           [#'bootstrap/c2-diagnostic-hash-input '([diagnostics])]
+           [#'bootstrap/c2-incremental-hashes
+            '([source-unit token-stream form-tree syntax-seeds
+               extension-invocations diagnostics])]
+           [#'bootstrap/c2-reader-product-integrity-record
+            '([source-unit top-level-form-ids incremental-hashes
+               literal-records deferred-literal-records])]
+           [#'bootstrap/c2-reader-artifact-id '([artifact])]]]
+    (is (= expected (:arglists (meta wrapper-var)))))
+  (let [source-path "/logical-project/src/example.gravity"
+        span {:source source-path
+              :file "sha256:source"
+              :byte-start 0
+              :byte-end 1}
+        source-unit {:path source-path
+                     :source-id "sha256:source"
+                     :identity-inputs
+                     {:project-relative-path "src/example.gravity"}
+                     :bytes-hash "sha256:bytes"
+                     :reader-options {:retain-comments true}}
+        token-stream [{:token-id :tok-0
+                       :source-path source-path
+                       :span span}]
+        form-tree [{:form-id :form-0
+                    :kind :symbol
+                    :children []
+                    :parent-form-id nil
+                    :source-path source-path
+                    :span span
+                    :surface-span span
+                    :origin {:source-path source-path}
+                    :generated-origin [{:from span}]}]
+        syntax-seeds [{:syntax-id :seed-0
+                       :span span
+                       :generated-origin [{:from span}]}]
+        extension-invocations [{:source-path source-path
+                                :span span
+                                :invocations [{:span span}]}]
+        diagnostics [{:source-span span
+                      :primary {:span span}
+                      :related [{:span span}]
+                      :origin-chain [{:path source-path :span span}]}]
+        canonical-value {:z [3 2 1] :a #{:b :a}}
+        leaf-canonical-operations {:sha256-hex bootstrap/sha256-hex}
+        leaf-incremental-operations
+        (assoc leaf-canonical-operations
+               :c2-form-graph-metrics
+               c2-lexical-validation/c2-form-graph-metrics
+               :max-reader-form-graph-depth
+               bootstrap/max-reader-form-graph-depth)
+        incremental-hashes
+        (bootstrap/c2-incremental-hashes
+         source-unit token-stream form-tree syntax-seeds
+         extension-invocations diagnostics)
+        integrity-record
+        (bootstrap/c2-reader-product-integrity-record
+         source-unit [:form-0] incremental-hashes
+         [{:span span}] [{:span span}])
+        artifact {:kind :gravity/stage0-c2-reader-artifact
+                  :task "C2"
+                  :document-set ["C2"]
+                  :source-unit-record source-unit
+                  :reader-product-integrity integrity-record
+                  :incremental-reader-hashes incremental-hashes
+                  :representation-boundary {:kind :reader-products}
+                  :source-overrides {:mode :default}
+                  :capability-based-proof {:status :partial}}]
+    (is (= (c2-artifact-identity/with-operations
+            leaf-canonical-operations
+            #(c2-artifact-identity/reader-canonical-value canonical-value))
+           (bootstrap/reader-canonical-value canonical-value)))
+    (is (= (c2-artifact-identity/with-operations
+            leaf-canonical-operations
+            #(c2-artifact-identity/reader-canonical-hash canonical-value))
+           (bootstrap/reader-canonical-hash canonical-value)))
+    (is (= (c2-artifact-identity/c2-semantic-form-hash-input form-tree)
+           (bootstrap/c2-semantic-form-hash-input form-tree)))
+    (is (= (c2-artifact-identity/c2-path-neutral-span span)
+           (bootstrap/c2-path-neutral-span span)))
+    (is (= (c2-artifact-identity/c2-token-hash-input token-stream)
+           (bootstrap/c2-token-hash-input token-stream)))
+    (is (= (c2-artifact-identity/c2-form-hash-input form-tree)
+           (bootstrap/c2-form-hash-input form-tree)))
+    (is (= (c2-artifact-identity/c2-syntax-seed-hash-input syntax-seeds)
+           (bootstrap/c2-syntax-seed-hash-input syntax-seeds)))
+    (is (= (c2-artifact-identity/c2-extension-hash-input
+            extension-invocations)
+           (bootstrap/c2-extension-hash-input extension-invocations)))
+    (is (= (c2-artifact-identity/c2-diagnostic-hash-input diagnostics)
+           (bootstrap/c2-diagnostic-hash-input diagnostics)))
+    (is (= (c2-artifact-identity/with-operations
+            leaf-incremental-operations
+            #(c2-artifact-identity/c2-incremental-hashes
+              source-unit token-stream form-tree syntax-seeds
+              extension-invocations diagnostics))
+           incremental-hashes))
+    (is (= (c2-artifact-identity/with-operations
+            leaf-canonical-operations
+            #(c2-artifact-identity/c2-reader-product-integrity-record
+              source-unit [:form-0] incremental-hashes
+              [{:span span}] [{:span span}]))
+           integrity-record))
+    (is (= (c2-artifact-identity/with-operations
+            leaf-canonical-operations
+            #(c2-artifact-identity/c2-reader-artifact-id artifact))
+           (bootstrap/c2-reader-artifact-id artifact)))
+    (let [original bootstrap/reader-canonical-hash
+          expected-hash (original canonical-value)
+          replacement-calls (atom 0)
+          actual-hash
+          (with-redefs [bootstrap/reader-canonical-hash
+                        (fn [value]
+                          (swap! replacement-calls inc)
+                          (original value))]
+            (bootstrap/reader-canonical-hash canonical-value))]
+      (is (= expected-hash actual-hash))
+      (is (= 1 @replacement-calls)))
+    (let [nested-list (list :inner 1)
+          nested-value [{:outer nested-list}]
+          original bootstrap/reader-canonical-value
+          visited-values (atom [])
+          actual-value
+          (with-redefs [bootstrap/reader-canonical-value
+                        (fn [value]
+                          (swap! visited-values conj value)
+                          (let [canonical-value (original value)]
+                            (if (= 1 value)
+                              :nested-scalar-interposed
+                              canonical-value)))]
+            (bootstrap/reader-canonical-value nested-value))]
+      (is (= [nested-value
+              {:outer nested-list}
+              :outer
+              nested-list
+              :inner
+              1]
+             @visited-values))
+      (is (= [:vector
+              [[:map
+                [[:outer
+                  [:list [:inner :nested-scalar-interposed]]]]]]]
+             actual-value)))
+    (let [path-calls (atom [])]
+      (with-redefs [bootstrap/c2-path-neutral-span
+                    (fn [value]
+                      (swap! path-calls conj value)
+                      (assoc value :interposed true))]
+        (is (= [{:token-id :tok-0
+                 :span (assoc span :interposed true)}]
+               (bootstrap/c2-token-hash-input token-stream))))
+      (is (= [span] @path-calls)))
+    (let [hash-calls (atom [])]
+      (with-redefs [bootstrap/reader-canonical-hash
+                    (fn [value]
+                      (swap! hash-calls conj value)
+                      "sha256:interposed")]
+        (let [record
+              (bootstrap/c2-reader-product-integrity-record
+               source-unit [:form-0] incremental-hashes
+               [{:span span}] [{:span span}])]
+          (is (= "sha256:interposed" (:integrity-hash record)))
+          (is (= "sha256:interposed"
+                 (get-in record [:input :literal-records-hash])))
+          (is (= "sha256:interposed"
+                 (get-in record [:input :deferred-literal-records-hash])))))
+      (is (= 3 (count @hash-calls))))
+    (let [metric-calls (atom [])
+          failure-calls (atom [])]
+      (with-redefs [bootstrap/c2-form-graph-metrics
+                    (fn [forms]
+                      (swap! metric-calls conj forms)
+                      {:acyclic? false
+                       :processed-form-count 0
+                       :max-form-depth 0})
+                    bootstrap/c2-reader-fail!
+                    (fn [& args]
+                      (swap! failure-calls conj args))]
+        (let [hashes (bootstrap/c2-incremental-hashes
+                      source-unit [] [] [] [] [])]
+          (is (= :stable (:status hashes)))))
+      (is (= [[]] @metric-calls))
+      (is (= 1 (count @failure-calls)))
+      (let [[id path _ extra] (first @failure-calls)]
+        (is (= "C2-HASH" id))
+        (is (= source-path path))
+        (is (= :reader-form-cycle
+               (get-in extra [:facts :failure-kind])))))
+    (is (= (inc bootstrap/max-reader-form-depth)
+           bootstrap/max-reader-form-graph-depth))
+    (is (integer? bootstrap/max-reader-form-graph-depth))
+    (is (pos? bootstrap/max-reader-form-graph-depth))
+    (is (= :accepted
+           (c2-artifact-identity/with-operations
+            {:max-reader-form-graph-depth
+             bootstrap/max-reader-form-graph-depth}
+            (constantly :accepted))))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (c2-artifact-identity/with-operations
+                  {:max-reader-form-graph-depth 0}
+                  (constantly :unreachable))))
+    (let [failure-calls (atom [])]
+      (with-redefs [bootstrap/c2-form-graph-metrics
+                    (fn [_]
+                      {:acyclic? true
+                       :processed-form-count 0
+                       :max-form-depth bootstrap/max-reader-form-graph-depth})
+                    bootstrap/c2-reader-fail!
+                    (fn [& args]
+                      (swap! failure-calls conj args))]
+        (bootstrap/c2-incremental-hashes source-unit [] [] [] [] []))
+      (is (empty? @failure-calls)))
+    (let [failure-calls (atom [])]
+      (with-redefs [bootstrap/c2-form-graph-metrics
+                    (fn [_]
+                      {:acyclic? true
+                       :processed-form-count 0
+                       :max-form-depth (inc bootstrap/max-reader-form-graph-depth)})
+                    bootstrap/c2-reader-fail!
+                    (fn [& args]
+                      (swap! failure-calls conj args))]
+        (bootstrap/c2-incremental-hashes source-unit [] [] [] [] []))
+      (is (= :reader-resource-depth-limit
+             (get-in (first @failure-calls) [3 :facts :failure-kind])))
+      (is (= bootstrap/max-reader-form-graph-depth
+             (get-in (first @failure-calls)
+                     [3 :facts :maximum-form-depth]))))))
 
 (deftest reader-artifact-preserves-l1-syntax-data
   (let [artifact (bootstrap/read-file-artifact (fixture "accepted/surface-syntax.gravity"))

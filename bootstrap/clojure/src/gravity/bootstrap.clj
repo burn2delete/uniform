@@ -10,6 +10,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.walk :as walk]
+            [gravity.c2-artifact-identity :as c2-artifact-identity]
             [gravity.c2-pass-cache :as c2-pass-cache]
             [gravity.c2-lexical-validation :as c2-lexical-validation]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
@@ -142170,45 +142171,63 @@
                           :extension-tag (:extension-tag overrides)}
                          {:missing-fields [fail-kind]})))))
 
+(declare reader-canonical-value
+         reader-canonical-hash
+         c2-semantic-form-hash-input
+         c2-path-neutral-span
+         c2-token-hash-input
+         c2-form-hash-input
+         c2-syntax-seed-hash-input
+         c2-extension-hash-input
+         c2-diagnostic-hash-input
+         c2-incremental-hashes
+         c2-reader-product-integrity-record
+         c2-reader-artifact-id)
+
+(defn- c2-artifact-identity-ops
+  []
+  {:sha256-hex sha256-hex
+   :c2-form-graph-metrics c2-form-graph-metrics
+   :c2-reader-fail! c2-reader-fail!
+   :source-span source-span
+   :reader-canonical-value reader-canonical-value
+   :reader-canonical-hash reader-canonical-hash
+   :c2-semantic-form-hash-input c2-semantic-form-hash-input
+   :c2-path-neutral-span c2-path-neutral-span
+   :c2-token-hash-input c2-token-hash-input
+   :c2-form-hash-input c2-form-hash-input
+   :c2-syntax-seed-hash-input c2-syntax-seed-hash-input
+   :c2-extension-hash-input c2-extension-hash-input
+   :c2-diagnostic-hash-input c2-diagnostic-hash-input
+   :c2-incremental-hashes c2-incremental-hashes
+   :c2-reader-product-integrity-record c2-reader-product-integrity-record
+   :c2-reader-artifact-id c2-reader-artifact-id
+   :max-reader-form-graph-depth max-reader-form-graph-depth})
+
+(def ^:private ^:dynamic *c2-artifact-identity-leaf-call?* false)
+
+(defn- c2-artifact-identity-call
+  [operation-key operation & args]
+  (if *c2-artifact-identity-leaf-call?*
+    (c2-artifact-identity/call-entrypoint-body
+     operation-key operation args)
+    (binding [*c2-artifact-identity-leaf-call?* true]
+      (c2-artifact-identity/with-operations
+       (c2-artifact-identity-ops)
+       #(c2-artifact-identity/call-entrypoint-body
+         operation-key operation args)))))
+
 (defn reader-canonical-value
   [value]
-  (cond
-    (map? value)
-    (let [decorated
-          (mapv
-           (fn [[key item]]
-             (let [entry [(reader-canonical-value key)
-                          (reader-canonical-value item)]]
-               [(pr-str entry) entry]))
-           value)]
-      [:map
-       (->> decorated
-            (sort-by first)
-            (mapv second))])
-
-    (set? value)
-    [:set (->> value
-               (map reader-canonical-value)
-               (sort-by pr-str)
-               vec)]
-
-    (vector? value)
-    [:vector (mapv reader-canonical-value value)]
-
-    (seq? value)
-    [:list (mapv reader-canonical-value value)]
-
-    :else value))
+  (c2-artifact-identity-call
+   :reader-canonical-value
+   c2-artifact-identity/reader-canonical-value value))
 
 (defn reader-canonical-hash
   [value]
-  (str "sha256:"
-       (sha256-hex
-        (binding [*print-length* nil
-                  *print-level* nil
-                  *print-meta* true]
-          (pr-str (reader-canonical-value value))))))
-
+  (c2-artifact-identity-call
+   :reader-canonical-hash
+   c2-artifact-identity/reader-canonical-hash value))
 (def standard-reader-policy
   {:policy :gravity/standard-reader
    :version 1
@@ -142468,182 +142487,69 @@
 
 (defn c2-semantic-form-hash-input
   [form-tree]
-  (mapv #(select-keys % [:form-id :kind :collection-kind :children
-                         :parent-form-id :abbrev :tag :value :metadata])
-        form-tree))
+  (c2-artifact-identity-call
+   :c2-semantic-form-hash-input
+   c2-artifact-identity/c2-semantic-form-hash-input form-tree))
 
 (defn c2-path-neutral-span
   [span]
-  (if (map? span) (dissoc span :source) span))
+  (c2-artifact-identity-call
+   :c2-path-neutral-span
+   c2-artifact-identity/c2-path-neutral-span span))
 
 (defn c2-token-hash-input
   [token-stream]
-  (mapv #(-> %
-             (dissoc :source-path)
-             (update :span c2-path-neutral-span))
-        token-stream))
+  (c2-artifact-identity-call
+   :c2-token-hash-input
+   c2-artifact-identity/c2-token-hash-input token-stream))
 
 (defn c2-form-hash-input
   [form-tree]
-  (mapv (fn [form]
-          (-> form
-              (dissoc :source-path)
-              (update :span c2-path-neutral-span)
-              (update :surface-span c2-path-neutral-span)
-              (update :origin #(when % (dissoc % :source-path)))
-              (update :generated-origin
-                      (fn [origins]
-                        (mapv #(update % :from c2-path-neutral-span)
-                              (or origins []))))))
-        form-tree))
+  (c2-artifact-identity-call
+   :c2-form-hash-input
+   c2-artifact-identity/c2-form-hash-input form-tree))
 
 (defn c2-syntax-seed-hash-input
   [syntax-seeds]
-  (mapv (fn [seed]
-          (cond-> (update seed :span c2-path-neutral-span)
-            (contains? seed :generated-origin)
-            (update :generated-origin
-                    (fn [origins]
-                      (mapv #(cond-> %
-                               (contains? % :from)
-                               (update :from c2-path-neutral-span))
-                            origins)))))
-        syntax-seeds))
+  (c2-artifact-identity-call
+   :c2-syntax-seed-hash-input
+   c2-artifact-identity/c2-syntax-seed-hash-input syntax-seeds))
 
 (defn c2-extension-hash-input
   [extension-invocations]
-  (let [semantic-span
-        (fn [span]
-          (if (map? span)
-            (dissoc span :source :file)
-            span))]
-    (mapv
-     (fn [invocation]
-       (cond-> (dissoc invocation :source-path)
-         (contains? invocation :span)
-         (update :span semantic-span)
-
-         (contains? invocation :invocations)
-         (update :invocations
-                 (fn [records]
-                   (mapv #(cond-> %
-                            (contains? % :span)
-                            (update :span semantic-span))
-                         records)))))
-     extension-invocations)))
+  (c2-artifact-identity-call
+   :c2-extension-hash-input
+   c2-artifact-identity/c2-extension-hash-input extension-invocations))
 
 (defn c2-diagnostic-hash-input
   [diagnostics]
-  (mapv
-   (fn [diagnostic]
-     (cond-> diagnostic
-       (contains? diagnostic :source-span)
-       (update :source-span c2-path-neutral-span)
-
-       (get-in diagnostic [:primary :span])
-       (update-in [:primary :span] c2-path-neutral-span)
-
-       (contains? diagnostic :related)
-       (update :related
-               (fn [related]
-                 (mapv #(cond-> %
-                          (contains? % :span)
-                          (update :span c2-path-neutral-span))
-                       related)))
-
-       (contains? diagnostic :origin-chain)
-       (update :origin-chain
-               (fn [origins]
-                 (mapv #(cond-> (dissoc % :path)
-                          (contains? % :span)
-                          (update :span c2-path-neutral-span))
-                       origins)))))
-   diagnostics))
+  (c2-artifact-identity-call
+   :c2-diagnostic-hash-input
+   c2-artifact-identity/c2-diagnostic-hash-input diagnostics))
 
 (defn c2-incremental-hashes
   [source-unit token-stream form-tree syntax-seeds extension-invocations
   diagnostics]
-  (let [graph-metrics (c2-form-graph-metrics form-tree)
-        max-depth (:max-form-depth graph-metrics)
-        _ (when-not (:acyclic? graph-metrics)
-            (c2-reader-fail!
-             "C2-HASH" (:path source-unit)
-             {:stage :read-source
-              :source-id (:source-id source-unit)
-              :source-span (or (:span (first form-tree))
-                               (source-span (:path source-unit) 0))
-              :reader-options (:reader-options source-unit)}
-             {:missing-fields [:acyclic-reader-form-graph]
-              :facts {:failure-kind :reader-form-cycle}}))
-        _ (when (> max-depth max-reader-form-graph-depth)
-            (c2-reader-fail!
-             "C2-HASH" (:path source-unit)
-             {:stage :read-source
-              :source-id (:source-id source-unit)
-              :source-span (or (:span (first form-tree))
-                               (source-span (:path source-unit) 0))
-              :reader-options (:reader-options source-unit)}
-             {:missing-fields [:bounded-reader-form-depth]
-              :facts {:observed-form-depth max-depth
-                      :maximum-form-depth max-reader-form-graph-depth
-                      :failure-kind :reader-resource-depth-limit}}))
-        retain-trivia? (true? (get-in source-unit
-                                      [:reader-options :retain-comments]))
-        form-hash-input (if retain-trivia?
-                          (c2-form-hash-input form-tree)
-                          (c2-semantic-form-hash-input form-tree))
-        token-hash-input (c2-token-hash-input token-stream)
-        syntax-hash-input (c2-syntax-seed-hash-input syntax-seeds)
-        extension-hash-input (c2-extension-hash-input extension-invocations)
-        diagnostic-hash-input (c2-diagnostic-hash-input diagnostics)]
-    {:artifact :gravity/reader-incremental-hashes
-     :source-unit (:source-id source-unit)
-     :token-stream (reader-canonical-hash token-hash-input)
-     :form-tree (reader-canonical-hash form-hash-input)
-     :syntax-seed-stream (reader-canonical-hash syntax-hash-input)
-     :extension-invocation-set (reader-canonical-hash extension-hash-input)
-     :reader-diagnostics (reader-canonical-hash diagnostic-hash-input)
-     :retained-trivia-affects-form-tree? retain-trivia?
-     :status :stable}))
+  (c2-artifact-identity-call
+   :c2-incremental-hashes
+   c2-artifact-identity/c2-incremental-hashes
+   source-unit token-stream form-tree syntax-seeds extension-invocations
+   diagnostics))
 
 (defn c2-reader-product-integrity-record
   [source-unit top-level-form-ids incremental-hashes literal-records
    deferred-literal-records]
-  (let [literal-input
-        (mapv #(update % :span c2-path-neutral-span) literal-records)
-        deferred-input
-        (mapv #(update % :span c2-path-neutral-span)
-              deferred-literal-records)
-        input
-        {:source-id (:source-id source-unit)
-         :source-identity-inputs (:identity-inputs source-unit)
-         :source-bytes-hash (:bytes-hash source-unit)
-         :reader-options (:reader-options source-unit)
-         :top-level-form-ids (vec top-level-form-ids)
-         :incremental-reader-hashes incremental-hashes
-         :literal-records-hash (reader-canonical-hash literal-input)
-         :deferred-literal-records-hash
-         (reader-canonical-hash deferred-input)}
-        integrity-hash (reader-canonical-hash input)]
-    {:artifact :gravity/c2-reader-product-integrity
-     :algorithm :sha256
-     :input input
-     :integrity-hash integrity-hash
-     :status :verified}))
+  (c2-artifact-identity-call
+   :c2-reader-product-integrity-record
+   c2-artifact-identity/c2-reader-product-integrity-record
+   source-unit top-level-form-ids incremental-hashes literal-records
+   deferred-literal-records))
 
 (defn c2-reader-artifact-id
   [artifact]
-  (reader-canonical-hash
-   {:kind (:kind artifact)
-    :task (:task artifact)
-    :document-set (:document-set artifact)
-    :source-id (get-in artifact [:source-unit-record :source-id])
-    :reader-product-integrity (:reader-product-integrity artifact)
-    :incremental-reader-hashes (:incremental-reader-hashes artifact)
-    :representation-boundary (:representation-boundary artifact)
-    :source-overrides (:source-overrides artifact)
-    :capability-based-proof (:capability-based-proof artifact)}))
-
+  (c2-artifact-identity-call
+   :c2-reader-artifact-id
+   c2-artifact-identity/c2-reader-artifact-id artifact))
 (defn c2-prevalidate-token-depth!
   [source-path source-unit token-stream]
   (loop [tokens token-stream
