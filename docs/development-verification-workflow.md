@@ -404,15 +404,20 @@ the builder and verifier hashes remain pinned and unchanged.
 
 The adapter keeps six exact SH12 selectors in one 8 GiB JVM. The narrow
 verification-envelope helper runs first, four semantic checks follow, and the
-single authenticated `.gravity` boundary runs last. Current evidence is split:
-the helper passed separately as 1 test/53 assertions at 2 GiB, and the
-five-selector suffix passed 5 tests/182 assertions in 86.284 seconds with an
-observed peak of 1,569,554,432 bytes. The exact combined six-selector 8 GiB
-batch has not been rerun. The public branch is one 2 GiB batch: exact C11
-source/builder semantic identity first, then the public compatibility selector.
-Its final receipt passed 2 tests/39 assertions in 319.494 seconds with a sampled
-3,166,142,464-byte process-tree peak. The source gate passed 3/62 in 5.278
-seconds with a sampled 492,797,952-byte peak.
+single authenticated `.gravity` boundary runs last. The fresh aggregate receipt
+at `target/validation/stage7-c11-post-native-3/receipt.json` passed in
+490866.529 ms with `authority: fresh-command-pass-non-authoritative` under the
+canonical command-owned lock; every production command exited 0 and reported
+no skipped selectors. The source gate passed 3 tests/62 assertions (runner 298
+ms, wrapper 6722.023 ms, peak 522,780,672 bytes), the public batch passed 2/39
+(runner 350265 ms, wrapper 359909.526 ms, peak 2,789,851,136 bytes), and the
+exact combined six-selector adapter passed 6/235 (runner 80730 ms, wrapper
+86737.375 ms, peak 1,892,941,824 bytes). The earlier separate 1/53 helper and
+5/182 suffix receipts are superseded planning evidence. These receipts remain
+non-authoritative development evidence, not a proof, attestation, scoped
+authority, or release result; no C11 proof candidate was rerun. The public
+branch still validates exact C11 source/builder semantic identity before the
+compatibility selector.
 All three automatic nodes are fresh, exclusive, capacity-one, command-owned
 users of `/private/tmp/gravity-sh07-heavy.lock`. C11 source changes select all
 three; SH12 test changes select source plus adapter. The C11 source and Stage7

@@ -258,14 +258,19 @@ helper first, authenticated `.gravity` boundary last) and one 2 GiB public
 batch that checks semantic pins before CLI acceptance. The frozen C11 source is 253,588 bytes with SHA
 `sha256:34f0e797...4136`; its measured plan/functions hashes are
 `sha256:974d3949...fb39` and `sha256:ece068d2...89a4`, while the builder and
-verifier hashes remain unchanged. Evidence for the six-selector adapter is
-currently split: the helper passed separately as 1 test/53 assertions at
-2 GiB, while the five-selector suffix passed 5 tests/182 assertions in 86.284
-seconds with a 1,569,554,432-byte observed peak. The exact combined
-six-selector 8 GiB batch has not been rerun. These are non-authoritative
-development and calibration receipts. The final two-selector public batch
-passed 2/39 in 319.494 seconds with a sampled 3,166,142,464-byte process-tree
-peak.
+verifier hashes remain unchanged. The fresh aggregate receipt in
+`target/validation/stage7-c11-post-native-3/receipt.json` passed in
+490866.529 ms with `authority: fresh-command-pass-non-authoritative` under the
+canonical command-owned lock. All production commands exited 0 and reported no
+skipped selectors. The source gate passed 3 tests/62 assertions (runner 298 ms,
+wrapper 6722.023 ms, peak 522,780,672 bytes); the public batch passed 2/39
+(runner 350265 ms, wrapper 359909.526 ms, peak 2,789,851,136 bytes); and the
+exact ordered six-selector SH12 batch passed 6/235 (runner 80730 ms, wrapper
+86737.375 ms, peak 1,892,941,824 bytes). This is fresh non-authoritative
+development evidence only: it is not a proof, reviewed attestation, scoped
+authority, or release result, and no C11 proof candidate was rerun. The earlier
+separate 1/53 helper plus 5/182 suffix receipts remain superseded planning
+evidence.
 
 The manual `stage7-c11-proof-candidate` is fixed to `c11-authority` / `c11-mir`,
 fresh, no-resume, new-state, `automatic: false`, `authority: none`, and

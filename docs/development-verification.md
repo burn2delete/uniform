@@ -843,18 +843,25 @@ production execution. It depends only on `stage3-runner-unit` and branches:
 2. `stage7-sh12-c10-mir-adapter` keeps the envelope helper, four semantic
    checks, and the authenticated `.gravity` boundary in one 8 GiB JVM. Helper
    placement first catches duplicated-carrier bounds before the cold carrier;
-   boundary placement last preserves fail-fast cache affinity. Evidence is
-   split: the helper passed separately as 1 test/53 assertions at 2 GiB, while
-   the five-selector suffix passed 5 tests/182 assertions in 86.284 seconds
-   with an observed process-tree peak of 1,569,554,432 bytes. The exact
-   combined six-selector 8 GiB batch has not been rerun.
+   boundary placement last preserves fail-fast cache affinity. The fresh
+   aggregate receipt at `target/validation/stage7-c11-post-native-3/receipt.json`
+   passed in 490866.529 ms with
+   `authority: fresh-command-pass-non-authoritative` under the canonical
+   command-owned lock. Its exact combined six-selector batch passed 6 tests/
+   235 assertions (runner 80730 ms, wrapper 86737.375 ms, peak
+   1,892,941,824 bytes), with exit 0 and no skipped selectors. The earlier
+   separate 1/53 helper and 5/182 suffix receipts are superseded planning
+   evidence.
 3. `stage7-public-c11` is a 2 GiB two-selector batch. It validates the complete
    source/plan/functions/builder/verifier tuple before the public compatibility
    selector. It is a sibling of the adapter, so an SH12-only edit does not
-   force public work. The final receipt passed 2 tests/39 assertions in 319.494
-   seconds with a sampled process-tree peak of 3,166,142,464 bytes. The source
-   gate separately passed 3/62 in 5.278 seconds at a sampled 492,797,952-byte
-   peak.
+   force public work. In the same fresh aggregate receipt, the public batch
+   passed 2 tests/39 assertions (runner 350265 ms, wrapper 359909.526 ms,
+   peak 2,789,851,136 bytes) and the source gate passed 3/62 (runner 298 ms,
+   wrapper 6722.023 ms, peak 522,780,672 bytes); both exited 0 with no skipped
+   selectors. These are fresh non-authoritative development receipts only, not
+   proof, reviewed attestation, scoped authority, or release evidence, and no
+   C11 proof candidate was rerun.
 
 C11 source changes select all three automatic Stage7 nodes. SH12 test changes
 select source plus adapter. Legacy broad Stage0 ownership is impact-excluded,
