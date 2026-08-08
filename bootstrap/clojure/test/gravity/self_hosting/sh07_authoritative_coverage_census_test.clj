@@ -107,6 +107,10 @@
         (get-in contract
                 [:authoritative-coverage-census
                  :module-expectations :c8-effects])
+        c9-expectation
+        (get-in contract
+                [:authoritative-coverage-census
+                 :module-expectations :c9-ownership])
         source-contracts (runner/module-source-contracts)]
     (is (= :source-bound-derived
            (:coverage-census-policy contract)))
@@ -129,7 +133,17 @@
     (is (= {:source-path
             "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
             :source-binding (:source-binding c8-expectation)}
-           (get source-contracts "c8-effects")))))
+           (get source-contracts "c8-effects")))
+    (is (= {:source-byte-count 47414
+            :source-bytes-sha256
+            "sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59"}
+           (:source-binding c9-expectation)))
+    (is (not (contains? c9-expectation :request-counts)))
+    (is (not (contains? c9-expectation :core-counts)))
+    (is (= {:source-path
+            "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+            :source-binding (:source-binding c9-expectation)}
+           (get source-contracts "c9-ownership")))))
 
 (deftest source-contract-mismatch-stops-before-authoritative-proof
   (let [source-reader

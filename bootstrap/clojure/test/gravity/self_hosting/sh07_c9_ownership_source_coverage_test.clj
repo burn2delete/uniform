@@ -32,9 +32,9 @@
   "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 35894)
+(def ^:private expected-source-byte-count 47414)
 (def ^:private expected-source-revision-id
-  "sha256:b4fdf1022eb6eb25d091f1c918332c7b1393b6850acf4bb6988d8b8dbb2269e0")
+  "sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:a0b95515faa899db463683ad98a37b0511def5dffa5964fd364cdc16547d3edc")
 (def ^:private expected-coverage
@@ -72,7 +72,10 @@
     verify-c9-ownership-checker
     sh10-ownership-policy
     sh10-check-ownership-request
-    sh10-verify-ownership-result])
+    sh10-verify-ownership-result
+    sh10-authenticated-sh09-adapter-policy
+    sh10-build-authenticated-ownership-core
+    sh10-verify-authenticated-ownership-core])
 (def ^:private expected-definition-names
   '#{c9-ownership-analysis-contract
      c9-borrow-graph-contract
@@ -88,6 +91,9 @@
      sh10-not
      sh10-and
      sh10-member?
+     sh10-exact-keys?
+     sh10-event-allowed-for-ownership-kind?
+     sh10-events-allowed-for-ownership-kind?
      sh10-lowercase-hex?
      sh10-sha256-id?
      sh10-unique-event-ids?
@@ -102,9 +108,19 @@
      sh10-transition-rejected
      sh10-transition-initialized
      sh10-transition
+     sh10-result-scope
      sh10-run-events
      sh10-check-ownership-request
-     sh10-verify-ownership-result})
+     sh10-verify-ownership-result
+     sh10-authenticated-sh09-adapter-policy
+     sh10-authenticated-sh09-input-valid?
+     sh10-authenticated-primitive-type?
+     sh10-authenticated-pure-node?
+     sh10-authenticated-ownership-request
+     sh10-authenticated-ownership-products
+     sh10-authenticated-adapter-diagnostic
+     sh10-build-authenticated-ownership-core
+     sh10-verify-authenticated-ownership-core})
 (def ^:private quoted-definition-names
   '#{build-c9-borrow-record
      build-c9-linear-resource-record
@@ -133,6 +149,7 @@
    :request-artifact :gravity/sh10-normalized-ownership-request
    :result-artifact :gravity/sh10-ownership-analysis-result
    :ownership-kind :owned-mutable
+   :ownership-kinds #{:owned-mutable :persistent-immutable}
    :initialization-states #{:uninitialized :initialized}
    :availability-states #{:available :moved :consumed}
    :events #{:initialize :read :borrow-immutable :borrow-mutable
@@ -145,16 +162,40 @@
                  "C9-MUT-ALIAS"
                  "C9-MOVE-WHILE-BORROWED"
                  "C9-UNSAFE"]
-   :pending [:persistent-copy-semantics
-             :field-and-range-splitting
+   :pending [:field-and-range-splitting
              :region-lifetimes
              :arena-generations
              :linear-resources
              :task-actor-and-ffi-transfer
              :runtime-borrow-checks
              :unsafe-audit-records
-             :authenticated-sh08-sh09-adapter
+             :persistent-aggregate-copy-semantics
+             :authenticated-effectful-or-nonprimitive-sh09-adapter
              :mir-preservation]})
+(def ^:private expected-authenticated-adapter-policy
+  {:artifact :gravity/sh10-authenticated-sh09-adapter-policy
+   :schema-version 1
+   :accepted-upstream-artifact
+   :gravity/sh09-identity-bound-effected-core-template
+   :accepted-upstream-scopes
+   #{:pure-authenticated-sh08-primitive-typed-core
+     :declared-pure-call-effects-with-thrown-effects-pending}
+   :accepted-types
+   #{:gravity.type/integer :gravity.type/bool :gravity.type/string}
+   :ownership-kind :persistent-immutable
+   :accepted-events [:read]
+   :profile :meta
+   :target :jvm
+   :diagnostics ["C9-UNSAFE" "C9-MUT-ALIAS"]
+   :pending [:owned-mutable-sh09-adapter
+             :persistent-aggregate-copy-semantics
+             :regions-arenas-and-linear-resources
+             :task-actor-and-ffi-transfer
+             :runtime-borrow-checks
+             :unsafe-audit-records
+             :mir-preservation]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
 (def ^:private expected-diagnostic-catalog
   {:diagnostics ["C9-USE-AFTER-MOVE"
                  "C9-USE-AFTER-CONSUME"
@@ -403,6 +444,12 @@
      value)
     @found))
 
+(defn- invalid-source-if-forms
+  [forms]
+  (vec
+   (filter #(not= 4 (count %))
+           (mapcat #(collect-calls 'if %) forms))))
+
 (defn- sha256-id
   [bytes]
   (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256")
@@ -524,15 +571,28 @@
 (deftest sh07-b30-proof-contract-registers-c9-source-exactly
   (let [contract
         (edn/read-string (slurp (path proof-contract-relative-path)))
+        expectation
+        (get-in contract
+                [:authoritative-coverage-census
+                 :module-expectations :c9-ownership])
         nonclaims (set (:nonclaims contract))]
-    (is (= "SH-07-B30" (:coverage-milestone contract)))
+    (is (= "SH-07-B47" (:coverage-milestone contract)))
     (is (= c9-relative-path
            (get-in contract [:authoritative-modules :c9-ownership])))
     (is (= {:keyword-lookups 0}
            (get-in contract
                    [:required-core-product-counts :c9-ownership])))
+    (is (= {:module-namespace
+            'gravity.compiler.c9-ownership-checker-engine
+            :source-binding
+            {:source-byte-count expected-source-byte-count
+             :source-bytes-sha256 expected-source-revision-id}}
+           expectation))
+    (is (not (contains? expectation :request-counts)))
+    (is (not (contains? expectation :core-counts)))
     (is (= {:request-schema-version 15
             :task "SH-07-B47"
+            :input-task "SH-07-B15"
             :scope :sh07-b15-keyword-map-lookup
             :adapter :gravity/sh07-to-c6-core-products-v16
             :fresh-authoritative-process-required true
@@ -541,7 +601,8 @@
     (doseq [nonclaim
             [:c9-production-ownership-checker-execution
              :c9-contract-and-diagnostic-schema-enforcement
-             :sh10-authenticated-sh08-sh09-adapter
+             :sh10-authenticated-owned-mutable-sh09-adapter
+             :sh10-authenticated-effectful-or-nonprimitive-sh09-adapter
              :sh10-persistent-copy-and-field-range-splitting
              :sh10-regions-arenas-and-linear-resources
              :sh10-transfer-runtime-check-and-unsafe-audit
@@ -551,6 +612,19 @@
              :seed-retirement
              :self-hosting-complete]]
       (is (contains? nonclaims nonclaim)))))
+
+(deftest sh07-b30-c9-source-control-form-arities-are-bounded
+  (let [forms (source-forms)
+        form-node-counts
+        (mapv #(count (tree-seq coll? seq %)) forms)]
+    (is (empty? (invalid-source-if-forms forms)))
+    (is (= '[(if true)]
+           (invalid-source-if-forms '[(if true)])))
+    (is (= '[(if true :then :else :extra)]
+           (invalid-source-if-forms
+            '[(if true :then :else :extra)])))
+    (is (<= (apply max form-node-counts) 1024)
+        "Conservative reader-tree admission is not the authoritative C6 form-id census")))
 
 (deftest sh07-b30-c9-source-contracts-states-and-reasons-are-exact
   (let [forms (source-forms)
@@ -570,6 +644,8 @@
                :when (and (= 'defn (first form)) (nil? (quoted-body form)))]
            name))
         policy (nth (get definitions 'sh10-ownership-policy) 3)
+        adapter-policy
+        (nth (get definitions 'sh10-authenticated-sh09-adapter-policy) 3)
         transition-calls
         (collect-calls
          'sh10-transition-rejected
@@ -587,10 +663,8 @@
         verification-diagnostic-calls
         (collect-calls
          'sh10-diagnostic
-         (get definitions 'sh10-verify-ownership-result))
-        all-if-calls
-        (mapcat #(collect-calls 'if %) (vals definitions))]
-    (is (= 32 (count forms)))
+         (get definitions 'sh10-verify-ownership-result))]
+    (is (= 45 (count forms)))
     (is (= 'gravity.compiler.c9-ownership-checker-engine
            (second namespace-form)))
     (is (= :meta (:profile namespace-clauses)))
@@ -636,12 +710,13 @@
            (:lineage bootstrap-metadata)))
     (is (= expected-definition-names (set (keys definitions))))
     (is (= 7 (count (filter #(= 'def (first %)) (vals definitions)))))
-    (is (= 24 (count (filter #(= 'defn (first %)) (vals definitions)))))
+    (is (= 37 (count (filter #(= 'defn (first %)) (vals definitions)))))
     (is (= quoted-definition-names
            (set (for [[name form] definitions :when (quoted-body form)] name))))
     (is (= expected-executable-sh10-names executable))
-    (is (= 21 (count executable)))
+    (is (= 34 (count executable)))
     (is (= expected-policy policy))
+    (is (= expected-authenticated-adapter-policy adapter-policy))
     (is (= expected-diagnostic-catalog
            (nth (get definitions 'c9-ownership-diagnostic-catalog) 2)))
     (doseq [[name contract] expected-contract-structures]
@@ -659,9 +734,7 @@
     (is (contains?
          (symbols-in (get definitions 'sh10-verify-ownership-result))
          'sh10-check-ownership-request))
-    (is (= 76 (count all-if-calls)))
-    (is (every? #(= 4 (count %)) all-if-calls))
-    (is (= 17 (count (collect-calls
+    (is (= 18 (count (collect-calls
                       'if (get definitions 'sh10-valid-request-shape?)))))
     (is (= 8 (count (collect-calls
                      'if (get definitions 'sh10-valid-event-shape?)))))

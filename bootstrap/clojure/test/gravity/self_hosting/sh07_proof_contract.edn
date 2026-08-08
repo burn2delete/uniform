@@ -305,7 +305,13 @@
     :source-binding
     {:source-byte-count 80761
      :source-bytes-sha256
-     "sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70"}}}}
+     "sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70"}}
+   :c9-ownership
+   {:module-namespace gravity.compiler.c9-ownership-checker-engine
+    :source-binding
+    {:source-byte-count 47414
+     :source-bytes-sha256
+     "sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59"}}}}
  :required-request-products
  [:fragment-manifest :fragment-coverage :module-assembly-manifest]
  :required-core-products
@@ -398,7 +404,8 @@
   :sh09-complete
   :c9-production-ownership-checker-execution
   :c9-contract-and-diagnostic-schema-enforcement
-  :sh10-authenticated-sh08-sh09-adapter
+  :sh10-authenticated-owned-mutable-sh09-adapter
+  :sh10-authenticated-effectful-or-nonprimitive-sh09-adapter
   :sh10-persistent-copy-and-field-range-splitting
   :sh10-regions-arenas-and-linear-resources
   :sh10-transfer-runtime-check-and-unsafe-audit

@@ -70,6 +70,22 @@ a proof candidate: counts were not precommitted, no trusted reviewed
 attestation was created, and it cannot claim exact-authentic coverage,
 aggregate, or release authority.
 
+The current C9 ownership source is 47,414 bytes with source hash
+`sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59`.
+It preserves the bounded owned-mutable transition kernel and adds a narrow
+C8-to-C9 adapter for identity-bound pure primitive values. Four synthetic
+adapter tests passed 32 assertions, the unchanged owned-mutable kernel passed
+424 assertions, and one authenticated boolean `.gravity` boundary passed 19
+assertions in 70.298 seconds of wrapper time with one cold carrier. These are
+non-authoritative development receipts. The adapter admits only persistent
+immutable integer, boolean, and string reads. Persistent aggregates,
+owned-mutable, effectful, and nonprimitive adaptation, regions, arenas, linear
+resources, runtime checks, unsafe audits, trusted digest resolution, and MIR
+preservation remain pending. The historical C9 proof binds the preceding
+35,894-byte source; the current source requires one fresh `c9-ownership`
+source-bound-derived proof candidate after its public check and final freeze.
+Do not rerun C8 authority for this C9-only change.
+
 ## Lane order
 
 Use the first lane that answers the question. Re-run the routing/plan check

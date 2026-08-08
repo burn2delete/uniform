@@ -575,10 +575,20 @@ shallow non-exact schemas; digest values are shape-checked only; whole-carrier
 cycle, depth, width, and scalar preflight is absent; the 1,024-event uniqueness
 and execution paths remain recursive; lifetime endpoints are generic numbers;
 the capability proof identifier is preserved but not authenticated; and the
-verifier is same-implementation recomputation. Persistent-copy semantics,
-field and range splitting, regions, arenas, linear resources, task, actor, and
-FFI transfer, runtime borrow checks, unsafe-audit execution, authenticated
-SH-08/SH-09 adaptation, MIR preservation, and SH-10 completion remain pending.
+verifier is same-implementation recomputation. That result is historical
+evidence for the 35,894-byte revision. The current 47,414-byte source at
+`sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59`
+preserves the owned-mutable kernel and adds an exact C8-to-C9 adapter for
+identity-bound pure integer, boolean, and string values as persistent immutable
+reads. Four synthetic adapter tests passed 32 assertions, the existing kernel
+passed 424 assertions, and one authenticated boolean `.gravity` boundary
+passed 19 assertions in 70.298 seconds of wrapper time with one cold carrier.
+These are non-authoritative development results; no current C9 proof candidate
+has yet been produced. Persistent aggregate copy semantics, owned-mutable,
+effectful, and nonprimitive SH-09 adaptation, field and range splitting,
+regions, arenas, linear resources, task, actor, and FFI transfer, runtime borrow
+checks, unsafe-audit execution, trusted digest resolution, MIR preservation,
+and SH-10 completion remain pending.
 The C10 safety-analysis source adds 68,327 authenticated bytes in 73 fragments
 containing 5,652 forms, 542 bindings, and 2,046 resolutions. Its calibrated
 lowering contains 4,709 canonical core nodes with 73 definitions: 63

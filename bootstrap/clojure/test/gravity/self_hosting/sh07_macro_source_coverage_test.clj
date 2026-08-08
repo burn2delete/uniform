@@ -175,9 +175,10 @@
         (edn/read-string (slurp (path proof-contract-relative-path)))
         modules (:authoritative-modules contract)
         nonclaims (set (:nonclaims contract))]
-    (is (= "SH-07-B38" (:coverage-milestone contract)))
+    (is (= "SH-07-B47" (:coverage-milestone contract)))
     (is (= {:request-schema-version 15
             :task "SH-07-B47"
+            :input-task "SH-07-B15"
             :scope :sh07-b15-keyword-map-lookup
             :adapter :gravity/sh07-to-c6-core-products-v16
             :fresh-authoritative-process-required true
@@ -235,6 +236,22 @@
             "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
             :c10-safety
             "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+            :l1-c2-surface-reader
+            "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
+            :sh23-package-build
+            "bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity"
+            :sh22-standard-library
+            "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity"
+            :authenticated-envelope
+            "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
+            :resolution
+            "bootstrap/gravity/src/gravity/resolution.gravity"
+            :c6-c10-pipeline
+            "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+            :c6-call-arity
+            "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+            :checked-core
+            "bootstrap/gravity/src/gravity/checked_core.gravity"
             :c3-compat
             "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
             :c6-core
@@ -276,7 +293,7 @@
              :sh08-complete
              :c8-production-effect-checker-execution
              :c8-contract-and-diagnostic-schema-enforcement
-             :sh09-authenticated-sh08-adapter
+             :sh09-authenticated-sh08-function-and-effectful-adapters
              :sh09-effect-inference-and-transitive-call-effects
              :sh09-handled-effects-and-module-summaries
              :sh09-runtime-profile-policy
@@ -284,7 +301,8 @@
              :sh09-complete
              :c9-production-ownership-checker-execution
              :c9-contract-and-diagnostic-schema-enforcement
-             :sh10-authenticated-sh08-sh09-adapter
+             :sh10-authenticated-owned-mutable-sh09-adapter
+             :sh10-authenticated-effectful-or-nonprimitive-sh09-adapter
              :sh10-persistent-copy-and-field-range-splitting
              :sh10-regions-arenas-and-linear-resources
              :sh10-transfer-runtime-check-and-unsafe-audit

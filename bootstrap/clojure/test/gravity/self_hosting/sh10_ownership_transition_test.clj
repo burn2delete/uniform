@@ -159,7 +159,7 @@
     (is (= #{:function-return}
            (:escape-destinations policy)))
     (is (some #{:region-lifetimes} (:pending policy)))
-    (is (some #{:authenticated-sh08-sh09-adapter}
+    (is (some #{:authenticated-effectful-or-nonprimitive-sh09-adapter}
               (:pending policy))))
   (is (= (slurp
           (path

@@ -14,7 +14,10 @@
              verify-c9-ownership-checker
              sh10-ownership-policy
              sh10-check-ownership-request
-             sh10-verify-ownership-result])
+             sh10-verify-ownership-result
+             sh10-authenticated-sh09-adapter-policy
+             sh10-build-authenticated-ownership-core
+             sh10-verify-authenticated-ownership-core])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -360,8 +363,10 @@
                       :artifact-provenance]}))
 
 ; SH-10 starts with a bounded owned-mutable state machine. It consumes ordered,
-; normalized ownership events. Region, arena, linear-resource, concurrency,
-; runtime-check, unsafe-audit, and authenticated typed-core adaptation remain
+; normalized ownership events. The narrow authenticated SH-09 adapter below
+; additionally admits read-only persistent primitive values. Persistent
+; aggregates, owned-mutable adaptation, regions, arenas, linear resources,
+; concurrency, runtime checks, unsafe audits, and MIR preservation remain
 ; explicit later work.
 
 (defn sh10-ownership-policy []
@@ -370,6 +375,7 @@
    :request-artifact :gravity/sh10-normalized-ownership-request
    :result-artifact :gravity/sh10-ownership-analysis-result
    :ownership-kind :owned-mutable
+   :ownership-kinds #{:owned-mutable :persistent-immutable}
    :initialization-states #{:uninitialized :initialized}
    :availability-states #{:available :moved :consumed}
    :events #{:initialize
@@ -388,15 +394,15 @@
                  "C9-MUT-ALIAS"
                  "C9-MOVE-WHILE-BORROWED"
                  "C9-UNSAFE"]
-   :pending [:persistent-copy-semantics
-             :field-and-range-splitting
+   :pending [:field-and-range-splitting
              :region-lifetimes
              :arena-generations
              :linear-resources
              :task-actor-and-ffi-transfer
              :runtime-borrow-checks
              :unsafe-audit-records
-             :authenticated-sh08-sh09-adapter
+             :persistent-aggregate-copy-semantics
+             :authenticated-effectful-or-nonprimitive-sh09-adapter
              :mir-preservation]})
 
 (defn sh10-not [value]
@@ -409,6 +415,25 @@
   (if (= nil value)
     false
     (= (get values value) value)))
+
+(defn sh10-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh10-event-allowed-for-ownership-kind? [ownership-kind event]
+  (if (= :persistent-immutable ownership-kind)
+    (= :read (get event :op))
+    true))
+
+(defn sh10-events-allowed-for-ownership-kind? [ownership-kind remaining]
+  (if (= (count remaining) 0)
+    true
+    (if (sh10-event-allowed-for-ownership-kind?
+         ownership-kind (first remaining))
+      (sh10-events-allowed-for-ownership-kind?
+       ownership-kind (rest remaining))
+      false)))
 
 (defn sh10-lowercase-hex? [characters]
   (if (= (count characters) 0)
@@ -463,8 +488,9 @@
           false
           (if (= nil (get request :owner-id))
             false
-            (if (= :owned-mutable
-                   (get request :ownership-kind))
+            (if (sh10-member?
+                 #{:owned-mutable :persistent-immutable}
+                 (get request :ownership-kind))
               (if (sh10-member?
                    #{:uninitialized :initialized}
                    (get request :initialization))
@@ -473,6 +499,10 @@
                     (if (<= (count (get request :events)) 1024)
                       (if (sh10-unique-event-ids?
                            (get request :events) {})
+                        (if
+                         (sh10-events-allowed-for-ownership-kind?
+                          (get request :ownership-kind)
+                          (get request :events))
                         (if (number? (get request :owner-lifetime-end))
                           (if (sh10-sha256-id?
                                (get request :type-fact-id))
@@ -484,8 +514,9 @@
                                     false
                                     (sh10-not
                                      (= nil (get request :target))))
-                                  false)
-                                false)
+                          false)
+                        false)
+                      false)
                               false)
                             false)
                           false)
@@ -786,6 +817,11 @@
      :malformed-ownership-event
      :provide-a-complete-normalized-ownership-event)))
 
+(defn sh10-result-scope [request]
+  (if (= :persistent-immutable (get request :ownership-kind))
+    :persistent-immutable-read-only
+    :owned-mutable-initialization-borrow-move-consume))
+
 (defn sh10-run-events [request remaining state facts]
   (if (= (count remaining) 0)
     {:status :accepted
@@ -839,7 +875,7 @@
            :identity-input
            {:request request
             :policy-version 1}
-           :scope :owned-mutable-initialization-borrow-move-consume
+           :scope (sh10-result-scope request)
            :pending (get (sh10-ownership-policy) :pending)}]
       (if (= :accepted (get analysis :status))
         accepted
@@ -878,3 +914,238 @@
      [(sh10-diagnostic
        request {} "C9-UNSAFE" :ownership-result-substitution
        :recompute-from-the-normalized-ownership-request)]}))
+
+(defn sh10-authenticated-sh09-adapter-policy []
+  {:artifact :gravity/sh10-authenticated-sh09-adapter-policy
+   :schema-version 1
+   :accepted-upstream-artifact
+   :gravity/sh09-identity-bound-effected-core-template
+   :accepted-upstream-scopes
+   #{:pure-authenticated-sh08-primitive-typed-core
+     :declared-pure-call-effects-with-thrown-effects-pending}
+   :accepted-types
+   #{:gravity.type/integer :gravity.type/bool :gravity.type/string}
+   :ownership-kind :persistent-immutable
+   :accepted-events [:read]
+   :profile :meta
+   :target :jvm
+   :diagnostics ["C9-UNSAFE" "C9-MUT-ALIAS"]
+   :pending [:owned-mutable-sh09-adapter
+             :persistent-aggregate-copy-semantics
+             :regions-arenas-and-linear-resources
+             :task-actor-and-ffi-transfer
+             :runtime-borrow-checks
+             :unsafe-audit-records
+             :mir-preservation]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh10-authenticated-sh09-input-valid? [bound verification]
+  (if
+   (sh10-exact-keys?
+    bound
+    #{:artifact :schema-version :status :scope :effected-core
+      :fact-identities :identity-input :identity-resolution
+      :provenance :diagnostics :pending :self-hosted?
+      :clojure-seed-boundary?})
+    (if (= :gravity/sh09-identity-bound-effected-core-template
+           (get bound :artifact))
+      (if (= 1 (get bound :schema-version))
+        (if (= :accepted (get bound :status))
+          (if (sh10-member?
+               #{:pure-authenticated-sh08-primitive-typed-core
+                 :declared-pure-call-effects-with-thrown-effects-pending}
+               (get bound :scope))
+            (if (= :coordinator-digest-bound
+                   (get bound :identity-resolution))
+              (if (= [] (get bound :diagnostics))
+                (if
+                 (sh10-exact-keys?
+                  verification
+                  #{:artifact :status :checks :expected :candidate})
+                  (if (= :gravity/sh09-effect-identity-binding-verification
+                         (get verification :artifact))
+                    (if (= :passed (get verification :status))
+                      (if (= [:fresh-authenticated-effected-core
+                              :exact-digest-request-order
+                              :resolved-digest-shape
+                              :type-effect-capability-linkage
+                              :path-neutral-identity-input
+                              :separate-actual-path-provenance]
+                             (get verification :checks))
+                        (if (= bound (get verification :expected))
+                          (= bound (get verification :candidate))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-authenticated-primitive-type? [value]
+  (sh10-member?
+   #{:gravity.type/integer :gravity.type/bool :gravity.type/string}
+   value))
+
+(defn sh10-authenticated-pure-node? [node]
+  (if (= :gravity/c8-effect-node (get node :artifact))
+    (if (= #{} (get node :direct))
+      (if (= #{} (get node :latent))
+        (if (= #{} (get node :transitive))
+          (= :pure (get node :ordering))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-authenticated-ownership-request
+  [bound effect-request fact-identities]
+  (let [effected (get bound :effected-core)
+        module (get effected :module)
+        core-node-id (get effect-request :core-node-id)
+        identities (get fact-identities core-node-id)]
+    {:artifact :gravity/sh10-normalized-ownership-request
+     :request-id (get identities :effect-fact-id)
+     :value-id core-node-id
+     :owner-id (get module :namespace)
+     :ownership-kind :persistent-immutable
+     :initialization :initialized
+     :availability :available
+     :events
+     [{:event-id core-node-id
+       :op :read
+       :source-span (get effect-request :source-span)
+       :origin-chain (get effect-request :origin-chain)
+       :control-path [:authenticated-pure-effect-read]}]
+     :owner-lifetime-end 1
+     :type-fact-id (get identities :type-fact-id)
+     :effect-fact-id (get identities :effect-fact-id)
+     :capability-proof-id (get identities :capability-proof-id)
+     :source-span (get effect-request :source-span)
+     :origin-chain (get effect-request :origin-chain)
+     :profile (get module :profile)
+     :target (get module :target)}))
+
+(defn sh10-authenticated-ownership-products
+  [bound remaining requests results]
+  (if (= (count remaining) 0)
+    {:status :accepted :requests requests :results results}
+    (let [effected (get bound :effected-core)
+          effect-request (first remaining)
+          core-node-id (get effect-request :core-node-id)
+          node
+          (get (get (get effected :effect-graph) :nodes) core-node-id)
+          value-type (get (get effected :type-table) core-node-id)
+          identities (get (get bound :fact-identities) core-node-id)]
+      (if (sh10-authenticated-primitive-type? value-type)
+        (if (sh10-authenticated-pure-node? node)
+          (if (map? identities)
+            (if (sh10-sha256-id? (get identities :type-fact-id))
+              (if (sh10-sha256-id? (get identities :effect-fact-id))
+                (if (sh10-sha256-id?
+                     (get identities :capability-proof-id))
+                  (let [request
+                        (sh10-authenticated-ownership-request
+                         bound effect-request
+                         (get bound :fact-identities))
+                        result (sh10-check-ownership-request request)]
+                    (if (= :accepted (get result :status))
+                      (sh10-authenticated-ownership-products
+                       bound (rest remaining)
+                       (conj requests request) (conj results result))
+                      {:status :rejected
+                       :reason :ownership-kernel-rejected
+                       :requests (conj requests request)
+                       :results (conj results result)}))
+                  {:status :rejected
+                   :reason :missing-capability-proof-identity})
+                {:status :rejected :reason :missing-effect-fact-identity})
+              {:status :rejected :reason :missing-type-fact-identity})
+            {:status :rejected :reason :missing-fact-identities})
+          {:status :rejected :reason :effect-node-is-not-pure})
+        {:status :rejected :reason :unsupported-persistent-primitive-type}))))
+
+(defn sh10-authenticated-adapter-diagnostic [bound reason]
+  (let [effected (get bound :effected-core)
+        request (first (get effected :effect-requests))]
+    {:diagnostic-id "C9-UNSAFE"
+     :rule "C9-UNSAFE"
+     :severity :error
+     :stage :ownership-checking
+     :reason reason
+     :core-node-id (get request :core-node-id)
+     :source-span (get request :source-span)
+     :generated-origin-chain (get request :origin-chain)
+     :profile (get (get effected :module) :profile)
+     :target (get (get effected :module) :target)
+     :remediation :supply-an-identity-bound-pure-primitive-effected-core}))
+
+(defn sh10-build-authenticated-ownership-core [bound verification]
+  (if (sh10-authenticated-sh09-input-valid? bound verification)
+    (let [effected (get bound :effected-core)
+          products
+          (sh10-authenticated-ownership-products
+           bound (get effected :effect-requests) [] [])]
+      (if (= :accepted (get products :status))
+        (let [identity-input
+              {:domain :gravity/sh10-authenticated-ownership-core-v1
+               :sh09-identity-input (get bound :identity-input)
+               :ownership-requests (get products :requests)
+               :ownership-results (get products :results)
+               :pending
+               (get (sh10-authenticated-sh09-adapter-policy) :pending)}]
+          {:artifact :gravity/sh10-authenticated-ownership-core-template
+           :schema-version 1
+           :status :accepted
+           :scope :persistent-immutable-pure-primitive-reads
+           :authentication-status
+           :host-resolved-sh09-identity-binding-boundary
+           :effected-core bound
+           :ownership-requests (get products :requests)
+           :ownership-results (get products :results)
+           :identity-input identity-input
+           :identity-resolution :coordinator-digest-required
+           :provenance (get bound :provenance)
+           :diagnostics []
+           :pending (get identity-input :pending)
+           :self-hosted? false
+           :clojure-seed-boundary? true})
+        {:artifact :gravity/sh10-authenticated-ownership-core-template
+         :schema-version 1
+         :status :rejected
+         :scope :persistent-immutable-pure-primitive-reads
+         :diagnostics
+         [(sh10-authenticated-adapter-diagnostic
+           bound (get products :reason))]
+         :pending
+         (get (sh10-authenticated-sh09-adapter-policy) :pending)}))
+    {:artifact :gravity/sh10-authenticated-ownership-core-template
+     :schema-version 1
+     :status :rejected
+     :scope :persistent-immutable-pure-primitive-reads
+     :diagnostics
+     [(sh10-authenticated-adapter-diagnostic
+       bound :untrusted-or-malformed-sh09-effected-core)]
+     :pending (get (sh10-authenticated-sh09-adapter-policy) :pending)}))
+
+(defn sh10-verify-authenticated-ownership-core
+  [bound verification candidate]
+  (let [expected
+        (sh10-build-authenticated-ownership-core bound verification)]
+    {:artifact :gravity/sh10-authenticated-ownership-core-verification
+     :status (if (= expected candidate) :passed :rejected)
+     :checks [:fresh-sh09-identity-binding
+              :persistent-primitive-type-boundary
+              :pure-effect-node-boundary
+              :read-only-ownership-events
+              :ownership-kernel-recomputation
+              :path-neutral-identity-input
+              :separate-actual-path-provenance]
+     :expected expected
+     :candidate candidate}))
