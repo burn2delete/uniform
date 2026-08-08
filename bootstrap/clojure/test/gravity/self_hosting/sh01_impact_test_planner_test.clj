@@ -1,6 +1,7 @@
 (ns gravity.self-hosting.sh01-impact-test-planner-test
   (:require [clojure.test :refer [deftest is testing]]
-            [gravity.self-hosting.sh01-impact-test-planner :as planner]))
+            [gravity.self-hosting.sh01-impact-test-planner :as planner]
+            [gravity.self-hosting-test-runner :as runner]))
 
 (deftest backlog-dependency-expansion-is-transitive
   (let [dependencies (planner/backlog-dependencies)
@@ -376,6 +377,65 @@
             (is (= :namespace-duplicate
                    (:reason (last (:entries data))))
                 request)))))))
+
+(deftest fixed-stage-infrastructure-is-discoverable-but-never-a-slice
+  (let [fixed-stage
+        #{'gravity.self-hosting.stage3-fragment-size-preflight-test
+          'gravity.self-hosting.stage3-verification-runner-test}
+        catalog-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'test-catalog)
+        general (set (runner/dedicated-test-namespaces))
+        catalog (@catalog-var)]
+    (testing "the general runner still owns both fixed-stage namespaces"
+      (is (every? #(contains? general %) fixed-stage))
+      (is (= (- (count general) (count fixed-stage))
+             (count catalog))))
+    (testing "the planner catalog contains only bounded SH slices"
+      (is (not-any? fixed-stage (map :namespace catalog)))
+      (is (every? #(re-matches #"SH-\d{2}" (:slice %)) catalog))
+      (is (some #{'gravity.self-hosting.sh07-checked-core-test}
+                (map :namespace catalog))))))
+
+(deftest fixed-stage-catalog-drift-removal-and-unknowns-fail-closed
+  (let [fixed-stage
+        ['gravity.self-hosting.stage3-fragment-size-preflight-test
+         'gravity.self-hosting.stage3-verification-runner-test]
+        ownership
+        'gravity.self-hosting.sh01-ownership-test
+        catalog-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'test-catalog)
+        runner-var
+        (ns-resolve 'gravity.self-hosting-test-runner
+                    'dedicated-test-namespaces)
+        exception-data
+        (fn [discovered]
+          (with-redefs-fn
+            {runner-var (constantly discovered)}
+            (fn []
+              (try
+                (@catalog-var)
+                nil
+                (catch clojure.lang.ExceptionInfo exception
+                  (ex-data exception))))))]
+    (testing "removing a reviewed infrastructure namespace is visible"
+      (let [data (exception-data [ownership (first fixed-stage)])]
+        (is (= "SH01-IMPACT-CATALOG" (:id data)))
+        (is (= ['gravity.self-hosting.stage3-verification-runner-test]
+               (:missing-fixed-stage-infrastructure data)))
+        (is (empty? (:unknown-non-slice-namespaces data)))))
+    (testing "renaming or adding an unreviewed non-slice namespace is not accepted"
+      (let [unknown 'gravity.self-hosting.stage4-verification-runner-test
+            data (exception-data (conj (vec fixed-stage) ownership unknown))]
+        (is (= "SH01-IMPACT-CATALOG" (:id data)))
+        (is (= [unknown] (:unknown-non-slice-namespaces data)))
+        (is (empty? (:missing-fixed-stage-infrastructure data)))))
+    (testing "duplicate handling remains a collision, not a slice assignment"
+      (let [data
+            (exception-data
+             (conj (vec fixed-stage) ownership ownership))]
+        (is (= "SH01-TEST-NAMESPACE-COLLISION" (:id data)))))))
 
 (deftest planner-context-discovers-catalog-once
   (let [ownership-var

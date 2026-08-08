@@ -14,6 +14,14 @@
 
 (def ^:private slice-count 30)
 
+;; These namespaces are fixed-stage verification infrastructure.  The general
+;; self-hosting runner discovers and can execute them, but they are not SH-00
+;; through SH-29 leaf tests and therefore must never enter the slice planner's
+;; catalog (or be inferred as SH-07 by a broad fallback).
+(def ^:private fixed-stage-infrastructure-namespaces
+  #{'gravity.self-hosting.stage3-fragment-size-preflight-test
+    'gravity.self-hosting.stage3-verification-runner-test})
+
 (defn- repository-root
   []
   (let [resource
@@ -231,14 +239,67 @@
       :else
       {:path relative :classification :unrelated :slices []})))
 
+(defn- duplicate-namespaces
+  [namespaces]
+  (->> namespaces
+       frequencies
+       (keep
+        (fn [[namespace count]]
+          (when (< 1 count)
+            namespace)))
+       sort
+       vec))
+
 (defn- test-catalog
   []
-  (->> (runner/dedicated-test-namespaces)
-       (map
-        (fn [namespace]
-          {:namespace namespace
-           :slice (namespace-slice namespace)}))
-       vec))
+  (let [namespaces (vec (runner/dedicated-test-namespaces))
+        duplicates (duplicate-namespaces namespaces)
+        discovered (set namespaces)
+        missing-infrastructure
+        (set/difference fixed-stage-infrastructure-namespaces discovered)
+        unknown-non-slice
+        (->> namespaces
+             (remove
+              #(or (contains? fixed-stage-infrastructure-namespaces %)
+                   (namespace-slice %)))
+             distinct
+             sort
+             vec)]
+    ;; The general runner owns duplicate/collision detection.  Keep the same
+    ;; fail-closed contract here as well so a changed discovery implementation
+    ;; cannot hide a duplicate fixed-stage namespace before it is filtered.
+    (when (seq duplicates)
+      (throw
+       (ex-info
+        "Dedicated self-hosting test namespaces must map to one file"
+        {:id "SH01-TEST-NAMESPACE-COLLISION"
+         :collisions
+         (into
+          (sorted-map)
+          (for [namespace duplicates]
+            [namespace
+             (vec (repeat (get (frequencies namespaces) namespace)
+                          :discovered))]))})))
+    ;; Require the reviewed infrastructure pair to remain discoverable.  A
+    ;; rename/removal must be surfaced as catalog drift instead of silently
+    ;; shrinking the fixed-stage boundary.
+    (when (or (seq missing-infrastructure)
+              (seq unknown-non-slice))
+      (throw
+       (ex-info
+        "The discovered self-hosting catalog has fixed-stage or unknown non-slice drift"
+        {:id "SH01-IMPACT-CATALOG"
+         :missing-fixed-stage-infrastructure
+         (vec (sort missing-infrastructure))
+         :unknown-non-slice-namespaces unknown-non-slice
+         :discovered-namespaces (vec (sort namespaces))})))
+    (->> namespaces
+         (remove #(contains? fixed-stage-infrastructure-namespaces %))
+         (map
+          (fn [namespace]
+            {:namespace namespace
+             :slice (namespace-slice namespace)}))
+         vec)))
 
 (defn- valid-slice?
   [slice]
