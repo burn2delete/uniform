@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -9,6 +11,7 @@ from unittest import mock
 
 from tools import run_sh07_authoritative_modules as sh07
 from tools import run_stage3_verification as stage3
+from tools import verify_development as verifier
 
 
 class Stage3WrapperTests(unittest.TestCase):
@@ -143,6 +146,243 @@ class Stage3WrapperTests(unittest.TestCase):
             self.assertTrue(receipt["lock"]["released"])
             self.assertEqual(123, receipt["observed_peak_process_tree_rss_bytes"])
             self.assertIn("runner_report", receipt)
+
+    def test_timeout_with_raw_zero_is_exit_124_not_false_pass(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            base = self._pure_launcher(root)
+
+            def timed_out(command, cwd, env, timeout):
+                result = base(command, cwd, env, timeout)
+                return stage3.dataclasses.replace(result, timed_out=True)
+
+            code, receipt = stage3.run_stage3(
+                root=root,
+                receipt_path=root / ".cpcache" / "timeout.json",
+                nonce="timeout-zero",
+                check_id="timeout-zero",
+                batch="public-c7-check",
+                command_identity_sha256="sha256:" + "7" * 64,
+                launcher=timed_out,
+                timeout_seconds=2,
+            )
+            self.assertEqual(124, code)
+            self.assertEqual("failed", receipt["status"])
+            self.assertTrue(receipt["child"]["timed_out"])
+
+    def test_supervision_failure_with_raw_zero_is_exit_75(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            base = self._pure_launcher(root)
+
+            def failed_supervision(command, cwd, env, timeout):
+                result = base(command, cwd, env, timeout)
+                return stage3.dataclasses.replace(result, supervision_failed=True)
+
+            code, receipt = stage3.run_stage3(
+                root=root,
+                receipt_path=root / ".cpcache" / "supervision.json",
+                nonce="supervision-zero",
+                check_id="supervision-zero",
+                batch="public-c7-check",
+                command_identity_sha256="sha256:" + "6" * 64,
+                launcher=failed_supervision,
+                timeout_seconds=2,
+            )
+            self.assertEqual(75, code)
+            self.assertEqual("failed", receipt["status"])
+            self.assertTrue(receipt["child"]["supervision_failed"])
+
+    def test_receipt_publication_never_overwrites_racing_target(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = stage3._safe_root(Path(directory))
+            target = root / "receipt.json"
+            original_link = os.link
+
+            def racing_link(source, destination, **kwargs):
+                parent_fd = kwargs["dst_dir_fd"]
+                victim_fd = os.open(
+                    destination,
+                    os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                    0o600,
+                    dir_fd=parent_fd,
+                )
+                os.write(victim_fd, b"user-owned\n")
+                os.close(victim_fd)
+                return original_link(source, destination, **kwargs)
+
+            with mock.patch.object(stage3.os, "link", side_effect=racing_link):
+                with self.assertRaises(stage3.Stage3Error):
+                    stage3.atomic_receipt_write(target, {"value": 1}, root=root)
+            self.assertEqual(b"user-owned\n", target.read_bytes())
+            self.assertEqual(1, target.stat().st_nlink)
+
+    def test_receipt_publication_rejects_preexisting_symlink_and_hardlink(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = stage3._safe_root(Path(directory))
+            victim = root / "victim"
+            victim.write_bytes(b"preserve")
+            symlink = root / "receipt-symlink.json"
+            symlink.symlink_to(victim.name)
+            with self.assertRaises(stage3.Stage3Error):
+                stage3.atomic_receipt_write(symlink, {"value": 1}, root=root)
+            self.assertEqual(b"preserve", victim.read_bytes())
+            hardlink = root / "receipt-hardlink.json"
+            os.link(victim, hardlink)
+            with self.assertRaises(stage3.Stage3Error):
+                stage3.atomic_receipt_write(hardlink, {"value": 2}, root=root)
+            self.assertEqual(b"preserve", victim.read_bytes())
+
+    def test_receipt_cleanup_error_cannot_mask_fatal_signal(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = stage3._safe_root(Path(directory))
+            original_unlink = os.unlink
+
+            def failed_cleanup(path, **kwargs):
+                if str(path).endswith(".tmp"):
+                    raise OSError("synthetic cleanup failure")
+                return original_unlink(path, **kwargs)
+
+            with mock.patch.object(stage3.os, "link", side_effect=KeyboardInterrupt), \
+                    mock.patch.object(stage3.os, "unlink", side_effect=failed_cleanup):
+                with self.assertRaises(KeyboardInterrupt):
+                    stage3.atomic_receipt_write(
+                        root / "fatal.json", {"value": 1}, root=root
+                    )
+
+    def test_output_validation_ignores_directory_nlink_churn(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            state = Path(directory) / "state"
+            modules = state / "modules"
+            modules.mkdir(parents=True)
+            modules_fd = os.open(modules, stage3._DIR_FLAGS)
+            output = b"structural output"
+            digest = "sha256:" + hashlib.sha256(output).hexdigest()
+            original_fstat = os.fstat
+            module_calls = 0
+
+            def changing_directory_nlink(descriptor):
+                nonlocal module_calls
+                info = original_fstat(descriptor)
+                if descriptor == modules_fd:
+                    module_calls += 1
+                    if module_calls > 1:
+                        values = list(info)
+                        values[3] = info.st_nlink + 1
+                        return os.stat_result(values)
+                return info
+
+            try:
+                with mock.patch.object(stage3.os, "fstat", side_effect=changing_directory_nlink):
+                    self.assertTrue(stage3._validate_captured_output_contract(
+                        root=Path(directory),
+                        state_dir=state,
+                        modules_fd=modules_fd,
+                        output_bytes=output,
+                        expected_stdout_hash=digest,
+                        source_path="source.gravity",
+                        source_size=4,
+                        source_hash="sha256:" + "a" * 64,
+                        proof_hash="sha256:" + "b" * 64,
+                        validator=lambda *args, **kwargs: True,
+                    ))
+            finally:
+                os.close(modules_fd)
+
+    def test_source_snapshot_bytes_remain_bound_after_path_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = stage3._safe_root(Path(directory))
+            source = root / "source.gravity"
+            source.write_bytes(b"original source")
+            snapshot = stage3._open_regular_bounded_snapshot(
+                root, source, maximum=1024, label="source"
+            )
+            self.assertIsNotNone(snapshot)
+            payload, info, descriptor, parent_fd, leaf = snapshot
+            moved = root / "source.original"
+            source.rename(moved)
+            source.write_bytes(b"replacement source")
+            try:
+                self.assertEqual(b"original source", payload)
+                os.lseek(descriptor, 0, os.SEEK_SET)
+                self.assertEqual(b"original source", os.read(descriptor, 1024))
+                self.assertNotEqual(
+                    (info.st_dev, info.st_ino),
+                    (os.stat(leaf, dir_fd=parent_fd, follow_symlinks=False).st_dev,
+                     os.stat(leaf, dir_fd=parent_fd, follow_symlinks=False).st_ino),
+                )
+            finally:
+                os.close(descriptor)
+                os.close(parent_fd)
+
+    def test_parent_receipt_boundary_rejects_loose_lifecycle_shapes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = stage3._safe_root(Path(directory))
+            identities = {"command": {"fixed": "stage3"}}
+            command_hash = "sha256:" + verifier._sha256_text(
+                verifier._canonical(identities["command"])
+            )
+            receipt_path = root / ".cpcache" / "parent-boundary.json"
+            code, receipt = stage3.run_stage3(
+                root=root,
+                receipt_path=receipt_path,
+                nonce="parent-boundary",
+                check_id="parent-boundary",
+                batch="public-c7-check",
+                command_identity_sha256=command_hash,
+                launcher=self._pure_launcher(root),
+                timeout_seconds=2,
+            )
+            self.assertEqual(0, code)
+            check = {
+                "id": "parent-boundary",
+                "stage3_mode": stage3.MODE_PURE,
+                "stage3_batch": "public-c7-check",
+                "authority": "none",
+            }
+            report_path = Path(str(receipt["runner_report_path"]))
+
+            def validate(value):
+                return verifier._validate_stage3_receipt(
+                    value,
+                    check=check,
+                    identities=identities,
+                    root=root,
+                    receipt_path=receipt_path,
+                    runner_report_path=report_path,
+                    nonce="parent-boundary",
+                    expected_returncode=0,
+                )
+
+            validate(receipt)
+            mutations = []
+            value = copy.deepcopy(receipt)
+            value["status"] = "failed"
+            mutations.append(value)
+            value = copy.deepcopy(receipt)
+            value["exit_code"] = False
+            mutations.append(value)
+            value = copy.deepcopy(receipt)
+            del value["child"]["timed_out"]
+            mutations.append(value)
+            value = copy.deepcopy(receipt)
+            value["child"]["supervision_failed"] = "false"
+            mutations.append(value)
+            value = copy.deepcopy(receipt)
+            value["child"]["returncode"] = False
+            mutations.append(value)
+            value = copy.deepcopy(receipt)
+            value["no_surviving_descendants"] = False
+            mutations.append(value)
+            value = copy.deepcopy(receipt)
+            value["lock"]["validated"] = False
+            mutations.append(value)
+            value = copy.deepcopy(receipt)
+            value["child"]["timed_out"] = True
+            mutations.append(value)
+            for tampered in mutations:
+                with self.assertRaises(verifier.VerificationError):
+                    validate(tampered)
 
     def test_receipt_bounds_worst_case_unicode_child_streams(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -492,8 +732,27 @@ class Stage3WrapperTests(unittest.TestCase):
                     "between-sample spikes may be missed",
                 )
 
+            def validate_from_held_source(**arguments):
+                original = source.with_suffix(".held")
+                source.rename(original)
+                source.write_text("transient replacement", encoding="utf-8")
+                try:
+                    self.assertEqual(len(b"source"), arguments["source_size"])
+                    self.assertEqual(
+                        "sha256:" + hashlib.sha256(b"source").hexdigest(),
+                        arguments["source_hash"],
+                    )
+                finally:
+                    source.unlink()
+                    original.rename(source)
+                return True
+
             with mock.patch.object(sh07, "output_contract_passed", return_value=True), \
-                    mock.patch.object(stage3, "_validate_captured_output_contract", return_value=True), \
+                    mock.patch.object(
+                        stage3,
+                        "_validate_captured_output_contract",
+                        side_effect=validate_from_held_source,
+                    ), \
                     mock.patch.object(
                         stage3,
                         "_recompute_shared_context",

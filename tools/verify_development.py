@@ -26,6 +26,7 @@ import datetime as _datetime
 import fnmatch
 import hashlib
 import json
+import math
 import os
 from pathlib import Path, PurePosixPath
 import platform
@@ -2311,7 +2312,6 @@ def _stage3_receipt_path(root: Path, check_id: str, nonce: str) -> Path:
 
     directory = _stage3_private_directory(root, check_id, nonce, fresh=True)
     path = directory / "receipt.json"
-    path = directory / f"{safe_check}.{nonce}.json"
     try:
         path.resolve(strict=False).relative_to(root.resolve())
     except ValueError as exc:
@@ -2480,6 +2480,12 @@ def _validate_stage3_receipt(
             after = lock.get("identity_after")
             if not isinstance(before, Mapping) or not isinstance(after, Mapping):
                 errors.append("receipt lock identity is malformed")
+            elif any(
+                type(identity.get(field)) is not int
+                for identity in (before, after)
+                for field in ("device", "inode", "uid", "nlink")
+            ):
+                errors.append("receipt lock identity fields are not strict integers")
             elif (before.get("canonical_path") != _stage3.CANONICAL_LOCK_TEXT
                   or after.get("canonical_path") != _stage3.CANONICAL_LOCK_TEXT
                   or before.get("inode") != after.get("inode")
@@ -2491,13 +2497,20 @@ def _validate_stage3_receipt(
                 errors.append("receipt lock identity is not stable")
     if receipt.get("daemonization") != "forbidden":
         errors.append("receipt daemonization policy mismatch")
-    if receipt.get("no_surviving_descendants") is not True:
-        errors.append("receipt has surviving or unbounded descendants")
+    top_no_survivors = receipt.get("no_surviving_descendants")
+    if type(top_no_survivors) is not bool:
+        errors.append("receipt descendant evidence is not a boolean")
     peak = receipt.get("observed_peak_process_tree_rss_bytes")
     cadence = receipt.get("rss_sampling_cadence_seconds")
-    if not isinstance(peak, int) or peak < 0:
+    if type(peak) is not int or peak < 0:
         errors.append("receipt lacks an observed process-tree RSS peak")
-    if not isinstance(cadence, (int, float)) or cadence <= 0:
+    cadence_valid = type(cadence) in {int, float} and cadence > 0
+    if cadence_valid:
+        try:
+            cadence_valid = math.isfinite(float(cadence))
+        except (OverflowError, ValueError):
+            cadence_valid = False
+    if not cadence_valid:
         errors.append("receipt RSS sampling cadence is missing")
     if receipt.get("rss_sampling_contract") != "run_with_heartbeat.process_tree_metrics-v1":
         errors.append("receipt RSS sampling contract mismatch")
@@ -2508,21 +2521,48 @@ def _validate_stage3_receipt(
     if not isinstance(child, Mapping):
         errors.append("receipt child evidence is missing")
     else:
-        survivors = child.get("survivors", [])
+        child_returncode = child.get("returncode")
+        child_timed_out = child.get("timed_out")
+        child_supervision_failed = child.get("supervision_failed")
+        survivors = child.get("survivors")
+        if type(child_returncode) is not int:
+            errors.append("receipt child returncode is malformed")
+        if type(child_timed_out) is not bool:
+            errors.append("receipt child timeout evidence is malformed")
+        if type(child_supervision_failed) is not bool:
+            errors.append("receipt child supervision evidence is malformed")
+        if not isinstance(survivors, list):
+            errors.append("receipt child survivor evidence is malformed")
+            survivors = []
         if survivors:
             errors.append("receipt child reports surviving descendants")
-        if child.get("supervision_failed") is True:
-            errors.append("receipt child supervision failed")
         child_peak = child.get("observed_peak_process_tree_rss_bytes")
-        if child_peak != peak:
+        if type(child_peak) is not int or child_peak < 0 or child_peak != peak:
             errors.append("receipt child/process-tree RSS peak mismatch")
+        if child.get("rss_sampling_cadence_seconds") != cadence:
+            errors.append("receipt child RSS cadence mismatch")
+        if child.get("rss_sampling_contract") != receipt.get("rss_sampling_contract"):
+            errors.append("receipt child RSS contract mismatch")
+        if child.get("rss_sampling_limitation") != receipt.get("rss_sampling_limitation"):
+            errors.append("receipt child RSS limitation mismatch")
         cleanup = child.get("cleanup")
-        if isinstance(cleanup, Mapping) and cleanup.get("terminal_safe") is False:
-            errors.append("receipt child cleanup was not terminal-safe")
-        if expected_returncode is not None and child.get("returncode") != expected_returncode:
-            errors.append("receipt child returncode mismatch")
+        cleanup_safe = (
+            cleanup is None
+            or isinstance(cleanup, Mapping) and cleanup.get("terminal_safe") is True
+        )
+        if cleanup is not None and not isinstance(cleanup, Mapping):
+            errors.append("receipt child cleanup evidence is malformed")
+        elif isinstance(cleanup, Mapping) and type(cleanup.get("terminal_safe")) is not bool:
+            errors.append("receipt child terminal-safe evidence is malformed")
+        elif isinstance(cleanup, Mapping) and cleanup.get("output_complete") is not True:
+            errors.append("receipt child output-complete evidence is not true")
+        computed_no_survivors = bool(
+            not survivors and child_supervision_failed is False and cleanup_safe
+        )
+        if top_no_survivors is not computed_no_survivors:
+            errors.append("receipt top-level descendant evidence disagrees with child cleanup")
         if receipt.get("mode") == _stage3.MODE_PURE and isinstance(receipt.get("runner_report"), Mapping):
-            if receipt["runner_report"].get("exit-code") != child.get("returncode"):
+            if receipt["runner_report"].get("exit-code") != child_returncode:
                 errors.append("receipt runner report/child exit mismatch")
         if receipt.get("mode") == _stage3.MODE_PURE:
             report_path_value = receipt.get("runner_report_path")
@@ -2539,10 +2579,50 @@ def _validate_stage3_receipt(
             if expected_child is None or child.get("command") != expected_child:
                 errors.append("receipt fixed-runner child command mismatch")
     wrapper_exit = receipt.get("exit_code")
-    if expected_returncode is not None and wrapper_exit != expected_returncode:
+    wrapper_status = receipt.get("status")
+    if type(wrapper_exit) is not int or wrapper_exit not in {0, 1, 75, 124}:
+        errors.append("receipt exit code is malformed")
+    if expected_returncode is not None and (
+        type(expected_returncode) is not int or wrapper_exit != expected_returncode
+    ):
         errors.append("receipt exit code mismatch")
-    if receipt.get("status") not in {"passed", "failed"}:
+    if wrapper_status not in {"passed", "failed"}:
         errors.append("receipt status is malformed")
+    elif wrapper_status == "passed" and wrapper_exit != 0:
+        errors.append("passed receipt has nonzero wrapper exit")
+    elif wrapper_status == "failed" and wrapper_exit == 0:
+        errors.append("failed receipt has zero wrapper exit")
+    if isinstance(child, Mapping) and type(child.get("returncode")) is int \
+            and type(child.get("timed_out")) is bool \
+            and type(child.get("supervision_failed")) is bool:
+        child_returncode = child["returncode"]
+        child_timed_out = child["timed_out"]
+        child_supervision_failed = child["supervision_failed"]
+        child_survivors = child.get("survivors") if isinstance(child.get("survivors"), list) else []
+        cleanup = child.get("cleanup")
+        cleanup_safe = cleanup is None or (
+            isinstance(cleanup, Mapping) and cleanup.get("terminal_safe") is True
+        )
+        if wrapper_exit == 0 and (
+            child_returncode != 0 or child_timed_out or child_supervision_failed
+            or child_survivors or not cleanup_safe
+        ):
+            errors.append("passed wrapper disagrees with child lifecycle")
+        if child_timed_out and wrapper_exit != 124:
+            errors.append("timed-out child does not map to wrapper exit 124")
+        if wrapper_exit == 124 and child_timed_out is not True:
+            errors.append("wrapper timeout exit lacks child timeout evidence")
+        infrastructure_failed = bool(
+            child_supervision_failed or child_survivors or not cleanup_safe
+        )
+        if infrastructure_failed and not child_timed_out and wrapper_exit != 75:
+            errors.append("child supervision failure does not map to wrapper exit 75")
+        if wrapper_exit == 75 and not infrastructure_failed:
+            errors.append("wrapper supervision exit lacks child failure evidence")
+        if wrapper_exit == 1 and (
+            child_timed_out or infrastructure_failed or child_returncode != 1
+        ):
+            errors.append("ordinary failure receipt disagrees with child exit")
     if errors:
         raise VerificationError("invalid command-owned Stage 3 receipt: " + "; ".join(errors))
     result = dict(receipt)

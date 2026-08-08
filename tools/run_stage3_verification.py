@@ -51,6 +51,10 @@ MAX_CHILD_OUTPUT_BYTES = 8 * 1024
 MAX_CHILD_OUTPUT_COMBINED_BYTES = 12 * 1024
 MAX_AUTHORITY_OUTPUT_BYTES = 4 * 1024 * 1024
 MAX_AUTHORITY_SOURCE_BYTES = 16 * 1024 * 1024
+STAGE3_RUNTIME_DEPENDENCIES = (
+    "tools/run_stage3_verification.py",
+    "tools/run_sh07_authoritative_modules.py",
+)
 DEFAULT_BATCH = "public-c7-check"
 DEFAULT_MODE = "pure"
 MODE_PURE = "pure"
@@ -594,7 +598,7 @@ def _assert_new_regular_target(path: Path) -> None:
 
 
 def atomic_receipt_write(path: Path, value: Mapping[str, object], *, root: Path | None = None) -> None:
-    """Publish one bounded receipt with no-follow, one-link file checks."""
+    """Publish one bounded receipt without ever replacing an existing name."""
 
     payload = (json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(",", ":")) + "\n").encode(
         "utf-8"
@@ -609,13 +613,9 @@ def atomic_receipt_write(path: Path, value: Mapping[str, object], *, root: Path 
     parent_descriptor, leaf = _open_parent_dirfd(root, path, "receipt", create=True)
     temporary_name = f".{leaf}.{os.getpid()}.{uuid.uuid4().hex}.tmp"
     descriptor = -1
+    target_linked = False
+    publication_complete = False
     try:
-        try:
-            os.stat(leaf, dir_fd=parent_descriptor, follow_symlinks=False)
-        except FileNotFoundError:
-            pass
-        else:
-            raise Stage3Error(f"Stage 3 receipt target already exists: {path}")
         descriptor = os.open(
             temporary_name,
             os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
@@ -627,23 +627,81 @@ def atomic_receipt_write(path: Path, value: Mapping[str, object], *, root: Path 
             stream.write(payload)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary_name, leaf, src_dir_fd=parent_descriptor, dst_dir_fd=parent_descriptor)
-        info = os.stat(leaf, dir_fd=parent_descriptor, follow_symlinks=False)
-        if (stat.S_ISLNK(info.st_mode) or not stat.S_ISREG(info.st_mode)
-                or info.st_nlink != 1 or info.st_uid != os.geteuid()):
+        # link(2) is the publication primitive: unlike replace(2), it fails
+        # atomically when any stale file, symlink, or racing publisher already
+        # owns the target name.  The temporary and target names must briefly
+        # be the same two-link inode before the temporary name is removed.
+        try:
+            os.link(
+                temporary_name,
+                leaf,
+                src_dir_fd=parent_descriptor,
+                dst_dir_fd=parent_descriptor,
+                follow_symlinks=False,
+            )
+        except FileExistsError as exc:
+            raise Stage3Error(f"Stage 3 receipt target already exists: {path}") from exc
+        target_linked = True
+        temporary_info = os.stat(
+            temporary_name, dir_fd=parent_descriptor, follow_symlinks=False
+        )
+        published_info = os.stat(leaf, dir_fd=parent_descriptor, follow_symlinks=False)
+        if (not stat.S_ISREG(published_info.st_mode)
+                or published_info.st_uid != os.geteuid()
+                or published_info.st_nlink != 2
+                or (temporary_info.st_dev, temporary_info.st_ino)
+                != (published_info.st_dev, published_info.st_ino)):
             raise Stage3Error(f"published Stage 3 receipt is unsafe: {path}")
+        os.unlink(temporary_name, dir_fd=parent_descriptor)
+        published_info = os.stat(leaf, dir_fd=parent_descriptor, follow_symlinks=False)
+        if (not stat.S_ISREG(published_info.st_mode)
+                or published_info.st_uid != os.geteuid()
+                or published_info.st_nlink != 1):
+            raise Stage3Error(f"published Stage 3 receipt is not one owned file: {path}")
+        publication_complete = True
         try:
             os.fsync(parent_descriptor)
         except OSError:
             pass
     finally:
+        active_exception = sys.exc_info()[1]
+        cleanup_error: OSError | None = None
         if descriptor != -1:
-            os.close(descriptor)
+            try:
+                os.close(descriptor)
+            except OSError as error:
+                cleanup_error = error
+        # On a failed post-link validation, remove only the target name that
+        # still identifies our temporary inode.  Never unlink a name an
+        # adversary replaced while cleanup was in progress.
+        if target_linked and not publication_complete:
+            try:
+                target_info = os.stat(leaf, dir_fd=parent_descriptor, follow_symlinks=False)
+                temporary_info = os.stat(
+                    temporary_name, dir_fd=parent_descriptor, follow_symlinks=False
+                )
+                if (target_info.st_dev, target_info.st_ino) == (
+                    temporary_info.st_dev, temporary_info.st_ino
+                ):
+                    os.unlink(leaf, dir_fd=parent_descriptor)
+            except FileNotFoundError:
+                pass
+            except OSError as error:
+                cleanup_error = cleanup_error or error
         try:
             os.unlink(temporary_name, dir_fd=parent_descriptor)
         except FileNotFoundError:
             pass
-        os.close(parent_descriptor)
+        except OSError as error:
+            cleanup_error = cleanup_error or error
+        try:
+            os.close(parent_descriptor)
+        except OSError as error:
+            cleanup_error = cleanup_error or error
+        # Cleanup faults must not mask ThreadDeath-equivalent Python signals
+        # (KeyboardInterrupt/SystemExit) or any in-flight publication error.
+        if cleanup_error is not None and active_exception is None:
+            raise Stage3Error(f"Stage 3 receipt cleanup failed: {cleanup_error}") from cleanup_error
 
 
 def _lock_identity(handle: Any) -> dict[str, object]:
@@ -724,11 +782,23 @@ def _child_record(result: ChildResult, command: Sequence[str]) -> dict[str, obje
 
 
 def _finish_receipt(receipt: dict[str, object], result: ChildResult) -> None:
-    receipt["exit_code"] = (
-        result.returncode
-        if result.returncode != 0 or (not result.supervision_failed and not result.survivors)
-        else 125
+    cleanup_safe = (
+        not isinstance(result.cleanup, Mapping)
+        or result.cleanup.get("terminal_safe", True) is True
     )
+    if result.timed_out:
+        wrapper_exit = 124
+    elif result.supervision_failed or result.survivors or not cleanup_safe:
+        wrapper_exit = 75
+    else:
+        wrapper_exit = result.returncode
+    # A malformed launcher must not smuggle booleans or a zero infrastructure
+    # failure through the process boundary.
+    if type(wrapper_exit) is not int or wrapper_exit == 0 and (
+        result.timed_out or result.supervision_failed or result.survivors or not cleanup_safe
+    ):
+        wrapper_exit = 75
+    receipt["exit_code"] = wrapper_exit
     receipt["observed_peak_process_tree_rss_bytes"] = result.observed_peak_process_tree_rss_bytes
     receipt["rss_sampling_cadence_seconds"] = result.rss_sampling_cadence_seconds
     receipt["rss_sampling_contract"] = result.rss_sampling_contract
@@ -736,12 +806,12 @@ def _finish_receipt(receipt: dict[str, object], result: ChildResult) -> None:
     receipt["no_surviving_descendants"] = bool(
         not result.survivors
         and not result.supervision_failed
-        and (not isinstance(result.cleanup, Mapping)
-             or result.cleanup.get("terminal_safe", True) is True)
+        and cleanup_safe
     )
     receipt["status"] = (
         "passed"
-        if result.returncode == 0
+        if wrapper_exit == 0
+        and result.returncode == 0
         and not result.timed_out
         and not result.survivors
         and not result.supervision_failed
@@ -821,6 +891,50 @@ def _read_regular_bounded(root: Path, path: Path, *, maximum: int = MAX_CHILD_OU
             os.close(parent_fd)
     except (OSError, Stage3Error):
         return None
+
+
+def _open_regular_bounded_snapshot(
+    root: Path, path: Path, *, maximum: int, label: str
+) -> tuple[bytes, os.stat_result, int, int, str] | None:
+    """Read and retain one no-follow file descriptor for a coherent snapshot.
+
+    The caller owns both returned descriptors.  Keeping the file descriptor
+    alive lets later structural parsing remain bound to the exact bytes whose
+    size and digest were checked, regardless of pathname replacement.
+    """
+
+    parent_fd = -1
+    descriptor = -1
+    try:
+        parent_fd, leaf = _open_parent_dirfd(root, path, label)
+        descriptor = os.open(leaf, _FILE_FLAGS, dir_fd=parent_fd)
+        before = os.fstat(descriptor)
+        if (not stat.S_ISREG(before.st_mode) or before.st_uid != os.geteuid()
+                or before.st_nlink != 1 or before.st_size > maximum):
+            raise Stage3Error(f"{label} is not one bounded owned regular file")
+        payload = b""
+        while len(payload) <= maximum:
+            block = os.read(descriptor, min(1024 * 1024, maximum + 1 - len(payload)))
+            if not block:
+                break
+            payload += block
+        after = os.fstat(descriptor)
+        if (len(payload) > maximum
+                or len(payload) != before.st_size
+                or (before.st_dev, before.st_ino, before.st_nlink, before.st_size)
+                != (after.st_dev, after.st_ino, after.st_nlink, after.st_size)):
+            raise Stage3Error(f"{label} changed while being read")
+        result = (payload, before, descriptor, parent_fd, leaf)
+        descriptor = -1
+        parent_fd = -1
+        return result
+    except (OSError, Stage3Error):
+        return None
+    finally:
+        if descriptor != -1:
+            os.close(descriptor)
+        if parent_fd != -1:
+            os.close(parent_fd)
 
 
 def _read_regular_bounded_fd(parent_fd: int, leaf: str, *, maximum: int = MAX_CHILD_OUTPUT_BYTES) -> tuple[bytes, os.stat_result] | None:
@@ -1018,8 +1132,14 @@ def _validate_captured_output_contract(
         temporary_after = os.lstat(temporary_path)
         temporary_held_after = os.fstat(descriptor)
         if (
-            (modules_after.st_dev, modules_after.st_ino, modules_after.st_nlink)
-            != (modules_before.st_dev, modules_before.st_ino, modules_before.st_nlink)
+            # Directory link counts are not stable publication evidence on
+            # APFS and may change while this function's own private snapshot
+            # exists.  The held descriptor and textual path must instead keep
+            # naming the same owned directory inode with the same type/mode.
+            (modules_after.st_dev, modules_after.st_ino, modules_after.st_uid,
+             stat.S_IFMT(modules_after.st_mode), stat.S_IMODE(modules_after.st_mode))
+            != (modules_before.st_dev, modules_before.st_ino, modules_before.st_uid,
+                stat.S_IFMT(modules_before.st_mode), stat.S_IMODE(modules_before.st_mode))
             or not stat.S_ISDIR(modules_path_after.st_mode)
             or (modules_path_after.st_dev, modules_path_after.st_ino)
             != (modules_before.st_dev, modules_before.st_ino)
@@ -1410,6 +1530,11 @@ def _authority_manifest_valid(
                 reasons.append("proof contract hash mismatch")
         except OSError:
             reasons.append("proof contract is unavailable")
+    source_descriptor = -1
+    source_parent_fd = -1
+    source_leaf = ""
+    source_bytes: bytes | None = None
+    source_info: os.stat_result | None = None
     context = record.get("module_context")
     if not isinstance(context, Mapping) or context.get("module") != AUTHORITY_MODULE:
         reasons.append("module context does not bind c7-types")
@@ -1422,13 +1547,17 @@ def _authority_manifest_valid(
             if source_entry.get("path") != "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity":
                 reasons.append("module context source path is not c7-types")
             source_path = root / str(source_entry.get("path", ""))
-            source_snapshot = _read_regular_bounded(
-                root, source_path, maximum=MAX_AUTHORITY_SOURCE_BYTES
+            source_snapshot = _open_regular_bounded_snapshot(
+                root,
+                source_path,
+                maximum=MAX_AUTHORITY_SOURCE_BYTES,
+                label="authority source",
             )
             if source_snapshot is None:
                 reasons.append("module context source binding is unavailable")
             else:
-                source_bytes, _source_info = source_snapshot
+                (source_bytes, source_info, source_descriptor,
+                 source_parent_fd, source_leaf) = source_snapshot
                 if (source_entry.get("size") != len(source_bytes)
                         or source_entry.get("sha256") != "sha256:" + _sha256_bytes(source_bytes)):
                     reasons.append("module context source binding is stale")
@@ -1473,6 +1602,8 @@ def _authority_manifest_valid(
         if check_output_contract:
             try:
                 source_entry = context["files"][0]  # type: ignore[index]
+                if source_bytes is None or source_info is None or source_descriptor == -1:
+                    raise ValueError("authority source snapshot is unavailable")
                 expected_stdout_hash = "sha256:" + _sha256_bytes(output_bytes)
                 if not _validate_captured_output_contract(
                     root=root,
@@ -1481,8 +1612,8 @@ def _authority_manifest_valid(
                     output_bytes=output_bytes,
                     expected_stdout_hash=expected_stdout_hash,
                     source_path=str(source_entry["path"]),
-                    source_size=int(source_entry["size"]),
-                    source_hash=str(source_entry["sha256"]),
+                    source_size=len(source_bytes),
+                    source_hash="sha256:" + _sha256_bytes(source_bytes),
                     proof_hash=str(record.get("proof_contract_sha256")),
                 ):
                     reasons.append("authoritative output contract did not structurally validate")
@@ -1506,6 +1637,25 @@ def _authority_manifest_valid(
             reasons.append("stderr receipt hash mismatch")
     if owned_modules_fd and modules_fd != -1:
         os.close(modules_fd)
+    if source_descriptor != -1:
+        try:
+            held_after = os.fstat(source_descriptor)
+            named_after = os.stat(
+                source_leaf, dir_fd=source_parent_fd, follow_symlinks=False
+            )
+            if (source_info is None
+                    or (held_after.st_dev, held_after.st_ino, held_after.st_nlink,
+                        held_after.st_size)
+                    != (source_info.st_dev, source_info.st_ino, source_info.st_nlink,
+                        source_info.st_size)
+                    or (named_after.st_dev, named_after.st_ino)
+                    != (source_info.st_dev, source_info.st_ino)):
+                reasons.append("authority source pathname no longer names the held snapshot")
+        except OSError:
+            reasons.append("authority source snapshot could not be revalidated")
+        finally:
+            os.close(source_descriptor)
+            os.close(source_parent_fd)
     evidence = {
         "state_dir": str(state_dir),
         "manifest_schema": manifest.get("schema"),
