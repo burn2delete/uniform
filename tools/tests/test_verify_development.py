@@ -1470,6 +1470,38 @@ class VerifyDevelopmentTests(unittest.TestCase):
         stage7_deferred_batches = {
             "stage7-c11-source-preflight",
         }
+        # The fixed runner exposes this seed before the durable graph is
+        # admitted, but the parsed production manifest must not route to it or
+        # mention its selectors/namespace in any check metadata.  Walk the
+        # real JSON values rather than comparing a hand-written expected set
+        # to itself; this covers ids, batches, commands, dependencies, input
+        # ownership, and other execution metadata together.
+        stage7_runner_markers = (
+            "stage7-",
+            "stage7-c11-source-preflight",
+            "sh07-c11-source-",
+            "sh07_c11_mir_source_preflight_test",
+            "sh07-c11-mir-source-preflight-test",
+        )
+        manifest_stage7_references: list[tuple[str, str]] = []
+
+        def collect_stage7_references(value: object, check_id: str, path: str) -> None:
+            if isinstance(value, dict):
+                for key, child in value.items():
+                    collect_stage7_references(child, check_id, f"{path}.{key}")
+            elif isinstance(value, list):
+                for index, child in enumerate(value):
+                    collect_stage7_references(child, check_id, f"{path}[{index}]")
+            elif isinstance(value, str) and any(marker in value for marker in stage7_runner_markers):
+                manifest_stage7_references.append((check_id, f"{path}={value}"))
+
+        for item in manifest["checks"]:
+            collect_stage7_references(item, item["id"], "check")
+        self.assertEqual([], manifest_stage7_references)
+        self.assertEqual(
+            [batch for batch in verifier._stage3.FIXED_BATCHES if batch.startswith("stage7-")],
+            sorted(stage7_deferred_batches),
+        )
         stage3_fixed_batches = (
             set(verifier._stage3.FIXED_BATCHES)
             - stage4_batches
@@ -1477,6 +1509,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             - stage6_batches
             - stage7_deferred_batches
         )
+        self.assertNotIn("stage7-c11-source-preflight", stage3_fixed_batches)
         self.assertEqual(
             {item["stage3_batch"] for item in stage3.values()},
             stage3_fixed_batches,
