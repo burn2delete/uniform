@@ -295,6 +295,55 @@ The prior `f3729a5` proof (artifact `ed0a4e...`, census `78ea0c...`) remains
 stale historical evidence only; no new proof ran during this integration and
 no speedup or equivalence claim is made.
 
+## Fixed Stage5 C9 ownership graph
+
+The C9 route is a fixed, non-authoritative graph layered only on the narrow
+`stage3-runner-unit` prerequisite. It does not depend on or replay the Stage3
+or Stage4 production nodes. Automatic changed-path routing is:
+
+`stage5-c9-source-structural` -> `stage5-c9-kernel` -> `stage5-public-c9`
+
+with a parallel source -> `stage5-sh10-c8-adapter` branch. The source gate
+uses the four exact C9 coverage selectors in source order (proof contract,
+control-form arity, contracts, limitations), `-J-Xmx2g`, and a 1,200-second
+timeout. Its source is pinned to 47,414 bytes and
+`sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59`.
+Coverage vars 5--9 remain deferred; the partial coverage namespace is
+fingerprinted and impact-excluded so an edit fails closed.
+
+The kernel node runs all four SH-10 ownership-transition selectors in one
+`-J-Xmx2g` process (4 tests/424 assertions, 6.42 seconds, observed peak
+1,039,777,792 bytes). The adapter node runs four synthetic C8-to-C9 selectors
+then its authenticated boundary in one `-J-Xmx8g` process (5 tests/51
+assertions, 68.073 seconds, observed peak 4,164,911,104 bytes); no skipped
+vars or `.qst` carrier was observed. The public C9 node is a fixed selector
+with `-J-Xmx2g`, a 600-second timeout, and wall/RSS receipt telemetry.
+
+All production nodes are fresh, exclusive, capacity-one, command-owned users
+of `/private/tmp/gravity-sh07-heavy.lock` and inherit the complete centralized
+runtime identity. Public inputs include the packaged JVM CLI jar, `bin/gravity`,
+the seed-retirement artifact, and the partial bootstrap/CLI/diagnostics chain.
+Kernel inputs include accepted/rejected `.gravity` and `.qst` fixture pairs;
+the adapter binds its C8/C9/SH-09/SH-08 helper chain and only the accepted
+typed-bool `.gravity` fixture loaded by its authenticated boundary.
+
+The `stage5-c9-proof-candidate` is manual-only (`automatic: false`), fresh,
+no-resume, new-state, `authority: none`, `proof_candidate: true`, and
+`attestation_required: true`; it uses the fixed `c9-authority` policy,
+`c9-ownership` module, `-J-Xmx8g`, and a 21,600-second timeout. The b6e80f1
+candidate (505.045 seconds, artifact `sha256:56aa7b6c...b2de`, census
+`sha256:b28f186a...1a45`) is planning evidence only and is invalidated by the
+current wrapper identity; do not rerun proof during this integration. An
+exit-0 candidate does not promote authority.
+
+C9 source changes select source plus both automatic branches. Kernel fixture or
+test changes select source/kernel/public only. Within the Stage5 graph,
+adapter/helper/C8 changes select source/adapter only; upstream Stage4 routing
+for those same C8 paths remains independent. Changed paths never select the proof candidate;
+explicit `--check` and `--all` may request its public+adapter closure. C9
+paths are impact-excluded from legacy broad Stage0 ownership, and all C9 fixed
+nodes carry the centralized runtime/input, heap, lock, and receipt checks.
+
 ## Selection and execution flow
 
 1. Normalize changed paths and validate the manifest before starting a command.

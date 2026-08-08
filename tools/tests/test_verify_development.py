@@ -1450,7 +1450,14 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage4-public-c8",
             "c8-authority",
         }
-        stage3_fixed_batches = set(verifier._stage3.FIXED_BATCHES) - stage4_batches
+        stage5_batches = {
+            "stage5-c9-source-structural",
+            "stage5-c9-kernel",
+            "stage5-sh10-c8-adapter",
+            "stage5-public-c9",
+            "c9-authority",
+        }
+        stage3_fixed_batches = set(verifier._stage3.FIXED_BATCHES) - stage4_batches - stage5_batches
         self.assertEqual(
             {item["stage3_batch"] for item in stage3.values()},
             stage3_fixed_batches,
@@ -1847,6 +1854,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         for check_id, batch, module in (
             ("stage3-c7-proof-candidate", "authority", "c7-types"),
             ("stage4-c8-proof-candidate", "c8-authority", "c8-effects"),
+            ("stage5-c9-proof-candidate", "c9-authority", "c9-ownership"),
         ):
             with tempfile.TemporaryDirectory(prefix=f"gravity-{module}-receipt-") as directory:
                 root = Path(directory).resolve()
@@ -1872,19 +1880,22 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 self.assertEqual(validated["authority_evidence"]["selected_modules"], [module])
 
     def test_parent_rejects_cross_module_proof_candidate_tampering(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="gravity-c8-tamper-") as directory:
+        with tempfile.TemporaryDirectory(prefix="gravity-c9-tamper-") as directory:
             root = Path(directory).resolve()
             receipt, check_item, identities = self._valid_stage3_proof_candidate_receipt(
                 root,
-                check_id="stage4-c8-proof-candidate",
-                batch="c8-authority",
-                module="c8-effects",
+                check_id="stage5-c9-proof-candidate",
+                batch="c9-authority",
+                module="c9-ownership",
             )
             for mutate in (
                 lambda value: value.update({"proof_batch": "authority"}),
                 lambda value: value.update({"proof_module": "c7-types"}),
                 lambda value: value["authority_evidence"].update({"module": "c7-types"}),
                 lambda value: value["authority_evidence"].update({"selected_modules": ["c7-types"]}),
+                lambda value: value.update({"proof_batch": "c8-authority"}),
+                lambda value: value.update({"proof_module": "c8-effects"}),
+                lambda value: value["authority_evidence"].update({"module": "c8-effects"}),
             ):
                 candidate = json.loads(json.dumps(receipt))
                 mutate(candidate)
@@ -1899,6 +1910,263 @@ class VerifyDevelopmentTests(unittest.TestCase):
                         nonce=candidate["nonce"],
                         expected_returncode=0,
                     )
+
+    def test_stage5_fixed_graph_matches_runner_and_resource_policy(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        by_id = verifier.checks_by_id(manifest)
+        expected_ids = [
+            "stage5-c9-source-structural",
+            "stage5-c9-kernel",
+            "stage5-sh10-c8-adapter",
+            "stage5-public-c9",
+            "stage5-c9-proof-candidate",
+        ]
+        self.assertEqual(
+            [item["id"] for item in manifest["checks"] if item["id"].startswith("stage5-")],
+            expected_ids,
+        )
+        expected_batches = {
+            "stage5-c9-source-structural",
+            "stage5-c9-kernel",
+            "stage5-sh10-c8-adapter",
+            "stage5-public-c9",
+            "c9-authority",
+        }
+        self.assertEqual(
+            {by_id[item]["stage3_batch"] for item in expected_ids},
+            expected_batches,
+        )
+        fixed = verifier._stage3._FIXED_BATCH_SELECTORS
+        expected_selectors = {
+            "stage5-c9-source-structural": (
+                "gravity.self-hosting.sh07-c9-ownership-source-coverage-test/sh07-b30-proof-contract-registers-c9-source-exactly",
+                "gravity.self-hosting.sh07-c9-ownership-source-coverage-test/sh07-b30-c9-source-control-form-arities-are-bounded",
+                "gravity.self-hosting.sh07-c9-ownership-source-coverage-test/sh07-b30-c9-source-contracts-states-and-reasons-are-exact",
+                "gravity.self-hosting.sh07-c9-ownership-source-coverage-test/sh07-b30-c9-structural-limitations-remain-explicit",
+            ),
+            "stage5-c9-kernel": (
+                "gravity.self-hosting.sh10-ownership-transition-test/sh10-source-and-fixtures-compile-as-gravity",
+                "gravity.self-hosting.sh10-ownership-transition-test/sh10-accepts-initiation-borrow-move-and-bounded-lifetime-flows",
+                "gravity.self-hosting.sh10-ownership-transition-test/sh10-rejects-invalid-state-transitions-structurally",
+                "gravity.self-hosting.sh10-ownership-transition-test/sh10-fails-closed-on-request-event-and-result-substitution",
+            ),
+            "stage5-sh10-c8-adapter": (
+                "gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-source-api-and-policy-are-exact",
+                "gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-accepts-persistent-primitive-read",
+                "gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-accepts-primitive-type-family",
+                "gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-rejects-mutation-and-non-read-events",
+                "gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-authenticated-gravity-boundary",
+            ),
+            "stage5-public-c9": (
+                "gravity.bootstrap-test/public-check-accepts-gravity-authored-c9-ownership-checker-engine",
+            ),
+        }
+        for check_id in expected_ids[:-1]:
+            item = by_id[check_id]
+            batch = item["stage3_batch"]
+            self.assertEqual(tuple(fixed[batch]), expected_selectors[check_id], batch)
+            self.assertEqual(len(fixed[batch]), len(set(fixed[batch])))
+            self.assertEqual(item["command"], ["python3", "tools/run_stage3_verification.py"])
+            self.assertEqual(item["lock_owner"], "command")
+            self.assertEqual(item["lock"], str(verifier._stage3.CANONICAL_LOCK))
+            self.assertTrue(item["exclusive"])
+            self.assertEqual(item["capacity"], 1)
+            self.assertTrue(item["fresh"])
+            self.assertFalse(item["resume"])
+            self.assertEqual(item["stage3_mode"], verifier._stage3.MODE_PURE)
+            expected_heap = verifier._stage3.batch_command(batch)[1]
+            self.assertEqual(item["jvm_heap"], expected_heap)
+            self.assertEqual(
+                item["minimum_heap_bytes"],
+                2147483648 if expected_heap == "-J-Xmx2g" else 8589934592,
+            )
+            self.assertTrue(
+                set(verifier._stage3.STAGE3_RUNTIME_DEPENDENCIES)
+                <= set(item["inputs"]) | set(item["tool_inputs"]),
+                check_id,
+            )
+        source = by_id["stage5-c9-source-structural"]
+        self.assertIn(
+            "bootstrap/clojure/test/gravity/self_hosting/sh07_c9_ownership_source_coverage_test.clj",
+            source["impact_excludes"],
+        )
+        self.assertEqual(len([item for item in source["inputs"] if item.startswith("docs/")]), 26)
+        source_identity = verifier.input_identities(source, ROOT)
+        source_record = next(
+            item
+            for item in source_identity["files"]
+            if item["path"] == "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+        )
+        self.assertEqual(source_record["size"], 47414)
+        self.assertEqual(
+            source_record["sha256"],
+            "59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59",
+        )
+        kernel = by_id["stage5-c9-kernel"]
+        self.assertTrue(
+            {
+                "bootstrap/clojure/fixtures/self-hosting/sh-10/accepted/ownership-transitions.gravity",
+                "bootstrap/clojure/fixtures/self-hosting/sh-10/accepted/ownership-transitions.qst",
+                "bootstrap/clojure/fixtures/self-hosting/sh-10/rejected/invalid-ownership-transitions.gravity",
+                "bootstrap/clojure/fixtures/self-hosting/sh-10/rejected/invalid-ownership-transitions.qst",
+            } <= set(kernel["inputs"])
+        )
+        adapter = by_id["stage5-sh10-c8-adapter"]
+        self.assertTrue(
+            {
+                "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+                "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+                "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj",
+                "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+                "bootstrap/clojure/test/gravity/self_hosting/sh08_primitive_function_type_test.clj",
+                "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-value-typed-bool.gravity",
+            } <= set(adapter["inputs"])
+        )
+        public = by_id["stage5-public-c9"]
+        self.assertEqual(public["jvm_heap"], "-J-Xmx2g")
+        self.assertGreaterEqual(public["timeout_seconds"], 600)
+        self.assertTrue(public["resource_receipt"].startswith("observed-peak"))
+        proof = by_id["stage5-c9-proof-candidate"]
+        self.assertEqual(proof["stage3_batch"], "c9-authority")
+        self.assertEqual(proof["stage3_mode"], verifier._stage3.MODE_PROOF_CANDIDATE)
+        self.assertFalse(proof["automatic"])
+        self.assertTrue(proof["proof_candidate"])
+        self.assertTrue(proof["attestation_required"])
+        self.assertTrue(proof["no_resume"])
+        self.assertEqual(proof["state_dir_policy"], "new-per-invocation")
+        self.assertEqual(proof["jvm_heap"], "-J-Xmx8g")
+        self.assertEqual(
+            proof["depends_on"],
+            ["stage5-public-c9", "stage5-sh10-c8-adapter"],
+        )
+
+    def test_stage5_change_impact_uses_only_fixed_c9_graph_and_manual_proof(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+
+        def selected(path: str) -> set[str]:
+            return set(verifier.select_impacted_checks(manifest, ROOT, changed_paths=[path])["selected_ids"])
+
+        source = selected("bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity")
+        self.assertTrue(
+            {
+                "stage5-c9-source-structural",
+                "stage5-c9-kernel",
+                "stage5-public-c9",
+                "stage5-sh10-c8-adapter",
+            } <= source
+        )
+        self.assertNotIn("stage5-c9-proof-candidate", source)
+        self.assertFalse(
+            any(
+                item.startswith("stage3-") and item != "stage3-runner-unit"
+                or item.startswith("stage4-")
+                for item in source
+            )
+        )
+        self.assertNotIn("stage0-clojure-suite", source)
+        self.assertNotIn("stage0-bootstrap-authority", source)
+
+        kernel = selected("bootstrap/clojure/fixtures/self-hosting/sh-10/accepted/ownership-transitions.gravity")
+        self.assertTrue({"stage5-c9-source-structural", "stage5-c9-kernel", "stage5-public-c9"} <= kernel)
+        self.assertNotIn("stage5-sh10-c8-adapter", kernel)
+        self.assertNotIn("stage5-c9-proof-candidate", kernel)
+        self.assertNotIn("stage0-clojure-suite", kernel)
+        self.assertNotIn("stage0-bootstrap-authority", kernel)
+
+        adapter = selected("bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj")
+        self.assertTrue({"stage5-c9-source-structural", "stage5-sh10-c8-adapter"} <= adapter)
+        self.assertNotIn("stage5-c9-kernel", adapter)
+        self.assertNotIn("stage5-public-c9", adapter)
+        self.assertNotIn("stage5-c9-proof-candidate", adapter)
+        self.assertNotIn("stage0-clojure-suite", adapter)
+        self.assertNotIn("stage0-bootstrap-authority", adapter)
+
+        c8 = selected("bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
+        self.assertTrue({"stage5-c9-source-structural", "stage5-sh10-c8-adapter"} <= c8)
+        self.assertNotIn("stage5-c9-kernel", c8)
+        self.assertNotIn("stage5-public-c9", c8)
+
+        partial = verifier.select_impacted_checks(
+            manifest,
+            ROOT,
+            changed_paths=["bootstrap/clojure/test/gravity/self_hosting/sh07_c9_ownership_source_coverage_test.clj"],
+        )
+        self.assertEqual(partial["selected_ids"], [])
+        self.assertEqual(
+            partial["unmatched_changes"],
+            ["bootstrap/clojure/test/gravity/self_hosting/sh07_c9_ownership_source_coverage_test.clj"],
+        )
+        explicit = verifier.select_impacted_checks(
+            manifest,
+            ROOT,
+            requested_ids=["stage5-c9-proof-candidate"],
+        )
+        self.assertIn("stage5-public-c9", explicit["selected_ids"])
+        self.assertIn("stage5-sh10-c8-adapter", explicit["selected_ids"])
+        self.assertIn("stage5-c9-proof-candidate", explicit["selected_ids"])
+
+    def test_stage5_resource_and_runtime_contracts_fail_closed_on_drift(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        for check_id in (
+            "stage5-c9-source-structural",
+            "stage5-c9-kernel",
+            "stage5-sh10-c8-adapter",
+            "stage5-public-c9",
+            "stage5-c9-proof-candidate",
+        ):
+            broken = json.loads(json.dumps(manifest))
+            target = next(item for item in broken["checks"] if item["id"] == check_id)
+            target["tool_inputs"].remove("bootstrap/clojure/src/**")
+            with self.assertRaisesRegex(verifier.ManifestError, "centralized Stage3 runtime inputs"):
+                verifier.validate_manifest(broken)
+
+        for check_id in (
+            "stage5-c9-source-structural",
+            "stage5-c9-kernel",
+            "stage5-sh10-c8-adapter",
+            "stage5-public-c9",
+            "stage5-c9-proof-candidate",
+        ):
+            broken = json.loads(json.dumps(manifest))
+            target = next(item for item in broken["checks"] if item["id"] == check_id)
+            target["jvm_heap"] = "-J-Xmx8g" if target["jvm_heap"] == "-J-Xmx2g" else "-J-Xmx2g"
+            target["minimum_heap_bytes"] = (
+                8589934592 if target["jvm_heap"] == "-J-Xmx8g" else 2147483648
+            )
+            with self.assertRaisesRegex(verifier.ManifestError, "jvm_heap"):
+                verifier.validate_manifest(broken)
+
+        for check_id in (
+            "stage5-c9-source-structural",
+            "stage5-c9-kernel",
+            "stage5-sh10-c8-adapter",
+            "stage5-public-c9",
+            "stage5-c9-proof-candidate",
+        ):
+            broken = json.loads(json.dumps(manifest))
+            target = next(item for item in broken["checks"] if item["id"] == check_id)
+            target["lock_owner"] = "runner"
+            with self.assertRaisesRegex(verifier.ManifestError, "command-owned lock evidence"):
+                verifier.validate_manifest(broken)
+
+        broken = json.loads(json.dumps(manifest))
+        broken["checks"] = [
+            item for item in broken["checks"] if item["id"] != "stage5-sh10-c8-adapter"
+        ]
+        # The generic graph validator intentionally accepts disconnected
+        # checks; this assertion protects the durable manifest contract from
+        # silently dropping a Stage5 owner during review.
+        stage5_ids = {item["id"] for item in broken["checks"] if item["id"].startswith("stage5-")}
+        self.assertNotEqual(
+            stage5_ids,
+            {
+                "stage5-c9-source-structural",
+                "stage5-c9-kernel",
+                "stage5-sh10-c8-adapter",
+                "stage5-public-c9",
+                "stage5-c9-proof-candidate",
+            },
+        )
 
     def test_real_manifest_partial_stage3_source_files_fail_closed_as_deferred(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
@@ -2066,6 +2334,18 @@ class VerifyDevelopmentTests(unittest.TestCase):
         source_path = "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
         source_selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[source_path])
         source_selected = set(source_selection["selected_ids"])
+        expected_c8_change_selection = {
+            "stage0-orchestrator-unit",
+            "stage1-sh01-unit",
+            "stage2-authority-admission-unit",
+            "stage3-runner-unit",
+            "stage4-c8-source-structural",
+            "stage4-sh09-adapter",
+            "stage4-public-c8",
+            "stage5-c9-source-structural",
+            "stage5-sh10-c8-adapter",
+        }
+        self.assertEqual(source_selected, expected_c8_change_selection)
         self.assertTrue(
             {
                 "stage4-c8-source-structural",
@@ -2095,6 +2375,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         adapter_path = "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj"
         adapter_selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[adapter_path])
         adapter_selected = set(adapter_selection["selected_ids"])
+        self.assertEqual(adapter_selected, expected_c8_change_selection)
         self.assertTrue(
             {
                 "stage4-sh09-adapter",

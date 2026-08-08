@@ -602,7 +602,9 @@ and derived census
 resolutions, 2,776 core nodes, 44 definitions, 423 calls and call edges, 855
 references, 37 function records, five recursion components, and zero keyword
 lookups. Counts were not precommitted, and no trusted reviewed attestation was
-created, so the result is historical and does not establish exact authentic
+created, so the result is historical planning evidence only. The current
+source and fixed wrapper identity invalidate it and require a fresh no-resume
+run after integration and freeze; it does not establish exact authentic
 coverage, aggregate or release authority, or automatic scoped authority.
 Persistent aggregate copy
 semantics, owned-mutable, effectful, and nonprimitive SH-09 adaptation, field

@@ -738,7 +738,59 @@ The graph is non-authoritative and makes no speedup or equivalence claim. The
 historical `f3729a5` proof evidence remains stale after the `eefb20d` source
 seam; no new C8 proof was run as part of this manifest update.
 
-### 9. Full release gate
+### 9. Fixed Stage5 C9 ownership graph
+
+The manifest now routes the C9 ownership slice through a fixed,
+non-authoritative graph. It depends only on the cheap `stage3-runner-unit`
+prerequisite; it does not replay the Stage3 or Stage4 production chains and
+never selects either earlier proof candidate. The automatic route is:
+
+1. `stage5-c9-source-structural`, a 2 GiB source/contract gate whose four
+   selectors run in source order: proof-contract, control-form arity, source
+   contracts, and structural limitations. The C9 source is bound at 47,414
+   bytes with SHA
+   `sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59`.
+   Coverage vars 5--9 remain intentionally deferred: their partial namespace
+   is fingerprinted and impact-excluded so an edit fails closed rather than
+   being reported as covered by a different selector.
+2. `stage5-c9-kernel`, a 2 GiB four-selector SH-10 ownership-transition batch.
+   The accepted and rejected `.gravity`/`.qst` fixture pairs are bound as
+   inputs. The measured receipt was 4 tests/424 assertions in 6.42 seconds
+   with an observed process-tree peak of 1,039,777,792 bytes. This is a
+   non-authoritative development observation.
+3. `stage5-sh10-c8-adapter`, one 8 GiB five-selector batch in source order:
+   four synthetic C8-to-C9 ownership adapters followed by the authenticated
+   boundary. It binds the C8 and C9 sources, the SH-09 adapter, the SH-08
+   helper tests, the C7 source, and exactly the accepted typed-bool `.gravity`
+   fixture loaded by the boundary. The measured receipt was 5 tests/51
+   assertions in 68.073 seconds with an observed peak of 4,164,911,104 bytes;
+   no skipped vars or `.qst` carrier were reported. These are resource and
+   scheduling observations, not speedup claims.
+4. `stage5-public-c9`, the fixed public C9 compatibility selector, uses
+   `-J-Xmx2g`, a 600-second timeout, and observed wall/RSS telemetry. Its
+   partial bootstrap/CLI/diagnostics test chain, packaged JVM CLI jar,
+   `bin/gravity`, and seed-retirement artifact are declared inputs.
+
+The manual `stage5-c9-proof-candidate` is a fresh, no-resume `c9-authority`
+candidate for `c9-ownership`, with a new invocation state directory,
+`automatic: false`, `authority: none`, `proof_candidate: true`, and
+`attestation_required: true`. It uses `-J-Xmx8g` and a 21,600-second timeout;
+an exit-0 candidate is not an attestation or authority promotion. The
+historical b6e80f1 planning evidence (505.045-second candidate, artifact
+`sha256:56aa7b6c...b2de`, census `sha256:b28f186a...1a45`) is retained only as
+stale planning evidence because the current wrapper identity must be rerun
+after integration and freeze. Do not rerun C8 authority for a C9-only change.
+
+C9 source changes select source structure and both automatic branches (kernel
+to public, and the merged adapter). Kernel fixture/test changes select only
+source, kernel, and public. Within the Stage5 graph, adapter/helper/C8 changes
+select source and the adapter only; upstream Stage4 routing for those same C8
+paths remains independent. Ordinary changed-path routing never selects the proof candidate;
+explicit `--check`/`--all` requests may include its dependency closure. C9
+paths are impact-excluded from the legacy broad Stage0 heavy checks so the
+fixed graph remains the sole automatic C9 owner.
+
+### 10. Full release gate
 
 Run only after the candidate is stable, the selected authoritative modules
 pass, and the worktree is ready for release review. This preserves every

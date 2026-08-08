@@ -207,6 +207,29 @@ contract 4 tests/96 assertions, synthetic 5/82, and public 108.627 seconds at
 historical evidence only; no new proof, speedup, equivalence, or authority
 claim is made by this graph.
 
+The fixed Stage5 C9 ownership graph is similarly bounded and non-authoritative.
+It depends only on the cheap `stage3-runner-unit` prerequisite, then routes
+C9 source structure (`-J-Xmx2g`) to the four-selector SH-10 kernel batch
+(`-J-Xmx2g`) and the merged five-selector C8-to-C9 adapter batch
+(`-J-Xmx8g`), with the kernel branch continuing to the public C9 selector
+(`-J-Xmx2g`). The measured kernel boundary was 4 tests/424 assertions in
+6.42 seconds at an observed 1,039,777,792-byte peak; the adapter was 5/51 in
+68.073 seconds at an observed 4,164,911,104-byte peak. The public node uses a
+600-second timeout and records wall/RSS telemetry. C9 source changes select
+both branches; kernel fixture/test changes select source/kernel/public only;
+within the Stage5 graph, adapter/helper/C8 changes select source/adapter only;
+upstream Stage4 routing remains independent. The old broad
+Stage0 heavy ownership is impact-excluded for these C9 paths.
+
+The manual `stage5-c9-proof-candidate` is a fresh, no-resume, new-state
+`c9-authority` candidate for `c9-ownership` with `-J-Xmx8g`, a 21,600-second
+timeout, `automatic: false`, `authority: none`, and
+`attestation_required: true`. The b6e80f1 result is planning evidence only
+(505.045 seconds; artifact `sha256:56aa7b6c...b2de`; census
+`sha256:b28f186a...1a45`) and is invalidated by the current wrapper identity.
+No C8 proof is rerun for C9-only work, and no candidate exit status promotes
+authority.
+
 Every Stage 0 manifest check explicitly sets `daemonization: forbidden`.
 Commands run in a new process group; ordinary descendants are cleaned before a
 resource lock is released, with one bounded host-wide `ps eww` environment

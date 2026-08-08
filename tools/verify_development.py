@@ -351,9 +351,15 @@ _STAGE3_HEAP_BYTES = {
 
 
 def _is_fixed_stage_check(check_id: str) -> bool:
-    """Return whether a manifest node invokes the fixed Stage3/Stage4 wrapper."""
+    """Return whether a manifest node invokes the fixed stage wrapper.
 
-    return check_id.startswith(("stage3-", "stage4-"))
+    Stage3, Stage4, and Stage5 all use the same command-owned
+    ``run_stage3_verification.py`` boundary.  Keep this predicate centralized
+    so a newly added fixed stage cannot accidentally bypass heap, runtime
+    identity, lock-owner, or receipt validation.
+    """
+
+    return check_id.startswith(("stage3-", "stage4-", "stage5-"))
 
 
 def _validate_stage3_resource_contract(check: Mapping[str, Any]) -> None:
@@ -454,10 +460,18 @@ def _lock_owner(check: Mapping[str, Any]) -> str:
             f"check {check.get('id')!r} lock_owner must be 'runner' or 'command'"
         )
     owner = str(raw)
+    check_id = str(check.get("id"))
+    if (
+        _is_fixed_stage_check(check_id)
+        and check_id != "stage3-runner-unit"
+        and owner != "command"
+    ):
+        raise ManifestError(
+            f"fixed stage check {check_id!r} must use command-owned lock evidence"
+        )
     if owner == "runner":
         return owner
 
-    check_id = str(check.get("id"))
     lane = check.get("lane")
     command = _parse_command(check.get("command"), check_id)
     if lane != "heavy-candidate":
