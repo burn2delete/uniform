@@ -281,6 +281,34 @@ class ProjectStructureValidationTests(unittest.TestCase):
         errors = self.errors_for(mutate)
         self.assertTrue(any("reviewed-central-routing" in error for error in errors), errors)
 
+    def test_stage0_coordinator_support_paths_are_exact_and_non_leaf(self) -> None:
+        manifest = validator.load_manifest()
+        module_paths = manifest["ownership"]["module_paths"]
+        self.assertEqual(
+            {
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj",
+                "bootstrap/clojure/test/gravity/development_test_runner.clj",
+            },
+            validator.STAGE0_COORDINATOR_SUPPORT_PATHS,
+        )
+        component_paths = {
+            component[section]["path"]
+            for component in validator.load_stage0_component_contract()["components"]
+            for section in ("source", "test")
+        }
+        for path in validator.STAGE0_COORDINATOR_SUPPORT_PATHS:
+            self.assertEqual("master-coordinator", module_paths[path])
+            self.assertNotIn(path, component_paths)
+
+    def test_stage0_coordinator_support_path_owner_drift_is_rejected(self) -> None:
+        path = "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj"
+
+        def mutate(manifest: dict) -> None:
+            manifest["ownership"]["module_paths"][path] = "sh-reader"
+
+        errors = self.errors_for(mutate)
+        self.assertTrue(any("coordinator support path" in error for error in errors), errors)
+
     def test_normative_central_routing_owner_cannot_be_transferred(self) -> None:
         def mutate(manifest: dict) -> None:
             for policy in manifest["path_policy"]["policies"]:

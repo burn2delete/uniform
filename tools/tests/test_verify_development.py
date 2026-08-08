@@ -1353,6 +1353,70 @@ class VerifyDevelopmentTests(unittest.TestCase):
             all_roots,
         )
 
+    def test_c2_compatibility_check_batches_exact_qualified_vars_under_host_capacity(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(check for check in manifest["checks"] if check["id"] == "stage0-c2-compatibility")
+        qualified = [
+            "gravity.bootstrap-compatibility.c2-test/c2-source-identity-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c2-test/c2-reader-diagnostics-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c2-test/c2-lexical-validation-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c2-test/c2-artifact-identity-load-order-initializes-standard-reader-options",
+            "gravity.bootstrap-compatibility.c2-test/c2-artifact-identity-compatibility-wrappers-preserve-interposition",
+        ]
+        self.assertEqual(
+            ["clojure", "-M:dev-test", "--namespace", "gravity.bootstrap-compatibility.c2-test"]
+            + [part for name in qualified for part in ("--exact", name)],
+            item["command"],
+        )
+        self.assertEqual("bootstrap-hosted", item["resource_class"])
+        self.assertEqual("none", item["authority"])
+        self.assertFalse(item["fresh"])
+        self.assertIsNone(item["lock"])
+        resource = verifier.check_resource_declaration(manifest, item)
+        self.assertEqual(verifier.CANONICAL_HEAVY_LOCK, resource["capacity_lock"])
+        self.assertEqual(1, resource["class_max_concurrency"])
+
+    def test_c2_compatibility_paths_route_and_invalidate_cache_identity(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(check for check in manifest["checks"] if check["id"] == "stage0-c2-compatibility")
+        for changed_path in (
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj",
+            "bootstrap/clojure/test/gravity/development_test_runner.clj",
+        ):
+            with self.subTest(path=changed_path):
+                selection = verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[changed_path]
+                )
+                self.assertIn("stage0-c2-compatibility", selection["selected_ids"])
+                self.assertIn("stage0-clojure-suite", selection["selected_ids"])
+                self.assertEqual([], selection["unmatched_changes"])
+
+        with tempfile.TemporaryDirectory(prefix="gravity-c2-compat-cache-") as directory:
+            temp_root = Path(directory)
+            copied = [
+                "deps.edn",
+                "contracts/project-structure.json",
+                "docs/self-hosting-slice-ownership.edn",
+                "bootstrap/clojure/src/gravity/bootstrap.clj",
+                "bootstrap/clojure/test/gravity/development_test_runner.clj",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj",
+                "tools/validate_project_structure.py",
+            ]
+            for relative in copied:
+                target = temp_root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / relative, target)
+            baseline = verifier.cache_key(manifest, item, temp_root)
+            for relative in copied[1:]:
+                target = temp_root / relative
+                original = target.read_bytes()
+                target.write_bytes(original + b"\ncompatibility-cache-change\n")
+                try:
+                    self.assertNotEqual(
+                        baseline, verifier.cache_key(manifest, item, temp_root), relative
+                    )
+                finally:
+                    target.write_bytes(original)
     def test_dependency_source_edits_route_to_every_consuming_leaf_group(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
         leaf_ids = {
@@ -1401,6 +1465,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage0-hosted-hello",
                 "stage0-hosted-hello-qst",
                 "stage0-selective-smoke",
+                "stage0-c2-compatibility",
                 "stage0-hosted-core-app",
                 "stage0-hosted-core-compiled-app",
                 "stage0-clojure-suite",
@@ -1603,6 +1668,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             if item["command"]
             and item["command"][0] == "clojure"
             and not item["id"].startswith("stage0-leaf-")
+            and item["id"] != "stage0-c2-compatibility"
         ]
         self.assertTrue(clojure_checks)
         self.assertTrue(all(item.get("fresh") is True for item in clojure_checks))

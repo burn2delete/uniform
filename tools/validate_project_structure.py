@@ -76,6 +76,10 @@ STAGE0_AUTHORITY_FIELDS = {
     "seed_retirement",
 }
 STAGE0_TEST_LANES = {"bootstrap-free", "compatibility", "coordinator"}
+STAGE0_COORDINATOR_SUPPORT_PATHS = {
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj",
+    "bootstrap/clojure/test/gravity/development_test_runner.clj",
+}
 STAGE0_MAPPING_KINDS = {
     "orchestrator",
     "primary",
@@ -1388,12 +1392,27 @@ def _validate_stage0_component_contract(
         path for path in module_paths
         if (path.startswith("bootstrap/clojure/src/") or path.startswith("bootstrap/clojure/test/"))
         and path not in stage_paths
+        and path not in STAGE0_COORDINATOR_SUPPORT_PATHS
     )
     for path in extra_stage_module_paths:
         _add_error(errors, "stage0 ownership projection", f"project has unregistered Stage0 module path {path!r}")
     missing_stage_module_paths = sorted(stage_paths.difference(module_paths))
     for path in missing_stage_module_paths:
         _add_error(errors, "stage0 ownership projection", f"project is missing Stage0 module path {path!r}")
+    for path in sorted(STAGE0_COORDINATOR_SUPPORT_PATHS):
+        if module_paths.get(path) != "master-coordinator":
+            _add_error(
+                errors,
+                "stage0 ownership projection",
+                f"coordinator support path {path!r} must be owned by 'master-coordinator'",
+            )
+        claims = _stage0_path_claims(path_policies, path)
+        if claims != [("reviewed-central-routing", "master-coordinator")]:
+            _add_error(
+                errors,
+                "stage0 ownership projection",
+                f"coordinator support path {path!r} must have only reviewed-central-routing claim",
+            )
 
     source_contracts = manifest.get("source_contracts")
     fixed_source_contract = {
