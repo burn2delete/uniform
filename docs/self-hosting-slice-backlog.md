@@ -497,10 +497,20 @@ literal recursive arguments, nonliteral bases, multiple recursive calls or
 components, mutual recursion, recursive captures or higher-order values, and
 polymorphic, multi-arity, variadic, or nonconvergent recursion remain rejected
 or pending. The prior source-bound proof and census remain exact historical
-evidence for `5fe2013`; they do not authenticate this newer source. The
-source-bound-derived contract now binds this source's bytes and SHA only,
-retains no precommitted count maps, and remains fail-closed pending a
-separately reviewed fresh authority run.
+evidence for `5fe2013`; they were not reused for this source. A fresh proof
+candidate at commit `206e89f` completed with stable context and a checked
+output contract in 3,998.709 seconds of wrapper time (3,993.553 seconds in the
+proof). It produced artifact
+`sha256:9ee396cb1f8d6403ce14061a9e9d9977829da25c7fc42c13d9a0804025006587`
+and derived census
+`sha256:6580b784bb46755231ad62ed3095ce5efe775f233d6f327098bb802fb6380393`:
+192 fragments and roots, 18,554 forms, 1,528 bindings, 1,266 local bindings,
+7,687 resolutions, 15,286 core nodes, 192 definitions, 3,082 calls, 6,185
+references, 187 function records, 3,082 call edges, 14 recursion components,
+and zero keyword-lookup products. Counts were derived rather than precommitted,
+the result requires a separate attestation, and no trusted reviewed attestation
+was created. It is therefore source-bound proof-candidate evidence only, not
+exact-authentic-coverage, aggregate, release, or seed-retirement authority.
 The C8 effect-checker source adds 44,102 authenticated bytes in 40 fragments
 containing 3,301 forms, 410 bindings, and 1,078 resolutions. It lowers to 2,788
 canonical core nodes with 40 definitions: 34 executable SH-09 functions and

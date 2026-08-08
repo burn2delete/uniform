@@ -312,11 +312,25 @@ about 10.4%. Profile that exact `5fe2013` proof phase before proposing another
 performance change; do not infer a speedup from interpreter microbenchmarks.
 The current 210,220-byte C7 source is a different candidate from that receipt,
 with source SHA `sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4`.
-Its source-bound-derived contract has been refreshed for the exact bytes only;
-count maps remain absent and the 55.85-minute receipt must not be relabeled as
-current evidence for it. The cheap primitive-family and separate bool/string
-`.gravity` boundary checks are non-authoritative development evidence; a fresh
-authoritative module run is still required.
+Its source-bound-derived contract was refreshed for the exact bytes only;
+count maps remained absent and the 55.85-minute receipt was not relabeled as
+current evidence for it. After two preserved fail-closed attempts exposed an
+oversized top-level fragment and malformed `if` forms, fresh proof commit
+`206e89f` completed in 3,998.709 seconds of wrapper time (3,993.553 seconds in
+the proof). The result passed its output contract with stable context, empty
+stderr, artifact
+`sha256:9ee396cb1f8d6403ce14061a9e9d9977829da25c7fc42c13d9a0804025006587`,
+and derived census
+`sha256:6580b784bb46755231ad62ed3095ce5efe775f233d6f327098bb802fb6380393`.
+The census contains 192 fragments and roots, 18,554 forms, 7,687 resolutions,
+15,286 core nodes, 192 definitions, 3,082 calls, 6,185 references, 187
+function records, 3,082 call edges, and 14 recursion components. This is a
+successful source-bound proof candidate, not automatic authority: counts were
+not precommitted, `:attestation-required?` is true, and no reviewed attestation
+was created because trusted reviewed-attestation admission is not enabled.
+Exact-authentic-coverage, aggregate, release, and seed-retirement claims remain
+unsupported. The cheap primitive-family and separate bool/string `.gravity`
+boundary checks likewise remain non-authoritative development evidence.
 `--fresh all` is the exhaustive SH-07 transaction and is reserved for the
 stable-candidate/release lane because of its measured runtime and memory cost.
 
