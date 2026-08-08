@@ -24,6 +24,7 @@ from verify_development import (
     ROOT,
     ManifestError,
     VerificationError,
+    check_semantic_declaration,
     checks_by_id,
     dependencies_of,
     input_identities,
@@ -243,6 +244,7 @@ def _validate_inputs(check: Mapping[str, Any], value: Any, root: Path, expected:
 
 
 def _declaration(check: Mapping[str, Any]) -> dict[str, Any]:
+    semantic = check_semantic_declaration(check)
     return {
         "id": check["id"],
         "lane": check["lane"],
@@ -252,11 +254,28 @@ def _declaration(check: Mapping[str, Any]) -> dict[str, Any]:
         "exclusive": bool(check.get("exclusive", False)),
         "cost": check.get("cost", "cheap"),
         "fresh": bool(check.get("fresh", False)),
+        "timeout_seconds": semantic["timeout_seconds"],
     }
 
 
 def _record_declaration(record: Mapping[str, Any]) -> dict[str, Any]:
-    return {key: record.get(key) for key in ("id", "lane", "command", "depends_on", "lock", "exclusive", "cost", "fresh")}
+    if "fresh" not in record or type(record["fresh"]) is not bool:
+        raise CompositionError("check record fresh declaration metadata must be boolean")
+    if "timeout_seconds" not in record:
+        raise CompositionError("check record is missing timeout_seconds declaration metadata")
+    timeout = record["timeout_seconds"]
+    if timeout is not None and (
+        type(timeout) is not float or not math.isfinite(timeout) or timeout <= 0
+    ):
+        raise CompositionError(
+            "check record timeout_seconds declaration metadata must be null or a finite positive float"
+        )
+    return {
+        key: record.get(key)
+        for key in (
+            "id", "lane", "command", "depends_on", "lock", "exclusive", "cost", "fresh", "timeout_seconds"
+        )
+    }
 
 
 def _immutable(record: Mapping[str, Any]) -> dict[str, Any]:
@@ -271,16 +290,9 @@ def _check_identity(check: Mapping[str, Any], record: Mapping[str, Any]) -> dict
     """Reconstruct the verifier cache identity without reading current inputs."""
 
     return {
-        "id": check["id"],
-        "lane": check["lane"],
-        "depends_on": dependencies_of(check),
+        **check_semantic_declaration(check),
         "command": record.get("command_identity"),
         "inputs": record.get("inputs"),
-        "cost": check.get("cost", "cheap"),
-        "lock": check.get("lock"),
-        "exclusive": bool(check.get("exclusive", False)),
-        "authority": check.get("authority", "none"),
-        "daemonization": check["daemonization"],
     }
 
 

@@ -26,6 +26,7 @@ import datetime as _datetime
 import fnmatch
 import hashlib
 import json
+import math
 import os
 from pathlib import Path, PurePosixPath
 import platform
@@ -283,6 +284,24 @@ def _check_authority(check: Mapping[str, Any], lane: str) -> str:
     return str(raw)
 
 
+def normalized_timeout_seconds(check: Mapping[str, Any]) -> float | None:
+    """Return one finite positive timeout value or fail with a stable error."""
+
+    timeout = check.get("timeout_seconds")
+    if timeout is None:
+        return None
+    message = f"check {check.get('id')!r} timeout_seconds must be a finite positive number"
+    if type(timeout) not in (int, float):
+        raise ManifestError(message)
+    try:
+        normalized = float(timeout)
+    except (OverflowError, ValueError, TypeError) as exc:
+        raise ManifestError(message) from exc
+    if not math.isfinite(normalized) or normalized <= 0:
+        raise ManifestError(message)
+    return normalized
+
+
 def load_manifest(path: Path | str = DEFAULT_MANIFEST) -> dict[str, Any]:
     """Load and validate a JSON verification manifest."""
 
@@ -361,9 +380,7 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
         if cost == "heavy" and lock is None and not exclusive:
             raise ManifestError(f"heavy check {check_id!r} must declare lock or exclusive=true")
         _check_authority(check, str(lane))
-        timeout = check.get("timeout_seconds")
-        if timeout is not None and (not isinstance(timeout, (int, float)) or timeout <= 0):
-            raise ManifestError(f"check {check_id!r} timeout_seconds must be positive")
+        normalized_timeout_seconds(check)
         cwd = check.get("cwd")
         if cwd is not None and (not isinstance(cwd, str) or not _is_safe_relative_path(_normalise_declared_path(cwd))):
             raise ManifestError(f"check {check_id!r} cwd must stay inside repository root")
@@ -745,18 +762,34 @@ def _marker_from_bound_identity(identity: Mapping[str, Any]) -> str:
     return _supervision_marker(unbound)
 
 
-def check_identity(check: Mapping[str, Any], root: Path | str = ROOT) -> dict[str, Any]:
-    identity = {
+def check_semantic_declaration(check: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the normalized manifest fields that govern check execution.
+
+    This public fragment is shared with receipt composition so cache-key
+    reconstruction cannot drift from the verifier as declaration fields are
+    added.  Command and input identities are bound separately because the
+    composer validates their recorded values without re-running a command.
+    """
+
+    return {
         "id": check["id"],
         "lane": check["lane"],
         "depends_on": dependencies_of(check),
-        "command": command_identity(check, root),
-        "inputs": input_identities(check, root),
         "cost": check.get("cost", "cheap"),
         "lock": check.get("lock"),
         "exclusive": bool(check.get("exclusive", False)),
+        "fresh": bool(check.get("fresh", False)),
+        "timeout_seconds": normalized_timeout_seconds(check),
         "authority": _check_authority(check, str(check["lane"])),
         "daemonization": check["daemonization"],
+    }
+
+
+def check_identity(check: Mapping[str, Any], root: Path | str = ROOT) -> dict[str, Any]:
+    identity = {
+        **check_semantic_declaration(check),
+        "command": command_identity(check, root),
+        "inputs": input_identities(check, root),
     }
     marker = _supervision_marker(identity)
     identity["command"]["runtime"]["supervision_environment"] = {
@@ -1872,6 +1905,7 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
         "exclusive": bool(check.get("exclusive", False)),
         "cost": check.get("cost", "cheap"),
         "fresh": bool(check.get("fresh", False)),
+        "timeout_seconds": identities["timeout_seconds"],
         "authority": "non-authoritative",
         "depends_on": dependencies_of(check),
         "started_at": started,
@@ -1887,7 +1921,7 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
                     command,
                     cwd=cwd,
                     env=env,
-                    timeout=check.get("timeout_seconds"),
+                    timeout=identities["timeout_seconds"],
                     marker=_marker_from_bound_identity(identities),
                 )
             finally:
@@ -1966,6 +2000,7 @@ def _reused_record(check: Mapping[str, Any], identities: dict[str, Any], entry: 
         "exclusive": bool(check.get("exclusive", False)),
         "cost": check.get("cost", "cheap"),
         "fresh": bool(check.get("fresh", False)),
+        "timeout_seconds": identities["timeout_seconds"],
         "authority": "non-authoritative",
         "depends_on": dependencies_of(check),
         "status": "reused",
@@ -2116,6 +2151,7 @@ def run_verification(
                 "exclusive": bool(by_id[check_id].get("exclusive", False)),
                 "cost": by_id[check_id].get("cost", "cheap"),
                 "fresh": bool(by_id[check_id].get("fresh", False)),
+                "timeout_seconds": check_semantic_declaration(by_id[check_id])["timeout_seconds"],
                 "authority": "non-authoritative",
                 "status": "planned",
             }
@@ -2150,6 +2186,8 @@ def run_verification(
                     "lock": by_id[check_id].get("lock"),
                     "exclusive": bool(by_id[check_id].get("exclusive", False)),
                     "cost": by_id[check_id].get("cost", "cheap"),
+                    "fresh": bool(by_id[check_id].get("fresh", False)),
+                    "timeout_seconds": check_semantic_declaration(by_id[check_id])["timeout_seconds"],
                     "authority": "non-authoritative",
                     "status": "blocked",
                     "blocked_by": failed_deps,
@@ -2176,6 +2214,8 @@ def run_verification(
                     "lock": by_id[check_id].get("lock"),
                     "exclusive": bool(by_id[check_id].get("exclusive", False)),
                     "cost": by_id[check_id].get("cost", "cheap"),
+                    "fresh": bool(by_id[check_id].get("fresh", False)),
+                    "timeout_seconds": identity["timeout_seconds"],
                     "authority": "non-authoritative",
                     "status": "blocked",
                     "reason": "fail-fast",

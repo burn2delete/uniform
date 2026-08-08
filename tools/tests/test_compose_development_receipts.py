@@ -59,7 +59,8 @@ class CompositionTests(unittest.TestCase):
             "id": check_id, "lane": declaration["lane"], "command": declaration["command"],
             "depends_on": declaration["depends_on"], "lock": declaration["lock"],
             "exclusive": declaration["exclusive"], "cost": declaration["cost"],
-            "fresh": declaration["fresh"], "command_identity": identity["command"],
+            "fresh": declaration["fresh"], "timeout_seconds": identity["timeout_seconds"],
+            "command_identity": identity["command"],
             "inputs": identity["inputs"],
             "status": status,
             "authority": "fresh-command-pass-non-authoritative" if status == "passed" else "non-authoritative",
@@ -163,6 +164,51 @@ class CompositionTests(unittest.TestCase):
     def test_accepts_verifier_generated_identity(self) -> None:
         result = self.compose(self.receipt(self.record("base")), expected=["base"])
         self.assertEqual(result["status"], "complete")
+
+    def test_verifier_and_composer_share_exact_semantic_identity(self) -> None:
+        declaration = next(check for check in self.manifest["checks"] if check["id"] == "base")
+        declaration["fresh"] = True
+        declaration["timeout_seconds"] = 17
+        self.identity["sha256"] = hashlib.sha256(canonical(self.manifest).encode()).hexdigest()
+        record = self.record("base")
+        self.assertEqual(
+            composer._check_identity(declaration, record),
+            verifier.check_identity(declaration, self.root),
+        )
+        self.assertEqual(
+            record["cache_key"],
+            verifier.cache_key(self.manifest, declaration, self.root),
+        )
+        self.assertEqual(record["timeout_seconds"], 17.0)
+
+    def test_old_receipt_cannot_compose_after_fresh_or_timeout_change(self) -> None:
+        declaration = next(check for check in self.manifest["checks"] if check["id"] == "base")
+
+        old_fresh_record = self.record("base")
+        declaration["fresh"] = True
+        self.identity["sha256"] = hashlib.sha256(canonical(self.manifest).encode()).hexdigest()
+        self.assert_invalid(self.receipt(old_fresh_record), "declaration does not match")
+
+        declaration["fresh"] = False
+        old_timeout_record = self.record("base")
+        declaration["timeout_seconds"] = 23
+        self.identity["sha256"] = hashlib.sha256(canonical(self.manifest).encode()).hexdigest()
+        self.assert_invalid(self.receipt(old_timeout_record), "declaration does not match")
+
+        current_record = self.record("base")
+        current_record.pop("timeout_seconds")
+        self.assert_invalid(self.receipt(current_record), "missing timeout_seconds")
+
+    def test_rejects_noncanonical_receipt_declaration_scalars(self) -> None:
+        for field, value, fragment in (
+            ("fresh", 0, "fresh declaration metadata must be boolean"),
+            ("timeout_seconds", True, "finite positive float"),
+            ("timeout_seconds", 1, "finite positive float"),
+        ):
+            record = self.record("base")
+            record[field] = value
+            with self.subTest(field=field, value=value):
+                self.assert_invalid(self.receipt(record), fragment)
 
     def test_rejects_rekeyed_noncanonical_or_wrong_input_selection(self) -> None:
         mutations = [

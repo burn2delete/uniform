@@ -78,6 +78,19 @@ class VerifyDevelopmentTests(unittest.TestCase):
         with self.assertRaisesRegex(verifier.ManifestError, "daemonization='forbidden'"):
             verifier.validate_manifest(manifest_for(item))
 
+    def test_manifest_rejects_boolean_and_nonfinite_timeouts(self) -> None:
+        command = [sys.executable, "-c", "pass"]
+        for timeout in (True, False, 0, -1, float("nan"), float("inf"), float("-inf"), 10**309):
+            with self.subTest(timeout=timeout), self.assertRaisesRegex(
+                verifier.ManifestError, "finite positive number"
+            ):
+                verifier.validate_manifest(
+                    manifest_for(check("timeout", command, timeout_seconds=timeout))
+                )
+        huge = check("huge-timeout", command, timeout_seconds=10**309)
+        with self.assertRaisesRegex(verifier.ManifestError, "finite positive number"):
+            verifier.check_identity(huge, Path("/tmp"))
+
     def test_dag_order_and_parallel_ready_groups(self) -> None:
         command = [sys.executable, "-c", "pass"]
         manifest = manifest_for(
@@ -124,6 +137,51 @@ class VerifyDevelopmentTests(unittest.TestCase):
             third = verifier.run_verification(manifest, root, all_checks=True, resume=True, cache_path=cache)
             self.assertEqual(third["checks"][0]["status"], "passed")
             self.assertFalse(third["checks"][0]["status"] == "reused")
+
+    def test_fresh_and_timeout_are_bound_into_cache_identity(self) -> None:
+        command = [sys.executable, "-c", "import sys; sys.exit(0)"]
+        with tempfile.TemporaryDirectory(prefix="gravity-verify-declaration-identity-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            original = check("one", command, timeout_seconds=1)
+            manifest = manifest_for(original)
+            original_key = verifier.cache_key(manifest, original, root)
+
+            fresh = dict(original)
+            fresh["fresh"] = True
+            fresh_manifest = manifest_for(fresh)
+            self.assertNotEqual(original_key, verifier.cache_key(fresh_manifest, fresh, root))
+
+            retimed = dict(original)
+            retimed["timeout_seconds"] = 2
+            retimed_manifest = manifest_for(retimed)
+            retimed_key = verifier.cache_key(retimed_manifest, retimed, root)
+            self.assertNotEqual(original_key, retimed_key)
+            self.assertEqual(verifier.check_identity(original, root)["fresh"], False)
+            self.assertEqual(verifier.check_identity(original, root)["timeout_seconds"], 1.0)
+            self.assertIsInstance(verifier.check_identity(original, root)["timeout_seconds"], float)
+
+            integer_timeout = check("equivalent", command, timeout_seconds=5)
+            float_timeout = check("equivalent", command, timeout_seconds=5.0)
+            self.assertEqual(
+                verifier.cache_key(manifest_for(integer_timeout), integer_timeout, root),
+                verifier.cache_key(manifest_for(float_timeout), float_timeout, root),
+            )
+
+            cache = root / "cache.json"
+            first = verifier.run_verification(manifest, root, all_checks=True, cache_path=cache)
+            self.assertEqual(first["checks"][0]["status"], "passed")
+            self.assertEqual(first["checks"][0]["timeout_seconds"], 1.0)
+            changed = verifier.run_verification(
+                retimed_manifest, root, all_checks=True, resume=True, cache_path=cache
+            )
+            self.assertEqual(changed["checks"][0]["status"], "passed")
+            self.assertEqual(changed["checks"][0]["cache_key"], retimed_key)
+            stable = verifier.run_verification(
+                retimed_manifest, root, all_checks=True, resume=True, cache_path=cache
+            )
+            self.assertEqual(stable["checks"][0]["status"], "reused")
+            self.assertEqual(stable["checks"][0]["timeout_seconds"], 2.0)
 
     def test_heavy_candidate_results_are_fresh_only(self) -> None:
         command = [sys.executable, "-c", "import sys; sys.exit(0)"]
@@ -260,6 +318,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 [item["id"] for item in dry_receipt["checks"]],
                 ["focused", "preflight"],
             )
+            self.assertTrue(all("timeout_seconds" in item for item in dry_receipt["checks"]))
+            self.assertTrue(all(item["timeout_seconds"] is None for item in dry_receipt["checks"]))
             self.assertEqual(dry_receipt["selection"]["selection_mode"], "all")
             self.assertEqual(dry_receipt["selection"]["unmatched_changes"], ["generated.py"])
 
@@ -319,6 +379,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             self.assertEqual(explicit_check["selection"]["selection_mode"], "explicit-check")
             self.assertEqual(explicit_check["selection"]["unmatched_changes"], ["generated.py"])
             self.assertEqual(explicit_check["checks"][0]["id"], "focused")
+            self.assertIn("timeout_seconds", explicit_check["checks"][0])
 
             with self.assertRaisesRegex(verifier.VerificationError, "--all cannot be combined"):
                 verifier.run_verification(
@@ -928,7 +989,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             (root / "input.txt").write_text("stable\n", encoding="ascii")
             manifest = manifest_for(
                 check("fail", failing),
-                check("dependent", passing, depends_on=["fail"]),
+                check("dependent", passing, depends_on=["fail"], timeout_seconds=4),
                 check("independent", passing),
             )
             receipt = verifier.run_verification(manifest, root, all_checks=True, fail_fast=False)
@@ -936,6 +997,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             self.assertEqual(statuses["fail"]["status"], "failed")
             self.assertEqual(statuses["dependent"]["status"], "blocked")
             self.assertEqual(statuses["dependent"]["reason"], "failed-prerequisite")
+            self.assertEqual(statuses["dependent"]["timeout_seconds"], 4.0)
             self.assertEqual(statuses["independent"]["status"], "passed")
 
     def test_default_manifest_declares_stage0_lanes_and_heavy_lock(self) -> None:
