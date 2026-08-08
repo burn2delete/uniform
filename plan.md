@@ -34,6 +34,7 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Consume only the resulting verified checked-core artifact in a pinned Gravity-authored C11 MIR builder, preserving real operands/results/CFG/definitions/uses and recomputing verifier facts.
 - [completed] Consume only that verified MIR in a bounded internal executable LLVM slice through the pinned ARM64 macOS target and real Clang execution, with standalone accepted/rejected co-canonical fixtures and fail-closed publication.
 - [completed] Add and independently review an explicit public native-run admission boundary; keep it fail-closed before source or staging I/O because the current Java host cannot prove descriptor-relative executable selection or OS-level process-tree containment.
+- [completed] Add and independently review a bounded Darwin host-launcher primitive that verifies the suspended child's mapped executable vnode and removes live members of its dedicated process group, while explicitly declining descriptor-relative, full-tree, public, self-hosting, and release claims.
 - [pending] Build an OS-contained, descriptor-relative Gravity-authored executable driver/runtime that the tracked public `bin/gravity` path invokes, then retire only the public component boundary it actually replaces.
 
 ## Baseline snapshot (2026-08-08)
@@ -44,7 +45,7 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
 - `bootstrap/gravity/p15_s23/compiler.gravity` passes the bootstrap-only public check after executable-symbol analysis was corrected; whole-language self-hosting remains partial.
 - The public wrapper and packaged/release artifacts remain bootstrap-hosted; final seed proof is incomplete and seed boundary remains true.
-- Roadmap audit records 74/181 accepted fixtures passing public `check`, 107 failing, and 1,054 rejected fixtures collapsing to generic `P18T06004`.
+- Current roadmap audit records 0/240 full-language documents complete, 7 without an executable owner, public `check` accepting 74/196 accepted fixtures, and 664/1,720 rejected fixtures with specific public diagnostics.
 - Host Java is OpenJDK 26.0.1; system `clojure` is absent, so baseline probes use the bundled temporary launcher at `/tmp/gravity-clojure-runtime/bin`.
 - The new C target is real and source-derived from the verified stage0 plan, but remains Clojure-seed-bound (`:clojure-seed-boundary? true`) and internal; it does not close public seedless release.
 - Explicit `gravity compile --target c -o ...` now routes to that backend; the default packaged/JVM compile path remains unchanged.
@@ -71,10 +72,10 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 
 ## Active slice
 
-- Owner: master coordinator; the current patch is restricted to the explicit public native-run admission boundary, its process/workspace safety support, focused tests, wrapper routing, and seed-boundary accounting.
-- Completed proof: tracked `bin/gravity run <source> --target c --lowering runtime-derived` bypasses a stale packaged JAR and reaches the current source boundary, which rejects with stable `P18T04002` / `:contained-public-native-run` before source reads, staging, compilation, or native execution. Focused parser, wrapper, timeout, captured-process termination, interrupt, secure-workspace, symlink, replacement, and partial-initialization tests pass. Process evidence no longer claims whole-tree reaping from a `ProcessHandle.descendants` snapshot.
-- Honest boundary: no public seed boundary was reduced. The rejected route records `:clojure-seed-boundary? true`, `:native-executable-run? false`, `:self-hosted? false`, and `:seedless-release? false`. Java does not provide the descriptor-relative execution and OS process containment required to enable this route safely. Formal-language completion remains 0/240.
-- Next gate: provide an OS-contained launcher that executes a descriptor-bound Gravity-authored driver/runtime and contains its complete process tree; then prove accepted `.gravity` and `.qst` execution plus stable rejection through tracked `bin/gravity` without a Clojure evaluator in the selected runtime component. Replays, manifests, source models, Clojure-hosted comparisons, and the currently disabled route cannot satisfy this gate.
+- Owner: master coordinator; the current patch is restricted to an internal Darwin host-launcher prerequisite, focused native tests, one partial proof record, and seed-boundary accounting. It does not edit `bin/gravity` or enable the public route.
+- Completed proof: the C launcher opens one owner-bound Mach-O target, spawns it suspended in a dedicated process group, enumerates the private Darwin mapped-vnode record before `SIGCONT`, rejects deterministic pathname replacement with `P15NL009` before child code, preserves accepted output/exit behavior, and fails closed on timeout, surviving same-group descendants, and launcher interruption. The supervised focused run passed 8 tests and 60 assertions; independent review approved the narrow contract.
+- Honest boundary: the launcher is host-authored C and is not descriptor-relative execution. It does not resist same-euid in-place mutation or external `SIGCONT`, contain `setsid`/double-fork escapees, verify code signatures or dyld closure, or prove whole-process-tree reaping. It is not wired into the public command, so compiler, evaluator/runtime, verifier, artifact construction, process/file I/O, and release-wrapper Clojure boundaries are unchanged. Formal-language completion remains 0/240.
+- Next gate: provide descriptor-relative execution plus OS-level complete-tree containment for a Gravity-authored driver/runtime, then prove accepted `.gravity` and `.qst` execution and stable rejection through tracked `bin/gravity` without a Clojure evaluator in the selected runtime component. The new launcher primitive closes only the mapped-vnode and same-process-group subproblem; it cannot satisfy `:contained-public-native-run` by itself.
 
 ## Completion gates
 
