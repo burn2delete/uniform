@@ -48,6 +48,10 @@ DEFAULT_CACHE = ROOT / ".cpcache" / "development-verification-cache.json"
 SCHEMA_VERSION = 1
 LANES = ("preflight", "focused", "heavy-candidate")
 STATUSES = ("passed", "failed", "blocked", "reused", "planned", "timeout")
+REQUIRED_RESOURCE_CLASSES = frozenset(
+    {"python-cheap", "leaf-jvm", "bootstrap-hosted", "memory-heavy"}
+)
+CANONICAL_HEAVY_LOCK = "/tmp/gravity-sh07-heavy.lock"
 _GLOB_CHARS = frozenset("*?[")
 _MAX_OUTPUT_BYTES = 64 * 1024
 _MUTATION_POLL_SECONDS = 0.05
@@ -302,6 +306,173 @@ def normalized_timeout_seconds(check: Mapping[str, Any]) -> float | None:
     return normalized
 
 
+def _positive_integer(value: Any, location: str) -> int:
+    if type(value) is not int or value <= 0:
+        raise ManifestError(f"{location} must be a positive integer")
+    return value
+
+
+def normalized_resource_policy(manifest: Mapping[str, Any]) -> dict[str, Any]:
+    """Validate and normalize resource reservations used for admission.
+
+    Reservations are conservative scheduling estimates. They are intentionally
+    not observations of runtime RSS or process counts and grant no authority.
+    """
+
+    policy = manifest.get("resource_policy")
+    if not isinstance(policy, Mapping):
+        raise ManifestError("manifest resource_policy must be an object")
+    unknown_policy_fields = set(policy) - {"aggregate", "classes"}
+    if unknown_policy_fields:
+        raise ManifestError(
+            f"manifest resource_policy has unknown fields: {sorted(unknown_policy_fields)}"
+        )
+    aggregate = policy.get("aggregate")
+    if not isinstance(aggregate, Mapping):
+        raise ManifestError("manifest resource_policy.aggregate must be an object")
+    unknown_aggregate_fields = set(aggregate) - {"max_rss_mb", "max_processes"}
+    if unknown_aggregate_fields:
+        raise ManifestError(
+            "manifest resource_policy.aggregate has unknown fields: "
+            f"{sorted(unknown_aggregate_fields)}"
+        )
+    if set(aggregate) != {"max_rss_mb", "max_processes"}:
+        raise ManifestError(
+            "manifest resource_policy.aggregate requires max_rss_mb and max_processes"
+        )
+    max_rss_mb = _positive_integer(
+        aggregate["max_rss_mb"], "manifest resource_policy.aggregate.max_rss_mb"
+    )
+    max_processes = _positive_integer(
+        aggregate["max_processes"], "manifest resource_policy.aggregate.max_processes"
+    )
+
+    classes = policy.get("classes")
+    if not isinstance(classes, Mapping) or not classes:
+        raise ManifestError("manifest resource_policy.classes must be a non-empty object")
+    missing_classes = sorted(REQUIRED_RESOURCE_CLASSES - set(classes))
+    if missing_classes:
+        raise ManifestError(f"manifest resource_policy.classes missing required classes: {missing_classes}")
+    extra_classes = sorted(set(classes) - REQUIRED_RESOURCE_CLASSES)
+    if extra_classes:
+        raise ManifestError(
+            f"manifest resource_policy.classes has unknown classes: {extra_classes}"
+        )
+    normalized_classes: dict[str, dict[str, Any]] = {}
+    class_fields = {
+        "max_concurrency",
+        "default_rss_mb",
+        "default_processes",
+        "jvm_xmx_mb",
+        "capacity_lock",
+    }
+    for class_name, declaration in classes.items():
+        if not isinstance(class_name, str) or not class_name:
+            raise ManifestError("resource class names must be non-empty strings")
+        location = f"manifest resource_policy.classes.{class_name}"
+        if not isinstance(declaration, Mapping):
+            raise ManifestError(f"{location} must be an object")
+        unknown_fields = set(declaration) - class_fields
+        if unknown_fields:
+            raise ManifestError(f"{location} has unknown fields: {sorted(unknown_fields)}")
+        missing_fields = class_fields - set(declaration)
+        if missing_fields:
+            raise ManifestError(f"{location} missing fields: {sorted(missing_fields)}")
+        max_concurrency = _positive_integer(
+            declaration["max_concurrency"], f"{location}.max_concurrency"
+        )
+        default_rss_mb = _positive_integer(
+            declaration["default_rss_mb"], f"{location}.default_rss_mb"
+        )
+        default_processes = _positive_integer(
+            declaration["default_processes"], f"{location}.default_processes"
+        )
+        jvm_xmx_mb = declaration["jvm_xmx_mb"]
+        if jvm_xmx_mb is not None:
+            jvm_xmx_mb = _positive_integer(jvm_xmx_mb, f"{location}.jvm_xmx_mb")
+        if default_rss_mb > max_rss_mb or default_processes > max_processes:
+            raise ManifestError(f"{location} reservation exceeds aggregate resource budget")
+        capacity_lock = declaration["capacity_lock"]
+        if capacity_lock is not None and (
+            not isinstance(capacity_lock, str) or not capacity_lock
+        ):
+            raise ManifestError(f"{location}.capacity_lock must be a non-empty string or null")
+        normalized_classes[class_name] = {
+            "max_concurrency": max_concurrency,
+            "default_rss_mb": default_rss_mb,
+            "default_processes": default_processes,
+            "jvm_xmx_mb": jvm_xmx_mb,
+            "capacity_lock": capacity_lock,
+        }
+    if normalized_classes["memory-heavy"]["max_concurrency"] != 1:
+        raise ManifestError("resource class 'memory-heavy' max_concurrency must be one")
+    if normalized_classes["bootstrap-hosted"]["max_concurrency"] != 1:
+        raise ManifestError("resource class 'bootstrap-hosted' max_concurrency must be one")
+    if normalized_classes["leaf-jvm"]["max_concurrency"] > 3:
+        raise ManifestError("resource class 'leaf-jvm' max_concurrency must not exceed three")
+    if normalized_classes["python-cheap"]["capacity_lock"] is not None:
+        raise ManifestError("resource class 'python-cheap' capacity_lock must be null")
+    for class_name in ("leaf-jvm", "bootstrap-hosted"):
+        if normalized_classes[class_name]["capacity_lock"] != CANONICAL_HEAVY_LOCK:
+            raise ManifestError(
+                f"resource class {class_name!r} capacity_lock must be {CANONICAL_HEAVY_LOCK!r}"
+            )
+    if normalized_classes["memory-heavy"]["capacity_lock"] not in {
+        None,
+        CANONICAL_HEAVY_LOCK,
+    }:
+        raise ManifestError(
+            "resource class 'memory-heavy' capacity_lock must be null or the canonical heavy lock"
+        )
+    return {
+        "aggregate": {"max_rss_mb": max_rss_mb, "max_processes": max_processes},
+        "classes": normalized_classes,
+        "authority": "non-authoritative-admission-estimate",
+    }
+
+
+def check_resource_declaration(
+    manifest: Mapping[str, Any], check: Mapping[str, Any]
+) -> dict[str, Any]:
+    policy = normalized_resource_policy(manifest)
+    class_name = check.get("resource_class")
+    if not isinstance(class_name, str) or class_name not in policy["classes"]:
+        raise ManifestError(
+            f"check {check.get('id')!r} resource_class must name a declared resource class"
+        )
+    resource_class = policy["classes"][class_name]
+    return {
+        "class": class_name,
+        "reserved_rss_mb": resource_class["default_rss_mb"],
+        "reserved_processes": resource_class["default_processes"],
+        "class_max_concurrency": resource_class["max_concurrency"],
+        "jvm_xmx_mb": resource_class["jvm_xmx_mb"],
+        "capacity_lock": resource_class["capacity_lock"],
+        "authority": "non-authoritative-admission-estimate",
+    }
+
+
+def _validate_jvm_xmx_parity(
+    manifest: Mapping[str, Any], check: Mapping[str, Any], command: Sequence[str]
+) -> None:
+    resource = check_resource_declaration(manifest, check)
+    if not command or Path(command[0]).name != "clojure":
+        return
+    declared = resource["jvm_xmx_mb"]
+    xmx_options = [item for item in command[1:] if item.startswith("-J-Xmx")]
+    if declared is None:
+        if xmx_options:
+            raise ManifestError(
+                f"check {check.get('id')!r} command declares JVM Xmx but resource class does not"
+            )
+        return
+    expected = f"-J-Xmx{declared}m"
+    if xmx_options != [expected]:
+        raise ManifestError(
+            f"check {check.get('id')!r} direct clojure command must declare exactly {expected!r}"
+        )
+
+
 def load_manifest(path: Path | str = DEFAULT_MANIFEST) -> dict[str, Any]:
     """Load and validate a JSON verification manifest."""
 
@@ -323,6 +494,7 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
         raise ManifestError("manifest must be a JSON object")
     if manifest.get("schema_version") != SCHEMA_VERSION:
         raise ManifestError(f"manifest schema_version must be {SCHEMA_VERSION}")
+    resource_policy = normalized_resource_policy(manifest)
     lanes = manifest.get("lanes")
     if not isinstance(lanes, Mapping):
         raise ManifestError("manifest lanes must be an object")
@@ -347,7 +519,7 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
         lane = check.get("lane")
         if lane not in LANES:
             raise ManifestError(f"check {check_id!r} has invalid lane {lane!r}")
-        _parse_command(check.get("command"), check_id)
+        command = _parse_command(check.get("command"), check_id)
         if check.get("daemonization") != "forbidden":
             raise ManifestError(
                 f"check {check_id!r} must declare daemonization='forbidden'; "
@@ -379,6 +551,12 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
             raise ManifestError(f"check {check_id!r} fresh must be boolean")
         if cost == "heavy" and lock is None and not exclusive:
             raise ManifestError(f"heavy check {check_id!r} must declare lock or exclusive=true")
+        resource = check_resource_declaration(manifest, check)
+        if cost == "heavy" and resource["class"] != "memory-heavy":
+            raise ManifestError(f"heavy check {check_id!r} must use resource_class 'memory-heavy'")
+        if resource["class"] == "memory-heavy" and cost != "heavy":
+            raise ManifestError(f"check {check_id!r} uses memory-heavy resource class but cost is not heavy")
+        _validate_jvm_xmx_parity(manifest, check, command)
         _check_authority(check, str(lane))
         normalized_timeout_seconds(check)
         cwd = check.get("cwd")
@@ -390,6 +568,9 @@ def validate_manifest(manifest: Mapping[str, Any]) -> None:
         for item in tool_inputs:
             if not _is_safe_relative_path(_normalise_declared_path(item)):
                 raise ManifestError(f"check {check_id!r} tool input escapes repository root: {item!r}")
+
+    if resource_policy["classes"]["memory-heavy"]["max_concurrency"] != 1:
+        raise ManifestError("memory-heavy checks must remain serialized")
 
     for check_id, deps in dependencies.items():
         missing = sorted(set(deps) - ids)
@@ -762,7 +943,9 @@ def _marker_from_bound_identity(identity: Mapping[str, Any]) -> str:
     return _supervision_marker(unbound)
 
 
-def check_semantic_declaration(check: Mapping[str, Any]) -> dict[str, Any]:
+def check_semantic_declaration(
+    check: Mapping[str, Any], manifest: Mapping[str, Any] | None = None
+) -> dict[str, Any]:
     """Return the normalized manifest fields that govern check execution.
 
     This public fragment is shared with receipt composition so cache-key
@@ -771,7 +954,7 @@ def check_semantic_declaration(check: Mapping[str, Any]) -> dict[str, Any]:
     composer validates their recorded values without re-running a command.
     """
 
-    return {
+    declaration = {
         "id": check["id"],
         "lane": check["lane"],
         "depends_on": dependencies_of(check),
@@ -783,11 +966,20 @@ def check_semantic_declaration(check: Mapping[str, Any]) -> dict[str, Any]:
         "authority": _check_authority(check, str(check["lane"])),
         "daemonization": check["daemonization"],
     }
+    if manifest is not None:
+        declaration["resource"] = check_resource_declaration(manifest, check)
+    else:
+        declaration["resource"] = {"class": check.get("resource_class")}
+    return declaration
 
 
-def check_identity(check: Mapping[str, Any], root: Path | str = ROOT) -> dict[str, Any]:
+def check_identity(
+    check: Mapping[str, Any],
+    root: Path | str = ROOT,
+    manifest: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     identity = {
-        **check_semantic_declaration(check),
+        **check_semantic_declaration(check, manifest),
         "command": command_identity(check, root),
         "inputs": input_identities(check, root),
     }
@@ -799,7 +991,7 @@ def check_identity(check: Mapping[str, Any], root: Path | str = ROOT) -> dict[st
 
 
 def cache_key(manifest: Mapping[str, Any], check: Mapping[str, Any], root: Path | str = ROOT) -> str:
-    return _cache_key_for_identity(manifest, check_identity(check, root))
+    return _cache_key_for_identity(manifest, check_identity(check, root, manifest))
 
 
 def _cache_key_for_identity(manifest: Mapping[str, Any], identity: Mapping[str, Any]) -> str:
@@ -1140,11 +1332,116 @@ def _process_lock(lock_name: str | None):
             fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
 
 
-def parallel_ready_groups(manifest: Mapping[str, Any], selected_ids: Iterable[str] | None = None) -> list[list[str]]:
-    """Compute deterministic dependency waves honoring heavy/exclusive locks."""
+def _admit_ready_batch(
+    manifest: Mapping[str, Any], ready: Sequence[str], jobs: int
+) -> list[str]:
+    """Greedily admit one deterministic batch under declared reservations."""
+
+    by_id = checks_by_id(manifest)
+    unlocked = [check_id for check_id in ready if _effective_lock(by_id[check_id]) is None]
+    candidates = unlocked if unlocked else list(ready[:1])
+    policy = normalized_resource_policy(manifest)
+    aggregate = policy["aggregate"]
+    admitted: list[str] = []
+    class_counts: dict[str, int] = {}
+    reserved_rss_mb = 0
+    reserved_processes = 0
+    admitted_capacity_lock: str | None = None
+    capacity_lock_selected = False
+    for check_id in candidates:
+        if len(admitted) >= jobs:
+            break
+        resource = check_resource_declaration(manifest, by_id[check_id])
+        class_name = str(resource["class"])
+        capacity_lock = resource["capacity_lock"]
+        if capacity_lock_selected and capacity_lock != admitted_capacity_lock:
+            continue
+        if class_counts.get(class_name, 0) >= resource["class_max_concurrency"]:
+            continue
+        if reserved_rss_mb + resource["reserved_rss_mb"] > aggregate["max_rss_mb"]:
+            continue
+        if reserved_processes + resource["reserved_processes"] > aggregate["max_processes"]:
+            continue
+        admitted.append(check_id)
+        class_counts[class_name] = class_counts.get(class_name, 0) + 1
+        reserved_rss_mb += resource["reserved_rss_mb"]
+        reserved_processes += resource["reserved_processes"]
+        if not capacity_lock_selected:
+            admitted_capacity_lock = str(capacity_lock) if capacity_lock is not None else None
+            capacity_lock_selected = True
+    if not admitted:
+        raise ManifestError("ready checks cannot be admitted under declared resource budgets")
+    return admitted
+
+
+def _batch_capacity_lock(
+    manifest: Mapping[str, Any], batch: Sequence[str]
+) -> str | None:
+    """Return the single batch lock, excluding per-check locked waves."""
+
+    by_id = checks_by_id(manifest)
+    if any(_effective_lock(by_id[check_id]) is not None for check_id in batch):
+        return None
+    locks = {
+        resource["capacity_lock"]
+        for resource in (
+            check_resource_declaration(manifest, by_id[check_id]) for check_id in batch
+        )
+        if resource["capacity_lock"] is not None
+    }
+    if len(locks) > 1:
+        raise ManifestError("admitted batch contains differing non-null capacity locks")
+    return str(next(iter(locks))) if locks else None
+
+
+def _execute_admitted_batch(
+    manifest: Mapping[str, Any],
+    batch: Sequence[str],
+    root: Path,
+    identities_by_id: Mapping[str, dict[str, Any]],
+) -> tuple[list[dict[str, Any]], str | None, str | None]:
+    """Acquire one class-capacity lock before submitting any batch command."""
+
+    by_id = checks_by_id(manifest)
+    capacity_lock = _batch_capacity_lock(manifest, batch)
+    with _process_lock(capacity_lock) as capacity_lock_path:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=len(batch), thread_name_prefix="gravity-verify"
+        ) as executor:
+            futures = {
+                executor.submit(
+                    _run_one,
+                    manifest,
+                    by_id[check_id],
+                    root,
+                    identities_by_id[check_id],
+                ): check_id
+                for check_id in batch
+            }
+            results = [
+                future.result() for future in sorted(futures, key=lambda item: futures[item])
+            ]
+    return (
+        results,
+        capacity_lock,
+        str(capacity_lock_path) if capacity_lock_path is not None else None,
+    )
+
+
+def parallel_ready_groups(
+    manifest: Mapping[str, Any],
+    selected_ids: Iterable[str] | None = None,
+    *,
+    jobs: int | None = None,
+) -> list[list[str]]:
+    """Compute deterministic dependency waves honoring resource admission."""
 
     validate_manifest(manifest)
     by_id = checks_by_id(manifest)
+    if jobs is None:
+        jobs = max(1, min(32, os.cpu_count() or 1))
+    if jobs < 1:
+        raise VerificationError("jobs must be at least one")
     selected = set(selected_ids) if selected_ids is not None else set(by_id)
     order = topological_order(manifest, selected)
     remaining = set(order)
@@ -1154,11 +1451,7 @@ def parallel_ready_groups(manifest: Mapping[str, Any], selected_ids: Iterable[st
         ready = sorted(check_id for check_id in remaining if set(dependencies_of(by_id[check_id])) <= complete)
         if not ready:
             raise ManifestError("unable to schedule selected checks; dependency graph is not executable")
-        cheap = [check_id for check_id in ready if _effective_lock(by_id[check_id]) is None]
-        if cheap:
-            group = cheap
-        else:
-            group = [ready[0]]
+        group = _admit_ready_batch(manifest, ready, jobs)
         groups.append(group)
         complete.update(group)
         remaining.difference_update(group)
@@ -1887,7 +2180,12 @@ def _run_command(
     }
 
 
-def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -> dict[str, Any]:
+def _run_one(
+    manifest: Mapping[str, Any],
+    check: Mapping[str, Any],
+    root: Path,
+    identities: dict[str, Any],
+) -> dict[str, Any]:
     started = _now()
     started_clock = time.monotonic()
     command = identities["command"]["argv"]
@@ -1904,6 +2202,7 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
         "lock": check.get("lock"),
         "exclusive": bool(check.get("exclusive", False)),
         "cost": check.get("cost", "cheap"),
+        "resource": check_resource_declaration(manifest, check),
         "fresh": bool(check.get("fresh", False)),
         "timeout_seconds": identities["timeout_seconds"],
         "authority": "non-authoritative",
@@ -1988,7 +2287,13 @@ def _run_one(check: Mapping[str, Any], root: Path, identities: dict[str, Any]) -
     return record
 
 
-def _reused_record(check: Mapping[str, Any], identities: dict[str, Any], entry: Mapping[str, Any], key: str) -> dict[str, Any]:
+def _reused_record(
+    manifest: Mapping[str, Any],
+    check: Mapping[str, Any],
+    identities: dict[str, Any],
+    entry: Mapping[str, Any],
+    key: str,
+) -> dict[str, Any]:
     timestamp = _now()
     return {
         "id": check["id"],
@@ -1999,6 +2304,7 @@ def _reused_record(check: Mapping[str, Any], identities: dict[str, Any], entry: 
         "lock": check.get("lock"),
         "exclusive": bool(check.get("exclusive", False)),
         "cost": check.get("cost", "cheap"),
+        "resource": check_resource_declaration(manifest, check),
         "fresh": bool(check.get("fresh", False)),
         "timeout_seconds": identities["timeout_seconds"],
         "authority": "non-authoritative",
@@ -2078,7 +2384,8 @@ def run_verification(
     )
     by_id = checks_by_id(manifest_value)
     selected_ids = selection["selected_ids"]
-    groups = parallel_ready_groups(manifest_value, selected_ids)
+    groups = parallel_ready_groups(manifest_value, selected_ids, jobs=jobs)
+    resource_policy = normalized_resource_policy(manifest_value)
     manifest_identity = {"path": _relpath(root_path, manifest_path) if manifest_path else None, "sha256": _sha256_text(_canonical(manifest_value))}
     run_started_clock = time.monotonic()
     receipt: dict[str, Any] = {
@@ -2087,6 +2394,7 @@ def run_verification(
         "manifest": manifest_identity,
         "root": str(root_path),
         "selection": selection,
+        "resource_policy": resource_policy,
         "plan": {"topological_order": topological_order(manifest_value, selected_ids), "parallel_ready_groups": groups, "jobs": jobs, "fail_fast": fail_fast},
         "checks": [],
         "started_at": _now(),
@@ -2150,8 +2458,9 @@ def run_verification(
                 "lock": by_id[check_id].get("lock"),
                 "exclusive": bool(by_id[check_id].get("exclusive", False)),
                 "cost": by_id[check_id].get("cost", "cheap"),
+                "resource": check_resource_declaration(manifest_value, by_id[check_id]),
                 "fresh": bool(by_id[check_id].get("fresh", False)),
-                "timeout_seconds": check_semantic_declaration(by_id[check_id])["timeout_seconds"],
+                "timeout_seconds": check_semantic_declaration(by_id[check_id], manifest_value)["timeout_seconds"],
                 "authority": "non-authoritative",
                 "status": "planned",
             }
@@ -2186,8 +2495,9 @@ def run_verification(
                     "lock": by_id[check_id].get("lock"),
                     "exclusive": bool(by_id[check_id].get("exclusive", False)),
                     "cost": by_id[check_id].get("cost", "cheap"),
+                    "resource": check_resource_declaration(manifest_value, by_id[check_id]),
                     "fresh": bool(by_id[check_id].get("fresh", False)),
-                    "timeout_seconds": check_semantic_declaration(by_id[check_id])["timeout_seconds"],
+                    "timeout_seconds": check_semantic_declaration(by_id[check_id], manifest_value)["timeout_seconds"],
                     "authority": "non-authoritative",
                     "status": "blocked",
                     "blocked_by": failed_deps,
@@ -2203,7 +2513,7 @@ def run_verification(
         if failed_seen and fail_fast:
             for check_id in sorted(pending):
                 timestamp = _now()
-                identity = check_identity(by_id[check_id], root_path)
+                identity = check_identity(by_id[check_id], root_path, manifest_value)
                 records[check_id] = {
                     "id": check_id,
                     "lane": by_id[check_id]["lane"],
@@ -2214,6 +2524,7 @@ def run_verification(
                     "lock": by_id[check_id].get("lock"),
                     "exclusive": bool(by_id[check_id].get("exclusive", False)),
                     "cost": by_id[check_id].get("cost", "cheap"),
+                    "resource": check_resource_declaration(manifest_value, by_id[check_id]),
                     "fresh": bool(by_id[check_id].get("fresh", False)),
                     "timeout_seconds": identity["timeout_seconds"],
                     "authority": "non-authoritative",
@@ -2233,7 +2544,7 @@ def run_verification(
         reused_any = False
         for check_id in ready:
             check = by_id[check_id]
-            identities = check_identity(check, root_path)
+            identities = check_identity(check, root_path, manifest_value)
             key = _cache_key_for_identity(manifest_value, identities)
             entry = cache["checks"].get(check_id) if resume else None
             if (entry and entry.get("status") == "passed"
@@ -2242,7 +2553,7 @@ def run_verification(
                     and not check.get("fresh", False)
                     and _cache_dependencies_match(check, entry, status_by_id, key_by_id)
                     and _check_authority(check, str(check["lane"])) != "declared"):
-                record = _reused_record(check, identities, entry, key)
+                record = _reused_record(manifest_value, check, identities, entry, key)
                 records[check_id] = record
                 status_by_id[check_id] = "reused"
                 key_by_id[check_id] = key
@@ -2250,59 +2561,92 @@ def run_verification(
                 reused_any = True
         if reused_any:
             continue
-        # Prefer all unlocked cheap work; a heavy/locked check occupies a
-        # single wave, making the resource boundary explicit in the receipt.
-        cheap = [check_id for check_id in ready if _effective_lock(by_id[check_id]) is None]
-        batch = cheap[:jobs] if cheap else [ready[0]]
-        identities_by_id = {check_id: check_identity(by_id[check_id], root_path) for check_id in batch}
+        # Greedy admission is stable by check id. A locked/heavy check still
+        # occupies a single wave; unlocked work is bounded by jobs, its class,
+        # and both aggregate reservation budgets.
+        batch = _admit_ready_batch(manifest_value, ready, jobs)
+        identities_by_id = {
+            check_id: check_identity(by_id[check_id], root_path, manifest_value)
+            for check_id in batch
+        }
         execution_keys = {
             check_id: _cache_key_for_identity(manifest_value, identities_by_id[check_id])
             for check_id in batch
         }
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(batch), thread_name_prefix="gravity-verify") as executor:
-            futures = {
-                executor.submit(_run_one, by_id[check_id], root_path, identities_by_id[check_id]): check_id
-                for check_id in batch
-            }
-            results = [future.result() for future in sorted(futures, key=lambda item: futures[item])]
-            for record in results:
-                check_id = str(record["id"])
-                executed_key = execution_keys[check_id]
-                post_identity = check_identity(by_id[check_id], root_path)
-                post_key = _cache_key_for_identity(manifest_value, post_identity)
-                record["cache_key"] = executed_key
-                if record["status"] == "passed" and post_key != executed_key:
-                    record["status"] = "failed"
-                    record["reason"] = "stale-input"
-                    record["authority"] = "non-authoritative"
-                    record["stderr"] = _trim_output(
-                        record.get("stderr", "")
-                        + ("\n" if record.get("stderr") else "")
-                        + "declared input or command identity changed during execution; result was not cached"
-                    )
-                    record["post_run_identity"] = post_identity
-                records[check_id] = record
-                status_by_id[check_id] = record["status"]
-                key_by_id[check_id] = executed_key
+        try:
+            results, capacity_lock, capacity_lock_path = _execute_admitted_batch(
+                manifest_value, batch, root_path, identities_by_id
+            )
+        except LockUnavailable:
+            for check_id in batch:
+                timestamp = _now()
+                identity = identities_by_id[check_id]
+                records[check_id] = {
+                    "id": check_id,
+                    "lane": by_id[check_id]["lane"],
+                    "command": identity["command"]["argv"],
+                    "command_identity": identity["command"],
+                    "inputs": identity["inputs"],
+                    "depends_on": dependencies_of(by_id[check_id]),
+                    "lock": by_id[check_id].get("lock"),
+                    "exclusive": bool(by_id[check_id].get("exclusive", False)),
+                    "cost": by_id[check_id].get("cost", "cheap"),
+                    "resource": check_resource_declaration(manifest_value, by_id[check_id]),
+                    "capacity_lock": _batch_capacity_lock(manifest_value, batch),
+                    "fresh": bool(by_id[check_id].get("fresh", False)),
+                    "timeout_seconds": identity["timeout_seconds"],
+                    "authority": "non-authoritative",
+                    "status": "blocked",
+                    "reason": "capacity-lock-busy",
+                    "started_at": timestamp,
+                    "finished_at": timestamp,
+                    "duration_ms": 0.0,
+                }
+                status_by_id[check_id] = "blocked"
                 pending.remove(check_id)
-                if record["status"] in {"failed", "timeout"}:
-                    failed_seen = True
-                if record["status"] == "passed" and record.get("cacheable", True):
-                    cache_updates[check_id] = {
-                        "cache_key": executed_key,
-                        "status": "passed",
-                        "cacheable": True,
-                        "recorded_at": record.get("finished_at"),
-                        "finished_at": record.get("finished_at"),
-                        "authority": record.get("authority"),
-                        "dependencies": {
-                            dep: {
-                                "cache_key": key_by_id[dep],
-                                "status": "passed",
-                            }
-                            for dep in dependencies_of(by_id[check_id])
-                        },
-                    }
+            failed_seen = True
+            continue
+        for record in results:
+            if capacity_lock is not None:
+                record["capacity_lock"] = capacity_lock
+                record["capacity_lock_path"] = capacity_lock_path
+            check_id = str(record["id"])
+            executed_key = execution_keys[check_id]
+            post_identity = check_identity(by_id[check_id], root_path, manifest_value)
+            post_key = _cache_key_for_identity(manifest_value, post_identity)
+            record["cache_key"] = executed_key
+            if record["status"] == "passed" and post_key != executed_key:
+                record["status"] = "failed"
+                record["reason"] = "stale-input"
+                record["authority"] = "non-authoritative"
+                record["stderr"] = _trim_output(
+                    record.get("stderr", "")
+                    + ("\n" if record.get("stderr") else "")
+                    + "declared input or command identity changed during execution; result was not cached"
+                )
+                record["post_run_identity"] = post_identity
+            records[check_id] = record
+            status_by_id[check_id] = record["status"]
+            key_by_id[check_id] = executed_key
+            pending.remove(check_id)
+            if record["status"] in {"failed", "timeout"}:
+                failed_seen = True
+            if record["status"] == "passed" and record.get("cacheable", True):
+                cache_updates[check_id] = {
+                    "cache_key": executed_key,
+                    "status": "passed",
+                    "cacheable": True,
+                    "recorded_at": record.get("finished_at"),
+                    "finished_at": record.get("finished_at"),
+                    "authority": record.get("authority"),
+                    "dependencies": {
+                        dep: {
+                            "cache_key": key_by_id[dep],
+                            "status": "passed",
+                        }
+                        for dep in dependencies_of(by_id[check_id])
+                    },
+                }
         if failed_seen and fail_fast:
             continue
     receipt["checks"] = [records[check_id] for check_id in selected_ids]

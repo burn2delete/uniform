@@ -35,6 +35,33 @@ clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M 
   authoritative runner must reread the source in a fresh process and perform
   the proof transaction's independent audit.
 
+## Development verifier resource admission
+
+`tools/development_verification_manifest.json` declares a strict
+`resource_policy`. Its global RSS and process budgets and each class's
+concurrency, default RSS, and default process reservations are admission
+estimates. They are not runtime measurements, resource enforcement, benchmark
+evidence, or authority claims. Every planned, executed, reused, or blocked
+check receipt records the resolved non-authoritative reservation.
+
+The canonical classes are `python-cheap`, `leaf-jvm`, `bootstrap-hosted`, and
+`memory-heavy`. Ready unlocked checks are considered in stable check-id order
+and admitted only while the requested `--jobs` limit, their class limit, and
+both aggregate budgets remain satisfied. The default jobs value therefore
+cannot bypass the resource policy. A locked or heavy check remains a
+single-check wave.
+
+`leaf-jvm` and `bootstrap-hosted` share the canonical
+`/tmp/gravity-sh07-heavy.lock` capacity lock with memory-heavy work. The
+verifier acquires this lock once before submitting an admitted JVM batch, so
+the three permitted leaf JVMs can run together without racing an external
+Stage7 owner or recursively locking in each child. A busy capacity lock blocks
+the batch before any command starts. Memory-heavy checks retain their existing
+per-check canonical lock and do not acquire it a second time as a batch lock.
+When a direct `clojure` command's class declares `jvm_xmx_mb`, the command must
+contain that exact single `-J-Xmx...m` option. Wrapper and `bin/` commands may
+use a class whose JVM limit is null.
+
 ## Lane order
 
 Use the first lane that answers the question. Re-run the routing/plan check

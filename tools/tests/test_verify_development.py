@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import os
 import io
+import contextlib
 import shutil
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -33,6 +34,39 @@ def manifest_for(*checks: dict) -> dict:
             "focused": {"description": "test"},
             "heavy-candidate": {"description": "test"},
         },
+        "resource_policy": {
+            "aggregate": {"max_rss_mb": 4096, "max_processes": 16},
+            "classes": {
+                "python-cheap": {
+                    "max_concurrency": 4,
+                    "default_rss_mb": 128,
+                    "default_processes": 1,
+                    "jvm_xmx_mb": None,
+                    "capacity_lock": None,
+                },
+                "leaf-jvm": {
+                    "max_concurrency": 3,
+                    "default_rss_mb": 512,
+                    "default_processes": 2,
+                    "jvm_xmx_mb": 256,
+                    "capacity_lock": "/tmp/gravity-sh07-heavy.lock",
+                },
+                "bootstrap-hosted": {
+                    "max_concurrency": 1,
+                    "default_rss_mb": 1024,
+                    "default_processes": 2,
+                    "jvm_xmx_mb": None,
+                    "capacity_lock": "/tmp/gravity-sh07-heavy.lock",
+                },
+                "memory-heavy": {
+                    "max_concurrency": 1,
+                    "default_rss_mb": 4096,
+                    "default_processes": 4,
+                    "jvm_xmx_mb": None,
+                    "capacity_lock": "/tmp/gravity-sh07-heavy.lock",
+                },
+            },
+        },
         "checks": list(checks),
     }
 
@@ -51,11 +85,13 @@ def check(
     timeout_seconds: float | None = None,
     env: dict[str, str] | None = None,
     fresh: bool = False,
+    resource_class: str | None = None,
 ) -> dict:
     value = {
         "id": check_id,
         "lane": lane,
         "cost": cost,
+        "resource_class": resource_class or ("memory-heavy" if cost == "heavy" else "python-cheap"),
         "lock": lock,
         "exclusive": exclusive,
         "authority": authority,
@@ -73,6 +109,277 @@ def check(
 
 
 class VerifyDevelopmentTests(unittest.TestCase):
+    def test_resource_policy_and_check_declarations_fail_closed(self) -> None:
+        command = [sys.executable, "-c", "pass"]
+        baseline = manifest_for(check("one", command))
+        mutations = []
+
+        missing_policy = json.loads(json.dumps(baseline))
+        missing_policy.pop("resource_policy")
+        mutations.append((missing_policy, "resource_policy must be an object"))
+
+        missing_class = json.loads(json.dumps(baseline))
+        missing_class["checks"][0].pop("resource_class")
+        mutations.append((missing_class, "resource_class must name"))
+
+        unknown_class = json.loads(json.dumps(baseline))
+        unknown_class["checks"][0]["resource_class"] = "typo"
+        mutations.append((unknown_class, "resource_class must name"))
+
+        invalid_limit = json.loads(json.dumps(baseline))
+        invalid_limit["resource_policy"]["classes"]["python-cheap"]["max_concurrency"] = True
+        mutations.append((invalid_limit, "max_concurrency must be a positive integer"))
+
+        missing_field = json.loads(json.dumps(baseline))
+        missing_field["resource_policy"]["classes"]["leaf-jvm"].pop("default_rss_mb")
+        mutations.append((missing_field, "missing fields"))
+
+        unknown_field = json.loads(json.dumps(baseline))
+        unknown_field["resource_policy"]["aggregate"]["telemetry"] = 1
+        mutations.append((unknown_field, "unknown fields"))
+
+        missing_capacity_lock = json.loads(json.dumps(baseline))
+        missing_capacity_lock["resource_policy"]["classes"]["leaf-jvm"].pop("capacity_lock")
+        mutations.append((missing_capacity_lock, "missing fields"))
+
+        unsafe_leaf_capacity = json.loads(json.dumps(baseline))
+        unsafe_leaf_capacity["resource_policy"]["classes"]["leaf-jvm"]["capacity_lock"] = None
+        mutations.append((unsafe_leaf_capacity, "capacity_lock must be"))
+
+        unsafe_leaf_fanout = json.loads(json.dumps(baseline))
+        unsafe_leaf_fanout["resource_policy"]["classes"]["leaf-jvm"]["max_concurrency"] = 4
+        mutations.append((unsafe_leaf_fanout, "must not exceed three"))
+
+        unsafe_hosted_fanout = json.loads(json.dumps(baseline))
+        unsafe_hosted_fanout["resource_policy"]["classes"]["bootstrap-hosted"]["max_concurrency"] = 2
+        mutations.append((unsafe_hosted_fanout, "max_concurrency must be one"))
+
+        forged_class = json.loads(json.dumps(baseline))
+        forged_class["resource_policy"]["classes"]["forged-cheap"] = {
+            "max_concurrency": 32,
+            "default_rss_mb": 1,
+            "default_processes": 1,
+            "jvm_xmx_mb": None,
+            "capacity_lock": None,
+        }
+        forged_class["checks"][0]["resource_class"] = "forged-cheap"
+        mutations.append((forged_class, "has unknown classes.*forged-cheap"))
+
+        for manifest, message in mutations:
+            with self.subTest(message=message), self.assertRaisesRegex(verifier.ManifestError, message):
+                verifier.validate_manifest(manifest)
+
+    def test_direct_clojure_jvm_xmx_must_match_declared_class(self) -> None:
+        valid = manifest_for(
+            check(
+                "leaf",
+                ["clojure", "-J-Xmx256m", "-M:leaf-test", "--group", "compiler"],
+                resource_class="leaf-jvm",
+            )
+        )
+        verifier.validate_manifest(valid)
+        for command in (
+            ["clojure", "-J-Xmx128m", "-M:leaf-test"],
+            ["clojure", "-M:leaf-test"],
+            ["clojure", "-J-Xmx256m", "-J-Xmx512m", "-M:leaf-test"],
+        ):
+            invalid = manifest_for(check("leaf", command, resource_class="leaf-jvm"))
+            with self.subTest(command=command), self.assertRaisesRegex(
+                verifier.ManifestError, "must declare exactly '-J-Xmx256m'"
+            ):
+                verifier.validate_manifest(invalid)
+
+        wrapper = manifest_for(
+            check("wrapped", ["bin/gravity-bootstrap", "--check"], resource_class="bootstrap-hosted")
+        )
+        verifier.validate_manifest(wrapper)
+
+    def test_resource_class_and_aggregate_budgets_shape_deterministic_batches(self) -> None:
+        command = [sys.executable, "-c", "pass"]
+        class_limited = manifest_for(
+            *(check(name, command) for name in ("e", "a", "d", "b", "c"))
+        )
+        class_limited["resource_policy"]["classes"]["python-cheap"]["max_concurrency"] = 2
+        self.assertEqual(
+            verifier.parallel_ready_groups(class_limited, jobs=32),
+            [["a", "b"], ["c", "d"], ["e"]],
+        )
+
+        for budget, reservation, field in (
+            (250, 150, "max_rss_mb"),
+            (3, 2, "max_processes"),
+        ):
+            aggregate_limited = manifest_for(
+                *(check(name, command) for name in ("c", "a", "b"))
+            )
+            policy = aggregate_limited["resource_policy"]
+            if field == "max_rss_mb":
+                policy["aggregate"][field] = budget
+                for declaration in policy["classes"].values():
+                    declaration["default_rss_mb"] = min(reservation, budget)
+                policy["classes"]["python-cheap"]["default_rss_mb"] = reservation
+            else:
+                policy["aggregate"][field] = budget
+                for declaration in policy["classes"].values():
+                    declaration["default_processes"] = 1
+                policy["classes"]["python-cheap"]["default_processes"] = reservation
+            with self.subTest(field=field):
+                self.assertEqual(
+                    verifier.parallel_ready_groups(aggregate_limited, jobs=32),
+                    [["a"], ["b"], ["c"]],
+                )
+
+    def test_resource_declaration_changes_cache_identity(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-resource-cache-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            item = check("one", [sys.executable, "-c", "pass"])
+            original = manifest_for(item)
+            changed = json.loads(json.dumps(original))
+            changed["resource_policy"]["classes"]["python-cheap"]["default_rss_mb"] += 1
+            self.assertNotEqual(
+                verifier.cache_key(original, item, root),
+                verifier.cache_key(changed, changed["checks"][0], root),
+            )
+
+    def test_resource_metadata_is_in_planned_executed_reused_and_blocked_receipts(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-resource-receipt-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            passing = manifest_for(check("pass", [sys.executable, "-c", "pass"]))
+            planned = verifier.run_verification(passing, root, all_checks=True, dry_run=True)
+            executed = verifier.run_verification(passing, root, all_checks=True, cache_path=root / "cache.json")
+            reused = verifier.run_verification(
+                passing, root, all_checks=True, resume=True, cache_path=root / "cache.json"
+            )
+            blocked_manifest = manifest_for(
+                check("fail", [sys.executable, "-c", "raise SystemExit(1)"]),
+                check("blocked", [sys.executable, "-c", "pass"], depends_on=["fail"]),
+            )
+            blocked = verifier.run_verification(
+                blocked_manifest, root, all_checks=True, fail_fast=False
+            )
+            records = [
+                planned["checks"][0],
+                executed["checks"][0],
+                reused["checks"][0],
+                next(item for item in blocked["checks"] if item["id"] == "blocked"),
+            ]
+            self.assertEqual([item["status"] for item in records], ["planned", "passed", "reused", "blocked"])
+            for receipt in (planned, executed, reused, blocked):
+                self.assertEqual(
+                    receipt["resource_policy"]["authority"],
+                    "non-authoritative-admission-estimate",
+                )
+            for record in records:
+                self.assertEqual(record["resource"]["class"], "python-cheap")
+                self.assertEqual(record["resource"]["reserved_rss_mb"], 128)
+                self.assertEqual(record["resource"]["reserved_processes"], 1)
+                self.assertEqual(
+                    record["resource"]["authority"],
+                    "non-authoritative-admission-estimate",
+                )
+
+    def test_capacity_lock_busy_blocks_before_any_subprocess_launch(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-capacity-busy-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            manifest = manifest_for(
+                check(
+                    "leaf-a",
+                    [sys.executable, "-c", "pass"],
+                    resource_class="leaf-jvm",
+                ),
+                check(
+                    "leaf-b",
+                    [sys.executable, "-c", "pass"],
+                    resource_class="leaf-jvm",
+                ),
+            )
+            @contextlib.contextmanager
+            def busy_capacity_lock(lock_name: str | None):
+                self.assertEqual(lock_name, verifier.CANONICAL_HEAVY_LOCK)
+                raise verifier.LockUnavailable(f"shared resource lock is busy: {lock_name}")
+                yield None
+
+            with mock.patch.object(
+                verifier, "_process_lock", busy_capacity_lock
+            ), mock.patch.object(verifier, "_run_one") as run_one:
+                receipt = verifier.run_verification(manifest, root, all_checks=True, jobs=32)
+            run_one.assert_not_called()
+            self.assertEqual(receipt["status"], "failed")
+            self.assertEqual(
+                [item["status"] for item in receipt["checks"]], ["blocked", "blocked"]
+            )
+            for record in receipt["checks"]:
+                self.assertEqual(record["reason"], "capacity-lock-busy")
+                self.assertEqual(record["capacity_lock"], verifier.CANONICAL_HEAVY_LOCK)
+                self.assertEqual(
+                    record["resource"]["capacity_lock"], verifier.CANONICAL_HEAVY_LOCK
+                )
+
+    def test_capacity_lock_is_acquired_once_for_leaf_batch_with_stable_lock_path(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-capacity-path-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            manifest = manifest_for(
+                check(
+                    "leaf-a",
+                    [sys.executable, "-c", "pass"],
+                    resource_class="leaf-jvm",
+                ),
+                check(
+                    "leaf-b",
+                    [sys.executable, "-c", "pass"],
+                    resource_class="leaf-jvm",
+                ),
+            )
+            lock_calls: list[str | None] = []
+
+            @contextlib.contextmanager
+            def observed_process_lock(lock_name: str | None):
+                lock_calls.append(lock_name)
+                yield (
+                    verifier._resource_lock_path(lock_name)
+                    if lock_name is not None
+                    else None
+                )
+
+            with mock.patch.object(verifier, "_process_lock", observed_process_lock):
+                receipt = verifier.run_verification(manifest, root, all_checks=True, jobs=32)
+            self.assertEqual(receipt["status"], "passed")
+            self.assertEqual(
+                [item for item in lock_calls if item == verifier.CANONICAL_HEAVY_LOCK],
+                [verifier.CANONICAL_HEAVY_LOCK],
+            )
+            expected_path = str(verifier._resource_lock_path(verifier.CANONICAL_HEAVY_LOCK))
+            for record in receipt["checks"]:
+                self.assertEqual(record["capacity_lock"], verifier.CANONICAL_HEAVY_LOCK)
+                self.assertEqual(record["capacity_lock_path"], expected_path)
+
+    def test_canonical_default_jobs_respects_every_resource_limit(self) -> None:
+        manifest = verifier.load_manifest(TOOLS / "development_verification_manifest.json")
+        groups = verifier.parallel_ready_groups(manifest)
+        policy = verifier.normalized_resource_policy(manifest)
+        by_id = verifier.checks_by_id(manifest)
+        for group in groups:
+            resources = [verifier.check_resource_declaration(manifest, by_id[item]) for item in group]
+            counts: dict[str, int] = {}
+            for resource in resources:
+                counts[resource["class"]] = counts.get(resource["class"], 0) + 1
+            self.assertLessEqual(
+                sum(resource["reserved_rss_mb"] for resource in resources),
+                policy["aggregate"]["max_rss_mb"],
+            )
+            self.assertLessEqual(
+                sum(resource["reserved_processes"] for resource in resources),
+                policy["aggregate"]["max_processes"],
+            )
+            for class_name, count in counts.items():
+                self.assertLessEqual(count, policy["classes"][class_name]["max_concurrency"])
+            if any(verifier._effective_lock(by_id[item]) is not None for item in group):
+                self.assertEqual(len(group), 1)
+
     def test_manifest_requires_explicit_daemonization_forbidden_policy(self) -> None:
         item = check("policy", [sys.executable, "-c", "pass"])
         item.pop("daemonization")
@@ -1182,6 +1489,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "fresh": True,
                 "authority": "none",
                 "cost": "heavy",
+                "resource_class": "memory-heavy",
             },
             "stage0-bootstrap-authority": {
                 "lock": "/tmp/gravity-sh07-heavy.lock",
@@ -1189,12 +1497,14 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "fresh": True,
                 "authority": "none",
                 "cost": "heavy",
+                "resource_class": "memory-heavy",
             },
         }
         for check_id, fields in expected.items():
             with self.subTest(check=check_id):
                 item = next(entry for entry in manifest["checks"] if entry["id"] == check_id)
                 self.assertEqual({key: item[key] for key in fields}, fields)
+                self.assertIsNone(verifier._batch_capacity_lock(manifest, [check_id]))
 
     def test_every_canonical_clojure_component_path_is_owned_by_a_check(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
