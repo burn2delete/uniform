@@ -51,9 +51,20 @@ MAX_CHILD_OUTPUT_BYTES = 8 * 1024
 MAX_CHILD_OUTPUT_COMBINED_BYTES = 12 * 1024
 MAX_AUTHORITY_OUTPUT_BYTES = 4 * 1024 * 1024
 MAX_AUTHORITY_SOURCE_BYTES = 16 * 1024 * 1024
+STAGE3_SHARED_RUNTIME_INPUTS = (
+    *_sh07.SHARED_GRAVITY_FILES,
+    *(f"{tree}/**" for tree in _sh07.SHARED_REPOSITORY_TREES),
+)
 STAGE3_RUNTIME_DEPENDENCIES = (
+    "deps.edn",
     "tools/run_stage3_verification.py",
+    "tools/verify_development.py",
     "tools/run_sh07_authoritative_modules.py",
+    "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/self_hosting_test_runner.clj",
+    "bootstrap/clojure/src/gravity/bootstrap.clj",
+    *STAGE3_SHARED_RUNTIME_INPUTS,
 )
 DEFAULT_BATCH = "public-c7-check"
 DEFAULT_MODE = "pure"
