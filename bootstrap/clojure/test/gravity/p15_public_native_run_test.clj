@@ -273,6 +273,25 @@
     (is (= #{11 12 13} (:retained-ids churn-snapshot)) churn-snapshot)
     (is (= [14] (:new-ids churn-snapshot)) churn-snapshot)))
 
+(deftest p15-s23-native-process-census-final-snapshot-fails-before-overcap-retain
+  (let [initial
+        (private-bootstrap-call "c-backend-census-consume-ids" #{} [21 22] 2)
+        error
+        (try
+          (private-bootstrap-call "c-backend-census-consume-ids"
+                                  (:retained-ids initial) [23] 2)
+          nil
+          (catch clojure.lang.ExceptionInfo failure
+            failure))]
+    (is (false? (:overflow? initial)) initial)
+    (is (= #{21 22} (:retained-ids initial)) initial)
+    (is (some? error) error)
+    (is (= :bounded-c-backend-process-descendants
+           (:missing-fact (ex-data error))) error)
+    (is (= 2 (:captured-count (ex-data error))) error)
+    (is (= 1 (:candidate-count (ex-data error))) error)
+    (is (= #{21 22} (:retained-ids (ex-data error))) error)))
+
 (deftest p15-s23-native-process-blocking-pump-closes-and-terminates
   (let [reader (java.io.PipedInputStream.)
         writer (java.io.PipedOutputStream. reader)
@@ -299,6 +318,61 @@
                  nil
                  (catch Throwable error error))]
     (is (identical? fatal caught) {:expected fatal :actual caught})))
+
+(deftest p15-s23-native-process-pump-fatal-and-interrupt-identities-survive
+  (doseq [fatal [(OutOfMemoryError. "synthetic pump OOME")
+                 (ThreadDeath.)]]
+    (let [caught
+          (try
+            (with-private-redefs
+              {"*c-backend-process-read-stream-fn*"
+               (fn [& _] (throw fatal))}
+              #(supervised-process
+                ["/usr/bin/true"] "p15-native-process-pump-fatal.gravity"
+                :c :test-pump-fatal))
+            nil
+            (catch Throwable error error))]
+      (is (identical? fatal caught) {:expected fatal :actual caught})))
+  (let [interrupted (InterruptedException. "synthetic pump interrupt")
+        caught
+        (try
+          (with-private-redefs
+            {"*c-backend-process-read-stream-fn*"
+             (fn [& _] (throw interrupted))}
+            #(supervised-process
+              ["/usr/bin/true"] "p15-native-process-pump-interrupt.gravity"
+              :c :test-pump-interrupt))
+          nil
+          (catch Throwable error error))]
+    (try
+      (is (identical? interrupted caught)
+          {:expected interrupted :actual caught})
+      (finally
+        (Thread/interrupted)))))
+
+(deftest p15-s23-native-run-cc-fatal-primary-suppresses-cleanup
+  (let [fatal (OutOfMemoryError. "synthetic run-cc fatal")
+        cleanup (ex-info "synthetic staging cleanup failure"
+                         {:id "TEST-CLEANUP-FAILURE"})
+        caught
+        (try
+          (with-private-redefs
+            {"c-backend-private-staging-directory!"
+             (fn [& _] {:path (java.nio.file.Paths/get
+                               "/tmp" (make-array String 0))})
+             "c-backend-run-process!"
+             (fn [& _] (throw fatal))
+             "c-backend-delete-private-staging!"
+             (fn [& _] (throw cleanup))}
+            #(private-bootstrap-call
+              "c-backend-run-cc!" "/tmp/p15-missing.c"
+              "/tmp/p15-missing-program" "p15-run-cc-fatal.gravity" :c))
+          nil
+          (catch Throwable error error))]
+    (is (identical? fatal caught) {:expected fatal :actual caught})
+    (is (some #(identical? cleanup %)
+              (.getSuppressed ^Throwable caught))
+        {:suppressed (vec (.getSuppressed ^Throwable caught))})))
 
 (deftest p15-s23-native-process-output-overflow-terminates-fail-closed
   (let [data

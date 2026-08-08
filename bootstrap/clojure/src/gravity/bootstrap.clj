@@ -145305,6 +145305,24 @@
      :overflow? (> (+ (count captured-ids) (count new-ids))
                    (long maximum))}))
 
+(defn- c-backend-census-consume-ids
+  "Consume one sequential snapshot, failing before an over-cap retain.
+
+  This consumer-level seam mirrors the ordering used by the real handle
+  merger and makes the final-snapshot boundary independently testable."
+  [captured-ids candidate-ids maximum]
+  (let [result (c-backend-census-merge-ids
+                captured-ids candidate-ids maximum)]
+    (when (:overflow? result)
+      (throw
+       (ex-info
+        "native process descendant census exceeded its global bound"
+        (assoc result
+               :missing-fact :bounded-c-backend-process-descendants
+               :captured-count (count (:retained-ids result))
+               :candidate-count (count (:new-ids result))))))
+    result))
+
 (defn- c-backend-merge-census-handles
   "Merge HANDLES into CAPTURED only after checking the global unique bound.
 
@@ -145382,44 +145400,54 @@
                   final-merge
                   (c-backend-merge-census-handles
                    @captured (:handles final-descendants)
-                   *c-backend-process-max-descendants*)
-                  _ (when (or (:overflow? final-descendants)
-                              (:overflow? final-merge))
-                      (reset! observation-overflow? true))
-                  _ (when-not @observation-overflow?
-                      (reset! captured (:captured final-merge)))
-                  final-handles
-                  (vals
-                   (into
-                    {}
-                    (map (fn [handle]
-                           [(.pid ^java.lang.ProcessHandle handle) handle]))
-                    (concat (vals @captured) (:handles final-descendants)
-                            [root])))
-                  final-alive
-                  (filter #(.isAlive ^java.lang.ProcessHandle %)
-                          final-handles)
-                  result
-                  {:kill-requested? true
-                   :captured-process-count (inc (count @captured))
-                   :descendant-count (count @captured)
-                   :alive-process-count (count final-alive)
-                   :root-alive-after-kill? (.isAlive root)
-                   :captured-process-set-reaped? (empty? final-alive)
-                   ;; ProcessHandle.descendants is only a snapshot.  It cannot
-                   ;; prove that a descendant did not reparent or fork between
-                   ;; enumeration and termination; only an OS containment
-                   ;; primitive such as a process group/job can prove that.
-                   :os-process-containment? false
-                   :whole-process-tree-reaping-proved? false}]
-              (when-not (:captured-process-set-reaped? result)
+                   *c-backend-process-max-descendants*)]
+              ;; The final snapshot is still a consumer of the global bound.
+              ;; Fail before retaining or concatenating a new identity; doing
+              ;; otherwise would briefly construct an over-cap kill set.
+              (when (or (:overflow? final-descendants)
+                        (:overflow? final-merge))
                 (c-backend-fail!
                  "B2-DIALECT"
-                 "C backend process tree could not be reaped fail-closed"
+                 "C backend process descendant set exceeded its bound"
                  source-path target nil
-                 {:missing-fact :c-backend-process-tree-reaping
-                  :termination result}))
-              result))))))
+                 {:missing-fact :bounded-c-backend-process-descendants
+                  :maximum-descendants *c-backend-process-max-descendants*
+                  :observed-descendants (count @captured)
+                  :final-snapshot-overflow? true
+                  :captured-kill-requested? true
+                  :whole-process-tree-reaping-proved? false}))
+              (reset! captured (:captured final-merge))
+              (let [final-handles
+                    (vals
+                     (into
+                      {}
+                      (map (fn [handle]
+                             [(.pid ^java.lang.ProcessHandle handle) handle]))
+                      (concat (vals @captured) [root])))
+                    final-alive
+                    (filter #(.isAlive ^java.lang.ProcessHandle %)
+                            final-handles)
+                    result
+                    {:kill-requested? true
+                     :captured-process-count (inc (count @captured))
+                     :descendant-count (count @captured)
+                     :alive-process-count (count final-alive)
+                     :root-alive-after-kill? (.isAlive root)
+                     :captured-process-set-reaped? (empty? final-alive)
+                     ;; ProcessHandle.descendants is only a snapshot.  It cannot
+                     ;; prove that a descendant did not reparent or fork between
+                     ;; enumeration and termination; only an OS containment
+                     ;; primitive such as a process group/job can prove that.
+                     :os-process-containment? false
+                     :whole-process-tree-reaping-proved? false}]
+                (when-not (:captured-process-set-reaped? result)
+                  (c-backend-fail!
+                   "B2-DIALECT"
+                   "C backend process tree could not be reaped fail-closed"
+                   source-path target nil
+                   {:missing-fact :c-backend-process-tree-reaping
+                    :termination result}))
+                result)))))))
 
 (defn- c-backend-process-read-stream
   "Drain INPUT completely while retaining a strict UTF-8 prefix.
@@ -145545,6 +145573,9 @@
                         {:carry (byte-array 0) :error error})))]
               (recur next-total (:carry decode-state) (:error decode-state)))))))))
 
+(def ^:dynamic *c-backend-process-read-stream-fn*
+  c-backend-process-read-stream)
+
 (defn- c-backend-start-output-pump!
   [input-stream stream-kind]
   (let [outcome (promise)
@@ -145553,13 +145584,26 @@
          (fn []
            (try
              (deliver outcome
-                      (assoc (c-backend-process-read-stream
+                      (assoc (*c-backend-process-read-stream-fn*
                               input-stream *c-backend-process-max-output-bytes*)
                              :stream stream-kind))
-             (catch Throwable error
+             (catch InterruptedException error
+               ;; Preserve the exact worker interruption for the supervising
+               ;; main thread; it is not an ordinary read error.
                (deliver outcome
                         {:stream stream-kind
-                         :read-error error}))))
+                         :fatal-error error}))
+             (catch Error error
+               ;; OOME and ThreadDeath retain identity across the bounded
+               ;; pump handoff and are rethrown by the main process path.
+               (deliver outcome
+                        {:stream stream-kind
+                         :fatal-error error}))
+             (catch Exception error
+               (deliver outcome
+                        {:stream stream-kind
+                         :read-error error}))
+             ))
          (str "gravity-c-backend-" (name stream-kind) "-pump"))]
     (.setDaemon thread true)
     (try
@@ -145579,6 +145623,7 @@
   (when (realized? (:outcome pump))
     (let [outcome @(:outcome pump)]
       (when (or (:decode-error outcome)
+                (:fatal-error outcome)
                 (:read-error outcome))
         outcome))))
 
@@ -145601,8 +145646,20 @@
 
 (defn- c-backend-fail-output-pump!
   [process failure source-path target role]
-  (let [termination
-        (c-backend-terminate-process-tree! process source-path target)]
+  (let [fatal (:fatal-error failure)
+        termination
+        (try
+          (c-backend-terminate-process-tree! process source-path target)
+          (catch Throwable cleanup
+            (if fatal
+              (do
+                (.addSuppressed ^Throwable fatal ^Throwable cleanup)
+                nil)
+              (throw cleanup))))]
+    (when fatal
+      (when (instance? InterruptedException fatal)
+        (.interrupt (Thread/currentThread)))
+      (throw ^Throwable fatal))
     (if (:limit-exceeded? failure)
       (c-backend-fail!
        "B2-DIALECT" "C backend process output exceeded its bound"
@@ -146116,6 +146173,11 @@
          (reset! primary-failure interrupted)
          (.interrupt (Thread/currentThread))
          (throw interrupted))
+       (catch Error fatal
+         ;; A fatal compiler/pump error remains the primary identity while
+         ;; staging cleanup failures are attached as suppressed evidence.
+         (reset! primary-failure fatal)
+         (throw fatal))
        (catch Exception ex
          (reset! primary-failure ex)
          (c-backend-fail! "B2-DIALECT"
