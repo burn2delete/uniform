@@ -239,9 +239,12 @@
             (failure "SH07-C11-PREFLIGHT-SOURCE-MUTATED"
                      "C11 source changed before descriptor read"
                      {:source-path (str path)}))
-          (let [buffer (java.nio.ByteBuffer/allocate maximum-source-bytes)]
+          ;; Read one probe byte beyond the admitted ceiling.  This lets an
+          ;; exact-bound file reach EOF and be accepted while a file that grew
+          ;; during the read is rejected without an unbounded allocation.
+          (let [buffer (java.nio.ByteBuffer/allocate (inc maximum-source-bytes))]
             (loop [zero-reads 0]
-              (if (= (.position buffer) maximum-source-bytes)
+              (if (= (.position buffer) (.capacity buffer))
                 nil
                 (let [read-count (.read channel buffer)]
                   (cond
@@ -260,7 +263,7 @@
                   (when (and (:root location) (:relative location))
                     (safe-contained-source-path (:root location)
                                                 (:relative location)))]
-              (when (or (>= observed-bytes maximum-source-bytes)
+              (when (or (> observed-bytes maximum-source-bytes)
                         (not= channel-size-before channel-size-after)
                         (not= channel-size-before observed-bytes)
                         (not (same-file-state? state-before state-after))
@@ -618,6 +621,7 @@
           real-file (.resolve temporary "real.gravity")
           link-file (.resolve temporary "link.gravity")
           oversized-file (.resolve temporary "oversized.gravity")
+          exact-bound-file (.resolve temporary "exact-bound.gravity")
           replacement-file (.resolve temporary "replacement.gravity")
           moved-original (.resolve temporary "original.gravity")
           real-directory (.resolve temporary "real-directory")
@@ -632,6 +636,14 @@
          oversized-file
          (byte-array (inc maximum-source-bytes))
          (make-array java.nio.file.OpenOption 0))
+        (java.nio.file.Files/write
+         exact-bound-file
+         (byte-array maximum-source-bytes)
+         (make-array java.nio.file.OpenOption 0))
+        (let [snapshot (read-source-snapshot exact-bound-file)]
+          (is (= maximum-source-bytes (:size snapshot)))
+          (is (= maximum-source-bytes
+                 (alength ^bytes (:bytes snapshot)))))
         (is (thrown? clojure.lang.ExceptionInfo
                      (read-source-snapshot oversized-file)))
         (is (thrown? clojure.lang.ExceptionInfo
@@ -683,6 +695,7 @@
           (java.nio.file.Files/deleteIfExists real-file)
           (java.nio.file.Files/deleteIfExists replacement-file)
           (java.nio.file.Files/deleteIfExists moved-original)
+          (java.nio.file.Files/deleteIfExists exact-bound-file)
           (java.nio.file.Files/deleteIfExists oversized-file)
           (java.nio.file.Files/deleteIfExists intermediate-link)
           (java.nio.file.Files/deleteIfExists nested-file)
