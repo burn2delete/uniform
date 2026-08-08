@@ -642,7 +642,8 @@
       (exact-map-keys focused
                       #{:test-namespace :tests :assertions :failures :errors
                         :receipt-scope :test-source-content-hash
-                        :historical-receipt}
+                        :historical-receipt :coverage-audit
+                        :gravity-contract-check}
                       :focused-validation)
       (require-artifact! (= 'gravity.p15-native-runtime-driver-test
                             (:test-namespace focused)) focused)
@@ -660,8 +661,7 @@
                         :canonical-lock :run-id
                         :elapsed-seconds :peak-rss-bytes :peak-process-count
                         :log-content-hash :status-content-hash
-                        :test-source-content-hash :coverage-audit
-                        :gravity-contract-check}
+                        :test-source-content-hash}
                       :historical-receipt)
       (require-artifact!
        (= {:tests 9 :assertions 234 :failures 0 :errors 0}
@@ -674,12 +674,12 @@
           (select-keys (:historical-receipt focused)
                        [:supervisor :canonical-lock]))
        (:historical-receipt focused))
-      (exact-map-keys (:coverage-audit (:historical-receipt focused))
+      (exact-map-keys (:coverage-audit focused)
                       #{:documents :full-language-complete :without-executable-owner
                         :public-accepted :accepted-total :public-rejected-specific
                         :rejected-total}
                       :coverage-audit)
-      (exact-map-keys (:gravity-contract-check (:historical-receipt focused))
+      (exact-map-keys (:gravity-contract-check focused)
                       #{:verification-profile :verification-target :result
                         :log-content-hash :status-content-hash}
                       :gravity-contract-check))

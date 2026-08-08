@@ -102,7 +102,7 @@
   :errors 0
   :receipt-scope :source-only-census
   :test-source-content-hash
-  "sha256:a2832fc1cef918dff2696ed519f557f8cc3a006b19f80f89e8f2853d8a8a925a"
+  "sha256:eb18f4a44f439ccb2b2378b4180e11e90f2be577be108c31f8ff6f7344d773f7"
   :historical-receipt
   {:tests 9
    :assertions 234
@@ -119,23 +119,23 @@
    :status-content-hash
    "sha256:0b7db3ae683d2daedebbd9ede2329f2c5edfd7da263e77bf5bd9188e91c1bd31"
    :test-source-content-hash
-   "sha256:a33423e704c5f414f845d7c5dd39ad9ad2d20902544b4c95cac0389a373e64a1"
-   :coverage-audit
-   {:documents 240
-    :full-language-complete 0
-    :without-executable-owner 7
-    :public-accepted 74
-    :accepted-total 197
-    :public-rejected-specific 664
-    :rejected-total 1720}
-   :gravity-contract-check
-   {:verification-profile :hosted
-    :verification-target :jvm
-    :result "gravity stage0 check passed: gravity.bootstrap.p15-s23.native-runtime-driver"
-    :log-content-hash
-    "sha256:4ac705138dd19131bbddac7eb689913a5e10866f8f390fa09ba0110861d2c937"
-    :status-content-hash
-    "sha256:c1319780b6b8c506f6bcf58402d73fdb001306b278b5df9ddc9b1ed139bdef68"}}
+   "sha256:a33423e704c5f414f845d7c5dd39ad9ad2d20902544b4c95cac0389a373e64a1"}
+  :coverage-audit
+  {:documents 240
+   :full-language-complete 0
+   :without-executable-owner 7
+   :public-accepted 74
+   :accepted-total 197
+   :public-rejected-specific 664
+   :rejected-total 1720}
+  :gravity-contract-check
+  {:verification-profile :hosted
+   :verification-target :jvm
+   :result "gravity stage0 check passed: gravity.bootstrap.p15-s23.native-runtime-driver"
+   :log-content-hash
+   "sha256:4ac705138dd19131bbddac7eb689913a5e10866f8f390fa09ba0110861d2c937"
+   :status-content-hash
+   "sha256:c1319780b6b8c506f6bcf58402d73fdb001306b278b5df9ddc9b1ed139bdef68"}}
  :seed-boundary
  {:selected-runtime-invokes-clojure? false
   :selected-runtime-invokes-jvm? false
