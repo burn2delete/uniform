@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
+            [gravity.c3-syntax-diagnostics :as c3-syntax-diagnostics]
             [gravity.c3-literal-projection :as c3-literal-projection]
             [gravity.c3-syntax-construction :as c3-syntax-construction]
             [gravity.c3-syntax-evidence :as c3-syntax-evidence]
@@ -10433,6 +10434,62 @@
                    {:stage :syntax-object-model}
                    {:missing-fields [:stable-syntax-ids?]}]]
                  @calls)))))))
+
+(deftest c3-syntax-diagnostics-compatibility-wrappers-preserve-interposition
+  (let [overrides {:fail :origin}
+        module {:metadata {:compiler {:c3-syntax overrides}}}
+        forms [(list 'ns 'demo.core
+                     (list :metadata {:compiler {:c3-syntax overrides}}))]]
+    (is (= c3-syntax-diagnostics/c3-syntax-diagnostic-ids
+           bootstrap/c3-syntax-diagnostic-ids))
+    (is (= c3-syntax-diagnostics/c3-syntax-governing-document
+           bootstrap/c3-syntax-governing-document))
+    (is (= c3-syntax-diagnostics/c3-syntax-rejected-designs
+           bootstrap/c3-syntax-rejected-designs))
+    (is (= c3-syntax-diagnostics/c3-syntax-override-diagnostics
+           bootstrap/c3-syntax-override-diagnostics))
+    (doseq [[wrapper-var expected]
+            [[#'bootstrap/c3-syntax-source-overrides '([module])]
+             [#'bootstrap/c3-syntax-overrides-from-forms '([forms])]
+             [#'bootstrap/c3-syntax-message '([id])]
+             [#'bootstrap/c3-syntax-fail!
+              '([id source-path subject extra])]
+             [#'bootstrap/c3-syntax-validate-overrides!
+              '([source-path overrides])]]]
+      (is (= expected (:arglists (meta wrapper-var)))))
+    (is (= (c3-syntax-diagnostics/c3-syntax-source-overrides module)
+           (bootstrap/c3-syntax-source-overrides module)))
+    (is (= (c3-syntax-diagnostics/c3-syntax-overrides-from-forms forms)
+           (bootstrap/c3-syntax-overrides-from-forms forms)))
+    (is (= (c3-syntax-diagnostics/c3-syntax-message "C3-ORIGIN")
+           (bootstrap/c3-syntax-message "C3-ORIGIN")))
+    (let [failure (atom nil)]
+      (with-redefs [bootstrap/c3-syntax-message (constantly "interposed")
+                    bootstrap/c3-syntax-governing-document
+                    "docs/interposed-c3.md"
+                    bootstrap/source-span (fn [& _] :interposed-span)
+                    bootstrap/fail! (fn [& args] (reset! failure args))]
+        (bootstrap/c3-syntax-fail! "C3-ID" "source.gravity" {} {})
+        (is (= "interposed" (second @failure)))
+        (is (= :interposed-span (:source-span (nth @failure 2))))
+        (is (= "docs/interposed-c3.md"
+               (:expected-document (nth @failure 2)))))
+      (reset! failure nil)
+      (with-redefs [bootstrap/c3-syntax-override-diagnostics
+                    {:interposed "C3-ID"}
+                    bootstrap/source-span (fn [& _] :override-span)
+                    bootstrap/c3-syntax-fail!
+                    (fn [& args] (reset! failure args))]
+        (bootstrap/c3-syntax-validate-overrides!
+         "source.gravity" {:fail :interposed})
+        (is (= ["C3-ID"
+                "source.gravity"
+                {:source-span :override-span
+                 :producer :fixture-override
+                 :form-kind :interposed
+                 :hygiene {:marks [] :captures []}}
+                {:missing-fields [:interposed]}]
+               @failure))))))
 
 (deftest c3-literal-projection-compatibility-wrappers-preserve-interposition
   (let [span {:source "ratio.gravity" :byte-start 0 :byte-end 3}
