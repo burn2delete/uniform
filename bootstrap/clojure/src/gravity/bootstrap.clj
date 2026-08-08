@@ -15,6 +15,7 @@
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
+            [gravity.macro-expansion :as macro-expansion]
             [gravity.reader-cursor :as reader-cursor]
             [gravity.reader-diagnostic-policy :as reader-diagnostic-policy]
             [gravity.reader-host-oracle :as reader-host-oracle]
@@ -747,527 +748,233 @@
               :profile (:profile module)
               :supported supported-profiles
               :remediation "Use (:profile :hosted) for executable stage0 modules."}))))
+(declare macro-expansion-ops
+         local-macro-symbol
+         parse-param-list
+         bind-macro-arguments
+         expand-template-items
+         macro-env-value
+         expand-template
+         parse-syntax-template
+         builtin-defn-output
+         builtin-when-output
+         thread-first-step
+         builtin-thread-first-output
+         builtin-macros
+         built-in-registry
+         parse-defmacro-form
+         macro-registry
+         macro-namespace-entry
+         macro-build-effect-record
+         macro-build-grants
+         assert-build-effects!
+         collect-let-bindings
+         assert-hygiene!
+         assert-generated-profile!
+         assert-generated-unsafe!
+         expand-macro-form
+         expansion-generated-origin
+         macro-call
+         expand-child-form
+         expand-form-children
+         expansion-trace-record
+         distinct-by-pr-str
+         expand-syntax-object
+         macro-source-artifact-from-records)
 
 (defn local-macro-symbol
   [module name]
-  (symbol (str (:module module)) (str name)))
+  (macro-expansion/local-macro-symbol module name))
 
 (defn parse-param-list
   [params]
-  (loop [items (seq params)
-         fixed []]
-    (cond
-      (nil? items) {:fixed fixed :rest nil}
-      (= '& (first items))
-      (let [rest-name (second items)]
-        (when-not (and (symbol? rest-name) (nil? (nnext items)))
-          (fail! "L4-MACRO-NOT-SYNTAX"
-                 "macro rest parameter must be a single symbol"
-                 {:params params
-                  :remediation "Use a parameter vector such as [x & body]."}))
-        {:fixed fixed :rest rest-name})
-      (symbol? (first items)) (recur (next items) (conj fixed (first items)))
-      :else
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "macro parameters must be symbols"
-             {:params params
-              :remediation "Use symbolic macro parameters."}))))
+  (macro-expansion/parse-param-list params (macro-expansion-ops)))
 
 (defn bind-macro-arguments
   [macro args call-span]
-  (let [{:keys [fixed rest]} (:params macro)]
-    (when (or (< (count args) (count fixed))
-              (and (nil? rest) (not= (count args) (count fixed))))
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "macro call does not match the accepted syntax shape"
-             {:source-span call-span
-              :macro (:identity macro)
-              :params fixed
-              :rest rest
-              :argument-count (count args)
-              :remediation "Call the macro with the syntax shape declared by its parameter vector."}))
-    (let [fixed-bindings (zipmap fixed (take (count fixed) args))]
-      (if rest
-        (assoc fixed-bindings rest (vec (drop (count fixed) args)))
-        fixed-bindings))))
-
-(declare expand-template)
+  (macro-expansion/bind-macro-arguments macro args call-span
+                                        (macro-expansion-ops)))
 
 (defn expand-template-items
   [env items]
-  (mapcat (fn [item]
-            (let [expanded (expand-template env item)]
-              (if (and (map? expanded) (contains? expanded ::splice))
-                (::splice expanded)
-                [expanded])))
-          items))
+  (macro-expansion/expand-template-items env items (macro-expansion-ops)))
 
 (defn macro-env-value
   [env sym]
-  (if (contains? env sym)
-    (get env sym)
-    (fail! "L4-MACRO-NOT-SYNTAX"
-           "syntax template references an unbound macro parameter"
-           {:symbol sym
-            :remediation "Use only symbols bound by the macro parameter vector inside unquote forms."})))
+  (macro-expansion/macro-env-value env sym (macro-expansion-ops)))
 
 (defn expand-template
   [env template]
-  (cond
-    (seq? template)
-    (case (first template)
-      unquote
-      (let [[_ sym] template]
-        (when-not (symbol? sym)
-          (fail! "L4-MACRO-NOT-SYNTAX"
-                 "unquote requires a macro parameter symbol"
-                 {:form template
-                  :remediation "Use (unquote name) inside syntax templates."}))
-        (macro-env-value env sym))
-
-      splice-unquote
-      (let [[_ sym] template
-            value (macro-env-value env sym)]
-        (when-not (sequential? value)
-          (fail! "L4-MACRO-NOT-SYNTAX"
-                 "splice-unquote requires a rest parameter value"
-                 {:form template
-                  :value value
-                  :remediation "Use splice-unquote with a rest parameter such as body."}))
-        {::splice value})
-
-      (apply list (expand-template-items env template)))
-
-    (vector? template) (vec (expand-template-items env template))
-    (map? template) (into {} (map (fn [[k v]]
-                                    [(expand-template env k) (expand-template env v)])
-                                  template))
-    (set? template) (set (expand-template-items env template))
-    :else template))
+  (macro-expansion/expand-template env template (macro-expansion-ops)))
 
 (defn parse-syntax-template
   [macro call-span]
-  (let [body (:body macro)]
-    (when-not (and (= 1 (count body))
-                   (seq? (first body))
-                   (= 'syntax-quote (ffirst body)))
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "stage0 macros must return syntax through a syntax-quote template"
-             {:source-span call-span
-              :macro (:identity macro)
-              :body body
-              :remediation "Return (syntax-quote form) from stage0 defmacro bodies."}))
-    (second (first body))))
+  (macro-expansion/parse-syntax-template macro call-span
+                                         (macro-expansion-ops)))
 
 (defn builtin-defn-output
   [args call-span]
-  (let [[name params & body] args
-        [return-type body] (if (= ':- (first body))
-                             [(second body) (nnext body)]
-                             [nil body])
-        fn-form (if return-type
-                  (list 'fn params (list 'typed/return (list 'quote return-type)
-                                         (cons 'do body)))
-                  (cons 'fn (cons params body)))]
-    (when-not (and (symbol? name) (vector? params))
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "defn expansion requires a symbolic name and vector parameters"
-             {:source-span call-span
-              :form (cons 'defn args)
-              :remediation "Use (defn name [args] body...)."}))
-    (list 'def name fn-form)))
+  (macro-expansion/builtin-defn-output args call-span
+                                       (macro-expansion-ops)))
 
 (defn builtin-when-output
   [args call-span]
-  (let [[condition & body] args]
-    (when (nil? condition)
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "when requires a condition"
-             {:source-span call-span
-              :remediation "Use (when condition body...)."}))
-    (list 'if condition (cons 'do body) nil)))
+  (macro-expansion/builtin-when-output args call-span
+                                       (macro-expansion-ops)))
 
 (defn thread-first-step
   [value step]
-  (if (seq? step)
-    (apply list (first step) value (rest step))
-    (list step value)))
+  (macro-expansion/thread-first-step value step))
 
 (defn builtin-thread-first-output
   [args call-span]
-  (let [[initial & steps] args]
-    (when (nil? initial)
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "thread-first requires an initial expression"
-             {:source-span call-span
-              :remediation "Use (-> value step...)."}))
-    (reduce thread-first-step initial steps)))
+  (macro-expansion/builtin-thread-first-output args call-span
+                                               (macro-expansion-ops)))
 
 (def builtin-macros
-  {'defn {:name 'defn
-          :identity 'gravity.core/defn
-          :kind :built-in
-          :version "stage0-builtin"
-          :macro-namespace 'gravity.core
-          :params {:fixed '[name params] :rest 'body}
-          :build-effects #{}
-          :required-build-capabilities #{}
-          :hygiene-policy :hygienic
-          :output-contract :gravity-syntax
-          :expander builtin-defn-output}
-   'when {:name 'when
-          :identity 'gravity.core/when
-          :kind :built-in
-          :version "stage0-builtin"
-          :macro-namespace 'gravity.core
-          :params {:fixed '[condition] :rest 'body}
-          :build-effects #{}
-          :required-build-capabilities #{}
-          :hygiene-policy :hygienic
-          :output-contract :gravity-syntax
-          :expander builtin-when-output}
-   '-> {:name '->
-        :identity 'gravity.core/->
-        :kind :built-in
-        :version "stage0-builtin"
-        :macro-namespace 'gravity.core
-        :params {:fixed '[initial] :rest 'steps}
-        :build-effects #{}
-        :required-build-capabilities #{}
-        :hygiene-policy :hygienic
-        :output-contract :gravity-syntax
-        :expander builtin-thread-first-output}})
+  (-> macro-expansion/builtin-macros
+      (assoc-in ['defn :expander] builtin-defn-output)
+      (assoc-in ['when :expander] builtin-when-output)
+      (assoc-in ['-> :expander] builtin-thread-first-output)))
 
 (defn built-in-registry
   []
-  (reduce-kv (fn [acc name macro]
-               (assoc acc name macro (:identity macro) macro))
-             {}
-             builtin-macros))
+  (macro-expansion/built-in-registry (macro-expansion-ops)))
 
 (defn parse-defmacro-form
   [module syntax]
-  (let [form (:form syntax)
-        [_ name & tail] form
-        [metadata tail] (if (map? (first tail))
-                          [(first tail) (rest tail)]
-                          [{} tail])
-        params (first tail)
-        body (vec (rest tail))]
-    (when-not (symbol? name)
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "defmacro requires a symbolic name"
-             {:source-span (:span syntax)
-              :form form
-              :remediation "Use (defmacro name [args] (syntax-quote ...))."}))
-    (when-not (vector? params)
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "defmacro requires a parameter vector"
-             {:source-span (:span syntax)
-              :macro name
-              :remediation "Use a vector parameter list."}))
-    (let [identity (local-macro-symbol module name)
-          macro {:name name
-                 :identity identity
-                 :kind :source
-                 :version (or (:version metadata) "stage0-source")
-                 :macro-namespace (:module module)
-                 :params (parse-param-list params)
-                 :source-span (:span syntax)
-                 :metadata metadata
-                 :body body
-                 :build-effects (or (:build-effects metadata) #{})
-                 :uses-build-effects (or (:uses-build-effects metadata) #{})
-                 :required-build-capabilities (or (:required-build-capabilities metadata) #{})
-                 :hygiene-policy (or (:hygiene-policy metadata) :hygienic)
-                 :output-contract (or (:output-contract metadata) :gravity-syntax)
-                 :allow-unsafe? (true? (:allow-unsafe metadata))
-                 :omit-generated-origin? (true? (:omit-generated-origin metadata))}]
-      [name identity macro])))
+  (macro-expansion/parse-defmacro-form module syntax
+                                        (macro-expansion-ops)))
 
 (defn macro-registry
   [module syntax]
-  (reduce (fn [registry syn]
-            (if (form-op? 'defmacro (:form syn))
-              (let [[name identity macro] (parse-defmacro-form module syn)]
-                (assoc registry name macro identity macro))
-              registry))
-          (built-in-registry)
-          syntax))
+  (macro-expansion/macro-registry module syntax (macro-expansion-ops)))
 
 (defn macro-namespace-entry
   [macro]
-  (select-keys macro [:name :identity :kind :version :macro-namespace :params
-                      :build-effects :required-build-capabilities :hygiene-policy
-                      :output-contract :source-span]))
+  (macro-expansion/macro-namespace-entry macro))
 
 (defn macro-build-effect-record
   [macro]
-  {:macro (:identity macro)
-   :declared-build-effects (:build-effects macro)
-   :used-build-effects (or (:uses-build-effects macro) (:build-effects macro) #{})
-   :required-build-capabilities (:required-build-capabilities macro)})
+  (macro-expansion/macro-build-effect-record macro))
 
 (defn macro-build-grants
   [module]
-  (or (get-in module [:metadata :build-grants]) #{}))
+  (macro-expansion/macro-build-grants module))
 
 (defn assert-build-effects!
   [module macro call-span]
-  (let [used (or (:uses-build-effects macro) (:build-effects macro) #{})
-        declared (:build-effects macro)
-        grants (macro-build-grants module)
-        undeclared (first (remove declared used))
-        ungranted (first (remove grants used))]
-    (when undeclared
-      (fail! "L4-BUILD-EFFECT"
-             "macro used an undeclared build effect"
-             {:source-span call-span
-              :macro (:identity macro)
-              :effect undeclared
-              :declared-effects declared
-              :remediation "Declare build effects in the macro definition."}))
-    (when ungranted
-      (fail! "L4-BUILD-EFFECT"
-             "macro used a build effect not granted by the build policy"
-             {:source-span call-span
-              :macro (:identity macro)
-              :effect ungranted
-              :declared-effects declared
-              :granted-build-effects grants
-              :remediation "Grant the build effect in project metadata or remove the effect."}))))
+  (macro-expansion/assert-build-effects! module macro call-span
+                                         (macro-expansion-ops)))
 
 (defn collect-let-bindings
   [form]
-  (cond
-    (form-op? 'let form)
-    (concat (take-nth 2 (second form))
-            (mapcat collect-let-bindings (drop 2 form)))
-    (seq? form) (mapcat collect-let-bindings form)
-    (coll? form) (mapcat collect-let-bindings form)
-    :else []))
+  (macro-expansion/collect-let-bindings form (macro-expansion-ops)))
 
 (defn assert-hygiene!
   [macro args output call-span]
-  (let [introduced (set (filter symbol? (collect-let-bindings output)))
-        caller-symbols (set (mapcat collect-symbols args))
-        accidental (first (set/intersection introduced caller-symbols))]
-    (when (and accidental (not= :explicit-capture (:hygiene-policy macro)))
-      (fail! "L4-HYGIENE-CAPTURE"
-             "macro expansion would accidentally capture a caller binding"
-             {:source-span call-span
-              :macro (:identity macro)
-              :symbol accidental
-              :hygiene-policy (:hygiene-policy macro)
-              :remediation "Use a fresh generated binding or mark the macro as explicit capture."}))))
+  (macro-expansion/assert-hygiene! macro args output call-span
+                                   (macro-expansion-ops)))
 
 (defn assert-generated-profile!
   [module macro output call-span]
-  (when (and (not= :hosted (:profile module))
-             (contains-form-op? 'host-reflect output))
-    (fail! "L4-GENERATED-PROFILE"
-           "macro generated code that violates the caller profile"
-           {:source-span call-span
-            :macro (:identity macro)
-            :profile (:profile module)
-            :generated-form output
-            :remediation "Generated code must pass the caller profile, not the macro implementation profile."})))
+  (macro-expansion/assert-generated-profile! module macro output call-span
+                                             (macro-expansion-ops)))
 
 (defn assert-generated-unsafe!
   [module macro output call-span]
-  (when (and (contains-form-op? 'unsafe output)
-             (not (:allow-unsafe? macro))
-             (#{:safe :safe-optimized nil} (:safety module)))
-    (fail! "L4-GENERATED-UNSAFE"
-           "macro generated unsafe code without an explicit unsafe policy"
-           {:source-span call-span
-            :macro (:identity macro)
-            :safety (:safety module)
-            :generated-form output
-            :remediation "Make unsafe generation explicit and attach an unsafe audit record."})))
+  (macro-expansion/assert-generated-unsafe! module macro output call-span
+                                            (macro-expansion-ops)))
 
 (defn expand-macro-form
   [module macro args call-span]
-  (assert-build-effects! module macro call-span)
-  (let [output (if-let [expander (:expander macro)]
-                 (expander args call-span)
-                 (let [env (bind-macro-arguments macro args call-span)
-                       template (parse-syntax-template macro call-span)]
-                   (expand-template env template)))]
-    (when (= :source (:kind macro))
-      (assert-hygiene! macro args output call-span))
-    (assert-generated-profile! module macro output call-span)
-    (assert-generated-unsafe! module macro output call-span)
-    output))
+  (macro-expansion/expand-macro-form module macro args call-span
+                                     (macro-expansion-ops)))
 
 (defn expansion-generated-origin
   [macro syntax input output]
-  (when-not (:omit-generated-origin? macro)
-    [{:from (:span syntax)
-      :macro (:identity macro)
-      :macro-version (:version macro)
-      :input-hash (str "sha256:" (sha256-hex (pr-str input)))
-      :output-hash (str "sha256:" (sha256-hex (pr-str output)))}]))
-
-(declare expand-syntax-object)
+  (macro-expansion/expansion-generated-origin macro syntax input output
+                                              (macro-expansion-ops)))
 
 (defn macro-call
   [registry form]
-  (when (seq? form)
-    (get registry (first form))))
+  (macro-expansion/macro-call registry form))
 
 (defn expand-child-form
   [registry module syntax form trace depth]
-  (:form (expand-syntax-object registry module (assoc syntax :form form) trace depth)))
+  (macro-expansion/expand-child-form registry module syntax form trace depth
+                                      (macro-expansion-ops)))
 
 (defn expand-form-children
   [registry module syntax form trace depth]
-  (cond
-    (seq? form) (apply list (map #(expand-child-form registry module syntax % trace depth) form))
-    (vector? form) (vec (map #(expand-child-form registry module syntax % trace depth) form))
-    (map? form) (into {} (map (fn [[k v]]
-                                [(expand-child-form registry module syntax k trace depth)
-                                 (expand-child-form registry module syntax v trace depth)])
-                              form))
-    (set? form) (set (map #(expand-child-form registry module syntax % trace depth) form))
-    :else form))
+  (macro-expansion/expand-form-children registry module syntax form trace depth
+                                         (macro-expansion-ops)))
 
 (defn expansion-trace-record
   [module macro syntax input output generated-origin depth]
-  {:macro (:identity macro)
-   :macro-version (:version macro)
-   :macro-namespace (:macro-namespace macro)
-   :caller-namespace (:namespace syntax)
-   :caller-profile (:profile syntax)
-   :depth depth
-   :call-span (:span syntax)
-   :input-syntax-id (:syntax-id syntax)
-   :input-hash (str "sha256:" (sha256-hex (pr-str input)))
-   :output-hash (str "sha256:" (sha256-hex (pr-str output)))
-   :build-effects (vec (sort-by str (or (:uses-build-effects macro)
-                                         (:build-effects macro)
-                                         #{})))
-   :generated-origin generated-origin
-   :generated-spans [(str "generated:" (:identity macro) ":" (get-in syntax [:span :form-index]))]
-   :hygiene-policy (:hygiene-policy macro)
-   :hygiene-marks (:hygiene syntax)
-   :metadata (:metadata syntax)
-   :diagnostics []})
+  (macro-expansion/expansion-trace-record module macro syntax input output
+                                           generated-origin depth
+                                           (macro-expansion-ops)))
 
 (defn distinct-by-pr-str
   [values]
-  (vec (vals (reduce (fn [acc value] (assoc acc (pr-str value) value)) {} values))))
+  (macro-expansion/distinct-by-pr-str values))
 
 (defn expand-syntax-object
   [registry module syntax trace depth]
-  (let [form (:form syntax)]
-    (cond
-      (form-op? 'defmacro form)
-      (assoc syntax :phase :macro-definition)
+  (macro-expansion/expand-syntax-object registry module syntax trace depth
+                                        (macro-expansion-ops)))
 
-      (macro-call registry form)
-      (do
-        (when (>= depth max-macro-expansion-depth)
-          (fail! "L4-EXPANSION-DEPTH"
-                 "macro expansion exceeded the configured depth limit"
-                 {:source-span (:span syntax)
-                  :form form
-                  :depth depth
-                  :limit max-macro-expansion-depth
-                  :remediation "Stop recursive expansion or raise the project expansion limit with evidence."}))
-        (let [macro (macro-call registry form)
-              input form
-              output (expand-macro-form module macro (vec (rest form)) (:span syntax))
-              generated-origin (expansion-generated-origin macro syntax input output)]
-          (when (empty? generated-origin)
-            (fail! "L4-PROVENANCE-MISSING"
-                   "macro expansion output lacks generated-origin metadata"
-                   {:source-span (:span syntax)
-                    :macro (:identity macro)
-                    :remediation "Attach generated-origin metadata linking output syntax to the macro call site."}))
-          (swap! trace conj (expansion-trace-record module macro syntax input output generated-origin depth))
-          (recur registry
-                 module
-                 (-> syntax
-                     (assoc :form output
-                            :origin :generated
-                            :phase :macro-expanded
-                            :generated-origin (vec (concat (:generated-origin syntax) generated-origin))
-                            :macro-namespace (:macro-namespace macro))
-                     (update :hygiene conj {:macro (:identity macro)
-                                            :policy (:hygiene-policy macro)}))
-                 trace
-                 (inc depth))))
-
-      (coll? form)
-      (assoc syntax
-             :form (expand-form-children registry module syntax form trace depth)
-             :phase :macro-expanded)
-
-      :else
-      (assoc syntax :phase :macro-expanded))))
+(defn macro-expansion-ops
+  []
+  {:fail! fail!
+   :form-op? form-op?
+   :contains-form-op? contains-form-op?
+   :collect-symbols collect-symbols
+   :local-macro-symbol local-macro-symbol
+   :source-span source-span
+   :sha256-hex sha256-hex
+   :splice-key ::splice
+   :max-macro-expansion-depth max-macro-expansion-depth
+   :builtin-macros builtin-macros
+   :parse-param-list parse-param-list
+   :expand-template-items expand-template-items
+   :expand-template expand-template
+   :macro-env-value macro-env-value
+   :parse-syntax-template parse-syntax-template
+   :builtin-defn-output builtin-defn-output
+   :builtin-when-output builtin-when-output
+   :thread-first-step thread-first-step
+   :builtin-thread-first-output builtin-thread-first-output
+   :built-in-registry built-in-registry
+   :parse-defmacro-form parse-defmacro-form
+   :macro-registry macro-registry
+   :macro-namespace-entry macro-namespace-entry
+   :macro-build-effect-record macro-build-effect-record
+   :macro-build-grants macro-build-grants
+   :assert-build-effects! assert-build-effects!
+   :collect-let-bindings collect-let-bindings
+   :assert-hygiene! assert-hygiene!
+   :assert-generated-profile! assert-generated-profile!
+   :assert-generated-unsafe! assert-generated-unsafe!
+   :bind-macro-arguments bind-macro-arguments
+   :expand-macro-form expand-macro-form
+   :expansion-generated-origin expansion-generated-origin
+   :macro-call macro-call
+   :expand-child-form expand-child-form
+   :expand-form-children expand-form-children
+   :expansion-trace-record expansion-trace-record
+   :distinct-by-pr-str distinct-by-pr-str
+   :expand-syntax-object expand-syntax-object})
 
 (defn macro-source-artifact-from-records
   [source-path source-text records]
   (let [forms (mapv :form records)
         _ (validate-ns-syntax! source-path forms)
         module (parse-module source-path forms)
-        syntax (syntax-object-stream source-path records module)
-        registry (macro-registry module syntax)
-        trace (atom [])
-        raw-expanded-syntax (->> syntax
-                                 (remove #(form-op? 'defmacro (:form %)))
-                                 (mapv #(expand-syntax-object registry module % trace 0)))
-        trace-records @trace
-        origins-by-syntax-id (group-by :input-syntax-id trace-records)
-        hygiene-by-syntax-id (reduce (fn [acc record]
-                                       (update acc (:input-syntax-id record) (fnil conj [])
-                                               {:macro (:macro record)
-                                                :policy (:hygiene-policy record)}))
-                                     {}
-                                     trace-records)
-        expanded-syntax (mapv (fn [syn]
-                                (let [trace-origins (mapcat :generated-origin
-                                                            (get origins-by-syntax-id (:syntax-id syn)))
-                                      trace-hygiene (get hygiene-by-syntax-id (:syntax-id syn))]
-                                  (cond-> syn
-                                    (seq trace-origins)
-                                    (assoc :generated-origin
-                                           (distinct-by-pr-str (concat (:generated-origin syn)
-                                                                       trace-origins)))
-                                    (seq trace-hygiene)
-                                    (assoc :hygiene
-                                           (distinct-by-pr-str (concat (:hygiene syn)
-                                                                       trace-hygiene))))))
-                              raw-expanded-syntax)
-        body-forms (mapv :form (subvec expanded-syntax 1))
-        macro-definitions (->> registry
-                               vals
-                               (distinct)
-                               (sort-by (comp str :identity))
-                               vec)
-        macro-entries (mapv macro-namespace-entry macro-definitions)]
-    {:kind :gravity/stage0-macro-artifact
-     :pass {:name :macro-expansion
-            :input :syntax-object-stream
-            :output :expanded-syntax
-            :requires [:reader :namespace-analyzer]
-            :preserves [:source-spans :metadata :hygiene :profile :generated-origin]
-            :rejects ["L4-MACRO-NOT-SYNTAX" "L4-HYGIENE-CAPTURE"
-                      "L4-BUILD-EFFECT" "L4-EXPANSION-DEPTH"
-                      "L4-GENERATED-PROFILE" "L4-GENERATED-UNSAFE"
-                      "L4-PROVENANCE-MISSING"]}
-     :module (select-keys module [:module :source-path :profile :target :effects
-                                  :capabilities :safety :metadata])
-     :macro-namespace-entries macro-entries
-     :macro-build-effect-records (mapv macro-build-effect-record macro-definitions)
-     :macro-expansion-trace trace-records
-     :generated-origin-source-map (mapv #(select-keys % [:syntax-id :span :generated-origin])
-                                        expanded-syntax)
-     :hygiene-marks (mapv #(select-keys % [:syntax-id :hygiene]) expanded-syntax)
-     :expanded-syntax-object-stream expanded-syntax
-     :expanded-forms body-forms
-     :diagnostics []}))
+        syntax (syntax-object-stream source-path records module)]
+    (macro-expansion/macro-source-artifact-from-records
+     source-path source-text records module syntax (macro-expansion-ops))))
 
 (defn macro-source-artifact
   [source-path source-text]

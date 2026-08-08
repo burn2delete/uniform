@@ -7,6 +7,7 @@
             [gravity.cli-test]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.diagnostics-test]
+            [gravity.macro-expansion :as macro-expansion]
             [gravity.syntax-object-stream :as syntax-object-stream]
             [gravity.syntax-origin :as syntax-origin]))
 
@@ -12606,6 +12607,46 @@
     (is (every? #(re-find #"^sha256:" (:input-hash %)) trace))
     (is (every? #(re-find #"^sha256:" (:output-hash %)) trace))
     (is (= "macro\nunless\n1\nthreaded\n" (bootstrap/run-file path)))))
+
+(deftest macro-expansion-compatibility-wrappers-preserve-output-and-interposition
+  (let [path (fixture "accepted/macro-expansion.gravity")
+        source-text (slurp path)
+        records (bootstrap/read-source-form-records path source-text)
+        forms (mapv :form records)
+        module (bootstrap/parse-module path forms)
+        syntax (bootstrap/syntax-object-stream path records module)
+        wrapped (bootstrap/macro-source-artifact-from-records
+                 path source-text records)
+        extracted (macro-expansion/macro-source-artifact-from-records
+                   path source-text records module syntax
+                   (bootstrap/macro-expansion-ops))]
+    (is (= '([source-path source-text records])
+           (:arglists (meta #'bootstrap/macro-source-artifact-from-records))))
+    (is (= '([source-path source-text])
+           (:arglists (meta #'bootstrap/macro-source-artifact))))
+    (is (= '([path])
+           (:arglists (meta #'bootstrap/macro-file-artifact))))
+    (is (= wrapped extracted))
+    (is (= :interposed
+           (with-redefs [bootstrap/macro-env-value
+                         (fn [_ _] :interposed)]
+             (bootstrap/expand-template {} '(unquote ignored)))))
+    (is (= [[:start :a] :b]
+           (with-redefs [bootstrap/thread-first-step
+                         (fn [value step] [value step])]
+             (bootstrap/builtin-thread-first-output
+              [:start :a :b] {:form-index 0}))))
+    (let [interposed
+          (with-redefs [bootstrap/macro-namespace-entry
+                        (fn [macro] {:entry (:identity macro)})
+                        bootstrap/macro-build-effect-record
+                        (fn [macro] {:effect (:identity macro)})]
+            (bootstrap/macro-source-artifact-from-records
+             path source-text records))]
+      (is (every? #(= #{:entry} (set (keys %)))
+                  (:macro-namespace-entries interposed)))
+      (is (every? #(= #{:effect} (set (keys %)))
+                  (:macro-build-effect-records interposed))))))
 
 (deftest typed-core-artifact-preserves-l5-boundary
   (let [artifact (bootstrap/typed-file-artifact (fixture "accepted/typed-core.gravity"))
