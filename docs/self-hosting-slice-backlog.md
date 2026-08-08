@@ -525,11 +525,13 @@ complete capability proof, and no failed checks. The bounded source recognizes
 provider, grant, or resource subject. That receipt is historical evidence for
 the 44,102-byte revision, not current evidence for the adapter revision.
 
-The current stage-owned C8 source is 80,761 bytes with hash
-`sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70`.
-It adds a bounded authenticated SH-08 adapter for legacy pure primitive typed
-cores and the current capture-free one-hop function-typed core when all
-declared call and latent effect sets are empty. The adapter preserves
+The current stage-owned C8 source is 82,797 bytes with hash
+`sha256:de3fb80e14336cadacf710a0b2fef33b19efab0728d5ca08e7a25c72df7afe16`.
+It adds a bounded authenticated SH-08 adapter for exact schema-3 pure primitive
+first-order and capture-free one-hop function-typed cores when all declared
+call and latent effect sets are empty. It reconstructs the complete C7 identity
+preimage rather than accepting a relabeled domain or shaped identifier. The
+adapter preserves
 `[:pending-sh09]` thrown effects, recomputes the existing C8 legality kernel,
 keeps physical path provenance out of semantic identity, and rejects altered
 upstream identities, facts, requests, or results. Four synthetic tests passed
@@ -546,11 +548,12 @@ and derived census
 resolutions, 5,135 core nodes, 61 definitions, 852 calls and call edges, 1,607
 references, 55 function records, one recursion component, and zero keyword
 lookups. That proof binds the preceding 73,997-byte revision at commit
-`f3729a5`; the current source adds ordered canonical type, effect, and
+`f3729a5`; the current source retains ordered canonical type, effect, and
 no-capability digest requests plus exact request/digest binding into a separate
-path-neutral effected-core template. Its focused identity lane passed two
-tests and 26 assertions. Digest computation remains an external coordinator
-boundary. Counts were derived rather than precommitted and no trusted reviewed
+path-neutral effected-core template. Its latest first-order and full-identity
+discriminator passed two tests and 28 assertions. Digest computation remains
+an external coordinator boundary. Counts were derived rather than precommitted
+and no trusted reviewed
 attestation was created, so the prior result is historical proof-candidate
 evidence only. This does
 not establish exact authentic coverage, aggregate or release authority, a
@@ -576,15 +579,20 @@ cycle, depth, width, and scalar preflight is absent; the 1,024-event uniqueness
 and execution paths remain recursive; lifetime endpoints are generic numbers;
 the capability proof identifier is preserved but not authenticated; and the
 verifier is same-implementation recomputation. That result is historical
-evidence for the 35,894-byte revision. The current 47,414-byte source at
-`sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59`
+evidence for the 35,894-byte revision. The current 71,132-byte source at
+`sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd`
 preserves the owned-mutable kernel and adds an exact C8-to-C9 adapter for
 identity-bound pure integer, boolean, and string values as persistent immutable
-reads. Four synthetic adapter tests passed 32 assertions, the existing kernel
-passed 424 assertions, and one authenticated boolean `.gravity` boundary
-passed 19 assertions in 70.298 seconds of wrapper time with one cold carrier.
-These are non-authoritative development results. A fresh source-bound-derived
-proof candidate for the current source then completed in 505.045 seconds of
+reads. It resolves each exact ownership fact before deriving and resolving the
+whole ownership-core identity, rejects reordered, substituted, missing, or
+colliding digest results, and keeps physical provenance outside semantic
+identity. Coordinator digest resolution remains shape-checked and explicitly
+non-authoritative. Four synthetic adapter tests passed 32 assertions, the
+existing kernel passed 424 assertions, and the combined C9-to-C10 lane passed
+five tests and 147 assertions in 69.470 seconds with one cold `.gravity`
+carrier; its `.qst` twin was byte-parity evidence only. These are
+non-authoritative development results. A historical source-bound-derived proof
+candidate for a preceding source revision completed in 505.045 seconds of
 checkpoint time (499.953 seconds in the proof), with stable context, empty
 stderr, artifact
 `sha256:56aa7b6cded727e47b7528a7b027b711b7fb911e8dd288df259d15282412b2de`,
@@ -594,14 +602,15 @@ and derived census
 resolutions, 2,776 core nodes, 44 definitions, 423 calls and call edges, 855
 references, 37 function records, five recursion components, and zero keyword
 lookups. Counts were not precommitted, and no trusted reviewed attestation was
-created, so the result does not establish exact authentic coverage, aggregate
-or release authority, or automatic scoped authority. Persistent aggregate copy
+created, so the result is historical and does not establish exact authentic
+coverage, aggregate or release authority, or automatic scoped authority.
+Persistent aggregate copy
 semantics, owned-mutable, effectful, and nonprimitive SH-09 adaptation, field
 and range splitting, regions, arenas, linear resources, task, actor, and FFI
 transfer, runtime borrow checks, unsafe-audit execution, trusted digest
 resolution, MIR preservation, and SH-10 completion remain pending.
-The C10 safety-analysis source adds 68,327 authenticated bytes in 73 fragments
-containing 5,652 forms, 542 bindings, and 2,046 resolutions. Its calibrated
+The historical C10 safety-analysis source added 68,327 authenticated bytes in
+73 fragments containing 5,652 forms, 542 bindings, and 2,046 resolutions. Its calibrated
 lowering contains 4,709 canonical core nodes with 73 definitions: 63
 executable SH-11 functions and three quoted source-model functions. Its 337
 `get` calls divide into 334 literal-key calls and three dynamic-key calls; all
@@ -617,7 +626,20 @@ complete contract and diagnostic schema enforcement, memory and lifetime
 safety, regions, linear resources, FFI, concurrency, taint, generated-code
 safety, floating-point and elementary-function safety, optimization
 invalidation, authenticated SH-09/SH-10 convergence, MIR preservation, and
-SH-11 completion remain pending.
+SH-11 completion remain pending. The current C10 source is 112,712 bytes at
+`sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968`.
+It adds a bounded adapter from the new identity-bound C9 ownership core. The
+adapter admits exactly one persistent-immutable integer, boolean, or string
+read and permits its private load classifier to return `:proven-safe` only
+after sequential proof, result, and whole-core digest resolution. The generic
+classifier still rejects load requests, and runtime-checked, unsafe,
+nonpersistent, aggregate, and effectful load families remain pending. Its
+current cross-stage development receipt is the five-test, 147-assertion lane
+above; the final authenticated `.gravity` boundary took 61.220 seconds, used
+one cold carrier, and did not build `.qst`. Fresh source-bound-derived C8, C9,
+and C10 proof candidates are required for these frozen sources. No trusted
+reviewed attestation, exact-authentic coverage, aggregate authority, release
+authority, or safety-certificate authority is claimed.
 The C12 domain-IR source adds 61,946 authenticated bytes in 85 fragments
 containing 5,711 forms, 569 bindings, and 2,073 resolutions. Its calibrated
 lowering contains 4,591 canonical core nodes with 85 definitions: 72

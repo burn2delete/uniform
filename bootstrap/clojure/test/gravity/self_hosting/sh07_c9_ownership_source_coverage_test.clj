@@ -32,9 +32,9 @@
   "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 47414)
+(def ^:private expected-source-byte-count 71132)
 (def ^:private expected-source-revision-id
-  "sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59")
+  "sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:a0b95515faa899db463683ad98a37b0511def5dffa5964fd364cdc16547d3edc")
 (def ^:private expected-coverage
@@ -75,7 +75,11 @@
     sh10-verify-ownership-result
     sh10-authenticated-sh09-adapter-policy
     sh10-build-authenticated-ownership-core
-    sh10-verify-authenticated-ownership-core])
+    sh10-verify-authenticated-ownership-core
+    sh10-authenticated-ownership-identity-requests
+    sh10-authenticated-ownership-core-identity-request
+    sh10-bind-authenticated-ownership-identities
+    sh10-verify-authenticated-ownership-identities])
 (def ^:private expected-definition-names
   '#{c9-ownership-analysis-contract
      c9-borrow-graph-contract
@@ -664,7 +668,7 @@
         (collect-calls
          'sh10-diagnostic
          (get definitions 'sh10-verify-ownership-result))]
-    (is (= 45 (count forms)))
+    (is (= 67 (count forms)))
     (is (= 'gravity.compiler.c9-ownership-checker-engine
            (second namespace-form)))
     (is (= :meta (:profile namespace-clauses)))

@@ -32,9 +32,9 @@
   "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 80761)
+(def ^:private expected-source-byte-count 82797)
 (def ^:private expected-source-revision-id
-  "sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70")
+  "sha256:de3fb80e14336cadacf710a0b2fef33b19efab0728d5ca08e7a25c72df7afe16")
 (def ^:private expected-coverage
   {:fragment-count 40
    :root-form-count 40
@@ -741,7 +741,7 @@
           #(filter keyword?
                    (tree-seq coll? seq (nth % 3)))
           rejection-calls))]
-    (is (= 69 (count forms)))
+    (is (= 73 (count forms)))
     (is (= 'gravity.compiler.c8-effect-checker-engine
            (second namespace-form)))
     (is (= :meta (:profile namespace-clauses)))

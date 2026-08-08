@@ -32,9 +32,9 @@
   "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 68327)
+(def ^:private expected-source-byte-count 112712)
 (def ^:private expected-source-revision-id
-  "sha256:62298cb3235db6a173e8051828edf91d80824b7c282e309b9cb1d206c2a0820b")
+  "sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:aa67002ca7394238f6004b8aabddb941ecae6ce7a31bb0c935182559a35acc7e")
 (def ^:private expected-coverage
@@ -93,7 +93,16 @@
     verify-c10-safety-analysis
     sh11-safety-policy
     sh11-classify-operation
-    sh11-verify-safety-result])
+    sh11-verify-safety-result
+    sh11-authenticated-safety-adapter-policy
+    sh11-authenticated-c9-input-valid?
+    sh11-build-authenticated-safety-core
+    sh11-verify-authenticated-safety-core
+    sh11-authenticated-safety-identity-requests
+    sh11-authenticated-safety-result-identity-request
+    sh11-authenticated-safety-core-identity-request
+    sh11-bind-authenticated-safety-identities
+    sh11-verify-authenticated-safety-identities])
 (def ^:private expected-definition-names
   '#{c10-safety-analysis-contract
      c10-operation-inventory-contract
@@ -194,7 +203,7 @@
              :generated-code-safety
              :elementary-and-floating-safety
              :optimization-invalidation
-             :authenticated-sh09-sh10-adapter
+             :authenticated-non-persistent-read-safety-families
              :mir-preservation]})
 (def ^:private expected-diagnostic-catalog
   {:diagnostics ["C10-NO-OUTCOME" "C10-PROOF" "C10-CHECK" "C10-UNSAFE"
@@ -374,6 +383,7 @@
    :maximum-form-children 1024
    :maximum-form-depth 256
    :maximum-bindings 2048
+   :maximum-module-bindings 2440
    :maximum-alias-records 256
    :maximum-fragment-resolutions 2048
    :maximum-module-resolutions 65536
@@ -566,8 +576,12 @@
 
 (deftest sh07-b31-proof-contract-registers-c10-source-exactly
   (let [contract (edn/read-string (slurp (path proof-contract-relative-path)))
+        expectation
+        (get-in contract
+                [:authoritative-coverage-census
+                 :module-expectations :c10-safety])
         nonclaims (set (:nonclaims contract))]
-    (is (= "SH-07-B31" (:coverage-milestone contract)))
+    (is (= "SH-07-B47" (:coverage-milestone contract)))
     (is (= c10-relative-path
            (get-in contract [:authoritative-modules :c10-safety])))
     (is (= {:keyword-lookups 0}
@@ -575,11 +589,20 @@
     (is (= expected-b16-bounds (:bounds contract)))
     (is (= {:request-schema-version 15
             :task "SH-07-B47"
+            :input-task "SH-07-B15"
             :scope :sh07-b15-keyword-map-lookup
             :adapter :gravity/sh07-to-c6-core-products-v16
             :fresh-authoritative-process-required true
             :iteration-cache-authoritative false}
            (:boundary contract)))
+    (is (= {:module-namespace
+            'gravity.compiler.c10-safety-analysis-pipeline
+            :source-binding
+            {:source-byte-count expected-source-byte-count
+             :source-bytes-sha256 expected-source-revision-id}}
+           expectation))
+    (is (not (contains? expectation :request-counts)))
+    (is (not (contains? expectation :core-counts)))
     (doseq [nonclaim
             [:c10-production-safety-analysis-execution
              :c10-contract-and-diagnostic-schema-enforcement
@@ -633,7 +656,7 @@
                             :candidate-structural-bound} entry)]
                entry))
         all-if-calls (mapcat #(collect-calls 'if %) (vals definitions))]
-    (is (= 74 (count forms)))
+    (is (= 112 (count forms)))
     (is (= 'gravity.compiler.c10-safety-analysis-pipeline
            (second namespace-form)))
     (is (= :meta (:profile namespace-clauses)))
@@ -700,7 +723,7 @@
     (is (= expected-rejection-tuples rejection-tuples))
     (is (= expected-structural-reasons
            (set/union preflight-reasons verification-reasons)))
-    (is (= 297 (count all-if-calls)))
+    (is (= 298 (count all-if-calls)))
     (is (every? #(= 4 (count %)) all-if-calls))
     (is (= :gravity/c10-safety-operation
            (:artifact (quoted-body
@@ -732,13 +755,13 @@
         preflight (get definitions 'sh11-structural-preflight)
         verifier (get definitions 'sh11-verify-safety-result)
         sha-shape (get definitions 'sh11-sha256-id?)]
-    (is (= 337 (count get-calls)))
-    (is (= 334 (count literal-gets)))
+    (is (= 328 (count get-calls)))
+    (is (= 325 (count literal-gets)))
     (is (= '[(get values value)
              (get value (first remaining))
              (get (get (sh11-safety-policy) :legal-modes) kind)]
            (vec dynamic-gets)))
-    (is (= [420 600 691] (mapv #(-> % meta :line) dynamic-gets)))
+    (is (= [461 641 830] (mapv #(-> % meta :line) dynamic-gets)))
     (is (= #{"C10-PROOF" "C10-GENERATED" "C10-TAINT"
              "C10-CAPABILITY" "C10-FFI" "C10-OPTIMIZATION"}
            (set/difference (set (:diagnostics catalog))

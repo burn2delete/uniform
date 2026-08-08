@@ -46,17 +46,20 @@ clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M 
   upgrading those claims. Missing, unknown, or mixed policy fields fail before
   an expensive proof transaction starts.
 
-The current C8 adapter revision is 80,761 bytes with source hash
-`sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70`.
-Its cheap synthetic lane passed four tests and 64 assertions; its single
-authenticated SH-08 function-typed `.gravity` boundary passed 27 assertions in
-65.918 seconds with one cold carrier. These are non-authoritative development
-receipts. The adapter is limited to legacy pure primitive typed cores and the
-current capture-free one-hop function-typed core with empty declared call and
-latent effects; thrown effects remain `[:pending-sh09]`. Keep `.qst` to byte
-parity, do not rerun C7 authority for this C8-only change, and require a new
-`c8-effects` source-bound-derived proof candidate after source and contract
-freeze. The fresh candidate at commit `871cd14` completed in 877.765 seconds
+The current C8 adapter revision is 82,797 bytes with source hash
+`sha256:de3fb80e14336cadacf710a0b2fef33b19efab0728d5ca08e7a25c72df7afe16`.
+It accepts the exact C7 schema-3 identity preimages for bounded pure primitive
+first-order and capture-free one-hop function-typed cores, while retaining
+empty declared call and latent effects and `[:pending-sh09]` thrown effects.
+Its focused first-order/identity discriminator passed two tests and 28
+assertions. The combined C9-to-C10 namespace lane, which consumes this C8
+output, passed five tests and 147 assertions in 69.470 seconds; its final
+authenticated `.gravity` boundary took 61.220 seconds with one cold carrier
+and did not build the byte-identical `.qst` twin. These are non-authoritative
+development receipts. Keep `.qst` to byte parity, do not rerun C7 authority
+for this C8-only change, and require a new `c8-effects` source-bound-derived
+proof candidate after source and contract freeze. The historical candidate at
+commit `871cd14` completed in 877.765 seconds
 (872.388 seconds in the proof), with stable context, empty stderr, artifact
 `sha256:ed0a4eb33beafb7c0585cab276ab97aac3d6542872b8bad3e89e9df1930d46a0`,
 and derived census
@@ -70,15 +73,18 @@ a proof candidate: counts were not precommitted, no trusted reviewed
 attestation was created, and it cannot claim exact-authentic coverage,
 aggregate, or release authority.
 
-The current C9 ownership source is 47,414 bytes with source hash
-`sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59`.
+The current C9 ownership source is 71,132 bytes with source hash
+`sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd`.
 It preserves the bounded owned-mutable transition kernel and adds a narrow
 C8-to-C9 adapter for identity-bound pure primitive values. Four synthetic
 adapter tests passed 32 assertions, the unchanged owned-mutable kernel passed
-424 assertions, and one authenticated boolean `.gravity` boundary passed 19
-assertions in 70.298 seconds of wrapper time with one cold carrier. These are
-non-authoritative development receipts. The adapter admits only persistent
-immutable integer, boolean, and string reads. Persistent aggregates,
+424 assertions, and the current sequential identity seam binds each exact
+ownership fact before binding the whole ownership core. Coordinator-provided
+digests remain shape-checked and non-authoritative; trusted digest resolution
+and independent canonical digest verification remain pending. The combined
+C9-to-C10 lane described above is the current authenticated boundary evidence.
+These are non-authoritative development receipts. The adapter admits only
+persistent immutable integer, boolean, and string reads. Persistent aggregates,
 owned-mutable, effectful, and nonprimitive adaptation, regions, arenas, linear
 resources, runtime checks, unsafe audits, trusted digest resolution, and MIR
 preservation remain pending. The historical C9 proof binds the preceding
@@ -92,9 +98,23 @@ It contains 44 fragments and roots, 3,274 forms, 426 bindings, 164 local
 bindings, 1,060 resolutions, 2,776 core nodes, 44 definitions, 423 calls and
 call edges, 855 references, 37 function records, five recursion components,
 and zero keyword lookups. Counts were not precommitted and a trusted reviewed
-attestation was not created, so this is a proof candidate rather than exact,
+attestation was not created, so this is historical proof-candidate evidence
+rather than exact,
 aggregate, release, or automatically promoted scoped authority. Do not rerun
 C8 authority for this C9-only change.
+
+The current C10 safety source is 112,712 bytes with source hash
+`sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968`.
+Its authenticated adapter accepts exactly one identity-bound C9
+persistent-immutable primitive read and classifies the derived private load as
+`:proven-safe` only after sequential proof, result, and whole-core digest
+resolution. The generic C10 classifier continues to reject load requests;
+runtime-checked, unsafe, nonpersistent, aggregate, and effectful load families
+remain pending. The five-test, 147-assertion combined lane is its current
+cross-stage development evidence. A fresh source-bound-derived `c10-safety`
+proof candidate is still required after the source and contract freeze. No
+current C8, C9, or C10 proof candidate has a trusted reviewed attestation or
+claims exact-authentic, aggregate, release, or safety-certificate authority.
 
 ## Lane order
 

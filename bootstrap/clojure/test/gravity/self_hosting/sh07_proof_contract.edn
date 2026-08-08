@@ -303,15 +303,21 @@
    :c8-effects
    {:module-namespace gravity.compiler.c8-effect-checker-engine
     :source-binding
-    {:source-byte-count 80761
+    {:source-byte-count 82797
      :source-bytes-sha256
-     "sha256:ff072574ed4bd6feaa8714e2f221b64d633fe2cd601d55de2b0df1eff4983a70"}}
+     "sha256:de3fb80e14336cadacf710a0b2fef33b19efab0728d5ca08e7a25c72df7afe16"}}
    :c9-ownership
    {:module-namespace gravity.compiler.c9-ownership-checker-engine
     :source-binding
-    {:source-byte-count 47414
+    {:source-byte-count 71132
      :source-bytes-sha256
-     "sha256:59662fe49c82906c957604755436803c5397bfeecaf9b8f95fc908841b983d59"}}}}
+     "sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd"}}
+   :c10-safety
+   {:module-namespace gravity.compiler.c10-safety-analysis-pipeline
+    :source-binding
+    {:source-byte-count 112712
+     :source-bytes-sha256
+     "sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968"}}}}
  :required-request-products
  [:fragment-manifest :fragment-coverage :module-assembly-manifest]
  :required-core-products
