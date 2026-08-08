@@ -3380,6 +3380,18 @@ class VerifyDevelopmentTests(unittest.TestCase):
             ROOT / "bootstrap" / "clojure" / "test" / "gravity"
             / "p15_native_runtime_driver_test.clj"
         ).read_text(encoding="utf-8")
+        fixture_set_start = test_source.index("(defn- assert-reviewed-fixture-set")
+        fixture_set_end = test_source.index("(defn- arm64-darwin-toolchain-available?")
+        fixture_set_helper = test_source[fixture_set_start:fixture_set_end]
+        exact_branch = fixture_set_helper.index("(when exact-directory?")
+        directory_scan = fixture_set_helper.index("(Files/list directory)")
+        subset_reads = fixture_set_helper.rindex(
+            "(doseq [relative expected-relatives]"
+        )
+        self.assertLess(exact_branch, directory_scan)
+        self.assertLess(directory_scan, subset_reads)
+        self.assertNotIn("Files/list", fixture_set_helper[subset_reads:])
+        self.assertNotIn("(every?", fixture_set_helper)
         auth_start = test_source.index(
             "(defn- artifact-authenticated-packet-binding-contract!"
         )

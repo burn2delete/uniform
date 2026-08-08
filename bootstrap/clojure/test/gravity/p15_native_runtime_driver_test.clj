@@ -282,25 +282,25 @@
                        {:path fixture-root-relative :reason :symlink})
     (require-artifact! (Files/isDirectory directory no-follow-options)
                        {:path fixture-root-relative :reason :not-directory})
-    (let [entries (with-open [stream (Files/list directory)]
-                    (vec (iterator-seq (.iterator stream))))
-          actual (sort (mapv #(str fixture-root-relative "/" (.getFileName ^Path %))
-                             entries))
-          expected (sort (mapv #(str fixture-root-relative "/" %)
-                               expected-relatives))]
-      (doseq [entry entries]
-        (require-artifact! (not (Files/isSymbolicLink entry))
-                           {:path (str entry) :reason :symlink})
-        (require-artifact! (Files/isRegularFile entry no-follow-options)
-                           {:path (str entry) :reason :not-regular-file}))
-      (require-artifact!
-       (if exact-directory?
-         (= expected actual)
-         (every? (set actual) expected))
-       {:expected expected :actual actual :exact-directory? exact-directory?})
-      (doseq [relative expected-relatives]
-        (read-bounded-regular-file (str fixture-root-relative "/" relative)
-                                   bounded-source-read-limit)))))
+    (when exact-directory?
+      (let [entries (with-open [stream (Files/list directory)]
+                      (vec (iterator-seq (.iterator stream))))
+            actual (sort (mapv #(str fixture-root-relative "/"
+                                    (.getFileName ^Path %))
+                               entries))
+            expected (sort (mapv #(str fixture-root-relative "/" %)
+                                 expected-relatives))]
+        (doseq [entry entries]
+          (require-artifact! (not (Files/isSymbolicLink entry))
+                             {:path (str entry) :reason :symlink})
+          (require-artifact! (Files/isRegularFile entry no-follow-options)
+                             {:path (str entry) :reason :not-regular-file}))
+        (require-artifact! (= expected actual)
+                           {:expected expected :actual actual
+                            :exact-directory? true})))
+    (doseq [relative expected-relatives]
+      (read-bounded-regular-file (str fixture-root-relative "/" relative)
+                                 bounded-source-read-limit))))
 
 (defn- arm64-darwin-toolchain-available?
   []

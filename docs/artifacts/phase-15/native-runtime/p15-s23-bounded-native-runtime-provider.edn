@@ -134,7 +134,7 @@
   :errors 0
   :receipt-scope :source-only-census
  :test-source-content-hash
-  "sha256:ed06b42bff2bc63e72e055ce0d626fda1c4cb4089821877a88623eb1af35fdcc"
+  "sha256:cb6814c5039238c664bf2f0bda5a649b9f5d763e550a1f201b98fc87b07f87cd"
   :profiles
   {:fast {:tests 10 :assertions 235 :failures 0 :errors 0}
    :authenticated-packet-binding {:tests 5 :assertions 70 :failures 0 :errors 0}}
