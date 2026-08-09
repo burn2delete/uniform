@@ -1,5 +1,5 @@
 (ns gravity.self-hosting.stage3-verification-runner
-  "Runs the fixed, non-authoritative Stage3--Stage10 development batches.
+  "Runs the fixed, non-authoritative Stage3--Stage11 development batches.
 
   Stage7 exposes the exact C11 source profiles, one cache-affine SH12 adapter
   batch, and one public C11 check.  The shape profile remains an execution-only
@@ -61,6 +61,10 @@
   'gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test)
 (def ^:private sh16-c13-evidence-boundary-test-namespace
   'gravity.self-hosting.sh16-c12-domain-evidence-boundary-test)
+(def ^:private c15-shape-test-namespace
+  'gravity.self-hosting.sh07-c15-diagnostics-shape-preflight-test)
+(def ^:private sh15-diagnostic-boundary-test-namespace
+  'gravity.self-hosting.sh15-diagnostic-boundary-test)
 (def ^:private public-test-namespace
   'gravity.bootstrap-test)
 
@@ -280,6 +284,20 @@
    'gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-rejects-substitution-and-hostile-carriers
    'gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-separates-top-level-provenance])
 
+(def stage11-c15-source-preflight-selectors
+  ['gravity.self-hosting.sh07-c15-diagnostics-shape-preflight-test/sh07-c15-diagnostics-source-shape-and-control
+   'gravity.self-hosting.sh07-c15-diagnostics-shape-preflight-test/sh07-c15-diagnostics-export-completeness-and-source-identity])
+
+(def stage11-sh15-diagnostic-boundary-selectors
+  ['gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-source-surface-and-policy
+   'gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-accepts-small-genuine-derived-references
+   'gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-preserves-real-rejection-partially
+   'gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-rejects-schema-policy-and-hostile-inputs
+   'gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-identity-is-path-neutral])
+
+(def stage11-public-c15-selectors
+  ['gravity.bootstrap-test/public-check-accepts-gravity-authored-c15-compiler-diagnostics])
+
 ;; W1/C14 development admission is intentionally split by cost.  The static
 ;; batch begins with the source-only parser, then binds the exact source/plan
 ;; tuples before running the complete cheap continuity and hardening catalogs.
@@ -379,7 +397,10 @@
    :stage10-w1-hostile-stable
    :stage10-w1-direct-mutation
    :stage10-w1-sh25-catalog
-   :stage10-w1-sh25-sh26-consumer])
+   :stage10-w1-sh25-sh26-consumer
+   :stage11-c15-source-preflight
+   :stage11-sh15-diagnostic-boundary
+   :stage11-public-c15])
 
 (def ^:private batch-selectors
   (array-map
@@ -424,7 +445,11 @@
    :stage10-w1-direct-mutation stage10-w1-direct-mutation-selectors
    :stage10-w1-sh25-catalog stage10-w1-sh25-catalog-selectors
    :stage10-w1-sh25-sh26-consumer
-   stage10-w1-sh25-sh26-consumer-selectors))
+   stage10-w1-sh25-sh26-consumer-selectors
+   :stage11-c15-source-preflight stage11-c15-source-preflight-selectors
+   :stage11-sh15-diagnostic-boundary
+   stage11-sh15-diagnostic-boundary-selectors
+   :stage11-public-c15 stage11-public-c15-selectors))
 
 (def fixed-batch-ids
   "The complete CLI allowlist, in deterministic presentation order."
@@ -484,6 +509,8 @@
     'gravity.self-hosting.sh14-authenticated-layout-test
     c13-shape-test-namespace
     sh16-c13-evidence-boundary-test-namespace
+    c15-shape-test-namespace
+    sh15-diagnostic-boundary-test-namespace
     'gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test
     'gravity.self-hosting.sh17-target-lowering-hardening-test})
 

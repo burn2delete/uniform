@@ -2554,6 +2554,9 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage10-w1-direct-mutation",
                 "stage10-w1-sh25-catalog",
                 "stage10-w1-sh25-sh26-consumer",
+                "stage11-c15-source-preflight",
+                "stage11-sh15-diagnostic-boundary",
+                "stage11-public-c15",
             },
         )
 
@@ -3182,10 +3185,15 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage10-w1-sh25-catalog",
             "stage10-w1-sh25-sh26-consumer",
         }
+        stage11_batches = {
+            "stage11-c15-source-preflight",
+            "stage11-sh15-diagnostic-boundary",
+            "stage11-public-c15",
+        }
         self.assertEqual(
             set(verifier._stage3.FIXED_BATCHES)
-            & (stage7_batches | stage7_runner_only_batches | stage8_batches | stage9_batches | stage10_batches),
-            stage7_batches | stage7_runner_only_batches | stage8_batches | stage9_batches | stage10_batches,
+            & (stage7_batches | stage7_runner_only_batches | stage8_batches | stage9_batches | stage10_batches | stage11_batches),
+            stage7_batches | stage7_runner_only_batches | stage8_batches | stage9_batches | stage10_batches | stage11_batches,
         )
         stage3_fixed_batches = (
             set(verifier._stage3.FIXED_BATCHES)
@@ -3197,6 +3205,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             - stage8_batches
             - stage9_batches
             - stage10_batches
+            - stage11_batches
         )
         self.assertTrue(stage7_batches.isdisjoint(stage3_fixed_batches))
         self.assertEqual(
@@ -4055,6 +4064,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage9-c13-source-shape",
                 "stage9-sh16-c13-evidence-boundary",
                 "stage10-w1-sh25-catalog",
+                "stage11-c15-source-preflight",
+                "stage11-sh15-diagnostic-boundary",
             },
         )
         kernel = selected(
@@ -4085,6 +4096,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage8-sh14-authenticated-layout",
                 "stage9-c13-source-shape",
                 "stage9-sh16-c13-evidence-boundary",
+                "stage11-c15-source-preflight",
+                "stage11-sh15-diagnostic-boundary",
             },
         )
         for upstream in (
@@ -4331,6 +4344,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage9-c13-source-shape",
             "stage9-sh16-c13-evidence-boundary",
             "stage10-w1-sh25-catalog",
+            "stage11-c15-source-preflight",
+            "stage11-sh15-diagnostic-boundary",
         }
         self.assertEqual(source_selected, expected_c8_change_selection)
         self.assertTrue(
@@ -4512,6 +4527,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage10-w1-static-admission",
                 "stage10-w1-direct-mutation",
                 "stage10-w1-sh25-catalog",
+                "stage11-c15-source-preflight",
+                "stage11-sh15-diagnostic-boundary",
             },
         )
         self.assertEqual(
@@ -4525,6 +4542,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage8-sh14-authenticated-layout",
                 "stage9-c13-source-shape",
                 "stage9-sh16-c13-evidence-boundary",
+                "stage11-c15-source-preflight",
+                "stage11-sh15-diagnostic-boundary",
             },
         )
         self.assertEqual(
@@ -4620,9 +4639,13 @@ class VerifyDevelopmentTests(unittest.TestCase):
         stage10_catalog_ids = {
             "stage10-w1-sh25-catalog",
         }
+        stage11_semantic_ids = {
+            "stage11-c15-source-preflight",
+            "stage11-sh15-diagnostic-boundary",
+        }
         self.assertEqual(
             selected(c12_path),
-            units | stage8_ids | stage9_ids | stage10_catalog_ids,
+            units | stage8_ids | stage9_ids | stage10_catalog_ids | stage11_semantic_ids,
         )
         self.assertEqual(
             selected(
@@ -4636,14 +4659,19 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "bootstrap/clojure/test/gravity/self_hosting/"
                 "sh13_c11_domain_evidence_adapter_test.clj"
             ),
-            units | {source["id"], adapter["id"], layout["id"]} | stage9_ids,
+            units
+            | {source["id"], adapter["id"], layout["id"]}
+            | stage9_ids
+            | stage11_semantic_ids,
         )
         self.assertEqual(
             selected(
                 "bootstrap/clojure/test/gravity/self_hosting/"
                 "sh14_authenticated_layout_test.clj"
             ),
-            units | {source["id"], adapter["id"], layout["id"]},
+            units
+            | {source["id"], adapter["id"], layout["id"]}
+            | stage11_semantic_ids,
         )
         for unrelated in (
             "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
@@ -4854,6 +4882,229 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 with self.assertRaisesRegex(verifier.ManifestError, field):
                     verifier.validate_manifest(broken)
 
+    def test_stage11_c15_graph_routing_exclusions_and_contract_are_exact(self) -> None:
+        manifest = verifier.load_manifest(
+            ROOT / "tools" / "development_verification_manifest.json"
+        )
+        by_id = verifier.checks_by_id(manifest)
+        stage11_ids = {
+            "stage11-c15-source-preflight",
+            "stage11-sh15-diagnostic-boundary",
+            "stage11-public-c15",
+        }
+        self.assertEqual(
+            {check_id for check_id in by_id if check_id.startswith("stage11-")},
+            stage11_ids,
+        )
+        shape = by_id["stage11-c15-source-preflight"]
+        semantic = by_id["stage11-sh15-diagnostic-boundary"]
+        public = by_id["stage11-public-c15"]
+        self.assertEqual(shape["depends_on"], ["stage3-runner-unit"])
+        self.assertEqual(semantic["depends_on"], [shape["id"]])
+        self.assertEqual(public["depends_on"], [shape["id"]])
+        self.assertEqual((shape["jvm_heap"], shape["timeout_seconds"]),
+                         ("-J-Xmx512m", 600))
+        self.assertEqual((semantic["jvm_heap"], semantic["timeout_seconds"]),
+                         ("-J-Xmx8g", 600))
+        self.assertEqual((public["jvm_heap"], public["timeout_seconds"]),
+                         ("-J-Xmx2g", 900))
+        for check in (shape, semantic, public):
+            self.assertEqual(check["authority"], "none")
+            self.assertTrue(check["automatic"])
+            self.assertTrue(check["fresh"])
+            self.assertFalse(check["resume"])
+            self.assertEqual(check["state_dir_policy"], "new-per-invocation")
+            self.assertEqual(check["lock"], "/private/tmp/gravity-sh07-heavy.lock")
+            self.assertEqual(check["lock_owner"], "command")
+            self.assertTrue(check["exclusive"])
+            self.assertEqual(check["capacity"], 1)
+
+        semantic_inputs = set(semantic["inputs"])
+        exact_semantic_sources = {
+            "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+        }
+        exact_semantic_tests = {
+            "bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj",
+        }
+        self.assertEqual(semantic_inputs, exact_semantic_sources | exact_semantic_tests)
+        self.assertNotIn(
+            "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+            semantic_inputs,
+        )
+        self.assertFalse(any("sh08_" in item for item in semantic_inputs))
+
+        units = {
+            "stage0-orchestrator-unit",
+            "stage1-sh01-unit",
+            "stage2-authority-admission-unit",
+            "stage3-runner-unit",
+        }
+
+        def selection(path: str) -> dict[str, object]:
+            return verifier.select_impacted_checks(
+                manifest, ROOT, changed_paths=[path]
+            )
+
+        c15_source = (
+            "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"
+        )
+        sh15_test = (
+            "bootstrap/clojure/test/gravity/self_hosting/"
+            "sh15_diagnostic_boundary_test.clj"
+        )
+        preflight_test = (
+            "bootstrap/clojure/test/gravity/self_hosting/"
+            "sh07_c15_diagnostics_shape_preflight_test.clj"
+        )
+        deferred_test = (
+            "bootstrap/clojure/test/gravity/self_hosting/"
+            "sh07_c15_diagnostics_source_coverage_test.clj"
+        )
+        self.assertEqual(
+            set(selection(c15_source)["selected_ids"]),
+            units | stage11_ids | {"stage10-w1-sh25-catalog"},
+        )
+        self.assertEqual(
+            set(selection(sh15_test)["selected_ids"]),
+            units | {shape["id"], semantic["id"]},
+        )
+        self.assertNotIn(public["id"], selection(sh15_test)["selected_ids"])
+        self.assertEqual(
+            set(selection(preflight_test)["selected_ids"]), units | stage11_ids
+        )
+        deferred = selection(deferred_test)
+        self.assertEqual(deferred["selected_ids"], [])
+        self.assertEqual(deferred["unmatched_changes"], [deferred_test])
+        deferred_receipt = verifier.run_verification(
+            manifest,
+            ROOT,
+            changed_paths=[deferred_test],
+            dry_run=True,
+        )
+        self.assertEqual(deferred_receipt["status"], "failed")
+        self.assertEqual(deferred_receipt["checks"], [])
+        self.assertEqual(
+            deferred_receipt["selection"]["unmatched_changes"],
+            [deferred_test],
+        )
+        self.assertIn(deferred_test, deferred_receipt["error"])
+        for unrelated_public_input in (
+            "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+            "bootstrap/clojure/test/gravity/cli_test.clj",
+            "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+        ):
+            selected = set(selection(unrelated_public_input)["selected_ids"])
+            self.assertNotIn(public["id"], selected)
+            self.assertNotIn(semantic["id"], selected)
+
+        legacy_source_owners = {
+            "stage0-project-structure", "stage0-project-structure-unit",
+            "stage0-orchestrator-unit", "stage0-reader",
+            "stage0-sh01-ownership-control", "stage0-sh01-leaf-runner-control",
+            "stage0-hosted-hello", "stage0-hosted-hello-qst",
+            "stage0-selective-smoke", "stage0-hosted-core-app",
+            "stage0-hosted-core-compiled-app", "stage0-clojure-suite",
+            "stage0-bootstrap-authority",
+        }
+        self.assertEqual(
+            {check_id for check_id, check in by_id.items()
+             if c15_source in check.get("impact_excludes", [])},
+            legacy_source_owners,
+        )
+        broad_test_owners = {
+            "stage0-project-structure", "stage0-project-structure-unit",
+            "stage1-sh01-unit", "stage0-sh01-ownership-control",
+            "stage0-sh01-leaf-runner-control",
+        }
+        for test_path in (preflight_test, sh15_test, deferred_test):
+            self.assertEqual(
+                {check_id for check_id, check in by_id.items()
+                 if test_path in check.get("impact_excludes", [])},
+                broad_test_owners,
+            )
+
+        public_excludes = set(public["impact_excludes"])
+        self.assertTrue(
+            {
+                "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+                "bootstrap/clojure/test/gravity/cli_test.clj",
+                "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+            }
+            <= public_excludes
+        )
+        self.assertFalse(any(check_id.endswith("proof-candidate")
+                             for check_id in stage11_ids))
+
+        same_heap_alternatives = {
+            "stage11-c15-source-preflight": "stage9-c13-source-shape",
+            "stage11-sh15-diagnostic-boundary": "stage9-sh16-c13-evidence-boundary",
+            "stage11-public-c15": "stage8-public-c12",
+        }
+        for check_id, policy in verifier._STAGE11_FIXED_NODE_POLICIES.items():
+            check = by_id[check_id]
+            for field, replacement in (
+                ("timeout_seconds", policy["timeout_seconds"] + 1),
+                ("fresh", False), ("resume", True), ("automatic", False),
+                ("exclusive", False), ("capacity", 2),
+                ("lock", "/private/tmp/gravity-stage11-wrong.lock"),
+                ("lock_owner", "runner"),
+                ("state_dir_policy", "reuse"),
+                ("stage3_batch", same_heap_alternatives[check_id]),
+                ("stage3_mode", "proof-candidate"),
+                ("command", ["python3", "tools/run_stage3_verification.py", "--wrong"]),
+                ("authority", "candidate"),
+                ("jvm_heap", "-J-Xmx1g"),
+                ("minimum_heap_bytes", check["minimum_heap_bytes"] + 1),
+                ("minimum_heap_bytes", 1.5),
+                ("minimum_heap_bytes", True),
+                ("depends_on", []),
+                ("impact_excludes", []),
+            ):
+                broken = json.loads(json.dumps(manifest))
+                target = next(item for item in broken["checks"]
+                              if item["id"] == check_id)
+                target[field] = replacement
+                with self.assertRaisesRegex(verifier.ManifestError, field):
+                    verifier.validate_manifest(broken)
+            for field in ("inputs", "tool_inputs"):
+                for required in policy[field]:
+                    broken = json.loads(json.dumps(manifest))
+                    target = next(item for item in broken["checks"]
+                                  if item["id"] == check_id)
+                    target[field].remove(required)
+                    with self.assertRaisesRegex(
+                        verifier.ManifestError,
+                        "inputs|runtime",
+                    ):
+                        verifier.validate_manifest(broken)
+
+        for check_id in stage11_ids:
+            broken = json.loads(json.dumps(manifest))
+            broken["checks"] = [item for item in broken["checks"]
+                                if item["id"] != check_id]
+            with self.assertRaisesRegex(verifier.ManifestError,
+                                        "Stage11 fixed graph ids"):
+                verifier.validate_manifest(broken, require_production_contracts=True)
+
+            broken = json.loads(json.dumps(manifest))
+            target = next(item for item in broken["checks"]
+                          if item["id"] == check_id)
+            target["id"] = f"{check_id}-renamed"
+            with self.assertRaisesRegex(verifier.ManifestError,
+                                        "Stage11 fixed graph ids"):
+                verifier.validate_manifest(broken, require_production_contracts=True)
+
     def test_stage10_w1_graph_profiles_routing_and_contract_drift_are_exact(self) -> None:
         manifest = verifier.load_manifest(
             ROOT / "tools" / "development_verification_manifest.json"
@@ -4869,16 +5120,16 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertEqual(
             manifest["scope"]["included"].count(verifier._STAGE10_INCLUDED), 1
         )
-        self.assertIn("Stage 3--10", verifier._stage3.__doc__ or "")
+        self.assertIn("Stage 3--11", verifier._stage3.__doc__ or "")
         runner_source = (
             ROOT
             / "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj"
         ).read_text(encoding="utf-8")
-        self.assertIn("Stage3--Stage10", runner_source)
+        self.assertIn("Stage3--Stage11", runner_source)
         for field, value, diagnostic in (
             (
                 "description",
-                manifest["description"].replace("--10", "--9"),
+                manifest["description"].replace("--11", "--10"),
                 "description",
             ),
             ("stage10_handoff", None, "stage10_handoff"),

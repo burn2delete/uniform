@@ -790,9 +790,78 @@ _STAGE10_FIXED_NODE_POLICIES = {
     },
 }
 
+_STAGE11_FIXED_NODE_POLICIES = {
+    "stage11-c15-source-preflight": {
+        "timeout_seconds": 600,
+        "stage3_batch": "stage11-c15-source-preflight",
+        "depends_on": ["stage3-runner-unit"],
+        "inputs": (
+            "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+            "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_shape_preflight_test.clj",
+            "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+            "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+            "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+            "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+            "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md",
+        ),
+        "tool_inputs": tuple(_stage3.STAGE3_RUNTIME_DEPENDENCIES),
+        "impact_excludes": (
+            "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+            "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+        ),
+    },
+    "stage11-sh15-diagnostic-boundary": {
+        "timeout_seconds": 600,
+        "stage3_batch": "stage11-sh15-diagnostic-boundary",
+        "depends_on": ["stage11-c15-source-preflight"],
+        "inputs": (
+            "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+            "bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj",
+        ),
+        "tool_inputs": tuple(_stage3.STAGE3_RUNTIME_DEPENDENCIES),
+        "impact_excludes": (
+            "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+            "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+        ),
+    },
+    "stage11-public-c15": {
+        "timeout_seconds": 900,
+        "stage3_batch": "stage11-public-c15",
+        "depends_on": ["stage11-c15-source-preflight"],
+        "inputs": (
+            "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+            "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+            "bootstrap/clojure/test/gravity/cli_test.clj",
+            "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+            "bin/gravity",
+            "target/phase-18/jvm-cli/gravity-jvm-cli.jar",
+            "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn",
+        ),
+        "tool_inputs": tuple(_stage3.STAGE3_RUNTIME_DEPENDENCIES),
+        "impact_excludes": (
+            "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+            "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+            "bootstrap/clojure/test/gravity/cli_test.clj",
+            "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+            "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+        ),
+    },
+}
+
 _STAGE10_MANIFEST_DESCRIPTION = (
     "Stage 0 and Milestone 0 verification graph with bounded Stage1/Stage2 "
-    "handoffs and fixed, non-authoritative Stage3--10 compiler candidate "
+    "handoffs and fixed, non-authoritative Stage3--11 compiler candidate "
     "graphs for evidence-producing development loops."
 )
 _STAGE10_HANDOFF = (
@@ -802,6 +871,12 @@ _STAGE10_HANDOFF = (
     "no automatic packet matrix, proof candidate, or authority promotion"
 )
 _STAGE10_INCLUDED = "the fixed Stage10 W1/C14 proportional development graph"
+_STAGE11_HANDOFF = (
+    "fixed C15 source preflight followed by independent SH15 semantic and "
+    "public C15 branches; no deep SH07 census, proof candidate, authority, "
+    "self-hosting, release, or seed-retirement claim"
+)
+_STAGE11_INCLUDED = "the fixed Stage11 C15/SH15 non-authoritative development graph"
 
 
 _P15_NATIVE_LAUNCHER_CHECK_ID = "stage0-p15-native-launcher-prerequisite"
@@ -1087,6 +1162,8 @@ def _validate_p15_public_native_admission_reservation(
                 )
 
 
+
+
 def _validate_p15_native_launcher_contract(check: Mapping[str, Any]) -> None:
     """Keep the bounded Darwin launcher gate on its reviewed direct command.
 
@@ -1302,14 +1379,14 @@ def _resource_receipt_error(record: Mapping[str, Any]) -> str | None:
 def _is_fixed_stage_check(check_id: str) -> bool:
     """Return whether a manifest node invokes the fixed stage wrapper.
 
-    Stage3 through Stage10 all use the same command-owned
+    Stage3 through Stage11 all use the same command-owned
     ``run_stage3_verification.py`` boundary.  Keep this predicate centralized
     so a newly added fixed stage cannot accidentally bypass heap, runtime
     identity, lock-owner, or receipt validation.
     """
 
     return check_id.startswith(
-        ("stage3-", "stage4-", "stage5-", "stage6-", "stage7-", "stage8-", "stage9-", "stage10-")
+        ("stage3-", "stage4-", "stage5-", "stage6-", "stage7-", "stage8-", "stage9-", "stage10-", "stage11-")
     )
 
 
@@ -1538,6 +1615,14 @@ def _validate_stage10_manifest_scope(manifest: Mapping[str, Any]) -> None:
         raise ManifestError(
             "manifest scope included must name the fixed Stage10 graph exactly once"
         )
+    if scope.get("stage11_handoff") != _STAGE11_HANDOFF:
+        raise ManifestError(
+            "manifest scope stage11_handoff must equal the reviewed Stage11 contract"
+        )
+    if included.count(_STAGE11_INCLUDED) != 1:
+        raise ManifestError(
+            "manifest scope included must name the fixed Stage11 graph exactly once"
+        )
 
 
 def _validate_stage10_node_contract(check: Mapping[str, Any]) -> None:
@@ -1597,6 +1682,63 @@ def _validate_stage10_node_contract(check: Mapping[str, Any]) -> None:
         if type(observed) is not list or observed != expected:
             raise ManifestError(
                 f"check {check_id!r} {field} must equal the exact Stage10 list"
+            )
+
+
+def _validate_stage11_node_contract(check: Mapping[str, Any]) -> None:
+    """Pin the source-only and non-authoritative Stage11 C15 branches."""
+
+    check_id = str(check.get("id", ""))
+    if not check_id.startswith("stage11-"):
+        return
+    policy = _STAGE11_FIXED_NODE_POLICIES.get(check_id)
+    if policy is None:
+        raise ManifestError(f"unreviewed Stage11 check id: {check_id!r}")
+    timeout = check.get("timeout_seconds")
+    if type(timeout) is not int or timeout != policy["timeout_seconds"]:
+        raise ManifestError(
+            f"check {check_id!r} timeout_seconds must equal the fixed Stage11 bound"
+        )
+    for field, value in {
+        "fresh": True,
+        "resume": False,
+        "automatic": True,
+        "exclusive": True,
+    }.items():
+        if check.get(field) is not value:
+            raise ManifestError(
+                f"check {check_id!r} {field} must equal fixed Stage11 value {value!r}"
+            )
+    for field, value in {
+        "state_dir_policy": "new-per-invocation",
+        "lock": "/private/tmp/gravity-sh07-heavy.lock",
+        "lock_owner": "command",
+    }.items():
+        if type(check.get(field)) is not str or check.get(field) != value:
+            raise ManifestError(
+                f"check {check_id!r} {field} must equal fixed Stage11 value {value!r}"
+            )
+    if type(check.get("capacity")) is not int or check.get("capacity") != 1:
+        raise ManifestError(
+            f"check {check_id!r} capacity must equal fixed Stage11 value 1"
+        )
+    for field, value in {
+        "command": ["python3", "tools/run_stage3_verification.py"],
+        "stage3_mode": _stage3.MODE_PURE,
+        "stage3_batch": policy["stage3_batch"],
+        "depends_on": policy["depends_on"],
+        "authority": "none",
+    }.items():
+        if type(check.get(field)) is not type(value) or check.get(field) != value:
+            raise ManifestError(
+                f"check {check_id!r} {field} must equal fixed Stage11 value {value!r}"
+            )
+    for field in ("inputs", "tool_inputs", "impact_excludes"):
+        expected = list(policy[field])
+        observed = check.get(field)
+        if type(observed) is not list or observed != expected:
+            raise ManifestError(
+                f"check {check_id!r} {field} must equal the exact Stage11 list"
             )
 
 
@@ -1816,6 +1958,19 @@ def validate_manifest(
                 f"expected {sorted(expected_stage10_ids)}, "
                 f"observed {sorted(observed_stage10_ids)}"
             )
+        observed_stage11_ids = {
+            str(item.get("id"))
+            for item in checks
+            if isinstance(item, Mapping)
+            and str(item.get("id", "")).startswith("stage11-")
+        }
+        expected_stage11_ids = set(_STAGE11_FIXED_NODE_POLICIES)
+        if observed_stage11_ids != expected_stage11_ids:
+            raise ManifestError(
+                "Stage11 fixed graph ids must equal the reviewed production set: "
+                f"expected {sorted(expected_stage11_ids)}, "
+                f"observed {sorted(observed_stage11_ids)}"
+            )
 
     ids: set[str] = set()
     dependencies: dict[str, list[str]] = {}
@@ -1840,6 +1995,7 @@ def validate_manifest(
         _validate_stage8_node_contract(check)
         _validate_stage9_node_contract(check)
         _validate_stage10_node_contract(check)
+        _validate_stage11_node_contract(check)
         if check.get("daemonization") != "forbidden":
             raise ManifestError(
                 f"check {check_id!r} must declare daemonization='forbidden'; "
@@ -1999,6 +2155,13 @@ def validate_manifest(
         raise ManifestError(
             "Stage10 fixed graph ids must equal the reviewed set: "
             f"expected {sorted(expected_stage10_ids)}, observed {sorted(stage10_ids)}"
+        )
+    stage11_ids = {check_id for check_id in ids if check_id.startswith("stage11-")}
+    expected_stage11_ids = set(_STAGE11_FIXED_NODE_POLICIES)
+    if (require_production_contracts or stage11_ids) and stage11_ids != expected_stage11_ids:
+        raise ManifestError(
+            "Stage11 fixed graph ids must equal the reviewed set: "
+            f"expected {sorted(expected_stage11_ids)}, observed {sorted(stage11_ids)}"
         )
     if require_production_contracts:
         _validate_stage10_manifest_scope(manifest)

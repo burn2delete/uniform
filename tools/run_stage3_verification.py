@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the reviewed Stage 3--10 fixed verification boundary.
+"""Run the reviewed Stage 3--11 fixed verification boundary.
 
 The development verifier deliberately treats this file as the only command
 that may own the SH-07 heavy lock.  The command is intentionally boring: its
@@ -15,6 +15,8 @@ proof candidate.  Stage9 exposes the evidence-only C13 boundary over that
 prepared C12 carrier and likewise exposes no proof candidate.  Stage10 exposes
 the fixed W1/C14 static, direct-mutation, SH25/SH26 consumer, and manual hostile
 stable-candidate batches; its packet-substitution matrix is never automatic.
+Stage11 exposes a bounded C15 source preflight and independent SH15 semantic
+and public C15 branches; it exposes no deep-census or proof candidate.
 The Stage7
 shape profile is an execution alias of the
 complete source profile and does not add catalog ownership.  A public/pure batch
@@ -131,6 +133,9 @@ FIXED_BATCHES = (
     "stage10-w1-direct-mutation",
     "stage10-w1-sh25-catalog",
     "stage10-w1-sh25-sh26-consumer",
+    "stage11-c15-source-preflight",
+    "stage11-sh15-diagnostic-boundary",
+    "stage11-public-c15",
     "authority",
     "c8-authority",
     "c9-authority",
@@ -184,6 +189,9 @@ _BATCH_HEAP = {
     "stage10-w1-direct-mutation": "-J-Xmx3g",
     "stage10-w1-sh25-catalog": "-J-Xmx8g",
     "stage10-w1-sh25-sh26-consumer": "-J-Xmx8g",
+    "stage11-c15-source-preflight": "-J-Xmx512m",
+    "stage11-sh15-diagnostic-boundary": "-J-Xmx8g",
+    "stage11-public-c15": "-J-Xmx2g",
     "c10-authority": "-J-Xmx8g",
     "c11-authority": "-J-Xmx8g",
 }
@@ -366,6 +374,20 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
         "gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-positive",
         "gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-rejects-substitution-and-hostile-carriers",
         "gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-separates-top-level-provenance",
+    ),
+    "stage11-c15-source-preflight": (
+        "gravity.self-hosting.sh07-c15-diagnostics-shape-preflight-test/sh07-c15-diagnostics-source-shape-and-control",
+        "gravity.self-hosting.sh07-c15-diagnostics-shape-preflight-test/sh07-c15-diagnostics-export-completeness-and-source-identity",
+    ),
+    "stage11-sh15-diagnostic-boundary": (
+        "gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-source-surface-and-policy",
+        "gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-accepts-small-genuine-derived-references",
+        "gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-preserves-real-rejection-partially",
+        "gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-rejects-schema-policy-and-hostile-inputs",
+        "gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-identity-is-path-neutral",
+    ),
+    "stage11-public-c15": (
+        "gravity.bootstrap-test/public-check-accepts-gravity-authored-c15-compiler-diagnostics",
     ),
     "stage10-w1-static-admission": (
         "gravity.self-hosting.sh07-c14-target-lowering-source-coverage-test/sh07-b34-c14-source-parses-and-control-form-arities-are-exact",

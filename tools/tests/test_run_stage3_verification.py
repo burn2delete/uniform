@@ -115,6 +115,9 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage10-w1-direct-mutation": "stage10-w1-direct-mutation-selectors",
             "stage10-w1-sh25-catalog": "stage10-w1-sh25-catalog-selectors",
             "stage10-w1-sh25-sh26-consumer": "stage10-w1-sh25-sh26-consumer-selectors",
+            "stage11-c15-source-preflight": "stage11-c15-source-preflight-selectors",
+            "stage11-sh15-diagnostic-boundary": "stage11-sh15-diagnostic-boundary-selectors",
+            "stage11-public-c15": "stage11-public-c15-selectors",
         }
         for batch, definition in selector_definitions.items():
             self.assertEqual(
@@ -163,6 +166,9 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage10-w1-direct-mutation": "-J-Xmx3g",
             "stage10-w1-sh25-catalog": "-J-Xmx8g",
             "stage10-w1-sh25-sh26-consumer": "-J-Xmx8g",
+            "stage11-c15-source-preflight": "-J-Xmx512m",
+            "stage11-sh15-diagnostic-boundary": "-J-Xmx8g",
+            "stage11-public-c15": "-J-Xmx2g",
             "c10-authority": "-J-Xmx8g",
             "c11-authority": "-J-Xmx8g",
         }
@@ -300,6 +306,24 @@ class Stage3WrapperTests(unittest.TestCase):
         self.assertEqual(3, len(consumer))
         self.assertEqual(3, len(set(consumer)))
         self.assertFalse(any("current-authoritative-inventory" in item for item in consumer))
+        c15_shape = stage3._FIXED_BATCH_SELECTORS["stage11-c15-source-preflight"]
+        c15_boundary = stage3._FIXED_BATCH_SELECTORS[
+            "stage11-sh15-diagnostic-boundary"
+        ]
+        self.assertEqual(2, len(c15_shape))
+        self.assertEqual(2, len(set(c15_shape)))
+        self.assertTrue(c15_shape[0].endswith("source-shape-and-control"))
+        self.assertTrue(c15_shape[1].endswith("source-identity"))
+        self.assertEqual(5, len(c15_boundary))
+        self.assertEqual(5, len(set(c15_boundary)))
+        self.assertTrue(c15_boundary[0].endswith("source-surface-and-policy"))
+        self.assertTrue(c15_boundary[-1].endswith("identity-is-path-neutral"))
+        self.assertEqual(
+            (
+                "gravity.bootstrap-test/public-check-accepts-gravity-authored-c15-compiler-diagnostics",
+            ),
+            stage3._FIXED_BATCH_SELECTORS["stage11-public-c15"],
+        )
 
     def test_retired_singleton_batch_ids_are_rejected(self) -> None:
         for retired in (

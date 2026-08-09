@@ -1086,8 +1086,9 @@ complete owned Gravity-source inventory. The 8 GiB SH25/SH26 fixture consumer
 runs three selectors without forcing the hostile packet matrix.
 
 The SH25 catalog selector rereads the reviewed ownership map and every owned
-Gravity source. It is independent of C14 static admission, so unrelated source
-edits do not rebuild C14 and SH26 merely to refresh inventory evidence. The
+Gravity source. Raw C15 source drift selects that catalog and fails closed on
+its stale tuple. An accepted C15 revision refreshes the SH25 engine and
+accepted Gravity/QST pair and runs the SH25/SH26 consumer once. The
 catalog receipt also binds the transitively loaded SH26 and
 authenticated-envelope test sources. The fixture consumer separately binds the
 SH19 runtime member, SH25 accepted/rejected fixtures, the exercised SH26
@@ -1105,7 +1106,32 @@ mutation discriminator, about 1323 seconds for packet substitution, and about
 25 seconds for SH25/SH26) guide timeouts only. They are not current wrapper
 receipts, proof, attestation, release evidence, or a generalized speed claim.
 
-### 15. Full release gate
+### 15. Fixed Stage11 C15 diagnostics boundary
+
+Stage11 uses a 512 MiB source-only preflight over one bounded, nofollow,
+strict-UTF8 C15 snapshot. It checks reader/control shape, export completeness,
+and the exact frozen source identity without compiling C15. The preflight then
+branches independently to an 8 GiB five-selector SH15 semantic batch with a
+600-second timeout and the existing 2 GiB public C15 selector with a 900-second
+timeout. All three nodes are automatic, fresh, no-resume, exclusive,
+capacity-one users of the canonical command-owned lock and have
+`authority: none`.
+
+The source helper alone establishes one bounded coherent snapshot. Adversarial
+same-size swap/restore detection is supplied by the combined node and
+supervising wrapper's transient-mutation boundary; it is not a helper-only
+claim.
+
+The semantic node binds exactly C8-C12 plus C15 and SH09-SH15; C7 and SH08 are
+not direct inputs. The public node retains bootstrap, CLI, and diagnostics
+tests as executable inputs but excludes unrelated edits to those broad files
+from Stage11 impact. The old deep C15 coverage namespace remains deliberately
+unmatched and fail-closed after exclusion from broad owners; it requires a
+future manual node and refreshed census. No Stage11 proof candidate, authority,
+self-hosting, release, public acceptance, or seed-retirement claim follows from
+these non-authoritative development receipts.
+
+### 16. Full release gate
 
 Run only after the candidate is stable, the selected authoritative modules
 pass, and the worktree is ready for release review. This preserves every

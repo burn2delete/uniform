@@ -579,8 +579,9 @@ binds the transitively loaded SH26 and authenticated-envelope test sources.
 The fixture consumer separately declares both SH25 fixture pairs, the exercised
 SH26 engine/accepted pair, and the authenticated-envelope source and all three
 test sources. Those are receipt inputs, not incidental namespace loads;
-unrelated source edits refresh inventory evidence without rebuilding the C14
-or SH26 consumers.
+raw C15 source drift selects the catalog and fails closed on its stale tuple.
+An accepted C15 revision refreshes the SH25 engine and accepted Gravity/QST
+pair and runs the SH25/SH26 consumer once; it does not avoid that consumer.
 
 The packet-substitution matrix is deliberately absent from ordinary change
 impact. Explicit stable-candidate selection runs `stage10-w1-hostile-stable`:
@@ -591,6 +592,28 @@ fresh, no-resume, exclusive, capacity one, command-owned on the canonical
 heavy lock, and declare `authority: none`. Existing timings are planning
 measurements for the frozen W1 implementation; the new wrapper/manifest
 identity still requires a focused receipt before current admission is claimed.
+
+## Fixed Stage11 C15 diagnostics boundary
+
+Stage11 begins with a 512 MiB source-only C15 preflight over one bounded,
+nofollow, strict-UTF8 snapshot. It checks control-form arity, exports, and the
+exact frozen source identity without compiling C15. From that gate the graph
+branches independently to the 8 GiB five-selector SH15 semantic batch and the
+2 GiB existing public C15 selector. Their timeouts are 600 and 900 seconds;
+all three nodes are fresh, no-resume, capacity-one users of the canonical
+command-owned lock with `authority: none`.
+
+The source helper establishes one bounded coherent snapshot; adversarial
+same-size swap/restore detection belongs to the combined node and supervising
+wrapper's transient-mutation boundary, not to the helper alone.
+
+The semantic receipt binds exactly C8-C12 plus C15 and SH09-SH15; C7 and SH08
+are not direct inputs. The public node keeps its bootstrap, CLI, and diagnostics
+tests as executable inputs while excluding unrelated edits to those broad
+files from Stage11 impact. The older deep C15 coverage namespace is excluded
+from broad owners and remains unmatched and fail-closed until its census is
+refreshed and a future manual deep node owns it. There is no Stage11 proof,
+authority, self-hosting, release, or seed-retirement claim.
 
 ## Selection and execution flow
 

@@ -313,8 +313,10 @@ mutation check so one JVM can reuse its namespace-local C14 plan and prepared
 carrier. The catalog receipt binds the SH25 ownership map and every owned
 Gravity source it hashes. The consumer receipt separately binds both SH25
 fixture pairs, the exercised SH26 fixtures, and the authenticated-envelope
-helper/source. An unrelated Gravity-source edit therefore reruns the truthful
-catalog check without rebuilding the C14 static or SH26 fixture consumers. All
+helper/source. Raw C15 source drift selects the truthful catalog and fails
+closed until the SH25 engine and accepted Gravity/QST pair carry the new tuple.
+An accepted C15 revision refreshes that pair and runs the SH25/SH26 consumer
+once; it does not avoid the consumer. All
 five production nodes are fresh, no-resume, capacity-one
 users of the canonical command-owned lock with `authority: none`; none is proof,
 attestation, release, or generalized performance evidence.
