@@ -38,6 +38,8 @@
    "bootstrap/clojure/test/gravity/development_test_runner.clj"
    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
    "tools/"]
+  :python-semantic-support-prefixes
+  ["src/gravity/"]
   :host-boundary-modules
   ["bootstrap/clojure/src/gravity/cli.clj"
    "bootstrap/clojure/src/gravity/darwin_publication.clj"
