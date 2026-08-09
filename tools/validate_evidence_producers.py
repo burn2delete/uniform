@@ -86,6 +86,7 @@ EXPECTED_EXCLUDED_PATTERNS = [
     "tools/tests/**",
     "tools/output_publication.py",
     "tools/validate_gravity_toolchain.py",
+    "tools/validate_w1_executable_carrier_interface.py",
 ]
 EXACT_OUTPUT_POLICY_PROFILES = {
     "generated-evidence": {
@@ -150,6 +151,7 @@ EXACT_PROMOTION_POLICY = {
 NONPRODUCER_WRITE_EXCEPTIONS = {
     "tools/output_publication.py",
     "tools/validate_gravity_toolchain.py",
+    "tools/validate_w1_executable_carrier_interface.py",
 }
 WRITE_CALL_NAMES = {
     "atomic_write_json", "atomic_write_text", "atomic_json_write", "_write_json",

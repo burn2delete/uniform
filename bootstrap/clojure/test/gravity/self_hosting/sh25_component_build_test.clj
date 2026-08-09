@@ -1,6 +1,7 @@
 (ns gravity.self-hosting.sh25-component-build-test
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh26-stage-rebuild-test])
@@ -131,7 +132,10 @@
         ownership
         (edn/read-string
          (slurp (path "docs/self-hosting-slice-ownership.edn")))
-        owned-paths (set (keys (:module-owners ownership)))
+        owned-paths
+        (set
+         (filter #(str/starts-with? % "bootstrap/gravity/src/")
+                 (keys (:module-owners ownership))))
         runtime-path
         "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity"
         catalog-paths (set (map :source-path catalog))
@@ -139,6 +143,7 @@
         (:components
          (request accepted-gravity-plan 'sh25-component-build-request))]
     (is (= 43 (count catalog)))
+    (is (= 42 (count owned-paths)))
     (is (= owned-paths (disj catalog-paths runtime-path)))
     (is (contains? catalog-paths runtime-path))
     (is (= 43 (count (set (map :component-id catalog)))))

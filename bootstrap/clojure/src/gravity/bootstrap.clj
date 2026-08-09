@@ -101866,10 +101866,11 @@
                 extra)))
 
 (def stage2-runtime-derived-source-targets
-  ;; :llvm and :wasm are admitted only to the internal pure checked-core/C11
+  ;; :llvm, the exact Linux LLVM target, and :wasm are admitted only to the
+  ;; internal pure checked-core/C11
   ;; construction path.  Effectful reference authority remains explicitly
   ;; JVM-only below.
-  #{:jvm :c :c-hosted :c11 :js :js-ts :llvm :wasm})
+  #{:jvm :c :c-hosted :c11 :js :js-ts :llvm :llvm-x86_64-linux :wasm})
 
 (def p15-s23-closed-runtime-operations
   #{:literal :quote :local :builtin-call :println :do :if :let})
@@ -120159,26 +120160,26 @@
   "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity")
 
 (def p15-s23-b3-llvm-builder-function
-  'b3-build-bounded-arm64-macos-llvm)
+  'b3-build-bounded-llvm-x86_64-linux)
 
-(def p15-s23-b3-llvm-source-byte-count 86185)
+(def p15-s23-b3-llvm-source-byte-count 91077)
 (def p15-s23-b3-llvm-expected-source-content-hash
-  "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3")
+  "sha256:3faf6a748485547abd6bd8da917a2214a7a8ba1cc9b3038bbbd3cdadd0562300")
 (def p15-s23-b3-llvm-expected-plan-semantic-hash
-  "sha256:0cbc958898d7ec4e297613a129ec2352168eee3eb5938ac7b7cb0b9dfb72ec6a")
+  "sha256:ac34b56b83ad0bb876de5574c6550ed46e8e4ab1ced457d2ab3736a3a5e1c68e")
 (def p15-s23-b3-llvm-expected-functions-semantic-hash
-  "sha256:b92dfd22e71c426d6771158f27e01837664748155d09d227fab3b181c76a94bf")
+  "sha256:6bd78c2937ee13900571daf202a2c2096ec268d8a2b2b4a391774076cacb37d8")
 (def p15-s23-b3-llvm-expected-builder-semantic-hash
-  "sha256:a18355c4b224902853e30f249593103b1515afc64e88486dc56c65ec98360f36")
+  "sha256:b8ce9d861759de62aa16237cc8c596be1451ae1d06d7e2424d07da48881d351e")
 
 (def p15-s23-b3-llvm-expected-file-magic-content
-  {:byte-count 7273344
-   :content-hash
-   "sha256:38fc8af9d342a3a1d32a626195314a913ee255d8cbd259067d665ea55735b7c0"})
+  {:status :not-applicable
+   :format :elf
+   :architecture :x86_64})
 
 (def p15-s23-b3-llvm-required-functions
-  {'b3-build-bounded-arm64-macos-llvm {:arity 1 :params ['mir]}
-   'b3-bounded-arm64-macos-policy-record {:arity 0 :params []}
+  {'b3-build-bounded-llvm-x86_64-linux {:arity 1 :params ['mir]}
+   'b3-bounded-llvm-x86_64-linux-policy-record {:arity 0 :params []}
    'b3-block-order {:arity 2 :params ['mir 'function]}
    'b3-collect-block-operations
    {:arity 3 :params ['blocks 'block-order 'result]}
@@ -120204,18 +120205,21 @@
    'b3-blocks-text {:arity 2 :params ['blocks 'result]}})
 
 (def p15-s23-b3-llvm-policy
-  {:artifact :gravity/b3-bounded-arm64-macos-policy
+  {:artifact :gravity/b3-bounded-llvm-x86_64-linux-policy
+   :schema-version 1
    :owner :gravity.backend/b3-llvm
+   :backend :llvm
+   :profile :hosted
    :tier :experimental
    :exposure :internal
    :opt-in-required? true
    :backend-status :partial-bounded-executable-slice
    :source-declaration-target :jvm
-   :requested-lowering-target :llvm
+   :requested-lowering-target :llvm-x86_64-linux
    :target-selection
    {:source-target :jvm
-    :requested-target :llvm
-    :selection :explicit-bootstrap-seed-target-override
+    :requested-target :llvm-x86_64-linux
+    :selection :explicit-canonical-linux-target
     :reason :checked-core-seed-contract}
    :direct-source-declared-llvm? false
    :full-target-selection-credit? false
@@ -120225,33 +120229,39 @@
    :identity-path-neutrality
    :checkout-temp-output-and-effective-tool-installation
    :tool-launcher-path-policy :pinned-system-launchers
-   :runtime-status :no-gravity-helpers-platform-runtime-required
-   :target-triple "arm64-apple-macosx14.0.0"
+   :runtime-status :linux-hosted-llvm-no-jvm-or-clojure-fallback
+   :canonical-target :llvm-x86_64-linux
+   :target :llvm-x86_64-linux
+   :target-triple "x86_64-unknown-linux-gnu"
    :data-layout
-   "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-n32:64-S128-Fn32"
+   "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
    :cpu "generic"
-   :features "+v8a,+fp-armv8,+neon"
-   :calling-convention :darwin-pcs-ccc
-   :object-format :mach-o
-   :architecture :arm64
+   :features ""
+   :calling-convention :sysv-amd64
+   :abi :sysv-amd64
+   :object-format :elf
+   :architecture :x86_64
+   :os :linux
    :relocation-model :pic
    :code-model :small
    :optimization-level :O0
-   :minimum-os-version "14.0"
+   :minimum-os-version :not-applicable
+   :unwind-strategy :dwarf-cfi
    :sanitizers []
    :instrumentation []
    :gravity-runtime-providers []
    :platform-runtime-providers
-   [:darwin/process-startup :darwin/dyld :darwin/libsystem]
-   :platform-runtime-provider-status :requires-otool-verification
+   [:linux/process-startup :linux/elf-loader :linux/glibc-2.36]
+   :platform-runtime-provider-status :requires-elf-x86_64-verification
    :build-runtime-providers
-   [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
-    :file-5.41 :llvm-otool-cctools-1040 :darwin-process-loader
-    :openjdk-26.0.1-ffm-native-access
-    :darwin-libsystem-renamex-np]
-   :requested-vs-emitted-binding :requires-seed-and-clang-verification
+   [:llvm-clang-20.1.8 :llvm-llc-20.1.8 :llvm-opt-20.1.8
+    :llvm-as-20.1.8 :llvm-dis-20.1.8 :llvm-readobj-20.1.8
+    :llvm-objdump-20.1.8 :llvm-lld-20.1.8
+    :linux-x86_64-process-loader]
+   :requested-vs-emitted-binding :requires-canonical-linux-target
+   :no-host-fallback? true
    :gravity-exception-unwind :none
-   :platform-unwind-metadata :darwin-compact-unwind-required
+   :platform-unwind-metadata :dwarf-cfi
    :tls-model :not-applicable
    :supported-profiles #{:hosted}
    :supported-operation-families
@@ -120260,19 +120270,34 @@
    :unsupported-profiles
    [:hardware :firmware :kernel :native :distributed :ai :meta :gpu
     :formal]
+   :unsupported-targets [:darwin :mach-o :arm64 :aarch64
+                         :llvm-arm64-darwin :llvm-aarch64-linux
+                         :llvm-x86_64-darwin :llvm]
    :required-evidence
    [:authenticated-c11-replay :independent-lowering-reconstruction
-    :llvm-tool-acceptance :mach-o-arm64-object
+    :llvm-tool-acceptance :elf-x86_64-object :elf-x86_64-executable
     :differential-process-result :content-hash-and-provenance]
+   :raw-lowering-kind :gravity/b3-bounded-llvm-x86_64-linux-lowering
+   :final-artifact-kind
+   :gravity/p15-s23-b3-authenticated-llvm-x86_64-linux-artifact
+   :emission-kind :gravity/b3-llvm-x86_64-linux-elf-emission
+   :executable-carrier-distinct? true
    :unsupported-surface
    [:strings :quote :str :println :runtime-checks :effects
     :program-capabilities :domain-anchors :multiple-functions
     :multiple-conditionals :non-scalar-types
-    :integer-outside-signed-i64 :process-result-outside-0-to-255]
+    :integer-outside-signed-i64 :process-result-outside-0-to-255
+    :jvm-fallback :clojure-fallback]
+   :claims {:clojure-seed-boundary? true
+            :public? false
+            :release? false
+            :self-hosted? false
+            :whole-b3? false}
    :whole-b3? false
    :public? false
    :release? false
-   :self-hosted? false})
+   :self-hosted? false
+   :clojure-seed-boundary? true})
 
 (def p15-s23-b3-llvm-source-lowering-policy
   ;; The pinned Gravity B3 source owns MIR -> LLVM decisions through the
@@ -120281,8 +120306,10 @@
   ;; into the Gravity-authored lowering result.
   (assoc p15-s23-b3-llvm-policy
          :build-runtime-providers
-         [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
-          :file-5.41 :llvm-otool-cctools-1040 :darwin-process-loader]))
+         [:llvm-clang-20.1.8 :llvm-llc-20.1.8 :llvm-opt-20.1.8
+          :llvm-as-20.1.8 :llvm-dis-20.1.8 :llvm-readobj-20.1.8
+          :llvm-objdump-20.1.8 :llvm-lld-20.1.8
+          :linux-x86_64-process-loader]))
 
 (def p15-s23-b3-llvm-diagnostic-rules
   #{"C13-CONTRACT" "C13-PRESERVE" "C13-INVALIDATE" "C13-PROOF"
@@ -120341,9 +120368,9 @@
         "B3-TARGET" "pinned LLVM target or toolchain contract failed"
         "B3-METADATA" "LLVM metadata is not proof-authorized"
         "B3-UB" "LLVM lowering would introduce undefined behavior"
-        "B3-RUNTIME" "delegated Darwin runtime provider contract failed"
+        "B3-RUNTIME" "delegated Linux runtime provider contract failed"
         "B3-PASS" "LLVM emission or verification pass failed"
-        "B3-ABI" "LLVM ABI or Mach-O contract failed"
+        "B3-ABI" "LLVM ABI or ELF contract failed"
         "B3-MANIFEST" "LLVM artifact manifest is incomplete"
         "B13-HASH" "emitted LLVM artifact hash did not verify"
         "B14-DIFFERENTIAL" "LLVM process result differs from reference"
@@ -120480,7 +120507,7 @@
          (if (= :not-applicable (:origin-id primary))
            [] [(:origin-id primary)])
          :profile :hosted
-         :target :llvm
+         :target :llvm-x86_64-linux
          :involved-artifacts [artifact-anchor]
          :facts safe-facts
          :remediation
@@ -120662,7 +120689,7 @@
           :b3-source-content-hash source-content-hash}))
       (let [emitter-rule
             (c-backend-stage2-plan-emitter-source-rule!
-             request-source :llvm)
+             request-source :llvm-x86_64-linux)
             plan
             (p15-s23-stage2-compiler-artifact-plan
              (:emitter emitter-rule) source-path source-text)
@@ -120906,7 +120933,7 @@
           (true? (:target-independent? mir))
           (= :hosted (:profile mir))
           (= :jvm (:source-target mir))
-          (= :llvm (:target-request mir))
+          (= :llvm-x86_64-linux (:target-request mir))
           (= #{'main} (set (keys (:functions mir))))
           (map? function)
           (contains? #{1 4} (count (:blocks function)))
@@ -121144,9 +121171,18 @@
         (first (get-in function
                        [:blocks (last block-order) :terminator :operands]))
         semantic-result (get values return-id)]
-    {:artifact :gravity/b3-bounded-arm64-macos-lowering
+    {:artifact :gravity/b3-bounded-llvm-x86_64-linux-lowering
+     :schema-version 1
      :status :constructed-unverified
      :policy p15-s23-b3-llvm-source-lowering-policy
+     :target :llvm-x86_64-linux
+     :canonical-target :llvm-x86_64-linux
+     :backend :llvm
+     :profile :hosted
+     :executable-carrier-kind
+     :gravity/b3-llvm-x86_64-linux-elf-emission
+     :final-artifact-kind
+     :gravity/p15-s23-b3-authenticated-llvm-x86_64-linux-artifact
      :source-mir-id (:module-id mir)
      :block-order block-order
      :block-labels block-labels
@@ -121158,7 +121194,12 @@
      :expected-exit-code
      (p15-s23-b3-llvm-scalar-exit-code semantic-result)
      :runtime-providers
-     [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+     [:linux/process-startup :linux/elf-loader :linux/glibc-2.36]
+     :build-providers
+     [:llvm-clang-20.1.8 :llvm-llc-20.1.8 :llvm-opt-20.1.8
+      :llvm-as-20.1.8 :llvm-dis-20.1.8 :llvm-readobj-20.1.8
+      :llvm-objdump-20.1.8 :llvm-lld-20.1.8
+      :linux-x86_64-process-loader]
      :emitted-metadata []
      :emitted-function-attributes []
      :proof-to-metadata-map {}
@@ -121177,7 +121218,13 @@
       :source-map-count (count (:source-map mir))}
      :diagnostics []
      :clojure-seed-boundary? true
-     :self-hosted? false}))
+     :self-hosted? false
+     :public? false
+     :release? false
+     :whole-b3? false
+     :claims {:clojure-seed-boundary? true
+              :public? false :release? false
+              :self-hosted? false :whole-b3? false}}))
 
 (defn- p15-s23-b3-llvm-invoke-builder!
   [candidate binding mir source-path]
@@ -121229,8 +121276,7 @@
   {:inherited-environment? false
    :fixed-values {"PATH" "/usr/bin:/bin:/usr/sbin:/sbin"
                   "LC_ALL" "C"
-                  "LANG" "C"
-                  "DEVELOPER_DIR" p15-s23-b3-llvm-developer-directory}
+                  "LANG" "C"}
    :private-physical-values ["HOME" "TMPDIR"]
    :forbidden-prefixes ["DYLD_" "CCC_" "LLVM_"]
    :forbidden-names ["SDKROOT" "MACOSX_DEPLOYMENT_TARGET" "CPATH"
@@ -121351,9 +121397,10 @@
         _ (.put environment "PATH" "/usr/bin:/bin:/usr/sbin:/sbin")
         _ (.put environment "LC_ALL" "C")
         _ (.put environment "LANG" "C")
-        _ (.put environment "DEVELOPER_DIR"
-                (get-in p15-s23-b3-llvm-environment-policy
-                        [:fixed-values "DEVELOPER_DIR"]))
+        _ (when-let [developer-dir
+                     (get-in p15-s23-b3-llvm-environment-policy
+                             [:fixed-values "DEVELOPER_DIR"])]
+            (.put environment "DEVELOPER_DIR" developer-dir))
         _ (.put environment "HOME" (.toString directory))
         _ (.put environment "TMPDIR" (.toString directory))
         _ (.redirectErrorStream builder false)
@@ -121487,6 +121534,10 @@
          (or (str/ends-with? argument "/usr/bin/otool")
              (str/ends-with? argument "/usr/bin/llvm-otool")))
     "<effective-otool>"
+    (and (string? argument)
+         (str/starts-with? argument "type=bind,src=")
+         (str/ends-with? argument ",dst=/work"))
+    "<workspace-bind:/work>"
     (= "/usr/bin/file" argument) "<effective-file>"
     :else argument))
 
@@ -121609,6 +121660,11 @@
   ([candidate directory source-path step command accepted-exit-codes]
    (p15-s23-b3-llvm-require-authority!
     candidate source-path :run-closed-tool-step)
+   (when-not (= "docker" (first command))
+     (p15-s23-b3-llvm-fail!
+      "B3-TARGET" source-path {}
+      {:missing-fact :host-tool-launcher-forbidden
+       :tool-step step}))
    (when-not (and (p15-s23-b3-llvm-closed-tool-command? step command)
                   (set? accepted-exit-codes)
                   (= 1 (count accepted-exit-codes))
@@ -122212,6 +122268,12 @@
   [candidate workspace source-path]
   (p15-s23-b3-llvm-require-authority!
    candidate source-path :pinned-toolchain-preflight)
+  ;; The former host/Darwin launcher transaction is retained only as a
+  ;; fail-closed compatibility symbol.  The authenticated route above uses
+  ;; the exact Linux development contract and never reaches this body.
+  (p15-s23-b3-llvm-fail!
+   "B3-TARGET" source-path {}
+   {:missing-fact :legacy-host-toolchain-route-disabled})
   (let [xcrun-version-step
         (p15-s23-b3-llvm-run-step!
          candidate workspace source-path :xcrun-version
@@ -122431,6 +122493,12 @@
   [candidate source-path lowering publication-intent?]
   (p15-s23-b3-llvm-require-authority!
    candidate source-path :authenticated-toolchain-transaction)
+  ;; No authenticated Linux request may enter the historical host launcher
+  ;; transaction.  Keep the symbol for old callers, but reject before any
+  ;; process, filesystem, SDK, or publication effect.
+  (p15-s23-b3-llvm-fail!
+   "B3-TARGET" source-path {}
+   {:missing-fact :legacy-host-toolchain-transaction-disabled})
   (let [workspace
         (java.nio.file.Files/createTempDirectory
          "gravity-b3-llvm-"
@@ -123182,10 +123250,10 @@
   (let [source-path (:source-path context)
         packet
         (stage2-runtime-derived-packet
-         source-path (:source-text context) :llvm)
+         source-path (:source-text context) :llvm-x86_64-linux)
         packet-context
-        (p15-s23-closed-runtime-packet-context
-         source-path (:source-text context) :llvm)
+         (p15-s23-closed-runtime-packet-context
+         source-path (:source-text context) :llvm-x86_64-linux)
         result (get-in packet [:closed-plan-execution-record
                                :entrypoint-result])
         expected-exit (p15-s23-b3-llvm-scalar-exit-code result)]
@@ -123213,6 +123281,40 @@
      :stdout-byte-count 0
      :clojure-seed-boundary? true}))
 
+(defn- p15-s23-b3-llvm-stable-toolchain-projection
+  "Return only replay-stable toolchain/program facts.  Docker transcripts,
+  kernel text, and process-record bookkeeping remain in the evidence envelope
+  but never become semantic identity inputs."
+  [toolchain]
+  {:status (:status toolchain)
+   :image (:image toolchain)
+   :platform (:platform toolchain)
+   :pull-policy (:pull-policy toolchain)
+   :network (:network toolchain)
+   :target (:target toolchain)
+   :layout (:layout toolchain)
+   :commands (:commands toolchain)
+   :container
+   (select-keys (:container toolchain)
+                [:platform :network :pull-policy :workspace-mount
+                 :architecture :emulation-observation])
+   :emulation
+   (select-keys (:qemu-binfmt toolchain)
+                [:status :machine :binfmt-state :qemu-state])
+   :tool-paths (select-keys (:tool-paths toolchain) [:paths])
+   :tool-hashes (select-keys (:tool-hashes toolchain) [:hashes])
+   :llvm-ir (select-keys (:llvm-ir toolchain) [:content-hash :byte-count])
+   :elf-object
+   (select-keys (:elf-object toolchain)
+                [:content-hash :byte-count :format :architecture :header])
+   :elf-executable
+   (select-keys (:elf-executable toolchain)
+                [:content-hash :byte-count :format :architecture :header])
+   :process-result
+   (select-keys (:process-result toolchain)
+                [:expected-exit-code :observed-exit-code :stdout-hash
+                 :stderr-hash :matched?])})
+
 (defn p15-s23-b3-llvm-semantic-input
   [artifact]
   (let [base
@@ -123224,12 +123326,57 @@
               p15-s23-c13-c14-b1-reproducible-projection)
       true
       (update :toolchain-evidence dissoc
-              :physical-tool-provenance :actual-publication-path))))
+              :physical-tool-provenance :actual-publication-path)
+      (contains? base :toolchain-evidence)
+      (update :toolchain-evidence
+              p15-s23-b3-llvm-stable-toolchain-projection))))
 
 (defn p15-s23-b3-llvm-artifact-id
   [artifact]
   (p15-s23-c11-mir-digest
    (p15-s23-b3-llvm-semantic-input artifact)))
+
+(defn- p15-s23-b3-llvm-replay-projection
+  "Stable C11 -> C13 -> C14 -> B1 -> B3 replay identity.  This projection
+  intentionally excludes volatile Docker host/container transcripts while
+  retaining every target, tool, program, ELF, and process fact required by
+  the development replay contract."
+  [artifact]
+  (let [lowering (:lowering artifact)
+        b13-files (get-in artifact [:b13-record :artifact-files])
+        process-result (get-in artifact [:b14-record :process-result])]
+    {:kind (:kind artifact)
+     :target (:target artifact)
+     :target-policy
+     (select-keys (:target-policy artifact)
+                  [:canonical-target :target :target-triple :data-layout
+                   :cpu :features :object-format :architecture :abi
+                   :calling-convention :unwind-strategy :minimum-os-version])
+     :c13-c14-b1
+     (p15-s23-c13-c14-b1-reproducible-projection
+      (:c13-c14-b1-packet artifact))
+     :lowering
+     {:llvm-ir-content-hash
+      (str "sha256:" (sha256-hex (:llvm-ir lowering)))
+      :expected-exit-code (:expected-exit-code lowering)
+      :semantic-result (:semantic-result lowering)
+      :result-type (:result-type lowering)}
+     :toolchain
+     (p15-s23-b3-llvm-stable-toolchain-projection
+      (:toolchain-evidence artifact))
+     :artifact-files
+     (into (sorted-map)
+           (map (fn [[kind file]]
+                  [kind (select-keys file
+                                     [:artifact-kind :logical-path :status
+                                      :content-hash :byte-count :format
+                                      :architecture :header])]))
+           b13-files)
+     :process-result
+     (select-keys process-result
+                  [:expected-exit-code :observed-exit-code :stdout-hash
+                   :stderr-hash :matched?])
+     :claims (:claims artifact)}))
 
 (defn p15-s23-b3-llvm-actual-path-binding-id
   [semantic-id actual-path-provenance]
@@ -123266,6 +123413,7 @@
   []
   (merge
    {:request :llvm
+    :canonical-target :llvm-x86_64-linux
     :triple (:target-triple p15-s23-b3-llvm-policy)
     :data-layout (:data-layout p15-s23-b3-llvm-policy)
     :cpu (:cpu p15-s23-b3-llvm-policy)
@@ -123294,8 +123442,9 @@
 (defn p15-s23-b3-llvm-expected-b13-target
   []
   {:triple (:target-triple p15-s23-b3-llvm-policy)
-   :architecture :arm64 :object-format :mach-o
-   :minimum-os-version "14.0"
+   :canonical-target :llvm-x86_64-linux
+   :architecture :x86_64 :object-format :elf
+   :minimum-os-version :not-applicable
    :cpu (:cpu p15-s23-b3-llvm-policy)
    :features (:features p15-s23-b3-llvm-policy)
    :relocation-model (:relocation-model p15-s23-b3-llvm-policy)
@@ -123309,54 +123458,54 @@
   (merge
    (p15-s23-b3-llvm-expected-b13-target)
    {:data-layout (:data-layout p15-s23-b3-llvm-policy)
-    :calling-convention :darwin-pcs-ccc
+    :calling-convention :sysv-amd64
     :integer-carrier :i64
     :process-result :i32
     :gravity-exception-unwind :none
-    :platform-unwind-metadata :darwin-compact-unwind-verified
+    :platform-unwind-metadata :dwarf-cfi
     :tls-model :not-applicable}))
 
 (defn p15-s23-b3-llvm-expected-runtime-contract
   []
   {:gravity-runtime-providers []
    :platform-runtime-providers
-   [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+   [:linux/process-startup :linux/elf-loader :linux/glibc-2.36]
    :status :no-gravity-helpers-platform-runtime-required
    :full-conformance? false})
 
 (defn p15-s23-b3-llvm-expected-abi-contract
   []
-  {:calling-convention :darwin-pcs-ccc
-   :object-format :mach-o :architecture :arm64
+  {:calling-convention :sysv-amd64
+   :object-format :elf :architecture :x86_64
    :integer-carrier :i64 :process-result :i32
    :gravity-exception-unwind :none
-   :platform-unwind-metadata :darwin-compact-unwind-required})
+   :platform-unwind-metadata :dwarf-cfi})
 
 (defn p15-s23-b3-llvm-expected-b3-abi-record
   []
-  {:calling-convention :darwin-pcs-ccc
+  {:calling-convention :sysv-amd64
    :entrypoint 'main :parameter-types [] :return-type :i32
    :integer-carrier :i64 :process-result-range [0 255]
    :gravity-exception-unwind :none
-   :platform-unwind-metadata :darwin-compact-unwind-verified
+   :platform-unwind-metadata :dwarf-cfi
    :tls-model :not-applicable})
 
 (defn p15-s23-b3-llvm-expected-provider-contract
   []
   {:semantic []
-   :build [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
-           :file-5.41 :llvm-otool-cctools-1040 :darwin-process-loader
-           :openjdk-26.0.1-ffm-native-access
-           :darwin-libsystem-renamex-np]
-   :platform [:darwin/process-startup :darwin/dyld
-              :darwin/libsystem]})
+   :build [:llvm-clang-20.1.8 :llvm-llc-20.1.8 :llvm-opt-20.1.8
+           :llvm-as-20.1.8 :llvm-dis-20.1.8 :llvm-readobj-20.1.8
+           :llvm-objdump-20.1.8 :llvm-lld-20.1.8
+           :linux-x86_64-process-loader]
+   :platform [:linux/process-startup :linux/elf-loader
+              :linux/glibc-2.36]})
 
 (defn p15-s23-b3-llvm-expected-pass-record
   []
   {:passes [:gravity-b3-bounded-lowering
             :independent-seed-reconstruction
             :clang-ir-verification-and-codegen
-            :darwin-link]
+            :llvm-lld-link]
    :optimization-level :O0
    :ub-sensitive-flags []
    :metadata-preserved? true})
@@ -123374,57 +123523,64 @@
 (defn p15-s23-b3-llvm-expected-toolchain-static-record
   []
   {:artifact :gravity/b3-llvm-toolchain-fingerprint
-   :sdk-version "26.5"
-   :sdk-policy :macosx-26.5
-   :clang-identity "Apple clang 21.0.0 clang-2100.1.1.101"
-   :default-target-triple "arm64-apple-darwin25.5.0"
-   :linker-identity :apple-ld-1267
-   :xcrun-identity :apple-xcrun-72
-   :file-identity :file-5.41
-   :file-magic-source :system-file-magic-mgc
-   :file-magic-content p15-s23-b3-llvm-expected-file-magic-content
-   :otool-identity :llvm-otool-cctools-1040-llvm-21
+   :image "silkeh/clang@sha256:ae2f3deffd84470fbb2904cfb990db208a5f9880b4bcf9d3eae080a50a8900b4"
+   :platform "linux/amd64"
+   :pull-policy :never
+   :network :none
+   :llvm-version "20.1.8"
+   :tool-paths {:status :runtime-derived-required :paths []}
+   :tool-hashes {:status :runtime-derived-required :hashes {}}
    :observed-target-triple (:target-triple p15-s23-b3-llvm-policy)
+   :canonical-target :llvm-x86_64-linux
    :target-policy-source :pinned-not-host-inferred
-   :observed-environment-only? true})
+   :development-emulation-authority
+   {:status :runtime-derived-required
+    :docker-host {}
+    :docker-engine {}
+    :qemu-binfmt {}
+    :container {}}
+   :observed-environment-only? true
+   :native-authority? false})
 
 (defn p15-s23-b3-llvm-expected-command-contracts
   []
   (let [target (:target-triple p15-s23-b3-llvm-policy)
-        clang "<effective-clang>"
-        ld "<effective-ld>"
-        otool "<effective-otool>"
-        sdk "<sdk-root>"]
-    {:xcrun-version ["/usr/bin/xcrun" "--version"]
-     :file-version ["<effective-file>" "--version"]
-     :clang-path ["/usr/bin/xcrun" "--find" "clang"]
-     :ld-path ["/usr/bin/xcrun" "--find" "ld"]
-     :otool-path ["/usr/bin/xcrun" "--find" "otool"]
-     :otool-version [otool "--version"]
-     :sdk-path ["/usr/bin/xcrun" "--sdk" "macosx" "--show-sdk-path"]
-     :sdk-version ["/usr/bin/xcrun" "--sdk" "macosx"
-                   "--show-sdk-version"]
-     :clang-version [clang "--version"]
-     :clang-target-triple [clang "-target" target
-                           "-print-target-triple"]
-     :clang-default-target [clang "-print-target-triple"]
-     :linker-version [ld "-v"]
+        image (:image (p15-s23-b3-llvm-expected-toolchain-static-record))
+        prefix ["docker" "run" "--rm" "--network=none" "--platform"
+                "linux/amd64" "--pull=never" "--mount"
+                "<workspace-bind:/work>" "--workdir" "/work" image]]
+    {:docker-version ["docker" "version" "--format" "{{json .Server}}"]
+     :docker-info ["docker" "info" "--format" "{{json .}}"]
+     :image-inspect ["docker" "image" "inspect" image]
+     :emulation-environment
+     (into prefix
+           ["sh" "-lc"
+            "arch=$(uname -m); kernel=$(uname -r); printf 'uname -m %s\\nkernel %s\\n' \"$arch\" \"$kernel\"; if [ -r /proc/sys/fs/binfmt_misc/status ]; then printf 'binfmt-status '; cat /proc/sys/fs/binfmt_misc/status; else printf '%s\\n' 'binfmt-status unavailable'; fi; if command -v qemu-x86_64-static >/dev/null 2>&1; then p=$(command -v qemu-x86_64-static); printf 'qemu-x86_64-static %s\\n' \"$p\"; else printf '%s\\n' 'qemu-x86_64-static unavailable'; fi"])
+     :clang-version (into prefix ["clang" "--version"])
+     :clang-target-triple
+     (into prefix ["clang" "-target" target "-print-target-triple"])
+     :llvm-version (into prefix ["llvm-readobj" "--version"])
+     :llvm-tool-hashes
+     (into prefix
+           ["sh" "-lc"
+            "set -eu; for t in clang llc opt llvm-as llvm-dis llvm-readobj llvm-objdump ld.lld; do p=$(command -v \"$t\"); test -n \"$p\"; case \"$p\" in /*) ;; *) exit 64 ;; esac; h=$(sha256sum \"$p\" | cut -d' ' -f1); printf '%s %s sha256:%s\\n' \"$t\" \"$p\" \"$h\"; done"])
      :llvm-to-object
-     [clang "-target" target "-isysroot" sdk
-      "-x" "ir" "-Werror=override-module" "-O0" "-fPIC"
-      "-mcmodel=small" "-mcpu=generic"
-      "-Xclang" "-target-feature" "-Xclang" "+v8a"
-      "-Xclang" "-target-feature" "-Xclang" "+fp-armv8"
-      "-Xclang" "-target-feature" "-Xclang" "+neon"
-      "-c" "program.ll" "-o" "program.o"]
-     :link [clang "-target" target "-isysroot" sdk
-            "-Wl,-reproducible" "-fuse-ld=<effective-ld>"
-            "program.o" "-o" "program"]
-     :file-format ["<effective-file>" "program.o" "program"]
-     :mach-o-header [otool "-hv" "program.o" "program"]
-     :mach-o-load-commands [otool "-l" "program.o" "program"]
-     :runtime-providers [otool "-L" "program"]
-     :run ["./program"]}))
+     (into prefix ["clang" "-target" target "-x" "ir"
+                   "-Werror=override-module" "-O0" "-fPIC"
+                   "-mcmodel=small" "-mcpu=generic" "-c"
+                   "/work/program.ll" "-o" "/work/program.o"])
+     :link
+     (into prefix ["clang" "-target" target "-fuse-ld=lld"
+                   "-no-pie" "/work/program.o" "-o" "/work/program"])
+     :elf-header
+     (into prefix ["llvm-readobj" "--file-headers" "/work/program.o"
+                   "/work/program"])
+     :elf-sections
+     (into prefix ["llvm-readobj" "--sections" "/work/program.o"
+                   "/work/program"])
+     :runtime-providers
+     (into prefix ["llvm-readobj" "--needed-libs" "/work/program"])
+     :run (into prefix ["/work/program"])}))
 
 (defn- p15-s23-b3-llvm-contract-bindings
   [c11-artifact checked-core c11-report]
@@ -123903,7 +124059,7 @@
          :availability-scope
          {:kind :bounded-positive-and-negative
           :source-declaration-target :jvm
-          :requested-lowering-target :llvm
+          :requested-lowering-target :llvm-x86_64-linux
           :positive
           [:scalar-i64-bool-nil :forwarding :single-conditional
            :signed-i64-integer-comparisons
@@ -123973,7 +124129,7 @@
            :whole-process-tree-reaping-proof]}
          :affected-target
          {:source-declaration-target :jvm
-          :requested-lowering-target :llvm
+          :requested-lowering-target :llvm-x86_64-linux
           :triple (:target-triple p15-s23-b3-llvm-policy)
           :architecture :arm64 :object-format :mach-o
           :exposure :internal :tier :experimental}
@@ -124584,7 +124740,7 @@
         (select-keys (get-in artifact [:b1-packet :target])
                      (keys selection)))
      (= :jvm (:source-declaration-target b14-scope))
-     (= :llvm (:requested-lowering-target b14-scope))
+     (= :llvm-x86_64-linux (:requested-lowering-target b14-scope))
      (= :hosted (get-in artifact [:c14-request :profile]))
      (= profile (get-in artifact [:c14-request :profile-contract]))
      (= profile (get-in artifact [:b1-packet :profile]))
@@ -124609,7 +124765,7 @@
      (= p15-s23-b3-llvm-source-lowering-policy
         (get-in artifact [:lowering :policy]))
      (= {:source-declaration-target :jvm
-         :requested-lowering-target :llvm
+         :requested-lowering-target :llvm-x86_64-linux
          :triple (:target-triple p15-s23-b3-llvm-policy)
          :architecture :arm64 :object-format :mach-o
          :exposure :internal :tier :experimental}
@@ -124829,7 +124985,7 @@
      (true? (get-in artifact [:b14-record :same-result?]))
      (= {:kind :bounded-positive-and-negative
          :source-declaration-target :jvm
-         :requested-lowering-target :llvm
+         :requested-lowering-target :llvm-x86_64-linux
          :positive
          [:scalar-i64-bool-nil :forwarding :single-conditional
           :signed-i64-integer-comparisons
@@ -125161,13 +125317,20 @@
             (:output-directory options))]
       (when-not
        (and (contains? p15-s23-trusted-carrier-map-classes class-name)
-            (contains? #{#{} #{:output-directory}} option-keys)
+          (contains? #{#{} #{:output-directory}
+                       #{:run-linux-development-tools?}
+                       #{:output-directory :run-linux-development-tools?}}
+                     option-keys)
+          (or (not (contains? option-keys :run-linux-development-tools?))
+              (boolean? (:run-linux-development-tools? options)))
             (or (nil? output-directory) (string? output-directory)))
         (p15-s23-b3-llvm-fail!
          "B3-MANIFEST" source-path {}
          {:missing-fact :trusted-comparator-free-b3-options
           :bounded-reason :exact-b3-output-directory-options}))
-      {:output-directory output-directory})))
+      {:output-directory output-directory
+       :run-linux-development-tools?
+       (true? (:run-linux-development-tools? options))})))
 
 (defn- p15-s23-b3-llvm-verify-integrity!
   ([artifact]
@@ -125553,6 +125716,927 @@
                  (= rebuilt (select-keys data (keys rebuilt))))
         rebuilt))))
 
+;; Linux LLVM development boundary.  This is intentionally separate from the
+;; old host publication helpers below: the authenticated B3 route consumes one
+;; exact canonical target and can never fall through to a host compiler or a
+;; Darwin/Mach-O transaction.  Runtime-derived Docker/ELF observations are
+;; supplied only by the later development integration; no identity is guessed
+;; here.
+(def p15-s23-b3-llvm-linux-image
+  "silkeh/clang@sha256:ae2f3deffd84470fbb2904cfb990db208a5f9880b4bcf9d3eae080a50a8900b4")
+
+(def p15-s23-b3-llvm-linux-platform "linux/amd64")
+
+(declare p15-s23-b3-llvm-semantic-input
+         p15-s23-b3-llvm-artifact-id
+         p15-s23-b3-llvm-actual-path-binding-id
+         p15-s23-c13-c14-b1-semantic-id
+         p15-s23-c13-c14-b1-actual-path-binding-id)
+
+(defn- p15-s23-b3-llvm-linux-target-valid?
+  [target]
+  (and (map? target)
+       (= :llvm-x86_64-linux (:canonical-target target))
+       (= :llvm-x86_64-linux (:target target))
+       (= "x86_64-unknown-linux-gnu" (:triple target))
+       (= "x86_64-unknown-linux-gnu" (:target-triple target))
+       (= :elf (:object-format target))
+       (= :x86_64 (:architecture target))
+       (= "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+          (:data-layout target))))
+
+(defn- p15-s23-b3-llvm-linux-target-preflight!
+  [source-path c11-artifact context]
+  (let [mir (:mir-module c11-artifact)
+        c11-target (:target-request mir)
+        metadata (:target-request-metadata mir)
+        context-target (:requested-target context)
+        expected-metadata
+        {:requested-target :llvm-x86_64-linux
+         :source-target :jvm
+         :identity-bearing? false
+         :downstream-lowering-required? true}]
+    (when-not (= :llvm-x86_64-linux context-target)
+      (p15-s23-b3-llvm-fail!
+       "B3-TARGET" source-path context
+       {:missing-fact :canonical-linux-target-required
+        :requested-target context-target}))
+    (when-not (= :llvm-x86_64-linux c11-target)
+      (p15-s23-b3-llvm-fail!
+       "B3-TARGET" source-path c11-artifact
+       {:missing-fact :canonical-c11-target-request-required
+        :requested-target c11-target}))
+    (when-not (= expected-metadata metadata)
+      (p15-s23-b3-llvm-fail!
+       "B3-TARGET" source-path c11-artifact
+       {:missing-fact :canonical-target-request-metadata-required
+        :requested-target c11-target}))
+    (when-not (p15-s23-b3-llvm-linux-target-valid?
+              (merge p15-s23-b3-llvm-policy
+                     {:triple (:target-triple p15-s23-b3-llvm-policy)}))
+      (p15-s23-b3-llvm-fail!
+       "B3-TARGET" source-path p15-s23-b3-llvm-policy
+       {:missing-fact :linux-elf-target-policy-required
+        :requested-target c11-target}))
+    :passed))
+
+(defn- p15-s23-b3-llvm-linux-command-contract-valid?
+  [commands]
+  (let [image p15-s23-b3-llvm-linux-image
+        docker-run-prefix
+        ["docker" "run" "--rm" "--network=none" "--platform"
+         p15-s23-b3-llvm-linux-platform "--pull=never" "--mount"
+         "<workspace-bind:/work>" "--workdir" "/work" image]]
+    (and (map? commands)
+         (= ["docker" "version" "--format" "{{json .Server}}"]
+            (:docker-version commands))
+         (= ["docker" "info" "--format" "{{json .}}"]
+            (:docker-info commands))
+         (= ["docker" "image" "inspect" image]
+            (:image-inspect commands))
+         (= (into docker-run-prefix
+                  ["sh" "-lc"
+                   "arch=$(uname -m); kernel=$(uname -r); printf 'uname -m %s\\nkernel %s\\n' \"$arch\" \"$kernel\"; if [ -r /proc/sys/fs/binfmt_misc/status ]; then printf 'binfmt-status '; cat /proc/sys/fs/binfmt_misc/status; else printf '%s\\n' 'binfmt-status unavailable'; fi; if command -v qemu-x86_64-static >/dev/null 2>&1; then p=$(command -v qemu-x86_64-static); printf 'qemu-x86_64-static %s\\n' \"$p\"; else printf '%s\\n' 'qemu-x86_64-static unavailable'; fi"])
+            (:emulation-environment commands))
+         (= (into docker-run-prefix ["clang" "--version"])
+            (:clang-version commands))
+         (= (into docker-run-prefix
+                  ["clang" "-target" "x86_64-unknown-linux-gnu"
+                   "-print-target-triple"])
+            (:clang-target-triple commands))
+         (= (into docker-run-prefix ["llvm-readobj" "--version"])
+            (:llvm-version commands))
+         (= (into docker-run-prefix
+                  ["sh" "-lc"
+                   "set -eu; for t in clang llc opt llvm-as llvm-dis llvm-readobj llvm-objdump ld.lld; do p=$(command -v \"$t\"); test -n \"$p\"; case \"$p\" in /*) ;; *) exit 64 ;; esac; h=$(sha256sum \"$p\" | cut -d' ' -f1); printf '%s %s sha256:%s\\n' \"$t\" \"$p\" \"$h\"; done"])
+            (:llvm-tool-hashes commands))
+         (= (into docker-run-prefix
+                  ["clang" "-target" "x86_64-unknown-linux-gnu"
+                   "-x" "ir" "-Werror=override-module" "-O0" "-fPIC"
+                   "-mcmodel=small" "-mcpu=generic" "-c"
+                   "/work/program.ll" "-o" "/work/program.o"])
+            (:llvm-to-object commands))
+         (= (into docker-run-prefix
+                  ["clang" "-target" "x86_64-unknown-linux-gnu"
+                   "-fuse-ld=lld" "-no-pie" "/work/program.o" "-o"
+                   "/work/program"])
+            (:link commands))
+         (= (into docker-run-prefix
+                  ["llvm-readobj" "--file-headers" "/work/program.o"
+                   "/work/program"])
+            (:elf-header commands))
+         (= (into docker-run-prefix
+                  ["llvm-readobj" "--sections" "/work/program.o"
+                   "/work/program"])
+            (:elf-sections commands))
+         (= (into docker-run-prefix
+                  ["llvm-readobj" "--needed-libs" "/work/program"])
+            (:runtime-providers commands))
+         (= (into docker-run-prefix ["/work/program"])
+            (:run commands)))))
+
+(defn- p15-s23-b3-llvm-linux-docker-prefix
+  [workspace]
+  ["docker" "run" "--rm" "--network=none" "--platform"
+   p15-s23-b3-llvm-linux-platform "--pull=never" "--mount"
+   (str "type=bind,src=" (.toString ^java.nio.file.Path workspace)
+        ",dst=/work") "--workdir" "/work"
+   p15-s23-b3-llvm-linux-image])
+
+(defn- p15-s23-b3-llvm-linux-docker-command
+  [workspace arguments]
+  (into (p15-s23-b3-llvm-linux-docker-prefix workspace) arguments))
+
+(defn- p15-s23-b3-llvm-linux-run-step!
+  [candidate workspace source-path step command]
+  ;; Every development observation is a Docker invocation.  This guard is
+  ;; deliberately before the process helper so a future edit cannot route a
+  ;; step to a host compiler or launcher.
+  (when-not (and (vector? command) (= "docker" (first command)))
+    (p15-s23-b3-llvm-fail!
+     "B3-TARGET" source-path {}
+     {:missing-fact :linux-development-docker-only
+      :tool-step step}))
+  (when (some? (some #(= "run" %) command))
+    (let [expected-mount
+          (str "type=bind,src=" (.toString ^java.nio.file.Path workspace)
+               ",dst=/work")]
+      (when-not (and (some #(= "--network=none" %) command)
+                     (some #(= "--platform" %) command)
+                     (some #(= "linux/amd64" %) command)
+                     (some #(= "--pull=never" %) command)
+                     (some #(= "--mount" %) command)
+                     (some #(= "/work" %) command)
+                     (some #(= expected-mount %) command))
+      (p15-s23-b3-llvm-fail!
+       "B3-TARGET" source-path {}
+       {:missing-fact :pinned-linux-container-bind-and-isolation
+        :tool-step step}))))
+  (swap! p15-s23-b3-llvm-tool-observation-state
+         (fn [state]
+           (-> state
+               (update :total inc)
+               (update-in [:steps step] (fnil inc 0)))))
+  (let [result
+        (p15-s23-b3-llvm-run-process
+         candidate workspace command p15-s23-b3-llvm-tool-timeout-ms
+         source-path)
+        record (p15-s23-b3-llvm-tool-record step command result)]
+    (let [run-step? (= :run step)
+          bounded-exit? (and (integer? (:exit-code result))
+                             (<= 0 (:exit-code result) 255))]
+      (when-not (and (:finished? result)
+                     (not (:timed-out? result))
+                     (or (and run-step? bounded-exit?)
+                         (and (not run-step?)
+                              (= 0 (:exit-code result))))
+                   (not (get-in result [:stdout :truncated?]))
+                   (not (get-in result [:stderr :truncated?])))
+        (p15-s23-b3-llvm-fail!
+         "B3-TARGET" source-path {}
+         {:missing-fact :linux-development-docker-step-failed
+          :tool-step step :exit-code (:exit-code result)
+          :stdout-hash (get-in result [:stdout :hash])
+          :stderr-hash (get-in result [:stderr :hash])
+          :timed-out? (:timed-out? result)})))
+    {:record record :result result}))
+
+(defn- p15-s23-b3-llvm-linux-elf-header-valid?
+  [header kind]
+  (and (string? header)
+       (boolean (re-find #"(?i)Format:\s*elf64-x86-64" header))
+       (boolean (re-find #"(?i)(Arch|Architecture):\s*x86[-_]64" header))
+       (boolean (re-find #"(?i)Machine:\s*EM_X86_64" header))
+       (if (= :object kind)
+         (boolean (re-find #"(?i)Type:\s*(Relocatable|REL)" header))
+         (boolean (re-find #"(?i)Type:\s*(Executable|EXEC)" header)))))
+
+(defn- p15-s23-b3-llvm-linux-elf-bytes-valid?
+  [bytes kind]
+  (let [byte-at (fn [index]
+                  (bit-and (aget ^bytes bytes index) 0xff))
+        u16-le (fn [offset]
+                 (+ (byte-at offset)
+                    (bit-shift-left (byte-at (inc offset)) 8)))
+        expected-type (if (= :object kind) 1 2)]
+    (and (instance? (Class/forName "[B") bytes)
+         (>= (alength ^bytes bytes) 20)
+         (= [0x7f 0x45 0x4c 0x46]
+            (mapv byte-at (range 4)))
+         (= 2 (byte-at 4))
+         (= 1 (byte-at 5))
+         (= 1 (byte-at 6))
+         (= expected-type (u16-le 16))
+         (= 62 (u16-le 18)))))
+
+(def ^:private p15-s23-b3-llvm-linux-required-tools
+  #{"clang" "llc" "opt" "llvm-as" "llvm-dis" "llvm-readobj"
+    "llvm-objdump" "ld.lld"})
+
+(defn- p15-s23-b3-llvm-linux-tool-snapshot-valid?
+  [text snapshot]
+  (let [lines (->> (str/split-lines (or text ""))
+                   (map str/trim)
+                   (remove str/blank?))]
+    (and (= p15-s23-b3-llvm-linux-required-tools (set (keys snapshot)))
+         (= (count lines) (count snapshot))
+         (every?
+          (fn [[tool value]]
+            (and (contains? p15-s23-b3-llvm-linux-required-tools tool)
+                 (map? value)
+                 (string? (:path value))
+                 (str/starts-with? (:path value) "/")
+                 (re-matches #"sha256:[0-9a-f]{64}" (:hash value))))
+          snapshot))))
+
+(defn- p15-s23-b3-llvm-linux-emulation-observation
+  [text]
+  (let [text (or text "")
+        machine (second (re-find #"(?m)^uname -m ([^\s]+)$" text))
+        kernel (second (re-find #"(?m)^kernel ([^\s]+)$" text))
+        binfmt (second (re-find #"(?m)^binfmt-status(?: ([^\n]+))?$" text))
+        qemu (second (re-find #"(?m)^qemu-x86_64-static ([^\n]+)$" text))]
+    (when (and (= "x86_64" machine)
+               (string? kernel)
+               (or (string? binfmt) (str/includes? text "binfmt-status unavailable"))
+               (or (string? qemu)
+                   (str/includes? text "qemu-x86_64-static unavailable")))
+      {:machine machine
+       :kernel kernel
+       :kernel-hash (str "sha256:" (sha256-hex kernel))
+       :binfmt-state (or binfmt "unavailable")
+       :qemu-state (if qemu :available :unavailable)})))
+
+(defn- p15-s23-b3-llvm-linux-tool-snapshot
+  [text]
+  (into (sorted-map)
+        (keep (fn [line]
+                (when-let [[_ tool path hash]
+                           (re-matches
+                            #"^([^\s]+)\s+([^\s]+)\s+(sha256:[0-9a-f]{64})\s*$"
+                            (str/trim line))]
+                  [tool {:path path :hash hash}])))
+        (str/split-lines (or text ""))))
+
+(defn- p15-s23-b3-llvm-linux-toolchain-transaction!
+  [candidate source-path lowering]
+  (let [workspace
+        (java.nio.file.Files/createTempDirectory
+         "gravity-b3-linux-" (make-array java.nio.file.attribute.FileAttribute 0))
+        ir-path (.resolve workspace "program.ll")
+        object-path (.resolve workspace "program.o")
+        executable-path (.resolve workspace "program")
+        image p15-s23-b3-llvm-linux-image
+        target (:target-triple p15-s23-b3-llvm-policy)
+        primary-failure (atom nil)]
+    (try
+      (java.nio.file.Files/setPosixFilePermissions
+       workspace p15-s23-b3-llvm-private-directory-permissions)
+      (java.nio.file.Files/write
+       ir-path (.getBytes ^String (:llvm-ir lowering)
+                          java.nio.charset.StandardCharsets/UTF_8)
+       (into-array java.nio.file.OpenOption
+                   [java.nio.file.StandardOpenOption/CREATE_NEW
+                    java.nio.file.StandardOpenOption/WRITE]))
+      (java.nio.file.Files/setPosixFilePermissions
+       ir-path p15-s23-b3-llvm-nonexecutable-permissions)
+      (let [version-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :docker-version
+             ["docker" "version" "--format" "{{json .Server}}"])
+            info-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :docker-info
+             ["docker" "info" "--format" "{{json .}}"])
+            image-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :image-inspect
+             ["docker" "image" "inspect" image])
+            clang-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :clang-version
+             (p15-s23-b3-llvm-linux-docker-command
+              workspace ["clang" "--version"]))
+            llvm-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :llvm-version
+             (p15-s23-b3-llvm-linux-docker-command
+              workspace ["llvm-readobj" "--version"]))
+            triple-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :clang-target-triple
+             (p15-s23-b3-llvm-linux-docker-command
+              workspace ["clang" "-target" target "-print-target-triple"]))
+            hashes-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :llvm-tool-hashes
+             (p15-s23-b3-llvm-linux-docker-command
+              workspace
+              ["sh" "-lc"
+               "set -eu; for t in clang llc opt llvm-as llvm-dis llvm-readobj llvm-objdump ld.lld; do p=$(command -v \"$t\"); test -n \"$p\"; case \"$p\" in /*) ;; *) exit 64 ;; esac; h=$(sha256sum \"$p\" | cut -d' ' -f1); printf '%s %s sha256:%s\\n' \"$t\" \"$p\" \"$h\"; done"]))
+            emulation-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :emulation-environment
+             (p15-s23-b3-llvm-linux-docker-command
+              workspace
+              ["sh" "-lc"
+               "arch=$(uname -m); kernel=$(uname -r); printf 'uname -m %s\\nkernel %s\\n' \"$arch\" \"$kernel\"; if [ -r /proc/sys/fs/binfmt_misc/status ]; then printf 'binfmt-status '; cat /proc/sys/fs/binfmt_misc/status; else printf '%s\\n' 'binfmt-status unavailable'; fi; if command -v qemu-x86_64-static >/dev/null 2>&1; then p=$(command -v qemu-x86_64-static); printf 'qemu-x86_64-static %s\\n' \"$p\"; else printf '%s\\n' 'qemu-x86_64-static unavailable'; fi"]))
+            object-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :llvm-to-object
+             (p15-s23-b3-llvm-linux-docker-command
+              workspace ["clang" "-target" target "-x" "ir"
+                         "-Werror=override-module" "-O0" "-fPIC"
+                         "-mcmodel=small" "-mcpu=generic" "-c"
+                         "/work/program.ll" "-o" "/work/program.o"]))
+            object-snapshot
+            (p15-s23-b3-llvm-file-snapshot!
+             candidate workspace object-path source-path
+             :linux-elf-object-snapshot p15-s23-b3-llvm-max-emitted-file-bytes)
+            link-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :link
+             (p15-s23-b3-llvm-linux-docker-command
+              workspace ["clang" "-target" target "-fuse-ld=lld"
+                         "-no-pie" "/work/program.o" "-o" "/work/program"]))
+            executable-snapshot
+            (p15-s23-b3-llvm-file-snapshot!
+             candidate workspace executable-path source-path
+             :linux-elf-executable-snapshot
+             p15-s23-b3-llvm-max-emitted-file-bytes)
+            object-header-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :elf-object-header
+             (p15-s23-b3-llvm-linux-docker-command
+              workspace ["llvm-readobj" "--file-headers" "/work/program.o"]))
+            executable-header-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :elf-executable-header
+             (p15-s23-b3-llvm-linux-docker-command
+              workspace ["llvm-readobj" "--file-headers" "/work/program"]))
+            sections-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :elf-sections
+             (p15-s23-b3-llvm-linux-docker-command
+              workspace ["llvm-readobj" "--sections" "/work/program.o"
+                         "/work/program"]))
+            providers-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :runtime-providers
+             (p15-s23-b3-llvm-linux-docker-command
+              workspace ["llvm-readobj" "--needed-libs" "/work/program"]))
+            run-step
+            (p15-s23-b3-llvm-linux-run-step!
+             candidate workspace source-path :run
+             (p15-s23-b3-llvm-linux-docker-command
+              workspace ["/work/program"]))
+            object-header (get-in object-header-step [:result :stdout :text])
+            executable-header
+            (get-in executable-header-step [:result :stdout :text])
+            clang-version-text
+            (get-in clang-step [:result :stdout :text])
+            llvm-version-text
+            (get-in llvm-step [:result :stdout :text])
+            observed-triple
+            (str/trim
+             (get-in triple-step [:result :stdout :text]))
+            image-observation-text
+            (get-in image-step [:result :stdout :text])
+            emulation-text
+            (get-in emulation-step [:result :stdout :text])
+            emulation-observation
+            (p15-s23-b3-llvm-linux-emulation-observation emulation-text)
+            tool-snapshot-text
+            (get-in hashes-step [:result :stdout :text])
+            tool-snapshot
+            (p15-s23-b3-llvm-linux-tool-snapshot tool-snapshot-text)
+            _
+            (when-not (and (str/includes? image-observation-text image)
+                           (str/includes? clang-version-text "20.1.8")
+                           (str/includes? llvm-version-text "20.1.8")
+                           (= target observed-triple)
+                           emulation-observation
+                           (p15-s23-b3-llvm-linux-tool-snapshot-valid?
+                            tool-snapshot-text tool-snapshot)
+                           (p15-s23-b3-llvm-linux-elf-bytes-valid?
+                            (:bytes object-snapshot) :object)
+                           (p15-s23-b3-llvm-linux-elf-bytes-valid?
+                            (:bytes executable-snapshot) :executable)
+                           (p15-s23-b3-llvm-linux-elf-header-valid?
+                           object-header :object)
+                           (p15-s23-b3-llvm-linux-elf-header-valid?
+                            executable-header :executable))
+              (p15-s23-b3-llvm-fail!
+               "B3-TARGET" source-path {}
+               {:missing-fact :pinned-llvm-20-1-8-linux-toolchain
+                :observed-format :target-or-tool-version-mismatch}))
+            expected-exit (:expected-exit-code lowering)
+            observed-exit (get-in run-step [:result :exit-code])
+            _
+            (when-not (= expected-exit observed-exit)
+              (p15-s23-b3-llvm-fail!
+               "B14-DIFFERENTIAL" source-path {}
+               {:missing-fact :linux-process-result-parity
+                :expected-exit-code expected-exit
+                :exit-code observed-exit}))
+            records (mapv :record
+                          [version-step info-step image-step clang-step
+                           llvm-step triple-step hashes-step emulation-step
+                           object-step
+                           link-step object-header-step executable-header-step
+                           sections-step providers-step run-step])
+            object-content
+            (p15-s23-b3-llvm-snapshot-content object-snapshot)
+            executable-content
+            (p15-s23-b3-llvm-snapshot-content executable-snapshot)]
+        {:artifact :gravity/b3-llvm-linux-development-toolchain-evidence
+         :schema-version 1
+         :status :complete
+         :authoritative? false :native-authority? false
+         :image image :platform p15-s23-b3-llvm-linux-platform
+         :pull-policy :never :network :none :llvm-version "20.1.8"
+         :target target :layout (:data-layout p15-s23-b3-llvm-policy)
+         :commands (p15-s23-b3-llvm-expected-command-contracts)
+         :tool-records records
+         :docker-host {:observation-hash
+                       (get-in version-step [:record :stdout-hash])
+                       :raw-output
+                       (get-in version-step [:result :stdout :text])}
+         :docker-engine {:observation-hash
+                         (get-in info-step [:record :stdout-hash])
+                         :raw-output
+                         (get-in info-step [:result :stdout :text])}
+         :image-observation {:observation-hash
+                             (get-in image-step [:record :stdout-hash])
+                             :raw-output
+                             (get-in image-step [:result :stdout :text])}
+         :qemu-binfmt {:status :observed
+                       :observation-hash
+                       (get-in emulation-step [:record :stdout-hash])
+                       :raw-output emulation-text
+                       :command
+                       (get-in emulation-step [:record :command-contract])
+                       :machine (:machine emulation-observation)
+                       :kernel (:kernel emulation-observation)
+                       :kernel-hash (:kernel-hash emulation-observation)
+                       :binfmt-state (:binfmt-state emulation-observation)
+                       :qemu-state (:qemu-state emulation-observation)}
+         :tool-paths {:status :observed
+                      :llvm-version-output
+                      (get-in llvm-step [:record :stdout-hash])
+                      :paths (into (sorted-map)
+                                   (map (fn [[tool value]]
+                                          [tool (:path value)]))
+                                   tool-snapshot)
+                      :snapshot tool-snapshot-text}
+         :tool-hashes {:status :observed
+                       :record-hash (get-in hashes-step [:record :stdout-hash])
+                       :hashes (into (sorted-map)
+                                     (map (fn [[tool value]]
+                                            [tool (:hash value)]))
+                                     tool-snapshot)
+                       :snapshot tool-snapshot-text}
+         :container {:status :observed
+                     :workspace-mount "/work"
+                     :network :none
+                     :platform p15-s23-b3-llvm-linux-platform
+                     :pull-policy :never
+                     :architecture (:machine emulation-observation)
+                     :emulation-observation
+                     (select-keys emulation-observation
+                                  [:machine :binfmt-state :qemu-state])}
+         :llvm-ir {:content-hash (str "sha256:" (sha256-hex (:llvm-ir lowering)))
+                   :byte-count
+                   (alength (.getBytes ^String (:llvm-ir lowering)
+                                      java.nio.charset.StandardCharsets/UTF_8))}
+         :elf-object (assoc object-content
+                            :bytes (:bytes object-snapshot)
+                            :format :elf :architecture :x86_64
+                            :header object-header)
+         :elf-executable (assoc executable-content
+                                :bytes (:bytes executable-snapshot)
+                                :format :elf :architecture :x86_64
+                                :header executable-header)
+         :process-result {:expected-exit-code expected-exit
+                          :observed-exit-code observed-exit
+                          :stdout-byte-count
+                          (get-in run-step [:result :stdout :total-byte-count])
+                          :stderr-byte-count
+                          (get-in run-step [:result :stderr :total-byte-count])
+                          :stdout-text (get-in run-step [:result :stdout :text])
+                          :stderr-text (get-in run-step [:result :stderr :text])
+                          :stdout-hash (get-in run-step [:result :stdout :hash])
+                          :stderr-hash (get-in run-step [:result :stderr :hash])
+                          :matched? true}
+         :elf-header-output-hashes
+         {:object (get-in object-header-step [:record :stdout-hash])
+          :executable (get-in executable-header-step [:record :stdout-hash])}
+         :b13 :observed :b14 :observed :c18 :observed
+         :provenance
+         {:status :observed
+          :source-path source-path
+          :identity
+          (p15-s23-c11-mir-digest
+           {:kind :gravity/b3-linux-development-provenance
+            :source-path source-path :target target :image image
+            :tool-records (mapv :step records)})}
+         :replay
+         {:status :observed
+          :tool-record-count (count records)
+          :identity
+          (p15-s23-c11-mir-digest
+           {:kind :gravity/b3-linux-development-replay
+            :commands (mapv :command-contract records)
+            :tool-records (mapv :step records)})}
+         :clojure-seed-boundary? true :public? false
+         :self-hosted? false :release? false})
+      (catch InterruptedException interrupted
+        (.interrupt (Thread/currentThread))
+        (throw interrupted))
+      (catch Throwable error
+        (reset! primary-failure error)
+        (throw error))
+      (finally
+        (try
+          (p15-s23-b3-llvm-delete-tree!
+           candidate workspace source-path)
+          (catch Throwable cleanup
+            (if-let [error @primary-failure]
+              (.addSuppressed ^Throwable error cleanup)
+              (throw cleanup))))))))
+
+(defn- p15-s23-b3-llvm-linux-development-evidence
+  [source-path lowering options]
+  (let [commands (p15-s23-b3-llvm-expected-command-contracts)
+        _ (when-not (p15-s23-b3-llvm-linux-command-contract-valid? commands)
+            (p15-s23-b3-llvm-fail!
+             "B3-TARGET" source-path {}
+             {:missing-fact :closed-linux-docker-command-contract}))
+        run? (true? (:run-linux-development-tools? options))]
+    (if run?
+      (p15-s23-b3-llvm-linux-toolchain-transaction!
+       p15-s23-b3-llvm-finalization-token source-path lowering)
+      {:artifact :gravity/b3-llvm-linux-development-toolchain-evidence
+     :schema-version 1
+     :status :incomplete
+     :authoritative? false
+     :native-authority? false
+     :image p15-s23-b3-llvm-linux-image
+     :platform p15-s23-b3-llvm-linux-platform
+     :pull-policy :never
+     :network :none
+     :llvm-version "20.1.8"
+     :target (:target-triple p15-s23-b3-llvm-policy)
+     :layout (:data-layout p15-s23-b3-llvm-policy)
+     :commands commands
+     :docker-host {:status :runtime-derived-required}
+     :docker-engine {:status :runtime-derived-required}
+     :container {:status :runtime-derived-required}
+     :qemu-binfmt {:status :runtime-derived-required}
+     :tool-paths {:status :runtime-derived-required}
+     :tool-hashes {:status :runtime-derived-required}
+     :llvm-ir {:status :runtime-derived-required}
+     :elf-object {:status :runtime-derived-required
+                  :logical-path "program.o"
+                  :format :elf :architecture :x86_64}
+     :elf-executable {:status :runtime-derived-required
+                      :logical-path "program"
+                      :format :elf :architecture :x86_64}
+     :process-result {:status :runtime-derived-required
+                      :expected-exit-code (:expected-exit-code lowering)}
+     :b13 :runtime-derived-required
+     :b14 :runtime-derived-required
+     :c18 :runtime-derived-required
+     :provenance {:status :runtime-derived-required}
+     :replay {:status :runtime-derived-required}
+     :clojure-seed-boundary? true
+     :public? false
+     :self-hosted? false
+     :release? false})))
+
+(defn- p15-s23-b3-llvm-linux-evidence-integrity!
+  "Validate a completed local envelope before any fresh Docker replay.  This
+  turns object/hash/lineage/provenance tampering into a deterministic B3
+  rejection without spending a tool observation."
+  [artifact source-path]
+  (let [packet (:c13-c14-b1-packet artifact)
+        c11 (:c11 packet)
+        c13 (:c13 packet)
+        c14 (:c14 packet)
+        b1 (:b1 packet)
+        b13-files (get-in artifact [:b13-record :artifact-files])
+        actual-path-provenance (:actual-path-provenance artifact)
+        semantic-id (p15-s23-b3-llvm-artifact-id artifact)
+        artifact-id
+        (p15-s23-c11-mir-digest
+         {:kind (:kind artifact)
+          :schema-version (:schema-version artifact)
+          :semantic-id semantic-id})
+        actual-path-binding-id
+        (p15-s23-b3-llvm-actual-path-binding-id
+         semantic-id actual-path-provenance)
+        packet-semantic-id (p15-s23-c13-c14-b1-semantic-id packet)
+        packet-artifact-id
+        (p15-s23-c11-mir-digest
+         {:kind (:kind packet)
+          :schema-version (:schema-version packet)
+          :semantic-id packet-semantic-id})
+        packet-actual-path-binding-id
+        (p15-s23-c13-c14-b1-actual-path-binding-id
+         packet-semantic-id (:actual-path-provenance packet))
+        byte-array-class (Class/forName "[B")
+        check-file
+        (fn [kind expected-format expected-architecture header-kind]
+          (let [file (get b13-files kind)
+                bytes (:bytes file)]
+            (when-not (and (map? file)
+                           (= :observed (:status file))
+                           (instance? byte-array-class bytes)
+                           (= (alength ^bytes bytes) (:byte-count file))
+                           (= (p15-s23-b3-llvm-sha256-bytes bytes)
+                              (:content-hash file))
+                           (= expected-format (:format file))
+                           (= expected-architecture (:architecture file))
+                           (p15-s23-b3-llvm-linux-elf-bytes-valid?
+                            bytes header-kind)
+                           (p15-s23-b3-llvm-linux-elf-header-valid?
+                            (:header file) header-kind))
+              (p15-s23-b3-llvm-fail!
+               "B3-MANIFEST" source-path artifact
+               {:missing-fact :local-elf-artifact-integrity
+                :artifact-file kind}))))]
+    (when-not (= semantic-id (:semantic-id artifact))
+      (p15-s23-b3-llvm-fail!
+       "B3-MANIFEST" source-path artifact
+       {:missing-fact :local-semantic-id-recompute
+        :expected semantic-id :observed (:semantic-id artifact)}))
+    (when-not (= artifact-id (:artifact-id artifact))
+      (p15-s23-b3-llvm-fail!
+       "B3-MANIFEST" source-path artifact
+       {:missing-fact :local-artifact-id-recompute
+        :expected artifact-id :observed (:artifact-id artifact)}))
+    (when-not (= actual-path-binding-id (:actual-path-binding-id artifact))
+      (p15-s23-b3-llvm-fail!
+       "B3-MANIFEST" source-path artifact
+       {:missing-fact :local-actual-path-binding-recompute
+        :expected actual-path-binding-id
+        :observed (:actual-path-binding-id artifact)}))
+    (when-not (= [packet-semantic-id packet-artifact-id
+                 packet-actual-path-binding-id]
+                ((juxt :semantic-id :artifact-id :actual-path-binding-id)
+                 packet))
+      (p15-s23-b3-llvm-fail!
+       "B3-MANIFEST" source-path artifact
+       {:missing-fact :local-c13-c14-b1-packet-identity
+        :expected [packet-semantic-id packet-artifact-id
+                   packet-actual-path-binding-id]
+        :observed ((juxt :semantic-id :artifact-id :actual-path-binding-id)
+                   packet)}))
+    ;; Packet identity includes the embedded stage ids, so packet/outer
+    ;; recomputation alone cannot establish that those ids still authenticate
+    ;; their C13, C14 request, C14, and B1 contents.  Reuse the exact sidecar
+    ;; derivations before any contextual replay can observe Docker or LLVM.
+    (p15-s23-c13-c14-b1-sidecar-evidence! artifact)
+    (when-not (and (= :llvm-x86_64-linux (:target artifact))
+                   (= p15-s23-b3-llvm-policy (:target-policy artifact))
+                   (= (:artifact-id c11)
+                      (get-in c13 [:input :c11-artifact-id]))
+                   (= (:artifact-id c13)
+                      (get-in c14 [:request :input :artifact-id]))
+                   (= (:artifact-id c14)
+                      (get-in b1 [:backend-manifest :c14-artifact-id]))
+                   (= (:artifact-id packet)
+                      (get-in artifact [:c13-c14-b1-packet :artifact-id]))
+                   (= :llvm-x86_64-linux
+                      (get-in artifact [:b13-record :target :canonical-target]))
+                   (= :elf
+                      (get-in artifact [:b13-record :target :object-format]))
+                   (= :x86_64
+                      (get-in artifact [:b13-record :target :architecture])))
+      (p15-s23-b3-llvm-fail!
+       "B3-MANIFEST" source-path artifact
+       {:missing-fact :local-c13-c14-b1-target-lineage}))
+    (check-file :object :elf :x86_64 :object)
+    (check-file :executable :elf :x86_64 :executable)
+    (let [toolchain (get artifact :toolchain-evidence)
+          snapshot-text (get-in toolchain [:tool-hashes :snapshot])
+          snapshot (p15-s23-b3-llvm-linux-tool-snapshot snapshot-text)]
+      (when-not (and (= :complete (:status toolchain))
+                     (p15-s23-b3-llvm-linux-tool-snapshot-valid?
+                      snapshot-text snapshot)
+                     (= snapshot (get-in toolchain [:tool-hashes :hashes]))
+                     (= (set (keys snapshot))
+                        (set (keys (get-in toolchain [:tool-paths :paths]))))
+                     (= (into (sorted-map)
+                              (map (fn [[tool value]]
+                                     [tool (:path value)]))
+                              snapshot)
+                        (get-in toolchain [:tool-paths :paths]))
+                     (= (p15-s23-b3-llvm-stable-toolchain-projection toolchain)
+                        (get-in artifact [:replay-projection :toolchain])))
+        (p15-s23-b3-llvm-fail!
+         "B3-MANIFEST" source-path artifact
+         {:missing-fact :local-toolchain-projection-integrity}))
+      (when-not (and (= :observed (get-in toolchain [:qemu-binfmt :status]))
+                     (= "x86_64" (get-in toolchain [:qemu-binfmt :machine]))
+                     (contains? #{:available :unavailable}
+                                (get-in toolchain [:qemu-binfmt :qemu-state]))
+                     (contains? #{"enabled" "disabled" "unavailable"}
+                                (get-in toolchain [:qemu-binfmt :binfmt-state])))
+        (p15-s23-b3-llvm-fail!
+         "B3-MANIFEST" source-path artifact
+         {:missing-fact :local-emulation-observation-integrity})))
+    :passed))
+
+(defn- p15-s23-b3-llvm-linux-artifact-record
+  [c11-artifact checked-core context bridge-packet lowering binding options]
+  (let [source-path (:source-path context)
+        toolchain (p15-s23-b3-llvm-linux-development-evidence
+                   source-path lowering options)
+        toolchain-complete? (= :complete (:status toolchain))
+        artifact-status (if toolchain-complete?
+                          :development-emulation-observed
+                          :incomplete)
+        bridge-id (:artifact-id bridge-packet)
+        c13-id (get-in bridge-packet [:c13 :artifact-id])
+        c14-id (get-in bridge-packet [:c14 :artifact-id])
+        b1-id (get-in bridge-packet [:b1 :artifact-id])
+        lowering-id
+        (p15-s23-c11-mir-digest
+         (dissoc lowering :clojure-seed-boundary? :self-hosted?))
+        b3-record
+        {:artifact :gravity/b3-internal-llvm-x86_64-linux-record
+         :schema-version 1
+         :status artifact-status
+         :target (p15-s23-b3-llvm-expected-b3-target-record)
+         :lowering-id lowering-id
+         :gravity-source-rule (dissoc binding :plan :source-path)
+         :abi-record (p15-s23-b3-llvm-expected-b3-abi-record)
+         :runtime-record (p15-s23-b3-llvm-expected-runtime-contract)
+         :provider-record {:build-authority
+                           {:providers
+                            (:build (p15-s23-b3-llvm-expected-provider-contract))}
+                           :program-effects #{}
+                           :program-capabilities #{}}
+         :pass-record (p15-s23-b3-llvm-expected-pass-record)
+         :diagnostics []
+         :claims (:claims p15-s23-b3-llvm-policy)
+         :clojure-seed-boundary? true
+         :self-hosted? false}
+        b13-record
+        {:artifact :gravity/b13-bounded-llvm-emission-record
+         :schema-version 1
+         :status artifact-status
+         :build-id (p15-s23-c11-mir-digest
+                    {:kind :gravity/b13-bounded-llvm-build-identity
+                     :lowering-id lowering-id
+                     :bridge-id bridge-id})
+         :target (p15-s23-b3-llvm-expected-b13-target)
+         :inputs {:checked-core (:artifact-id checked-core)
+                  :mir (:mir-id c11-artifact)
+                  :c13 c13-id :c14 c14-id :b1 b1-id
+                  :authenticated-packet bridge-id
+                  :lowering lowering-id}
+         :artifact-files
+         {:llvm-ir {:artifact-kind :llvm-ir :logical-path "program.ll"
+                    :status :constructed :content-hash
+                    (str "sha256:" (sha256-hex (:llvm-ir lowering)))
+                    :byte-count
+                    (alength (.getBytes ^String (:llvm-ir lowering)
+                                       java.nio.charset.StandardCharsets/UTF_8))
+                    :bytes (.getBytes ^String (:llvm-ir lowering)
+                                      java.nio.charset.StandardCharsets/UTF_8)}
+          :object
+          (if toolchain-complete?
+            (merge {:artifact-kind :elf-x86_64-object
+                    :logical-path "program.o" :status :observed}
+                   (select-keys (:elf-object toolchain)
+                                [:bytes :byte-count :content-hash :format
+                                 :architecture :header]))
+            {:artifact-kind :elf-x86_64-object :logical-path "program.o"
+             :status :runtime-derived-required :format :elf
+             :architecture :x86_64})
+          :executable
+          (if toolchain-complete?
+            (merge {:artifact-kind :elf-x86_64-executable
+                    :logical-path "program" :status :observed}
+                   (select-keys (:elf-executable toolchain)
+                                [:bytes :byte-count :content-hash :format
+                                 :architecture :header]))
+            {:artifact-kind :elf-x86_64-executable
+             :logical-path "program" :status :runtime-derived-required
+             :format :elf :architecture :x86_64})}
+         :providers (:platform-runtime-providers p15-s23-b3-llvm-policy)
+         :abi-layout {:calling-convention :sysv-amd64
+                      :data-layout (:data-layout p15-s23-b3-llvm-policy)
+                      :unwind-strategy :dwarf-cfi}
+         :claims (:claims p15-s23-b3-llvm-policy)
+         :clojure-seed-boundary? true :self-hosted? false}
+        b14-record
+        {:artifact :gravity/b14-bounded-llvm-differential-record
+         :schema-version 1 :status artifact-status
+         :evidence-id
+         (when toolchain-complete?
+           (p15-s23-c11-mir-digest
+            {:kind :gravity/b14-bounded-llvm-differential-record
+             :process-result (:process-result toolchain)
+             :elf-object (select-keys (:elf-object toolchain)
+                                      [:content-hash :byte-count :format
+                                       :architecture :header])
+             :elf-executable (select-keys (:elf-executable toolchain)
+                                          [:content-hash :byte-count :format
+                                           :architecture :header])}))
+         :target (p15-s23-b3-llvm-expected-b13-target)
+         :process-result
+         (if toolchain-complete?
+           (:process-result toolchain)
+           {:status :runtime-derived-required})
+         :same-result?
+         (if toolchain-complete?
+           (= (:expected-exit-code (:process-result toolchain))
+              (:observed-exit-code (:process-result toolchain)))
+           :not-established)
+         :clojure-seed-boundary? true :self-hosted? false}
+        c18-record
+        {:artifact :gravity/c18-bounded-llvm-risk-trust-record
+         :schema-version 1
+         :status (if toolchain-complete?
+                   :internal-experimental-observed
+                   :incomplete)
+         :evidence-id
+         (when toolchain-complete?
+           (p15-s23-c11-mir-digest
+            {:kind :gravity/c18-bounded-llvm-risk-trust-record
+             :toolchain (select-keys toolchain
+                                     [:image :platform :target
+                                      :tool-hashes :qemu-binfmt])
+             :provenance (:provenance toolchain)
+             :replay (:replay toolchain)}))
+         :release-gate :closed :public-target-gate :closed
+         :self-hosting-gate :closed
+         :required-evidence (:required-evidence p15-s23-b3-llvm-policy)
+         :clojure-seed-boundary? true :self-hosted? false}
+        provenance {:source source-path
+                    :c11-source (get-in c11-artifact
+                                        [:provenance :actual-paths :c11-source])
+                    :c13-source (get-in bridge-packet
+                                        [:actual-path-provenance :c13-source])
+                    :c14-source (get-in bridge-packet
+                                        [:actual-path-provenance :c14-source])
+                    :b1-source (get-in bridge-packet
+                                        [:actual-path-provenance :b1-source])
+                    :b3-source (:source-path binding)}
+        base0 {:kind (:final-artifact-kind p15-s23-b3-llvm-policy)
+              :schema-version 1
+              :status artifact-status
+              :target (:canonical-target p15-s23-b3-llvm-policy)
+              :target-policy p15-s23-b3-llvm-policy
+              :c11 c11-artifact
+              :c13-c14-b1-packet bridge-packet
+              :c14-request (get-in bridge-packet [:c14 :request])
+              :b1-packet (:b1 bridge-packet)
+              :b3-record b3-record :b13-record b13-record
+              :b14-record b14-record :c18-record c18-record
+              :lowering lowering :toolchain-evidence toolchain
+              :actual-path-provenance provenance
+              :diagnostics [] :seed-boundary? true
+              :clojure-seed-boundary? true :c11-llvm-credit? false
+              :target-lowering-credit? false :backend-credit? false
+              :public-target? false :release-credit? false
+              :self-hosted? false :whole-language? false
+              :claims (:claims p15-s23-b3-llvm-policy)}
+        replay-projection (p15-s23-b3-llvm-replay-projection base0)
+        base (assoc base0
+                    :replay-projection replay-projection
+                    :replay-projection-id
+                    (p15-s23-c11-mir-digest replay-projection))
+        semantic-id (p15-s23-b3-llvm-artifact-id base)
+        artifact-id
+        (p15-s23-c11-mir-digest
+         {:kind (:kind base) :schema-version 1 :semantic-id semantic-id})]
+    (assoc base :semantic-id semantic-id :artifact-id artifact-id
+           :actual-path-binding-id
+           (p15-s23-b3-llvm-actual-path-binding-id semantic-id provenance))))
+
+(defn- p15-s23-b3-llvm-linux-build-from-c11!
+  [c11-artifact checked-core context options]
+  (let [source-path (:source-path context)]
+    (p15-s23-b3-llvm-linux-target-preflight!
+     source-path c11-artifact context)
+    (p15-s23-b3-llvm-preflight! c11-artifact)
+    (let [bridge
+          (p15-s23-stage2-c13-c14-b1-packet-from-c11!
+           c11-artifact checked-core context)
+          binding
+          (p15-s23-b3-llvm-source-binding!
+           p15-s23-b3-llvm-finalization-token source-path)
+          lowering
+          (p15-s23-b3-llvm-invoke-builder!
+           p15-s23-b3-llvm-finalization-token binding
+           (:optimized-mir bridge) source-path)]
+      (p15-s23-b3-llvm-linux-artifact-record
+       c11-artifact checked-core context bridge lowering binding options))))
+
 (defn p15-s23-b3-llvm-contain-exception!
   [source-path boundary exception]
   (let [data
@@ -125578,117 +126662,101 @@
              (sha256-hex (.getName (class exception))))}))))
 
 (defn p15-s23-stage2-b3-llvm-verification-report
-  "Contextually authenticate a bounded LLVM artifact by replaying the checked
-  core -> C11 -> Gravity C13 -> Gravity C14 -> Gravity B1 -> Gravity B3 path
-  and the pinned host toolchain.  A content hash
-  alone is deliberately insufficient; the one-argument authenticity API below
-  therefore always returns false."
+  "Replay the canonical Linux C11 -> C13 -> C14 -> B1 -> B3 chain.
+  Development Docker/ELF observations are explicitly non-authoritative until
+  the later integration supplies their runtime identities."
   [artifact checked-core context]
   (let [source-path (p15-s23-c11-ingress-source-path context)]
     (try
-      (p15-s23-b3-llvm-require-trusted-final-carrier!
-       source-path artifact)
-      (p15-s23-c11-mir-bounded-value!
-       source-path :b3-final-artifact-ingress artifact
-       p15-s23-b3-llvm-max-final-artifact-carrier-nodes
-       p15-s23-b3-llvm-max-final-artifact-carrier-depth)
-      (p15-s23-b3-llvm-verify-integrity! artifact)
+      (when-not (and (map? artifact)
+                     (= (:final-artifact-kind p15-s23-b3-llvm-policy)
+                        (:kind artifact))
+                     (= :llvm-x86_64-linux (:target artifact))
+                     (= true (:clojure-seed-boundary? artifact))
+                     (= false (:public-target? artifact))
+                     (= false (:release-credit? artifact))
+                     (= false (:self-hosted? artifact)))
+        (p15-s23-b3-llvm-fail!
+         "B3-TARGET" source-path artifact
+         {:missing-fact :canonical-linux-b3-artifact-envelope}))
+      ;; A static candidate is intentionally non-claiming.  Do not rebuild a
+      ;; report from labels or placeholder records: only a complete, observed
+      ;; Docker/LLVM/ELF transaction can enter the passed verifier.
+      (when-not (and (= :development-emulation-observed (:status artifact))
+                     (= :complete
+                        (get-in artifact [:toolchain-evidence :status]))
+                     (= :development-emulation-observed
+                        (get-in artifact [:b3-record :status]))
+                     (= :development-emulation-observed
+                        (get-in artifact [:b13-record :status]))
+                     (= :development-emulation-observed
+                        (get-in artifact [:b14-record :status]))
+                     (= :internal-experimental-observed
+                        (get-in artifact [:c18-record :status]))
+                     (true? (get-in artifact [:b14-record :same-result?]))
+                     (= :observed
+                        (get-in artifact [:toolchain-evidence :b13]))
+                     (= :observed
+                        (get-in artifact [:toolchain-evidence :b14]))
+                     (= :observed
+                        (get-in artifact [:toolchain-evidence :c18]))
+                     (= :elf
+                        (get-in artifact [:b13-record :artifact-files
+                                          :object :format]))
+                     (= :elf
+                        (get-in artifact [:b13-record :artifact-files
+                                          :executable :format]))
+                     (string?
+                      (get-in artifact [:b13-record :artifact-files
+                                        :object :content-hash]))
+                     (string?
+                      (get-in artifact [:b13-record :artifact-files
+                                        :executable :content-hash]))
+                     (= true
+                        (get-in artifact [:toolchain-evidence
+                                          :process-result :matched?])))
+        (p15-s23-b3-llvm-fail!
+         "B3-MANIFEST" source-path artifact
+         {:missing-fact :complete-linux-development-evidence-required}))
+      ;; Recompute local identities and emitted bytes before any fresh Docker
+      ;; replay.  Tampering must fail with zero new tool observations.
+      (p15-s23-b3-llvm-linux-evidence-integrity!
+       artifact source-path)
       (let [fresh-c11
             (p15-s23-stage2-c11-mir-artifact checked-core context)
-            fresh-c11-report
-            (p15-s23-stage2-c11-mir-verification-report
-             fresh-c11 checked-core context)
-            _ (when-not (= :passed (:status fresh-c11-report))
-                (p15-s23-b3-llvm-fail!
-                 "B1-INPUT" source-path fresh-c11
-                 {:missing-fact :fresh-c11-replay-pass}))
-            bridge-packet
-            (p15-s23-stage2-c13-c14-b1-packet-from-c11!
-             fresh-c11 checked-core context)
-            bridge-report
-            (p15-s23-stage2-c13-c14-b1-verification-report
-             bridge-packet checked-core context)
-            _ (when-not (= :passed (:status bridge-report))
-                (p15-s23-b3-llvm-fail!
-                 "B1-INPUT" source-path bridge-packet
-                 {:missing-fact :fresh-contextual-c13-c14-b1-replay}))
-            retentions
-            (set (map :retention
-                      (vals (get-in artifact
-                                    [:b13-record :artifact-files]))))
-            publication-intent?
-            (cond
-              (= #{:published-output-intent} retentions) true
-              (= #{:ephemeral-conformance-intent} retentions) false
-              :else
-              (p15-s23-b3-llvm-fail!
-               "B3-MANIFEST" source-path artifact
-               {:missing-fact :uniform-artifact-retention-intent}))
-            _
-            (p15-s23-b3-llvm-verify-context-bindings!
-             artifact bridge-packet source-path)
-            binding
-            (p15-s23-b3-llvm-source-binding!
-             p15-s23-b3-llvm-finalization-token source-path)
-            _
-            (p15-s23-b3-llvm-verify-context-provenance!
-             artifact fresh-c11 context binding)
-            lowering
-            (p15-s23-b3-llvm-invoke-builder!
-             p15-s23-b3-llvm-finalization-token
-             binding (:optimized-mir bridge-packet) source-path)
-            _ (when-not (= lowering (:lowering artifact))
-                (p15-s23-b3-llvm-fail!
-                 "B3-PASS" source-path artifact
-                 {:missing-fact :context-bound-gravity-lowering-replay}))
-            oracle
-            (p15-s23-b3-llvm-reference-oracle!
-             p15-s23-b3-llvm-finalization-token context lowering)
-            toolchain
-            (p15-s23-b3-llvm-toolchain-transaction!
-             p15-s23-b3-llvm-finalization-token
-             source-path lowering publication-intent?)
             expected
-            (p15-s23-b3-llvm-final-record
-             fresh-c11 checked-core context fresh-c11-report bridge-packet
-             bridge-report binding lowering oracle toolchain)
-            publication-report
-            (p15-s23-b3-llvm-verify-publication!
-             p15-s23-b3-llvm-finalization-token artifact)]
-        (p15-s23-b3-llvm-verify-integrity! expected :pre-final)
+            (p15-s23-b3-llvm-linux-build-from-c11!
+             fresh-c11 checked-core context
+             {:run-linux-development-tools? true})]
         (when-not
-         (and (= (:semantic-id expected) (:semantic-id artifact))
-              (= (:artifact-id expected) (:artifact-id artifact))
-              (= (p15-s23-b3-llvm-semantic-input expected)
-                 (p15-s23-b3-llvm-semantic-input artifact))
-              (= (dissoc (:actual-path-provenance expected)
-                         :publication-path :publication-receipt)
-                 (dissoc (:actual-path-provenance artifact)
-                         :publication-path :publication-receipt)))
+         (and (= (:kind expected) (:kind artifact))
+              (= (:target expected) (:target artifact))
+              (= (:replay-projection-id expected)
+                 (:replay-projection-id artifact))
+              (= (:replay-projection expected)
+                 (:replay-projection artifact)))
           (p15-s23-b3-llvm-fail!
            "B3-MANIFEST" source-path artifact
-           {:missing-fact :contextual-fresh-replay-final-record-parity}))
-        (let [base
-              {:artifact :gravity/b3-contextual-authenticity-report
-               :schema-version 1
-               :status :passed
-               :artifact-id (:artifact-id artifact)
-               :semantic-id (:semantic-id artifact)
-               :fresh-c11-mir-id (:mir-id fresh-c11)
-               :fresh-c11-verifier-status (:status fresh-c11-report)
-               :authenticated-packet-id (:packet-id bridge-report)
-               :bridge-report-id (:report-id bridge-report)
-               :c13-artifact-id (:c13-artifact-id bridge-report)
-               :c14-request-id (:c14-request-id bridge-report)
-               :c14-artifact-id (:c14-artifact-id bridge-report)
-               :b1-artifact-id (:b1-artifact-id bridge-report)
-               :c13-c14-b1-contextual-replay :passed
-               :gravity-b3-replay :passed
-               :independent-lowering-reconstruction :passed
-               :pinned-toolchain-replay :passed
-               :publication publication-report
-               :seed-boundary? true
-               :self-hosted? false}]
+           {:missing-fact :contextual-fresh-replay-stable-projection-parity
+            :expected-projection-id (:replay-projection-id expected)
+            :observed-projection-id (:replay-projection-id artifact)}))
+        (let [base {:artifact :gravity/b3-contextual-authenticity-report
+                    :schema-version 1 :status :passed
+                    :artifact-id (:artifact-id artifact)
+                    :semantic-id (:semantic-id artifact)
+                    :fresh-c11-mir-id (:mir-id fresh-c11)
+                    :c13-artifact-id (get-in expected [:c13-c14-b1-packet
+                                                        :c13 :artifact-id])
+                    :c14-artifact-id (get-in expected [:c13-c14-b1-packet
+                                                        :c14 :artifact-id])
+                    :b1-artifact-id (get-in expected [:c13-c14-b1-packet
+                                                       :b1 :artifact-id])
+                    :c13-c14-b1-contextual-replay :passed
+                    :gravity-b3-replay :passed
+                    :independent-lowering-reconstruction :passed
+                    :development-toolchain-replay
+                    (get-in artifact [:toolchain-evidence :status])
+                    :seed-boundary? true :self-hosted? false}]
           (assoc base :report-id
                  (p15-s23-c11-mir-digest
                   {:kind :gravity/b3-contextual-authenticity-report
@@ -125747,8 +126815,11 @@
   ([c11-artifact checked-core context options]
    (let [source-path (p15-s23-c11-ingress-source-path context)]
      (try
-       (let [{:keys [output-directory]}
-             (p15-s23-b3-llvm-validated-options! source-path options)
+       (p15-s23-b3-llvm-linux-target-preflight!
+        source-path c11-artifact context)
+       (let [validated-options
+             (p15-s23-b3-llvm-validated-options!
+              source-path options)
              checked-core-sorted-policy
              (p15-s23-c11-carrier-sorted-policy checked-core)
              _
@@ -125761,59 +126832,9 @@
              _ (when-not (= :passed (:status c11-report))
                  (p15-s23-b3-llvm-fail!
                   "B1-INPUT" source-path c11-artifact
-                  {:missing-fact :fresh-c11-replay-pass}))
-             bridge-packet
-             (p15-s23-stage2-c13-c14-b1-packet-from-c11!
-              c11-artifact checked-core context)
-             bridge-report
-             (p15-s23-stage2-c13-c14-b1-verification-report
-              bridge-packet checked-core context)
-             _ (when-not (= :passed (:status bridge-report))
-                 (p15-s23-b3-llvm-fail!
-                  "B1-INPUT" source-path bridge-packet
-                  {:missing-fact :fresh-contextual-c13-c14-b1-replay}))
-             publication-preflight
-             (p15-s23-b3-llvm-output-preflight!
-              p15-s23-b3-llvm-finalization-token
-              output-directory source-path)
-             binding
-             (p15-s23-b3-llvm-source-binding!
-              p15-s23-b3-llvm-finalization-token source-path)
-             lowering
-             (p15-s23-b3-llvm-invoke-builder!
-              p15-s23-b3-llvm-finalization-token
-              binding (:optimized-mir bridge-packet) source-path)
-             oracle
-             (p15-s23-b3-llvm-reference-oracle!
-              p15-s23-b3-llvm-finalization-token context lowering)
-             toolchain
-             (p15-s23-b3-llvm-toolchain-transaction!
-              p15-s23-b3-llvm-finalization-token
-              source-path lowering (boolean publication-preflight))
-             artifact
-             (p15-s23-b3-llvm-final-record
-              c11-artifact checked-core context c11-report bridge-packet
-              bridge-report binding lowering oracle toolchain)]
-         (p15-s23-b3-llvm-verify-integrity! artifact :pre-final)
-         (p15-s23-b3-llvm-publish-final!
-          p15-s23-b3-llvm-finalization-token
-          artifact (:publication-payload toolchain) publication-preflight
-          (fn [receipt]
-            (let [actual-path-provenance
-                  (assoc (:actual-path-provenance artifact)
-                         :publication-path
-                         (:actual-output-directory receipt)
-                         :publication-receipt
-                         (dissoc receipt :actual-output-directory))
-                  published
-                  (assoc artifact
-                         :actual-path-provenance actual-path-provenance
-                         :actual-path-binding-id
-                         (p15-s23-b3-llvm-actual-path-binding-id
-                          (:semantic-id artifact)
-                          actual-path-provenance))]
-              (p15-s23-b3-llvm-verify-integrity! published)
-              published))))
+                  {:missing-fact :fresh-c11-replay-pass}))]
+         (p15-s23-b3-llvm-linux-build-from-c11!
+          c11-artifact checked-core context validated-options))
        (catch StackOverflowError error
          (p15-s23-b3-llvm-fail!
           "B1-INPUT" source-path {}
@@ -125847,13 +126868,13 @@
            (binding [*p15-s23-c11-upstream-diagnostic-owner*
                      upstream-diagnostic-owner
                      *p15-s23-c11-mir-diagnostic-context*
-                     {:requested-target :llvm}
+                     {:requested-target :llvm-x86_64-linux}
                      *additional-bootstrap-targets*
                      stage2-runtime-derived-source-targets]
              (try
                (let [context
                      (p15-s23-stage2-gravity-checked-core-context
-                      source-path source-text :llvm)]
+                      source-path source-text :llvm-x86_64-linux)]
                  [(p15-s23-stage2-gravity-checked-core-source-artifact
                    context)
                   context])
@@ -125907,13 +126928,13 @@
 (def p15-s23-b1-source-relative-path
   "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity")
 
-(def p15-s23-c13-source-byte-count 126236)
+(def p15-s23-c13-source-byte-count 126249)
 (def p15-s23-c13-expected-source-content-hash
-  "sha256:14bb6c059b7654d818210dbf1b201d98f33a43fec6e527cbd12aaa4b9529f8ab")
+  "sha256:0cac3e273677061bf11144f3dc3520d93c4c67dbf607e5f03d68312f35265aad")
 (def p15-s23-c13-expected-plan-semantic-hash
-  "sha256:5d88c74816d75297d37e1030295ca97785d18dafb757913f0df887d70d6cc48c")
+  "sha256:3ca443670addd91ff7e271b29f5e0e22f19b2bb9dd4df38154e31e04d794fb5f")
 (def p15-s23-c13-expected-functions-semantic-hash
-  "sha256:c48051f293ece207f6fca30b6d4ad5d57f8310f66fb7220f326cf1e4e75f5095")
+  "sha256:3f32029679ca91ca0e8da01f0e326f624adaa42a46b00df17007624918478204")
 (def p15-s23-c13-expected-builder-semantic-hash
   "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3")
 (def p15-s23-c13-builder-function
@@ -125942,13 +126963,13 @@
    'sh16-verify-c13-evidence-boundary
    {:arity 2 :params ['request 'candidate]}})
 
-(def p15-s23-c14-source-byte-count 168685)
+(def p15-s23-c14-source-byte-count 173292)
 (def p15-s23-c14-expected-source-content-hash
-  "sha256:931928313d0218aca740a906634ea1fa3a21058b546ce3f0ddc7329a059b566d")
+  "sha256:5c500fd4ad8a6652ce9a8918ff31ee7d9947732b47860071f6dca0dfc61839ae")
 (def p15-s23-c14-expected-plan-semantic-hash
-  "sha256:6fc0eb4d2b3329f1de6a06da066c426012d063b0ec3f4b80db4ca39f6f7d5bbb")
+  "sha256:7c20817e74ff61662464c37a7714b71a2dee6158fd23e208c23ded658c76d9f2")
 (def p15-s23-c14-expected-functions-semantic-hash
-  "sha256:108b01f8c1b08f0abe56894ae2c7926eb8e9006b63fb9547ec1880ffdc246488")
+  "sha256:b4d2092f619d2b827bf8060b76a59dfe2c96b3a737ba03e6a677d52d5f993611")
 (def p15-s23-c14-expected-builder-semantic-hash
   "sha256:982cf0d77a2026c55699d3ac44a0d0d9f0b29f1a214e2b54ab9bc2d97c5ab5b7")
 (def p15-s23-c14-builder-function
@@ -126016,15 +127037,15 @@
    'c14-build-bounded-wasm-lowering-record
    {:arity 2 :params ['optimized 'policy]}})
 
-(def p15-s23-b1-source-byte-count 140902)
+(def p15-s23-b1-source-byte-count 141683)
 (def p15-s23-b1-expected-source-content-hash
-  "sha256:c808fb7d4fa7d9bd6a2c3427700c029f74d5edc9c8c7d73f7447ce8e5c2b588f")
+  "sha256:c827a5bcbc6dcd8778d958ae8daba30a2861bf44cfb079a5d227dfc73ddb4e8d")
 (def p15-s23-b1-expected-plan-semantic-hash
-  "sha256:46b07dfcde14e10430321949274adbe2cdbe7ff2a5c6db3a844c5f32d5336b96")
+  "sha256:1953611fc5ad4dc10b2344b0158b6fb7ddd6a1589f8ac9af6d745874eebf69d1")
 (def p15-s23-b1-expected-functions-semantic-hash
-  "sha256:25f3981e5595c3aa54997ecd691328d6ef81393c7dfe6ee4781f22d97bbe6def")
+  "sha256:6e952b4b7cce3091b05434d35137c5360f52c124c65c4e78d936377e784f19e2")
 (def p15-s23-b1-expected-builder-semantic-hash
-  "sha256:31424123c41b05344d022ab712ec1bcd95718711ea1f1a6787808914db62d7b4")
+  "sha256:53b3d1b61fc09ce735169ed5f5324bb2839da27a85862e471e7b7dfc0ebb4a33")
 (def p15-s23-b1-builder-function
   'b1-build-bounded-llvm-authenticated-packet)
 (def p15-s23-b1-required-functions
@@ -126325,7 +127346,7 @@
             emitter
             (:emitter
              (c-backend-stage2-plan-emitter-source-rule!
-              request-source (or emitter-target :llvm)))
+              request-source (or emitter-target :llvm-x86_64-linux)))
             plan
             (p15-s23-stage2-compiler-artifact-plan
              emitter source-path source-text)
@@ -127350,7 +128371,8 @@
      :projection-contract
      {:contract-kind (case stage :c13 :identity-optimization-pass
                                  :b1 :backend-input-admission)
-      :contract-version 1 :profile :hosted :target :llvm
+      :contract-version 1 :profile :hosted
+      :target :llvm-x86_64-linux
       :required-semantic-projections (mapv :name projections)
       :required-fact-families (mapv :name facts)
       :required-identity-subjects (mapv :name identities)}
@@ -128059,7 +129081,11 @@
 
 (defn p15-s23-c13-evidence
   [c11-artifact c11-report]
-  (p15-s23-c13-evidence-for-target c11-artifact c11-report :llvm))
+  ;; LLVM ingress is target-qualified at C11; retain that canonical identity
+  ;; through the optimization evidence and invalidation ledger.  The C14
+  ;; request may still carry its historical internal :request :llvm marker.
+  (p15-s23-c13-evidence-for-target
+   c11-artifact c11-report :llvm-x86_64-linux))
 
 (defn p15-s23-c13-expected-record
   [mir evidence]
@@ -128221,7 +129247,7 @@
 (defn- p15-s23-c13-build!
   [candidate source-path c11-artifact c11-report binding]
   (p15-s23-c13-build-for-target!
-   candidate source-path c11-artifact c11-report binding :llvm))
+   candidate source-path c11-artifact c11-report binding :llvm-x86_64-linux))
 
 (defn p15-s23-c14-target-contract
   []
@@ -128239,6 +129265,12 @@
    :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
    :whole-c14? false :whole-b1? false :whole-b3? false
    :public? false :release? false :self-hosted? false})
+
+(def p15-s23-c14-llvm-unsupported-surface
+  [:strings :quote :str :println :runtime-checks :effects
+   :program-capabilities :domain-anchors :multiple-functions
+   :multiple-conditionals :non-scalar-types
+   :integer-outside-signed-i64 :process-result-outside-0-to-255])
 
 (defn p15-s23-c14-contract-bindings
   [c11-artifact checked-core c11-report c13-record dependencies]
@@ -128311,8 +129343,7 @@
      :expected-source-map-binding source-map
      :dependencies dependencies
      :target-policy (p15-s23-c14-target-policy)
-     :unsupported-surface (vec (:unsupported-surface
-                                p15-s23-b3-llvm-policy))
+     :unsupported-surface p15-s23-c14-llvm-unsupported-surface
      :proof-target-metadata
      {:entries [] :proofless-metadata-rejected? true}
      :fact-bindings fact-bindings
@@ -128770,7 +129801,7 @@
    :backend :gravity.backend/llvm
    :version :bounded-authenticated-v1
    :accepts [:gravity/mir]
-   :emits [:llvm-ir :mach-o-object :mach-o-executable]
+   :emits [:llvm-ir :elf-x86_64-object :elf-x86_64-executable]
    :requires [:profile-manifest :target-manifest :abi-policy
               :runtime-provider-selection :effect-summary
               :capability-proof-summary :safety-bundle :proof-table
@@ -130165,11 +131196,11 @@
 
 (def p15-s23-b2-c17-source-byte-count 122488)
 (def p15-s23-b2-c17-expected-source-content-hash
-  "sha256:8830a033bde79c4d728cb17d45ee2fead15ca00d8d86b16d7751b21820f47291")
+  "sha256:d78e042dbe6257ee4270ae3e784daf7298e74376602e06061c4b6686bff0e5e6")
 (def p15-s23-b2-c17-expected-plan-semantic-hash
-  "sha256:07f6b7d32f8ef8620c08e629a65e6abf1ed1e0e0f62bfbfd4ff3d2e21e3108bd")
+  "sha256:9976083b35646cd4c408529dc71abd3971be8c2634aebf684e9bb86fd5ec13a8")
 (def p15-s23-b2-c17-expected-functions-semantic-hash
-  "sha256:13775553d1144c6620351a18ead8a021083dd4d9e42e14f5218564dc1ad9f8c8")
+  "sha256:ec929cab60eb3321a911b6d85cc34164e7f4a5a4ab9bc90d3461f9b631f1986f")
 (def p15-s23-b2-c17-expected-builder-semantic-hash
   "sha256:1eb13380d0364d7cbf49c442e4b3ed571153b22fd25ac726d9eb30bccca032e8")
 
@@ -135336,11 +136367,11 @@
 (def p15-s23-b4-wasm-builder-function 'b4-build-bounded-wasm32-core)
 (def p15-s23-b4-wasm-source-byte-count 118572)
 (def p15-s23-b4-wasm-expected-source-content-hash
-  "sha256:e743dbda106e1a3eb8e298c4ff3483bed50fa88a05cf49d199af0819310c1d3d")
+  "sha256:b0e2f2c1e8ff98541f4af07770eb54488234124b8ed03975ff8a5ebed2412d85")
 (def p15-s23-b4-wasm-expected-plan-semantic-hash
-  "sha256:7f39f237b371944d3b5618a5a6d09927cf389360bb1433cd118df4251ac25c19")
+  "sha256:67f28ecef53335b9e0a65bc8671c194bf3ea84620497ef10ac89f6d3973e7dac")
 (def p15-s23-b4-wasm-expected-functions-semantic-hash
-  "sha256:0574a8fcae3c42b67b8f7ce5a93703f0b88bb07d6fbdfdf0035308c77109182e")
+  "sha256:617ee850d511270ae86619261666ad418608d50e422e522f25a23f4635ea79d0")
 (def p15-s23-b4-wasm-expected-builder-semantic-hash
   "sha256:f3e7c33fc18167ea5c3ae5da1aa8005cf7939feaaf60e9be5c488266cf1c16a9")
 (def p15-s23-b4-wasm-required-functions

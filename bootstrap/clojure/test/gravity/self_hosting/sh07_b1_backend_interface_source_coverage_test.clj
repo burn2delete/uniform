@@ -27,9 +27,9 @@
   "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 140902)
+(def ^:private expected-source-byte-count 141683)
 (def ^:private expected-source-revision-id
-  "sha256:c808fb7d4fa7d9bd6a2c3427700c029f74d5edc9c8c7d73f7447ce8e5c2b588f")
+  "sha256:c827a5bcbc6dcd8778d958ae8daba30a2861bf44cfb079a5d227dfc73ddb4e8d")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:e2da5de22c35745e7143916404ddd19ddc832ddbc88bd7820a99fa7e55b95214")
 (def ^:private expected-coverage
@@ -60,7 +60,7 @@
      b1-bounded-c14-input-valid? b1-bounded-c14-c-input-valid?
      b1-bounded-c14-wasm-input-valid? b1-c11-source-rule-valid?
      b1-c13-source-rule-valid? b1-c14-source-rule-valid?
-     b1-c14-verifier-valid?})
+     b1-c14-verifier-valid? b1-c14-target-rejection?})
 (def ^:private expected-contract-value-hashes
   {'b1-backend-interface-contract
    "sha256:fbfa1e55088aeed8274b6001738675bc2ded9ddebb01264f7987bb7975ed2da5"
@@ -299,10 +299,10 @@
         by-name (into {} (map (juxt second identity)) definitions)
         metadata (get-in clauses [:metadata :bootstrap])
         if-calls (mapcat #(collect-calls 'if %) definitions)]
-    (is (= 71 (count forms)))
-    (is (= 70 (count definitions) (count by-name)))
+    (is (= 72 (count forms)))
+    (is (= 71 (count definitions) (count by-name)))
     (is (= 6 (count (filter #(= 'def (first %)) definitions))))
-    (is (= 64 (count (filter #(= 'defn (first %)) definitions))))
+    (is (= 65 (count (filter #(= 'defn (first %)) definitions))))
     (is (= 'gravity.backend.b1-backend-interface-specification
            (second ns-form)))
     (is (= :meta (:profile clauses)))
@@ -330,7 +330,7 @@
     (is (= expected-diagnostic-ids
            (mapv :id (get-in (nth (get by-name 'b1-diagnostic-catalog) 2)
                              [:diagnostics]))))
-    (is (= 475 (count if-calls)))
+    (is (= 482 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path b1-relative-path)))))
@@ -346,8 +346,8 @@
         llvm (get by-name 'b1-build-bounded-llvm-authenticated-packet)
         c (get by-name 'b1-build-bounded-c-authenticated-packet)
         wasm (get by-name 'b1-build-bounded-wasm-authenticated-packet)]
-    (is (= 1077 (count gets)))
-    (is (= 1069 (count (filter #(keyword? (nth % 2 nil)) gets))))
+    (is (= 1082 (count gets)))
+    (is (= 1074 (count (filter #(keyword? (nth % 2 nil)) gets))))
     (is (= 8 (count dynamic)))
     (is (= {:reference 4 :call 4}
            (frequencies (map #(if (symbol? (nth % 2)) :reference :call)
@@ -359,12 +359,35 @@
     (is (contains? (symbols-in wasm) 'b1-bounded-c14-wasm-input-valid?))
     (is (contains? (symbols-in wasm) 'b1-bounded-wasm-manifest-valid?))))
 
+(deftest sh07-b35-b1-linux-ingress-and-policy-targets-are-distinct
+  (let [source (slurp (path b1-relative-path))]
+    (is (.contains source
+                   "[:llvm :llvm-x86_64-linux \"x86_64-unknown-linux-gnu\""))
+    ;; B1 consumes C14's internal lowering selection here; this is not a MIR
+    ;; ingress check and therefore intentionally remains the backend family.
+    (is (.contains source ":requested-lowering-target :llvm"))
+    (is (not (.contains source "(get mir :target-request) :llvm)")))))
+
 (deftest sh07-b35-b1-source-model-and-three-packet-builders-execute
   (let [manifest (invoke 'build-b1-backend-manifest
                          [:llvm [:hosted] [:llvm-ir]])
         input (invoke 'build-b1-input-packet
                       [{:kind :gravity/mir} :hosted {:backend :llvm} {}])
-        verification (invoke 'verify-b1-backend-interface [manifest])]
+        verification (invoke 'verify-b1-backend-interface [manifest])
+        binding (fn [entry-count]
+                  {:content-id zero-id :entry-count entry-count})
+        bindings {:profile (binding 2) :target (binding 24)
+                  :abi (binding 8) :runtime (binding 4)
+                  :providers (binding 3) :effects (binding 2)
+                  :capabilities (binding 3) :type (binding 1)
+                  :ownership (binding 1) :safety (binding 1)
+                  :proofs (binding 2) :source-map (binding 1)
+                  :dependencies (binding 6) :c11-verifier (binding 1)
+                  :c13-optimization (binding 4)}
+        request {:contract-bindings bindings
+                 :safety {:binding (:safety bindings)}
+                 :source-map {:id zero-id}
+                 :input {:verifier-report-id zero-id}}]
     (is (= :gravity/backend-manifest (:artifact manifest)))
     (is (= :llvm (:backend manifest)))
     (is (= :gravity/b1-input-packet (:artifact input)))
@@ -372,6 +395,15 @@
     (is (= :gravity/b1-backend-interface-verification
            (:artifact verification)))
     (is (false? (:production-backend-execution? verification)))
+    (is (true? (invoke 'b1-c14-contract-bindings-valid? [request])))
+    (is (false?
+         (invoke 'b1-c14-contract-bindings-valid?
+                 [(assoc-in request
+                            [:contract-bindings :target :entry-count] 23)])))
+    (is (false?
+         (invoke 'b1-c14-contract-bindings-valid?
+                 [(assoc-in request
+                            [:contract-bindings :target :entry-count] 25)])))
     (doseq [[function expected-missing-fact]
             [['b1-build-bounded-llvm-authenticated-packet
               :accepted-c14-lowering-record]

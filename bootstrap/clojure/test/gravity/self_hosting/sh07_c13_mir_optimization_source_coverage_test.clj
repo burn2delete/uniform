@@ -29,9 +29,9 @@
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private accepted-fixture-relative-path
   "bootstrap/clojure/fixtures/self-hosting/sh-16/accepted/mir-optimizations.gravity")
-(def ^:private expected-source-byte-count 126236)
+(def ^:private expected-source-byte-count 126249)
 (def ^:private expected-source-revision-id
-  "sha256:14bb6c059b7654d818210dbf1b201d98f33a43fec6e527cbd12aaa4b9529f8ab")
+  "sha256:0cac3e273677061bf11144f3dc3520d93c4c67dbf607e5f03d68312f35265aad")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:3b42495073aac7f58957bafeaa8720e803df2203b69e499628e10755d93fdfb5")
 (def ^:private expected-coverage

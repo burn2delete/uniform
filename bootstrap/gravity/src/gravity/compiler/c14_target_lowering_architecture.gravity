@@ -450,21 +450,23 @@
              :architecture :relocation-model :code-model
              :optimization-level :minimum-os-version :sanitizers
              :instrumentation :backend :tier :exposure
-             :source-declaration-target :requested-lowering-target
+             :canonical-target :source-declaration-target
+             :requested-lowering-target
              :selection :reason :direct-source-declared-llvm?
              :profile-eligibility :fingerprint})
-      (if (= (get target :request) :llvm)
-        (if (= (get target :triple) "arm64-apple-macosx14.0.0")
+      (if (= [(get target :request) (get target :canonical-target)]
+             [:llvm :llvm-x86_64-linux])
+        (if (= (get target :triple) "x86_64-unknown-linux-gnu")
           (if (= (get target :data-layout)
-                 "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-n32:64-S128-Fn32")
+                 "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128")
             (if (= (get target :cpu) "generic")
-              (if (= (get target :features) "+v8a,+fp-armv8,+neon")
-                (if (= (get target :object-format) :mach-o)
-                  (if (= (get target :architecture) :arm64)
+              (if (= (get target :features) "")
+                (if (= (get target :object-format) :elf)
+                  (if (= (get target :architecture) :x86_64)
                     (if (= (get target :relocation-model) :pic)
                       (if (= (get target :code-model) :small)
                         (if (= (get target :optimization-level) :O0)
-                          (if (= (get target :minimum-os-version) "14.0")
+                          (if (= (get target :minimum-os-version) :not-applicable)
                             (if (= (get target :sanitizers) [])
                               (if (= (get target :instrumentation) [])
                                 (if (= (get target :backend)
@@ -488,7 +490,7 @@
                                                             :profile-eligibility)
                                                        [:hosted])
                                                   (= (get target :fingerprint)
-                                                     "sha256:e3082b8a45534a67a2cf58fa2ddbcd385aa9463246e85955756b0a386cc36255")
+                                                     "sha256:25e57788c750cb3d184fe54c68fc9e2e69c807bb5c1510e12160ed53a89df593")
                                                   false)
                                                 false)
                                               false)
@@ -518,11 +520,11 @@
   [abi]
   (if (map? abi)
     (= abi
-       {:calling-convention :darwin-pcs-ccc
-        :object-format :mach-o :architecture :arm64
+       {:calling-convention :sysv-amd64
+        :object-format :elf :architecture :x86_64
         :integer-carrier :i64 :process-result :i32
         :gravity-exception-unwind :none
-        :platform-unwind-metadata :darwin-compact-unwind-required
+        :platform-unwind-metadata :dwarf-cfi
         :return-type :i32})
     false))
 
@@ -532,7 +534,7 @@
     (= runtime
        {:gravity-runtime-providers []
         :platform-runtime-providers
-        [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+        [:linux/process-startup :linux/elf-loader :linux/glibc-2.36]
         :status :no-gravity-helpers-platform-runtime-required
         :full-conformance? false})
     false))
@@ -542,13 +544,13 @@
   (if (map? providers)
     (= providers
        {:semantic []
-        :build [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
-                :file-5.41 :llvm-otool-cctools-1040
-                :darwin-process-loader
-                :openjdk-26.0.1-ffm-native-access
-                :darwin-libsystem-renamex-np]
-        :platform [:darwin/process-startup :darwin/dyld
-                   :darwin/libsystem]})
+        :build [:llvm-clang-20.1.8 :llvm-llc-20.1.8
+                :llvm-opt-20.1.8 :llvm-as-20.1.8
+                :llvm-dis-20.1.8 :llvm-readobj-20.1.8
+                :llvm-objdump-20.1.8 :llvm-lld-20.1.8
+                :linux-x86_64-process-loader]
+        :platform [:linux/process-startup :linux/elf-loader
+                   :linux/glibc-2.36]})
     false))
 
 (defn c14-fact-bindings-valid?
@@ -650,13 +652,13 @@
              :self-hosted?})
       (if (= (get rule :artifact) :gravity/c11-pinned-source-rule)
         (if (= (get rule :owner) :gravity-source)
-          (if (= (get rule :source-byte-count) 113008)
+          (if (= (get rule :source-byte-count) 253588)
             (if (= (get rule :source-content-hash)
-                   "sha256:95fd82d9484d0a1b7a93b3da10ed6c490c7b051e253da0eb1eb58f0f08334fe3")
+                   "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136")
               (if (= (get rule :plan-semantic-hash)
-                     "sha256:6012e4be9c87a786ae26cdcbc85a26eedae2c602e7a407932ec411e5634cd2ae")
+                     "sha256:974d3949e224d136a2d95c0c348b11c8858becdddd47542ffd4ae24c0233fb39")
                 (if (= (get rule :functions-semantic-hash)
-                       "sha256:c6be9a17ccb1c6d160fcc2916ecf2ebba41ebf16259cf66cbf5ca6a004f59ef5")
+                       "sha256:ece068d2c82e550798cb98e1b0ac9bd0c5e15b5c932c591b93b821411eed89a4")
                   (if (= (get rule :builder-function)
                          'c11-build-target-independent-mir)
                     (if (= (get rule :builder-semantic-hash)
@@ -704,13 +706,13 @@
                :gravity.compiler/c13-mir-optimization)
           (if (= (get rule :builder-function)
                  'c13-build-bounded-identity-optimized-mir)
-              (if (= (get rule :source-byte-count) 126236)
+              (if (= (get rule :source-byte-count) 126249)
                 (if (= (get rule :source-content-hash)
-                       "sha256:14bb6c059b7654d818210dbf1b201d98f33a43fec6e527cbd12aaa4b9529f8ab")
+                       "sha256:0cac3e273677061bf11144f3dc3520d93c4c67dbf607e5f03d68312f35265aad")
                   (if (= (get rule :plan-semantic-hash)
-                         "sha256:5d88c74816d75297d37e1030295ca97785d18dafb757913f0df887d70d6cc48c")
+                         "sha256:3ca443670addd91ff7e271b29f5e0e22f19b2bb9dd4df38154e31e04d794fb5f")
                     (if (= (get rule :functions-semantic-hash)
-                           "sha256:c48051f293ece207f6fca30b6d4ad5d57f8310f66fb7220f326cf1e4e75f5095")
+                           "sha256:3f32029679ca91ca0e8da01f0e326f624adaa42a46b00df17007624918478204")
                     (if (= (get rule :builder-semantic-hash)
                            "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3")
                       (if (= (get rule :function-shapes)
@@ -781,7 +783,7 @@
                     (if (c14-c13-source-rule-valid?
                          (get dependencies :c13-source-rule))
                       (= (get dependencies :b3-source)
-                         "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3")
+                         "sha256:3faf6a748485547abd6bd8da917a2214a7a8ba1cc9b3038bbbd3cdadd0562300")
                       false)
                     false)
                   false)
@@ -800,8 +802,11 @@
     (if (= (set (keys proofs)) #{:capability :certificates})
       (if (map? (get proofs :capability))
        (if (map? (get proofs :certificates))
-        (if (= (set (keys (get proofs :capability)))
-             #{:content-id :entry-count :proof-ids})
+        (if (= (get proofs :capability)
+               {:content-id
+                "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+                :entry-count 0
+                :proof-ids []})
         (if (= (set (keys (get proofs :certificates)))
                #{:content-id :entry-count :safety-proof-count
                  :safety-proof-ids})
@@ -1177,6 +1182,55 @@
       false)
     false))
 
+(defn c14-c13-residual-check-report-valid?
+  [optimized]
+  (= (get optimized :residual-check-report)
+     {:artifact :gravity/c13-residual-check-report
+      :status :complete
+      :retained-runtime-checks
+      (get (get optimized :optimized-mir) :runtime-check-table)
+      :elided-runtime-checks []
+      :open-proof-obligations []}))
+
+(defn c14-c13-verifier-replay-valid?
+  [optimized]
+  (let [input (get optimized :input)
+        semantic (get optimized :semantic-identity)]
+    (= (get optimized :verifier-replay)
+       {:artifact :gravity/c13-post-pass-verifier-replay
+        :required? true
+        :c11-artifact-id (get input :c11-artifact-id)
+        :verifier-report-id (get input :verifier-report-id)
+        :c11-mir-id (get input :c11-mir-id)
+        :expected-input-module-id (get input :module-id)
+        :expected-output-module-id (get input :module-id)
+        :fact-bindings (get semantic :fact-bindings)
+        :semantic-identity-required? true
+        :result :passed})))
+
+(defn c14-c13-invalidation-ledger-valid?
+  [optimized]
+  (let [input (get optimized :input)
+        decision (get optimized :decision-record)
+        target-request (get (get optimized :optimized-mir) :target-request)]
+    (= (get optimized :invalidation-ledger)
+       {:artifact :gravity/c13-invalidation-ledger
+        :pass-id :c13-bounded-identity
+        :decision-id (get decision :decision-id)
+        :input-mir (get input :c11-mir-id)
+        :output-mir (get input :c11-mir-id)
+        :analysis-invalidated []
+        :facts-invalidated []
+        :facts-regenerated []
+        :proofs-invalidated []
+        :certificates-invalidated []
+        :runtime-checks-restored []
+        :passes-to-rerun []
+        :caches-cleared []
+        :diagnostics-affected []
+        :profile :hosted
+        :target target-request})))
+
 (defn c14-bounded-optimized-input-valid?
   [optimized policy]
   (if (map? optimized)
@@ -1240,9 +1294,33 @@
                                                   :decision-id))
                                         (if (c14-sha256-id?
                                              (get decision :decision-id))
-                                          (= (get decision :residual-checks)
-                                             (get mir
-                                                  :runtime-check-table))
+                                          (if (= (get decision :residual-checks)
+                                                 (get mir
+                                                      :runtime-check-table))
+                                            (if (c14-c13-residual-check-report-valid?
+                                                 optimized)
+                                              (if (c14-c13-verifier-replay-valid?
+                                                   optimized)
+                                                (if (= [(get mir :module-id)
+                                                        (get semantic
+                                                             :input-module-id)
+                                                        (get semantic
+                                                             :output-module-id)]
+                                                       [(get (get optimized
+                                                                  :input)
+                                                             :module-id)
+                                                        (get (get optimized
+                                                                  :input)
+                                                             :module-id)
+                                                        (get (get optimized
+                                                                  :input)
+                                                             :module-id)])
+                                                  (c14-c13-invalidation-ledger-valid?
+                                                   optimized)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
                                           false)
                                         false)
                                       false)
@@ -1285,8 +1363,10 @@
 (defn c14-policy-core-valid?
   [optimized policy]
   (if (= (get policy :profile) :hosted)
-    (if (= (get (get optimized :invalidation-ledger) :target) :llvm)
-      (if (= (get (get optimized :optimized-mir) :target-request) :llvm)
+    (if (= (get (get optimized :invalidation-ledger) :target)
+           :llvm-x86_64-linux)
+      (if (= (get (get optimized :optimized-mir) :target-request)
+             :llvm-x86_64-linux)
         (if (= (get policy :profile-contract)
                {:name :hosted :validated? true})
         (if (c14-target-valid? (get policy :target))
@@ -1334,7 +1414,8 @@
                 (if (= (get policy :required-evidence)
                        [:authenticated-c11-replay
                         :independent-lowering-reconstruction
-                        :llvm-tool-acceptance :mach-o-arm64-object
+                        :llvm-tool-acceptance :elf-x86_64-object
+                        :elf-x86_64-executable
                         :differential-process-result
                         :content-hash-and-provenance])
                   (if (c14-c11-verifier-valid?
@@ -1997,7 +2078,7 @@
         operation-order (c14-bounded-operation-order mir)
         operations-by-id (c14-c-operation-map operations {})]
     (if (= (get mir :profile) :hosted)
-      (if (= (get mir :target-request) :llvm)
+      (if (= (get mir :target-request) :llvm-x86_64-linux)
         (if (= (get mir :target-independent?) true)
           (if (= (count functions) 1)
             (if (= (get function :params) [])
@@ -3102,14 +3183,14 @@
 
 (defn sh17-current-c11-revision []
   {:artifact :gravity/sh17-c11-revision
-   :source-byte-count 113008
+   :source-byte-count 253588
    :source-content-hash
-   "sha256:95fd82d9484d0a1b7a93b3da10ed6c490c7b051e253da0eb1eb58f0f08334fe3"
+   "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"
    :plan-semantic-hash
-   "sha256:6012e4be9c87a786ae26cdcbc85a26eedae2c602e7a407932ec411e5634cd2ae"
+   "sha256:974d3949e224d136a2d95c0c348b11c8858becdddd47542ffd4ae24c0233fb39"
    :functions-semantic-hash
-   "sha256:c6be9a17ccb1c6d160fcc2916ecf2ebba41ebf16259cf66cbf5ca6a004f59ef5"
-   :function-count 139
+   "sha256:ece068d2c82e550798cb98e1b0ac9bd0c5e15b5c932c591b93b821411eed89a4"
+   :function-count 237
    :builder-function 'c11-build-target-independent-mir
    :builder-semantic-hash
    "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
@@ -3592,14 +3673,19 @@
     false))
 
 (defn sh17-target-valid? [backend target]
-  (if (sh17-exact-map?
-       target #{:backend :triple :architecture :object-format})
-    (if (= (get target :backend) backend)
-      (if (= backend :llvm)
-        (= target {:backend :llvm
-                   :triple "arm64-apple-macosx14.0.0"
-                   :architecture :arm64
-                   :object-format :mach-o})
+  (if (= backend :llvm)
+    (if (sh17-exact-map?
+         target #{:backend :canonical-target :triple
+                  :architecture :object-format})
+      (= target {:backend :llvm
+                 :canonical-target :llvm-x86_64-linux
+                 :triple "x86_64-unknown-linux-gnu"
+                 :architecture :x86_64
+                 :object-format :elf})
+      false)
+    (if (sh17-exact-map?
+         target #{:backend :triple :architecture :object-format})
+      (if (= (get target :backend) backend)
         (if (= backend :c)
           (= target {:backend :c
                      :triple "arm64-apple-macosx14.0.0"
@@ -3610,9 +3696,9 @@
                        :triple "wasm32-unknown-unknown"
                        :architecture :wasm32
                        :object-format :wasm-module})
-            false)))
-      false)
-    false))
+            false))
+        false)
+      false)))
 
 (defn sh17-abi-valid? [backend abi]
   (if (sh17-exact-map?
@@ -3623,7 +3709,8 @@
           (if (= (get abi :calling-convention) :wasm-core)
             (= (get abi :pointer-width) 32)
             false)
-          (if (= (get abi :calling-convention) :c)
+          (if (= (get abi :calling-convention)
+                 (if (= backend :llvm) :sysv-amd64 :c))
             (= (get abi :pointer-width) 64)
             false))
         false)
@@ -3909,7 +3996,9 @@
    :schema-version 1
    :status :rejected
    :diagnostics
-   [{:diagnostic-id "C14-INPUT"
+   [{:diagnostic-id (if (= reason :target-contract-mismatch)
+                      "C14-TARGET"
+                      "C14-INPUT")
      :stage :target-lowering
      :reason reason
      :structural-preflight preflight}]
@@ -3934,7 +4023,16 @@
              :diagnostics []
              :pending (get (sh17-target-lowering-policy) :pending)})
           (sh17-rejection :cross-reference-mismatch preflight))
-        (sh17-rejection :invalid-normalized-request preflight))
+        (if (if (map? request)
+              (if (contains? request :backend)
+                (contains? request :target)
+                false)
+              false)
+          (if (sh17-target-valid? (get request :backend)
+                                  (get request :target))
+            (sh17-rejection :invalid-normalized-request preflight)
+            (sh17-rejection :target-contract-mismatch preflight))
+          (sh17-rejection :invalid-normalized-request preflight)))
       (sh17-rejection (get preflight :reason) preflight))))
 
 (defn sh17-verify-target-lowering [request candidate]

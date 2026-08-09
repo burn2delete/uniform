@@ -26,9 +26,9 @@
   "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 168685)
+(def ^:private expected-source-byte-count 173292)
 (def ^:private expected-source-revision-id
-  "sha256:931928313d0218aca740a906634ea1fa3a21058b546ce3f0ddc7329a059b566d")
+  "sha256:5c500fd4ad8a6652ce9a8918ff31ee7d9947732b47860071f6dca0dfc61839ae")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:aee0b3c997a661ae9a08391a0468483b2459a2d814fe05e4f09a43ef90a1b70e")
 (def ^:private expected-coverage
@@ -132,6 +132,28 @@
 (defn- path [relative] (str (.resolve @root relative)))
 (defn- source-bytes [source-path]
   (java.nio.file.Files/readAllBytes (.toPath (io/file source-path))))
+(def ^:private maximum-c14-source-bytes (* 1024 1024))
+(defn- bounded-source-text []
+  (let [source-path (.toPath (io/file (path c14-relative-path)))
+        options (into-array java.nio.file.OpenOption
+                            [java.nio.file.StandardOpenOption/READ
+                             java.nio.file.LinkOption/NOFOLLOW_LINKS])]
+    (with-open [channel (java.nio.channels.FileChannel/open source-path options)]
+      (let [size (.size channel)]
+        (when (or (neg? size) (> size maximum-c14-source-bytes))
+          (throw (ex-info "C14 source exceeds the source-only parse bound"
+                          {:id "SH07-C14-SOURCE-BOUND"
+                           :maximum-bytes maximum-c14-source-bytes
+                           :actual-bytes size})))
+        (let [buffer (java.nio.ByteBuffer/allocate (int size))]
+          (loop []
+            (when (.hasRemaining buffer)
+              (let [read-count (.read channel buffer)]
+                (when (neg? read-count)
+                  (throw (ex-info "C14 source ended before its measured size"
+                                  {:id "SH07-C14-SOURCE-SHORT-READ"})))
+                (recur))))
+          (String. (.array buffer) java.nio.charset.StandardCharsets/UTF_8))))))
 (defn- sha256-id [bytes]
   (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256") bytes)]
     (str "sha256:"
@@ -140,7 +162,7 @@
   (sha256-id (.getBytes (pr-str value) "UTF-8")))
 (defn- source-forms []
   (with-open [reader (clojure.lang.LineNumberingPushbackReader.
-                      (io/reader (path c14-relative-path)))]
+                      (java.io.StringReader. (bounded-source-text)))]
     (loop [forms []]
       (let [form (read {:eof ::eof} reader)]
         (if (= ::eof form) forms (recur (conj forms form)))))))
@@ -187,14 +209,16 @@
   (str "sha256:" (apply str (repeat 64 character))))
 (defn- target [backend]
   (case backend
-    :llvm {:backend :llvm :triple "arm64-apple-macosx14.0.0"
-           :architecture :arm64 :object-format :mach-o}
+    :llvm {:backend :llvm :canonical-target :llvm-x86_64-linux
+           :triple "x86_64-unknown-linux-gnu"
+           :architecture :x86_64 :object-format :elf}
     :c {:backend :c :triple "arm64-apple-macosx14.0.0"
         :architecture :arm64 :object-format :c17-source}
     :wasm {:backend :wasm :triple "wasm32-unknown-unknown"
            :architecture :wasm32 :object-format :wasm-module}))
 (defn- abi [backend]
-  {:calling-convention (if (= backend :wasm) :wasm-core :c)
+  {:calling-convention (if (= backend :wasm) :wasm-core
+                           (if (= backend :llvm) :sysv-amd64 :c))
    :pointer-width (if (= backend :wasm) 32 64)
    :endianness :little :layout-id (digest "a")})
 (defn- operation [operation-id opcode operands result-id source-id]
@@ -284,6 +308,16 @@
   (delay ((required-var 'sh06-resolution-artifact-verification)
           (:sh06-resolution-artifact @c14-artifact))))
 
+(deftest sh07-b34-c14-source-parses-and-control-form-arities-are-exact
+  (let [forms (source-forms)
+        definitions (filter #(and (seq? %) (#{'def 'defn} (first %))) forms)
+        if-calls (mapcat #(collect-calls 'if %) definitions)]
+    (is (seq forms))
+    (is (= 'ns (ffirst forms)))
+    (is (seq definitions))
+    (is (seq if-calls))
+    (is (every? #(= 4 (count %)) if-calls))))
+
 (deftest sh07-b34-c14-source-contracts-and-static-shape-are-exact
   (let [forms (source-forms) ns-form (first forms)
         clauses (into {} (map (fn [clause] [(first clause) (second clause)]))
@@ -292,10 +326,10 @@
                                   (#{'def 'defn} (first %))) forms)
         by-name (into {} (map (juxt second identity)) definitions)
         if-calls (mapcat #(collect-calls 'if %) definitions)]
-    (is (= 144 (count forms)))
-    (is (= 143 (count definitions) (count by-name)))
+    (is (= 147 (count forms)))
+    (is (= 146 (count definitions) (count by-name)))
     (is (= 8 (count (filter #(= 'def (first %)) definitions))))
-    (is (= 135 (count (filter #(= 'defn (first %)) definitions))))
+    (is (= 138 (count (filter #(= 'defn (first %)) definitions))))
     (is (= 'gravity.compiler.c14-target-lowering-architecture (second ns-form)))
     (is (= :meta (:profile clauses)))
     (is (= :jvm (:target clauses)))
@@ -314,7 +348,7 @@
       (is (= expected-hash (value-sha256-id (nth (get by-name name) 2)))))
     (doseq [name target-builder-names]
       (is (= 2 (count (nth (get by-name name) 2))) (str name)))
-    (is (= 776 (count if-calls)))
+    (is (= 787 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path c14-relative-path)))))
@@ -330,8 +364,8 @@
         build (get by-name 'sh17-build-target-lowering)
         verify (get by-name 'sh17-verify-target-lowering)
         identity (get by-name 'sh17-identity-input)]
-    (is (= 1131 (count gets)))
-    (is (= 1032 (count (filter #(keyword? (nth % 2 nil)) gets))))
+    (is (= 1134 (count gets)))
+    (is (= 1035 (count (filter #(keyword? (nth % 2 nil)) gets))))
     (is (= 99 (count dynamic)))
     (is (= {:reference 45 :call 54}
            (frequencies (map #(if (symbol? (nth % 2)) :reference :call)
@@ -341,6 +375,25 @@
     (is (contains? (symbols-in build) 'sh17-references-valid?))
     (is (contains? (symbols-in verify) 'sh17-build-target-lowering))
     (is (contains? (symbols-in identity) 'sh17-neutral-source-map))))
+
+(deftest sh07-b34-c14-capability-proof-content-id-is-exact
+  (let [mir {:capability-proof-table {}
+             :proof-certificate-table {:safety-proofs {}}}
+        proofs
+        {:capability
+         {:content-id
+          "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          :entry-count 0
+          :proof-ids []}
+         :certificates
+         {:content-id (digest \c)
+          :entry-count 1
+          :safety-proof-count 0
+          :safety-proof-ids []}}
+        hostile
+        (assoc-in proofs [:capability :content-id] (digest \d))]
+    (is (true? (invoke 'c14-proofs-valid? [mir proofs])))
+    (is (false? (invoke 'c14-proofs-valid? [mir hostile])))))
 
 (deftest sh07-b34-all-target-builders-and-sh17-routing-execute
   (let [policy (invoke 'sh17-target-lowering-policy [])]
@@ -373,6 +426,46 @@
                                  :target-opcode]))))
           (is (= :passed (:status verification)))
           (is (empty? (:diagnostics verification))))))))
+
+(deftest sh07-b34-linux-llvm-target-contract-is-explicit
+  (let [source (slurp (path c14-relative-path))]
+    (doseq [literal [":canonical-target :llvm-x86_64-linux"
+                     "x86_64-unknown-linux-gnu"
+                     "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+                     ":object-format :elf"
+                     ":architecture :x86_64"
+                     ":calling-convention :sysv-amd64"
+                     ":platform-unwind-metadata :dwarf-cfi"
+                     ":linux/process-startup"
+                     ":linux/elf-loader"
+                     ":linux/glibc-2.36"
+                     ":elf-x86_64-object"]]
+      (is (.contains source literal) (str "missing Linux LLVM literal " literal)))
+    (is (.contains source
+                   "(get (get optimized :invalidation-ledger) :target)\n           :llvm-x86_64-linux"))
+    (is (.contains source
+                   "(get (get optimized :optimized-mir) :target-request)\n             :llvm-x86_64-linux"))
+    (is (.contains source
+                   "(get mir :target-request) :llvm-x86_64-linux"))
+    ;; C14's selected backend request remains the internal family marker; it
+    ;; is distinct from the canonical C13/MIR ingress identity above.
+    (is (.contains source ":requested-lowering-target :llvm"))
+    (is (not (.contains source "(get mir :target-request) :llvm)")))
+    (is (not (.contains source ":canonical-target :llvm-x86-64-linux")))
+    (is (not (.contains source ":canonical-target :darwin-arm64")))))
+
+(deftest sh07-b34-linux-llvm-hostile-targets-reject-before-lowering
+  (let [base (sh17-request :llvm "/checkout-a")
+        hostile-targets
+        [(assoc-in base [:target :canonical-target] :llvm-x86-64-linux)
+         (assoc-in base [:target :triple] "arm64-apple-macosx14.0.0")
+         (assoc-in base [:target :architecture] :aarch64)
+         (assoc-in base [:target :object-format] :mach-o)
+         (update base :target dissoc :canonical-target)]]
+    (doseq [hostile hostile-targets]
+      (let [result (invoke 'sh17-build-target-lowering [hostile])]
+        (is (= :rejected (:status result)))
+        (is (= "C14-TARGET" (get-in result [:diagnostics 0 :diagnostic-id])))))))
 
 (deftest sh07-b34-sh17-rejected-families-are-structured
   (let [base (sh17-request :llvm "/checkout-a")

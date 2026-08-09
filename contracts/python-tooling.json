@@ -5,10 +5,10 @@
   "scope": {
     "roots": ["src/gravity", "tools"],
     "excluded_segments": ["__pycache__"],
-    "inventory_count": 157,
-    "inventory_sha256": "sha256:72011db09b8a3030d36d406f9ed8d573daf4221284c8232ed46d16fad40de84e",
-    "dependency_edge_count": 187,
-    "dependency_edge_sha256": "sha256:0b25688183d73a2397099e0aaab96cebf939058a9a8795015ae451cc46985978"
+    "inventory_count": 159,
+    "inventory_sha256": "sha256:13bc00fda67d199d3717ca6174d3b9dfd474dfc422f580405809736c9194023b",
+    "dependency_edge_count": 188,
+    "dependency_edge_sha256": "sha256:6c6e79cde46a127ffb0e9c480505502ecd813a1e152b0a4648b250c79d271c25"
   },
   "enums": {
     "categories": [
@@ -366,7 +366,8 @@
         "tools/validate_python_tooling_contract.py",
         "tools/validate_repository_hygiene.py",
         "tools/validate_safety_performance_gates.py",
-        "tools/validate_terminology_boundaries.py"
+        "tools/validate_terminology_boundaries.py",
+        "tools/validate_w1_executable_carrier_interface.py"
       ],
       "category": "validator",
       "role": "artifact-validator",
@@ -395,7 +396,8 @@
         "tools/validate_milestone_evidence.py",
         "tools/validate_project_structure.py",
         "tools/validate_safety_performance_gates.py",
-        "tools/validate_terminology_boundaries.py"
+        "tools/validate_terminology_boundaries.py",
+        "tools/validate_w1_executable_carrier_interface.py"
       ],
       "excludes": [],
       "category": "validator",

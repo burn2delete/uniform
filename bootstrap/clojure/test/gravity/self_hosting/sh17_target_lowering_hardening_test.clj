@@ -74,9 +74,10 @@
 (defn- target [backend]
   (case backend
     :llvm {:backend :llvm
-           :triple "arm64-apple-macosx14.0.0"
-           :architecture :arm64
-           :object-format :mach-o}
+           :canonical-target :llvm-x86_64-linux
+           :triple "x86_64-unknown-linux-gnu"
+           :architecture :x86_64
+           :object-format :elf}
     :c {:backend :c
         :triple "arm64-apple-macosx14.0.0"
         :architecture :arm64
@@ -87,7 +88,8 @@
            :object-format :wasm-module}))
 
 (defn- abi [backend]
-  {:calling-convention (if (= backend :wasm) :wasm-core :c)
+  {:calling-convention (if (= backend :wasm) :wasm-core
+                           (if (= backend :llvm) :sysv-amd64 :c))
    :pointer-width (if (= backend :wasm) 32 64)
    :endianness :little
    :layout-id (digest "a")})
@@ -199,8 +201,8 @@
         (assoc (:function-shapes source-rule)
                'c11-build-data-flow-for-node
                {:arity 2 :params '[node result]})]
-    (is (= 113008 (:source-byte-count revision)))
-    (is (= 139 (:function-count revision)))
+    (is (= 253588 (:source-byte-count revision)))
+    (is (= 237 (:function-count revision)))
     (is (= 'verify-c11-mir-module (:verifier-function revision)))
     (is (= 27 (count (:function-shapes revision))))
     (is (pos? (count if-calls)))
@@ -338,7 +340,26 @@
       (is (= :rejected (:status (build hostile))))
       (is (contains? #{:invalid-normalized-request
                        :structure-noncanonical-scalar}
-                     (reason (build hostile)))))))
+                       (reason (build hostile)))))))
+
+(deftest sh17-linux-llvm-target-contract-rejects-cross-target-substitution
+  (let [base (request :llvm "/checkout-a")
+        hostile-targets
+        [(assoc-in base [:target :canonical-target] :llvm-x86-64-linux)
+         (assoc-in base [:target :canonical-target] :darwin-arm64)
+         (assoc-in base [:target :triple] "arm64-apple-macosx14.0.0")
+         (assoc-in base [:target :architecture] :arm64)
+         (assoc-in base [:target :architecture] :aarch64)
+         (assoc-in base [:target :object-format] :mach-o)
+         (update base :target dissoc :canonical-target)
+         (assoc-in base [:target :triple] "wasm32-unknown-unknown")]]
+    (doseq [hostile hostile-targets]
+      (let [result (build hostile)]
+        (is (= :rejected (:status result)))
+        (is (= "C14-TARGET"
+               (get-in result [:diagnostics 0 :diagnostic-id])))
+        (is (= :target-contract-mismatch
+               (reason result)))))))
 
 (deftest sh17-identity-is-path-neutral-and-provenance-retains-paths
   (doseq [backend [:llvm :c :wasm]]

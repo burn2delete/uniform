@@ -15,7 +15,8 @@
     "excluded_patterns": [
       "tools/tests/**",
       "tools/output_publication.py",
-      "tools/validate_gravity_toolchain.py"
+      "tools/validate_gravity_toolchain.py",
+      "tools/validate_w1_executable_carrier_interface.py"
     ],
     "producer_count": 67,
     "producer_sha256": "sha256:0bdaa846475cf95fa253ba73693f61a51dbfb33229d8e1daef1e56ebe0b95fb5"
@@ -143,7 +144,8 @@
           "tools/validate_python_tooling_contract.py",
           "tools/validate_repository_hygiene.py",
           "tools/validate_safety_performance_gates.py",
-          "tools/validate_terminology_boundaries.py"
+          "tools/validate_terminology_boundaries.py",
+          "tools/validate_w1_executable_carrier_interface.py"
         ]
       },
       "commands": ["python3 {source} [--artifact-out target/validation/<tool>.json]"],

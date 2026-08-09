@@ -27,9 +27,9 @@
   "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 86185)
+(def ^:private expected-source-byte-count 91077)
 (def ^:private expected-source-revision-id
-  "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3")
+  "sha256:3faf6a748485547abd6bd8da917a2214a7a8ba1cc9b3038bbbd3cdadd0562300")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:2190dea530d73d9abdff5b64df3eada3992c03583ab6498fc0c783b3f971a732")
 (def ^:private expected-coverage
@@ -88,6 +88,8 @@
     build-b3-target-record build-b3-metadata-map
     build-b3-runtime-abi-helper-map build-b3-pass-pipeline-record
     build-b3-llvm-artifact-record verify-b3-llvm-backend-design
+    b3-bounded-llvm-x86_64-linux-policy-record
+    b3-build-bounded-llvm-x86_64-linux
     b3-build-bounded-arm64-macos-llvm])
 (def ^:private data-definition-names
   '#{b3-llvm-backend-contract b3-target-data-layout-contract
@@ -97,11 +99,15 @@
      b3-pass-pipeline-contract b3-artifact-manifest-contract
      b3-diagnostic-catalog})
 (def ^:private required-executable-names
-  '#{b3-bounded-arm64-macos-policy-record b3-module-envelope-reason
+  '#{b3-bounded-arm64-macos-policy-record
+     b3-bounded-llvm-x86_64-linux-policy-record
+     b3-linux-target-fields-reason b3-linux-target-reason
+     b3-target-rejected b3-module-envelope-reason
      b3-function-envelope-reason b3-operation-envelope-reason
      b3-cfg-structure-reason b3-data-flow-value-closure-reason
      b3-operation-unsupported-reason b3-build-emitted-lowering
      b3-build-validated-operations b3-build-validated-cfg
+     b3-build-bounded-llvm-x86_64-linux
      b3-build-bounded-arm64-macos-llvm})
 (def ^:private expected-contract-value-hashes
   {'b3-llvm-backend-contract
@@ -278,12 +284,12 @@
   (let [source (closed-pure-source)
         source-path "sh07-b36-b3-llvm.gravity"]
     (binding [bootstrap/*p15-s23-c11-mir-diagnostic-context*
-              {:requested-target :llvm}
+              {:requested-target :llvm-x86_64-linux}
               bootstrap/*additional-bootstrap-targets*
               bootstrap/stage2-runtime-derived-source-targets]
       (let [context
             (bootstrap/p15-s23-stage2-gravity-checked-core-context
-             source-path source :llvm)
+             source-path source :llvm-x86_64-linux)
             checked-core
             (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
              context)
@@ -293,7 +299,7 @@
             (bootstrap/p15-s23-stage2-c13-c14-b1-packet-from-c11!
              c11 checked-core context)
             mir (:optimized-mir packet)
-            lowering (invoke 'b3-build-bounded-arm64-macos-llvm [mir])
+            lowering (invoke 'b3-build-bounded-llvm-x86_64-linux [mir])
             artifact
             (bootstrap/p15-s23-stage2-b3-llvm-artifact-from-c11!
              c11 checked-core context)
@@ -317,10 +323,10 @@
         by-name (into {} (map (juxt second identity)) definitions)
         metadata (get-in clauses [:metadata :bootstrap])
         if-calls (mapcat #(collect-calls 'if %) definitions)]
-    (is (= 84 (count forms)))
-    (is (= 83 (count definitions) (count by-name)))
+    (is (= 89 (count forms)))
+    (is (= 88 (count definitions) (count by-name)))
     (is (= 11 (count (filter #(= 'def (first %)) definitions))))
-    (is (= 72 (count (filter #(= 'defn (first %)) definitions))))
+    (is (= 77 (count (filter #(= 'defn (first %)) definitions))))
     (is (= 'gravity.backend.b3-llvm-backend-design (second ns-form)))
     (is (= :meta (:profile clauses)))
     (is (= :jvm (:target clauses)))
@@ -343,11 +349,13 @@
     (doseq [[name expected-hash] expected-contract-value-hashes]
       (is (= expected-hash (value-sha256-id (nth (get by-name name) 2)))))
     (is (= '[mir]
+           (nth (get by-name 'b3-build-bounded-llvm-x86_64-linux) 2)))
+    (is (= '[mir]
            (nth (get by-name 'b3-build-bounded-arm64-macos-llvm) 2)))
     (is (= expected-diagnostic-ids
            (mapv :id (get-in (nth (get by-name 'b3-diagnostic-catalog) 2)
                              [:diagnostics]))))
-    (is (= 357 (count if-calls)))
+    (is (= 363 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path b3-relative-path)))))
@@ -360,12 +368,12 @@
         by-name (into {} (map (juxt second identity)) definitions)
         gets (mapcat #(collect-calls 'get %) definitions)
         dynamic (remove #(keyword? (nth % 2 nil)) gets)
-        builder (get by-name 'b3-build-bounded-arm64-macos-llvm)
+        builder (get by-name 'b3-build-bounded-llvm-x86_64-linux)
         emitted (get by-name 'b3-build-emitted-lowering)]
-    (is (= 372 (count gets)))
-    (is (= 306 (count (filter #(keyword? (nth % 2 nil)) gets))))
-    (is (= 66 (count dynamic)))
-    (is (= {:reference 23 :call 43}
+    (is (= 377 (count gets)))
+    (is (= 310 (count (filter #(keyword? (nth % 2 nil)) gets))))
+    (is (= 67 (count dynamic)))
+    (is (= {:reference 23 :call 44}
            (frequencies (map #(if (symbol? (nth % 2)) :reference :call)
                              dynamic))))
     (is (contains? (symbols-in builder) 'b3-module-envelope-reason))
@@ -373,45 +381,118 @@
     (is (contains? (symbols-in builder) 'b3-build-validated-cfg))
     (is (contains? (symbols-in emitted) 'b3-build-operation-records))
     (is (contains? (symbols-in emitted) 'b3-build-block-records))
-    (is (contains? (symbols-in emitted) 'b3-bounded-arm64-macos-policy-record))))
+    (is (contains? (symbols-in emitted)
+                   'b3-bounded-llvm-x86_64-linux-policy-record))
+    (is (contains? (symbols-in builder) 'b3-linux-target-reason))
+    (is (contains? (symbols-in builder) 'b3-target-rejected))))
 
 (deftest sh07-b36-b3-source-model-and-bounded-builder-execute
-  (let [target (invoke 'build-b3-target-record
-                       ["arm64-apple-macosx14.0.0" "layout" "generic"
-                        "+v8a" {:calling-convention :darwin-pcs-ccc}])
-        manifest (invoke 'build-b3-llvm-backend-manifest
-                         [target [:llvm-ir] [:verified-mir]])
-        verification (invoke 'verify-b3-llvm-backend-design [manifest])
-        policy (invoke 'b3-bounded-arm64-macos-policy-record [])
-        rejected (invoke 'b3-build-bounded-arm64-macos-llvm [nil])]
-    (is (= :gravity/b3-target-data-layout-record (:artifact target)))
-    (is (= :gravity/llvm-backend-manifest (:artifact manifest)))
-    (is (true? (:source-model-only? manifest)))
-    (is (= :gravity/b3-llvm-backend-verification (:artifact verification)))
-    (is (false? (:production-backend-execution? verification)))
-    (is (= :gravity/b3-bounded-arm64-macos-policy (:artifact policy)))
-    (is (= :partial-bounded-executable-slice (:backend-status policy)))
-    (is (false? (:whole-b3? policy)))
-    (is (false? (:self-hosted? policy)))
-    (is (= :rejected (:status rejected)))
-    (is (= "B1-INPUT" (:diagnostic rejected)))
-    (is (= :exact-mir-module-envelope (:missing-fact rejected)))
-    (is (nil? (:operation-id rejected)))))
+  (let [forms (source-forms)
+        by-name (into {} (map (juxt second identity)
+                              (filter #(and (seq? %)
+                                            (#{'def 'defn} (first %)))
+                                      forms)))
+        policy (nth (get by-name
+                         'b3-bounded-llvm-x86_64-linux-policy-record)
+                    2)
+        policy-text (pr-str policy)
+        builder (get by-name 'b3-build-bounded-llvm-x86_64-linux)
+        emitted (get by-name 'b3-build-emitted-lowering)]
+    (is (re-find #":canonical-target :llvm-x86_64-linux" policy-text))
+    (is (re-find #":target-triple \"x86_64-unknown-linux-gnu\""
+                 policy-text))
+    (is (re-find #":object-format :elf" policy-text))
+    (is (re-find #":architecture :x86_64" policy-text))
+    (is (re-find #":abi :sysv-amd64" policy-text))
+    (is (re-find #":calling-convention :sysv-amd64" policy-text))
+    (is (re-find #":unwind-strategy :dwarf-cfi" policy-text))
+    (is (re-find #":linux/process-startup" policy-text))
+    (is (re-find #":linux/elf-loader" policy-text))
+    (is (re-find #":linux/glibc-2.36" policy-text))
+    (is (re-find #":elf-x86_64-object" policy-text))
+    (is (re-find #":elf-x86_64-executable" policy-text))
+    (is (re-find #":clojure-seed-boundary\? true" policy-text))
+    (is (re-find #":public\? false" policy-text))
+    (is (re-find #":release\? false" policy-text))
+    (is (re-find #":self-hosted\? false" policy-text))
+    (is (re-find #":whole-b3\? false" policy-text))
+    (is (contains? (symbols-in builder) 'b3-linux-target-reason))
+    (is (contains? (symbols-in builder) 'b3-target-rejected))
+    (is (re-find #":gravity/b3-llvm-x86_64-linux-elf-emission"
+                 (pr-str emitted)))
+    (is (re-find #":gravity/p15-s23-b3-authenticated-llvm-x86_64-linux-artifact"
+                 (pr-str emitted)))))
 
 (deftest sh07-b36-b3-claim-boundary-remains-explicit
   (let [forms (source-forms)
         by-name (into {} (map (juxt second identity) (rest forms)))
         contract (nth (get by-name 'b3-llvm-backend-contract) 2)
-        policy (invoke 'b3-bounded-arm64-macos-policy-record [])]
+        policy (nth (get by-name
+                         'b3-bounded-llvm-x86_64-linux-policy-record)
+                    2)
+        legacy (nth (get by-name
+                         'b3-bounded-arm64-macos-policy-record)
+                    2)
+        builder (get by-name 'b3-build-bounded-llvm-x86_64-linux)]
     (is (= :not-claimed (:production-backend-status contract)))
     (is (= :source-model-bridge (:scope contract)))
     (is (contains? (set (:forbidden contract)) :source-to-llvm-shortcut))
     (is (contains? (set (:forbidden contract))
                    :llvm-undefined-behavior-as-optimization))
-    (is (false? (:release? policy)))
-    (is (false? (:public? policy)))
-    (is (true? (:opt-in-required? policy)))
-    (is (seq (:unsupported-surface policy)))))
+    (is (re-find #":clojure-seed-boundary\? true" (pr-str policy)))
+    (is (re-find #":public\? false" (pr-str policy)))
+    (is (re-find #":release\? false" (pr-str policy)))
+    (is (re-find #":self-hosted\? false" (pr-str policy)))
+    (is (re-find #":whole-b3\? false" (pr-str policy)))
+    (is (re-find #":status :rejected" (pr-str legacy)))
+    (is (re-find #":diagnostic \"B3-TARGET\"" (pr-str legacy)))
+    (is (contains? (symbols-in builder) 'b3-linux-target-reason))
+    (is (contains? (symbols-in builder) 'b3-target-rejected))))
+
+(deftest sh07-b36-b3-linux-target-selection-is-source-owned-and-fail-closed
+  (let [forms (source-forms)
+        definitions (filter #(and (seq? %)
+                                   (#{'def 'defn} (first %))) forms)
+        by-name (into {} (map (juxt second identity) definitions))
+        target-reason (get by-name 'b3-linux-target-reason)
+        target-rejection (get by-name 'b3-target-rejected)
+        builder (get by-name 'b3-build-bounded-llvm-x86_64-linux)
+        emitted (get by-name 'b3-build-emitted-lowering)
+        legacy-builder (get by-name 'b3-build-bounded-arm64-macos-llvm)
+        source-text (slurp (path b3-relative-path))]
+    (testing "the source owns one canonical Linux target"
+      (is (contains? (symbols-in target-reason) 'b3-linux-target-fields-reason))
+      (is (re-find #":llvm-x86_64-linux" (pr-str target-reason)))
+      (is (re-find #":requested-target" (pr-str target-reason)))
+      (is (re-find #":source-target" (pr-str target-reason)))
+      (is (re-find #":identity-bearing\?" (pr-str target-reason)))
+      (is (re-find #":downstream-lowering-required\?" (pr-str target-reason)))
+      (is (re-find #":x86_64-unknown-linux-gnu|x86_64" source-text))
+      (is (re-find #":gravity/b3-bounded-llvm-x86_64-linux-lowering"
+                   (pr-str emitted)))
+      (is (re-find #":gravity/b3-llvm-x86_64-linux-elf-emission"
+                   (pr-str emitted)))
+      (is (re-find #":gravity/p15-s23-b3-authenticated-llvm-x86_64-linux-artifact"
+                   (pr-str emitted))))
+    (testing "hostile target spellings reject before emission"
+      (doseq [hostile [":llvm" ":llvm-x86_64-darwin" ":llvm-arm64-darwin"
+                       ":llvm-aarch64-linux" ":darwin" ":mach-o" ":arm64"
+                       ":aarch64"]]
+        (is (re-find (re-pattern (java.util.regex.Pattern/quote hostile))
+                     source-text)
+            (str "missing fail-closed hostile target literal " hostile)))
+      (is (re-find #"B3-TARGET" (pr-str target-rejection)))
+      (is (re-find #":emission-attempted\? false" (pr-str target-rejection)))
+      (is (re-find #":fallback :reject-no-jvm-or-clojure-fallback"
+                   (pr-str target-rejection)))
+      (is (re-find #":canonical-linux-target-required" (pr-str target-reason)))
+      (is (re-find #":exact-target-request-metadata-required"
+                   (pr-str target-reason)))
+      (is (contains? (symbols-in builder) 'b3-linux-target-reason))
+      (is (contains? (symbols-in builder) 'b3-target-rejected))
+      (is (contains? (symbols-in legacy-builder) 'b3-target-rejected))
+      (is (not (contains? (symbols-in legacy-builder)
+                          'b3-build-validated-cfg))))))
 
 (deftest sh07-b36-authentic-bounded-llvm-lowering-executes
   (if (= "1" (System/getenv "GRAVITY_SH07_B36_EXECUTION"))
@@ -435,7 +516,7 @@
       (is (= :accepted-for-bounded-llvm (:status packet)))
       (is (= (:optimized-mir packet) mir))
       (is (= :constructed-unverified (:status lowering)))
-      (is (= :gravity/b3-bounded-arm64-macos-lowering
+      (is (= :gravity/b3-bounded-llvm-x86_64-linux-lowering
              (:artifact lowering)))
       (is (string? (:llvm-ir lowering)))
       (is (<= (count (:llvm-ir lowering)) 65536))
@@ -498,7 +579,7 @@
           definition-index
           (first (keep-indexed
                   (fn [index definition]
-                    (when (= 'b3-build-bounded-arm64-macos-llvm
+                    (when (= 'b3-build-bounded-llvm-x86_64-linux
                              (:name definition))
                       index))
                   (:definitions c)))

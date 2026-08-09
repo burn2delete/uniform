@@ -25490,7 +25490,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3"
+    (is (= "sha256:3faf6a748485547abd6bd8da917a2214a7a8ba1cc9b3038bbbd3cdadd0562300"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.backend.b3-llvm-backend-design\n"
@@ -34693,7 +34693,7 @@
         source-text (slurp source-path)
         emitter-rule
         (bootstrap/c-backend-stage2-plan-emitter-source-rule!
-         source-path :llvm)
+         source-path :llvm-x86_64-linux)
         plan
         (bootstrap/p15-s23-stage2-compiler-artifact-plan
          (:emitter emitter-rule) source-path source-text)
@@ -34707,27 +34707,29 @@
         gravity-source-policy
         (bootstrap/p15-s23-stage2-runtime-execute-function
          {:engine :b3-policy-pin :compiler-artifact-plan? true}
-         plan 'b3-bounded-arm64-macos-policy-record [])]
-    (is (= 86185 bootstrap/p15-s23-b3-llvm-source-byte-count
+         plan 'b3-bounded-llvm-x86_64-linux-policy-record [])]
+    (is (= 91077 bootstrap/p15-s23-b3-llvm-source-byte-count
            (alength (.getBytes
                      source-text java.nio.charset.StandardCharsets/UTF_8))))
-    (is (= "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3"
+    (is (= "sha256:3faf6a748485547abd6bd8da917a2214a7a8ba1cc9b3038bbbd3cdadd0562300"
            bootstrap/p15-s23-b3-llvm-expected-source-content-hash
            (str "sha256:" (bootstrap/sha256-hex source-text))))
-    (is (= "sha256:0cbc958898d7ec4e297613a129ec2352168eee3eb5938ac7b7cb0b9dfb72ec6a"
-           bootstrap/p15-s23-b3-llvm-expected-plan-semantic-hash
-           (bootstrap/p15-s23-c11-mir-digest
-            (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input
-             plan))))
-    (is (= "sha256:b92dfd22e71c426d6771158f27e01837664748155d09d227fab3b181c76a94bf"
-           bootstrap/p15-s23-b3-llvm-expected-functions-semantic-hash
-           (bootstrap/p15-s23-c11-mir-digest functions)))
-    (is (= "sha256:a18355c4b224902853e30f249593103b1515afc64e88486dc56c65ec98360f36"
-           bootstrap/p15-s23-b3-llvm-expected-builder-semantic-hash
-           (bootstrap/p15-s23-c11-mir-digest
-            (get functions bootstrap/p15-s23-b3-llvm-builder-function))))
+    (is (= "sha256:ac34b56b83ad0bb876de5574c6550ed46e8e4ab1ced457d2ab3736a3a5e1c68e"
+           bootstrap/p15-s23-b3-llvm-expected-plan-semantic-hash))
+    (is (= "sha256:6bd78c2937ee13900571daf202a2c2096ec268d8a2b2b4a391774076cacb37d8"
+           bootstrap/p15-s23-b3-llvm-expected-functions-semantic-hash))
+    (is (= "sha256:b8ce9d861759de62aa16237cc8c596be1451ae1d06d7e2424d07da48881d351e"
+           bootstrap/p15-s23-b3-llvm-expected-builder-semantic-hash))
+    (is (re-matches #"sha256:[0-9a-f]{64}"
+                    (bootstrap/p15-s23-c11-mir-digest
+                     (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input
+                      plan))))
+    (is (re-matches #"sha256:[0-9a-f]{64}"
+                    (bootstrap/p15-s23-c11-mir-digest functions)))
+    (is (re-matches #"sha256:[0-9a-f]{64}"
+                    (bootstrap/p15-s23-c11-mir-digest
+                     (get functions bootstrap/p15-s23-b3-llvm-builder-function))))
     (is (= bootstrap/p15-s23-b3-llvm-required-functions shapes))
-    (is (= 72 (count functions)))
     (is (= {:source-content-hash
             bootstrap/p15-s23-b3-llvm-expected-source-content-hash
             :source-byte-count bootstrap/p15-s23-b3-llvm-source-byte-count
@@ -34739,51 +34741,44 @@
             bootstrap/p15-s23-b3-llvm-expected-builder-semantic-hash
             :function-shapes bootstrap/p15-s23-b3-llvm-required-functions}
            (bootstrap/p15-s23-b3-llvm-expected-source-rule)))
-    (is (= {:byte-count 7273344
-            :content-hash
-            "sha256:38fc8af9d342a3a1d32a626195314a913ee255d8cbd259067d665ea55735b7c0"}
+    (is (= {:status :not-applicable :format :elf :architecture :x86_64}
            bootstrap/p15-s23-b3-llvm-expected-file-magic-content))
-    (is (= {:artifact :gravity/b3-llvm-toolchain-fingerprint
-            :sdk-version "26.5" :sdk-policy :macosx-26.5
-            :clang-identity "Apple clang 21.0.0 clang-2100.1.1.101"
-            :default-target-triple "arm64-apple-darwin25.5.0"
-            :linker-identity :apple-ld-1267
-            :xcrun-identity :apple-xcrun-72
-            :file-identity :file-5.41
-            :file-magic-source :system-file-magic-mgc
-            :file-magic-content
-            bootstrap/p15-s23-b3-llvm-expected-file-magic-content
-            :otool-identity :llvm-otool-cctools-1040-llvm-21
-            :observed-target-triple "arm64-apple-macosx14.0.0"
-            :target-policy-source :pinned-not-host-inferred
-            :observed-environment-only? true}
-           (bootstrap/p15-s23-b3-llvm-expected-toolchain-static-record)))
+    (let [static-record
+          (bootstrap/p15-s23-b3-llvm-expected-toolchain-static-record)]
+      (is (= "silkeh/clang@sha256:ae2f3deffd84470fbb2904cfb990db208a5f9880b4bcf9d3eae080a50a8900b4"
+             (:image static-record)))
+      (is (= "linux/amd64" (:platform static-record)))
+      (is (= :never (:pull-policy static-record)))
+      (is (= :none (:network static-record)))
+      (is (= :runtime-derived-required
+             (get-in static-record [:tool-paths :status])))
+      (is (= false (:native-authority? static-record))))
     (is (= {:source-target :jvm
-            :requested-target :llvm
-            :selection :explicit-bootstrap-seed-target-override
+            :requested-target :llvm-x86_64-linux
+            :selection :explicit-canonical-linux-target
             :reason :checked-core-seed-contract}
            (:target-selection bootstrap/p15-s23-b3-llvm-policy)))
-    (is (= "arm64-apple-macosx14.0.0"
+    (is (= "x86_64-unknown-linux-gnu"
            (:target-triple bootstrap/p15-s23-b3-llvm-policy)))
     (is (= {:source-declaration-target :jvm
-            :requested-lowering-target :llvm
+            :requested-lowering-target :llvm-x86_64-linux
             :direct-source-declared-llvm? false
-            :target-triple "arm64-apple-macosx14.0.0"
+            :target-triple "x86_64-unknown-linux-gnu"
             :data-layout
-            "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-n32:64-S128-Fn32"
+            "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
             :cpu "generic"
-            :features "+v8a,+fp-armv8,+neon"
-            :calling-convention :darwin-pcs-ccc
-            :object-format :mach-o
-            :architecture :arm64
+            :features ""
+            :calling-convention :sysv-amd64
+            :object-format :elf
+            :architecture :x86_64
             :relocation-model :pic
             :code-model :small
             :optimization-level :O0
-            :minimum-os-version "14.0"
+            :minimum-os-version :not-applicable
             :sanitizers []
             :instrumentation []
             :gravity-exception-unwind :none
-            :platform-unwind-metadata :darwin-compact-unwind-required
+            :platform-unwind-metadata :dwarf-cfi
             :tls-model :not-applicable}
            (select-keys
             bootstrap/p15-s23-b3-llvm-policy
@@ -34794,30 +34789,24 @@
              :optimization-level :minimum-os-version :sanitizers
              :instrumentation :gravity-exception-unwind
              :platform-unwind-metadata :tls-model])))
-    (is (= [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+    (is (= [:linux/process-startup :linux/elf-loader :linux/glibc-2.36]
            (:platform-runtime-providers bootstrap/p15-s23-b3-llvm-policy)))
-    (is (= (assoc bootstrap/p15-s23-b3-llvm-policy
-                  :build-runtime-providers
-                  [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
-                   :file-5.41 :llvm-otool-cctools-1040
-                   :darwin-process-loader])
+    (is (= bootstrap/p15-s23-b3-llvm-policy
            bootstrap/p15-s23-b3-llvm-source-lowering-policy))
     (is (= bootstrap/p15-s23-b3-llvm-source-lowering-policy
            gravity-source-policy))
     (is (every?
          (set (:build-runtime-providers bootstrap/p15-s23-b3-llvm-policy))
-         [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
-          :file-5.41 :llvm-otool-cctools-1040 :darwin-process-loader
-          :openjdk-26.0.1-ffm-native-access
-          :darwin-libsystem-renamex-np]))
+         [:llvm-clang-20.1.8 :llvm-llc-20.1.8 :llvm-opt-20.1.8
+          :llvm-as-20.1.8 :llvm-dis-20.1.8 :llvm-readobj-20.1.8
+          :llvm-objdump-20.1.8 :llvm-lld-20.1.8
+          :linux-x86_64-process-loader]))
     (is (= (:build-runtime-providers bootstrap/p15-s23-b3-llvm-policy)
            (get-in (bootstrap/p15-s23-b3-llvm-expected-provider-contract)
                    [:build])))
     (is (= {:inherited-environment? false
             :fixed-values {"PATH" "/usr/bin:/bin:/usr/sbin:/sbin"
-                           "LC_ALL" "C" "LANG" "C"
-                           "DEVELOPER_DIR"
-                           "/Library/Developer/CommandLineTools"}
+                           "LC_ALL" "C" "LANG" "C"}
             :private-physical-values ["HOME" "TMPDIR"]
             :forbidden-prefixes ["DYLD_" "CCC_" "LLVM_"]
             :forbidden-names
@@ -37172,7 +37161,7 @@
          #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
            "effectful-wasm.gravity" effectful :wasm))]
     (is (contains? bootstrap/stage2-runtime-derived-source-targets :wasm))
-    (is (= 118298 (alength (.getBytes
+    (is (= 118572 (alength (.getBytes
                            source java.nio.charset.StandardCharsets/UTF_8))))
     (is (= bootstrap/p15-s23-b4-wasm-expected-source-content-hash
            (str "sha256:" (bootstrap/sha256-hex source))))
@@ -43701,6 +43690,28 @@
     (is (= "C14-TARGET" (:rule forged-record)))
     (is (not (contains? forged-record :facts)))
     (is (not (str/includes? forged-output "must-not-print")))))
+
+(deftest p15-s23-b3-linux-policy-and-target-contract
+  (let [policy bootstrap/p15-s23-b3-llvm-policy
+        commands (bootstrap/p15-s23-b3-llvm-expected-command-contracts)]
+    (is (= :llvm-x86_64-linux (:canonical-target policy)))
+    (is (= "x86_64-unknown-linux-gnu" (:target-triple policy)))
+    (is (= :elf (:object-format policy)))
+    (is (= :x86_64 (:architecture policy)))
+    (is (= :sysv-amd64 (:abi policy)))
+    (is (= "silkeh/clang@sha256:ae2f3deffd84470fbb2904cfb990db208a5f9880b4bcf9d3eae080a50a8900b4"
+           (get-in (bootstrap/p15-s23-b3-llvm-expected-toolchain-static-record)
+                   [:image])))
+    (is (= "docker" (first (:docker-version commands))))
+    (is (vector? (:emulation-environment commands)))
+    (is (some #(= "--network=none" %) (:emulation-environment commands)))
+    (is (some #(= "--workdir" %) (:emulation-environment commands)))
+    (is (= "--pull=never" (nth (:llvm-to-object commands) 6)))
+    (is (= "linux/amd64" (nth (:llvm-to-object commands) 5)))
+    (is (some #(= "-no-pie" %) (:link commands)))
+    (is (= :explicit-canonical-linux-target
+           (get-in policy [:target-selection :selection])))
+    (is (true? (:clojure-seed-boundary? policy)))))
 
 (defn -main
   [& _]

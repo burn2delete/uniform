@@ -20,6 +20,8 @@
              build-b3-pass-pipeline-record
              build-b3-llvm-artifact-record
              verify-b3-llvm-backend-design
+             b3-bounded-llvm-x86_64-linux-policy-record
+             b3-build-bounded-llvm-x86_64-linux
              b3-build-bounded-arm64-macos-llvm])
   (:effects #{})
   (:capabilities #{})
@@ -531,17 +533,40 @@
 
 (defn b3-bounded-arm64-macos-policy-record
   []
-  {:artifact :gravity/b3-bounded-arm64-macos-policy
+  {:artifact :gravity/b3-rejected-legacy-arm64-macos-policy
+   :backend :gravity.backend/llvm
+   :status :rejected
+   :diagnostic "B3-TARGET"
+   :requested-target :llvm-arm64-darwin
+   :rejected-targets [:darwin :mach-o :arm64 :aarch64]
+   :nonclaims [:b3-bounded-llvm-arm64-darwin
+               :b3-production-backend-execution
+               :b3-object-or-executable-emission
+               :b3-public-gravity-routing
+               :b3-release
+               :b3-self-hosted]
+   :whole-b3? false
+   :public? false
+   :release? false
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn b3-bounded-llvm-x86_64-linux-policy-record
+  []
+  {:artifact :gravity/b3-bounded-llvm-x86_64-linux-policy
+   :schema-version 1
    :owner :gravity.backend/b3-llvm
+   :backend :llvm
+   :profile :hosted
    :tier :experimental
    :exposure :internal
    :opt-in-required? true
    :backend-status :partial-bounded-executable-slice
    :source-declaration-target :jvm
-   :requested-lowering-target :llvm
+   :requested-lowering-target :llvm-x86_64-linux
    :target-selection {:source-target :jvm
-                      :requested-target :llvm
-                      :selection :explicit-bootstrap-seed-target-override
+                      :requested-target :llvm-x86_64-linux
+                      :selection :explicit-canonical-linux-target
                       :reason :checked-core-seed-contract}
    :direct-source-declared-llvm? false
    :full-target-selection-credit? false
@@ -551,52 +576,76 @@
    :identity-path-neutrality
    :checkout-temp-output-and-effective-tool-installation
    :tool-launcher-path-policy :pinned-system-launchers
-   :runtime-status :no-gravity-helpers-platform-runtime-required
-   :target-triple "arm64-apple-macosx14.0.0"
-   :data-layout "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-n32:64-S128-Fn32"
+   :canonical-target :llvm-x86_64-linux
+   :target :llvm-x86_64-linux
+   :target-triple "x86_64-unknown-linux-gnu"
+   :data-layout
+   "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
    :cpu "generic"
-   :features "+v8a,+fp-armv8,+neon"
-   :calling-convention :darwin-pcs-ccc
-   :object-format :mach-o
-   :architecture :arm64
+   :features ""
+   :calling-convention :sysv-amd64
+   :abi :sysv-amd64
+   :object-format :elf
+   :architecture :x86_64
+   :os :linux
    :relocation-model :pic
    :code-model :small
    :optimization-level :O0
-   :minimum-os-version "14.0"
+   :minimum-os-version :not-applicable
+   :unwind-strategy :dwarf-cfi
+   :gravity-exception-unwind :none
+   :platform-unwind-metadata :dwarf-cfi
+   :tls-model :not-applicable
    :sanitizers []
    :instrumentation []
    :gravity-runtime-providers []
    :platform-runtime-providers
-   [:darwin/process-startup :darwin/dyld :darwin/libsystem]
-   :platform-runtime-provider-status :requires-otool-verification
+   [:linux/process-startup :linux/elf-loader :linux/glibc-2.36]
+   :platform-runtime-provider-status :requires-elf-x86_64-verification
    :build-runtime-providers
-   [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
-    :file-5.41 :llvm-otool-cctools-1040 :darwin-process-loader]
-   :requested-vs-emitted-binding :requires-seed-and-clang-verification
-   :gravity-exception-unwind :none
-   :platform-unwind-metadata :darwin-compact-unwind-required
-   :tls-model :not-applicable
+   [:llvm-clang-20.1.8 :llvm-llc-20.1.8 :llvm-opt-20.1.8
+    :llvm-as-20.1.8 :llvm-dis-20.1.8 :llvm-readobj-20.1.8
+    :llvm-objdump-20.1.8 :llvm-lld-20.1.8
+    :linux-x86_64-process-loader]
+   :requested-vs-emitted-binding :requires-canonical-linux-target
+   :runtime-status :linux-hosted-llvm-no-jvm-or-clojure-fallback
+   :no-host-fallback? true
    :supported-profiles #{:hosted}
    :supported-operation-families
    [:scalar-i64-bool-nil :forwarding :truthiness :single-conditional
     :signed-i64-integer-comparisons]
    :unsupported-profiles [:hardware :firmware :kernel :native
                           :distributed :ai :meta :gpu :formal]
+   :unsupported-targets [:darwin :mach-o :arm64 :aarch64
+                         :llvm-arm64-darwin :llvm-aarch64-linux
+                         :llvm-x86_64-darwin :llvm]
    :required-evidence [:authenticated-c11-replay
                        :independent-lowering-reconstruction
-                       :llvm-tool-acceptance
-                       :mach-o-arm64-object
+                       :llvm-tool-acceptance :elf-x86_64-object
+                       :elf-x86_64-executable
                        :differential-process-result
                        :content-hash-and-provenance]
+   :raw-lowering-kind :gravity/b3-bounded-llvm-x86_64-linux-lowering
+   :final-artifact-kind
+   :gravity/p15-s23-b3-authenticated-llvm-x86_64-linux-artifact
+   :emission-kind :gravity/b3-llvm-x86_64-linux-elf-emission
+   :executable-carrier-distinct? true
    :unsupported-surface [:strings :quote :str :println :runtime-checks
                          :effects :program-capabilities :domain-anchors
                          :multiple-functions :multiple-conditionals
                          :non-scalar-types :integer-outside-signed-i64
-                         :process-result-outside-0-to-255]
+                         :process-result-outside-0-to-255
+                         :jvm-fallback :clojure-fallback]
+   :claims {:clojure-seed-boundary? true
+            :public? false
+            :release? false
+            :self-hosted? false
+            :whole-b3? false}
    :whole-b3? false
    :public? false
    :release? false
-   :self-hosted? false})
+   :self-hosted? false
+   :clojure-seed-boundary? true})
 
 (defn b3-last
   [values]
@@ -625,6 +674,59 @@
     (if (map? (get value (first fields)))
       (b3-all-map-fields? value (rest fields))
       false)))
+
+(defn b3-linux-target-fields-reason
+  [metadata fields]
+  (if (= (count fields) 0)
+    nil
+    (let [field (first fields)]
+      (if (= (get metadata (first field)) (second field))
+        (b3-linux-target-fields-reason metadata (rest fields))
+        (second (rest field))))))
+
+(defn b3-linux-target-reason
+  [mir]
+  (let [metadata (get mir :target-request-metadata)
+        canonical :llvm-x86_64-linux]
+    (if (= (get mir :target-request) canonical)
+      (if (map? metadata)
+        (if (b3-exact-keys?
+             metadata
+             #{:requested-target :source-target :identity-bearing?
+               :downstream-lowering-required?})
+          (b3-linux-target-fields-reason
+           metadata
+           [[:requested-target canonical :canonical-target-request-required]
+            [:source-target :jvm :source-target-binding-required]
+            [:identity-bearing? false :identity-bearing-target-metadata]
+            [:downstream-lowering-required? true
+             :downstream-lowering-target-metadata]])
+          :exact-target-request-metadata-required)
+        :target-request-metadata-required)
+      :canonical-linux-target-required)))
+
+(defn b3-target-rejected
+  [reason mir]
+  {:artifact :gravity/b3-llvm-target-rejection
+   :status :rejected
+   :diagnostic "B3-TARGET"
+   :missing-fact reason
+   :target-request (get mir :target-request)
+   :target-request-metadata (get mir :target-request-metadata)
+   :fallback :reject-no-jvm-or-clojure-fallback
+   :emission-attempted? false
+   :nonclaims [:b3-production-backend-execution
+               :b3-object-or-executable-emission
+               :b3-external-target-execution
+               :b3-public-gravity-routing
+               :b3-release
+               :b3-self-hosted
+               :b3-whole]
+   :claims {:clojure-seed-boundary? true
+            :public? false
+            :release? false
+            :self-hosted? false
+            :whole-b3? false}})
 
 (defn b3-scalar-carrier-type?
   [type]
@@ -700,7 +802,7 @@
           (if (= (get mir :target-independent?) true)
             (if (= (get mir :profile) :hosted)
               (if (= (get mir :source-target) :jvm)
-              (if (= (get mir :target-request) :llvm)
+              (if (= (get mir :target-request) :llvm-x86_64-linux)
                 (if (= (set (keys (get mir :functions))) #{(quote main)})
                   (if (= (get mir :globals) {})
                     (if (= (get mir :runtime-check-table) {})
@@ -1896,18 +1998,27 @@
              "; Gravity authenticated B3 bounded LLVM\n"
              "source_filename = \"gravity-b3-internal\"\n"
              "target datalayout = \""
-             (get (b3-bounded-arm64-macos-policy-record) :data-layout)
+             (get (b3-bounded-llvm-x86_64-linux-policy-record) :data-layout)
              "\"\n"
              "target triple = \""
-             (get (b3-bounded-arm64-macos-policy-record) :target-triple)
+             (get (b3-bounded-llvm-x86_64-linux-policy-record) :target-triple)
              "\"\n\n"
              "define ccc i32 @main() {\n"
              (b3-blocks-text block-records "")
              "}\n")]
         (if (<= (count ir) 65536)
-          {:artifact :gravity/b3-bounded-arm64-macos-lowering
+          {:artifact :gravity/b3-bounded-llvm-x86_64-linux-lowering
+           :schema-version 1
            :status :constructed-unverified
-           :policy (b3-bounded-arm64-macos-policy-record)
+           :policy (b3-bounded-llvm-x86_64-linux-policy-record)
+           :target :llvm-x86_64-linux
+           :canonical-target :llvm-x86_64-linux
+           :backend :llvm
+           :profile :hosted
+           :executable-carrier-kind
+           :gravity/b3-llvm-x86_64-linux-elf-emission
+           :final-artifact-kind
+           :gravity/p15-s23-b3-authenticated-llvm-x86_64-linux-artifact
            :source-mir-id (get mir :module-id)
            :block-order block-order
            :block-labels block-labels
@@ -1918,7 +2029,12 @@
            :semantic-result semantic-result
            :expected-exit-code expected-exit-code
            :runtime-providers
-           [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+           [:linux/process-startup :linux/elf-loader :linux/glibc-2.36]
+           :build-providers
+           [:llvm-clang-20.1.8 :llvm-llc-20.1.8 :llvm-opt-20.1.8
+            :llvm-as-20.1.8 :llvm-dis-20.1.8 :llvm-readobj-20.1.8
+            :llvm-objdump-20.1.8 :llvm-lld-20.1.8
+            :linux-x86_64-process-loader]
            :emitted-metadata []
            :emitted-function-attributes []
            :proof-to-metadata-map {}
@@ -1938,7 +2054,15 @@
             :source-map-count (count (get mir :source-map))}
            :diagnostics []
            :clojure-seed-boundary? true
-           :self-hosted? false}
+           :self-hosted? false
+           :public? false
+           :release? false
+           :whole-b3? false
+           :claims {:clojure-seed-boundary? true
+                    :public? false
+                    :release? false
+                    :self-hosted? false
+                    :whole-b3? false}}
           (b3-rejected "B1-UNSUPPORTED" :bounded-llvm-ir-bytes {})))
       (b3-rejected "B1-UNSUPPORTED" :bounded-process-exit-code {}))))
 
@@ -1994,13 +2118,20 @@
         (b3-rejected "B1-INPUT" terminator-reason {}))
       (b3-rejected "B1-INPUT" block-reason {}))))
 
+(defn b3-build-bounded-llvm-x86_64-linux
+  [mir]
+  (let [target-reason (b3-linux-target-reason mir)]
+    (if (= target-reason nil)
+      (let [module-reason (b3-module-envelope-reason mir)]
+        (if (= module-reason nil)
+          (let [function (get (get mir :functions) 'main)
+                function-reason (b3-function-envelope-reason function)]
+            (if (= function-reason nil)
+              (b3-build-validated-cfg mir function)
+              (b3-rejected "B1-INPUT" function-reason {})))
+          (b3-rejected "B1-INPUT" module-reason {})))
+      (b3-target-rejected target-reason mir))))
+
 (defn b3-build-bounded-arm64-macos-llvm
   [mir]
-  (let [module-reason (b3-module-envelope-reason mir)]
-    (if (= module-reason nil)
-      (let [function (get (get mir :functions) 'main)
-            function-reason (b3-function-envelope-reason function)]
-        (if (= function-reason nil)
-          (b3-build-validated-cfg mir function)
-          (b3-rejected "B1-INPUT" function-reason {})))
-      (b3-rejected "B1-INPUT" module-reason {}))))
+  (b3-target-rejected :legacy-darwin-arm64-route-disabled mir))

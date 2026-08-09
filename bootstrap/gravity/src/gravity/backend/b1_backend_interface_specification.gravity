@@ -370,10 +370,12 @@
              :architecture :relocation-model :code-model
              :optimization-level :minimum-os-version :sanitizers
              :instrumentation :backend :tier :exposure
-             :source-declaration-target :requested-lowering-target
+             :canonical-target :source-declaration-target
+             :requested-lowering-target
              :selection :reason :direct-source-declared-llvm?
              :profile-eligibility :fingerprint})
-      (if (= [(get target :request) (get target :triple)
+      (if (= [(get target :request) (get target :canonical-target)
+              (get target :triple)
               (get target :data-layout) (get target :cpu)
               (get target :features) (get target :object-format)
               (get target :architecture) (get target :relocation-model)
@@ -386,15 +388,15 @@
               (get target :selection) (get target :reason)
               (get target :direct-source-declared-llvm?)
               (get target :profile-eligibility)]
-             [:llvm "arm64-apple-macosx14.0.0"
-              "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-n32:64-S128-Fn32"
-              "generic" "+v8a,+fp-armv8,+neon" :mach-o :arm64 :pic
-              :small :O0 "14.0" [] [] :gravity.backend/llvm
+             [:llvm :llvm-x86_64-linux "x86_64-unknown-linux-gnu"
+              "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+              "generic" "" :elf :x86_64 :pic
+              :small :O0 :not-applicable [] [] :gravity.backend/llvm
               :experimental :internal :jvm :llvm
               :explicit-bootstrap-seed-target-override
               :checked-core-seed-contract false [:hosted]])
         (= (get target :fingerprint)
-           "sha256:e3082b8a45534a67a2cf58fa2ddbcd385aa9463246e85955756b0a386cc36255")
+           "sha256:25e57788c750cb3d184fe54c68fc9e2e69c807bb5c1510e12160ed53a89df593")
         false)
       false)
     false))
@@ -402,10 +404,10 @@
 (defn b1-c14-abi-valid?
   [abi]
   (= abi
-     {:calling-convention :darwin-pcs-ccc :object-format :mach-o
-      :architecture :arm64 :integer-carrier :i64 :process-result :i32
+     {:calling-convention :sysv-amd64 :object-format :elf
+      :architecture :x86_64 :integer-carrier :i64 :process-result :i32
       :gravity-exception-unwind :none
-      :platform-unwind-metadata :darwin-compact-unwind-required
+      :platform-unwind-metadata :dwarf-cfi
       :return-type :i32}))
 
 (defn b1-c14-runtime-valid?
@@ -413,7 +415,7 @@
   (= runtime
      {:gravity-runtime-providers []
       :platform-runtime-providers
-      [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+      [:linux/process-startup :linux/elf-loader :linux/glibc-2.36]
       :status :no-gravity-helpers-platform-runtime-required
       :full-conformance? false}))
 
@@ -421,13 +423,13 @@
   [providers]
   (= providers
      {:semantic []
-      :build [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
-              :file-5.41 :llvm-otool-cctools-1040
-              :darwin-process-loader
-              :openjdk-26.0.1-ffm-native-access
-              :darwin-libsystem-renamex-np]
-      :platform [:darwin/process-startup :darwin/dyld
-                 :darwin/libsystem]}))
+      :build [:llvm-clang-20.1.8 :llvm-llc-20.1.8
+              :llvm-opt-20.1.8 :llvm-as-20.1.8
+              :llvm-dis-20.1.8 :llvm-readobj-20.1.8
+              :llvm-objdump-20.1.8 :llvm-lld-20.1.8
+              :linux-x86_64-process-loader]
+      :platform [:linux/process-startup :linux/elf-loader
+                 :linux/glibc-2.36]}))
 
 (defn b1-nonnegative-integer?
   [value]
@@ -727,7 +729,7 @@
                 (get (get bindings :dependencies) :entry-count)
                 (get (get bindings :c11-verifier) :entry-count)
                 (get (get bindings :c13-optimization) :entry-count)]
-               [2 23 8 4 3 2 3 2 6 1 4])
+               [2 24 8 4 3 2 3 2 6 1 4])
           (if (b1-content-binding-valid? (get bindings :profile))
             (if (b1-content-binding-valid? (get bindings :target))
               (if (b1-content-binding-valid? (get bindings :abi))
@@ -795,10 +797,10 @@
         (get rule :compiled-by) (get rule :executed-by)
         (get rule :clojure-seed-boundary?) (get rule :self-hosted?)
         (get rule :function-shapes)]
-       [:gravity/c11-pinned-source-rule :gravity-source 113008
-        "sha256:95fd82d9484d0a1b7a93b3da10ed6c490c7b051e253da0eb1eb58f0f08334fe3"
-        "sha256:6012e4be9c87a786ae26cdcbc85a26eedae2c602e7a407932ec411e5634cd2ae"
-        "sha256:c6be9a17ccb1c6d160fcc2916ecf2ebba41ebf16259cf66cbf5ca6a004f59ef5"
+       [:gravity/c11-pinned-source-rule :gravity-source 253588
+        "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"
+        "sha256:974d3949e224d136a2d95c0c348b11c8858becdddd47542ffd4ae24c0233fb39"
+        "sha256:ece068d2c82e550798cb98e1b0ac9bd0c5e15b5c932c591b93b821411eed89a4"
         'c11-build-target-independent-mir
         "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
         'verify-c11-mir-module
@@ -870,10 +872,10 @@
         (get rule :executed-by) (get rule :self-hosted?)
         (get rule :function-shapes)]
        [:gravity/pinned-gravity-source-rule
-        :gravity.compiler/c13-mir-optimization 126236
-        "sha256:14bb6c059b7654d818210dbf1b201d98f33a43fec6e527cbd12aaa4b9529f8ab"
-        "sha256:5d88c74816d75297d37e1030295ca97785d18dafb757913f0df887d70d6cc48c"
-        "sha256:c48051f293ece207f6fca30b6d4ad5d57f8310f66fb7220f326cf1e4e75f5095"
+        :gravity.compiler/c13-mir-optimization 126249
+        "sha256:0cac3e273677061bf11144f3dc3520d93c4c67dbf607e5f03d68312f35265aad"
+        "sha256:3ca443670addd91ff7e271b29f5e0e22f19b2bb9dd4df38154e31e04d794fb5f"
+        "sha256:3f32029679ca91ca0e8da01f0e326f624adaa42a46b00df17007624918478204"
         'c13-build-bounded-identity-optimized-mir
         "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3"
         :gravity-source :clojure-stage0-seed
@@ -927,7 +929,7 @@
                                      :binding)
                                 :pass-execution-record-id))
                       (= (get dependencies :b3-source)
-                         "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3")
+                         "sha256:3faf6a748485547abd6bd8da917a2214a7a8ba1cc9b3038bbbd3cdadd0562300")
                       false)
                     false)
                   false)
@@ -990,7 +992,8 @@
                                    [:authenticated-c11-replay
                                     :independent-lowering-reconstruction
                                     :llvm-tool-acceptance
-                                    :mach-o-arm64-object
+                                    :elf-x86_64-object
+                                    :elf-x86_64-executable
                                     :differential-process-result
                                     :content-hash-and-provenance])
                               (if (= (get request :source-map)
@@ -1098,10 +1101,10 @@
           (get rule :compiled-by) (get rule :executed-by)
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
-          :gravity.compiler/c14-target-lowering 168685
-          "sha256:931928313d0218aca740a906634ea1fa3a21058b546ce3f0ddc7329a059b566d"
-          "sha256:6fc0eb4d2b3329f1de6a06da066c426012d063b0ec3f4b80db4ca39f6f7d5bbb"
-          "sha256:108b01f8c1b08f0abe56894ae2c7926eb8e9006b63fb9547ec1880ffdc246488"
+          :gravity.compiler/c14-target-lowering 173292
+          "sha256:5c500fd4ad8a6652ce9a8918ff31ee7d9947732b47860071f6dca0dfc61839ae"
+          "sha256:7c20817e74ff61662464c37a7714b71a2dee6158fd23e208c23ded658c76d9f2"
+          "sha256:b4d2092f619d2b827bf8060b76a59dfe2c96b3a737ba03e6a677d52d5f993611"
           'c14-build-bounded-llvm-lowering-record
           "sha256:982cf0d77a2026c55699d3ac44a0d0d9f0b29f1a214e2b54ab9bc2d97c5ab5b7"
           '{c14-bounded-optimized-input-valid?
@@ -1211,7 +1214,7 @@
         (if (= (get backend-manifest :accepts) [:gravity/mir])
           (if (= (get backend-manifest :supports-profiles) [:hosted])
             (if (= (get backend-manifest :emits)
-                   [:llvm-ir :mach-o-object :mach-o-executable])
+                   [:llvm-ir :elf-x86_64-object :elf-x86_64-executable])
               (if (= (get backend-manifest :rejects)
                      [:unverified-ir :unsupported-op :missing-proof
                       :implicit-ub :ambient-capability :profile-violation])
@@ -1235,6 +1238,19 @@
     false)
    false)
    false))
+
+(defn b1-c14-target-rejection?
+  [lowering]
+  (if (map? lowering)
+    (if (map? (get lowering :request))
+      (if (contains? (get lowering :request) :target)
+        (if (b1-c14-target-valid? (get (get lowering :request)
+                                       :target))
+          false
+          true)
+        false)
+      false)
+    false))
 
 (defn b1-build-bounded-llvm-authenticated-packet
   [lowering backend-manifest]
@@ -1319,9 +1335,15 @@
     {:artifact :gravity/b1-verified-backend-input-packet
      :schema-version 1
      :status :rejected
-     :diagnostic "B1-INPUT"
-     :missing-fact :accepted-c14-lowering-record
-     :diagnostics ["B1-INPUT"]}))
+     :diagnostic (if (b1-c14-target-rejection? lowering)
+                   "B1-TARGET"
+                   "B1-INPUT")
+     :missing-fact (if (b1-c14-target-rejection? lowering)
+                     :exact-linux-x86-64-target
+                     :accepted-c14-lowering-record)
+     :diagnostics [(if (b1-c14-target-rejection? lowering)
+                     "B1-TARGET"
+                     "B1-INPUT")]}))
 
 ; Separate C17 admission prevents a C backend from accepting an LLVM/Wasm
 ; lowering by changing labels.  The full bounded C14 payload, including the
@@ -1678,10 +1700,10 @@
           (get rule :compiled-by) (get rule :executed-by)
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
-          :gravity.compiler/c14-target-lowering 168685
-          "sha256:931928313d0218aca740a906634ea1fa3a21058b546ce3f0ddc7329a059b566d"
-          "sha256:6fc0eb4d2b3329f1de6a06da066c426012d063b0ec3f4b80db4ca39f6f7d5bbb"
-          "sha256:108b01f8c1b08f0abe56894ae2c7926eb8e9006b63fb9547ec1880ffdc246488"
+          :gravity.compiler/c14-target-lowering 173292
+          "sha256:5c500fd4ad8a6652ce9a8918ff31ee7d9947732b47860071f6dca0dfc61839ae"
+          "sha256:7c20817e74ff61662464c37a7714b71a2dee6158fd23e208c23ded658c76d9f2"
+          "sha256:b4d2092f619d2b827bf8060b76a59dfe2c96b3a737ba03e6a677d52d5f993611"
           'c14-build-bounded-c-lowering-record
           "sha256:3209bb1605d40c7a466a53eb01d6cf7a4d243210ce6a0c189ceb3b15564f09ee"
           '{c14-bounded-optimized-input-valid?
@@ -2701,10 +2723,10 @@
           (get rule :compiled-by) (get rule :executed-by)
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
-          :gravity.compiler/c14-target-lowering 168685
-          "sha256:931928313d0218aca740a906634ea1fa3a21058b546ce3f0ddc7329a059b566d"
-          "sha256:6fc0eb4d2b3329f1de6a06da066c426012d063b0ec3f4b80db4ca39f6f7d5bbb"
-          "sha256:108b01f8c1b08f0abe56894ae2c7926eb8e9006b63fb9547ec1880ffdc246488"
+          :gravity.compiler/c14-target-lowering 173292
+          "sha256:5c500fd4ad8a6652ce9a8918ff31ee7d9947732b47860071f6dca0dfc61839ae"
+          "sha256:7c20817e74ff61662464c37a7714b71a2dee6158fd23e208c23ded658c76d9f2"
+          "sha256:b4d2092f619d2b827bf8060b76a59dfe2c96b3a737ba03e6a677d52d5f993611"
           'c14-build-bounded-wasm-lowering-record
           "sha256:fe20574f102acb55063e64223715adf2e2fa40a25e9e147616ee554f9989b3fa"
           '{c14-bounded-optimized-input-valid?
