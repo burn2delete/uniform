@@ -431,7 +431,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             side_effect = root / "too-late"
             command = [
                 sys.executable, "-c",
-                f"import time; from pathlib import Path; time.sleep(0.2); Path({str(side_effect)!r}).write_text('bad')",
+                f"import time; from pathlib import Path; time.sleep(1.0); Path({str(side_effect)!r}).write_text('bad')",
             ]
 
             def slow_metrics(_pid: int) -> dict[str, object]:
