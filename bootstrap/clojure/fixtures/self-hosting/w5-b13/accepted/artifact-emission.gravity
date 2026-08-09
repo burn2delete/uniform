@@ -1,0 +1,467 @@
+(ns gravity.self-hosting.w5-b13.accepted
+  (:profile :meta)
+  ; Namespace target is the :jvm stage2 compiler-plan harness only; request
+  ; records below carry the exact :llvm-x86_64-linux artifact candidate.
+  (:target :jvm)
+  (:exports [w5-b13-artifact-emission-request-at
+             w5-b13-artifact-emission-request
+             w5-b13-artifact-emission-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+; This request is structurally complete but hash and rebuild observations are
+; deliberately pending independent byte verification.  The source path is
+; retained only in provenance and source-map records; IDs are path-neutral.
+
+(def w5-b13-id-source
+  "sha256:1111111111111111111111111111111111111111111111111111111111111111")
+(def w5-b13-id-mir
+  "sha256:2222222222222222222222222222222222222222222222222222222222222222")
+(def w5-b13-id-lowering
+  "sha256:3333333333333333333333333333333333333333333333333333333333333333")
+(def w5-b13-id-content
+  "sha256:4444444444444444444444444444444444444444444444444444444444444444")
+(def w5-b13-id-manifest
+  "sha256:5555555555555555555555555555555555555555555555555555555555555555")
+(def w5-b13-id-artifact
+  "sha256:6666666666666666666666666666666666666666666666666666666666666666")
+(def w5-b13-id-dependencies
+  "sha256:7777777777777777777777777777777777777777777777777777777777777777")
+(def w5-b13-id-evidence
+  "sha256:8888888888888888888888888888888888888888888888888888888888888888")
+(def w5-b13-id-conformance
+  "sha256:9999999999999999999999999999999999999999999999999999999999999999")
+(def w5-b13-id-reproducibility
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+(def w5-b13-id-emitted
+  "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+
+(def w5-b13-provenance-passes
+  [:read-source-forms :emit-syntax-objects :macro-expand
+   :lower-core-gravity-ast :resolve-names :check-types :check-effects
+   :validate-profile :validate-capabilities :analyze-ownership-lifetimes
+   :analyze-safety :build-gravity-mir :verify-mir :lower-domain-ir
+   :verify-domain-ir :optimize :lower-target :emit-artifact
+   :record-package-provenance])
+
+(def w5-b13-dependency-inventory
+  ["gravity/compiler-core-v1"
+   "gravity/llvm-lowering-contract-v1"])
+
+(def w5-b13-target-features
+  #{:x86_64 :sse2})
+
+(def w5-b13-abi-layout
+  {:architecture :x86_64
+   :binary-format :elf
+   :calling-convention :sysv-amd64
+   :pointer-width 64
+   :endianness :little})
+
+(def w5-b13-non-authority
+  {:clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :full-language? false
+   :authority :non-authority})
+
+(defn w5-b13-source-span []
+  {:source-id w5-b13-id-source
+   :start-byte 0
+   :end-byte 128})
+
+(defn w5-b13-target-scope []
+  {:target :llvm-x86_64-linux
+   :os :linux
+   :arch :x86_64
+   :backend :llvm
+   :object-format :elf
+   :abi :sysv-amd64
+   :runtime :none
+   :providers #{}
+   :runtime-providers #{}
+   :darwin-supported? false
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :cross-target-inference? false
+   :darwin-fallback? false
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :candidate-fallback? false
+   :no-fallback? true})
+
+(defn w5-b13-manifest []
+  {:artifact :gravity/artifact-manifest
+   :schema-version 1
+   :kind :llvm-object
+   :backend :gravity.backend/llvm
+   :profile :native
+   :target :llvm-x86_64-linux
+   :content-hash w5-b13-id-content
+   :inputs {:source w5-b13-id-source
+            :mir w5-b13-id-mir
+            :lowering w5-b13-id-lowering}
+   :evidence {:safety w5-b13-id-evidence
+              :proofs w5-b13-id-evidence
+              :certificates w5-b13-id-evidence
+              :effects #{}
+              :capabilities #{}
+              :conformance w5-b13-id-conformance}
+   :provenance {:compiler "gravity-w5-b13-stage2"
+                :generator "gravity.backend.w5-b13-artifact-emitter"
+                :passes w5-b13-provenance-passes
+                :dependencies w5-b13-id-dependencies
+                :dependency-inventory w5-b13-dependency-inventory}
+   :build-identity "gravity-w5-b13-static-build-v1"
+   :effects #{}
+   :capabilities #{}
+   :safety :safe
+   :target-features w5-b13-target-features
+   :abi-layout w5-b13-abi-layout
+   :runtime-providers #{}
+   :diagnostics []})
+
+(defn w5-b13-hash-record []
+  {:artifact :gravity/content-hash-record
+   :artifact-kind :llvm-object
+   :content-hash w5-b13-id-content
+   :manifest-digest w5-b13-id-manifest
+   :artifact-id w5-b13-id-artifact
+   :verification :structural-crosslink-only
+   :cryptographically-verified? false
+   :status :pending-unverified})
+
+(defn w5-b13-source-debug-map [path]
+  {:artifact :gravity/source-debug-map
+   :source-id w5-b13-id-source
+   :actual-source-path path
+   :source-span (w5-b13-source-span)
+   :locations [{:phase :source-forms :source-span (w5-b13-source-span)
+                :origin :source-forms}
+               {:phase :reader :source-span (w5-b13-source-span)
+                :origin :reader}
+               {:phase :syntax-objects :source-span (w5-b13-source-span)
+                :origin :syntax-objects}
+               {:phase :macro-expansion :source-span (w5-b13-source-span)
+                :origin :macro-expansion}
+               {:phase :core-gravity-ast :source-span (w5-b13-source-span)
+                :origin :core-gravity-ast}
+               {:phase :name-resolution :source-span (w5-b13-source-span)
+                :origin :name-resolution}
+               {:phase :type-checking :source-span (w5-b13-source-span)
+                :origin :type-checking}
+               {:phase :effect-checking :source-span (w5-b13-source-span)
+                :origin :effect-checking}
+               {:phase :profile-validation :source-span (w5-b13-source-span)
+                :origin :profile-validation}
+               {:phase :capability-validation :source-span (w5-b13-source-span)
+                :origin :capability-validation}
+               {:phase :ownership-lifetime-analysis
+                :source-span (w5-b13-source-span)
+                :origin :ownership-lifetime-analysis}
+               {:phase :safety-analysis :source-span (w5-b13-source-span)
+                :origin :safety-analysis}
+               {:phase :gravity-mir :source-span (w5-b13-source-span)
+                :origin :gravity-mir}
+               {:phase :verify-mir :source-span (w5-b13-source-span)
+                :origin :verify-mir}
+               {:phase :domain-ir-lowering :source-span (w5-b13-source-span)
+                :origin :domain-ir-lowering}
+               {:phase :verify-domain-ir :source-span (w5-b13-source-span)
+                :origin :verify-domain-ir}
+               {:phase :optimization :source-span (w5-b13-source-span)
+                :origin :optimization}
+               {:phase :target-lowering :source-span (w5-b13-source-span)
+                :origin :target-lowering}
+               {:phase :artifact-emission :source-span (w5-b13-source-span)
+                :origin :artifact-emission}
+               {:phase :package-provenance-recording
+                :source-span (w5-b13-source-span)
+                :origin :package-provenance-recording}]
+   :generated-origin-chain
+   [:source-forms :reader :syntax-objects :macro-expansion
+    :core-gravity-ast :name-resolution :type-checking :effect-checking
+    :profile-validation :capability-validation
+    :ownership-lifetime-analysis :safety-analysis :gravity-mir :verify-mir
+    :domain-ir-lowering :verify-domain-ir :optimization :target-lowering
+    :artifact-emission :package-provenance-recording]
+   :phases [:source-forms :reader :syntax-objects :macro-expansion
+            :core-gravity-ast :name-resolution :type-checking :effect-checking
+            :profile-validation :capability-validation
+            :ownership-lifetime-analysis :safety-analysis :gravity-mir
+            :verify-mir :domain-ir-lowering :verify-domain-ir
+            :optimization :target-lowering
+            :artifact-emission :package-provenance-recording]
+   :status :preserved})
+
+(defn w5-b13-compiler-provenance []
+  {:artifact :gravity/compiler-provenance-record
+   :compiler-id "gravity-w5-b13-stage2"
+   :compiler-version "0.1.0"
+   :generator-id "gravity.backend.w5-b13-artifact-emitter"
+   :pass-pipeline w5-b13-provenance-passes
+   :pass-contract "B13-artifact-emission-v1"
+   :source-id w5-b13-id-source
+   :status :complete})
+
+(defn w5-b13-dependency-provenance []
+  {:artifact :gravity/dependency-provenance-record
+   :dependency-graph-id w5-b13-id-dependencies
+   :dependencies w5-b13-dependency-inventory
+   :generator "gravity.backend.w5-b13-artifact-emitter"
+   :target-toolchain "llvm-x86_64-linux-static-record"
+   :runtime-providers []
+   :status :complete})
+
+(defn w5-b13-evidence-bundle []
+  {:artifact :gravity/safety-proof-certificate-bundle
+   :bundle-id w5-b13-id-evidence
+   :safety-mode :safe
+   :safety-outcomes [:proven-safe]
+   :proofs ["proof:manifest-schema" "proof:target-coherence"
+            "proof:source-map-preservation"]
+   :certificates ["certificate:content-hash" "certificate:graph-closure"]
+   :unsafe-audit-records []
+   :status :structural-complete})
+
+(defn w5-b13-effect-capability-summary []
+  {:artifact :gravity/effect-capability-summary
+   :effects #{}
+   :capabilities #{}
+   :unsafe-islands #{}
+   :status :complete})
+
+(defn w5-b13-runtime-summary []
+  {:artifact :gravity/runtime-provider-summary
+   :runtime :none
+   :providers #{}
+   :runtime-providers #{}
+   :static-only? true
+   :jvm-fallback? false
+   :status :complete})
+
+(defn w5-b13-target-summary []
+  {:artifact :gravity/target-runtime-abi-layout-summary
+   :target :llvm-x86_64-linux
+   :os :linux
+   :arch :x86_64
+   :backend :llvm
+   :object-format :elf
+   :abi :sysv-amd64
+   :runtime :none
+   :providers #{}
+   :target-features w5-b13-target-features
+   :abi-layout w5-b13-abi-layout
+   :status :complete})
+
+(defn w5-b13-reproducibility []
+  {:artifact :gravity/reproducibility-record
+   :hashes [w5-b13-id-source w5-b13-id-mir w5-b13-id-lowering
+            w5-b13-id-content w5-b13-id-manifest w5-b13-id-artifact
+            w5-b13-id-dependencies w5-b13-id-evidence
+            w5-b13-id-conformance]
+   :timestamp-policy :none
+   :environment-inputs ["gravity-w5-b13-stage2"
+                        "llvm-x86_64-linux"
+                        "source-text"]
+   :nondeterminism []
+   :path-dependent-identity? false
+   :cryptographically-verified? false
+   :reproducible? false
+   :status :pending-unverified})
+
+(defn w5-b13-conformance []
+  {:artifact :gravity/conformance-evidence-reference
+   :evidence-id w5-b13-id-conformance
+   :packs ["B13-common-manifest" "B13-static-target" "B14-metadata"]
+   :diagnostics ["B13-SCHEMA" "B13-HASH" "B13-PROVENANCE"
+                 "B13-SOURCEMAP" "B13-EVIDENCE" "B13-TARGET"
+                 "B13-CONFORMANCE" "B13-REPRODUCIBILITY" "B13-RELEASE"
+                 "B13-GRAPH"]
+   :metadata-preservation :pending-unverified
+   :verification :structural-crosslink-only
+   :independently-verified? false
+   :status :pending-unverified})
+
+(defn w5-b13-release-gate []
+  {:artifact :gravity/artifact-release-gate
+   :release-grade-artifact-status :blocked-development-only
+   :reason :stage2-static-development-evidence
+   :blocked-downstream [:signing :packaging :deployment :release-governance]
+   :diagnostic-on-release-attempt "B13-RELEASE"
+   :authority :not-release-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :full-language? false
+   :non-authority w5-b13-non-authority
+   :status :complete})
+
+(defn w5-b13-graph []
+  {:artifact :gravity/artifact-graph
+   :artifact-id w5-b13-id-artifact
+   :dependency-graph-id w5-b13-id-dependencies
+   :dependencies w5-b13-dependency-inventory
+   :root :source-forms
+   :nodes [{:node-id :source-forms :kind :source-forms :digest w5-b13-id-source}
+           {:node-id :reader :kind :reader :digest w5-b13-id-source}
+           {:node-id :syntax-objects :kind :syntax-objects
+            :digest w5-b13-id-source}
+           {:node-id :macro-expansion :kind :macro-expansion
+            :digest w5-b13-id-source}
+           {:node-id :core-gravity-ast :kind :core-gravity-ast
+            :digest w5-b13-id-mir}
+           {:node-id :name-resolution :kind :name-resolution
+            :digest w5-b13-id-mir}
+           {:node-id :type-checking :kind :type-checking
+            :digest w5-b13-id-mir}
+           {:node-id :effect-checking :kind :effect-checking
+            :digest w5-b13-id-mir}
+           {:node-id :profile-validation :kind :profile-validation
+            :digest w5-b13-id-mir}
+           {:node-id :capability-validation :kind :capability-validation
+            :digest w5-b13-id-mir}
+           {:node-id :ownership-lifetime-analysis
+            :kind :ownership-lifetime-analysis :digest w5-b13-id-mir}
+           {:node-id :safety-analysis :kind :safety-analysis
+            :digest w5-b13-id-mir}
+           {:node-id :gravity-mir :kind :gravity-mir :digest w5-b13-id-mir}
+           {:node-id :verify-mir :kind :verify-mir :digest w5-b13-id-mir}
+           {:node-id :domain-ir-lowering :kind :domain-ir-lowering
+            :digest w5-b13-id-lowering}
+           {:node-id :verify-domain-ir :kind :verify-domain-ir
+            :digest w5-b13-id-lowering}
+           {:node-id :optimization :kind :optimization
+            :digest w5-b13-id-lowering}
+           {:node-id :target-lowering :kind :target-lowering
+            :digest w5-b13-id-lowering}
+           {:node-id :artifact-emission :kind :artifact-emission
+            :digest w5-b13-id-artifact}
+           {:node-id :package-provenance-recording
+            :kind :package-provenance-recording
+            :digest w5-b13-id-conformance}]
+   :edges [{:from :source-forms :to :reader :pass :read-source-forms
+            :source-span (w5-b13-source-span) :origin :reader}
+           {:from :reader :to :syntax-objects :pass :emit-syntax-objects
+            :source-span (w5-b13-source-span) :origin :syntax-objects}
+           {:from :syntax-objects :to :macro-expansion :pass :macro-expand
+            :source-span (w5-b13-source-span) :origin :macro-expansion}
+           {:from :macro-expansion :to :core-gravity-ast
+            :pass :lower-core-gravity-ast
+            :source-span (w5-b13-source-span) :origin :core-gravity-ast}
+           {:from :core-gravity-ast :to :name-resolution :pass :resolve-names
+            :source-span (w5-b13-source-span) :origin :name-resolution}
+           {:from :name-resolution :to :type-checking :pass :check-types
+            :source-span (w5-b13-source-span) :origin :type-checking}
+           {:from :type-checking :to :effect-checking :pass :check-effects
+            :source-span (w5-b13-source-span) :origin :effect-checking}
+           {:from :effect-checking :to :profile-validation
+            :pass :validate-profile
+            :source-span (w5-b13-source-span) :origin :profile-validation}
+           {:from :profile-validation :to :capability-validation
+            :pass :validate-capabilities
+            :source-span (w5-b13-source-span) :origin :capability-validation}
+           {:from :capability-validation :to :ownership-lifetime-analysis
+            :pass :analyze-ownership-lifetimes
+            :source-span (w5-b13-source-span)
+            :origin :ownership-lifetime-analysis}
+           {:from :ownership-lifetime-analysis :to :safety-analysis
+            :pass :analyze-safety
+            :source-span (w5-b13-source-span) :origin :safety-analysis}
+           {:from :safety-analysis :to :gravity-mir :pass :build-gravity-mir
+            :source-span (w5-b13-source-span) :origin :gravity-mir}
+           {:from :gravity-mir :to :verify-mir :pass :verify-mir
+            :source-span (w5-b13-source-span) :origin :verify-mir}
+           {:from :verify-mir :to :domain-ir-lowering
+            :pass :lower-domain-ir
+            :source-span (w5-b13-source-span) :origin :domain-ir-lowering}
+           {:from :domain-ir-lowering :to :verify-domain-ir
+            :pass :verify-domain-ir
+            :source-span (w5-b13-source-span) :origin :verify-domain-ir}
+           {:from :verify-domain-ir :to :optimization :pass :optimize
+            :source-span (w5-b13-source-span) :origin :optimization}
+           {:from :optimization :to :target-lowering :pass :lower-target
+            :source-span (w5-b13-source-span) :origin :target-lowering}
+           {:from :target-lowering :to :artifact-emission
+            :pass :emit-artifact
+            :source-span (w5-b13-source-span) :origin :artifact-emission}
+           {:from :artifact-emission :to :package-provenance-recording
+            :pass :record-package-provenance
+            :source-span (w5-b13-source-span)
+            :origin :package-provenance-recording}]
+   :invalidation-rules [:source-change :compiler-change :pass-change
+                        :target-change :dependency-change :evidence-change]
+   :status :complete})
+
+(defn w5-b13-artifact-emission-request-at [path]
+  {:artifact :gravity/w5-b13-artifact-emission-request
+     :schema-version 1
+     :artifact-id w5-b13-id-artifact
+     :profile :meta
+     :target :llvm-x86_64-linux
+     :target-scope (w5-b13-target-scope)
+     :manifest (w5-b13-manifest)
+     :hash-record (w5-b13-hash-record)
+     :emitted-artifact {:artifact :gravity/llvm-object
+                        :artifact-id w5-b13-id-artifact
+                        :content-hash w5-b13-id-content
+                        :kind :llvm-object
+                        :target :llvm-x86_64-linux
+                        :object-format :elf
+                        :abi :sysv-amd64
+                        :runtime-providers #{}
+                        :bytes-id w5-b13-id-emitted}
+     :source-debug-map (w5-b13-source-debug-map path)
+     :compiler-provenance (w5-b13-compiler-provenance)
+     :dependency-provenance (w5-b13-dependency-provenance)
+     :safety-proof-certificate-bundle (w5-b13-evidence-bundle)
+     :effect-capability-summary (w5-b13-effect-capability-summary)
+     :runtime-provider-summary (w5-b13-runtime-summary)
+     :target-runtime-abi-layout-summary (w5-b13-target-summary)
+     :reproducibility-record (w5-b13-reproducibility)
+     :conformance-evidence-reference (w5-b13-conformance)
+     :release-gate-record (w5-b13-release-gate)
+     :artifact-graph (w5-b13-graph)
+     :diagnostic-stream {:artifact :gravity/w5-b13-diagnostic-stream
+                         :diagnostics ["B13-SCHEMA" "B13-HASH"
+                                       "B13-PROVENANCE" "B13-SOURCEMAP"
+                                       "B13-EVIDENCE" "B13-TARGET"
+                                       "B13-CONFORMANCE"
+                                       "B13-REPRODUCIBILITY" "B13-RELEASE"
+                                       "B13-GRAPH"]
+                         :status :complete}
+     :release-attempt? false
+     :provenance {:artifact :gravity/artifact-provenance-record
+                  :source-id w5-b13-id-source
+                  :actual-source-path path
+                  :compiler-id "gravity-w5-b13-stage2"
+                  :generator-id "gravity.backend.w5-b13-artifact-emitter"
+                  :pass-pipeline w5-b13-provenance-passes
+                  :dependency-graph-id w5-b13-id-dependencies
+                  :dependencies w5-b13-dependency-inventory
+                  :status :structural-complete}
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :release? false
+     :public-authority? false
+     :authority :non-authority
+     :non-authority w5-b13-non-authority})
+
+(defn w5-b13-artifact-emission-request []
+  (w5-b13-artifact-emission-request-at
+   "/checkout-a/bootstrap/clojure/fixtures/self-hosting/w5-b13/accepted/artifact-emission.gravity"))
+
+(defn w5-b13-artifact-emission-alternate-path-request []
+  (w5-b13-artifact-emission-request-at
+   "/checkout-b/bootstrap/clojure/fixtures/self-hosting/w5-b13/accepted/artifact-emission.gravity"))
