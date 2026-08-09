@@ -1074,7 +1074,27 @@ evidence namespace at 4 tests and 69 assertions in 60.797 seconds with peak RSS
 current wrapper receipts. A receipt-bearing run on the final composed tool and
 input identity is still required.
 
-### 14. Full release gate
+### 14. Fixed Stage10 W1 lowering admission
+
+The Stage10 W1 graph replaces broad Stage0 fallback for C14 and B1-B4 with a
+fixed, non-authoritative development boundary. The 2 GiB static node executes
+22 exact selectors, beginning with the source-only C14 parser and continuing
+through exact source/plan pins plus the complete SH17 continuity and hardening
+catalogs. The automatic edit path then runs one 3 GiB direct carrier-mutation
+selector. A separate 8 GiB branch checks the four SH25/SH26 consumers without
+forcing the hostile packet matrix for fixture-only changes.
+
+`stage10-w1-hostile-stable` is manual. It owns the complete two-test carrier
+namespace and executes direct mutation before packet substitution in one JVM;
+the automatic direct node is only an execution-profile subset of that owner.
+Every production node is fresh, no-resume, exclusive, capacity one,
+command-owned on `/private/tmp/gravity-sh07-heavy.lock`, and has
+`authority: none`. Historical direct measurements (about 113 seconds for the
+mutation discriminator, about 1323 seconds for packet substitution, and about
+25 seconds for SH25/SH26) guide timeouts only. They are not current wrapper
+receipts, proof, attestation, release evidence, or a generalized speed claim.
+
+### 15. Full release gate
 
 Run only after the candidate is stable, the selected authoritative modules
 pass, and the worktree is ready for release review. This preserves every

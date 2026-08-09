@@ -110,6 +110,10 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage8-sh14-authenticated-layout": "stage8-sh14-authenticated-layout-selectors",
             "stage9-c13-source-shape": "stage9-c13-source-shape-selectors",
             "stage9-sh16-c13-evidence-boundary": "stage9-sh16-c13-evidence-boundary-selectors",
+            "stage10-w1-static-admission": "stage10-w1-static-admission-selectors",
+            "stage10-w1-hostile-stable": "stage10-w1-hostile-stable-selectors",
+            "stage10-w1-direct-mutation": "stage10-w1-direct-mutation-selectors",
+            "stage10-w1-sh25-sh26-consumer": "stage10-w1-sh25-sh26-consumer-selectors",
         }
         for batch, definition in selector_definitions.items():
             self.assertEqual(
@@ -153,6 +157,10 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage8-sh14-authenticated-layout": "-J-Xmx8g",
             "stage9-c13-source-shape": "-J-Xmx512m",
             "stage9-sh16-c13-evidence-boundary": "-J-Xmx8g",
+            "stage10-w1-static-admission": "-J-Xmx2g",
+            "stage10-w1-hostile-stable": "-J-Xmx3g",
+            "stage10-w1-direct-mutation": "-J-Xmx3g",
+            "stage10-w1-sh25-sh26-consumer": "-J-Xmx8g",
             "c10-authority": "-J-Xmx8g",
             "c11-authority": "-J-Xmx8g",
         }
@@ -205,7 +213,10 @@ class Stage3WrapperTests(unittest.TestCase):
         self.assertEqual(2, len(c11_shape))
         self.assertEqual(2, len(set(c11_shape)))
         self.assertEqual(
-            {"stage7-c11-shape-preflight": "stage7-c11-source-preflight"},
+            {
+                "stage7-c11-shape-preflight": "stage7-c11-source-preflight",
+                "stage10-w1-direct-mutation": "stage10-w1-hostile-stable",
+            },
             dict(stage3.EXECUTION_PROFILE_BATCH_OWNERS),
         )
         c11_adapter = list(
@@ -271,6 +282,18 @@ class Stage3WrapperTests(unittest.TestCase):
                 "/sh16-c13-evidence-boundary-separates-top-level-provenance"
             )
         )
+        static = stage3._FIXED_BATCH_SELECTORS["stage10-w1-static-admission"]
+        stable = stage3._FIXED_BATCH_SELECTORS["stage10-w1-hostile-stable"]
+        direct = stage3._FIXED_BATCH_SELECTORS["stage10-w1-direct-mutation"]
+        consumer = stage3._FIXED_BATCH_SELECTORS["stage10-w1-sh25-sh26-consumer"]
+        self.assertEqual(22, len(static))
+        self.assertEqual(22, len(set(static)))
+        self.assertTrue(static[0].endswith("source-parses-and-control-form-arities-are-exact"))
+        self.assertEqual(stable[:1], direct)
+        self.assertEqual(2, len(stable))
+        self.assertTrue(stable[-1].endswith("context-replay-fail-closed"))
+        self.assertEqual(4, len(consumer))
+        self.assertEqual(4, len(set(consumer)))
 
     def test_retired_singleton_batch_ids_are_rejected(self) -> None:
         for retired in (

@@ -560,6 +560,26 @@ in 60.797 seconds with peak RSS 1,602,322,432 bytes. These are historical
 non-authoritative planning measurements, not current wrapper receipts. The
 composed graph still requires a fresh receipt-bearing run.
 
+## Fixed Stage10 W1 lowering admission
+
+Stage10 is a non-authoritative development boundary for the frozen
+C13-to-C14/B1-B4 lowering slice. `stage10-w1-static-admission` uses a 2 GiB JVM
+and runs the source-only C14 parse/control-form check first, then the exact
+source and plan pins, the complete six-test continuity catalog, and the
+complete seven-test target-hardening catalog. It branches to the automatic
+3 GiB direct carrier-mutation discriminator and an independent automatic 8 GiB
+SH25/SH26 consumer batch.
+
+The packet-substitution matrix is deliberately absent from ordinary change
+impact. Explicit stable-candidate selection runs `stage10-w1-hostile-stable`:
+direct mutation first and packet substitution second in the same JVM, with
+fail-fast and one cache entry, so the namespace-local C14 plan and prepared
+carrier are not rebuilt between the two checks. All production nodes are
+fresh, no-resume, exclusive, capacity one, command-owned on the canonical
+heavy lock, and declare `authority: none`. Existing timings are planning
+measurements for the frozen W1 implementation; the new wrapper/manifest
+identity still requires a focused receipt before current admission is claimed.
+
 ## Selection and execution flow
 
 1. Normalize changed paths and validate the manifest before starting a command.

@@ -60,6 +60,28 @@
   'gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test)
 (def ^:private sh16-evidence-ns
   'gravity.self-hosting.sh16-c12-domain-evidence-boundary-test)
+(def ^:private sh17-continuity-ns
+  'gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test)
+(def ^:private sh17-hardening-ns
+  'gravity.self-hosting.sh17-target-lowering-hardening-test)
+(def ^:private sh17-carrier-ns
+  'gravity.self-hosting.sh17-c13-optimized-mir-carrier-test)
+(def ^:private b1-source-ns
+  'gravity.self-hosting.sh07-b1-backend-interface-source-coverage-test)
+(def ^:private b2-source-ns
+  'gravity.self-hosting.sh07-b2-c-backend-source-coverage-test)
+(def ^:private b3-source-ns
+  'gravity.self-hosting.sh07-b3-llvm-backend-source-coverage-test)
+(def ^:private b4-source-ns
+  'gravity.self-hosting.sh07-b4-wasm-backend-source-coverage-test)
+(def ^:private c13-source-ns
+  'gravity.self-hosting.sh07-c13-mir-optimization-source-coverage-test)
+(def ^:private c14-source-ns
+  'gravity.self-hosting.sh07-c14-target-lowering-source-coverage-test)
+(def ^:private sh25-ns
+  'gravity.self-hosting.sh25-component-build-test)
+(def ^:private sh26-ns
+  'gravity.self-hosting.sh26-stage-rebuild-test)
 (def ^:private sh10-kernel-ns
   'gravity.self-hosting.sh10-ownership-transition-test)
 (def ^:private sh10-adapter-ns
@@ -100,7 +122,9 @@
    c12-shape-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj"
    sh13-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj"
    c13-shape-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj"
-   sh16-evidence-ns "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj"})
+   sh16-evidence-ns "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj"
+   sh17-continuity-ns "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_c14_b1_linux_llvm_backend_continuity_test.clj"
+   sh17-hardening-ns "bootstrap/clojure/test/gravity/self_hosting/sh17_target_lowering_hardening_test.clj"})
 
 (defn- source-deftest-selectors
   [namespace-symbol relative-path]
@@ -118,6 +142,27 @@
                (conj selectors
                      (symbol (str namespace-symbol) (str (second form))))
                selectors))))))))
+
+(def ^:private stage10-source-files
+  {b1-source-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_b1_backend_interface_source_coverage_test.clj"
+   b2-source-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_b2_c_backend_source_coverage_test.clj"
+   b3-source-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_b3_llvm_backend_source_coverage_test.clj"
+   b4-source-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_b4_wasm_backend_source_coverage_test.clj"
+   c13-source-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_source_coverage_test.clj"
+   c14-source-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_c14_target_lowering_source_coverage_test.clj"
+   sh17-continuity-ns "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_c14_b1_linux_llvm_backend_continuity_test.clj"
+   sh17-hardening-ns "bootstrap/clojure/test/gravity/self_hosting/sh17_target_lowering_hardening_test.clj"
+   sh17-carrier-ns "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj"
+   sh25-ns "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj"
+   sh26-ns "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj"})
+
+(defn- stage10-discovered-catalog
+  []
+  (into {}
+        (map (fn [[namespace-symbol relative-path]]
+               [namespace-symbol
+                (source-deftest-selectors namespace-symbol relative-path)]))
+        stage10-source-files))
 
 (deftest fixed-batches-have-exact-source-order-vectors
   (is (= [:primitive-pure
@@ -150,7 +195,11 @@
           :stage8-public-c12
           :stage8-sh13-c11-domain-evidence
           :stage9-c13-source-shape
-          :stage9-sh16-c13-evidence-boundary]
+          :stage9-sh16-c13-evidence-boundary
+          :stage10-w1-static-admission
+          :stage10-w1-hostile-stable
+          :stage10-w1-direct-mutation
+          :stage10-w1-sh25-sh26-consumer]
          runner/fixed-batch-ids))
   (is (= runner/primitive-pure-selectors
          (get runner/fixed-batch-selectors :primitive-pure)))
@@ -261,6 +310,22 @@
          (get runner/fixed-batch-selectors
               :stage9-sh16-c13-evidence-boundary)))
   (is (= 4 (count runner/stage9-sh16-c13-evidence-boundary-selectors)))
+  (is (= runner/stage10-w1-static-admission-selectors
+         (get runner/fixed-batch-selectors :stage10-w1-static-admission)))
+  (is (= 22 (count runner/stage10-w1-static-admission-selectors)))
+  (is (= 22 (count (set runner/stage10-w1-static-admission-selectors))))
+  (is (= runner/stage10-w1-hostile-stable-selectors
+         (get runner/fixed-batch-selectors :stage10-w1-hostile-stable)))
+  (is (= 2 (count runner/stage10-w1-hostile-stable-selectors)))
+  (is (= [(first runner/stage10-w1-hostile-stable-selectors)]
+         runner/stage10-w1-direct-mutation-selectors))
+  (is (= false
+         (get-in runner/fixed-batches
+                 [:stage10-w1-direct-mutation :catalog-owner?])))
+  (is (= :stage10-w1-hostile-stable
+         (get-in runner/fixed-batches
+                 [:stage10-w1-direct-mutation :catalog-owner-batch])))
+  (is (= 4 (count runner/stage10-w1-sh25-sh26-consumer-selectors)))
   (is (not-any? #(re-find #"sh07-b29-(c8-source-has-exact-authentic-coverage|c8-calls-lookups-and-error-effect|c8-is-deterministic-path-neutral|c8-replay-and-alteration|existing-rejected-families)" (str %))
                 runner/stage4-c8-source-structural-selectors)))
 
@@ -286,7 +351,8 @@
 
 (deftest fixed-catalog-covers-owned-source-files-exactly
   (let [discovered
-        {primitive-ns (selectors-for primitive-ns)
+        (merge
+         {primitive-ns (selectors-for primitive-ns)
          recursive-ns (selectors-for recursive-ns)
          ho-ns (selectors-for ho-ns)
          census-ns (conj (selectors-for census-ns)
@@ -335,7 +401,8 @@
                            sh16-evidence-ns
                            "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj")
          fragment-ns (selectors-for fragment-ns)
-         bootstrap-ns (selectors-for bootstrap-ns)}]
+         bootstrap-ns (selectors-for bootstrap-ns)}
+         (stage10-discovered-catalog))]
     (let [catalog-result
           (runner/validate-fixed-catalog! runner/fixed-batches discovered)]
       (is (= :passed (:status catalog-result)))
@@ -433,6 +500,59 @@
            (get-in runner/fixed-batches
                    [:stage9-sh16-c13-evidence-boundary
                     :catalog-order-policy])))))
+
+(deftest stage10-w1-complete-catalogs-and-direct-profile-are-exact
+  (let [continuity (source-deftest-selectors
+                    sh17-continuity-ns
+                    "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_c14_b1_linux_llvm_backend_continuity_test.clj")
+        hardening (source-deftest-selectors
+                   sh17-hardening-ns
+                   "bootstrap/clojure/test/gravity/self_hosting/sh17_target_lowering_hardening_test.clj")
+        carrier (source-deftest-selectors
+                 sh17-carrier-ns
+                 "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj")
+        direct (execution-profile-selectors-for sh17-carrier-ns)]
+    (is (= 6 (count continuity)))
+    (is (= 7 (count hardening)))
+    (is (= 4 (count carrier)))
+    (is (= runner/stage10-w1-hostile-stable-selectors
+           (subvec carrier 2)))
+    (is (= [(nth carrier 2)] direct))
+    (is (= runner/stage10-w1-hostile-stable-selectors
+           (selectors-for sh17-carrier-ns)))
+    (is (= :source-subsequence
+           (get-in runner/fixed-batches
+                   [:stage10-w1-static-admission :catalog-order-policy])))
+    (is (= :stage10-w1-hostile-stable
+           (get-in runner/fixed-batches
+                   [:stage10-w1-direct-mutation :catalog-owner-batch])))))
+
+(deftest stage10-w1-stable-owner-preserves-fail-fast-skipped-tail
+  (let [selectors runner/stage10-w1-hostile-stable-selectors
+        calls (atom [])]
+    (binding [runner/*catalog-loader* nil
+              runner/*delegate-run-test-vars*
+              (fn [selection]
+                (swap! calls conj selection)
+                {:test-result {:test 1 :pass 0 :fail 1 :error 0 :type :summary}
+                 :test-var-results
+                 [(assoc (passing-result (first selectors) 0)
+                         :test-result {:test 1 :pass 0 :fail 1 :error 0})]
+                 :skipped-test-vars (subvec selectors 1)
+                 :cache {:sh06-hits 0 :sh06-misses 1
+                         :core-hits 0 :core-misses 0
+                         :verification-hits 0 :verification-misses 0}
+                 :elapsed-ms 3})]
+      (let [result (runner/run-batch :stage10-w1-hostile-stable)]
+        (is (= [{:test-vars selectors
+                 :maximum-entries 1
+                 :fail-fast? true}]
+               @calls))
+        (is (= selectors (:selection-order result)))
+        (is (= (subvec selectors 1) (:skipped-tail result)))
+        (is (= [:failed :skipped]
+               (mapv :status (:test-var-results result))))
+        (is (= :non-authoritative (:authority result)))))))
 
 (deftest stage8-adapter-preserves-fail-fast-skipped-tail
   (let [selectors runner/stage8-sh13-c11-domain-evidence-selectors
@@ -623,7 +743,8 @@
 
 (deftest fixed-catalog-rejects-missing-extra-and-duplicate-drift
   (let [base
-        {primitive-ns (selectors-for primitive-ns)
+        (merge
+         {primitive-ns (selectors-for primitive-ns)
          recursive-ns (selectors-for recursive-ns)
          ho-ns (selectors-for ho-ns)
          census-ns (selectors-for census-ns)
@@ -672,6 +793,7 @@
                            "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}
+         (stage10-discovered-catalog))
         missing (update base primitive-ns pop)
         extra (update base primitive-ns conj
                       'gravity.self-hosting.sh08-primitive-function-type-test/new-test)

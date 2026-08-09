@@ -2538,6 +2538,9 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage8-sh14-authenticated-layout",
                 "stage9-c13-source-shape",
                 "stage9-sh16-c13-evidence-boundary",
+                "stage10-w1-static-admission",
+                "stage10-w1-direct-mutation",
+                "stage10-w1-sh25-sh26-consumer",
             },
         )
 
@@ -3159,10 +3162,16 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage9-c13-source-shape",
             "stage9-sh16-c13-evidence-boundary",
         }
+        stage10_batches = {
+            "stage10-w1-static-admission",
+            "stage10-w1-hostile-stable",
+            "stage10-w1-direct-mutation",
+            "stage10-w1-sh25-sh26-consumer",
+        }
         self.assertEqual(
             set(verifier._stage3.FIXED_BATCHES)
-            & (stage7_batches | stage7_runner_only_batches | stage8_batches | stage9_batches),
-            stage7_batches | stage7_runner_only_batches | stage8_batches | stage9_batches,
+            & (stage7_batches | stage7_runner_only_batches | stage8_batches | stage9_batches | stage10_batches),
+            stage7_batches | stage7_runner_only_batches | stage8_batches | stage9_batches | stage10_batches,
         )
         stage3_fixed_batches = (
             set(verifier._stage3.FIXED_BATCHES)
@@ -3173,6 +3182,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             - stage7_runner_only_batches
             - stage8_batches
             - stage9_batches
+            - stage10_batches
         )
         self.assertTrue(stage7_batches.isdisjoint(stage3_fixed_batches))
         self.assertEqual(
@@ -4477,6 +4487,9 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage8-sh14-authenticated-layout",
                 "stage9-c13-source-shape",
                 "stage9-sh16-c13-evidence-boundary",
+                "stage10-w1-static-admission",
+                "stage10-w1-direct-mutation",
+                "stage10-w1-sh25-sh26-consumer",
             },
         )
         self.assertEqual(
@@ -4721,7 +4734,12 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "bootstrap/clojure/test/gravity/self_hosting/"
             "sh16_c12_domain_evidence_boundary_test.clj"
         )
-        self.assertEqual(selected(c13_path), units | stage9_ids)
+        stage10_automatic = {
+            "stage10-w1-static-admission",
+            "stage10-w1-direct-mutation",
+            "stage10-w1-sh25-sh26-consumer",
+        }
+        self.assertEqual(selected(c13_path), units | stage9_ids | stage10_automatic)
         self.assertEqual(selected(sh16_path), units | stage9_ids)
         self.assertNotIn("stage8-c12-source-shape", selected(c13_path))
         self.assertNotIn("stage8-sh13-c11-domain-evidence", selected(c13_path))
@@ -4807,6 +4825,140 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 target[field] = list(value)
                 with self.assertRaisesRegex(verifier.ManifestError, field):
                     verifier.validate_manifest(broken)
+
+    def test_stage10_w1_graph_profiles_routing_and_contract_drift_are_exact(self) -> None:
+        manifest = verifier.load_manifest(
+            ROOT / "tools" / "development_verification_manifest.json"
+        )
+        by_id = verifier.checks_by_id(manifest)
+        policies = verifier._STAGE10_FIXED_NODE_POLICIES
+        self.assertEqual(
+            {check_id for check_id in by_id if check_id.startswith("stage10-")},
+            set(policies),
+        )
+        for check_id, policy in policies.items():
+            check = by_id[check_id]
+            self.assertEqual(check["stage3_batch"], policy["stage3_batch"])
+            self.assertEqual(check["depends_on"], policy["depends_on"])
+            self.assertIs(check["automatic"], policy["automatic"])
+            self.assertEqual(check["authority"], "none")
+            self.assertEqual(check["lock"], "/private/tmp/gravity-sh07-heavy.lock")
+            self.assertEqual(check["lock_owner"], "command")
+            self.assertTrue(check["exclusive"])
+            self.assertEqual(check["capacity"], 1)
+            self.assertTrue(check["fresh"])
+            self.assertFalse(check["resume"])
+            self.assertEqual(check["state_dir_policy"], "new-per-invocation")
+
+            wrong_batch = {
+                "stage10-w1-static-admission": "stage4-public-c8",
+                "stage10-w1-hostile-stable": "stage10-w1-direct-mutation",
+                "stage10-w1-direct-mutation": "stage10-w1-hostile-stable",
+                "stage10-w1-sh25-sh26-consumer": "stage9-sh16-c13-evidence-boundary",
+            }[check_id]
+            mutations = (
+                ("timeout_seconds", float(policy["timeout_seconds"])),
+                ("fresh", 1),
+                ("resume", 0),
+                ("automatic", not policy["automatic"]),
+                ("exclusive", 1),
+                ("capacity", True),
+                ("state_dir_policy", "reused"),
+                ("lock", "/private/tmp/gravity-stage10-wrong.lock"),
+                ("lock_owner", "runner"),
+                ("stage3_batch", wrong_batch),
+                ("depends_on", []),
+                ("stage3_mode", verifier._stage3.MODE_PROOF_CANDIDATE),
+                ("command", [sys.executable, "-c", "pass"]),
+                ("authority", "declared"),
+            )
+            for field, value in mutations:
+                broken = json.loads(json.dumps(manifest))
+                target = next(
+                    item for item in broken["checks"] if item["id"] == check_id
+                )
+                target[field] = value
+                with self.assertRaisesRegex(verifier.ManifestError, field):
+                    verifier.validate_manifest(broken)
+            for field in ("inputs", "tool_inputs", "impact_excludes"):
+                broken = json.loads(json.dumps(manifest))
+                target = next(
+                    item for item in broken["checks"] if item["id"] == check_id
+                )
+                target[field] = target[field][1:]
+                diagnostic = (
+                    "centralized Stage3 runtime inputs|tool_inputs"
+                    if field == "tool_inputs"
+                    else field
+                )
+                with self.assertRaisesRegex(verifier.ManifestError, diagnostic):
+                    verifier.validate_manifest(broken)
+
+        static = by_id["stage10-w1-static-admission"]
+        stable = by_id["stage10-w1-hostile-stable"]
+        direct = by_id["stage10-w1-direct-mutation"]
+        consumer = by_id["stage10-w1-sh25-sh26-consumer"]
+        self.assertEqual(static["jvm_heap"], "-J-Xmx2g")
+        self.assertEqual(direct["jvm_heap"], "-J-Xmx3g")
+        self.assertEqual(stable["jvm_heap"], "-J-Xmx3g")
+        self.assertEqual(consumer["jvm_heap"], "-J-Xmx8g")
+        self.assertEqual(
+            verifier._stage3._FIXED_BATCH_SELECTORS["stage10-w1-direct-mutation"],
+            verifier._stage3._FIXED_BATCH_SELECTORS["stage10-w1-hostile-stable"][:1],
+        )
+
+        units = {
+            "stage0-orchestrator-unit",
+            "stage1-sh01-unit",
+            "stage2-authority-admission-unit",
+            "stage3-runner-unit",
+        }
+        def selected(path: str) -> set[str]:
+            return set(verifier.select_impacted_checks(
+                manifest, ROOT, changed_paths=[path]
+            )["selected_ids"])
+
+        self.assertEqual(
+            selected("bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"),
+            units | {static["id"], direct["id"], consumer["id"]},
+        )
+        self.assertEqual(
+            selected("bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj"),
+            units | {static["id"], direct["id"]},
+        )
+        self.assertEqual(
+            selected("bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity"),
+            units | {static["id"], consumer["id"]},
+        )
+        explicit = set(verifier.select_impacted_checks(
+            manifest, ROOT, requested_ids=[stable["id"]]
+        )["selected_ids"])
+        self.assertEqual(explicit, units | {static["id"], stable["id"]})
+        self.assertNotIn(direct["id"], explicit)
+        self.assertNotIn(consumer["id"], explicit)
+
+        for check_id in (
+            "stage0-hosted-hello", "stage0-hosted-hello-qst",
+            "stage0-selective-smoke", "stage0-hosted-core-app",
+            "stage0-hosted-core-compiled-app", "stage0-clojure-suite",
+            "stage0-bootstrap-authority",
+        ):
+            excludes = by_id[check_id]["impact_excludes"]
+            for path in (
+                "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+                "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+                "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+                "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+                "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
+            ):
+                self.assertEqual(excludes.count(path), 1, (check_id, path))
+
+        missing = json.loads(json.dumps(manifest))
+        missing["checks"] = [
+            item for item in missing["checks"] if item["id"] != stable["id"]
+        ]
+        with self.assertRaisesRegex(verifier.ManifestError, "Stage10 fixed graph ids"):
+            verifier.validate_manifest(missing)
 
     def test_stage8_runtime_resource_lifecycle_and_node_drift_fail_closed(self) -> None:
         manifest = verifier.load_manifest(
@@ -5734,6 +5886,25 @@ class VerifyDevelopmentTests(unittest.TestCase):
             Path, "read_text", return_value=json.dumps(stage9_drifted)
         ):
             with self.assertRaisesRegex(verifier.ManifestError, "Stage9 fixed graph ids"):
+                verifier.load_manifest(manifest_path)
+
+        stage10_drifted = json.loads(json.dumps(manifest))
+        stage10_drifted["name"] = "test-development-verification"
+        stage10_drifted["scope"] = {"stage": "synthetic"}
+        stage10_drifted["checks"] = [
+            item
+            for item in stage10_drifted["checks"]
+            if not item["id"].startswith("stage10-")
+        ]
+        verifier.validate_manifest(stage10_drifted)
+        with self.assertRaisesRegex(verifier.ManifestError, "Stage10 fixed graph ids"):
+            verifier.validate_manifest(
+                stage10_drifted, require_production_contracts=True
+            )
+        with mock.patch.object(
+            Path, "read_text", return_value=json.dumps(stage10_drifted)
+        ):
+            with self.assertRaisesRegex(verifier.ManifestError, "Stage10 fixed graph ids"):
                 verifier.load_manifest(manifest_path)
 
     def _run_mocked_resource_check(
