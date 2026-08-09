@@ -1,0 +1,153 @@
+(ns gravity.self-hosting.w5-c16.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-c16-invalid-key-request
+             w5-c16-invalid-entry-request
+             w5-c16-stale-entry-request
+             w5-c16-stale-proof-request
+             w5-c16-speculative-request
+             w5-c16-missing-replay-request
+             w5-c16-policy-mismatch-request
+             w5-c16-stale-diagnostic-request
+             w5-c16-graph-inconsistency-request
+             w5-c16-invalid-provenance-request
+             w5-c16-invalid-replay-input-request
+             w5-c16-missing-source-span-request
+             w5-c16-revoked-trust-request
+             w5-c16-rejected-revalidation-request
+             w5-c16-producer-substitution-request
+             w5-c16-coherent-input-substitution-request
+             w5-c16-coherent-existing-root-substitution-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage2
+               :component :w5-c16-rejected-fixture
+               :status :executable-leaf
+               :scope :stage-owned-nonauthority
+               :clojure-seed-boundary? true
+               :stage2-target :jvm
+               :candidate-target :llvm-x86_64-linux
+               :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                                    :artifact-format :elf :abi :sysv-amd64}
+               :unsupported-targets
+               [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+               :unsupported-target-policies
+               [{:target :darwin :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :darwin-arm64 :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :darwin-x86_64 :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :windows :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}]
+               :cross-target-inference? false
+               :fallback? false
+               :self-hosted? false
+               :release? false
+               :full-language-credit? false
+               :matrix-240-credit? false
+               :public-authority? false}}))
+
+; Each function below changes one supplied request without throwing.  The
+; executor must emit exactly one stable C16 diagnostic for the corresponding
+; malformed cache, stale evidence, policy, replay, or graph condition.
+
+(defn w5-c16-invalid-key-request [request]
+  (assoc request :cache-key
+         (assoc (get request :cache-key) :source nil)))
+
+(defn w5-c16-invalid-entry-request [request]
+  (assoc request :cache-entry
+         (assoc (get request :cache-entry) :proof nil)))
+
+(defn w5-c16-stale-entry-request [request]
+  (let [entry (get request :cache-entry)
+        key (get entry :cache-key)
+        inputs (get entry :inputs)]
+    (assoc request :cache-entry
+           (assoc entry :cache-key
+                  (assoc key :source "sha256:w5-c16-source-stale")
+                  :inputs
+                  (assoc inputs 0 "sha256:w5-c16-source-stale")))))
+
+(defn w5-c16-stale-proof-request [request]
+  (let [entry (get request :cache-entry)
+        proof (get entry :proof)]
+    (assoc request :cache-entry
+           (assoc entry :proof (assoc proof :status :stale)))))
+
+(defn w5-c16-speculative-request [request]
+  (assoc request :mode :speculative))
+
+(defn w5-c16-missing-replay-request [request]
+  (assoc request :replay
+         (assoc (get request :replay) :status :pending)))
+
+(defn w5-c16-policy-mismatch-request [request]
+  (assoc request :policy
+         (assoc (get request :policy) :target :native)))
+
+(defn w5-c16-stale-diagnostic-request [request]
+  (let [entry (get request :cache-entry)
+        diagnostics (get entry :diagnostics)]
+    (assoc request :cache-entry
+           (assoc entry :diagnostics
+                  (assoc diagnostics :stream-id
+                         "sha256:w5-c16-diagnostic-stale")))))
+
+(defn w5-c16-graph-inconsistency-request [request]
+  (let [graph (get request :dependency-graph)
+        edges (get graph :edges)
+        first-edge (get edges 0)]
+    (assoc request :dependency-graph
+           (assoc graph :edges
+                  (assoc edges 0
+                         (assoc first-edge :to :missing-node))))))
+
+(defn w5-c16-invalid-provenance-request [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :lineage [:clojure-stage0 "not-a-lineage-keyword"])))
+
+(defn w5-c16-invalid-replay-input-request [request]
+  (assoc request :replay
+         (assoc (get request :replay) :inputs [nil])))
+
+(defn w5-c16-missing-source-span-request [request]
+  (assoc request :source
+         (assoc (get request :source) :source-span nil)))
+
+(defn w5-c16-revoked-trust-request [request]
+  (assoc request :cache-entry
+         (assoc (get request :cache-entry) :trust :revoked)))
+
+(defn w5-c16-rejected-revalidation-request [request]
+  (assoc request :cache-entry
+         (assoc (get request :cache-entry) :revalidation :rejected)))
+
+(defn w5-c16-producer-substitution-request [request]
+  (let [entry (get request :cache-entry)
+        producer (get entry :producer)]
+    (assoc request :cache-entry
+           (assoc entry :producer
+                  (assoc producer :compiler-id
+                         "sha256:w5-c16-substituted-compiler")))))
+
+(defn w5-c16-coherent-input-substitution-request [request]
+  (let [key (assoc (get request :cache-key)
+                   :source "sha256:w5-c16-substituted-source")
+        entry (get request :cache-entry)
+        entry-key (assoc (get entry :cache-key)
+                         :source "sha256:w5-c16-substituted-source")
+        inputs (assoc (get entry :inputs) 0
+                      "sha256:w5-c16-substituted-source")]
+    (assoc request
+           :cache-key key
+           :cache-entry (assoc entry :cache-key entry-key :inputs inputs))))
+
+(defn w5-c16-coherent-existing-root-substitution-request [request]
+  (let [graph (get request :dependency-graph)]
+    (assoc request :dependency-graph
+           (assoc graph :root :typed-core))))

@@ -1,0 +1,1344 @@
+(ns gravity.compiler.w5-c16-incremental-executor
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-c16-policy
+             w5-c16-stage-cache-key-fields
+             w5-c16-invalidation-causes
+             w5-c16-build-cache-key
+             w5-c16-build-cache-entry
+             w5-c16-build-dependency-graph
+             w5-c16-cache-key-valid?
+             w5-c16-cache-entry-valid?
+             w5-c16-dependency-graph-valid?
+             w5-c16-build-invalidation-trace
+             w5-c16-revalidate-cache-entry
+             w5-c16-build-reuse-report
+             w5-c16-incremental-execute
+             w5-c16-execute
+             w5-c16-run
+             w5-c16-verify-result
+             w5-c16-target-policy
+             w5-c16-target-valid?
+             w5-c16-request-target-valid?
+             w5-c16-diagnostic-catalog])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage2
+               :component :w5-c16-incremental-executor
+               :owner :w5
+               :source-language :gravity
+               :seed :clojure-stage0
+               :status :executable-leaf
+               :scope :stage-owned-nonauthority
+               :clojure-seed-boundary? true
+               :stage2-target :jvm
+               :candidate-target :llvm-x86_64-linux
+               :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                                    :artifact-format :elf :abi :sysv-amd64}
+               :unsupported-targets
+               [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+               :unsupported-target-policies
+               [{:target :darwin :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :darwin-arm64 :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :darwin-x86_64 :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :windows :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}]
+               :cross-target-inference? false
+               :fallback? false
+               :self-hosted? false
+               :release? false
+               :full-language-credit? false
+               :matrix-240-credit? false
+               :public-authority? false
+               :residual-boundaries #{:clojure-stage2-compiler-plan
+                                      :jvm-stage2-runtime}
+               :governing-documents ["C16" "C1" "C2" "C3" "C4"
+                                     "C5" "C6" "C7" "C8" "C9"
+                                     "C10" "C11" "C12" "C13"
+                                     "C14" "C15" "C17" "C18"
+                                     "D0" "D1" "D2" "D3" "D8" "D9"
+                                     "BOOT1" "BOOT3" "BOOT8"]
+               :non-goals [:global-completion
+                           :full-language-coverage
+                           :release-self-hosting
+                           :filesystem-cache-store
+                           :network-cache-store
+                           :ambient-cache-authority]}}))
+
+; W5 owns this filename, while the namespace remains aligned with the C16
+; compiler contract.  This is an executable, deterministic leaf over supplied
+; cache records.  It does not claim a production cache service or seed
+; retirement; the stage2 compiler plan and JVM runtime remain explicit
+; residual boundaries in every result.
+
+(def w5-c16-stage2-target :jvm)
+(def w5-c16-candidate-target :llvm-x86_64-linux)
+(def w5-c16-candidate-platform
+  {:os :linux :arch :x86_64 :backend :llvm
+   :artifact-format :elf :abi :sysv-amd64})
+(def w5-c16-unsupported-targets
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+(def w5-c16-unsupported-target-policies
+  [{:target :darwin :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-arm64 :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-x86_64 :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :windows :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}])
+(def w5-c16-target-scope
+  {:candidate-target w5-c16-candidate-target
+   :candidate-platform w5-c16-candidate-platform
+   :unsupported-targets w5-c16-unsupported-targets
+   :unsupported-target-policies w5-c16-unsupported-target-policies
+   :cross-target-inference? false
+   :fallback? false})
+
+(defn w5-c16-target-policy []
+  w5-c16-target-scope)
+
+(defn w5-c16-target-valid? [target]
+  (= target w5-c16-target-scope))
+
+(def w5-c16-semantic-fields
+  [:source :reader :syntax :macro-expansion :namespace :typed-core
+   :effect-graph :profile :capabilities :safety :proof-policy
+   :dependencies :target :backend :plugin :diagnostic-schema
+   :build-effects :compiler :pass-contract :language-facets :target-scope
+   :package-lock :provider-policy])
+
+(def w5-c16-invalidation-causes
+  [:source-change
+   :macro-change
+   :namespace-change
+   :type-change
+   :effect-change
+   :profile-change
+   :capability-change
+   :safety-change
+   :proof-change
+   :dependency-change
+   :target-change
+   :backend-change
+   :plugin-change
+   :diagnostic-change])
+
+(def w5-c16-diagnostic-catalog
+  {:artifact :gravity/w5-c16-diagnostic-catalog
+   :schema-version 1
+   :diagnostics ["C16-KEY"
+                 "C16-ENTRY"
+                 "C16-STALE"
+                 "C16-PROOF"
+                 "C16-SPECULATIVE"
+                 "C16-REPLAY"
+                 "C16-POLICY"
+                 "C16-DIAGNOSTIC"
+                 "C16-GRAPH"
+                 "C16-VERIFY"]
+   :remediation {"C16-KEY" "Provide every required field for the selected stage."
+                 "C16-ENTRY" "Provide a complete producer-bound cache entry."
+                 "C16-STALE" "Invalidate the entry and revalidate downstream stages."
+                 "C16-PROOF" "Regenerate the proof or certificate for current inputs."
+                 "C16-SPECULATIVE" "Complete full revalidation before publication."
+                 "C16-REPLAY" "Record a complete deterministic build-effect replay."
+                 "C16-POLICY" "Use a cache entry built under the active policy."
+                 "C16-DIAGNOSTIC" "Regenerate diagnostics for the current fact stream."
+                 "C16-GRAPH" "Repair dependency edges and downstream invalidation."
+                 "C16-VERIFY" "Recompute the result from the request before trusting it."}
+   :non-authority {:clojure-seed-boundary? true
+                   :self-hosted? false
+                   :release? false
+                   :public-authority? false
+                   :full-language-credit? false
+                   :matrix-240-credit? false
+                   :candidate-target w5-c16-candidate-target
+                   :candidate-platform w5-c16-candidate-platform
+                   :unsupported-targets w5-c16-unsupported-targets
+                   :unsupported-target-policies
+                   w5-c16-unsupported-target-policies
+                   :cross-target-inference? false
+                   :fallback? false}})
+
+(defn w5-c16-policy []
+  {:artifact :gravity/w5-c16-incremental-execution-policy
+   :schema-version 1
+   :stage :type-check
+   :profile :meta
+   :stage2-target w5-c16-stage2-target
+   :target w5-c16-candidate-target
+   :candidate-target w5-c16-candidate-target
+   :candidate-platform w5-c16-candidate-platform
+   :target-scope w5-c16-target-scope
+   :unsupported-targets w5-c16-unsupported-targets
+   :unsupported-target-policies w5-c16-unsupported-target-policies
+   :cross-target-inference? false
+   :fallback? false
+   :cache-key-schema-version 1
+   :cache-entry-schema-version 1
+   :required-cache-key-fields (set (conj w5-c16-semantic-fields
+                                          :artifact
+                                          :schema-version
+                                          :stage))
+   :required-cache-entry-fields #{:artifact :schema-version :cache-key
+                                  :artifact-id :producer :inputs
+                                  :preserved-facts :invalidated-by
+                                  :diagnostics :proof :trust :revalidation
+                                  :provenance}
+   :invalidation-causes w5-c16-invalidation-causes
+   :diagnostics (get w5-c16-diagnostic-catalog :diagnostics)
+   :residual-boundary {:stage2-compiler-plan :clojure-bootstrap
+                       :runtime :jvm
+                       :cache-store :supplied-data-only
+                       :filesystem-authority false
+                       :network-authority false}
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :full-language-credit? false
+   :matrix-240-credit? false
+   :public-authority? false
+   :non-authority {:clojure-seed-boundary? true
+                   :self-hosted? false
+                   :release? false
+                   :public-authority? false
+                   :full-language-credit? false
+                   :matrix-240-credit? false
+                   :candidate-target w5-c16-candidate-target
+                   :candidate-platform w5-c16-candidate-platform
+                   :unsupported-targets w5-c16-unsupported-targets
+                   :unsupported-target-policies
+                   w5-c16-unsupported-target-policies
+                   :cross-target-inference? false
+                   :fallback? false}
+   :pending [:independent-rebuild
+             :external-proof-recomputation
+             :filesystem-cache-engine
+             :seed-retirement
+             :release-admission]})
+
+(defn w5-c16-stage-cache-key-fields [stage]
+  (if (= stage :reader)
+    #{:source :reader :compiler :pass-contract :profile :target
+      :dependencies :build-effects :capabilities :language-facets
+      :diagnostic-schema}
+    (if (= stage :macro-expansion)
+      #{:source :reader :syntax :macro-expansion :compiler
+        :pass-contract :profile :target :dependencies :build-effects
+        :capabilities :language-facets :package-lock :provider-policy
+        :diagnostic-schema}
+      (if (= stage :namespace-analysis)
+        #{:source :syntax :macro-expansion :namespace :compiler
+          :pass-contract :profile :target :dependencies :build-effects
+          :capabilities :language-facets :package-lock :provider-policy
+          :diagnostic-schema}
+        (if (= stage :type-check)
+          (set (conj w5-c16-semantic-fields :source))
+          (if (= stage :effect-check)
+            #{:source :syntax :macro-expansion :namespace :typed-core
+              :effect-graph :compiler :pass-contract :profile :target
+              :dependencies :build-effects :capabilities :language-facets
+              :package-lock :provider-policy :diagnostic-schema}
+            (if (= stage :safety-analysis)
+              #{:source :syntax :macro-expansion :namespace :typed-core
+                :effect-graph :profile :capabilities :safety
+                :proof-policy :compiler :pass-contract :target
+                :dependencies :build-effects :language-facets
+                :package-lock :provider-policy :diagnostic-schema}
+              (if (= stage :mir)
+                #{:source :syntax :macro-expansion :namespace :typed-core
+                  :effect-graph :profile :capabilities :safety
+                  :proof-policy :dependencies :compiler :pass-contract
+                  :target :backend :plugin :build-effects :language-facets
+                  :package-lock :provider-policy :diagnostic-schema}
+                (if (= stage :target-lowering)
+                  #{:source :typed-core :effect-graph :profile :capabilities
+                    :safety :proof-policy :dependencies :target :backend
+                    :plugin :compiler :pass-contract :build-effects
+                    :language-facets :package-lock :provider-policy
+                    :diagnostic-schema}
+                  (if (= stage :diagnostics)
+                    #{:source :namespace :typed-core :effect-graph :safety
+                      :proof-policy :diagnostic-schema :compiler
+                      :pass-contract :profile :target :dependencies
+                      :build-effects :capabilities :language-facets
+                      :package-lock :provider-policy}
+                    #{}))))))))))
+
+(defn w5-c16-invalidation-cause? [cause]
+  (contains? (set w5-c16-invalidation-causes) cause))
+
+(defn w5-c16-present? [value]
+  (if (= nil value) false true))
+
+(defn w5-c16-id? [value]
+  (if (string? value)
+    (> (count value) 0)
+    false))
+
+(defn w5-c16-source-span-valid? [span]
+  (if (map? span)
+    (if (= (set (keys span)) #{:source-id :start-byte :end-byte})
+      (if (w5-c16-id? (get span :source-id))
+        (if (integer? (get span :start-byte))
+          (if (integer? (get span :end-byte))
+            (if (>= (get span :start-byte) 0)
+              (<= (get span :start-byte) (get span :end-byte))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-lineage-valid? [lineage index]
+  (if (= index (count lineage))
+    true
+    (if (keyword? (get lineage index))
+      (w5-c16-lineage-valid? lineage (+ index 1))
+      false)))
+
+(defn w5-c16-stage? [stage]
+  (if (= #{} (w5-c16-stage-cache-key-fields stage))
+    false
+    true))
+
+(defn w5-c16-key-fields-valid? [key fields index]
+  (if (= index (count fields))
+    true
+    (if (if (= :target-scope (get fields index))
+          (w5-c16-target-valid? (get key :target-scope))
+          (w5-c16-id? (get key (get fields index))))
+      (w5-c16-key-fields-valid? key fields (+ index 1))
+      false)))
+
+(defn w5-c16-cache-key-valid? [key]
+  (if (map? key)
+    (if (= (set (keys key))
+           #{:artifact :schema-version :stage :source :reader :syntax
+             :macro-expansion :namespace :typed-core :effect-graph
+             :profile :capabilities :safety :proof-policy :dependencies
+             :target :backend :plugin :diagnostic-schema :build-effects
+             :compiler :pass-contract :language-facets :package-lock
+             :provider-policy :target-scope})
+      (if (= :gravity/w5-c16-cache-key (get key :artifact))
+        (if (= 1 (get key :schema-version))
+          (if (w5-c16-stage? (get key :stage))
+            (if (w5-c16-key-fields-valid?
+                 key w5-c16-semantic-fields 0)
+              (if (w5-c16-key-fields-valid?
+                   key
+                   (vec (w5-c16-stage-cache-key-fields
+                         (get key :stage)))
+                   0)
+                true
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-build-cache-key [stage semantic-input]
+  (assoc (assoc (assoc semantic-input
+                       :artifact :gravity/w5-c16-cache-key)
+                :schema-version 1)
+         :stage stage))
+
+(defn w5-c16-producer-valid? [producer key]
+  (if (map? producer)
+    (if (= (set (keys producer))
+           #{:stage :pass-id :pass-version :compiler-id :pass-contract})
+      (if (= (get key :stage) (get producer :stage))
+        (if (= "gravity.pass.type-check" (get producer :pass-id))
+          (if (= "w5-c16-pass-v1" (get producer :pass-version))
+            (if (= (get key :compiler) (get producer :compiler-id))
+              (= (get key :pass-contract) (get producer :pass-contract))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-expected-entry-inputs [key]
+  [(get key :source)
+   (get key :reader)
+   (get key :syntax)
+   (get key :macro-expansion)
+   (get key :namespace)
+   (get key :typed-core)
+   (get key :effect-graph)
+   (get key :profile)
+   (get key :capabilities)
+   (get key :safety)
+   (get key :proof-policy)
+   (get key :dependencies)
+   (get key :target)
+   (get key :backend)
+   (get key :plugin)
+   (get key :diagnostic-schema)
+   (get key :build-effects)
+   (get key :compiler)
+   (get key :pass-contract)
+   (get key :language-facets)
+   (get key :package-lock)
+   (get key :provider-policy)])
+
+(def w5-c16-preserved-facts
+  #{:source-spans :syntax-identity :macro-expansion-trace
+    :namespace-analysis :type-facts :effect-facts
+    :profile-target-metadata :safety-outcomes
+    :proof-obligations :diagnostic-streams
+    :dependency-graph-edges :build-effect-replay-records})
+
+(defn w5-c16-diagnostic-stream-valid? [stream]
+  (if (map? stream)
+    (if (= (set (keys stream)) #{:stream-id :schema-version :facts-id})
+      (if (= 1 (get stream :schema-version))
+        (if (w5-c16-id? (get stream :stream-id))
+          (w5-c16-id? (get stream :facts-id))
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-proof-valid? [proof]
+  (if (map? proof)
+    (if (= (set (keys proof)) #{:proof-id :claim-id :inputs-id :status})
+      (if (w5-c16-id? (get proof :proof-id))
+        (if (w5-c16-id? (get proof :claim-id))
+          (if (w5-c16-id? (get proof :inputs-id))
+            (if (= :fresh (get proof :status))
+              true
+              (if (= :stale (get proof :status)) true false))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-provenance-valid? [provenance]
+  (if (map? provenance)
+    (if (= (set (keys provenance))
+           #{:source-path :logical-source :compiler-path :profile :target
+             :dependency-graph-id :build-replay-id :target-scope})
+      (if (w5-c16-id? (get provenance :source-path))
+        (if (w5-c16-id? (get provenance :logical-source))
+          (if (w5-c16-id? (get provenance :compiler-path))
+            (if (= :meta (get provenance :profile))
+              (if (= w5-c16-candidate-target (get provenance :target))
+                (if (w5-c16-id? (get provenance :dependency-graph-id))
+                  (if (w5-c16-id? (get provenance :build-replay-id))
+                    (w5-c16-target-valid? (get provenance :target-scope))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-cache-entry-valid? [entry]
+  (if (map? entry)
+    (if (= (set (keys entry))
+           #{:artifact :schema-version :cache-key :artifact-id :producer
+             :inputs :preserved-facts :invalidated-by :diagnostics :proof
+             :trust :revalidation :provenance})
+      (if (= :gravity/w5-c16-cache-entry (get entry :artifact))
+        (if (= 1 (get entry :schema-version))
+          (if (w5-c16-cache-key-valid? (get entry :cache-key))
+            (if (w5-c16-id? (get entry :artifact-id))
+              (if (w5-c16-producer-valid?
+                   (get entry :producer) (get entry :cache-key))
+                (if (= (w5-c16-expected-entry-inputs
+                        (get entry :cache-key))
+                       (get entry :inputs))
+                  (if (= w5-c16-preserved-facts
+                         (get entry :preserved-facts))
+                    (if (= (set w5-c16-invalidation-causes)
+                           (get entry :invalidated-by))
+                      (if (w5-c16-diagnostic-stream-valid?
+                           (get entry :diagnostics))
+                        (if (w5-c16-proof-valid? (get entry :proof))
+                          (if (= :local-build (get entry :trust))
+                            (if (= :accepted (get entry :revalidation))
+                              (w5-c16-provenance-valid?
+                               (get entry :provenance))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-cache-entry-matches-request? [request]
+  (let [key (get request :cache-key)
+        entry (get request :cache-entry)]
+    (if (= (get key :source) (get (get request :source) :content-id))
+      (if (= key (get entry :cache-key))
+        (= (w5-c16-expected-entry-inputs key) (get entry :inputs))
+        false)
+      false)))
+
+(defn w5-c16-build-cache-entry
+  [key artifact-id producer inputs preserved-facts invalidated-by diagnostics
+   proof trust revalidation provenance]
+  {:artifact :gravity/w5-c16-cache-entry
+   :schema-version 1
+   :cache-key key
+   :artifact-id artifact-id
+   :producer producer
+   :inputs inputs
+   :preserved-facts preserved-facts
+   :invalidated-by invalidated-by
+   :diagnostics diagnostics
+   :proof proof
+   :trust trust
+   :revalidation revalidation
+   :provenance provenance})
+
+(defn w5-c16-node-id? [nodes node-id index]
+  (if (= index (count nodes))
+    false
+    (if (= node-id (get (get nodes index) :node-id))
+      true
+      (w5-c16-node-id? nodes node-id (+ index 1)))))
+
+(defn w5-c16-node-ids-unique? [nodes index seen]
+  (if (= index (count nodes))
+    true
+    (let [node (get nodes index)
+          node-id (get node :node-id)]
+      (if (contains? seen node-id)
+        false
+        (w5-c16-node-ids-unique?
+         nodes (+ index 1) (conj seen node-id))))))
+
+(defn w5-c16-graph-node-valid? [node]
+  (if (map? node)
+    (if (= (set (keys node)) #{:node-id :kind :stage})
+      (if (keyword? (get node :node-id))
+        (if (keyword? (get node :kind))
+          (w5-c16-stage? (get node :stage))
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-graph-nodes-valid? [nodes index]
+  (if (= index (count nodes))
+    true
+    (if (w5-c16-graph-node-valid? (get nodes index))
+      (w5-c16-graph-nodes-valid? nodes (+ index 1))
+      false)))
+
+(defn w5-c16-edge-valid? [edge nodes]
+  (if (map? edge)
+    (if (= (set (keys edge))
+           #{:edge-id :from :to :dependency-kind :invalidated-by
+             :source-span :producer-stage :consumer-stage})
+      (if (keyword? (get edge :edge-id))
+        (if (w5-c16-node-id? nodes (get edge :from) 0)
+          (if (w5-c16-node-id? nodes (get edge :to) 0)
+            (if (keyword? (get edge :dependency-kind))
+              (if (set? (get edge :invalidated-by))
+                (if (w5-c16-source-span-valid?
+                     (get edge :source-span))
+                  (if (w5-c16-stage? (get edge :producer-stage))
+                    (w5-c16-stage? (get edge :consumer-stage))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-graph-edges-valid? [edges nodes index seen]
+  (if (= index (count edges))
+    true
+    (let [edge (get edges index)
+          edge-id (get edge :edge-id)]
+      (if (contains? seen edge-id)
+        false
+        (if (w5-c16-edge-valid? edge nodes)
+          (w5-c16-graph-edges-valid?
+           edges nodes (+ index 1) (conj seen edge-id))
+          false)))))
+
+(defn w5-c16-node-reachable?
+  [edges current-node target-node edge-index visited]
+  (if (= current-node target-node)
+    true
+    (if (contains? visited current-node)
+      false
+      (if (= edge-index (count edges))
+        false
+        (let [edge (get edges edge-index)]
+          (if (= current-node (get edge :from))
+            (if (w5-c16-node-reachable?
+                 edges (get edge :to) target-node 0
+                 (conj visited current-node))
+              true
+              (w5-c16-node-reachable?
+               edges current-node target-node (+ edge-index 1) visited))
+            (w5-c16-node-reachable?
+             edges current-node target-node (+ edge-index 1) visited)))))))
+
+(defn w5-c16-all-nodes-reachable? [nodes edges root index]
+  (if (= index (count nodes))
+    true
+    (if (w5-c16-node-reachable?
+         edges root (get (get nodes index) :node-id) 0 #{})
+      (w5-c16-all-nodes-reachable? nodes edges root (+ index 1))
+      false)))
+
+(defn w5-c16-dependency-graph-valid? [graph]
+  (if (map? graph)
+    (if (= (set (keys graph))
+           #{:artifact :schema-version :graph-id :nodes :edges :root})
+      (if (= :gravity/w5-c16-dependency-graph (get graph :artifact))
+        (if (= 1 (get graph :schema-version))
+          (if (w5-c16-id? (get graph :graph-id))
+            (if (vector? (get graph :nodes))
+              (if (> (count (get graph :nodes)) 0)
+                (if (w5-c16-graph-nodes-valid? (get graph :nodes) 0)
+                  (if (w5-c16-node-ids-unique?
+                       (get graph :nodes) 0 #{})
+                    (if (vector? (get graph :edges))
+                      (if (w5-c16-graph-edges-valid?
+                           (get graph :edges)
+                           (get graph :nodes) 0 #{})
+                        (if (= :source-unit (get graph :root))
+                          (w5-c16-all-nodes-reachable?
+                           (get graph :nodes) (get graph :edges)
+                           (get graph :root) 0)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-build-dependency-graph [graph-id nodes edges root]
+  {:artifact :gravity/w5-c16-dependency-graph
+   :schema-version 1
+   :graph-id graph-id
+   :nodes nodes
+   :edges edges
+   :root root})
+
+(defn w5-c16-change-valid? [change]
+  (if (map? change)
+    (if (= (set (keys change)) #{:cause :field :before :after})
+      (if (w5-c16-invalidation-cause? (get change :cause))
+        (if (= (get change :field)
+               (if (= (get change :cause) :source-change) :source
+                 (if (= (get change :cause) :macro-change)
+                   :macro-expansion
+                   (if (= (get change :cause) :namespace-change)
+                     :namespace
+                     (if (= (get change :cause) :type-change)
+                       :typed-core
+                       (if (= (get change :cause) :effect-change)
+                         :effect-graph
+                         (if (= (get change :cause) :profile-change)
+                           :profile
+                           (if (= (get change :cause) :capability-change)
+                             :capabilities
+                             (if (= (get change :cause) :safety-change)
+                               :safety
+                               (if (= (get change :cause) :proof-change)
+                                 :proof-policy
+                                 (if (= (get change :cause) :dependency-change)
+                                   :dependencies
+                                   (if (= (get change :cause) :target-change)
+                                     :target
+                                     (if (= (get change :cause) :backend-change)
+                                       :backend
+                                       (if (= (get change :cause) :plugin-change)
+                                         :plugin
+                                         :diagnostic-schema))))))))))))
+          (if (w5-c16-id? (get change :before))
+            (if (w5-c16-id? (get change :after))
+              (if (= (get change :before) (get change :after))
+                false
+                true)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))))
+
+(defn w5-c16-change-list-valid? [changes index]
+  (if (= index (count changes))
+    true
+    (if (w5-c16-change-valid? (get changes index))
+      (w5-c16-change-list-valid? changes (+ index 1))
+      false)))
+
+(defn w5-c16-change-baselines-match-key?
+  [key changes index]
+  (if (= index (count changes))
+    true
+    (let [change (get changes index)]
+      (if (= (get key (get change :field))
+             (get change :before))
+        (w5-c16-change-baselines-match-key?
+         key changes (+ index 1))
+        false))))
+
+(defn w5-c16-key-identity [key]
+  {:artifact :gravity/w5-c16-cache-key-identity
+   :schema-version 1
+   :stage (get key :stage)
+   ; Cache keys contain semantic content only; actual paths live in the entry
+   ; provenance map and therefore cannot enter this deterministic projection.
+   :semantic-input key})
+
+(defn w5-c16-execution-identity [request]
+  {:artifact :gravity/w5-c16-execution-identity
+   :schema-version 1
+   :execution-id (get request :execution-id)
+   :stage (get request :stage)
+   :stage2-target (get request :stage2-target)
+   :profile (get request :profile)
+   :target (get request :target)
+   :target-scope (get request :target-scope)
+   :cache-key (w5-c16-key-identity (get request :cache-key))
+   :dependency-graph-id
+   (get (get request :dependency-graph) :graph-id)
+   :changes (get request :changes)
+   :replay-id (get (get request :replay) :replay-id)
+   :policy-id :gravity/w5-c16-policy-v1})
+
+(def w5-c16-diagnostic-fallback-span
+  {:source-id "gravity/w5-c16-diagnostic"
+   :start-byte 0
+   :end-byte 0})
+
+(defn w5-c16-diagnostic-span [request]
+  (let [candidate (get (get request :source) :source-span)]
+    (if (w5-c16-source-span-valid? candidate)
+      candidate
+      w5-c16-diagnostic-fallback-span)))
+
+(defn w5-c16-diagnostic
+  [rule request invalidating-input manifest-entry reason]
+  {:artifact :gravity/w5-c16-diagnostic
+   :schema-version 1
+   :rule rule
+   :diagnostic-id rule
+   :severity :error
+   :stage (get request :stage)
+   :cache-key (w5-c16-key-identity (get request :cache-key))
+   :artifact-id (get (get request :cache-entry) :artifact-id)
+   :invalidating-input invalidating-input
+   :source-span (w5-c16-diagnostic-span request)
+   :manifest-entry manifest-entry
+   :profile (get request :profile)
+   :target (get request :target)
+   :candidate-target w5-c16-candidate-target
+   :candidate-platform w5-c16-candidate-platform
+   :target-scope (get request :target-scope)
+   :facts {:reason reason
+           :rule rule}
+   :remediation (get (get w5-c16-diagnostic-catalog :remediation) rule)})
+
+(defn w5-c16-rejected
+  [request rule invalidating-input manifest-entry reason]
+  {:artifact :gravity/w5-c16-incremental-execution-result
+   :schema-version 1
+   :status :rejected
+   :identity-input nil
+   :operations []
+   :invalidation-traces []
+   :reuse-reports []
+   :diagnostics [(w5-c16-diagnostic
+                  rule request invalidating-input manifest-entry reason)]
+   :provenance (get request :provenance)
+   :clojure-seed-boundary? true
+   :stage2-target w5-c16-stage2-target
+   :candidate-target w5-c16-candidate-target
+   :candidate-platform w5-c16-candidate-platform
+   :target-scope (get request :target-scope)
+   :self-hosted? false
+   :release? false
+   :full-language-credit? false
+   :matrix-240-credit? false
+   :public-authority? false
+   :completion :incomplete
+   :authority :non-authority
+   :non-authority (get w5-c16-diagnostic-catalog :non-authority)
+   :publishable? false})
+
+(defn w5-c16-source-valid? [request]
+  (let [source (get request :source)]
+    (if (map? source)
+      (if (= (set (keys source))
+             #{:logical-path :content-id :source-span :actual-source-path})
+        (if (w5-c16-id? (get source :logical-path))
+          (if (w5-c16-id? (get source :content-id))
+            (if (w5-c16-source-span-valid? (get source :source-span))
+              (w5-c16-id? (get source :actual-source-path))
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-c16-replay-valid? [replay]
+  (if (map? replay)
+    (if (= (set (keys replay))
+           #{:artifact :schema-version :replay-id :status :inputs})
+      (if (= :gravity/w5-c16-build-replay (get replay :artifact))
+        (if (= 1 (get replay :schema-version))
+            (if (w5-c16-id? (get replay :replay-id))
+            (if (= :complete (get replay :status))
+              (if (vector? (get replay :inputs))
+                (if (> (count (get replay :inputs)) 0)
+                  (w5-c16-replay-inputs-valid? (get replay :inputs) 0)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-replay-inputs-valid? [inputs index]
+  (if (= index (count inputs))
+    true
+    (if (w5-c16-id? (get inputs index))
+      (w5-c16-replay-inputs-valid? inputs (+ index 1))
+      false)))
+
+(defn w5-c16-provenance-matches? [request entry]
+  (let [source (get request :source)
+        request-provenance (get request :provenance)
+        provenance (get entry :provenance)]
+    (if (w5-c16-request-provenance-valid? request-provenance)
+      (if (= (get source :actual-source-path)
+             (get provenance :source-path))
+        (if (= (get request-provenance :compiler-source-path)
+               (get provenance :compiler-path))
+          (if (= (get request-provenance :profile)
+                 (get provenance :profile))
+            (if (= (get request-provenance :target)
+                   (get provenance :target))
+              (if (= (get request-provenance :target-scope)
+                     (get provenance :target-scope))
+              (if (= (get (get request :dependency-graph) :graph-id)
+                     (get provenance :dependency-graph-id))
+                (= (get (get request :replay) :replay-id)
+                   (get provenance :build-replay-id))
+                false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-c16-request-target-valid? [request]
+  (if (= w5-c16-candidate-target (get request :target))
+    (if (= w5-c16-stage2-target (get request :stage2-target))
+      (if (= w5-c16-candidate-platform (get request :candidate-platform))
+        (if (= w5-c16-unsupported-targets
+               (get request :unsupported-targets))
+          (if (= w5-c16-unsupported-target-policies
+                 (get request :unsupported-target-policies))
+            (if (= false (get request :cross-target-inference?))
+              (if (= false (get request :fallback?))
+                (w5-c16-target-valid? (get request :target-scope))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-request-provenance-valid? [provenance]
+  (if (map? provenance)
+    (if (= (set (keys provenance))
+           #{:source-path :compiler-source-path :stage :profile :target
+             :lineage :stage2-target :target-scope})
+      (if (w5-c16-id? (get provenance :source-path))
+        (if (w5-c16-id? (get provenance :compiler-source-path))
+          (if (= :type-check (get provenance :stage))
+            (if (= :meta (get provenance :profile))
+              (if (= w5-c16-candidate-target (get provenance :target))
+                (if (= w5-c16-stage2-target (get provenance :stage2-target))
+                  (if (vector? (get provenance :lineage))
+                    (if (> (count (get provenance :lineage)) 0)
+                      (if (w5-c16-lineage-valid? (get provenance :lineage) 0)
+                        (w5-c16-target-valid? (get provenance :target-scope))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-request-shell-valid? [request]
+  (if (map? request)
+    (if (= (set (keys request))
+           #{:artifact :schema-version :execution-id :stage :profile :target
+             :stage2-target :candidate-target :candidate-platform
+             :target-scope :unsupported-targets :unsupported-target-policies
+             :cross-target-inference? :fallback? :mode :policy :source :cache-key :cache-entry
+             :dependency-graph :changes :provenance :replay})
+      (if (= :gravity/w5-c16-incremental-execution-request
+             (get request :artifact))
+        (if (= 1 (get request :schema-version))
+          (if (keyword? (get request :execution-id))
+            (if (= :type-check (get request :stage))
+              (if (= :meta (get request :profile))
+              (if (= w5-c16-candidate-target (get request :candidate-target))
+                (if (w5-c16-request-target-valid? request)
+                    (if (= :normal (get request :mode))
+                      true
+                      (if (= :speculative (get request :mode)) true false))
+                    false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))))
+
+(defn w5-c16-revalidate-cache-entry [request]
+  (let [key (get request :cache-key)
+        entry (get request :cache-entry)]
+    {:artifact :gravity/w5-c16-revalidation-report
+     :schema-version 1
+     :stage (get request :stage)
+     :artifact-id (get entry :artifact-id)
+     :cache-key (w5-c16-key-identity key)
+     :checks-run [:cache-key-equality
+                  :artifact-schema-version
+                  :producer-pass-version
+                  :producer-pass-contract
+                  :preserved-fact-set
+                  :proof-certificate-freshness
+                  :profile-compatibility
+                  :target-compatibility
+                  :capability-policy-compatibility
+                  :diagnostic-schema-compatibility
+                  :dependency-graph-compatibility
+                  :build-effect-replay-present
+                  :package-provider-provenance-present]
+     :checks-missing []
+     :outcome :accepted
+     :speculation :none
+     :blocking-diagnostics []
+     :profile (get request :profile)
+     :target (get request :target)
+     :candidate-target w5-c16-candidate-target
+     :candidate-platform w5-c16-candidate-platform
+     :target-scope (get request :target-scope)
+     :remediation nil}))
+
+(defn w5-c16-build-invalidation-trace
+  [request change current-key]
+  {:artifact :gravity/w5-c16-invalidation-trace
+   :schema-version 1
+   :trace-id (str "sha256:w5-c16-trace-" (get change :cause))
+   :cause (get change :cause)
+   :invalidating-input {:field (get change :field)
+                        :before (get change :before)
+                        :after (get change :after)}
+   :changed-field (get change :field)
+   :affected-nodes [:source-unit :typed-core :diagnostic-stream
+                    :proof-certificate :target-artifact]
+   :downstream-stages [:type-check :effect-check :safety-analysis :mir
+                       :target-lowering :diagnostics]
+   :proofs-invalidated true
+   :diagnostics-invalidated true
+   :runtime-checks-restored true
+   :source-span (get (get request :source) :source-span)
+   :manifest-entry (get change :field)
+   :profile (get request :profile)
+   :target (get request :target)
+   :candidate-target w5-c16-candidate-target
+   :candidate-platform w5-c16-candidate-platform
+   :target-scope (get request :target-scope)
+   :current-cache-key (w5-c16-key-identity current-key)
+   :remediation (str "Revalidate downstream stages after "
+                     (get change :cause) ".")})
+
+(defn w5-c16-build-reuse-report
+  [request operation-id status cache-key artifact-id revalidation trace
+   proof-reuse diagnostic-reuse publishable]
+  {:artifact :gravity/w5-c16-artifact-reuse-report
+   :schema-version 1
+   :operation-id operation-id
+   :artifact-id artifact-id
+   :cache-key (w5-c16-key-identity cache-key)
+   :reuse-status status
+   :revalidation-report revalidation
+   :invalidation-trace trace
+   :proof-reuse proof-reuse
+   :diagnostic-reuse diagnostic-reuse
+   :diagnostics []
+   :publishable? publishable
+   :profile (get request :profile)
+   :target (get request :target)
+   :candidate-target w5-c16-candidate-target
+   :candidate-platform w5-c16-candidate-platform
+   :target-scope (get request :target-scope)})
+
+(defn w5-c16-apply-change [key change]
+  (assoc key (get change :field) (get change :after)))
+
+(defn w5-c16-unchanged-operation [request]
+  (let [key (get request :cache-key)
+        entry (get request :cache-entry)
+        revalidation (w5-c16-revalidate-cache-entry request)]
+    {:operation-id :unchanged-reuse
+     :cause nil
+     :decision :reused
+     :cache-key (w5-c16-key-identity key)
+     :cache-entry-id (get entry :artifact-id)
+     :revalidation revalidation
+     :proof-reuse :accepted
+     :diagnostic-reuse :accepted
+     :publishable? true
+     :reuse-report
+     (w5-c16-build-reuse-report
+      request :unchanged-reuse :reused key (get entry :artifact-id)
+      revalidation nil :accepted :accepted true)}))
+
+(defn w5-c16-changed-operation [request change]
+  (let [key (get request :cache-key)
+        current-key (w5-c16-apply-change key change)
+        trace (w5-c16-build-invalidation-trace request change current-key)
+        revalidation
+        {:artifact :gravity/w5-c16-revalidation-report
+         :schema-version 1
+         :stage (get request :stage)
+         :artifact-id (str "sha256:w5-c16-rebuilt-" (get change :cause))
+         :cache-key (w5-c16-key-identity current-key)
+         :checks-run [:cache-key-equality
+                      :invalidation-trace
+                      :proof-certificate-freshness
+                      :diagnostic-schema-compatibility
+                      :dependency-graph-compatibility]
+         :checks-missing []
+         :outcome :accepted
+         :speculation :none
+         :blocking-diagnostics []
+         :profile (get request :profile)
+         :target (get request :target)
+         :candidate-target w5-c16-candidate-target
+         :candidate-platform w5-c16-candidate-platform
+         :target-scope (get request :target-scope)
+         :remediation nil}
+        artifact-id (str "sha256:w5-c16-rebuilt-" (get change :cause))]
+    {:operation-id (get change :cause)
+     :cause (get change :cause)
+     :changed-field (get change :field)
+     :decision :invalidated
+     :before-key (w5-c16-key-identity key)
+     :after-key (w5-c16-key-identity current-key)
+     :revalidation revalidation
+     :proof-reuse :rejected
+     :diagnostic-reuse :rejected
+     :publishable? true
+     :artifact-id artifact-id
+     :invalidation-trace trace
+     :reuse-report
+     (w5-c16-build-reuse-report
+      request (get change :cause) :invalidated current-key artifact-id
+      revalidation trace :rejected :rejected true)}))
+
+(defn w5-c16-changed-operations [request changes index result]
+  (if (= index (count changes))
+    result
+    (w5-c16-changed-operations
+     request changes (+ index 1)
+     (conj result
+           (w5-c16-changed-operation request (get changes index))))))
+
+(defn w5-c16-operations-with-unchanged
+  [unchanged changed index result]
+  (if (= index (count changed))
+    result
+    (w5-c16-operations-with-unchanged
+     unchanged changed (+ index 1)
+     (conj result (get changed index)))))
+
+(defn w5-c16-invalidation-traces
+  [operations index result]
+  (if (= index (count operations))
+    result
+    (let [trace (get (get operations index) :invalidation-trace)]
+      (if (= nil trace)
+        (w5-c16-invalidation-traces operations (+ index 1) result)
+        (w5-c16-invalidation-traces
+         operations (+ index 1) (conj result trace))))))
+
+(defn w5-c16-reuse-reports
+  [operations index result]
+  (if (= index (count operations))
+    result
+    (w5-c16-reuse-reports
+     operations (+ index 1)
+     (conj result (get (get operations index) :reuse-report)))))
+
+(defn w5-c16-request-ready? [request]
+  (if (w5-c16-request-shell-valid? request)
+    (if (= (get (get request :policy) :stage) :type-check)
+      (if (= (get (get request :policy) :profile)
+             (get request :profile))
+        (if (= (get (get request :policy) :target)
+               (get request :target))
+          (if (w5-c16-source-valid? request)
+            (if (w5-c16-cache-key-valid? (get request :cache-key))
+              (if (w5-c16-cache-entry-valid?
+                   (get request :cache-entry))
+                (if (= (get request :cache-key)
+                       (get (get request :cache-entry) :cache-key))
+                  (if (w5-c16-cache-entry-matches-request? request)
+                    (if (w5-c16-provenance-matches?
+                       request (get request :cache-entry))
+                    (if (w5-c16-dependency-graph-valid?
+                         (get request :dependency-graph))
+                      (if (vector? (get request :changes))
+                        (if (w5-c16-change-list-valid?
+                             (get request :changes) 0)
+                          (if (w5-c16-request-provenance-valid?
+                               (get request :provenance))
+                            (w5-c16-replay-valid?
+                             (get request :replay))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c16-incremental-execute [request]
+  (if (w5-c16-request-shell-valid? request)
+    (if (= :speculative (get request :mode))
+      (w5-c16-rejected
+       request "C16-SPECULATIVE" :speculation :publish-boundary
+       :speculative-publication)
+      (if (= (get (get request :policy) :stage) :type-check)
+        (if (= (get (get request :policy) :profile)
+               (get request :profile))
+          (if (= (get (get request :policy) :target)
+                 (get request :target))
+            (if (w5-c16-source-valid? request)
+              (if (w5-c16-cache-key-valid? (get request :cache-key))
+                (if (w5-c16-cache-entry-valid?
+                     (get request :cache-entry))
+                  (if (= (get request :cache-key)
+                         (get (get request :cache-entry) :cache-key))
+                    (if (w5-c16-cache-entry-matches-request? request)
+                      (if (w5-c16-provenance-matches?
+                         request (get request :cache-entry))
+                      (if (w5-c16-dependency-graph-valid?
+                           (get request :dependency-graph))
+                        (if (w5-c16-replay-valid? (get request :replay))
+                          (if (= :fresh
+                                 (get (get (get request :cache-entry)
+                                           :proof)
+                                      :status))
+                            (if (= "sha256:w5-c16-diagnostic-v1"
+                                   (get (get (get request :cache-entry)
+                                             :diagnostics)
+                                        :stream-id))
+                              (if (vector? (get request :changes))
+                                (if (w5-c16-change-list-valid?
+                                     (get request :changes) 0)
+                                  (if (w5-c16-change-baselines-match-key?
+                                       (get request :cache-key)
+                                       (get request :changes) 0)
+                                    (let [unchanged
+                                          (w5-c16-unchanged-operation request)
+                                          changed
+                                          (w5-c16-changed-operations
+                                           request (get request :changes) 0 [])
+                                          operations
+                                          (w5-c16-operations-with-unchanged
+                                           unchanged changed 0 [unchanged])]
+                                      {:artifact
+                                       :gravity/w5-c16-incremental-execution-result
+                                       :schema-version 1
+                                       :status :accepted
+                                       :stage (get request :stage)
+                                       :profile (get request :profile)
+                                       :target (get request :target)
+                                       :stage2-target (get request :stage2-target)
+                                       :candidate-target w5-c16-candidate-target
+                                       :candidate-platform w5-c16-candidate-platform
+                                       :target-scope (get request :target-scope)
+                                       :identity-input
+                                       (w5-c16-execution-identity request)
+                                       :dependency-graph
+                                       (get request :dependency-graph)
+                                       :operations operations
+                                       :invalidation-traces
+                                       (w5-c16-invalidation-traces
+                                        operations 0 [])
+                                       :reuse-reports
+                                       (w5-c16-reuse-reports operations 0 [])
+                                       :diagnostics []
+                                       :provenance
+                                       (get request :provenance)
+                                       :clojure-seed-boundary? true
+                                       :self-hosted? false
+                                       :release? false
+                                       :full-language-credit? false
+                                       :matrix-240-credit? false
+                                       :public-authority? false
+                                       :non-authority
+                                       (get w5-c16-diagnostic-catalog
+                                            :non-authority)
+                                       :residual-boundary
+                                       (get (w5-c16-policy)
+                                            :residual-boundary)
+                                       :completion :incomplete
+                                       :authority :non-authority
+                                       :publishable? true
+                                       :revalidation :accepted})
+                                    (w5-c16-rejected
+                                     request "C16-STALE" :cache-key
+                                     :cache-key
+                                     :cache-key-baseline-substitution))
+                                  (w5-c16-rejected
+                                   request "C16-KEY" :changes :cache-key
+                                   :invalid-or-incomplete-change))
+                                (w5-c16-rejected
+                                 request "C16-KEY" :changes :cache-key
+                                 :changes-vector-required))
+                              (w5-c16-rejected
+                               request "C16-DIAGNOSTIC"
+                               :diagnostic-schema :diagnostics
+                               :stale-diagnostic-stream))
+                            (w5-c16-rejected
+                             request "C16-PROOF" :proof-policy :proof
+                             :stale-proof-or-certificate))
+                          (w5-c16-rejected
+                           request "C16-REPLAY" :build-effects :replay
+                           :missing-build-effect-replay))
+                        (w5-c16-rejected
+                         request "C16-GRAPH" :dependency-graph
+                         :dependency-graph-inconsistency))
+                      (w5-c16-rejected
+                       request "C16-STALE" :source :cache-entry
+                       :provenance-path-mismatch))
+                      (w5-c16-rejected
+                       request "C16-ENTRY" :cache-entry :cache-entry
+                       :cache-entry-request-binding-mismatch))
+                    (w5-c16-rejected
+                     request "C16-STALE" :cache-key :cache-entry
+                     :cache-key-mismatch))
+                  (w5-c16-rejected
+                   request "C16-ENTRY" :cache-entry :cache-entry
+                   :malformed-cache-entry))
+                (w5-c16-rejected
+                 request "C16-KEY" :cache-key :cache-key
+                 :malformed-or-incomplete-cache-key))
+              (w5-c16-rejected
+               request "C16-KEY" :source :source
+               :malformed-source-record))
+            (w5-c16-rejected
+             request "C16-POLICY" :policy :policy
+             :incompatible-profile-or-target-policy))
+          (w5-c16-rejected
+           request "C16-POLICY" :policy :policy
+           :incompatible-profile-or-target-policy))
+        (w5-c16-rejected
+         request "C16-POLICY" :stage :policy
+         :stage-policy-mismatch)))
+    (w5-c16-rejected request "C16-KEY" :request :request
+                     :malformed-incremental-request)))
+
+(defn w5-c16-execute [request]
+  (w5-c16-incremental-execute request))
+
+(defn w5-c16-run [request]
+  (w5-c16-incremental-execute request))
+
+(defn w5-c16-verify-result [request result]
+  (let [expected (w5-c16-incremental-execute request)]
+    (if (= expected result)
+      {:artifact :gravity/w5-c16-verification
+       :schema-version 1
+       :status :passed
+       :checked-result-status (get result :status)
+       :recomputed true
+       :diagnostics []
+       :clojure-seed-boundary? true
+       :candidate-target w5-c16-candidate-target
+       :candidate-platform w5-c16-candidate-platform
+       :target-scope (get request :target-scope)
+       :self-hosted? false
+       :release? false
+       :full-language-credit? false
+       :matrix-240-credit? false
+       :completion :incomplete
+       :authority :non-authority
+       :non-authority (get w5-c16-diagnostic-catalog :non-authority)}
+      {:artifact :gravity/w5-c16-verification
+       :schema-version 1
+       :status :rejected
+       :checked-result-status (get result :status)
+       :recomputed true
+       :diagnostics
+       [(w5-c16-diagnostic
+         "C16-VERIFY" request :result :result-substitution
+         :result-recompute-mismatch)]
+       :clojure-seed-boundary? true
+       :candidate-target w5-c16-candidate-target
+       :candidate-platform w5-c16-candidate-platform
+       :target-scope (get request :target-scope)
+       :self-hosted? false
+       :release? false
+       :full-language-credit? false
+       :matrix-240-credit? false
+       :non-authority (get w5-c16-diagnostic-catalog :non-authority)})))

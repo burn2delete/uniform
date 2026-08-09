@@ -1,0 +1,367 @@
+(ns gravity.self-hosting.w5-c16.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-c16-incremental-execution-request
+             w5-c16-incremental-execution-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-c16-incremental-fixture
+     :scope :stage-owned-nonauthority
+     :clojure-seed-boundary? true
+     :stage2-target :jvm
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-arm64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-x86_64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :windows :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}]
+     :cross-target-inference? false
+     :fallback? false
+     :authority :non-authority
+     :self-hosted? false
+     :release? false
+     :full-language-credit? false}}))
+
+; The accepted fixture supplies a complete type-check cache request.  The
+; executor performs one genuine unchanged reuse and one invalidating rebuild
+; for every C16 input family.  Paths are provenance only; all semantic IDs are
+; content IDs and therefore remain stable across checkouts.
+
+(defn w5-c16-source-span []
+  {:source-id "sha256:w5-c16-source-span"
+   :start-byte 0
+   :end-byte 24})
+
+(defn w5-c16-cache-key []
+  {:artifact :gravity/w5-c16-cache-key
+   :schema-version 1
+   :stage :type-check
+   :source "sha256:w5-c16-source-v1"
+   :reader "sha256:w5-c16-reader-v1"
+   :syntax "sha256:w5-c16-syntax-v1"
+   :macro-expansion "sha256:w5-c16-macro-v1"
+   :namespace "sha256:w5-c16-namespace-v1"
+   :typed-core "sha256:w5-c16-type-v1"
+   :effect-graph "sha256:w5-c16-effect-v1"
+   :profile "sha256:w5-c16-profile-meta-v1"
+   :capabilities "sha256:w5-c16-capability-empty-v1"
+   :safety "sha256:w5-c16-safety-safe-v1"
+   :proof-policy "sha256:w5-c16-proof-policy-v1"
+   :dependencies "sha256:w5-c16-dependencies-v1"
+   :target "sha256:w5-c16-target-llvm-x86_64-linux-v1"
+   :backend "sha256:w5-c16-backend-llvm-v1"
+   :plugin "sha256:w5-c16-plugin-set-v1"
+   :diagnostic-schema "sha256:w5-c16-diagnostic-schema-v1"
+   :build-effects "sha256:w5-c16-build-replay-v1"
+   :target-scope
+   {:candidate-target :llvm-x86_64-linux
+    :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                         :artifact-format :elf :abi :sysv-amd64}
+    :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+    :unsupported-target-policies
+    [{:target :darwin :support :unsupported
+      :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :darwin-arm64 :support :unsupported
+      :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :darwin-x86_64 :support :unsupported
+      :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :windows :support :unsupported
+      :invokes-clojure? false :links-jvm? false :fallback? false}]
+    :cross-target-inference? false
+    :fallback? false}
+   :compiler "sha256:w5-c16-compiler-v1"
+   :pass-contract "sha256:w5-c16-pass-contract-type-check-v1"
+   :language-facets "sha256:w5-c16-facets-core-v1"
+   :package-lock "sha256:w5-c16-package-lock-v1"
+   :provider-policy "sha256:w5-c16-provider-policy-v1"})
+
+(defn w5-c16-dependency-graph []
+  {:artifact :gravity/w5-c16-dependency-graph
+   :schema-version 1
+   :graph-id "sha256:w5-c16-graph-v1"
+   :nodes [{:node-id :source-unit :kind :source-unit :stage :reader}
+           {:node-id :syntax-stream :kind :syntax-object-stream
+            :stage :macro-expansion}
+           {:node-id :typed-core :kind :typed-core :stage :type-check}
+           {:node-id :proof-certificate :kind :proof-certificate
+            :stage :safety-analysis}
+           {:node-id :diagnostic-stream :kind :diagnostic-stream
+            :stage :diagnostics}
+           {:node-id :target-artifact :kind :target-artifact
+            :stage :target-lowering}]
+   :edges [{:edge-id :edge/source-syntax
+            :from :source-unit
+            :to :syntax-stream
+            :dependency-kind :syntax
+            :invalidated-by #{:source-change :macro-change
+                              :namespace-change}
+            :source-span (w5-c16-source-span)
+            :producer-stage :reader
+            :consumer-stage :macro-expansion}
+           {:edge-id :edge/syntax-typed
+            :from :syntax-stream
+            :to :typed-core
+            :dependency-kind :semantic
+            :invalidated-by #{:macro-change :namespace-change :type-change
+                              :effect-change :profile-change
+                              :capability-change}
+            :source-span (w5-c16-source-span)
+            :producer-stage :macro-expansion
+            :consumer-stage :type-check}
+           {:edge-id :edge/typed-proof
+            :from :typed-core
+            :to :proof-certificate
+            :dependency-kind :proof
+            :invalidated-by #{:type-change :effect-change :profile-change
+                              :capability-change :safety-change
+                              :proof-change :dependency-change}
+            :source-span (w5-c16-source-span)
+            :producer-stage :type-check
+            :consumer-stage :safety-analysis}
+           {:edge-id :edge/proof-target
+            :from :proof-certificate
+            :to :target-artifact
+            :dependency-kind :lowering
+            :invalidated-by #{:safety-change :proof-change
+                              :target-change :backend-change :plugin-change}
+            :source-span (w5-c16-source-span)
+            :producer-stage :safety-analysis
+            :consumer-stage :target-lowering}
+           {:edge-id :edge/typed-diagnostics
+            :from :typed-core
+            :to :diagnostic-stream
+            :dependency-kind :diagnostic
+            :invalidated-by #{:type-change :effect-change :diagnostic-change}
+            :source-span (w5-c16-source-span)
+            :producer-stage :type-check
+            :consumer-stage :diagnostics}]
+   :root :source-unit}
+)
+
+(defn w5-c16-cache-entry [key path extension]
+  {:artifact :gravity/w5-c16-cache-entry
+   :schema-version 1
+   :cache-key key
+   :artifact-id "sha256:w5-c16-artifact-v1"
+   :producer {:stage :type-check
+              :pass-id "gravity.pass.type-check"
+              :pass-version "w5-c16-pass-v1"
+              :compiler-id "sha256:w5-c16-compiler-v1"
+              :pass-contract "sha256:w5-c16-pass-contract-type-check-v1"}
+   :inputs ["sha256:w5-c16-source-v1"
+            "sha256:w5-c16-reader-v1"
+            "sha256:w5-c16-syntax-v1"
+            "sha256:w5-c16-macro-v1"
+            "sha256:w5-c16-namespace-v1"
+            "sha256:w5-c16-type-v1"
+            "sha256:w5-c16-effect-v1"
+            "sha256:w5-c16-profile-meta-v1"
+            "sha256:w5-c16-capability-empty-v1"
+            "sha256:w5-c16-safety-safe-v1"
+            "sha256:w5-c16-proof-policy-v1"
+            "sha256:w5-c16-dependencies-v1"
+            "sha256:w5-c16-target-llvm-x86_64-linux-v1"
+            "sha256:w5-c16-backend-llvm-v1"
+            "sha256:w5-c16-plugin-set-v1"
+            "sha256:w5-c16-diagnostic-schema-v1"
+            "sha256:w5-c16-build-replay-v1"
+            "sha256:w5-c16-compiler-v1"
+            "sha256:w5-c16-pass-contract-type-check-v1"
+            "sha256:w5-c16-facets-core-v1"
+            "sha256:w5-c16-package-lock-v1"
+            "sha256:w5-c16-provider-policy-v1"]
+   :preserved-facts #{:source-spans :syntax-identity :macro-expansion-trace
+                      :namespace-analysis :type-facts :effect-facts
+                      :profile-target-metadata :safety-outcomes
+                      :proof-obligations :diagnostic-streams
+                      :dependency-graph-edges
+                      :build-effect-replay-records}
+   :invalidated-by #{:source-change :macro-change :namespace-change
+                     :type-change :effect-change :profile-change
+                     :capability-change :safety-change :proof-change
+                     :dependency-change :target-change :backend-change
+                     :plugin-change :diagnostic-change}
+   :diagnostics {:stream-id "sha256:w5-c16-diagnostic-v1"
+                 :schema-version 1
+                 :facts-id "sha256:w5-c16-diagnostic-facts-v1"}
+   :proof {:proof-id "sha256:w5-c16-proof-v1"
+           :claim-id "sha256:w5-c16-typed-core-claim-v1"
+           :inputs-id "sha256:w5-c16-proof-inputs-v1"
+           :status :fresh}
+   :trust :local-build
+   :revalidation :accepted
+   :provenance {:source-path path
+                :logical-source (str "fixtures/w5-c16/incremental-execution" extension)
+                :compiler-path "/checkout-a/bin/gravity-stage2"
+                :profile :meta
+                :target :llvm-x86_64-linux
+                :target-scope
+                {:candidate-target :llvm-x86_64-linux
+                 :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                                      :artifact-format :elf :abi :sysv-amd64}
+                 :unsupported-targets
+                 [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+                 :unsupported-target-policies
+                 [{:target :darwin :support :unsupported
+                   :invokes-clojure? false :links-jvm? false :fallback? false}
+                  {:target :darwin-arm64 :support :unsupported
+                   :invokes-clojure? false :links-jvm? false :fallback? false}
+                  {:target :darwin-x86_64 :support :unsupported
+                   :invokes-clojure? false :links-jvm? false :fallback? false}
+                  {:target :windows :support :unsupported
+                   :invokes-clojure? false :links-jvm? false :fallback? false}]
+                 :cross-target-inference? false
+                 :fallback? false}
+                :dependency-graph-id "sha256:w5-c16-graph-v1"
+                :build-replay-id "sha256:w5-c16-replay-v1"}})
+
+(defn w5-c16-change [cause field before after]
+  {:cause cause :field field :before before :after after})
+
+(defn w5-c16-changes []
+  [(w5-c16-change :source-change :source
+                  "sha256:w5-c16-source-v1" "sha256:w5-c16-source-v2")
+   (w5-c16-change :macro-change :macro-expansion
+                  "sha256:w5-c16-macro-v1" "sha256:w5-c16-macro-v2")
+   (w5-c16-change :namespace-change :namespace
+                  "sha256:w5-c16-namespace-v1" "sha256:w5-c16-namespace-v2")
+   (w5-c16-change :type-change :typed-core
+                  "sha256:w5-c16-type-v1" "sha256:w5-c16-type-v2")
+   (w5-c16-change :effect-change :effect-graph
+                  "sha256:w5-c16-effect-v1" "sha256:w5-c16-effect-v2")
+   (w5-c16-change :profile-change :profile
+                  "sha256:w5-c16-profile-meta-v1"
+                  "sha256:w5-c16-profile-meta-v2")
+   (w5-c16-change :capability-change :capabilities
+                  "sha256:w5-c16-capability-empty-v1"
+                  "sha256:w5-c16-capability-empty-v2")
+   (w5-c16-change :safety-change :safety
+                  "sha256:w5-c16-safety-safe-v1"
+                  "sha256:w5-c16-safety-safe-v2")
+   (w5-c16-change :proof-change :proof-policy
+                  "sha256:w5-c16-proof-policy-v1"
+                  "sha256:w5-c16-proof-policy-v2")
+   (w5-c16-change :dependency-change :dependencies
+                  "sha256:w5-c16-dependencies-v1"
+                  "sha256:w5-c16-dependencies-v2")
+   (w5-c16-change :target-change :target
+                  "sha256:w5-c16-target-llvm-x86_64-linux-v1"
+                  "sha256:w5-c16-target-llvm-x86_64-linux-v2")
+   (w5-c16-change :backend-change :backend
+                  "sha256:w5-c16-backend-llvm-v1"
+                  "sha256:w5-c16-backend-llvm-v2")
+   (w5-c16-change :plugin-change :plugin
+                  "sha256:w5-c16-plugin-set-v1"
+                  "sha256:w5-c16-plugin-set-v2")
+   (w5-c16-change :diagnostic-change :diagnostic-schema
+                  "sha256:w5-c16-diagnostic-schema-v1"
+                  "sha256:w5-c16-diagnostic-schema-v2")])
+
+(defn w5-c16-request [checkout extension kind]
+  (let [source-path
+        (str checkout "/bootstrap/clojure/fixtures/self-hosting/w5-c16/accepted/incremental-execution" extension)
+        key (w5-c16-cache-key)
+        graph (w5-c16-dependency-graph)]
+    {:artifact :gravity/w5-c16-incremental-execution-request
+     :schema-version 1
+     :execution-id :w5-c16/incremental-execution
+     :stage :type-check
+     :profile :meta
+     :target :llvm-x86_64-linux
+     :stage2-target :jvm
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :target-scope (get key :target-scope)
+     :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-arm64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-x86_64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :windows :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}]
+     :cross-target-inference? false
+     :fallback? false
+     :mode :normal
+     :policy {:artifact :gravity/w5-c16-incremental-execution-policy
+              :schema-version 1
+              :stage :type-check
+              :profile :meta
+              :stage2-target :jvm
+              :target :llvm-x86_64-linux
+              :candidate-target :llvm-x86_64-linux
+              :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                                   :artifact-format :elf :abi :sysv-amd64}
+              :target-scope (get key :target-scope)
+              :unsupported-targets
+              [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+              :unsupported-target-policies
+              [{:target :darwin :support :unsupported
+                :invokes-clojure? false :links-jvm? false :fallback? false}
+               {:target :darwin-arm64 :support :unsupported
+                :invokes-clojure? false :links-jvm? false :fallback? false}
+               {:target :darwin-x86_64 :support :unsupported
+                :invokes-clojure? false :links-jvm? false :fallback? false}
+               {:target :windows :support :unsupported
+                :invokes-clojure? false :links-jvm? false :fallback? false}]
+              :cross-target-inference? false
+              :fallback? false}
+     :source {:logical-path (str "fixtures/w5-c16/incremental-execution" extension)
+              :content-id "sha256:w5-c16-source-v1"
+              :source-span (w5-c16-source-span)
+              :actual-source-path source-path}
+     :cache-key key
+     :cache-entry (w5-c16-cache-entry key source-path extension)
+     :dependency-graph graph
+     :changes (w5-c16-changes)
+     :provenance {:source-path source-path
+                  :compiler-source-path "/checkout-a/bin/gravity-stage2"
+                  :stage :type-check
+                  :profile :meta
+                :target :llvm-x86_64-linux
+                :target-scope
+                {:candidate-target :llvm-x86_64-linux
+                 :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                                      :artifact-format :elf :abi :sysv-amd64}
+                 :unsupported-targets
+                 [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+                 :unsupported-target-policies
+                 [{:target :darwin :support :unsupported
+                   :invokes-clojure? false :links-jvm? false :fallback? false}
+                  {:target :darwin-arm64 :support :unsupported
+                   :invokes-clojure? false :links-jvm? false :fallback? false}
+                  {:target :darwin-x86_64 :support :unsupported
+                   :invokes-clojure? false :links-jvm? false :fallback? false}
+                  {:target :windows :support :unsupported
+                   :invokes-clojure? false :links-jvm? false :fallback? false}]
+                 :cross-target-inference? false
+                 :fallback? false}
+                :stage2-target :jvm
+                :lineage [:clojure-stage0 :gravity-stage1
+                            :gravity-stage2-leaf]}
+     :replay {:artifact :gravity/w5-c16-build-replay
+              :schema-version 1
+              :replay-id "sha256:w5-c16-replay-v1"
+              :status :complete
+              :inputs ["sha256:w5-c16-build-replay-v1"]}}))
+
+(defn w5-c16-incremental-execution-request [checkout extension kind]
+  (w5-c16-request checkout extension kind))
+
+(defn w5-c16-incremental-execution-alternate-path-request
+  [checkout extension kind]
+  (w5-c16-request checkout extension kind))
