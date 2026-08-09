@@ -1,0 +1,160 @@
+(ns gravity.self-hosting.w5-b14.rejected
+  (:profile :meta)
+  ; Stage2 plan harness target; this is not candidate backend evidence.
+  (:target :jvm)
+  (:exports [w5-b14-invalid-coverage-request
+             w5-b14-invalid-target-request
+             w5-b14-invalid-suite-target-link-request
+             w5-b14-invalid-positive-request
+             w5-b14-invalid-positive-fixture-link-request
+             w5-b14-invalid-negative-request
+             w5-b14-invalid-negative-span-link-request
+             w5-b14-invalid-reversed-span-request
+             w5-b14-invalid-differential-request
+             w5-b14-invalid-differential-link-request
+             w5-b14-invalid-metadata-request
+             w5-b14-invalid-artifact-request
+             w5-b14-invalid-artifact-link-request
+             w5-b14-invalid-nondeterminism-request
+             w5-b14-invalid-skip-request
+             w5-b14-invalid-evidence-request
+             w5-b14-invalid-identity-link-request
+             w5-b14-invalid-provenance-link-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+; Each mutator changes one B14 family and remains total.  The verifier must
+; reject the result with that family's stable diagnostic id.
+
+(defn w5-b14-invalid-coverage-request
+  [request]
+  (assoc request :fixture-matrix []))
+
+(defn w5-b14-invalid-target-request
+  [request]
+  (assoc request :target-availability
+         (assoc (get request :target-availability)
+                :candidate-target :llvm-darwin))
+  )
+
+(defn w5-b14-invalid-suite-target-link-request
+  [request]
+  (assoc request :suite-manifest
+         (assoc (get request :suite-manifest)
+                :supported-target :llvm-arm64-linux)))
+
+(defn w5-b14-invalid-positive-request
+  [request]
+  (let [results (get request :positive-results)
+        first-result (get results 0)]
+    (assoc request :positive-results
+           (assoc results 0 (assoc first-result :status :failed)))))
+
+(defn w5-b14-invalid-positive-fixture-link-request
+  [request]
+  (let [results (get request :positive-results)
+        first-result (get results 0)]
+    (assoc request :positive-results
+           (assoc results 0
+                  (assoc first-result :fixture-id
+                         "w5-b14/positive/substituted")))))
+
+(defn w5-b14-invalid-negative-request
+  [request]
+  (let [results (get request :negative-results)
+        first-result (get results 0)]
+    (assoc request :negative-results
+           (assoc first-result :actual "B14-TARGET"))))
+
+(defn w5-b14-invalid-negative-span-link-request
+  [request]
+  (let [results (get request :negative-results)
+        first-result (get results 0)
+        span (get first-result :source-span)]
+    (assoc request :negative-results
+           (assoc results 0
+                  (assoc first-result :source-span
+                         (assoc span :source-id
+                                "sha256:w5-b14-negative-substituted"))))))
+
+(defn w5-b14-invalid-reversed-span-request
+  [request]
+  (let [results (get request :negative-results)
+        first-result (get results 0)
+        span (get first-result :source-span)]
+    (assoc request :negative-results
+           (assoc results 0
+                  (assoc first-result :source-span
+                         (assoc (assoc span :start-byte 9)
+                                :end-byte 4))))))
+
+(defn w5-b14-invalid-differential-request
+  [request]
+  (assoc request :differential-results
+         (assoc (get request :differential-results)
+                :status :mismatched)))
+
+(defn w5-b14-invalid-differential-link-request
+  [request]
+  (let [comparison (get request :differential-results)
+        entries (get comparison :comparisons)
+        first-entry (get entries 0)]
+    (assoc request :differential-results
+           (assoc comparison :comparisons
+                  (assoc entries 0
+                         (assoc (assoc first-entry
+                                       :reference-id
+                                       "sha256:w5-b14-semantic-substituted")
+                                :observed-id
+                                "sha256:w5-b14-semantic-substituted"))))))
+
+(defn w5-b14-invalid-metadata-request
+  [request]
+  (assoc request :metadata-report
+         (assoc (get request :metadata-report)
+                :source-spans false)))
+
+(defn w5-b14-invalid-artifact-request
+  [request]
+  (assoc request :artifact-report
+         (assoc (get request :artifact-report)
+                :status :invalid)))
+
+(defn w5-b14-invalid-artifact-link-request
+  [request]
+  (assoc request :artifact-report
+         (assoc (get request :artifact-report)
+                :validated-artifacts
+                ["sha256:w5-b14-artifact-substituted"])))
+
+(defn w5-b14-invalid-nondeterminism-request
+  [request]
+  (assoc request :nondeterminism-record
+         (assoc (get request :nondeterminism-record)
+                :unrecorded [:clock])))
+
+(defn w5-b14-invalid-skip-request
+  [request]
+  (assoc request :skip-report
+         (assoc (get request :skip-report)
+                :darwin-policy :available)))
+
+(defn w5-b14-invalid-evidence-request
+  [request]
+  (assoc request :evidence-pack
+         (assoc (get request :evidence-pack)
+                :status :complete)))
+
+(defn w5-b14-invalid-identity-link-request
+  [request]
+  (assoc request :identity-input
+         (assoc (get request :identity-input)
+                :suite-id "sha256:w5-b14-suite-substituted")))
+
+(defn w5-b14-invalid-provenance-link-request
+  [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :compiler-source-path
+                "/checkout-a/bootstrap/gravity/src/gravity/backend/substituted.qst")))
