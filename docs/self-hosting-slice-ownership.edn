@@ -122,6 +122,7 @@
   "bootstrap/clojure/src/gravity/c13_optimization.clj" :sh-optimization
   "bootstrap/clojure/src/gravity/c14_lowering.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/c15_diagnostics.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/c15_c16_pass_cache.clj" :sh-incremental
   "bootstrap/clojure/src/gravity/c16_incremental.clj" :sh-incremental
   "bootstrap/clojure/src/gravity/c17_plugin.clj" :sh-pass-api
   "bootstrap/clojure/src/gravity/c18_verification.clj" :sh-verification
@@ -197,6 +198,7 @@
   "bootstrap/clojure/test/gravity/c13_optimization_test.clj" :sh-optimization
   "bootstrap/clojure/test/gravity/c14_lowering_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/c15_diagnostics_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/c15_c16_pass_cache_test.clj" :sh-incremental
   "bootstrap/clojure/test/gravity/c16_incremental_test.clj" :sh-incremental
   "bootstrap/clojure/test/gravity/c17_plugin_test.clj" :sh-pass-api
   "bootstrap/clojure/test/gravity/c18_verification_test.clj" :sh-verification
@@ -250,6 +252,7 @@
   "c13-optimization" :sh-optimization
   "c14-lowering" :master-coordinator
   "c15-diagnostics" :master-coordinator
+  "c15-c16-pass-cache" :sh-incremental
   "c16-incremental" :sh-incremental
   "c17-plugin" :sh-pass-api
   "c18-verification" :sh-verification
