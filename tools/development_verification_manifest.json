@@ -62,7 +62,7 @@
       "python-cheap": {
         "max_concurrency": 6,
         "default_rss_mb": 256,
-        "default_processes": 1,
+        "default_processes": 4,
         "jvm_xmx_mb": null,
         "capacity_lock": null
       },
