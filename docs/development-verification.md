@@ -1088,10 +1088,12 @@ runs three selectors without forcing the hostile packet matrix.
 The SH25 catalog selector rereads the reviewed ownership map and every owned
 Gravity source. It is independent of C14 static admission, so unrelated source
 edits do not rebuild C14 and SH26 merely to refresh inventory evidence. The
-fixture consumer separately binds the SH19 runtime member, SH25
-accepted/rejected fixtures, the exercised SH26 engine/accepted fixtures, and
-the authenticated-envelope source/helper. Changes invalidate only the node
-that actually consumes them instead of silently preserving an earlier receipt.
+catalog receipt also binds the transitively loaded SH26 and
+authenticated-envelope test sources. The fixture consumer separately binds the
+SH19 runtime member, SH25 accepted/rejected fixtures, the exercised SH26
+engine/accepted fixtures, the authenticated-envelope source, and all three test
+sources. Changes invalidate every node that actually consumes them instead of
+silently preserving an earlier receipt.
 
 `stage10-w1-hostile-stable` is manual. It owns the complete two-test carrier
 namespace and executes direct mutation before packet substitution in one JVM;

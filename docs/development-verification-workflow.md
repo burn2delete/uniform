@@ -574,10 +574,13 @@ SH25/SH26 fixture consumer runs the remaining three selectors.
 The catalog node declares the SH25 ownership map, the complete
 `bootstrap/gravity/src/**/*.gravity` catalog that its selector hashes, the SH19
 runtime member, the SH25 engine and accepted fixture, and the SH25 test source.
+Because that selector loads the SH25 test namespace, its catalog receipt also
+binds the transitively loaded SH26 and authenticated-envelope test sources.
 The fixture consumer separately declares both SH25 fixture pairs, the exercised
-SH26 engine/accepted pair, and the authenticated-envelope source/helper. Those
-are receipt inputs, not incidental namespace loads; unrelated source edits
-refresh inventory evidence without rebuilding the C14 or SH26 consumers.
+SH26 engine/accepted pair, and the authenticated-envelope source and all three
+test sources. Those are receipt inputs, not incidental namespace loads;
+unrelated source edits refresh inventory evidence without rebuilding the C14
+or SH26 consumers.
 
 The packet-substitution matrix is deliberately absent from ordinary change
 impact. Explicit stable-candidate selection runs `stage10-w1-hostile-stable`:

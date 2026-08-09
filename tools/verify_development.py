@@ -752,7 +752,9 @@ _STAGE10_FIXED_NODE_POLICIES = {
             "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity",
+            "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
             "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj",
         ),
         "tool_inputs": tuple(_stage3.STAGE3_RUNTIME_DEPENDENCIES),
         "impact_excludes": (

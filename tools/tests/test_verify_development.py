@@ -5032,11 +5032,40 @@ class VerifyDevelopmentTests(unittest.TestCase):
             selected("bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity"),
             units | {catalog["id"], consumer["id"]},
         )
+        legacy_authenticated_envelope_routes = {
+            "m0-change-control",
+            "m0-contract-traceability",
+            "m0-docs",
+            "m0-foundation-coverage",
+            "m0-milestone-evidence",
+            "m0-safety-performance",
+            "m0-terminology",
+            "stage0-bootstrap-authority",
+            "stage0-clojure-suite",
+            "stage0-hosted-core-app",
+            "stage0-hosted-core-compiled-app",
+            "stage0-hosted-hello",
+            "stage0-hosted-hello-qst",
+            "stage0-project-structure",
+            "stage0-project-structure-unit",
+            "stage0-reader",
+            "stage0-selective-smoke",
+            "stage0-sh01-ownership-control",
+        }
+        self.assertEqual(
+            selected(
+                "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
+            ),
+            units
+            | legacy_authenticated_envelope_routes
+            | {catalog["id"], consumer["id"]},
+        )
         for shared_catalog_consumer_input in (
-            "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
+            "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
             "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj",
         ):
             self.assertEqual(
                 selected(shared_catalog_consumer_input),
@@ -5047,7 +5076,6 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "bootstrap/clojure/fixtures/self-hosting/sh-25/rejected/invalid-component-builds.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-26/stage_rebuild_engine.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.qst",
-            "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         ):
             self.assertEqual(
                 selected(consumer_only_input),
