@@ -30,10 +30,10 @@ SCHEMA_VERSION = 1
 STAGE0_COMPONENT_SCHEMA = "gravity/stage0-clojure-components-v1"
 STAGE0_COMPONENT_KIND = "stage0-clojure-component-inventory"
 STAGE0_COMPONENT_COUNTS = {
-    "components": 47,
-    "sources": 47,
-    "tests": 47,
-    "bootstrap_free_tests": 41,
+    "components": 50,
+    "sources": 50,
+    "tests": 50,
+    "bootstrap_free_tests": 44,
     "compatibility_tests": 5,
     "coordinator_tests": 1,
 }
@@ -96,7 +96,11 @@ STAGE0_COORDINATOR_SUPPORT_PATHS = {
     "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj",
     "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj",
     "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj",
     "bootstrap/clojure/test/gravity/development_test_runner.clj",
+    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
 }
 STAGE0_MAPPING_KINDS = {
     "orchestrator",
@@ -160,17 +164,20 @@ STAGE0_LEAF_EXECUTION_GROUP_COMPONENT_IDS = {
         "c7-type-checker",
         "c8-effect-checker",
         "c9-ownership-checker",
+        "capability-validation",
         "compiler-verification-shared",
         "core-ast-lowering",
         "darwin-publication",
         "macro-expansion",
         "optimization-lowering",
+        "pass-execution",
+        "profile-validation",
     },
 }
 STAGE0_LEAF_EXECUTION_GROUP_COUNTS = {
     "foundation-reader": 9,
     "c2-c3": 12,
-    "compiler": 20,
+    "compiler": 23,
 }
 STAGE0_LEAF_EXECUTION_GROUP_BY_COMPONENT = {
     component_id: group
@@ -222,10 +229,13 @@ STAGE0_COMPATIBILITY_AUTHORITY_COMPONENT_IDS = {
     "c16-incremental",
     "c17-plugin",
     "c18-verification",
+    "capability-validation",
     "compiler-verification-shared",
     "core-ast-lowering",
     "module-analysis",
     "optimization-lowering",
+    "pass-execution",
+    "profile-validation",
 }
 
 CANONICAL_PASS_IDS = (
@@ -1098,7 +1108,7 @@ def _validate_stage0_component_contract(
         _add_error(errors, "stage0 component contract.components", "must be a list")
         return
     if len(components) != STAGE0_COMPONENT_COUNTS["components"]:
-        _add_error(errors, "stage0 component contract.components", "must contain exactly 47 components")
+        _add_error(errors, "stage0 component contract.components", "must contain exactly 50 components")
 
     # Every source file in this slice is a direct child of the reviewed source
     # root.  The test root also contains runner infrastructure; only the
@@ -1341,7 +1351,7 @@ def _validate_stage0_component_contract(
 
     lanes = [component.get("test", {}).get("lane") for component in component_by_id.values() if _is_mapping(component.get("test"))]
     if lanes.count("bootstrap-free") != STAGE0_COMPONENT_COUNTS["bootstrap_free_tests"]:
-        _add_error(errors, "stage0 component test lanes", "must contain exactly 41 bootstrap-free tests")
+        _add_error(errors, "stage0 component test lanes", "must contain exactly 44 bootstrap-free tests")
     if lanes.count("compatibility") != STAGE0_COMPONENT_COUNTS["compatibility_tests"]:
         _add_error(errors, "stage0 component test lanes", "must contain exactly 5 compatibility tests")
     if lanes.count("coordinator") != STAGE0_COMPONENT_COUNTS["coordinator_tests"]:
@@ -1361,7 +1371,7 @@ def _validate_stage0_component_contract(
         _add_error(
             errors,
             "stage0 component leaf execution groups",
-            "must contain exactly 41 grouped bootstrap-free components",
+            "must contain exactly 44 grouped bootstrap-free components",
         )
 
     reserved, compatibility_tests, ownership_errors = parse_stage0_component_ownership()

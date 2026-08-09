@@ -6,10 +6,10 @@
   "source_root": "bootstrap/clojure/src",
   "test_root": "bootstrap/clojure/test",
   "counts": {
-    "components": 47,
-    "sources": 47,
-    "tests": 47,
-    "bootstrap_free_tests": 41,
+    "components": 50,
+    "sources": 50,
+    "tests": 50,
+    "bootstrap_free_tests": 44,
     "compatibility_tests": 5,
     "coordinator_tests": 1
   },
@@ -106,6 +106,7 @@
         "c7-type-checker",
         "c8-effect-checker",
         "c9-ownership-checker",
+        "capability-validation",
         "cli",
         "compiler-verification-shared",
         "core-ast-lowering",
@@ -115,6 +116,7 @@
         "macro-expansion",
         "module-analysis",
         "optimization-lowering",
+        "profile-validation",
         "reader-cursor",
         "reader-diagnostic-policy",
         "reader-host-oracle",
@@ -1129,6 +1131,39 @@
       "leaf_execution_group": "compiler"
     },
     {
+      "id": "capability-validation",
+      "owner": "sh-capability",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/capability_validation.clj",
+        "namespace": "gravity.capability-validation"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/capability_validation_test.clj",
+        "namespace": "gravity.capability-validation-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "capability-validation"
+      ],
+      "canonical_pass_refs": [
+        "capability-validation"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "capability-validation-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
       "id": "cli",
       "owner": "master-coordinator",
       "source": {
@@ -1419,6 +1454,72 @@
         "seed_retirement": false
       },
       "contract_var": "shared-engine-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "pass-execution",
+      "owner": "sh-verification",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/pass_execution.clj",
+        "namespace": "gravity.pass-execution"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/pass_execution_test.clj",
+        "namespace": "gravity.pass-execution-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "pass-execution"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "pass-execution-contract",
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "profile-validation",
+      "owner": "sh-profile",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/profile_validation.clj",
+        "namespace": "gravity.profile-validation"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/profile_validation_test.clj",
+        "namespace": "gravity.profile-validation-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "profile-validation"
+      ],
+      "canonical_pass_refs": [
+        "profile-validation"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "profile-validation-contract",
       "stage0_group": "compiler",
       "leaf_execution_group": "compiler"
     },

@@ -49,7 +49,7 @@ class ProjectStructureValidationTests(unittest.TestCase):
         contract = validator.load_stage0_component_contract()
         by_id = {component["id"]: component for component in contract["components"]}
         expected_by_id = validator.STAGE0_LEAF_EXECUTION_GROUP_BY_COMPONENT
-        self.assertEqual(41, len(expected_by_id))
+        self.assertEqual(44, len(expected_by_id))
         self.assertEqual(
             validator.STAGE0_LEAF_EXECUTION_GROUP_COUNTS,
             {
@@ -176,7 +176,7 @@ class ProjectStructureValidationTests(unittest.TestCase):
     def test_stage0_edn_projection_has_exact_reserved_and_compatibility_shapes(self) -> None:
         reserved, compatibility, errors = validator.parse_stage0_component_ownership()
         self.assertEqual([], errors)
-        self.assertEqual(47, len(reserved))
+        self.assertEqual(50, len(reserved))
         self.assertEqual(5, len(compatibility))
         self.assertEqual(sorted(compatibility), compatibility)
 
@@ -306,7 +306,11 @@ class ProjectStructureValidationTests(unittest.TestCase):
     "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj",
                 "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj",
                 "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj",
+                "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj",
                 "bootstrap/clojure/test/gravity/development_test_runner.clj",
+                "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
             },
             validator.STAGE0_COORDINATOR_SUPPORT_PATHS,
         )

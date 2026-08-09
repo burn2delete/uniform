@@ -17,6 +17,28 @@
     :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj"}
    {:namespace 'gravity.bootstrap-compatibility.core-ast-lowering-test
     :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.profile-validation-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj"
+    :selectors
+    ["gravity.bootstrap-compatibility.profile-validation-test/profile-facades-match-head-4921fbc-reference-table"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-head-reference-policy-denial-matrix-and-dynamic-seams"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-downstream-caller-artifacts-retain-head-shape"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-facades-preserve-public-arglists-and-exact-leaf-parity"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-policy-map-redefs-reach-the-leaf-through-the-central-seam"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-registry-function-seams-match-head-4921fbc-ownership"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-validation-facade-preserves-central-diagnostics-and-target-gates"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-captured-original-interposition-is-one-shot"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-leaf-operation-interposition-is-observable-through-facade"]}
+   {:namespace 'gravity.bootstrap-compatibility.capability-validation-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj"
+    :selectors
+    ["gravity.bootstrap-compatibility.capability-validation-test/capability-facades-preserve-arglists-and-explicit-pass-parity"
+     "gravity.bootstrap-compatibility.capability-validation-test/capability-final-authority-narrows-trust-without-rewriting-legacy-row"
+     "gravity.bootstrap-compatibility.capability-validation-test/capability-policy-and-provider-seams-remain-interposable"
+     "gravity.bootstrap-compatibility.capability-validation-test/capability-diagnostic-policy-scalar-reaches-leaf-pass-contract"
+     "gravity.bootstrap-compatibility.capability-validation-test/capability-diagnostics-preserve-source-context-and-stable-ids"
+     "gravity.bootstrap-compatibility.capability-validation-test/capability-provider-name-matches-head-4921fbc-reference-table"
+     "gravity.bootstrap-compatibility.capability-validation-test/capability-captured-original-provider-interposition-is-one-shot"]}
    {:namespace 'gravity.bootstrap-compatibility.c4-test
     :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj"}
    {:namespace 'gravity.bootstrap-compatibility.c5-test

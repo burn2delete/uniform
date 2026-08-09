@@ -1571,9 +1571,93 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "contracts/project-structure.json",
                 "contracts/stage0-clojure-components.json",
                 "docs/self-hosting-slice-ownership.edn",
+                "bootstrap/clojure/src/gravity/*.clj",
+                "bootstrap/clojure/test/gravity/*_test.clj",
                 "tools/validate_project_structure.py",
             },
         )
+
+    def test_control_plane_contract_tests_are_executable_cacheable_and_routable(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        checks = {item["id"]: item for item in manifest["checks"]}
+        cases = {
+            "tools/tests/test_validate_project_structure.py": {
+                "id": "stage0-project-structure-unit",
+                "command": [
+                    "python3", "-m", "unittest",
+                    "tools.tests.test_validate_project_structure", "-v",
+                ],
+                "resource_class": "python-cheap",
+            },
+            "bootstrap/clojure/test/gravity/self_hosting/sh01_ownership_test.clj": {
+                "id": "stage0-sh01-ownership-control",
+                "command": [
+                    "clojure", "-J-Xmx256m", "-M:test", "--namespace",
+                    "gravity.self-hosting.sh01-ownership-test",
+                ],
+                "resource_class": "leaf-jvm",
+            },
+            "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_runner_test.clj": {
+                "id": "stage0-sh01-development-runner-control",
+                "command": [
+                    "clojure", "-J-Xmx256m", "-M:test", "--namespace",
+                    "gravity.self-hosting.sh01-development-test-runner-test",
+                ],
+                "resource_class": "leaf-jvm",
+            },
+            "bootstrap/clojure/test/gravity/self_hosting/sh01_stage0_leaf_test_runner_test.clj": {
+                "id": "stage0-sh01-leaf-runner-control",
+                "command": [
+                    "clojure", "-J-Xmx256m", "-M:test", "--namespace",
+                    "gravity.self-hosting.sh01-stage0-leaf-test-runner-test",
+                ],
+                "resource_class": "leaf-jvm",
+            },
+        }
+        for changed_path, expected in cases.items():
+            with self.subTest(path=changed_path):
+                item = checks[expected["id"]]
+                self.assertEqual(expected["command"], item["command"])
+                self.assertEqual(expected["resource_class"], item["resource_class"])
+                self.assertEqual("none", item["authority"])
+                self.assertFalse(item["fresh"])
+                self.assertIsNone(item["lock"])
+                self.assertFalse(item["exclusive"])
+                self.assertIn(changed_path, item["inputs"])
+                selection = verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[changed_path]
+                )
+                self.assertEqual([], selection["unmatched_changes"])
+                self.assertIn(expected["id"], selection["selected_ids"])
+                with tempfile.TemporaryDirectory(prefix="gravity-control-plane-cache-") as directory:
+                    temp_root = Path(directory)
+                    target = temp_root / changed_path
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(ROOT / changed_path, target)
+                    baseline = verifier.cache_key(manifest, item, temp_root)
+                    original = target.read_bytes()
+                    target.write_bytes(original + b"\ncontrol-plane-cache-change\n")
+                    self.assertNotEqual(baseline, verifier.cache_key(manifest, item, temp_root))
+
+    def test_filesystem_enumerating_control_checks_bind_stage0_source_and_test_globs(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        checks = {item["id"]: item for item in manifest["checks"]}
+        for check_id in (
+            "stage0-project-structure",
+            "stage0-project-structure-unit",
+            "stage0-sh01-ownership-control",
+        ):
+            with self.subTest(check_id=check_id):
+                item = checks[check_id]
+                self.assertIn("bootstrap/clojure/src/gravity/*.clj", item["inputs"])
+                self.assertIn("bootstrap/clojure/test/gravity/*_test.clj", item["inputs"])
+                with tempfile.TemporaryDirectory(prefix="gravity-filesystem-cache-") as directory:
+                    temp_root = Path(directory)
+                    source = temp_root / "bootstrap/clojure/src/gravity/cache_probe.clj"
+                    source.parent.mkdir(parents=True, exist_ok=True)
+                    baseline = verifier.cache_key(manifest, item, temp_root)
+                    source.write_text("(ns gravity.cache-probe)\n", encoding="ascii")
+                    self.assertNotEqual(baseline, verifier.cache_key(manifest, item, temp_root))
 
     def test_component_source_and_test_edits_route_to_the_matching_leaf_group(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
@@ -1612,7 +1696,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         )
         components = {component["id"]: component for component in contract["components"]}
         checks = {item["id"]: item for item in manifest["checks"]}
-        expected_counts = {"foundation-reader": 9, "c2-c3": 12, "compiler": 20}
+        expected_counts = {"foundation-reader": 9, "c2-c3": 12, "compiler": 23}
         all_roots: set[str] = set()
         for group, expected_count in expected_counts.items():
             roots = {
@@ -1646,7 +1730,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             expected_tests = {components[component_id]["test"]["path"] for component_id in roots}
             self.assertEqual(expected_sources, actual_sources, group)
             self.assertEqual(expected_tests, actual_tests, group)
-        self.assertEqual(41, len(all_roots))
+        self.assertEqual(44, len(all_roots))
         self.assertEqual(
             {
                 component_id
@@ -1848,6 +1932,86 @@ class VerifyDevelopmentTests(unittest.TestCase):
             self.assertIn("stage0-clojure-suite", selection["selected_ids"])
             self.assertEqual([], selection["unmatched_changes"])
 
+    def test_profile_capability_compatibility_check_is_exact_cacheable_and_routable(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(
+            check for check in manifest["checks"]
+            if check["id"] == "stage0-profile-capability-compatibility"
+        )
+        expected = [
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-facades-match-head-4921fbc-reference-table",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-head-reference-policy-denial-matrix-and-dynamic-seams",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-downstream-caller-artifacts-retain-head-shape",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-facades-preserve-public-arglists-and-exact-leaf-parity",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-policy-map-redefs-reach-the-leaf-through-the-central-seam",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-registry-function-seams-match-head-4921fbc-ownership",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-validation-facade-preserves-central-diagnostics-and-target-gates",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-captured-original-interposition-is-one-shot",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-leaf-operation-interposition-is-observable-through-facade",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-facades-preserve-arglists-and-explicit-pass-parity",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-final-authority-narrows-trust-without-rewriting-legacy-row",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-policy-and-provider-seams-remain-interposable",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-diagnostic-policy-scalar-reaches-leaf-pass-contract",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-diagnostics-preserve-source-context-and-stable-ids",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-provider-name-matches-head-4921fbc-reference-table",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-captured-original-provider-interposition-is-one-shot",
+        ]
+        for namespace, relative in (
+            (
+                "gravity.bootstrap-compatibility.profile-validation-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj",
+            ),
+            (
+                "gravity.bootstrap-compatibility.capability-validation-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj",
+            ),
+        ):
+            deftests = re.findall(
+                r"^\(deftest\s+([^\s\)]+)",
+                (ROOT / relative).read_text(encoding="utf-8"),
+                flags=re.MULTILINE,
+            )
+            self.assertEqual(
+                [f"{namespace}/{name}" for name in deftests],
+                [selector for selector in expected if selector.startswith(f"{namespace}/")],
+            )
+        runner_source = (
+            ROOT / "bootstrap/clojure/test/gravity/development_test_runner.clj"
+        ).read_text(encoding="utf-8")
+        self.assertEqual(
+            expected,
+            re.findall(
+                r'"(gravity\.bootstrap-compatibility\.(?:profile|capability)-validation-test/[^\"]+)"',
+                runner_source,
+            ),
+        )
+        self.assertEqual(
+            expected,
+            [
+                item["command"][index + 1]
+                for index, token in enumerate(item["command"])
+                if token == "--exact"
+            ],
+        )
+        self.assertEqual("bootstrap-hosted", item["resource_class"])
+        self.assertEqual("none", item["authority"])
+        self.assertFalse(item["fresh"])
+        self.assertIsNone(item["lock"])
+        for path in (
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj",
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj",
+            "bootstrap/clojure/src/gravity/profile_validation.clj",
+            "bootstrap/clojure/src/gravity/capability_validation.clj",
+            "bootstrap/clojure/src/gravity/bootstrap.clj",
+        ):
+            self.assertIn(path, item["inputs"])
+            selection = verifier.select_impacted_checks(
+                manifest, ROOT, changed_paths=[path]
+            )
+            self.assertIn(item["id"], selection["selected_ids"])
+            self.assertIn("stage0-clojure-suite", selection["selected_ids"])
+            self.assertEqual([], selection["unmatched_changes"])
+
     def test_c4_c18_compatibility_forms_are_exactly_preserved_and_absent_centrally(self) -> None:
         central = (ROOT / "bootstrap/clojure/test/gravity/bootstrap_test.clj").read_text()
         observed = 0
@@ -1942,14 +2106,14 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 self.assertIn("stage0-clojure-suite", selection["selected_ids"])
                 self.assertEqual([], selection["unmatched_changes"])
 
-    def test_development_runner_catalog_has_exact_20_static_namespaces(self) -> None:
+    def test_development_runner_catalog_has_exact_22_static_namespaces(self) -> None:
         source = (
             ROOT / "bootstrap/clojure/test/gravity/development_test_runner.clj"
         ).read_text()
         catalog_source = source[
             source.index("(def namespace-catalog") : source.index("(def ^:private usage-text")
         ]
-        observed = re.findall(r"\{:namespace '([^\s]+)\s+:path \"([^\"]+)\"\}", catalog_source)
+        observed = re.findall(r"\{:namespace '([^\s]+)\s+:path \"([^\"]+)\"", catalog_source)
         expected = [
             ("gravity.bootstrap-test", "bootstrap/clojure/test/gravity/bootstrap_test.clj"),
             *[
@@ -1966,6 +2130,14 @@ class VerifyDevelopmentTests(unittest.TestCase):
             (
                 "gravity.bootstrap-compatibility.core-ast-lowering-test",
                 "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj",
+            ),
+            (
+                "gravity.bootstrap-compatibility.profile-validation-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj",
+            ),
+            (
+                "gravity.bootstrap-compatibility.capability-validation-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj",
             ),
             *[
                 (
@@ -2065,6 +2237,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage0-c4-c6-compatibility",
                 "stage0-c7-c10-compatibility",
                 "stage0-c11-c18-compatibility",
+                "stage0-profile-capability-compatibility",
                 "stage0-hosted-core-app",
                 "stage0-hosted-core-compiled-app",
                 "stage0-clojure-suite",
@@ -2077,12 +2250,16 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "m0-safety-performance",
                 "m0-change-control",
                 "stage0-project-structure",
+                "stage0-project-structure-unit",
                 "stage0-orchestrator-unit",
                 "stage0-reader",
+                "stage0-sh01-ownership-control",
+                "stage0-sh01-development-runner-control",
+                "stage0-sh01-leaf-runner-control",
             },
         )
 
-    def test_unowned_top_level_stage0_test_fails_closed_in_plan_diagnostics(self) -> None:
+    def test_unowned_top_level_stage0_test_routes_to_filesystem_validators(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
         receipt = verifier.run_verification(
             manifest,
@@ -2090,13 +2267,13 @@ class VerifyDevelopmentTests(unittest.TestCase):
             changed_paths=["bootstrap/clojure/test/gravity/not_registered_test.clj"],
             dry_run=True,
         )
-        self.assertEqual(receipt["status"], "failed")
-        self.assertEqual(receipt["checks"], [])
-        self.assertEqual(
-            receipt["selection"]["unmatched_changes"],
-            ["bootstrap/clojure/test/gravity/not_registered_test.clj"],
-        )
-        self.assertIn("not_registered_test.clj", receipt["error"])
+        self.assertEqual(receipt["status"], "planned")
+        self.assertEqual([], receipt["selection"]["unmatched_changes"])
+        selected = set(receipt["selection"]["selected_ids"])
+        self.assertIn("stage0-project-structure", selected)
+        self.assertIn("stage0-project-structure-unit", selected)
+        self.assertIn("stage0-sh01-ownership-control", selected)
+        self.assertIn("stage0-sh01-leaf-runner-control", selected)
 
     def test_leaf_checks_are_cacheable_non_authoritative_and_bind_sources_contracts_and_runner(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
@@ -2274,6 +2451,10 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage0-c4-c6-compatibility",
                 "stage0-c7-c10-compatibility",
                 "stage0-c11-c18-compatibility",
+                "stage0-profile-capability-compatibility",
+                "stage0-sh01-ownership-control",
+                "stage0-sh01-development-runner-control",
+                "stage0-sh01-leaf-runner-control",
             }
         ]
         self.assertTrue(clojure_checks)
@@ -2294,8 +2475,12 @@ class VerifyDevelopmentTests(unittest.TestCase):
             full_suite["inputs"],
         )
         self.assertIn("bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj", full_suite["inputs"])
-        self.assertIn(
+        self.assertNotIn(
             "bootstrap/clojure/test/gravity/self_hosting/sh01_stage0_leaf_test_runner_test.clj",
+            full_suite["inputs"],
+        )
+        self.assertNotIn(
+            "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_runner_test.clj",
             full_suite["inputs"],
         )
         self.assertIn("contracts/stage0-clojure-components.json", full_suite["inputs"])

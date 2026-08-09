@@ -24,6 +24,8 @@
             [gravity.c3-syntax-evidence :as c3-syntax-evidence]
             [gravity.c3-syntax-verification :as c3-syntax-verification]
             [gravity.c4-macro-evidence :as c4-macro-evidence]
+            [gravity.profile-validation :as profile-validation]
+            [gravity.capability-validation :as capability-validation]
             [gravity.cli :as cli]
             [gravity.module-analysis :as module-analysis]
             [gravity.core-ast-lowering :as core-ast-lowering]
@@ -3530,9 +3532,54 @@
   [values]
   (vec (sort-by pr-str values)))
 
+(def capability-diagnostic-ids
+  ["L15-CAPABILITY-MISSING" "L15-PROVIDER-MISSING" "L15-PROFILE"
+   "L15-SCOPE" "L15-PHASE" "L15-TRUST"])
+
+(defn- compatibility-diagnostic-record
+  [artifact stage id facts]
+  {:artifact artifact
+   :diagnostic id
+   :stage stage
+   :facts facts
+   :status :rejected})
+
+(declare provider-name
+         profile-capabilities
+         capability-validation-facts)
+
+(def ^:private ^:dynamic *capability-validation-leaf-call?* false)
+
+(defn- capability-validation-ops
+  []
+  {:stable-set stable-set
+   :stable-vec stable-vec
+   :diagnostic-record
+   (fn [id facts]
+     (compatibility-diagnostic-record
+      :gravity/capability-diagnostic :capability-validation id facts))
+   :capability-diagnostic-ids capability-diagnostic-ids
+   ;; Provider selection and profile capability projection remain bootstrap
+   ;; seams.  The leaf may consume them, but it never discovers grants or
+   ;; establishes provider trust.
+   :provider-name provider-name
+   :profile-capabilities profile-capabilities
+   :provider-specs provider-specs})
+
+(defn- capability-validation-call
+  [operation-key operation & args]
+  (if *capability-validation-leaf-call?*
+    (capability-validation/call-entrypoint-body operation-key operation args)
+    (binding [*capability-validation-leaf-call?* true]
+      (capability-validation/with-operations
+       (capability-validation-ops)
+       #(capability-validation/call-entrypoint-body
+         operation-key operation args)))))
+
 (defn provider-name
   [capability]
-  (get-in provider-specs [capability :provider]))
+  (capability-validation-call
+   :provider-name capability-validation/provider-name capability))
 
 (defn provider-version
   [capability]
@@ -14054,44 +14101,92 @@
    :gpu #{:schema :gpu-kernel :device-buffer}
    :formal #{:schema :proof-certificate :solver-artifact}})
 
+(declare profile-allowed-effects
+         profile-capabilities
+         profile-contract
+         profile-policy-layer
+         profile-effective-effects
+         effect-permission-table
+         profile-validation-facts)
+
+(defn- profile-validation-effect-registry
+  "Return the bootstrap effect registry in the leaf's portable shape.
+
+  Build effects intentionally omit :profiles in the legacy registry because
+  their profile legality comes from :requires-build-grant.  The accepted leaf
+  validates registry rows structurally, so an absent profile set is projected
+  as an empty set without changing the legacy build-grant rule."
+  []
+  (reduce-kv (fn [registry effect entry]
+               (assoc registry effect
+                      (if (contains? entry :profiles)
+                        entry
+                        (assoc entry :profiles #{}))))
+             {}
+             effect-registry))
+
+(def ^:private ^:dynamic *profile-validation-leaf-call?* false)
+
+(defn- profile-validation-ops
+  []
+  {:stable-set stable-set
+   :stable-vec stable-vec
+   :diagnostic-record
+   (fn [id facts]
+     (compatibility-diagnostic-record
+      :gravity/profile-diagnostic :profile-validation id facts))
+   ;; Preserve the two distinct legacy registry seams from HEAD 4921fbc.
+   ;; profile-contract consults all-registered-effects only for its forbidden
+   ;; complement; effect-registry-entry belongs only to permission-table row
+   ;; metadata.  The leaf may consume these functions, but registry ownership
+   ;; remains in bootstrap (including with-redefs).
+   :all-registered-effects all-registered-effects
+   :effect-registry-entry effect-registry-entry
+   :profile-allowed-effects profile-allowed-effects
+   :profile-capabilities profile-capabilities
+   :profile-contract profile-contract
+   ;; Grant discovery remains a bootstrap-owned seam.  The leaf only
+   ;; consumes this function while projecting policy intersections.
+   :profile-policy-layer profile-policy-layer
+   :profile-effective-effects profile-effective-effects
+   :effect-permission-table effect-permission-table
+   :profile-validation-facts profile-validation-facts
+   :standard-profile-order standard-profile-order
+   :profile-diagnostic-ids p1-diagnostic-ids
+   :profile-memory-regimes profile-memory-regimes
+   :profile-runtime-assumptions profile-runtime-assumptions
+   :profile-unsafe-policies profile-unsafe-policies
+   :profile-artifact-boundaries profile-artifact-boundaries
+   :effect-registry (profile-validation-effect-registry)
+   :provider-specs provider-specs
+   :core-forms core-forms
+   :supported-targets (set/union supported-targets
+                                 *additional-bootstrap-targets*)})
+
+(defn- profile-validation-call
+  [operation-key operation & args]
+  (if *profile-validation-leaf-call?*
+    (profile-validation/call-entrypoint-body operation-key operation args)
+    (binding [*profile-validation-leaf-call?* true]
+      (profile-validation/with-operations
+       (profile-validation-ops)
+       #(profile-validation/call-entrypoint-body
+         operation-key operation args)))))
+
 (defn profile-allowed-effects
   [profile]
-  (->> effect-registry
-       (keep (fn [[effect entry]]
-               (when (or (contains? (:profiles entry #{}) profile)
-                         (and (:requires-build-grant entry)
-                              (contains? #{:meta :hosted} profile)))
-                 effect)))
-       stable-set))
+  (profile-validation-call
+   :profile-allowed-effects profile-validation/profile-allowed-effects profile))
 
 (defn profile-capabilities
   [profile]
-  (->> provider-specs
-       (keep (fn [[capability spec]]
-               (when (contains? (:profiles spec #{}) profile)
-                 capability)))
-       stable-set))
+  (profile-validation-call
+   :profile-capabilities profile-validation/profile-capabilities profile))
 
 (defn profile-contract
   [profile]
-  (let [allowed-effects (profile-allowed-effects profile)]
-    {:profile profile
-     :allowed-forms core-forms
-     :allowed-effects allowed-effects
-     :checked-effects (stable-set (for [[effect entry] effect-registry
-                                        :when (and (contains? allowed-effects effect)
-                                                   (or (:requires-capability entry)
-                                                       (:requires-build-grant entry)))]
-                                    effect))
-     :forbidden-effects (set/difference (all-registered-effects) allowed-effects)
-     :capabilities (profile-capabilities profile)
-     :memory (profile-memory-regimes profile)
-     :runtime (profile-runtime-assumptions profile)
-     :nondeterminism (if (contains? #{:distributed :ai} profile)
-                       :recorded-when-effectful
-                       :profile-specific)
-     :unsafe-policy (profile-unsafe-policies profile)
-     :artifact-boundaries (profile-artifact-boundaries profile)}))
+  (profile-validation-call
+   :profile-contract profile-validation/profile-contract profile))
 
 (defn profile-policy-layer
   [module metadata-key source-key default-value]
@@ -14101,19 +14196,9 @@
 
 (defn profile-effective-effects
   [module inferred-effects]
-  (let [source-effects (:effects module)
-        profile-effects (profile-allowed-effects (:profile module))
-        package-effects (profile-policy-layer module :package-allowed-effects :effects #{})
-        provider-effects (profile-policy-layer module :provider-effect-grants :effects #{})
-        deployment-effects (profile-policy-layer module :deployment-allowed-effects :effects #{})]
-    {:source source-effects
-     :inferred inferred-effects
-     :profile profile-effects
-     :package package-effects
-     :provider provider-effects
-     :deployment deployment-effects
-     :effective (set/intersection source-effects profile-effects package-effects
-                                  provider-effects deployment-effects)}))
+  (profile-validation-call
+   :profile-effective-effects profile-validation/profile-effective-effects
+   module inferred-effects))
 
 (defn profile-effective-capabilities
   [module required-capabilities]
@@ -14133,40 +14218,15 @@
 
 (defn effect-permission-table
   [module inferred-effects effective]
-  (let [source-effects (:source effective)
-        row-effects (set/union source-effects inferred-effects)]
-    (mapv (fn [effect]
-            (let [entry (effect-registry-entry effect)
-                  profile-allowed? (contains? (:profile effective) effect)
-                  package-allowed? (contains? (:package effective) effect)
-                  provider-granted? (contains? (:provider effective) effect)
-                  deployment-granted? (contains? (:deployment effective) effect)
-                  effective? (contains? (:effective effective) effect)]
-              {:effect effect
-               :family (:family entry)
-               :requires-capability (boolean (:requires-capability entry))
-               :capability (:capability entry)
-               :declared? (contains? source-effects effect)
-               :inferred? (contains? inferred-effects effect)
-               :profile-allowed? profile-allowed?
-               :package-allowed? package-allowed?
-               :provider-granted? provider-granted?
-               :deployment-granted? deployment-granted?
-               :effective? effective?
-               :state (cond
-                        effective? :allowed
-                        (not profile-allowed?) :rejected
-                        (or (not package-allowed?)
-                            (not provider-granted?)
-                            (not deployment-granted?)) :checked
-                        :else :rejected)
-               :policy-layer (cond
-                               (not profile-allowed?) :profile
-                               (not package-allowed?) :package
-                               (not provider-granted?) :provider
-                               (not deployment-granted?) :deployment
-                               :else :effective)}))
-          (stable-vec row-effects))))
+  (profile-validation-call
+   :effect-permission-table profile-validation/effect-permission-table
+   module inferred-effects effective))
+
+(defn profile-validation-facts
+  [module typed-artifact module-artifact]
+  (profile-validation-call
+   :profile-validation-facts profile-validation/profile-validation-facts
+   module typed-artifact module-artifact))
 
 (defn capability-permission-table
   [module required-capabilities effective]
@@ -14201,6 +14261,19 @@
                                (not deployment-granted?) :deployment
                                :else :effective)}))
           (stable-vec row-capabilities))))
+
+(defn capability-validation-facts
+  "Project explicit capability grants through the hosted compatibility leaf.
+
+  The legacy capability-permission-table above intentionally remains the
+  bootstrap-owned grant row.  This entrypoint is the newer explicit pass
+  boundary: the leaf narrows the final authority with provider trust while
+  retaining the legacy grant intersection in its report."
+  [profile-output profile-report grant-facts provider-facts]
+  (capability-validation-call
+   :capability-validation-facts
+   capability-validation/capability-validation-facts
+   profile-output profile-report grant-facts provider-facts))
 
 (defn backend-eligibility-report
   [module manifest]

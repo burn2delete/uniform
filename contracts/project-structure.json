@@ -257,7 +257,7 @@
       "invalidates": ["profile-unknown"],
       "emits": ["profile-facts", "profile-diagnostics"],
       "rejects": ["undeclared-profile", "profile-forbids-form", "profile-runtime-mismatch"],
-      "owner": "master-coordinator",
+      "owner": "sh-profile",
       "cost": {
         "class": "cheap",
         "lane": "preflight",
@@ -283,7 +283,7 @@
       "invalidates": ["capability-unknown"],
       "emits": ["capability-facts", "capability-diagnostics"],
       "rejects": ["capability-missing", "capability-escalation", "ambient-authority"],
-      "owner": "master-coordinator",
+      "owner": "sh-capability",
       "cost": {
         "class": "cheap",
         "lane": "preflight",
@@ -1035,6 +1035,8 @@
       {"id": "sh-core", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-core-module", "reviewed-stage0-clojure-sh-core"]},
       {"id": "sh-types", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-types-module", "reviewed-stage0-clojure-sh-types"]},
       {"id": "sh-effects", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-effects-module", "reviewed-stage0-clojure-sh-effects"]},
+      {"id": "sh-profile", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-stage0-clojure-sh-profile"]},
+      {"id": "sh-capability", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-stage0-clojure-sh-capability"]},
       {"id": "sh-ownership", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-ownership-module", "reviewed-stage0-clojure-sh-ownership"]},
       {"id": "sh-safety", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-safety-module", "reviewed-stage0-clojure-sh-safety"]},
       {"id": "sh-mir", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-mir-module", "reviewed-stage0-clojure-sh-mir"]},
@@ -1137,6 +1139,7 @@
       "bootstrap/clojure/src/gravity/c7_type_checker.clj": "sh-types",
       "bootstrap/clojure/src/gravity/c8_effect_checker.clj": "sh-effects",
       "bootstrap/clojure/src/gravity/c9_ownership_checker.clj": "sh-ownership",
+      "bootstrap/clojure/src/gravity/capability_validation.clj": "sh-capability",
       "bootstrap/clojure/src/gravity/cli.clj": "master-coordinator",
       "bootstrap/clojure/src/gravity/compiler_verification_shared.clj": "sh-verification",
       "bootstrap/clojure/src/gravity/core_ast_lowering.clj": "sh-core",
@@ -1146,6 +1149,8 @@
       "bootstrap/clojure/src/gravity/macro_expansion.clj": "sh-macro",
       "bootstrap/clojure/src/gravity/module_analysis.clj": "sh-resolution",
       "bootstrap/clojure/src/gravity/optimization_lowering.clj": "sh-optimization",
+      "bootstrap/clojure/src/gravity/pass_execution.clj": "sh-verification",
+      "bootstrap/clojure/src/gravity/profile_validation.clj": "sh-profile",
       "bootstrap/clojure/src/gravity/reader_cursor.clj": "sh-reader",
       "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj": "sh-reader",
       "bootstrap/clojure/src/gravity/reader_host_oracle.clj": "sh-reader",
@@ -1174,8 +1179,12 @@
       "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj": "master-coordinator",
       "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj": "master-coordinator",
       "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj": "master-coordinator",
       "bootstrap/clojure/test/gravity/bootstrap_test.clj": "master-coordinator",
       "bootstrap/clojure/test/gravity/development_test_runner.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj": "master-coordinator",
       "bootstrap/clojure/test/gravity/c10_safety_analysis_test.clj": "sh-safety",
       "bootstrap/clojure/test/gravity/c11_mir_test.clj": "sh-mir",
       "bootstrap/clojure/test/gravity/c12_domain_ir_test.clj": "sh-domain-ir",
@@ -1204,6 +1213,7 @@
       "bootstrap/clojure/test/gravity/c7_type_checker_test.clj": "sh-types",
       "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj": "sh-effects",
       "bootstrap/clojure/test/gravity/c9_ownership_checker_test.clj": "sh-ownership",
+      "bootstrap/clojure/test/gravity/capability_validation_test.clj": "sh-capability",
       "bootstrap/clojure/test/gravity/cli_test.clj": "master-coordinator",
       "bootstrap/clojure/test/gravity/compiler_verification_shared_test.clj": "sh-verification",
       "bootstrap/clojure/test/gravity/core_ast_lowering_test.clj": "sh-core",
@@ -1213,6 +1223,8 @@
       "bootstrap/clojure/test/gravity/macro_expansion_test.clj": "sh-macro",
       "bootstrap/clojure/test/gravity/module_analysis_test.clj": "sh-resolution",
       "bootstrap/clojure/test/gravity/optimization_lowering_test.clj": "sh-optimization",
+      "bootstrap/clojure/test/gravity/pass_execution_test.clj": "sh-verification",
+      "bootstrap/clojure/test/gravity/profile_validation_test.clj": "sh-profile",
       "bootstrap/clojure/test/gravity/reader_cursor_test.clj": "sh-reader",
       "bootstrap/clojure/test/gravity/reader_diagnostic_policy_test.clj": "sh-reader",
       "bootstrap/clojure/test/gravity/reader_host_oracle_test.clj": "sh-reader",
@@ -1233,7 +1245,7 @@
         "id": "reviewed-central-routing",
         "kind": "reviewed",
         "owner": "master-coordinator",
-        "patterns": ["deps.edn", "bin/gravity", "bin/gravity-bootstrap", "contracts/project-structure.json", "bootstrap/clojure/java/gravity/cli/Main.java", "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c5_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c6_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c7_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c8_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c9_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c10_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c12_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c13_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c14_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c15_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c16_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c17_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj", "bootstrap/clojure/test/gravity/bootstrap_test.clj", "bootstrap/clojure/test/gravity/development_test_runner.clj", "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj", "tools/"],
+        "patterns": ["deps.edn", "bin/gravity", "bin/gravity-bootstrap", "contracts/project-structure.json", "bootstrap/clojure/java/gravity/cli/Main.java", "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c5_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c6_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c7_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c8_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c9_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c10_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c12_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c13_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c14_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c15_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c16_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c17_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj", "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj", "bootstrap/clojure/test/gravity/bootstrap_test.clj", "bootstrap/clojure/test/gravity/development_test_runner.clj", "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj", "tools/"],
         "editable": true,
         "review_required": true,
         "reviewer": "master-coordinator",
@@ -1807,14 +1819,42 @@
         "allow_overlap": false
       },
       {
+        "id": "reviewed-stage0-clojure-sh-capability",
+        "kind": "reviewed",
+        "owner": "sh-capability",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/capability_validation.clj",
+          "bootstrap/clojure/test/gravity/capability_validation_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-profile",
+        "kind": "reviewed",
+        "owner": "sh-profile",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/profile_validation.clj",
+          "bootstrap/clojure/test/gravity/profile_validation_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
         "id": "reviewed-stage0-clojure-sh-verification",
         "kind": "reviewed",
         "owner": "sh-verification",
         "patterns": [
           "bootstrap/clojure/src/gravity/c18_verification.clj",
           "bootstrap/clojure/src/gravity/compiler_verification_shared.clj",
+          "bootstrap/clojure/src/gravity/pass_execution.clj",
           "bootstrap/clojure/test/gravity/c18_verification_test.clj",
-          "bootstrap/clojure/test/gravity/compiler_verification_shared_test.clj"
+          "bootstrap/clojure/test/gravity/compiler_verification_shared_test.clj",
+          "bootstrap/clojure/test/gravity/pass_execution_test.clj"
         ],
         "editable": true,
         "review_required": true,

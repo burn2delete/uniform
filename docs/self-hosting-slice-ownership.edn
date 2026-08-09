@@ -31,6 +31,9 @@
    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj"
    "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj"
    "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj"
+   "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj"
+   "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj"
+   "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj"
    "bootstrap/clojure/test/gravity/bootstrap_test.clj"
    "bootstrap/clojure/test/gravity/development_test_runner.clj"
    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
@@ -141,6 +144,7 @@
   "bootstrap/clojure/src/gravity/c7_type_checker.clj" :sh-types
   "bootstrap/clojure/src/gravity/c8_effect_checker.clj" :sh-effects
   "bootstrap/clojure/src/gravity/c9_ownership_checker.clj" :sh-ownership
+  "bootstrap/clojure/src/gravity/capability_validation.clj" :sh-capability
   "bootstrap/clojure/src/gravity/cli.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/compiler_verification_shared.clj" :sh-verification
   "bootstrap/clojure/src/gravity/core_ast_lowering.clj" :sh-core
@@ -150,6 +154,8 @@
   "bootstrap/clojure/src/gravity/macro_expansion.clj" :sh-macro
   "bootstrap/clojure/src/gravity/module_analysis.clj" :sh-resolution
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" :sh-optimization
+  "bootstrap/clojure/src/gravity/pass_execution.clj" :sh-verification
+  "bootstrap/clojure/src/gravity/profile_validation.clj" :sh-profile
   "bootstrap/clojure/src/gravity/reader_cursor.clj" :sh-reader
   "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj" :sh-reader
   "bootstrap/clojure/src/gravity/reader_host_oracle.clj" :sh-reader
@@ -178,8 +184,12 @@
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/bootstrap_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/development_test_runner.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/c10_safety_analysis_test.clj" :sh-safety
   "bootstrap/clojure/test/gravity/c11_mir_test.clj" :sh-mir
   "bootstrap/clojure/test/gravity/c12_domain_ir_test.clj" :sh-domain-ir
@@ -208,6 +218,7 @@
   "bootstrap/clojure/test/gravity/c7_type_checker_test.clj" :sh-types
   "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj" :sh-effects
   "bootstrap/clojure/test/gravity/c9_ownership_checker_test.clj" :sh-ownership
+  "bootstrap/clojure/test/gravity/capability_validation_test.clj" :sh-capability
   "bootstrap/clojure/test/gravity/cli_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/compiler_verification_shared_test.clj" :sh-verification
   "bootstrap/clojure/test/gravity/core_ast_lowering_test.clj" :sh-core
@@ -217,6 +228,8 @@
   "bootstrap/clojure/test/gravity/macro_expansion_test.clj" :sh-macro
   "bootstrap/clojure/test/gravity/module_analysis_test.clj" :sh-resolution
   "bootstrap/clojure/test/gravity/optimization_lowering_test.clj" :sh-optimization
+  "bootstrap/clojure/test/gravity/pass_execution_test.clj" :sh-verification
+  "bootstrap/clojure/test/gravity/profile_validation_test.clj" :sh-profile
   "bootstrap/clojure/test/gravity/reader_cursor_test.clj" :sh-reader
   "bootstrap/clojure/test/gravity/reader_diagnostic_policy_test.clj" :sh-reader
   "bootstrap/clojure/test/gravity/reader_host_oracle_test.clj" :sh-reader
@@ -257,6 +270,7 @@
   "c7-type-checker" :sh-types
   "c8-effect-checker" :sh-effects
   "c9-ownership-checker" :sh-ownership
+  "capability-validation" :sh-capability
   "cli" :master-coordinator
   "compiler-verification-shared" :sh-verification
   "core-ast-lowering" :sh-core
@@ -266,6 +280,8 @@
   "macro-expansion" :sh-macro
   "module-analysis" :sh-resolution
   "optimization-lowering" :sh-optimization
+  "pass-execution" :sh-verification
+  "profile-validation" :sh-profile
   "reader-cursor" :sh-reader
   "reader-diagnostic-policy" :sh-reader
   "reader-host-oracle" :sh-reader
