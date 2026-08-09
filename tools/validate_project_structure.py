@@ -35,10 +35,10 @@ PYTHON_SEMANTIC_SUPPORT_POLICY_ID = "reviewed-python-semantic-support"
 STAGE0_COMPONENT_SCHEMA = "gravity/stage0-clojure-components-v1"
 STAGE0_COMPONENT_KIND = "stage0-clojure-component-inventory"
 STAGE0_COMPONENT_COUNTS = {
-    "components": 52,
-    "sources": 52,
-    "tests": 52,
-    "bootstrap_free_tests": 46,
+    "components": 53,
+    "sources": 53,
+    "tests": 53,
+    "bootstrap_free_tests": 47,
     "compatibility_tests": 5,
     "coordinator_tests": 1,
 }
@@ -240,6 +240,7 @@ STAGE0_LEAF_EXECUTION_GROUP_COMPONENT_IDS = {
         "c15-diagnostics",
         "c15-c16-pass-cache",
         "c16-incremental",
+        "c17-c18-pass-cache",
         "c17-plugin",
         "c18-verification",
         "c4-macro-evidence",
@@ -262,7 +263,7 @@ STAGE0_LEAF_EXECUTION_GROUP_COMPONENT_IDS = {
 STAGE0_LEAF_EXECUTION_GROUP_COUNTS = {
     "foundation-reader": 9,
     "c2-c3": 12,
-    "compiler": 25,
+    "compiler": 26,
 }
 STAGE0_LEAF_EXECUTION_GROUP_BY_COMPONENT = {
     component_id: group
@@ -313,6 +314,7 @@ STAGE0_COMPATIBILITY_AUTHORITY_COMPONENT_IDS = {
     "c15-diagnostics",
     "c15-c16-pass-cache",
     "c16-incremental",
+    "c17-c18-pass-cache",
     "c17-plugin",
     "c18-verification",
     "capability-validation",
@@ -1233,7 +1235,7 @@ def _validate_stage0_component_contract(
         _add_error(errors, "stage0 component contract.components", "must be a list")
         return
     if len(components) != STAGE0_COMPONENT_COUNTS["components"]:
-        _add_error(errors, "stage0 component contract.components", "must contain exactly 52 components")
+        _add_error(errors, "stage0 component contract.components", "must contain exactly 53 components")
 
     # Every source file in this slice is a direct child of the reviewed source
     # root.  The test root also contains runner infrastructure; only the
@@ -1476,7 +1478,7 @@ def _validate_stage0_component_contract(
 
     lanes = [component.get("test", {}).get("lane") for component in component_by_id.values() if _is_mapping(component.get("test"))]
     if lanes.count("bootstrap-free") != STAGE0_COMPONENT_COUNTS["bootstrap_free_tests"]:
-        _add_error(errors, "stage0 component test lanes", "must contain exactly 46 bootstrap-free tests")
+        _add_error(errors, "stage0 component test lanes", "must contain exactly 47 bootstrap-free tests")
     if lanes.count("compatibility") != STAGE0_COMPONENT_COUNTS["compatibility_tests"]:
         _add_error(errors, "stage0 component test lanes", "must contain exactly 5 compatibility tests")
     if lanes.count("coordinator") != STAGE0_COMPONENT_COUNTS["coordinator_tests"]:
@@ -1496,7 +1498,7 @@ def _validate_stage0_component_contract(
         _add_error(
             errors,
             "stage0 component leaf execution groups",
-            "must contain exactly 46 grouped bootstrap-free components",
+            "must contain exactly 47 grouped bootstrap-free components",
         )
 
     reserved, compatibility_tests, ownership_errors = parse_stage0_component_ownership()
