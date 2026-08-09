@@ -3092,6 +3092,7 @@
         "bootstrap/clojure/src/gravity/digest.clj",
         "bootstrap/clojure/src/gravity/macro_expansion.clj",
         "bootstrap/clojure/src/gravity/optimization_lowering.clj",
+        "bootstrap/clojure/src/gravity/pass_cache.clj",
         "bootstrap/clojure/src/gravity/pass_execution.clj",
         "bootstrap/clojure/src/gravity/profile_validation.clj",
         "bootstrap/clojure/test/gravity/c10_safety_analysis_test.clj",
@@ -3115,6 +3116,7 @@
         "bootstrap/clojure/test/gravity/darwin_publication_test.clj",
         "bootstrap/clojure/test/gravity/macro_expansion_test.clj",
         "bootstrap/clojure/test/gravity/optimization_lowering_test.clj",
+        "bootstrap/clojure/test/gravity/pass_cache_test.clj",
         "bootstrap/clojure/test/gravity/pass_execution_test.clj",
         "bootstrap/clojure/test/gravity/profile_validation_test.clj"
       ],
@@ -5011,6 +5013,7 @@
         "bootstrap/clojure/test/gravity/macro_expansion_test.clj",
         "bootstrap/clojure/test/gravity/module_analysis_test.clj",
         "bootstrap/clojure/test/gravity/optimization_lowering_test.clj",
+        "bootstrap/clojure/test/gravity/pass_cache_test.clj",
         "bootstrap/clojure/test/gravity/pass_execution_test.clj",
         "bootstrap/clojure/test/gravity/profile_validation_test.clj",
         "bootstrap/clojure/test/gravity/reader_cursor_test.clj",
