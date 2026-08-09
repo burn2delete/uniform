@@ -3150,7 +3150,8 @@
         "bootstrap/gravity/src/gravity/macro.gravity",
         "bootstrap/gravity/src/gravity/resolution.gravity",
         "bootstrap/gravity/src/gravity/checked_core.gravity",
-        "bootstrap/clojure/src/**"
+        "bootstrap/clojure/src/**",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_census.clj"
       ],
       "depends_on": ["stage3-runner-unit"],
       "jvm_heap": "-J-Xmx2g",

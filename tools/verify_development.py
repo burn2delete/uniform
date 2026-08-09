@@ -695,7 +695,9 @@ _STAGE10_FIXED_NODE_POLICIES = {
             "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_c14_b1_linux_llvm_backend_continuity_test.clj",
             "bootstrap/clojure/test/gravity/self_hosting/sh17_target_lowering_hardening_test.clj",
         ),
-        "tool_inputs": tuple(_stage3.STAGE3_RUNTIME_DEPENDENCIES),
+        "tool_inputs": tuple(_stage3.STAGE3_RUNTIME_DEPENDENCIES) + (
+            "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_census.clj",
+        ),
         "impact_excludes": (
             "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
             "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",

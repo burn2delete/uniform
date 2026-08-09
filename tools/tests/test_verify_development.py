@@ -4954,6 +4954,12 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertEqual(stable["jvm_heap"], "-J-Xmx3g")
         self.assertEqual(consumer["jvm_heap"], "-J-Xmx8g")
         self.assertEqual(
+            static["tool_inputs"].count(
+                "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_census.clj"
+            ),
+            1,
+        )
+        self.assertEqual(
             verifier._stage3._FIXED_BATCH_SELECTORS["stage10-w1-direct-mutation"],
             verifier._stage3._FIXED_BATCH_SELECTORS["stage10-w1-hostile-stable"][:1],
         )
