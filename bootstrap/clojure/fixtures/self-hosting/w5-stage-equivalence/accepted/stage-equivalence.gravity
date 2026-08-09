@@ -1,0 +1,358 @@
+(ns gravity.self-hosting.w5-stage-equivalence.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-stage-equivalence-request
+             w5-stage-equivalence-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def w5-id-a
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+(def w5-id-b
+  "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+(def w5-id-c
+  "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
+(def w5-id-d
+  "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd")
+(def w5-id-e
+  "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+(def w5-id-f
+  "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+(def w5-id-0
+  "sha256:0000000000000000000000000000000000000000000000000000000000000000")
+(def w5-id-1
+  "sha256:1111111111111111111111111111111111111111111111111111111111111111")
+(def w5-id-2
+  "sha256:2222222222222222222222222222222222222222222222222222222222222222")
+(def w5-id-3
+  "sha256:3333333333333333333333333333333333333333333333333333333333333333")
+(def w5-id-4
+  "sha256:4444444444444444444444444444444444444444444444444444444444444444")
+(def w5-id-5
+  "sha256:5555555555555555555555555555555555555555555555555555555555555555")
+(def w5-id-6
+  "sha256:6666666666666666666666666666666666666666666666666666666666666666")
+(def w5-id-7
+  "sha256:7777777777777777777777777777777777777777777777777777777777777777")
+(def w5-id-8
+  "sha256:8888888888888888888888888888888888888888888888888888888888888888")
+(def w5-id-9
+  "sha256:9999999999999999999999999999999999999999999999999999999999999999")
+
+(defn w5-stage [stage ordinal compiler lineage source executable artifact output input path]
+  {:stage-id stage
+   :ordinal ordinal
+   :compiler-id compiler
+   :compiler-lineage-id lineage
+   :source-id source
+   :executable-id executable
+   :artifact-id artifact
+   :output-artifact-id output
+   :compiler-input-artifact-id input
+   :profile :meta
+   :target :llvm-x86_64-linux
+   :execution-status :pending
+   :conformance-status :pending
+   :actual-source-path (str path "/source.gravity")
+   :actual-executable-path (str path "/bin/" compiler)
+   :actual-artifact-path (str path "/artifacts/" compiler ".elf")})
+
+(defn w5-target []
+  {:target-id :llvm-x86_64-linux
+   :profile :meta
+   :backend :llvm
+   :os :linux
+   :arch :x86_64
+   :artifact-format :elf
+   :abi :sysv-amd64
+   :runtime :none
+   :cross-target? false
+   :fallback? false
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :no-fallback? true})
+
+(defn w5-recipe []
+  {:recipe-id w5-id-a
+   :content-id w5-id-b
+   :semantic-id w5-id-c
+   :status :locked
+   :network-policy :disabled
+   :actual-path "/checkout-a/bootstrap/recipe.edn"})
+
+(defn w5-lock []
+  {:lock-id w5-id-d
+   :content-id w5-id-d
+   :dependency-ids [w5-id-0 w5-id-1 w5-id-2]
+   :status :locked
+   :network-policy :disabled
+   :actual-path "/checkout-a/bootstrap/lock.edn"})
+
+(defn w5-environment [path]
+  {:environment-id w5-id-e
+   :toolchain-id w5-id-f
+   :locked-dependencies true
+   :locale "C"
+   :timezone "UTC"
+   :filesystem-order :sorted
+   :timestamp-policy :fixed
+   :random-seed 503
+   :network :disabled
+   :allowed-environment []
+   :actual-path (str path "/environment.edn")})
+
+(defn w5-toolchain [compiler source path]
+  {:toolchain-id w5-id-f
+   :family :llvm
+   :version "llvm-18.1.8"
+   :target :llvm-x86_64-linux
+   :compiler-id compiler
+   :source-id source
+   :status :declared
+   :actual-path (str path "/toolchains/llvm")})
+
+(defn w5-span [source path start end line column]
+  {:source-id source
+   :start-byte start
+   :end-byte end
+   :line line
+   :column column
+   :actual-source-path (str path "/source.gravity")})
+
+(defn w5-spans [path]
+  [(w5-span :stage-a path 0 4 1 1)
+   (w5-span :stage-b path 5 12 2 1)
+   (w5-span :stage-c path 13 20 3 1)])
+
+(defn w5-diagnostics [path]
+  [{:code "W5-STAGE-EXECUTION-PENDING"
+    :severity :information
+    :message "stage execution remains pending"
+    :source-span (w5-span :stage-a path 0 4 1 1)}])
+
+(defn w5-manifest-stage [stage compiler source executable artifact]
+  {:compiler-id compiler
+   :source-id source
+   :executable-id executable
+   :artifact-id artifact
+   :target :llvm-x86_64-linux})
+
+(defn w5-manifest []
+  {:stage-a (w5-manifest-stage :stage-a "gravityc:stage-a"
+                               w5-id-a w5-id-b w5-id-c)
+   :stage-b (w5-manifest-stage :stage-b "gravityc:stage-b"
+                               w5-id-b w5-id-c w5-id-d)
+   :stage-c (w5-manifest-stage :stage-c "gravityc:stage-c"
+                               w5-id-c w5-id-d w5-id-e)})
+
+(defn w5-conformance [accepted rejected]
+  {:status :pending
+   :accepted-transcript accepted
+   :rejected-transcript rejected
+   :execution :not-executed})
+
+(defn w5-runtime []
+  {:stdout ""
+   :stderr ""
+   :exit 0
+   :status :pending
+   :execution :not-executed})
+
+(defn w5-ir [prefix]
+  {:normalized-operations
+   [{:ordinal 0 :opcode :argument :operands []}
+    {:ordinal 1 :opcode :literal :operands []}
+    {:ordinal 2 :opcode :return :operands [1]}]
+   :id-renaming
+   [{:original (str prefix "-argument") :ordinal 0}
+    {:original (str prefix "-literal") :ordinal 1}
+    {:original (str prefix "-return") :ordinal 2}]
+   :target-independent true})
+
+(defn w5-products [path]
+  (let [spans (w5-spans path)
+        diagnostics (w5-diagnostics path)
+        accepted-id w5-id-6
+        rejected-id w5-id-7
+        artifact
+        {:stage-a w5-id-c :stage-b w5-id-d :stage-c w5-id-e}
+        manifest (w5-manifest)
+        conformance (w5-conformance accepted-id rejected-id)
+        runtime (w5-runtime)
+        ir-a (w5-ir "a")
+        ir-b (w5-ir "b")
+        reviewed-left {:builder-note "seed-build provenance timestamp"}
+        reviewed-right {:builder-note "self-build provenance timestamp"}]
+    [{:product-id :product/artifact
+      :mode :artifact
+      :left artifact
+      :right artifact
+      :canonical-form :canonical-content-hash
+      :source-spans spans
+      :evidence-status :pending}
+     {:product-id :product/manifest
+      :mode :manifest
+      :left manifest
+      :right manifest
+      :canonical-form :canonical-manifest
+      :source-spans spans
+      :evidence-status :pending}
+     {:product-id :product/diagnostic
+      :mode :diagnostic
+      :left diagnostics
+      :right diagnostics
+      :canonical-form :stable-code-and-source-span
+      :source-spans spans
+      :evidence-status :pending}
+     {:product-id :product/conformance
+      :mode :conformance
+      :left conformance
+      :right conformance
+      :canonical-form :accepted-rejected-transcripts
+      :source-spans spans
+      :evidence-status :pending}
+     {:product-id :product/runtime-output
+      :mode :runtime-output
+      :left runtime
+      :right runtime
+      :canonical-form :canonical-runtime-output
+      :source-spans spans
+      :evidence-status :pending}
+     {:product-id :product/ir
+      :mode :ir-modulo-id
+      :left ir-a
+      :right ir-b
+      :canonical-form :normalized-structure-modulo-id
+      :source-spans spans
+      :evidence-status :pending}
+     {:product-id :product/reviewed-delta
+      :mode :reviewed-delta
+      :left reviewed-left
+      :right reviewed-right
+      :canonical-form :reviewed-provenance-delta
+      :source-spans spans
+      :evidence-status :pending}]))
+
+(defn w5-transcripts [path]
+  (let [spans (w5-spans path)
+        diagnostics (w5-diagnostics path)]
+    {:accepted {:transcript-id w5-id-6
+                :status :pending
+                :diagnostics diagnostics
+                :source-spans spans
+                :actual-path (str path "/transcripts/accepted.edn")}
+     :rejected {:transcript-id w5-id-7
+                :status :pending
+                :diagnostics diagnostics
+                :source-spans spans
+                :actual-path (str path "/transcripts/rejected.edn")}}))
+
+(defn w5-request [path]
+  (let [stage-a
+        (w5-stage :stage-a 0 "gravityc:stage-a" "lineage:stage-a"
+                  w5-id-a w5-id-b w5-id-c w5-id-c nil path)
+        stage-b
+        (w5-stage :stage-b 1 "gravityc:stage-b" "lineage:stage-b"
+                  w5-id-b w5-id-c w5-id-d w5-id-d w5-id-c path)
+        stage-c
+        (w5-stage :stage-c 2 "gravityc:stage-c" "lineage:stage-c"
+                  w5-id-c w5-id-d w5-id-e w5-id-e w5-id-d path)
+        recipe (w5-recipe)
+        lock (w5-lock)
+        transition-a-b
+        {:transition-id :transition/a-b
+         :parent-stage-id :stage-a
+         :parent-compiler-id "gravityc:stage-a"
+         :parent-output-artifact-id w5-id-c
+         :child-stage-id :stage-b
+         :child-compiler-id "gravityc:stage-b"
+         :child-compiler-lineage-id "lineage:stage-b"
+         :child-compiler-input-artifact-id w5-id-c
+         :recipe-id w5-id-a
+         :lock-id w5-id-d
+         :toolchain-id w5-id-f}
+        transition-b-c
+        {:transition-id :transition/b-c
+         :parent-stage-id :stage-b
+         :parent-compiler-id "gravityc:stage-b"
+         :parent-output-artifact-id w5-id-d
+         :child-stage-id :stage-c
+         :child-compiler-id "gravityc:stage-c"
+         :child-compiler-lineage-id "lineage:stage-c"
+         :child-compiler-input-artifact-id w5-id-d
+         :recipe-id w5-id-a
+         :lock-id w5-id-d
+         :toolchain-id w5-id-f}
+        reviewed-left {:builder-note "seed-build provenance timestamp"}
+        reviewed-right {:builder-note "self-build provenance timestamp"}
+        performance-bound {:bound-id :bootstrap-performance-bound
+                           :status :pending
+                           :limit 1
+                           :actual 0
+                           :unit :relative}]
+    {:artifact :gravity/w5-stage-equivalence-request
+     :schema-version 1
+     :comparison-id :comparison/stage-a-b-c
+     :candidate-target :llvm-x86_64-linux
+     :target (w5-target)
+     :stage-a stage-a
+     :stage-b stage-b
+     :stage-c stage-c
+     :transition-a-b transition-a-b
+     :transition-b-c transition-b-c
+     :recipe recipe
+     :lock lock
+     :environment-a (w5-environment path)
+     :environment-b (w5-environment path)
+     :environment-c (w5-environment path)
+     :toolchain-a (w5-toolchain "gravityc:stage-a" w5-id-a path)
+     :toolchain-b (w5-toolchain "gravityc:stage-b" w5-id-b path)
+     :toolchain-c (w5-toolchain "gravityc:stage-c" w5-id-c path)
+     :modes [:artifact :manifest :diagnostic :conformance :runtime-output
+             :ir-modulo-id :reviewed-delta]
+     :products (w5-products path)
+     :accepted-deltas
+     [{:delta-id :delta/provenance-timestamp
+       :product-id :product/reviewed-delta
+       :mode :reviewed-delta
+       :status :approved
+       :reviewer "w5-policy-review"
+       :policy-id "BOOT7-W5-REVIEWED-DELTA"
+       :reason "only provenance timestamp differs; execution is still pending"
+       :left reviewed-left
+       :right reviewed-right}]
+     :performance-bound performance-bound
+     :transcripts (w5-transcripts path)
+     :execution {:status :pending
+                 :stage-a :not-executed
+                 :stage-b :not-executed
+                 :stage-c :not-executed
+                 :native-sol-evidence :pending}
+     :independent-verifier
+     {:verifier-id "gravity/w5-stage-equivalence-independent-verifier"
+      :source-id w5-id-8
+      :executable-id w5-id-9
+      :artifact-id w5-id-0
+      :independent? true
+      :authority :non-authority
+      :status :not-executed
+      :actual-source-path (str path "/w5_stage_equivalence_verifier.gravity")}
+     :provenance
+     {:actual-request-path (str path "/accepted/stage-equivalence.gravity")
+      :actual-comparison-path (str path "/comparison/stage-a-b-c.edn")
+      :stage-a-source-path (str path "/stage-a/source.gravity")
+      :stage-b-source-path (str path "/stage-b/source.gravity")
+      :stage-c-source-path (str path "/stage-c/source.gravity")}}))
+
+(defn w5-stage-equivalence-request []
+  (w5-request "/checkout-a"))
+
+(defn w5-stage-equivalence-alternate-path-request []
+  (w5-request "/checkout-b"))
