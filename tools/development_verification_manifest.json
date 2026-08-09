@@ -4185,6 +4185,8 @@
         "gravity.self-hosting.sh07-iteration-cache-runner",
         "--fail-fast",
         "--test-var",
+        "gravity.p15-native-plan-specialization-test/fixed-real-packet-cache-is-bounded-and-source-coherent",
+        "--test-var",
         "gravity.p15-native-plan-specialization-test/packet-and-context-tamper-reject-before-validator-or-emitter",
         "--test-var",
         "gravity.p15-native-plan-specialization-test/authenticated-unsupported-plan-rejects-before-emitter",
