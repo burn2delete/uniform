@@ -1,13 +1,13 @@
 # Full Language Coverage Matrix Report
 
-Generated on: 2026-08-08
+Generated on: 2026-08-09
 
 ## Contract
 
 - Matrix kind/schema: `gravity/full-language-coverage-matrix` / `1`
 - Matrix status: `incomplete`
-- Matrix semantic identity: `sha256:f771100e478f77ae4d1dbd284a29fd5bef3da83ba382b1ba31be64fac3906508`
-- Gap-report semantic identity: `sha256:feb35aeb9e81514add43160d06fba5a6d0f9fabf8a3d038627d62ef3735e3ee8`
+- Matrix semantic identity: `sha256:de0a61b46fb8a52bf892b4e321f23921535694cb312597e90e45d36175cda8ae`
+- Gap-report semantic identity: `sha256:6a2a78788e5413dbf5d86da865877711596683191ecf1290b2b6c9591db21349`
 - Authority: non-authoritative observation
 - Completion, public authority, release readiness, self-hosting, and seed retirement are not claimed.
 
