@@ -2552,6 +2552,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage9-sh16-c13-evidence-boundary",
                 "stage10-w1-static-admission",
                 "stage10-w1-direct-mutation",
+                "stage10-w1-sh25-catalog",
                 "stage10-w1-sh25-sh26-consumer",
             },
         )
@@ -3178,6 +3179,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage10-w1-static-admission",
             "stage10-w1-hostile-stable",
             "stage10-w1-direct-mutation",
+            "stage10-w1-sh25-catalog",
             "stage10-w1-sh25-sh26-consumer",
         }
         self.assertEqual(
@@ -4052,8 +4054,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage8-sh14-authenticated-layout",
                 "stage9-c13-source-shape",
                 "stage9-sh16-c13-evidence-boundary",
-                "stage10-w1-static-admission",
-                "stage10-w1-sh25-sh26-consumer",
+                "stage10-w1-sh25-catalog",
             },
         )
         kernel = selected(
@@ -4329,8 +4330,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage8-sh14-authenticated-layout",
             "stage9-c13-source-shape",
             "stage9-sh16-c13-evidence-boundary",
-            "stage10-w1-static-admission",
-            "stage10-w1-sh25-sh26-consumer",
+            "stage10-w1-sh25-catalog",
         }
         self.assertEqual(source_selected, expected_c8_change_selection)
         self.assertTrue(
@@ -4366,8 +4366,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             adapter_selected,
             expected_c8_change_selection
             - {
-                "stage10-w1-static-admission",
-                "stage10-w1-sh25-sh26-consumer",
+                "stage10-w1-sh25-catalog",
             },
         )
         self.assertTrue(
@@ -4512,7 +4511,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage9-sh16-c13-evidence-boundary",
                 "stage10-w1-static-admission",
                 "stage10-w1-direct-mutation",
-                "stage10-w1-sh25-sh26-consumer",
+                "stage10-w1-sh25-catalog",
             },
         )
         self.assertEqual(
@@ -4619,8 +4618,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage9-sh16-c13-evidence-boundary",
         }
         stage10_catalog_ids = {
-            "stage10-w1-static-admission",
-            "stage10-w1-sh25-sh26-consumer",
+            "stage10-w1-sh25-catalog",
         }
         self.assertEqual(
             selected(c12_path),
@@ -4767,7 +4765,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         stage10_automatic = {
             "stage10-w1-static-admission",
             "stage10-w1-direct-mutation",
-            "stage10-w1-sh25-sh26-consumer",
+            "stage10-w1-sh25-catalog",
         }
         self.assertEqual(selected(c13_path), units | stage9_ids | stage10_automatic)
         self.assertEqual(selected(sh16_path), units | stage9_ids)
@@ -4917,6 +4915,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage10-w1-static-admission": "stage4-public-c8",
                 "stage10-w1-hostile-stable": "stage10-w1-direct-mutation",
                 "stage10-w1-direct-mutation": "stage10-w1-hostile-stable",
+                "stage10-w1-sh25-catalog": "stage9-sh16-c13-evidence-boundary",
                 "stage10-w1-sh25-sh26-consumer": "stage9-sh16-c13-evidence-boundary",
             }[check_id]
             mutations = (
@@ -4960,13 +4959,16 @@ class VerifyDevelopmentTests(unittest.TestCase):
         static = by_id["stage10-w1-static-admission"]
         stable = by_id["stage10-w1-hostile-stable"]
         direct = by_id["stage10-w1-direct-mutation"]
+        catalog = by_id["stage10-w1-sh25-catalog"]
         consumer = by_id["stage10-w1-sh25-sh26-consumer"]
         self.assertEqual(static["jvm_heap"], "-J-Xmx2g")
         self.assertEqual(direct["jvm_heap"], "-J-Xmx3g")
         self.assertEqual(stable["jvm_heap"], "-J-Xmx3g")
+        self.assertEqual(catalog["jvm_heap"], "-J-Xmx8g")
         self.assertEqual(consumer["jvm_heap"], "-J-Xmx8g")
         gravity_catalog_declaration = "bootstrap/gravity/src/**/*.gravity"
-        self.assertIn(gravity_catalog_declaration, consumer["inputs"])
+        self.assertIn(gravity_catalog_declaration, catalog["inputs"])
+        self.assertNotIn(gravity_catalog_declaration, consumer["inputs"])
         observed_catalog = {
             relative
             for relative, path in verifier._input_files(
@@ -5020,7 +5022,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
 
         self.assertEqual(
             selected("bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"),
-            units | {static["id"], direct["id"], consumer["id"]},
+            units | {static["id"], direct["id"], catalog["id"]},
         )
         self.assertEqual(
             selected("bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj"),
@@ -5028,26 +5030,51 @@ class VerifyDevelopmentTests(unittest.TestCase):
         )
         self.assertEqual(
             selected("bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity"),
-            units | {static["id"], consumer["id"]},
+            units | {catalog["id"], consumer["id"]},
         )
-        for transitive_input in (
+        for shared_catalog_consumer_input in (
+            "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
+            "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
+            "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj",
+        ):
+            self.assertEqual(
+                selected(shared_catalog_consumer_input),
+                units | {catalog["id"], consumer["id"]},
+                shared_catalog_consumer_input,
+            )
+        for consumer_only_input in (
             "bootstrap/clojure/fixtures/self-hosting/sh-25/rejected/invalid-component-builds.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-26/stage_rebuild_engine.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.qst",
             "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         ):
             self.assertEqual(
-                selected(transitive_input),
-                units | {static["id"], consumer["id"]},
-                transitive_input,
+                selected(consumer_only_input),
+                units | {consumer["id"]},
+                consumer_only_input,
             )
         catalog_source_selection = selected(
             "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
         )
         self.assertTrue(
-            {static["id"], consumer["id"]} <= catalog_source_selection
+            {catalog["id"]} <= catalog_source_selection
         )
+        self.assertNotIn(static["id"], catalog_source_selection)
+        self.assertNotIn(direct["id"], catalog_source_selection)
+        self.assertNotIn(consumer["id"], catalog_source_selection)
+        explicit_catalog = set(
+            verifier.select_impacted_checks(
+                manifest, ROOT, requested_ids=[catalog["id"]]
+            )["selected_ids"]
+        )
+        self.assertEqual(explicit_catalog, units | {catalog["id"]})
+        explicit_consumer = set(
+            verifier.select_impacted_checks(
+                manifest, ROOT, requested_ids=[consumer["id"]]
+            )["selected_ids"]
+        )
+        self.assertEqual(explicit_consumer, units | {consumer["id"]})
         self.assertNotIn(stable["id"], catalog_source_selection)
         self.assertNotIn(direct["id"], catalog_source_selection)
         explicit = set(verifier.select_impacted_checks(

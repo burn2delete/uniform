@@ -303,16 +303,19 @@ remains non-authoritative, non-source-bound runtime calibration only.
 The fixed Stage10 W1 graph provides proportional non-authoritative admission
 for the frozen C14/B1-B4 lowering boundary. A 2 GiB static batch starts with
 the source-only C14 parser, binds the exact source/plan tuples, and runs the
-complete continuity and target-hardening catalogs. Automatic branches then
-run the 3 GiB direct carrier-mutation discriminator and the independent 8 GiB
-SH25/SH26 consumer checks. The expensive packet-substitution check is retained
+complete continuity and target-hardening catalogs. The 3 GiB direct
+carrier-mutation discriminator remains an automatic C14 branch. A separate
+8 GiB SH25 catalog node owns the complete Gravity-source inventory, while the
+8 GiB SH25/SH26 consumer keeps fixture parity and authenticated projection
+checks. The expensive packet-substitution check is retained
 only in the manual `stage10-w1-hostile-stable` batch, ordered after the direct
 mutation check so one JVM can reuse its namespace-local C14 plan and prepared
-carrier. The consumer receipt binds the SH25 ownership catalog and every
-owned Gravity source it hashes, both SH25 fixture pairs, the exercised SH26
-fixtures, and the authenticated-envelope helper/source; changes to those
-inputs therefore select that downstream consumer rather than reuse stale
-catalog evidence. All four production nodes are fresh, no-resume, capacity-one
+carrier. The catalog receipt binds the SH25 ownership map and every owned
+Gravity source it hashes. The consumer receipt separately binds both SH25
+fixture pairs, the exercised SH26 fixtures, and the authenticated-envelope
+helper/source. An unrelated Gravity-source edit therefore reruns the truthful
+catalog check without rebuilding the C14 static or SH26 fixture consumers. All
+five production nodes are fresh, no-resume, capacity-one
 users of the canonical command-owned lock with `authority: none`; none is proof,
 attestation, release, or generalized performance evidence.
 

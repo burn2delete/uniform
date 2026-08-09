@@ -113,6 +113,7 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage10-w1-static-admission": "stage10-w1-static-admission-selectors",
             "stage10-w1-hostile-stable": "stage10-w1-hostile-stable-selectors",
             "stage10-w1-direct-mutation": "stage10-w1-direct-mutation-selectors",
+            "stage10-w1-sh25-catalog": "stage10-w1-sh25-catalog-selectors",
             "stage10-w1-sh25-sh26-consumer": "stage10-w1-sh25-sh26-consumer-selectors",
         }
         for batch, definition in selector_definitions.items():
@@ -160,6 +161,7 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage10-w1-static-admission": "-J-Xmx2g",
             "stage10-w1-hostile-stable": "-J-Xmx3g",
             "stage10-w1-direct-mutation": "-J-Xmx3g",
+            "stage10-w1-sh25-catalog": "-J-Xmx8g",
             "stage10-w1-sh25-sh26-consumer": "-J-Xmx8g",
             "c10-authority": "-J-Xmx8g",
             "c11-authority": "-J-Xmx8g",
@@ -285,6 +287,7 @@ class Stage3WrapperTests(unittest.TestCase):
         static = stage3._FIXED_BATCH_SELECTORS["stage10-w1-static-admission"]
         stable = stage3._FIXED_BATCH_SELECTORS["stage10-w1-hostile-stable"]
         direct = stage3._FIXED_BATCH_SELECTORS["stage10-w1-direct-mutation"]
+        catalog = stage3._FIXED_BATCH_SELECTORS["stage10-w1-sh25-catalog"]
         consumer = stage3._FIXED_BATCH_SELECTORS["stage10-w1-sh25-sh26-consumer"]
         self.assertEqual(22, len(static))
         self.assertEqual(22, len(set(static)))
@@ -292,8 +295,11 @@ class Stage3WrapperTests(unittest.TestCase):
         self.assertEqual(stable[:1], direct)
         self.assertEqual(2, len(stable))
         self.assertTrue(stable[-1].endswith("context-replay-fail-closed"))
-        self.assertEqual(4, len(consumer))
-        self.assertEqual(4, len(set(consumer)))
+        self.assertEqual(1, len(catalog))
+        self.assertTrue(catalog[0].endswith("current-authoritative-inventory"))
+        self.assertEqual(3, len(consumer))
+        self.assertEqual(3, len(set(consumer)))
+        self.assertFalse(any("current-authoritative-inventory" in item for item in consumer))
 
     def test_retired_singleton_batch_ids_are_rejected(self) -> None:
         for retired in (

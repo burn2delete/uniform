@@ -567,15 +567,17 @@ C13-to-C14/B1-B4 lowering slice. `stage10-w1-static-admission` uses a 2 GiB JVM
 and runs the source-only C14 parse/control-form check first, then the exact
 source and plan pins, the complete six-test continuity catalog, and the
 complete seven-test target-hardening catalog. It branches to the automatic
-3 GiB direct carrier-mutation discriminator and an independent automatic 8 GiB
-SH25/SH26 consumer batch.
+3 GiB direct carrier-mutation discriminator. An independent 8 GiB SH25 catalog
+node owns the full Gravity-source inventory, and an independent 8 GiB
+SH25/SH26 fixture consumer runs the remaining three selectors.
 
-The consumer node declares the SH25 ownership map, the complete
-`bootstrap/gravity/src/**/*.gravity` catalog that its selected test hashes, the SH19
-runtime member, both SH25 fixture pairs, the exercised SH26 engine/accepted
-pair, and the authenticated-envelope source/helper. Those are receipt inputs,
-not incidental namespace loads; changes route to the downstream consumer and
-cannot leave its non-authoritative catalog result looking current.
+The catalog node declares the SH25 ownership map, the complete
+`bootstrap/gravity/src/**/*.gravity` catalog that its selector hashes, the SH19
+runtime member, the SH25 engine and accepted fixture, and the SH25 test source.
+The fixture consumer separately declares both SH25 fixture pairs, the exercised
+SH26 engine/accepted pair, and the authenticated-envelope source/helper. Those
+are receipt inputs, not incidental namespace loads; unrelated source edits
+refresh inventory evidence without rebuilding the C14 or SH26 consumers.
 
 The packet-substitution matrix is deliberately absent from ordinary change
 impact. Explicit stable-candidate selection runs `stage10-w1-hostile-stable`:

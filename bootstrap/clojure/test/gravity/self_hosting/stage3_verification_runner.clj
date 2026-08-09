@@ -319,9 +319,15 @@
 (def stage10-w1-direct-mutation-selectors
   ['gravity.self-hosting.sh17-c13-optimized-mir-carrier-test/sh17-c13-c14-carrier-mutations-fail-closed])
 
+;; Inventory is isolated from the fixture consumer because this selector alone
+;; rereads the ownership map and all authoritative Gravity sources.  Keeping it
+;; independent prevents an unrelated source edit from rebuilding C14 and SH26;
+;; fixture changes still select the exact consumer that uses those fixtures.
+(def stage10-w1-sh25-catalog-selectors
+  ['gravity.self-hosting.sh25-component-build-test/sh25-catalog-covers-the-current-authoritative-inventory])
+
 (def stage10-w1-sh25-sh26-consumer-selectors
   ['gravity.self-hosting.sh25-component-build-test/sh25-fixture-pairs-are-byte-identical
-   'gravity.self-hosting.sh25-component-build-test/sh25-catalog-covers-the-current-authoritative-inventory
    'gravity.self-hosting.sh26-stage-rebuild-test/sh26-consumes-the-final-authenticated-sh25-projection
    'gravity.self-hosting.sh26-stage-rebuild-test/sh26-rejects-paired-sh25-alterations])
 
@@ -372,6 +378,7 @@
    :stage10-w1-static-admission
    :stage10-w1-hostile-stable
    :stage10-w1-direct-mutation
+   :stage10-w1-sh25-catalog
    :stage10-w1-sh25-sh26-consumer])
 
 (def ^:private batch-selectors
@@ -415,6 +422,7 @@
    :stage10-w1-static-admission stage10-w1-static-admission-selectors
    :stage10-w1-hostile-stable stage10-w1-hostile-stable-selectors
    :stage10-w1-direct-mutation stage10-w1-direct-mutation-selectors
+   :stage10-w1-sh25-catalog stage10-w1-sh25-catalog-selectors
    :stage10-w1-sh25-sh26-consumer
    stage10-w1-sh25-sh26-consumer-selectors))
 
@@ -473,6 +481,7 @@
     c11-source-test-namespace
     c12-shape-test-namespace
     sh13-c11-domain-evidence-test-namespace
+    'gravity.self-hosting.sh14-authenticated-layout-test
     c13-shape-test-namespace
     sh16-c13-evidence-boundary-test-namespace
     'gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test

@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.stage3-verification-runner-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.set :as set]
+            [clojure.test :refer [deftest is testing]]
             [gravity.self-hosting.stage3-fragment-size-preflight-test :as fragment]
             [gravity.self-hosting.stage3-verification-runner :as runner]))
 
@@ -56,6 +57,8 @@
   'gravity.self-hosting.sh07-c12-domain-ir-shape-preflight-test)
 (def ^:private sh13-adapter-ns
   'gravity.self-hosting.sh13-c11-domain-evidence-adapter-test)
+(def ^:private sh14-layout-ns
+  'gravity.self-hosting.sh14-authenticated-layout-test)
 (def ^:private c13-shape-ns
   'gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test)
 (def ^:private sh16-evidence-ns
@@ -121,6 +124,7 @@
    sh12-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj"
    c12-shape-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj"
    sh13-adapter-ns "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj"
+   sh14-layout-ns "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj"
    c13-shape-ns "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj"
    sh16-evidence-ns "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj"
    sh17-continuity-ns "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_c14_b1_linux_llvm_backend_continuity_test.clj"
@@ -194,11 +198,13 @@
           :stage8-c12-source-shape
           :stage8-public-c12
           :stage8-sh13-c11-domain-evidence
+          :stage8-sh14-authenticated-layout
           :stage9-c13-source-shape
           :stage9-sh16-c13-evidence-boundary
           :stage10-w1-static-admission
           :stage10-w1-hostile-stable
           :stage10-w1-direct-mutation
+          :stage10-w1-sh25-catalog
           :stage10-w1-sh25-sh26-consumer]
          runner/fixed-batch-ids))
   (is (= runner/primitive-pure-selectors
@@ -325,7 +331,14 @@
   (is (= :stage10-w1-hostile-stable
          (get-in runner/fixed-batches
                  [:stage10-w1-direct-mutation :catalog-owner-batch])))
-  (is (= 4 (count runner/stage10-w1-sh25-sh26-consumer-selectors)))
+  (is (= 1 (count runner/stage10-w1-sh25-catalog-selectors)))
+  (is (= 3 (count runner/stage10-w1-sh25-sh26-consumer-selectors)))
+  (is (= ['gravity.self-hosting.sh25-component-build-test/sh25-catalog-covers-the-current-authoritative-inventory]
+         runner/stage10-w1-sh25-catalog-selectors))
+  (is (empty?
+       (set/intersection
+        (set runner/stage10-w1-sh25-catalog-selectors)
+        (set runner/stage10-w1-sh25-sh26-consumer-selectors))))
   (is (not-any? #(re-find #"sh07-b29-(c8-source-has-exact-authentic-coverage|c8-calls-lookups-and-error-effect|c8-is-deterministic-path-neutral|c8-replay-and-alteration|existing-rejected-families)" (str %))
                 runner/stage4-c8-source-structural-selectors)))
 
@@ -394,6 +407,9 @@
          sh13-adapter-ns (source-deftest-selectors
                           sh13-adapter-ns
                           "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj")
+         sh14-layout-ns (source-deftest-selectors
+                         sh14-layout-ns
+                         "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj")
          c13-shape-ns (source-deftest-selectors
                        c13-shape-ns
                        "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj")
@@ -785,6 +801,9 @@
          sh13-adapter-ns (source-deftest-selectors
                           sh13-adapter-ns
                           "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj")
+         sh14-layout-ns (source-deftest-selectors
+                         sh14-layout-ns
+                         "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj")
          c13-shape-ns (source-deftest-selectors
                        c13-shape-ns
                        "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj")

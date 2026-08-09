@@ -13,7 +13,7 @@
     "stage7_handoff": "fixed C11 MIR source, C10 adapter, public, and manual proof-candidate nodes; no legacy broad replay or authority promotion",
     "stage8_handoff": "fixed C12 shape, C11-domain evidence, and public development nodes; no proof candidate or authority promotion",
     "stage9_handoff": "fixed C13 source-shape gate followed by an evidence-only boundary over a reconstructed C12 carrier; no optimization credit, proof candidate, target lowering, or authority promotion",
-    "stage10_handoff": "fixed W1 C14 static admission, ordinary direct-mutation discriminator, narrow SH25/SH26 consumer, and manual hostile stable-candidate nodes; no automatic packet matrix, proof candidate, or authority promotion",
+    "stage10_handoff": "fixed W1 C14 static admission, ordinary direct-mutation discriminator, independent SH25 source catalog, narrow SH25/SH26 fixture consumer, and manual hostile stable-candidate nodes; no automatic packet matrix, proof candidate, or authority promotion",
     "milestones": [
       "M0-documentation-lock",
       "M1-hosted-hello-slice"
@@ -3256,6 +3256,52 @@
       "resource_class": "memory-heavy"
     },
     {
+      "id": "stage10-w1-sh25-catalog",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 600,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "stage10-w1-sh25-catalog",
+      "inputs": [
+        "docs/self-hosting-slice-ownership.edn",
+        "bootstrap/gravity/src/**/*.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn", "tools/run_stage3_verification.py", "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/p15_s23/emitter.gravity", "bootstrap/gravity/src/gravity/macro.gravity",
+        "bootstrap/gravity/src/gravity/resolution.gravity", "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/clojure/src/**"
+      ],
+      "depends_on": ["stage3-runner-unit"],
+      "jvm_heap": "-J-Xmx8g",
+      "minimum_heap_bytes": 8589934592,
+      "automatic": true,
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
+      ],
+      "resource_class": "memory-heavy"
+    },
+    {
       "id": "stage10-w1-sh25-sh26-consumer",
       "lane": "heavy-candidate",
       "cost": "heavy",
@@ -3273,8 +3319,7 @@
       "stage3_mode": "pure",
       "stage3_batch": "stage10-w1-sh25-sh26-consumer",
       "inputs": [
-        "docs/self-hosting-slice-ownership.edn",
-        "bootstrap/gravity/src/**/*.gravity",
+        "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity",
         "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
         "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
         "bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity",
@@ -3299,7 +3344,7 @@
         "bootstrap/gravity/src/gravity/resolution.gravity", "bootstrap/gravity/src/gravity/checked_core.gravity",
         "bootstrap/clojure/src/**"
       ],
-      "depends_on": ["stage10-w1-static-admission"],
+      "depends_on": ["stage3-runner-unit"],
       "jvm_heap": "-J-Xmx8g",
       "minimum_heap_bytes": 8589934592,
       "automatic": true,

@@ -129,6 +129,7 @@ FIXED_BATCHES = (
     "stage10-w1-static-admission",
     "stage10-w1-hostile-stable",
     "stage10-w1-direct-mutation",
+    "stage10-w1-sh25-catalog",
     "stage10-w1-sh25-sh26-consumer",
     "authority",
     "c8-authority",
@@ -181,6 +182,7 @@ _BATCH_HEAP = {
     "stage10-w1-static-admission": "-J-Xmx2g",
     "stage10-w1-hostile-stable": "-J-Xmx3g",
     "stage10-w1-direct-mutation": "-J-Xmx3g",
+    "stage10-w1-sh25-catalog": "-J-Xmx8g",
     "stage10-w1-sh25-sh26-consumer": "-J-Xmx8g",
     "c10-authority": "-J-Xmx8g",
     "c11-authority": "-J-Xmx8g",
@@ -396,9 +398,11 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
     "stage10-w1-direct-mutation": (
         "gravity.self-hosting.sh17-c13-optimized-mir-carrier-test/sh17-c13-c14-carrier-mutations-fail-closed",
     ),
+    "stage10-w1-sh25-catalog": (
+        "gravity.self-hosting.sh25-component-build-test/sh25-catalog-covers-the-current-authoritative-inventory",
+    ),
     "stage10-w1-sh25-sh26-consumer": (
         "gravity.self-hosting.sh25-component-build-test/sh25-fixture-pairs-are-byte-identical",
-        "gravity.self-hosting.sh25-component-build-test/sh25-catalog-covers-the-current-authoritative-inventory",
         "gravity.self-hosting.sh26-stage-rebuild-test/sh26-consumes-the-final-authenticated-sh25-projection",
         "gravity.self-hosting.sh26-stage-rebuild-test/sh26-rejects-paired-sh25-alterations",
     ),

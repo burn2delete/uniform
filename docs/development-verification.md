@@ -1080,16 +1080,18 @@ The Stage10 W1 graph replaces broad Stage0 fallback for C14 and B1-B4 with a
 fixed, non-authoritative development boundary. The 2 GiB static node executes
 22 exact selectors, beginning with the source-only C14 parser and continuing
 through exact source/plan pins plus the complete SH17 continuity and hardening
-catalogs. The automatic edit path then runs one 3 GiB direct carrier-mutation
-selector. A separate 8 GiB branch checks the four SH25/SH26 consumers without
-forcing the hostile packet matrix for fixture-only changes.
+catalogs. The automatic C14 edit path then runs one 3 GiB direct
+carrier-mutation selector. A separate 8 GiB SH25 catalog node checks the
+complete owned Gravity-source inventory. The 8 GiB SH25/SH26 fixture consumer
+runs three selectors without forcing the hostile packet matrix.
 
 The SH25 catalog selector rereads the reviewed ownership map and every owned
-Gravity source, while the SH26 selectors consume the SH19 runtime member,
-SH25 accepted/rejected fixtures, the exercised SH26 engine/accepted fixtures,
-and the authenticated-envelope source/helper. The manifest binds those exact
-transitive inputs; their changes invalidate and select the consumer instead of
-silently preserving an earlier receipt.
+Gravity source. It is independent of C14 static admission, so unrelated source
+edits do not rebuild C14 and SH26 merely to refresh inventory evidence. The
+fixture consumer separately binds the SH19 runtime member, SH25
+accepted/rejected fixtures, the exercised SH26 engine/accepted fixtures, and
+the authenticated-envelope source/helper. Changes invalidate only the node
+that actually consumes them instead of silently preserving an earlier receipt.
 
 `stage10-w1-hostile-stable` is manual. It owns the complete two-test carrier
 namespace and executes direct mutation before packet substitution in one JVM;

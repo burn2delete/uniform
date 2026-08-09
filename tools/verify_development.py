@@ -741,14 +741,32 @@ _STAGE10_FIXED_NODE_POLICIES = {
             "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
         ),
     },
-    "stage10-w1-sh25-sh26-consumer": {
+    "stage10-w1-sh25-catalog": {
         "timeout_seconds": 600,
-        "stage3_batch": "stage10-w1-sh25-sh26-consumer",
-        "depends_on": ["stage10-w1-static-admission"],
+        "stage3_batch": "stage10-w1-sh25-catalog",
+        "depends_on": ["stage3-runner-unit"],
         "automatic": True,
         "inputs": (
             "docs/self-hosting-slice-ownership.edn",
             "bootstrap/gravity/src/**/*.gravity",
+            "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
+            "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
+            "bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity",
+            "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj",
+        ),
+        "tool_inputs": tuple(_stage3.STAGE3_RUNTIME_DEPENDENCIES),
+        "impact_excludes": (
+            "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+            "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+        ),
+    },
+    "stage10-w1-sh25-sh26-consumer": {
+        "timeout_seconds": 600,
+        "stage3_batch": "stage10-w1-sh25-sh26-consumer",
+        "depends_on": ["stage3-runner-unit"],
+        "automatic": True,
+        "inputs": (
+            "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity",
@@ -777,7 +795,8 @@ _STAGE10_MANIFEST_DESCRIPTION = (
 )
 _STAGE10_HANDOFF = (
     "fixed W1 C14 static admission, ordinary direct-mutation discriminator, "
-    "narrow SH25/SH26 consumer, and manual hostile stable-candidate nodes; "
+    "independent SH25 source catalog, narrow SH25/SH26 fixture consumer, and "
+    "manual hostile stable-candidate nodes; "
     "no automatic packet matrix, proof candidate, or authority promotion"
 )
 _STAGE10_INCLUDED = "the fixed Stage10 W1/C14 proportional development graph"
