@@ -4992,6 +4992,60 @@ class VerifyDevelopmentTests(unittest.TestCase):
             with self.subTest(label=label), self.assertRaises(verifier.ManifestError):
                 verifier.validate_manifest(broken)
 
+    def test_real_manifest_p15_public_native_admission_reservation_is_exact(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        check_id = "stage0-coordinator-integration-reservations"
+        check = verifier.checks_by_id(manifest)[check_id]
+        paths = verifier._P15_PUBLIC_NATIVE_ADMISSION_NEGATIVE_ONLY_PATHS
+        self.assertEqual(
+            paths,
+            [
+                "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+                "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj",
+                "contracts/p15-public-native-admission-v1.edn",
+            ],
+        )
+        self.assertTrue(all(path in check["inputs"] for path in paths))
+        for path in paths:
+            with self.subTest(path=path):
+                selection = verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[path]
+                )
+                self.assertEqual(selection["selected_ids"], [check_id])
+                self.assertEqual(selection["unmatched_changes"], [])
+                direct = {
+                    selected_id
+                    for selected_id, reasons in selection["reasons"].items()
+                    if any(reason.startswith("changed-input:") for reason in reasons)
+                }
+                self.assertEqual(direct, {check_id})
+
+        for label, mutate in (
+            (
+                "missing-owned-path",
+                lambda broken: next(
+                    item for item in broken["checks"] if item["id"] == check_id
+                )["inputs"].remove(paths[2]),
+            ),
+            (
+                "missing-broad-exclusion",
+                lambda broken: next(
+                    item for item in broken["checks"]
+                    if item["id"] == "stage0-clojure-suite"
+                )["impact_excludes"].remove(paths[0]),
+            ),
+            (
+                "stray-exclusion",
+                lambda broken: next(
+                    item for item in broken["checks"] if item["id"] == "m0-docs"
+                )["impact_excludes"].append(paths[2]),
+            ),
+        ):
+            broken = json.loads(json.dumps(manifest))
+            mutate(broken)
+            with self.subTest(label=label), self.assertRaises(verifier.ManifestError):
+                verifier.validate_manifest(broken, require_production_contracts=True)
+
     def test_real_manifest_p15_native_launcher_gate_contract_and_dry_runs(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
         launcher = verifier.checks_by_id(manifest)["stage0-p15-native-launcher-prerequisite"]

@@ -619,6 +619,7 @@ _STAGE9_FIXED_NODE_POLICIES = {
         "tool_inputs": tuple(_stage3.STAGE3_RUNTIME_DEPENDENCIES),
         "impact_excludes": (
             "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+            "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
         ),
     },
     "stage9-sh16-c13-evidence-boundary": {
@@ -642,6 +643,7 @@ _STAGE9_FIXED_NODE_POLICIES = {
         "tool_inputs": tuple(_stage3.STAGE3_RUNTIME_DEPENDENCIES),
         "impact_excludes": (
             "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+            "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
         ),
     },
 }
@@ -705,6 +707,12 @@ _P15_NATIVE_PLAN_TOOL_INPUTS = [
     "bootstrap/gravity/src/gravity/resolution.gravity",
     "bootstrap/gravity/src/gravity/checked_core.gravity",
     "bootstrap/clojure/src/**",
+]
+_COORDINATOR_INTEGRATION_CHECK_ID = "stage0-coordinator-integration-reservations"
+_P15_PUBLIC_NATIVE_ADMISSION_NEGATIVE_ONLY_PATHS = [
+    "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj",
+    "contracts/p15-public-native-admission-v1.edn",
 ]
 
 
@@ -872,10 +880,56 @@ def _validate_p15_native_plan_contract(check: Mapping[str, Any]) -> None:
         raise ManifestError(
             f"check {_P15_NATIVE_PLAN_CHECK_ID!r} must depend only on stage0-orchestrator-unit"
         )
-    if check.get("impact_excludes", []) != []:
+    expected_impact_excludes = [
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+    ]
+    if check.get("impact_excludes", []) != expected_impact_excludes:
         raise ManifestError(
-            f"check {_P15_NATIVE_PLAN_CHECK_ID!r} must not exclude its owned inputs"
+            f"check {_P15_NATIVE_PLAN_CHECK_ID!r} impact_excludes must equal the reviewed negative-only reservation"
         )
+
+
+def _validate_p15_public_native_admission_reservation(
+    checks: Sequence[Mapping[str, Any]],
+) -> None:
+    """Pin the negative-only W4 ownership and proportional routing boundary."""
+
+    by_id = {
+        str(check.get("id")): check
+        for check in checks
+        if isinstance(check, Mapping)
+    }
+    coordinator = by_id.get(_COORDINATOR_INTEGRATION_CHECK_ID)
+    if coordinator is None:
+        raise ManifestError(
+            f"missing {_COORDINATOR_INTEGRATION_CHECK_ID!r} for the W4 reservation"
+        )
+    coordinator_inputs = coordinator.get("inputs")
+    if not isinstance(coordinator_inputs, list) or not all(
+        path in coordinator_inputs
+        for path in _P15_PUBLIC_NATIVE_ADMISSION_NEGATIVE_ONLY_PATHS
+    ):
+        raise ManifestError(
+            f"check {_COORDINATOR_INTEGRATION_CHECK_ID!r} must own every exact W4 negative-only path"
+        )
+    for check_id, check in by_id.items():
+        if check_id != _COORDINATOR_INTEGRATION_CHECK_ID and not _automatic_check(check):
+            continue
+        declared = list(check.get("inputs", [])) + list(check.get("tool_inputs", []))
+        exclusions = check.get("impact_excludes", [])
+        for path in _P15_PUBLIC_NATIVE_ADMISSION_NEGATIVE_ONLY_PATHS:
+            declared_match = any(_matches_change(item, path) for item in declared)
+            excluded = path in exclusions
+            if check_id == _COORDINATOR_INTEGRATION_CHECK_ID:
+                if excluded:
+                    raise ManifestError(
+                        f"check {check_id!r} must not exclude its W4 owned path {path!r}"
+                    )
+            elif declared_match != excluded:
+                requirement = "exclude" if declared_match else "not exclude"
+                raise ManifestError(
+                    f"check {check_id!r} must {requirement} W4 reservation path {path!r}"
+                )
 
 
 def _validate_p15_native_launcher_contract(check: Mapping[str, Any]) -> None:
@@ -1654,6 +1708,7 @@ def validate_manifest(
         raise ManifestError("memory-heavy checks must remain serialized")
 
     if require_production_contracts:
+        _validate_p15_public_native_admission_reservation(checks)
         production_defaults = {
             class_name: resource_policy["classes"][class_name]["default_processes"]
             for class_name in ("python-cheap", "bootstrap-hosted")
