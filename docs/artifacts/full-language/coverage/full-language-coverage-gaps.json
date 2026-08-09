@@ -3118,10 +3118,19 @@
     },
     {
       "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
         "completion-admission-disabled"
       ],
-      "coverageClass": "current-public-executable-surface",
-      "gaps": [],
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
       "id": "PKG9",
       "path": "docs/phase-12-build-package-and-artifact-system/173-pkg9-private-registry-and-latent-package-space-design.md",
       "sequence": 173
@@ -4255,12 +4264,18 @@
     },
     {
       "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
         "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
         "completion-admission-disabled"
       ],
-      "coverageClass": "current-public-executable-surface",
+      "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
-        "no-public-gravity-accepted-proof"
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
       ],
       "id": "GOV5",
       "path": "docs/phase-17-governance-and-evolution/235-gov5-target-support-policy.md",
@@ -4362,11 +4377,11 @@
       "sequence": 240
     }
   ],
-  "generatedOn": "2026-08-09",
+  "generatedOn": "2026-08-08",
   "inputIdentities": {
     "contractSha256": "sha256:912d42f0b789f2a290d81d01450230de834b5529c93df29dfe1c1f648a377142",
     "generatorSha256": "sha256:972feb2ace8c71b86093acd6f542985f31bce834dcf9104a21be4720172a4613",
-    "matrixSemanticId": "sha256:3290090fedc33b46ed0b14746d88cc8ec19540db0ed9158a068f0e3ad7245d2a"
+    "matrixSemanticId": "sha256:f771100e478f77ae4d1dbd284a29fd5bef3da83ba382b1ba31be64fac3906508"
   },
   "inventoryCount": 240,
   "kind": "gravity/full-language-coverage-gap-report",
@@ -4377,6 +4392,6 @@
     "predicateVersion": 1
   },
   "schemaVersion": 1,
-  "semanticId": "sha256:55b8416f1d1039c4c375883e196a6c9aee624dc93d95d0ba491f6063ef21c311",
+  "semanticId": "sha256:feb35aeb9e81514add43160d06fba5a6d0f9fabf8a3d038627d62ef3735e3ee8",
   "status": "incomplete"
 }
