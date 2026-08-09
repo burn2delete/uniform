@@ -1,0 +1,519 @@
+; Co-canonical rejected W5/C17 plugin-pass requests.
+; Each exported request violates exactly one C17 policy family while keeping
+; the remaining descriptor fields deterministic and path-neutral.
+(ns gravity.self-hosting.w5-c17.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-c17-invalid-manifest-request
+             w5-c17-incompatible-api-request
+             w5-c17-unversioned-api-request
+             w5-c17-missing-capability-request
+             w5-c17-excess-capability-request
+             w5-c17-hidden-authority-request
+             w5-c17-build-effect-request
+             w5-c17-sandbox-request
+             w5-c17-invalid-pass-contract-request
+             w5-c17-invalid-preservation-request
+             w5-c17-opaque-domain-request
+             w5-c17-opaque-facet-request
+             w5-c17-unverifiable-output-request
+             w5-c17-output-substitution-request
+             w5-c17-trust-policy-request
+             w5-c17-invalid-signature-request
+             w5-c17-revoked-signature-request
+             w5-c17-invalid-provenance-request
+             w5-c17-invalid-source-span-request
+             w5-c17-invalid-pass-identity-request
+             w5-c17-invalid-pass-registration-request
+             w5-c17-coherent-registration-plugin-substitution-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage2
+               :component :w5-c17-rejected-fixture
+               :owner :w5
+               :source-language :gravity
+               :status :executable-leaf
+               :scope :stage-owned-nonauthority
+               :clojure-seed-boundary? true
+               :stage2-target :jvm
+               :candidate-target :llvm-x86_64-linux
+               :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                                    :artifact-format :elf :abi :sysv-amd64}
+               :unsupported-targets
+               [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+               :unsupported-target-policies
+               [{:target :darwin :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :darwin-arm64 :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :darwin-x86_64 :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :windows :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}]
+               :cross-target-inference? false
+               :fallback? false
+               :self-hosted? false
+               :release? false
+               :full-language-credit? false
+               :matrix-240-credit? false
+               :public-authority? false
+               :authority :non-authority
+               :non-authoritative? true
+               :residual-boundaries #{:clojure-stage2-compiler-plan
+                                      :jvm-stage2-runtime}}}))
+
+(defn w5-c17-target-scope []
+  {:candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :cross-target-inference? false
+   :fallback? false})
+
+(defn w5-c17-source-span []
+  {:source-id :gravity.compiler/w5-c17-rejected-fixture
+   :start 0
+   :end 256})
+
+(defn w5-c17-package []
+  {:name :gravity/w5-c17-plugin
+   :version "0.1.0"
+   :source-hash
+   "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :signatures [{:algorithm :sha256
+                 :subject :gravity/w5-c17-plugin
+                 :status :verified
+                 :signature-id :sig/w5-c17-v1}]
+   :dependency-graph [:gravity/compiler-api-v1]})
+
+(defn w5-c17-manifest [actual-source-path]
+  {:artifact :gravity/compiler-plugin
+   :plugin :gravity.plugins/w5-c17-deterministic
+   :package (w5-c17-package)
+   :api-version "1"
+   :compiler-compatibility {:min "1" :max-exclusive "2"
+                            :declared-features #{:mir-identity-pass}
+                            :required-contracts #{:C17 :C16}
+                            :deprecated-contracts #{}}
+   :trust :sandboxed
+   :profile :meta
+   :stage2-target :jvm
+   :target :llvm-x86_64-linux
+   :candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :target-scope (w5-c17-target-scope)
+   :build-effects #{}
+   :capabilities #{:compiler/ir-transform}
+   :capability-scopes {:compiler/ir-transform
+                       #{:read-mir :write-mir :register-pass
+                         :emit-diagnostics :emit-artifacts}}
+   :passes [:w5/plugin-execution]
+   :domains [:w5/plugin-domain]
+   :facets [:w5/plugin-facet]
+   :emits #{:plugin-execution-trace :verifier-report}
+   :conformance [:w5-c17-accepted :w5-c17-rejected
+                 :w5-c17-domain-fixture :w5-c17-facet-fixture]
+   :provenance {:logical-source-id :gravity.compiler/w5-c17-plugin
+                :actual-source-path actual-source-path
+                :source-hash
+                "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+                :compiled-by :clojure-stage0
+                :verified-by :clojure-stage0
+                :stage :stage2
+                :target :llvm-x86_64-linux
+                :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                                     :artifact-format :elf :abi :sysv-amd64}
+                :target-scope (w5-c17-target-scope)
+                :fixture-kind :rejected}
+   :manifest-hash
+   "sha256:2222222222222222222222222222222222222222222222222222222222222222"})
+
+(defn w5-c17-pass-contract []
+  {:artifact :gravity/c17-pass-registration
+   :pass-id :w5/plugin-execution
+   :plugin :gravity.plugins/w5-c17-deterministic
+   :version "1"
+   :input :gravity/mir
+   :output :gravity/mir
+   :requires #{:mir-verifier-passed :manifest-accepted
+               :api-compatible :trust-accepted}
+   :preserves #{:source-spans :origin-chain :type-facts
+                :effect-facts :capability-facts :profile :target}
+   :invalidates #{}
+   :regenerates #{}
+   :proof-obligations #{:output-verifier-report
+                        :semantic-identity-replay}
+   :emits #{:plugin-execution-trace :verifier-report}
+   :capabilities #{:compiler/ir-transform}
+   :profile-constraints {:profile :meta
+                         :target :llvm-x86_64-linux
+                         :stage2-target :jvm
+                         :target-scope (w5-c17-target-scope)}
+   :sandbox-policy :deterministic-only
+   :diagnostics ["C17-PASS-CONTRACT" "C17-OUTPUT"]
+   :contract-version "C17-1"})
+
+(defn w5-c17-sandbox []
+  (let [replay {:mode :deterministic :events []}]
+    {:artifact :gravity/c17-sandbox-grant
+     :plugin :gravity.plugins/w5-c17-deterministic
+     :package :gravity/w5-c17-plugin
+     :trust :sandboxed
+     :stage2-target :jvm
+     :target :llvm-x86_64-linux
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :target-scope (w5-c17-target-scope)
+     :grants {:compiler/ir-transform
+              #{:read-mir :write-mir :register-pass
+                :emit-diagnostics :emit-artifacts}}
+     :build-effects #{}
+     :capability-scopes {:compiler/ir-transform
+                         #{:read-mir :write-mir :register-pass
+                           :emit-diagnostics :emit-artifacts}}
+     :artifact-access #{:read-input-mir :write-output-mir}
+     :restricted-authority #{:filesystem :network :process :environment
+                             :clock :random :model-call :tool-call
+                             :registry-access :compiler-private-state}
+     :denied-authority #{:filesystem :network :process :environment
+                         :clock :random :model-call :tool-call
+                         :registry-access :compiler-private-state}
+     :replay-record replay
+     :policy-decision :accepted
+     :grant-hash
+     "sha256:3333333333333333333333333333333333333333333333333333333333333333"}))
+
+(defn w5-c17-domain []
+  {:artifact :gravity/c17-domain-registration
+   :plugin :gravity.plugins/w5-c17-deterministic
+   :domain :w5/plugin-domain
+   :owner-doc "C12"
+   :schema {:name :w5/plugin-domain-schema
+            :version 1
+            :fields [:input-id :output-id :semantic-anchor]}
+   :verifier {:id :w5/plugin-domain-verifier
+              :version "1"
+              :result :passed}
+   :supported-profiles #{:meta}
+   :target :llvm-x86_64-linux
+   :target-scope (w5-c17-target-scope)
+   :effects #{}
+   :capabilities #{:compiler/ir-transform}
+   :lowering-paths [:gravity/mir]
+   :semantic-anchor :gravity/mir
+   :diagnostics ["C17-DOMAIN"]
+   :conformance [:w5-c17-domain-fixture]
+   :payload {:kind :identity-domain :opaque? false
+             :fields [:input-id :output-id]}
+   :registration-result :accepted})
+
+(defn w5-c17-facet []
+  {:artifact :gravity/c17-facet-registration
+   :plugin :gravity.plugins/w5-c17-deterministic
+   :facet :w5/plugin-facet
+   :owner-doc "L14"
+   :schema {:name :w5/plugin-facet-schema
+            :version 1
+            :fields [:profile :deterministic?]}
+   :verifier {:id :w5/plugin-facet-verifier
+              :version "1"
+              :result :passed}
+   :supported-profiles #{:meta}
+   :target :llvm-x86_64-linux
+   :target-scope (w5-c17-target-scope)
+   :effects #{}
+   :capabilities #{:compiler/ir-transform}
+   :lowering-paths [:gravity/mir]
+   :diagnostics ["C17-FACET"]
+   :conformance [:w5-c17-facet-fixture]
+   :payload {:kind :deterministic-plugin-facet :opaque? false
+             :fields [:profile :deterministic?]}
+   :registration-result :accepted})
+
+(defn w5-c17-base-request [actual-source-path]
+  (let [replay {:mode :deterministic :events []}
+        facts {:source-spans :facts/source-v1
+               :origin-chain :facts/origin-v1
+               :type-facts :facts/types-v1
+               :effect-facts :facts/effects-v1
+               :capability-facts :facts/capabilities-v1}
+        input {:artifact-id
+               "sha256:5555555555555555555555555555555555555555555555555555555555555555"
+               :kind :gravity/mir
+               :facts facts
+               :semantic-value :identity}
+        output {:artifact-id
+                "sha256:6666666666666666666666666666666666666666666666666666666666666666"
+                :kind :gravity/mir
+                :facts facts
+                :semantic-value :identity
+                :verifier {:id :gravity/mir-verifier
+                           :version "1"
+                           :result :passed}
+                :verifier-result :passed}]
+    {:artifact :gravity/w5-c17-plugin-request
+     :request-id :rejected
+     :compiler-api-version "1"
+     :profile :meta
+     :target :llvm-x86_64-linux
+     :stage2-target :jvm
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :target-scope (w5-c17-target-scope)
+     :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-arm64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-x86_64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :windows :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}]
+     :cross-target-inference? false
+     :fallback? false
+     :source-span (w5-c17-source-span)
+     :provenance {:logical-source-id :gravity.compiler/w5-c17-rejected-fixture
+                  :actual-source-path
+                  actual-source-path
+                  :source-hash
+                  "sha256:7777777777777777777777777777777777777777777777777777777777777777"
+                  :compiled-by :clojure-stage0
+                  :verified-by :clojure-stage0
+                  :stage :stage2
+                  :target :llvm-x86_64-linux
+                  :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                                       :artifact-format :elf :abi :sysv-amd64}
+                  :target-scope (w5-c17-target-scope)
+                  :fixture-kind :rejected}
+     :manifest (w5-c17-manifest actual-source-path)
+     :trust-record {:package :gravity/w5-c17-plugin
+                    :signature-status :verified
+                    :policy-decision :accepted
+                    :revocation-status :clear
+                    :source-provenance :recorded
+                    :dependency-provenance :recorded}
+     :plugin-code {:entry :w5/plugin-execution
+                   :hidden-state? false
+                   :authority #{}
+                   :deterministic? true}
+     :requested-scopes #{:read-mir :write-mir :register-pass
+                         :emit-diagnostics :emit-artifacts}
+     :capability-grant {:capability :compiler/ir-transform
+                        :scopes #{:read-mir :write-mir :register-pass
+                                  :emit-diagnostics :emit-artifacts}
+                        :granted-by :w5-c17-policy
+                        :profile :meta
+                        :target :llvm-x86_64-linux
+                        :stage2-target :jvm
+                        :target-scope (w5-c17-target-scope)
+                        :artifact-kinds #{:gravity/mir}
+                        :grant-hash
+                        "sha256:3333333333333333333333333333333333333333333333333333333333333333"}
+     :build-effect-grants #{}
+     :replay-record replay
+     :sandbox (w5-c17-sandbox)
+     :pass-contract (w5-c17-pass-contract)
+     :input-artifact input
+     :output-artifact output
+     :domain-registration (w5-c17-domain)
+     :facet-registration (w5-c17-facet)
+     :plugin-load-order [:manifest :api-compatibility :trust :sandbox :code]
+     :authority-summary {:effects #{}
+                         :capabilities #{:compiler/ir-transform}
+                         :ambient-authority :denied
+                         :target :llvm-x86_64-linux
+                         :target-scope (w5-c17-target-scope)
+                         :cross-target-inference? false
+                         :fallback? false}
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :release? false
+     :non-authoritative? true}))
+
+(defn w5-c17-invalid-manifest-request [actual-source-path]
+  (dissoc (w5-c17-base-request actual-source-path) :manifest))
+
+(defn w5-c17-incompatible-api-request [actual-source-path]
+  (assoc (w5-c17-base-request actual-source-path) :compiler-api-version "9"))
+
+(defn w5-c17-unversioned-api-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)]
+    (assoc request :manifest
+           (assoc (get request :manifest) :api-version nil))))
+
+(defn w5-c17-missing-capability-request [actual-source-path]
+  (let [scopes #{:read-mir :register-pass :emit-diagnostics :emit-artifacts}]
+    (let [request (w5-c17-base-request actual-source-path)
+          manifest (get request :manifest)
+          grant (get request :capability-grant)
+          sandbox (get request :sandbox)
+          manifest-scopes (assoc (get manifest :capability-scopes)
+                                 :compiler/ir-transform scopes)
+          sandbox-scopes (assoc (get sandbox :capability-scopes)
+                                :compiler/ir-transform scopes)
+          sandbox-grants (assoc (get sandbox :grants)
+                                :compiler/ir-transform scopes)]
+      (assoc request
+             :requested-scopes scopes
+             :manifest (assoc manifest :capability-scopes manifest-scopes)
+             :capability-grant (assoc grant :scopes scopes)
+             :sandbox (assoc sandbox
+                            :capability-scopes sandbox-scopes
+                            :grants sandbox-grants)))))
+
+(defn w5-c17-excess-capability-request [actual-source-path]
+  (let [scopes #{:read-mir :write-mir :register-pass
+                :emit-diagnostics :emit-artifacts
+                :query-compiler-configuration}]
+    (let [request (w5-c17-base-request actual-source-path)
+          manifest (get request :manifest)
+          grant (get request :capability-grant)
+          sandbox (get request :sandbox)
+          manifest-scopes (assoc (get manifest :capability-scopes)
+                                 :compiler/ir-transform scopes)
+          sandbox-scopes (assoc (get sandbox :capability-scopes)
+                                :compiler/ir-transform scopes)
+          sandbox-grants (assoc (get sandbox :grants)
+                                :compiler/ir-transform scopes)]
+      (assoc request
+             :requested-scopes scopes
+             :manifest (assoc manifest :capability-scopes manifest-scopes)
+             :capability-grant (assoc grant :scopes scopes)
+             :sandbox (assoc sandbox
+                            :capability-scopes sandbox-scopes
+                            :grants sandbox-grants)))))
+
+(defn w5-c17-hidden-authority-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)]
+    (assoc request :plugin-code
+           (assoc (get request :plugin-code) :hidden-state? true))))
+
+(defn w5-c17-build-effect-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)]
+    (assoc request
+           :manifest (assoc (get request :manifest)
+                            :build-effects #{:network-fetch})
+           :build-effect-grants #{:network-fetch}
+           :sandbox (assoc (get request :sandbox)
+                           :build-effects #{:network-fetch}))))
+
+(defn w5-c17-sandbox-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)]
+    (assoc request :sandbox
+           (assoc (get request :sandbox)
+                  :denied-authority
+                  #{:network :process :environment :clock :random
+                    :model-call :tool-call :registry-access
+                    :compiler-private-state}))))
+
+(defn w5-c17-invalid-pass-contract-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)]
+    (assoc request :pass-contract
+           (assoc (get request :pass-contract)
+                  :preserves #{:source-spans}))))
+
+(defn w5-c17-invalid-preservation-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)
+        output (get request :output-artifact)]
+    (assoc request :output-artifact
+           (assoc output :facts
+                  (assoc (get output :facts)
+                         :type-facts :facts/types-dropped)))))
+
+(defn w5-c17-opaque-domain-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)
+        domain (get request :domain-registration)]
+    (assoc request :domain-registration
+           (assoc domain :payload
+                  (assoc (get domain :payload) :opaque? true)))))
+
+(defn w5-c17-opaque-facet-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)
+        facet (get request :facet-registration)]
+    (assoc request :facet-registration
+           (assoc facet :payload
+                  (assoc (get facet :payload) :opaque? true)))))
+
+(defn w5-c17-unverifiable-output-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)
+        output (get request :output-artifact)]
+    (assoc request :output-artifact
+           (assoc output :verifier
+                  (assoc (get output :verifier) :result :failed)))))
+
+(defn w5-c17-output-substitution-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)]
+    (assoc request :output-artifact
+           (assoc (get request :output-artifact)
+                  :semantic-value :substituted))))
+
+(defn w5-c17-trust-policy-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)]
+    (assoc request :trust-record
+           (assoc (get request :trust-record)
+                  :policy-decision :rejected))))
+
+(defn w5-c17-invalid-signature-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)
+        manifest (get request :manifest)
+        package (get manifest :package)
+        signature (first (get package :signatures))]
+    (assoc request :manifest
+           (assoc manifest :package
+                  (assoc package :signatures
+                         [(assoc signature :status :unverified)])))))
+
+(defn w5-c17-revoked-signature-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)]
+    (assoc request :trust-record
+           (assoc (get request :trust-record)
+                  :revocation-status :revoked))))
+
+(defn w5-c17-invalid-provenance-request [actual-source-path]
+  (assoc (w5-c17-base-request actual-source-path) :provenance
+         (assoc (get (w5-c17-base-request actual-source-path) :provenance)
+                :forged-field true)))
+
+(defn w5-c17-invalid-source-span-request [actual-source-path]
+  (assoc (w5-c17-base-request actual-source-path) :source-span
+         {:source-id :gravity.compiler/w5-c17-rejected-fixture
+          :start 12
+          :end -1}))
+
+(defn w5-c17-invalid-pass-identity-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)]
+    (assoc request :pass-contract
+           (assoc (get request :pass-contract)
+                  :plugin :gravity.plugins/substituted))))
+
+(defn w5-c17-invalid-pass-registration-request [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)
+        manifest (get request :manifest)]
+    (assoc request :manifest
+           (assoc manifest :passes [:w5/unregistered-pass]))))
+
+(defn w5-c17-coherent-registration-plugin-substitution-request
+  [actual-source-path]
+  (let [request (w5-c17-base-request actual-source-path)
+        domain (get request :domain-registration)
+        facet (get request :facet-registration)]
+    (assoc request
+           :domain-registration
+           (assoc domain :plugin :gravity.plugins/substituted-registration)
+           :facet-registration
+           (assoc facet :plugin :gravity.plugins/substituted-registration))))
