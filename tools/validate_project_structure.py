@@ -26,6 +26,8 @@ STAGE0_COMPONENT_CONTRACT = ROOT / "contracts" / "stage0-clojure-components.json
 MAX_OWNERSHIP_EDN_BYTES = 512 * 1024
 MAX_STAGE0_COMPONENT_CONTRACT_BYTES = 512 * 1024
 SCHEMA_VERSION = 1
+PYTHON_SEMANTIC_SUPPORT_ROOT = "src/gravity/"
+PYTHON_SEMANTIC_SUPPORT_POLICY_ID = "reviewed-python-semantic-support"
 
 STAGE0_COMPONENT_SCHEMA = "gravity/stage0-clojure-components-v1"
 STAGE0_COMPONENT_KIND = "stage0-clojure-component-inventory"
@@ -1778,7 +1780,19 @@ def _validate_slices(
             _add_error(errors, f"{location}.owner", f"unknown owner {item.get('owner')!r}")
         for field in ("artifact_inputs", "artifact_outputs"):
             _validate_id_list(item.get(field), f"{location}.{field}", errors, artifact_ids)
-        _validate_id_list(item.get("path_policy_ids"), f"{location}.path_policy_ids", errors, policy_ids)
+        slice_policy_ids = item.get("path_policy_ids")
+        _validate_id_list(
+            slice_policy_ids, f"{location}.path_policy_ids", errors, policy_ids
+        )
+        if (
+            isinstance(slice_policy_ids, list)
+            and PYTHON_SEMANTIC_SUPPORT_POLICY_ID in slice_policy_ids
+        ):
+            _add_error(
+                errors,
+                f"{location}.path_policy_ids",
+                "src/gravity semantic support must remain outside Stage0 slices",
+            )
         _validate_cost(item.get("cost"), f"{location}.cost", errors)
         _validate_authority(item.get("authority"), f"{location}.authority", errors)
     expected = {f"SH-{index:02d}" for index in range(30)}
@@ -1840,6 +1854,12 @@ def _validate_ownership_and_paths(
                 _add_error(errors, location, "module owner paths must be exact paths")
             if owner not in owner_ids:
                 _add_error(errors, location, f"unknown owner {owner!r}")
+            if source_path.startswith(PYTHON_SEMANTIC_SUPPORT_ROOT):
+                _add_error(
+                    errors,
+                    location,
+                    "src/gravity support paths must remain outside ownership.module_paths",
+                )
 
     path_policy = manifest.get("path_policy")
     if not _is_mapping(path_policy):
@@ -1889,6 +1909,55 @@ def _validate_ownership_and_paths(
         elif kind == "reserved":
             if not isinstance(item.get("reservation"), str) or not item.get("reservation"):
                 _add_error(errors, location, "reserved policy needs a reservation description")
+
+    python_support_policy = policy_by_id.get(PYTHON_SEMANTIC_SUPPORT_POLICY_ID)
+    if python_support_policy is None:
+        _add_error(
+            errors,
+            "path_policy.policies",
+            f"missing required policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+        )
+    else:
+        if python_support_policy.get("kind") != "reviewed":
+            _add_error(
+                errors,
+                f"path policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+                "must remain reviewed",
+            )
+        if python_support_policy.get("owner") != "master-coordinator":
+            _add_error(
+                errors,
+                f"path policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+                "must remain coordinator-owned",
+            )
+        if python_support_policy.get("patterns") != [PYTHON_SEMANTIC_SUPPORT_ROOT]:
+            _add_error(
+                errors,
+                f"path policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+                f"must cover only {PYTHON_SEMANTIC_SUPPORT_ROOT!r}",
+            )
+        for field, expected in (
+            ("editable", True),
+            ("review_required", True),
+            ("reviewer", "master-coordinator"),
+            ("allow_overlap", False),
+        ):
+            if python_support_policy.get(field) != expected:
+                _add_error(
+                    errors,
+                    f"path policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+                    f"must set {field}={expected!r}",
+                )
+
+    coordinator_claims = owner_policies.get("master-coordinator", []).count(
+        PYTHON_SEMANTIC_SUPPORT_POLICY_ID
+    )
+    if coordinator_claims != 1:
+        _add_error(
+            errors,
+            "ownership owner 'master-coordinator'",
+            f"must claim {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r} exactly once",
+        )
 
     for owner, references in owner_policies.items():
         for policy_id in references:

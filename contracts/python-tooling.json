@@ -88,14 +88,14 @@
   },
   "policies": [
     {
-      "id": "unresolved-semantic-source",
-      "kind": "unresolved",
+      "id": "reviewed-python-semantic-support",
+      "kind": "reviewed",
       "patterns": ["src/gravity/"],
       "authorizes_edits": false,
       "review_required": true,
-      "blocking": true,
-      "external_contract": null,
-      "external_policy_id": null
+      "blocking": false,
+      "external_contract": "contracts/project-structure.json",
+      "external_policy_id": "reviewed-python-semantic-support"
     },
     {
       "id": "reviewed-central-routing",
@@ -162,7 +162,7 @@
       "effects": [],
       "output_classes": ["none"],
       "authority_ceiling": "none",
-      "source_path_policy_refs": ["unresolved-semantic-source"],
+      "source_path_policy_refs": ["reviewed-python-semantic-support"],
       "output_path_policy_refs": [],
       "import_safety": "library",
       "execution_mode": "parallel-safe",
@@ -181,7 +181,7 @@
       "effects": ["filesystem-read"],
       "output_classes": ["none"],
       "authority_ceiling": "none",
-      "source_path_policy_refs": ["unresolved-semantic-source"],
+      "source_path_policy_refs": ["reviewed-python-semantic-support"],
       "output_path_policy_refs": [],
       "import_safety": "library",
       "execution_mode": "parallel-safe",
@@ -197,7 +197,7 @@
       "effects": ["filesystem-read"],
       "output_classes": ["none"],
       "authority_ceiling": "none",
-      "source_path_policy_refs": ["unresolved-semantic-source"],
+      "source_path_policy_refs": ["reviewed-python-semantic-support"],
       "output_path_policy_refs": [],
       "import_safety": "library",
       "execution_mode": "parallel-safe",
@@ -536,7 +536,7 @@
     "semantic_root": "src/gravity",
     "tooling_root": "tools",
     "test_pattern": "tools/tests/test_*.py",
-    "unresolved_semantic_policy": "unresolved-semantic-source"
+    "semantic_source_policy": "reviewed-python-semantic-support"
   },
   "readme_contract": {
     "path": "tools/README.md",
@@ -545,7 +545,7 @@
       "Validator: `python3 tools/validate_python_tooling_contract.py`",
       "Scope: every tracked or intentional untracked non-`__pycache__` Python file under `src/gravity/` and `tools/`.",
       "Python authority: none; observations and generated outputs remain non-authoritative unless a separate normative contract and coordinator admission establish otherwise.",
-      "`src/gravity` ownership: unresolved and blocking in the external project-structure contract; this contract classifies the files but does not authorize edits.",
+      "`src/gravity` ownership: coordinator-reviewed semantic support in the external project-structure contract. This contract does not authorize Python edits or compiler authority, and these paths remain outside Stage0 module ownership and slices.",
       "Generated evidence and coverage outputs use the isolated atomic publication layer and remain separate from reviewed source.",
       "Reviewed-source generators require coordinator review and nonparallel execution; this contract does not authorize running them or admitting their output.",
       "Static-analysis limit: AST checks cannot prove dynamically constructed imports, calls, or runtime behavior; such behavior requires separate execution evidence and review.",
