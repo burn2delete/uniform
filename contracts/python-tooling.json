@@ -357,6 +357,7 @@
         "tools/validate_change_control.py",
         "tools/validate_contract_traceability.py",
         "tools/validate_evidence_producers.py",
+        "tools/validate_artifact_census.py",
         "tools/validate_foundation_document_coverage.py",
         "tools/validate_full_language_roadmap.py",
         "tools/validate_gravity_docs.py",
@@ -384,6 +385,22 @@
       "import_safety": "guarded-cli",
       "execution_mode": "parallel-safe",
       "test_surfaces": ["import-smoke", "validator-cli"]
+    },
+    {
+      "id": "artifact-census-validator",
+      "includes": ["tools/validate_artifact_census.py"],
+      "excludes": [],
+      "category": "validator",
+      "role": "artifact-validator",
+      "allowed_dependency_categories": [],
+      "effects": ["clock", "filesystem-read", "process", "stdout"],
+      "output_classes": ["stdout-diagnostic"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
+      "import_safety": "guarded-cli",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "validator-cli", "unit-test"]
     },
     {
       "id": "read-only-contract-validators",

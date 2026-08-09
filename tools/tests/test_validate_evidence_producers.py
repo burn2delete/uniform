@@ -98,11 +98,124 @@ class EvidenceProducerContractTests(unittest.TestCase):
         self.assertTrue(any("EP007" in error and path in error and "matched 0" in error for error in errors), errors)
         self.assertTrue(any("EP015" in error for error in errors), errors)
 
+    def test_read_only_artifact_census_path_is_excluded_but_write_mutation_is_not_hidden(self) -> None:
+        path = "tools/validate_artifact_census.py"
+        source = Path(ROOT / path).read_text(encoding="utf-8") + "\nfrom pathlib import Path\nPath('target/forged').write_text('x')\n"
+        errors = self.validate(source_overrides={path: source})
+        self.assertTrue(any("EP007" in error and path in error and "matched 0" in error for error in errors), errors)
+        self.assertTrue(any("EP015" in error and "producer_count" in error for error in errors), errors)
+
+    def test_os_write_is_a_producer_unless_pipe_proven_in_the_same_scope(self) -> None:
+        path = "tools/validate_artifact_census.py"
+        shadowed = "import os\nimport subprocess\nprocess = subprocess.Popen([])\ndef write(process):\n os.write(process.stdin.fileno(), b'x')\n"
+        self.assertEqual(
+            validator.discover_producers(
+                ROOT, source_overrides={path: shadowed}, python_paths=[path]
+            ),
+            [path],
+        )
+        shadowed_module = "import os\nimport subprocess\ndef write(subprocess):\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n"
+        self.assertEqual(
+            validator.discover_producers(
+                ROOT, source_overrides={path: shadowed_module}, python_paths=[path]
+            ),
+            [path],
+        )
+        for shadowed_os in (
+            "import os\nimport subprocess\ndef write(os):\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n",
+            "import os\nimport subprocess\ndef write():\n os = object()\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n",
+            "import os as operating\nimport subprocess\ndef write(operating):\n process = subprocess.Popen([])\n operating.write(process.stdin.fileno(), b'x')\n",
+        ):
+            self.assertEqual(
+                validator.discover_producers(
+                    ROOT, source_overrides={path: shadowed_os}, python_paths=[path]
+                ),
+                [path],
+            )
+        imported_alias_pipe = "import os as operating\nimport subprocess as child_process\ndef write():\n process = child_process.Popen([])\n operating.write(process.stdin.fileno(), b'x')\n"
+        self.assertEqual(
+            validator.discover_producers(
+                ROOT, source_overrides={path: imported_alias_pipe}, python_paths=[path]
+            ),
+            [],
+        )
+        local_import_arbitrary = "def write(handle):\n import os as operating\n operating.write(handle, b'x')\n"
+        self.assertEqual(
+            validator.discover_producers(
+                ROOT, source_overrides={path: local_import_arbitrary}, python_paths=[path]
+            ),
+            [path],
+        )
+        local_import_pipe = "def write():\n import os as operating\n import subprocess as child_process\n process = child_process.Popen([])\n operating.write(process.stdin.fileno(), b'x')\n"
+        self.assertEqual(
+            validator.discover_producers(
+                ROOT, source_overrides={path: local_import_pipe}, python_paths=[path]
+            ),
+            [],
+        )
+        comprehension_shadow = "import os\nimport subprocess\ndef write(handles):\n process = subprocess.Popen([])\n return [os.write(process.stdin.fileno(), b'x') for os in handles]\n"
+        self.assertEqual(
+            validator.discover_producers(
+                ROOT, source_overrides={path: comprehension_shadow}, python_paths=[path]
+            ),
+            [path],
+        )
+        for shadowed_source in (
+            "import os, subprocess\ndef write(value):\n process = subprocess.Popen([])\n match value:\n  case {'items': [*process], **rest}:\n   os.write(process.stdin.fileno(), b'x')\n",
+            "import os, subprocess\ndef write(value):\n process = subprocess.Popen([])\n match value:\n  case {**os}:\n   os.write(process.stdin.fileno(), b'x')\n",
+            "import os, subprocess\ndef write(values):\n process = subprocess.Popen([])\n return [os.write(process.stdin.fileno(), b'x') for value in values if (process := value)]\n",
+            "import os, subprocess\ndef write(values):\n process = subprocess.Popen([])\n return [os.write(process.stdin.fileno(), b'x') for value in values if (os := value)]\n",
+        ):
+            self.assertEqual(
+                validator.discover_producers(
+                    ROOT, source_overrides={path: shadowed_source}, python_paths=[path]
+                ),
+                [path],
+            )
+        proven_pipe = "import os\nimport subprocess\ndef write():\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n"
+        self.assertEqual(
+            validator.discover_producers(
+                ROOT, source_overrides={path: proven_pipe}, python_paths=[path]
+            ),
+            [],
+        )
+
     def test_overlapping_source_ownership_is_rejected(self) -> None:
         contract = copy.deepcopy(self.contract)
         self.producer(contract, "development-baseline-receipt")["sources"]["includes"] = ["tools/run_*.py", "tools/measure_development_baseline.py"]
         errors = self.validate(contract)
         self.assertTrue(any("EP007" in error and "matched 2" in error for error in errors), errors)
+
+    def test_pipe_producer_proof_skips_class_namespaces_and_honors_definitions(self) -> None:
+        path = "tools/validate_artifact_census.py"
+        negatives = (
+            "import os, subprocess\nclass C:\n import os as operating\n import subprocess as child_process\n def f(self):\n  process = child_process.Popen([])\n  operating.write(process.stdin.fileno(), b'x')\n",
+            "import os, subprocess\nos = object()\nprocess = subprocess.Popen([])\ndef f(value=os.write(process.stdin.fileno(), b'x')):\n import os\n return value\n",
+            "import os, subprocess\ndef f():\n global os\n os = object()\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n",
+            "class C:\n import os\n import subprocess\n process = subprocess.Popen([])\n values = [os.write(process.stdin.fileno(), b'x') for item in ()]\n",
+            "class C:\n import os as operating\n import subprocess as child_process\n process = child_process.Popen([])\n operating.write(process.stdin.fileno(), b'x')\n",
+            "class C:\n import os\n import subprocess\n process = subprocess.Popen([])\n values = [item for item in os.write(process.stdin.fileno(), b'x')]\n",
+            "os = object()\nimport subprocess\nclass C:\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n import os\n",
+            "import os, subprocess\nprocess = object()\nclass C:\n os.write(process.stdin.fileno(), b'x')\n process = subprocess.Popen([])\n",
+            "os = object()\nimport subprocess\nprocess = object()\nclass C:\n os.write(process.stdin.fileno(), b'x')\n import os\n process = subprocess.Popen([])\n",
+        )
+        for source in negatives:
+            self.assertEqual(
+                validator.discover_producers(
+                    ROOT, source_overrides={path: source}, python_paths=[path]
+                ),
+                [path],
+            )
+        positives = (
+            "class C:\n def f(self):\n  import os as operating\n  import subprocess as child_process\n  process = child_process.Popen([])\n  operating.write(process.stdin.fileno(), b'x')\n",
+        )
+        for source in positives:
+            self.assertEqual(
+                validator.discover_producers(
+                    ROOT, source_overrides={path: source}, python_paths=[path]
+                ),
+                [],
+            )
 
     def test_output_pattern_must_remain_in_declared_policy(self) -> None:
         contract = copy.deepcopy(self.contract)

@@ -16,7 +16,8 @@
       "tools/tests/**",
       "tools/output_publication.py",
       "tools/validate_gravity_toolchain.py",
-      "tools/validate_w1_executable_carrier_interface.py"
+      "tools/validate_w1_executable_carrier_interface.py",
+      "tools/validate_artifact_census.py"
     ],
     "producer_count": 67,
     "producer_sha256": "sha256:0bdaa846475cf95fa253ba73693f61a51dbfb33229d8e1daef1e56ebe0b95fb5"
@@ -131,6 +132,7 @@
           "tools/validate_change_control.py",
           "tools/validate_compile_time.py",
           "tools/validate_contract_traceability.py",
+          "tools/validate_artifact_census.py",
           "tools/validate_evidence_producers.py",
           "tools/validate_facets.py",
           "tools/validate_foundation_document_coverage.py",

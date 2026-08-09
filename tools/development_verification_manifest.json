@@ -266,6 +266,65 @@
       "impact_excludes": []
     },
     {
+      "id": "artifact-census-contract",
+      "lane": "preflight",
+      "cost": "cheap",
+      "resource_class": "python-cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "command": [
+        "python3",
+        "tools/validate_artifact_census.py"
+      ],
+      "inputs": [
+        "contracts/artifact-census.json",
+        "tools/validate_artifact_census.py",
+        "tools/tests/test_validate_artifact_census.py",
+        "contracts/python-tooling.json",
+        "contracts/evidence-producers.json",
+        "tools/development_verification_manifest.json",
+        "docs/artifacts/**",
+        "target/**"
+      ],
+      "depends_on": [
+        "m0-docs"
+      ],
+      "impact_excludes": []
+    },
+    {
+      "id": "artifact-census-unit",
+      "lane": "preflight",
+      "cost": "cheap",
+      "resource_class": "python-cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "tools.tests.test_validate_artifact_census",
+        "-v"
+      ],
+      "inputs": [
+        "contracts/artifact-census.json",
+        "tools/validate_artifact_census.py",
+        "tools/tests/test_validate_artifact_census.py",
+        "contracts/python-tooling.json",
+        "contracts/evidence-producers.json",
+        "tools/development_verification_manifest.json"
+      ],
+      "depends_on": [
+        "artifact-census-contract"
+      ],
+      "impact_excludes": []
+    },
+    {
       "id": "stage0-project-structure",
       "lane": "preflight",
       "cost": "cheap",
