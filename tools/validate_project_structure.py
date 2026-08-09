@@ -25,6 +25,276 @@ NORMATIVE_OWNERSHIP = ROOT / "docs" / "self-hosting-slice-ownership.edn"
 MAX_OWNERSHIP_EDN_BYTES = 512 * 1024
 SCHEMA_VERSION = 1
 
+STAGE0_COMPONENT_CONTRACT = ROOT / "contracts" / "stage0-clojure-components.json"
+MAX_OWNERSHIP_EDN_BYTES = 512 * 1024
+MAX_STAGE0_COMPONENT_CONTRACT_BYTES = 512 * 1024
+SCHEMA_VERSION = 1
+
+STAGE0_COMPONENT_SCHEMA = "gravity/stage0-clojure-components-v1"
+STAGE0_COMPONENT_KIND = "stage0-clojure-component-inventory"
+STAGE0_COMPONENT_COUNTS = {
+    "components": 50,
+    "sources": 50,
+    "tests": 50,
+    "bootstrap_free_tests": 44,
+    "compatibility_tests": 5,
+    "coordinator_tests": 1,
+}
+STAGE0_COMPONENT_TOP_FIELDS = {
+    "schema",
+    "kind",
+    "authority",
+    "integration_owner",
+    "source_root",
+    "test_root",
+    "counts",
+    "canonical_pipeline_order",
+    "stage0_extension_order",
+    "authority_ceiling",
+    "nonclaims",
+    "coordinator_integration_reservations",
+    "components",
+}
+STAGE0_COORDINATOR_INTEGRATION_RESERVATIONS = [
+    {
+        "id": "p15-native-plan-specialization",
+        "owner": "master-coordinator",
+        "authority_ceiling": "none",
+        "ordinary_component": False,
+        "focused_check_id": "stage0-p15-native-plan-specialization-prerequisite",
+        "paths": [
+            "bootstrap/clojure/src/gravity/p15_native_plan_specialization.clj",
+            "bootstrap/clojure/test/gravity/p15_native_plan_specialization_test.clj",
+            "bootstrap/gravity/p15_s23/native_plan_c_emitter.gravity",
+            "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-bool.gravity",
+            "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-control.gravity",
+            "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-nonascii.gravity",
+            "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.gravity",
+            "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.qst",
+            "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-str.gravity",
+            "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-trigraph.gravity",
+            "bootstrap/clojure/fixtures/p15-native-plan-specialization/unsupported-builtin.gravity",
+        ],
+    },
+    {
+        "id": "p15-native-packet-binding",
+        "owner": "master-coordinator",
+        "authority_ceiling": "none",
+        "ordinary_component": False,
+        "focused_check_id": "stage0-p15-native-runtime-provider-packet-binding-prerequisite",
+        "paths": ["bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"],
+    },
+    {
+        "id": "p15-native-integration-tests",
+        "owner": "master-coordinator",
+        "authority_ceiling": "none",
+        "ordinary_component": False,
+        "focused_check_id": "stage0-coordinator-integration-reservations",
+        "paths": [
+            "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+            "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
+            "bootstrap/clojure/test/gravity/p15_public_native_run_test.clj",
+            "bootstrap/clojure/test/gravity/p15_public_native_run_wrapper_test.clj",
+        ],
+    },
+    {
+        "id": "project-structure-runner-integration",
+        "owner": "master-coordinator",
+        "authority_ceiling": "none",
+        "ordinary_component": False,
+        "focused_check_id": "stage0-coordinator-integration-reservations",
+        "paths": [
+            "bootstrap/clojure/test/gravity/project_structure_test_runner_test.clj",
+        ],
+    },
+]
+STAGE0_COMPONENT_FIELDS = {
+    "id",
+    "owner",
+    "source",
+    "test",
+    "direct_source_dependencies",
+    "direct_test_dependencies",
+    "canonical_pass_refs",
+    "mapping_kind",
+    "authority",
+    "contract_var",
+    "stage0_group",
+    "leaf_execution_group",
+}
+STAGE0_SOURCE_FIELDS = {"path", "namespace"}
+STAGE0_TEST_FIELDS = {"path", "namespace", "lane", "execution_requires_bootstrap"}
+STAGE0_AUTHORITY_FIELDS = {
+    "ceiling",
+    "compatibility_only",
+    "canonical_authority",
+    "self_hosted",
+    "release",
+    "seed_retirement",
+}
+STAGE0_TEST_LANES = {"bootstrap-free", "compatibility", "coordinator"}
+STAGE0_COORDINATOR_SUPPORT_PATHS = {
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c5_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c6_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c7_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c8_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c9_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c10_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c12_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c13_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c14_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c15_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c16_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c17_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj",
+    "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj",
+    "bootstrap/clojure/test/gravity/development_test_runner.clj",
+    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+}
+STAGE0_MAPPING_KINDS = {
+    "orchestrator",
+    "primary",
+    "supporting",
+    "cross-cutting",
+    "stage0-extension",
+}
+STAGE0_AUTHORITY_CEILINGS = {"none", "non-authoritative"}
+STAGE0_GROUPS = {
+    "coordinator",
+    "foundation-reader",
+    "c2-c3",
+    "compiler",
+    "compatibility-support",
+}
+STAGE0_LEAF_EXECUTION_GROUPS = {
+    "foundation-reader",
+    "c2-c3",
+    "compiler",
+}
+STAGE0_LEAF_EXECUTION_GROUP_COMPONENT_IDS = {
+    "foundation-reader": {
+        "digest",
+        "module-analysis",
+        "reader-cursor",
+        "reader-diagnostic-policy",
+        "reader-host-oracle",
+        "reader-namespace",
+        "source-unit",
+        "syntax-object-stream",
+        "syntax-origin",
+    },
+    "c2-c3": {
+        "c2-artifact-identity",
+        "c2-lexical-validation",
+        "c2-reader-diagnostics",
+        "c2-reader-product-projection",
+        "c2-source-identity",
+        "c3-artifact-identity",
+        "c3-literal-projection",
+        "c3-reader-integrity",
+        "c3-syntax-construction",
+        "c3-syntax-diagnostics",
+        "c3-syntax-evidence",
+        "c3-syntax-verification",
+    },
+    "compiler": {
+        "c10-safety-analysis",
+        "c11-mir",
+        "c12-domain-ir",
+        "c13-optimization",
+        "c14-lowering",
+        "c15-diagnostics",
+        "c16-incremental",
+        "c17-plugin",
+        "c18-verification",
+        "c4-macro-evidence",
+        "c5-name-resolution",
+        "c6-core-lowering",
+        "c7-type-checker",
+        "c8-effect-checker",
+        "c9-ownership-checker",
+        "capability-validation",
+        "compiler-verification-shared",
+        "core-ast-lowering",
+        "darwin-publication",
+        "macro-expansion",
+        "optimization-lowering",
+        "pass-execution",
+        "profile-validation",
+    },
+}
+STAGE0_LEAF_EXECUTION_GROUP_COUNTS = {
+    "foundation-reader": 9,
+    "c2-c3": 12,
+    "compiler": 23,
+}
+STAGE0_LEAF_EXECUTION_GROUP_BY_COMPONENT = {
+    component_id: group
+    for group, component_ids in STAGE0_LEAF_EXECUTION_GROUP_COMPONENT_IDS.items()
+    for component_id in component_ids
+}
+STAGE0_BOOTSTRAP_COMPATIBILITY_TEST_COUNT = 5
+STAGE0_COMPONENT_NONCLAIMS = (
+    "canonical Gravity compiler authority",
+    "self-hosted compiler authority",
+    "release authority",
+    "seed-retirement authority",
+    "proof or conformance authority",
+    "target support beyond the Stage0 Clojure/JVM subset",
+)
+STAGE0_EXTENSION_ORDER = (
+    "read-source",
+    "build-syntax",
+    "macro-expand",
+    "resolve-names",
+    "lower-to-core",
+    "type-check",
+    "effect-check",
+    "profile-validate",
+    "capability-validate",
+    "ownership-check",
+    "safety-analyze",
+    "build-mir",
+    "verify-mir",
+    "optimize-mir",
+    "lower-domain-ir",
+    "verify-domain-ir",
+    "lower-target",
+    "emit-artifacts",
+    "record-package-provenance",
+)
+STAGE0_COMPATIBILITY_AUTHORITY_COMPONENT_IDS = {
+    "c5-name-resolution",
+    "c6-core-lowering",
+    "c7-type-checker",
+    "c8-effect-checker",
+    "c9-ownership-checker",
+    "c10-safety-analysis",
+    "c11-mir",
+    "c12-domain-ir",
+    "c13-optimization",
+    "c14-lowering",
+    "c15-diagnostics",
+    "c16-incremental",
+    "c17-plugin",
+    "c18-verification",
+    "capability-validation",
+    "compiler-verification-shared",
+    "core-ast-lowering",
+    "module-analysis",
+    "optimization-lowering",
+    "pass-execution",
+    "profile-validation",
+}
+
 CANONICAL_PASS_IDS = (
     "source-forms",
     "reader",
@@ -85,6 +355,36 @@ ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_.:-]*$")
 
 class ManifestError(ValueError):
     """Raised by callers that prefer exceptions to an error list."""
+
+
+def _strict_object_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    """Build JSON objects while rejecting duplicate keys.
+
+    ``json.loads`` otherwise keeps the last value silently.  That is unsafe
+    for a review contract because a duplicate key can hide an earlier owner,
+    dependency, or authority claim.
+    """
+
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON object key {key!r}")
+        result[key] = value
+    return result
+
+
+def _reject_json_constant(value: str) -> Any:
+    """Reject non-standard JSON constants such as NaN and Infinity."""
+
+    raise ValueError(f"non-standard JSON constant {value!r} is not allowed")
+
+
+def _strict_json_loads(text: str) -> Any:
+    return json.loads(
+        text,
+        object_pairs_hook=_strict_object_pairs,
+        parse_constant=_reject_json_constant,
+    )
 
 
 def _is_mapping(value: Any) -> bool:
@@ -331,6 +631,241 @@ def _extract_normative_string_vector(
     return values
 
 
+def _read_ascii_contract_text(
+    path: Path, maximum_bytes: int, label: str
+) -> tuple[str, list[str]]:
+    """Read a bounded ASCII contract text without a permissive fallback."""
+
+    try:
+        raw = path.read_bytes()
+    except OSError as exc:
+        return "", [f"cannot read {label} {path}: {exc}"]
+    if len(raw) > maximum_bytes:
+        return "", [f"{label} exceeds {maximum_bytes} bytes"]
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        return "", [f"{label} is not UTF-8: {exc}"]
+    try:
+        text.encode("ascii")
+    except UnicodeEncodeError:
+        return "", [f"{label} must be ASCII"]
+    return text, []
+
+
+def _clojure_ns_form(text: str, location: str) -> tuple[str | None, str, list[str]]:
+    """Extract the first balanced Clojure ``ns`` form.
+
+    Stage0 files keep their namespace declaration as the first form.  A small
+    scanner is used instead of loading Clojure/JVM code, and it ignores
+    comments and strings so names in documentation cannot become dependencies.
+    """
+
+    errors: list[str] = []
+    index = 0
+    length = len(text)
+    while index < length:
+        if text[index].isspace() or text[index] == ",":
+            index += 1
+            continue
+        if text[index] == ";":
+            newline = text.find("\n", index)
+            index = length if newline < 0 else newline + 1
+            continue
+        break
+    if not text.startswith("(ns", index) or (
+        index + 3 < length and not text[index + 3].isspace() and text[index + 3] not in "([{}"
+    ):
+        return None, "", [f"{location}: first form must be an ns declaration"]
+    start = index
+    stack: list[str] = []
+    in_string = False
+    escaped = False
+    in_comment = False
+    while index < length:
+        char = text[index]
+        if in_comment:
+            if char == "\n":
+                in_comment = False
+            index += 1
+            continue
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            index += 1
+            continue
+        if char == ";":
+            in_comment = True
+            index += 1
+            continue
+        if char == '"':
+            in_string = True
+            index += 1
+            continue
+        if char in "([{":
+            stack.append(char)
+        elif char in ")]}":
+            expected = {')': '(', ']': '[', '}': '{'}[char]
+            if not stack or stack[-1] != expected:
+                errors.append(f"{location}: unbalanced ns declaration")
+                return None, "", errors
+            stack.pop()
+            if not stack:
+                return None, text[start:index + 1], errors
+        index += 1
+    if in_string:
+        errors.append(f"{location}: unterminated string in ns declaration")
+    else:
+        errors.append(f"{location}: unterminated ns declaration")
+    return None, "", errors
+
+
+def _clojure_form_tokens(form: str) -> tuple[list[str], list[str]]:
+    """Tokenize delimiters and symbols in a namespace form."""
+
+    tokens: list[str] = []
+    errors: list[str] = []
+    index = 0
+    length = len(form)
+    delimiters = set("()[]{}")
+    while index < length:
+        char = form[index]
+        if char.isspace() or char == ",":
+            index += 1
+            continue
+        if char == ";":
+            newline = form.find("\n", index)
+            index = length if newline < 0 else newline + 1
+            continue
+        if char in delimiters:
+            tokens.append(char)
+            index += 1
+            continue
+        if char == '"':
+            start = index
+            index += 1
+            escaped = False
+            while index < length:
+                current = form[index]
+                if escaped:
+                    escaped = False
+                elif current == "\\":
+                    escaped = True
+                elif current == '"':
+                    index += 1
+                    break
+                index += 1
+            else:
+                errors.append("namespace declaration contains an unterminated string")
+                break
+            tokens.append(form[start:index])
+            continue
+        start = index
+        while index < length and not form[index].isspace() and form[index] not in delimiters and form[index] != ",":
+            index += 1
+        tokens.append(form[start:index])
+    return tokens, errors
+
+
+def _clojure_ns_requirements(
+    text: str, location: str
+) -> tuple[str | None, list[str], list[str]]:
+    """Return an ns symbol and direct ``:require`` namespace symbols."""
+
+    namespace, form, errors = _clojure_ns_form(text, location)
+    if errors:
+        return namespace, [], errors
+    tokens, token_errors = _clojure_form_tokens(form)
+    errors.extend(f"{location}: {error}" for error in token_errors)
+    if len(tokens) < 3 or tokens[0] != "(" or tokens[1] != "ns":
+        errors.append(f"{location}: malformed ns declaration")
+        return None, [], errors
+    namespace = tokens[2]
+    if not namespace or namespace.startswith(("[", "(", ":")):
+        errors.append(f"{location}: ns declaration has no namespace symbol")
+        return None, [], errors
+
+    # Find direct ``(:require ...)`` clauses in the outer ns list.  Nested
+    # vectors such as ``:refer [foo]`` are deliberately ignored.
+    requirements: list[str] = []
+    index = 3
+    outer_depth = 1
+    while index < len(tokens):
+        token = tokens[index]
+        if token == "(" and index + 1 < len(tokens) and tokens[index + 1] == ":require" and outer_depth == 1:
+            index += 2
+            clause_depth = 1
+            while index < len(tokens) and clause_depth:
+                token = tokens[index]
+                if token == "[" and clause_depth == 1:
+                    if index + 1 >= len(tokens):
+                        errors.append(f"{location}: malformed :require vector")
+                        break
+                    required_namespace = tokens[index + 1]
+                    if required_namespace.startswith('"'):
+                        errors.append(f"{location}: :require namespace must be a symbol")
+                    else:
+                        requirements.append(required_namespace)
+                    vector_depth = 1
+                    index += 1
+                    while index < len(tokens) and vector_depth:
+                        if tokens[index] == "[":
+                            vector_depth += 1
+                        elif tokens[index] == "]":
+                            vector_depth -= 1
+                        index += 1
+                    continue
+                if token == "(":
+                    clause_depth += 1
+                elif token == ")":
+                    clause_depth -= 1
+                index += 1
+            continue
+        if token == "(":
+            outer_depth += 1
+        elif token == ")":
+            outer_depth -= 1
+        index += 1
+    if outer_depth != 0:
+        errors.append(f"{location}: malformed outer ns declaration")
+    return namespace, requirements, errors
+
+
+def _component_file_dependencies(
+    path: Path,
+    location: str,
+    namespace_to_component: Mapping[str, str],
+    errors: list[str],
+) -> tuple[str | None, list[str]]:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        _add_error(errors, location, f"cannot read source/test file {path}: {exc}")
+        return None, []
+    namespace, required_namespaces, parse_errors = _clojure_ns_requirements(text, location)
+    for parse_error in parse_errors:
+        _add_error(errors, location, parse_error)
+    dependencies: list[str] = []
+    for required_namespace in required_namespaces:
+        if not required_namespace.startswith("gravity."):
+            continue
+        component_id = namespace_to_component.get(required_namespace)
+        if component_id is None:
+            _add_error(
+                errors,
+                location,
+                f"requires unregistered internal namespace {required_namespace!r}",
+            )
+            continue
+        if component_id not in dependencies:
+            dependencies.append(component_id)
+    return namespace, sorted(dependencies)
+
+
 def parse_normative_ownership(
     path: Path = NORMATIVE_OWNERSHIP,
 ) -> tuple[list[str], list[str], list[str], dict[str, str], list[str]]:
@@ -412,6 +947,591 @@ def parse_normative_ownership(
     if not entries or re.search(r"[^\s]", remainder):
         errors.append("normative ownership EDN :module-owners map contains unrecognized structure")
     return central_routing, generated_evidence_prefixes, integration_surfaces, module_owners, errors
+
+
+def _extract_edn_delimited_section(
+    text: str, marker: str, opener: str, closer: str, errors: list[str]
+) -> str:
+    """Extract one balanced EDN section after a marker.
+
+    The normative file is intentionally a tiny EDN projection.  We still
+    track nested delimiters and strings so a malformed or truncated section
+    fails closed instead of being accepted by a non-greedy regex.
+    """
+
+    matches = list(re.finditer(rf":{re.escape(marker)}\s*{re.escape(opener)}", text))
+    if len(matches) != 1:
+        errors.append(f"ownership EDN must contain exactly one :{marker} {opener} section")
+        return ""
+    start = matches[0].end()
+    stack = [opener]
+    in_string = False
+    escaped = False
+    index = start
+    while index < len(text):
+        char = text[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            index += 1
+            continue
+        if char == '"':
+            in_string = True
+            index += 1
+            continue
+        if char in "([{":
+            stack.append(char)
+        elif char in ")]}":
+            if not stack or {')': '(', ']': '[', '}': '{'}[char] != stack[-1]:
+                errors.append(f"ownership EDN :{marker} section has unbalanced delimiters")
+                return ""
+            stack.pop()
+            if not stack:
+                return text[start:index]
+        index += 1
+    errors.append(f"ownership EDN :{marker} section is unterminated")
+    return ""
+
+
+def _parse_edn_keyword_map(body: str, marker: str, errors: list[str]) -> dict[str, str]:
+    entry_re = re.compile(r'"([^"\\]*(?:\\.[^"\\]*)*)"\s+:([A-Za-z0-9_-]+)')
+    entries = list(entry_re.finditer(body))
+    result: dict[str, str] = {}
+    for match in entries:
+        key, value = match.groups()
+        if key in result:
+            errors.append(f"ownership EDN :{marker} repeats key {key!r}")
+        result[key] = value
+    remainder = entry_re.sub("", body)
+    if re.search(r"[^\s]", remainder):
+        errors.append(f"ownership EDN :{marker} map contains unrecognized structure")
+    if not entries:
+        errors.append(f"ownership EDN :{marker} map is empty")
+    return result
+
+
+def parse_stage0_component_ownership(
+    path: Path = NORMATIVE_OWNERSHIP,
+) -> tuple[dict[str, str], list[str], list[str]]:
+    """Project the Stage0 reserved-leaf and compatibility-test EDN facts.
+
+    The existing :func:`parse_normative_ownership` return shape is preserved;
+    this focused projection supplies the two new Stage0 maps/vectors without
+    exposing a permissive general EDN reader.
+    """
+
+    errors: list[str] = []
+    text, read_errors = _read_ascii_contract_text(
+        path, MAX_OWNERSHIP_EDN_BYTES, "normative ownership EDN"
+    )
+    errors.extend(read_errors)
+    if read_errors:
+        return {}, [], errors
+    non_string_text = re.sub(r'"([^"\\]*(?:\\.[^"\\]*)*)"', '""', text)
+    if re.search(r"[#;]", non_string_text):
+        errors.append(
+            "normative ownership EDN may not use comments, reader discard, or tagged reader syntax"
+        )
+    reserved_body = _extract_edn_delimited_section(
+        text, "reserved-leaf-modules", "{", "}", errors
+    )
+    reserved = _parse_edn_keyword_map(reserved_body, "reserved-leaf-modules", errors) if reserved_body else {}
+    compatibility_body = _extract_edn_delimited_section(
+        text, "bootstrap-compatibility-tests", "[", "]", errors
+    )
+    compatibility: list[str] = []
+    if compatibility_body:
+        values = re.findall(r'"([^"\\]*(?:\\.[^"\\]*)*)"', compatibility_body)
+        remainder = re.sub(r'"([^"\\]*(?:\\.[^"\\]*)*)"', "", compatibility_body)
+        if re.search(r"[^\s]", remainder):
+            errors.append(
+                "ownership EDN :bootstrap-compatibility-tests vector contains unrecognized structure"
+            )
+        compatibility = values
+        if len(values) != len(set(values)):
+            errors.append("ownership EDN :bootstrap-compatibility-tests vector repeats a path")
+    return reserved, compatibility, errors
+
+
+# Descriptive alias for callers that use the projection terminology.
+parse_stage0_ownership_projection = parse_stage0_component_ownership
+
+
+def load_stage0_component_contract(
+    path: Path = STAGE0_COMPONENT_CONTRACT,
+) -> Any:
+    """Load the fixed reviewed Stage0 component inventory strictly."""
+
+    try:
+        raw = path.read_bytes()
+    except OSError as exc:
+        raise ManifestError(f"cannot read Stage0 component contract {path}: {exc}") from exc
+    if len(raw) > MAX_STAGE0_COMPONENT_CONTRACT_BYTES:
+        raise ManifestError(
+            f"Stage0 component contract {path} exceeds {MAX_STAGE0_COMPONENT_CONTRACT_BYTES} bytes"
+        )
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ManifestError(f"Stage0 component contract {path} is not UTF-8: {exc}") from exc
+    try:
+        return _strict_json_loads(text)
+    except (TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise ManifestError(f"invalid strict JSON in Stage0 component contract {path}: {exc}") from exc
+
+
+def _stage0_component_id_from_source_path(path: str) -> str | None:
+    match = re.fullmatch(r"bootstrap/clojure/src/gravity/([A-Za-z0-9_]+)\.clj", path)
+    if not match:
+        return None
+    return match.group(1).replace("_", "-")
+
+
+def _stage0_test_path_for_source(path: str) -> str | None:
+    component_id = _stage0_component_id_from_source_path(path)
+    if component_id is None:
+        return None
+    source_stem = path.rsplit("/", 1)[-1][:-4]
+    return f"bootstrap/clojure/test/gravity/{source_stem}_test.clj"
+
+
+def _stage0_path_claims(
+    policies: Sequence[Any], path: str
+) -> list[tuple[str, str]]:
+    claims: list[tuple[str, str]] = []
+    for policy in policies:
+        if not _is_mapping(policy) or not _is_string_list(policy.get("patterns")):
+            continue
+        if any(_path_pattern_matches(pattern, path) for pattern in policy["patterns"]):
+            policy_id = policy.get("id")
+            owner = policy.get("owner")
+            if isinstance(policy_id, str) and isinstance(owner, str):
+                claims.append((policy_id, owner))
+    return claims
+
+
+def _validate_stage0_component_contract(
+    manifest: Mapping[str, Any],
+    errors: list[str],
+    contract: Any | None = None,
+) -> None:
+    """Validate the fixed Stage0 component inventory and all projections."""
+
+    if contract is None:
+        try:
+            contract = load_stage0_component_contract()
+        except ManifestError as exc:
+            _add_error(errors, "stage0 component contract", str(exc))
+            return
+    if not _is_mapping(contract):
+        _add_error(errors, "stage0 component contract", "must be a JSON object")
+        return
+
+    missing = sorted(STAGE0_COMPONENT_TOP_FIELDS.difference(contract))
+    extra = sorted(set(contract).difference(STAGE0_COMPONENT_TOP_FIELDS))
+    if missing:
+        _add_error(errors, "stage0 component contract", "missing required fields: " + ", ".join(missing))
+    if extra:
+        _add_error(errors, "stage0 component contract", "unknown fields: " + ", ".join(extra))
+    if contract.get("schema") != STAGE0_COMPONENT_SCHEMA:
+        _add_error(errors, "stage0 component contract.schema", f"must be {STAGE0_COMPONENT_SCHEMA!r}")
+    if contract.get("kind") != STAGE0_COMPONENT_KIND:
+        _add_error(errors, "stage0 component contract.kind", f"must be {STAGE0_COMPONENT_KIND!r}")
+    if contract.get("authority") is not False:
+        _add_error(errors, "stage0 component contract.authority", "must be false")
+    if contract.get("integration_owner") != "master-coordinator":
+        _add_error(errors, "stage0 component contract.integration_owner", "must be 'master-coordinator'")
+    if contract.get("source_root") != "bootstrap/clojure/src":
+        _add_error(errors, "stage0 component contract.source_root", "must be bootstrap/clojure/src")
+    if contract.get("test_root") != "bootstrap/clojure/test":
+        _add_error(errors, "stage0 component contract.test_root", "must be bootstrap/clojure/test")
+    if contract.get("authority_ceiling") != "non-authoritative":
+        _add_error(errors, "stage0 component contract.authority_ceiling", "must be non-authoritative")
+    if contract.get("nonclaims") != list(STAGE0_COMPONENT_NONCLAIMS):
+        _add_error(errors, "stage0 component contract.nonclaims", "must match the reviewed nonclaims exactly")
+    if contract.get("canonical_pipeline_order") != list(CANONICAL_PASS_IDS):
+        _add_error(errors, "stage0 component contract.canonical_pipeline_order", "must match canonical pass order exactly")
+    if contract.get("stage0_extension_order") != list(STAGE0_EXTENSION_ORDER):
+        _add_error(errors, "stage0 component contract.stage0_extension_order", "must match Stage0 extension order exactly")
+    if contract.get("counts") != STAGE0_COMPONENT_COUNTS:
+        _add_error(errors, "stage0 component contract.counts", f"must equal {STAGE0_COMPONENT_COUNTS!r}")
+    reservations = contract.get("coordinator_integration_reservations")
+    if reservations != STAGE0_COORDINATOR_INTEGRATION_RESERVATIONS:
+        _add_error(
+            errors,
+            "stage0 component contract.coordinator_integration_reservations",
+            "must match the exact reviewed coordinator-only reservations",
+        )
+        reservations = []
+    reserved_paths = {
+        path
+        for reservation in reservations
+        for path in reservation["paths"]
+    }
+    missing_reserved_paths = sorted(path for path in reserved_paths if not (ROOT / path).is_file())
+    if missing_reserved_paths:
+        _add_error(
+            errors,
+            "stage0 component contract.coordinator_integration_reservations",
+            "missing reserved paths: " + ", ".join(missing_reserved_paths),
+        )
+
+    components = contract.get("components")
+    if not isinstance(components, list):
+        _add_error(errors, "stage0 component contract.components", "must be a list")
+        return
+    if len(components) != STAGE0_COMPONENT_COUNTS["components"]:
+        _add_error(errors, "stage0 component contract.components", "must contain exactly 50 components")
+
+    # Every source file in this slice is a direct child of the reviewed source
+    # root.  The test root also contains runner infrastructure; only the
+    # paired *_test.clj files are part of this inventory.
+    source_root = ROOT / "bootstrap/clojure/src/gravity"
+    test_root = ROOT / "bootstrap/clojure/test/gravity"
+    actual_source_paths = {
+        path.relative_to(ROOT).as_posix()
+        for path in source_root.glob("*.clj")
+        if path.is_file()
+    }.difference(reserved_paths)
+    actual_test_paths = {
+        path.relative_to(ROOT).as_posix()
+        for path in test_root.glob("*_test.clj")
+        if path.is_file()
+    }.difference(reserved_paths)
+
+    component_by_id: dict[str, Mapping[str, Any]] = {}
+    source_namespace_to_id: dict[str, str] = {}
+    test_namespace_to_id: dict[str, str] = {}
+    source_paths: list[str] = []
+    test_paths: list[str] = []
+    leaf_execution_groups: list[Any] = []
+    for index, component in enumerate(components):
+        location = f"stage0 component contract.components[{index}]"
+        if not _is_mapping(component):
+            _add_error(errors, location, "must be an object")
+            continue
+        missing_fields = sorted(STAGE0_COMPONENT_FIELDS.difference(component))
+        extra_fields = sorted(set(component).difference(STAGE0_COMPONENT_FIELDS))
+        if missing_fields:
+            _add_error(errors, location, "missing required fields: " + ", ".join(missing_fields))
+        if extra_fields:
+            _add_error(errors, location, "unknown fields: " + ", ".join(extra_fields))
+        component_id = component.get("id")
+        if not _validate_id(component_id, f"{location}.id", errors):
+            continue
+        if component_id in component_by_id:
+            _add_error(errors, f"{location}.id", f"duplicate component id {component_id!r}")
+        component_by_id[component_id] = component
+        source = component.get("source")
+        test = component.get("test")
+        if not _required_mapping_fields(source, STAGE0_SOURCE_FIELDS, f"{location}.source", errors):
+            source = {}
+        if not _required_mapping_fields(test, STAGE0_TEST_FIELDS, f"{location}.test", errors):
+            test = {}
+        if _is_mapping(source) and set(source) != STAGE0_SOURCE_FIELDS:
+            _add_error(errors, f"{location}.source", "must contain exactly path and namespace")
+        if _is_mapping(test) and set(test) != STAGE0_TEST_FIELDS:
+            _add_error(errors, f"{location}.test", "must contain exactly path, namespace, lane, and execution_requires_bootstrap")
+        source_path = source.get("path") if _is_mapping(source) else None
+        test_path = test.get("path") if _is_mapping(test) else None
+        source_namespace = source.get("namespace") if _is_mapping(source) else None
+        test_namespace = test.get("namespace") if _is_mapping(test) else None
+        for value, field in ((source_path, "source.path"), (test_path, "test.path"), (source_namespace, "source.namespace"), (test_namespace, "test.namespace")):
+            if not isinstance(value, str) or not value:
+                _add_error(errors, f"{location}.{field}", "must be a non-empty string")
+        if isinstance(source_path, str):
+            source_paths.append(source_path)
+            expected_id = _stage0_component_id_from_source_path(source_path)
+            if expected_id != component_id:
+                _add_error(errors, f"{location}.id", f"must match source path stem {expected_id!r}")
+            if not source_path.startswith("bootstrap/clojure/src/"):
+                _add_error(errors, f"{location}.source.path", "must be under the reviewed source root")
+            if source_path_namespace := source_namespace:
+                if source_path_namespace in source_namespace_to_id:
+                    _add_error(errors, f"{location}.source.namespace", f"duplicate source namespace {source_path_namespace!r}")
+                source_namespace_to_id[source_path_namespace] = component_id
+        if isinstance(test_path, str):
+            test_paths.append(test_path)
+            expected_test_path = _stage0_test_path_for_source(source_path) if isinstance(source_path, str) else None
+            if test_path != expected_test_path:
+                _add_error(errors, f"{location}.test.path", f"must be paired test path {expected_test_path!r}")
+            if not test_path.startswith("bootstrap/clojure/test/"):
+                _add_error(errors, f"{location}.test.path", "must be under the reviewed test root")
+            if isinstance(test_namespace, str):
+                if test_namespace in test_namespace_to_id:
+                    _add_error(errors, f"{location}.test.namespace", f"duplicate test namespace {test_namespace!r}")
+                test_namespace_to_id[test_namespace] = component_id
+
+        owner = component.get("owner")
+        if not isinstance(owner, str) or not owner:
+            _add_error(errors, f"{location}.owner", "must be a non-empty string")
+        for dependency_field in ("direct_source_dependencies", "direct_test_dependencies", "canonical_pass_refs"):
+            value = component.get(dependency_field)
+            if not _is_string_list(value):
+                _add_error(errors, f"{location}.{dependency_field}", "must be a list of strings")
+            elif dependency_field != "canonical_pass_refs" and value != sorted(set(value)):
+                _add_error(errors, f"{location}.{dependency_field}", "must be sorted and contain no duplicates")
+        canonical_refs = component.get("canonical_pass_refs")
+        if _is_string_list(canonical_refs):
+            unknown_refs = sorted(set(canonical_refs).difference(CANONICAL_PASS_IDS))
+            if unknown_refs:
+                _add_error(errors, f"{location}.canonical_pass_refs", "unknown canonical pass reference(s): " + ", ".join(unknown_refs))
+            expected_ref_order = sorted(canonical_refs, key=lambda ref: CANONICAL_PASS_IDS.index(ref) if ref in CANONICAL_PASS_IDS else len(CANONICAL_PASS_IDS))
+            if canonical_refs != expected_ref_order:
+                _add_error(errors, f"{location}.canonical_pass_refs", "must follow canonical pipeline order")
+        if component.get("mapping_kind") not in STAGE0_MAPPING_KINDS:
+            _add_error(errors, f"{location}.mapping_kind", f"unknown mapping kind {component.get('mapping_kind')!r}")
+        if component.get("stage0_group") not in STAGE0_GROUPS:
+            _add_error(errors, f"{location}.stage0_group", f"unknown Stage0 group {component.get('stage0_group')!r}")
+        leaf_execution_group = component.get("leaf_execution_group")
+        leaf_execution_groups.append(leaf_execution_group)
+        valid_leaf_execution_group = (
+            isinstance(leaf_execution_group, str)
+            and leaf_execution_group in STAGE0_LEAF_EXECUTION_GROUPS
+        )
+        if leaf_execution_group is not None and not valid_leaf_execution_group:
+            _add_error(
+                errors,
+                f"{location}.leaf_execution_group",
+                f"unknown leaf execution group {leaf_execution_group!r}",
+            )
+        expected_leaf_execution_group = STAGE0_LEAF_EXECUTION_GROUP_BY_COMPONENT.get(component_id)
+        if leaf_execution_group != expected_leaf_execution_group:
+            _add_error(
+                errors,
+                f"{location}.leaf_execution_group",
+                f"must be {expected_leaf_execution_group!r} for component {component_id!r}",
+            )
+        if component.get("contract_var") is not None and not isinstance(component.get("contract_var"), str):
+            _add_error(errors, f"{location}.contract_var", "must be a string or null")
+        authority = component.get("authority")
+        if not _required_mapping_fields(authority, STAGE0_AUTHORITY_FIELDS, f"{location}.authority", errors):
+            authority = {}
+        if set(authority) != STAGE0_AUTHORITY_FIELDS:
+            _add_error(errors, f"{location}.authority", "must contain exactly the reviewed authority fields")
+        if authority.get("ceiling") not in STAGE0_AUTHORITY_CEILINGS:
+            _add_error(errors, f"{location}.authority.ceiling", f"unknown ceiling {authority.get('ceiling')!r}")
+        for field in ("compatibility_only", "canonical_authority", "self_hosted", "release", "seed_retirement"):
+            if not isinstance(authority.get(field), bool):
+                _add_error(errors, f"{location}.authority.{field}", "must be boolean")
+        for field in ("canonical_authority", "self_hosted", "release", "seed_retirement"):
+            if authority.get(field) is not False:
+                _add_error(errors, f"{location}.authority.{field}", "must be false")
+
+        lane = test.get("lane") if _is_mapping(test) else None
+        execution_requires_bootstrap = test.get("execution_requires_bootstrap") if _is_mapping(test) else None
+        if lane not in STAGE0_TEST_LANES:
+            _add_error(errors, f"{location}.test.lane", f"unknown test lane {lane!r}")
+        if (lane == "bootstrap-free") != valid_leaf_execution_group:
+            _add_error(
+                errors,
+                f"{location}.leaf_execution_group",
+                "must be non-null exactly for bootstrap-free tests",
+            )
+        if not isinstance(execution_requires_bootstrap, bool):
+            _add_error(errors, f"{location}.test.execution_requires_bootstrap", "must be boolean")
+        elif execution_requires_bootstrap != (lane in {"compatibility", "coordinator"}):
+            _add_error(errors, f"{location}.test.execution_requires_bootstrap", "does not match test lane")
+        expected_compatibility_authority = (
+            component_id in STAGE0_COMPATIBILITY_AUTHORITY_COMPONENT_IDS
+            or (lane == "compatibility")
+        )
+        if authority.get("compatibility_only") != expected_compatibility_authority:
+            _add_error(
+                errors,
+                f"{location}.authority.compatibility_only",
+                f"must be {expected_compatibility_authority} for the reviewed namespace contract",
+            )
+        expected_ceiling = "non-authoritative" if expected_compatibility_authority or lane in {"compatibility", "coordinator"} else "none"
+        if authority.get("ceiling") != expected_ceiling:
+            _add_error(errors, f"{location}.authority.ceiling", f"must be {expected_ceiling!r}")
+
+    if source_paths != sorted(source_paths):
+        _add_error(errors, "stage0 component contract.components", "components must be sorted by id")
+    ids = list(component_by_id)
+    if ids != sorted(ids):
+        _add_error(errors, "stage0 component contract.components", "components must be sorted lexically by id")
+    if len(set(source_paths)) != len(source_paths):
+        _add_error(errors, "stage0 component contract", "source paths must be unique")
+    if len(set(test_paths)) != len(test_paths):
+        _add_error(errors, "stage0 component contract", "test paths must be unique")
+    if source_paths and actual_source_paths != set(source_paths):
+        missing_paths = sorted(set(source_paths).difference(actual_source_paths))
+        extra_paths = sorted(actual_source_paths.difference(source_paths))
+        if missing_paths:
+            _add_error(errors, "stage0 component contract", "missing source files: " + ", ".join(missing_paths))
+        if extra_paths:
+            _add_error(errors, "stage0 component contract", "unregistered source files: " + ", ".join(extra_paths))
+    if test_paths and actual_test_paths != set(test_paths):
+        missing_paths = sorted(set(test_paths).difference(actual_test_paths))
+        extra_paths = sorted(actual_test_paths.difference(test_paths))
+        if missing_paths:
+            _add_error(errors, "stage0 component contract", "missing component test files: " + ", ".join(missing_paths))
+        if extra_paths:
+            _add_error(errors, "stage0 component contract", "unregistered component test files: " + ", ".join(extra_paths))
+
+    # Parse every paired file's actual namespace and static :require edges.
+    all_namespace_to_id = {**source_namespace_to_id, **test_namespace_to_id}
+    for component_id, component in sorted(component_by_id.items()):
+        location = f"stage0 component {component_id!r}"
+        source = component.get("source", {})
+        test = component.get("test", {})
+        source_path = source.get("path") if _is_mapping(source) else None
+        test_path = test.get("path") if _is_mapping(test) else None
+        if not isinstance(source_path, str) or not isinstance(test_path, str):
+            continue
+        source_file = ROOT / source_path
+        test_file = ROOT / test_path
+        actual_source_namespace, actual_source_deps = _component_file_dependencies(
+            source_file, f"{location}.source", all_namespace_to_id, errors
+        )
+        actual_test_namespace, actual_test_deps = _component_file_dependencies(
+            test_file, f"{location}.test", all_namespace_to_id, errors
+        )
+        expected_source_namespace = source.get("namespace")
+        expected_test_namespace = test.get("namespace")
+        if actual_source_namespace != expected_source_namespace:
+            _add_error(errors, f"{location}.source.namespace", f"does not match file ns {actual_source_namespace!r}")
+        if actual_test_namespace != expected_test_namespace:
+            _add_error(errors, f"{location}.test.namespace", f"does not match file ns {actual_test_namespace!r}")
+        declared_source_deps = component.get("direct_source_dependencies")
+        if isinstance(declared_source_deps, list) and actual_source_deps != declared_source_deps:
+            _add_error(errors, f"{location}.direct_source_dependencies", f"must equal static ns :require dependencies {actual_source_deps!r}")
+        expected_test_deps = sorted(set(actual_test_deps) | {component_id})
+        execution_requires_bootstrap = bool(test.get("execution_requires_bootstrap")) if _is_mapping(test) else False
+        if execution_requires_bootstrap:
+            expected_test_deps = sorted(set(expected_test_deps) | {"bootstrap"})
+        declared_test_deps = component.get("direct_test_dependencies")
+        if isinstance(declared_test_deps, list) and expected_test_deps != declared_test_deps:
+            _add_error(errors, f"{location}.direct_test_dependencies", f"must equal static test dependencies plus execution edges {expected_test_deps!r}")
+
+    # The leaf source graph is acyclic and only the coordinator may depend on
+    # the bootstrap orchestrator.
+    source_graph: dict[str, list[str]] = {}
+    for component_id, component in component_by_id.items():
+        dependencies = component.get("direct_source_dependencies")
+        if not _is_string_list(dependencies):
+            source_graph[component_id] = []
+            continue
+        source_graph[component_id] = list(dependencies)
+        for dependency in dependencies:
+            if dependency not in component_by_id:
+                _add_error(errors, f"stage0 component {component_id!r}.direct_source_dependencies", f"unknown component dependency {dependency!r}")
+            if component_id != "bootstrap" and dependency == "bootstrap":
+                _add_error(errors, f"stage0 component {component_id!r}.direct_source_dependencies", "leaf source components may not depend on bootstrap")
+    for cycle in _find_cycles(source_graph):
+        _add_error(errors, "stage0 component source graph", "dependency cycle: " + " -> ".join(cycle))
+
+    lanes = [component.get("test", {}).get("lane") for component in component_by_id.values() if _is_mapping(component.get("test"))]
+    if lanes.count("bootstrap-free") != STAGE0_COMPONENT_COUNTS["bootstrap_free_tests"]:
+        _add_error(errors, "stage0 component test lanes", "must contain exactly 44 bootstrap-free tests")
+    if lanes.count("compatibility") != STAGE0_COMPONENT_COUNTS["compatibility_tests"]:
+        _add_error(errors, "stage0 component test lanes", "must contain exactly 5 compatibility tests")
+    if lanes.count("coordinator") != STAGE0_COMPONENT_COUNTS["coordinator_tests"]:
+        _add_error(errors, "stage0 component test lanes", "must contain exactly 1 coordinator test")
+    for group, expected_count in STAGE0_LEAF_EXECUTION_GROUP_COUNTS.items():
+        actual_count = leaf_execution_groups.count(group)
+        if actual_count != expected_count:
+            _add_error(
+                errors,
+                "stage0 component leaf execution groups",
+                f"{group!r} must contain exactly {expected_count} components, found {actual_count}",
+            )
+    non_null_execution_group_count = sum(
+        group in STAGE0_LEAF_EXECUTION_GROUPS for group in leaf_execution_groups
+    )
+    if non_null_execution_group_count != STAGE0_COMPONENT_COUNTS["bootstrap_free_tests"]:
+        _add_error(
+            errors,
+            "stage0 component leaf execution groups",
+            "must contain exactly 44 grouped bootstrap-free components",
+        )
+
+    reserved, compatibility_tests, ownership_errors = parse_stage0_component_ownership()
+    for ownership_error in ownership_errors:
+        _add_error(errors, "stage0 ownership projection", ownership_error)
+    if not ownership_errors:
+        expected_reserved = {
+            component_id: component.get("owner")
+            for component_id, component in component_by_id.items()
+            if isinstance(component.get("owner"), str)
+        }
+        if reserved != expected_reserved:
+            _add_error(errors, "stage0 ownership projection", "reserved-leaf-modules must equal component id -> owner exactly")
+        expected_compatibility_tests = sorted(
+            component["test"]["path"]
+            for component in component_by_id.values()
+            if _is_mapping(component.get("test"))
+            and component["test"].get("lane") == "compatibility"
+        )
+        if compatibility_tests != expected_compatibility_tests:
+            _add_error(errors, "stage0 ownership projection", "bootstrap-compatibility-tests must equal compatibility leaf test paths in lexical order")
+
+    ownership = manifest.get("ownership")
+    module_paths = ownership.get("module_paths") if _is_mapping(ownership) else None
+    path_policies = manifest.get("path_policy", {}).get("policies") if _is_mapping(manifest.get("path_policy")) else None
+    if not _is_mapping(module_paths):
+        _add_error(errors, "stage0 ownership projection", "project module_paths are unavailable")
+        module_paths = {}
+    if not isinstance(path_policies, list):
+        _add_error(errors, "stage0 ownership projection", "project path policies are unavailable")
+        path_policies = []
+    stage_paths: set[str] = set()
+    for component_id, component in component_by_id.items():
+        owner = component.get("owner")
+        for section_name in ("source", "test"):
+            section = component.get(section_name)
+            path = section.get("path") if _is_mapping(section) else None
+            if not isinstance(path, str):
+                continue
+            stage_paths.add(path)
+            if module_paths.get(path) != owner:
+                _add_error(errors, "stage0 ownership projection", f"project module_paths owner mismatch for {path!r}: expected {owner!r}")
+            if reserved.get(component_id) != owner:
+                _add_error(errors, "stage0 ownership projection", f"reserved owner mismatch for {component_id!r}")
+            claims = _stage0_path_claims(path_policies, path)
+            if len(claims) != 1:
+                _add_error(errors, "stage0 ownership projection", f"{path!r} must have exactly one path-policy claim, found {claims!r}")
+            elif claims[0][1] != owner:
+                _add_error(errors, "stage0 ownership projection", f"path-policy owner mismatch for {path!r}: {claims[0][1]!r} vs {owner!r}")
+    extra_stage_module_paths = sorted(
+        path for path in module_paths
+        if (path.startswith("bootstrap/clojure/src/") or path.startswith("bootstrap/clojure/test/"))
+        and path not in stage_paths
+        and path not in STAGE0_COORDINATOR_SUPPORT_PATHS
+    )
+    for path in extra_stage_module_paths:
+        _add_error(errors, "stage0 ownership projection", f"project has unregistered Stage0 module path {path!r}")
+    missing_stage_module_paths = sorted(stage_paths.difference(module_paths))
+    for path in missing_stage_module_paths:
+        _add_error(errors, "stage0 ownership projection", f"project is missing Stage0 module path {path!r}")
+    for path in sorted(STAGE0_COORDINATOR_SUPPORT_PATHS):
+        if module_paths.get(path) != "master-coordinator":
+            _add_error(
+                errors,
+                "stage0 ownership projection",
+                f"coordinator support path {path!r} must be owned by 'master-coordinator'",
+            )
+        claims = _stage0_path_claims(path_policies, path)
+        if claims != [("reviewed-central-routing", "master-coordinator")]:
+            _add_error(
+                errors,
+                "stage0 ownership projection",
+                f"coordinator support path {path!r} must have only reviewed-central-routing claim",
+            )
+
+    source_contracts = manifest.get("source_contracts")
+    fixed_source_contract = {
+        "id": "STAGE0-CLOJURE-COMPONENTS",
+        "path": "contracts/stage0-clojure-components.json",
+        "role": "reviewed Stage0 Clojure component inventory and ownership",
+    }
+    if not isinstance(source_contracts, list) or source_contracts.count(fixed_source_contract) != 1:
+        _add_error(errors, "stage0 ownership projection", "project source_contracts must contain the fixed Stage0 component contract exactly once")
 
 
 def _path_pattern_matches(pattern: str, path: str) -> bool:
@@ -941,6 +2061,7 @@ def validate_manifest(manifest: Any) -> list[str]:
     _validate_artifact_continuity(manifest, errors)
     _validate_slices(manifest, artifact_ids, owner_ids, policy_ids, errors)
     _validate_normative_ownership_parity(manifest, errors)
+    _validate_stage0_component_contract(manifest, errors)
     return errors
 
 
@@ -948,11 +2069,16 @@ def load_manifest(path: Path = DEFAULT_MANIFEST) -> Any:
     """Load JSON from ``path`` with a useful manifest-specific error."""
 
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        raw = path.read_bytes()
+        if len(raw) > MAX_OWNERSHIP_EDN_BYTES * 4:
+            raise ManifestError(f"project structure manifest exceeds {MAX_OWNERSHIP_EDN_BYTES * 4} bytes")
+        return _strict_json_loads(raw.decode("utf-8"))
     except OSError as exc:
         raise ManifestError(f"cannot read manifest {path}: {exc}") from exc
-    except json.JSONDecodeError as exc:
-        raise ManifestError(f"invalid JSON in {path}: {exc}") from exc
+    except ManifestError:
+        raise
+    except (UnicodeDecodeError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise ManifestError(f"invalid strict JSON in {path}: {exc}") from exc
 
 
 def main(argv: Sequence[str] | None = None) -> int:

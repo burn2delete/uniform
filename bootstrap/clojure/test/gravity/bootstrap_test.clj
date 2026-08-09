@@ -4,6 +4,10 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
+            [gravity.c2-artifact-identity :as c2-artifact-identity]
+            [gravity.c2-source-identity :as c2-source-identity]
+            [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
+            [gravity.c2-lexical-validation :as c2-lexical-validation]
             [gravity.cli-test]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.diagnostics-test]))
@@ -10155,6 +10159,7 @@
     (is (= '(quote gravity.reader/value) (:form syntax)))
     (is (= :quote (get-in syntax [:generated-origin 0 :reader-abbreviation])))))
 
+
 (defn- absolute-test-classpath
   []
   (let [base (.getCanonicalFile (java.io.File. "."))]
@@ -12572,6 +12577,7 @@
     (is (every? #(re-find #"^sha256:" (:output-hash %)) trace))
     (is (= "macro\nunless\n1\nthreaded\n" (bootstrap/run-file path)))))
 
+
 (deftest typed-core-artifact-preserves-l5-boundary
   (let [artifact (bootstrap/typed-file-artifact (fixture "accepted/typed-core.gravity"))
         inferred-effects (get-in artifact [:namespace-effect-summary :inferred])
@@ -14938,6 +14944,8 @@
     (is (= :stable (:invalidation-status conformance)))
     (is (= :complete (:status conformance)))))
 
+
+
 (deftest c6-lowering-artifact-preserves-p06-d085-contract
   (let [artifact (bootstrap/compiler-c6-lowering-file-artifact
                   (fixture "accepted/compiler-c6-core-lowering.gravity"))
@@ -14946,6 +14954,10 @@
         nodes (:core-node-table artifact)
         rejected (set (map :diagnostic (:rejected-design-coverage artifact)))]
     (is (= :gravity/stage0-c6-core-lowering-artifact (:kind artifact)))
+    ;; Immediate-parent artifact identity: the older proof record predates later
+    ;; C4/C5 identity evolution, while this anchor detects extraction drift.
+    (is (= "sha256:d2bbf5cf2b16bbb98b712a39ee79f02931d96cc7f6f39288b27c982e1ec66f0f"
+           (:artifact-id artifact)))
     (is (= "P06-D085" (:task artifact)))
     (is (= ["C6"] (:document-set artifact)))
     (is (= bootstrap/c6-lowering-governing-document
@@ -14954,6 +14966,11 @@
            (get-in artifact [:c5-name-resolution-artifact :kind])))
     (is (= :gravity/core-ast-module
            (get-in artifact [:core-ast-module :artifact])))
+    (is (= 53 (count nodes)))
+    (is (= 6 (count (get-in artifact [:core-ast-module :roots]))))
+    (is (= 7 (count (get-in artifact [:surface-to-core-map :entries]))))
+    (is (= 24 (count (get-in artifact [:evaluation-order-records :records]))))
+    (is (= 1 (count (:domain-boundary-records artifact))))
     (is (seq (:core-node-table artifact)))
     (is (every? #(= :gravity/core-node (:artifact %)) nodes))
     (is (some #(= 'if (:form %)) nodes))
@@ -14996,6 +15013,7 @@
     (is (= :stable (:invalidation-status conformance)))
     (is (= :complete (:status conformance)))))
 
+
 (deftest c7-type-checker-artifact-preserves-p06-d086-contract
   (let [artifact (bootstrap/compiler-c7-type-file-artifact
                   (fixture "accepted/compiler-c7-type-checker.gravity"))
@@ -15015,6 +15033,8 @@
                               (get-in artifact
                                       [:type-diagnostics :diagnostics])))]
     (is (= :gravity/stage0-c7-type-checker-artifact (:kind artifact)))
+    (is (= "sha256:79efb7c627a24124eb9d0bc726ba047532c4e2b3bfa288c03926017245afd2fd"
+           (:artifact-id artifact)))
     (is (= "P06-D086" (:task artifact)))
     (is (= ["C7"] (:document-set artifact)))
     (is (= bootstrap/c7-type-governing-document
@@ -15023,6 +15043,15 @@
            (get-in artifact [:c6-core-lowering-artifact :kind])))
     (is (= :gravity/typed-core (:artifact typed-core)))
     (is (= :complete (:status typed-core)))
+    (is (= 76 (count (:type-facts artifact))))
+    (is (= 76 (count (:constraints constraints))))
+    (is (= 2 (count (:functions functions))))
+    (is (= 1 (count (:records dynamic))))
+    (is (= 1 (count (:records casts))))
+    (is (= 1 (count (:records generic))))
+    (is (= 1 (count (:records dispatch))))
+    (is (= 1 (count (:records schema))))
+    (is (= 76 (count (:records layout))))
     (is (seq (:type-facts artifact)))
     (is (= (count (:type-facts artifact))
            (count (:types environment))))
@@ -15066,6 +15095,7 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
+
 (deftest c8-effect-checker-artifact-preserves-p06-d087-contract
   (let [artifact (bootstrap/compiler-c8-effect-file-artifact
                   (fixture "accepted/compiler-c8-effect-checker.gravity"))
@@ -15089,6 +15119,15 @@
     (is (= :gravity/stage0-c7-type-checker-artifact
            (get-in artifact [:c7-type-checker-artifact :kind])))
     (is (= :gravity/c8-effect-graph (:artifact graph)))
+    (is (= 76 (count (:nodes graph))))
+    (is (= 4 (count (get-in graph [:namespace :inferred]))))
+    (is (= 2 (count (:functions graph))))
+    (is (= 4 (count (:records legality))))
+    (is (= 4 (count (:records capability))))
+    (is (= 1 (count (:records build))))
+    (is (= 1 (count (:records replay))))
+    (is (= 10 (count (:records ordering))))
+    (is (= 3 (count (:records residual))))
     (is (seq (:nodes graph)))
     (is (seq (get-in graph [:namespace :inferred])))
     (is (= :complete (:status graph)))
@@ -15129,6 +15168,7 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
+
 (deftest c9-ownership-checker-artifact-preserves-p06-d088-contract
   (let [artifact (bootstrap/compiler-c9-ownership-file-artifact
                   (fixture "accepted/compiler-c9-ownership-checker.gravity"))
@@ -15158,6 +15198,15 @@
     (is (= :gravity/stage0-c8-effect-checker-artifact
            (get-in artifact [:c8-effect-checker-artifact :kind])))
     (is (= :gravity/c9-ownership-graph (:artifact ownership)))
+    (is (= 76 (count (:owners ownership))))
+    (is (= 5 (count (:edges borrow))))
+    (is (= 9 (count (:intervals lifetimes))))
+    (is (= 2 (count (:regions region))))
+    (is (= 1 (count (:arenas arena))))
+    (is (= 2 (count (:resources linear))))
+    (is (= 4 (count (:records transfer))))
+    (is (= 4 (count (:records runtime))))
+    (is (= 2 (count (:records unsafe))))
     (is (seq (:owners ownership)))
     (is (seq (:moves ownership)))
     (is (seq (:consumes ownership)))
@@ -15209,6 +15258,7 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
+
 (deftest c10-safety-analysis-artifact-preserves-p06-d089-contract
   (let [artifact (bootstrap/compiler-c10-safety-file-artifact
                   (fixture "accepted/compiler-c10-safety-analysis.gravity"))
@@ -15236,6 +15286,16 @@
     (is (= :gravity/stage0-c9-ownership-checker-artifact
            (get-in artifact [:c9-ownership-checker-artifact :kind])))
     (is (= :gravity/c10-safety-operation-inventory (:artifact inventory)))
+    (is (= 12 (count (:records inventory))))
+    (is (= 12 (count (:records outcomes))))
+    (is (= 3 (count (:records checks))))
+    (is (= 7 (count (:records obligations))))
+    (is (= 3 (count (:records certificates))))
+    (is (= 2 (count (:records unsafe))))
+    (is (= 1 (count (:taint-records report))))
+    (is (= 1 (count (:capability-records report))))
+    (is (= 1 (count (:records generated))))
+    (is (= 2 (count (:records optimization))))
     (is (seq (:records inventory)))
     (is (= (count (:records inventory)) (count (:records outcomes))))
     (is (every? bootstrap/c10-safe-outcomes outcome-values))
@@ -15281,6 +15341,7 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
+
 (deftest c11-mir-spec-artifact-preserves-p06-d090-contract
   (let [artifact (bootstrap/compiler-c11-mir-file-artifact
                   (fixture "accepted/compiler-c11-mir-spec.gravity"))
@@ -15306,6 +15367,9 @@
            (get-in artifact [:c10-safety-analysis-artifact :artifact-id])))
     (is (= :hosted (:profile module)))
     (is (= :jvm (:target-request module)))
+    (is (= 20 (count operations)))
+    (is (= 19 (count (:data-flow-graph artifact))))
+    (is (= 1 (count (:domain-anchor-table artifact))))
     (is (= (count bootstrap/c11-mir-required-operation-families)
            (count operations)))
     (is (= (set bootstrap/c11-mir-required-operation-families)
@@ -15353,6 +15417,7 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
+
 (deftest c12-domain-ir-architecture-artifact-preserves-p06-d091-contract
   (let [artifact (bootstrap/compiler-c12-domain-ir-file-artifact
                   (fixture "accepted/compiler-c12-domain-ir.gravity"))
@@ -15386,6 +15451,7 @@
            (get-in artifact [:c11-mir-spec-artifact :artifact-id])))
     (is (= (count bootstrap/domain-ir-required-families)
            (count registrations)))
+    (is (= 10 (count registrations)))
     (is (= (count bootstrap/domain-ir-required-families)
            (count domain-artifacts)))
     (is (= (set bootstrap/domain-ir-required-families) domains))
@@ -15444,6 +15510,7 @@
     (is (= :complete (:plugin-policy-status conformance)))
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
+
 
 (deftest c13-mir-optimization-artifact-preserves-p06-d092-contract
   (let [artifact (bootstrap/compiler-c13-optimization-file-artifact
@@ -15529,6 +15596,7 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
 
+
 (deftest c14-target-lowering-artifact-preserves-p06-d093-contract
   (let [artifact (bootstrap/compiler-c14-lowering-file-artifact
                   (fixture "accepted/compiler-c14-lowering.gravity"))
@@ -15604,6 +15672,7 @@
     (is (= :complete (:manifest-status conformance)))
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
+
 
 (deftest c15-compiler-diagnostics-artifact-preserves-p06-d094-contract
   (let [artifact (bootstrap/compiler-c15-diagnostics-file-artifact
@@ -15681,6 +15750,7 @@
     (is (= :complete (:rendering-status conformance)))
     (is (= :complete (:golden-status conformance)))
     (is (= :complete (:status conformance)))))
+
 
 (deftest c16-incremental-compilation-artifact-preserves-p06-d095-contract
   (let [artifact (bootstrap/compiler-c16-incremental-file-artifact
@@ -15771,6 +15841,7 @@
     (is (= :complete (:release-rebuild-status conformance)))
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:status conformance)))))
+
 
 (deftest c17-compiler-plugin-artifact-preserves-p06-d096-contract
   (let [artifact (bootstrap/compiler-c17-plugin-file-artifact
@@ -15873,6 +15944,7 @@
     (is (= :complete (:diagnostic-status conformance)))
     (is (= :complete (:conformance-status conformance)))
     (is (= :complete (:status conformance)))))
+
 
 (deftest c18-compiler-verification-artifact-preserves-p06-d097-contract
   (let [artifact (bootstrap/compiler-c18-verification-file-artifact

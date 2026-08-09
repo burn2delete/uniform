@@ -32,11 +32,20 @@ def manifest() -> dict:
             "id": check_id, "lane": "focused", "command": ["tool", check_id],
             "inputs": [f"{check_id}.txt"], "depends_on": dependencies,
             "cost": "cheap", "lock": None, "exclusive": False, "fresh": False,
-            "authority": "none", "daemonization": "forbidden",
+            "authority": "none", "daemonization": "forbidden", "resource_class": "python-cheap",
         }
     return {
         "schema_version": 1, "name": "composition-test",
         "lanes": {"preflight": {}, "focused": {}, "heavy-candidate": {}},
+        "resource_policy": {
+            "aggregate": {"max_rss_mb": 4096, "max_processes": 16},
+            "classes": {
+                "python-cheap": {"max_concurrency": 4, "default_rss_mb": 128, "default_processes": 1, "jvm_xmx_mb": None, "capacity_lock": None},
+                "leaf-jvm": {"max_concurrency": 3, "default_rss_mb": 512, "default_processes": 2, "jvm_xmx_mb": 256, "capacity_lock": "/tmp/gravity-sh07-heavy.lock"},
+                "bootstrap-hosted": {"max_concurrency": 1, "default_rss_mb": 1024, "default_processes": 2, "jvm_xmx_mb": None, "capacity_lock": "/tmp/gravity-sh07-heavy.lock"},
+                "memory-heavy": {"max_concurrency": 1, "default_rss_mb": 4096, "default_processes": 4, "jvm_xmx_mb": None, "capacity_lock": "/tmp/gravity-sh07-heavy.lock"},
+            },
+        },
         "checks": [check("leaf", ["base"]), check("base", []), check("side", ["base"])],
     }
 
@@ -54,19 +63,35 @@ class CompositionTests(unittest.TestCase):
 
     def record(self, check_id: str, *, status: str = "passed") -> dict:
         declaration = next(check for check in self.manifest["checks"] if check["id"] == check_id)
-        identity = verifier.check_identity(declaration, self.root)
+        identity = verifier.check_identity(declaration, self.root, self.manifest)
+        resource = verifier.check_resource_declaration(self.manifest, declaration)
         record = {
             "id": check_id, "lane": declaration["lane"], "command": declaration["command"],
             "depends_on": declaration["depends_on"], "lock": declaration["lock"],
             "exclusive": declaration["exclusive"], "cost": declaration["cost"],
-            "fresh": declaration["fresh"], "command_identity": identity["command"],
+            "fresh": declaration["fresh"], "timeout_seconds": identity["timeout_seconds"],
+            "command_identity": identity["command"],
             "inputs": identity["inputs"],
+            "resource": resource,
+            "resource_observation": (
+                verifier._not_executed_resource_observation(resource)
+                if status == "reused"
+                else {
+                    "source": "process-tree-sampling", "sample_count": 2,
+                    "sample_interval_seconds": 0.25, "peak_rss_bytes": 1024,
+                    "peak_process_count": 1, "telemetry_available": True,
+                    "telemetry_error": None,
+                    "declared_reserved_rss_bytes": 128 * 1024 * 1024,
+                    "declared_reserved_processes": 1, "rss_exceeded": False,
+                    "processes_exceeded": False, "authoritative": False,
+                }
+            ),
             "status": status,
             "authority": "fresh-command-pass-non-authoritative" if status == "passed" else "non-authoritative",
             "returncode": 0, "stdout": "volatile output", "stderr": "",
             "started_at": "volatile-start", "finished_at": "volatile-finish", "duration_ms": 1.0,
         }
-        record["cache_key"] = composer._cache_key(self.manifest, composer._check_identity(declaration, record))
+        record["cache_key"] = composer._cache_key(self.manifest, composer._check_identity(self.manifest, declaration, record))
         return record
 
     def receipt(self, *records: dict) -> dict:
@@ -86,14 +111,14 @@ class CompositionTests(unittest.TestCase):
     def rekey(self, record: dict, *, bind_supervision: bool = False) -> None:
         declaration = next(check for check in self.manifest["checks"] if check["id"] == record["id"])
         if bind_supervision:
-            identity = composer._check_identity(declaration, record)
+            identity = composer._check_identity(self.manifest, declaration, record)
             unbound = copy.deepcopy(identity)
             unbound["command"]["runtime"].pop("supervision_environment", None)
             marker = hashlib.sha256(("gravity-supervision:" + canonical(unbound)).encode()).hexdigest()[:32]
             record["command_identity"]["runtime"]["supervision_environment"] = {
                 "_GRAVITY_VERIFIER_RUN": {"present": True, "sha256": hashlib.sha256(marker.encode()).hexdigest()}
             }
-        record["cache_key"] = composer._cache_key(self.manifest, composer._check_identity(declaration, record))
+        record["cache_key"] = composer._cache_key(self.manifest, composer._check_identity(self.manifest, declaration, record))
 
     def test_reordering_and_passed_reused_dedupe_are_deterministic(self) -> None:
         base = self.record("base")
@@ -116,6 +141,99 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(incomplete["status"], "incomplete")
         self.assertEqual(incomplete["coverage"]["missing"], ["leaf"])
         self.assertFalse(incomplete["authoritative"])
+
+    def test_resource_observations_are_validated_preserved_and_summarized(self) -> None:
+        base = self.record("base")
+        leaf = self.record("leaf", status="reused")
+        result = self.compose(self.receipt(leaf, base), expected=["base", "leaf"])
+        self.assertEqual(base["resource_observation"], result["checks"][0]["resource_observation"])
+        summary = result["resource_summary"]
+        self.assertFalse(summary["authoritative"])
+        self.assertEqual(1, summary["executed_count"])
+        self.assertEqual(1, summary["not_executed_count"])
+        self.assertEqual(1, summary["telemetry_available_count"])
+        self.assertEqual(2, summary["total_sample_count"])
+        self.assertEqual(1024, summary["peak_rss_bytes"])
+
+    def test_rejects_forged_or_inconsistent_resource_observation(self) -> None:
+        mutations = [
+            ("missing", lambda value: value.pop("peak_rss_bytes"), "invalid keys"),
+            ("authority", lambda value: value.__setitem__("authoritative", True), "non-authoritative"),
+            ("reservation", lambda value: value.__setitem__("declared_reserved_processes", 9), "reservation"),
+            ("exceeded", lambda value: value.__setitem__("rss_exceeded", True), "exceeded flags"),
+            ("invented", lambda value: (value.__setitem__("telemetry_available", False), value.__setitem__("telemetry_error", "no ps")), "invents measurements"),
+        ]
+        for name, mutate, fragment in mutations:
+            record = self.record("base")
+            mutate(record["resource_observation"])
+            with self.subTest(name=name):
+                self.assert_invalid(self.receipt(record), fragment)
+
+    def test_resource_observation_exact_types_and_positive_measurements(self) -> None:
+        mutations = [
+            ("reservation-bool", "declared_reserved_processes", True, "reservation"),
+            ("sample-bool", "sample_count", True, "sample_count"),
+            ("available-int", "telemetry_available", 1, "telemetry_available"),
+            ("rss-bool", "peak_rss_bytes", True, "invalid measurements"),
+            ("rss-zero", "peak_rss_bytes", 0, "invalid measurements"),
+            ("process-bool", "peak_process_count", True, "invalid measurements"),
+            ("process-zero", "peak_process_count", 0, "invalid measurements"),
+            ("rss-exceeded-int", "rss_exceeded", 0, "exceeded flags"),
+            ("process-exceeded-int", "processes_exceeded", 0, "exceeded flags"),
+        ]
+        for name, field, replacement, fragment in mutations:
+            record = self.record("base")
+            record["resource_observation"][field] = replacement
+            with self.subTest(name=name):
+                self.assert_invalid(self.receipt(record), fragment)
+
+        unavailable = self.record("base")
+        unavailable["resource_observation"].update(
+            sample_count=0, peak_rss_bytes=None, peak_process_count=None,
+            telemetry_available=False, telemetry_error="unavailable",
+            rss_exceeded=False, processes_exceeded=None,
+        )
+        self.assert_invalid(self.receipt(unavailable), "invents exceeded flags")
+
+    def test_duplicate_fresh_observations_merge_independent_maxima_order_invariant(self) -> None:
+        self.manifest["resource_policy"]["classes"]["python-cheap"]["default_processes"] = 10
+        self.identity["sha256"] = hashlib.sha256(canonical(self.manifest).encode()).hexdigest()
+        observations = []
+        for rss, processes, samples in ((900, 2, 2), (100000, 3, 5), (50000, 7, 4)):
+            record = self.record("base")
+            record["resource_observation"].update(
+                peak_rss_bytes=rss, peak_process_count=processes,
+                sample_count=samples, declared_reserved_processes=10,
+            )
+            observations.append(record)
+        first = self.compose(*(self.receipt(record) for record in observations), expected=["base"])
+        second = self.compose(*(self.receipt(record) for record in reversed(observations)), expected=["base"])
+        self.assertEqual(first, second)
+        merged = first["checks"][0]["resource_observation"]
+        self.assertEqual("composed-process-tree-maxima", merged["source"])
+        self.assertEqual(100000, merged["peak_rss_bytes"])
+        self.assertEqual(7, merged["peak_process_count"])
+        self.assertEqual(5, merged["sample_count"])
+        self.assertFalse(merged["rss_exceeded"])
+        self.assertFalse(merged["processes_exceeded"])
+
+    def test_duplicate_available_and_unavailable_discloses_limits_without_losing_peak(self) -> None:
+        measured = self.record("base")
+        measured["resource_observation"]["peak_rss_bytes"] = 100000
+        unavailable = self.record("base")
+        unavailable["resource_observation"].update(
+            sample_count=0, peak_rss_bytes=None, peak_process_count=None,
+            telemetry_available=False, telemetry_error="ps unavailable",
+            rss_exceeded=None, processes_exceeded=None,
+        )
+        result = self.compose(self.receipt(unavailable), self.receipt(measured), expected=["base"])
+        merged = result["checks"][0]["resource_observation"]
+        self.assertEqual("composed-process-tree-maxima", merged["source"])
+        self.assertEqual(100000, merged["peak_rss_bytes"])
+        self.assertTrue(merged["telemetry_available"])
+        self.assertIn("unavailable telemetry", merged["telemetry_error"])
+        self.assertEqual(1, result["resource_summary"]["composed_count"])
+        self.assertEqual(1, result["resource_summary"]["composed_with_unavailable_count"])
 
     def test_empty_and_unknown_expected_ids(self) -> None:
         result = self.compose(self.receipt(self.record("base")), expected=[])
@@ -163,6 +281,51 @@ class CompositionTests(unittest.TestCase):
     def test_accepts_verifier_generated_identity(self) -> None:
         result = self.compose(self.receipt(self.record("base")), expected=["base"])
         self.assertEqual(result["status"], "complete")
+
+    def test_verifier_and_composer_share_exact_semantic_identity(self) -> None:
+        declaration = next(check for check in self.manifest["checks"] if check["id"] == "base")
+        declaration["fresh"] = True
+        declaration["timeout_seconds"] = 17
+        self.identity["sha256"] = hashlib.sha256(canonical(self.manifest).encode()).hexdigest()
+        record = self.record("base")
+        self.assertEqual(
+            composer._check_identity(self.manifest, declaration, record),
+            verifier.check_identity(declaration, self.root, self.manifest),
+        )
+        self.assertEqual(
+            record["cache_key"],
+            verifier.cache_key(self.manifest, declaration, self.root),
+        )
+        self.assertEqual(record["timeout_seconds"], 17.0)
+
+    def test_old_receipt_cannot_compose_after_fresh_or_timeout_change(self) -> None:
+        declaration = next(check for check in self.manifest["checks"] if check["id"] == "base")
+
+        old_fresh_record = self.record("base")
+        declaration["fresh"] = True
+        self.identity["sha256"] = hashlib.sha256(canonical(self.manifest).encode()).hexdigest()
+        self.assert_invalid(self.receipt(old_fresh_record), "declaration does not match")
+
+        declaration["fresh"] = False
+        old_timeout_record = self.record("base")
+        declaration["timeout_seconds"] = 23
+        self.identity["sha256"] = hashlib.sha256(canonical(self.manifest).encode()).hexdigest()
+        self.assert_invalid(self.receipt(old_timeout_record), "declaration does not match")
+
+        current_record = self.record("base")
+        current_record.pop("timeout_seconds")
+        self.assert_invalid(self.receipt(current_record), "missing timeout_seconds")
+
+    def test_rejects_noncanonical_receipt_declaration_scalars(self) -> None:
+        for field, value, fragment in (
+            ("fresh", 0, "fresh declaration metadata must be boolean"),
+            ("timeout_seconds", True, "finite positive float"),
+            ("timeout_seconds", 1, "finite positive float"),
+        ):
+            record = self.record("base")
+            record[field] = value
+            with self.subTest(field=field, value=value):
+                self.assert_invalid(self.receipt(record), fragment)
 
     def test_rejects_rekeyed_noncanonical_or_wrong_input_selection(self) -> None:
         mutations = [
@@ -216,9 +379,6 @@ class CompositionTests(unittest.TestCase):
     def test_rejects_impossible_reuse_and_duplicate_id(self) -> None:
         base = next(check for check in self.manifest["checks"] if check["id"] == "base")
         base["fresh"] = True
-        self.identity["sha256"] = hashlib.sha256(canonical(self.manifest).encode()).hexdigest()
-        self.assert_invalid(self.receipt(self.record("base", status="reused")), "cannot be reused")
-        base["fresh"] = False; base["lane"] = "heavy-candidate"; base["authority"] = "declared"
         self.identity["sha256"] = hashlib.sha256(canonical(self.manifest).encode()).hexdigest()
         self.assert_invalid(self.receipt(self.record("base", status="reused")), "cannot be reused")
         base["lane"] = "focused"; base["authority"] = "none"

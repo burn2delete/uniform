@@ -51,33 +51,153 @@
          (map #(str/replace % java.io.File/separator "/"))
          set)))
 
+(defn- top-level-paths
+  "Returns exact, direct-child paths for a Stage0 root.
+
+  The Stage0 component contract intentionally excludes nested runner and
+  self-hosting infrastructure.  Keep this helper exact so an unrelated file
+  cannot silently enter the owner projection.
+  "
+  [relative-root suffix]
+  (let [root-file (path relative-root)
+        root-path @root]
+    (->> (.listFiles root-file)
+         (filter #(.isFile %))
+         (filter #(str/ends-with? (.getName %) suffix))
+         (map #(str (.relativize root-path (.toPath %))))
+         (map #(str/replace % java.io.File/separator "/"))
+         set)))
+
+(defn- stage0-source-paths
+  []
+  (top-level-paths "bootstrap/clojure/src/gravity" ".clj"))
+
+(defn- stage0-test-paths
+  []
+  (top-level-paths "bootstrap/clojure/test/gravity" "_test.clj"))
+
+(defn- all-direct-stage0-test-paths
+  []
+  (top-level-paths "bootstrap/clojure/test/gravity" ".clj"))
+
+(defn- stage0-component-id
+  "Derives the reviewed Stage0 id from one exact source/test stem."
+  [relative]
+  (some-> (re-find
+           #"^bootstrap/clojure/(?:src|test)/gravity/([^/]+?)(?:_test)?\.clj$"
+           relative)
+          second
+          (str/replace "_test" "")
+          (str/replace "_" "-")))
+
+(defn- paired-stage0-path
+  [relative]
+  (when-let [id (stage0-component-id relative)]
+    (let [stem (str/replace id "-" "_")]
+      (cond
+        (str/starts-with? relative "bootstrap/clojure/src/")
+        (str "bootstrap/clojure/test/gravity/" stem "_test.clj")
+
+        (str/starts-with? relative "bootstrap/clojure/test/")
+        (str "bootstrap/clojure/src/gravity/" stem ".clj")))))
+
+(defn- coordinator-support-paths
+  "Return Clojure coordinator reservations outside paired Stage0.
+
+  Coordinator runners are intentionally not Stage0 components: they have no
+  source/test pair and must not be admitted by the leaf projection merely
+  because they have a module-owner record.
+  "
+  [record paired-stage0-tests]
+  (set/difference
+   (set (filter #(re-find
+                 #"^bootstrap/clojure/test/gravity/[^/]+\.clj$"
+                 %)
+                (get-in record [:coordinator-owned :central-routing])))
+   paired-stage0-tests))
+
 (deftest ownership-record-is-total-and-unambiguous
   (let [record (ownership-record)
         module-owners (:module-owners record)
-        actual-modules (gravity-module-paths)
+        actual-gravity-modules (gravity-module-paths)
+        actual-stage0-sources (stage0-source-paths)
+        all-direct-stage0-tests (all-direct-stage0-test-paths)
+        support-paths
+        (coordinator-support-paths record (stage0-test-paths))
+        actual-stage0-tests
+        (set/difference all-direct-stage0-tests support-paths)
+        actual-stage0-paths (set/union actual-stage0-sources actual-stage0-tests)
         declared-modules (set (keys module-owners))
         slice-ids (set (keys (:slice-owners record)))
         expected-slice-ids
-        (set (map #(format "SH-%02d" %) (range 30)))]
+        (set (map #(format "SH-%02d" %) (range 30)))
+        declared-gravity-modules
+        (set (filter #(str/starts-with? % "bootstrap/gravity/src/")
+                     declared-modules))
+        declared-stage0-paths
+        (set/difference
+         (set (filter #(re-find
+                        #"^bootstrap/clojure/(?:src|test)/gravity/[^/]+$"
+                        %)
+                       declared-modules))
+         support-paths)]
     (testing "the countable plan and all current Gravity modules have one owner"
       (is (= :gravity/self-hosting-slice-ownership-v1 (:schema record)))
       (is (= "SH-01" (:slice record)))
       (is (= :complete (:status record)))
       (is (= :master-coordinator (:integration-owner record)))
       (is (= expected-slice-ids slice-ids))
-      (is (= actual-modules declared-modules))
-      (is (= 42 (count module-owners)))
+      (is (= actual-gravity-modules declared-gravity-modules))
+      (is (= 42 (count actual-gravity-modules)))
+      (is (= (stage0-test-paths) actual-stage0-tests))
+      (is (= all-direct-stage0-tests
+             (set/union actual-stage0-tests support-paths)))
+      (is (empty? (set/intersection actual-stage0-tests support-paths)))
+      (is (= 100 (count actual-stage0-paths)))
+      (is (= actual-stage0-paths declared-stage0-paths))
+      (is (= 166 (count module-owners)))
       (is (every? keyword? (vals module-owners))))
+    (testing "coordinator support paths stay reserved outside paired Stage0"
+      (is (= #{"bootstrap/clojure/test/gravity/development_test_runner.clj"
+               "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj"
+               "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"}
+             support-paths))
+      (is (every? #(and (contains?
+                        (set (get-in record [:coordinator-owned :central-routing]))
+                        %)
+                       (= :master-coordinator (get module-owners %)))
+                  support-paths))
+      (is (empty? (set/intersection actual-stage0-paths support-paths))))
+    (testing "all exact module-owner paths exist and source/test owners are paired"
+      (doseq [relative declared-modules]
+        (is (.isFile (path relative)) relative))
+      (doseq [source actual-stage0-sources
+              :let [test (paired-stage0-path source)]]
+        (is (some? test) source)
+        (is (= (get module-owners source)
+               (get module-owners test))
+            [source test]))
+      (doseq [test actual-stage0-tests
+              :let [source (paired-stage0-path test)]]
+        (is (some? source) test)
+        (is (= (get module-owners test)
+               (get module-owners source))
+            [test source])))
     (testing "coordinator-only integration modules are not assigned to a leaf"
       (doseq [module
               (get-in record [:coordinator-owned :integration-surfaces])
               :when (str/starts-with? module "bootstrap/gravity/src/")]
         (is (= :master-coordinator (get module-owners module)) module)))
-    (testing "reserved leaf modules do not collide with current modules"
-      (is (empty?
-           (set/intersection
-            declared-modules
-            (set (keys (:reserved-leaf-modules record)))))))))
+    (testing "reserved Stage0 ids cover exactly the 50 source components"
+      (let [reserved (:reserved-leaf-modules record)
+            expected-ids (set (map stage0-component-id actual-stage0-sources))]
+        (is (= 50 (count reserved)))
+        (is (= expected-ids (set (keys reserved))))
+        (doseq [source actual-stage0-sources
+                :let [id (stage0-component-id source)
+                      owner (get module-owners source)]]
+          (is (some? id) source)
+          (is (= owner (get reserved id)) [id source]))))))
 
 (deftest coordinator-reservations-and-leaf-conventions-are-explicit
   (let [record (ownership-record)
@@ -108,6 +228,46 @@
              (:test-runner conventions)))
       (is (some #{:another-leaf-owner}
                 (:worker-must-not-edit conventions))))))
+
+(deftest stage0-compatibility-tests-are-five-exact-owned-paths
+  (let [record (ownership-record)
+        compatibility (:bootstrap-compatibility-tests record)
+        module-owners (:module-owners record)
+        stage0-tests (stage0-test-paths)]
+    (is (= 5 (count compatibility)))
+    (is (= 5 (count (set compatibility))))
+    (doseq [test-path compatibility
+            :let [source-path (paired-stage0-path test-path)
+                  owner (get module-owners test-path)]]
+      (is (.isFile (path test-path)) test-path)
+      (is (contains? stage0-tests test-path) test-path)
+      (is (keyword? owner) test-path)
+      (is (= owner (get module-owners source-path)) [test-path source-path]))))
+
+(deftest bootstrap-free-stage0-catalog-is-exact-when-runner-is-available
+  (testing "the optional bootstrap-free runner owns exactly the 44 leaf tests"
+    (if-not (io/resource "gravity/bootstrap_free_leaf_test_runner.clj")
+      (is true "bootstrap-free runner is not present in this checkout")
+      (do
+        (require 'gravity.bootstrap-free-leaf-test-runner)
+        (let [runner-ns (find-ns 'gravity.bootstrap-free-leaf-test-runner)
+              catalog (var-get (ns-resolve runner-ns 'catalog))
+              validate! (var-get (ns-resolve runner-ns 'validate-catalog!))
+              record (ownership-record)
+              stage0-tests (stage0-test-paths)
+              expected
+              (set/difference
+               stage0-tests
+               (set (:bootstrap-compatibility-tests record))
+               #{"bootstrap/clojure/test/gravity/bootstrap_test.clj"})]
+          (is (= 44 (count catalog)))
+          (is (= expected (set (map :test-path catalog))))
+          (is (true? (validate!)))
+          (is (every? symbol? (map :namespace catalog)))
+          (is (= (set (map #(symbol (str "gravity." (str/replace % "_" "-") "-test"))
+                           (map #(str/replace % #"^bootstrap/clojure/test/gravity/|_test\.clj$" "")
+                                expected)))
+                 (set (map :namespace catalog)))))))))
 
 (deftest dedicated-test-routing-does-not-use-the-monolithic-test-file
   (let [deps (edn/read-string (slurp (path "deps.edn")))

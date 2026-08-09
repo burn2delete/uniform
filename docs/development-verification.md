@@ -189,6 +189,50 @@ match those bindings. A descendant merge with a changed fingerprint requires a
 new proof; an older detached result is never carried forward merely because
 the merge is related.
 
+## Development verifier resource admission
+
+`tools/development_verification_manifest.json` declares a strict
+`resource_policy`. Its global RSS and process budgets and each class's
+concurrency, default RSS, and default process reservations are admission
+estimates. They are not runtime measurements, resource enforcement, benchmark
+evidence, or authority claims. Every planned, executed, reused, or blocked
+check receipt records the resolved non-authoritative reservation.
+
+Executed checks also record bounded best-effort process-tree observations at a
+0.25-second interval, including sampled peak RSS and process count. These
+measurements are non-authoritative sampled high-water observations, not OS
+enforcement or benchmark evidence. An observed reservation exceedance fails
+the check and prevents caching. If host telemetry is unavailable, the receipt
+records that error and leaves measurements and exceedance decisions unknown;
+it does not manufacture a zero measurement. Planned, reused, and blocked
+checks record an explicit `not-executed` observation. Receipt composition
+validates these shapes and reports a deterministic non-authoritative resource
+summary without promoting any development evidence. When multiple receipts
+provide fresh observations for the same semantic check, composition emits an
+explicit `composed-process-tree-maxima` observation: RSS and process peaks are
+merged independently by maximum, sample count is the maximum reported count
+rather than a sum that could double-count one execution, and any unavailable
+input telemetry remains disclosed. A reused `not-executed` observation never
+replaces a fresh measurement.
+
+The canonical classes are `python-cheap`, `leaf-jvm`, `bootstrap-hosted`, and
+`memory-heavy`. Ready unlocked checks are considered in stable check-id order
+and admitted only while the requested `--jobs` limit, their class limit, and
+both aggregate budgets remain satisfied. The default jobs value therefore
+cannot bypass the resource policy. A locked or heavy check remains a
+single-check wave.
+
+`leaf-jvm` and `bootstrap-hosted` share the canonical
+`/tmp/gravity-sh07-heavy.lock` capacity lock with memory-heavy work. The
+verifier acquires this lock once before submitting an admitted JVM batch, so
+the three permitted leaf JVMs can run together without racing an external
+Stage7 owner or recursively locking in each child. A busy capacity lock blocks
+the batch before any command starts. Memory-heavy checks retain their existing
+per-check canonical lock and do not acquire it a second time as a batch lock.
+When a direct `clojure` command's class declares `jvm_xmx_mb`, the command must
+contain that exact single `-J-Xmx...m` option. Wrapper and `bin/` commands may
+use a class whose JVM limit is null.
+
 ## Lane order
 
 Use the first lane that answers the question. Re-run the routing/plan check

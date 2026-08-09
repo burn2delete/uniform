@@ -14,6 +14,9 @@ import argparse
 import copy
 import fnmatch
 import json
+import hashlib
+import json
+import math
 from pathlib import Path
 import re
 import sys
@@ -30,9 +33,152 @@ except ImportError as exc:  # pragma: no cover - only reachable from bad setup
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = validator.DEFAULT_MANIFEST
 
+IDENTITY_ALGORITHM = "sha256"
+IDENTITY_SCHEMA_VERSION = "1"
+IDENTITY_DOMAIN_VERSION = "gravity.project-structure.static-contract/v1"
+
+_IDENTITY_DOMAINS = {
+    "manifest": f"{IDENTITY_DOMAIN_VERSION}/manifest",
+    "canonical-pass": f"{IDENTITY_DOMAIN_VERSION}/canonical-pass",
+    "canonical-pass-set": f"{IDENTITY_DOMAIN_VERSION}/canonical-pass-set",
+    "artifact": f"{IDENTITY_DOMAIN_VERSION}/artifact",
+    "artifact-set": f"{IDENTITY_DOMAIN_VERSION}/artifact-set",
+    "impact-closure": f"{IDENTITY_DOMAIN_VERSION}/impact-closure",
+}
+
 
 class RenderError(ValueError):
     """Raised when a manifest cannot be rendered safely."""
+
+
+def _canonical_json_value(value: Any, active: set[int] | None = None) -> Any:
+    """Return a strict JSON value with deterministic object-key ordering.
+
+    The identity layer accepts JSON data, not Python's wider set of values.
+    Rejecting non-finite numbers, non-string object keys, unsupported objects,
+    and cycles keeps failures explicit instead of relying on serializer quirks.
+    """
+
+    if active is None:
+        active = set()
+    if value is None or isinstance(value, (bool, int, str)):
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise RenderError("contract identity input contains a non-finite number")
+        return value
+    if isinstance(value, list):
+        marker = id(value)
+        if marker in active:
+            raise RenderError("contract identity input contains a cycle")
+        active.add(marker)
+        try:
+            return [_canonical_json_value(item, active) for item in value]
+        finally:
+            active.remove(marker)
+    if isinstance(value, dict):
+        marker = id(value)
+        if marker in active:
+            raise RenderError("contract identity input contains a cycle")
+        if any(not isinstance(key, str) for key in value):
+            raise RenderError("contract identity JSON object keys must be strings")
+        active.add(marker)
+        try:
+            return {
+                key: _canonical_json_value(value[key], active)
+                for key in sorted(value)
+            }
+        finally:
+            active.remove(marker)
+    raise RenderError(
+        "contract identity input contains unsupported JSON value "
+        f"of type {type(value).__name__}"
+    )
+
+
+def _canonical_json_sha256(value: Any, domain: str) -> str:
+    """Hash a strict canonical JSON value under an explicit identity domain."""
+
+    if domain not in _IDENTITY_DOMAINS:
+        raise RenderError(f"unknown contract identity domain: {domain!r}")
+    try:
+        canonical_value = _canonical_json_value(value)
+    except RecursionError as exc:
+        raise RenderError(
+            "contract identity input exceeds the supported nesting depth"
+        ) from exc
+    envelope = {
+        "domain": _IDENTITY_DOMAINS[domain],
+        "schema_version": IDENTITY_SCHEMA_VERSION,
+        "value": canonical_value,
+    }
+    try:
+        encoded = json.dumps(
+            envelope,
+            ensure_ascii=True,
+            allow_nan=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    except (TypeError, ValueError, RecursionError) as exc:
+        raise RenderError(f"contract identity canonicalization failed: {exc}") from exc
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _identity_manifest_payload(manifest: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the full manifest with semantically unordered artifacts sorted."""
+
+    try:
+        payload = copy.deepcopy(dict(manifest))
+    except RecursionError as exc:
+        raise RenderError(
+            "project structure manifest exceeds the supported identity nesting depth"
+        ) from exc
+    artifacts = payload.get("artifacts")
+    if isinstance(artifacts, list):
+        payload["artifacts"] = sorted(artifacts, key=lambda item: item["id"])
+    return payload
+
+
+def contract_identity_view(manifest: Mapping[str, Any]) -> dict[str, Any]:
+    """Return non-authoritative static identities for the validated contract.
+
+    These digests identify renderer inputs.  They are deliberately not cache,
+    verification, release, ownership, or execution authority.
+    """
+
+    manifest = _require_valid_manifest(manifest)
+    pass_records = [
+        {"id": item["id"], "sha256": _canonical_json_sha256(item, "canonical-pass")}
+        for item in manifest.get("canonical_passes", ())
+    ]
+    artifact_records = [
+        {"id": item["id"], "sha256": _canonical_json_sha256(item, "artifact")}
+        for item in sorted(manifest.get("artifacts", ()), key=lambda item: item["id"])
+    ]
+    return {
+        "identity_kind": "static-contract-only",
+        "algorithm": IDENTITY_ALGORITHM,
+        "schema_version": IDENTITY_SCHEMA_VERSION,
+        "domain_version": IDENTITY_DOMAIN_VERSION,
+        "non_authoritative": True,
+        "authorizes_cache_reuse": False,
+        "authorizes_verification": False,
+        "authorizes_release": False,
+        "authorizes_ownership": False,
+        "manifest": {
+            "id": manifest.get("manifest_id"),
+            "sha256": _canonical_json_sha256(
+                _identity_manifest_payload(manifest), "manifest"
+            ),
+        },
+        "canonical_passes": pass_records,
+        "canonical_passes_sha256": _canonical_json_sha256(
+            pass_records, "canonical-pass-set"
+        ),
+        "artifacts": artifact_records,
+        "artifacts_sha256": _canonical_json_sha256(artifact_records, "artifact-set"),
+    }
 
 
 def _sorted_unique(values: Iterable[str]) -> list[str]:
@@ -466,7 +612,7 @@ def changed_path_impact_closure(
         for pass_id in sorted(impacted_pass_ids):
             impacted_artifacts.update(pass_by_id[pass_id].get("output_artifacts", ()))
 
-    return {
+    closure = {
         "changed_paths": normalised_paths,
         "path_matches": view["paths"],
         "unowned_paths": view["unowned_paths"],
@@ -484,6 +630,40 @@ def changed_path_impact_closure(
             item["id"] for item in passes if item["id"] in impacted_pass_ids
         ],
     }
+    identities = contract_identity_view(manifest)
+    pass_identities = {
+        item["id"]: item for item in identities["canonical_passes"]
+    }
+    artifact_identities = {item["id"]: item for item in identities["artifacts"]}
+    impact_identity = {
+        "identity_kind": "static-contract-impact-only",
+        "algorithm": IDENTITY_ALGORITHM,
+        "schema_version": IDENTITY_SCHEMA_VERSION,
+        "domain_version": IDENTITY_DOMAIN_VERSION,
+        "non_authoritative": True,
+        "authorizes_cache_reuse": False,
+        "authorizes_verification": False,
+        "authorizes_release": False,
+        "base_manifest_sha256": identities["manifest"]["sha256"],
+        "impacted_passes": [
+            copy.deepcopy(pass_identities[item_id])
+            for item_id in closure["impacted_passes"]
+        ],
+        "impacted_artifacts": [
+            copy.deepcopy(artifact_identities[item_id])
+            for item_id in closure["impacted_artifacts"]
+            if item_id in artifact_identities
+        ],
+    }
+    impact_identity["sha256"] = _canonical_json_sha256(
+        {
+            "base_manifest_sha256": identities["manifest"]["sha256"],
+            "closure": closure,
+        },
+        "impact-closure",
+    )
+    closure["impact_identity"] = impact_identity
+    return closure
 
 
 def render_structure(
@@ -499,6 +679,7 @@ def render_structure(
             "description": manifest.get("description"),
         },
         "summary": render_summary(manifest),
+        "contract_identity": contract_identity_view(manifest),
         "canonical_pass_table": canonical_pass_table(manifest),
         "slice_topological_waves": slice_topological_waves(manifest),
         "owner_path_view": owner_path_view(manifest),
@@ -538,6 +719,8 @@ def _selected_report(report: Mapping[str, Any], sections: Sequence[str]) -> Mapp
         "owners": "owner_path_view",
         "owner-path": "owner_path_view",
         "impact": "changed_path_impact",
+        "identity": "contract_identity",
+        "identities": "contract_identity",
     }
     for section in sections:
         key = section_keys.get(section)
@@ -558,7 +741,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--section",
         action="append",
-        choices=("all", "summary", "passes", "canonical-passes", "slices", "slice-waves", "owners", "owner-path", "impact"),
+        choices=("all", "summary", "passes", "canonical-passes", "slices", "slice-waves", "owners", "owner-path", "impact", "identity", "identities"),
         default=[],
         help="restrict output to one or more report sections",
     )

@@ -3,8 +3,9 @@
 
   This is a leaf utility: it reads the coordinator-owned ownership record and
   backlog, but does not modify either one. Test and fixture ownership follows
-  the SH-01 naming conventions, so a new leaf test remains parallel-safe
-  without an edit to the central runner."
+  the SH-01 naming conventions, while exact Stage0 Clojure source/test paths
+  use their reserved component owner and slice closure. A new leaf test remains
+  parallel-safe without an edit to the central runner."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.set :as set]
@@ -21,6 +22,9 @@
 (def ^:private fixed-stage-infrastructure-namespaces
   #{'gravity.self-hosting.stage3-fragment-size-preflight-test
     'gravity.self-hosting.stage3-verification-runner-test})
+
+(def ^:private component-cross-cutting-reason
+  :reserved-component-owner-has-no-slice)
 
 (defn- repository-root
   []
@@ -183,6 +187,14 @@
   [relative]
   (or
    (str/starts-with? relative "bootstrap/gravity/src/")
+   (boolean
+    (re-matches
+     #"bootstrap/clojure/src/gravity/[^/]+\.clj"
+     relative))
+   (boolean
+    (re-matches
+     #"bootstrap/clojure/test/gravity/[^/]+_test\.clj"
+     relative))
    (str/starts-with?
     relative
     "bootstrap/clojure/test/gravity/self_hosting/")
@@ -190,13 +202,101 @@
     relative
     "bootstrap/clojure/fixtures/self-hosting/")))
 
+(defn- stage0-component-id
+  "Derives a Stage0 component id from an exact top-level source/test stem."
+  [relative]
+  (some-> (re-find
+           #"^bootstrap/clojure/(?:src|test)/gravity/([^/]+?)(?:_test)?\.clj$"
+           relative)
+          second
+          (str/replace "_test" "")
+          (str/replace "_" "-")))
+
+(defn- stage0-component-metadata
+  "Returns reviewed component identity only for an exact reserved stem.
+
+  A path is enriched only when the reserved id, owner, and canonical paired
+  source/test paths agree.  This keeps synthetic or future paths fail-closed
+  instead of guessing a component namespace from a filename alone.
+  "
+  [record relative module-owner]
+  (when (and module-owner
+             (or (re-matches #"bootstrap/clojure/src/gravity/[^/]+\.clj"
+                             relative)
+                 (re-matches #"bootstrap/clojure/test/gravity/[^/]+_test\.clj"
+                             relative)))
+    (let [component-id (stage0-component-id relative)
+          reserved (:reserved-leaf-modules record)
+          reserved-owner (get reserved component-id)
+          stem (some-> component-id (str/replace "-" "_"))
+          source-path (when stem
+                        (str "bootstrap/clojure/src/gravity/" stem ".clj"))
+          test-path (when stem
+                      (str "bootstrap/clojure/test/gravity/" stem "_test.clj"))
+          expected-path
+          (cond
+            (str/starts-with? relative "bootstrap/clojure/src/") source-path
+            (str/starts-with? relative "bootstrap/clojure/test/") test-path)]
+      (when (and (string? component-id)
+                 (contains? reserved component-id)
+                 (= module-owner reserved-owner)
+                 (= relative expected-path))
+        {:component-id component-id
+         :component-owner module-owner
+         :component-source-path source-path
+         :component-test-path test-path
+         :test-namespace
+         (symbol (str "gravity." component-id "-test"))}))))
+
+(defn- component-identities
+  [classified]
+  (->> classified
+       (keep
+        (fn [entry]
+          (when (:component-id entry)
+            (select-keys entry
+                         [:component-id
+                          :component-owner
+                          :component-source-path
+                          :component-test-path
+                          :test-namespace
+                          :component-cross-cutting?
+                          :component-cross-cutting-reason]))))
+       distinct
+       (sort-by (juxt :component-id :component-test-path))
+       vec))
+
+(defn- component-plan-fields
+  [classified]
+  (let [components (component-identities classified)
+        cross-cutting
+        (->> classified
+             (filter :component-cross-cutting?)
+             (map :path)
+             sort
+             vec)]
+    (cond->
+     {:component-identities components
+      :component-test-namespaces (mapv :test-namespace components)}
+      (seq cross-cutting)
+      (assoc
+       :authority :non-authoritative
+       :authoritative? false
+       :non-authoritative? true
+       :component-cross-cutting? true
+       :component-cross-cutting-reason component-cross-cutting-reason
+       :component-cross-cutting-paths cross-cutting))))
+
 (defn classify-path
   "Classifies a repository-relative path for impact planning.
 
   Shared coordinator surfaces conservatively affect every slice. Dedicated
   tests and fixtures derive their one slice from the SH-01 path convention.
-  A path inside an owned self-hosting root that matches neither rule is
-  unowned and causes changed-file planning to fail closed."
+  Exact Stage0 Clojure paths derive a component identity only when the
+  reserved id, owner, and paired stem agree. A reviewed component whose owner
+  has no slice mapping conservatively selects all slices and remains explicitly
+  non-authoritative. A path inside an owned self-hosting root that matches
+  neither rule is unowned and causes changed-file planning to fail closed."
   [record relative]
   (let [module-owner (get (:module-owners record) relative)
         slice-owners (:slice-owners record)
@@ -207,6 +307,10 @@
                  :when (= module-owner (:leaf-owner ownership))]
              slice)))
         dedicated-slice (path-slice relative)
+        component-metadata (stage0-component-metadata
+                            record
+                            relative
+                            module-owner)
         coordinator?
         (or
          (contains? (coordinator-exact-paths record) relative)
@@ -214,9 +318,11 @@
                (coordinator-prefixes record)))]
     (cond
       coordinator?
-      {:path relative
-       :classification :coordinator
-       :slices (vec (sort (all-slices)))}
+      (merge
+       {:path relative
+        :classification :coordinator
+        :slices (vec (sort (all-slices)))}
+       component-metadata)
 
       dedicated-slice
       {:path relative
@@ -224,14 +330,30 @@
        :slices [dedicated-slice]}
 
       (= :master-coordinator module-owner)
-      {:path relative
-       :classification :coordinator
-       :slices (vec (sort (all-slices)))}
+      (merge
+       {:path relative
+        :classification :coordinator
+        :slices (vec (sort (all-slices)))}
+       component-metadata)
 
       (seq owner-slices)
-      {:path relative
-       :classification :module
-       :slices (vec (sort owner-slices))}
+      (merge
+       {:path relative
+        :classification :module
+        :slices (vec (sort owner-slices))}
+       component-metadata)
+
+      component-metadata
+      (merge
+       {:path relative
+        :classification :module
+        :slices (vec (sort (all-slices)))
+        :authority :non-authoritative
+        :authoritative? false
+        :non-authoritative? true
+        :component-cross-cutting? true
+        :component-cross-cutting-reason component-cross-cutting-reason}
+       component-metadata)
 
       (relevant-owned-root? relative)
       {:path relative :classification :unowned :slices []}
@@ -655,29 +777,31 @@
         "Requested slices must belong to the SH-00 through SH-29 plan"
         {:id "SH01-IMPACT-SLICE"
          :slices (vec (sort invalid-slices))})))
-    {:schema :gravity/sh01-impact-test-plan-v1
-     :mode :iteration
-     :authority :non-authoritative
-     :non-authoritative? true
-     :authoritative? false
-     :iteration? true
-     :iteration-slices (vec (sort requested))
-     :full-gate-deferred? true
-     :full-gate-deferred-reason
-     "The authoritative dependency-expanded gate is deferred for slice iteration feedback."
-     :deferred-coordinator-paths deferred-coordinator
-     :deferred-other-affected-paths deferred-other
-     :deferred-paths (vec (concat deferred-coordinator deferred-other))
-     :direct-slices (vec (sort selected-slices))
-     :affected-slices (vec (sort selected-slices))
-     :changed-paths changed-paths
-     :classifications classified
-     :namespaces namespaces
-     :shards shards
-     :ignored-paths
-     (->> classified
-          (filter #(= :unrelated (:classification %)))
-          (mapv :path))}))
+    (merge
+     {:schema :gravity/sh01-impact-test-plan-v1
+      :mode :iteration
+      :authority :non-authoritative
+      :non-authoritative? true
+      :authoritative? false
+      :iteration? true
+      :iteration-slices (vec (sort requested))
+      :full-gate-deferred? true
+      :full-gate-deferred-reason
+      "The authoritative dependency-expanded gate is deferred for slice iteration feedback."
+      :deferred-coordinator-paths deferred-coordinator
+      :deferred-other-affected-paths deferred-other
+      :deferred-paths (vec (concat deferred-coordinator deferred-other))
+      :direct-slices (vec (sort selected-slices))
+      :affected-slices (vec (sort selected-slices))
+      :changed-paths changed-paths
+      :classifications classified
+      :namespaces namespaces
+      :shards shards
+      :ignored-paths
+      (->> classified
+           (filter #(= :unrelated (:classification %)))
+           (mapv :path))}
+     (component-plan-fields classified))))
 
 (defn- planner-context-for-request
   [request]
@@ -766,17 +890,19 @@
                       {:namespace namespace
                        :slice slice
                        :resource-class (resource-class slice)}))))]
-        {:schema :gravity/sh01-impact-test-plan-v1
-         :direct-slices (vec (sort direct))
-         :affected-slices (vec (sort selected))
-         :changed-paths changed-paths
-         :classifications classified
-         :namespaces namespaces
-         :shards shards
-         :ignored-paths
-         (->> classified
+        (merge
+         {:schema :gravity/sh01-impact-test-plan-v1
+          :direct-slices (vec (sort direct))
+          :affected-slices (vec (sort selected))
+          :changed-paths changed-paths
+          :classifications classified
+          :namespaces namespaces
+          :shards shards
+          :ignored-paths
+          (->> classified
               (filter #(= :unrelated (:classification %)))
-              (mapv :path))}))))
+              (mapv :path))}
+         (component-plan-fields classified))))))
 
 (defn build-namespace-plan
   "Builds a non-authoritative plan for exact dedicated test namespaces.

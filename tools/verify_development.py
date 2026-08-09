@@ -52,6 +52,11 @@ try:
 except ImportError:  # pragma: no cover - direct execution from tools/
     import run_stage3_verification as _stage3
 
+try:
+    from tools.process_tree_telemetry import process_tree_metrics
+except ImportError:  # pragma: no cover - direct execution from tools/
+    from process_tree_telemetry import process_tree_metrics
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = Path(__file__).with_name("development_verification_manifest.json")
@@ -59,9 +64,14 @@ DEFAULT_CACHE = ROOT / ".cpcache" / "development-verification-cache.json"
 SCHEMA_VERSION = 1
 LANES = ("preflight", "focused", "heavy-candidate")
 STATUSES = ("passed", "failed", "blocked", "reused", "planned", "timeout")
+REQUIRED_RESOURCE_CLASSES = frozenset(
+    {"python-cheap", "leaf-jvm", "bootstrap-hosted", "memory-heavy"}
+)
+CANONICAL_HEAVY_LOCK = "/tmp/gravity-sh07-heavy.lock"
 _GLOB_CHARS = frozenset("*?[")
 _MAX_OUTPUT_BYTES = 64 * 1024
 _MUTATION_POLL_SECONDS = 0.05
+_RESOURCE_SAMPLE_SECONDS = 0.25
 _PROCESS_TERM_GRACE_SECONDS = 0.5
 _PROCESS_KILL_GRACE_SECONDS = 0.5
 _STAGE3_RSS_CADENCE_SECONDS = 1.0
@@ -317,6 +327,189 @@ def _check_authority(check: Mapping[str, Any], lane: str) -> str:
     return str(raw)
 
 
+def normalized_timeout_seconds(check: Mapping[str, Any]) -> float | None:
+    """Return one finite positive timeout value or fail with a stable error."""
+
+    timeout = check.get("timeout_seconds")
+    if timeout is None:
+        return None
+    message = f"check {check.get('id')!r} timeout_seconds must be a finite positive number"
+    if type(timeout) not in (int, float):
+        raise ManifestError(message)
+    try:
+        normalized = float(timeout)
+    except (OverflowError, ValueError, TypeError) as exc:
+        raise ManifestError(message) from exc
+    if not math.isfinite(normalized) or normalized <= 0:
+        raise ManifestError(message)
+    return normalized
+
+
+def _positive_integer(value: Any, location: str) -> int:
+    if type(value) is not int or value <= 0:
+        raise ManifestError(f"{location} must be a positive integer")
+    return value
+
+
+def normalized_resource_policy(manifest: Mapping[str, Any]) -> dict[str, Any]:
+    """Validate conservative, non-authoritative scheduling reservations."""
+
+    policy = manifest.get("resource_policy")
+    if not isinstance(policy, Mapping):
+        raise ManifestError("manifest resource_policy must be an object")
+    unknown_policy_fields = set(policy) - {"aggregate", "classes"}
+    if unknown_policy_fields:
+        raise ManifestError(
+            f"manifest resource_policy has unknown fields: {sorted(unknown_policy_fields)}"
+        )
+    aggregate = policy.get("aggregate")
+    if not isinstance(aggregate, Mapping):
+        raise ManifestError("manifest resource_policy.aggregate must be an object")
+    aggregate_fields = {"max_rss_mb", "max_processes"}
+    unknown_aggregate_fields = set(aggregate) - aggregate_fields
+    if unknown_aggregate_fields:
+        raise ManifestError(
+            "manifest resource_policy.aggregate has unknown fields: "
+            f"{sorted(unknown_aggregate_fields)}"
+        )
+    if set(aggregate) != aggregate_fields:
+        raise ManifestError(
+            "manifest resource_policy.aggregate requires max_rss_mb and max_processes"
+        )
+    max_rss_mb = _positive_integer(
+        aggregate["max_rss_mb"], "manifest resource_policy.aggregate.max_rss_mb"
+    )
+    max_processes = _positive_integer(
+        aggregate["max_processes"], "manifest resource_policy.aggregate.max_processes"
+    )
+    classes = policy.get("classes")
+    if not isinstance(classes, Mapping) or not classes:
+        raise ManifestError("manifest resource_policy.classes must be a non-empty object")
+    missing_classes = sorted(REQUIRED_RESOURCE_CLASSES - set(classes))
+    if missing_classes:
+        raise ManifestError(
+            f"manifest resource_policy.classes missing required classes: {missing_classes}"
+        )
+    extra_classes = sorted(set(classes) - REQUIRED_RESOURCE_CLASSES)
+    if extra_classes:
+        raise ManifestError(
+            f"manifest resource_policy.classes has unknown classes: {extra_classes}"
+        )
+    class_fields = {
+        "max_concurrency",
+        "default_rss_mb",
+        "default_processes",
+        "jvm_xmx_mb",
+        "capacity_lock",
+    }
+    normalized_classes: dict[str, dict[str, Any]] = {}
+    for class_name, declaration in classes.items():
+        location = f"manifest resource_policy.classes.{class_name}"
+        if not isinstance(class_name, str) or not class_name:
+            raise ManifestError("resource class names must be non-empty strings")
+        if not isinstance(declaration, Mapping):
+            raise ManifestError(f"{location} must be an object")
+        unknown_fields = set(declaration) - class_fields
+        missing_fields = class_fields - set(declaration)
+        if unknown_fields:
+            raise ManifestError(f"{location} has unknown fields: {sorted(unknown_fields)}")
+        if missing_fields:
+            raise ManifestError(f"{location} missing fields: {sorted(missing_fields)}")
+        max_concurrency = _positive_integer(
+            declaration["max_concurrency"], f"{location}.max_concurrency"
+        )
+        default_rss_mb = _positive_integer(
+            declaration["default_rss_mb"], f"{location}.default_rss_mb"
+        )
+        default_processes = _positive_integer(
+            declaration["default_processes"], f"{location}.default_processes"
+        )
+        jvm_xmx_mb = declaration["jvm_xmx_mb"]
+        if jvm_xmx_mb is not None:
+            jvm_xmx_mb = _positive_integer(jvm_xmx_mb, f"{location}.jvm_xmx_mb")
+        capacity_lock = declaration["capacity_lock"]
+        if capacity_lock is not None and (
+            not isinstance(capacity_lock, str) or not capacity_lock
+        ):
+            raise ManifestError(f"{location}.capacity_lock must be a non-empty string or null")
+        if default_rss_mb > max_rss_mb or default_processes > max_processes:
+            raise ManifestError(f"{location} reservation exceeds aggregate resource budget")
+        normalized_classes[class_name] = {
+            "max_concurrency": max_concurrency,
+            "default_rss_mb": default_rss_mb,
+            "default_processes": default_processes,
+            "jvm_xmx_mb": jvm_xmx_mb,
+            "capacity_lock": capacity_lock,
+        }
+    if normalized_classes["memory-heavy"]["max_concurrency"] != 1:
+        raise ManifestError("resource class 'memory-heavy' max_concurrency must be one")
+    if normalized_classes["bootstrap-hosted"]["max_concurrency"] != 1:
+        raise ManifestError("resource class 'bootstrap-hosted' max_concurrency must be one")
+    if normalized_classes["leaf-jvm"]["max_concurrency"] > 3:
+        raise ManifestError("resource class 'leaf-jvm' max_concurrency must not exceed three")
+    if normalized_classes["python-cheap"]["capacity_lock"] is not None:
+        raise ManifestError("resource class 'python-cheap' capacity_lock must be null")
+    for class_name in ("leaf-jvm", "bootstrap-hosted"):
+        if normalized_classes[class_name]["capacity_lock"] != CANONICAL_HEAVY_LOCK:
+            raise ManifestError(
+                f"resource class {class_name!r} capacity_lock must be {CANONICAL_HEAVY_LOCK!r}"
+            )
+    if normalized_classes["memory-heavy"]["capacity_lock"] not in {
+        None,
+        CANONICAL_HEAVY_LOCK,
+    }:
+        raise ManifestError(
+            "resource class 'memory-heavy' capacity_lock must be null or the canonical heavy lock"
+        )
+    return {
+        "aggregate": {"max_rss_mb": max_rss_mb, "max_processes": max_processes},
+        "classes": normalized_classes,
+        "authority": "non-authoritative-admission-estimate",
+    }
+
+
+def check_resource_declaration(
+    manifest: Mapping[str, Any], check: Mapping[str, Any]
+) -> dict[str, Any]:
+    policy = normalized_resource_policy(manifest)
+    class_name = check.get("resource_class")
+    if not isinstance(class_name, str) or class_name not in policy["classes"]:
+        raise ManifestError(
+            f"check {check.get('id')!r} resource_class must name a declared resource class"
+        )
+    resource_class = policy["classes"][class_name]
+    return {
+        "class": class_name,
+        "reserved_rss_mb": resource_class["default_rss_mb"],
+        "reserved_processes": resource_class["default_processes"],
+        "class_max_concurrency": resource_class["max_concurrency"],
+        "jvm_xmx_mb": resource_class["jvm_xmx_mb"],
+        "capacity_lock": resource_class["capacity_lock"],
+        "authority": "non-authoritative-admission-estimate",
+    }
+
+
+def _validate_jvm_xmx_parity(
+    manifest: Mapping[str, Any], check: Mapping[str, Any], command: Sequence[str]
+) -> None:
+    resource = check_resource_declaration(manifest, check)
+    if not command or Path(command[0]).name != "clojure":
+        return
+    declared = resource["jvm_xmx_mb"]
+    xmx_options = [item for item in command[1:] if item.startswith("-J-Xmx")]
+    if declared is None:
+        if len(xmx_options) > 1:
+            raise ManifestError(
+                f"check {check.get('id')!r} command declares multiple JVM Xmx values"
+            )
+        return
+    expected = f"-J-Xmx{declared}m"
+    if xmx_options != [expected]:
+        raise ManifestError(
+            f"check {check.get('id')!r} direct clojure command must declare exactly {expected!r}"
+        )
+
+
 def _stage3_mode(check: Mapping[str, Any]) -> str:
     """Require an explicit Stage 3 mode for command-owned nodes."""
 
@@ -461,6 +654,54 @@ _P15_NATIVE_LAUNCHER_TOOL_INPUTS = [
     "deps.edn",
     "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
 ]
+_P15_NATIVE_PLAN_CHECK_ID = "stage0-p15-native-plan-specialization-prerequisite"
+_P15_NATIVE_PLAN_TEST_NAMESPACE = "gravity.p15-native-plan-specialization-test"
+_P15_NATIVE_PLAN_TEST_VARS = [
+    f"{_P15_NATIVE_PLAN_TEST_NAMESPACE}/packet-and-context-tamper-reject-before-validator-or-emitter",
+    f"{_P15_NATIVE_PLAN_TEST_NAMESPACE}/authenticated-unsupported-plan-rejects-before-emitter",
+    f"{_P15_NATIVE_PLAN_TEST_NAMESPACE}/overbound-packet-tamper-rejects-before-validator",
+    f"{_P15_NATIVE_PLAN_TEST_NAMESPACE}/authenticated-validator-accepted-unsupported-helper-values-reject",
+    f"{_P15_NATIVE_PLAN_TEST_NAMESPACE}/tampered-gravity-c-emitter-source-rejects-before-helper-execution",
+    f"{_P15_NATIVE_PLAN_TEST_NAMESPACE}/authenticated-gravity-and-qst-packets-emit-and-run",
+]
+_P15_NATIVE_PLAN_INPUTS = [
+    "bootstrap/clojure/src/gravity/p15_native_plan_specialization.clj",
+    "bootstrap/clojure/test/gravity/p15_native_plan_specialization_test.clj",
+    "bootstrap/gravity/p15_s23/native_plan_c_emitter.gravity",
+    "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-bool.gravity",
+    "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-control.gravity",
+    "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-nonascii.gravity",
+    "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.gravity",
+    "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.qst",
+    "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-str.gravity",
+    "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-trigraph.gravity",
+    "bootstrap/clojure/fixtures/p15-native-plan-specialization/unsupported-builtin.gravity",
+]
+_P15_NATIVE_PLAN_TOOL_INPUTS = [
+    "deps.edn",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+    "bootstrap/clojure/src/gravity/bootstrap.clj",
+    "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+    "bootstrap/gravity/p15_s23/compiler.gravity",
+    "bootstrap/gravity/p15_s23/emitter.gravity",
+    "bootstrap/gravity/src/gravity/macro.gravity",
+    "bootstrap/gravity/src/gravity/resolution.gravity",
+    "bootstrap/gravity/src/gravity/checked_core.gravity",
+    "bootstrap/clojure/src/**",
+]
+
+
+def _p15_native_plan_command() -> list[str]:
+    command = [
+        "clojure", "-J-Xmx1g", "-Sdeps",
+        '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}',
+        "-M", "-m", "gravity.self-hosting.sh07-iteration-cache-runner", "--fail-fast",
+    ]
+    for test_var in _P15_NATIVE_PLAN_TEST_VARS:
+        command.extend(["--test-var", test_var])
+    command.extend(["--max-cache-entries", "1"])
+    return command
 _P15_NATIVE_RUNTIME_PROVIDER_CHECK_ID = (
     "stage0-p15-native-runtime-provider-contract-prerequisite"
 )
@@ -578,6 +819,47 @@ _P15_NATIVE_RUNTIME_REQUIRED_ENV = {
 }
 _OBSERVED_PROCESS_TREE_RESOURCE_RECEIPT = "observed-peak-process-tree-rss-and-wall-time"
 _OBSERVED_PROCESS_TREE_RSS_CONTRACT = "run_with_heartbeat.process_tree_metrics-v1"
+
+
+def _validate_p15_native_plan_contract(check: Mapping[str, Any]) -> None:
+    """Pin the reviewed coordinator-only native-plan specialization lane."""
+
+    if check.get("id") != _P15_NATIVE_PLAN_CHECK_ID:
+        return
+    expected_scalars = {
+        "lane": "heavy-candidate", "cost": "heavy", "resource_class": "memory-heavy",
+        "lock": str(_stage3.CANONICAL_LOCK), "lock_owner": "runner",
+        "exclusive": True, "capacity": 1, "authority": "none",
+        "fresh": True, "resume": False, "no_resume": True,
+        "timeout_seconds": 2400, "jvm_heap": "-J-Xmx1g",
+        "minimum_heap_bytes": 1073741824,
+        "automatic": True,
+    }
+    for field, expected in expected_scalars.items():
+        if check.get(field) != expected:
+            raise ManifestError(
+                f"check {_P15_NATIVE_PLAN_CHECK_ID!r} {field} must equal {expected!r}"
+            )
+    if check.get("command") != _p15_native_plan_command():
+        raise ManifestError(
+            f"check {_P15_NATIVE_PLAN_CHECK_ID!r} command must equal the reviewed six-selector order"
+        )
+    if check.get("inputs") != _P15_NATIVE_PLAN_INPUTS:
+        raise ManifestError(
+            f"check {_P15_NATIVE_PLAN_CHECK_ID!r} inputs must equal the reviewed reservation"
+        )
+    if check.get("tool_inputs") != _P15_NATIVE_PLAN_TOOL_INPUTS:
+        raise ManifestError(
+            f"check {_P15_NATIVE_PLAN_CHECK_ID!r} tool_inputs must equal the reviewed runtime closure"
+        )
+    if check.get("depends_on") != ["stage0-orchestrator-unit"]:
+        raise ManifestError(
+            f"check {_P15_NATIVE_PLAN_CHECK_ID!r} must depend only on stage0-orchestrator-unit"
+        )
+    if check.get("impact_excludes", []) != []:
+        raise ManifestError(
+            f"check {_P15_NATIVE_PLAN_CHECK_ID!r} must not exclude its owned inputs"
+        )
 
 
 def _validate_p15_native_launcher_contract(check: Mapping[str, Any]) -> None:
@@ -1136,6 +1418,7 @@ def validate_manifest(
         raise ManifestError("manifest must be a JSON object")
     if manifest.get("schema_version") != SCHEMA_VERSION:
         raise ManifestError(f"manifest schema_version must be {SCHEMA_VERSION}")
+    resource_policy = normalized_resource_policy(manifest)
     lanes = manifest.get("lanes")
     if not isinstance(lanes, Mapping):
         raise ManifestError("manifest lanes must be an object")
@@ -1150,6 +1433,14 @@ def validate_manifest(
     # so removal, renaming, or replacement by a widened arbitrary command
     # cannot silently drop the focused owner.
     if require_production_contracts:
+        native_plan_count = sum(
+            1 for item in checks
+            if isinstance(item, Mapping) and item.get("id") == _P15_NATIVE_PLAN_CHECK_ID
+        )
+        if native_plan_count != 1:
+            raise ManifestError(
+                f"manifest must contain exactly one check id {_P15_NATIVE_PLAN_CHECK_ID!r}"
+            )
         launcher_count = sum(
             1
             for item in checks
@@ -1221,7 +1512,8 @@ def validate_manifest(
         lane = check.get("lane")
         if lane not in LANES:
             raise ManifestError(f"check {check_id!r} has invalid lane {lane!r}")
-        _parse_command(check.get("command"), check_id)
+        command = _parse_command(check.get("command"), check_id)
+        _validate_p15_native_plan_contract(check)
         _validate_p15_native_launcher_contract(check)
         _validate_p15_native_runtime_provider_contract(check)
         _validate_stage3_resource_contract(check)
@@ -1277,6 +1569,15 @@ def validate_manifest(
             raise ManifestError(f"check {check_id!r} env keys and values must be scalar")
         if cost == "heavy" and lock is None and not exclusive:
             raise ManifestError(f"heavy check {check_id!r} must declare lock or exclusive=true")
+        resource = check_resource_declaration(manifest, check)
+        if cost == "heavy" and resource["class"] != "memory-heavy":
+            raise ManifestError(f"heavy check {check_id!r} must use resource_class 'memory-heavy'")
+        if resource["class"] == "memory-heavy" and cost != "heavy":
+            raise ManifestError(
+                f"check {check_id!r} uses memory-heavy resource class but cost is not heavy"
+            )
+        _validate_jvm_xmx_parity(manifest, check, command)
+        normalized_timeout_seconds(check)
         authority = _check_authority(check, str(lane))
         owner = _lock_owner(check)
         if authority == "declared" and owner != "command":
@@ -1332,6 +1633,9 @@ def validate_manifest(
         for item in tool_inputs:
             if not _is_safe_relative_path(_normalise_declared_path(item)):
                 raise ManifestError(f"check {check_id!r} tool input escapes repository root: {item!r}")
+
+    if resource_policy["classes"]["memory-heavy"]["max_concurrency"] != 1:
+        raise ManifestError("memory-heavy checks must remain serialized")
 
     stage8_ids = {check_id for check_id in ids if check_id.startswith("stage8-")}
     expected_stage8_ids = set(_STAGE8_FIXED_NODE_POLICIES)
@@ -1435,6 +1739,15 @@ def _impact_excludes_change(check: Mapping[str, Any], changed: str) -> bool:
     )
 
 
+def _exclusive_change_owner(check: Mapping[str, Any], changed: str) -> bool:
+    """Suppress broad owners for exact coordinator integration reservations."""
+
+    return (
+        changed in _P15_NATIVE_PLAN_INPUTS
+        and check.get("id") != _P15_NATIVE_PLAN_CHECK_ID
+    )
+
+
 def _automatic_check(check: Mapping[str, Any]) -> bool:
     """Return whether a check participates in implicit change-impact routing.
 
@@ -1497,7 +1810,11 @@ def select_impacted_checks(
             # Exclusions are path patterns, not a check-wide veto.  A broad
             # check may ignore its owned C7 path while still being selected by
             # a second changed path that it genuinely owns.
-            active_changed = [path for path in changed if not _impact_excludes_change(check, path)]
+            active_changed = [
+                path for path in changed
+                if not _impact_excludes_change(check, path)
+                and not _exclusive_change_owner(check, path)
+            ]
             matches = [path for path in active_changed if any(_matches_change(item, path) for item in declared)]
             if matches:
                 direct.add(check_id)
@@ -1545,7 +1862,7 @@ def select_impacted_checks(
             continue
         declared = list(check["inputs"]) + list(check.get("tool_inputs", []))
         for path in changed:
-            if _impact_excludes_change(check, path):
+            if _impact_excludes_change(check, path) or _exclusive_change_owner(check, path):
                 continue
             if any(_matches_change(item, path) for item in declared):
                 matches_by_path[path].append((check_id, str(check["lane"])))
@@ -1750,19 +2067,40 @@ def _marker_from_bound_identity(identity: Mapping[str, Any]) -> str:
     return _supervision_marker(unbound)
 
 
-def check_identity(check: Mapping[str, Any], root: Path | str = ROOT) -> dict[str, Any]:
-    identity = {
+def check_semantic_declaration(
+    check: Mapping[str, Any], manifest: Mapping[str, Any] | None = None
+) -> dict[str, Any]:
+    """Return the normalized manifest fields that govern check execution."""
+
+    declaration = {
         "id": check["id"],
         "lane": check["lane"],
         "depends_on": dependencies_of(check),
-        "command": command_identity(check, root),
-        "inputs": input_identities(check, root),
         "cost": check.get("cost", "cheap"),
         "lock": check.get("lock"),
         "lock_owner": _lock_owner(check),
         "exclusive": bool(check.get("exclusive", False)),
+        "fresh": bool(check.get("fresh", False)),
+        "timeout_seconds": normalized_timeout_seconds(check),
         "authority": _check_authority(check, str(check["lane"])),
         "daemonization": check["daemonization"],
+    }
+    if manifest is not None:
+        declaration["resource"] = check_resource_declaration(manifest, check)
+    else:
+        declaration["resource"] = {"class": check.get("resource_class")}
+    return declaration
+
+
+def check_identity(
+    check: Mapping[str, Any],
+    root: Path | str = ROOT,
+    manifest: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    identity = {
+        **check_semantic_declaration(check, manifest),
+        "command": command_identity(check, root),
+        "inputs": input_identities(check, root),
     }
     marker = _supervision_marker(identity)
     identity["command"]["runtime"]["supervision_environment"] = {
@@ -1772,7 +2110,7 @@ def check_identity(check: Mapping[str, Any], root: Path | str = ROOT) -> dict[st
 
 
 def cache_key(manifest: Mapping[str, Any], check: Mapping[str, Any], root: Path | str = ROOT) -> str:
-    return _cache_key_for_identity(manifest, check_identity(check, root))
+    return _cache_key_for_identity(manifest, check_identity(check, root, manifest))
 
 
 def _cache_key_for_identity(manifest: Mapping[str, Any], identity: Mapping[str, Any]) -> str:
@@ -2139,11 +2477,124 @@ def _process_lock(lock_name: str | None):
             fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
 
 
-def parallel_ready_groups(manifest: Mapping[str, Any], selected_ids: Iterable[str] | None = None) -> list[list[str]]:
-    """Compute deterministic dependency waves honoring heavy/exclusive locks."""
+def _admit_ready_batch(
+    manifest: Mapping[str, Any], ready: Sequence[str], jobs: int
+) -> list[str]:
+    """Greedily admit one deterministic batch under declared reservations."""
+
+    by_id = checks_by_id(manifest)
+    unlocked = [check_id for check_id in ready if _effective_lock(by_id[check_id]) is None]
+    candidates = unlocked if unlocked else list(ready[:1])
+    aggregate = normalized_resource_policy(manifest)["aggregate"]
+    admitted: list[str] = []
+    class_counts: dict[str, int] = {}
+    reserved_rss_mb = 0
+    reserved_processes = 0
+    admitted_capacity_lock: str | None = None
+    capacity_lock_selected = False
+    for check_id in candidates:
+        if len(admitted) >= jobs:
+            break
+        resource = check_resource_declaration(manifest, by_id[check_id])
+        class_name = str(resource["class"])
+        capacity_lock = resource["capacity_lock"]
+        if capacity_lock_selected and capacity_lock != admitted_capacity_lock:
+            continue
+        if class_counts.get(class_name, 0) >= resource["class_max_concurrency"]:
+            continue
+        if reserved_rss_mb + resource["reserved_rss_mb"] > aggregate["max_rss_mb"]:
+            continue
+        if reserved_processes + resource["reserved_processes"] > aggregate["max_processes"]:
+            continue
+        admitted.append(check_id)
+        class_counts[class_name] = class_counts.get(class_name, 0) + 1
+        reserved_rss_mb += resource["reserved_rss_mb"]
+        reserved_processes += resource["reserved_processes"]
+        if not capacity_lock_selected:
+            admitted_capacity_lock = (
+                str(capacity_lock) if capacity_lock is not None else None
+            )
+            capacity_lock_selected = True
+    if not admitted:
+        raise ManifestError("ready checks cannot be admitted under declared resource budgets")
+    return admitted
+
+
+def _batch_capacity_lock(
+    manifest: Mapping[str, Any], batch: Sequence[str]
+) -> str | None:
+    """Return the single admission lock, excluding per-check locked waves."""
+
+    by_id = checks_by_id(manifest)
+    if any(_effective_lock(by_id[check_id]) is not None for check_id in batch):
+        return None
+    locks = {
+        resource["capacity_lock"]
+        for resource in (
+            check_resource_declaration(manifest, by_id[check_id]) for check_id in batch
+        )
+        if resource["capacity_lock"] is not None
+    }
+    if len(locks) > 1:
+        raise ManifestError("admitted batch contains differing non-null capacity locks")
+    return str(next(iter(locks))) if locks else None
+
+
+def _execute_admitted_batch(
+    manifest: Mapping[str, Any],
+    batch: Sequence[str],
+    root: Path,
+    identities_by_id: Mapping[str, dict[str, Any]],
+    *,
+    review_inputs_by_id: Mapping[str, Mapping[str, object] | None] | None = None,
+) -> tuple[list[dict[str, Any]], str | None, str | None]:
+    """Acquire one class-capacity lock before submitting any batch command."""
+
+    by_id = checks_by_id(manifest)
+    capacity_lock = _batch_capacity_lock(manifest, batch)
+    with _process_lock(capacity_lock) as capacity_lock_path:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=len(batch), thread_name_prefix="gravity-verify"
+        ) as executor:
+            futures = {
+                executor.submit(
+                    _run_one,
+                    by_id[check_id],
+                    root,
+                    identities_by_id[check_id],
+                    stage3_review_inputs=(
+                        review_inputs_by_id.get(check_id)
+                        if review_inputs_by_id is not None
+                        else None
+                    ),
+                ): check_id
+                for check_id in batch
+            }
+            results = [
+                future.result()
+                for future in sorted(futures, key=lambda item: futures[item])
+            ]
+    return (
+        results,
+        capacity_lock,
+        str(capacity_lock_path) if capacity_lock_path is not None else None,
+    )
+
+
+def parallel_ready_groups(
+    manifest: Mapping[str, Any],
+    selected_ids: Iterable[str] | None = None,
+    *,
+    jobs: int | None = None,
+) -> list[list[str]]:
+    """Compute deterministic dependency waves honoring resource admission."""
 
     validate_manifest(manifest)
     by_id = checks_by_id(manifest)
+    if jobs is None:
+        jobs = max(1, min(32, os.cpu_count() or 1))
+    if jobs < 1:
+        raise VerificationError("jobs must be at least one")
     selected = set(selected_ids) if selected_ids is not None else set(by_id)
     order = topological_order(manifest, selected)
     remaining = set(order)
@@ -2153,11 +2604,7 @@ def parallel_ready_groups(manifest: Mapping[str, Any], selected_ids: Iterable[st
         ready = sorted(check_id for check_id in remaining if set(dependencies_of(by_id[check_id])) <= complete)
         if not ready:
             raise ManifestError("unable to schedule selected checks; dependency graph is not executable")
-        cheap = [check_id for check_id in ready if _effective_lock(by_id[check_id]) is None]
-        if cheap:
-            group = cheap
-        else:
-            group = [ready[0]]
+        group = _admit_ready_batch(manifest, ready, jobs)
         groups.append(group)
         complete.update(group)
         remaining.difference_update(group)
@@ -2737,6 +3184,119 @@ class _ProcessSupervisor:
         return {"processes": {pid: dict(value) for pid, value in self._observed.items()}, "error": self._error}
 
 
+class _ResourceSampler:
+    """Bounded best-effort sampler for one already-launched process tree."""
+
+    def __init__(self, root_pid: int, interval: float = _RESOURCE_SAMPLE_SECONDS):
+        self.root_pid = root_pid
+        self.interval = interval
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._lock = threading.Lock()
+        self._sample_count = 0
+        self._peak_rss_bytes: int | None = None
+        self._peak_process_count: int | None = None
+        self._error: str | None = None
+        self._shutdown_complete = False
+
+    def _sample(self) -> None:
+        metrics = process_tree_metrics(self.root_pid)
+        available = metrics.get("telemetry_available") is True
+        rss_bytes = metrics.get("rss_bytes")
+        process_count = metrics.get("process_count")
+        with self._lock:
+            if available and type(rss_bytes) is int and type(process_count) is int:
+                self._sample_count += 1
+                self._peak_rss_bytes = max(self._peak_rss_bytes or 0, rss_bytes)
+                self._peak_process_count = max(
+                    self._peak_process_count or 0, process_count
+                )
+            elif self._sample_count == 0:
+                error = metrics.get("telemetry_error")
+                self._error = str(error) if error else "process-tree telemetry unavailable"
+
+    def start(self) -> None:
+        def sample_until_stopped() -> None:
+            self._sample()
+            while not self._stop.wait(self.interval):
+                self._sample()
+
+        self._thread = threading.Thread(
+            target=sample_until_stopped,
+            name="gravity-resource-sampler",
+            daemon=True,
+        )
+        self._thread.start()
+
+    def shutdown(self) -> None:
+        if self._shutdown_complete:
+            return
+        self._stop.set()
+        if self._thread is not None:
+            self._thread.join(timeout=max(1.0, self.interval * 4))
+        self._shutdown_complete = True
+
+    def stop(self) -> dict[str, Any]:
+        self.shutdown()
+        self._sample()
+        with self._lock:
+            available = self._sample_count > 0
+            return {
+                "source": "process-tree-sampling",
+                "sample_count": self._sample_count,
+                "sample_interval_seconds": self.interval,
+                "peak_rss_bytes": self._peak_rss_bytes,
+                "peak_process_count": self._peak_process_count,
+                "telemetry_available": available,
+                "telemetry_error": None if available else self._error,
+            }
+
+
+def _not_executed_resource_sample() -> dict[str, Any]:
+    return {
+        "source": "not-executed",
+        "sample_count": 0,
+        "sample_interval_seconds": None,
+        "peak_rss_bytes": None,
+        "peak_process_count": None,
+        "telemetry_available": False,
+        "telemetry_error": None,
+    }
+
+
+def _not_executed_resource_observation(resource: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        **_not_executed_resource_sample(),
+        "declared_reserved_rss_bytes": int(resource["reserved_rss_mb"]) * 1024 * 1024,
+        "declared_reserved_processes": int(resource["reserved_processes"]),
+        "rss_exceeded": None,
+        "processes_exceeded": None,
+        "authoritative": False,
+    }
+
+
+def _resource_observation(
+    sampled: Mapping[str, Any], resource: Mapping[str, Any]
+) -> dict[str, Any]:
+    reserved_rss = int(resource["reserved_rss_mb"]) * 1024 * 1024
+    reserved_processes = int(resource["reserved_processes"])
+    available = sampled.get("telemetry_available") is True
+    peak_rss = sampled.get("peak_rss_bytes") if available else None
+    peak_processes = sampled.get("peak_process_count") if available else None
+    return {
+        **sampled,
+        "declared_reserved_rss_bytes": reserved_rss,
+        "declared_reserved_processes": reserved_processes,
+        "rss_exceeded": peak_rss > reserved_rss if type(peak_rss) is int else None,
+        "processes_exceeded": (
+            peak_processes > reserved_processes
+            if type(peak_processes) is int
+            else None
+        ),
+        "authoritative": False,
+    }
+
+
 def _terminate_process_tree(
     process: subprocess.Popen[str], extra_processes: Mapping[int, Mapping[str, Any]] | None = None,
     marker: str | None = None,
@@ -2855,6 +3415,31 @@ def _cleanup_terminal_safe(cleanup: Mapping[str, Any] | None) -> bool:
     )
 
 
+def _best_effort_exception_cleanup(
+    process: subprocess.Popen[str],
+    observed_processes: Mapping[int, Mapping[str, Any]],
+    marker: str,
+) -> None:
+    """Bound and reap a launched command without replacing its original error."""
+
+    try:
+        _terminate_process_tree(process, observed_processes, marker)
+    except BaseException:
+        with contextlib.suppress(BaseException):
+            if process.poll() is None:
+                if os.name == "posix":
+                    os.killpg(process.pid, signal.SIGKILL)
+                else:  # pragma: no cover
+                    process.kill()
+                process.wait(timeout=_PROCESS_KILL_GRACE_SECONDS)
+    with contextlib.suppress(BaseException):
+        process.communicate(timeout=_PROCESS_KILL_GRACE_SECONDS)
+    for stream in (process.stdout, process.stderr):
+        if stream is not None:
+            with contextlib.suppress(BaseException):
+                stream.close()
+
+
 def _stage3_process_tree_rss(root_pid: int) -> tuple[int | None, float, str, str]:
     """Sample process-tree RSS using the reviewed heartbeat metric helper."""
 
@@ -2922,23 +3507,50 @@ def _run_command(
         if barrier_write is not None:
             os.close(barrier_write)
         raise
+    deadline = None if timeout is None else time.monotonic() + max(0.0, float(timeout))
     capture_threads: list[threading.Thread] = []
     capture_states: dict[str, dict[str, Any]] = {}
-    if sample_rss:
-        for stream_name, stream in (("stdout", process.stdout), ("stderr", process.stderr)):
-            if stream is not None:
-                thread, state = _bounded_stream_reader(stream, _MAX_OUTPUT_BYTES)
-                capture_threads.append(thread)
-                capture_states[stream_name] = state
-    if barrier_read is not None:
-        os.close(barrier_read)
-    supervisor = _ProcessSupervisor(process.pid, marker)
-    supervisor_armed = supervisor.start()
-    if barrier_write is not None and supervisor_armed:
-        os.write(barrier_write, b"1")
-        os.close(barrier_write)
-        barrier_write = None
-    if not supervisor_armed:
+    supervisor: _ProcessSupervisor | None = None
+    resource_sampler: _ResourceSampler | None = None
+    try:
+        # Every operation after Popen belongs to this setup boundary. A failed
+        # barrier release must not strand the blocked child or captured pipes.
+        if sample_rss:
+            for stream_name, stream in (("stdout", process.stdout), ("stderr", process.stderr)):
+                if stream is not None:
+                    thread, state = _bounded_stream_reader(stream, _MAX_OUTPUT_BYTES)
+                    capture_threads.append(thread)
+                    capture_states[stream_name] = state
+        if barrier_read is not None:
+            os.close(barrier_read)
+            barrier_read = None
+        supervisor = _ProcessSupervisor(process.pid, marker)
+        supervisor_armed = supervisor.start()
+        setup_deadline_expired = deadline is not None and time.monotonic() >= deadline
+        if barrier_write is not None and supervisor_armed and not setup_deadline_expired:
+            os.write(barrier_write, b"1")
+            os.close(barrier_write)
+            barrier_write = None
+        if supervisor_armed and not setup_deadline_expired:
+            resource_sampler = _ResourceSampler(process.pid)
+            resource_sampler.start()
+    except BaseException:
+        for launch_fd in (barrier_read, barrier_write):
+            if launch_fd is not None:
+                with contextlib.suppress(BaseException):
+                    os.close(launch_fd)
+        observed_processes: Mapping[int, Mapping[str, Any]] = {}
+        if supervisor is not None:
+            with contextlib.suppress(BaseException):
+                observed_processes = supervisor.stop().get("processes", {})
+        if resource_sampler is not None:
+            with contextlib.suppress(BaseException):
+                resource_sampler.shutdown()
+        with contextlib.suppress(BaseException):
+            _best_effort_exception_cleanup(process, observed_processes, marker)
+        raise
+    assert supervisor is not None
+    if not supervisor_armed or setup_deadline_expired:
         # A failed first census is fail-closed: do not release the target into
         # an unsupervised run. Kill the blocked wrapper and drain its pipes.
         census = supervisor.stop()
@@ -2979,11 +3591,12 @@ def _run_command(
             "returncode": process.returncode,
             "stdout": stdout_text,
             "stderr": stderr_text,
-            "timed_out": False,
+            "timed_out": setup_deadline_expired,
             "cleanup": cleanup,
             "surviving_descendants": False,
-            "supervision_failed": True,
+            "supervision_failed": not supervisor_armed,
             "supervisor": census,
+            "resource_sample": _not_executed_resource_sample(),
             "observed_peak_process_tree_rss_bytes": None,
             "rss_sampling_cadence_seconds": _STAGE3_RSS_CADENCE_SECONDS if sample_rss else None,
             "rss_sampling_contract": "run_with_heartbeat.process_tree_metrics-v1" if sample_rss else None,
@@ -3000,7 +3613,6 @@ def _run_command(
     rss_contract = "run_with_heartbeat.process_tree_metrics-v1" if sample_rss else None
     rss_limitation = "between-sample spikes may be missed" if sample_rss else None
     next_sample = time.monotonic()
-    deadline = None if timeout is None else time.monotonic() + max(0.0, float(timeout))
     if sample_rss:
         rss, _cadence, rss_contract, rss_limitation = _stage3_process_tree_rss(process.pid)
         if rss is not None:
@@ -3029,7 +3641,13 @@ def _run_command(
     # Exactly one terminal whole-system marker census closes the normal-exit
     # setsid/double-fork gap without duration-scaled polling. Saved identities
     # from this census are revalidated with targeted probes before signaling.
-    marker_processes, marker_error = _marker_processes(marker)
+    try:
+        marker_processes, marker_error = _marker_processes(marker)
+    except BaseException:
+        resource_sampler.shutdown()
+        with contextlib.suppress(BaseException):
+            _best_effort_exception_cleanup(process, observed_processes, marker)
+        raise
     observed_processes.update(marker_processes)
     census["error"] = census.get("error") or marker_error
     observed_descendants = [pid for pid in observed_processes if int(pid) != process.pid]
@@ -3064,6 +3682,7 @@ def _run_command(
     cleanup_safe = _cleanup_terminal_safe(cleanup)
     if cleanup is not None:
         cleanup["terminal_safe"] = cleanup_safe
+    resource_sample = resource_sampler.stop()
     return {
         "returncode": process.returncode,
         "stdout": stdout_text,
@@ -3081,6 +3700,7 @@ def _run_command(
         ),
         "supervision_failed": bool(census.get("error") or not cleanup_safe),
         "supervisor": census,
+        "resource_sample": resource_sample,
         "observed_peak_process_tree_rss_bytes": peak_rss,
         "rss_sampling_cadence_seconds": _STAGE3_RSS_CADENCE_SECONDS if sample_rss else None,
         "rss_sampling_contract": rss_contract,
@@ -3684,6 +4304,17 @@ def _run_one(
     cwd = root / _normalise_declared_path(str(cwd_value))
     resource_receipt = check.get("resource_receipt")
     sample_rss = resource_receipt == _OBSERVED_PROCESS_TREE_RESOURCE_RECEIPT
+    resource = identities.get("resource", {})
+    if not isinstance(resource, Mapping) or "reserved_rss_mb" not in resource:
+        resource = {
+            "class": check.get("resource_class", "python-cheap"),
+            "reserved_rss_mb": 8192,
+            "reserved_processes": 16,
+            "class_max_concurrency": 1,
+            "jvm_xmx_mb": None,
+            "capacity_lock": None,
+            "authority": "non-authoritative-admission-estimate",
+        }
     env = os.environ.copy()
     env.update({str(k): str(v) for k, v in dict(check.get("env", {})).items()})
     lock_owner = _lock_owner(check)
@@ -3737,7 +4368,10 @@ def _run_one(
         "exclusive": bool(check.get("exclusive", False)),
         "cost": check.get("cost", "cheap"),
         "fresh": bool(check.get("fresh", False)),
+        "timeout_seconds": identities["timeout_seconds"],
         "resource_receipt": resource_receipt,
+        "resource": resource,
+        "resource_observation": _not_executed_resource_observation(resource),
         "authority": "non-authoritative",
         "depends_on": dependencies_of(check),
         "started_at": started,
@@ -3768,6 +4402,9 @@ def _run_one(
         record["stdout"] = _trim_output(outcome["stdout"])
         record["stderr"] = _trim_output(outcome["stderr"])
         record["status"] = "timeout" if outcome["timed_out"] else ("passed" if outcome["returncode"] == 0 else "failed")
+        record["resource_observation"] = _resource_observation(
+            outcome.get("resource_sample", _not_executed_resource_sample()), resource
+        )
         if outcome.get("cleanup") is not None:
             record["timeout_cleanup" if outcome["timed_out"] else "descendant_cleanup"] = outcome["cleanup"]
         record["mutation_monitor"] = {
@@ -3805,6 +4442,18 @@ def _run_one(
             record["authority"] = "non-authoritative"
             suffix = "declared input or command identity changed during execution; result was not cached"
             record["stderr"] = _trim_output(record.get("stderr", "") + ("\n" if record.get("stderr") else "") + suffix)
+        observation = record["resource_observation"]
+        if observation["rss_exceeded"] is True or observation["processes_exceeded"] is True:
+            if record["status"] == "passed":
+                record["status"] = "failed"
+                record["reason"] = "resource-budget-exceeded"
+            record["cacheable"] = False
+            record["authority"] = "non-authoritative"
+            record["stderr"] = _trim_output(
+                record.get("stderr", "")
+                + ("\n" if record.get("stderr") else "")
+                + "observed process-tree resources exceeded the declared reservation; result was not cached"
+            )
         if command_owned and record["status"] in {"passed", "failed", "timeout"}:
             assert stage3_receipt_path is not None and stage3_nonce is not None
             try:
@@ -3896,6 +4545,7 @@ def _reused_record(check: Mapping[str, Any], identities: dict[str, Any], entry: 
         "exclusive": bool(check.get("exclusive", False)),
         "cost": check.get("cost", "cheap"),
         "fresh": bool(check.get("fresh", False)),
+        "timeout_seconds": identities["timeout_seconds"],
         "authority": "non-authoritative",
         "depends_on": dependencies_of(check),
         "status": "reused",
@@ -4013,7 +4663,8 @@ def run_verification(
     if not (dry_run or explain):
         for check_id in reviewed_selected:
             _reviewed_stage3_values(by_id[check_id], root_path)
-    groups = parallel_ready_groups(manifest_value, selected_ids)
+    groups = parallel_ready_groups(manifest_value, selected_ids, jobs=jobs)
+    resource_policy = normalized_resource_policy(manifest_value)
     manifest_identity = {"path": _relpath(root_path, manifest_path) if manifest_path else None, "sha256": _sha256_text(_canonical(manifest_value))}
     run_started_clock = time.monotonic()
     receipt: dict[str, Any] = {
@@ -4022,6 +4673,7 @@ def run_verification(
         "manifest": manifest_identity,
         "root": str(root_path),
         "selection": selection,
+        "resource_policy": resource_policy,
         "plan": {"topological_order": topological_order(manifest_value, selected_ids), "parallel_ready_groups": groups, "jobs": jobs, "fail_fast": fail_fast},
         "checks": [],
         "started_at": _now(),
@@ -4086,7 +4738,14 @@ def run_verification(
                 "lock_owner": _lock_owner(by_id[check_id]),
                 "exclusive": bool(by_id[check_id].get("exclusive", False)),
                 "cost": by_id[check_id].get("cost", "cheap"),
+                "resource": check_resource_declaration(
+                    manifest_value, by_id[check_id]
+                ),
+                "resource_observation": _not_executed_resource_observation(
+                    check_resource_declaration(manifest_value, by_id[check_id])
+                ),
                 "fresh": bool(by_id[check_id].get("fresh", False)),
+                "timeout_seconds": normalized_timeout_seconds(by_id[check_id]),
                 "authority": "non-authoritative",
                 "status": "planned",
             }
@@ -4122,6 +4781,13 @@ def run_verification(
                     "lock_owner": _lock_owner(by_id[check_id]),
                     "exclusive": bool(by_id[check_id].get("exclusive", False)),
                     "cost": by_id[check_id].get("cost", "cheap"),
+                    "resource": check_resource_declaration(
+                        manifest_value, by_id[check_id]
+                    ),
+                    "resource_observation": _not_executed_resource_observation(
+                        check_resource_declaration(manifest_value, by_id[check_id])
+                    ),
+                    "timeout_seconds": normalized_timeout_seconds(by_id[check_id]),
                     "authority": "non-authoritative",
                     "status": "blocked",
                     "blocked_by": failed_deps,
@@ -4137,7 +4803,7 @@ def run_verification(
         if failed_seen and fail_fast:
             for check_id in sorted(pending):
                 timestamp = _now()
-                identity = check_identity(by_id[check_id], root_path)
+                identity = check_identity(by_id[check_id], root_path, manifest_value)
                 records[check_id] = {
                     "id": check_id,
                     "lane": by_id[check_id]["lane"],
@@ -4149,6 +4815,11 @@ def run_verification(
                     "lock_owner": _lock_owner(by_id[check_id]),
                     "exclusive": bool(by_id[check_id].get("exclusive", False)),
                     "cost": by_id[check_id].get("cost", "cheap"),
+                    "resource": identity["resource"],
+                    "resource_observation": _not_executed_resource_observation(
+                        identity["resource"]
+                    ),
+                    "timeout_seconds": identity["timeout_seconds"],
                     "authority": "non-authoritative",
                     "status": "blocked",
                     "reason": "fail-fast",
@@ -4166,7 +4837,7 @@ def run_verification(
         reused_any = False
         for check_id in ready:
             check = by_id[check_id]
-            identities = check_identity(check, root_path)
+            identities = check_identity(check, root_path, manifest_value)
             key = _cache_key_for_identity(manifest_value, identities)
             entry = cache["checks"].get(check_id) if resume else None
             if (entry and entry.get("status") == "passed"
@@ -4176,6 +4847,10 @@ def run_verification(
                     and _cache_dependencies_match(check, entry, status_by_id, key_by_id)
                     and _check_authority(check, str(check["lane"])) != "declared"):
                 record = _reused_record(check, identities, entry, key)
+                record["resource"] = check_resource_declaration(manifest_value, check)
+                record["resource_observation"] = _not_executed_resource_observation(
+                    record["resource"]
+                )
                 records[check_id] = record
                 status_by_id[check_id] = "reused"
                 key_by_id[check_id] = key
@@ -4183,25 +4858,73 @@ def run_verification(
                 reused_any = True
         if reused_any:
             continue
-        # Prefer all unlocked cheap work; a heavy/locked check occupies a
-        # single wave, making the resource boundary explicit in the receipt.
-        cheap = [check_id for check_id in ready if _effective_lock(by_id[check_id]) is None]
-        batch = cheap[:jobs] if cheap else [ready[0]]
-        identities_by_id = {check_id: check_identity(by_id[check_id], root_path) for check_id in batch}
+        batch = _admit_ready_batch(manifest_value, ready, jobs)
+        identities_by_id = {
+            check_id: check_identity(by_id[check_id], root_path, manifest_value)
+            for check_id in batch
+        }
         execution_keys = {
             check_id: _cache_key_for_identity(manifest_value, identities_by_id[check_id])
             for check_id in batch
         }
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(batch), thread_name_prefix="gravity-verify") as executor:
-            futures = {
-                executor.submit(_run_one, by_id[check_id], root_path, identities_by_id[check_id]): check_id
-                for check_id in batch
-            }
-            results = [future.result() for future in sorted(futures, key=lambda item: futures[item])]
-            for record in results:
+        review_inputs_by_id = {
+            check_id: explicit_review_inputs if check_id in reviewed_selected else None
+            for check_id in batch
+        }
+        try:
+            results, capacity_lock, capacity_lock_path = _execute_admitted_batch(
+                manifest_value,
+                batch,
+                root_path,
+                identities_by_id,
+                review_inputs_by_id=review_inputs_by_id,
+            )
+        except LockUnavailable:
+            results = []
+            capacity_lock = _batch_capacity_lock(manifest_value, batch)
+            capacity_lock_path = None
+            timestamp = _now()
+            for check_id in batch:
+                results.append({
+                    "id": check_id,
+                    "lane": by_id[check_id]["lane"],
+                    "command": identities_by_id[check_id]["command"]["argv"],
+                    "command_identity": identities_by_id[check_id]["command"],
+                    "inputs": identities_by_id[check_id]["inputs"],
+                    "depends_on": dependencies_of(by_id[check_id]),
+                    "lock": by_id[check_id].get("lock"),
+                    "lock_owner": _lock_owner(by_id[check_id]),
+                    "exclusive": bool(by_id[check_id].get("exclusive", False)),
+                    "cost": by_id[check_id].get("cost", "cheap"),
+                    "resource": check_resource_declaration(
+                        manifest_value, by_id[check_id]
+                    ),
+                    "resource_observation": _not_executed_resource_observation(
+                        check_resource_declaration(manifest_value, by_id[check_id])
+                    ),
+                    "authority": "non-authoritative",
+                    "status": "blocked",
+                    "reason": "capacity-lock-busy",
+                    "returncode": None,
+                    "stdout": "",
+                    "stderr": "shared resource capacity lock is busy",
+                    "started_at": timestamp,
+                    "finished_at": timestamp,
+                    "duration_ms": 0.0,
+                })
+        for record in results:
+                if "resource" not in record:
+                    record["resource"] = check_resource_declaration(
+                        manifest_value, by_id[str(record["id"])]
+                    )
+                if capacity_lock is not None:
+                    record["capacity_lock"] = capacity_lock
+                    record["capacity_lock_path"] = capacity_lock_path
                 check_id = str(record["id"])
                 executed_key = execution_keys[check_id]
-                post_identity = check_identity(by_id[check_id], root_path)
+                post_identity = check_identity(
+                    by_id[check_id], root_path, manifest_value
+                )
                 post_key = _cache_key_for_identity(manifest_value, post_identity)
                 record["cache_key"] = executed_key
                 if record["status"] == "passed" and post_key != executed_key:

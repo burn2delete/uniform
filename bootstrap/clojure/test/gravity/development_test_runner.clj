@@ -1,264 +1,303 @@
 (ns gravity.development-test-runner
-  "Selective, deterministic feedback runner for the stage0 bootstrap tests.
+  "Namespace-lazy, deterministic feedback runner for reviewed compatibility tests.
 
-  The runner deliberately keeps clojure.test in charge of test execution and
-  reporting.  Selection only changes the vars passed to the same fixture and
-  reporting pipeline; it does not duplicate test logic or introduce a second
-  test framework."
-  (:require [clojure.test :as test]
-            [clojure.string :as str]
-            [gravity.bootstrap-test]))
+  The static catalog is the complete require authority. Selection changes only
+  the vars passed through clojure.test's normal namespace and fixture pipeline."
+  (:require [clojure.string :as str]
+            [clojure.test :as test]))
 
-(def ^:private test-namespace
-  'gravity.bootstrap-test)
+(def namespace-catalog
+  [{:namespace 'gravity.bootstrap-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c2-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c3-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.module-analysis-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.core-ast-lowering-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.profile-validation-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj"
+    :selectors
+    ["gravity.bootstrap-compatibility.profile-validation-test/profile-facades-match-head-4921fbc-reference-table"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-head-reference-policy-denial-matrix-and-dynamic-seams"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-downstream-caller-artifacts-retain-head-shape"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-facades-preserve-public-arglists-and-exact-leaf-parity"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-policy-map-redefs-reach-the-leaf-through-the-central-seam"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-registry-function-seams-match-head-4921fbc-ownership"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-validation-facade-preserves-central-diagnostics-and-target-gates"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-captured-original-interposition-is-one-shot"
+     "gravity.bootstrap-compatibility.profile-validation-test/profile-leaf-operation-interposition-is-observable-through-facade"]}
+   {:namespace 'gravity.bootstrap-compatibility.capability-validation-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj"
+    :selectors
+    ["gravity.bootstrap-compatibility.capability-validation-test/capability-facades-preserve-arglists-and-explicit-pass-parity"
+     "gravity.bootstrap-compatibility.capability-validation-test/capability-final-authority-narrows-trust-without-rewriting-legacy-row"
+     "gravity.bootstrap-compatibility.capability-validation-test/capability-policy-and-provider-seams-remain-interposable"
+     "gravity.bootstrap-compatibility.capability-validation-test/capability-diagnostic-policy-scalar-reaches-leaf-pass-contract"
+     "gravity.bootstrap-compatibility.capability-validation-test/capability-diagnostics-preserve-source-context-and-stable-ids"
+     "gravity.bootstrap-compatibility.capability-validation-test/capability-provider-name-matches-head-4921fbc-reference-table"
+     "gravity.bootstrap-compatibility.capability-validation-test/capability-captured-original-provider-interposition-is-one-shot"]}
+   {:namespace 'gravity.bootstrap-compatibility.c4-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c5-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c5_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c6-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c6_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c7-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c7_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c8-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c8_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c9-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c9_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c10-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c10_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c11-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c12-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c12_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c13-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c13_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c14-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c14_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c15-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c15_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c16-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c16_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c17-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c17_test.clj"}
+   {:namespace 'gravity.bootstrap-compatibility.c18-test
+    :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj"}])
+
+(def ^:private default-test-namespace 'gravity.bootstrap-test)
+(def ^:private catalog-by-namespace
+  (into {} (map (juxt :namespace identity) namespace-catalog)))
 
 (def ^:private usage-text
   (str
    "Usage: clojure -M:<alias> -m gravity.development-test-runner [options]\n"
    "\n"
-   "Runs gravity.bootstrap-test once, or a deterministic selection of its test vars.\n"
-   "With no selector, all tests run.\n"
+   "Runs gravity.bootstrap-test by default, or selected static catalog namespaces.\n"
+   "With no selector, all tests in the selected namespace set run.\n"
    "\n"
    "Options (repeatable):\n"
-   "  --exact NAME       select NAME (or gravity.bootstrap-test/NAME) exactly\n"
-   "  --regex REGEX      select names matching REGEX\n"
-   "  --prefix PREFIX    select names beginning with PREFIX\n"
-   "  --list             print selected names and exit without running tests\n"
-   "  --fail-fast        stop after the first test failure or error\n"
-   "  --help             print this help\n"
+   "  --namespace NS    select an allowed static-catalog namespace\n"
+   "  --exact NAME      select NAME or a selected namespace/NAME exactly\n"
+   "  --regex REGEX     select names matching REGEX\n"
+   "  --prefix PREFIX   select names beginning with PREFIX\n"
+   "  --list            print selected qualified names without running tests\n"
+   "  --catalog         print the static namespace/path catalog without loading tests\n"
+   "  --fail-fast       stop after the first test failure or error\n"
+   "  --help            print this help without loading tests\n"
    "\n"
-   "Selectors are matched against the short var name and its qualified name.\n"))
+   "Qualified selectors resolve only within explicitly selected namespaces.\n"))
 
-(defn- test-var-records
-  "Returns all deftest vars in stable qualified-name order.
-
-  ns-interns is used rather than ns-publics so private deftest vars retain the
-  same visibility to this runner as they have to clojure.test/test-all-vars."
-  []
-  (->> (ns-interns test-namespace)
-       (keep (fn [[name test-var]]
-               (when (:test (meta test-var))
-                 (let [short-name (str name)
-                       qualified-name (str (ns-name (:ns (meta test-var))) "/" short-name)]
-                   {:name short-name
-                    :qualified-name qualified-name
-                    :var test-var}))))
-       (sort-by :qualified-name)
-       vec))
-
-(defn- selector-value
-  [option value]
+(defn- selector-value [option value]
   (let [value (some-> value str/trim)]
     (when (str/blank? value)
       (throw (ex-info (str option " requires a non-empty value")
-                      {:type ::invalid-selector
-                       :option option})))
+                      {:type ::invalid-selector :option option})))
     value))
 
-(defn- parse-args
-  [args]
+(defn- parse-args [args]
   (loop [remaining (seq args)
-         options {:exact []
-                  :regex []
-                  :prefix []
-                  :list? false
-                  :fail-fast? false
-                  :help? false}]
+         options {:namespaces [] :exact [] :regex [] :prefix []
+                  :list? false :catalog? false :fail-fast? false :help? false}]
     (if-not remaining
       options
       (let [argument (first remaining)
             tail (next remaining)]
         (cond
-          (= argument "--help")
-          (recur tail (assoc options :help? true))
+          (= argument "--help") (recur tail (assoc options :help? true))
+          (= argument "--list") (recur tail (assoc options :list? true))
+          (= argument "--catalog") (recur tail (assoc options :catalog? true))
+          (= argument "--fail-fast") (recur tail (assoc options :fail-fast? true))
 
-          (= argument "--list")
-          (recur tail (assoc options :list? true))
-
-          (= argument "--fail-fast")
-          (recur tail (assoc options :fail-fast? true))
+          (= argument "--namespace")
+          (if (seq tail)
+            (recur (next tail)
+                   (update options :namespaces conj
+                           (symbol (selector-value argument (first tail)))))
+            (throw (ex-info "--namespace requires a non-empty value"
+                            {:type ::invalid-selector :option argument})))
 
           (or (= argument "--exact") (= argument "-e"))
           (if (seq tail)
             (recur (next tail)
                    (update options :exact conj (selector-value argument (first tail))))
             (throw (ex-info (str argument " requires a non-empty value")
-                            {:type ::invalid-selector
-                             :option argument})))
+                            {:type ::invalid-selector :option argument})))
 
           (or (= argument "--regex") (= argument "--pattern") (= argument "-r"))
           (if (seq tail)
             (recur (next tail)
                    (update options :regex conj (selector-value argument (first tail))))
             (throw (ex-info (str argument " requires a non-empty value")
-                            {:type ::invalid-selector
-                             :option argument})))
+                            {:type ::invalid-selector :option argument})))
 
           (or (= argument "--prefix") (= argument "-p"))
           (if (seq tail)
             (recur (next tail)
                    (update options :prefix conj (selector-value argument (first tail))))
             (throw (ex-info (str argument " requires a non-empty value")
-                            {:type ::invalid-selector
-                             :option argument})))
+                            {:type ::invalid-selector :option argument})))
 
           (= argument "--")
-          (recur nil (update options :exact into (map #(selector-value "selector" %) tail)))
+          (recur nil (update options :exact into
+                             (map #(selector-value "selector" %) tail)))
 
           (str/starts-with? argument "-")
           (throw (ex-info (str "unknown option: " argument)
-                          {:type ::usage-error
-                           :option argument}))
+                          {:type ::usage-error :option argument}))
 
           :else
-          ;; Positional selectors are exact names.  This keeps the command
-          ;; convenient in a shell while making every non-explicit selector
-          ;; unambiguous and auditable.
           (recur tail
-                 (update options :exact conj (selector-value "selector" argument))))))))
+                 (update options :exact conj
+                         (selector-value "selector" argument))))))))
 
-(defn- matches-name?
-  [record selector]
-  (or (= selector (:name record))
-      (= selector (:qualified-name record))))
+(defn- selected-namespace-records [{:keys [namespaces]}]
+  (let [requested (if (seq namespaces) (set namespaces) #{default-test-namespace})]
+    (doseq [namespace requested]
+      (when-not (contains? catalog-by-namespace namespace)
+        (throw (ex-info (str "unknown test namespace: " namespace)
+                        {:type ::unknown-namespace :namespace namespace}))))
+    (filterv #(contains? requested (:namespace %)) namespace-catalog)))
 
-(defn- matches-prefix?
-  [record prefix]
+(defn- load-selected-namespaces! [namespace-records]
+  (doseq [{:keys [namespace]} namespace-records]
+    (require namespace)))
+
+(defn- test-var-records [namespace-records]
+  (->> namespace-records
+       (mapcat
+        (fn [{:keys [namespace]}]
+          (let [namespace-object (the-ns namespace)]
+            (keep (fn [[name test-var]]
+                    (when (:test (meta test-var))
+                      (let [short-name (str name)]
+                        {:name short-name
+                         :qualified-name (str namespace "/" short-name)
+                         :namespace namespace
+                         :namespace-object namespace-object
+                         :var test-var})))
+                  (ns-interns namespace-object)))))
+       (sort-by :qualified-name)
+       vec))
+
+(defn- matches-name? [record selector]
+  (or (= selector (:name record)) (= selector (:qualified-name record))))
+
+(defn- matches-prefix? [record prefix]
   (or (str/starts-with? (:name record) prefix)
       (str/starts-with? (:qualified-name record) prefix)))
 
-(defn- compile-patterns
-  [patterns]
+(defn- compile-patterns [patterns]
   (mapv (fn [pattern]
           (try
             (re-pattern pattern)
             (catch java.util.regex.PatternSyntaxException ex
               (throw (ex-info (str "invalid regex selector " (pr-str pattern) ": "
                                   (.getDescription ex))
-                              {:type ::invalid-selector
-                               :selector pattern}
-                              ex)))))
+                              {:type ::invalid-selector :selector pattern} ex)))))
         patterns))
 
-(defn- matches-regex?
-  [record patterns]
-  (some (fn [pattern]
-          (or (re-find pattern (:name record))
-              (re-find pattern (:qualified-name record))))
+(defn- matches-regex? [record patterns]
+  (some #(or (re-find % (:name record))
+             (re-find % (:qualified-name record)))
         patterns))
 
-(defn- select-test-vars
-  [records {:keys [exact regex prefix]}]
+(defn- select-test-vars [records {:keys [exact regex prefix]}]
   (let [compiled-patterns (compile-patterns regex)
         selector-supplied? (or (seq exact) (seq regex) (seq prefix))
-        selected
-        (filter (fn [record]
-                  (or (not selector-supplied?)
-                      (some #(matches-name? record %) exact)
-                      (some #(matches-prefix? record %) prefix)
-                      (matches-regex? record compiled-patterns)))
-                records)
-        selected (vec selected)]
+        selected (->> records
+                      (filter (fn [record]
+                                (or (not selector-supplied?)
+                                    (some #(matches-name? record %) exact)
+                                    (some #(matches-prefix? record %) prefix)
+                                    (matches-regex? record compiled-patterns))))
+                      vec)]
     (doseq [selector exact]
       (when-not (some #(matches-name? % selector) records)
         (throw (ex-info (str "unknown exact test selector: " selector)
-                        {:type ::unknown-selector
-                         :selector selector
-                         :kind :exact}))))
+                        {:type ::unknown-selector :selector selector :kind :exact}))))
     (doseq [selector prefix]
       (when-not (some #(matches-prefix? % selector) records)
         (throw (ex-info (str "selector matched no test vars: --prefix " selector)
-                        {:type ::unknown-selector
-                         :selector selector
-                         :kind :prefix}))))
+                        {:type ::unknown-selector :selector selector :kind :prefix}))))
     (doseq [[selector pattern] (map vector regex compiled-patterns)]
       (when-not (some #(or (re-find pattern (:name %))
-                           (re-find pattern (:qualified-name %)))
-                      records)
+                           (re-find pattern (:qualified-name %))) records)
         (throw (ex-info (str "selector matched no test vars: --regex " selector)
-                        {:type ::unknown-selector
-                         :selector selector
-                         :kind :regex}))))
+                        {:type ::unknown-selector :selector selector :kind :regex}))))
     selected))
 
-(defn- report-summary
-  [summary]
+(defn- report-summary [summary]
   (test/do-report (assoc summary :type :summary))
   summary)
 
-(defn- run-selected-tests
-  "Runs selected vars with namespace and per-test fixtures intact.
-
-  This mirrors clojure.test/test-vars while allowing a fail-fast boundary
-  between vars.  The once fixture still wraps the complete selected batch and
-  each fixture still wraps exactly one test, so enabling --fail-fast does not
-  change fixture semantics for tests that do run."
-  [selected-vars fail-fast?]
-  (let [namespace-object (the-ns test-namespace)
-        once-fixture-fn (test/join-fixtures (::test/once-fixtures
-                                             (meta namespace-object)))
-        each-fixture-fn (test/join-fixtures (::test/each-fixtures
-                                             (meta namespace-object)))]
-    (binding [test/*report-counters* (ref test/*initial-report-counters*)]
-      (test/do-report {:type :begin-test-ns :ns namespace-object})
-      (let [stopped? (atom false)]
-        (once-fixture-fn
-         (fn []
-           (doseq [test-var selected-vars]
-             (when (and (:test (meta test-var)) (not @stopped?))
-               (each-fixture-fn #(test/test-var test-var))
+(defn- run-selected-tests [namespace-records selected-records fail-fast?]
+  (binding [test/*report-counters* (ref test/*initial-report-counters*)]
+    (let [stopped? (atom false)
+          selected-by-namespace (group-by :namespace selected-records)]
+      (doseq [{:keys [namespace]} namespace-records
+              :let [records (get selected-by-namespace namespace)]
+              :when (and (seq records) (not @stopped?))]
+        (let [namespace-object (the-ns namespace)
+              once-fixture-fn (test/join-fixtures
+                               (::test/once-fixtures (meta namespace-object)))
+              each-fixture-fn (test/join-fixtures
+                               (::test/each-fixtures (meta namespace-object)))]
+          (test/do-report {:type :begin-test-ns :ns namespace-object})
+          (once-fixture-fn
+           (fn []
+             (doseq [{:keys [var]} records :while (not @stopped?)]
+               (each-fixture-fn #(test/test-var var))
                (when (and fail-fast?
                           (pos? (+ (:fail @test/*report-counters*)
                                    (:error @test/*report-counters*))))
-                 (reset! stopped? true))))))
-        (test/do-report {:type :end-test-ns :ns namespace-object})
-        (report-summary @test/*report-counters*)))))
+                 (reset! stopped? true)))))
+          (test/do-report {:type :end-test-ns :ns namespace-object})))
+      (report-summary @test/*report-counters*))))
 
-(defn- print-selection
-  [selected-records]
+(defn- print-selection [selected-records]
   (doseq [{:keys [qualified-name]} selected-records]
     (println qualified-name))
   (flush))
 
-(defn run-cli!
-  "Parses args, selects and runs tests, and returns a conventional exit code.
+(defn- print-catalog []
+  (doseq [{:keys [namespace path]} namespace-catalog]
+    (println (str namespace "\t" path)))
+  (flush))
 
-  This function is intentionally side-effectful only through clojure.test's
-  normal reports and stdout/stderr.  Keeping it separate from -main makes the
-  selection and exit behavior straightforward to exercise in a REPL."
-  [args]
+(defn run-cli! [args]
   (let [options (parse-args args)]
-    (if (:help? options)
-      (do
-        (print usage-text)
-        0)
-      (let [records (test-var-records)
+    (cond
+      (:help? options) (do (print usage-text) 0)
+      (:catalog? options) (do (print-catalog) 0)
+      :else
+      (let [namespace-records (selected-namespace-records options)
+            _ (load-selected-namespaces! namespace-records)
+            records (test-var-records namespace-records)
             selected-records (select-test-vars records options)]
-        (when (and (seq (:exact options)) (empty? selected-records))
-          (throw (ex-info "selectors matched no test vars"
-                          {:type ::unknown-selector})))
         (if (:list? options)
-          (do
-            (print-selection selected-records)
-            0)
-          (let [summary (run-selected-tests
-                         (mapv :var selected-records)
-                         (:fail-fast? options))]
-            (if (and (zero? (:fail summary)) (zero? (:error summary))
+          (do (print-selection selected-records) 0)
+          (let [summary (run-selected-tests namespace-records selected-records
+                                            (:fail-fast? options))]
+            (if (and (zero? (:fail summary))
+                     (zero? (:error summary))
                      (= (:test summary) (count selected-records)))
               0
               1)))))))
 
-(defn- report-cli-error
-  [^Throwable ex]
+(defn- report-cli-error [^Throwable ex]
   (binding [*out* *err*]
     (println (str "development-test-runner: " (.getMessage ex)))
     (when (= ::usage-error (:type (ex-data ex)))
       (println "Try --help for usage."))
     (flush)))
 
-(defn -main
-  [& args]
+(defn -main [& args]
   (try
     (System/exit (run-cli! args))
     (catch clojure.lang.ExceptionInfo ex

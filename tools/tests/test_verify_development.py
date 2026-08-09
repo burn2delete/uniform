@@ -8,6 +8,10 @@ import hashlib
 import fcntl
 import os
 import io
+import re
+import contextlib
+import hashlib
+import shutil
 from contextlib import redirect_stdout
 from pathlib import Path
 import subprocess
@@ -25,6 +29,60 @@ if str(TOOLS) not in sys.path:
 import verify_development as verifier
 
 
+C4_C18_COMPATIBILITY_FORMS = {
+    "c4_test.clj": {
+        "c4-macro-evidence-compatibility-wrappers-preserve-output-and-interposition": "705f4268b8b265bd7e79cf1288a7ea4a2074047ca3d376f764b8722a641a3c70",
+        "macro-expansion-compatibility-wrappers-preserve-output-and-interposition": "737de10877b86d9248384d4d8a8d5ca99897b633bdb91bf8a3f6db7a7fc47f78",
+    },
+    "c5_test.clj": {"c5-resolution-compatibility-wrappers-preserve-arglists-and-interposition": "73eeff6cf219d27b5de6a7b80bd2dbd0d2fcbade5f1ede24104f769d8b28042e"},
+    "c6_test.clj": {"c6-lowering-compatibility-wrappers-preserve-arglists-and-interposition": "3b3861dc9fe27fc42abe0adf0b03d591ad06aba5780437518dd00709247ad4ac"},
+    "c7_test.clj": {"c7-type-checker-compatibility-wrappers-preserve-interposition": "0b78a41ab70ea329ee27d8f860a5a89d997c5cf2de4eca33f865058c263fcc19"},
+    "c8_test.clj": {"c8-effect-checker-compatibility-wrappers-preserve-interposition": "5a55d1772f66e6833e09fc0552b1bcde9d7dc0427d99b1f103cb150fb69f4b21"},
+    "c9_test.clj": {"c9-ownership-checker-compatibility-wrappers-preserve-interposition": "0b71ec75b13ca7599c6338f984759a3617fbb6537c644be0e075d03f08b8af48"},
+    "c10_test.clj": {"c10-safety-analysis-compatibility-wrappers-preserve-interposition": "119dfcc7e85daf3e05b6343944c894c1148c7574358a7cbf08f957fe58d86125"},
+    "c11_test.clj": {"c11-mir-compatibility-wrappers-preserve-interposition": "850a30974d63d36c5353983094f79089aae7aab15aa07cfe3c207cb3927e81b6"},
+    "c12_test.clj": {"c12-domain-ir-compatibility-wrappers-preserve-interposition": "66c368ea6860a2284abee4e87212aed078c365a3d251fb6b1b0d7e0652cb6ed9"},
+    "c13_test.clj": {"c13-optimization-compatibility-wrappers-preserve-interposition": "806c1edd066063a8c7ec53dddebd909e768d34c59000b8371286626b27004607"},
+    "c14_test.clj": {"c14-lowering-compatibility-wrappers-preserve-interposition": "e3080d947809166821578aa838ec8f5145b00d7dcd08d0c300c1cbd56971eafb"},
+    "c15_test.clj": {"c15-diagnostics-compatibility-wrappers-preserve-interposition": "ba4e0d297f3a8b479693b85bce817be5ff5f6e2193f507d9a1d7c1009397f044"},
+    "c16_test.clj": {"c16-incremental-compatibility-wrappers-preserve-interposition": "7f55bf46604118570a812826c57d776f978cf2a17bd66865e1347d782f77b327"},
+    "c17_test.clj": {"c17-plugin-compatibility-wrappers-preserve-interposition": "693d0a4d846084953476126a93c1ecda1a6097d4b0435151b7f9d11e10b006a1"},
+    "c18_test.clj": {"c18-verification-compatibility-wrappers-preserve-interposition": "0b0fc1689131a565f55b7b34f80fe81c0642d80f333e105723d8fa886aad9636"},
+}
+
+
+def clojure_deftest_source(source: str, name: str) -> str:
+    start = source.index(f"(deftest {name}")
+    depth = 0
+    in_string = False
+    escaped = False
+    in_comment = False
+    for index in range(start, len(source)):
+        character = source[index]
+        if in_comment:
+            in_comment = character != "\n"
+            continue
+        if in_string:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                in_string = False
+            continue
+        if character == ";":
+            in_comment = True
+        elif character == '"':
+            in_string = True
+        elif character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+            if depth == 0:
+                return source[start : index + 1]
+    raise AssertionError(f"unterminated deftest {name}")
+
+
 def manifest_for(*checks: dict) -> dict:
     return {
         "schema_version": 1,
@@ -33,6 +91,39 @@ def manifest_for(*checks: dict) -> dict:
             "preflight": {"description": "test"},
             "focused": {"description": "test"},
             "heavy-candidate": {"description": "test"},
+        },
+        "resource_policy": {
+            "aggregate": {"max_rss_mb": 4096, "max_processes": 16},
+            "classes": {
+                "python-cheap": {
+                    "max_concurrency": 4,
+                    "default_rss_mb": 128,
+                    "default_processes": 1,
+                    "jvm_xmx_mb": None,
+                    "capacity_lock": None,
+                },
+                "leaf-jvm": {
+                    "max_concurrency": 3,
+                    "default_rss_mb": 512,
+                    "default_processes": 2,
+                    "jvm_xmx_mb": 256,
+                    "capacity_lock": "/tmp/gravity-sh07-heavy.lock",
+                },
+                "bootstrap-hosted": {
+                    "max_concurrency": 1,
+                    "default_rss_mb": 1024,
+                    "default_processes": 2,
+                    "jvm_xmx_mb": None,
+                    "capacity_lock": "/tmp/gravity-sh07-heavy.lock",
+                },
+                "memory-heavy": {
+                    "max_concurrency": 1,
+                    "default_rss_mb": 4096,
+                    "default_processes": 4,
+                    "jvm_xmx_mb": None,
+                    "capacity_lock": "/tmp/gravity-sh07-heavy.lock",
+                },
+            },
         },
         "checks": list(checks),
     }
@@ -52,11 +143,13 @@ def check(
     timeout_seconds: float | None = None,
     env: dict[str, str] | None = None,
     fresh: bool = False,
+    resource_class: str | None = None,
 ) -> dict:
     value = {
         "id": check_id,
         "lane": lane,
         "cost": cost,
+        "resource_class": resource_class or ("memory-heavy" if cost == "heavy" else "python-cheap"),
         "lock": lock,
         "exclusive": exclusive,
         "authority": authority,
@@ -94,6 +187,514 @@ class VerifyDevelopmentTests(unittest.TestCase):
         peak, limitation = result.stdout.strip().split(" ", 1)
         self.assertGreater(int(peak), 0)
         self.assertNotIn("unavailable", limitation)
+    def test_resource_policy_and_check_declarations_fail_closed(self) -> None:
+        command = [sys.executable, "-c", "pass"]
+        baseline = manifest_for(check("one", command))
+        mutations = []
+
+        missing_policy = json.loads(json.dumps(baseline))
+        missing_policy.pop("resource_policy")
+        mutations.append((missing_policy, "resource_policy must be an object"))
+
+        missing_class = json.loads(json.dumps(baseline))
+        missing_class["checks"][0].pop("resource_class")
+        mutations.append((missing_class, "resource_class must name"))
+
+        unknown_class = json.loads(json.dumps(baseline))
+        unknown_class["checks"][0]["resource_class"] = "typo"
+        mutations.append((unknown_class, "resource_class must name"))
+
+        invalid_limit = json.loads(json.dumps(baseline))
+        invalid_limit["resource_policy"]["classes"]["python-cheap"]["max_concurrency"] = True
+        mutations.append((invalid_limit, "max_concurrency must be a positive integer"))
+
+        missing_field = json.loads(json.dumps(baseline))
+        missing_field["resource_policy"]["classes"]["leaf-jvm"].pop("default_rss_mb")
+        mutations.append((missing_field, "missing fields"))
+
+        unknown_field = json.loads(json.dumps(baseline))
+        unknown_field["resource_policy"]["aggregate"]["telemetry"] = 1
+        mutations.append((unknown_field, "unknown fields"))
+
+        missing_capacity_lock = json.loads(json.dumps(baseline))
+        missing_capacity_lock["resource_policy"]["classes"]["leaf-jvm"].pop("capacity_lock")
+        mutations.append((missing_capacity_lock, "missing fields"))
+
+        unsafe_leaf_capacity = json.loads(json.dumps(baseline))
+        unsafe_leaf_capacity["resource_policy"]["classes"]["leaf-jvm"]["capacity_lock"] = None
+        mutations.append((unsafe_leaf_capacity, "capacity_lock must be"))
+
+        unsafe_leaf_fanout = json.loads(json.dumps(baseline))
+        unsafe_leaf_fanout["resource_policy"]["classes"]["leaf-jvm"]["max_concurrency"] = 4
+        mutations.append((unsafe_leaf_fanout, "must not exceed three"))
+
+        unsafe_hosted_fanout = json.loads(json.dumps(baseline))
+        unsafe_hosted_fanout["resource_policy"]["classes"]["bootstrap-hosted"]["max_concurrency"] = 2
+        mutations.append((unsafe_hosted_fanout, "max_concurrency must be one"))
+
+        forged_class = json.loads(json.dumps(baseline))
+        forged_class["resource_policy"]["classes"]["forged-cheap"] = {
+            "max_concurrency": 32,
+            "default_rss_mb": 1,
+            "default_processes": 1,
+            "jvm_xmx_mb": None,
+            "capacity_lock": None,
+        }
+        forged_class["checks"][0]["resource_class"] = "forged-cheap"
+        mutations.append((forged_class, "has unknown classes.*forged-cheap"))
+
+        for manifest, message in mutations:
+            with self.subTest(message=message), self.assertRaisesRegex(verifier.ManifestError, message):
+                verifier.validate_manifest(manifest)
+
+    def test_direct_clojure_jvm_xmx_must_match_declared_class(self) -> None:
+        valid = manifest_for(
+            check(
+                "leaf",
+                ["clojure", "-J-Xmx256m", "-M:leaf-test", "--group", "compiler"],
+                resource_class="leaf-jvm",
+            )
+        )
+        verifier.validate_manifest(valid)
+        for command in (
+            ["clojure", "-J-Xmx128m", "-M:leaf-test"],
+            ["clojure", "-M:leaf-test"],
+            ["clojure", "-J-Xmx256m", "-J-Xmx512m", "-M:leaf-test"],
+        ):
+            invalid = manifest_for(check("leaf", command, resource_class="leaf-jvm"))
+            with self.subTest(command=command), self.assertRaisesRegex(
+                verifier.ManifestError, "must declare exactly '-J-Xmx256m'"
+            ):
+                verifier.validate_manifest(invalid)
+
+        wrapper = manifest_for(
+            check("wrapped", ["bin/gravity-bootstrap", "--check"], resource_class="bootstrap-hosted")
+        )
+        verifier.validate_manifest(wrapper)
+
+    def test_resource_class_and_aggregate_budgets_shape_deterministic_batches(self) -> None:
+        command = [sys.executable, "-c", "pass"]
+        class_limited = manifest_for(
+            *(check(name, command) for name in ("e", "a", "d", "b", "c"))
+        )
+        class_limited["resource_policy"]["classes"]["python-cheap"]["max_concurrency"] = 2
+        self.assertEqual(
+            verifier.parallel_ready_groups(class_limited, jobs=32),
+            [["a", "b"], ["c", "d"], ["e"]],
+        )
+
+        for budget, reservation, field in (
+            (250, 150, "max_rss_mb"),
+            (3, 2, "max_processes"),
+        ):
+            aggregate_limited = manifest_for(
+                *(check(name, command) for name in ("c", "a", "b"))
+            )
+            policy = aggregate_limited["resource_policy"]
+            if field == "max_rss_mb":
+                policy["aggregate"][field] = budget
+                for declaration in policy["classes"].values():
+                    declaration["default_rss_mb"] = min(reservation, budget)
+                policy["classes"]["python-cheap"]["default_rss_mb"] = reservation
+            else:
+                policy["aggregate"][field] = budget
+                for declaration in policy["classes"].values():
+                    declaration["default_processes"] = 1
+                policy["classes"]["python-cheap"]["default_processes"] = reservation
+            with self.subTest(field=field):
+                self.assertEqual(
+                    verifier.parallel_ready_groups(aggregate_limited, jobs=32),
+                    [["a"], ["b"], ["c"]],
+                )
+
+    def test_resource_declaration_changes_cache_identity(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-resource-cache-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            item = check("one", [sys.executable, "-c", "pass"])
+            original = manifest_for(item)
+            changed = json.loads(json.dumps(original))
+            changed["resource_policy"]["classes"]["python-cheap"]["default_rss_mb"] += 1
+            self.assertNotEqual(
+                verifier.cache_key(original, item, root),
+                verifier.cache_key(changed, changed["checks"][0], root),
+            )
+
+    def test_resource_metadata_is_in_planned_executed_reused_and_blocked_receipts(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-resource-receipt-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            passing = manifest_for(check("pass", [sys.executable, "-c", "pass"]))
+            planned = verifier.run_verification(passing, root, all_checks=True, dry_run=True)
+            executed = verifier.run_verification(passing, root, all_checks=True, cache_path=root / "cache.json")
+            reused = verifier.run_verification(
+                passing, root, all_checks=True, resume=True, cache_path=root / "cache.json"
+            )
+            blocked_manifest = manifest_for(
+                check("fail", [sys.executable, "-c", "raise SystemExit(1)"]),
+                check("blocked", [sys.executable, "-c", "pass"], depends_on=["fail"]),
+            )
+            blocked = verifier.run_verification(
+                blocked_manifest, root, all_checks=True, fail_fast=False
+            )
+            records = [
+                planned["checks"][0],
+                executed["checks"][0],
+                reused["checks"][0],
+                next(item for item in blocked["checks"] if item["id"] == "blocked"),
+            ]
+            self.assertEqual([item["status"] for item in records], ["planned", "passed", "reused", "blocked"])
+            for receipt in (planned, executed, reused, blocked):
+                self.assertEqual(
+                    receipt["resource_policy"]["authority"],
+                    "non-authoritative-admission-estimate",
+                )
+            for record in records:
+                self.assertEqual(record["resource"]["class"], "python-cheap")
+                self.assertEqual(record["resource"]["reserved_rss_mb"], 128)
+                self.assertEqual(record["resource"]["reserved_processes"], 1)
+                self.assertEqual(
+                    record["resource"]["authority"],
+                    "non-authoritative-admission-estimate",
+                )
+            self.assertEqual("process-tree-sampling", executed["checks"][0]["resource_observation"]["source"])
+            self.assertEqual(0.25, executed["checks"][0]["resource_observation"]["sample_interval_seconds"])
+            self.assertFalse(executed["checks"][0]["resource_observation"]["authoritative"])
+            for record in (planned["checks"][0], reused["checks"][0], records[-1]):
+                self.assertEqual("not-executed", record["resource_observation"]["source"])
+                self.assertEqual(0, record["resource_observation"]["sample_count"])
+
+    def test_observed_resource_exceedance_fails_and_is_not_cached(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-resource-exceeded-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            cache = root / "cache.json"
+            manifest = manifest_for(check("over", [sys.executable, "-c", "pass"]))
+            measurement = {
+                "process_count": 2, "rss_bytes": 129 * 1024 * 1024,
+                "cpu_percent": 0.0, "telemetry_available": True,
+                "telemetry_error": None,
+            }
+            with mock.patch.object(verifier, "process_tree_metrics", return_value=measurement):
+                receipt = verifier.run_verification(manifest, root, all_checks=True, cache_path=cache)
+            record = receipt["checks"][0]
+            self.assertEqual("failed", record["status"])
+            self.assertEqual("resource-budget-exceeded", record["reason"])
+            self.assertFalse(record["cacheable"])
+            self.assertTrue(record["resource_observation"]["rss_exceeded"])
+            self.assertTrue(record["resource_observation"]["processes_exceeded"])
+            self.assertFalse(cache.exists())
+
+    def test_unavailable_resource_telemetry_is_explicit_and_non_authoritative(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-resource-unavailable-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            manifest = manifest_for(check("unknown", [sys.executable, "-c", "pass"]))
+            unavailable = {
+                "process_count": None, "rss_bytes": None, "cpu_percent": None,
+                "telemetry_available": False, "telemetry_error": "ps unavailable",
+            }
+            with mock.patch.object(verifier, "process_tree_metrics", return_value=unavailable):
+                receipt = verifier.run_verification(manifest, root, all_checks=True)
+            record = receipt["checks"][0]
+            self.assertEqual("passed", record["status"])
+            observation = record["resource_observation"]
+            self.assertEqual(
+                {
+                    "source", "sample_count", "sample_interval_seconds", "peak_rss_bytes",
+                    "peak_process_count", "telemetry_available", "telemetry_error",
+                    "declared_reserved_rss_bytes", "declared_reserved_processes",
+                    "rss_exceeded", "processes_exceeded", "authoritative",
+                },
+                set(observation),
+            )
+            self.assertFalse(observation["telemetry_available"])
+            self.assertEqual("ps unavailable", observation["telemetry_error"])
+            self.assertIsNone(observation["rss_exceeded"])
+            self.assertIsNone(observation["processes_exceeded"])
+            self.assertFalse(observation["authoritative"])
+            self.assertFalse(any(thread.name == "gravity-resource-sampler" for thread in verifier.threading.enumerate()))
+
+    def test_slow_initial_telemetry_cannot_extend_command_execution_deadline(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-slow-telemetry-") as directory:
+            root = Path(directory)
+            side_effect = root / "too-late"
+            command = [
+                sys.executable, "-c",
+                f"import time; from pathlib import Path; time.sleep(0.2); Path({str(side_effect)!r}).write_text('bad')",
+            ]
+
+            def slow_metrics(_pid: int) -> dict[str, object]:
+                time.sleep(0.3)
+                return {
+                    "process_count": None, "rss_bytes": None, "cpu_percent": None,
+                    "telemetry_available": False, "telemetry_error": "slow test sampler",
+                }
+
+            started = time.monotonic()
+            with mock.patch.object(verifier, "process_tree_metrics", side_effect=slow_metrics):
+                outcome = verifier._run_command(
+                    command, cwd=root, env=os.environ.copy(), timeout=0.1,
+                    marker="slow-telemetry-deadline-test",
+                )
+            elapsed = time.monotonic() - started
+            time.sleep(0.25)
+            self.assertTrue(outcome["timed_out"])
+            self.assertFalse(side_effect.exists())
+            self.assertLess(elapsed, 1.5)
+            self.assertFalse(any(thread.name == "gravity-resource-sampler" for thread in verifier.threading.enumerate()))
+
+    @unittest.skipUnless(os.name == "posix", "process-group escalation requires POSIX")
+    def test_timeout_sigterm_ignoring_group_is_killed_reaped_and_terminal_safe(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-ignore-term-") as directory:
+            root = Path(directory)
+            outcome = verifier._run_command(
+                [
+                    sys.executable,
+                    "-c",
+                    "import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(10)",
+                ],
+                cwd=root,
+                env=os.environ.copy(),
+                timeout=0.2,
+                marker="ignore-term-deadline-test",
+            )
+            cleanup = outcome["cleanup"]
+            self.assertTrue(outcome["timed_out"])
+            self.assertIsNotNone(outcome["returncode"])
+            self.assertTrue(cleanup["term_sent"])
+            self.assertTrue(cleanup["kill_sent"])
+            self.assertFalse(cleanup["group_alive"])
+            self.assertEqual(cleanup["escaped_alive"], [])
+            self.assertEqual(cleanup["marker_alive"], [])
+            self.assertTrue(cleanup["terminal_safe"])
+            self.assertFalse(verifier._process_group_alive(cleanup["process_group"]))
+
+    def test_terminal_census_exception_joins_sampler_and_preserves_exception(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-census-exception-") as directory:
+            root = Path(directory)
+            with mock.patch.object(
+                verifier,
+                "_marker_processes",
+                side_effect=RuntimeError("injected terminal census exception"),
+            ):
+                with self.assertRaisesRegex(RuntimeError, "injected terminal census exception"):
+                    verifier._run_command(
+                        [sys.executable, "-c", "import time; time.sleep(0.05)"],
+                        cwd=root,
+                        env=os.environ.copy(),
+                        timeout=1.0,
+                        marker="terminal-census-exception-test",
+                    )
+            self.assertFalse(
+                any(thread.name == "gravity-resource-sampler" for thread in verifier.threading.enumerate())
+            )
+
+    def test_terminal_census_error_refreshes_cleanup_safety(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-census-error-") as directory:
+            root = Path(directory)
+            with mock.patch.object(
+                verifier,
+                "_marker_processes",
+                return_value=({}, "injected terminal census failure"),
+            ):
+                outcome = verifier._run_command(
+                    [sys.executable, "-c", "pass"],
+                    cwd=root,
+                    env=os.environ.copy(),
+                    timeout=1.0,
+                    marker="terminal-census-error-test",
+                )
+            self.assertEqual(
+                outcome["cleanup"]["census_error"],
+                "injected terminal census failure",
+            )
+            self.assertFalse(outcome["cleanup"]["terminal_safe"])
+            self.assertTrue(outcome["supervision_failed"])
+
+    def test_expired_supervisor_setup_deadline_never_releases_target(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-slow-supervisor-") as directory:
+            root = Path(directory)
+            side_effect = root / "must-not-run"
+            command = [sys.executable, "-c", f"from pathlib import Path; Path({str(side_effect)!r}).write_text('bad')"]
+            original_start = verifier._ProcessSupervisor.start
+
+            def slow_start(supervisor: verifier._ProcessSupervisor) -> bool:
+                time.sleep(0.1)
+                return original_start(supervisor)
+
+            with mock.patch.object(verifier._ProcessSupervisor, "start", slow_start):
+                outcome = verifier._run_command(
+                    command, cwd=root, env=os.environ.copy(), timeout=0.05,
+                    marker="slow-supervisor-deadline-test",
+                )
+            self.assertTrue(outcome["timed_out"])
+            self.assertFalse(outcome["supervision_failed"])
+            self.assertFalse(side_effect.exists())
+            self.assertEqual("not-executed", outcome["resource_sample"]["source"])
+
+    @unittest.skipUnless(os.name == "posix", "launch barriers require POSIX")
+    def test_barrier_release_exception_reaps_child_closes_fds_and_preserves_error(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-barrier-release-error-") as directory:
+            root = Path(directory)
+            side_effect = root / "must-not-run"
+            command = [
+                sys.executable,
+                "-c",
+                f"from pathlib import Path; Path({str(side_effect)!r}).write_text('bad')",
+            ]
+            original_pipe = os.pipe
+            original_write = os.write
+            original_popen = subprocess.Popen
+            launch_fds: dict[str, int] = {}
+            launched: list[subprocess.Popen[str]] = []
+
+            def tracked_pipe() -> tuple[int, int]:
+                read_fd, write_fd = original_pipe()
+                if not launch_fds:
+                    launch_fds.update(read=read_fd, write=write_fd)
+                return read_fd, write_fd
+
+            def fail_barrier_release(fd: int, data: bytes) -> int:
+                if fd == launch_fds.get("write"):
+                    raise BrokenPipeError("injected barrier release failure")
+                return original_write(fd, data)
+
+            def tracked_popen(*args, **kwargs):
+                process = original_popen(*args, **kwargs)
+                if kwargs.get("env", {}).get("_GRAVITY_VERIFIER_RUN") == "barrier-release-error-test":
+                    launched.append(process)
+                return process
+
+            with (
+                mock.patch.object(verifier.os, "pipe", side_effect=tracked_pipe),
+                mock.patch.object(verifier.os, "write", side_effect=fail_barrier_release),
+                mock.patch.object(verifier.subprocess, "Popen", side_effect=tracked_popen),
+            ):
+                with self.assertRaisesRegex(BrokenPipeError, "injected barrier release failure"):
+                    verifier._run_command(
+                        command,
+                        cwd=root,
+                        env=os.environ.copy(),
+                        timeout=1.0,
+                        marker="barrier-release-error-test",
+                    )
+
+            self.assertEqual(len(launched), 1)
+            process = launched[0]
+            self.assertIsNotNone(process.poll())
+            self.assertTrue(process.stdout is not None and process.stdout.closed)
+            self.assertTrue(process.stderr is not None and process.stderr.closed)
+            for launch_fd in launch_fds.values():
+                with self.assertRaises(OSError):
+                    os.fstat(launch_fd)
+            self.assertFalse(side_effect.exists())
+            marker_processes, marker_error = verifier._marker_processes("barrier-release-error-test")
+            self.assertIsNone(marker_error)
+            self.assertEqual(marker_processes, {})
+            self.assertFalse(
+                any(thread.name == "gravity-resource-sampler" for thread in verifier.threading.enumerate())
+            )
+
+    def test_capacity_lock_busy_blocks_before_any_subprocess_launch(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-capacity-busy-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            manifest = manifest_for(
+                check(
+                    "leaf-a",
+                    [sys.executable, "-c", "pass"],
+                    resource_class="leaf-jvm",
+                ),
+                check(
+                    "leaf-b",
+                    [sys.executable, "-c", "pass"],
+                    resource_class="leaf-jvm",
+                ),
+            )
+            @contextlib.contextmanager
+            def busy_capacity_lock(lock_name: str | None):
+                self.assertEqual(lock_name, verifier.CANONICAL_HEAVY_LOCK)
+                raise verifier.LockUnavailable(f"shared resource lock is busy: {lock_name}")
+                yield None
+
+            with mock.patch.object(
+                verifier, "_process_lock", busy_capacity_lock
+            ), mock.patch.object(verifier, "_run_one") as run_one:
+                receipt = verifier.run_verification(manifest, root, all_checks=True, jobs=32)
+            run_one.assert_not_called()
+            self.assertEqual(receipt["status"], "failed")
+            self.assertEqual(
+                [item["status"] for item in receipt["checks"]], ["blocked", "blocked"]
+            )
+            for record in receipt["checks"]:
+                self.assertEqual(record["reason"], "capacity-lock-busy")
+                self.assertEqual(record["capacity_lock"], verifier.CANONICAL_HEAVY_LOCK)
+                self.assertEqual(
+                    record["resource"]["capacity_lock"], verifier.CANONICAL_HEAVY_LOCK
+                )
+
+    def test_capacity_lock_is_acquired_once_for_leaf_batch_with_stable_lock_path(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-capacity-path-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            manifest = manifest_for(
+                check(
+                    "leaf-a",
+                    [sys.executable, "-c", "pass"],
+                    resource_class="leaf-jvm",
+                ),
+                check(
+                    "leaf-b",
+                    [sys.executable, "-c", "pass"],
+                    resource_class="leaf-jvm",
+                ),
+            )
+            lock_calls: list[str | None] = []
+
+            @contextlib.contextmanager
+            def observed_process_lock(lock_name: str | None):
+                lock_calls.append(lock_name)
+                yield (
+                    verifier._resource_lock_path(lock_name)
+                    if lock_name is not None
+                    else None
+                )
+
+            with mock.patch.object(verifier, "_process_lock", observed_process_lock):
+                receipt = verifier.run_verification(manifest, root, all_checks=True, jobs=32)
+            self.assertEqual(receipt["status"], "passed")
+            self.assertEqual(
+                [item for item in lock_calls if item == verifier.CANONICAL_HEAVY_LOCK],
+                [verifier.CANONICAL_HEAVY_LOCK],
+            )
+            expected_path = str(verifier._resource_lock_path(verifier.CANONICAL_HEAVY_LOCK))
+            for record in receipt["checks"]:
+                self.assertEqual(record["capacity_lock"], verifier.CANONICAL_HEAVY_LOCK)
+                self.assertEqual(record["capacity_lock_path"], expected_path)
+
+    def test_canonical_default_jobs_respects_every_resource_limit(self) -> None:
+        manifest = verifier.load_manifest(TOOLS / "development_verification_manifest.json")
+        groups = verifier.parallel_ready_groups(manifest)
+        policy = verifier.normalized_resource_policy(manifest)
+        by_id = verifier.checks_by_id(manifest)
+        for group in groups:
+            resources = [verifier.check_resource_declaration(manifest, by_id[item]) for item in group]
+            counts: dict[str, int] = {}
+            for resource in resources:
+                counts[resource["class"]] = counts.get(resource["class"], 0) + 1
+            self.assertLessEqual(
+                sum(resource["reserved_rss_mb"] for resource in resources),
+                policy["aggregate"]["max_rss_mb"],
+            )
+            self.assertLessEqual(
+                sum(resource["reserved_processes"] for resource in resources),
+                policy["aggregate"]["max_processes"],
+            )
+            for class_name, count in counts.items():
+                self.assertLessEqual(count, policy["classes"][class_name]["max_concurrency"])
+            if any(verifier._effective_lock(by_id[item]) is not None for item in group):
+                self.assertEqual(len(group), 1)
 
     def test_manifest_requires_explicit_daemonization_forbidden_policy(self) -> None:
         item = check("policy", [sys.executable, "-c", "pass"])
@@ -136,6 +737,18 @@ class VerifyDevelopmentTests(unittest.TestCase):
         manual["automatic"] = "false"
         with self.assertRaisesRegex(verifier.ManifestError, "automatic must be boolean"):
             verifier.validate_manifest(manifest)
+    def test_manifest_rejects_boolean_and_nonfinite_timeouts(self) -> None:
+        command = [sys.executable, "-c", "pass"]
+        for timeout in (True, False, 0, -1, float("nan"), float("inf"), float("-inf"), 10**309):
+            with self.subTest(timeout=timeout), self.assertRaisesRegex(
+                verifier.ManifestError, "finite positive number"
+            ):
+                verifier.validate_manifest(
+                    manifest_for(check("timeout", command, timeout_seconds=timeout))
+                )
+        huge = check("huge-timeout", command, timeout_seconds=10**309)
+        with self.assertRaisesRegex(verifier.ManifestError, "finite positive number"):
+            verifier.check_identity(huge, Path("/tmp"))
 
     def test_dag_order_and_parallel_ready_groups(self) -> None:
         command = [sys.executable, "-c", "pass"]
@@ -183,6 +796,51 @@ class VerifyDevelopmentTests(unittest.TestCase):
             third = verifier.run_verification(manifest, root, all_checks=True, resume=True, cache_path=cache)
             self.assertEqual(third["checks"][0]["status"], "passed")
             self.assertFalse(third["checks"][0]["status"] == "reused")
+
+    def test_fresh_and_timeout_are_bound_into_cache_identity(self) -> None:
+        command = [sys.executable, "-c", "import sys; sys.exit(0)"]
+        with tempfile.TemporaryDirectory(prefix="gravity-verify-declaration-identity-") as directory:
+            root = Path(directory)
+            (root / "input.txt").write_text("stable\n", encoding="ascii")
+            original = check("one", command, timeout_seconds=1)
+            manifest = manifest_for(original)
+            original_key = verifier.cache_key(manifest, original, root)
+
+            fresh = dict(original)
+            fresh["fresh"] = True
+            fresh_manifest = manifest_for(fresh)
+            self.assertNotEqual(original_key, verifier.cache_key(fresh_manifest, fresh, root))
+
+            retimed = dict(original)
+            retimed["timeout_seconds"] = 2
+            retimed_manifest = manifest_for(retimed)
+            retimed_key = verifier.cache_key(retimed_manifest, retimed, root)
+            self.assertNotEqual(original_key, retimed_key)
+            self.assertEqual(verifier.check_identity(original, root)["fresh"], False)
+            self.assertEqual(verifier.check_identity(original, root)["timeout_seconds"], 1.0)
+            self.assertIsInstance(verifier.check_identity(original, root)["timeout_seconds"], float)
+
+            integer_timeout = check("equivalent", command, timeout_seconds=5)
+            float_timeout = check("equivalent", command, timeout_seconds=5.0)
+            self.assertEqual(
+                verifier.cache_key(manifest_for(integer_timeout), integer_timeout, root),
+                verifier.cache_key(manifest_for(float_timeout), float_timeout, root),
+            )
+
+            cache = root / "cache.json"
+            first = verifier.run_verification(manifest, root, all_checks=True, cache_path=cache)
+            self.assertEqual(first["checks"][0]["status"], "passed")
+            self.assertEqual(first["checks"][0]["timeout_seconds"], 1.0)
+            changed = verifier.run_verification(
+                retimed_manifest, root, all_checks=True, resume=True, cache_path=cache
+            )
+            self.assertEqual(changed["checks"][0]["status"], "passed")
+            self.assertEqual(changed["checks"][0]["cache_key"], retimed_key)
+            stable = verifier.run_verification(
+                retimed_manifest, root, all_checks=True, resume=True, cache_path=cache
+            )
+            self.assertEqual(stable["checks"][0]["status"], "reused")
+            self.assertEqual(stable["checks"][0]["timeout_seconds"], 2.0)
 
     def test_heavy_candidate_results_are_fresh_only(self) -> None:
         command = [sys.executable, "-c", "import sys; sys.exit(0)"]
@@ -449,6 +1107,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 [item["id"] for item in dry_receipt["checks"]],
                 ["focused", "preflight"],
             )
+            self.assertTrue(all("timeout_seconds" in item for item in dry_receipt["checks"]))
+            self.assertTrue(all(item["timeout_seconds"] is None for item in dry_receipt["checks"]))
             self.assertEqual(dry_receipt["selection"]["selection_mode"], "all")
             self.assertEqual(dry_receipt["selection"]["unmatched_changes"], ["generated.py"])
 
@@ -508,6 +1168,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             self.assertEqual(explicit_check["selection"]["selection_mode"], "explicit-check")
             self.assertEqual(explicit_check["selection"]["unmatched_changes"], ["generated.py"])
             self.assertEqual(explicit_check["checks"][0]["id"], "focused")
+            self.assertIn("timeout_seconds", explicit_check["checks"][0])
 
             with self.assertRaisesRegex(verifier.VerificationError, "--all cannot be combined"):
                 verifier.run_verification(
@@ -793,7 +1454,12 @@ class VerifyDevelopmentTests(unittest.TestCase):
             def counting_run(*args, **kwargs):
                 nonlocal census_calls
                 argv = args[0] if args else kwargs.get("args", [])
-                if argv and Path(str(argv[0])).name == "ps":
+                if (
+                    argv
+                    and Path(str(argv[0])).name == "ps"
+                    and "eww" in argv
+                    and "-axo" in argv
+                ):
                     census_calls += 1
                 return original_run(*args, **kwargs)
 
@@ -1073,6 +1739,860 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertIn("stage0-clojure-suite", selected)
         self.assertIn("stage0-bootstrap-authority", selected)
 
+    def test_stage0_project_structure_check_has_contract_inputs(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        check_record = next(item for item in manifest["checks"] if item["id"] == "stage0-project-structure")
+        self.assertEqual(check_record["lane"], "preflight")
+        self.assertEqual(check_record["cost"], "cheap")
+        self.assertIsNone(check_record["lock"])
+        self.assertFalse(check_record["exclusive"])
+        self.assertEqual(check_record["authority"], "none")
+        self.assertEqual(
+            check_record["command"],
+            ["python3", "tools/validate_project_structure.py", "contracts/project-structure.json"],
+        )
+        self.assertEqual(
+            set(check_record["inputs"]),
+            {
+                "contracts/project-structure.json",
+                "contracts/stage0-clojure-components.json",
+                "docs/self-hosting-slice-ownership.edn",
+                "bootstrap/clojure/src/gravity/*.clj",
+                "bootstrap/clojure/test/gravity/*_test.clj",
+                "tools/validate_project_structure.py",
+            },
+        )
+
+    def test_control_plane_contract_tests_are_executable_cacheable_and_routable(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        checks = {item["id"]: item for item in manifest["checks"]}
+        cases = {
+            "tools/tests/test_validate_project_structure.py": {
+                "id": "stage0-project-structure-unit",
+                "command": [
+                    "python3", "-m", "unittest",
+                    "tools.tests.test_validate_project_structure", "-v",
+                ],
+                "resource_class": "python-cheap",
+            },
+            "bootstrap/clojure/test/gravity/self_hosting/sh01_ownership_test.clj": {
+                "id": "stage0-sh01-ownership-control",
+                "command": [
+                    "clojure", "-J-Xmx256m", "-M:test", "--namespace",
+                    "gravity.self-hosting.sh01-ownership-test",
+                ],
+                "resource_class": "leaf-jvm",
+            },
+            "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_runner_test.clj": {
+                "id": "stage0-sh01-development-runner-control",
+                "command": [
+                    "clojure", "-J-Xmx256m", "-M:test", "--namespace",
+                    "gravity.self-hosting.sh01-development-test-runner-test",
+                ],
+                "resource_class": "leaf-jvm",
+            },
+            "bootstrap/clojure/test/gravity/self_hosting/sh01_stage0_leaf_test_runner_test.clj": {
+                "id": "stage0-sh01-leaf-runner-control",
+                "command": [
+                    "clojure", "-J-Xmx256m", "-M:test", "--namespace",
+                    "gravity.self-hosting.sh01-stage0-leaf-test-runner-test",
+                ],
+                "resource_class": "leaf-jvm",
+            },
+        }
+        for changed_path, expected in cases.items():
+            with self.subTest(path=changed_path):
+                item = checks[expected["id"]]
+                self.assertEqual(expected["command"], item["command"])
+                self.assertEqual(expected["resource_class"], item["resource_class"])
+                self.assertEqual("none", item["authority"])
+                self.assertFalse(item["fresh"])
+                self.assertIsNone(item["lock"])
+                self.assertFalse(item["exclusive"])
+                self.assertIn(changed_path, item["inputs"])
+                selection = verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[changed_path]
+                )
+                self.assertEqual([], selection["unmatched_changes"])
+                self.assertIn(expected["id"], selection["selected_ids"])
+                with tempfile.TemporaryDirectory(prefix="gravity-control-plane-cache-") as directory:
+                    temp_root = Path(directory)
+                    target = temp_root / changed_path
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(ROOT / changed_path, target)
+                    baseline = verifier.cache_key(manifest, item, temp_root)
+                    original = target.read_bytes()
+                    target.write_bytes(original + b"\ncontrol-plane-cache-change\n")
+                    self.assertNotEqual(baseline, verifier.cache_key(manifest, item, temp_root))
+
+    def test_filesystem_enumerating_control_checks_bind_stage0_source_and_test_globs(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        checks = {item["id"]: item for item in manifest["checks"]}
+        for check_id in (
+            "stage0-project-structure",
+            "stage0-project-structure-unit",
+            "stage0-sh01-ownership-control",
+        ):
+            with self.subTest(check_id=check_id):
+                item = checks[check_id]
+                self.assertIn("bootstrap/clojure/src/gravity/*.clj", item["inputs"])
+                self.assertIn("bootstrap/clojure/test/gravity/*_test.clj", item["inputs"])
+                with tempfile.TemporaryDirectory(prefix="gravity-filesystem-cache-") as directory:
+                    temp_root = Path(directory)
+                    source = temp_root / "bootstrap/clojure/src/gravity/cache_probe.clj"
+                    source.parent.mkdir(parents=True, exist_ok=True)
+                    baseline = verifier.cache_key(manifest, item, temp_root)
+                    source.write_text("(ns gravity.cache-probe)\n", encoding="ascii")
+                    self.assertNotEqual(baseline, verifier.cache_key(manifest, item, temp_root))
+
+    def test_component_source_and_test_edits_route_to_the_matching_leaf_group(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        leaf_ids = {
+            "stage0-leaf-foundation-reader",
+            "stage0-leaf-c2-c3",
+            "stage0-leaf-compiler",
+        }
+        cases = {
+            "bootstrap/clojure/src/gravity/c2_artifact_identity.clj": {"stage0-leaf-c2-c3"},
+            "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj": {"stage0-leaf-c2-c3"},
+            "bootstrap/clojure/src/gravity/c7_type_checker.clj": {"stage0-leaf-compiler"},
+            "bootstrap/clojure/test/gravity/c7_type_checker_test.clj": {"stage0-leaf-compiler"},
+            "bootstrap/clojure/src/gravity/core_ast_lowering.clj": {"stage0-leaf-compiler"},
+            "bootstrap/clojure/test/gravity/core_ast_lowering_test.clj": {"stage0-leaf-compiler"},
+            "bootstrap/clojure/src/gravity/reader_cursor.clj": {"stage0-leaf-foundation-reader"},
+            "bootstrap/clojure/test/gravity/reader_cursor_test.clj": {"stage0-leaf-foundation-reader"},
+            "bootstrap/clojure/src/gravity/module_analysis.clj": {"stage0-leaf-foundation-reader"},
+            "bootstrap/clojure/test/gravity/module_analysis_test.clj": {"stage0-leaf-foundation-reader"},
+        }
+        for changed_path, expected in cases.items():
+            with self.subTest(changed_path=changed_path):
+                selection = verifier.select_impacted_checks(
+                    manifest,
+                    ROOT,
+                    changed_paths=[changed_path],
+                    lanes=["focused"],
+                )
+                selected_leaf_ids = set(selection["selected_ids"]) & leaf_ids
+                self.assertEqual(expected, selected_leaf_ids)
+
+    def test_leaf_manifest_inputs_exactly_cover_normative_roots_and_source_closures(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        contract = json.loads(
+            (ROOT / "contracts" / "stage0-clojure-components.json").read_text(encoding="utf-8")
+        )
+        components = {component["id"]: component for component in contract["components"]}
+        checks = {item["id"]: item for item in manifest["checks"]}
+        expected_counts = {"foundation-reader": 9, "c2-c3": 12, "compiler": 23}
+        all_roots: set[str] = set()
+        for group, expected_count in expected_counts.items():
+            roots = {
+                component_id
+                for component_id, component in components.items()
+                if component["leaf_execution_group"] == group
+            }
+            self.assertEqual(expected_count, len(roots), group)
+            all_roots.update(roots)
+            closure = set(roots)
+            pending = list(roots)
+            while pending:
+                component_id = pending.pop()
+                for dependency in components[component_id]["direct_source_dependencies"]:
+                    if dependency not in closure:
+                        closure.add(dependency)
+                        pending.append(dependency)
+            item = checks[f"stage0-leaf-{group}"]
+            actual_sources = {
+                path
+                for path in item["inputs"]
+                if path.startswith("bootstrap/clojure/src/gravity/")
+            }
+            actual_tests = {
+                path
+                for path in item["inputs"]
+                if path.startswith("bootstrap/clojure/test/gravity/")
+                and path.endswith("_test.clj")
+            }
+            expected_sources = {components[component_id]["source"]["path"] for component_id in closure}
+            expected_tests = {components[component_id]["test"]["path"] for component_id in roots}
+            self.assertEqual(expected_sources, actual_sources, group)
+            self.assertEqual(expected_tests, actual_tests, group)
+        self.assertEqual(44, len(all_roots))
+        self.assertEqual(
+            {
+                component_id
+                for component_id, component in components.items()
+                if component["test"]["lane"] == "bootstrap-free"
+            },
+            all_roots,
+        )
+
+    def test_c2_compatibility_check_batches_exact_qualified_vars_under_host_capacity(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(check for check in manifest["checks"] if check["id"] == "stage0-c2-compatibility")
+        qualified = [
+            "gravity.bootstrap-compatibility.c2-test/c2-source-identity-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c2-test/c2-reader-product-projection-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c2-test/c2-reader-diagnostics-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c2-test/c2-lexical-validation-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c2-test/c2-artifact-identity-load-order-initializes-standard-reader-options",
+            "gravity.bootstrap-compatibility.c2-test/c2-artifact-identity-compatibility-wrappers-preserve-interposition",
+        ]
+        self.assertEqual(
+            ["clojure", "-M:dev-test", "--namespace", "gravity.bootstrap-compatibility.c2-test"]
+            + [part for name in qualified for part in ("--exact", name)],
+            item["command"],
+        )
+        self.assertEqual("bootstrap-hosted", item["resource_class"])
+        self.assertEqual("none", item["authority"])
+        self.assertFalse(item["fresh"])
+        self.assertIsNone(item["lock"])
+        resource = verifier.check_resource_declaration(manifest, item)
+        self.assertEqual(verifier.CANONICAL_HEAVY_LOCK, resource["capacity_lock"])
+        self.assertEqual(1, resource["class_max_concurrency"])
+
+    def test_c2_compatibility_paths_route_and_invalidate_cache_identity(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(check for check in manifest["checks"] if check["id"] == "stage0-c2-compatibility")
+        for changed_path in (
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj",
+            "bootstrap/clojure/test/gravity/development_test_runner.clj",
+        ):
+            with self.subTest(path=changed_path):
+                selection = verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[changed_path]
+                )
+                self.assertIn("stage0-c2-compatibility", selection["selected_ids"])
+                self.assertIn("stage0-clojure-suite", selection["selected_ids"])
+                self.assertEqual([], selection["unmatched_changes"])
+
+        with tempfile.TemporaryDirectory(prefix="gravity-c2-compat-cache-") as directory:
+            temp_root = Path(directory)
+            copied = [
+                "deps.edn",
+                "contracts/project-structure.json",
+                "docs/self-hosting-slice-ownership.edn",
+                "bootstrap/clojure/src/gravity/bootstrap.clj",
+                "bootstrap/clojure/test/gravity/development_test_runner.clj",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj",
+                "tools/validate_project_structure.py",
+            ]
+            for relative in copied:
+                target = temp_root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / relative, target)
+            baseline = verifier.cache_key(manifest, item, temp_root)
+            for relative in copied[1:]:
+                target = temp_root / relative
+                original = target.read_bytes()
+                target.write_bytes(original + b"\ncompatibility-cache-change\n")
+                try:
+                    self.assertNotEqual(
+                        baseline, verifier.cache_key(manifest, item, temp_root), relative
+                    )
+                finally:
+                    target.write_bytes(original)
+
+    def test_c3_compatibility_check_batches_exact_qualified_vars_under_host_capacity(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(check for check in manifest["checks"] if check["id"] == "stage0-c3-compatibility")
+        qualified = [
+            "gravity.bootstrap-compatibility.c3-test/syntax-object-stream-compatibility-wrapper-preserves-arity-and-output",
+            "gravity.bootstrap-compatibility.c3-test/c3-origin-chain-compatibility-wrapper-preserves-arity-and-output",
+            "gravity.bootstrap-compatibility.c3-test/c3-syntax-evidence-compatibility-wrappers-preserve-output-and-interposition",
+            "gravity.bootstrap-compatibility.c3-test/c3-syntax-construction-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c3-test/c3-syntax-verification-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c3-test/c3-syntax-diagnostics-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c3-test/c3-reader-integrity-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c3-test/c3-literal-projection-compatibility-wrappers-preserve-interposition",
+            "gravity.bootstrap-compatibility.c3-test/c3-artifact-identity-compatibility-wrappers-preserve-interposition",
+        ]
+        self.assertEqual(
+            ["clojure", "-M:dev-test", "--namespace", "gravity.bootstrap-compatibility.c3-test"]
+            + [part for name in qualified for part in ("--exact", name)],
+            item["command"],
+        )
+        self.assertEqual("bootstrap-hosted", item["resource_class"])
+        self.assertEqual("none", item["authority"])
+        self.assertFalse(item["fresh"])
+        self.assertIsNone(item["lock"])
+        resource = verifier.check_resource_declaration(manifest, item)
+        self.assertEqual(verifier.CANONICAL_HEAVY_LOCK, resource["capacity_lock"])
+        self.assertEqual(1, resource["class_max_concurrency"])
+
+    def test_c3_compatibility_paths_route_and_invalidate_cache_identity(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(check for check in manifest["checks"] if check["id"] == "stage0-c3-compatibility")
+        for changed_path in (
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj",
+            "bootstrap/clojure/test/gravity/development_test_runner.clj",
+        ):
+            with self.subTest(path=changed_path):
+                selection = verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[changed_path]
+                )
+                self.assertIn("stage0-c3-compatibility", selection["selected_ids"])
+                self.assertIn("stage0-clojure-suite", selection["selected_ids"])
+                self.assertEqual([], selection["unmatched_changes"])
+
+        with tempfile.TemporaryDirectory(prefix="gravity-c3-compat-cache-") as directory:
+            temp_root = Path(directory)
+            copied = [
+                "deps.edn",
+                "contracts/project-structure.json",
+                "docs/self-hosting-slice-ownership.edn",
+                "bootstrap/clojure/src/gravity/bootstrap.clj",
+                "bootstrap/clojure/src/gravity/c3_artifact_identity.clj",
+                "bootstrap/clojure/src/gravity/c3_literal_projection.clj",
+                "bootstrap/clojure/src/gravity/c3_reader_integrity.clj",
+                "bootstrap/clojure/src/gravity/c3_syntax_construction.clj",
+                "bootstrap/clojure/src/gravity/c3_syntax_diagnostics.clj",
+                "bootstrap/clojure/src/gravity/c3_syntax_evidence.clj",
+                "bootstrap/clojure/src/gravity/c3_syntax_verification.clj",
+                "bootstrap/clojure/src/gravity/syntax_object_stream.clj",
+                "bootstrap/clojure/src/gravity/syntax_origin.clj",
+                "bootstrap/clojure/test/gravity/development_test_runner.clj",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj",
+                "tools/validate_project_structure.py",
+            ]
+            for relative in copied:
+                target = temp_root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / relative, target)
+            baseline = verifier.cache_key(manifest, item, temp_root)
+            for relative in copied[1:]:
+                target = temp_root / relative
+                original = target.read_bytes()
+                target.write_bytes(original + b"\ncompatibility-cache-change\n")
+                try:
+                    self.assertNotEqual(
+                        baseline, verifier.cache_key(manifest, item, temp_root), relative
+                    )
+                finally:
+                    target.write_bytes(original)
+
+    def test_foundation_compatibility_check_is_exact_cacheable_and_routable(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(
+            check for check in manifest["checks"]
+            if check["id"] == "stage0-foundation-compatibility"
+        )
+        self.assertEqual(
+            [
+                "gravity.bootstrap-compatibility.module-analysis-test",
+                "gravity.bootstrap-compatibility.core-ast-lowering-test",
+            ],
+            [
+                item["command"][index + 1]
+                for index, token in enumerate(item["command"])
+                if token == "--namespace"
+            ],
+        )
+        self.assertEqual(
+            [
+                "gravity.bootstrap-compatibility.module-analysis-test/"
+                "module-analysis-compatibility-wrappers-preserve-arglists-output-and-interposition",
+                "gravity.bootstrap-compatibility.module-analysis-test/"
+                "bootstrap-owned-policy-map-redefs-reach-helpers-and-downstream-checks",
+                "gravity.bootstrap-compatibility.core-ast-lowering-test/"
+                "core-ast-lowering-compatibility-wrappers-preserve-arglists-output-and-interposition",
+            ],
+            [
+                item["command"][index + 1]
+                for index, token in enumerate(item["command"])
+                if token == "--exact"
+            ],
+        )
+        self.assertEqual("bootstrap-hosted", item["resource_class"])
+        self.assertEqual("none", item["authority"])
+        self.assertFalse(item["fresh"])
+        self.assertIsNone(item["lock"])
+        compatibility_paths = {
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj",
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj",
+        }
+        self.assertTrue(compatibility_paths <= set(item["inputs"]))
+        self.assertFalse(any(path.startswith("bootstrap/clojure/fixtures/") for path in item["inputs"]))
+        for path in compatibility_paths:
+            selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[path])
+            self.assertIn(item["id"], selection["selected_ids"])
+            self.assertIn("stage0-clojure-suite", selection["selected_ids"])
+            self.assertEqual([], selection["unmatched_changes"])
+
+    def test_profile_capability_compatibility_check_is_exact_cacheable_and_routable(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(
+            check for check in manifest["checks"]
+            if check["id"] == "stage0-profile-capability-compatibility"
+        )
+        expected = [
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-facades-match-head-4921fbc-reference-table",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-head-reference-policy-denial-matrix-and-dynamic-seams",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-downstream-caller-artifacts-retain-head-shape",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-facades-preserve-public-arglists-and-exact-leaf-parity",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-policy-map-redefs-reach-the-leaf-through-the-central-seam",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-registry-function-seams-match-head-4921fbc-ownership",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-validation-facade-preserves-central-diagnostics-and-target-gates",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-captured-original-interposition-is-one-shot",
+            "gravity.bootstrap-compatibility.profile-validation-test/profile-leaf-operation-interposition-is-observable-through-facade",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-facades-preserve-arglists-and-explicit-pass-parity",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-final-authority-narrows-trust-without-rewriting-legacy-row",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-policy-and-provider-seams-remain-interposable",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-diagnostic-policy-scalar-reaches-leaf-pass-contract",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-diagnostics-preserve-source-context-and-stable-ids",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-provider-name-matches-head-4921fbc-reference-table",
+            "gravity.bootstrap-compatibility.capability-validation-test/capability-captured-original-provider-interposition-is-one-shot",
+        ]
+        for namespace, relative in (
+            (
+                "gravity.bootstrap-compatibility.profile-validation-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj",
+            ),
+            (
+                "gravity.bootstrap-compatibility.capability-validation-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj",
+            ),
+        ):
+            deftests = re.findall(
+                r"^\(deftest\s+([^\s\)]+)",
+                (ROOT / relative).read_text(encoding="utf-8"),
+                flags=re.MULTILINE,
+            )
+            self.assertEqual(
+                [f"{namespace}/{name}" for name in deftests],
+                [selector for selector in expected if selector.startswith(f"{namespace}/")],
+            )
+        runner_source = (
+            ROOT / "bootstrap/clojure/test/gravity/development_test_runner.clj"
+        ).read_text(encoding="utf-8")
+        self.assertEqual(
+            expected,
+            re.findall(
+                r'"(gravity\.bootstrap-compatibility\.(?:profile|capability)-validation-test/[^\"]+)"',
+                runner_source,
+            ),
+        )
+        self.assertEqual(
+            expected,
+            [
+                item["command"][index + 1]
+                for index, token in enumerate(item["command"])
+                if token == "--exact"
+            ],
+        )
+        self.assertEqual("bootstrap-hosted", item["resource_class"])
+        self.assertEqual("none", item["authority"])
+        self.assertFalse(item["fresh"])
+        self.assertIsNone(item["lock"])
+        for path in (
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj",
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj",
+            "bootstrap/clojure/src/gravity/profile_validation.clj",
+            "bootstrap/clojure/src/gravity/capability_validation.clj",
+            "bootstrap/clojure/src/gravity/bootstrap.clj",
+        ):
+            self.assertIn(path, item["inputs"])
+            selection = verifier.select_impacted_checks(
+                manifest, ROOT, changed_paths=[path]
+            )
+            self.assertIn(item["id"], selection["selected_ids"])
+            self.assertIn("stage0-clojure-suite", selection["selected_ids"])
+            self.assertEqual([], selection["unmatched_changes"])
+
+    def test_c4_c18_compatibility_forms_are_exactly_preserved_and_absent_centrally(self) -> None:
+        central = (ROOT / "bootstrap/clojure/test/gravity/bootstrap_test.clj").read_text()
+        observed = 0
+        for file_name, expected_forms in C4_C18_COMPATIBILITY_FORMS.items():
+            source = (
+                ROOT / "bootstrap/clojure/test/gravity/bootstrap_compatibility" / file_name
+            ).read_text()
+            for name, expected_hash in expected_forms.items():
+                with self.subTest(file=file_name, name=name):
+                    self.assertNotIn(f"(deftest {name}", central)
+                    form = clojure_deftest_source(source, name)
+                    self.assertEqual(expected_hash, hashlib.sha256(form.encode()).hexdigest())
+                    observed += 1
+        self.assertEqual(16, observed)
+        self.assertEqual(471, central.count("\n(deftest ") + central.startswith("(deftest "))
+
+    def test_c4_c18_compatibility_batches_are_exact_routable_and_cacheable(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        checks = {item["id"]: item for item in manifest["checks"]}
+        batches = {
+            "stage0-c4-c6-compatibility": range(4, 7),
+            "stage0-c7-c10-compatibility": range(7, 11),
+            "stage0-c11-c18-compatibility": range(11, 19),
+        }
+        for check_id, stages in batches.items():
+            item = checks[check_id]
+            expected_namespaces = [f"gravity.bootstrap-compatibility.c{stage}-test" for stage in stages]
+            actual_namespaces = [
+                item["command"][index + 1]
+                for index, token in enumerate(item["command"])
+                if token == "--namespace"
+            ]
+            self.assertEqual(expected_namespaces, actual_namespaces, check_id)
+            expected_exact = [
+                f"gravity.bootstrap-compatibility.c{stage}-test/{name}"
+                for stage in stages
+                for name in C4_C18_COMPATIBILITY_FORMS[f"c{stage}_test.clj"]
+            ]
+            if check_id == "stage0-c11-c18-compatibility":
+                expected_exact.insert(
+                    3,
+                    "gravity.bootstrap-compatibility.c13-test/"
+                    "optimization-lowering-captured-facade-delegates-exactly-once",
+                )
+            actual_exact = [
+                item["command"][index + 1]
+                for index, token in enumerate(item["command"])
+                if token == "--exact"
+            ]
+            self.assertEqual(expected_exact, actual_exact, check_id)
+            self.assertEqual("bootstrap-hosted", item["resource_class"])
+            self.assertEqual("none", item["authority"])
+            self.assertFalse(item["fresh"])
+            self.assertIsNone(item["lock"])
+            self.assertEqual(verifier.CANONICAL_HEAVY_LOCK,
+                             verifier.check_resource_declaration(manifest, item)["capacity_lock"])
+            for stage in stages:
+                path = f"bootstrap/clojure/test/gravity/bootstrap_compatibility/c{stage}_test.clj"
+                self.assertIn(path, item["inputs"])
+                selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[path])
+                self.assertIn(check_id, selection["selected_ids"])
+                self.assertIn("stage0-clojure-suite", selection["selected_ids"])
+                self.assertEqual([], selection["unmatched_changes"])
+            for control_path in (
+                "contracts/project-structure.json",
+                "contracts/stage0-clojure-components.json",
+                "docs/self-hosting-slice-ownership.edn",
+                "bootstrap/clojure/test/gravity/development_test_runner.clj",
+            ):
+                self.assertIn(control_path, item["inputs"])
+            fixture_paths = {
+                f"bootstrap/clojure/fixtures/{relative}"
+                for stage in stages
+                for relative in re.findall(
+                    r'\(fixture\s+"([^"]+)"',
+                    (
+                        ROOT
+                        / f"bootstrap/clojure/test/gravity/bootstrap_compatibility/c{stage}_test.clj"
+                    ).read_text(),
+                )
+            }
+            declared_fixtures = {
+                path for path in item["inputs"]
+                if path.startswith("bootstrap/clojure/fixtures/")
+            }
+            self.assertEqual(fixture_paths, declared_fixtures, check_id)
+            for fixture_path in fixture_paths:
+                selection = verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[fixture_path]
+                )
+                self.assertIn(check_id, selection["selected_ids"])
+                self.assertIn("stage0-clojure-suite", selection["selected_ids"])
+                self.assertEqual([], selection["unmatched_changes"])
+
+    def test_development_runner_catalog_has_exact_22_static_namespaces(self) -> None:
+        source = (
+            ROOT / "bootstrap/clojure/test/gravity/development_test_runner.clj"
+        ).read_text()
+        catalog_source = source[
+            source.index("(def namespace-catalog") : source.index("(def ^:private usage-text")
+        ]
+        observed = re.findall(r"\{:namespace '([^\s]+)\s+:path \"([^\"]+)\"", catalog_source)
+        expected = [
+            ("gravity.bootstrap-test", "bootstrap/clojure/test/gravity/bootstrap_test.clj"),
+            *[
+                (
+                    f"gravity.bootstrap-compatibility.c{stage}-test",
+                    f"bootstrap/clojure/test/gravity/bootstrap_compatibility/c{stage}_test.clj",
+                )
+                for stage in range(2, 4)
+            ],
+            (
+                "gravity.bootstrap-compatibility.module-analysis-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj",
+            ),
+            (
+                "gravity.bootstrap-compatibility.core-ast-lowering-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj",
+            ),
+            (
+                "gravity.bootstrap-compatibility.profile-validation-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj",
+            ),
+            (
+                "gravity.bootstrap-compatibility.capability-validation-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj",
+            ),
+            *[
+                (
+                    f"gravity.bootstrap-compatibility.c{stage}-test",
+                    f"bootstrap/clojure/test/gravity/bootstrap_compatibility/c{stage}_test.clj",
+                )
+                for stage in range(4, 19)
+            ],
+        ]
+        self.assertEqual(expected, observed)
+
+    def test_c4_c18_compatibility_cache_identity_tracks_test_runner_and_contract(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        checks = {item["id"]: item for item in manifest["checks"]}
+        for check_id in (
+            "stage0-c4-c6-compatibility",
+            "stage0-c7-c10-compatibility",
+            "stage0-c11-c18-compatibility",
+        ):
+            item = checks[check_id]
+            with tempfile.TemporaryDirectory(prefix="gravity-c4-c18-compat-cache-") as directory:
+                temp_root = Path(directory)
+                copied = [path for path in item["inputs"] if "*" not in path]
+                copied += ["bootstrap/clojure/src/gravity/bootstrap.clj", *item["tool_inputs"]]
+                for relative in copied:
+                    target = temp_root / relative
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(ROOT / relative, target)
+                baseline = verifier.cache_key(manifest, item, temp_root)
+                fixture_paths = [
+                    path for path in item["inputs"]
+                    if path.startswith("bootstrap/clojure/fixtures/")
+                ]
+                self.assertTrue(fixture_paths, check_id)
+                for relative in fixture_paths:
+                    target = temp_root / relative
+                    original = target.read_bytes()
+                    target.write_bytes(original + b"\ncompatibility-cache-change\n")
+                    try:
+                        self.assertNotEqual(
+                            baseline, verifier.cache_key(manifest, item, temp_root), relative
+                        )
+                    finally:
+                        target.write_bytes(original)
+
+    def test_dependency_source_edits_route_to_every_consuming_leaf_group(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        leaf_ids = {
+            "stage0-leaf-foundation-reader",
+            "stage0-leaf-c2-c3",
+            "stage0-leaf-compiler",
+        }
+        cases = {
+            "bootstrap/clojure/src/gravity/digest.clj": leaf_ids,
+            "bootstrap/clojure/src/gravity/reader_primitives.clj": {
+                "stage0-leaf-foundation-reader",
+                "stage0-leaf-c2-c3",
+            },
+            "bootstrap/clojure/src/gravity/syntax_origin.clj": {
+                "stage0-leaf-foundation-reader",
+                "stage0-leaf-c2-c3",
+            },
+            "bootstrap/clojure/src/gravity/optimization_lowering.clj": {
+                "stage0-leaf-compiler",
+            },
+            "bootstrap/clojure/src/gravity/compiler_verification_shared.clj": {
+                "stage0-leaf-compiler",
+            },
+        }
+        for changed_path, expected in cases.items():
+            with self.subTest(changed_path=changed_path):
+                selection = verifier.select_impacted_checks(
+                    manifest,
+                    ROOT,
+                    changed_paths=[changed_path],
+                    lanes=["focused"],
+                )
+                selected_leaf_ids = set(selection["selected_ids"]) & leaf_ids
+                self.assertEqual(expected, selected_leaf_ids)
+
+    def test_bootstrap_source_change_selects_hosted_and_heavy_closure(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        selection = verifier.select_impacted_checks(
+            manifest,
+            ROOT,
+            changed_paths=["bootstrap/clojure/src/gravity/bootstrap.clj"],
+        )
+        self.assertEqual(
+            set(selection["selected_ids"]),
+            {
+                "stage0-hosted-hello",
+                "stage0-hosted-hello-qst",
+                "stage0-selective-smoke",
+                "stage0-c2-compatibility",
+                "stage0-c3-compatibility",
+                "stage0-foundation-compatibility",
+                "stage0-c4-c6-compatibility",
+                "stage0-c7-c10-compatibility",
+                "stage0-c11-c18-compatibility",
+                "stage0-profile-capability-compatibility",
+                "stage0-hosted-core-app",
+                "stage0-hosted-core-compiled-app",
+                "stage0-clojure-suite",
+                "stage0-bootstrap-authority",
+                "m0-docs",
+                "m0-foundation-coverage",
+                "m0-contract-traceability",
+                "m0-milestone-evidence",
+                "m0-terminology",
+                "m0-safety-performance",
+                "m0-change-control",
+                "stage0-project-structure",
+                "stage0-project-structure-unit",
+                "stage0-orchestrator-unit",
+                "stage0-reader",
+                "stage0-sh01-ownership-control",
+                "stage0-sh01-development-runner-control",
+                "stage0-sh01-leaf-runner-control",
+                "stage0-p15-native-runtime-provider-contract-prerequisite",
+                "stage0-p15-native-runtime-provider-packet-binding-prerequisite",
+                "stage0-p15-native-plan-specialization-prerequisite",
+                "stage0-project-structure-extraction",
+                "stage0-project-structure-runner-unit",
+                "stage1-sh01-unit",
+                "stage2-authority-admission-unit",
+                "stage3-authoritative-ho-authenticated",
+                "stage3-authoritative-ho-pure",
+                "stage3-coverage-census-contract",
+                "stage3-fragment-size-preflight",
+                "stage3-primitive-bool-authenticated",
+                "stage3-primitive-pure",
+                "stage3-public-c7-check",
+                "stage3-recursive-authenticated",
+                "stage3-recursive-pure",
+                "stage3-runner-unit",
+                "stage3-source-control-form-arity",
+                "stage3-source-plan-contract",
+                "stage4-c8-source-structural",
+                "stage4-public-c8",
+                "stage4-sh09-adapter",
+                "stage5-c9-kernel",
+                "stage5-c9-source-structural",
+                "stage5-public-c9",
+                "stage5-sh10-c8-adapter",
+                "stage6-c10-kernel",
+                "stage6-c10-source-structural",
+                "stage6-public-c10",
+                "stage6-sh11-c9-safety-adapter",
+                "stage7-c11-source-structural",
+                "stage7-public-c11",
+                "stage7-sh12-c10-mir-adapter",
+                "stage8-c12-source-shape",
+                "stage8-public-c12",
+                "stage8-sh13-c11-domain-evidence",
+                "stage9-c13-source-shape",
+                "stage9-sh16-c13-evidence-boundary",
+            },
+        )
+
+    def test_unowned_top_level_stage0_test_routes_to_filesystem_validators(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        receipt = verifier.run_verification(
+            manifest,
+            ROOT,
+            changed_paths=["bootstrap/clojure/test/gravity/not_registered_test.clj"],
+            dry_run=True,
+        )
+        self.assertEqual(receipt["status"], "planned")
+        self.assertEqual([], receipt["selection"]["unmatched_changes"])
+        selected = set(receipt["selection"]["selected_ids"])
+        self.assertIn("stage0-project-structure", selected)
+        self.assertIn("stage0-project-structure-unit", selected)
+        self.assertIn("stage0-sh01-ownership-control", selected)
+        self.assertIn("stage0-sh01-leaf-runner-control", selected)
+
+    def test_leaf_checks_are_cacheable_non_authoritative_and_bind_sources_contracts_and_runner(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        leaf_checks = [item for item in manifest["checks"] if item["id"].startswith("stage0-leaf-")]
+        self.assertEqual(3, len(leaf_checks))
+        for item in leaf_checks:
+            with self.subTest(check=item["id"]):
+                self.assertEqual(item["lane"], "focused")
+                self.assertEqual(item["cost"], "cheap")
+                self.assertIsNone(item["lock"])
+                self.assertFalse(item["exclusive"])
+                self.assertEqual(item["authority"], "none")
+                self.assertFalse(item["fresh"])
+                self.assertEqual(item.get("tool_inputs"), ["tools/validate_project_structure.py"])
+                self.assertIn("deps.edn", item["inputs"])
+                self.assertIn("contracts/project-structure.json", item["inputs"])
+                self.assertIn("contracts/stage0-clojure-components.json", item["inputs"])
+                self.assertIn("docs/self-hosting-slice-ownership.edn", item["inputs"])
+                self.assertIn(
+                    "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj",
+                    item["inputs"],
+                )
+                with tempfile.TemporaryDirectory(prefix="gravity-leaf-cache-identity-") as directory:
+                    temp_root = Path(directory)
+                    for relative in item["inputs"] + item.get("tool_inputs", []):
+                        source = ROOT / relative
+                        if not source.is_file():
+                            continue
+                        target = temp_root / relative
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copyfile(source, target)
+                    baseline = verifier.cache_key(manifest, item, temp_root)
+                    for relative in (
+                        "bootstrap/clojure/src/gravity/digest.clj",
+                        "contracts/stage0-clojure-components.json",
+                        "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj",
+                    ):
+                        target = temp_root / relative
+                        if not target.is_file() or relative not in item["inputs"]:
+                            continue
+                        original = target.read_bytes()
+                        target.write_bytes(original + b"\ncache-identity-change\n")
+                        try:
+                            self.assertNotEqual(baseline, verifier.cache_key(manifest, item, temp_root))
+                        finally:
+                            target.write_bytes(original)
+
+    def test_all_canonical_heavy_lock_declarations_remain_unchanged(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        expected = {
+            "stage0-clojure-suite": {
+                "lock": "/tmp/gravity-sh07-heavy.lock",
+                "exclusive": True,
+                "fresh": True,
+                "authority": "none",
+                "cost": "heavy",
+                "resource_class": "memory-heavy",
+            },
+            "stage0-bootstrap-authority": {
+                "lock": "/tmp/gravity-sh07-heavy.lock",
+                "exclusive": True,
+                "fresh": True,
+                "authority": "none",
+                "cost": "heavy",
+                "resource_class": "memory-heavy",
+            },
+        }
+        for check_id, fields in expected.items():
+            with self.subTest(check=check_id):
+                item = next(entry for entry in manifest["checks"] if entry["id"] == check_id)
+                self.assertEqual({key: item[key] for key in fields}, fields)
+                self.assertIsNone(verifier._batch_capacity_lock(manifest, [check_id]))
+
+    def test_every_canonical_clojure_component_path_is_owned_by_a_check(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        contract = json.loads(
+            (ROOT / "contracts" / "stage0-clojure-components.json").read_text(encoding="utf-8")
+        )
+        checks = manifest["checks"]
+        for component in contract["components"]:
+            paths = [component["source"]["path"], component["test"]["path"]]
+            for path in paths:
+                with self.subTest(path=path):
+                    self.assertTrue(
+                        any(
+                            any(
+                                verifier._matches_change(declaration, path)
+                                for declaration in list(item.get("inputs", []))
+                                + list(item.get("tool_inputs", []))
+                            )
+                            for item in checks
+                        ),
+                        path,
+                    )
+
     def test_real_manifest_explicit_reader_check_does_not_expand_to_downstream_heavy_checks(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
         selection = verifier.select_impacted_checks(
@@ -1176,7 +2696,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             (root / "input.txt").write_text("stable\n", encoding="ascii")
             manifest = manifest_for(
                 check("fail", failing),
-                check("dependent", passing, depends_on=["fail"]),
+                check("dependent", passing, depends_on=["fail"], timeout_seconds=4),
                 check("independent", passing),
             )
             receipt = verifier.run_verification(manifest, root, all_checks=True, fail_fast=False)
@@ -1184,6 +2704,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             self.assertEqual(statuses["fail"]["status"], "failed")
             self.assertEqual(statuses["dependent"]["status"], "blocked")
             self.assertEqual(statuses["dependent"]["reason"], "failed-prerequisite")
+            self.assertEqual(statuses["dependent"]["timeout_seconds"], 4.0)
             self.assertEqual(statuses["independent"]["status"], "passed")
 
     def test_default_manifest_declares_stage0_lanes_and_heavy_lock(self) -> None:
@@ -1294,7 +2815,11 @@ class VerifyDevelopmentTests(unittest.TestCase):
         )
         self.assertEqual(
             runner_selection["selected_ids"],
-            ["stage0-project-structure-runner-unit", "stage0-project-structure-extraction"],
+            [
+                "stage0-coordinator-integration-reservations",
+                "stage0-project-structure-runner-unit",
+                "stage0-project-structure-extraction",
+            ],
         )
         sh01_unit = next(item for item in manifest["checks"] if item["id"] == "stage1-sh01-unit")
         self.assertEqual(sh01_unit["lane"], "preflight")
@@ -1351,8 +2876,65 @@ class VerifyDevelopmentTests(unittest.TestCase):
             },
         )
         self.assertEqual(stage2_admission_unit["depends_on"], ["stage1-sh01-unit"])
+        leaf_checks = [item for item in manifest["checks"] if item["id"].startswith("stage0-leaf-")]
+        self.assertEqual(3, len(leaf_checks))
+        self.assertTrue(all(item.get("fresh") is False for item in leaf_checks))
+        self.assertTrue(all(item.get("authority") == "none" for item in leaf_checks))
+        self.assertTrue(all(item.get("lock") is None and not item.get("exclusive") for item in leaf_checks))
+        clojure_checks = [
+            item
+            for item in manifest["checks"]
+            if item["command"]
+            and item["command"][0] == "clojure"
+            and not item["id"].startswith("stage0-leaf-")
+            and item["id"] not in {
+                "stage0-c2-compatibility",
+                "stage0-c3-compatibility",
+                "stage0-foundation-compatibility",
+                "stage0-c4-c6-compatibility",
+                "stage0-c7-c10-compatibility",
+                "stage0-c11-c18-compatibility",
+                "stage0-profile-capability-compatibility",
+                "stage0-sh01-ownership-control",
+                "stage0-sh01-development-runner-control",
+                "stage0-sh01-leaf-runner-control",
+                "stage1-sh01-unit",
+                "stage3-runner-unit",
+                "stage0-project-structure-runner-unit",
+                "stage0-project-structure-extraction",
+                "stage0-p15-native-launcher-prerequisite",
+                "stage0-p15-native-runtime-provider-contract-prerequisite",
+                "stage0-p15-native-runtime-provider-packet-binding-prerequisite",
+                "stage0-p15-native-plan-specialization-prerequisite",
+            }
+        ]
+        self.assertTrue(clojure_checks)
+        self.assertTrue(all(item.get("fresh") is True for item in clojure_checks))
+        self.assertTrue(all("bin/gravity" in item["inputs"] for item in clojure_checks))
+        self.assertTrue(all("bootstrap/gravity/**" in item["inputs"] for item in clojure_checks))
         full_suite = next(item for item in manifest["checks"] if item["id"] == "stage0-clojure-suite")
         self.assertIn("bin/gravity-bootstrap", full_suite["inputs"])
+        self.assertIn("bootstrap/clojure/src/gravity/*.clj", full_suite["inputs"])
+        self.assertIn("bootstrap/clojure/test/gravity/module_analysis_test.clj", full_suite["inputs"])
+        self.assertIn("bootstrap/clojure/test/gravity/core_ast_lowering_test.clj", full_suite["inputs"])
+        self.assertIn(
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj",
+            full_suite["inputs"],
+        )
+        self.assertIn(
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj",
+            full_suite["inputs"],
+        )
+        self.assertIn("bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj", full_suite["inputs"])
+        self.assertNotIn(
+            "bootstrap/clojure/test/gravity/self_hosting/sh01_stage0_leaf_test_runner_test.clj",
+            full_suite["inputs"],
+        )
+        self.assertNotIn(
+            "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_runner_test.clj",
+            full_suite["inputs"],
+        )
+        self.assertIn("contracts/stage0-clojure-components.json", full_suite["inputs"])
 
     def test_impact_excludes_is_per_changed_path(self) -> None:
         owned = check(
@@ -3282,6 +4864,51 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertIn("stage3-runner-unit", selection["selected_ids"])
         self.assertNotIn("stage3-c7-proof-candidate", selection["selected_ids"])
 
+    def test_real_manifest_p15_native_plan_reservation_is_exact_and_exclusive(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        check_id = "stage0-p15-native-plan-specialization-prerequisite"
+        check = verifier.checks_by_id(manifest)[check_id]
+        self.assertEqual(check["command"], verifier._p15_native_plan_command())
+        self.assertEqual(check["inputs"], verifier._P15_NATIVE_PLAN_INPUTS)
+        self.assertEqual(check["tool_inputs"], verifier._P15_NATIVE_PLAN_TOOL_INPUTS)
+        self.assertEqual(check["depends_on"], ["stage0-orchestrator-unit"])
+        self.assertEqual(check["resource_class"], "memory-heavy")
+        self.assertEqual(check["jvm_heap"], "-J-Xmx1g")
+        self.assertEqual(check["timeout_seconds"], 2400)
+        self.assertEqual(check["lock"], "/private/tmp/gravity-sh07-heavy.lock")
+        self.assertEqual(check["lock_owner"], "runner")
+        self.assertTrue(check["exclusive"])
+        self.assertEqual(check["capacity"], 1)
+        self.assertTrue(check["fresh"])
+        self.assertFalse(check["resume"])
+        self.assertTrue(check["no_resume"])
+        self.assertEqual(check["authority"], "none")
+
+        expected = {"stage0-orchestrator-unit", check_id}
+        probes = (
+            "bootstrap/clojure/src/gravity/p15_native_plan_specialization.clj",
+            "bootstrap/clojure/test/gravity/p15_native_plan_specialization_test.clj",
+            "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.gravity",
+            "bootstrap/gravity/p15_s23/native_plan_c_emitter.gravity",
+        )
+        for path in probes:
+            with self.subTest(path=path):
+                selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[path])
+                self.assertEqual(set(selection["selected_ids"]), expected)
+                self.assertEqual(selection["unmatched_changes"], [])
+
+        for label, mutate in (
+            ("positive-first", lambda item: item["command"].__setitem__(9, verifier._P15_NATIVE_PLAN_TEST_VARS[-1])),
+            ("extra-input", lambda item: item["inputs"].append("extra.gravity")),
+            ("missing-tool", lambda item: item["tool_inputs"].pop()),
+            ("wide-heap", lambda item: item.__setitem__("jvm_heap", "-J-Xmx8g")),
+        ):
+            broken = json.loads(json.dumps(manifest))
+            candidate = next(item for item in broken["checks"] if item["id"] == check_id)
+            mutate(candidate)
+            with self.subTest(label=label), self.assertRaises(verifier.ManifestError):
+                verifier.validate_manifest(broken)
+
     def test_real_manifest_p15_native_launcher_gate_contract_and_dry_runs(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
         launcher = verifier.checks_by_id(manifest)["stage0-p15-native-launcher-prerequisite"]
@@ -3340,10 +4967,13 @@ class VerifyDevelopmentTests(unittest.TestCase):
         }
         for owned_path in launcher["inputs"]:
             with self.subTest(owned_path=owned_path):
+                path_expected_ids = set(expected_ids)
+                if owned_path == "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj":
+                    path_expected_ids.add("stage0-coordinator-integration-reservations")
                 selection = verifier.select_impacted_checks(
                     manifest, ROOT, changed_paths=[owned_path]
                 )
-                self.assertEqual(set(selection["selected_ids"]), expected_ids)
+                self.assertEqual(set(selection["selected_ids"]), path_expected_ids)
                 self.assertEqual(selection["unmatched_changes"], [])
                 self.assertNotIn("stage0-clojure-suite", selection["selected_ids"])
                 self.assertNotIn("stage0-bootstrap-authority", selection["selected_ids"])
@@ -3367,7 +4997,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 self.assertEqual(receipt["status"], "planned")
                 self.assertFalse(receipt["authoritative"])
                 self.assertEqual(
-                    {record["id"] for record in receipt["checks"]}, expected_ids
+                    {record["id"] for record in receipt["checks"]}, path_expected_ids
                 )
                 record = next(
                     item
@@ -3665,6 +5295,10 @@ class VerifyDevelopmentTests(unittest.TestCase):
                     if owned_path in auth_only
                     else {fast_id, auth_id}
                 )
+                if owned_path == "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj":
+                    expected_direct.add("stage0-coordinator-integration-reservations")
+                if owned_path == "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj":
+                    expected_direct.add("stage0-p15-native-plan-specialization-prerequisite")
                 expected_ids = {orchestrator_id} | expected_direct
                 self.assertEqual(set(selection["selected_ids"]), expected_ids)
                 self.assertEqual(selection["unmatched_changes"], [])
@@ -3679,7 +5313,15 @@ class VerifyDevelopmentTests(unittest.TestCase):
                     )
                     and not verifier._impact_excludes_change(check, owned_path)
                 }
-                self.assertTrue(broad_matches <= {fast_id, auth_id})
+                self.assertTrue(
+                    broad_matches
+                    <= {
+                        fast_id,
+                        auth_id,
+                        "stage0-coordinator-integration-reservations",
+                        "stage0-p15-native-plan-specialization-prerequisite",
+                    }
+                )
                 receipt = verifier.run_verification(
                     manifest, ROOT, changed_paths=[owned_path], dry_run=True
                 )

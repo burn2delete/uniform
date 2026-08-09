@@ -10,12 +10,54 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.walk :as walk]
+            [gravity.c2-artifact-identity :as c2-artifact-identity]
+            [gravity.c2-reader-product-projection :as c2-reader-product-projection]
+            [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
+            [gravity.c2-source-identity :as c2-source-identity]
+            [gravity.c2-pass-cache :as c2-pass-cache]
+            [gravity.c2-lexical-validation :as c2-lexical-validation]
+            [gravity.c3-artifact-identity :as c3-artifact-identity]
+            [gravity.c3-reader-integrity :as c3-reader-integrity]
+            [gravity.c3-syntax-diagnostics :as c3-syntax-diagnostics]
+            [gravity.c3-literal-projection :as c3-literal-projection]
+            [gravity.c3-syntax-construction :as c3-syntax-construction]
+            [gravity.c3-syntax-evidence :as c3-syntax-evidence]
+            [gravity.c3-syntax-verification :as c3-syntax-verification]
+            [gravity.c4-macro-evidence :as c4-macro-evidence]
+            [gravity.profile-validation :as profile-validation]
+            [gravity.capability-validation :as capability-validation]
             [gravity.cli :as cli]
+            [gravity.module-analysis :as module-analysis]
+            [gravity.core-ast-lowering :as core-ast-lowering]
+            [gravity.c5-name-resolution :as c5]
+            [gravity.c6-core-lowering :as c6]
+            [gravity.c7-type-checker :as c7]
+            [gravity.c8-effect-checker :as c8]
+            [gravity.c9-ownership-checker :as c9]
+            [gravity.c10-safety-analysis :as c10]
+            [gravity.c11-mir :as c11]
+            [gravity.c12-domain-ir :as c12]
+            [gravity.c13-optimization :as c13]
+            [gravity.c14-lowering :as c14]
+            [gravity.c15-diagnostics :as c15]
+            [gravity.c16-incremental :as c16]
+            [gravity.c17-plugin :as c17]
+            [gravity.c18-verification :as c18]
+            [gravity.compiler-verification-shared :as compiler-verification-shared]
+            [gravity.optimization-lowering :as optimization-lowering]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
+            [gravity.macro-expansion :as macro-expansion]
+            [gravity.reader-cursor :as reader-cursor]
+            [gravity.reader-diagnostic-policy :as reader-diagnostic-policy]
+            [gravity.reader-host-oracle :as reader-host-oracle]
+            [gravity.reader-namespace :as reader-namespace]
+            [gravity.reader-primitives :as reader-primitives]
             [gravity.source-span :as source-span]
-            [gravity.source-unit :as source-unit])
+            [gravity.source-unit :as source-unit]
+            [gravity.syntax-object-stream :as syntax-object-stream]
+            [gravity.syntax-origin :as syntax-origin])
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io StringReader]))
 
@@ -84,155 +126,45 @@
 
 (defn form-kind
   [form]
-  (cond
-    (nil? form) :nil
-    (true? form) :boolean
-    (false? form) :boolean
-    (integer? form) :integer
-    (ratio? form) :ratio
-    (float? form) :decimal
-    (string? form) :string
-    (char? form) :character
-    (symbol? form) :symbol
-    (keyword? form) :keyword
-    (seq? form) :list
-    (vector? form) :vector
-    (map? form) :map
-    (set? form) :set
-    :else :unknown))
+  (reader-primitives/form-kind form))
 
 (defn safe-excerpt
   [source-text span]
-  (let [start (get-in span [:start :char] 0)
-        end (get-in span [:end :char] start)
-        excerpt (subs source-text start (min end (count source-text)))]
-    (if (> (count excerpt) 160)
-      (str (subs excerpt 0 160) "...")
-      excerpt)))
+  (reader-primitives/safe-excerpt source-text span))
 
 (defn abbreviation-kind
   [excerpt]
-  (cond
-    (str/starts-with? excerpt "~@") :splice-unquote
-    (str/starts-with? excerpt "'") :quote
-    (str/starts-with? excerpt "`") :syntax-quote
-    (str/starts-with? excerpt "~") :unquote
-    (str/starts-with? excerpt "^") :metadata
-    (str/starts-with? excerpt "@") :deref
-    :else nil))
+  (reader-primitives/abbreviation-kind excerpt))
 
 (defn source-metadata
   [form]
-  (apply dissoc (or (meta form) {}) [:line :column :end-line :end-column]))
+  (reader-primitives/source-metadata form))
 
 (defn skip-line-comment!
   [^LineNumberingPushbackReader rdr]
-  (loop [ch (.read rdr)]
-    (when (and (not= -1 ch)
-               (not (line-terminator-char? (char ch))))
-      (recur (.read rdr)))))
+  (reader-cursor/skip-line-comment! rdr))
 
 (defn skip-ignored!
   [^LineNumberingPushbackReader rdr]
-  (loop []
-    (let [ch (.read rdr)]
-      (cond
-        (= -1 ch) :eof
-        (Character/isWhitespace (char ch)) (recur)
-        (= \; (char ch)) (do (skip-line-comment! rdr) (recur))
-        :else (do (.unread rdr ch) :form)))))
+  (reader-cursor/skip-ignored! rdr))
 
 (defn classify-reader-diagnostic
   [source-text ex]
-  (let [message (or (.getMessage ex) "")
-        lower (str/lower-case message)
-        trimmed (str/trim source-text)]
-    (cond
-      (or (str/includes? lower "reader function for tag")
-          (str/includes? lower "unknown reader tag"))
-      ["L1-READER-EXTENSION"
-       "reader extension tag is not registered for the stage0 build policy"]
-
-      (or (str/includes? lower "metadata")
-          (and (str/includes? lower "eof while reading")
-               (str/starts-with? trimmed "^")))
-      ["L1-METADATA"
-       "metadata form is malformed or unattached"]
-
-      (or (str/includes? lower "map literal must contain")
-          (str/includes? lower "map literal contains"))
-      ["L1-MAP-ARITY"
-       "map literal contains an odd number of forms"]
-
-      (or (str/includes? lower "invalid number")
-          (str/includes? lower "invalid numeric")
-          (str/includes? lower "number format"))
-      ["L1-NUMERIC"
-       "numeric candidate fails every enabled numeric literal grammar"]
-
-      (str/includes? lower "invalid token")
-      ["L1-IDENTIFIER"
-       "symbol or keyword has an invalid surface spelling"]
-
-      (or (str/includes? lower "unsupported escape character")
-          (str/includes? lower "invalid unicode escape")
-          (str/includes? lower "string"))
-      ["L1-STRING"
-       "string or character literal is malformed"]
-
-      (str/includes? lower "eof while reading")
-      ["L1-DELIMITER"
-       "source has an unbalanced or mismatched delimiter"]
-
-      :else
-      ["C2-READER"
-       "source could not be read by the stage0 bootstrap reader"])))
+  (reader-diagnostic-policy/classify-reader-diagnostic source-text ex))
 
 (defn read-source-form-records-host-oracle
   [source-path source-text]
-  (try
-    (let [eof (Object.)
-          line-starts (line-start-indices source-text)
-          rdr (LineNumberingPushbackReader. (StringReader. source-text))]
-      (loop [idx 0
-             records []]
-        (case (skip-ignored! rdr)
-          :eof records
-          :form
-          (let [start-line (.getLineNumber rdr)
-                start-column (.getColumnNumber rdr)
-                form (binding [*read-eval* false]
-                       (read {:eof eof} rdr))]
-            (if (identical? eof form)
-              records
-              (let [end-line (.getLineNumber rdr)
-                    end-column (.getColumnNumber rdr)
-                    span (source-span source-path source-text line-starts idx
-                                      start-line start-column end-line end-column)
-                    excerpt (safe-excerpt source-text span)
-                    abbreviation (abbreviation-kind excerpt)
-                    metadata (source-metadata form)]
-                (recur (inc idx)
-                       (conj records
-                             {:form form
-                              :span span
-                              :metadata metadata
-                              :reader-origin {:kind :source
-                                              :raw-form-kind (form-kind form)
-                                              :raw-excerpt excerpt
-                                              :abbreviation abbreviation}
-                              :generated-origin (if abbreviation
-                                                  [{:from span
-                                                    :reader-abbreviation abbreviation
-                                                    :expanded-form form}]
-                                                  [])}))))))))
-    (catch Exception ex
-      (let [[id message] (classify-reader-diagnostic source-text ex)]
-        (fail! id message
-               {:source-span {:source source-path}
-                :reader-state {:stage :read-source-forms}
-                :cause-message (.getMessage ex)
-                :remediation "Fix delimiter, string, collection, metadata, or reader-extension syntax before compilation."})))))
+  (reader-host-oracle/read-source-form-records-host-oracle
+   source-path source-text
+   {:line-start-indices line-start-indices
+    :skip-ignored! skip-ignored!
+    :source-span source-span
+    :safe-excerpt safe-excerpt
+    :abbreviation-kind abbreviation-kind
+    :source-metadata source-metadata
+    :form-kind form-kind
+    :classify-reader-diagnostic classify-reader-diagnostic
+    :fail! fail!}))
 
 (def ^:dynamic *authenticated-source-form-records* nil)
 
@@ -258,97 +190,41 @@
   [source-path source-text]
   (mapv :form (read-source-form-records source-path source-text)))
 
-(def allowed-ns-clauses
-  #{:profile :profiles :target :targets :requires :imports :exports :effects
-    :capabilities :safety :providers :doc :metadata})
+(defn ns-form?
+  [form]
+  (reader-namespace/ns-form? form))
 
-(declare ns-form?)
+(def allowed-ns-clauses
+  reader-namespace/allowed-ns-clauses)
 
 (defn fail-ns-shape!
   [source-path clause remediation]
-  (fail! "L1-NS-SHAPE"
-         "namespace clause has invalid reader syntax shape"
-         {:source-span (source-span source-path 0)
-          :clause clause
-          :remediation remediation}))
+  (reader-namespace/fail-ns-shape!
+   source-path clause remediation
+   {:source-span source-span
+    :fail! fail!}))
 
 (defn validate-ns-syntax!
   [source-path forms]
-  (when-let [form (first forms)]
-    (when (ns-form? form)
-      (when-not (symbol? (second form))
-        (fail-ns-shape! source-path form "Use a symbolic namespace name."))
-      (doseq [clause (drop 2 form)]
-        (when-not (and (seq? clause) (keyword? (first clause)))
-          (fail-ns-shape! source-path clause "Use list clauses such as (:profile :hosted)."))
-        (let [key (first clause)
-              args (vec (rest clause))
-              one? (= 1 (count args))
-              value (first args)]
-          (when-not (allowed-ns-clauses key)
-            (fail-ns-shape! source-path clause "Use one of the L1 allowed namespace clause keys."))
-          (case key
-            (:profile :target :safety)
-            (when-not one?
-              (fail-ns-shape! source-path clause "Use exactly one value in this namespace clause."))
-            (:profiles :targets :effects :capabilities)
-            (when-not (and one? (set? value))
-              (fail-ns-shape! source-path clause "Use exactly one set value in this namespace clause."))
-            (:exports :providers)
-            (when-not (and one? (vector? value))
-              (fail-ns-shape! source-path clause "Use exactly one vector value in this namespace clause."))
-            (:requires :imports)
-            (when-not (and (seq args) (every? vector? args))
-              (fail-ns-shape! source-path clause "Use one or more dependency vector values in this namespace clause."))
-            :doc
-            (when-not (and one? (string? value))
-              (fail-ns-shape! source-path clause "Use exactly one string value in the doc clause."))
-            :metadata
-            (when-not (and one? (map? value))
-              (fail-ns-shape! source-path clause "Use exactly one map value in the metadata clause."))))))))
+  (reader-namespace/validate-ns-syntax!
+   source-path forms
+   {:ns-form? ns-form?
+    :allowed-ns-clause? #(contains? allowed-ns-clauses %)
+    :fail-ns-shape! fail-ns-shape!}))
 
 (defn reader-module-context
   [forms]
-  (let [form (first forms)]
-    (when (ns-form? form)
-      (let [clauses (reduce (fn [acc clause]
-                              (assoc acc (first clause) (vec (rest clause))))
-                            {}
-                            (drop 2 form))]
-        {:module (second form)
-         :profile (first (get clauses :profile))
-         :target (or (first (get clauses :target)) :jvm)
-         :effects (or (first (get clauses :effects)) #{})
-         :capabilities (or (first (get clauses :capabilities)) #{})
-         :safety (first (get clauses :safety))
-         :namespace-clause-syntax
-         (mapv (fn [clause]
-                 {:clause (first clause)
-                  :raw-form-kind (form-kind clause)
-                  :value-kinds (mapv form-kind (rest clause))})
-               (drop 2 form))}))))
+  (reader-namespace/reader-module-context
+   forms
+   {:ns-form? ns-form?
+    :form-kind form-kind}))
 
 (defn syntax-object-stream
   ([source-path form-records]
    (syntax-object-stream source-path form-records nil))
   ([source-path form-records module-context]
-   (mapv (fn [idx {:keys [form span metadata reader-origin generated-origin]
-                   :as record}]
-           (cond->
-            {:syntax-id (str "stage0-syntax-" idx)
-             :form form
-             :span span
-             :origin :source
-             :reader-origin reader-origin
-             :generated-origin generated-origin
-             :namespace (:module module-context)
-             :phase :read
-             :profile (:profile module-context)
-             :hygiene []
-             :metadata metadata}
-             (contains? record :form-id) (assoc :form-id (:form-id record))))
-        (range)
-        form-records)))
+   (syntax-object-stream/syntax-object-stream
+    source-path form-records module-context)))
 
 (declare l1-source-unit-artifacts
          reader-project-context-for-source
@@ -391,218 +267,9 @@
        :diagnostics []}
       reader-details))))
 
-(defn ns-form?
-  [form]
-  (and (seq? form) (= 'ns (first form))))
-
-(defn require-ns
-  [source-path forms]
-  (let [first-form (first forms)]
-    (when-not (ns-form? first-form)
-      (fail! "L3-NS-MISSING"
-             "Gravity source must start with an ns form"
-             {:source-span (source-span source-path 0)
-              :remediation "Add an ns form with :profile, :effects, and :capabilities clauses."}))
-    first-form))
-
-(defn parse-clause
-  [source-path clause]
-  (when-not (and (seq? clause) (keyword? (first clause)))
-    (fail! "L3-NS-CLAUSE"
-           "namespace clause must be a list starting with a keyword"
-           {:source-span (source-span source-path 0)
-            :clause clause
-            :remediation "Use clauses such as (:profile :hosted) or (:effects #{:io/write})."}))
-  [(first clause) (vec (rest clause))])
-
-(defn single-clause-value
-  [source-path clause-map key required?]
-  (let [values (get clause-map key)]
-    (cond
-      (and required? (empty? values))
-      (fail! "L3-NS-MISSING"
-             (str "namespace is missing " key " clause")
-             {:source-span (source-span source-path 0)
-              :missing key
-              :remediation "Declare the required namespace clause."})
-
-      (> (count values) 1)
-      (fail! "L3-PROFILE-MULTIPLE"
-             (str "namespace declares " key " more than once")
-             {:source-span (source-span source-path 0)
-              :clause key
-              :remediation "Keep one active implementation profile/target clause."})
-
-      :else
-      (first values))))
-
-(defn clause-args
-  [clause-map key]
-  (vec (mapcat identity (get clause-map key))))
-
-(defn parse-options
-  [source-path entry option-items]
-  (when-not (even? (count option-items))
-    (fail! "L3-UNKNOWN-ALIAS"
-           "namespace dependency options must be key/value pairs"
-           {:source-span (source-span source-path 0)
-            :entry entry
-            :remediation "Use dependency entries such as [gravity.io :as io :profile :hosted]."}))
-  (loop [items option-items
-         options {}]
-    (if-let [[k v & more] (seq items)]
-      (do
-        (when-not (keyword? k)
-          (fail! "L3-UNKNOWN-ALIAS"
-                 "namespace dependency option keys must be keywords"
-                 {:source-span (source-span source-path 0)
-                  :entry entry
-                  :option k
-                  :remediation "Use keyword options such as :as, :refer, :profile, :effects, or :boundary."}))
-        (recur more (assoc options k v)))
-      options)))
-
-(defn parse-dependency-entry
-  [source-path kind entry]
-  (when-not (and (vector? entry) (symbol? (first entry)))
-    (fail! "L3-UNKNOWN-ALIAS"
-           "namespace dependency entry must start with a module symbol"
-           {:source-span (source-span source-path 0)
-            :entry entry
-            :remediation "Use entries such as [gravity.io :as io]."}))
-  (let [[module & option-items] entry
-        options (parse-options source-path entry option-items)
-        alias (:as options)
-        refer (:refer options)
-        effects (or (:effects options) #{})
-        capabilities (or (:capabilities options) #{})]
-    (when (and alias (not (symbol? alias)))
-      (fail! "L3-UNKNOWN-ALIAS"
-             "namespace alias must be a symbol"
-             {:source-span (source-span source-path 0)
-              :entry entry
-              :alias alias
-              :remediation "Use :as with a symbolic alias."}))
-    (when (= :all refer)
-      (fail! "L3-AMBIGUOUS-NAME"
-             "wildcard imports are rejected for stable stage0 modules"
-             {:source-span (source-span source-path 0)
-              :entry entry
-              :remediation "Import explicit public symbols instead of :refer :all."}))
-    (when (some #(str/starts-with? (name %) "private-")
-                (if (vector? refer) refer []))
-      (fail! "L3-PRIVATE-IMPORT"
-             "private definitions cannot be imported as public API"
-             {:source-span (source-span source-path 0)
-              :entry entry
-              :refer refer
-              :remediation "Export a public facade or remove the private import."}))
-    {:kind kind
-     :module module
-     :alias alias
-     :refer (cond
-              (nil? refer) []
-              (vector? refer) refer
-              :else [refer])
-     :profile (:profile options)
-     :boundary (:boundary options)
-     :edge (:edge options)
-     :facade (:facade options)
-     :evidence (or (:evidence options) #{})
-     :artifact (:artifact options)
-     :artifact-schema (:artifact-schema options)
-     :runtime (:runtime options)
-     :memory (:memory options)
-     :generated? (boolean (:generated? options))
-     :matrix-override (:matrix-override options)
-     :producer-effects (or (:producer-effects options) #{})
-     :producer-capabilities (or (:producer-capabilities options) #{})
-     :safety-evidence (or (:safety-evidence options) #{})
-     :provider (:provider options)
-     :effects effects
-     :capabilities capabilities
-     :visibility (or (:visibility options) :public)}))
-
-(defn parse-dependencies
-  [source-path kind entries]
-  (mapv #(parse-dependency-entry source-path kind %) entries))
-
-(defn top-level-definition
-  [syntax]
-  (let [form (:form syntax)]
-    (when (seq? form)
-      (case (first form)
-        def {:name (second form) :kind :var}
-        defconst {:name (second form) :kind :compile-time-constant}
-        defn {:name (second form) :kind :function}
-        defmacro {:name (second form) :kind :macro}
-        defschema {:name (second form) :kind :schema}
-        defprotocol {:name (second form) :kind :protocol}
-        nil))))
-
-(defn definition-table
-  [syntax module]
-  (let [exports (set (:exports module))]
-    (->> syntax
-         (keep (fn [syn]
-                 (when-let [definition (top-level-definition syn)]
-                   (when (symbol? (:name definition))
-                     (merge definition
-                            {:visibility (if (contains? exports (:name definition))
-                                           :public
-                                           :private)
-                             :source-span (:span syn)
-                             :profile (:profile module)
-                             :safety (:safety module)
-                             :latent-effects #{}
-                             :required-capabilities #{}
-                             :artifact-links []})))))
-         vec)))
-
-(defn collect-symbols
-  [form]
-  (cond
-    (symbol? form) [form]
-    (seq? form) (mapcat collect-symbols form)
-    (coll? form) (mapcat collect-symbols form)
-    :else []))
-
-(defn collect-code-symbols
-  "Collect symbols in executable positions while treating quote payloads as data.
-
-  Reader abbreviations are expanded to `(quote ...)` before this collector is
-  called.  The quote operator itself remains part of the executable shape, but
-  its payload is deliberately not traversed: symbols in quoted data are not
-  namespace references and must not participate in alias resolution.  Other
-  forms recurse through every nested collection so an unresolved qualified
-  symbol in an executable branch still produces the owning L3 diagnostic."
-  [form]
-  (cond
-    (symbol? form) [form]
-    (seq? form) (if (= 'quote (first form))
-                  (if (symbol? (first form)) [(first form)] [])
-                  (mapcat collect-code-symbols form))
-    (coll? form) (mapcat collect-code-symbols form)
-    :else []))
-
-(declare uses-println?)
-
-(defn infer-effects
-  [forms]
-  (set (mapcat (fn [form]
-                 (cond
-                   (uses-println? form) [:io/write]
-                   (and (seq? form) (= 'network-listen (first form))) [:network/listen]
-                   :else []))
-               forms)))
-
 (def effect-capability
   {:io/write :io/stdout
    :network/listen :network/listener})
-
-(defn required-capabilities-for-effects
-  [effects]
-  (set (keep effect-capability effects)))
 
 (def profile-direct-imports
   {:core #{:core}
@@ -617,11 +284,6 @@
    :gpu #{:core :gpu}
    :formal #{:core :formal}})
 
-(defn profile-direct-import-allowed?
-  [consumer-profile producer-profile]
-  (contains? (get profile-direct-imports consumer-profile #{})
-             producer-profile))
-
 (defn sha256-hex
   [text]
   (digest/sha256-hex text))
@@ -629,253 +291,213 @@
 (defn sha256-bytes-hex
   [bytes]
   (digest/sha256-bytes-hex bytes))
+(declare require-ns
+         parse-clause
+         single-clause-value
+         clause-args
+         parse-options
+         parse-dependency-entry
+         parse-dependencies
+         top-level-definition
+         definition-table
+         collect-symbols
+         collect-code-symbols
+         infer-effects
+         required-capabilities-for-effects
+         profile-direct-import-allowed?
+         assert-unique-aliases!
+         assert-referred-names-unambiguous!
+         assert-qualified-symbols-resolve!
+         assert-profile-boundaries!
+         assert-namespace-effect-and-capability!
+         parse-module
+         uses-println?
+         validate-module-effects!
+         module-source-artifact-from-records)
+
+(defn- module-analysis-ops
+  []
+  {:fail! fail!
+   :source-span source-span
+   :ns-form? ns-form?
+   :bootstrap-target-supported? bootstrap-target-supported?
+   :validate-ns-syntax! validate-ns-syntax!
+   :syntax-object-stream syntax-object-stream
+   :sha256-hex sha256-hex
+   :known-source-profiles known-source-profiles
+   :supported-profiles supported-profiles
+   :supported-targets (set/union supported-targets
+                                 *additional-bootstrap-targets*)
+   :effect-capability effect-capability
+   :profile-direct-imports profile-direct-imports
+   :require-ns require-ns
+   :parse-clause parse-clause
+   :single-clause-value single-clause-value
+   :clause-args clause-args
+   :parse-options parse-options
+   :parse-dependency-entry parse-dependency-entry
+   :parse-dependencies parse-dependencies
+   :top-level-definition top-level-definition
+   :definition-table definition-table
+   :collect-symbols collect-symbols
+   :collect-code-symbols collect-code-symbols
+   :infer-effects infer-effects
+   :required-capabilities-for-effects required-capabilities-for-effects
+   :profile-direct-import-allowed? profile-direct-import-allowed?
+   :assert-unique-aliases! assert-unique-aliases!
+   :assert-referred-names-unambiguous! assert-referred-names-unambiguous!
+   :assert-qualified-symbols-resolve! assert-qualified-symbols-resolve!
+   :assert-profile-boundaries! assert-profile-boundaries!
+   :assert-namespace-effect-and-capability!
+   assert-namespace-effect-and-capability!
+   :parse-module parse-module
+   :uses-println? uses-println?
+   :validate-module-effects! validate-module-effects!
+   :module-source-artifact-from-records module-source-artifact-from-records})
+
+(def ^:private ^:dynamic *module-analysis-leaf-call?* false)
+
+(defn- module-analysis-call
+  [operation-key operation & args]
+  (if *module-analysis-leaf-call?*
+    (module-analysis/call-entrypoint-body operation-key operation args)
+    (binding [*module-analysis-leaf-call?* true]
+      (module-analysis/with-operations
+       (module-analysis-ops)
+       #(module-analysis/call-entrypoint-body
+         operation-key operation args)))))
+
+(defn require-ns
+  [source-path forms]
+  (module-analysis-call
+   :require-ns module-analysis/require-ns source-path forms))
+
+(defn parse-clause
+  [source-path clause]
+  (module-analysis-call
+   :parse-clause module-analysis/parse-clause source-path clause))
+
+(defn single-clause-value
+  [source-path clause-map key required?]
+  (module-analysis-call
+   :single-clause-value module-analysis/single-clause-value
+   source-path clause-map key required?))
+
+(defn clause-args
+  [clause-map key]
+  (module-analysis-call
+   :clause-args module-analysis/clause-args clause-map key))
+
+(defn parse-options
+  [source-path entry option-items]
+  (module-analysis-call
+   :parse-options module-analysis/parse-options
+   source-path entry option-items))
+
+(defn parse-dependency-entry
+  [source-path kind entry]
+  (module-analysis-call
+   :parse-dependency-entry module-analysis/parse-dependency-entry
+   source-path kind entry))
+
+(defn parse-dependencies
+  [source-path kind entries]
+  (module-analysis-call
+   :parse-dependencies module-analysis/parse-dependencies
+   source-path kind entries))
+
+(defn top-level-definition
+  [syntax]
+  (module-analysis-call
+   :top-level-definition module-analysis/top-level-definition syntax))
+
+(defn definition-table
+  [syntax module]
+  (module-analysis-call
+   :definition-table module-analysis/definition-table syntax module))
+
+(defn collect-symbols
+  [form]
+  (module-analysis-call
+   :collect-symbols module-analysis/collect-symbols form))
+
+(defn collect-code-symbols
+  [form]
+  (module-analysis-call
+   :collect-code-symbols module-analysis/collect-code-symbols form))
+
+(defn infer-effects
+  [forms]
+  (module-analysis-call
+   :infer-effects module-analysis/infer-effects forms))
+
+(defn required-capabilities-for-effects
+  [effects]
+  (module-analysis-call
+   :required-capabilities-for-effects
+   module-analysis/required-capabilities-for-effects effects))
+
+(defn profile-direct-import-allowed?
+  [consumer-profile producer-profile]
+  (module-analysis-call
+   :profile-direct-import-allowed?
+   module-analysis/profile-direct-import-allowed?
+   consumer-profile producer-profile))
 
 (defn assert-unique-aliases!
   [source-path dependencies]
-  (let [aliases (keep :alias dependencies)
-        duplicate (first (for [[alias n] (frequencies aliases) :when (> n 1)] alias))]
-    (when duplicate
-      (fail! "L3-AMBIGUOUS-NAME"
-             "namespace alias resolves to multiple dependencies"
-             {:source-span (source-span source-path 0)
-              :alias duplicate
-              :remediation "Use one unique alias per required or imported module."}))))
+  (module-analysis-call
+   :assert-unique-aliases! module-analysis/assert-unique-aliases!
+   source-path dependencies))
 
 (defn assert-referred-names-unambiguous!
   [source-path dependencies]
-  (let [referred (mapcat :refer dependencies)
-        duplicate (first (for [[sym n] (frequencies referred) :when (> n 1)] sym))]
-    (when duplicate
-      (fail! "L3-AMBIGUOUS-NAME"
-             "unqualified imported name resolves to multiple dependencies"
-             {:source-span (source-span source-path 0)
-              :symbol duplicate
-              :remediation "Remove one refer or qualify the symbol through an alias."}))))
+  (module-analysis-call
+   :assert-referred-names-unambiguous!
+   module-analysis/assert-referred-names-unambiguous!
+   source-path dependencies))
 
 (defn assert-qualified-symbols-resolve!
   [source-path forms module dependencies]
-  (let [aliases (set (map str (keep :alias dependencies)))
-        allowed-qualified (conj aliases (str (:module module)))
-        unknown (first (for [sym (mapcat collect-code-symbols forms)
-                             :let [ns-part (namespace sym)]
-                             :when (and ns-part
-                                        (not (contains? allowed-qualified ns-part))
-                                        (not (str/includes? ns-part ".")))]
-                         sym))]
-    (when unknown
-      (fail! "L3-UNKNOWN-ALIAS"
-             "qualified symbol uses an unknown namespace alias"
-             {:source-span {:source source-path}
-              :symbol unknown
-              :alias (symbol (namespace unknown))
-              :remediation "Declare the alias in :requires or :imports, or use a fully qualified namespace."}))))
+  (module-analysis-call
+   :assert-qualified-symbols-resolve!
+   module-analysis/assert-qualified-symbols-resolve!
+   source-path forms module dependencies))
 
 (defn assert-profile-boundaries!
   [source-path module dependencies]
-  (doseq [dependency dependencies]
-    (let [dep-profile (:profile dependency)
-          module-profile (:profile module)]
-      (when (and dep-profile
-                 (not (profile-direct-import-allowed? module-profile
-                                                      dep-profile))
-                 (nil? (:boundary dependency)))
-        (fail! "L3-CROSS-PROFILE"
-               "cross-profile import requires an explicit boundary"
-               {:source-span (source-span source-path 0)
-                :module (:module dependency)
-                :profile module-profile
-                :dependency-profile dep-profile
-                :remediation "Use a :core API, profile-safe facade, typed schema/artifact boundary, or explicit interop boundary."})))))
+  (module-analysis-call
+   :assert-profile-boundaries! module-analysis/assert-profile-boundaries!
+   source-path module dependencies))
 
 (defn assert-namespace-effect-and-capability!
   [source-path module inferred-effects]
-  (let [declared-effects (:effects module)
-        widened (first (remove declared-effects inferred-effects))
-        required-capabilities (required-capabilities-for-effects inferred-effects)
-        missing-capability (first (remove (:capabilities module) required-capabilities))]
-    (when widened
-      (fail! "L3-EFFECT-WIDEN"
-             "inferred namespace effects exceed declared effect allowance"
-             {:source-span {:source source-path}
-              :effect widened
-              :declared-effects declared-effects
-              :remediation "Declare the effect at namespace level or remove the effectful form."}))
-    (when missing-capability
-      (fail! "L3-CAPABILITY-MISSING"
-             "namespace requires a capability not declared by the namespace"
-             {:source-span {:source source-path}
-              :required-capability missing-capability
-              :declared-capabilities (:capabilities module)
-              :remediation "Declare the required capability or remove the capability-using form."}))))
+  (module-analysis-call
+   :assert-namespace-effect-and-capability!
+   module-analysis/assert-namespace-effect-and-capability!
+   source-path module inferred-effects))
 
 (defn parse-module
   [source-path forms]
-  (let [ns-form (require-ns source-path forms)
-        module-name (second ns-form)
-        clauses (map #(parse-clause source-path %) (drop 2 ns-form))
-        clause-map (reduce (fn [acc [k v]] (update acc k (fnil conj []) v)) {} clauses)
-        active-profile-values (get clause-map :profile)
-        library-profile-values (get clause-map :profiles)
-        profile (first (single-clause-value source-path clause-map :profile true))
-        target (or (first (single-clause-value source-path clause-map :target false)) :jvm)
-        effects (or (first (single-clause-value source-path clause-map :effects false)) #{})
-        capabilities (or (first (single-clause-value source-path clause-map :capabilities false)) #{})
-        requires (parse-dependencies source-path :require (clause-args clause-map :requires))
-        imports (parse-dependencies source-path :import (clause-args clause-map :imports))
-        exports (or (first (single-clause-value source-path clause-map :exports false)) [])
-        safety (or (first (single-clause-value source-path clause-map :safety false)) :safe)
-        providers (or (first (single-clause-value source-path clause-map :providers false)) [])
-        metadata (or (first (single-clause-value source-path clause-map :metadata false)) {})
-        docs (or (first (single-clause-value source-path clause-map :doc false)) nil)]
-    (when (or (> (count active-profile-values) 1)
-              (and (seq active-profile-values) (seq library-profile-values))
-              (seq library-profile-values))
-      (fail! "L3-PROFILE-MULTIPLE"
-             "stage0 implementation namespaces must declare exactly one active profile"
-             {:source-span (source-span source-path 0)
-              :profile-clauses active-profile-values
-              :profiles-clauses library-profile-values
-              :remediation "Use one (:profile p) clause for stage0 implementation modules."}))
-    (when-not (symbol? module-name)
-      (fail! "L3-NS-MISSING"
-             "namespace name must be a symbol"
-             {:source-span (source-span source-path 0)
-              :remediation "Use a symbolic namespace name, for example hello.main."}))
-    (when-not (known-source-profiles profile)
-      (fail! "P1-PROFILE-UNSUPPORTED"
-             "stage0 bootstrap does not know this source profile"
-             {:source-span (source-span source-path 0)
-              :profile profile
-              :known known-source-profiles
-              :supported supported-profiles
-              :remediation "Use a known source profile such as :hosted, :core, or :kernel."}))
-    (when-not (bootstrap-target-supported? target)
-      (fail! "B1-TARGET-UNSUPPORTED"
-             "stage0 bootstrap does not support this requested target"
-             {:source-span (source-span source-path 0)
-              :target target
-              :supported (set/union supported-targets
-                                    *additional-bootstrap-targets*)
-              :remediation "Use a target enabled by the selected bootstrap backend."}))
-    {:module module-name
-     :source-path source-path
-     :profile profile
-     :target target
-     :effects effects
-     :capabilities capabilities
-     :requires requires
-     :imports imports
-     :exports exports
-     :safety safety
-     :providers providers
-     :metadata metadata
-     :doc docs
-     :forms (vec (rest forms))}))
+  (module-analysis-call
+   :parse-module module-analysis/parse-module source-path forms))
 
 (defn uses-println?
   [form]
-  (cond
-    (seq? form) (or (= 'println (first form)) (some uses-println? form))
-    (coll? form) (some uses-println? form)
-    :else false))
+  (module-analysis-call
+   :uses-println? module-analysis/uses-println? form))
 
 (defn validate-module-effects!
   [module]
-  (let [forms (:forms module)
-        writes? (some uses-println? forms)]
-    (when (and writes? (not (contains? (:effects module) :io/write)))
-      (fail! "L6-EFFECT-UNDECLARED"
-             "println requires the :io/write effect"
-             {:source-span {:source (:source-path module)}
-              :required-effect :io/write
-              :declared-effects (:effects module)
-              :remediation "Add :io/write to the namespace effects."}))
-    (when (and writes? (not (contains? (:capabilities module) :io/stdout)))
-      (fail! "L3-CAPABILITY-MISSING"
-             "println requires the :io/stdout capability"
-             {:source-span {:source (:source-path module)}
-              :required-capability :io/stdout
-              :declared-capabilities (:capabilities module)
-              :remediation "Add :io/stdout to the namespace capabilities."}))))
+  (module-analysis-call
+   :validate-module-effects! module-analysis/validate-module-effects! module))
 
 (defn module-source-artifact-from-records
   [source-path source-text records]
-  (let [forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        syntax (syntax-object-stream source-path records module)
-        dependencies (vec (concat (:requires module) (:imports module)))
-        _ (assert-unique-aliases! source-path dependencies)
-        _ (assert-referred-names-unambiguous! source-path dependencies)
-        _ (assert-profile-boundaries! source-path module dependencies)
-        _ (assert-qualified-symbols-resolve! source-path (:forms module) module dependencies)
-        inferred-effects (infer-effects (:forms module))
-        _ (assert-namespace-effect-and-capability! source-path module inferred-effects)
-        definitions (definition-table syntax module)
-        source-hash (str "sha256:" (sha256-hex source-text))
-        definitions-hash (str "sha256:" (sha256-hex (pr-str definitions)))
-        dependency-records (mapv #(select-keys % [:kind :module :alias :profile :boundary :effects :capabilities])
-                                 dependencies)
-        public-api (filterv #(= :public (:visibility %)) definitions)]
-    {:kind :gravity/stage0-module-artifact
-     :pass {:name :namespace-analyzer
-            :input :syntax-object-stream
-            :output :module-artifact
-            :requires [:reader]
-            :preserves [:source-spans :profile :target :effects :capabilities]
-            :rejects ["L3-NS-MISSING" "L3-PROFILE-MULTIPLE" "L3-UNKNOWN-ALIAS"
-                      "L3-AMBIGUOUS-NAME" "L3-PRIVATE-IMPORT" "L3-CROSS-PROFILE"
-                      "L3-EFFECT-WIDEN" "L3-CAPABILITY-MISSING"]}
-     :namespace-table [{:name (:module module)
-                        :package (get-in module [:metadata :package])
-                        :profile (:profile module)
-                        :target (:target module)
-                        :source-path source-path
-                        :safety (:safety module)
-                        :metadata (:metadata module)}]
-     :alias-table (mapv (fn [dependency]
-                          {:alias (:alias dependency)
-                           :module (:module dependency)
-                           :kind (:kind dependency)
-                           :profile (:profile dependency)})
-                        (filter :alias dependencies))
-     :import-export-table {:requires (:requires module)
-                           :imports (:imports module)
-                           :exports (:exports module)}
-     :module-dependency-graph {:module (:module module)
-                               :dependencies dependency-records
-                               :acyclic true}
-     :namespace-effect-summary {:declared (:effects module)
-                                :inferred inferred-effects}
-     :namespace-capability-summary {:declared (:capabilities module)
-                                    :required (required-capabilities-for-effects inferred-effects)}
-     :profile-boundary-records (mapv (fn [dependency]
-                                       {:module (:module dependency)
-                                        :from-profile (:profile module)
-                                        :to-profile (:profile dependency)
-                                        :boundary (or (:boundary dependency)
-                                                      (when (= :core (:profile dependency)) :pure-core))})
-                                     (filter #(or (:boundary %)
-                                                  (and (:profile %)
-                                                       (not= (:profile %) (:profile module))))
-                                             dependencies))
-     :module-artifact {:module (:module module)
-                       :package (get-in module [:metadata :package])
-                       :profile (:profile module)
-                       :target (:target module)
-                       :exports (:exports module)
-                       :requires (mapv #(select-keys % [:module :profile :effects]) (:requires module))
-                       :imports (mapv #(select-keys % [:module :profile :effects :boundary]) (:imports module))
-                       :effects (:effects module)
-                       :capabilities (:capabilities module)
-                       :safety (:safety module)
-                       :source-hash source-hash
-                       :definitions definitions-hash}
-     :public-api-manifest {:module (:module module)
-                           :exports public-api}
-     :definitions definitions
-     :syntax-object-stream syntax
-     :diagnostics []}))
+  (module-analysis-call
+   :module-source-artifact-from-records
+   module-analysis/module-source-artifact-from-records
+   source-path source-text records))
 
 (defn module-source-artifact
   [source-path source-text]
@@ -910,527 +532,233 @@
               :profile (:profile module)
               :supported supported-profiles
               :remediation "Use (:profile :hosted) for executable stage0 modules."}))))
+(declare macro-expansion-ops
+         local-macro-symbol
+         parse-param-list
+         bind-macro-arguments
+         expand-template-items
+         macro-env-value
+         expand-template
+         parse-syntax-template
+         builtin-defn-output
+         builtin-when-output
+         thread-first-step
+         builtin-thread-first-output
+         builtin-macros
+         built-in-registry
+         parse-defmacro-form
+         macro-registry
+         macro-namespace-entry
+         macro-build-effect-record
+         macro-build-grants
+         assert-build-effects!
+         collect-let-bindings
+         assert-hygiene!
+         assert-generated-profile!
+         assert-generated-unsafe!
+         expand-macro-form
+         expansion-generated-origin
+         macro-call
+         expand-child-form
+         expand-form-children
+         expansion-trace-record
+         distinct-by-pr-str
+         expand-syntax-object
+         macro-source-artifact-from-records)
 
 (defn local-macro-symbol
   [module name]
-  (symbol (str (:module module)) (str name)))
+  (macro-expansion/local-macro-symbol module name))
 
 (defn parse-param-list
   [params]
-  (loop [items (seq params)
-         fixed []]
-    (cond
-      (nil? items) {:fixed fixed :rest nil}
-      (= '& (first items))
-      (let [rest-name (second items)]
-        (when-not (and (symbol? rest-name) (nil? (nnext items)))
-          (fail! "L4-MACRO-NOT-SYNTAX"
-                 "macro rest parameter must be a single symbol"
-                 {:params params
-                  :remediation "Use a parameter vector such as [x & body]."}))
-        {:fixed fixed :rest rest-name})
-      (symbol? (first items)) (recur (next items) (conj fixed (first items)))
-      :else
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "macro parameters must be symbols"
-             {:params params
-              :remediation "Use symbolic macro parameters."}))))
+  (macro-expansion/parse-param-list params (macro-expansion-ops)))
 
 (defn bind-macro-arguments
   [macro args call-span]
-  (let [{:keys [fixed rest]} (:params macro)]
-    (when (or (< (count args) (count fixed))
-              (and (nil? rest) (not= (count args) (count fixed))))
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "macro call does not match the accepted syntax shape"
-             {:source-span call-span
-              :macro (:identity macro)
-              :params fixed
-              :rest rest
-              :argument-count (count args)
-              :remediation "Call the macro with the syntax shape declared by its parameter vector."}))
-    (let [fixed-bindings (zipmap fixed (take (count fixed) args))]
-      (if rest
-        (assoc fixed-bindings rest (vec (drop (count fixed) args)))
-        fixed-bindings))))
-
-(declare expand-template)
+  (macro-expansion/bind-macro-arguments macro args call-span
+                                        (macro-expansion-ops)))
 
 (defn expand-template-items
   [env items]
-  (mapcat (fn [item]
-            (let [expanded (expand-template env item)]
-              (if (and (map? expanded) (contains? expanded ::splice))
-                (::splice expanded)
-                [expanded])))
-          items))
+  (macro-expansion/expand-template-items env items (macro-expansion-ops)))
 
 (defn macro-env-value
   [env sym]
-  (if (contains? env sym)
-    (get env sym)
-    (fail! "L4-MACRO-NOT-SYNTAX"
-           "syntax template references an unbound macro parameter"
-           {:symbol sym
-            :remediation "Use only symbols bound by the macro parameter vector inside unquote forms."})))
+  (macro-expansion/macro-env-value env sym (macro-expansion-ops)))
 
 (defn expand-template
   [env template]
-  (cond
-    (seq? template)
-    (case (first template)
-      unquote
-      (let [[_ sym] template]
-        (when-not (symbol? sym)
-          (fail! "L4-MACRO-NOT-SYNTAX"
-                 "unquote requires a macro parameter symbol"
-                 {:form template
-                  :remediation "Use (unquote name) inside syntax templates."}))
-        (macro-env-value env sym))
-
-      splice-unquote
-      (let [[_ sym] template
-            value (macro-env-value env sym)]
-        (when-not (sequential? value)
-          (fail! "L4-MACRO-NOT-SYNTAX"
-                 "splice-unquote requires a rest parameter value"
-                 {:form template
-                  :value value
-                  :remediation "Use splice-unquote with a rest parameter such as body."}))
-        {::splice value})
-
-      (apply list (expand-template-items env template)))
-
-    (vector? template) (vec (expand-template-items env template))
-    (map? template) (into {} (map (fn [[k v]]
-                                    [(expand-template env k) (expand-template env v)])
-                                  template))
-    (set? template) (set (expand-template-items env template))
-    :else template))
+  (macro-expansion/expand-template env template (macro-expansion-ops)))
 
 (defn parse-syntax-template
   [macro call-span]
-  (let [body (:body macro)]
-    (when-not (and (= 1 (count body))
-                   (seq? (first body))
-                   (= 'syntax-quote (ffirst body)))
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "stage0 macros must return syntax through a syntax-quote template"
-             {:source-span call-span
-              :macro (:identity macro)
-              :body body
-              :remediation "Return (syntax-quote form) from stage0 defmacro bodies."}))
-    (second (first body))))
+  (macro-expansion/parse-syntax-template macro call-span
+                                         (macro-expansion-ops)))
 
 (defn builtin-defn-output
   [args call-span]
-  (let [[name params & body] args
-        [return-type body] (if (= ':- (first body))
-                             [(second body) (nnext body)]
-                             [nil body])
-        fn-form (if return-type
-                  (list 'fn params (list 'typed/return (list 'quote return-type)
-                                         (cons 'do body)))
-                  (cons 'fn (cons params body)))]
-    (when-not (and (symbol? name) (vector? params))
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "defn expansion requires a symbolic name and vector parameters"
-             {:source-span call-span
-              :form (cons 'defn args)
-              :remediation "Use (defn name [args] body...)."}))
-    (list 'def name fn-form)))
+  (macro-expansion/builtin-defn-output args call-span
+                                       (macro-expansion-ops)))
 
 (defn builtin-when-output
   [args call-span]
-  (let [[condition & body] args]
-    (when (nil? condition)
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "when requires a condition"
-             {:source-span call-span
-              :remediation "Use (when condition body...)."}))
-    (list 'if condition (cons 'do body) nil)))
+  (macro-expansion/builtin-when-output args call-span
+                                       (macro-expansion-ops)))
 
 (defn thread-first-step
   [value step]
-  (if (seq? step)
-    (apply list (first step) value (rest step))
-    (list step value)))
+  (macro-expansion/thread-first-step value step))
 
 (defn builtin-thread-first-output
   [args call-span]
-  (let [[initial & steps] args]
-    (when (nil? initial)
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "thread-first requires an initial expression"
-             {:source-span call-span
-              :remediation "Use (-> value step...)."}))
-    (reduce thread-first-step initial steps)))
+  (macro-expansion/builtin-thread-first-output args call-span
+                                               (macro-expansion-ops)))
 
 (def builtin-macros
-  {'defn {:name 'defn
-          :identity 'gravity.core/defn
-          :kind :built-in
-          :version "stage0-builtin"
-          :macro-namespace 'gravity.core
-          :params {:fixed '[name params] :rest 'body}
-          :build-effects #{}
-          :required-build-capabilities #{}
-          :hygiene-policy :hygienic
-          :output-contract :gravity-syntax
-          :expander builtin-defn-output}
-   'when {:name 'when
-          :identity 'gravity.core/when
-          :kind :built-in
-          :version "stage0-builtin"
-          :macro-namespace 'gravity.core
-          :params {:fixed '[condition] :rest 'body}
-          :build-effects #{}
-          :required-build-capabilities #{}
-          :hygiene-policy :hygienic
-          :output-contract :gravity-syntax
-          :expander builtin-when-output}
-   '-> {:name '->
-        :identity 'gravity.core/->
-        :kind :built-in
-        :version "stage0-builtin"
-        :macro-namespace 'gravity.core
-        :params {:fixed '[initial] :rest 'steps}
-        :build-effects #{}
-        :required-build-capabilities #{}
-        :hygiene-policy :hygienic
-        :output-contract :gravity-syntax
-        :expander builtin-thread-first-output}})
+  (-> macro-expansion/builtin-macros
+      (assoc-in ['defn :expander] builtin-defn-output)
+      (assoc-in ['when :expander] builtin-when-output)
+      (assoc-in ['-> :expander] builtin-thread-first-output)))
 
 (defn built-in-registry
   []
-  (reduce-kv (fn [acc name macro]
-               (assoc acc name macro (:identity macro) macro))
-             {}
-             builtin-macros))
+  (macro-expansion/built-in-registry (macro-expansion-ops)))
 
 (defn parse-defmacro-form
   [module syntax]
-  (let [form (:form syntax)
-        [_ name & tail] form
-        [metadata tail] (if (map? (first tail))
-                          [(first tail) (rest tail)]
-                          [{} tail])
-        params (first tail)
-        body (vec (rest tail))]
-    (when-not (symbol? name)
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "defmacro requires a symbolic name"
-             {:source-span (:span syntax)
-              :form form
-              :remediation "Use (defmacro name [args] (syntax-quote ...))."}))
-    (when-not (vector? params)
-      (fail! "L4-MACRO-NOT-SYNTAX"
-             "defmacro requires a parameter vector"
-             {:source-span (:span syntax)
-              :macro name
-              :remediation "Use a vector parameter list."}))
-    (let [identity (local-macro-symbol module name)
-          macro {:name name
-                 :identity identity
-                 :kind :source
-                 :version (or (:version metadata) "stage0-source")
-                 :macro-namespace (:module module)
-                 :params (parse-param-list params)
-                 :source-span (:span syntax)
-                 :metadata metadata
-                 :body body
-                 :build-effects (or (:build-effects metadata) #{})
-                 :uses-build-effects (or (:uses-build-effects metadata) #{})
-                 :required-build-capabilities (or (:required-build-capabilities metadata) #{})
-                 :hygiene-policy (or (:hygiene-policy metadata) :hygienic)
-                 :output-contract (or (:output-contract metadata) :gravity-syntax)
-                 :allow-unsafe? (true? (:allow-unsafe metadata))
-                 :omit-generated-origin? (true? (:omit-generated-origin metadata))}]
-      [name identity macro])))
+  (macro-expansion/parse-defmacro-form module syntax
+                                        (macro-expansion-ops)))
 
 (defn macro-registry
   [module syntax]
-  (reduce (fn [registry syn]
-            (if (form-op? 'defmacro (:form syn))
-              (let [[name identity macro] (parse-defmacro-form module syn)]
-                (assoc registry name macro identity macro))
-              registry))
-          (built-in-registry)
-          syntax))
+  (macro-expansion/macro-registry module syntax (macro-expansion-ops)))
 
 (defn macro-namespace-entry
   [macro]
-  (select-keys macro [:name :identity :kind :version :macro-namespace :params
-                      :build-effects :required-build-capabilities :hygiene-policy
-                      :output-contract :source-span]))
+  (macro-expansion/macro-namespace-entry macro))
 
 (defn macro-build-effect-record
   [macro]
-  {:macro (:identity macro)
-   :declared-build-effects (:build-effects macro)
-   :used-build-effects (or (:uses-build-effects macro) (:build-effects macro) #{})
-   :required-build-capabilities (:required-build-capabilities macro)})
+  (macro-expansion/macro-build-effect-record macro))
 
 (defn macro-build-grants
   [module]
-  (or (get-in module [:metadata :build-grants]) #{}))
+  (macro-expansion/macro-build-grants module))
 
 (defn assert-build-effects!
   [module macro call-span]
-  (let [used (or (:uses-build-effects macro) (:build-effects macro) #{})
-        declared (:build-effects macro)
-        grants (macro-build-grants module)
-        undeclared (first (remove declared used))
-        ungranted (first (remove grants used))]
-    (when undeclared
-      (fail! "L4-BUILD-EFFECT"
-             "macro used an undeclared build effect"
-             {:source-span call-span
-              :macro (:identity macro)
-              :effect undeclared
-              :declared-effects declared
-              :remediation "Declare build effects in the macro definition."}))
-    (when ungranted
-      (fail! "L4-BUILD-EFFECT"
-             "macro used a build effect not granted by the build policy"
-             {:source-span call-span
-              :macro (:identity macro)
-              :effect ungranted
-              :declared-effects declared
-              :granted-build-effects grants
-              :remediation "Grant the build effect in project metadata or remove the effect."}))))
+  (macro-expansion/assert-build-effects! module macro call-span
+                                         (macro-expansion-ops)))
 
 (defn collect-let-bindings
   [form]
-  (cond
-    (form-op? 'let form)
-    (concat (take-nth 2 (second form))
-            (mapcat collect-let-bindings (drop 2 form)))
-    (seq? form) (mapcat collect-let-bindings form)
-    (coll? form) (mapcat collect-let-bindings form)
-    :else []))
+  (macro-expansion/collect-let-bindings form (macro-expansion-ops)))
 
 (defn assert-hygiene!
   [macro args output call-span]
-  (let [introduced (set (filter symbol? (collect-let-bindings output)))
-        caller-symbols (set (mapcat collect-symbols args))
-        accidental (first (set/intersection introduced caller-symbols))]
-    (when (and accidental (not= :explicit-capture (:hygiene-policy macro)))
-      (fail! "L4-HYGIENE-CAPTURE"
-             "macro expansion would accidentally capture a caller binding"
-             {:source-span call-span
-              :macro (:identity macro)
-              :symbol accidental
-              :hygiene-policy (:hygiene-policy macro)
-              :remediation "Use a fresh generated binding or mark the macro as explicit capture."}))))
+  (macro-expansion/assert-hygiene! macro args output call-span
+                                   (macro-expansion-ops)))
 
 (defn assert-generated-profile!
   [module macro output call-span]
-  (when (and (not= :hosted (:profile module))
-             (contains-form-op? 'host-reflect output))
-    (fail! "L4-GENERATED-PROFILE"
-           "macro generated code that violates the caller profile"
-           {:source-span call-span
-            :macro (:identity macro)
-            :profile (:profile module)
-            :generated-form output
-            :remediation "Generated code must pass the caller profile, not the macro implementation profile."})))
+  (macro-expansion/assert-generated-profile! module macro output call-span
+                                             (macro-expansion-ops)))
 
 (defn assert-generated-unsafe!
   [module macro output call-span]
-  (when (and (contains-form-op? 'unsafe output)
-             (not (:allow-unsafe? macro))
-             (#{:safe :safe-optimized nil} (:safety module)))
-    (fail! "L4-GENERATED-UNSAFE"
-           "macro generated unsafe code without an explicit unsafe policy"
-           {:source-span call-span
-            :macro (:identity macro)
-            :safety (:safety module)
-            :generated-form output
-            :remediation "Make unsafe generation explicit and attach an unsafe audit record."})))
+  (macro-expansion/assert-generated-unsafe! module macro output call-span
+                                            (macro-expansion-ops)))
 
 (defn expand-macro-form
   [module macro args call-span]
-  (assert-build-effects! module macro call-span)
-  (let [output (if-let [expander (:expander macro)]
-                 (expander args call-span)
-                 (let [env (bind-macro-arguments macro args call-span)
-                       template (parse-syntax-template macro call-span)]
-                   (expand-template env template)))]
-    (when (= :source (:kind macro))
-      (assert-hygiene! macro args output call-span))
-    (assert-generated-profile! module macro output call-span)
-    (assert-generated-unsafe! module macro output call-span)
-    output))
+  (macro-expansion/expand-macro-form module macro args call-span
+                                     (macro-expansion-ops)))
 
 (defn expansion-generated-origin
   [macro syntax input output]
-  (when-not (:omit-generated-origin? macro)
-    [{:from (:span syntax)
-      :macro (:identity macro)
-      :macro-version (:version macro)
-      :input-hash (str "sha256:" (sha256-hex (pr-str input)))
-      :output-hash (str "sha256:" (sha256-hex (pr-str output)))}]))
-
-(declare expand-syntax-object)
+  (macro-expansion/expansion-generated-origin macro syntax input output
+                                              (macro-expansion-ops)))
 
 (defn macro-call
   [registry form]
-  (when (seq? form)
-    (get registry (first form))))
+  (macro-expansion/macro-call registry form))
 
 (defn expand-child-form
   [registry module syntax form trace depth]
-  (:form (expand-syntax-object registry module (assoc syntax :form form) trace depth)))
+  (macro-expansion/expand-child-form registry module syntax form trace depth
+                                      (macro-expansion-ops)))
 
 (defn expand-form-children
   [registry module syntax form trace depth]
-  (cond
-    (seq? form) (apply list (map #(expand-child-form registry module syntax % trace depth) form))
-    (vector? form) (vec (map #(expand-child-form registry module syntax % trace depth) form))
-    (map? form) (into {} (map (fn [[k v]]
-                                [(expand-child-form registry module syntax k trace depth)
-                                 (expand-child-form registry module syntax v trace depth)])
-                              form))
-    (set? form) (set (map #(expand-child-form registry module syntax % trace depth) form))
-    :else form))
+  (macro-expansion/expand-form-children registry module syntax form trace depth
+                                         (macro-expansion-ops)))
 
 (defn expansion-trace-record
   [module macro syntax input output generated-origin depth]
-  {:macro (:identity macro)
-   :macro-version (:version macro)
-   :macro-namespace (:macro-namespace macro)
-   :caller-namespace (:namespace syntax)
-   :caller-profile (:profile syntax)
-   :depth depth
-   :call-span (:span syntax)
-   :input-syntax-id (:syntax-id syntax)
-   :input-hash (str "sha256:" (sha256-hex (pr-str input)))
-   :output-hash (str "sha256:" (sha256-hex (pr-str output)))
-   :build-effects (vec (sort-by str (or (:uses-build-effects macro)
-                                         (:build-effects macro)
-                                         #{})))
-   :generated-origin generated-origin
-   :generated-spans [(str "generated:" (:identity macro) ":" (get-in syntax [:span :form-index]))]
-   :hygiene-policy (:hygiene-policy macro)
-   :hygiene-marks (:hygiene syntax)
-   :metadata (:metadata syntax)
-   :diagnostics []})
+  (macro-expansion/expansion-trace-record module macro syntax input output
+                                           generated-origin depth
+                                           (macro-expansion-ops)))
 
 (defn distinct-by-pr-str
   [values]
-  (vec (vals (reduce (fn [acc value] (assoc acc (pr-str value) value)) {} values))))
+  (macro-expansion/distinct-by-pr-str values))
 
 (defn expand-syntax-object
   [registry module syntax trace depth]
-  (let [form (:form syntax)]
-    (cond
-      (form-op? 'defmacro form)
-      (assoc syntax :phase :macro-definition)
+  (macro-expansion/expand-syntax-object registry module syntax trace depth
+                                        (macro-expansion-ops)))
 
-      (macro-call registry form)
-      (do
-        (when (>= depth max-macro-expansion-depth)
-          (fail! "L4-EXPANSION-DEPTH"
-                 "macro expansion exceeded the configured depth limit"
-                 {:source-span (:span syntax)
-                  :form form
-                  :depth depth
-                  :limit max-macro-expansion-depth
-                  :remediation "Stop recursive expansion or raise the project expansion limit with evidence."}))
-        (let [macro (macro-call registry form)
-              input form
-              output (expand-macro-form module macro (vec (rest form)) (:span syntax))
-              generated-origin (expansion-generated-origin macro syntax input output)]
-          (when (empty? generated-origin)
-            (fail! "L4-PROVENANCE-MISSING"
-                   "macro expansion output lacks generated-origin metadata"
-                   {:source-span (:span syntax)
-                    :macro (:identity macro)
-                    :remediation "Attach generated-origin metadata linking output syntax to the macro call site."}))
-          (swap! trace conj (expansion-trace-record module macro syntax input output generated-origin depth))
-          (recur registry
-                 module
-                 (-> syntax
-                     (assoc :form output
-                            :origin :generated
-                            :phase :macro-expanded
-                            :generated-origin (vec (concat (:generated-origin syntax) generated-origin))
-                            :macro-namespace (:macro-namespace macro))
-                     (update :hygiene conj {:macro (:identity macro)
-                                            :policy (:hygiene-policy macro)}))
-                 trace
-                 (inc depth))))
-
-      (coll? form)
-      (assoc syntax
-             :form (expand-form-children registry module syntax form trace depth)
-             :phase :macro-expanded)
-
-      :else
-      (assoc syntax :phase :macro-expanded))))
+(defn macro-expansion-ops
+  []
+  {:fail! fail!
+   :form-op? form-op?
+   :contains-form-op? contains-form-op?
+   :collect-symbols collect-symbols
+   :local-macro-symbol local-macro-symbol
+   :source-span source-span
+   :sha256-hex sha256-hex
+   :splice-key ::splice
+   :max-macro-expansion-depth max-macro-expansion-depth
+   :builtin-macros builtin-macros
+   :parse-param-list parse-param-list
+   :expand-template-items expand-template-items
+   :expand-template expand-template
+   :macro-env-value macro-env-value
+   :parse-syntax-template parse-syntax-template
+   :builtin-defn-output builtin-defn-output
+   :builtin-when-output builtin-when-output
+   :thread-first-step thread-first-step
+   :builtin-thread-first-output builtin-thread-first-output
+   :built-in-registry built-in-registry
+   :parse-defmacro-form parse-defmacro-form
+   :macro-registry macro-registry
+   :macro-namespace-entry macro-namespace-entry
+   :macro-build-effect-record macro-build-effect-record
+   :macro-build-grants macro-build-grants
+   :assert-build-effects! assert-build-effects!
+   :collect-let-bindings collect-let-bindings
+   :assert-hygiene! assert-hygiene!
+   :assert-generated-profile! assert-generated-profile!
+   :assert-generated-unsafe! assert-generated-unsafe!
+   :bind-macro-arguments bind-macro-arguments
+   :expand-macro-form expand-macro-form
+   :expansion-generated-origin expansion-generated-origin
+   :macro-call macro-call
+   :expand-child-form expand-child-form
+   :expand-form-children expand-form-children
+   :expansion-trace-record expansion-trace-record
+   :distinct-by-pr-str distinct-by-pr-str
+   :expand-syntax-object expand-syntax-object})
 
 (defn macro-source-artifact-from-records
   [source-path source-text records]
   (let [forms (mapv :form records)
         _ (validate-ns-syntax! source-path forms)
         module (parse-module source-path forms)
-        syntax (syntax-object-stream source-path records module)
-        registry (macro-registry module syntax)
-        trace (atom [])
-        raw-expanded-syntax (->> syntax
-                                 (remove #(form-op? 'defmacro (:form %)))
-                                 (mapv #(expand-syntax-object registry module % trace 0)))
-        trace-records @trace
-        origins-by-syntax-id (group-by :input-syntax-id trace-records)
-        hygiene-by-syntax-id (reduce (fn [acc record]
-                                       (update acc (:input-syntax-id record) (fnil conj [])
-                                               {:macro (:macro record)
-                                                :policy (:hygiene-policy record)}))
-                                     {}
-                                     trace-records)
-        expanded-syntax (mapv (fn [syn]
-                                (let [trace-origins (mapcat :generated-origin
-                                                            (get origins-by-syntax-id (:syntax-id syn)))
-                                      trace-hygiene (get hygiene-by-syntax-id (:syntax-id syn))]
-                                  (cond-> syn
-                                    (seq trace-origins)
-                                    (assoc :generated-origin
-                                           (distinct-by-pr-str (concat (:generated-origin syn)
-                                                                       trace-origins)))
-                                    (seq trace-hygiene)
-                                    (assoc :hygiene
-                                           (distinct-by-pr-str (concat (:hygiene syn)
-                                                                       trace-hygiene))))))
-                              raw-expanded-syntax)
-        body-forms (mapv :form (subvec expanded-syntax 1))
-        macro-definitions (->> registry
-                               vals
-                               (distinct)
-                               (sort-by (comp str :identity))
-                               vec)
-        macro-entries (mapv macro-namespace-entry macro-definitions)]
-    {:kind :gravity/stage0-macro-artifact
-     :pass {:name :macro-expansion
-            :input :syntax-object-stream
-            :output :expanded-syntax
-            :requires [:reader :namespace-analyzer]
-            :preserves [:source-spans :metadata :hygiene :profile :generated-origin]
-            :rejects ["L4-MACRO-NOT-SYNTAX" "L4-HYGIENE-CAPTURE"
-                      "L4-BUILD-EFFECT" "L4-EXPANSION-DEPTH"
-                      "L4-GENERATED-PROFILE" "L4-GENERATED-UNSAFE"
-                      "L4-PROVENANCE-MISSING"]}
-     :module (select-keys module [:module :source-path :profile :target :effects
-                                  :capabilities :safety :metadata])
-     :macro-namespace-entries macro-entries
-     :macro-build-effect-records (mapv macro-build-effect-record macro-definitions)
-     :macro-expansion-trace trace-records
-     :generated-origin-source-map (mapv #(select-keys % [:syntax-id :span :generated-origin])
-                                        expanded-syntax)
-     :hygiene-marks (mapv #(select-keys % [:syntax-id :hygiene]) expanded-syntax)
-     :expanded-syntax-object-stream expanded-syntax
-     :expanded-forms body-forms
-     :diagnostics []}))
+        syntax (syntax-object-stream source-path records module)]
+    (macro-expansion/macro-source-artifact-from-records
+     source-path source-text records module syntax (macro-expansion-ops))))
 
 (defn macro-source-artifact
   [source-path source-text]
@@ -1563,201 +891,55 @@
 
 (defn c4-macro-environment
   [macro-artifact]
-  (let [entries (:macro-namespace-entries macro-artifact)]
-    {:artifact :gravity/macro-environment
-     :macro-vars (mapv (fn [entry]
-                         {:macro (:identity entry)
-                          :version (:version entry)
-                          :namespace (:macro-namespace entry)
-                          :api (:params entry)
-                          :safety-declaration
-                          {:generates-unsafe
-                           (str/includes? (str (:identity entry)) "unsafe")
-                           :preserves-taint true}
-                          :build-effects (:build-effects entry)
-                          :required-build-capabilities
-                          (:required-build-capabilities entry)})
-                       entries)
-     :dependency-hashes [(str "sha256:" (sha256-hex (pr-str entries)))]
-     :status :complete}))
+  (c4-macro-evidence/c4-macro-environment
+   macro-artifact {:sha256-hex sha256-hex}))
 
 (defn c4-expansion-input
   [module c3-artifact macro-artifact]
-  {:artifact :gravity/macro-expansion-input
-   :module (:module module)
-   :syntax-root (get-in c3-artifact [:syntax-object-stream 0 :syntax/id])
-   :namespace (:module module)
-   :profile (:profile module)
-   :target (:target module)
-   :macro-environment (c4-artifact-id
-                       (:macro-namespace-entries macro-artifact))
-   :build-grants (get-in module [:metadata :build-grants] #{})
-   :hermetic true
-   :limits {:depth max-macro-expansion-depth
-            :nodes 100000
-            :time-ms 5000}})
+  (c4-macro-evidence/c4-expansion-input
+   module c3-artifact macro-artifact
+   {:artifact-id-of c4-artifact-id
+    :max-macro-expansion-depth max-macro-expansion-depth}))
 
 (defn c4-expanded-syntax-stream
   [macro-artifact]
-  (mapv (fn [syntax]
-          (assoc syntax
-                 :artifact :gravity/expanded-syntax-object
-                 :expanded-syntax-id
-                 (str "sha256:" (sha256-hex
-                                  (pr-str (select-keys syntax
-                                                       [:syntax-id :form
-                                                        :phase
-                                                        :generated-origin]))))))
-        (:expanded-syntax-object-stream macro-artifact)))
+  (c4-macro-evidence/c4-expanded-syntax-stream
+   macro-artifact {:sha256-hex sha256-hex}))
 
 (defn c4-trace-records
   [macro-artifact]
-  (let [entries-by-id (into {} (map (juxt :identity identity)
-                                    (:macro-namespace-entries macro-artifact)))]
-    (mapv (fn [idx record]
-            (let [entry (get entries-by-id (:macro record))]
-              {:artifact :gravity/macro-expansion-step
-               :step (inc idx)
-               :macro (:macro record)
-               :macro-version (:macro-version record)
-               :definition-span (:source-span entry)
-               :call-site (:call-span record)
-               :input-syntax [(:input-syntax-id record)]
-               :output-syntax [(:output-hash record)]
-               :hygiene {:introduced-marks [(:macro record)]
-                         :captures (if (= :explicit-capture
-                                          (:hygiene-policy record))
-                                     [{:macro (:macro record)
-                                       :capture :explicit
-                                       :policy-result :allowed}]
-                                     [])}
-               :build-effects (:build-effects record)
-               :capabilities (:required-build-capabilities entry)
-               :safety {:generates-unsafe
-                        (str/includes? (str (:macro record)) "unsafe")
-                        :preserves-taint true}
-               :profile-check :pending-downstream
-               :generated-origin (:generated-origin record)
-               :generated-spans (:generated-spans record)
-               :diagnostics []}))
-          (range)
-          (:macro-expansion-trace macro-artifact))))
+  (c4-macro-evidence/c4-trace-records macro-artifact))
 
 (defn c4-hygiene-capture-records
   [trace-records]
-  (vec
-   (keep (fn [record]
-           (when (seq (get-in record [:hygiene :captures]))
-             {:artifact :gravity/macro-hygiene-capture-record
-              :macro (:macro record)
-              :step (:step record)
-              :captures (get-in record [:hygiene :captures])
-              :status :explicit-and-allowed}))
-         trace-records)))
+  (c4-macro-evidence/c4-hygiene-capture-records trace-records))
 
 (defn c4-build-effect-log
   [module trace-records]
-  (let [grants (get-in module [:metadata :build-grants] #{})]
-    {:artifact :gravity/macro-build-effect-log
-     :records
-     (mapv (fn [record]
-             {:macro (:macro record)
-              :step (:step record)
-              :build-effects (:build-effects record)
-              :grants grants
-              :authorization (if (set/subset? (set (:build-effects record))
-                                              grants)
-                               :granted
-                               :not-required)
-              :replay-policy :hermetic})
-           trace-records)
-     :status :complete}))
+  (c4-macro-evidence/c4-build-effect-log module trace-records))
 
 (defn c4-macro-safety-declarations
   [macro-environment]
-  {:artifact :gravity/macro-safety-declaration-records
-   :records
-   (mapv (fn [entry]
-           {:macro (:macro entry)
-            :version (:version entry)
-            :generates-unsafe (get-in entry [:safety-declaration
-                                             :generates-unsafe])
-            :build-effects (:build-effects entry)
-            :capabilities (:required-build-capabilities entry)
-            :preserves-taint true
-            :safe12-metadata-schema
-            (if (get-in entry [:safety-declaration :generates-unsafe])
-              :safe6-unsafe-island-required
-              :not-applicable)})
-         (:macro-vars macro-environment))
-   :status :complete})
+  (c4-macro-evidence/c4-macro-safety-declarations macro-environment))
 
 (defn c4-generated-origin-source-map
   [trace-records expanded-stream]
-  {:artifact :gravity/generated-origin-source-map
-   :trace-origins (mapv #(select-keys % [:step :macro :generated-origin
-                                         :generated-spans])
-                        trace-records)
-   :expanded-syntax (mapv #(select-keys % [:syntax-id :expanded-syntax-id
-                                           :span :generated-origin])
-                          expanded-stream)
-   :status :complete})
+  (c4-macro-evidence/c4-generated-origin-source-map
+   trace-records expanded-stream))
 
 (defn c4-expansion-cache-key
   [expansion-input trace-records]
-  (let [payload {:source-syntax (:syntax-root expansion-input)
-                 :macro-versions (mapv #(select-keys % [:macro
-                                                        :macro-version])
-                                        trace-records)
-                 :build-grants (:build-grants expansion-input)
-                 :target (:target expansion-input)
-                 :profile (:profile expansion-input)
-                 :reader-and-namespace-config
-                 (select-keys expansion-input [:module :namespace])
-                 :replay-records []
-                 :enabled-facets #{}
-                 :language-version "stage0"}]
-    {:artifact :gravity/macro-expansion-cache-key
-     :payload payload
-     :hash (str "sha256:" (sha256-hex (pr-str payload)))
-     :reuse-policy :trace-replay-required
-     :status :stable}))
+  (c4-macro-evidence/c4-expansion-cache-key
+   expansion-input trace-records {:sha256-hex sha256-hex}))
 
 (defn c4-trace-replay-report
   [trace-records cache-key]
-  {:artifact :gravity/macro-trace-replay-report
-   :trace-steps (count trace-records)
-   :cache-key (:hash cache-key)
-   :inputs-match? (every? #(and (:macro-version %)
-                                (seq (:input-syntax %))
-                                (seq (:output-syntax %)))
-                          trace-records)
-   :grants-match? true
-   :replay-inputs-match? true
-   :status :passed})
+  (c4-macro-evidence/c4-trace-replay-report trace-records cache-key))
 
 (defn c4-macro-safety-report
   [trace-records safety-declarations]
-  {:artifact :gravity/macro-safety-report
-   :generated-code-check :pending-downstream-normal-pipeline
-   :declarations (:records safety-declarations)
-   :generated-unsafe
-   (mapv (fn [declaration]
-           {:macro (:macro declaration)
-            :safe6-metadata (if (:generates-unsafe declaration)
-                              :required-and-recorded
-                              :not-applicable)
-            :status :accepted})
-         (filter :generates-unsafe (:records safety-declarations)))
-   :taint-preservation (mapv (fn [record]
-                               {:macro (:macro record)
-                                :preserves-taint true})
-                             trace-records)
-   :profile-checks (mapv (fn [record]
-                           {:macro (:macro record)
-                            :profile-check (:profile-check record)})
-                         trace-records)
-   :status :complete})
+  (c4-macro-evidence/c4-macro-safety-report
+   trace-records safety-declarations))
 
 (defn c4-macro-capability-proof
   [artifact]
@@ -1896,1602 +1078,496 @@
   (compiler-c4-macro-source-artifact path (slurp path)))
 
 (def c5-resolution-diagnostic-ids
-  ["C5-UNRESOLVED"
-   "C5-AMBIGUOUS"
-   "C5-PRIVATE"
-   "C5-ALIAS"
-   "C5-SHADOW"
-   "C5-CYCLE"
-   "C5-CROSS-PROFILE"
-   "C5-CAPABILITY"
-   "C5-TARGET"
-   "C5-FOREIGN"])
-
+  c5/c5-resolution-diagnostic-ids)
 (def c5-resolution-governing-document
-  "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md")
-
+  c5/c5-resolution-governing-document)
 (def c5-resolution-rejected-designs
-  [{:diagnostic "C5-UNRESOLVED"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-unresolved.gravity"
-    :rejected-design :unresolved-symbol}
-   {:diagnostic "C5-AMBIGUOUS"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-ambiguous.gravity"
-    :rejected-design :ambiguous-unqualified-symbol}
-   {:diagnostic "C5-PRIVATE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-private.gravity"
-    :rejected-design :private-binding-access}
-   {:diagnostic "C5-ALIAS"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-alias.gravity"
-    :rejected-design :unknown-or-duplicate-alias}
-   {:diagnostic "C5-SHADOW"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-shadow.gravity"
-    :rejected-design :illegal-shadowing}
-   {:diagnostic "C5-CYCLE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-cycle.gravity"
-    :rejected-design :namespace-dependency-cycle}
-   {:diagnostic "C5-CROSS-PROFILE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-cross-profile.gravity"
-    :rejected-design :cross-profile-edge-without-boundary}
-   {:diagnostic "C5-CAPABILITY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-capability.gravity"
-    :rejected-design :imported-binding-without-capability}
-   {:diagnostic "C5-TARGET"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-target.gravity"
-    :rejected-design :target-incompatible-import}
-   {:diagnostic "C5-FOREIGN"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c5-foreign.gravity"
-    :rejected-design :malformed-foreign-import-record}])
-
+  c5/c5-resolution-rejected-designs)
 (def c5-resolution-override-diagnostics
-  {:unresolved "C5-UNRESOLVED"
-   :ambiguous "C5-AMBIGUOUS"
-   :private "C5-PRIVATE"
-   :alias "C5-ALIAS"
-   :shadow "C5-SHADOW"
-   :cycle "C5-CYCLE"
-   :cross-profile "C5-CROSS-PROFILE"
-   :capability "C5-CAPABILITY"
-   :target "C5-TARGET"
-   :foreign "C5-FOREIGN"})
-
+  c5/c5-resolution-override-diagnostics)
 (def c5-special-form-symbols
-  '#{quote if do let fn loop recur def defn defmacro defschema defprotocol
-     syntax-quote unquote splice-unquote unsafe})
-
+  c5/c5-special-form-symbols)
 (def c5-core-auto-imports
-  '#{println + - * / = < > <= >= str pr-str hash-map vector list conj assoc
-     get first second rest count})
-
+  c5/c5-core-auto-imports)
 (def c5-type-auto-imports
-  '#{I8 I16 I32 I64 U8 U16 U32 U64 F32 F64 Bool String Symbol Keyword
-     Dynamic Unit Never})
+  c5/c5-type-auto-imports)
+
+(declare c5-resolution-ops
+         c5-resolution-source-overrides
+         c5-resolution-message
+         c5-resolution-fail!
+         c5-resolution-validate-overrides!
+         c5-package-record
+         c5-binding-id
+         c5-binding-identity
+         c5-definition-binding
+         c5-special-form-binding
+         c5-core-binding
+         c5-type-binding
+         c5-import-binding
+         c5-alias-table
+         c5-import-export-table
+         c5-definition-bindings
+         c5-macro-bindings
+         c5-param-symbols
+         c5-local-bindings-from-params
+         c5-let-binding-symbols
+         c5-local-scope-graph
+         c5-bindings-by-name
+         c5-resolve-qualified-symbol
+         c5-resolution-record
+         c5-binding-table
+         c5-namespace-analysis-artifact
+         c5-dependency-graph
+         c5-cross-profile-edge-report
+         c5-incremental-invalidation-keys
+         c5-resolution-diagnostics
+         c5-resolution-verification-report
+         c5-resolution-capability-proof
+         c5-resolution-validate!
+         compiler-c5-resolution-source-artifact
+         compiler-c5-resolution-file-artifact)
+
+(defn- c5-call
+  [operation & args]
+  (c5/with-operations (c5-resolution-ops)
+    #(apply operation args)))
 
 (defn c5-resolution-source-overrides
   [module]
-  (get-in module [:metadata :compiler :c5-resolution] {}))
+  (c5-call c5/c5-resolution-source-overrides module))
 
 (defn c5-resolution-message
   [id]
-  (case id
-    "C5-UNRESOLVED" "symbol has no resolvable binding"
-    "C5-AMBIGUOUS" "symbol has multiple legal bindings"
-    "C5-PRIVATE" "private binding is accessed outside its namespace boundary"
-    "C5-ALIAS" "namespace alias is unknown or duplicated"
-    "C5-SHADOW" "lexical binding shadows a namespace binding illegally"
-    "C5-CYCLE" "namespace dependency graph contains an illegal cycle"
-    "C5-CROSS-PROFILE" "cross-profile import lacks an accepted boundary"
-    "C5-CAPABILITY" "imported binding requires an unavailable capability"
-    "C5-TARGET" "imported binding is incompatible with the active target"
-    "C5-FOREIGN" "foreign import record is malformed"
-    "name resolution and namespace analysis failed"))
+  (c5-call c5/c5-resolution-message id))
 
 (defn c5-resolution-fail!
   [id source-path subject extra]
-  (fail! id
-         (c5-resolution-message id)
-         (merge {:source-span (or (:source-span subject)
-                                  (:span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :c5-name-resolution
-                 :stage :name-resolution
-                 :document-id "C5"
-                 :expected-document c5-resolution-governing-document
-                 :symbol (:symbol subject)
-                 :syntax-id (:syntax-id subject)
-                 :namespace (:namespace subject)
-                 :active-profile (:profile subject)
-                 :target (:target subject)
-                 :candidate-bindings (:candidate-bindings subject)
-                 :dependency-edge (:dependency-edge subject)
-                 :capabilities (:capabilities subject)
-                 :remediation "Resolve names through lexical, namespace, alias, package, foreign, core, or target-intrinsic records with explicit profile, target, effect, capability, visibility, and dependency metadata."}
-                extra)))
+  (c5-call c5/c5-resolution-fail! id source-path subject extra))
 
 (defn c5-resolution-validate-overrides!
   [source-path module overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c5-resolution-override-diagnostics fail-kind)]
-      (c5-resolution-fail! id source-path
-                           {:source-span (source-span source-path 0)
-                            :symbol (symbol (str "fixture/" (name fail-kind)))
-                            :syntax-id "fixture-override"
-                            :namespace (:module module)
-                            :profile (:profile module)
-                            :target (:target module)
-                            :capabilities (:capabilities module)}
-                           {:missing-fields [fail-kind]}))))
+  (c5-call c5/c5-resolution-validate-overrides!
+           source-path module overrides))
 
 (defn c5-package-record
   [module]
-  {:name (or (get-in module [:metadata :package]) 'gravity/stage0-local)
-   :version (or (get-in module [:metadata :package-version]) "0.0.0-stage0")})
+  (c5-call c5/c5-package-record module))
 
 (defn c5-binding-id
   [binding]
-  (str "sha256:" (sha256-hex (pr-str (select-keys binding
-                                                   [:name :kind :namespace
-                                                    :package :visibility
-                                                    :profile-set :target-set
-                                                    :type-ref :effects
-                                                    :capabilities :safety
-                                                    :source-span])))))
+  (c5-call c5/c5-binding-id binding))
 
 (defn c5-binding-identity
   [binding]
-  (let [stable (select-keys binding
-                            [:name :kind :namespace :package :visibility
-                             :profile-set :target-set :type-ref :effects
-                             :capabilities :safety :source-span :artifact])]
-    (assoc stable :binding-id (c5-binding-id stable))))
+  (c5-call c5/c5-binding-identity binding))
 
 (defn c5-definition-binding
   [module definition artifact-id]
-  (c5-binding-identity
-   {:name (:name definition)
-    :kind (:kind definition)
-    :namespace (:module module)
-    :package (c5-package-record module)
-    :visibility (:visibility definition)
-    :profile-set #{(:profile module)}
-    :target-set #{(:target module)}
-    :type-ref (case (:kind definition)
-                :schema :gravity.type/schema
-                :protocol :gravity.type/protocol
-                :macro :gravity.syntax/macro
-                :function :gravity.type/function
-                :gravity.type/value)
-    :effects (:latent-effects definition)
-    :capabilities (:required-capabilities definition)
-    :safety (:safety definition)
-    :source-span (:source-span definition)
-    :artifact artifact-id}))
+  (c5-call c5/c5-definition-binding module definition artifact-id))
 
 (defn c5-special-form-binding
   [sym module]
-  (c5-binding-identity
-   {:name sym
-    :kind :special-form
-    :namespace 'gravity.core
-    :package {:name 'gravity/core :version "stage0"}
-    :visibility :public
-    :profile-set known-source-profiles
-    :target-set supported-targets
-    :type-ref :gravity.syntax/special-form
-    :effects #{}
-    :capabilities #{}
-    :safety :safe
-    :source-span {:source "gravity.core" :form-index 0}
-    :artifact (:module module)}))
+  (c5-call c5/c5-special-form-binding sym module))
 
 (defn c5-core-binding
   [sym module]
-  (c5-binding-identity
-   {:name sym
-    :kind :var
-    :namespace 'gravity.core
-    :package {:name 'gravity/core :version "stage0"}
-    :visibility :public
-    :profile-set known-source-profiles
-    :target-set supported-targets
-    :type-ref :gravity.type/core-var
-    :effects (if (= 'println sym) #{:io/write} #{})
-    :capabilities (if (= 'println sym) #{:io/stdout} #{})
-    :safety :safe
-    :source-span {:source "gravity.core" :form-index 0}
-    :artifact (:module module)}))
+  (c5-call c5/c5-core-binding sym module))
 
 (defn c5-type-binding
   [sym module]
-  (c5-binding-identity
-   {:name sym
-    :kind :type
-    :namespace 'gravity.core
-    :package {:name 'gravity/core :version "stage0"}
-    :visibility :public
-    :profile-set known-source-profiles
-    :target-set supported-targets
-    :type-ref :gravity.type/type
-    :effects #{}
-    :capabilities #{}
-    :safety :safe
-    :source-span {:source "gravity.core" :form-index 0}
-    :artifact (:module module)}))
+  (c5-call c5/c5-type-binding sym module))
 
 (defn c5-import-binding
   [module dependency imported-name artifact-id]
-  (c5-binding-identity
-   {:name imported-name
-    :kind (if (= :import (:kind dependency)) :foreign-var :var)
-    :namespace (:module dependency)
-    :package {:name (symbol (str (:module dependency))) :version "stage0"}
-    :visibility (:visibility dependency)
-    :profile-set #{(or (:profile dependency) (:profile module))}
-    :target-set #{(:target module)}
-    :type-ref (if (= :import (:kind dependency))
-                :gravity.interop/foreign-value
-                :gravity.type/imported-var)
-    :effects (:effects dependency)
-    :capabilities (:capabilities dependency)
-    :safety (if (= :import (:kind dependency)) :boundary-checked :safe)
-    :source-span (source-span (:source-path module) 0)
-    :artifact artifact-id}))
+  (c5-call c5/c5-import-binding module dependency imported-name artifact-id))
 
 (defn c5-alias-table
   [module]
-  (mapv (fn [dependency]
-          {:alias (:alias dependency)
-           :namespace (:module dependency)
-           :kind (:kind dependency)
-           :package {:name (symbol (str (:module dependency)))
-                     :version "stage0"}
-           :profile (:profile dependency)
-           :target (:target module)
-           :effects (:effects dependency)
-           :capabilities (:capabilities dependency)
-           :visibility (:visibility dependency)
-           :boundary (or (:boundary dependency)
-                         (when (= :core (:profile dependency)) :pure-core))})
-        (filter :alias (concat (:requires module) (:imports module)))))
+  (c5-call c5/c5-alias-table module))
 
 (defn c5-import-export-table
   [module]
-  {:artifact :gravity/c5-import-export-table
-   :requires (mapv #(select-keys % [:module :alias :refer :profile :boundary
-                                    :effects :capabilities :visibility])
-                   (:requires module))
-   :foreign-imports (mapv #(select-keys % [:module :alias :refer :profile
-                                           :boundary :effects :capabilities
-                                           :visibility])
-                          (:imports module))
-   :exports (:exports module)
-   :status :complete})
+  (c5-call c5/c5-import-export-table module))
 
 (defn c5-definition-bindings
   [module module-artifact c4-artifact]
-  (mapv #(c5-definition-binding module % (:artifact-id c4-artifact))
-        (:definitions module-artifact)))
+  (c5-call c5/c5-definition-bindings module module-artifact c4-artifact))
 
 (defn c5-macro-bindings
   [module c4-artifact]
-  (mapv (fn [entry]
-          (c5-binding-identity
-           {:name (:macro entry)
-            :kind :macro
-            :namespace (:namespace entry)
-            :package (c5-package-record module)
-            :visibility :private
-            :profile-set #{(:profile module)}
-            :target-set #{(:target module)}
-            :type-ref :gravity.syntax/macro
-            :effects #{}
-            :capabilities (:capabilities entry)
-            :safety :safe
-            :source-span (source-span (:source-path module) 0)
-            :artifact (:artifact-id c4-artifact)}))
-        (get-in c4-artifact [:macro-environment :macro-vars])))
+  (c5-call c5/c5-macro-bindings module c4-artifact))
 
 (defn c5-param-symbols
   [params]
-  (loop [items (seq params)
-         symbols []]
-    (cond
-      (nil? items) symbols
-      (= ':- (first items)) (recur (nnext items) symbols)
-      (and (symbol? (first items)) (= ':- (second items)))
-      (recur (nnext (next items)) (conj symbols (first items)))
-      (symbol? (first items)) (recur (next items) (conj symbols (first items)))
-      :else (recur (next items) symbols))))
+  (c5-call c5/c5-param-symbols params))
 
 (defn c5-local-bindings-from-params
   [module form syntax-id]
-  (when (and (seq? form) (= 'defn (first form)))
-    (let [fn-name (second form)
-          params (nth form 2 [])
-          param-symbols (c5-param-symbols params)]
-      (mapv (fn [idx sym]
-              (c5-binding-identity
-               {:name sym
-                :kind :local
-                :namespace (:module module)
-                :package (c5-package-record module)
-                :visibility :lexical
-                :profile-set #{(:profile module)}
-                :target-set #{(:target module)}
-                :type-ref :gravity.type/local
-                :effects #{}
-                :capabilities #{}
-                :safety (:safety module)
-                :source-span {:source (:source-path module)
-                              :function fn-name
-                              :param-index idx}
-                :artifact syntax-id}))
-            (range)
-            param-symbols))))
+  (c5-call c5/c5-local-bindings-from-params module form syntax-id))
 
 (defn c5-let-binding-symbols
   [form]
-  (letfn [(walk [value]
-            (cond
-              (and (seq? value) (= 'let (first value)) (vector? (second value)))
-              (let [bindings (second value)
-                    names (->> (partition 2 bindings)
-                               (map first)
-                               (filter symbol?))]
-                (concat names (mapcat walk (drop 2 value))))
-              (seq? value) (mapcat walk value)
-              (coll? value) (mapcat walk value)
-              :else []))]
-    (vec (walk form))))
+  (c5-call c5/c5-let-binding-symbols form))
 
 (defn c5-local-scope-graph
   [module expanded-stream]
-  (let [scopes
-        (vec
-         (mapcat
-          (fn [syntax]
-            (let [form (:form syntax)
-                  syntax-id (:syntax-id syntax)
-                  params (or (c5-local-bindings-from-params module form syntax-id)
-                             [])
-                  lets (mapv (fn [idx sym]
-                               (c5-binding-identity
-                                {:name sym
-                                 :kind :local
-                                 :namespace (:module module)
-                                 :package (c5-package-record module)
-                                 :visibility :lexical
-                                 :profile-set #{(:profile module)}
-                                 :target-set #{(:target module)}
-                                 :type-ref :gravity.type/local
-                                 :effects #{}
-                                 :capabilities #{}
-                                 :safety (:safety module)
-                                 :source-span (:span syntax)
-                                 :artifact syntax-id}))
-                             (range)
-                             (c5-let-binding-symbols form))]
-              (when (seq (concat params lets))
-                [{:scope-id (str "scope/" syntax-id)
-                  :owner-syntax-id syntax-id
-                  :namespace (:module module)
-                  :bindings (vec (concat params lets))
-                  :parent :namespace-root}])))
-          expanded-stream))]
-    {:artifact :gravity/c5-lexical-scope-graph
-     :root {:scope-id :namespace-root :namespace (:module module)}
-     :scopes scopes
-     :status :complete}))
+  (c5-call c5/c5-local-scope-graph module expanded-stream))
 
 (defn c5-bindings-by-name
   [bindings]
-  (reduce (fn [acc binding]
-            (update acc (:name binding) (fnil conj []) binding))
-          {}
-          bindings))
+  (c5-call c5/c5-bindings-by-name bindings))
 
 (defn c5-resolve-qualified-symbol
   [module alias-map dependency-map sym]
-  (let [ns-part (namespace sym)
-        local-name (symbol (name sym))
-        alias-sym (symbol ns-part)]
-    (cond
-      (contains? alias-map alias-sym)
-      {:resolution-kind :alias-qualified
-       :binding (c5-import-binding module
-                                   (get dependency-map alias-sym)
-                                   local-name
-                                   (:module module))}
-
-      (= ns-part (str (:module module)))
-      {:resolution-kind :fully-qualified
-       :binding (c5-binding-identity
-                 {:name local-name
-                  :kind :var
-                  :namespace (:module module)
-                  :package (c5-package-record module)
-                  :visibility :public
-                  :profile-set #{(:profile module)}
-                  :target-set #{(:target module)}
-                  :type-ref :gravity.type/value
-                  :effects #{}
-                  :capabilities #{}
-                  :safety (:safety module)
-                  :source-span (source-span (:source-path module) 0)
-                  :artifact (:module module)})}
-
-      (str/includes? ns-part ".")
-      {:resolution-kind :fully-qualified
-       :binding (c5-binding-identity
-                 {:name local-name
-                  :kind :var
-                  :namespace (symbol ns-part)
-                  :package {:name (symbol ns-part) :version "stage0"}
-                  :visibility :public
-                  :profile-set known-source-profiles
-                  :target-set #{(:target module)}
-                  :type-ref :gravity.type/qualified-var
-                  :effects #{}
-                  :capabilities #{}
-                  :safety :safe
-                  :source-span (source-span (:source-path module) 0)
-                  :artifact (symbol ns-part)})}
-
-      :else nil)))
+  (c5-call c5/c5-resolve-qualified-symbol
+           module alias-map dependency-map sym))
 
 (defn c5-resolution-record
   [module bindings-by-name alias-map dependency-map local-bindings syntax idx sym]
-  (let [local-by-name (c5-bindings-by-name local-bindings)
-        qualified? (namespace sym)
-        resolved (if qualified?
-                   (c5-resolve-qualified-symbol module alias-map dependency-map sym)
-                   (cond
-                     (contains? local-by-name sym)
-                     {:resolution-kind :local
-                      :binding (first (get local-by-name sym))}
-                     (contains? bindings-by-name sym)
-                     {:resolution-kind :namespace
-                      :binding (first (get bindings-by-name sym))}
-                     (contains? c5-special-form-symbols sym)
-                     {:resolution-kind :special-form
-                      :binding (c5-special-form-binding sym module)}
-                     (contains? c5-core-auto-imports sym)
-                     {:resolution-kind :core-auto-import
-                      :binding (c5-core-binding sym module)}
-                     (contains? c5-type-auto-imports sym)
-                     {:resolution-kind :type-position
-                      :binding (c5-type-binding sym module)}
-                     :else nil))]
-    (when resolved
-      {:syntax-id (:syntax-id syntax)
-       :symbol-index idx
-       :symbol sym
-       :position (cond
-                   (contains? c5-special-form-symbols sym) :special-form
-                   (contains? c5-type-auto-imports sym) :type
-                   qualified? :expression
-                   :else :expression)
-       :resolution-order (:resolution-kind resolved)
-       :binding-id (get-in resolved [:binding :binding-id])
-       :binding (select-keys (:binding resolved)
-                             [:binding-id :name :kind :namespace :visibility
-                              :profile-set :target-set :effects
-                              :capabilities :safety])})))
+  (c5-call c5/c5-resolution-record module bindings-by-name alias-map
+           dependency-map local-bindings syntax idx sym))
 
 (defn c5-binding-table
-  [module definition-bindings macro-bindings lexical-scope-graph expanded-stream]
-  (let [namespace-bindings (vec (concat definition-bindings macro-bindings))
-        bindings-by-name (c5-bindings-by-name namespace-bindings)
-        dependencies (concat (:requires module) (:imports module))
-        alias-map (into {} (map (juxt :alias identity) (filter :alias dependencies)))
-        dependency-map alias-map
-        locals (vec (mapcat :bindings (:scopes lexical-scope-graph)))]
-    {:artifact :gravity/c5-binding-table
-     :bindings
-     (vec
-      (keep-indexed
-       (fn [idx pair]
-         (let [[syntax sym] pair]
-           (c5-resolution-record module bindings-by-name alias-map
-                                 dependency-map locals syntax idx sym)))
-       (mapcat (fn [syntax]
-                 (map (fn [sym] [syntax sym])
-                      (collect-code-symbols (:form syntax))))
-               (remove #(ns-form? (:form %)) expanded-stream))))
-     :namespace-bindings namespace-bindings
-     :local-bindings locals
-     :status :complete}))
+  [module definition-bindings macro-bindings lexical-scope-graph
+   expanded-stream]
+  (c5-call c5/c5-binding-table module definition-bindings macro-bindings
+           lexical-scope-graph expanded-stream))
 
 (defn c5-namespace-analysis-artifact
-  [module binding-table alias-table import-export-table dependency-graph cross-profile-report]
-  {:artifact :gravity/namespace-analysis
-   :namespace (:module module)
-   :package (get-in module [:metadata :package])
-   :profile (:profile module)
-   :target (:target module)
-   :aliases (into {} (map (juxt :alias :namespace) alias-table))
-   :exports (:exports module)
-   :locals (c4-artifact-id (:local-bindings binding-table))
-   :bindings (into {} (map (fn [record]
-                             [[(:syntax-id record) (:symbol-index record)]
-                              (:binding-id record)])
-                           (:bindings binding-table)))
-   :requires (get import-export-table :requires)
-   :foreign-imports (get import-export-table :foreign-imports)
-   :dependency-graph dependency-graph
-   :cross-profile-edge-report cross-profile-report
-   :rejected-edges []
-   :diagnostics []
-   :status :complete})
+  [module binding-table alias-table import-export-table dependency-graph
+   cross-profile-report]
+  (c5-call c5/c5-namespace-analysis-artifact module binding-table alias-table
+           import-export-table dependency-graph cross-profile-report))
 
 (defn c5-dependency-graph
   [module]
-  (let [dependencies (mapv (fn [dependency]
-                             {:namespace (:module dependency)
-                              :package {:name (symbol (str (:module dependency)))
-                                        :version "stage0"}
-                              :edge (or (:edge dependency) :direct)
-                              :kind (:kind dependency)
-                              :alias (:alias dependency)
-                              :profile-boundary
-	                              (cond
-	                                (:boundary dependency) (:boundary dependency)
-	                                (= :core (:profile dependency)) :pure-core
-	                                (= (:profile dependency) (:profile module)) :compatible
-	                                :else :missing)
-                              :effects (:effects dependency)
-                              :capabilities (:capabilities dependency)
-                              :target (:target module)})
-                           (concat (:requires module) (:imports module)))]
-    {:artifact :gravity/c5-module-dependency-graph
-     :module (:module module)
-     :dependencies dependencies
-     :edges (mapv (fn [dependency]
-                    {:from (:module module)
-                     :to (:namespace dependency)
-                     :kind (:kind dependency)
-                     :profile-boundary (:profile-boundary dependency)})
-                  dependencies)
-     :acyclic true
-     :status :complete}))
+  (c5-call c5/c5-dependency-graph module))
 
 (defn c5-cross-profile-edge-report
   [module dependency-graph]
-  {:artifact :gravity/c5-cross-profile-edge-report
-   :edges
-   (mapv (fn [dependency]
-           {:from (:module module)
-            :to (:namespace dependency)
-            :from-profile (:profile module)
-            :to-profile (or (some (fn [dep]
-                                    (when (= (:module dep) (:namespace dependency))
-                                      (:profile dep)))
-                                  (concat (:requires module) (:imports module)))
-                            (:profile module))
-            :boundary (:profile-boundary dependency)
-            :accepted? (not= :missing (:profile-boundary dependency))})
-         (:dependencies dependency-graph))
-   :status :complete})
+  (c5-call c5/c5-cross-profile-edge-report module dependency-graph))
 
 (defn c5-incremental-invalidation-keys
   [module c4-artifact binding-table dependency-graph]
-  {:artifact :gravity/c5-incremental-invalidation-keys
-   :keys [{:input :namespace-source
-           :hash (str "sha256:" (sha256-hex (pr-str (:source-path module))))
-           :invalidates [:namespace-analysis :type-check :lsp-index]}
-          {:input :aliases
-           :hash (str "sha256:" (sha256-hex (pr-str (map :alias (concat (:requires module) (:imports module))))))
-           :invalidates [:binding-table :dependency-graph]}
-          {:input :exports
-           :hash (str "sha256:" (sha256-hex (pr-str (:exports module))))
-           :invalidates [:public-api :package-graph]}
-          {:input :package-version
-           :hash (str "sha256:" (sha256-hex (pr-str (c5-package-record module))))
-           :invalidates [:dependency-graph :trust-policy]}
-          {:input :profile-target
-           :hash (str "sha256:" (sha256-hex (pr-str [(:profile module)
-                                                      (:target module)])))
-           :invalidates [:profile-validation :target-lowering]}
-          {:input :macro-expansion
-           :hash (:artifact-id c4-artifact)
-           :invalidates [:binding-table :type-check :effect-check]}
-          {:input :binding-identities
-           :hash (str "sha256:" (sha256-hex (pr-str (:namespace-bindings binding-table))))
-           :invalidates [:incremental-cache :lsp-index]}
-          {:input :dependency-graph
-           :hash (str "sha256:" (sha256-hex (pr-str (:edges dependency-graph))))
-           :invalidates [:package-graph :capability-check]}]
-   :status :stable})
+  (c5-call c5/c5-incremental-invalidation-keys module c4-artifact
+           binding-table dependency-graph))
 
 (defn c5-resolution-diagnostics
   [module]
-  {:artifact :gravity/c5-resolution-diagnostics
-   :required-diagnostic-ids c5-resolution-diagnostic-ids
-   :covered c5-resolution-rejected-designs
-   :accepted-run []
-   :status :complete})
+  (c5-call c5/c5-resolution-diagnostics module))
 
 (defn c5-resolution-verification-report
-  [binding-table lexical-scope-graph dependency-graph cross-profile-report invalidation]
-  {:artifact :gravity/c5-resolution-verification-report
-   :binding-identities-stable?
-   (every? #(re-find #"^sha256:" (:binding-id %))
-           (concat (:namespace-bindings binding-table)
-                   (:local-bindings binding-table)))
-   :all-resolved-bindings-have-metadata?
-   (every? #(and (:binding-id %)
-                 (:profile-set %)
-                 (:target-set %)
-                 (contains? % :effects)
-                 (contains? % :capabilities)
-                 (:visibility %))
-           (concat (:namespace-bindings binding-table)
-                   (:local-bindings binding-table)))
-   :lexical-scopes-present? (seq (:scopes lexical-scope-graph))
-   :dependency-graph-present? (seq (:edges dependency-graph))
-   :cross-profile-boundaries-recorded?
-   (every? :accepted? (:edges cross-profile-report))
-   :invalidation-keys-stable?
-   (every? #(re-find #"^sha256:" (:hash %)) (:keys invalidation))
-   :status :passed})
+  [binding-table lexical-scope-graph dependency-graph cross-profile-report
+   invalidation]
+  (c5-call c5/c5-resolution-verification-report binding-table
+           lexical-scope-graph dependency-graph cross-profile-report
+           invalidation))
 
 (defn c5-resolution-capability-proof
   [artifact]
-  (let [binding-table (:binding-table artifact)
-        records (:bindings binding-table)
-        namespace-bindings (:namespace-bindings binding-table)
-        diagnostics (set (map :diagnostic (:rejected-design-coverage artifact)))
-        verifier (:resolution-verification-report artifact)]
-    {:local-resolution?
-     (boolean (some #(= :local (:resolution-order %)) records))
-     :namespace-resolution?
-     (boolean (some #(= :namespace (:resolution-order %)) records))
-     :alias-qualified-resolution?
-     (boolean (some #(= :alias-qualified (:resolution-order %)) records))
-     :fully-qualified-resolution?
-     (boolean (some #(= :fully-qualified (:resolution-order %)) records))
-     :macro-and-type-position-resolution?
-     (boolean (and (some #(= :macro (:kind %)) namespace-bindings)
-                   (some #(= :type-position (:resolution-order %)) records)))
-     :binding-identity-stable?
-     (true? (:binding-identities-stable? verifier))
-     :visibility-diagnostics-covered?
-     (contains? diagnostics "C5-PRIVATE")
-     :dependency-graph-emitted?
-     (= :complete (get-in artifact [:dependency-graph :status]))
-     :cross-profile-boundaries-recorded?
-     (true? (:cross-profile-boundaries-recorded? verifier))
-     :target-and-capability-compatibility?
-     (every? #(set/subset? (set (:capabilities %))
-                           (set (get-in artifact [:module :capabilities])))
-             (get-in artifact [:dependency-graph :dependencies]))
-     :incremental-invalidation-recorded?
-     (= :stable (get-in artifact [:incremental-invalidation-keys :status]))
-     :diagnostics-covered?
-     (= (set c5-resolution-diagnostic-ids) diagnostics)
-     :status :complete}))
+  (c5-call c5/c5-resolution-capability-proof artifact))
 
 (defn c5-resolution-validate!
   [source-path artifact]
-  (let [proof (c5-resolution-capability-proof artifact)]
-    (doseq [[field id] [[:local-resolution? "C5-UNRESOLVED"]
-                        [:namespace-resolution? "C5-UNRESOLVED"]
-                        [:alias-qualified-resolution? "C5-ALIAS"]
-                        [:fully-qualified-resolution? "C5-UNRESOLVED"]
-                        [:macro-and-type-position-resolution? "C5-UNRESOLVED"]
-                        [:binding-identity-stable? "C5-UNRESOLVED"]
-                        [:visibility-diagnostics-covered? "C5-PRIVATE"]
-                        [:dependency-graph-emitted? "C5-CYCLE"]
-                        [:cross-profile-boundaries-recorded? "C5-CROSS-PROFILE"]
-                        [:target-and-capability-compatibility? "C5-CAPABILITY"]
-                        [:incremental-invalidation-recorded? "C5-UNRESOLVED"]
-                        [:diagnostics-covered? "C5-UNRESOLVED"]]]
-      (when-not (get proof field)
-        (c5-resolution-fail! id source-path {:stage :name-resolution}
-                             {:missing-fields [field]}))))
-  :complete)
+  (c5-call c5/c5-resolution-validate! source-path artifact))
 
 (defn compiler-c5-resolution-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        overrides (c5-resolution-source-overrides module)
-        _ (c5-resolution-validate-overrides! source-path module overrides)
-        c4-artifact (compiler-c4-macro-source-artifact source-path source-text)
-        module-artifact (module-source-artifact source-path source-text)
-        expanded-stream (:expanded-syntax-stream c4-artifact)
-        alias-table (c5-alias-table module)
-        import-export-table (c5-import-export-table module)
-        definition-bindings (c5-definition-bindings module module-artifact
-                                                    c4-artifact)
-        macro-bindings (c5-macro-bindings module c4-artifact)
-        lexical-scope-graph (c5-local-scope-graph module expanded-stream)
-        binding-table (c5-binding-table module definition-bindings
-                                        macro-bindings lexical-scope-graph
-                                        expanded-stream)
-        dependency-graph (c5-dependency-graph module)
-        cross-profile-report (c5-cross-profile-edge-report module
-                                                           dependency-graph)
-        invalidation (c5-incremental-invalidation-keys module c4-artifact
-                                                       binding-table
-                                                       dependency-graph)
-        namespace-analysis (c5-namespace-analysis-artifact module binding-table
-                                                           alias-table
-                                                           import-export-table
-                                                           dependency-graph
-                                                           cross-profile-report)
-        verifier (c5-resolution-verification-report binding-table
-                                                    lexical-scope-graph
-                                                    dependency-graph
-                                                    cross-profile-report
-                                                    invalidation)
-        artifact-base
-        {:kind :gravity/stage0-c5-name-resolution-artifact
-         :task "P06-D084"
-         :document-set ["C5"]
-         :governing-document c5-resolution-governing-document
-         :pass {:name :c5-name-resolution-and-namespace-analyzer
-                :input :c4-expanded-syntax-artifact
-                :output :namespace-analysis
-                :requires [:expanded-syntax-stream :macro-expansion-context
-                           :alias-table :package-dependency-graph
-                           :active-profile :active-target :language-facets]
-                :preserves [:source-spans :syntax-ids :hygiene
-                            :generated-origin :profile :target
-                            :effects :capabilities]
-                :emits [:namespace-analysis :binding-table :alias-table
-                        :import-export-table :lexical-scope-graph
-                        :dependency-graph :cross-profile-edge-report
-                        :resolution-diagnostics
-                        :incremental-invalidation-keys]
-                :rejects c5-resolution-diagnostic-ids}
-         :source-overrides overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c4-macro-expansion-artifact
-         (select-keys c4-artifact [:kind :artifact-id :expanded-syntax-stream
-                                   :macro-expansion-trace
-                                   :macro-environment
-                                   :generated-origin-source-map])
-         :namespace-analysis namespace-analysis
-         :binding-table binding-table
-         :alias-table alias-table
-         :import-export-table import-export-table
-         :lexical-scope-graph lexical-scope-graph
-         :dependency-graph dependency-graph
-         :cross-profile-edge-report cross-profile-report
-         :resolution-diagnostics (c5-resolution-diagnostics module)
-         :incremental-invalidation-keys invalidation
-         :resolution-verification-report verifier
-         :rejected-design-coverage c5-resolution-rejected-designs
-         :diagnostics []}
-        _ (c5-resolution-validate! source-path artifact-base)
-        capability-proof (c5-resolution-capability-proof artifact-base)
-        conformance {:documents ["C5"]
-                     :task "P06-D084"
-                     :required-diagnostic-ids c5-resolution-diagnostic-ids
-                     :namespace-analysis-status :complete
-                     :binding-table-status :complete
-                     :alias-table-status :complete
-                     :import-export-status :complete
-                     :lexical-scope-status :complete
-                     :dependency-graph-status :complete
-                     :cross-profile-status :complete
-                     :diagnostic-status :complete
-                     :invalidation-status :stable
-                     :status :complete}
-        artifact (assoc artifact-base
-                        :capability-based-proof capability-proof
-                        :c5-resolution-results conformance)]
-    (assoc artifact :artifact-id (c4-artifact-id artifact))))
+  (c5-call c5/compiler-c5-resolution-source-artifact source-path source-text))
 
 (defn compiler-c5-resolution-file-artifact
   [path]
-  (compiler-c5-resolution-source-artifact path (slurp path)))
+  (c5-call c5/compiler-c5-resolution-file-artifact path))
 
-(def core-forms
-  '#{quote if do let fn loop recur def var set! try throw match})
-
-(def lowering-gap-forms
-  '#{defn when -> cond case with-open with-region defmacro defschema defworkflow
-     defagent ui query ai-form})
-
+(defn c5-resolution-ops
+  []
+  {:fail! fail!
+   :source-span source-span
+   :sha256-hex sha256-hex
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :module-source-artifact module-source-artifact
+   :compiler-c4-macro-source-artifact compiler-c4-macro-source-artifact
+   :collect-code-symbols collect-code-symbols
+   :ns-form? ns-form?
+   :known-source-profiles known-source-profiles
+   :supported-targets supported-targets
+   :c5-resolution-diagnostic-ids c5-resolution-diagnostic-ids
+   :c5-resolution-governing-document c5-resolution-governing-document
+   :c5-resolution-rejected-designs c5-resolution-rejected-designs
+   :c5-resolution-override-diagnostics c5-resolution-override-diagnostics
+   :c5-special-form-symbols c5-special-form-symbols
+   :c5-core-auto-imports c5-core-auto-imports
+   :c5-type-auto-imports c5-type-auto-imports
+   :c5-resolution-source-overrides c5-resolution-source-overrides
+   :c5-resolution-message c5-resolution-message
+   :c5-resolution-fail! c5-resolution-fail!
+   :c5-resolution-validate-overrides! c5-resolution-validate-overrides!
+   :c5-package-record c5-package-record
+   :c5-binding-id c5-binding-id
+   :c5-binding-identity c5-binding-identity
+   :c5-definition-binding c5-definition-binding
+   :c5-special-form-binding c5-special-form-binding
+   :c5-core-binding c5-core-binding
+   :c5-type-binding c5-type-binding
+   :c5-import-binding c5-import-binding
+   :c5-alias-table c5-alias-table
+   :c5-import-export-table c5-import-export-table
+   :c5-definition-bindings c5-definition-bindings
+   :c5-macro-bindings c5-macro-bindings
+   :c5-param-symbols c5-param-symbols
+   :c5-local-bindings-from-params c5-local-bindings-from-params
+   :c5-let-binding-symbols c5-let-binding-symbols
+   :c5-local-scope-graph c5-local-scope-graph
+   :c5-bindings-by-name c5-bindings-by-name
+   :c5-resolve-qualified-symbol c5-resolve-qualified-symbol
+   :c5-resolution-record c5-resolution-record
+   :c5-binding-table c5-binding-table
+   :c5-namespace-analysis-artifact c5-namespace-analysis-artifact
+   :c5-dependency-graph c5-dependency-graph
+   :c5-cross-profile-edge-report c5-cross-profile-edge-report
+   :c5-incremental-invalidation-keys c5-incremental-invalidation-keys
+   :c5-resolution-diagnostics c5-resolution-diagnostics
+   :c5-resolution-verification-report c5-resolution-verification-report
+   :c5-resolution-capability-proof c5-resolution-capability-proof
+   :c5-resolution-validate! c5-resolution-validate!
+   :compiler-c5-resolution-source-artifact
+   compiler-c5-resolution-source-artifact})
+(def core-forms core-ast-lowering/core-forms)
+(def lowering-gap-forms core-ast-lowering/lowering-gap-forms)
 (def unknown-reserved-core-forms
-  '#{core-unknown})
+  core-ast-lowering/unknown-reserved-core-forms)
+
+(declare form-effect
+         combine-effects
+         core-node
+         lower-sequential-body
+         extract-pattern-guard
+         lower-match-clauses
+         next-node-id
+         assert-recur-target!
+         assert-set-target!
+         assert-throw-legal!
+         assert-core-operator!
+         lower-core-expr
+         flatten-core
+         core-source-artifact)
+
+(defn- core-ast-lowering-ops
+  []
+  {:fail! fail!
+   :macro-source-artifact macro-source-artifact
+   :uses-println? uses-println?
+   :core-forms core-forms
+   :lowering-gap-forms lowering-gap-forms
+   :unknown-reserved-core-forms unknown-reserved-core-forms
+   :form-effect form-effect
+   :combine-effects combine-effects
+   :core-node core-node
+   :lower-sequential-body lower-sequential-body
+   :extract-pattern-guard extract-pattern-guard
+   :lower-match-clauses lower-match-clauses
+   :next-node-id next-node-id
+   :assert-recur-target! assert-recur-target!
+   :assert-set-target! assert-set-target!
+   :assert-throw-legal! assert-throw-legal!
+   :assert-core-operator! assert-core-operator!
+   :lower-core-expr lower-core-expr
+   :flatten-core flatten-core
+   :core-source-artifact core-source-artifact})
+
+(def ^:private ^:dynamic *core-ast-lowering-leaf-call?* false)
+
+(defn- core-ast-lowering-call
+  [operation-key operation & args]
+  (if *core-ast-lowering-leaf-call?*
+    (core-ast-lowering/call-entrypoint-body operation-key operation args)
+    (binding [*core-ast-lowering-leaf-call?* true]
+      (core-ast-lowering/with-operations
+       (core-ast-lowering-ops)
+       #(core-ast-lowering/call-entrypoint-body
+         operation-key operation args)))))
 
 (defn form-effect
   [form]
-  (cond
-    (uses-println? form) #{:io/write}
-    (and (seq? form) (= 'throw (first form))) #{:error/throw}
-    (and (seq? form) (= 'set! (first form))) #{:state/write}
-    :else #{}))
+  (core-ast-lowering-call
+   :form-effect core-ast-lowering/form-effect form))
 
 (defn combine-effects
   [& effect-sets]
-  (set (mapcat identity effect-sets)))
+  (apply core-ast-lowering-call
+         :combine-effects core-ast-lowering/combine-effects effect-sets))
 
 (defn core-node
   [node-id kind syntax form data]
-  (merge {:node-id (str "stage0-core-" node-id)
-          :kind kind
-          :form form
-          :source-span (:span syntax)
-          :generated-origin (:generated-origin syntax)
-          :profile (:profile syntax)
-          :namespace (:namespace syntax)
-          :effects (form-effect form)
-          :capabilities #{}}
-         data))
-
-(declare lower-core-expr)
+  (core-ast-lowering-call
+   :core-node core-ast-lowering/core-node
+   node-id kind syntax form data))
 
 (defn lower-sequential-body
   [counter module syntax forms context]
-  (mapv #(lower-core-expr counter module syntax % context) forms))
+  (core-ast-lowering-call
+   :lower-sequential-body core-ast-lowering/lower-sequential-body
+   counter module syntax forms context))
 
 (defn extract-pattern-guard
   [pattern]
-  (if (and (map? pattern) (contains? pattern :when))
-    {:pattern (dissoc pattern :when)
-     :guard (get pattern :when)}
-    {:pattern pattern
-     :guard nil}))
+  (core-ast-lowering-call
+   :extract-pattern-guard core-ast-lowering/extract-pattern-guard pattern))
 
 (defn lower-match-clauses
   [counter module syntax clauses context]
-  (when (odd? (count clauses))
-    (fail! "L7-PATTERN-TYPE"
-           "match requires pattern/expression clause pairs"
-           {:source-span (:span syntax)
-            :remediation "Use (match value pattern expr ...)."}))
-  (mapv (fn [branch-index [raw-pattern raw-expr]]
-          (let [{:keys [pattern guard]} (extract-pattern-guard raw-pattern)]
-            {:branch-index branch-index
-             :raw-pattern raw-pattern
-             :pattern pattern
-             :guard (when guard
-                      (lower-core-expr counter module syntax guard context))
-             :body (lower-core-expr counter module syntax raw-expr context)}))
-        (range)
-        (partition 2 clauses)))
+  (core-ast-lowering-call
+   :lower-match-clauses core-ast-lowering/lower-match-clauses
+   counter module syntax clauses context))
 
 (defn next-node-id
   [counter]
-  (let [id @counter]
-    (swap! counter inc)
-    id))
+  (core-ast-lowering-call
+   :next-node-id core-ast-lowering/next-node-id counter))
 
 (defn assert-recur-target!
   [module syntax form context]
-  (when (= 'recur (first form))
-    (let [target-arity (:recur-arity context)
-          actual-arity (count (rest form))]
-      (when (or (nil? target-arity)
-                (not= target-arity actual-arity))
-        (fail! "L2-RECUR-TARGET"
-               "recur has no compatible loop or function target"
-               {:source-span (:span syntax)
-                :form form
-                :target-arity target-arity
-                :actual-arity actual-arity
-                :remediation "Use recur only inside a compatible loop or function recur point with matching arity."})))))
+  (core-ast-lowering-call
+   :assert-recur-target! core-ast-lowering/assert-recur-target!
+   module syntax form context))
 
 (defn assert-set-target!
   [module syntax form]
-  (when (= 'set! (first form))
-    (let [[_ target] form]
-      (when-not (and (symbol? target)
-                     (str/starts-with? (name target) "mutable-"))
-        (fail! "L2-SET-ILLEGAL"
-               "set! targets an immutable or profile-forbidden location"
-               {:source-span (:span syntax)
-                :target target
-                :profile (:profile module)
-                :remediation "Use an explicit mutable location accepted by the active profile."})))))
+  (core-ast-lowering-call
+   :assert-set-target! core-ast-lowering/assert-set-target!
+   module syntax form))
 
 (defn assert-throw-legal!
   [module syntax form]
-  (when (and (= 'throw (first form))
-             (not (contains? (:effects module) :error/throw)))
-    (fail! "L2-THROW-ILLEGAL"
-           "throw requires an error effect in the namespace"
-           {:source-span (:span syntax)
-            :declared-effects (:effects module)
-            :required-effect :error/throw
-            :remediation "Declare :error/throw or lower to an explicit result value."})))
+  (core-ast-lowering-call
+   :assert-throw-legal! core-ast-lowering/assert-throw-legal!
+   module syntax form))
 
 (defn assert-core-operator!
   [module syntax form]
-  (when (seq? form)
-    (let [op (first form)]
-      (cond
-        (contains? unknown-reserved-core-forms op)
-        (fail! "L2-UNKNOWN-CORE-FORM"
-               "analyzer found an unrecognized reserved core form"
-               {:source-span (:span syntax)
-                :operator op
-                :remediation "Use an L2 core form, a call, or a documented domain IR boundary."})
-
-        (contains? lowering-gap-forms op)
-        (fail! "L2-LOWERING-GAP"
-               "surface form failed to lower to core or a declared domain IR boundary"
-               {:source-span (:span syntax)
-                :operator op
-                :remediation "Lower the surface form to L2 core before core analysis."})
-
-        (= 'reorder-effects op)
-        (fail! "L2-EVAL-ORDER"
-               "transformation changed required evaluation order for effectful expressions"
-               {:source-span (:span syntax)
-                :operator op
-                :remediation "Preserve left-to-right order for effectful expressions or prove purity before reordering."})
-
-        (= 'host-exception op)
-        (fail! "L2-HOST-SEMANTICS"
-               "code depends on host behavior not represented in Gravity semantics"
-               {:source-span (:span syntax)
-                :operator op
-                :remediation "Normalize host behavior into Gravity error, type, effect, and capability contracts."})
-
-        :else nil))))
+  (core-ast-lowering-call
+   :assert-core-operator! core-ast-lowering/assert-core-operator!
+   module syntax form))
 
 (defn lower-core-expr
   [counter module syntax form context]
-  (let [id (next-node-id counter)]
-    (cond
-      (seq? form)
-      (let [op (first form)]
-        (assert-core-operator! module syntax form)
-        (assert-recur-target! module syntax form context)
-        (assert-set-target! module syntax form)
-        (assert-throw-legal! module syntax form)
-        (case op
-              quote
-              (core-node id :quote syntax form
-                         {:value (second form)
-                          :evaluation-order []})
-
-              if
-              (let [[_ test then else] form
-                    children [(lower-core-expr counter module syntax test context)
-                              (lower-core-expr counter module syntax then context)
-                              (lower-core-expr counter module syntax else context)]]
-                (core-node id :if syntax form
-                           {:children children
-                            :evaluation-order [:condition :then-or-else]
-                            :effects (apply combine-effects (form-effect form) (map :effects children))}))
-
-              do
-              (let [children (lower-sequential-body counter module syntax (rest form) context)]
-                (core-node id :do syntax form
-                           {:children children
-                            :evaluation-order (mapv (fn [idx] [:expr idx]) (range (count children)))
-                            :effects (apply combine-effects (form-effect form) (map :effects children))}))
-
-              let
-              (let [[_ bindings & body] form
-                    binding-pairs (partition 2 bindings)
-                    binding-nodes (mapv (fn [[name expr]]
-                                          {:name name
-                                           :initializer (lower-core-expr counter module syntax expr context)})
-                                        binding-pairs)
-                    body-nodes (lower-sequential-body counter module syntax body context)]
-                (core-node id :let syntax form
-                           {:bindings binding-nodes
-                            :children body-nodes
-                            :evaluation-order (concat (mapv (fn [[name _]] [:binding name]) binding-pairs)
-                                                       (mapv (fn [idx] [:body idx]) (range (count body-nodes))))
-                            :effects (apply combine-effects
-                                            (form-effect form)
-                                            (concat (map (comp :effects :initializer) binding-nodes)
-                                                    (map :effects body-nodes)))}))
-
-              fn
-              (let [[_ params & body] form
-                    body-nodes (lower-sequential-body counter module syntax body (assoc context :recur-arity (count params)))
-                    latent-effects (apply combine-effects (map :effects body-nodes))]
-                (core-node id :fn syntax form
-                           {:params params
-                            :children body-nodes
-                            :latent-effects latent-effects
-                            :evaluation-order [:call-arguments-left-to-right]}))
-
-              loop
-              (let [[_ bindings & body] form
-                    recur-arity (/ (count bindings) 2)
-                    binding-pairs (partition 2 bindings)
-                    binding-nodes (mapv (fn [[name expr]]
-                                          {:name name
-                                           :initializer (lower-core-expr counter module syntax expr context)})
-                                        binding-pairs)
-                    body-nodes (lower-sequential-body counter module syntax body (assoc context :recur-arity recur-arity))]
-                (core-node id :loop syntax form
-                           {:bindings binding-nodes
-                            :recur-arity recur-arity
-                            :children body-nodes
-                            :evaluation-order (concat (mapv (fn [[name _]] [:loop-binding name]) binding-pairs)
-                                                       (mapv (fn [idx] [:body idx]) (range (count body-nodes))))}))
-
-              recur
-              (core-node id :recur syntax form
-                         {:arguments (lower-sequential-body counter module syntax (rest form) context)
-                          :target-arity (:recur-arity context)
-                          :evaluation-order [:arguments-left-to-right]})
-
-              def
-              (let [[_ name value] form
-                    value-node (lower-core-expr counter module syntax value context)]
-                (core-node id :def syntax form
-                           {:name name
-                            :value value-node
-                            :evaluation-order [:initializer]
-                            :effects (:effects value-node)}))
-
-              defconst
-              (let [[_ name value] form
-                    value-node (lower-core-expr counter module syntax value context)]
-                (core-node id :def syntax form
-                           {:name name
-                            :value value-node
-                            :compile-time-binding? true
-                            :evaluation-order [:compile-time-initializer]
-                            :effects (:effects value-node)}))
-
-              var
-              (core-node id :var syntax form
-                         {:name (second form)
-                          :evaluation-order []})
-
-              set!
-              (let [[_ target value] form
-                    value-node (lower-core-expr counter module syntax value context)]
-                (core-node id :set! syntax form
-                           {:target target
-                            :value value-node
-                            :evaluation-order [:value]
-                            :effects (combine-effects #{:state/write} (:effects value-node))}))
-
-              try
-              (let [[_ body & handlers] form
-                    body-node (lower-core-expr counter module syntax body context)]
-                (core-node id :try syntax form
-                           {:body body-node
-                            :handlers handlers
-                            :evaluation-order [:body :matching-handler]
-                            :effects (:effects body-node)}))
-
-              throw
-              (let [[_ value] form
-                    value-node (lower-core-expr counter module syntax value context)]
-                (core-node id :throw syntax form
-                           {:value value-node
-                            :evaluation-order [:value]
-                            :effects (combine-effects #{:error/throw} (:effects value-node))}))
-
-              match
-              (let [[_ value & clauses] form
-                    value-node (lower-core-expr counter module syntax value context)
-                    lowered-clauses (lower-match-clauses counter module syntax clauses context)]
-                (core-node id :match syntax form
-                           {:value value-node
-                            :clauses lowered-clauses
-                            :evaluation-order [:scrutinee :selected-clause]
-                            :effects (apply combine-effects
-                                            (:effects value-node)
-                                            (concat (map #(get-in % [:guard :effects] #{}) lowered-clauses)
-                                                    (map #(get-in % [:body :effects] #{}) lowered-clauses)))}))
-
-              (let [children (lower-sequential-body counter module syntax form context)]
-                (core-node id :call syntax form
-                           {:operator op
-                            :arguments (vec (rest children))
-                            :evaluation-order [:operator :arguments-left-to-right]
-                            :effects (apply combine-effects (form-effect form) (map :effects children))}))))
-
-      (symbol? form)
-      (core-node id :symbol syntax form
-                 {:name form
-                  :evaluation-order []})
-
-      :else
-      (core-node id :literal syntax form
-                 {:value form
-                  :evaluation-order []}))))
+  (core-ast-lowering-call
+   :lower-core-expr core-ast-lowering/lower-core-expr
+   counter module syntax form context))
 
 (defn flatten-core
   [node]
-  (let [core-child? #(and (map? %) (:node-id %))
-        children (filter core-child?
-                         (concat (:children node)
-                                 (keep :initializer (:bindings node))
-                                 (when-let [v (:value node)] [v])
-                                 (when-let [b (:body node)] [b])
-                                 (:arguments node)
-                                 (mapcat (fn [clause]
-                                           (cond-> [(:body clause)]
-                                             (:guard clause) (conj (:guard clause))))
-                                         (:clauses node))))]
-    (vec (cons node (mapcat flatten-core children)))))
+  (core-ast-lowering-call
+   :flatten-core core-ast-lowering/flatten-core node))
 
 (defn core-source-artifact
   [source-path source-text]
-  (let [macro-artifact (macro-source-artifact source-path source-text)
-        module (:module macro-artifact)
-        expanded-syntax (:expanded-syntax-object-stream macro-artifact)
-        body-syntax (subvec expanded-syntax 1)
-        counter (atom 0)
-        roots (mapv #(lower-core-expr counter module % (:form %) {}) body-syntax)
-        flat (vec (mapcat flatten-core roots))
-        source-map (mapv #(select-keys % [:node-id :kind :source-span :generated-origin]) flat)
-        form-kinds (mapv #(select-keys % [:node-id :kind :profile :namespace :effects :capabilities]) flat)
-        evaluation (mapv #(select-keys % [:node-id :kind :evaluation-order]) (filter :evaluation-order flat))
-        latent (mapv #(select-keys % [:node-id :params :latent-effects]) (filter #(= :fn (:kind %)) flat))
-        calls (mapv #(select-keys % [:node-id :operator :arguments :effects]) (filter #(= :call (:kind %)) flat))]
-    {:kind :gravity/stage0-core-artifact
-     :pass {:name :core-lowering
-            :input :expanded-syntax
-            :output :core-ast
-            :requires [:reader :namespace-analyzer]
-            :preserves [:source-spans :generated-origin :profile :effects :capabilities]
-            :rejects ["L2-UNKNOWN-CORE-FORM" "L2-EVAL-ORDER" "L2-RECUR-TARGET"
-                      "L2-SET-ILLEGAL" "L2-THROW-ILLEGAL" "L2-HOST-SEMANTICS"
-                      "L2-LOWERING-GAP"]}
-     :module (select-keys module [:module :source-path :profile :target :effects
-                                  :capabilities :safety :metadata])
-     :macro-expansion-trace (:macro-expansion-trace macro-artifact)
-     :expanded-syntax-object-stream expanded-syntax
-     :expanded-core-ast roots
-     :core-node-source-map source-map
-     :core-form-kind-records form-kinds
-     :evaluation-order-metadata evaluation
-     :latent-function-effect-records latent
-     :call-records calls
-     :diagnostics []}))
+  (core-ast-lowering-call
+   :core-source-artifact core-ast-lowering/core-source-artifact
+   source-path source-text))
 
-(def c6-lowering-diagnostic-ids
-  ["C6-LOWERING-GAP"
-   "C6-CORE-SHAPE"
-   "C6-EVAL-ORDER"
-   "C6-ORIGIN"
-   "C6-EFFECT-DROP"
-   "C6-UNSAFE-DROP"
-   "C6-DOMAIN-BOUNDARY"
-   "C6-VERIFY"])
+(def c6-lowering-diagnostic-ids c6/c6-lowering-diagnostic-ids)
+(def c6-lowering-governing-document c6/c6-lowering-governing-document)
+(def c6-lowering-rejected-designs c6/c6-lowering-rejected-designs)
+(def c6-lowering-override-diagnostics c6/c6-lowering-override-diagnostics)
+(def c6-domain-boundary-operators c6/c6-domain-boundary-operators)
+(def c6-core-node-forms c6/c6-core-node-forms)
 
-(def c6-lowering-governing-document
-  "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md")
+(declare c6-lowering-source-overrides
+         c6-lowering-message
+         c6-lowering-fail!
+         c6-lowering-validate-overrides!
+         c6-node-id
+         c6-core-node
+         c6-lower-children
+         c6-eval-order
+         c6-form->core-form
+         c6-lower-form
+         c6-core-child-nodes
+         c6-flatten-core
+         c6-domain-boundary-records
+         c6-surface-to-core-map
+         c6-desugaring-trace
+         c6-evaluation-order-records
+         c6-core-verifier-report
+         c6-rule-invalidation-record
+         c6-lowering-capability-proof
+         c6-lowering-validate!)
 
-(def c6-lowering-rejected-designs
-  [{:diagnostic "C6-LOWERING-GAP"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c6-lowering-gap.gravity"
-    :rejected-design :surface-form-bypasses-core}
-   {:diagnostic "C6-CORE-SHAPE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c6-core-shape.gravity"
-    :rejected-design :malformed-core-node}
-   {:diagnostic "C6-EVAL-ORDER"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c6-eval-order.gravity"
-    :rejected-design :evaluation-order-lost}
-   {:diagnostic "C6-ORIGIN"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c6-origin.gravity"
-    :rejected-design :introduced-form-without-origin}
-   {:diagnostic "C6-EFFECT-DROP"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c6-effect-drop.gravity"
-    :rejected-design :effect-or-capability-erased}
-   {:diagnostic "C6-UNSAFE-DROP"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c6-unsafe-drop.gravity"
-    :rejected-design :unsafe-metadata-erased}
-   {:diagnostic "C6-DOMAIN-BOUNDARY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c6-domain-boundary.gravity"
-    :rejected-design :malformed-domain-boundary}
-   {:diagnostic "C6-VERIFY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c6-verify.gravity"
-    :rejected-design :core-verifier-failure}])
-
-(def c6-lowering-override-diagnostics
-  {:gap "C6-LOWERING-GAP"
-   :core-shape "C6-CORE-SHAPE"
-   :eval-order "C6-EVAL-ORDER"
-   :origin "C6-ORIGIN"
-   :effect-drop "C6-EFFECT-DROP"
-   :unsafe-drop "C6-UNSAFE-DROP"
-   :domain-boundary "C6-DOMAIN-BOUNDARY"
-   :verify "C6-VERIFY"})
-
-(def c6-domain-boundary-operators
-  '#{defschema defworkflow defagent ui query ai-form})
-
-(def c6-core-node-forms
-  (set/union core-forms #{:call :literal :symbol :declared-primitive}))
-
-(defn c6-lowering-source-overrides
-  [module]
-  (get-in module [:metadata :compiler :c6-lowering] {}))
-
-(defn c6-lowering-message
-  [id]
-  (case id
-    "C6-LOWERING-GAP" "surface form cannot lower to core or a declared domain boundary"
-    "C6-CORE-SHAPE" "core node is malformed"
-    "C6-EVAL-ORDER" "lowering lost required evaluation-order facts"
-    "C6-ORIGIN" "introduced core form lacks source or generated-origin links"
-    "C6-EFFECT-DROP" "lowering erased effect or capability declarations"
-    "C6-UNSAFE-DROP" "lowering erased unsafe metadata"
-    "C6-DOMAIN-BOUNDARY" "domain IR boundary record is malformed"
-    "C6-VERIFY" "core verifier rejected the lowered artifact"
-    "AST and core lowering failed"))
-
-(defn c6-lowering-fail!
-  [id source-path subject extra]
-  (fail! id
-         (c6-lowering-message id)
-         (merge {:source-span (or (:source-span subject)
-                                  (:span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :c6-ast-core-lowering
-                 :stage :core-lowering
-                 :document-id "C6"
-                 :expected-document c6-lowering-governing-document
-                 :syntax-id (:syntax-id subject)
-                 :core-node-id (:core-node-id subject)
-                 :generated-origin-chain (:generated-origin subject)
-                 :lowering-rule (:lowering-rule subject)
-                 :active-profile (:profile subject)
-                 :target (:target subject)
-                 :remediation "Lower expanded and resolved syntax into verified core nodes or declared domain IR boundary records while preserving source provenance, evaluation order, effects, capabilities, unsafe metadata, profile, and target facts."}
-                extra)))
-
-(defn c6-lowering-validate-overrides!
-  [source-path module overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c6-lowering-override-diagnostics fail-kind)]
-      (c6-lowering-fail! id source-path
-                         {:source-span (source-span source-path 0)
-                          :syntax-id "fixture-override"
-                          :profile (:profile module)
-                          :target (:target module)
-                          :lowering-rule fail-kind}
-                         {:missing-fields [fail-kind]}))))
-
-(defn c6-node-id
-  [counter]
-  (str "c6-core-" (let [id @counter] (swap! counter inc) id)))
-
-(defn c6-core-node
-  [node-id form syntax module data]
-  (let [source {:syntax-id (:syntax-id syntax)
-                :span (:span syntax)
-                :origin-chain (vec (concat (when (:origin syntax)
-                                             [{:kind (:origin syntax)}])
-                                           (:generated-origin syntax)))}
-        surface-form (:surface-form data)
-        unsafe-metadata (when (= 'unsafe (and (seq? surface-form)
-                                              (first surface-form)))
-                          {:unsafe-island :declared
-                           :safety-outcome :pending-safe6})]
-    (merge {:artifact :gravity/core-node
-            :node-id node-id
-            :form form
-            :children {}
-            :source source
-            :binding-context :namespace-root
-            :profile (:profile module)
-            :target (:target module)
-            :metadata (:metadata syntax)
-            :facts {:resolved-bindings :pending-c5-binding-table}
-            :effects (form-effect (:form syntax))
-            :capabilities (:capabilities module)
-            :unsafe-metadata unsafe-metadata
-            :generated? (boolean (seq (:generated-origin syntax)))}
-           data)))
-
-(declare c6-lower-form)
-
-(defn c6-lower-children
-  [counter module syntax forms]
-  (mapv #(c6-lower-form counter module syntax %) forms))
-
-(defn c6-eval-order
-  [form child-count]
-  (case form
-    quote []
-    if [:condition :then-or-else]
-    do (mapv (fn [idx] [:expr idx]) (range child-count))
-    let [:bindings-left-to-right :body-left-to-right]
-    fn [:call-arguments-left-to-right]
-    loop [:loop-bindings-left-to-right :body-left-to-right]
-    recur [:arguments-left-to-right]
-    def [:initializer]
-    var []
-    set! [:value]
-    try [:body :matching-handler]
-    throw [:value]
-    match [:scrutinee :selected-clause]
-    :call [:operator :arguments-left-to-right]
-    :declared-primitive [:arguments-left-to-right]
-    []))
-
-(defn c6-form->core-form
-  [form]
-  (cond
-    (not (seq? form)) (if (symbol? form) :symbol :literal)
-    (contains? core-forms (first form)) (first form)
-    (= 'unsafe (first form)) :declared-primitive
-    :else :call))
-
-(defn c6-lower-form
-  [counter module syntax form]
-  (let [core-form (c6-form->core-form form)
-        node-id (c6-node-id counter)]
-    (cond
-      (and (seq? form) (contains? c6-domain-boundary-operators (first form)))
-      nil
-
-      (and (seq? form) (= :call core-form)
-           (contains? lowering-gap-forms (first form)))
-      (c6-lowering-fail! "C6-LOWERING-GAP" (:source-path module) syntax
-                         {:lowering-rule (first form)})
-
-      (seq? form)
-      (let [children (case core-form
-                       quote []
-                       if (c6-lower-children counter module syntax (rest form))
-                       do (c6-lower-children counter module syntax (rest form))
-                       let (let [[_ bindings & body] form
-                                 binding-children (mapv (fn [[name expr]]
-                                                          {:name name
-                                                           :initializer
-                                                           (c6-lower-form counter module syntax expr)})
-                                                        (partition 2 bindings))
-                                 body-children (c6-lower-children counter module syntax body)]
-                             {:bindings binding-children
-                              :body body-children})
-                       fn (let [[_ params & body] form]
-                            {:params params
-                             :body (c6-lower-children counter module syntax body)})
-                       loop (let [[_ bindings & body] form]
-                              {:bindings (mapv (fn [[name expr]]
-                                                 {:name name
-                                                  :initializer
-                                                  (c6-lower-form counter module syntax expr)})
-                                               (partition 2 bindings))
-                               :body (c6-lower-children counter module syntax body)})
-                       recur {:arguments (c6-lower-children counter module syntax (rest form))}
-                       def (let [[_ name value] form]
-                             {:name name
-                              :value (c6-lower-form counter module syntax value)})
-                       var {:name (second form)}
-                       set! (let [[_ target value] form]
-                              {:target target
-                               :value (c6-lower-form counter module syntax value)})
-                       try (let [[_ body & handlers] form]
-                             {:body (c6-lower-form counter module syntax body)
-                              :handlers handlers})
-                       throw {:value (c6-lower-form counter module syntax (second form))}
-                       match (let [[_ value & clauses] form]
-                               {:scrutinee (c6-lower-form counter module syntax value)
-                                :clauses (mapv (fn [[pattern expr]]
-                                                 {:pattern pattern
-                                                  :body (c6-lower-form counter module syntax expr)})
-                                               (partition 2 clauses))})
-                       :declared-primitive
-                       {:operator (first form)
-                        :arguments (c6-lower-children counter module syntax (rest form))}
-                       :call {:operator (first form)
-                              :arguments (c6-lower-children counter module syntax (rest form))})]
-        (c6-core-node node-id core-form syntax module
-                      {:surface-form form
-                       :children children
-                       :evaluation-order (c6-eval-order core-form
-                                                        (if (map? children)
-                                                          (count children)
-                                                          (count children)))
-                       :lowering-rule (if (= :call core-form)
-                                        :declared-call
-                                        core-form)}))
-
-      :else
-      (c6-core-node node-id core-form syntax module
-                    {:surface-form form
-                     :children {}
-                     :evaluation-order []
-                     :lowering-rule core-form
-                     :value form}))))
-
-(defn c6-core-child-nodes
-  [value]
-  (cond
-    (and (map? value) (= :gravity/core-node (:artifact value))) [value]
-    (map? value) (mapcat c6-core-child-nodes (vals value))
-    (coll? value) (mapcat c6-core-child-nodes value)
-    :else []))
-
-(defn c6-flatten-core
-  [node]
-  (vec (cons node (mapcat c6-flatten-core (c6-core-child-nodes (:children node))))))
-
-(defn c6-domain-boundary-records
-  [module expanded-stream c5-artifact]
-  (vec
-   (keep (fn [syntax]
-           (let [form (:form syntax)]
-             (when (and (seq? form)
-                        (contains? c6-domain-boundary-operators (first form)))
-               {:artifact :gravity/c6-domain-boundary-record
-                :domain (case (first form)
-                          defschema :schema-ir
-                          defworkflow :workflow-graph-ir
-                          defagent :ai-agent-ir
-                          ui :ui-ir
-                          query :query-ir
-                          ai-form :ai-agent-ir)
-                :owner-document "C12"
-                :required-checker :domain-ir-verifier
-                :source {:syntax-id (:syntax-id syntax)
-                         :span (:span syntax)
-                         :origin-chain (:generated-origin syntax)}
-                :semantic-anchor {:source-syntax (:syntax-id syntax)
-                                  :namespace (get-in c5-artifact
-                                                     [:namespace-analysis
-                                                      :namespace])
-                                  :future-typed-core :pending-c7}
-                :profile (:profile module)
-                :target (:target module)
-                :effects (:effects module)
-                :capabilities (:capabilities module)
-                :fallback :lower-after-domain-verifier
-                :status :declared})))
-         expanded-stream)))
-
-(defn c6-surface-to-core-map
-  [roots domain-boundaries]
-  {:artifact :gravity/c6-surface-to-core-map
-   :entries (vec (concat
-                  (map (fn [root]
-                         {:surface-syntax (get-in root [:source :syntax-id])
-                          :core-root (:node-id root)
-                          :core-form (:form root)
-                          :generated? (:generated? root)})
-                       roots)
-                  (map (fn [boundary]
-                         {:surface-syntax (get-in boundary [:source :syntax-id])
-                          :domain-boundary (:domain boundary)
-                          :status :accepted-domain-boundary})
-                       domain-boundaries)))
-   :status :complete})
-
-(defn c6-desugaring-trace
-  [roots]
-  {:artifact :gravity/c6-desugaring-trace
-   :records (mapv (fn [root]
-                    {:surface-syntax (get-in root [:source :syntax-id])
-                     :surface-kind (:form root)
-                     :core-root (:node-id root)
-                     :introduced-forms (vec (keep #(when (:generated? %)
-                                                     (:form %))
-                                                  (c6-flatten-core root)))
-                     :preserved #{:source-spans :metadata :profile
-                                  :capabilities :effects :generated-origin}
-                     :introduced-origin (mapv (fn [node]
-                                                {:core-node (:node-id node)
-                                                 :reason :surface-or-macro-desugar
-                                                 :from (get-in node
-                                                               [:source
-                                                                :syntax-id])})
-                                              (filter :generated?
-                                                      (c6-flatten-core root)))
-                     :evaluation-order (:evaluation-order root)
-                     :diagnostics []})
-                  roots)
-   :status :complete})
-
-(defn c6-evaluation-order-records
-  [flat-nodes]
-  {:artifact :gravity/c6-evaluation-order-records
-   :records (mapv (fn [node]
-                    {:core-node (:node-id node)
-                     :form (:form node)
-                     :order (:evaluation-order node)
-                     :effect-sensitive? (boolean (seq (:effects node)))
-                     :source (get node :source)})
-                  (filter #(seq (:evaluation-order %)) flat-nodes))
-   :status :complete})
-
-(defn c6-core-verifier-report
-  [flat-nodes domain-boundaries c5-artifact]
-  (let [node-ids (set (map :node-id flat-nodes))
-        child-ids (set (map :node-id (mapcat #(c6-core-child-nodes
-                                               (:children %))
-                                             flat-nodes)))
-        valid-forms? (every? #(contains? c6-core-node-forms (:form %))
-                             flat-nodes)
-        children-exist? (set/subset? child-ids node-ids)
-        origins-valid? (every? #(and (get-in % [:source :syntax-id])
-                                     (get-in % [:source :span]))
-                               flat-nodes)
-        binding-context-valid? (seq (get-in c5-artifact
-                                            [:binding-table :bindings]))
-        eval-present? (every? #(contains? % :evaluation-order) flat-nodes)
-        profile-target-valid? (every? #(and (known-source-profiles (:profile %))
-                                            (supported-targets (:target %)))
-                                      flat-nodes)
-        domain-valid? (every? #(and (:owner-document %)
-                                    (get-in % [:semantic-anchor
-                                               :source-syntax]))
-                              domain-boundaries)]
-    {:artifact :gravity/c6-core-verifier-report
-     :valid-core-forms? valid-forms?
-     :child-references-resolve? children-exist?
-     :source-and-generated-origins-valid? origins-valid?
-     :binding-references-point-to-c5? (boolean binding-context-valid?)
-     :evaluation-order-present? eval-present?
-     :profile-target-annotations-valid? profile-target-valid?
-     :domain-boundaries-valid? domain-valid?
-     :surface-only-forms-absent? true
-     :status (if (and valid-forms? children-exist? origins-valid?
-                      binding-context-valid? eval-present?
-                      profile-target-valid? domain-valid?)
-               :passed
-               :failed)}))
-
-(defn c6-rule-invalidation-record
-  [roots]
-  {:artifact :gravity/c6-lowering-rule-invalidation
-   :rule-version "stage0-c6.1"
-   :rules (vec (sort (set (map :lowering-rule roots))))
-   :invalidates [:typed-core :effects :ownership :safety :mir :diagnostics]
-   :status :stable})
-
-(defn c6-lowering-capability-proof
-  [artifact]
-  (let [diagnostics (set (map :diagnostic (:rejected-design-coverage artifact)))
-        verifier (:core-verifier-report artifact)
-        flat (:core-node-table artifact)]
-    {:every-executable-form-lowered?
-     (boolean (seq (:entries (:surface-to-core-map artifact))))
-     :source-to-core-map-present?
-     (= :complete (get-in artifact [:surface-to-core-map :status]))
-     :evaluation-order-preserved?
-     (= :complete (get-in artifact [:evaluation-order-records :status]))
-     :origin-links-present?
-     (every? #(get-in % [:source :syntax-id]) flat)
-     :effect-capability-unsafe-preserved?
-     (boolean (and (= (get-in artifact [:module :effects])
-                      (get-in artifact [:preserved-declarations :effects]))
-                   (= (get-in artifact [:module :capabilities])
-                      (get-in artifact [:preserved-declarations
-                                        :capabilities]))
-                   (or (not= :unsafe (get-in artifact [:module :safety]))
-                       (some :unsafe-metadata flat))))
-     :domain-boundaries-recorded?
-     (true? (:domain-boundaries-valid? verifier))
-     :core-verifier-passed?
-     (= :passed (:status verifier))
-     :versioned-rule-invalidation?
-     (= :stable (get-in artifact [:lowering-rule-invalidation :status]))
-     :diagnostics-covered?
-     (= (set c6-lowering-diagnostic-ids) diagnostics)
-     :status :complete}))
-
-(defn c6-lowering-validate!
-  [source-path artifact]
-  (let [proof (c6-lowering-capability-proof artifact)]
-    (doseq [[field id] [[:every-executable-form-lowered? "C6-LOWERING-GAP"]
-                        [:source-to-core-map-present? "C6-CORE-SHAPE"]
-                        [:evaluation-order-preserved? "C6-EVAL-ORDER"]
-                        [:origin-links-present? "C6-ORIGIN"]
-                        [:effect-capability-unsafe-preserved? "C6-EFFECT-DROP"]
-                        [:domain-boundaries-recorded? "C6-DOMAIN-BOUNDARY"]
-                        [:core-verifier-passed? "C6-VERIFY"]
-                        [:versioned-rule-invalidation? "C6-VERIFY"]
-                        [:diagnostics-covered? "C6-VERIFY"]]]
-      (when-not (get proof field)
-        (c6-lowering-fail! id source-path {:stage :core-lowering}
-                           {:missing-fields [field]}))))
-  :complete)
-
+(defn- c6-lowering-ops []
+  {:fail! fail! :source-span source-span :c4-artifact-id c4-artifact-id
+   :form-effect form-effect :ns-form? ns-form? :core-forms core-forms
+   :lowering-gap-forms lowering-gap-forms :known-source-profiles known-source-profiles
+   :supported-targets supported-targets
+   :c6-lowering-diagnostic-ids c6-lowering-diagnostic-ids
+   :c6-lowering-governing-document c6-lowering-governing-document
+   :c6-lowering-rejected-designs c6-lowering-rejected-designs
+   :c6-lowering-override-diagnostics c6-lowering-override-diagnostics
+   :c6-domain-boundary-operators c6-domain-boundary-operators
+   :c6-core-node-forms c6-core-node-forms
+   :c6-lowering-source-overrides c6-lowering-source-overrides
+   :c6-lowering-message c6-lowering-message
+   :c6-lowering-fail! c6-lowering-fail!
+   :c6-lowering-validate-overrides! c6-lowering-validate-overrides!
+   :c6-node-id c6-node-id
+   :c6-core-node c6-core-node
+   :c6-lower-children c6-lower-children
+   :c6-eval-order c6-eval-order
+   :c6-form->core-form c6-form->core-form
+   :c6-lower-form c6-lower-form
+   :c6-core-child-nodes c6-core-child-nodes
+   :c6-flatten-core c6-flatten-core
+   :c6-domain-boundary-records c6-domain-boundary-records
+   :c6-surface-to-core-map c6-surface-to-core-map
+   :c6-desugaring-trace c6-desugaring-trace
+   :c6-evaluation-order-records c6-evaluation-order-records
+   :c6-core-verifier-report c6-core-verifier-report
+   :c6-rule-invalidation-record c6-rule-invalidation-record
+   :c6-lowering-capability-proof c6-lowering-capability-proof
+   :c6-lowering-validate! c6-lowering-validate!})
+(def ^:private ^:dynamic *c6-leaf-call?* false)
+(defn- c6-call [f & args]
+  (if *c6-leaf-call?*
+    (apply f args)
+    (binding [*c6-leaf-call?* true]
+      (c6/with-operations (c6-lowering-ops) #(apply f args)))))
+(defn c6-lowering-source-overrides [module]
+  (c6-call c6/c6-lowering-source-overrides module))
+(defn c6-lowering-message [id] (c6-call c6/c6-lowering-message id))
+(defn c6-lowering-fail! [id source-path subject extra]
+  (c6-call c6/c6-lowering-fail! id source-path subject extra))
+(defn c6-lowering-validate-overrides! [source-path module overrides]
+  (c6-call c6/c6-lowering-validate-overrides! source-path module overrides))
+(defn c6-node-id [counter] (c6-call c6/c6-node-id counter))
+(defn c6-core-node [node-id form syntax module data]
+  (c6-call c6/c6-core-node node-id form syntax module data))
+(defn c6-lower-children [counter module syntax forms]
+  (c6-call c6/c6-lower-children counter module syntax forms))
+(defn c6-eval-order [form child-count] (c6-call c6/c6-eval-order form child-count))
+(defn c6-form->core-form [form] (c6-call c6/c6-form->core-form form))
+(defn c6-lower-form [counter module syntax form]
+  (c6-call c6/c6-lower-form counter module syntax form))
+(defn c6-core-child-nodes [value] (c6-call c6/c6-core-child-nodes value))
+(defn c6-flatten-core [node] (c6-call c6/c6-flatten-core node))
+(defn c6-domain-boundary-records [module expanded-stream c5-artifact]
+  (c6-call c6/c6-domain-boundary-records module expanded-stream c5-artifact))
+(defn c6-surface-to-core-map [roots domain-boundaries]
+  (c6-call c6/c6-surface-to-core-map roots domain-boundaries))
+(defn c6-desugaring-trace [roots] (c6-call c6/c6-desugaring-trace roots))
+(defn c6-evaluation-order-records [flat-nodes]
+  (c6-call c6/c6-evaluation-order-records flat-nodes))
+(defn c6-core-verifier-report [flat-nodes domain-boundaries c5-artifact]
+  (c6-call c6/c6-core-verifier-report flat-nodes domain-boundaries c5-artifact))
+(defn c6-rule-invalidation-record [roots]
+  (c6-call c6/c6-rule-invalidation-record roots))
+(defn c6-lowering-capability-proof [artifact]
+  (c6-call c6/c6-lowering-capability-proof artifact))
+(defn c6-lowering-validate! [source-path artifact]
+  (c6-call c6/c6-lowering-validate! source-path artifact))
 (declare sh06-resolution-artifact-verification)
 
 (def ^:dynamic *compiler-c6-authenticated-resolution-input* nil)
@@ -3501,117 +1577,30 @@
   (let [c5-artifact (or *compiler-c6-authenticated-resolution-input*
                         (compiler-c5-resolution-source-artifact source-path
                                                                 source-text))
-        sh06-input? (= :gravity/sh06-resolution-artifact
-                       (:kind c5-artifact))
+        sh06-input? (= :gravity/sh06-resolution-artifact (:kind c5-artifact))
         sh06-report (when sh06-input?
                       (sh06-resolution-artifact-verification c5-artifact))
         _ (when (and sh06-input? (not= :passed (:status sh06-report)))
-            (c6-lowering-fail!
-             "C6-VERIFY" source-path {:stage :core-lowering}
-             {:missing-fields [:fresh-authenticated-sh06-resolution]}))
-        expanded-stream
-        (if sh06-input?
-          (mapv
-           (fn [syntax]
-             (-> syntax
-                 (assoc :syntax-id (:syntax/id syntax)
-                        :generated-origin (:origin syntax))
-                 (dissoc :origin)))
-           (get-in c5-artifact
-                   [:sh05-macro-artifact :expanded-syntax-stream]))
-          (get-in c5-artifact
-                  [:c4-macro-expansion-artifact :expanded-syntax-stream]))
+            (c6-lowering-fail! "C6-VERIFY" source-path
+                               {:stage :core-lowering}
+                               {:missing-fields [:fresh-authenticated-sh06-resolution]}))
+        expanded-stream (if sh06-input?
+                          (mapv (fn [syntax]
+                                  (-> syntax
+                                      (assoc :syntax-id (:syntax/id syntax)
+                                             :generated-origin (:origin syntax))
+                                      (dissoc :origin)))
+                                (get-in c5-artifact
+                                        [:sh05-macro-artifact :expanded-syntax-stream]))
+                          (get-in c5-artifact
+                                  [:c4-macro-expansion-artifact :expanded-syntax-stream]))
         records (when-not sh06-input?
                   (read-source-form-records source-path source-text))
-        forms (if sh06-input?
-                (mapv :form expanded-stream)
-                (mapv :form records))
+        forms (mapv :form (if sh06-input? expanded-stream records))
         _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        overrides (c6-lowering-source-overrides module)
-        _ (c6-lowering-validate-overrides! source-path module overrides)
-        body-syntax (remove #(ns-form? (:form %)) expanded-stream)
-        domain-boundaries (c6-domain-boundary-records module body-syntax
-                                                      c5-artifact)
-        counter (atom 0)
-        roots (vec (keep #(c6-lower-form counter module % (:form %))
-                         body-syntax))
-        flat (vec (mapcat c6-flatten-core roots))
-        surface-map (c6-surface-to-core-map roots domain-boundaries)
-        trace (c6-desugaring-trace roots)
-        evaluation (c6-evaluation-order-records flat)
-        verifier (c6-core-verifier-report flat domain-boundaries c5-artifact)
-        invalidation (c6-rule-invalidation-record roots)
-        artifact-base
-        {:kind :gravity/stage0-c6-core-lowering-artifact
-         :task "P06-D085"
-         :document-set ["C6"]
-         :governing-document c6-lowering-governing-document
-         :pass {:name :c6-ast-and-core-lowering
-                :input :c5-namespace-analysis
-                :output :verified-core-ast
-                :requires [:expanded-syntax-stream :binding-table
-                           :namespace-analysis :profile :target]
-                :preserves [:source-spans :generated-origin :metadata
-                            :namespace-context :profile :effects
-                            :capabilities :unsafe-metadata]
-                :emits [:core-ast-module :surface-to-core-map
-                        :desugaring-trace :evaluation-order-records
-                        :domain-boundary-records :core-verifier-report
-                        :core-lowering-diagnostics]
-                :rejects c6-lowering-diagnostic-ids}
-         :source-overrides overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c5-name-resolution-artifact
-         (select-keys c5-artifact [:kind :artifact-id :namespace-analysis
-                                   :binding-table :alias-table
-                                   :dependency-graph])
-         :core-ast-module {:artifact :gravity/core-ast-module
-                           :module (:module module)
-                           :roots (mapv :node-id roots)
-                           :node-count (count flat)
-                           :domain-boundaries (mapv :domain
-                                                    domain-boundaries)
-                           :status :complete}
-         :core-node-table flat
-         :surface-to-core-map surface-map
-         :desugaring-trace trace
-         :evaluation-order-records evaluation
-         :domain-boundary-records domain-boundaries
-         :core-verifier-report verifier
-         :lowering-rule-invalidation invalidation
-         :preserved-declarations {:effects (:effects module)
-                                  :capabilities (:capabilities module)
-                                  :profile (:profile module)
-                                  :target (:target module)}
-         :core-lowering-diagnostics
-         {:artifact :gravity/c6-core-lowering-diagnostics
-          :required-diagnostic-ids c6-lowering-diagnostic-ids
-          :covered c6-lowering-rejected-designs
-          :status :complete}
-         :rejected-design-coverage c6-lowering-rejected-designs
-         :diagnostics []}
-        _ (c6-lowering-validate! source-path artifact-base)
-        capability-proof (c6-lowering-capability-proof artifact-base)
-        conformance {:documents ["C6"]
-                     :task "P06-D085"
-                     :required-diagnostic-ids c6-lowering-diagnostic-ids
-                     :core-ast-status :complete
-                     :surface-map-status :complete
-                     :desugaring-trace-status :complete
-                     :evaluation-order-status :complete
-                     :domain-boundary-status :complete
-                     :core-verifier-status :passed
-                     :diagnostic-status :complete
-                     :invalidation-status :stable
-                     :status :complete}
-        artifact (assoc artifact-base
-                        :capability-based-proof capability-proof
-                        :c6-lowering-results conformance)]
-    (assoc artifact :artifact-id (c4-artifact-id artifact))))
-
+        module (parse-module source-path forms)]
+    (c6-call c6/c6-lowering-artifact
+             source-path module c5-artifact expanded-stream)))
 (defn sh06-c6-lowering-from-resolution-artifact
   [resolution-artifact]
   (let [source-path (or (get-in resolution-artifact
@@ -3632,3076 +1621,762 @@
   [path]
   (compiler-c6-lowering-source-artifact path (slurp path)))
 
-(def c7-type-diagnostic-ids
-  ["C7-TYPE-MISMATCH"
-   "C7-ANNOTATION"
-   "C7-DYNAMIC"
-   "C7-CAST"
-   "C7-NULLABILITY"
-   "C7-GENERIC"
-   "C7-PROTOCOL"
-   "C7-LAYOUT"
-   "C7-SCHEMA"
-   "C7-VERIFY"])
+(def c7-type-diagnostic-ids c7/c7-type-diagnostic-ids)
+(def c7-type-governing-document c7/c7-type-governing-document)
+(def c7-type-rejected-designs c7/c7-type-rejected-designs)
+(def c7-type-override-diagnostics c7/c7-type-override-diagnostics)
 
-(def c7-type-governing-document
-  "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md")
+(declare c7-type-source-overrides
+         c7-type-message
+         c7-type-fail!
+         c7-type-validate-overrides!
+         c7-literal-type
+         c7-node-operator
+         c7-node-type
+         c7-type-fact
+         c7-type-environment
+         c7-constraint-ledger
+         c7-function-table
+         c7-dynamic-boundary-records
+         c7-cast-records
+         c7-generic-instantiations
+         c7-protocol-dispatch-table
+         c7-schema-links
+         c7-layout-facts
+         c7-type-diagnostics
+         c7-typed-core-verifier-report
+         c7-type-capability-proof
+         c7-type-validate!
+         compiler-c7-type-source-artifact
+         compiler-c7-type-file-artifact)
 
-(def c7-type-rejected-designs
-  [{:diagnostic "C7-TYPE-MISMATCH"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-type-mismatch.gravity"
-    :rejected-design :incompatible-inferred-and-expected-types}
-   {:diagnostic "C7-ANNOTATION"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-annotation.gravity"
-    :rejected-design :profile-required-type-fact-missing}
-   {:diagnostic "C7-DYNAMIC"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-dynamic.gravity"
-    :rejected-design :dynamic-fallback-in-constrained-profile}
-   {:diagnostic "C7-CAST"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-cast.gravity"
-    :rejected-design :unchecked-or-illegal-conversion}
-   {:diagnostic "C7-NULLABILITY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-nullability.gravity"
-    :rejected-design :host-null-without-typed-wrapper}
-   {:diagnostic "C7-GENERIC"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-generic.gravity"
-    :rejected-design :failed-generic-instantiation}
-   {:diagnostic "C7-PROTOCOL"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-protocol.gravity"
-    :rejected-design :missing-protocol-implementation}
-   {:diagnostic "C7-LAYOUT"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-layout.gravity"
-    :rejected-design :missing-profile-required-layout-facts}
-   {:diagnostic "C7-SCHEMA"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-schema.gravity"
-    :rejected-design :schema-derived-type-weakened}
-   {:diagnostic "C7-VERIFY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-verify.gravity"
-    :rejected-design :typed-core-verifier-failure}])
+(defn- c7-type-ops
+  []
+  {:fail! fail!
+   :source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c6-lowering-source-artifact
+   compiler-c6-lowering-source-artifact
+   :c7-type-diagnostic-ids c7-type-diagnostic-ids
+   :c7-type-governing-document c7-type-governing-document
+   :c7-type-rejected-designs c7-type-rejected-designs
+   :c7-type-override-diagnostics c7-type-override-diagnostics
+   :c7-type-source-overrides c7-type-source-overrides
+   :c7-type-message c7-type-message
+   :c7-type-fail! c7-type-fail!
+   :c7-type-validate-overrides! c7-type-validate-overrides!
+   :c7-literal-type c7-literal-type
+   :c7-node-operator c7-node-operator
+   :c7-node-type c7-node-type
+   :c7-type-fact c7-type-fact
+   :c7-type-environment c7-type-environment
+   :c7-constraint-ledger c7-constraint-ledger
+   :c7-function-table c7-function-table
+   :c7-dynamic-boundary-records c7-dynamic-boundary-records
+   :c7-cast-records c7-cast-records
+   :c7-generic-instantiations c7-generic-instantiations
+   :c7-protocol-dispatch-table c7-protocol-dispatch-table
+   :c7-schema-links c7-schema-links
+   :c7-layout-facts c7-layout-facts
+   :c7-type-diagnostics c7-type-diagnostics
+   :c7-typed-core-verifier-report c7-typed-core-verifier-report
+   :c7-type-capability-proof c7-type-capability-proof
+   :c7-type-validate! c7-type-validate!
+   :compiler-c7-type-source-artifact compiler-c7-type-source-artifact
+   :compiler-c7-type-file-artifact compiler-c7-type-file-artifact})
 
-(def c7-type-override-diagnostics
-  {:type-mismatch "C7-TYPE-MISMATCH"
-   :annotation "C7-ANNOTATION"
-   :dynamic "C7-DYNAMIC"
-   :cast "C7-CAST"
-   :nullability "C7-NULLABILITY"
-   :generic "C7-GENERIC"
-   :protocol "C7-PROTOCOL"
-   :layout "C7-LAYOUT"
-   :schema "C7-SCHEMA"
-   :verify "C7-VERIFY"})
+(def ^:private ^:dynamic *c7-leaf-call?* false)
+
+(defn- c7-call
+  [operation & args]
+  (if *c7-leaf-call?*
+    (apply operation args)
+    (binding [*c7-leaf-call?* true]
+      (c7/with-operations (c7-type-ops)
+        #(apply operation args)))))
 
 (defn c7-type-source-overrides
   [module]
-  (get-in module [:metadata :compiler :c7-type-check] {}))
+  (c7-call c7/c7-type-source-overrides module))
 
 (defn c7-type-message
   [id]
-  (case id
-    "C7-TYPE-MISMATCH" "inferred type is incompatible with the expected type"
-    "C7-ANNOTATION" "active profile requires a type annotation or layout fact"
-    "C7-DYNAMIC" "dynamic behavior is forbidden by the active profile"
-    "C7-CAST" "cast or conversion lacks a checked or unsafe classification"
-    "C7-NULLABILITY" "host null crossed into a non-null Gravity type without a wrapper"
-    "C7-GENERIC" "generic instantiation failed or omitted bound evidence"
-    "C7-PROTOCOL" "protocol dispatch lacks a matching implementation"
-    "C7-LAYOUT" "profile-required layout facts are missing"
-    "C7-SCHEMA" "schema-derived type lost source schema identity"
-    "C7-VERIFY" "typed-core verifier rejected the artifact"
-    "Type checking failed"))
+  (c7-call c7/c7-type-message id))
 
 (defn c7-type-fail!
   [id source-path subject extra]
-  (fail! id
-         (c7-type-message id)
-         (merge {:source-span (or (:source-span subject)
-                                  (get-in subject [:source :span])
-                                  (:span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :c7-type-checker
-                 :stage :type-check
-                 :document-id "C7"
-                 :expected-document c7-type-governing-document
-                 :core-node-id (or (:core-node-id subject) (:node-id subject))
-                 :syntax-id (or (:syntax-id subject)
-                                (get-in subject [:source :syntax-id]))
-                 :expected-type (or (:expected-type subject) "Typed")
-                 :actual-type (or (:actual-type subject) "Dynamic")
-                 :active-profile (:profile subject)
-                 :target (:target subject)
-                 :relevant-binding-id (:binding-ref subject)
-                 :generated-origin-chain (or (:generated-origin subject)
-                                             (get-in subject
-                                                     [:source :origin-chain]))
-                 :remediation "Emit typed-core facts, solved constraints, checked casts, dynamic boundary records, schema/layout links, generic and protocol evidence, and verifier-accepted diagnostics before effect checking."}
-                extra)))
+  (c7-call c7/c7-type-fail! id source-path subject extra))
 
 (defn c7-type-validate-overrides!
   [source-path module overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c7-type-override-diagnostics fail-kind)]
-      (c7-type-fail! id source-path
-                     {:source-span (source-span source-path 0)
-                      :syntax-id "fixture-override"
-                      :core-node-id "fixture-override"
-                      :expected-type "Expected"
-                      :actual-type "Actual"
-                      :profile (:profile module)
-                      :target (:target module)
-                      :generated-origin []}
-                     {:missing-fields [fail-kind]}))))
+  (c7-call c7/c7-type-validate-overrides! source-path module overrides))
 
 (defn c7-literal-type
   [value]
-  (cond
-    (nil? value) "Nil"
-    (true? value) "Boolean"
-    (false? value) "Boolean"
-    (integer? value) "I64"
-    (float? value) "F64"
-    (string? value) "String"
-    (keyword? value) "Keyword"
-    (symbol? value) "Symbol"
-    (vector? value) "Vector[Dynamic]"
-    (map? value) "Map[Keyword, Dynamic]"
-    (set? value) "Set[Dynamic]"
-    (seq? value) "List[Dynamic]"
-    :else "Dynamic"))
+  (c7-call c7/c7-literal-type value))
 
 (defn c7-node-operator
   [node]
-  (get-in node [:children :operator]))
+  (c7-call c7/c7-node-operator node))
 
 (defn c7-node-type
   [node]
-  (let [operator (c7-node-operator node)]
-    (case (:form node)
-      :literal (c7-literal-type (:value node))
-      quote "Syntax"
-      :symbol "BindingRef"
-      def "Var"
-      fn "Fn[Dynamic]->Dynamic"
-      let "Dynamic"
-      do "Dynamic"
-      if "Dynamic"
-      match "Dynamic"
-      try "Dynamic"
-      throw "Never"
-      loop "Dynamic"
-      recur "Never"
-      var "VarRef"
-      set! "Unit"
-      :declared-primitive (if (:unsafe-metadata node)
-                            "UnsafeIsland[Dynamic]"
-                            "PrimitiveResult")
-      :call (case operator
-              dynamic/value "Dynamic"
-              dynamic/cast "CheckedCast[String]"
-              generic/id "Generic[T]"
-              protocol/value "ProtocolValue"
-              schema/derive "SchemaDerived"
-              schema/validate "Validated[Schema]"
-              "Dynamic")
-      "Dynamic")))
+  (c7-call c7/c7-node-type node))
 
 (defn c7-type-fact
   [node]
-  {:artifact :gravity/c7-type-fact
-   :fact-id (str "c7-type-" (:node-id node))
-   :core-node (:node-id node)
-   :source (:source node)
-   :type (c7-node-type node)
-   :type-source :local-deterministic-inference
-   :profile (:profile node)
-   :target (:target node)
-   :effects (:effects node)
-   :capabilities (:capabilities node)
-   :ownership {:mode :borrowed :resource :nonlinear}
-   :layout {:representation (case (:profile node)
-                              :hosted :managed-object
-                              :native :layout-required
-                              :kernel :explicit-layout-required
-                              :firmware :fixed-layout-required
-                              :hardware :synthesizable-layout-required
-                              :abstract)
-            :status :recorded}
-   :diagnostics []})
+  (c7-call c7/c7-type-fact node))
 
 (defn c7-type-environment
   [type-facts]
-  {:artifact :gravity/c7-type-environment
-   :types (into (sorted-map)
-                (map (fn [fact] [(:core-node fact) (:type fact)])
-                     type-facts))
-   :locals (into (sorted-map)
-                 (keep (fn [fact]
-                         (when (= "BindingRef" (:type fact))
-                           [(:core-node fact)
-                            {:type (:type fact)
-                             :mutability :immutable
-                             :ownership :borrowed}]))
-                       type-facts))
-   :status :complete})
+  (c7-call c7/c7-type-environment type-facts))
 
 (defn c7-constraint-ledger
   [type-facts]
-  {:artifact :gravity/c7-constraint-ledger
-   :constraints
-   (mapv (fn [idx fact]
-           {:constraint-id (str "c7-constraint-" idx)
-            :kind :type-assignment
-            :source-node (:core-node fact)
-            :producer-rule :local-inference
-            :dependencies [(:core-node fact)]
-            :solution (:type fact)
-            :invalidation [:core-node :binding-table :profile-contract]
-            :status :solved})
-         (range)
-         type-facts)
-   :status :solved})
+  (c7-call c7/c7-constraint-ledger type-facts))
 
 (defn c7-function-table
   [nodes]
-  {:artifact :gravity/c7-function-type-table
-   :functions
-   (mapv (fn [node]
-           {:fn-id (:node-id node)
-            :params (vec (repeat (count (get-in node [:children :params]))
-                                 "Dynamic"))
-            :return "Dynamic"
-            :latent-effects (:effects node)
-            :capabilities (:capabilities node)
-            :ownership-constraints [:borrowed-captures-preserved]
-            :profile-constraints [(:profile node)]
-            :throws #{"String"}
-            :source (:source node)
-            :status :typed})
-         (filter #(= 'fn (:form %)) nodes))
-   :status :complete})
+  (c7-call c7/c7-function-table nodes))
 
 (defn c7-dynamic-boundary-records
   [nodes module]
-  {:artifact :gravity/c7-dynamic-boundary-records
-   :records
-   (mapv (fn [node]
-           {:boundary-id (str "c7-dynamic-" (:node-id node))
-            :kind :dynamic-call
-            :source (:node-id node)
-            :input-type "Dynamic"
-            :result-type "Dynamic"
-            :profile (:profile node)
-            :target (:target node)
-            :runtime-checks [:runtime-type-known]
-            :effects #{:runtime/dynamic-dispatch}
-            :capabilities #{}
-            :accepted? (= :hosted (:profile module))
-            :diagnostics []})
-         (filter #(= 'dynamic/value (c7-node-operator %)) nodes))
-   :status :complete})
+  (c7-call c7/c7-dynamic-boundary-records nodes module))
 
 (defn c7-cast-records
   [nodes]
-  {:artifact :gravity/c7-cast-records
-   :records
-   (mapv (fn [node]
-           {:cast-id (str "c7-cast-" (:node-id node))
-            :kind :checked-dynamic-cast
-            :source-node (:node-id node)
-            :from "Dynamic"
-            :to "String"
-            :classification :runtime-checked
-            :runtime-check :type-tag-check
-            :unsafe-metadata (:unsafe-metadata node)
-            :source (:source node)
-            :status :checked})
-         (filter #(= 'dynamic/cast (c7-node-operator %)) nodes))
-   :status :complete})
+  (c7-call c7/c7-cast-records nodes))
 
 (defn c7-generic-instantiations
   [nodes]
-  {:artifact :gravity/c7-generic-instantiation-table
-   :records
-   (mapv (fn [node]
-           {:instantiation-id (str "c7-generic-" (:node-id node))
-            :generic 'generic/id
-            :type-arguments ["T"]
-            :bounds ["Any"]
-            :source-node (:node-id node)
-            :profile (:profile node)
-            :target (:target node)
-            :status :solved})
-         (filter #(= 'generic/id (c7-node-operator %)) nodes))
-   :status :complete})
+  (c7-call c7/c7-generic-instantiations nodes))
 
 (defn c7-protocol-dispatch-table
   [nodes]
-  {:artifact :gravity/c7-protocol-dispatch-type-table
-   :records
-   (mapv (fn [node]
-           {:dispatch-id (str "c7-dispatch-" (:node-id node))
-            :protocol :Displayable
-            :method 'protocol/value
-            :receiver-type "String"
-            :dispatch :hosted-dynamic
-            :effects (:effects node)
-            :capabilities (:capabilities node)
-            :profile (:profile node)
-            :target (:target node)
-            :source-node (:node-id node)
-            :status :typed})
-         (filter #(= 'protocol/value (c7-node-operator %)) nodes))
-   :status :complete})
+  (c7-call c7/c7-protocol-dispatch-table nodes))
 
 (defn c7-schema-links
   [domain-boundaries]
-  {:artifact :gravity/c7-schema-type-links
-   :records
-   (mapv (fn [boundary]
-           {:schema-type-id (str "c7-schema-"
-                                 (get-in boundary
-                                         [:source :syntax-id]))
-            :schema :Packet
-            :source-schema (get-in boundary [:semantic-anchor :source-syntax])
-            :domain (:domain boundary)
-            :validation-boundary :schema-ir-verifier
-            :profile (:profile boundary)
-            :target (:target boundary)
-            :status :preserved})
-         (filter #(= :schema-ir (:domain %)) domain-boundaries))
-   :status :complete})
+  (c7-call c7/c7-schema-links domain-boundaries))
 
 (defn c7-layout-facts
   [nodes]
-  {:artifact :gravity/c7-layout-facts
-   :records
-   (mapv (fn [node]
-           {:layout-id (str "c7-layout-" (:node-id node))
-            :core-node (:node-id node)
-            :type (c7-node-type node)
-            :profile (:profile node)
-            :target (:target node)
-            :layout (case (:profile node)
-                      :hosted :managed
-                      :native :explicit-native-layout
-                      :firmware :fixed-layout
-                      :kernel :explicit-kernel-layout
-                      :hardware :synthesizable-layout
-                      :abstract)
-            :status :recorded})
-         nodes)
-   :status :complete})
+  (c7-call c7/c7-layout-facts nodes))
 
 (defn c7-type-diagnostics
   [source-path nodes]
-  {:artifact :gravity/c7-type-diagnostic-registry
-   :required-diagnostic-ids c7-type-diagnostic-ids
-   :diagnostics
-   (mapv (fn [design]
-           (let [node (first nodes)]
-             {:diagnostic (:diagnostic design)
-              :fixture (:fixture design)
-              :core-node-id (:node-id node)
-              :syntax-id (get-in node [:source :syntax-id])
-              :source-span (get-in node [:source :span]
-                                   (source-span source-path 0))
-              :expected-type "Expected"
-              :actual-type "Actual"
-              :active-profile (:profile node)
-              :target (:target node)
-              :relevant-binding-id (:node-id node)
-              :generated-origin-chain (get-in node [:source :origin-chain])
-              :remediation "Keep C7 type facts explicit and profile-gated."}))
-         c7-type-rejected-designs)
-   :status :complete})
+  (c7-call c7/c7-type-diagnostics source-path nodes))
 
 (defn c7-typed-core-verifier-report
   [nodes type-facts constraints functions dynamic cast generic dispatch schema layout]
-  (let [node-ids (set (map :node-id nodes))
-        typed-node-ids (set (map :core-node type-facts))
-        all-typed? (= node-ids typed-node-ids)
-        constraints-solved? (every? #(= :solved (:status %))
-                                    (:constraints constraints))
-        functions-have-effects? (every? #(contains? % :latent-effects)
-                                        (:functions functions))
-        casts-classified? (every? #(contains? % :classification)
-                                  (:records cast))
-        dynamic-profiled? (every? #(contains? % :profile) (:records dynamic))
-        schema-preserved? (seq (:records schema))
-        layout-recorded? (and (seq (:records layout))
-                              (every? #(= :recorded (:status %))
-                                      (:records layout)))
-        origins-preserved? (every? #(get-in % [:source :syntax-id]) nodes)
-        generic-solved? (= :complete (:status generic))
-        dispatch-typed? (= :complete (:status dispatch))]
-    {:artifact :gravity/c7-typed-core-verifier-report
-     :every-node-typed-or-diagnostic? all-typed?
-     :constraints-solved? constraints-solved?
-     :function-latent-effects-present? functions-have-effects?
-     :casts-classified? casts-classified?
-     :dynamic-boundaries-profile-marked? dynamic-profiled?
-     :schema-derived-types-preserve-identity? (boolean schema-preserved?)
-     :layout-facts-recorded? layout-recorded?
-     :generic-instantiations-solved? generic-solved?
-     :protocol-dispatch-typed? dispatch-typed?
-     :origins-preserved? origins-preserved?
-     :status (if (and all-typed? constraints-solved?
-                      functions-have-effects? casts-classified?
-                      dynamic-profiled? schema-preserved? layout-recorded?
-                      generic-solved? dispatch-typed? origins-preserved?)
-               :passed
-               :failed)}))
+  (c7-call c7/c7-typed-core-verifier-report nodes type-facts constraints functions dynamic cast generic dispatch schema layout))
 
 (defn c7-type-capability-proof
   [artifact]
-  (let [diagnostics (set (map :diagnostic
-                              (get-in artifact
-                                      [:type-diagnostics :diagnostics])))
-        verifier (:typed-core-verifier-report artifact)]
-    {:every-core-node-has-type-or-diagnostic?
-     (:every-node-typed-or-diagnostic? verifier)
-     :constraints-solved?
-     (:constraints-solved? verifier)
-     :function-types-include-latent-effects?
-     (:function-latent-effects-present? verifier)
-     :dynamic-boundaries-profile-gated?
-     (:dynamic-boundaries-profile-marked? verifier)
-     :casts-classified?
-     (:casts-classified? verifier)
-     :generic-and-protocol-evidence?
-     (and (:generic-instantiations-solved? verifier)
-          (:protocol-dispatch-typed? verifier))
-     :schema-identity-preserved?
-     (:schema-derived-types-preserve-identity? verifier)
-     :layout-facts-recorded?
-     (:layout-facts-recorded? verifier)
-     :diagnostics-covered?
-     (= (set c7-type-diagnostic-ids) diagnostics)
-     :verifier-passed?
-     (= :passed (:status verifier))
-     :status :complete}))
+  (c7-call c7/c7-type-capability-proof artifact))
 
 (defn c7-type-validate!
   [source-path artifact]
-  (let [proof (c7-type-capability-proof artifact)]
-    (doseq [[field id] [[:every-core-node-has-type-or-diagnostic?
-                         "C7-TYPE-MISMATCH"]
-                        [:constraints-solved? "C7-VERIFY"]
-                        [:function-types-include-latent-effects?
-                         "C7-VERIFY"]
-                        [:dynamic-boundaries-profile-gated? "C7-DYNAMIC"]
-                        [:casts-classified? "C7-CAST"]
-                        [:generic-and-protocol-evidence? "C7-GENERIC"]
-                        [:schema-identity-preserved? "C7-SCHEMA"]
-                        [:layout-facts-recorded? "C7-LAYOUT"]
-                        [:diagnostics-covered? "C7-VERIFY"]
-                        [:verifier-passed? "C7-VERIFY"]]]
-      (when-not (get proof field)
-        (c7-type-fail! id source-path {:stage :type-check}
-                       {:missing-fields [field]}))))
-  :complete)
+  (c7-call c7/c7-type-validate! source-path artifact))
 
 (defn compiler-c7-type-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        overrides (c7-type-source-overrides module)
-        _ (c7-type-validate-overrides! source-path module overrides)
-        c6-artifact (compiler-c6-lowering-source-artifact source-path
-                                                          source-text)
-        nodes (:core-node-table c6-artifact)
-        type-facts (mapv c7-type-fact nodes)
-        environment (c7-type-environment type-facts)
-        constraints (c7-constraint-ledger type-facts)
-        functions (c7-function-table nodes)
-        dynamic (c7-dynamic-boundary-records nodes module)
-        cast (c7-cast-records nodes)
-        generic (c7-generic-instantiations nodes)
-        dispatch (c7-protocol-dispatch-table nodes)
-        schema (c7-schema-links (:domain-boundary-records c6-artifact))
-        layout (c7-layout-facts nodes)
-        diagnostics (c7-type-diagnostics source-path nodes)
-        typed-core
-        {:artifact :gravity/typed-core
-         :module (get-in c6-artifact [:core-ast-module :module])
-         :core-input (:artifact-id c6-artifact)
-         :types (:types environment)
-         :locals (:locals environment)
-         :functions (:functions functions)
-         :constraints (mapv :constraint-id (:constraints constraints))
-         :dynamic-boundaries (mapv :boundary-id (:records dynamic))
-         :casts (mapv :cast-id (:records cast))
-         :layout-facts :c7-layout-facts
-         :diagnostics []
-         :status :complete}
-        verifier (c7-typed-core-verifier-report nodes type-facts constraints
-                                                functions dynamic cast generic
-                                                dispatch schema layout)
-        artifact-base
-        {:kind :gravity/stage0-c7-type-checker-artifact
-         :task "P06-D086"
-         :document-set ["C7"]
-         :governing-document c7-type-governing-document
-         :pass {:name :c7-type-checker
-                :input :verified-core-ast
-                :output :typed-core
-                :requires [:core-ast-module :core-node-table
-                           :binding-table :profile :target
-                           :domain-boundary-records]
-                :preserves [:source-spans :generated-origin :metadata
-                            :profile :target :effects :capabilities
-                            :unsafe-metadata]
-                :emits [:typed-core-module :type-environment
-                        :constraint-ledger :generic-instantiation-table
-                        :protocol-dispatch-type-table
-                        :dynamic-boundary-records :cast-conversion-records
-                        :layout-facts :schema-type-links
-                        :typed-core-verifier-report :type-diagnostics]
-                :rejects c7-type-diagnostic-ids}
-         :source-overrides overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c6-core-lowering-artifact
-         (select-keys c6-artifact [:kind :artifact-id :core-ast-module
-                                   :surface-to-core-map
-                                   :evaluation-order-records
-                                   :domain-boundary-records])
-         :typed-core-module typed-core
-         :type-environment environment
-         :type-facts type-facts
-         :constraint-ledger constraints
-         :function-type-table functions
-         :generic-instantiation-table generic
-         :protocol-dispatch-type-table dispatch
-         :dynamic-boundary-records dynamic
-         :cast-conversion-records cast
-         :layout-facts layout
-         :schema-type-links schema
-         :typed-core-verifier-report verifier
-         :type-diagnostics diagnostics
-         :c7-type-check-results
-         {:documents ["C7"]
-          :task "P06-D086"
-          :required-diagnostic-ids c7-type-diagnostic-ids
-          :typed-core-status :complete
-          :type-environment-status :complete
-          :constraint-status :solved
-          :generic-status :complete
-          :protocol-status :complete
-          :dynamic-boundary-status :complete
-          :cast-status :complete
-          :schema-link-status :complete
-          :layout-status :complete
-          :verifier-status (:status verifier)
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c7-type-validate! source-path artifact-base)
-        capability-proof (c7-type-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+  (c7-call c7/compiler-c7-type-source-artifact source-path source-text))
 
 (defn compiler-c7-type-file-artifact
   [path]
-  (compiler-c7-type-source-artifact path (slurp path)))
+  (c7-call c7/compiler-c7-type-file-artifact path))
 
-(def c8-effect-diagnostic-ids
-  ["C8-UNDECLARED"
-   "C8-PROFILE"
-   "C8-CAPABILITY"
-   "C8-BUILD"
-   "C8-REPLAY"
-   "C8-ORDER"
-   "C8-RUNTIME"
-   "C8-UNKNOWN"
-   "C8-VERIFY"])
+(def c8-effect-diagnostic-ids c8/c8-effect-diagnostic-ids)
+(def c8-effect-governing-document c8/c8-effect-governing-document)
+(def c8-effect-rejected-designs c8/c8-effect-rejected-designs)
+(def c8-effect-override-diagnostics c8/c8-effect-override-diagnostics)
+(def c8-known-effects c8/c8-known-effects)
+(def c8-effect-capability c8/c8-effect-capability)
+(def c8-replay-sensitive-effects c8/c8-replay-sensitive-effects)
 
-(def c8-effect-governing-document
-  "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md")
+(declare c8-effect-source-overrides
+         c8-effect-message
+         c8-effect-fail!
+         c8-effect-validate-overrides!
+         c8-fact-direct-effects
+         c8-effectful-facts
+         c8-effect-graph
+         c8-legality-records
+         c8-capability-proof-records
+         c8-build-effect-log
+         c8-replay-requirements
+         c8-ordering-constraints
+         c8-residual-effect-report
+         c8-effect-diagnostics
+         c8-effect-verifier-report
+         c8-effect-capability-proof
+         c8-effect-validate!
+         compiler-c8-effect-source-artifact
+         compiler-c8-effect-file-artifact)
 
-(def c8-effect-rejected-designs
-  [{:diagnostic "C8-UNDECLARED"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-undeclared.gravity"
-    :rejected-design :inferred-effect-outside-declaration}
-   {:diagnostic "C8-PROFILE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-profile.gravity"
-    :rejected-design :profile-rejects-effect}
-   {:diagnostic "C8-CAPABILITY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-capability.gravity"
-    :rejected-design :missing-capability-grant}
-   {:diagnostic "C8-BUILD"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-build.gravity"
-    :rejected-design :ungranted-build-effect}
-   {:diagnostic "C8-REPLAY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-replay.gravity"
-    :rejected-design :replay-sensitive-effect-without-obligation}
-   {:diagnostic "C8-ORDER"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-order.gravity"
-    :rejected-design :missing-effect-ordering}
-   {:diagnostic "C8-RUNTIME"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-runtime.gravity"
-    :rejected-design :no-runtime-provider-support}
-   {:diagnostic "C8-UNKNOWN"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-unknown.gravity"
-    :rejected-design :unregistered-effect-name}
-   {:diagnostic "C8-VERIFY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-verify.gravity"
-    :rejected-design :malformed-effect-artifact}])
+(defn- c8-effect-ops []
+  {:fail! fail!
+   :source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c7-type-source-artifact compiler-c7-type-source-artifact
+   :c8-effect-diagnostic-ids c8-effect-diagnostic-ids
+   :c8-effect-governing-document c8-effect-governing-document
+   :c8-effect-rejected-designs c8-effect-rejected-designs
+   :c8-effect-override-diagnostics c8-effect-override-diagnostics
+   :c8-known-effects c8-known-effects
+   :c8-effect-capability c8-effect-capability
+   :c8-replay-sensitive-effects c8-replay-sensitive-effects
+   :c8-effect-source-overrides c8-effect-source-overrides
+   :c8-effect-message c8-effect-message
+   :c8-effect-fail! c8-effect-fail!
+   :c8-effect-validate-overrides! c8-effect-validate-overrides!
+   :c8-fact-direct-effects c8-fact-direct-effects
+   :c8-effectful-facts c8-effectful-facts
+   :c8-effect-graph c8-effect-graph
+   :c8-legality-records c8-legality-records
+   :c8-capability-proof-records c8-capability-proof-records
+   :c8-build-effect-log c8-build-effect-log
+   :c8-replay-requirements c8-replay-requirements
+   :c8-ordering-constraints c8-ordering-constraints
+   :c8-residual-effect-report c8-residual-effect-report
+   :c8-effect-diagnostics c8-effect-diagnostics
+   :c8-effect-verifier-report c8-effect-verifier-report
+   :c8-effect-capability-proof c8-effect-capability-proof
+   :c8-effect-validate! c8-effect-validate!
+   :compiler-c8-effect-source-artifact compiler-c8-effect-source-artifact
+   :compiler-c8-effect-file-artifact compiler-c8-effect-file-artifact})
 
-(def c8-effect-override-diagnostics
-  {:undeclared "C8-UNDECLARED"
-   :profile "C8-PROFILE"
-   :capability "C8-CAPABILITY"
-   :build "C8-BUILD"
-   :replay "C8-REPLAY"
-   :order "C8-ORDER"
-   :runtime "C8-RUNTIME"
-   :unknown "C8-UNKNOWN"
-   :verify "C8-VERIFY"})
-
-(def c8-known-effects
-  #{:io/write :io/read :filesystem/read :filesystem/write :network/http
-    :database/read :database/write :time/read :random/read
-    :runtime/dynamic-dispatch :error/throw :memory/raw :ffi/call
-    :workflow/event :workflow/replay :ai/model-call :ai/tool-call
-    :ai/human-review :build/read-file :build/write-artifact
-    :build/network :build/exec :build/model-call :build/tool-call})
-
-(def c8-effect-capability
-  {:io/write :io/stdout
-   :filesystem/read :fs/read
-   :filesystem/write :fs/write
-   :network/http :http/client
-   :database/read :db/read
-   :database/write :db/write
-   :memory/raw :memory/raw
-   :ffi/call :ffi/call
-   :workflow/event :workflow/event
-   :ai/model-call :model/call
-   :ai/tool-call :tool/invoke
-   :ai/human-review :ai/human-review
-   :build/read-file :fs/read
-   :build/write-artifact :artifact/write
-   :build/network :http/client
-   :build/exec :process/exec
-   :build/model-call :model/call
-   :build/tool-call :tool/invoke})
-
-(def c8-replay-sensitive-effects
-  #{:time/read :random/read :network/http :database/read :workflow/event
-    :workflow/replay :ai/model-call :ai/tool-call :ai/human-review
-    :runtime/dynamic-dispatch})
+(def ^:private ^:dynamic *c8-leaf-call?* false)
+(defn- c8-call [operation & args]
+  (if *c8-leaf-call?*
+    (apply operation args)
+    (binding [*c8-leaf-call?* true]
+      (c8/with-operations (c8-effect-ops)
+        #(apply operation args)))))
 
 (defn c8-effect-source-overrides
   [module]
-  (get-in module [:metadata :compiler :c8-effect-check] {}))
+  (c8-call c8/c8-effect-source-overrides module))
 
 (defn c8-effect-message
   [id]
-  (case id
-    "C8-UNDECLARED" "inferred effects exceed the declared effect allowance"
-    "C8-PROFILE" "active profile rejects the inferred effect"
-    "C8-CAPABILITY" "effect lacks a required capability grant"
-    "C8-BUILD" "build effect lacks a build grant"
-    "C8-REPLAY" "replay-sensitive effect lacks replay or audit obligation"
-    "C8-ORDER" "effect ordering constraints are missing"
-    "C8-RUNTIME" "no legal runtime or provider supports the effect"
-    "C8-UNKNOWN" "effect name is unregistered"
-    "C8-VERIFY" "effect verifier rejected the artifact"
-    "Effect checking failed"))
+  (c8-call c8/c8-effect-message id))
 
 (defn c8-effect-fail!
   [id source-path subject extra]
-  (fail! id
-         (c8-effect-message id)
-         (merge {:source-span (or (:source-span subject)
-                                  (get-in subject [:source :span])
-                                  (:span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :c8-effect-checker
-                 :stage :effect-check
-                 :document-id "C8"
-                 :expected-document c8-effect-governing-document
-                 :core-node-id (or (:core-node-id subject) (:core-node subject))
-                 :generated-origin-chain (or (:generated-origin subject)
-                                             (get-in subject
-                                                     [:source :origin-chain]))
-                 :function (:function subject)
-                 :namespace (:namespace subject)
-                 :effect (or (:effect subject) :unknown/effect)
-                 :capability (:capability subject)
-                 :profile (:profile subject)
-                 :target (:target subject)
-                 :provider (:provider subject)
-                 :grant (:grant subject)
-                 :remediation "Emit effect graph facts, legality intersection records, capability proofs, build/replay obligations, ordering constraints, residual effect records, and verifier-accepted diagnostics before MIR construction."}
-                extra)))
+  (c8-call c8/c8-effect-fail! id source-path subject extra))
 
 (defn c8-effect-validate-overrides!
   [source-path module overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c8-effect-override-diagnostics fail-kind)]
-      (c8-effect-fail! id source-path
-                       {:source-span (source-span source-path 0)
-                        :core-node "fixture-override"
-                        :function "fixture"
-                        :namespace (:module module)
-                        :effect fail-kind
-                        :capability (get c8-effect-capability fail-kind)
-                        :profile (:profile module)
-                        :target (:target module)
-                        :provider :fixture/provider
-                        :grant :fixture/grant
-                        :generated-origin []}
-                       {:missing-fields [fail-kind]}))))
+  (c8-call c8/c8-effect-validate-overrides! source-path module overrides))
 
 (defn c8-fact-direct-effects
   [fact]
-  (set/union (set (:effects fact))
-             (case (:type fact)
-               "CheckedCast[String]" #{:runtime/dynamic-dispatch}
-               "ProtocolValue" #{:runtime/dynamic-dispatch}
-               "SchemaDerived" #{:runtime/dynamic-dispatch}
-               "UnsafeIsland[Dynamic]" #{:memory/raw}
-               "Never" #{:error/throw}
-               #{})))
+  (c8-call c8/c8-fact-direct-effects fact))
 
 (defn c8-effectful-facts
   [type-facts]
-  (filter #(seq (c8-fact-direct-effects %)) type-facts))
+  (c8-call c8/c8-effectful-facts type-facts))
 
 (defn c8-effect-graph
   [module type-facts functions]
-  (let [effectful (c8-effectful-facts type-facts)]
-    {:artifact :gravity/c8-effect-graph
-     :module (:module module)
-     :nodes (into (sorted-map)
-                  (map (fn [fact]
-                         (let [direct (c8-fact-direct-effects fact)]
-                           [(:core-node fact)
-                            {:direct direct
-                             :latent #{}
-                             :transitive direct
-                             :ordering (if (seq direct) :sequence :pure)
-                             :source (:source fact)}]))
-                       type-facts))
-     :functions (into (sorted-map)
-                      (map (fn [fn-record]
-                             [(:fn-id fn-record)
-                              {:declared (set (:latent-effects fn-record))
-                               :inferred (set (:latent-effects fn-record))
-                               :latent (set (:latent-effects fn-record))
-                               :throws (:throws fn-record)}])
-                           (:functions functions)))
-     :namespace {:declared (:effects module)
-                 :inferred (set (mapcat c8-fact-direct-effects type-facts))}
-     :build-effects (vec (sort-by str
-                                  (get-in module
-                                          [:metadata :build-grants] #{})))
-     :replay-required (set/intersection
-                       c8-replay-sensitive-effects
-                       (set (mapcat c8-fact-direct-effects effectful)))
-     :diagnostics []
-     :status :complete}))
+  (c8-call c8/c8-effect-graph module type-facts functions))
 
 (defn c8-legality-records
   [module effect-graph]
-  (let [effects (get-in effect-graph [:namespace :inferred])]
-    {:artifact :gravity/c8-effect-legality-report
-     :records
-     (mapv (fn [effect]
-             (let [capability (get c8-effect-capability effect)]
-               {:effect effect
-                :source :namespace
-                :allowed-by {:function true
-                             :namespace (contains? (:effects module) effect)
-                             :profile true
-                             :package true
-                             :deployment true
-                             :runtime true
-                             :safety true}
-                :required-capabilities (if capability #{capability} #{})
-                :granted-capabilities (set/intersection
-                                       (if capability #{capability} #{})
-                                       (:capabilities module))
-                :result :accepted}))
-           (sort-by str effects))
-     :status :accepted}))
+  (c8-call c8/c8-legality-records module effect-graph))
 
 (defn c8-capability-proof-records
   [module effect-graph]
-  {:artifact :gravity/c8-capability-proof-records
-   :records
-   (mapv (fn [effect]
-           (let [capability (get c8-effect-capability effect)]
-             {:artifact :gravity/capability-proof
-              :effect effect
-              :source :namespace
-              :capability capability
-              :grant (when capability
-                       {:grant/id (keyword "stage0" (name capability))
-                        :scope :namespace
-                        :principal (:module module)
-                        :phase :runtime})
-              :provider (keyword "gravity.runtime" (name effect))
-              :profile (:profile module)
-              :target (:target module)
-              :status (if (or (nil? capability)
-                              (contains? (:capabilities module) capability))
-                        :accepted
-                        :rejected)}))
-         (sort-by str (get-in effect-graph [:namespace :inferred])))
-   :status :complete})
+  (c8-call c8/c8-capability-proof-records module effect-graph))
 
 (defn c8-build-effect-log
   [module]
-  (let [grants (get-in module [:metadata :build-grants] #{})]
-    {:artifact :gravity/c8-build-effect-log
-     :records (mapv (fn [effect]
-                      {:effect effect
-                       :phase :build
-                       :granted? (contains? grants effect)
-                       :capability (get c8-effect-capability effect)
-                       :status (if (contains? grants effect)
-                                 :accepted
-                                 :rejected)})
-                    (sort-by str grants))
-     :status :complete}))
+  (c8-call c8/c8-build-effect-log module))
 
 (defn c8-replay-requirements
   [effect-graph]
-  {:artifact :gravity/c8-replay-effect-requirements
-   :records (mapv (fn [effect]
-                    {:effect effect
-                     :mode :audit-record
-                     :record-id (str "c8-replay-" (name effect))
-                     :status :recorded})
-                  (sort-by str (:replay-required effect-graph)))
-   :status :complete})
+  (c8-call c8/c8-replay-requirements effect-graph))
 
 (defn c8-ordering-constraints
   [effect-graph]
-  {:artifact :gravity/c8-effect-ordering-constraints
-   :records
-   (mapv (fn [[node-id node]]
-           {:constraint-id (str "c8-order-" node-id)
-            :core-node node-id
-            :effects (:direct node)
-            :ordering (:ordering node)
-            :preserves [:sequence :no-duplicate :no-eliminate]
-            :status :recorded})
-         (filter (fn [[_ node]] (seq (:direct node)))
-                 (:nodes effect-graph)))
-   :status :complete})
+  (c8-call c8/c8-ordering-constraints effect-graph))
 
 (defn c8-residual-effect-report
   [effect-graph]
-  (let [effects (get-in effect-graph [:namespace :inferred])
-        residuals (set/intersection effects
-                                    #{:runtime/dynamic-dispatch :error/throw
-                                      :memory/raw})]
-    {:artifact :gravity/c8-residual-effect-report
-     :records (mapv (fn [effect]
-                      {:effect effect
-                       :reason :preserved-for-runtime-or-safety
-                       :mir-preservation :required
-                       :status :recorded})
-                    (sort-by str residuals))
-     :status :complete}))
+  (c8-call c8/c8-residual-effect-report effect-graph))
 
 (defn c8-effect-diagnostics
   [source-path type-facts]
-  {:artifact :gravity/c8-effect-diagnostic-registry
-   :required-diagnostic-ids c8-effect-diagnostic-ids
-   :diagnostics
-   (mapv (fn [design]
-           (let [fact (first type-facts)
-                 effect (keyword "fixture" (:diagnostic design))]
-             {:diagnostic (:diagnostic design)
-              :fixture (:fixture design)
-              :core-node-id (:core-node fact)
-              :source-span (get-in fact [:source :span]
-                                   (source-span source-path 0))
-              :generated-origin-chain (get-in fact [:source :origin-chain])
-              :function :fixture
-              :namespace :fixture
-              :effect effect
-              :capability (get c8-effect-capability effect)
-              :profile (:profile fact)
-              :target (:target fact)
-              :provider :fixture/provider
-              :grant :fixture/grant
-              :remediation "Keep effect legality explicit before MIR construction."}))
-         c8-effect-rejected-designs)
-   :status :complete})
+  (c8-call c8/c8-effect-diagnostics source-path type-facts))
 
 (defn c8-effect-verifier-report
-  [module effect-graph legality capability-proof build-log replay ordering residual diagnostics]
-  (let [inferred (get-in effect-graph [:namespace :inferred])
-        declared (:effects module)
-        known? (set/subset? inferred c8-known-effects)
-        declared? (set/subset? inferred declared)
-        legality? (every? #(= :accepted (:result %)) (:records legality))
-        capabilities? (every? #(= :accepted (:status %))
-                              (:records capability-proof))
-        build? (every? #(= :accepted (:status %)) (:records build-log))
-        replay? (or (empty? (:replay-required effect-graph))
-                    (seq (:records replay)))
-        order? (seq (:records ordering))
-        residual? (= :complete (:status residual))
-        diagnostics? (= (set c8-effect-diagnostic-ids)
-                        (set (map :diagnostic (:diagnostics diagnostics))))]
-    {:artifact :gravity/c8-effect-verifier-report
-     :every-effectful-node-recorded? (boolean (seq (:nodes effect-graph)))
-     :known-effects? known?
-     :declarations-cover-inferred-effects? declared?
-     :legality-intersections-accepted? legality?
-     :capability-proofs-accepted? capabilities?
-     :build-effects-authorized? build?
-     :replay-obligations-recorded? (boolean replay?)
-     :ordering-constraints-recorded? (boolean order?)
-     :residual-effects-recorded? residual?
-     :diagnostics-covered? diagnostics?
-     :status (if (and known? declared? legality? capabilities? build?
-                      replay? order? residual? diagnostics?)
-               :passed
-               :failed)}))
+  [module effect-graph legality capability-proof build-log replay ordering
+   residual diagnostics]
+  (c8-call c8/c8-effect-verifier-report module effect-graph legality
+           capability-proof build-log replay ordering residual diagnostics))
 
 (defn c8-effect-capability-proof
   [artifact]
-  (let [verifier (:effect-verifier-report artifact)]
-    {:effect-graph-complete?
-     (:every-effectful-node-recorded? verifier)
-     :declared-effect-allowance-checked?
-     (:declarations-cover-inferred-effects? verifier)
-     :legality-intersection-recorded?
-     (:legality-intersections-accepted? verifier)
-     :capability-proofs-accepted?
-     (:capability-proofs-accepted? verifier)
-     :build-effects-separated-and-authorized?
-     (:build-effects-authorized? verifier)
-     :replay-obligations-recorded?
-     (:replay-obligations-recorded? verifier)
-     :ordering-constraints-recorded?
-     (:ordering-constraints-recorded? verifier)
-     :residual-effects-recorded?
-     (:residual-effects-recorded? verifier)
-     :diagnostics-covered?
-     (:diagnostics-covered? verifier)
-     :verifier-passed?
-     (= :passed (:status verifier))
-     :status :complete}))
+  (c8-call c8/c8-effect-capability-proof artifact))
 
 (defn c8-effect-validate!
   [source-path artifact]
-  (let [proof (c8-effect-capability-proof artifact)]
-    (doseq [[field id] [[:effect-graph-complete? "C8-VERIFY"]
-                        [:declared-effect-allowance-checked?
-                         "C8-UNDECLARED"]
-                        [:legality-intersection-recorded? "C8-PROFILE"]
-                        [:capability-proofs-accepted? "C8-CAPABILITY"]
-                        [:build-effects-separated-and-authorized?
-                         "C8-BUILD"]
-                        [:replay-obligations-recorded? "C8-REPLAY"]
-                        [:ordering-constraints-recorded? "C8-ORDER"]
-                        [:residual-effects-recorded? "C8-RUNTIME"]
-                        [:diagnostics-covered? "C8-VERIFY"]
-                        [:verifier-passed? "C8-VERIFY"]]]
-      (when-not (get proof field)
-        (c8-effect-fail! id source-path {:stage :effect-check}
-                         {:missing-fields [field]}))))
-  :complete)
+  (c8-call c8/c8-effect-validate! source-path artifact))
 
 (defn compiler-c8-effect-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        overrides (c8-effect-source-overrides module)
-        _ (c8-effect-validate-overrides! source-path module overrides)
-        c7-artifact (compiler-c7-type-source-artifact source-path source-text)
-        type-facts (:type-facts c7-artifact)
-        functions (:function-type-table c7-artifact)
-        effect-graph (c8-effect-graph module type-facts functions)
-        legality (c8-legality-records module effect-graph)
-        capability-proof-records (c8-capability-proof-records module effect-graph)
-        build-log (c8-build-effect-log module)
-        replay (c8-replay-requirements effect-graph)
-        ordering (c8-ordering-constraints effect-graph)
-        residual (c8-residual-effect-report effect-graph)
-        diagnostics (c8-effect-diagnostics source-path type-facts)
-        verifier (c8-effect-verifier-report module effect-graph legality
-                                            capability-proof-records build-log
-                                            replay ordering residual
-                                            diagnostics)
-        artifact-base
-        {:kind :gravity/stage0-c8-effect-checker-artifact
-         :task "P06-D087"
-         :document-set ["C8"]
-         :governing-document c8-effect-governing-document
-         :pass {:name :c8-effect-checker
-                :input :typed-core
-                :output :effected-core
-                :requires [:typed-core-module :type-facts :function-types
-                           :profile :capabilities :build-grants]
-                :preserves [:source-spans :generated-origin :types
-                            :profile :target :capabilities]
-                :emits [:effect-graph :function-latent-effect-table
-                        :namespace-effect-summary :module-effect-summary
-                        :capability-proof-records :build-effect-log
-                        :replay-effect-requirements
-                        :effect-ordering-constraints
-                        :residual-effect-report
-                        :effect-diagnostics]
-                :rejects c8-effect-diagnostic-ids}
-         :source-overrides overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c7-type-checker-artifact
-         (select-keys c7-artifact [:kind :artifact-id :typed-core-module
-                                   :type-environment :function-type-table
-                                   :capability-based-proof])
-         :effect-graph effect-graph
-         :function-latent-effect-table
-         {:artifact :gravity/c8-function-latent-effect-table
-          :functions (get-in effect-graph [:functions])
-          :status :complete}
-         :namespace-effect-summary (:namespace effect-graph)
-         :module-effect-summary {:declared (:effects module)
-                                 :inferred (get-in effect-graph
-                                                   [:namespace :inferred])
-                                 :status :complete}
-         :effect-legality-report legality
-         :capability-proof-records capability-proof-records
-         :build-effect-log build-log
-         :replay-effect-requirements replay
-         :effect-ordering-constraints ordering
-         :residual-effect-report residual
-         :effect-verifier-report verifier
-         :effect-diagnostics diagnostics
-         :c8-effect-check-results
-         {:documents ["C8"]
-          :task "P06-D087"
-          :required-diagnostic-ids c8-effect-diagnostic-ids
-          :effect-graph-status :complete
-          :function-latent-status :complete
-          :namespace-summary-status :complete
-          :module-summary-status :complete
-          :capability-proof-status :accepted
-          :build-effect-status :complete
-          :replay-status :complete
-          :ordering-status :complete
-          :residual-status :complete
-          :verifier-status (:status verifier)
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c8-effect-validate! source-path artifact-base)
-        capability-proof (c8-effect-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+  (c8-call c8/compiler-c8-effect-source-artifact source-path source-text))
 
 (defn compiler-c8-effect-file-artifact
   [path]
-  (compiler-c8-effect-source-artifact path (slurp path)))
+  (c8-call c8/compiler-c8-effect-file-artifact path))
 
-(def c9-ownership-diagnostic-ids
-  ["C9-USE-AFTER-MOVE"
-   "C9-USE-AFTER-CONSUME"
-   "C9-BORROW-ESCAPE"
-   "C9-MUT-ALIAS"
-   "C9-MOVE-WHILE-BORROWED"
-   "C9-REGION-ESCAPE"
-   "C9-ARENA-GENERATION"
-   "C9-LINEAR-LEAK"
-   "C9-LINEAR-DOUBLE"
-   "C9-TRANSFER"
-   "C9-RUNTIME-CHECK"
-   "C9-UNSAFE"])
+(def c9-ownership-diagnostic-ids c9/c9-ownership-diagnostic-ids)
+(def c9-ownership-governing-document c9/c9-ownership-governing-document)
+(def c9-ownership-rejected-designs c9/c9-ownership-rejected-designs)
+(def c9-ownership-override-diagnostics c9/c9-ownership-override-diagnostics)
 
-(def c9-ownership-governing-document
-  "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md")
+(declare c9-ownership-source-overrides
+         c9-ownership-message
+         c9-ownership-fail!
+         c9-ownership-validate-overrides!
+         c9-node-ids
+         c9-node
+         c9-ownership-graph
+         c9-borrow-graph
+         c9-lifetime-interval-map
+         c9-escape-analysis-report
+         c9-region-lifetime-graph
+         c9-arena-generation-graph
+         c9-linear-resource-flow-graph
+         c9-transfer-records
+         c9-runtime-check-records
+         c9-unsafe-audit-references
+         c9-ownership-diagnostics
+         c9-linear-paths-exact?
+         c9-ownership-verifier-report
+         c9-ownership-capability-proof
+         c9-ownership-validate!
+         compiler-c9-ownership-source-artifact
+         compiler-c9-ownership-file-artifact)
 
-(def c9-ownership-rejected-designs
-  [{:diagnostic "C9-USE-AFTER-MOVE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-use-after-move.gravity"
-    :rejected-design :use-after-move}
-   {:diagnostic "C9-USE-AFTER-CONSUME"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-use-after-consume.gravity"
-    :rejected-design :use-after-terminal-consume}
-   {:diagnostic "C9-BORROW-ESCAPE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-borrow-escape.gravity"
-    :rejected-design :borrow-outlives-valid-scope}
-   {:diagnostic "C9-MUT-ALIAS"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-mut-alias.gravity"
-    :rejected-design :mutable-access-while-aliased}
-   {:diagnostic "C9-MOVE-WHILE-BORROWED"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-move-while-borrowed.gravity"
-    :rejected-design :move-during-active-borrow}
-   {:diagnostic "C9-REGION-ESCAPE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-region-escape.gravity"
-    :rejected-design :region-value-escapes}
-   {:diagnostic "C9-ARENA-GENERATION"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-arena-generation.gravity"
-    :rejected-design :stale-arena-generation}
-   {:diagnostic "C9-LINEAR-LEAK"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-linear-leak.gravity"
-    :rejected-design :missing-terminal-resource-state}
-   {:diagnostic "C9-LINEAR-DOUBLE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-linear-double.gravity"
-    :rejected-design :duplicate-terminal-resource-state}
-   {:diagnostic "C9-TRANSFER"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-transfer.gravity"
-    :rejected-design :invalid-ownership-transfer}
-   {:diagnostic "C9-RUNTIME-CHECK"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-runtime-check.gravity"
-    :rejected-design :runtime-check-unavailable}
-   {:diagnostic "C9-UNSAFE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-unsafe.gravity"
-    :rejected-design :manual-lifetime-or-resource-flow-without-audit}])
+(defn- c9-ownership-ops []
+  {:fail! fail!
+   :source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c8-effect-source-artifact compiler-c8-effect-source-artifact
+   :c9-ownership-diagnostic-ids c9-ownership-diagnostic-ids
+   :c9-ownership-governing-document c9-ownership-governing-document
+   :c9-ownership-rejected-designs c9-ownership-rejected-designs
+   :c9-ownership-override-diagnostics c9-ownership-override-diagnostics
+   :c9-ownership-source-overrides c9-ownership-source-overrides
+   :c9-ownership-message c9-ownership-message
+   :c9-ownership-fail! c9-ownership-fail!
+   :c9-ownership-validate-overrides! c9-ownership-validate-overrides!
+   :c9-node-ids c9-node-ids
+   :c9-node c9-node
+   :c9-ownership-graph c9-ownership-graph
+   :c9-borrow-graph c9-borrow-graph
+   :c9-lifetime-interval-map c9-lifetime-interval-map
+   :c9-escape-analysis-report c9-escape-analysis-report
+   :c9-region-lifetime-graph c9-region-lifetime-graph
+   :c9-arena-generation-graph c9-arena-generation-graph
+   :c9-linear-resource-flow-graph c9-linear-resource-flow-graph
+   :c9-transfer-records c9-transfer-records
+   :c9-runtime-check-records c9-runtime-check-records
+   :c9-unsafe-audit-references c9-unsafe-audit-references
+   :c9-ownership-diagnostics c9-ownership-diagnostics
+   :c9-linear-paths-exact? c9-linear-paths-exact?
+   :c9-ownership-verifier-report c9-ownership-verifier-report
+   :c9-ownership-capability-proof c9-ownership-capability-proof
+   :c9-ownership-validate! c9-ownership-validate!
+   :compiler-c9-ownership-source-artifact compiler-c9-ownership-source-artifact
+   :compiler-c9-ownership-file-artifact compiler-c9-ownership-file-artifact})
 
-(def c9-ownership-override-diagnostics
-  {:use-after-move "C9-USE-AFTER-MOVE"
-   :use-after-consume "C9-USE-AFTER-CONSUME"
-   :borrow-escape "C9-BORROW-ESCAPE"
-   :mut-alias "C9-MUT-ALIAS"
-   :move-while-borrowed "C9-MOVE-WHILE-BORROWED"
-   :region-escape "C9-REGION-ESCAPE"
-   :arena-generation "C9-ARENA-GENERATION"
-   :linear-leak "C9-LINEAR-LEAK"
-   :linear-double "C9-LINEAR-DOUBLE"
-   :transfer "C9-TRANSFER"
-   :runtime-check "C9-RUNTIME-CHECK"
-   :unsafe "C9-UNSAFE"})
+(def ^:private ^:dynamic *c9-leaf-call?* false)
+(defn- c9-call [operation & args]
+  (if *c9-leaf-call?*
+    (apply operation args)
+    (binding [*c9-leaf-call?* true]
+      (c9/with-operations (c9-ownership-ops)
+        #(apply operation args)))))
 
 (defn c9-ownership-source-overrides
   [module]
-  (get-in module [:metadata :compiler :c9-ownership-check] {}))
+  (c9-call c9/c9-ownership-source-overrides module))
 
 (defn c9-ownership-message
   [id]
-  (case id
-    "C9-USE-AFTER-MOVE" "owned value is used after move"
-    "C9-USE-AFTER-CONSUME" "linear or owned value is used after terminal consumption"
-    "C9-BORROW-ESCAPE" "borrow outlives owner, region, provider, callback, or task scope"
-    "C9-MUT-ALIAS" "mutable access overlaps active aliases"
-    "C9-MOVE-WHILE-BORROWED" "owner is moved while an active borrow exists"
-    "C9-REGION-ESCAPE" "region value escapes its valid lifetime"
-    "C9-ARENA-GENERATION" "arena value is used after reset generation invalidation"
-    "C9-LINEAR-LEAK" "linear resource may miss a terminal operation"
-    "C9-LINEAR-DOUBLE" "linear resource may reach multiple terminal operations"
-    "C9-TRANSFER" "ownership transfer lacks explicit destination cleanup or lifetime proof"
-    "C9-RUNTIME-CHECK" "required dynamic ownership check is unavailable in the active profile"
-    "C9-UNSAFE" "manual lifetime, alias, or resource behavior lacks unsafe audit evidence"
-    "Ownership checking failed"))
+  (c9-call c9/c9-ownership-message id))
 
 (defn c9-ownership-fail!
   [id source-path subject extra]
-  (fail! id
-         (c9-ownership-message id)
-         (merge {:source-span (or (:source-span subject)
-                                  (get-in subject [:source :span])
-                                  (:span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :c9-ownership-checker
-                 :stage :ownership-lifetime-region-check
-                 :document-id "C9"
-                 :expected-document c9-ownership-governing-document
-                 :value-id (or (:value-id subject) :fixture/value)
-                 :owner-id (or (:owner-id subject) :fixture/owner)
-                 :borrow-id (or (:borrow-id subject) :fixture/borrow)
-                 :region-id (or (:region-id subject) :fixture/region)
-                 :arena-generation (or (:arena-generation subject)
-                                       :fixture/generation)
-                 :resource-id (or (:resource-id subject)
-                                  :fixture/resource)
-                 :control-path (or (:control-path subject) :fixture/path)
-                 :generated-origin-chain (or (:generated-origin subject)
-                                             (get-in subject
-                                                     [:source :origin-chain]))
-                 :profile (:profile subject)
-                 :target (:target subject)
-                 :transfer (:transfer subject)
-                 :runtime-check (:runtime-check subject)
-                 :unsafe-audit (:unsafe-audit subject)
-                 :remediation "Emit ownership, borrow, lifetime, region, arena, linear-flow, transfer, runtime-check, unsafe-audit, and diagnostic records before safety analysis and MIR construction."}
-                extra)))
+  (c9-call c9/c9-ownership-fail! id source-path subject extra))
 
 (defn c9-ownership-validate-overrides!
   [source-path module overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c9-ownership-override-diagnostics fail-kind)]
-      (c9-ownership-fail! id source-path
-                          {:source-span (source-span source-path 0)
-                           :value-id (keyword "fixture" (name fail-kind))
-                           :owner-id :fixture/owner
-                           :borrow-id :fixture/borrow
-                           :region-id :fixture/region
-                           :arena-generation :fixture/generation
-                           :resource-id :fixture/resource
-                           :control-path :fixture/path
-                           :profile (:profile module)
-                           :target (:target module)
-                           :generated-origin []}
-                          {:missing-fields [fail-kind]}))))
+  (c9-call c9/c9-ownership-validate-overrides! source-path module overrides))
 
 (defn c9-node-ids
   [effect-graph]
-  (vec (keys (:nodes effect-graph))))
+  (c9-call c9/c9-node-ids effect-graph))
 
 (defn c9-node
   [node-ids index fallback]
-  (or (get node-ids index) fallback))
+  (c9-call c9/c9-node node-ids index fallback))
 
 (defn c9-ownership-graph
   [module effect-graph]
-  (let [node-ids (c9-node-ids effect-graph)]
-    {:artifact :gravity/c9-ownership-graph
-     :module (:module module)
-     :owners
-     (into (sorted-map)
-           (map-indexed (fn [idx node-id]
-                          [node-id
-                           {:value-id node-id
-                            :owner-id (str "owner-" (inc idx))
-                            :kind (case (mod idx 6)
-                                    0 :persistent-immutable
-                                    1 :owned-mutable
-                                    2 :borrowed-immutable
-                                    3 :borrowed-mutable
-                                    4 :region-owned
-                                    :linear-resource)
-                            :copyable? (zero? (mod idx 6))
-                            :profile (:profile module)
-                            :target (:target module)
-                            :source (get-in effect-graph
-                                            [:nodes node-id :source])}])
-                        node-ids))
-     :moves [{:move-id "move-owned-buffer"
-              :from "buffer"
-              :to "worker-buffer"
-              :value (c9-node node-ids 1 "core-node-owned")
-              :owner-before "owner-2"
-              :owner-after "owner-task"
-              :span (source-span (:source-path module) 0)
-              :status :accepted}]
-     :consumes [{:consume-id "consume-linear-file"
-                 :resource-id "resource-file"
-                 :operation :close
-                 :owner-before "owner-resource"
-                 :terminal-state :closed
-                 :span (source-span (:source-path module) 0)
-                 :status :accepted}]
-     :status :complete}))
+  (c9-call c9/c9-ownership-graph module effect-graph))
 
 (defn c9-borrow-graph
   [module effect-graph]
-  (let [node-ids (c9-node-ids effect-graph)]
-    {:artifact :gravity/c9-borrow-graph
-     :module (:module module)
-     :nodes {:owners ["owner-2" "owner-region" "owner-resource"]
-             :borrows ["borrow-immutable-a" "borrow-immutable-b"
-                       "borrow-mutable-exclusive"]
-             :ranges [:whole :header :payload]
-             :provider-scopes [:provider/scope-stdout
-                               :provider/scope-memory]}
-     :edges [{:edge :immutable-borrow
-              :owner "owner-2"
-              :borrow-id "borrow-immutable-a"
-              :value (c9-node node-ids 1 "core-node-owned")
-              :range :whole
-              :lifetime "lt-borrow-read"
-              :status :accepted}
-             {:edge :immutable-borrow
-              :owner "owner-2"
-              :borrow-id "borrow-immutable-b"
-              :value (c9-node node-ids 1 "core-node-owned")
-              :range :whole
-              :lifetime "lt-borrow-read"
-              :status :accepted}
-             {:edge :mutable-borrow
-              :owner "owner-2"
-              :borrow-id "borrow-mutable-exclusive"
-              :value (c9-node node-ids 1 "core-node-owned")
-              :range :payload
-              :lifetime "lt-borrow-write"
-              :status :accepted}
-             {:edge :field-projection
-              :owner "owner-2"
-              :borrow-id "borrow-field-header"
-              :value (c9-node node-ids 2 "core-node-field")
-              :range :header
-              :lifetime "lt-borrow-read"
-              :status :accepted}
-             {:edge :transfer
-              :owner "owner-2"
-              :destination "owner-task"
-              :value (c9-node node-ids 3 "core-node-transfer")
-              :lifetime "lt-structured-task"
-              :status :accepted}]
-     :conflict-analysis {:many-immutable-borrows :accepted
-                         :one-mutable-borrow :accepted
-                         :move-while-borrowed :rejected-by-diagnostic
-                         :mutable-alias :rejected-by-diagnostic
-                         :status :complete}
-     :status :complete}))
+  (c9-call c9/c9-borrow-graph module effect-graph))
 
 (defn c9-lifetime-interval-map
   [module]
-  {:artifact :gravity/c9-lifetime-interval-map
-   :module (:module module)
-   :intervals
-   (sorted-map
-    "lt-lexical" {:kind :lexical
-                  :start :function-entry
-                  :end :function-exit
-                  :owner "owner-1"
-                  :allowed-escapes #{}
-                  :invalidates [:scope-exit]}
-    "lt-borrow-read" {:kind :borrow
-                      :start :borrow-enter
-                      :end :borrow-exit
-                      :owner "owner-2"
-                      :allowed-escapes #{}
-                      :invalidates [:owner-move :owner-consume]}
-    "lt-borrow-write" {:kind :mutable-borrow
-                       :start :borrow-mut-enter
-                       :end :borrow-mut-exit
-                       :owner "owner-2"
-                       :allowed-escapes #{}
-                       :invalidates [:owner-move :owner-consume]}
-    "lt-region-outer" {:kind :region
-                       :start :region-enter
-                       :end :region-exit
-                       :owner "region-outer"
-                       :allowed-escapes #{:copy :serialize}
-                       :invalidates [:region-exit]}
-    "lt-arena-generation-1" {:kind :arena-generation
-                             :start :arena-reset
-                             :end :arena-reset-next
-                             :owner "arena-main"
-                             :allowed-escapes #{}
-                             :invalidates [:arena-reset]}
-    "lt-provider-scope" {:kind :provider-scope
-                         :start :provider-enter
-                         :end :provider-exit
-                         :owner "provider-memory"
-                         :allowed-escapes #{}
-                         :invalidates [:provider-revoke]}
-    "lt-structured-task" {:kind :structured-task
-                          :start :task-spawn
-                          :end :task-join
-                          :owner "owner-task"
-                          :allowed-escapes #{:ownership-transfer}
-                          :invalidates [:task-end]}
-    "lt-callback" {:kind :callback
-                   :start :callback-enter
-                   :end :callback-return
-                   :owner "foreign-callback"
-                   :allowed-escapes #{}
-                   :invalidates [:callback-return]}
-    "lt-generated-artifact" {:kind :generated-artifact
-                             :start :macro-expansion
-                             :end :artifact-serialization
-                             :owner "generated-origin"
-                             :allowed-escapes #{:artifact-provenance}
-                             :invalidates [:compiler-pass-invalidation]})
-   :status :complete})
+  (c9-call c9/c9-lifetime-interval-map module))
 
 (defn c9-escape-analysis-report
   [module]
-  {:artifact :gravity/c9-escape-analysis-report
-   :module (:module module)
-   :legal-escapes [{:destination :function-return
-                    :mode :persistent-copy
-                    :status :accepted}
-                   {:destination :actor-message
-                    :mode :ownership-transfer
-                    :status :accepted}
-                   {:destination :ffi-call
-                    :mode :borrowed-for-call-duration
-                    :status :accepted}
-                   {:destination :generated-artifact
-                    :mode :provenance-only
-                    :status :accepted}]
-   :illegal-escapes-covered-by-diagnostics
-   ["C9-BORROW-ESCAPE" "C9-REGION-ESCAPE" "C9-TRANSFER"]
-   :status :complete})
+  (c9-call c9/c9-escape-analysis-report module))
 
 (defn c9-region-lifetime-graph
   [module]
-  {:artifact :gravity/c9-region-lifetime-graph
-   :module (:module module)
-   :regions
-   (sorted-map
-    "region-outer" {:scope "scope-outer"
-                    :lifetime "lt-region-outer"
-                    :allocations ["region-value-config"]
-                    :escapes []
-                    :provider :region/provider
-                    :status :accepted}
-    "region-inner" {:scope "scope-inner"
-                    :parent "region-outer"
-                    :lifetime "lt-region-inner"
-                    :allocations ["region-value-scratch"]
-                    :escapes []
-                    :provider :region/provider
-                    :status :accepted})
-   :nested-references [{:from "region-inner"
-                        :to "region-outer"
-                        :direction :inner-may-borrow-outer
-                        :status :accepted}]
-   :rejected-escape-families ["C9-REGION-ESCAPE"]
-   :status :complete})
+  (c9-call c9/c9-region-lifetime-graph module))
 
 (defn c9-arena-generation-graph
   [module]
-  {:artifact :gravity/c9-arena-generation-graph
-   :module (:module module)
-   :arenas
-   (sorted-map
-    "arena-main" {:provider :arena/provider
-                  :thread-affinity :task-local
-                  :generations [{:generation "gen-0"
-                                 :allocations ["arena-node-old"]
-                                 :reset-node "core-node-arena-reset"
-                                 :valid? false}
-                                {:generation "gen-1"
-                                 :allocations ["arena-node-current"]
-                                 :valid? true}]
-                  :runtime-generation-checks? true
-                  :status :accepted})
-   :reset-invalidation [{:arena "arena-main"
-                         :invalidated-generation "gen-0"
-                         :replacement-generation "gen-1"
-                         :status :recorded}]
-   :rejected-generation-families ["C9-ARENA-GENERATION"]
-   :status :complete})
+  (c9-call c9/c9-arena-generation-graph module))
 
 (defn c9-linear-resource-flow-graph
   [module]
-  {:artifact :gravity/c9-linear-resource-flow-graph
-   :module (:module module)
-   :resources
-   (sorted-map
-    "resource-file" {:provider :fs/provider
-                     :state :owned
-                     :terminal-paths [{:path :normal
-                                       :terminal :closed
-                                       :terminal-count 1}
-                                      {:path :error
-                                       :terminal :closed
-                                       :terminal-count 1}
-                                      {:path :panic
-                                       :terminal :closed
-                                       :terminal-count 1}
-                                      {:path :cancellation
-                                       :terminal :cancelled
-                                       :terminal-count 1}]
-                     :cleanup-obligations [:close-on-normal
-                                           :close-on-error
-                                           :close-on-panic
-                                           :cancel-on-cancellation]
-                     :status :accepted}
-    "resource-transaction" {:provider :db/provider
-                            :state :owned
-                            :terminal-paths [{:path :normal
-                                              :terminal :committed
-                                              :terminal-count 1}
-                                             {:path :error
-                                              :terminal :rolled-back
-                                              :terminal-count 1}
-                                             {:path :panic
-                                              :terminal :rolled-back
-                                              :terminal-count 1}
-                                             {:path :cancellation
-                                              :terminal :cancelled
-                                              :terminal-count 1}]
-                            :cleanup-obligations [:commit-or-rollback
-                                                  :cancel-on-cancellation]
-                            :status :accepted})
-   :structured-resource-lowering [{:form :with-open
-                                   :resource "resource-file"
-                                   :normal :closed
-                                   :error :closed
-                                   :panic :closed
-                                   :cancellation :cancelled
-                                   :status :accepted}]
-   :rejected-flow-families ["C9-LINEAR-LEAK" "C9-LINEAR-DOUBLE"]
-   :status :complete})
+  (c9-call c9/c9-linear-resource-flow-graph module))
 
 (defn c9-transfer-records
   [module]
-  {:artifact :gravity/c9-transfer-records
-   :module (:module module)
-   :records [{:transfer-id "transfer-function-return"
-              :boundary :function
-              :value-id "owned-result"
-              :from "callee"
-              :to "caller"
-              :mode :ownership-transfer
-              :cleanup-obligation :caller
-              :status :accepted}
-             {:transfer-id "transfer-actor-message"
-              :boundary :actor
-              :value-id "actor-buffer"
-              :from "parent-task"
-              :to "worker-actor"
-              :mode :move
-              :cleanup-obligation :worker-actor
-              :status :accepted}
-             {:transfer-id "transfer-structured-task"
-              :boundary :task
-              :value-id "task-buffer"
-              :from "parent-task"
-              :to "child-task"
-              :mode :structured-move
-              :lifetime "lt-structured-task"
-              :cleanup-obligation :child-task
-              :status :accepted}
-             {:transfer-id "transfer-ffi-borrow"
-              :boundary :ffi
-              :value-id "ffi-slice"
-              :from "gravity"
-              :to "foreign-call"
-              :mode :borrowed-for-call
-              :lifetime "lt-callback"
-              :cleanup-obligation :gravity
-              :status :accepted}]
-   :rejected-transfer-families ["C9-TRANSFER"]
-   :status :complete})
+  (c9-call c9/c9-transfer-records module))
 
 (defn c9-runtime-check-records
   [module]
-  (let [profile (:profile module)
-        legal? (contains? #{:hosted :native :distributed :ai} profile)]
-    {:artifact :gravity/c9-runtime-check-records
-     :module (:module module)
-     :records [{:check-id "runtime-borrow-state"
-                :kind :dynamic-borrow-state
-                :failure :recoverable-error
-                :profile profile
-                :profile-legal? legal?
-                :status :recorded}
-               {:check-id "runtime-arena-generation"
-                :kind :arena-generation
-                :failure :recoverable-error
-                :profile profile
-                :profile-legal? legal?
-                :status :recorded}
-               {:check-id "runtime-provider-scope"
-                :kind :provider-scope-validity
-                :failure :recoverable-error
-                :profile profile
-                :profile-legal? legal?
-                :status :recorded}
-               {:check-id "runtime-resource-terminal-state"
-                :kind :resource-terminal-state
-                :failure :recoverable-error
-                :profile profile
-                :profile-legal? legal?
-                :status :recorded}]
-     :rejected-runtime-check-families ["C9-RUNTIME-CHECK"]
-     :status :complete}))
+  (c9-call c9/c9-runtime-check-records module))
 
 (defn c9-unsafe-audit-references
   [module]
-  {:artifact :gravity/c9-unsafe-audit-references
-   :module (:module module)
-   :records [{:audit-id "C9-AUDIT-MANUAL-LIFETIME"
-              :unsafe-island :manual-lifetime-extension
-              :safe-api-boundary :stage0/checked-lifetime-handle
-              :reason :manual-lifetime-extension
-              :review :required
-              :status :recorded}
-             {:audit-id "C9-AUDIT-MANUAL-RESOURCE-FLOW"
-              :unsafe-island :manual-resource-flow
-              :safe-api-boundary :stage0/linear-resource-wrapper
-              :reason :manual-resource-flow
-              :review :required
-              :status :recorded}]
-   :rejected-unsafe-families ["C9-UNSAFE"]
-   :status :complete})
+  (c9-call c9/c9-unsafe-audit-references module))
 
 (defn c9-ownership-diagnostics
   [source-path ownership]
-  {:artifact :gravity/c9-ownership-diagnostic-registry
-   :required-diagnostic-ids c9-ownership-diagnostic-ids
-   :diagnostics
-   (mapv (fn [design]
-           {:diagnostic (:diagnostic design)
-            :fixture (:fixture design)
-            :value-id (or (some-> ownership :owners keys first)
-                          :fixture/value)
-            :owner-id :fixture/owner
-            :borrow-id :fixture/borrow
-            :region-id :fixture/region
-            :arena-generation :fixture/generation
-            :resource-id :fixture/resource
-            :control-path :fixture/path
-            :source-span (source-span source-path 0)
-            :generated-origin-chain []
-            :profile :fixture/profile
-            :target :fixture/target
-            :remediation "Keep ownership, lifetime, region, arena, and linear-resource facts explicit before safety analysis."})
-         c9-ownership-rejected-designs)
-   :status :complete})
+  (c9-call c9/c9-ownership-diagnostics source-path ownership))
 
 (defn c9-linear-paths-exact?
   [linear]
-  (every? (fn [[_ resource]]
-            (every? #(= 1 (:terminal-count %))
-                    (:terminal-paths resource)))
-          (:resources linear)))
+  (c9-call c9/c9-linear-paths-exact? linear))
 
 (defn c9-ownership-verifier-report
   [c8-artifact ownership borrow lifetimes moves escape region arena linear transfer runtime unsafe diagnostics]
-  (let [diagnostics? (= (set c9-ownership-diagnostic-ids)
-                        (set (map :diagnostic (:diagnostics diagnostics))))
-        borrow-kinds (set (map :edge (:edges borrow)))
-        transfer-boundaries (set (map :boundary (:records transfer)))]
-    {:artifact :gravity/c9-ownership-verifier-report
-     :c8-proof-complete? (= :complete
-                            (get-in c8-artifact
-                                    [:capability-based-proof :status]))
-     :ownership-graph-complete? (and (seq (:owners ownership))
-                                     (= :complete (:status ownership)))
-     :borrow-rules-proven? (and (contains? borrow-kinds :immutable-borrow)
-                                (contains? borrow-kinds :mutable-borrow)
-                                (= :complete (:status borrow)))
-     :lifetime-intervals-recorded? (and (seq (:intervals lifetimes))
-                                        (= :complete (:status lifetimes)))
-     :move-and-consume-recorded? (boolean (and (seq (:moves moves))
-                                               (seq (:consumes moves))))
-     :escape-analysis-recorded? (= :complete (:status escape))
-     :region-and-arena-recorded? (and (seq (:regions region))
-                                      (seq (:arenas arena))
-                                      (= :complete (:status region))
-                                      (= :complete (:status arena)))
-     :linear-flow-complete? (and (c9-linear-paths-exact? linear)
-                                 (= :complete (:status linear)))
-     :transfer-boundaries-explicit? (set/subset?
-                                     #{:function :actor :task :ffi}
-                                     transfer-boundaries)
-     :runtime-checks-profile-gated? (every? :profile-legal?
-                                            (:records runtime))
-     :unsafe-audit-references-recorded? (boolean (seq (:records unsafe)))
-     :diagnostics-covered? diagnostics?
-     :status (if (and (= :complete
-                         (get-in c8-artifact
-                                 [:capability-based-proof :status]))
-                      (seq (:owners ownership))
-                      (contains? borrow-kinds :immutable-borrow)
-                      (contains? borrow-kinds :mutable-borrow)
-                      (seq (:intervals lifetimes))
-                      (seq (:moves moves))
-                      (seq (:consumes moves))
-                      (= :complete (:status escape))
-                      (seq (:regions region))
-                      (seq (:arenas arena))
-                      (c9-linear-paths-exact? linear)
-                      (set/subset? #{:function :actor :task :ffi}
-                                   transfer-boundaries)
-                      (every? :profile-legal? (:records runtime))
-                      (seq (:records unsafe))
-                      diagnostics?)
-               :passed
-               :failed)}))
+  (c9-call c9/c9-ownership-verifier-report c8-artifact ownership borrow lifetimes moves escape region arena linear transfer runtime unsafe diagnostics))
 
 (defn c9-ownership-capability-proof
   [artifact]
-  (let [verifier (:ownership-verifier-report artifact)]
-    {:ownership-graph-complete?
-     (:ownership-graph-complete? verifier)
-     :borrow-rules-proven?
-     (:borrow-rules-proven? verifier)
-     :lifetime-intervals-recorded?
-     (:lifetime-intervals-recorded? verifier)
-     :move-and-consume-recorded?
-     (:move-and-consume-recorded? verifier)
-     :region-and-arena-recorded?
-     (:region-and-arena-recorded? verifier)
-     :linear-flow-complete?
-     (:linear-flow-complete? verifier)
-     :transfer-boundaries-explicit?
-     (:transfer-boundaries-explicit? verifier)
-     :runtime-checks-profile-gated?
-     (:runtime-checks-profile-gated? verifier)
-     :unsafe-audit-references-recorded?
-     (:unsafe-audit-references-recorded? verifier)
-     :diagnostics-covered?
-     (:diagnostics-covered? verifier)
-     :verifier-passed?
-     (= :passed (:status verifier))
-     :status :complete}))
+  (c9-call c9/c9-ownership-capability-proof artifact))
 
 (defn c9-ownership-validate!
   [source-path artifact]
-  (let [proof (c9-ownership-capability-proof artifact)]
-    (doseq [[field id] [[:ownership-graph-complete? "C9-USE-AFTER-MOVE"]
-                        [:borrow-rules-proven? "C9-MUT-ALIAS"]
-                        [:lifetime-intervals-recorded? "C9-BORROW-ESCAPE"]
-                        [:move-and-consume-recorded?
-                         "C9-USE-AFTER-CONSUME"]
-                        [:region-and-arena-recorded?
-                         "C9-REGION-ESCAPE"]
-                        [:linear-flow-complete? "C9-LINEAR-LEAK"]
-                        [:transfer-boundaries-explicit? "C9-TRANSFER"]
-                        [:runtime-checks-profile-gated?
-                         "C9-RUNTIME-CHECK"]
-                        [:unsafe-audit-references-recorded? "C9-UNSAFE"]
-                        [:diagnostics-covered? "C9-UNSAFE"]
-                        [:verifier-passed? "C9-UNSAFE"]]]
-      (when-not (get proof field)
-        (c9-ownership-fail! id source-path
-                            {:stage :ownership-lifetime-region-check}
-                            {:missing-fields [field]}))))
-  :complete)
+  (c9-call c9/c9-ownership-validate! source-path artifact))
 
 (defn compiler-c9-ownership-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        overrides (c9-ownership-source-overrides module)
-        _ (c9-ownership-validate-overrides! source-path module overrides)
-        c8-artifact (compiler-c8-effect-source-artifact source-path source-text)
-        effect-graph (:effect-graph c8-artifact)
-        ownership (c9-ownership-graph module effect-graph)
-        borrow (c9-borrow-graph module effect-graph)
-        lifetimes (c9-lifetime-interval-map module)
-        moves (select-keys ownership [:moves :consumes])
-        escape (c9-escape-analysis-report module)
-        region (c9-region-lifetime-graph module)
-        arena (c9-arena-generation-graph module)
-        linear (c9-linear-resource-flow-graph module)
-        transfer (c9-transfer-records module)
-        runtime (c9-runtime-check-records module)
-        unsafe (c9-unsafe-audit-references module)
-        diagnostics (c9-ownership-diagnostics source-path ownership)
-        verifier (c9-ownership-verifier-report c8-artifact ownership borrow
-                                               lifetimes moves escape region
-                                               arena linear transfer runtime
-                                               unsafe diagnostics)
-        artifact-base
-        {:kind :gravity/stage0-c9-ownership-checker-artifact
-         :task "P06-D088"
-         :document-set ["C9"]
-         :governing-document c9-ownership-governing-document
-         :pass {:name :c9-ownership-lifetime-region-checker
-                :input :effected-core
-                :output :ownership-checked-core
-                :requires [:typed-core-module :effect-graph
-                           :capability-proof-records :profile :target]
-                :preserves [:source-spans :generated-origin :types
-                            :effects :capabilities :profile :target
-                            :unsafe-metadata]
-                :emits [:ownership-graph :borrow-graph
-                        :lifetime-interval-map :move-consume-records
-                        :escape-analysis-report :region-lifetime-graph
-                        :arena-generation-graph
-                        :linear-resource-flow-graph :transfer-records
-                        :runtime-check-records :unsafe-audit-references
-                        :ownership-diagnostics]
-                :rejects c9-ownership-diagnostic-ids}
-         :source-overrides overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c8-effect-checker-artifact
-         (select-keys c8-artifact [:kind :artifact-id :effect-graph
-                                   :namespace-effect-summary
-                                   :capability-proof-records
-                                   :capability-based-proof])
-         :ownership-graph ownership
-         :borrow-graph borrow
-         :lifetime-interval-map lifetimes
-         :move-consume-records moves
-         :escape-analysis-report escape
-         :region-lifetime-graph region
-         :arena-generation-graph arena
-         :linear-resource-flow-graph linear
-         :transfer-records transfer
-         :runtime-check-records runtime
-         :unsafe-audit-references unsafe
-         :ownership-verifier-report verifier
-         :ownership-diagnostics diagnostics
-         :c9-ownership-check-results
-         {:documents ["C9"]
-          :task "P06-D088"
-          :required-diagnostic-ids c9-ownership-diagnostic-ids
-          :ownership-graph-status :complete
-          :borrow-graph-status :complete
-          :lifetime-status :complete
-          :move-consume-status :complete
-          :escape-status :complete
-          :region-status :complete
-          :arena-status :complete
-          :linear-status :complete
-          :transfer-status :complete
-          :runtime-check-status :complete
-          :unsafe-audit-status :complete
-          :verifier-status (:status verifier)
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c9-ownership-validate! source-path artifact-base)
-        capability-proof (c9-ownership-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+  (c9-call c9/compiler-c9-ownership-source-artifact source-path source-text))
 
 (defn compiler-c9-ownership-file-artifact
   [path]
-  (compiler-c9-ownership-source-artifact path (slurp path)))
+  (c9-call c9/compiler-c9-ownership-file-artifact path))
 
-(def c10-safety-diagnostic-ids
-  ["C10-NO-OUTCOME"
-   "C10-PROOF"
-   "C10-CHECK"
-   "C10-UNSAFE"
-   "C10-GENERATED"
-   "C10-TAINT"
-   "C10-CAPABILITY"
-   "C10-FFI"
-   "C10-NUMERIC"
-   "C10-OPTIMIZATION"])
+(def c10-safety-diagnostic-ids c10/c10-safety-diagnostic-ids)
+(def c10-safety-governing-document c10/c10-safety-governing-document)
+(def c10-safety-rejected-designs c10/c10-safety-rejected-designs)
+(def c10-safety-override-diagnostics c10/c10-safety-override-diagnostics)
+(def c10-safe-outcomes c10/c10-safe-outcomes)
 
-(def c10-safety-governing-document
-  "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md")
+(declare c10-safety-source-overrides
+         c10-safety-message
+         c10-safety-fail!
+         c10-safety-validate-overrides!
+         c10-safety-operation-inventory
+         c10-safety-outcome-records
+         c10-runtime-check-list
+         c10-proof-obligation-list
+         c10-proof-certificate-references
+         c10-unsafe-island-audit-manifest
+         c10-taint-capability-safety-report
+         c10-generated-code-safety-provenance
+         c10-optimization-safety-preservation
+         c10-safety-diagnostics
+         c10-safety-verifier-report
+         c10-safety-capability-proof
+         c10-safety-validate!
+         compiler-c10-safety-source-artifact
+         compiler-c10-safety-file-artifact)
 
-(def c10-safety-rejected-designs
-  [{:diagnostic "C10-NO-OUTCOME"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c10-no-outcome.gravity"
-    :rejected-design :missing-safety-classification}
-   {:diagnostic "C10-PROOF"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c10-proof.gravity"
-    :rejected-design :missing-or-invalid-proof}
-   {:diagnostic "C10-CHECK"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c10-check.gravity"
-    :rejected-design :missing-or-illegal-runtime-check}
-   {:diagnostic "C10-UNSAFE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c10-unsafe.gravity"
-    :rejected-design :unsafe-island-policy-or-metadata-gap}
-   {:diagnostic "C10-GENERATED"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c10-generated.gravity"
-    :rejected-design :generated-unsafe-without-provenance}
-   {:diagnostic "C10-TAINT"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c10-taint.gravity"
-    :rejected-design :taint-facts-dropped-before-sink}
-   {:diagnostic "C10-CAPABILITY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c10-capability.gravity"
-    :rejected-design :capability-use-without-proof}
-   {:diagnostic "C10-FFI"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c10-ffi.gravity"
-    :rejected-design :foreign-boundary-safety-gap}
-   {:diagnostic "C10-NUMERIC"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c10-numeric.gravity"
-    :rejected-design :numeric-safety-gap}
-   {:diagnostic "C10-OPTIMIZATION"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c10-optimization.gravity"
-    :rejected-design :stale-safety-evidence-after-transform}])
+(defn- c10-safety-ops []
+  {:fail! fail!
+   :source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c9-ownership-source-artifact compiler-c9-ownership-source-artifact
+   :c10-safety-diagnostic-ids c10-safety-diagnostic-ids
+   :c10-safety-governing-document c10-safety-governing-document
+   :c10-safety-rejected-designs c10-safety-rejected-designs
+   :c10-safety-override-diagnostics c10-safety-override-diagnostics
+   :c10-safe-outcomes c10-safe-outcomes
+   :c10-safety-source-overrides c10-safety-source-overrides
+   :c10-safety-message c10-safety-message
+   :c10-safety-fail! c10-safety-fail!
+   :c10-safety-validate-overrides! c10-safety-validate-overrides!
+   :c10-safety-operation-inventory c10-safety-operation-inventory
+   :c10-safety-outcome-records c10-safety-outcome-records
+   :c10-runtime-check-list c10-runtime-check-list
+   :c10-proof-obligation-list c10-proof-obligation-list
+   :c10-proof-certificate-references c10-proof-certificate-references
+   :c10-unsafe-island-audit-manifest c10-unsafe-island-audit-manifest
+   :c10-taint-capability-safety-report c10-taint-capability-safety-report
+   :c10-generated-code-safety-provenance c10-generated-code-safety-provenance
+   :c10-optimization-safety-preservation c10-optimization-safety-preservation
+   :c10-safety-diagnostics c10-safety-diagnostics
+   :c10-safety-verifier-report c10-safety-verifier-report
+   :c10-safety-capability-proof c10-safety-capability-proof
+   :c10-safety-validate! c10-safety-validate!
+   :compiler-c10-safety-source-artifact compiler-c10-safety-source-artifact
+   :compiler-c10-safety-file-artifact compiler-c10-safety-file-artifact})
 
-(def c10-safety-override-diagnostics
-  {:no-outcome "C10-NO-OUTCOME"
-   :proof "C10-PROOF"
-   :check "C10-CHECK"
-   :unsafe "C10-UNSAFE"
-   :generated "C10-GENERATED"
-   :taint "C10-TAINT"
-   :capability "C10-CAPABILITY"
-   :ffi "C10-FFI"
-   :numeric "C10-NUMERIC"
-   :optimization "C10-OPTIMIZATION"})
-
-(def c10-safe-outcomes
-  #{:proven-safe :runtime-checked :rejected :unsafe-island})
+(def ^:private ^:dynamic *c10-leaf-call?* false)
+(defn- c10-call [operation & args]
+  (if *c10-leaf-call?*
+    (apply operation args)
+    (binding [*c10-leaf-call?* true]
+      (c10/with-operations (c10-safety-ops)
+        #(apply operation args)))))
 
 (defn c10-safety-source-overrides
   [module]
-  (get-in module [:metadata :compiler :c10-safety-analysis] {}))
+  (c10-call c10/c10-safety-source-overrides module))
 
 (defn c10-safety-message
   [id]
-  (case id
-    "C10-NO-OUTCOME" "safety-sensitive operation lacks a SAFE1 outcome"
-    "C10-PROOF" "safety proof evidence is missing or invalid"
-    "C10-CHECK" "runtime check record is missing or illegal"
-    "C10-UNSAFE" "unsafe island lacks required metadata or policy approval"
-    "C10-GENERATED" "generated unsafe or rejected code lacks provenance"
-    "C10-TAINT" "taint facts were dropped before a sink"
-    "C10-CAPABILITY" "authority use is not covered by capability proof"
-    "C10-FFI" "foreign boundary is missing safety facts"
-    "C10-NUMERIC" "numeric operation lacks required proof or check"
-    "C10-OPTIMIZATION" "transformed code has stale safety evidence"
-    "Safety analysis failed"))
+  (c10-call c10/c10-safety-message id))
 
 (defn c10-safety-fail!
   [id source-path subject extra]
-  (fail! id
-         (c10-safety-message id)
-         (merge {:source-span (or (:source-span subject)
-                                  (get-in subject [:source :span])
-                                  (:span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :c10-safety-analysis
-                 :stage :safety-analysis
-                 :document-id "C10"
-                 :expected-document c10-safety-governing-document
-                 :operation-id (or (:operation-id subject) :fixture/operation)
-                 :specialized-safe-rule (or (:specialized-safe-rule subject)
-                                            :fixture/safe-rule)
-                 :generated-origin-chain (or (:generated-origin subject)
-                                             (get-in subject
-                                                     [:source :origin-chain]))
-                 :profile (:profile subject)
-                 :target (:target subject)
-                 :safety-mode (or (:safety-mode subject) :safe)
-                 :missing-fact (:missing-fact subject)
-                 :proof-id (:proof-id subject)
-                 :runtime-check (:runtime-check subject)
-                 :unsafe-audit (:unsafe-audit subject)
-                 :remediation "Classify each safety-sensitive operation with exactly one SAFE1 outcome and emit runtime checks, proof obligations, unsafe audit metadata, generated provenance, taint/capability reports, and optimization invalidation records before MIR construction."}
-                extra)))
+  (c10-call c10/c10-safety-fail! id source-path subject extra))
 
 (defn c10-safety-validate-overrides!
   [source-path module overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c10-safety-override-diagnostics fail-kind)]
-      (c10-safety-fail! id source-path
-                        {:source-span (source-span source-path 0)
-                         :operation-id (keyword "fixture" (name fail-kind))
-                         :profile (:profile module)
-                         :target (:target module)
-                         :safety-mode (:safety module)
-                         :generated-origin []}
-                        {:missing-fields [fail-kind]}))))
+  (c10-call c10/c10-safety-validate-overrides! source-path module overrides))
 
 (defn c10-safety-operation-inventory
   [module c9-artifact]
-  {:artifact :gravity/c10-safety-operation-inventory
-   :module (:module module)
-   :records [{:operation-id "op-memory-load"
-              :kind :buffer-read
-              :safe-family :memory
-              :source-core-node "c6-core-1"
-              :facts {:types :typed-core
-                      :effects :effect-graph
-                      :ownership :ownership-graph}
-              :profile (:profile module)
-              :target (:target module)}
-             {:operation-id "op-bounds-index"
-              :kind :indexing
-              :safe-family :bounds
-              :source-core-node "c6-core-2"
-              :facts {:types :typed-core
-                      :effects :effect-graph
-                      :ownership :borrow-graph}
-              :profile (:profile module)
-              :target (:target module)}
-             {:operation-id "op-borrow"
-              :kind :borrow
-              :safe-family :ownership
-              :source-core-node "c6-core-3"
-              :facts {:ownership :borrow-graph
-                      :lifetimes :lifetime-interval-map}
-              :profile (:profile module)
-              :target (:target module)}
-             {:operation-id "op-region"
-              :kind :region-allocation
-              :safe-family :region
-              :facts {:regions :region-lifetime-graph}
-              :profile (:profile module)
-              :target (:target module)}
-             {:operation-id "op-linear"
-              :kind :resource-close
-              :safe-family :linear-resource
-              :facts {:linear :linear-resource-flow-graph}
-              :profile (:profile module)
-              :target (:target module)}
-             {:operation-id "op-ffi"
-              :kind :ffi-call
-              :safe-family :ffi
-              :facts {:transfer :transfer-records}
-              :profile (:profile module)
-              :target (:target module)}
-             {:operation-id "op-concurrency"
-              :kind :task-transfer
-              :safe-family :concurrency
-              :facts {:transfer :transfer-records
-                      :lifetimes :lifetime-interval-map}
-              :profile (:profile module)
-              :target (:target module)}
-             {:operation-id "op-numeric"
-              :kind :numeric-overflow
-              :safe-family :numeric
-              :facts {:types :typed-core}
-              :profile (:profile module)
-              :target (:target module)}
-             {:operation-id "op-capability"
-              :kind :authority-use
-              :safe-family :capability
-              :facts {:capabilities :capability-proof-records}
-              :profile (:profile module)
-              :target (:target module)}
-             {:operation-id "op-taint"
-              :kind :taint-sink
-              :safe-family :taint
-              :facts {:taint :taint-report}
-              :profile (:profile module)
-              :target (:target module)}
-             {:operation-id "op-generated-unsafe"
-              :kind :generated-unsafe
-              :safe-family :macro-safety
-              :facts {:origin :generated-origin-chain}
-              :profile (:profile module)
-              :target (:target module)}
-             {:operation-id "op-optimization-erased-check"
-              :kind :check-elision
-              :safe-family :optimization
-              :facts {:proof :optimization-proof}
-              :profile (:profile module)
-              :target (:target module)}]
-   :upstream {:c9-artifact-id (:artifact-id c9-artifact)
-              :ownership-proof (get-in c9-artifact
-                                       [:capability-based-proof :status])}
-   :status :complete})
+  (c10-call c10/c10-safety-operation-inventory module c9-artifact))
 
 (defn c10-safety-outcome-records
   [module inventory]
-  (let [span (source-span (:source-path module) 0)]
-    {:artifact :gravity/c10-safety-outcome-records
-     :module (:module module)
-     :records
-     [{:operation "op-memory-load"
-       :kind :buffer-read
-       :source {:core-node "c6-core-1"
-                :span span
-                :origin-chain []}
-       :profile (:profile module)
-       :target (:target module)
-       :facts {:type "c7-type-fact"
-               :effects "c8-effect-fact"
-               :ownership "c9-owner-fact"}
-       :outcome :proven-safe
-       :proof "proof-memory-valid"
-       :runtime-check nil
-       :unsafe-audit nil}
-      {:operation "op-bounds-index"
-       :kind :indexing
-       :source {:core-node "c6-core-2"
-                :span span
-                :origin-chain []}
-       :profile (:profile module)
-       :target (:target module)
-       :facts {:type "c7-length-fact"
-               :effects "c8-read-effect"
-               :ownership "c9-borrow-fact"}
-       :outcome :runtime-checked
-       :condition :bounds
-       :runtime-check "check-bounds-1"
-       :failure-behavior :panic/bounds}
-      {:operation "op-borrow"
-       :kind :borrow
-       :source {:core-node "c6-core-3"
-                :span span
-                :origin-chain []}
-       :profile (:profile module)
-       :target (:target module)
-       :facts {:ownership "borrow-immutable-a"
-               :lifetime "lt-borrow-read"}
-       :outcome :proven-safe
-       :proof "proof-borrow-lifetime"}
-      {:operation "op-region"
-       :kind :region-allocation
-       :source {:core-node "region-value-config"
-                :span span
-                :origin-chain []}
-       :profile (:profile module)
-       :target (:target module)
-       :facts {:region "region-outer"}
-       :outcome :proven-safe
-       :proof "proof-region-no-escape"}
-      {:operation "op-linear"
-       :kind :resource-close
-       :source {:core-node "resource-file"
-                :span span
-                :origin-chain []}
-       :profile (:profile module)
-       :target (:target module)
-       :facts {:linear "resource-file"}
-       :outcome :proven-safe
-       :proof "proof-linear-exact-terminal"}
-      {:operation "op-ffi"
-       :kind :ffi-call
-       :source {:core-node "ffi-slice"
-                :span span
-                :origin-chain []}
-       :profile (:profile module)
-       :target (:target module)
-       :facts {:transfer "transfer-ffi-borrow"}
-       :outcome :unsafe-island
-       :unsafe-audit "unsafe-ffi-borrow-audit"}
-      {:operation "op-concurrency"
-       :kind :task-transfer
-       :source {:core-node "task-buffer"
-                :span span
-                :origin-chain []}
-       :profile (:profile module)
-       :target (:target module)
-       :facts {:transfer "transfer-structured-task"}
-       :outcome :proven-safe
-       :proof "proof-structured-task-join"}
-      {:operation "op-numeric"
-       :kind :numeric-overflow
-       :source {:core-node "numeric-add"
-                :span span
-                :origin-chain []}
-       :profile (:profile module)
-       :target (:target module)
-       :facts {:type "I64"}
-       :outcome :runtime-checked
-       :condition :overflow
-       :runtime-check "check-overflow-1"
-       :failure-behavior :panic/overflow}
-      {:operation "op-capability"
-       :kind :authority-use
-       :source {:core-node "capability-use"
-                :span span
-                :origin-chain []}
-       :profile (:profile module)
-       :target (:target module)
-       :facts {:capability "stage0/stdout"}
-       :outcome :proven-safe
-       :proof "proof-capability-scope"}
-      {:operation "op-taint"
-       :kind :taint-sink
-       :source {:core-node "taint-sink"
-                :span span
-                :origin-chain []}
-       :profile (:profile module)
-       :target (:target module)
-       :facts {:taint "sanitized-input"}
-       :outcome :runtime-checked
-       :condition :sanitized-before-sink
-       :runtime-check "check-taint-1"
-       :failure-behavior :error/taint}
-      {:operation "op-generated-unsafe"
-       :kind :generated-unsafe
-       :source {:core-node "generated-unsafe"
-                :span span
-                :origin-chain [{:kind :generated
-                                :macro "stage0-unsafe"}]}
-       :profile (:profile module)
-       :target (:target module)
-       :facts {:generated-origin "stage0-unsafe"}
-       :outcome :unsafe-island
-       :unsafe-audit "unsafe-generated-audit"}
-      {:operation "op-optimization-erased-check"
-       :kind :check-elision
-       :source {:core-node "optimized-bounds"
-                :span span
-                :origin-chain []}
-       :profile (:profile module)
-       :target (:target module)
-       :facts {:proof "range-analysis-1"}
-       :outcome :proven-safe
-       :proof "proof-check-elision-preserved"}]
-     :operation-count (count (:records inventory))
-     :status :complete}))
+  (c10-call c10/c10-safety-outcome-records module inventory))
 
 (defn c10-runtime-check-list
   [module outcomes]
-  {:artifact :gravity/c10-runtime-check-list
-   :module (:module module)
-   :records
-   (mapv (fn [outcome]
-           {:check-id (:runtime-check outcome)
-            :operation (:operation outcome)
-            :condition (:condition outcome)
-            :profile (:profile outcome)
-            :target (:target outcome)
-            :failure-behavior (:failure-behavior outcome)
-            :effects #{:error/throw}
-            :performance-class :bounded
-            :guards-exact-operation? true
-            :invalidates-on [:control-flow-change :proof-change]
-            :status :recorded})
-         (filter #(= :runtime-checked (:outcome %)) (:records outcomes)))
-   :status :complete})
+  (c10-call c10/c10-runtime-check-list module outcomes))
 
 (defn c10-proof-obligation-list
   [module outcomes]
-  {:artifact :gravity/c10-proof-obligation-list
-   :module (:module module)
-   :records [{:obligation-id "proof-memory-valid"
-              :kind :memory
-              :operation "op-memory-load"
-              :discharged-by :static-analysis
-              :status :discharged}
-             {:obligation-id "proof-borrow-lifetime"
-              :kind :lifetime
-              :operation "op-borrow"
-              :discharged-by :ownership-checker
-              :status :discharged}
-             {:obligation-id "proof-region-no-escape"
-              :kind :region-escape
-              :operation "op-region"
-              :discharged-by :region-graph
-              :status :discharged}
-             {:obligation-id "proof-linear-exact-terminal"
-              :kind :resource-terminal-state
-              :operation "op-linear"
-              :discharged-by :linear-flow-graph
-              :status :discharged}
-             {:obligation-id "proof-structured-task-join"
-              :kind :data-race-freedom
-              :operation "op-concurrency"
-              :discharged-by :structured-concurrency
-              :status :discharged}
-             {:obligation-id "proof-capability-scope"
-              :kind :capability-scope
-              :operation "op-capability"
-              :discharged-by :capability-proof-record
-              :status :discharged}
-             {:obligation-id "proof-check-elision-preserved"
-              :kind :optimization-preservation
-              :operation "op-optimization-erased-check"
-              :discharged-by :range-analysis-certificate
-              :status :discharged}]
-   :source-outcomes (count (:records outcomes))
-   :status :complete})
+  (c10-call c10/c10-proof-obligation-list module outcomes))
 
 (defn c10-proof-certificate-references
   [module]
-  {:artifact :gravity/c10-proof-certificate-references
-   :module (:module module)
-   :records [{:certificate-id "cert-safe1-outcomes"
-              :feeds :SAFE15
-              :source :safety-outcome-records
-              :status :recorded}
-             {:certificate-id "cert-runtime-checks"
-              :feeds :SAFE15
-              :source :runtime-check-list
-              :status :recorded}
-             {:certificate-id "cert-conformance-fixtures"
-              :feeds :SAFE16
-              :source :diagnostic-fixtures
-              :status :recorded}]
-   :status :complete})
+  (c10-call c10/c10-proof-certificate-references module))
 
 (defn c10-unsafe-island-audit-manifest
   [module outcomes]
-  {:artifact :gravity/c10-unsafe-island-audit-manifest
-   :module (:module module)
-   :records
-   (mapv (fn [outcome]
-           {:audit-id (:unsafe-audit outcome)
-            :operation (:operation outcome)
-            :owner "compiler-stage0"
-            :reason (:kind outcome)
-            :source-span (get-in outcome [:source :span])
-            :generated-origin (get-in outcome [:source :origin-chain])
-            :profile (:profile outcome)
-            :target (:target outcome)
-            :effects #{:memory/raw}
-            :capabilities #{:memory/raw}
-            :preconditions [:typed :effected :ownership-checked]
-            :postconditions [:safe-wrapper-boundary]
-            :invariants [:no-invalid-state-leaks]
-            :safe-wrapper :stage0/safe-wrapper
-            :review {:policy :required
-                     :id "C10-SAFETY-AUDIT"}
-            :status :recorded})
-         (filter #(= :unsafe-island (:outcome %)) (:records outcomes)))
-   :status :complete})
+  (c10-call c10/c10-unsafe-island-audit-manifest module outcomes))
 
 (defn c10-taint-capability-safety-report
   [module]
-  {:artifact :gravity/c10-taint-capability-safety-report
-   :module (:module module)
-   :taint-records [{:source :external-input
-                    :sink :io/write
-                    :sanitizer :stage0/sanitize
-                    :check-id "check-taint-1"
-                    :status :accepted}]
-   :capability-records [{:operation "op-capability"
-                         :capability :io/stdout
-                         :grant :stage0/stdout
-                         :proof "proof-capability-scope"
-                         :status :accepted}]
-   :status :complete})
+  (c10-call c10/c10-taint-capability-safety-report module))
 
 (defn c10-generated-code-safety-provenance
   [module]
-  {:artifact :gravity/c10-generated-code-safety-provenance
-   :module (:module module)
-   :records [{:operation "op-generated-unsafe"
-              :generated-form "generated-unsafe"
-              :generator "stage0-unsafe"
-              :generator-source-span (source-span (:source-path module) 0)
-              :diagnostic-provenance :source-and-generated
-              :unsafe-audit "unsafe-generated-audit"
-              :status :recorded}]
-   :status :complete})
+  (c10-call c10/c10-generated-code-safety-provenance module))
 
 (defn c10-optimization-safety-preservation
   [module]
-  {:artifact :gravity/c10-optimization-safety-preservation
-   :module (:module module)
-   :records [{:operation "op-optimization-erased-check"
-              :erased-check :bounds
-              :proof "proof-check-elision-preserved"
-              :certificate "range-analysis-1"
-              :invalidates-on [:range-fact-change :layout-change
-                               :control-flow-change]
-              :status :preserved}
-             {:operation "op-memory-load"
-              :required-recheck-on [:alias-change :lifetime-change]
-              :status :invalidation-recorded}]
-   :status :complete})
+  (c10-call c10/c10-optimization-safety-preservation module))
 
 (defn c10-safety-diagnostics
   [source-path]
-  {:artifact :gravity/c10-safety-diagnostic-registry
-   :required-diagnostic-ids c10-safety-diagnostic-ids
-   :diagnostics
-   (mapv (fn [design]
-           {:diagnostic (:diagnostic design)
-            :fixture (:fixture design)
-            :operation-id (keyword "fixture" (:diagnostic design))
-            :specialized-safe-rule (:rejected-design design)
-            :source-span (source-span source-path 0)
-            :generated-origin-chain []
-            :profile :fixture/profile
-            :target :fixture/target
-            :safety-mode :safe
-            :missing-fact (:rejected-design design)
-            :remediation "Keep SAFE1 outcome, proof, check, unsafe, generated, taint, capability, FFI, numeric, and optimization evidence explicit before MIR construction."})
-         c10-safety-rejected-designs)
-   :status :complete})
+  (c10-call c10/c10-safety-diagnostics source-path))
 
 (defn c10-safety-verifier-report
   [c9-artifact inventory outcomes checks obligations certificates unsafe report generated optimization diagnostics]
-  (let [outcome-ops (set (map :operation (:records outcomes)))
-        inventory-ops (set (map :operation-id (:records inventory)))
-        outcomes-valid? (every? #(contains? c10-safe-outcomes (:outcome %))
-                                (:records outcomes))
-        one-outcome? (= outcome-ops inventory-ops)
-        checks? (seq (:records checks))
-        proofs? (every? #(= :discharged (:status %)) (:records obligations))
-        unsafe? (seq (:records unsafe))
-        report? (and (seq (:taint-records report))
-                     (seq (:capability-records report)))
-        diagnostics? (= (set c10-safety-diagnostic-ids)
-                        (set (map :diagnostic (:diagnostics diagnostics))))]
-    {:artifact :gravity/c10-safety-verifier-report
-     :c9-proof-complete? (= :complete
-                            (get-in c9-artifact
-                                    [:capability-based-proof :status]))
-     :operation-inventory-complete? (and (seq (:records inventory))
-                                         (= :complete (:status inventory)))
-     :exactly-one-outcome-per-operation? (and outcomes-valid? one-outcome?)
-     :runtime-checks-emitted? (boolean checks?)
-     :proof-obligations-discharged? proofs?
-     :certificate-references-recorded? (seq (:records certificates))
-     :unsafe-island-audits-complete? (boolean unsafe?)
-     :taint-and-capability-reports-complete? (boolean report?)
-     :generated-provenance-recorded? (seq (:records generated))
-     :optimization-evidence-preserved? (every? #{:preserved
-                                                 :invalidation-recorded}
-                                               (map :status
-                                                    (:records optimization)))
-     :diagnostics-covered? diagnostics?
-     :status (if (and (= :complete
-                         (get-in c9-artifact
-                                 [:capability-based-proof :status]))
-                      (seq (:records inventory))
-                      outcomes-valid?
-                      one-outcome?
-                      checks?
-                      proofs?
-                      (seq (:records certificates))
-                      unsafe?
-                      report?
-                      (seq (:records generated))
-                      (every? #{:preserved :invalidation-recorded}
-                              (map :status (:records optimization)))
-                      diagnostics?)
-               :passed
-               :failed)}))
+  (c10-call c10/c10-safety-verifier-report c9-artifact inventory outcomes checks obligations certificates unsafe report generated optimization diagnostics))
 
 (defn c10-safety-capability-proof
   [artifact]
-  (let [verifier (:safety-verifier-report artifact)]
-    {:operation-inventory-complete?
-     (:operation-inventory-complete? verifier)
-     :exactly-one-outcome-per-operation?
-     (:exactly-one-outcome-per-operation? verifier)
-     :runtime-checks-emitted?
-     (:runtime-checks-emitted? verifier)
-     :proof-obligations-discharged?
-     (:proof-obligations-discharged? verifier)
-     :certificate-references-recorded?
-     (boolean (:certificate-references-recorded? verifier))
-     :unsafe-island-audits-complete?
-     (:unsafe-island-audits-complete? verifier)
-     :taint-and-capability-reports-complete?
-     (:taint-and-capability-reports-complete? verifier)
-     :generated-provenance-recorded?
-     (boolean (:generated-provenance-recorded? verifier))
-     :optimization-evidence-preserved?
-     (:optimization-evidence-preserved? verifier)
-     :diagnostics-covered?
-     (:diagnostics-covered? verifier)
-     :verifier-passed?
-     (= :passed (:status verifier))
-     :status :complete}))
+  (c10-call c10/c10-safety-capability-proof artifact))
 
 (defn c10-safety-validate!
   [source-path artifact]
-  (let [proof (c10-safety-capability-proof artifact)]
-    (doseq [[field id] [[:operation-inventory-complete? "C10-NO-OUTCOME"]
-                        [:exactly-one-outcome-per-operation?
-                         "C10-NO-OUTCOME"]
-                        [:runtime-checks-emitted? "C10-CHECK"]
-                        [:proof-obligations-discharged? "C10-PROOF"]
-                        [:certificate-references-recorded? "C10-PROOF"]
-                        [:unsafe-island-audits-complete? "C10-UNSAFE"]
-                        [:taint-and-capability-reports-complete?
-                         "C10-TAINT"]
-                        [:generated-provenance-recorded?
-                         "C10-GENERATED"]
-                        [:optimization-evidence-preserved?
-                         "C10-OPTIMIZATION"]
-                        [:diagnostics-covered? "C10-NO-OUTCOME"]
-                        [:verifier-passed? "C10-NO-OUTCOME"]]]
-      (when-not (get proof field)
-        (c10-safety-fail! id source-path {:stage :safety-analysis}
-                          {:missing-fields [field]}))))
-  :complete)
+  (c10-call c10/c10-safety-validate! source-path artifact))
 
 (defn compiler-c10-safety-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        overrides (c10-safety-source-overrides module)
-        _ (c10-safety-validate-overrides! source-path module overrides)
-        c9-artifact (compiler-c9-ownership-source-artifact source-path source-text)
-        inventory (c10-safety-operation-inventory module c9-artifact)
-        outcomes (c10-safety-outcome-records module inventory)
-        checks (c10-runtime-check-list module outcomes)
-        obligations (c10-proof-obligation-list module outcomes)
-        certificates (c10-proof-certificate-references module)
-        unsafe (c10-unsafe-island-audit-manifest module outcomes)
-        report (c10-taint-capability-safety-report module)
-        generated (c10-generated-code-safety-provenance module)
-        optimization (c10-optimization-safety-preservation module)
-        diagnostics (c10-safety-diagnostics source-path)
-        verifier (c10-safety-verifier-report c9-artifact inventory outcomes
-                                             checks obligations certificates
-                                             unsafe report generated
-                                             optimization diagnostics)
-        artifact-base
-        {:kind :gravity/stage0-c10-safety-analysis-artifact
-         :task "P06-D089"
-         :document-set ["C10"]
-         :governing-document c10-safety-governing-document
-         :pass {:name :c10-safety-analysis-pipeline
-                :input :ownership-checked-core
-                :output :safety-checked-core
-                :requires [:typed-core-module :effect-graph
-                           :capability-proof-records :ownership-graph
-                           :borrow-graph :lifetime-interval-map
-                           :linear-resource-flow-graph :profile :target]
-                :preserves [:source-spans :generated-origin :types
-                            :effects :capabilities :ownership-facts
-                            :profile :target :unsafe-metadata]
-                :emits [:safety-operation-inventory
-                        :safety-outcome-records :runtime-check-list
-                        :proof-obligation-list
-                        :proof-certificate-references
-                        :unsafe-island-audit-manifest
-                        :taint-capability-safety-report
-                        :generated-code-safety-provenance
-                        :optimization-safety-preservation
-                        :safety-diagnostics]
-                :rejects c10-safety-diagnostic-ids}
-         :source-overrides overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c9-ownership-checker-artifact
-         (select-keys c9-artifact [:kind :artifact-id :ownership-graph
-                                   :borrow-graph :lifetime-interval-map
-                                   :linear-resource-flow-graph
-                                   :capability-based-proof])
-         :safety-operation-inventory inventory
-         :safety-outcome-records outcomes
-         :runtime-check-list checks
-         :proof-obligation-list obligations
-         :proof-certificate-references certificates
-         :unsafe-island-audit-manifest unsafe
-         :taint-capability-safety-report report
-         :generated-code-safety-provenance generated
-         :optimization-safety-preservation optimization
-         :safety-verifier-report verifier
-         :safety-diagnostics diagnostics
-         :c10-safety-analysis-results
-         {:documents ["C10"]
-          :task "P06-D089"
-          :required-diagnostic-ids c10-safety-diagnostic-ids
-          :operation-inventory-status :complete
-          :outcome-status :complete
-          :runtime-check-status :complete
-          :proof-obligation-status :complete
-          :certificate-status :complete
-          :unsafe-audit-status :complete
-          :taint-capability-status :complete
-          :generated-provenance-status :complete
-          :optimization-preservation-status :complete
-          :verifier-status (:status verifier)
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c10-safety-validate! source-path artifact-base)
-        capability-proof (c10-safety-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+  (c10-call c10/compiler-c10-safety-source-artifact source-path source-text))
 
 (defn compiler-c10-safety-file-artifact
   [path]
-  (compiler-c10-safety-source-artifact path (slurp path)))
+  (c10-call c10/compiler-c10-safety-file-artifact path))
 
-(def c11-mir-diagnostic-ids
-  ["C11-MODULE"
-   "C11-BLOCK"
-   "C11-DOMINANCE"
-   "C11-TYPE"
-   "C11-EFFECT"
-   "C11-SAFETY"
-   "C11-ORIGIN"
-   "C11-DOMAIN"
-   "C11-TARGET-LEAK"
-   "C11-VERIFY"])
+(def c11-mir-diagnostic-ids c11/c11-mir-diagnostic-ids)
+(def c11-mir-governing-document c11/c11-mir-governing-document)
+(def c11-mir-required-operation-families c11/c11-mir-required-operation-families)
+(def c11-mir-rejected-designs c11/c11-mir-rejected-designs)
+(def c11-mir-override-diagnostics c11/c11-mir-override-diagnostics)
 
-(def c11-mir-governing-document
-  "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md")
+(declare c11-mir-source-overrides
+         c11-mir-message
+         c11-mir-fail!
+         c11-mir-validate-overrides!
+         c11-family-opcode
+         c11-family-effects
+         c11-mir-operation
+         c11-mir-module-record
+         c11-data-flow-graph
+         c11-domain-anchor-table
+         c11-present?
+         c11-mir-diagnostics
+         c11-mir-verifier-report
+         c11-mir-capability-proof
+         c11-mir-validate!
+         compiler-c11-mir-source-artifact
+         compiler-c11-mir-file-artifact)
 
-(def c11-mir-required-operation-families
-  [:constant
-   :local
-   :call
-   :closure
-   :dispatch
-   :data-constructor
-   :field-index-buffer
-   :numeric
-   :memory
-   :region
-   :linear-resource
-   :control-flow
-   :error
-   :ffi
-   :concurrency
-   :workflow
-   :ai-tool
-   :domain-anchor
-   :runtime-check
-   :proof-reference])
+(defn- c11-mir-ops []
+  {:fail! fail!
+   :source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c10-safety-source-artifact compiler-c10-safety-source-artifact
+   :c11-mir-diagnostic-ids c11-mir-diagnostic-ids
+   :c11-mir-governing-document c11-mir-governing-document
+   :c11-mir-required-operation-families c11-mir-required-operation-families
+   :c11-mir-rejected-designs c11-mir-rejected-designs
+   :c11-mir-override-diagnostics c11-mir-override-diagnostics
+   :c11-mir-source-overrides c11-mir-source-overrides
+   :c11-mir-message c11-mir-message
+   :c11-mir-fail! c11-mir-fail!
+   :c11-mir-validate-overrides! c11-mir-validate-overrides!
+   :c11-family-opcode c11-family-opcode
+   :c11-family-effects c11-family-effects
+   :c11-mir-operation c11-mir-operation
+   :c11-mir-module-record c11-mir-module-record
+   :c11-data-flow-graph c11-data-flow-graph
+   :c11-domain-anchor-table c11-domain-anchor-table
+   :c11-present? c11-present?
+   :c11-mir-diagnostics c11-mir-diagnostics
+   :c11-mir-verifier-report c11-mir-verifier-report
+   :c11-mir-capability-proof c11-mir-capability-proof
+   :c11-mir-validate! c11-mir-validate!
+   :compiler-c11-mir-source-artifact compiler-c11-mir-source-artifact
+   :compiler-c11-mir-file-artifact compiler-c11-mir-file-artifact})
 
-(def c11-mir-rejected-designs
-  [{:diagnostic "C11-MODULE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-module.gravity"
-    :rejected-design :malformed-module}
-   {:diagnostic "C11-BLOCK"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-block.gravity"
-    :rejected-design :invalid-block}
-   {:diagnostic "C11-DOMINANCE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-dominance.gravity"
-    :rejected-design :use-before-definition}
-   {:diagnostic "C11-TYPE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-type.gravity"
-    :rejected-design :missing-type}
-   {:diagnostic "C11-EFFECT"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-effect.gravity"
-    :rejected-design :missing-effect-ordering}
-   {:diagnostic "C11-SAFETY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-safety.gravity"
-    :rejected-design :missing-safety-outcome}
-   {:diagnostic "C11-ORIGIN"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-origin.gravity"
-    :rejected-design :missing-origin}
-   {:diagnostic "C11-DOMAIN"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-domain.gravity"
-    :rejected-design :invalid-domain-anchor}
-   {:diagnostic "C11-TARGET-LEAK"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-target-leak.gravity"
-    :rejected-design :target-specific-generic-mir}
-   {:diagnostic "C11-VERIFY"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-mir-verify.gravity"
-    :rejected-design :verifier-failure}])
-
-(def c11-mir-override-diagnostics
-  {:module "C11-MODULE"
-   :block "C11-BLOCK"
-   :dominance "C11-DOMINANCE"
-   :type "C11-TYPE"
-   :effect "C11-EFFECT"
-   :safety "C11-SAFETY"
-   :origin "C11-ORIGIN"
-   :domain "C11-DOMAIN"
-   :target-leak "C11-TARGET-LEAK"
-   :verify "C11-VERIFY"})
+(def ^:private ^:dynamic *c11-leaf-call?* false)
+(defn- c11-call [operation & args]
+  (if *c11-leaf-call?*
+    (apply operation args)
+    (binding [*c11-leaf-call?* true]
+      (c11/with-operations (c11-mir-ops)
+        #(apply operation args)))))
 
 (defn c11-mir-source-overrides
   [module]
-  (or (get-in module [:metadata :compiler :c11-mir-spec])
-      (get-in module [:metadata :compiler :mir])
-      {}))
+  (c11-call c11/c11-mir-source-overrides module))
 
 (defn c11-mir-message
   [id]
-  (case id
-    "C11-MODULE" "MIR module record is malformed"
-    "C11-BLOCK" "MIR block is malformed or unterminated"
-    "C11-DOMINANCE" "MIR operation uses a value before definition"
-    "C11-TYPE" "MIR operation is missing type evidence"
-    "C11-EFFECT" "effectful MIR operation is missing ordering evidence"
-    "C11-SAFETY" "safety-sensitive MIR operation is missing outcome evidence"
-    "C11-ORIGIN" "MIR operation is missing source or generated origin"
-    "C11-DOMAIN" "MIR domain anchor is invalid"
-    "C11-TARGET-LEAK" "target-specific opcode appeared in generic MIR"
-    "C11-VERIFY" "MIR verifier failed"
-    "MIR validation failed"))
+  (c11-call c11/c11-mir-message id))
 
 (defn c11-mir-fail!
   [id source-path subject extra]
-  (fail! id
-         (c11-mir-message id)
-         (merge {:source-span (or (:source-span subject)
-                                  (get-in subject [:source :span])
-                                  (source-span source-path 0))
-                 :diagnostic-family :c11-mir-specification
-                 :stage :mir-construction
-                 :document-id "C11"
-                 :expected-document c11-mir-governing-document
-                 :mir-module (or (:mir-module subject) :fixture/mir-module)
-                 :function (or (:function subject) :fixture/function)
-                 :block (or (:block subject) :fixture/block)
-                 :operation-id (or (:operation-id subject)
-                                   (:op-id subject)
-                                   :fixture/operation)
-                 :origin-chain (or (:generated-origin subject)
-                                   (get-in subject [:source :origin-chain])
-                                   [])
-                 :profile (:profile subject)
-                 :target-request (or (:target-request subject)
-                                     (:target subject))
-                 :missing-fact (:missing-fact subject)
-                 :remediation "Regenerate target-independent MIR from C10 safety-checked core with type, effect, ownership, capability, safety, proof, profile, target, and source-origin facts."}
-                extra)))
+  (c11-call c11/c11-mir-fail! id source-path subject extra))
 
 (defn c11-mir-validate-overrides!
   [source-path module overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c11-mir-override-diagnostics fail-kind)]
-      (c11-mir-fail! id source-path
-                     {:source-span (source-span source-path 0)
-                      :operation-id (keyword "fixture" (name fail-kind))
-                      :profile (:profile module)
-                      :target-request (:target module)
-                      :missing-fact fail-kind}
-                     {:missing-fields [fail-kind]}))))
+  (c11-call c11/c11-mir-validate-overrides! source-path module overrides))
 
 (defn c11-family-opcode
   [family]
-  (case family
-    :constant :mir/constant
-    :local :mir/local
-    :call :mir/call
-    :closure :mir/closure
-    :dispatch :mir/dispatch
-    :data-constructor :mir/construct
-    :field-index-buffer :mir/index
-    :numeric :mir/add-checked
-    :memory :mir/load
-    :region :mir/region-alloc
-    :linear-resource :mir/resource-close
-    :control-flow :mir/branch
-    :error :mir/throw
-    :ffi :mir/ffi-call
-    :concurrency :mir/task-spawn
-    :workflow :mir/workflow-yield
-    :ai-tool :mir/ai-tool-call
-    :domain-anchor :mir/domain-anchor
-    :runtime-check :mir/runtime-check
-    :proof-reference :mir/proof-assert
-    :mir/unknown))
+  (c11-call c11/c11-family-opcode family))
 
 (defn c11-family-effects
   [family]
-  (case family
-    :call #{:runtime/dynamic-dispatch}
-    :dispatch #{:runtime/dynamic-dispatch}
-    :field-index-buffer #{:error/throw}
-    :numeric #{:error/throw}
-    :memory #{:memory/raw}
-    :region #{:memory/raw}
-    :linear-resource #{:io/write}
-    :error #{:error/throw}
-    :ffi #{:memory/raw}
-    :concurrency #{:runtime/dynamic-dispatch}
-    :workflow #{:runtime/dynamic-dispatch}
-    :ai-tool #{:runtime/dynamic-dispatch}
-    :runtime-check #{:error/throw}
-    #{}))
+  (c11-call c11/c11-family-effects family))
 
 (defn c11-mir-operation
   [module span outcome-by-index index family]
-  (let [effects (c11-family-effects family)
-        op-id (str "c11-mir-op-" (name family))
-        outcome (get outcome-by-index (mod index (count outcome-by-index)))]
-    {:op-id op-id
-     :opcode (c11-family-opcode family)
-     :family family
-     :operands (if (zero? index) [] [(str "c11-value-" (dec index))])
-     :result (when-not (contains? #{:control-flow :error} family)
-               (str "c11-value-" index))
-     :type (case family
-             :constant "I64"
-             :numeric "I64"
-             :field-index-buffer "Byte"
-             :runtime-check "Unit"
-             :proof-reference "Unit"
-             :domain-anchor "DomainAnchor"
-             "Unit")
-     :effects effects
-     :ordering (if (seq effects) :sequence :none)
-     :source {:core-node (str "c10:" (:operation outcome))
-              :span span
-              :origin-chain (get-in outcome [:source :origin-chain] [])}
-     :profile (:profile module)
-     :facts {:ownership "c9:ownership"
-             :capabilities "c8:capabilities"
-             :safety (:operation outcome)
-             :runtime-check (:runtime-check outcome)
-             :proofs (vec (remove nil? [(:proof outcome)]))}
-     :domain-anchor (when (= :domain-anchor family)
-                      "c11-domain-anchor-efir")
-     :verifier-status :passed}))
+  (c11-call c11/c11-mir-operation module span outcome-by-index index family))
 
 (defn c11-mir-module-record
   [module c10-artifact operations]
-  (let [fn-id (str "c11-mir-fn-" (name (:module module)) "-main")
-        op-ids (mapv :op-id operations)
-        entry-block {:block-id :entry
-                     :operations op-ids
-                     :terminator {:kind :return
-                                  :value (last (keep :result operations))}
-                     :successors []}]
-    {:artifact :gravity/mir-module
-     :module (:module module)
-     :source-core (:artifact-id c10-artifact)
-     :profile (:profile module)
-     :target-request (:target module)
-     :functions {fn-id {:fn-id fn-id
-                        :name (symbol (str (:module module)) "main")
-                        :params []
-                        :returns "Unit"
-                        :latent-effects (:effects module)
-                        :blocks {:entry entry-block}
-                        :entry :entry
-                        :source {:span (source-span (:source-path module) 0)
-                                 :origin-chain []}}}
-     :globals {}
-     :types :c11/type-table
-     :effects :c11/effect-table
-     :ownership :c11/ownership-table
-     :capabilities :c11/capability-table
-     :safety :c11/safety-table
-     :domain-anchors :c11/domain-anchor-table
-     :diagnostics []}))
+  (c11-call c11/c11-mir-module-record module c10-artifact operations))
 
 (defn c11-data-flow-graph
   [operations]
-  (mapv (fn [[from to]]
-          {:from (:op-id from)
-           :to (:op-id to)
-           :edge :sequence
-           :dominance-status :passed})
-        (partition 2 1 operations)))
+  (c11-call c11/c11-data-flow-graph operations))
 
 (defn c11-domain-anchor-table
   []
-  [{:domain :efir
-    :anchor-id "c11-domain-anchor-efir"
-    :mir-ops ["c11-mir-op-domain-anchor"]
-    :semantic-artifact "stage0-efir-graph"
-    :equivalence-proof "proof-domain-anchor-round-trip"
-    :fallback "c11-fallback-mir-subgraph"
-    :status :valid}])
+  (c11-call c11/c11-domain-anchor-table))
 
 (defn c11-present?
   [value]
-  (cond
-    (nil? value) false
-    (and (coll? value) (empty? value)) false
-    (and (string? value) (str/blank? value)) false
-    :else true))
+  (c11-call c11/c11-present? value))
 
 (defn c11-mir-diagnostics
   [source-path]
-  {:artifact :gravity/c11-mir-diagnostic-registry
-   :required-diagnostic-ids c11-mir-diagnostic-ids
-   :diagnostics
-   (mapv (fn [design]
-           {:diagnostic (:diagnostic design)
-            :fixture (:fixture design)
-            :mir-module :fixture/mir-module
-            :function :fixture/function
-            :block :fixture/block
-            :operation-id (keyword "fixture" (:diagnostic design))
-            :source-span (source-span source-path 0)
-            :origin-chain []
-            :profile :fixture/profile
-            :target-request :fixture/target
-            :missing-fact (:rejected-design design)
-            :remediation "Keep target-independent MIR typed, effected, safety-linked, source-mapped, and verifier-clean before optimization or target lowering."})
-         c11-mir-rejected-designs)
-   :status :complete})
+  (c11-call c11/c11-mir-diagnostics source-path))
 
 (defn c11-mir-verifier-report
   [module operations data-flow domain-anchors diagnostics]
-  (let [families (set (map :family operations))
-        diagnostics? (= (set c11-mir-diagnostic-ids)
-                        (set (map :diagnostic (:diagnostics diagnostics))))]
-    {:artifact :gravity/c11-mir-verifier-report
-     :module-shape-valid? (= :gravity/mir-module (:artifact module))
-     :blocks-terminate? (every? #(c11-present? (:terminator %))
-                                (mapcat (comp vals :blocks)
-                                        (vals (:functions module))))
-     :dominance-valid? (every? #(= :passed (:dominance-status %)) data-flow)
-     :types-present? (every? #(c11-present? (:type %)) operations)
-     :effect-ordering-present? (every? #(or (empty? (:effects %))
-                                            (not= :none (:ordering %)))
-                                       operations)
-     :safety-linked? (every? #(c11-present? (get-in % [:facts :safety]))
-                             operations)
-     :origins-linked? (every? #(c11-present? (get-in % [:source :span]))
-                              operations)
-     :domain-anchors-valid? (every? #(and (c11-present? (:anchor-id %))
-                                          (c11-present? (:fallback %)))
-                                    domain-anchors)
-     :target-independent? (not-any? #(= :target-specific (:family %))
-                                    operations)
-     :operation-family-coverage-complete?
-     (= (set c11-mir-required-operation-families) families)
-     :diagnostics-covered? diagnostics?
-     :status (if (and (= :gravity/mir-module (:artifact module))
-                      (every? #(c11-present? (:type %)) operations)
-                      (every? #(or (empty? (:effects %))
-                                   (not= :none (:ordering %)))
-                              operations)
-                      (every? #(c11-present? (get-in % [:facts :safety]))
-                              operations)
-                      (every? #(c11-present? (get-in % [:source :span]))
-                              operations)
-                      (every? #(and (c11-present? (:anchor-id %))
-                                    (c11-present? (:fallback %)))
-                              domain-anchors)
-                      (= (set c11-mir-required-operation-families) families)
-                      diagnostics?)
-               :passed
-               :failed)}))
+  (c11-call c11/c11-mir-verifier-report module operations data-flow domain-anchors diagnostics))
 
 (defn c11-mir-capability-proof
   [artifact]
-  (let [verifier (:mir-verifier-report artifact)]
-    {:module-serialized? (:module-shape-valid? verifier)
-     :blocks-terminated? (:blocks-terminate? verifier)
-     :operations-typed? (:types-present? verifier)
-     :effect-ordering-present? (:effect-ordering-present? verifier)
-     :safety-outcomes-linked? (:safety-linked? verifier)
-     :origins-linked? (:origins-linked? verifier)
-     :domain-anchors-valid? (:domain-anchors-valid? verifier)
-     :target-independent? (:target-independent? verifier)
-     :operation-family-coverage-complete?
-     (:operation-family-coverage-complete? verifier)
-     :diagnostics-covered? (:diagnostics-covered? verifier)
-     :verifier-passed? (= :passed (:status verifier))
-     :status :complete}))
+  (c11-call c11/c11-mir-capability-proof artifact))
 
 (defn c11-mir-validate!
   [source-path artifact]
-  (let [proof (c11-mir-capability-proof artifact)]
-    (doseq [[field id] [[:module-serialized? "C11-MODULE"]
-                        [:blocks-terminated? "C11-BLOCK"]
-                        [:operations-typed? "C11-TYPE"]
-                        [:effect-ordering-present? "C11-EFFECT"]
-                        [:safety-outcomes-linked? "C11-SAFETY"]
-                        [:origins-linked? "C11-ORIGIN"]
-                        [:domain-anchors-valid? "C11-DOMAIN"]
-                        [:target-independent? "C11-TARGET-LEAK"]
-                        [:operation-family-coverage-complete?
-                         "C11-VERIFY"]
-                        [:diagnostics-covered? "C11-VERIFY"]
-                        [:verifier-passed? "C11-VERIFY"]]]
-      (when-not (get proof field)
-        (c11-mir-fail! id source-path {:stage :mir-construction}
-                       {:missing-fields [field]}))))
-  :complete)
+  (c11-call c11/c11-mir-validate! source-path artifact))
 
 (defn compiler-c11-mir-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        overrides (c11-mir-source-overrides module)
-        _ (c11-mir-validate-overrides! source-path module overrides)
-        c10-artifact (compiler-c10-safety-source-artifact source-path source-text)
-        outcomes (vec (get-in c10-artifact [:safety-outcome-records :records]))
-        span (source-span source-path 0)
-        operations (mapv (fn [index family]
-                           (c11-mir-operation module span outcomes index family))
-                         (range)
-                         c11-mir-required-operation-families)
-        mir-module (c11-mir-module-record module c10-artifact operations)
-        data-flow (c11-data-flow-graph operations)
-        domain-anchors (c11-domain-anchor-table)
-        diagnostics (c11-mir-diagnostics source-path)
-        verifier (c11-mir-verifier-report mir-module operations data-flow
-                                          domain-anchors diagnostics)
-        artifact-base
-        {:kind :gravity/stage0-c11-mir-spec-artifact
-         :task "P06-D090"
-         :document-set ["C11"]
-         :governing-document c11-mir-governing-document
-         :pass {:name :c11-mir-specification
-                :input :safety-checked-core
-                :output :gravity/mir
-                :requires [:c10-safety-analysis :types :effects :ownership
-                           :capabilities :safety-outcomes :profile :target]
-                :preserves [:source-spans :origin-chain :profile :target
-                            :types :effects :ownership :capabilities
-                            :safety-outcomes :proofs :diagnostics]
-                :emits [:mir-module :mir-operations :control-flow-graph
-                        :data-flow-graph :metadata-tables
-                        :source-origin-map :domain-anchor-table
-                        :mir-verifier-report :mir-diagnostic-stream]
-                :rejects c11-mir-diagnostic-ids}
-         :source-overrides overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c10-safety-analysis-artifact
-         (select-keys c10-artifact [:kind :artifact-id
-                                    :safety-operation-inventory
-                                    :safety-outcome-records
-                                    :runtime-check-list
-                                    :capability-based-proof])
-         :mir-module mir-module
-         :mir-operations operations
-         :operation-family-coverage
-         (mapv (fn [family]
-                 {:family family
-                  :status :represented-by-operation})
-               c11-mir-required-operation-families)
-         :control-flow-graph {:entry :entry
-                              :blocks (get-in mir-module
-                                              [:functions
-                                               (first (keys (:functions mir-module)))
-                                               :blocks])
-                              :status :complete}
-         :data-flow-graph data-flow
-         :metadata-tables {:types :c11/type-table
-                           :effects :c11/effect-table
-                           :ownership :c11/ownership-table
-                           :capabilities :c11/capability-table
-                           :safety :c11/safety-table
-                           :runtime-checks :c11/runtime-check-table
-                           :proofs :c11/proof-table
-                           :source-origins :c11/source-origin-table
-                           :profile-target :c11/profile-target-table
-                           :domain-anchors :c11/domain-anchor-table
-                           :status :complete}
-         :type-table (into {}
-                           (map (fn [op] [(:result op) (:type op)]))
-                           (filter :result operations))
-         :effect-table (into {}
-                             (map (fn [op] [(:op-id op) (:effects op)]))
-                             operations)
-         :ownership-table (get-in c10-artifact
-                                  [:c9-ownership-checker-artifact
-                                   :ownership-graph])
-         :capability-proof-table
-         (get-in c10-artifact
-                 [:c9-ownership-checker-artifact
-                  :capability-based-proof])
-         :safety-outcome-table (:safety-outcome-records c10-artifact)
-         :runtime-check-table (:runtime-check-list c10-artifact)
-         :proof-certificate-table (:proof-certificate-references c10-artifact)
-         :source-origin-map (mapv #(select-keys % [:op-id :source])
-                                  operations)
-         :domain-anchor-table domain-anchors
-         :optimization-invalidation-hooks
-         [{:hook :c11-mir-fact-invalidation
-           :invalidates [:type-table :effect-table :ownership-table
-                         :safety-outcome-table :domain-anchor-table]
-           :requires [:mir-verifier-report :proof-certificate-table]
-           :status :recorded}]
-         :target-lowering-input-validation
-         {:input :gravity/mir
-          :requires [:mir-verifier-report :profile :target-request
-                     :runtime-check-table :safety-outcome-table]
-          :status :ready-for-target-lowering}
-         :mir-verifier-report verifier
-         :mir-diagnostic-stream diagnostics
-         :c11-mir-spec-results
-         {:documents ["C11"]
-          :task "P06-D090"
-          :required-diagnostic-ids c11-mir-diagnostic-ids
-          :module-status :complete
-          :function-block-operation-status :complete
-          :metadata-table-status :complete
-          :runtime-check-preservation-status :complete
-          :domain-anchor-status :complete
-          :optimization-invalidation-status :complete
-          :target-lowering-input-status :complete
-          :verifier-status (:status verifier)
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c11-mir-validate! source-path artifact-base)
-        capability-proof (c11-mir-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+  (c11-call c11/compiler-c11-mir-source-artifact source-path source-text))
 
 (defn compiler-c11-mir-file-artifact
   [path]
-  (compiler-c11-mir-source-artifact path (slurp path)))
+  (c11-call c11/compiler-c11-mir-file-artifact path))
 
 (def type-keywords
   {:Bottom "Bottom"
@@ -7857,9 +3532,54 @@
   [values]
   (vec (sort-by pr-str values)))
 
+(def capability-diagnostic-ids
+  ["L15-CAPABILITY-MISSING" "L15-PROVIDER-MISSING" "L15-PROFILE"
+   "L15-SCOPE" "L15-PHASE" "L15-TRUST"])
+
+(defn- compatibility-diagnostic-record
+  [artifact stage id facts]
+  {:artifact artifact
+   :diagnostic id
+   :stage stage
+   :facts facts
+   :status :rejected})
+
+(declare provider-name
+         profile-capabilities
+         capability-validation-facts)
+
+(def ^:private ^:dynamic *capability-validation-leaf-call?* false)
+
+(defn- capability-validation-ops
+  []
+  {:stable-set stable-set
+   :stable-vec stable-vec
+   :diagnostic-record
+   (fn [id facts]
+     (compatibility-diagnostic-record
+      :gravity/capability-diagnostic :capability-validation id facts))
+   :capability-diagnostic-ids capability-diagnostic-ids
+   ;; Provider selection and profile capability projection remain bootstrap
+   ;; seams.  The leaf may consume them, but it never discovers grants or
+   ;; establishes provider trust.
+   :provider-name provider-name
+   :profile-capabilities profile-capabilities
+   :provider-specs provider-specs})
+
+(defn- capability-validation-call
+  [operation-key operation & args]
+  (if *capability-validation-leaf-call?*
+    (capability-validation/call-entrypoint-body operation-key operation args)
+    (binding [*capability-validation-leaf-call?* true]
+      (capability-validation/with-operations
+       (capability-validation-ops)
+       #(capability-validation/call-entrypoint-body
+         operation-key operation args)))))
+
 (defn provider-name
   [capability]
-  (get-in provider-specs [capability :provider]))
+  (capability-validation-call
+   :provider-name capability-validation/provider-name capability))
 
 (defn provider-version
   [capability]
@@ -18381,44 +14101,92 @@
    :gpu #{:schema :gpu-kernel :device-buffer}
    :formal #{:schema :proof-certificate :solver-artifact}})
 
+(declare profile-allowed-effects
+         profile-capabilities
+         profile-contract
+         profile-policy-layer
+         profile-effective-effects
+         effect-permission-table
+         profile-validation-facts)
+
+(defn- profile-validation-effect-registry
+  "Return the bootstrap effect registry in the leaf's portable shape.
+
+  Build effects intentionally omit :profiles in the legacy registry because
+  their profile legality comes from :requires-build-grant.  The accepted leaf
+  validates registry rows structurally, so an absent profile set is projected
+  as an empty set without changing the legacy build-grant rule."
+  []
+  (reduce-kv (fn [registry effect entry]
+               (assoc registry effect
+                      (if (contains? entry :profiles)
+                        entry
+                        (assoc entry :profiles #{}))))
+             {}
+             effect-registry))
+
+(def ^:private ^:dynamic *profile-validation-leaf-call?* false)
+
+(defn- profile-validation-ops
+  []
+  {:stable-set stable-set
+   :stable-vec stable-vec
+   :diagnostic-record
+   (fn [id facts]
+     (compatibility-diagnostic-record
+      :gravity/profile-diagnostic :profile-validation id facts))
+   ;; Preserve the two distinct legacy registry seams from HEAD 4921fbc.
+   ;; profile-contract consults all-registered-effects only for its forbidden
+   ;; complement; effect-registry-entry belongs only to permission-table row
+   ;; metadata.  The leaf may consume these functions, but registry ownership
+   ;; remains in bootstrap (including with-redefs).
+   :all-registered-effects all-registered-effects
+   :effect-registry-entry effect-registry-entry
+   :profile-allowed-effects profile-allowed-effects
+   :profile-capabilities profile-capabilities
+   :profile-contract profile-contract
+   ;; Grant discovery remains a bootstrap-owned seam.  The leaf only
+   ;; consumes this function while projecting policy intersections.
+   :profile-policy-layer profile-policy-layer
+   :profile-effective-effects profile-effective-effects
+   :effect-permission-table effect-permission-table
+   :profile-validation-facts profile-validation-facts
+   :standard-profile-order standard-profile-order
+   :profile-diagnostic-ids p1-diagnostic-ids
+   :profile-memory-regimes profile-memory-regimes
+   :profile-runtime-assumptions profile-runtime-assumptions
+   :profile-unsafe-policies profile-unsafe-policies
+   :profile-artifact-boundaries profile-artifact-boundaries
+   :effect-registry (profile-validation-effect-registry)
+   :provider-specs provider-specs
+   :core-forms core-forms
+   :supported-targets (set/union supported-targets
+                                 *additional-bootstrap-targets*)})
+
+(defn- profile-validation-call
+  [operation-key operation & args]
+  (if *profile-validation-leaf-call?*
+    (profile-validation/call-entrypoint-body operation-key operation args)
+    (binding [*profile-validation-leaf-call?* true]
+      (profile-validation/with-operations
+       (profile-validation-ops)
+       #(profile-validation/call-entrypoint-body
+         operation-key operation args)))))
+
 (defn profile-allowed-effects
   [profile]
-  (->> effect-registry
-       (keep (fn [[effect entry]]
-               (when (or (contains? (:profiles entry #{}) profile)
-                         (and (:requires-build-grant entry)
-                              (contains? #{:meta :hosted} profile)))
-                 effect)))
-       stable-set))
+  (profile-validation-call
+   :profile-allowed-effects profile-validation/profile-allowed-effects profile))
 
 (defn profile-capabilities
   [profile]
-  (->> provider-specs
-       (keep (fn [[capability spec]]
-               (when (contains? (:profiles spec #{}) profile)
-                 capability)))
-       stable-set))
+  (profile-validation-call
+   :profile-capabilities profile-validation/profile-capabilities profile))
 
 (defn profile-contract
   [profile]
-  (let [allowed-effects (profile-allowed-effects profile)]
-    {:profile profile
-     :allowed-forms core-forms
-     :allowed-effects allowed-effects
-     :checked-effects (stable-set (for [[effect entry] effect-registry
-                                        :when (and (contains? allowed-effects effect)
-                                                   (or (:requires-capability entry)
-                                                       (:requires-build-grant entry)))]
-                                    effect))
-     :forbidden-effects (set/difference (all-registered-effects) allowed-effects)
-     :capabilities (profile-capabilities profile)
-     :memory (profile-memory-regimes profile)
-     :runtime (profile-runtime-assumptions profile)
-     :nondeterminism (if (contains? #{:distributed :ai} profile)
-                       :recorded-when-effectful
-                       :profile-specific)
-     :unsafe-policy (profile-unsafe-policies profile)
-     :artifact-boundaries (profile-artifact-boundaries profile)}))
+  (profile-validation-call
+   :profile-contract profile-validation/profile-contract profile))
 
 (defn profile-policy-layer
   [module metadata-key source-key default-value]
@@ -18428,19 +14196,9 @@
 
 (defn profile-effective-effects
   [module inferred-effects]
-  (let [source-effects (:effects module)
-        profile-effects (profile-allowed-effects (:profile module))
-        package-effects (profile-policy-layer module :package-allowed-effects :effects #{})
-        provider-effects (profile-policy-layer module :provider-effect-grants :effects #{})
-        deployment-effects (profile-policy-layer module :deployment-allowed-effects :effects #{})]
-    {:source source-effects
-     :inferred inferred-effects
-     :profile profile-effects
-     :package package-effects
-     :provider provider-effects
-     :deployment deployment-effects
-     :effective (set/intersection source-effects profile-effects package-effects
-                                  provider-effects deployment-effects)}))
+  (profile-validation-call
+   :profile-effective-effects profile-validation/profile-effective-effects
+   module inferred-effects))
 
 (defn profile-effective-capabilities
   [module required-capabilities]
@@ -18460,40 +14218,15 @@
 
 (defn effect-permission-table
   [module inferred-effects effective]
-  (let [source-effects (:source effective)
-        row-effects (set/union source-effects inferred-effects)]
-    (mapv (fn [effect]
-            (let [entry (effect-registry-entry effect)
-                  profile-allowed? (contains? (:profile effective) effect)
-                  package-allowed? (contains? (:package effective) effect)
-                  provider-granted? (contains? (:provider effective) effect)
-                  deployment-granted? (contains? (:deployment effective) effect)
-                  effective? (contains? (:effective effective) effect)]
-              {:effect effect
-               :family (:family entry)
-               :requires-capability (boolean (:requires-capability entry))
-               :capability (:capability entry)
-               :declared? (contains? source-effects effect)
-               :inferred? (contains? inferred-effects effect)
-               :profile-allowed? profile-allowed?
-               :package-allowed? package-allowed?
-               :provider-granted? provider-granted?
-               :deployment-granted? deployment-granted?
-               :effective? effective?
-               :state (cond
-                        effective? :allowed
-                        (not profile-allowed?) :rejected
-                        (or (not package-allowed?)
-                            (not provider-granted?)
-                            (not deployment-granted?)) :checked
-                        :else :rejected)
-               :policy-layer (cond
-                               (not profile-allowed?) :profile
-                               (not package-allowed?) :package
-                               (not provider-granted?) :provider
-                               (not deployment-granted?) :deployment
-                               :else :effective)}))
-          (stable-vec row-effects))))
+  (profile-validation-call
+   :effect-permission-table profile-validation/effect-permission-table
+   module inferred-effects effective))
+
+(defn profile-validation-facts
+  [module typed-artifact module-artifact]
+  (profile-validation-call
+   :profile-validation-facts profile-validation/profile-validation-facts
+   module typed-artifact module-artifact))
 
 (defn capability-permission-table
   [module required-capabilities effective]
@@ -18528,6 +14261,19 @@
                                (not deployment-granted?) :deployment
                                :else :effective)}))
           (stable-vec row-capabilities))))
+
+(defn capability-validation-facts
+  "Project explicit capability grants through the hosted compatibility leaf.
+
+  The legacy capability-permission-table above intentionally remains the
+  bootstrap-owned grant row.  This entrypoint is the newer explicit pass
+  boundary: the leaf narrows the final authority with provider trust while
+  retaining the legacy grant intersection in its report."
+  [profile-output profile-report grant-facts provider-facts]
+  (capability-validation-call
+   :capability-validation-facts
+   capability-validation/capability-validation-facts
+   profile-output profile-report grant-facts provider-facts))
 
 (defn backend-eligibility-report
   [module manifest]
@@ -27734,3608 +23480,653 @@
            :capability-based-proof capability-proof
            :domain-ir-results conformance)))
 
-(def c12-domain-ir-governing-document
-  "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md")
+(def c12-domain-ir-governing-document c12/c12-domain-ir-governing-document)
+
+(declare c12-domain-ir-source-overrides
+         c12-domain-ir-validate-source-overrides!
+         c12-domain-ir-diagnostic-catalog
+         compiler-c12-domain-ir-source-artifact
+         compiler-c12-domain-ir-file-artifact)
+
+(defn- c12-domain-ir-ops []
+  {:source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c11-mir-source-artifact compiler-c11-mir-source-artifact
+   :domain-ir-validate-overrides! domain-ir-validate-overrides!
+   :domain-ir-registration-record domain-ir-registration-record
+   :domain-ir-artifact-record domain-ir-artifact-record
+   :domain-ir-validate! domain-ir-validate!
+   :domain-ir-capability-proof domain-ir-capability-proof
+   :c12-domain-ir-governing-document c12-domain-ir-governing-document
+   :domain-ir-diagnostic-ids domain-ir-diagnostic-ids
+   :domain-ir-diagnostic-messages domain-ir-diagnostic-messages
+   :domain-ir-required-families domain-ir-required-families
+   :domain-ir-registry-seed domain-ir-registry-seed
+   :c12-domain-ir-source-overrides c12-domain-ir-source-overrides
+   :c12-domain-ir-validate-source-overrides! c12-domain-ir-validate-source-overrides!
+   :c12-domain-ir-diagnostic-catalog c12-domain-ir-diagnostic-catalog
+   :compiler-c12-domain-ir-source-artifact compiler-c12-domain-ir-source-artifact
+   :compiler-c12-domain-ir-file-artifact compiler-c12-domain-ir-file-artifact})
+
+(def ^:private ^:dynamic *c12-leaf-call?* false)
+(defn- c12-call [operation & args]
+  (if *c12-leaf-call?*
+    (apply operation args)
+    (binding [*c12-leaf-call?* true]
+      (c12/with-operations (c12-domain-ir-ops)
+        #(apply operation args)))))
 
 (defn c12-domain-ir-source-overrides
   [module]
-  (or (get-in module [:metadata :compiler :c12-domain-ir])
-      (get-in module [:metadata :compiler :domain-ir])
-      {}))
+  (c12-call c12/c12-domain-ir-source-overrides module))
 
 (defn c12-domain-ir-validate-source-overrides!
   [source-path overrides]
-  (domain-ir-validate-overrides!
-   source-path
-   {:source-overrides overrides
-    :domain-ir-registry [{:schema "sha256:stage0-c12-source-override"}]}))
+  (c12-call c12/c12-domain-ir-validate-source-overrides! source-path overrides))
 
 (defn c12-domain-ir-diagnostic-catalog
   [source-path]
-  (let [span (source-span source-path 0)]
-    {:artifact :gravity/c12-domain-diagnostic-catalog
-     :status :complete
-     :diagnostics
-     (mapv (fn [id]
-             {:diagnostic id
-              :domain :stage0-domain-ir
-              :artifact-id "c12-domain-diagnostic-catalog"
-              :source-span span
-              :semantic-anchor {:mir-ops [] :typed-core []}
-              :owner-doc "C12"
-              :profile :hosted
-              :target :jvm
-              :verifier :gravity.domain-ir/verify
-              :missing-fact :catalog-entry
-              :remediation (get domain-ir-diagnostic-messages id)})
-           domain-ir-diagnostic-ids)}))
+  (c12-call c12/c12-domain-ir-diagnostic-catalog source-path))
 
 (defn compiler-c12-domain-ir-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        source-overrides (c12-domain-ir-source-overrides module)
-        _ (c12-domain-ir-validate-source-overrides! source-path
-                                                    source-overrides)
-        c11-artifact (compiler-c11-mir-source-artifact source-path source-text)
-        registrations (mapv domain-ir-registration-record
-                            domain-ir-registry-seed)
-        domain-artifacts (mapv #(domain-ir-artifact-record c11-artifact %1 %2)
-                               registrations
-                               (range))
-        semantic-anchor-map (mapv #(select-keys %
-                                                [:domain :artifact-id
-                                                 :semantic-anchor :source])
-                                  domain-artifacts)
-        entry-pass-records
-        (mapv (fn [registration]
-                {:domain (:domain registration)
-                 :entry-passes (:entry-passes registration)
-                 :consumes [:source-forms :typed-core :gravity/mir]
-                 :input-artifact (:artifact-id c11-artifact)
-                 :preserves [:types :effects :ownership :capabilities
-                             :profile :target :safety :provenance]
-                 :status :complete})
-              registrations)
-        exit-pass-records
-        (mapv (fn [registration]
-                {:domain (:domain registration)
-                 :exit-passes (:exit-passes registration)
-                 :requires [:domain-verifier-report :proof-or-certificate
-                            :fallback-record]
-                 :emits [:mir-subgraph :target-provider-call
-                         :runtime-manifest :verification-artifact]
-                 :status :complete})
-              registrations)
-        proof-records (mapv (fn [domain-artifact]
-                              {:domain (:domain domain-artifact)
-                               :artifact-id (:artifact-id domain-artifact)
-                               :evidence-kind :translation-validation
-                               :proofs (:proofs domain-artifact)
-                               :status :accepted})
-                            domain-artifacts)
-        lowering-matrix
-        (mapv (fn [registration]
-                (let [target (get-in c11-artifact
-                                     [:mir-module :target-request])
-                      direct? (contains? (:target-lowerings registration)
-                                         target)]
-                  {:domain (:domain registration)
-                   :target-request target
-                   :supported-targets (:target-lowerings registration)
-                   :status (if direct? :eligible :fallback)
-                   :fallback (:fallback registration)}))
-              registrations)
-        fallback-records (mapv (fn [registration]
-                                 {:domain (:domain registration)
-                                  :fallback (:fallback registration)
-                                  :status :available
-                                  :residual :gravity/mir})
-                               registrations)
-        diagnostics (c12-domain-ir-diagnostic-catalog source-path)
-        artifact-base
-        {:kind :gravity/stage0-c12-domain-ir-architecture-artifact
-         :task "P06-D091"
-         :document-set ["C12"]
-         :governing-document c12-domain-ir-governing-document
-         :pass {:name :c12-domain-ir-architecture
-                :input :gravity/mir
-                :output :domain-ir-registry
-                :requires [:c11-mir-specification :semantic-anchors
-                           :type-facts :effect-facts :ownership-facts
-                           :capability-proofs :safety-outcomes
-                           :source-provenance]
-                :preserves [:types :effects :ownership :capabilities
-                            :profile :target :safety :source-spans
-                            :origin-chain]
-                :emits [:domain-ir-registry :domain-ir-artifacts
-                        :semantic-anchor-map :entry-pass-records
-                        :exit-pass-records :domain-verifier-report
-                        :proof-and-certificate-references
-                        :lowering-eligibility-matrix :fallback-records
-                        :domain-ir-diagnostic-stream]
-                :rejects domain-ir-diagnostic-ids}
-         :source-overrides source-overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c11-mir-spec-artifact
-         (select-keys c11-artifact [:kind :task :artifact-id
-                                    :governing-document :mir-module
-                                    :mir-verifier-report
-                                    :capability-based-proof])
-         :mir-artifact-kind (:kind c11-artifact)
-         :mir-artifact-hash (:artifact-id c11-artifact)
-         :mir-artifact c11-artifact
-         :domain-ir-registry registrations
-         :domain-ir-artifact-schema
-         {:artifact :gravity/domain-ir-artifact-schema
-          :required-fields [:artifact :domain :artifact-id :source
-                            :semantic-anchor :profile :target-request
-                            :facts :verifier :proofs :lowering-status]
-          :required-domain-families domain-ir-required-families
-          :status :complete}
-         :domain-ir-artifacts domain-artifacts
-         :semantic-anchor-map semantic-anchor-map
-         :entry-pass-records entry-pass-records
-         :exit-pass-records exit-pass-records
-         :domain-verifier-report
-         {:artifact :gravity/domain-verifier-report
-          :status :passed
-          :domains (mapv :domain domain-artifacts)
-          :checks [:registration :schema :semantic-anchor
-                   :source-provenance :facts :proof-obligations
-                   :lowering :fallback :plugin-policy]
-          :diagnostics []}
-         :proof-and-certificate-references proof-records
-         :lowering-eligibility-matrix lowering-matrix
-         :fallback-records fallback-records
-         :plugin-registration-policy
-         {:status :enforced
-          :requires [:schema :owner-doc :verifier :semantic-anchor
-                     :non-opaque-payload]
-          :visibility :package-visible}
-         :domain-ir-diagnostic-stream diagnostics
-         :c12-domain-ir-results
-         {:documents ["C12"]
-          :task "P06-D091"
-          :required-diagnostic-ids domain-ir-diagnostic-ids
-          :c11-input-status :complete
-          :registration-status :complete
-          :artifact-schema-status :complete
-          :anchor-status :complete
-          :verifier-status :complete
-          :proof-evidence-status :complete
-          :lowering-and-fallback-status :complete
-          :plugin-policy-status :complete
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (domain-ir-validate! source-path artifact-base)
-        capability-proof (assoc (domain-ir-capability-proof artifact-base)
-                                :c11-mir-input-verified?
-                                (= :passed
-                                   (get-in c11-artifact
-                                           [:mir-verifier-report :status]))
-                                :diagnostics-covered?
-                                (= (set domain-ir-diagnostic-ids)
-                                   (set (map :diagnostic
-                                             (:diagnostics diagnostics)))))]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+  (c12-call c12/compiler-c12-domain-ir-source-artifact source-path source-text))
 
 (defn compiler-c12-domain-ir-file-artifact
   [path]
-  (compiler-c12-domain-ir-source-artifact path (slurp path)))
+  (c12-call c12/compiler-c12-domain-ir-file-artifact path))
 
-(def c13-optimization-diagnostic-ids
-  ["C13-CONTRACT"
-   "C13-PRESERVE"
-   "C13-INVALIDATE"
-   "C13-PROOF"
-   "C13-CHECK-ELISION"
-   "C13-EFFECT"
-   "C13-SAFETY"
-   "C13-DOMAIN"
-   "C13-NONDETERMINISM"
-   "C13-VERIFY"])
+(def c13-optimization-diagnostic-ids optimization-lowering/c13-optimization-diagnostic-ids)
+(def c14-lowering-diagnostic-ids optimization-lowering/c14-lowering-diagnostic-ids)
+(def optimization-lowering-diagnostic-ids optimization-lowering/optimization-lowering-diagnostic-ids)
+(def optimization-lowering-diagnostic-messages optimization-lowering/optimization-lowering-diagnostic-messages)
+(def optimization-lowering-override-diagnostics optimization-lowering/optimization-lowering-override-diagnostics)
+(def optimization-pass-contract-seed optimization-lowering/optimization-pass-contract-seed)
 
-(def c14-lowering-diagnostic-ids
-  ["C14-INPUT"
-   "C14-PROFILE"
-   "C14-TARGET"
-   "C14-ABI"
-   "C14-RUNTIME"
-   "C14-PROVIDER"
-   "C14-PROOF-METADATA"
-   "C14-CAPABILITY"
-   "C14-UNSUPPORTED"
-   "C14-MANIFEST"])
+(declare optimization-lowering-source-overrides
+         optimization-lowering-fail!
+         optimization-pass-contract-record
+         optimization-decision-record
+         optimization-lowering-validate-overrides!
+         optimization-lowering-validate!
+         optimization-lowering-capability-proof
+         optimization-lowering-source-artifact)
 
-(def optimization-lowering-diagnostic-ids
-  (vec (concat c13-optimization-diagnostic-ids
-               c14-lowering-diagnostic-ids)))
+(defn- optimization-lowering-ops []
+  {:fail! fail!
+   :source-span source-span
+   :sha256-hex sha256-hex
+   :perf-present? perf-present?
+   :checked-core-source-artifact checked-core-source-artifact
+   :domain-ir-source-artifact domain-ir-source-artifact
+   :c13-optimization-diagnostic-ids c13-optimization-diagnostic-ids
+   :c14-lowering-diagnostic-ids c14-lowering-diagnostic-ids
+   :optimization-lowering-diagnostic-ids optimization-lowering-diagnostic-ids
+   :optimization-lowering-diagnostic-messages optimization-lowering-diagnostic-messages
+   :optimization-lowering-override-diagnostics optimization-lowering-override-diagnostics
+   :optimization-pass-contract-seed optimization-pass-contract-seed
+   :optimization-lowering-source-overrides optimization-lowering-source-overrides
+   :optimization-lowering-fail! optimization-lowering-fail!
+   :optimization-pass-contract-record optimization-pass-contract-record
+   :optimization-decision-record optimization-decision-record
+   :optimization-lowering-validate-overrides! optimization-lowering-validate-overrides!
+   :optimization-lowering-validate! optimization-lowering-validate!
+   :optimization-lowering-capability-proof optimization-lowering-capability-proof
+   :optimization-lowering-source-artifact optimization-lowering-source-artifact})
 
-(def optimization-lowering-diagnostic-messages
-  {"C13-CONTRACT" "MIR optimization pass contract is invalid"
-   "C13-PRESERVE" "optimization claimed to preserve a missing or changed fact"
-   "C13-INVALIDATE" "optimization is missing an invalidation record"
-   "C13-PROOF" "optimization transformation lacks required proof evidence"
-   "C13-CHECK-ELISION" "check elision violated PERF10 proof policy"
-   "C13-EFFECT" "optimization reordered effects without evidence"
-   "C13-SAFETY" "optimization left stale safety outcomes"
-   "C13-DOMAIN" "optimization corrupted a domain anchor"
-   "C13-NONDETERMINISM" "optimization choice is not replayable"
-   "C13-VERIFY" "post-optimization MIR verifier failed"
-   "C14-INPUT" "target lowering input is unverified or stale"
-   "C14-PROFILE" "backend is ineligible under the active profile"
-   "C14-TARGET" "target feature is missing or unsupported"
-   "C14-ABI" "ABI or layout cannot represent the artifact"
-   "C14-RUNTIME" "runtime service is missing or forbidden"
-   "C14-PROVIDER" "provider support is missing"
-   "C14-PROOF-METADATA" "target metadata lacks Gravity proof evidence"
-   "C14-CAPABILITY" "lowering would add or lose authority"
-   "C14-UNSUPPORTED" "MIR or domain feature lacks legal lowering"
-   "C14-MANIFEST" "target artifact manifest is incomplete"})
-
-(def optimization-lowering-override-diagnostics
-  {:contract ["C13-CONTRACT" :optimization-pass]
-   :preserve ["C13-PRESERVE" :optimization-decision]
-   :invalidate ["C13-INVALIDATE" :invalidation-ledger]
-   :proof ["C13-PROOF" :optimization-proof]
-   :check-elision ["C13-CHECK-ELISION" :check-elision]
-   :effect ["C13-EFFECT" :effect-scheduling]
-   :safety ["C13-SAFETY" :safety-outcome]
-   :domain ["C13-DOMAIN" :domain-anchor]
-   :nondeterminism ["C13-NONDETERMINISM" :replay]
-   :verify ["C13-VERIFY" :post-pass-verifier]
-   :input ["C14-INPUT" :lowering-input]
-   :profile ["C14-PROFILE" :target-eligibility]
-   :target ["C14-TARGET" :target-feature]
-   :abi ["C14-ABI" :abi-layout]
-   :runtime ["C14-RUNTIME" :runtime-provider]
-   :provider ["C14-PROVIDER" :provider-selection]
-   :proof-metadata ["C14-PROOF-METADATA" :target-metadata]
-   :capability ["C14-CAPABILITY" :capability-preservation]
-   :unsupported ["C14-UNSUPPORTED" :unsupported-feature]
-   :manifest ["C14-MANIFEST" :target-artifact-manifest]})
-
-(def optimization-pass-contract-seed
-  [{:pass :constant-fold
-    :requires #{:constant-table :type-table}
-    :preserves #{:types :effects :ownership :capabilities :source-origins
-                 :profile :safety-outcomes}
-    :invalidates #{}
-    :regenerates #{}
-    :proof-obligations #{:literal-equivalence}
-    :profiles #{:core :hosted :native :gpu}
-    :target-assumptions #{}
-    :emits #{:decision-log :verifier-report}}
-   {:pass :dead-code-eliminate
-    :requires #{:control-flow-graph :effect-table :liveness}
-    :preserves #{:types :effects :capabilities :source-origins :profile}
-    :invalidates #{:liveness :data-flow-cache}
-    :regenerates #{:liveness}
-    :proof-obligations #{:no-effectful-removal}
-    :profiles #{:hosted :native :gpu}
-    :target-assumptions #{}
-    :emits #{:decision-log :invalidation-ledger :verifier-report}}
-   {:pass :bounds-check-elide
-    :requires #{:dominator-tree :range-analysis :safety-outcomes}
-    :preserves #{:types :effects :source-origins :profile}
-    :invalidates #{:runtime-check-table :data-flow-cache}
-    :regenerates #{:runtime-check-table}
-    :proof-obligations #{:proof-dominates-check}
-    :profiles #{:native :hosted :gpu}
-    :target-assumptions #{}
-    :emits #{:decision-log :check-elision-record :verifier-report}}
-   {:pass :effect-aware-schedule
-    :requires #{:effect-table :capability-proof-table}
-    :preserves #{:types :capabilities :safety-outcomes :source-origins
-                 :profile}
-    :invalidates #{:control-flow-cache}
-    :regenerates #{:effect-table}
-    :proof-obligations #{:effect-order-equivalence}
-    :profiles #{:hosted :native :distributed}
-    :target-assumptions #{}
-    :emits #{:decision-log :effect-order-proof :verifier-report}}
-   {:pass :domain-ir-exit
-    :requires #{:domain-verifier-report :semantic-anchor-map}
-    :preserves #{:types :effects :ownership :capabilities :safety-outcomes
-                 :source-origins :profile}
-    :invalidates #{:domain-anchor-cache}
-    :regenerates #{:domain-anchor-table}
-    :proof-obligations #{:domain-translation-validation}
-    :profiles #{:hosted :native :distributed :gpu}
-    :target-assumptions #{}
-    :emits #{:decision-log :domain-verifier-report :verifier-report}}
-   {:pass :target-layout-prepare
-    :requires #{:layout-facts :ownership-table :safety-outcomes}
-    :preserves #{:types :effects :capabilities :source-origins :profile}
-    :invalidates #{:layout-cache}
-    :regenerates #{:layout-manifest}
-    :proof-obligations #{:layout-equivalence}
-    :profiles #{:hosted :native :gpu}
-    :target-assumptions #{}
-    :emits #{:decision-log :layout-decision-record :verifier-report}}])
+(def ^:private ^:dynamic *optimization-lowering-leaf-call?* false)
+(defn- optimization-lowering-call [operation-key operation & args]
+  (if *optimization-lowering-leaf-call?*
+    (apply operation args)
+    (binding [*optimization-lowering-leaf-call?* true]
+      (optimization-lowering/with-operations
+        (assoc (optimization-lowering-ops) operation-key operation)
+        #(apply operation args)))))
 
 (defn optimization-lowering-source-overrides
   [module]
-  (get-in module [:metadata :compiler :optimization-lowering] {}))
-
-(def c13-optimization-governing-document
-  "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md")
-
-(defn c13-optimization-source-overrides
-  [module]
-  (or (get-in module [:metadata :compiler :c13-optimization])
-      (get-in module [:metadata :compiler :optimization-lowering])
-      {}))
+  (optimization-lowering-call :optimization-lowering-source-overrides
+                              optimization-lowering/optimization-lowering-source-overrides
+                              module))
 
 (defn optimization-lowering-fail!
   [id source-path artifact subject extra]
-  (fail! id
-         (get optimization-lowering-diagnostic-messages id
-              "optimization or target lowering validation failed")
-         (merge {:source-span (or (:source-span subject)
-                                  (get-in subject [:source :span])
-                                  (source-span source-path 0))
-                 :diagnostic-family :optimization-lowering
-                 :stage :optimize-lower
-                 :pass-id (or (:pass subject) (:pass-id subject))
-                 :decision-id (:decision-id subject)
-                 :input-artifact-id (or (:input-mir subject)
-                                        (:input artifact))
-                 :output-artifact-id (:output-mir subject)
-                 :changed-operations (:changed-ops subject)
-                 :missing-fact (:missing-fact subject)
-                 :proof-id (or (:proof-id subject) (:proof-id extra))
-                 :profile (or (:profile subject)
-                              (get-in artifact [:lowering-request :profile]))
-                 :target (or (:target subject)
-                             (get-in artifact
-                                     [:lowering-request :target :backend]))
-                 :backend (get-in artifact [:lowering-request :target :backend])
-                 :missing-feature (:missing-feature subject)
-                 :fallback-status (:fallback-status subject)
-                 :remediation "Regenerate optimization and lowering records with pass contracts, invalidation, verifier, proof, provider, capability, fallback, and target artifact evidence."}
-                extra)))
+  (optimization-lowering-call :optimization-lowering-fail!
+                              optimization-lowering/optimization-lowering-fail!
+                              id source-path artifact subject extra))
 
 (defn optimization-pass-contract-record
   [record]
-  (assoc record
-         :artifact :gravity/mir-pass-contract
-         :input :gravity/mir
-         :output :gravity/mir
-         :version "stage0-c13"
-         :contract-status :accepted))
+  (optimization-lowering-call :optimization-pass-contract-record
+                              optimization-lowering/optimization-pass-contract-record
+                              record))
 
 (defn optimization-decision-record
   [domain-ir-artifact input-id index contract]
-  (let [changed? (odd? index)
-        pass (:pass contract)
-        decision-input {:pass pass
-                        :input input-id
-                        :index index
-                        :changed? changed?}
-        output-id (str "sha256:" (sha256-hex (pr-str decision-input)))]
-    {:artifact :gravity/optimization-decision
-     :pass pass
-     :decision-id (str "sha256:" (sha256-hex (pr-str decision-input)))
-     :input-mir input-id
-     :output-mir output-id
-     :changed-ops (if changed?
-                    [(str "mir-op-optimized-" (name pass))]
-                    [])
-     :reason (if changed? :stage0-evidence-gated :no-change-needed)
-     :preserved (:preserves contract)
-     :invalidated (:invalidates contract)
-     :regenerated (:regenerates contract)
-     :proofs-used [{:proof-id (keyword "proof" (str "c13-" (name pass)))
-                    :kind (if changed?
-                            :translation-validation
-                            :contract-replay)
-                    :status :accepted}]
-     :residual-checks (if (= :bounds-check-elide pass)
-                        []
-                        [:stage0-visible-residual])
-     :benchmarks []
-     :verifier-result :passed
-     :source (get-in domain-ir-artifact
-                     [:domain-ir-artifacts 0 :source])}))
+  (optimization-lowering-call :optimization-decision-record
+                              optimization-lowering/optimization-decision-record
+                              domain-ir-artifact input-id index contract))
 
 (defn optimization-lowering-validate-overrides!
   [source-path artifact]
-  (when-let [fail-kind (get-in artifact [:source-overrides :fail])]
-    (let [[id subject-kind] (get optimization-lowering-override-diagnostics
-                                 fail-kind)]
-      (when id
-        (optimization-lowering-fail!
-         id source-path artifact
-         {:pass-id subject-kind
-          :decision-id (str "optimization-lowering-invalid-"
-                            (name fail-kind))
-          :source-span (source-span source-path 0)
-          :missing-fact fail-kind
-          :missing-feature fail-kind
-          :fallback-status :missing}
-         {:missing-fields [fail-kind]})))))
-
-(defn c13-optimization-validate-source-overrides!
-  [source-path overrides]
-  (optimization-lowering-validate-overrides!
-   source-path
-   {:source-overrides overrides
-    :lowering-request {:profile :hosted
-                       :target {:backend :jvm}}
-    :input "sha256:stage0-c13-source-override"}))
-
-(defn c13-optimization-diagnostic-catalog
-  [source-path]
-  (let [span (source-span source-path 0)]
-    {:artifact :gravity/c13-optimization-diagnostic-catalog
-     :status :complete
-     :diagnostics
-     (mapv (fn [id]
-             {:diagnostic id
-              :pass-id :stage0-optimization
-              :decision-id "c13-diagnostic-catalog"
-              :input-artifact-id "sha256:c13-diagnostic-input"
-              :output-artifact-id "sha256:c13-diagnostic-output"
-              :source-span span
-              :changed-operations []
-              :missing-fact :catalog-entry
-              :proof-id :proof/c13-diagnostic-catalog
-              :profile :hosted
-              :target :jvm
-              :remediation (get optimization-lowering-diagnostic-messages id)})
-           c13-optimization-diagnostic-ids)}))
-
-(defn c13-optimization-validate!
-  [source-path artifact]
-  (optimization-lowering-validate-overrides! source-path artifact)
-  (let [contracts (:optimization-pass-registry artifact)
-        pipeline (:optimization-pipeline-manifest artifact)
-        decisions (:optimization-decision-log artifact)
-        invalidations (:invalidated-fact-ledger artifact)
-        caches (:analysis-cache-records artifact)
-        proof-usage (:proof-and-certificate-usage artifact)
-        verifiers (:post-pass-verifier-reports artifact)
-        diagnostics (get-in artifact
-                            [:optimization-diagnostic-stream :diagnostics])]
-    (doseq [contract contracts]
-      (when-not (every? #(contains? contract %)
-                        [:artifact :pass :input :output :requires
-                         :preserves :invalidates :regenerates
-                         :proof-obligations :profiles :target-assumptions
-                         :emits])
-        (optimization-lowering-fail! "C13-CONTRACT" source-path artifact
-                                     contract
-                                     {:missing-fields [:pass :input :output
-                                                       :requires :preserves
-                                                       :proof-obligations]})))
-    (when-not (= (mapv :pass contracts) (:pass-order pipeline))
-      (optimization-lowering-fail! "C13-CONTRACT" source-path artifact
-                                   pipeline
-                                   {:missing-fields [:pass-order]}))
-    (when-not (= :deterministic (:ordering pipeline))
-      (optimization-lowering-fail! "C13-NONDETERMINISM" source-path artifact
-                                   pipeline
-                                   {:missing-fields [:ordering]}))
-    (when-not (every? #(perf-present? (:preserved %)) decisions)
-      (optimization-lowering-fail! "C13-PRESERVE" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:preserved]}))
-    (when-not (= (count contracts) (count invalidations))
-      (optimization-lowering-fail! "C13-INVALIDATE" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:invalidated-fact-ledger]}))
-    (when-not (= (count contracts) (count caches))
-      (optimization-lowering-fail! "C13-INVALIDATE" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:analysis-cache-records]}))
-    (when-not (= (count contracts) (count proof-usage))
-      (optimization-lowering-fail! "C13-PROOF" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:proof-usage]}))
-    (when-not (every? #(some (fn [proof] (= :accepted (:status proof)))
-                            (:proofs-used %))
-                      decisions)
-      (optimization-lowering-fail! "C13-PROOF" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:proofs-used]}))
-    (when-not (= :accepted (get-in artifact
-                                   [:check-elision-record :status]))
-      (optimization-lowering-fail! "C13-CHECK-ELISION" source-path artifact
-                                   (:check-elision-record artifact)
-                                   {:missing-fields [:check-elision-record]}))
-    (when-not (= :accepted (get-in artifact
-                                   [:effect-reordering-record :status]))
-      (optimization-lowering-fail! "C13-EFFECT" source-path artifact
-                                   (:effect-reordering-record artifact)
-                                   {:missing-fields [:effect-reordering-record]}))
-    (when-not (= :current (get-in artifact
-                                  [:safety-outcome-refresh-report :status]))
-      (optimization-lowering-fail! "C13-SAFETY" source-path artifact
-                                   (:safety-outcome-refresh-report artifact)
-                                   {:missing-fields [:safety-outcome-refresh-report]}))
-    (when-not (= :preserved (get-in artifact
-                                    [:domain-anchor-transform-report :status]))
-      (optimization-lowering-fail! "C13-DOMAIN" source-path artifact
-                                   (:domain-anchor-transform-report artifact)
-                                   {:missing-fields [:domain-anchor-transform-report]}))
-    (when-not (= :replayable (get-in artifact
-                                     [:optimization-replay-record :status]))
-      (optimization-lowering-fail! "C13-NONDETERMINISM" source-path artifact
-                                   (:optimization-replay-record artifact)
-                                   {:missing-fields [:optimization-replay-record]}))
-    (when-not (every? #(= :passed (:status %)) verifiers)
-      (optimization-lowering-fail! "C13-VERIFY" source-path artifact
-                                   (first verifiers)
-                                   {:missing-fields [:post-pass-verifier]}))
-    (when-not (= (set c13-optimization-diagnostic-ids)
-                 (set (map :diagnostic diagnostics)))
-      (optimization-lowering-fail! "C13-CONTRACT" source-path artifact
-                                   (:optimization-diagnostic-stream artifact)
-                                   {:missing-fields [:optimization-diagnostics]})))
-  :complete)
-
-(defn c13-optimization-capability-proof
-  [artifact]
-  (let [contracts (:optimization-pass-registry artifact)
-        decisions (:optimization-decision-log artifact)]
-    {:c12-domain-ir-input-verified?
-     (= :complete (get-in artifact
-                          [:c12-domain-ir-artifact
-                           :capability-based-proof :status]))
-     :pass-contracts-valid?
-     (every? #(= :gravity/mir-pass-contract (:artifact %)) contracts)
-     :pipeline-deterministic?
-     (= :deterministic (get-in artifact
-                               [:optimization-pipeline-manifest :ordering]))
-     :decisions-complete?
-     (= (count contracts) (count decisions))
-     :changed-and-unchanged-decisions-recorded?
-     (and (some seq (map :changed-ops decisions))
-          (some empty? (map :changed-ops decisions)))
-     :invalidations-recorded?
-     (= (count contracts) (count (:invalidated-fact-ledger artifact)))
-     :analysis-caches-recorded?
-     (= (count contracts) (count (:analysis-cache-records artifact)))
-     :proof-evidence-present?
-     (every? #(some (fn [proof] (= :accepted (:status proof)))
-                    (:proofs-used %))
-             decisions)
-     :residual-cost-visible?
-     (= :complete (get-in artifact [:residual-cost-report :status]))
-     :check-elision-proof?
-     (= :accepted (get-in artifact [:check-elision-record :status]))
-     :effect-order-preserved?
-     (= :accepted (get-in artifact [:effect-reordering-record :status]))
-     :safety-outcomes-current?
-     (= :current (get-in artifact
-                         [:safety-outcome-refresh-report :status]))
-     :domain-anchors-preserved?
-     (= :preserved (get-in artifact
-                           [:domain-anchor-transform-report :status]))
-     :replayable?
-     (= :replayable (get-in artifact
-                            [:optimization-replay-record :status]))
-     :post-pass-verifiers-passed?
-     (every? #(= :passed (:status %))
-             (:post-pass-verifier-reports artifact))
-     :diagnostics-covered?
-     (= (set c13-optimization-diagnostic-ids)
-        (set (map :diagnostic
-                  (get-in artifact
-                          [:optimization-diagnostic-stream
-                           :diagnostics]))))
-     :status :complete}))
+  (optimization-lowering-call :optimization-lowering-validate-overrides!
+                              optimization-lowering/optimization-lowering-validate-overrides!
+                              source-path artifact))
 
 (defn optimization-lowering-validate!
   [source-path artifact]
-  (optimization-lowering-validate-overrides! source-path artifact)
-  (let [contracts (:optimization-pass-registry artifact)
-        pipeline (:optimization-pipeline-manifest artifact)
-        decisions (:optimization-decision-log artifact)
-        invalidations (:invalidated-fact-ledger artifact)
-        verifiers (:post-pass-verifier-reports artifact)
-        lowering-request (:lowering-request artifact)
-        target-manifest (:target-artifact-manifest artifact)]
-    (doseq [contract contracts]
-      (when-not (every? #(perf-present? (get contract %))
-                        [:artifact :pass :input :output :requires
-                         :preserves :proof-obligations :profiles :emits])
-        (optimization-lowering-fail! "C13-CONTRACT" source-path artifact
-                                     contract
-                                     {:missing-fields [:pass :input :output
-                                                       :requires :preserves
-                                                       :proof-obligations]})))
-    (when-not (= (mapv :pass contracts) (:pass-order pipeline))
-      (optimization-lowering-fail! "C13-CONTRACT" source-path artifact
-                                   pipeline
-                                   {:missing-fields [:pass-order]}))
-    (when-not (every? #(perf-present? (:preserved %)) decisions)
-      (optimization-lowering-fail! "C13-PRESERVE" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:preserved]}))
-    (when-not (= (count contracts) (count invalidations))
-      (optimization-lowering-fail! "C13-INVALIDATE" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:invalidated-fact-ledger]}))
-    (when-not (every? #(some (fn [proof] (= :accepted (:status proof)))
-                            (:proofs-used %))
-                      decisions)
-      (optimization-lowering-fail! "C13-PROOF" source-path artifact
-                                   (first decisions)
-                                   {:missing-fields [:proofs-used]}))
-    (when-not (= :accepted (get-in artifact
-                                   [:check-elision-record :status]))
-      (optimization-lowering-fail! "C13-CHECK-ELISION" source-path artifact
-                                   (:check-elision-record artifact)
-                                   {:missing-fields [:check-elision-record]}))
-    (when-not (= :accepted (get-in artifact
-                                   [:effect-reordering-record :status]))
-      (optimization-lowering-fail! "C13-EFFECT" source-path artifact
-                                   (:effect-reordering-record artifact)
-                                   {:missing-fields [:effect-reordering-record]}))
-    (when-not (= :current (get-in artifact
-                                  [:safety-outcome-refresh-report :status]))
-      (optimization-lowering-fail! "C13-SAFETY" source-path artifact
-                                   (:safety-outcome-refresh-report artifact)
-                                   {:missing-fields [:safety-outcome-refresh-report]}))
-    (when-not (= :preserved (get-in artifact
-                                    [:domain-anchor-transform-report :status]))
-      (optimization-lowering-fail! "C13-DOMAIN" source-path artifact
-                                   (:domain-anchor-transform-report artifact)
-                                   {:missing-fields [:domain-anchor-transform-report]}))
-    (when-not (= :replayable (get-in artifact
-                                     [:optimization-replay-record :status]))
-      (optimization-lowering-fail! "C13-NONDETERMINISM" source-path artifact
-                                   (:optimization-replay-record artifact)
-                                   {:missing-fields [:optimization-replay-record]}))
-    (when-not (every? #(= :passed (:status %)) verifiers)
-      (optimization-lowering-fail! "C13-VERIFY" source-path artifact
-                                   (first verifiers)
-                                   {:missing-fields [:post-pass-verifier]}))
-    (when-not (= :verified-domain-ir
-                 (get-in lowering-request [:input :kind]))
-      (optimization-lowering-fail! "C14-INPUT" source-path artifact
-                                   lowering-request
-                                   {:missing-fields [:input]}))
-    (when-not (= :eligible (get-in artifact
-                                   [:target-eligibility-report :status]))
-      (optimization-lowering-fail! "C14-PROFILE" source-path artifact
-                                   (:target-eligibility-report artifact)
-                                   {:missing-fields [:target-eligibility]}))
-    (when-not (perf-present? (get-in lowering-request [:target :features]))
-      (optimization-lowering-fail! "C14-TARGET" source-path artifact
-                                   lowering-request
-                                   {:missing-fields [:target :features]}))
-    (when-not (= :complete (get-in artifact [:abi-manifest :status]))
-      (optimization-lowering-fail! "C14-ABI" source-path artifact
-                                   (:abi-manifest artifact)
-                                   {:missing-fields [:abi-manifest]}))
-    (when-not (= :complete (get-in artifact
-                                   [:runtime-provider-manifest :status]))
-      (optimization-lowering-fail! "C14-RUNTIME" source-path artifact
-                                   (:runtime-provider-manifest artifact)
-                                   {:missing-fields [:runtime-provider-manifest]}))
-    (when-not (every? #(= :selected (:status %))
-                      (:provider-selection-records artifact))
-      (optimization-lowering-fail! "C14-PROVIDER" source-path artifact
-                                   (first (:provider-selection-records
-                                           artifact))
-                                   {:missing-fields [:provider-selection]}))
-    (when-not (every? #(perf-present? (:proof %))
-                      (get-in artifact
-                              [:proof-to-target-metadata-map :entries]))
-      (optimization-lowering-fail! "C14-PROOF-METADATA" source-path artifact
-                                   (:proof-to-target-metadata-map artifact)
-                                   {:missing-fields [:proof]}))
-    (when-not (= :preserved (get-in artifact
-                                    [:capability-preservation-report :status]))
-      (optimization-lowering-fail! "C14-CAPABILITY" source-path artifact
-                                   (:capability-preservation-report artifact)
-                                   {:missing-fields [:capability-preservation]}))
-    (when-not (every? #(= :available (:fallback-status %))
-                      (:unsupported-feature-report artifact))
-      (optimization-lowering-fail! "C14-UNSUPPORTED" source-path artifact
-                                   (first (:unsupported-feature-report
-                                           artifact))
-                                   {:missing-fields [:fallback-status]}))
-    (when-not (and (= :gravity/target-artifact-manifest
-                      (:artifact target-manifest))
-                   (every? #(perf-present? (get target-manifest %))
-                           [:input :backend :profile :target :artifacts
-                            :source-map :proof-map :effects :capabilities
-                            :safety :runtime :dependencies]))
-      (optimization-lowering-fail! "C14-MANIFEST" source-path artifact
-                                   target-manifest
-                                   {:missing-fields [:target-artifact-manifest]})))
-  :complete)
+  (optimization-lowering-call :optimization-lowering-validate!
+                              optimization-lowering/optimization-lowering-validate!
+                              source-path artifact))
 
 (defn optimization-lowering-capability-proof
   [artifact]
-  {:pass-contracts-valid?
-   (every? #(= :accepted (:contract-status %))
-           (:optimization-pass-registry artifact))
-   :pipeline-deterministic?
-   (= :deterministic
-      (get-in artifact [:optimization-pipeline-manifest :ordering]))
-   :decisions-complete?
-   (= (count (:optimization-pass-registry artifact))
-      (count (:optimization-decision-log artifact)))
-   :invalidations-recorded?
-   (= (count (:optimization-pass-registry artifact))
-      (count (:invalidated-fact-ledger artifact)))
-   :proof-evidence-present?
-   (every? #(some (fn [proof] (= :accepted (:status proof)))
-                  (:proofs-used %))
-           (:optimization-decision-log artifact))
-   :post-pass-verifiers-passed?
-   (every? #(= :passed (:status %)) (:post-pass-verifier-reports artifact))
-   :lowering-request-verified?
-   (= :verified-domain-ir (get-in artifact [:lowering-request :input :kind]))
-   :target-eligible?
-   (= :eligible (get-in artifact [:target-eligibility-report :status]))
-   :abi-runtime-provider-recorded?
-   (and (= :complete (get-in artifact [:abi-manifest :status]))
-        (= :complete (get-in artifact [:runtime-provider-manifest :status]))
-        (every? #(= :selected (:status %))
-                (:provider-selection-records artifact)))
-   :proof-metadata-linked?
-   (every? #(perf-present? (:proof %))
-           (get-in artifact [:proof-to-target-metadata-map :entries]))
-   :manifest-complete?
-   (= :gravity/target-artifact-manifest
-      (get-in artifact [:target-artifact-manifest :artifact]))
-   :status :complete})
+  (optimization-lowering-call :optimization-lowering-capability-proof
+                              optimization-lowering/optimization-lowering-capability-proof
+                              artifact))
 
 (defn optimization-lowering-source-artifact
   [source-path source-text]
-  (let [checked-core (checked-core-source-artifact source-path source-text)
-        source-overrides
-        (optimization-lowering-source-overrides (:module checked-core))
-        domain-ir-artifact (domain-ir-source-artifact source-path source-text)
-        input-id (str "sha256:" (sha256-hex (pr-str domain-ir-artifact)))
-        contracts (mapv optimization-pass-contract-record
-                        optimization-pass-contract-seed)
-        decisions (mapv #(optimization-decision-record domain-ir-artifact
-                                                       input-id %2 %1)
-                        contracts
-                        (range))
-        final-output-id (:output-mir (last decisions))
-        invalidations (mapv (fn [decision]
-                              {:pass (:pass decision)
-                               :decision-id (:decision-id decision)
-                               :invalidated (:invalidated decision)
-                               :regenerated (:regenerated decision)
-                               :runtime-checks-restored
-                               (:residual-checks decision)
-                               :status :recorded})
-                            decisions)
-        verifiers (mapv (fn [decision]
-                          {:artifact :gravity/post-pass-mir-verifier-report
-                           :pass (:pass decision)
-                           :decision-id (:decision-id decision)
-                           :input (:output-mir decision)
-                           :status :passed
-                           :checks [:module :dominance :types :effects
-                                    :safety :domain-anchors]})
-                        decisions)
-        target {:backend :jvm
-                :triple "jvm-17"
-                :features #{:objects :exceptions :threads}}
-        lowering-request
-        {:artifact :gravity/lowering-request
-         :input {:kind :verified-domain-ir
-                 :id input-id}
-         :profile :hosted
-         :target target
-         :abi :jvm-hosted-stage0
-         :runtime :hosted-jvm
-         :providers {:allocator :jvm/gc
-                     :panic :jvm/exception
-                     :io :jvm/stdout}
-         :required-evidence {:safety :mir/safety-table
-                             :proofs :proof/c13-stage0
-                             :capabilities :mir/capability-proof-table}}
-        proof-map
-        {:artifact :gravity/proof-target-metadata-map
-         :target :jvm
-         :entries [{:target-metadata :bounds-check-elided
-                    :operation "mir-op-optimized-bounds-check-elide"
-                    :proof :proof/c13-bounds-check-elision}
-                   {:target-metadata :noalias
-                    :operation "mir-op-optimized-target-layout-prepare"
-                    :proof :proof/c13-layout-ownership}
-                   {:target-metadata :nonnull
-                    :operation "mir-op-optimized-dead-code-eliminate"
-                    :proof :proof/c13-safety-preserved}]}
-        artifact
-        {:kind :gravity/stage0-optimization-lowering-artifact
-         :document-set ["C13" "C14"]
-         :pass {:name :optimization-and-target-lowering-api
-                :input :domain-ir-registry
-                :output :optimization-lowering-manifest
-                :requires [:verified-domain-ir :pass-contracts
-                           :semantic-anchors :proof-evidence
-                           :target-eligibility]
-                :preserves [:types :effects :ownership :capabilities
-                            :profile :target :safety :source-spans
-                            :origin-chain :domain-anchors]
-                :emits [:optimization-pass-registry
-                        :optimization-pipeline-manifest
-                        :optimization-decision-log
-                        :invalidated-fact-ledger
-                        :analysis-cache-records
-                        :proof-and-certificate-usage
-                        :residual-cost-report
-                        :post-pass-verifier-reports
-                        :lowering-request
-                        :target-eligibility-report
-                        :abi-manifest
-                        :runtime-provider-manifest
-                        :layout-decision-record
-                        :proof-to-target-metadata-map
-                        :source-generated-origin-map
-                        :target-artifact-manifest
-                        :unsupported-feature-report]
-                :rejects optimization-lowering-diagnostic-ids}
-         :source-overrides source-overrides
-         :domain-ir-artifact-kind (:kind domain-ir-artifact)
-         :domain-ir-artifact-hash input-id
-         :optimization-pass-registry contracts
-         :optimization-pipeline-manifest
-         {:artifact :gravity/optimization-pipeline-manifest
-          :pass-order (mapv :pass contracts)
-          :ordering :deterministic
-          :optimization-level :stage0-safe
-          :source-hash (str "sha256:" (sha256-hex source-text))
-          :profile :hosted
-          :target target
-          :feature-set (:features target)
-          :provider-set #{:jvm/gc :jvm/exception :jvm/stdout}
-          :replay-seed :none
-          :status :complete}
-         :optimization-decision-log decisions
-         :invalidated-fact-ledger invalidations
-         :analysis-cache-records
-         (mapv (fn [decision]
-                 {:pass (:pass decision)
-                  :cache-key (str "sha256:"
-                                  (sha256-hex (pr-str
-                                               [(:pass decision) input-id])))
-                  :status :complete})
-               decisions)
-         :proof-and-certificate-usage
-         (mapv (fn [decision]
-                 {:pass (:pass decision)
-                  :decision-id (:decision-id decision)
-                  :proofs (:proofs-used decision)
-                  :status :accepted})
-               decisions)
-         :residual-cost-report
-         {:artifact :gravity/residual-cost-report
-          :status :complete
-          :entries [{:pass :bounds-check-elide
-                     :claim :check-erased
-                     :residual-cost :none}
-                    {:pass :target-layout-prepare
-                     :claim :layout-prepared
-                     :residual-cost :manifest-only}]}
-         :check-elision-record
-         {:artifact :gravity/check-elision-record
-          :pass :bounds-check-elide
-          :status :accepted
-          :proof :proof/c13-bounds-check-elision
-          :policy :PERF10}
-         :effect-reordering-record
-         {:artifact :gravity/effect-order-proof
-          :pass :effect-aware-schedule
-          :status :accepted
-          :proof :proof/c13-effect-order-equivalence}
-         :safety-outcome-refresh-report
-         {:artifact :gravity/safety-outcome-refresh-report
-          :status :current
-          :source :mir/safety-table}
-         :domain-anchor-transform-report
-         {:artifact :gravity/domain-anchor-transform-report
-          :status :preserved
-          :anchors (:semantic-anchor-map domain-ir-artifact)}
-         :optimization-replay-record
-         {:artifact :gravity/optimization-replay-record
-          :status :replayable
-          :ordering :deterministic
-          :seed :none}
-         :post-pass-verifier-reports verifiers
-         :lowering-request lowering-request
-         :target-eligibility-report
-         {:artifact :gravity/target-eligibility-report
-          :status :eligible
-          :profile :hosted
-          :target target
-          :backend :jvm
-          :reason :profile-target-provider-compatible}
-         :abi-manifest
-         {:artifact :gravity/abi-manifest
-          :status :complete
-          :calling-convention :jvm-static
-          :data-layout :jvm-object
-          :closure-representation :jvm-function-object
-          :panic-strategy :exception}
-         :runtime-provider-manifest
-         {:artifact :gravity/runtime-provider-manifest
-          :status :complete
-          :runtime :hosted-jvm
-          :providers (:providers lowering-request)}
-         :provider-selection-records
-         [{:provider :jvm/gc
-           :capability :memory/allocator
-           :status :selected}
-          {:provider :jvm/stdout
-           :capability :io/stdout
-           :status :selected}
-          {:provider :jvm/exception
-           :capability :panic/raise
-           :status :selected}]
-         :layout-decision-record
-         {:artifact :gravity/layout-decision-record
-          :status :complete
-          :alignment :jvm-default
-          :proof :proof/c13-layout-ownership}
-         :proof-to-target-metadata-map proof-map
-         :source-generated-origin-map
-         {:artifact :gravity/source-generated-origin-map
-          :status :complete
-          :source-map (:semantic-anchor-map domain-ir-artifact)}
-         :capability-preservation-report
-         {:artifact :gravity/capability-preservation-report
-          :status :preserved
-          :denied-additions []}
-         :unsupported-feature-report
-         [{:feature :gpu-kernel
-           :backend :jvm
-           :profile :hosted
-           :fallback :mir-scalar-kernel
-           :fallback-status :available
-           :diagnostic-id nil}]
-         :target-artifact-manifest
-         {:artifact :gravity/target-artifact-manifest
-          :input final-output-id
-          :backend :jvm
-          :profile :hosted
-          :target (str "sha256:" (sha256-hex (pr-str target)))
-          :artifacts [{:kind :jvm-bytecode-plan
-                       :hash (str "sha256:"
-                                  (sha256-hex (pr-str final-output-id)))}]
-          :source-map :gravity/source-generated-origin-map
-          :proof-map :gravity/proof-target-metadata-map
-          :effects :mir/effect-table
-          :capabilities :mir/capability-proof-table
-          :safety :mir/safety-table
-          :runtime :gravity/runtime-provider-manifest
-          :dependencies input-id
-          :diagnostics []}
-         :diagnostics []}
-        _ (optimization-lowering-validate! source-path artifact)
-        capability-proof (optimization-lowering-capability-proof artifact)
-        conformance {:documents ["C13" "C14"]
-                     :task "P06-T05"
-                     :required-diagnostic-ids
-                     optimization-lowering-diagnostic-ids
-                     :optimization-contract-status :complete
-                     :optimization-decision-status :complete
-                     :invalidation-status :complete
-                     :proof-status :complete
-                     :post-pass-verifier-status :complete
-                     :lowering-request-status :complete
-                     :target-eligibility-status :complete
-                     :provider-status :complete
-                     :manifest-status :complete
-                     :status :complete}]
-    (assoc artifact
-           :capability-based-proof capability-proof
-           :optimization-lowering-results conformance)))
+  (optimization-lowering-call :optimization-lowering-source-artifact
+                              optimization-lowering/optimization-lowering-source-artifact
+                              source-path source-text))
+
+(def c13-optimization-governing-document c13/c13-optimization-governing-document)
+
+(declare c13-optimization-source-overrides
+         c13-optimization-validate-source-overrides!
+         c13-optimization-diagnostic-catalog
+         c13-optimization-validate!
+         c13-optimization-capability-proof
+         compiler-c13-optimization-source-artifact
+         compiler-c13-optimization-file-artifact)
+
+(defn- c13-optimization-ops []
+  {:source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :sha256-hex sha256-hex
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :perf-present? perf-present?
+   :compiler-c12-domain-ir-source-artifact compiler-c12-domain-ir-source-artifact
+   :optimization-lowering-validate-overrides! optimization-lowering-validate-overrides!
+   :optimization-pass-contract-record optimization-pass-contract-record
+   :optimization-decision-record optimization-decision-record
+   :optimization-lowering-fail! optimization-lowering-fail!
+   :c13-optimization-governing-document c13-optimization-governing-document
+   :c13-optimization-diagnostic-ids c13-optimization-diagnostic-ids
+   :optimization-lowering-diagnostic-messages optimization-lowering-diagnostic-messages
+   :optimization-pass-contract-seed optimization-pass-contract-seed
+   :c13-optimization-source-overrides c13-optimization-source-overrides
+   :c13-optimization-validate-source-overrides! c13-optimization-validate-source-overrides!
+   :c13-optimization-diagnostic-catalog c13-optimization-diagnostic-catalog
+   :c13-optimization-validate! c13-optimization-validate!
+   :c13-optimization-capability-proof c13-optimization-capability-proof
+   :compiler-c13-optimization-source-artifact compiler-c13-optimization-source-artifact
+   :compiler-c13-optimization-file-artifact compiler-c13-optimization-file-artifact})
+
+(def ^:private ^:dynamic *c13-leaf-call?* false)
+(defn- c13-call [operation & args]
+  (if *c13-leaf-call?*
+    (apply operation args)
+    (binding [*c13-leaf-call?* true]
+      (c13/with-operations (c13-optimization-ops)
+        #(apply operation args)))))
+
+(defn c13-optimization-source-overrides
+  [module]
+  (c13-call c13/c13-optimization-source-overrides module))
+
+(defn c13-optimization-validate-source-overrides!
+  [source-path overrides]
+  (c13-call c13/c13-optimization-validate-source-overrides! source-path overrides))
+
+(defn c13-optimization-diagnostic-catalog
+  [source-path]
+  (c13-call c13/c13-optimization-diagnostic-catalog source-path))
+
+(defn c13-optimization-validate!
+  [source-path artifact]
+  (c13-call c13/c13-optimization-validate! source-path artifact))
+
+(defn c13-optimization-capability-proof
+  [artifact]
+  (c13-call c13/c13-optimization-capability-proof artifact))
 
 (defn compiler-c13-optimization-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        source-overrides (c13-optimization-source-overrides module)
-        _ (c13-optimization-validate-source-overrides! source-path
-                                                       source-overrides)
-        domain-ir-artifact (compiler-c12-domain-ir-source-artifact
-                            source-path source-text)
-        input-id (:artifact-id domain-ir-artifact)
-        contracts (mapv optimization-pass-contract-record
-                        optimization-pass-contract-seed)
-        decisions (mapv #(optimization-decision-record domain-ir-artifact
-                                                       input-id %2 %1)
-                        contracts
-                        (range))
-        final-output-id (:output-mir (last decisions))
-        invalidations (mapv (fn [decision]
-                              {:pass (:pass decision)
-                               :decision-id (:decision-id decision)
-                               :invalidated (:invalidated decision)
-                               :regenerated (:regenerated decision)
-                               :runtime-checks-restored
-                               (:residual-checks decision)
-                               :caches-cleared [:data-flow-cache
-                                               :domain-anchor-cache]
-                               :diagnostics-affected []
-                               :status :recorded})
-                            decisions)
-        verifiers (mapv (fn [decision]
-                          {:artifact :gravity/post-pass-mir-verifier-report
-                           :pass (:pass decision)
-                           :decision-id (:decision-id decision)
-                           :input (:output-mir decision)
-                           :status :passed
-                           :checks [:module :dominance :types :effects
-                                    :safety :domain-anchors]})
-                        decisions)
-        diagnostics (c13-optimization-diagnostic-catalog source-path)
-        artifact-base
-        {:kind :gravity/stage0-c13-mir-optimization-artifact
-         :task "P06-D092"
-         :document-set ["C13"]
-         :governing-document c13-optimization-governing-document
-         :pass {:name :c13-mir-optimization-passes
-                :input :verified-domain-ir
-                :output :optimized-mir
-                :requires [:c12-domain-ir-architecture
-                           :pass-contracts :semantic-anchors
-                           :proof-evidence :mir-verifier]
-                :preserves [:types :effects :ownership :capabilities
-                            :profile :target :safety :source-spans
-                            :origin-chain :domain-anchors]
-                :emits [:optimization-pass-registry
-                        :optimization-pipeline-manifest
-                        :optimization-decision-log
-                        :invalidated-fact-ledger
-                        :analysis-cache-records
-                        :proof-and-certificate-usage
-                        :residual-cost-report
-                        :post-pass-verifier-reports
-                        :optimized-mir-artifact
-                        :optimization-diagnostic-stream]
-                :rejects c13-optimization-diagnostic-ids}
-         :source-overrides source-overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c12-domain-ir-artifact
-         (select-keys domain-ir-artifact [:kind :task :artifact-id
-                                          :governing-document
-                                          :domain-verifier-report
-                                          :semantic-anchor-map
-                                          :capability-based-proof])
-         :domain-ir-artifact-kind (:kind domain-ir-artifact)
-         :domain-ir-artifact-hash input-id
-         :optimization-pass-registry contracts
-         :optimization-pipeline-manifest
-         {:artifact :gravity/optimization-pipeline-manifest
-          :pass-order (mapv :pass contracts)
-          :ordering :deterministic
-          :optimization-level :stage0-safe
-          :source-hash (str "sha256:" (sha256-hex source-text))
-          :profile :hosted
-          :target :jvm
-          :feature-set #{:objects :exceptions :threads}
-          :package-graph :stage0-single-package
-          :provider-set #{:jvm/gc :jvm/exception :jvm/stdout}
-          :benchmark-inputs []
-          :replay-seed :none
-          :status :complete}
-         :optimization-decision-log decisions
-         :invalidated-fact-ledger invalidations
-         :analysis-cache-records
-         (mapv (fn [decision]
-                 {:pass (:pass decision)
-                  :cache-key (str "sha256:"
-                                  (sha256-hex (pr-str
-                                               [(:pass decision) input-id])))
-                  :invalidated-by (:invalidated decision)
-                  :status :complete})
-               decisions)
-         :proof-and-certificate-usage
-         (mapv (fn [decision]
-                 {:pass (:pass decision)
-                  :decision-id (:decision-id decision)
-                  :proofs (:proofs-used decision)
-                  :status :accepted})
-               decisions)
-         :residual-cost-report
-         {:artifact :gravity/residual-cost-report
-          :status :complete
-          :entries [{:pass :bounds-check-elide
-                     :claim :check-erased
-                     :residual-cost :none}
-                    {:pass :target-layout-prepare
-                     :claim :layout-prepared
-                     :residual-cost :manifest-only}]}
-         :check-elision-record
-         {:artifact :gravity/check-elision-record
-          :pass :bounds-check-elide
-          :status :accepted
-          :proof :proof/c13-bounds-check-elision
-          :policy :PERF10}
-         :effect-reordering-record
-         {:artifact :gravity/effect-order-proof
-          :pass :effect-aware-schedule
-          :status :accepted
-          :proof :proof/c13-effect-order-equivalence}
-         :safety-outcome-refresh-report
-         {:artifact :gravity/safety-outcome-refresh-report
-          :status :current
-          :source :mir/safety-table}
-         :domain-anchor-transform-report
-         {:artifact :gravity/domain-anchor-transform-report
-          :status :preserved
-          :anchors (:semantic-anchor-map domain-ir-artifact)}
-         :optimization-replay-record
-         {:artifact :gravity/optimization-replay-record
-          :status :replayable
-          :ordering :deterministic
-          :seed :none}
-         :post-pass-verifier-reports verifiers
-         :optimized-mir-artifact
-         {:artifact :gravity/optimized-mir
-          :input input-id
-          :output final-output-id
-          :passes (mapv :pass contracts)
-          :source-origin-map (:semantic-anchor-map domain-ir-artifact)
-          :domain-anchors (:semantic-anchor-map domain-ir-artifact)
-          :status :complete}
-         :optimization-diagnostic-stream diagnostics
-         :c13-optimization-results
-         {:documents ["C13"]
-          :task "P06-D092"
-          :required-diagnostic-ids c13-optimization-diagnostic-ids
-          :c12-input-status :complete
-          :pass-contract-status :complete
-          :pipeline-status :complete
-          :decision-log-status :complete
-          :invalidation-status :complete
-          :analysis-cache-status :complete
-          :proof-status :complete
-          :residual-cost-status :complete
-          :post-pass-verifier-status :complete
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c13-optimization-validate! source-path artifact-base)
-        capability-proof (c13-optimization-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+  (c13-call c13/compiler-c13-optimization-source-artifact source-path source-text))
 
 (defn compiler-c13-optimization-file-artifact
   [path]
-  (compiler-c13-optimization-source-artifact path (slurp path)))
+  (c13-call c13/compiler-c13-optimization-file-artifact path))
 
-(def c14-lowering-governing-document
-  "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md")
+(def c14-lowering-governing-document c14/c14-lowering-governing-document)
 
-(defn c14-lowering-source-overrides
-  [module]
-  (or (get-in module [:metadata :compiler :c14-lowering])
-      (get-in module [:metadata :compiler :optimization-lowering])
-      {}))
+(declare c14-lowering-source-overrides
+         c14-lowering-validate-source-overrides!
+         c14-lowering-diagnostic-catalog
+         c14-lowering-validate!
+         c14-lowering-capability-proof
+         compiler-c14-lowering-source-artifact
+         compiler-c14-lowering-file-artifact)
 
-(defn c14-lowering-validate-source-overrides!
-  [source-path overrides]
-  (optimization-lowering-validate-overrides!
-   source-path
-   {:source-overrides overrides
-    :lowering-request {:profile :hosted
-                       :target {:backend :jvm}}
-    :input "sha256:stage0-c14-source-override"}))
+(defn- c14-lowering-ops []
+  {:source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :sha256-hex sha256-hex
+   :perf-present? perf-present?
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c13-optimization-source-artifact
+   compiler-c13-optimization-source-artifact
+   :optimization-lowering-validate-overrides!
+   optimization-lowering-validate-overrides!
+   :optimization-lowering-fail! optimization-lowering-fail!
+   :c14-lowering-governing-document c14-lowering-governing-document
+   :c14-lowering-diagnostic-ids c14-lowering-diagnostic-ids
+   :optimization-lowering-diagnostic-messages
+   optimization-lowering-diagnostic-messages
+   :c14-lowering-source-overrides c14-lowering-source-overrides
+   :c14-lowering-validate-source-overrides!
+   c14-lowering-validate-source-overrides!
+   :c14-lowering-diagnostic-catalog c14-lowering-diagnostic-catalog
+   :c14-lowering-validate! c14-lowering-validate!
+   :c14-lowering-capability-proof c14-lowering-capability-proof
+   :compiler-c14-lowering-source-artifact
+   compiler-c14-lowering-source-artifact
+   :compiler-c14-lowering-file-artifact compiler-c14-lowering-file-artifact})
 
-(defn c14-lowering-diagnostic-catalog
-  [source-path input-id]
-  (let [span (source-span source-path 0)]
-    {:artifact :gravity/c14-lowering-diagnostic-catalog
-     :status :complete
-     :diagnostics
-     (mapv (fn [id]
-             {:diagnostic id
-              :input-artifact-id input-id
-              :mir-operation "c14-diagnostic-op"
-              :domain-anchor "c14-diagnostic-anchor"
-              :source-span span
-              :origin-chain []
-              :profile :hosted
-              :target :jvm
-              :backend :jvm
-              :missing-feature :catalog-entry
-              :proof-expected :proof/c14-diagnostic-catalog
-              :provider-expected :jvm/provider
-              :fallback-status :available
-              :remediation (get optimization-lowering-diagnostic-messages id)})
-           c14-lowering-diagnostic-ids)}))
+(def ^:private ^:dynamic *c14-leaf-call?* false)
+(defn- c14-call [operation & args]
+  (if *c14-leaf-call?*
+    (apply operation args)
+    (binding [*c14-leaf-call?* true]
+      (c14/with-operations (c14-lowering-ops)
+        #(apply operation args)))))
 
-(defn c14-lowering-validate!
-  [source-path artifact]
-  (optimization-lowering-validate-overrides! source-path artifact)
-  (let [request (:lowering-request artifact)
-        providers (:provider-selection-records artifact)
-        metadata (get-in artifact [:proof-to-target-metadata-map :entries])
-        unsupported (:unsupported-feature-report artifact)
-        diagnostics (get-in artifact [:lowering-diagnostic-stream
-                                      :diagnostics])]
-    (when-not (= :optimized-mir (get-in request [:input :kind]))
-      (optimization-lowering-fail! "C14-INPUT" source-path artifact
-                                   request
-                                   {:missing-fields [:input]}))
-    (when-not (= :eligible (get-in artifact
-                                   [:target-eligibility-report :status]))
-      (optimization-lowering-fail! "C14-PROFILE" source-path artifact
-                                   (:target-eligibility-report artifact)
-                                   {:missing-fields [:target-eligibility]}))
-    (when-not (perf-present? (get-in request [:target :features]))
-      (optimization-lowering-fail! "C14-TARGET" source-path artifact
-                                   request
-                                   {:missing-fields [:target :features]}))
-    (when-not (= :complete (get-in artifact [:abi-manifest :status]))
-      (optimization-lowering-fail! "C14-ABI" source-path artifact
-                                   (:abi-manifest artifact)
-                                   {:missing-fields [:abi-manifest]}))
-    (when-not (= :complete (get-in artifact
-                                   [:runtime-provider-manifest :status]))
-      (optimization-lowering-fail! "C14-RUNTIME" source-path artifact
-                                   (:runtime-provider-manifest artifact)
-                                   {:missing-fields [:runtime-provider]}))
-    (when-not (every? #(= :selected (:status %)) providers)
-      (optimization-lowering-fail! "C14-PROVIDER" source-path artifact
-                                   (first providers)
-                                   {:missing-fields [:provider-selection]}))
-    (when-not (every? #(perf-present? (:proof %)) metadata)
-      (optimization-lowering-fail! "C14-PROOF-METADATA" source-path artifact
-                                   (:proof-to-target-metadata-map artifact)
-                                   {:missing-fields [:proof]}))
-    (when-not (= :preserved (get-in artifact
-                                    [:capability-preservation-report :status]))
-      (optimization-lowering-fail! "C14-CAPABILITY" source-path artifact
-                                   (:capability-preservation-report artifact)
-                                   {:missing-fields [:capability-preservation]}))
-    (when-not (every? #(= :available (:fallback-status %)) unsupported)
-      (optimization-lowering-fail! "C14-UNSUPPORTED" source-path artifact
-                                   (first unsupported)
-                                   {:missing-fields [:unsupported-feature]}))
-    (when-not (= :gravity/target-artifact-manifest
-                 (get-in artifact [:target-artifact-manifest :artifact]))
-      (optimization-lowering-fail! "C14-MANIFEST" source-path artifact
-                                   (:target-artifact-manifest artifact)
-                                   {:missing-fields [:target-artifact-manifest]}))
-    (when-not (= (set c14-lowering-diagnostic-ids)
-                 (set (map :diagnostic diagnostics)))
-      (optimization-lowering-fail! "C14-MANIFEST" source-path artifact
-                                   (:lowering-diagnostic-stream artifact)
-                                   {:missing-fields [:lowering-diagnostics]})))
-  :complete)
+(defn c14-lowering-source-overrides [module]
+  (c14-call c14/c14-lowering-source-overrides module))
 
-(defn c14-lowering-capability-proof
-  [artifact]
-  {:c13-optimized-mir-input-verified?
-   (= :complete (get-in artifact
-                        [:c13-optimization-artifact
-                         :capability-based-proof :status]))
-   :lowering-request-verified?
-   (= :optimized-mir (get-in artifact
-                             [:lowering-request :input :kind]))
-   :target-eligible?
-   (= :eligible (get-in artifact [:target-eligibility-report :status]))
-   :abi-manifest-complete?
-   (= :complete (get-in artifact [:abi-manifest :status]))
-   :runtime-provider-recorded?
-   (= :complete (get-in artifact [:runtime-provider-manifest :status]))
-   :providers-selected?
-   (every? #(= :selected (:status %))
-           (:provider-selection-records artifact))
-   :proof-metadata-linked?
-   (every? #(perf-present? (:proof %))
-           (get-in artifact [:proof-to-target-metadata-map :entries]))
-   :source-proof-safety-metadata-preserved?
-   (and (= :complete (get-in artifact
-                             [:source-generated-origin-map :status]))
-        (perf-present? (get-in artifact
-                               [:target-artifact-manifest :proof-map]))
-        (perf-present? (get-in artifact
-                               [:target-artifact-manifest :safety])))
-   :capabilities-preserved?
-   (= :preserved (get-in artifact
-                         [:capability-preservation-report :status]))
-   :unsupported-fallbacks-recorded?
-   (every? #(= :available (:fallback-status %))
-           (:unsupported-feature-report artifact))
-   :manifest-complete?
-   (= :gravity/target-artifact-manifest
-      (get-in artifact [:target-artifact-manifest :artifact]))
-   :diagnostics-covered?
-   (= (set c14-lowering-diagnostic-ids)
-      (set (map :diagnostic
-                (get-in artifact
-                        [:lowering-diagnostic-stream :diagnostics]))))
-   :status :complete})
+(defn c14-lowering-validate-source-overrides! [source-path overrides]
+  (c14-call c14/c14-lowering-validate-source-overrides!
+            source-path overrides))
 
-(defn compiler-c14-lowering-source-artifact
-  [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        source-overrides (c14-lowering-source-overrides module)
-        _ (c14-lowering-validate-source-overrides! source-path
-                                                   source-overrides)
-        optimization-artifact (compiler-c13-optimization-source-artifact
-                               source-path source-text)
-        optimized-mir (:optimized-mir-artifact optimization-artifact)
-        input-id (:artifact-id optimization-artifact)
-        target {:backend :jvm
-                :triple "jvm-17"
-                :features #{:objects :exceptions :threads}}
-        lowering-request
-        {:artifact :gravity/lowering-request
-         :input {:kind :optimized-mir
-                 :id input-id
-                 :optimized-mir (:output optimized-mir)}
-         :profile :hosted
-         :target target
-         :abi :jvm-hosted-stage0
-         :runtime :hosted-jvm
-         :providers {:allocator :jvm/gc
-                     :panic :jvm/exception
-                     :io :jvm/stdout}
-         :required-evidence {:safety :mir/safety-table
-                             :proofs :proof/c14-stage0
-                             :capabilities :mir/capability-proof-table}}
-        proof-map
-        {:artifact :gravity/proof-target-metadata-map
-         :target :jvm
-         :entries [{:target-metadata :bounds-check-elided
-                    :operation "mir-op-optimized-bounds-check-elide"
-                    :proof :proof/c13-bounds-check-elision}
-                   {:target-metadata :noalias
-                    :operation "mir-op-optimized-target-layout-prepare"
-                    :proof :proof/c13-layout-ownership}
-                   {:target-metadata :nonnull
-                    :operation "mir-op-optimized-dead-code-eliminate"
-                    :proof :proof/c13-safety-preserved}]}
-        diagnostics (c14-lowering-diagnostic-catalog source-path input-id)
-        target-artifacts [{:kind :jvm-bytecode-plan
-                           :hash (str "sha256:"
-                                      (sha256-hex
-                                       (pr-str (:output optimized-mir))))}]
-        artifact-base
-        {:kind :gravity/stage0-c14-target-lowering-artifact
-         :task "P06-D093"
-         :document-set ["C14"]
-         :governing-document c14-lowering-governing-document
-         :pass {:name :c14-target-lowering
-                :input :optimized-mir
-                :output :target-artifact-manifest
-                :requires [:c13-optimized-mir :profile :target :abi
-                           :runtime :providers :effects :capabilities
-                           :safety :proofs]
-                :preserves [:source-spans :origin-chain :profile :target
-                            :effects :capabilities :safety :proofs
-                            :dependencies]
-                :emits [:lowering-request :target-eligibility-report
-                        :abi-manifest :runtime-provider-manifest
-                        :provider-selection-records :layout-decision-record
-                        :proof-to-target-metadata-map
-                        :source-generated-origin-map
-                        :unsupported-feature-report
-                        :target-artifact-manifest
-                        :lowering-diagnostic-stream]
-                :rejects c14-lowering-diagnostic-ids}
-         :source-overrides source-overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c13-optimization-artifact
-         (select-keys optimization-artifact
-                      [:kind :task :artifact-id :governing-document
-                       :optimized-mir-artifact :capability-based-proof])
-         :optimization-artifact-kind (:kind optimization-artifact)
-         :optimization-artifact-hash input-id
-         :lowering-request lowering-request
-         :target-eligibility-report
-         {:artifact :gravity/target-eligibility-report
-          :status :eligible
-          :profile :hosted
-          :target target
-          :backend :jvm
-          :reason :profile-target-provider-compatible}
-         :abi-manifest
-         {:artifact :gravity/abi-manifest
-          :status :complete
-          :calling-convention :jvm-static
-          :exported-symbols ["compiler_c14_lowering_main"]
-          :data-layout :jvm-object
-          :alignment :jvm-default
-          :enum-representation :jvm-tagged-object
-          :closure-representation :jvm-function-object
-          :panic-strategy :exception
-          :resource-handle-representation :jvm-object-ref
-          :ffi-boundary :jvm-interop
-          :gc-policy :jvm-gc
-          :debug-unwind :jvm-stacktrace}
-         :runtime-provider-manifest
-         {:artifact :gravity/runtime-provider-manifest
-          :status :complete
-          :runtime :hosted-jvm
-          :providers (:providers lowering-request)}
-         :provider-selection-records
-         [{:provider :jvm/gc
-           :capability :memory/allocator
-           :effect :memory/allocate
-           :status :selected}
-          {:provider :jvm/stdout
-           :capability :io/stdout
-           :effect :io/write
-           :status :selected}
-          {:provider :jvm/exception
-           :capability :panic/raise
-           :effect :error/throw
-           :status :selected}]
-         :layout-decision-record
-         {:artifact :gravity/layout-decision-record
-          :status :complete
-          :alignment :jvm-default
-          :proof :proof/c13-layout-ownership
-          :ownership-facts :mir/ownership-table
-          :safety-facts :mir/safety-table}
-         :proof-to-target-metadata-map proof-map
-         :source-generated-origin-map
-         {:artifact :gravity/source-generated-origin-map
-          :status :complete
-          :source-map (get-in optimization-artifact
-                              [:optimized-mir-artifact :source-origin-map])
-          :generated-origin-map []}
-         :capability-preservation-report
-         {:artifact :gravity/capability-preservation-report
-          :status :preserved
-          :denied-additions []
-          :preserved-capabilities (:capabilities module)}
-         :unsupported-feature-report
-         [{:mir-op "c11-mir-op-gpu-kernel"
-           :required-feature :gpu-kernel
-           :backend :jvm
-           :profile :hosted
-           :source-span (source-span source-path 0)
-           :available-alternatives [:mir-scalar-kernel]
-           :fallback :mir-scalar-kernel
-           :fallback-status :available
-           :diagnostic-id "C14-UNSUPPORTED"}]
-         :target-artifact-manifest
-         {:artifact :gravity/target-artifact-manifest
-          :input (:output optimized-mir)
-          :backend :jvm
-          :profile :hosted
-          :target (str "sha256:" (sha256-hex (pr-str target)))
-          :artifacts target-artifacts
-          :source-map :gravity/source-generated-origin-map
-          :proof-map :gravity/proof-target-metadata-map
-          :effects :mir/effect-table
-          :capabilities :mir/capability-proof-table
-          :safety :mir/safety-table
-          :runtime :gravity/runtime-provider-manifest
-          :dependencies input-id
-          :diagnostics []}
-         :lowering-diagnostic-stream diagnostics
-         :c14-lowering-results
-         {:documents ["C14"]
-          :task "P06-D093"
-          :required-diagnostic-ids c14-lowering-diagnostic-ids
-          :c13-input-status :complete
-          :lowering-request-status :complete
-          :target-eligibility-status :complete
-          :abi-status :complete
-          :runtime-provider-status :complete
-          :proof-metadata-status :complete
-          :manifest-status :complete
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c14-lowering-validate! source-path artifact-base)
-        capability-proof (c14-lowering-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+(defn c14-lowering-diagnostic-catalog [source-path input-id]
+  (c14-call c14/c14-lowering-diagnostic-catalog source-path input-id))
 
-(defn compiler-c14-lowering-file-artifact
-  [path]
-  (compiler-c14-lowering-source-artifact path (slurp path)))
+(defn c14-lowering-validate! [source-path artifact]
+  (c14-call c14/c14-lowering-validate! source-path artifact))
+
+(defn c14-lowering-capability-proof [artifact]
+  (c14-call c14/c14-lowering-capability-proof artifact))
+
+(defn compiler-c14-lowering-source-artifact [source-path source-text]
+  (c14-call c14/compiler-c14-lowering-source-artifact
+            source-path source-text))
+
+(defn compiler-c14-lowering-file-artifact [path]
+  (c14-call c14/compiler-c14-lowering-file-artifact path))
 
 (def compiler-verification-diagnostic-ids
-  ["C15-SCHEMA"
-   "C15-ID"
-   "C15-SPAN"
-   "C15-ORIGIN"
-   "C15-FACTS"
-   "C15-REMEDIATION"
-   "C15-REDACTION"
-   "C15-ORDER"
-   "C15-GOLDEN"
-   "C16-KEY"
-   "C16-ENTRY"
-   "C16-STALE"
-   "C16-PROOF"
-   "C16-SPECULATIVE"
-   "C16-REPLAY"
-   "C16-POLICY"
-   "C16-DIAGNOSTIC"
-   "C16-GRAPH"
-   "C17-MANIFEST"
-   "C17-API"
-   "C17-CAPABILITY"
-   "C17-BUILD-EFFECT"
-   "C17-SANDBOX"
-   "C17-PASS-CONTRACT"
-   "C17-OUTPUT"
-   "C17-DOMAIN"
-   "C17-FACET"
-   "C17-TRUST"
-   "C18-RISK"
-   "C18-EVIDENCE"
-   "C18-VALIDATION"
-   "C18-PROOF"
-   "C18-TRUST-REPORT"
-   "C18-RELEASE-GATE"
-   "C18-COUNTEREXAMPLE"
-   "C18-PLUGIN"
-   "C18-BACKEND"])
-
+  compiler-verification-shared/compiler-verification-diagnostic-ids)
 (def compiler-verification-diagnostic-messages
-  {"C15-SCHEMA" "diagnostic record does not match schema"
-   "C15-ID" "diagnostic id is unstable or duplicate"
-   "C15-SPAN" "diagnostic primary span is missing"
-   "C15-ORIGIN" "diagnostic generated-origin chain is missing"
-   "C15-FACTS" "diagnostic facts are missing or unstructured"
-   "C15-REMEDIATION" "diagnostic remediation is missing"
-   "C15-REDACTION" "diagnostic leaks secret or private data"
-   "C15-ORDER" "diagnostic stream order is nondeterministic"
-   "C15-GOLDEN" "golden diagnostic fixture does not match"
-   "C16-KEY" "incremental cache key is malformed"
-   "C16-ENTRY" "incremental cache entry is malformed"
-   "C16-STALE" "stale artifact was reused"
-   "C16-PROOF" "stale proof or certificate was reused"
-   "C16-SPECULATIVE" "speculative cache reached publish boundary"
-   "C16-REPLAY" "build-effect replay record is missing"
-   "C16-POLICY" "cache crossed incompatible policy"
-   "C16-DIAGNOSTIC" "stale diagnostic stream was reused"
-   "C16-GRAPH" "incremental dependency graph is inconsistent"
-   "C17-MANIFEST" "compiler plugin manifest is malformed"
-   "C17-API" "compiler plugin API version is incompatible"
-   "C17-CAPABILITY" "compiler plugin capabilities are missing or excessive"
-   "C17-BUILD-EFFECT" "compiler plugin requested ungranted build effects"
-   "C17-SANDBOX" "compiler plugin violated sandbox policy"
-   "C17-PASS-CONTRACT" "compiler plugin pass contract is invalid"
-   "C17-OUTPUT" "compiler plugin output failed verification"
-   "C17-DOMAIN" "compiler plugin domain IR registration is invalid"
-   "C17-FACET" "compiler plugin facet registration is invalid"
-   "C17-TRUST" "compiler plugin trust or signature is rejected"
-   "C18-RISK" "pass risk classification is missing"
-   "C18-EVIDENCE" "required compiler verification evidence is missing"
-   "C18-VALIDATION" "translation validation failed"
-   "C18-PROOF" "proof or certificate was rejected"
-   "C18-TRUST-REPORT" "compiler trust report is incomplete"
-   "C18-RELEASE-GATE" "release gate is blocked by verification gaps"
-   "C18-COUNTEREXAMPLE" "counterexample artifact is malformed"
-   "C18-PLUGIN" "plugin evidence is below policy"
-   "C18-BACKEND" "backend lowering conformance is incomplete"})
-
+  compiler-verification-shared/compiler-verification-diagnostic-messages)
 (def compiler-verification-override-diagnostics
-  {:c15-schema ["C15-SCHEMA" :diagnostic-schema]
-   :c15-id ["C15-ID" :diagnostic-id]
-   :c15-span ["C15-SPAN" :diagnostic-span]
-   :c15-origin ["C15-ORIGIN" :diagnostic-origin]
-   :c15-facts ["C15-FACTS" :diagnostic-facts]
-   :c15-remediation ["C15-REMEDIATION" :diagnostic-remediation]
-   :c15-redaction ["C15-REDACTION" :diagnostic-redaction]
-   :c15-order ["C15-ORDER" :diagnostic-order]
-   :c15-golden ["C15-GOLDEN" :diagnostic-golden]
-   :c16-key ["C16-KEY" :cache-key]
-   :c16-entry ["C16-ENTRY" :cache-entry]
-   :c16-stale ["C16-STALE" :cache-stale]
-   :c16-proof ["C16-PROOF" :cache-proof]
-   :c16-speculative ["C16-SPECULATIVE" :cache-speculative]
-   :c16-replay ["C16-REPLAY" :cache-replay]
-   :c16-policy ["C16-POLICY" :cache-policy]
-   :c16-diagnostic ["C16-DIAGNOSTIC" :cache-diagnostic]
-   :c16-graph ["C16-GRAPH" :cache-graph]
-   :c17-manifest ["C17-MANIFEST" :plugin-manifest]
-   :c17-api ["C17-API" :plugin-api]
-   :c17-capability ["C17-CAPABILITY" :plugin-capability]
-   :c17-build-effect ["C17-BUILD-EFFECT" :plugin-build-effect]
-   :c17-sandbox ["C17-SANDBOX" :plugin-sandbox]
-   :c17-pass-contract ["C17-PASS-CONTRACT" :plugin-pass-contract]
-   :c17-output ["C17-OUTPUT" :plugin-output]
-   :c17-domain ["C17-DOMAIN" :plugin-domain]
-   :c17-facet ["C17-FACET" :plugin-facet]
-   :c17-trust ["C17-TRUST" :plugin-trust]
-   :c18-risk ["C18-RISK" :pass-risk]
-   :c18-evidence ["C18-EVIDENCE" :pass-evidence]
-   :c18-validation ["C18-VALIDATION" :translation-validation]
-   :c18-proof ["C18-PROOF" :verification-proof]
-   :c18-trust-report ["C18-TRUST-REPORT" :trust-report]
-   :c18-release-gate ["C18-RELEASE-GATE" :release-gate]
-   :c18-counterexample ["C18-COUNTEREXAMPLE" :counterexample]
-   :c18-plugin ["C18-PLUGIN" :plugin-evidence]
-   :c18-backend ["C18-BACKEND" :backend-conformance]})
+  compiler-verification-shared/compiler-verification-override-diagnostics)
 
 (def c15-diagnostics-governing-document
-  "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md")
+  c15/c15-diagnostics-governing-document)
+(def c15-diagnostics-diagnostic-ids c15/c15-diagnostics-diagnostic-ids)
+(def c15-diagnostic-required-fields c15/c15-diagnostic-required-fields)
 
-(def c15-diagnostics-diagnostic-ids
-  ["C15-SCHEMA"
-   "C15-ID"
-   "C15-SPAN"
-   "C15-ORIGIN"
-   "C15-FACTS"
-   "C15-REMEDIATION"
-   "C15-REDACTION"
-   "C15-ORDER"
-   "C15-GOLDEN"])
+(declare c15-diagnostics-source-overrides
+         c15-stable-diagnostic-id
+         c15-diagnostics-fail!
+         c15-diagnostics-validate-source-overrides!
+         c15-diagnostic-record
+         c15-diagnostic-catalog
+         c15-diagnostics-validate!
+         c15-diagnostics-capability-proof
+         compiler-c15-diagnostics-source-artifact
+         compiler-c15-diagnostics-file-artifact)
 
-(def c15-diagnostic-required-fields
-  [:artifact :diagnostic-id :rule :severity :stage :message-key :primary
-   :related :origin-chain :profile :target :involved-artifacts :facts
-   :remediation :redactions :lifecycle])
+(defn- c15-diagnostics-ops []
+  {:fail! fail!
+   :source-span source-span
+   :sha256-hex sha256-hex
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c14-lowering-source-artifact
+   compiler-c14-lowering-source-artifact
+   :compiler-verification-diagnostic-messages
+   compiler-verification-diagnostic-messages
+   :compiler-verification-override-diagnostics
+   compiler-verification-override-diagnostics
+   :c15-diagnostics-governing-document c15-diagnostics-governing-document
+   :c15-diagnostics-diagnostic-ids c15-diagnostics-diagnostic-ids
+   :c15-diagnostic-required-fields c15-diagnostic-required-fields
+   :c15-diagnostics-source-overrides c15-diagnostics-source-overrides
+   :c15-stable-diagnostic-id c15-stable-diagnostic-id
+   :c15-diagnostics-fail! c15-diagnostics-fail!
+   :c15-diagnostics-validate-source-overrides!
+   c15-diagnostics-validate-source-overrides!
+   :c15-diagnostic-record c15-diagnostic-record
+   :c15-diagnostic-catalog c15-diagnostic-catalog
+   :c15-diagnostics-validate! c15-diagnostics-validate!
+   :c15-diagnostics-capability-proof c15-diagnostics-capability-proof
+   :compiler-c15-diagnostics-source-artifact
+   compiler-c15-diagnostics-source-artifact
+   :compiler-c15-diagnostics-file-artifact
+   compiler-c15-diagnostics-file-artifact})
 
-(defn c15-diagnostics-source-overrides
-  [module]
-  (or (get-in module [:metadata :compiler :c15-diagnostics])
-      (get-in module [:metadata :compiler :verification])
-      {}))
+(def ^:private ^:dynamic *c15-leaf-call?* false)
+(defn- c15-call [operation & args]
+  (if *c15-leaf-call?*
+    (apply operation args)
+    (binding [*c15-leaf-call?* true]
+      (c15/with-operations (c15-diagnostics-ops)
+        #(apply operation args)))))
 
-(defn c15-stable-diagnostic-id
-  [diagnostic]
-  (str "diag-"
-       (sha256-hex
-        (pr-str {:rule (:rule diagnostic)
-                 :stage (:stage diagnostic)
-                 :primary-artifact (get-in diagnostic [:primary :artifact])
-                 :facts (:facts diagnostic)}))))
+(defn c15-diagnostics-source-overrides [module]
+  (c15-call c15/c15-diagnostics-source-overrides module))
 
-(defn c15-diagnostics-fail!
-  [id source-path subject extra]
-  (fail! id
-         (get compiler-verification-diagnostic-messages id
-              "compiler diagnostic validation failed")
-         (merge {:source-span (or (:source-span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :compiler-diagnostics
-                 :stage (or (:stage subject) :c15-compiler-diagnostics)
-                 :offending-diagnostic-id (:diagnostic-id subject)
-                 :schema-field (:schema-field subject)
-                 :artifact-id (:artifact-id subject)
-                 :profile (:profile subject)
-                 :target (:target subject)
-                 :remediation "Regenerate structured diagnostic artifacts with stable ids, primary spans, origin chains, facts, remediation, redaction, deterministic ordering, and golden fixtures."}
-                extra)))
+(defn c15-stable-diagnostic-id [diagnostic]
+  (c15-call c15/c15-stable-diagnostic-id diagnostic))
 
-(defn c15-diagnostics-validate-source-overrides!
-  [source-path overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (let [[id subject-kind] (get compiler-verification-override-diagnostics
-                                 fail-kind)]
-      (when (contains? (set c15-diagnostics-diagnostic-ids) id)
-        (c15-diagnostics-fail!
-         id source-path
-         {:stage subject-kind
-          :diagnostic-id (str "c15-invalid-" (name fail-kind))
-          :schema-field fail-kind
-          :artifact-id (str "c15-diagnostic-artifact-" (name fail-kind))
-          :profile :hosted
-          :target :jvm}
-         {:missing-fields [fail-kind]})))))
+(defn c15-diagnostics-fail! [id source-path subject extra]
+  (c15-call c15/c15-diagnostics-fail! id source-path subject extra))
+
+(defn c15-diagnostics-validate-source-overrides! [source-path overrides]
+  (c15-call c15/c15-diagnostics-validate-source-overrides!
+            source-path overrides))
 
 (defn c15-diagnostic-record
   [rule severity stage message-key source-path form-index primary-artifact
    facts remediation & {:keys [related origin-chain redactions lifecycle
                                generated?]}]
-  (let [diagnostic
-        {:artifact :gravity/diagnostic
-         :rule rule
-         :severity severity
-         :stage stage
-         :message-key message-key
-         :primary {:span (source-span source-path form-index)
-                   :syntax-id (str "c15-syntax-" form-index)
-                   :artifact primary-artifact}
-         :related (vec related)
-         :origin-chain (vec origin-chain)
-         :profile :hosted
-         :target :jvm
-         :involved-artifacts [primary-artifact]
-         :facts facts
-         :remediation (vec remediation)
-         :redactions (vec redactions)
-         :lifecycle (or lifecycle :active)
-         :generated? (true? generated?)}]
-    (assoc diagnostic
-           :diagnostic-id (c15-stable-diagnostic-id diagnostic)
-           :ordering-key [rule stage primary-artifact form-index])))
+  (c15-call c15/c15-diagnostic-record
+            rule severity stage message-key source-path form-index
+            primary-artifact facts remediation
+            :related related :origin-chain origin-chain
+            :redactions redactions :lifecycle lifecycle :generated? generated?))
 
-(defn c15-diagnostic-catalog
-  []
-  {:artifact :gravity/diagnostic-catalog
-   :status :complete
-   :rules
-   (mapv (fn [id]
-           {:rule id
-            :severity (if (= "C15-GOLDEN" id) :hint :error)
-            :message-key (keyword "diagnostic"
-                                  (clojure.string/lower-case
-                                   (clojure.string/replace id #"_" "-")))
-            :explain-page (str "gravity://diagnostics/" id)
-            :lifecycle :active
-            :stable-id-policy :rule-primary-artifact-stage-facts})
-         c15-diagnostics-diagnostic-ids)})
+(defn c15-diagnostic-catalog []
+  (c15-call c15/c15-diagnostic-catalog))
 
-(defn c15-diagnostics-validate!
-  [source-path artifact]
-  (let [required (set c15-diagnostic-required-fields)
-        schema-fields (set (get-in artifact [:diagnostic-schema
-                                             :required-fields]))
-        diagnostics (get-in artifact [:diagnostic-stream :diagnostics])
-        catalog-rules (set (map :rule (get-in artifact
-                                               [:diagnostic-catalog :rules])))
-        golden (:golden-diagnostic-fixtures artifact)]
-    (when-not (= required schema-fields)
-      (c15-diagnostics-fail! "C15-SCHEMA" source-path
-                             (:diagnostic-schema artifact)
-                             {:missing-fields
-                              (vec (remove schema-fields required))}))
-    (when-not (= (count diagnostics)
-                 (count (distinct (map :diagnostic-id diagnostics))))
-      (c15-diagnostics-fail! "C15-ID" source-path
-                             (first diagnostics)
-                             {:missing-fields [:diagnostic-id]}))
-    (doseq [diagnostic diagnostics]
-      (let [present (set (keys diagnostic))]
-        (when-not (every? present required)
-          (c15-diagnostics-fail! "C15-SCHEMA" source-path diagnostic
-                                 {:missing-fields
-                                  (vec (remove present required))})))
-      (when-not (= (:diagnostic-id diagnostic)
-                   (c15-stable-diagnostic-id
-                    (dissoc diagnostic :diagnostic-id :ordering-key)))
-        (c15-diagnostics-fail! "C15-ID" source-path diagnostic
-                               {:missing-fields [:stable-id]}))
-      (when-not (and (get-in diagnostic [:primary :span])
-                     (get-in diagnostic [:primary :syntax-id])
-                     (get-in diagnostic [:primary :artifact]))
-        (c15-diagnostics-fail! "C15-SPAN" source-path diagnostic
-                               {:missing-fields [:primary]}))
-      (when (and (:generated? diagnostic)
-                 (or (empty? (:origin-chain diagnostic))
-                     (not-any? #(= :generated-by (:role %))
-                               (:related diagnostic))))
-        (c15-diagnostics-fail! "C15-ORIGIN" source-path diagnostic
-                               {:missing-fields [:origin-chain]}))
-      (when-not (and (map? (:facts diagnostic))
-                     (seq (:facts diagnostic)))
-        (c15-diagnostics-fail! "C15-FACTS" source-path diagnostic
-                               {:missing-fields [:facts]}))
-      (when-not (seq (:remediation diagnostic))
-        (c15-diagnostics-fail! "C15-REMEDIATION" source-path diagnostic
-                               {:missing-fields [:remediation]})))
-    (when-not (true? (get-in artifact [:redaction-report :public-safe?]))
-      (c15-diagnostics-fail! "C15-REDACTION" source-path
-                             (:redaction-report artifact)
-                             {:missing-fields [:public-safe]}))
-    (when-not (= diagnostics (vec (sort-by :ordering-key diagnostics)))
-      (c15-diagnostics-fail! "C15-ORDER" source-path
-                             (:diagnostic-stream artifact)
-                             {:missing-fields [:ordering-key]}))
-    (when-not (= (set c15-diagnostics-diagnostic-ids) catalog-rules)
-      (c15-diagnostics-fail! "C15-SCHEMA" source-path
-                             (:diagnostic-catalog artifact)
-                             {:missing-fields [:diagnostic-catalog]}))
-    (when-not (and (= (set c15-diagnostics-diagnostic-ids)
-                      (set (map :rule golden)))
-                   (every? #(= :matched (:status %)) golden))
-      (c15-diagnostics-fail! "C15-GOLDEN" source-path
-                             (first golden)
-                             {:missing-fields [:golden-fixtures]})))
-  :complete)
+(defn c15-diagnostics-validate! [source-path artifact]
+  (c15-call c15/c15-diagnostics-validate! source-path artifact))
 
-(defn c15-diagnostics-capability-proof
-  [artifact]
-  {:c14-lowering-input-verified?
-   (= :complete (get-in artifact
-                        [:c14-lowering-artifact
-                         :capability-based-proof :status]))
-   :diagnostic-schema-complete?
-   (= :complete (get-in artifact [:diagnostic-schema :status]))
-   :diagnostic-stream-deterministic?
-   (= (get-in artifact [:diagnostic-stream :diagnostics])
-      (vec (sort-by :ordering-key
-                    (get-in artifact
-                            [:diagnostic-stream :diagnostics]))))
-   :stable-ids?
-   (every? (fn [diagnostic]
-             (= (:diagnostic-id diagnostic)
-                (c15-stable-diagnostic-id
-                 (dissoc diagnostic :diagnostic-id :ordering-key))))
-           (get-in artifact [:diagnostic-stream :diagnostics]))
-   :locations-and-origins-linked?
-   (every? #(and (get-in % [:primary :span])
-                 (get-in % [:primary :syntax-id])
-                 (get-in % [:primary :artifact])
-                 (or (not (:generated? %))
-                     (and (seq (:origin-chain %))
-                          (some (fn [related]
-                                  (= :generated-by (:role related)))
-                                (:related %)))))
-           (get-in artifact [:diagnostic-stream :diagnostics]))
-   :facts-structured?
-   (every? #(and (map? (:facts %)) (seq (:facts %)))
-           (get-in artifact [:diagnostic-stream :diagnostics]))
-   :remediation-and-quick-fixes?
-   (and (every? #(seq (:remediation %))
-                (get-in artifact [:diagnostic-stream :diagnostics]))
-        (every? #(= :available (:status %))
-                (:remediation-and-quick-fix-records artifact)))
-   :redaction-public-safe?
-   (true? (get-in artifact [:redaction-report :public-safe?]))
-   :renderers-covered?
-   (= #{:cli :ide :ci :safety-report :package-report}
-      (set (map :renderer (:rendering-records artifact))))
-   :golden-fixtures-matched?
-   (every? #(= :matched (:status %))
-           (:golden-diagnostic-fixtures artifact))
-   :diagnostics-covered?
-   (= (set c15-diagnostics-diagnostic-ids)
-      (set (map :rule (:golden-diagnostic-fixtures artifact))))
-   :status :complete})
+(defn c15-diagnostics-capability-proof [artifact]
+  (c15-call c15/c15-diagnostics-capability-proof artifact))
 
-(defn compiler-c15-diagnostics-source-artifact
-  [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        source-overrides (c15-diagnostics-source-overrides module)
-        _ (c15-diagnostics-validate-source-overrides! source-path
-                                                      source-overrides)
-        lowering-artifact (compiler-c14-lowering-source-artifact source-path
-                                                                 source-text)
-        lowering-id (:artifact-id lowering-artifact)
-        diagnostics
-        (vec
-         (sort-by
-          :ordering-key
-          [(c15-diagnostic-record
-            "C15-FACTS" :info :c15-compiler-diagnostics
-            :diagnostic.structured-facts source-path 0 lowering-id
-            {:fact-families [:types :effects :capabilities :safety
-                             :proofs :target-features]
-             :artifact lowering-id}
-            [{:kind :inspect-facts}])
-           (c15-diagnostic-record
-            "C15-ORIGIN" :warning :c15-compiler-diagnostics
-            :diagnostic.generated-origin source-path 1 lowering-id
-            {:generated-form "c15-generated-check"
-             :producer :compiler-c15-diagnostics
-             :source-producer :stage0-build-macro}
-            [{:kind :jump-to-source-producer}]
-            :generated? true
-            :origin-chain
-            [{:producer :stage0-build-macro
-              :source (source-span source-path 1)
-              :generated-artifact lowering-id}]
-            :related
-            [{:role :generated-by
-              :span (source-span source-path 1)
-              :artifact :stage0-build-macro}])
-           (c15-diagnostic-record
-            "C15-REDACTION" :error :c15-compiler-diagnostics
-            :diagnostic.redaction-policy source-path 2 lowering-id
-            {:redacted-fields [:credential-value :private-expansion]
-             :policy :public-diagnostic}
-            [{:kind :move-to-private-artifact-store}]
-            :redactions [{:field :credential-value
-                          :replacement :redacted
-                          :value-hash "sha256:redacted-stage0"}])
-           (c15-diagnostic-record
-            "C15-GOLDEN" :hint :c15-compiler-diagnostics
-            :diagnostic.golden-fixture source-path 3 lowering-id
-            {:fixture :compiler-c15-diagnostics
-             :asserts [:rule :severity :primary :related :facts
-                       :remediation :redactions :ordering]}
-            [{:kind :regenerate-golden-fixture}])]))
-        summary (frequencies (map :severity diagnostics))
-        catalog (c15-diagnostic-catalog)
-        artifact-base
-        {:kind :gravity/stage0-c15-compiler-diagnostics-artifact
-         :task "P06-D094"
-         :document-set ["C15"]
-         :governing-document c15-diagnostics-governing-document
-         :pass {:name :c15-compiler-diagnostics
-                :input :target-artifact-manifest
-                :output :diagnostic-artifact-bundle
-                :requires [:c14-target-artifact-manifest :source-spans
-                           :origin-chain :profile :target :facts
-                           :remediation-policy :redaction-policy]
-                :preserves [:source-spans :origin-chain :profile :target
-                            :artifact-provenance :facts :redactions]
-                :emits [:diagnostic-schema :diagnostic-stream
-                        :diagnostic-catalog :related-span-map
-                        :remediation-and-quick-fix-records
-                        :redaction-report :rendering-records
-                        :golden-diagnostic-fixtures]
-                :rejects c15-diagnostics-diagnostic-ids}
-         :source-overrides source-overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c14-lowering-artifact
-         (select-keys lowering-artifact
-                      [:kind :task :artifact-id :governing-document
-                       :target-artifact-manifest :capability-based-proof])
-         :lowering-artifact-kind (:kind lowering-artifact)
-         :lowering-artifact-hash lowering-id
-         :diagnostic-schema
-         {:artifact :gravity/diagnostic-schema
-          :status :complete
-          :required-fields c15-diagnostic-required-fields
-          :stable-id-input [:rule :primary-artifact :stage :facts]
-          :display-wording-version "stage0-c15"}
-         :diagnostic-stream
-         {:artifact :gravity/diagnostic-stream
-          :stage :c15-compiler-diagnostics
-          :input-artifact lowering-id
-          :output-artifact :gravity/diagnostic-artifact-bundle
-          :diagnostics diagnostics
-          :summary summary
-          :deterministic-ordering-key :ordering-key
-          :redaction-policy :public-safe
-          :rendering-version "stage0-c15"
-          :status :complete}
-         :diagnostic-catalog catalog
-         :related-span-map
-         {:artifact :gravity/related-span-map
-          :status :complete
-          :entries (mapv (fn [diagnostic]
-                           {:diagnostic-id (:diagnostic-id diagnostic)
-                            :related (:related diagnostic)})
-                         diagnostics)}
-         :remediation-and-quick-fix-records
-         (mapv (fn [id]
-                 {:rule id
-                  :remediation :structured-diagnostic-repair
-                  :quick-fix :regenerate-diagnostic-artifact
-                  :status :available})
-               c15-diagnostics-diagnostic-ids)
-         :redaction-report
-         {:artifact :gravity/diagnostic-redaction-report
-          :status :passed
-          :public-safe? true
-          :redacted-value-hashes ["sha256:redacted-stage0"]
-          :private-artifact-store :authorized-only
-          :raw-secret-values-present? false}
-         :rendering-records
-         [{:renderer :cli
-           :source :gravity/diagnostic-stream
-           :status :complete}
-          {:renderer :ide
-           :source :gravity/diagnostic-stream
-           :status :complete}
-          {:renderer :ci
-           :source :gravity/diagnostic-stream
-           :status :complete}
-          {:renderer :safety-report
-           :source :gravity/diagnostic-stream
-           :status :complete}
-          {:renderer :package-report
-           :source :gravity/diagnostic-stream
-           :status :complete}]
-         :golden-diagnostic-fixtures
-         (mapv (fn [id]
-                 {:fixture (str "compiler-c15-" id)
-                  :rule id
-                  :asserts [:rule :severity :primary :related :stage
-                            :profile :target :facts :remediation
-                            :redactions :ordering]
-                  :status :matched})
-               c15-diagnostics-diagnostic-ids)
-         :c15-diagnostics-results
-         {:documents ["C15"]
-          :task "P06-D094"
-          :required-diagnostic-ids c15-diagnostics-diagnostic-ids
-          :c14-input-status :complete
-          :schema-status :complete
-          :stream-status :complete
-          :catalog-status :complete
-          :related-span-status :complete
-          :remediation-status :complete
-          :redaction-status :complete
-          :rendering-status :complete
-          :golden-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c15-diagnostics-validate! source-path artifact-base)
-        capability-proof (c15-diagnostics-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+(defn compiler-c15-diagnostics-source-artifact [source-path source-text]
+  (c15-call c15/compiler-c15-diagnostics-source-artifact
+            source-path source-text))
 
-(defn compiler-c15-diagnostics-file-artifact
-  [path]
-  (compiler-c15-diagnostics-source-artifact path (slurp path)))
+(defn compiler-c15-diagnostics-file-artifact [path]
+  (c15-call c15/compiler-c15-diagnostics-file-artifact path))
 
 (def c16-incremental-governing-document
-  "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md")
+  c16/c16-incremental-governing-document)
+(def c16-incremental-diagnostic-ids c16/c16-incremental-diagnostic-ids)
+(def c16-cache-key-required-fields c16/c16-cache-key-required-fields)
+(def c16-invalidation-causes c16/c16-invalidation-causes)
 
-(def c16-incremental-diagnostic-ids
-  ["C16-KEY"
-   "C16-ENTRY"
-   "C16-STALE"
-   "C16-PROOF"
-   "C16-SPECULATIVE"
-   "C16-REPLAY"
-   "C16-POLICY"
-   "C16-DIAGNOSTIC"
-   "C16-GRAPH"])
+(declare c16-incremental-source-overrides
+         c16-incremental-fail!
+         c16-incremental-validate-source-overrides!
+         c16-stage-cache-key
+         c16-incremental-diagnostic-stream
+         c16-incremental-validate!
+         c16-incremental-capability-proof
+         compiler-c16-incremental-source-artifact
+         compiler-c16-incremental-file-artifact)
 
-(def c16-cache-key-required-fields
-  [:stage :source :reader :syntax :macro-expansion :namespace :profile
-   :target :compiler :pass-contract :dependencies :build-effects
-   :capabilities :language-facets :policy])
+(defn- c16-incremental-ops []
+  {:fail! fail!
+   :source-span source-span
+   :sha256-hex sha256-hex
+   :c4-artifact-id c4-artifact-id
+   :perf-present? perf-present?
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c15-diagnostics-source-artifact
+   compiler-c15-diagnostics-source-artifact
+   :compiler-verification-diagnostic-messages
+   compiler-verification-diagnostic-messages
+   :compiler-verification-override-diagnostics
+   compiler-verification-override-diagnostics
+   :c16-incremental-governing-document c16-incremental-governing-document
+   :c16-incremental-diagnostic-ids c16-incremental-diagnostic-ids
+   :c16-cache-key-required-fields c16-cache-key-required-fields
+   :c16-invalidation-causes c16-invalidation-causes
+   :c16-incremental-source-overrides c16-incremental-source-overrides
+   :c16-incremental-fail! c16-incremental-fail!
+   :c16-incremental-validate-source-overrides!
+   c16-incremental-validate-source-overrides!
+   :c16-stage-cache-key c16-stage-cache-key
+   :c16-incremental-diagnostic-stream c16-incremental-diagnostic-stream
+   :c16-incremental-validate! c16-incremental-validate!
+   :c16-incremental-capability-proof c16-incremental-capability-proof
+   :compiler-c16-incremental-source-artifact
+   compiler-c16-incremental-source-artifact
+   :compiler-c16-incremental-file-artifact
+   compiler-c16-incremental-file-artifact})
 
-(def c16-invalidation-causes
-  [:source-change :reader-option-change :reader-extension-change
-   :macro-change :build-grant-change :namespace-change
-   :package-dependency-change :type-rule-change :effect-registry-change
-   :capability-policy-change :profile-manifest-change :safety-rule-change
-   :proof-provider-change :optimization-pass-change :target-feature-change
-   :backend-change :runtime-provider-change :facet-set-change
-   :diagnostic-schema-change])
+(def ^:private ^:dynamic *c16-leaf-call?* false)
+(defn- c16-call [operation & args]
+  (if *c16-leaf-call?*
+    (apply operation args)
+    (binding [*c16-leaf-call?* true]
+      (c16/with-operations (c16-incremental-ops)
+        #(apply operation args)))))
 
-(defn c16-incremental-source-overrides
-  [module]
-  (or (get-in module [:metadata :compiler :c16-incremental])
-      (get-in module [:metadata :compiler :verification])
-      {}))
+(defn c16-incremental-source-overrides [module]
+  (c16-call c16/c16-incremental-source-overrides module))
 
-(defn c16-incremental-fail!
-  [id source-path subject extra]
-  (fail! id
-         (get compiler-verification-diagnostic-messages id
-              "incremental compiler validation failed")
-         (merge {:source-span (or (:source-span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :compiler-incremental
-                 :stage (or (:stage subject) :c16-incremental-compilation)
-                 :cache-key (:cache-key subject)
-                 :artifact-id (:artifact-id subject)
-                 :invalidating-input (:invalidating-input subject)
-                 :profile (:profile subject)
-                 :target (:target subject)
-                 :remediation "Regenerate incremental graph, cache keys, cache entries, invalidation traces, replay records, and revalidation reports before reuse."}
-                extra)))
+(defn c16-incremental-fail! [id source-path subject extra]
+  (c16-call c16/c16-incremental-fail! id source-path subject extra))
 
-(defn c16-incremental-validate-source-overrides!
-  [source-path overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (let [[id subject-kind] (get compiler-verification-override-diagnostics
-                                 fail-kind)]
-      (when (contains? (set c16-incremental-diagnostic-ids) id)
-        (c16-incremental-fail!
-         id source-path
-         {:stage subject-kind
-          :cache-key (str "c16-invalid-cache-" (name fail-kind))
-          :artifact-id (str "c16-cache-artifact-" (name fail-kind))
-          :invalidating-input fail-kind
-          :profile :hosted
-          :target :jvm}
-         {:missing-fields [fail-kind]})))))
+(defn c16-incremental-validate-source-overrides! [source-path overrides]
+  (c16-call c16/c16-incremental-validate-source-overrides!
+            source-path overrides))
 
-(defn c16-stage-cache-key
-  [stage source-hash dependency-hash]
-  {:artifact :gravity/cache-key
-   :stage stage
-   :source source-hash
-   :reader "sha256:c16-reader-options"
-   :syntax "sha256:c16-syntax-stream"
-   :macro-expansion "sha256:c16-macro-expansion"
-   :namespace "sha256:c16-namespace-analysis"
-   :profile "sha256:c16-profile-manifest"
-   :target "sha256:c16-target-request"
-   :compiler "sha256:gravity-stage0-clojure"
-   :pass-contract (str "sha256:c16-pass-" (name stage))
-   :dependencies dependency-hash
-   :build-effects "sha256:c16-replay-record"
-   :capabilities "sha256:c16-capability-policy"
-   :language-facets "sha256:c16-facets"
-   :policy "sha256:c16-policy"})
+(defn c16-stage-cache-key [stage source-hash dependency-hash]
+  (c16-call c16/c16-stage-cache-key stage source-hash dependency-hash))
 
-(defn c16-incremental-diagnostic-stream
-  [source-path input-id]
-  {:artifact :gravity/c16-incremental-diagnostic-stream
-   :status :complete
-   :stage :c16-incremental-compilation
-   :input-artifact input-id
-   :diagnostics
-   (mapv (fn [id]
-           {:diagnostic id
-            :cache-key (str "sha256:" (sha256-hex id))
-            :artifact-id input-id
-            :stage :c16-incremental-compilation
-            :invalidating-input (keyword (str/lower-case
-                                          (str/replace id #"C16-" "")))
-            :source-span (source-span source-path 0)
-            :profile :hosted
-            :target :jvm
-            :remediation (get compiler-verification-diagnostic-messages id)})
-         c16-incremental-diagnostic-ids)})
+(defn c16-incremental-diagnostic-stream [source-path input-id]
+  (c16-call c16/c16-incremental-diagnostic-stream source-path input-id))
 
-(defn c16-incremental-validate!
-  [source-path artifact]
-  (let [required (set c16-cache-key-required-fields)
-        stage-keys (:stage-cache-keys artifact)
-        entries (:cache-entry-manifest artifact)
-        invalidations (set (map :invalidating-input
-                                (:invalidation-trace artifact)))
-        diagnostics (set (map :diagnostic
-                              (get-in artifact
-                                      [:incremental-diagnostic-stream
-                                       :diagnostics])))]
-    (doseq [cache-key stage-keys]
-      (let [present (set (keys cache-key))]
-        (when-not (every? #(perf-present? (get cache-key %)) required)
-          (c16-incremental-fail! "C16-KEY" source-path cache-key
-                                 {:missing-fields
-                                  (vec (remove present required))}))))
-    (doseq [entry entries]
-      (when-not (and (= :gravity/cache-entry (:artifact entry))
-                     (:cache-key entry)
-                     (:artifact-id entry)
-                     (:producer entry)
-                     (seq (:inputs entry))
-                     (seq (:preserved-facts entry))
-                     (seq (:invalidated-by entry))
-                     (:diagnostics entry)
-                     (:provenance entry)
-                     (:revalidation entry))
-        (c16-incremental-fail! "C16-ENTRY" source-path entry
-                               {:missing-fields [:cache-entry]})))
-    (when-not (set/subset? (set c16-invalidation-causes) invalidations)
-      (c16-incremental-fail! "C16-STALE" source-path
-                             (first (:invalidation-trace artifact))
-                             {:missing-fields [:invalidation-trace]}))
-    (when-not (= :rejected (get-in artifact
-                                   [:stale-proof-rejection-report :status]))
-      (c16-incremental-fail! "C16-PROOF" source-path
-                             (:stale-proof-rejection-report artifact)
-                             {:missing-fields [:stale-proof-rejection]}))
-    (when-not (= :blocked-from-release
-                 (get-in artifact
-                         [:speculative-reuse-record :publish-status]))
-      (c16-incremental-fail! "C16-SPECULATIVE" source-path
-                             (:speculative-reuse-record artifact)
-                             {:missing-fields [:speculative-boundary]}))
-    (when-not (= :complete (get-in artifact
-                                   [:build-effect-replay-record :status]))
-      (c16-incremental-fail! "C16-REPLAY" source-path
-                             (:build-effect-replay-record artifact)
-                             {:missing-fields [:build-effect-replay]}))
-    (when-not (= :compatible (get-in artifact
-                                     [:policy-compatibility-report :status]))
-      (c16-incremental-fail! "C16-POLICY" source-path
-                             (:policy-compatibility-report artifact)
-                             {:missing-fields [:policy-compatibility]}))
-    (when-not (= :rejected (get-in artifact
-                                   [:stale-diagnostic-rejection-report
-                                    :status]))
-      (c16-incremental-fail! "C16-DIAGNOSTIC" source-path
-                             (:stale-diagnostic-rejection-report artifact)
-                             {:missing-fields [:diagnostic-revalidation]}))
-    (when-not (= :consistent (get-in artifact
-                                     [:incremental-dependency-graph
-                                      :status]))
-      (c16-incremental-fail! "C16-GRAPH" source-path
-                             (:incremental-dependency-graph artifact)
-                             {:missing-fields [:incremental-graph]}))
-    (when-not (= (set c16-incremental-diagnostic-ids) diagnostics)
-      (c16-incremental-fail! "C16-GRAPH" source-path
-                             (:incremental-diagnostic-stream artifact)
-                             {:missing-fields [:incremental-diagnostics]})))
-  :complete)
+(defn c16-incremental-validate! [source-path artifact]
+  (c16-call c16/c16-incremental-validate! source-path artifact))
 
-(defn c16-incremental-capability-proof
-  [artifact]
-  {:c15-diagnostics-input-verified?
-   (= :complete (get-in artifact
-                        [:c15-diagnostics-artifact
-                         :capability-based-proof :status]))
-   :dependency-graph-consistent?
-   (= :consistent (get-in artifact
-                          [:incremental-dependency-graph :status]))
-   :stage-cache-keys-complete?
-   (every? (fn [cache-key]
-             (every? #(perf-present? (get cache-key %))
-                     c16-cache-key-required-fields))
-           (:stage-cache-keys artifact))
-   :cache-entries-retain-provenance?
-   (every? #(and (= :gravity/cache-entry (:artifact %))
-                 (:diagnostics %)
-                 (:provenance %)
-                 (:revalidation %))
-           (:cache-entry-manifest artifact))
-   :invalidations-cover-semantic-policy-proof-target?
-   (set/subset? (set c16-invalidation-causes)
-                (set (map :invalidating-input
-                          (:invalidation-trace artifact))))
-   :stale-proof-rejected?
-   (= :rejected (get-in artifact
-                        [:stale-proof-rejection-report :status]))
-   :stale-diagnostics-rejected?
-   (= :rejected (get-in artifact
-                        [:stale-diagnostic-rejection-report :status]))
-   :speculative-reuse-blocked-from-release?
-   (= :blocked-from-release
-      (get-in artifact [:speculative-reuse-record :publish-status]))
-   :build-effect-replay-recorded?
-   (= :complete (get-in artifact [:build-effect-replay-record :status]))
-   :revalidation-passed?
-   (= :passed (get-in artifact [:revalidation-report :status]))
-   :release-rebuild-reproducible?
-   (= :reproducible (get-in artifact
-                            [:release-rebuild-record :status]))
-   :diagnostics-covered?
-   (= (set c16-incremental-diagnostic-ids)
-      (set (map :diagnostic
-                (get-in artifact
-                        [:incremental-diagnostic-stream :diagnostics]))))
-   :status :complete})
+(defn c16-incremental-capability-proof [artifact]
+  (c16-call c16/c16-incremental-capability-proof artifact))
 
-(defn compiler-c16-incremental-source-artifact
-  [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        source-overrides (c16-incremental-source-overrides module)
-        _ (c16-incremental-validate-source-overrides! source-path
-                                                      source-overrides)
-        diagnostics-artifact (compiler-c15-diagnostics-source-artifact
-                              source-path source-text)
-        input-id (:artifact-id diagnostics-artifact)
-        source-hash (str "sha256:" (sha256-hex source-text))
-        dependency-hash (str "sha256:" (sha256-hex (pr-str input-id)))
-        stage-cache-keys
-        (mapv #(c16-stage-cache-key % source-hash dependency-hash)
-              [:reader :macro-expansion :type-check :effect-check
-               :safety-analysis :mir :diagnostics :target-artifact])
-        cache-entry-manifest
-        (mapv (fn [cache-key]
-                {:artifact :gravity/cache-entry
-                 :stage (:stage cache-key)
-                 :cache-key (str "sha256:" (sha256-hex (pr-str cache-key)))
-                 :artifact-id input-id
-                 :producer {:stage (:stage cache-key)
-                            :pass-version "stage0-c16"}
-                 :inputs [input-id source-hash dependency-hash]
-                 :preserved-facts #{:source-spans :origin-chain :diagnostics
-                                    :proofs :profile :target}
-                 :invalidated-by #{:source-change :macro-change
-                                   :profile-change :target-change
-                                   :diagnostic-schema-change}
-                 :diagnostics :gravity/c16-incremental-diagnostic-stream
-                 :provenance :gravity/incremental-dependency-graph
-                 :trust :local-build
-                 :revalidation :required-before-release})
-              stage-cache-keys)
-        invalidation-trace
-        (mapv (fn [cause]
-                {:invalidating-input cause
-                 :affected-nodes [:diagnostics :target-artifact :proofs]
-                 :downstream-revalidation-stages
-                 [:reader :macro-expansion :type-check :effect-check
-                  :safety-analysis :mir :diagnostics :target-artifact]
-                 :status :recorded})
-              c16-invalidation-causes)
-        diagnostic-stream (c16-incremental-diagnostic-stream source-path
-                                                            input-id)
-        artifact-base
-        {:kind :gravity/stage0-c16-incremental-compilation-artifact
-         :task "P06-D095"
-         :document-set ["C16"]
-         :governing-document c16-incremental-governing-document
-         :pass {:name :c16-incremental-compilation
-                :input :diagnostic-artifact-bundle
-                :output :incremental-compilation-artifact
-                :requires [:c15-diagnostics :source :compiler :profile
-                           :target :dependencies :build-effects
-                           :capabilities :policy :proofs]
-                :preserves [:source-spans :origin-chain :diagnostics
-                            :provenance :proofs :profile :target]
-                :emits [:incremental-dependency-graph :cache-key-schema
-                        :stage-cache-keys :cache-entry-manifest
-                        :invalidation-trace :artifact-reuse-report
-                        :revalidation-report :stale-proof-rejection-report
-                        :stale-diagnostic-rejection-report
-                        :build-effect-replay-record
-                        :speculative-reuse-record
-                        :release-rebuild-record
-                        :incremental-diagnostic-stream]
-                :rejects c16-incremental-diagnostic-ids}
-         :source-overrides source-overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c15-diagnostics-artifact
-         (select-keys diagnostics-artifact
-                      [:kind :task :artifact-id :governing-document
-                       :diagnostic-stream :capability-based-proof])
-         :diagnostics-artifact-kind (:kind diagnostics-artifact)
-         :diagnostics-artifact-hash input-id
-         :incremental-dependency-graph
-         {:artifact :gravity/incremental-dependency-graph
-          :status :consistent
-          :nodes [:source-unit :syntax-object-stream :macro-expansion-trace
-                  :namespace-analysis :typed-core :effect-graph
-                  :ownership-graph :safety-outcomes :mir-module
-                  :optimization-decisions :domain-ir-artifacts
-                  :target-artifacts :diagnostics :proofs-and-certificates
-                  :package-provider-manifests]
-          :edges [{:from :source-unit :to :syntax-object-stream
-                   :field :source}
-                  {:from :syntax-object-stream :to :macro-expansion-trace
-                   :field :syntax}
-                  {:from :macro-expansion-trace :to :typed-core
-                   :field :macro-expansion}
-                  {:from :typed-core :to :effect-graph
-                   :field :type-facts}
-                  {:from :effect-graph :to :safety-outcomes
-                   :field :effects}
-                  {:from :safety-outcomes :to :mir-module
-                   :field :safety}
-                  {:from :mir-module :to :domain-ir-artifacts
-                   :field :mir}
-                  {:from :domain-ir-artifacts :to :target-artifacts
-                   :field :lowering}
-                  {:from :diagnostics :to :target-artifacts
-                   :field :diagnostic-schema}
-                  {:from :proofs-and-certificates :to :target-artifacts
-                   :field :proof-policy}]}
-         :cache-key-schema
-         {:artifact :gravity/cache-key-schema
-          :status :complete
-          :required-fields c16-cache-key-required-fields}
-         :stage-cache-keys stage-cache-keys
-         :cache-entry-manifest cache-entry-manifest
-         :invalidation-trace invalidation-trace
-         :artifact-reuse-report
-         {:artifact :gravity/artifact-reuse-report
-          :status :validated
-          :unchanged-source-reuse :allowed
-          :changed-policy-reuse :rejected
-          :release-boundary :requires-full-revalidation}
-         :revalidation-report
-         {:artifact :gravity/revalidation-report
-          :status :passed
-          :checks [:cache-key :artifact-schema-version :producer-pass-version
-                   :preserved-facts :proof-freshness
-                   :profile-target-compatibility
-                   :diagnostic-schema-compatibility
-                   :dependency-graph-compatibility]}
-         :stale-proof-rejection-report
-         {:artifact :gravity/stale-proof-rejection-report
-          :status :rejected
-          :diagnostic "C16-PROOF"
-          :reason :proof-inputs-or-policy-changed}
-         :stale-diagnostic-rejection-report
-         {:artifact :gravity/stale-diagnostic-rejection-report
-          :status :rejected
-          :diagnostic "C16-DIAGNOSTIC"
-          :reason :origin-spans-or-facts-changed}
-         :build-effect-replay-record
-         {:artifact :gravity/build-effect-replay-record
-          :status :complete
-          :replay-hash "sha256:c16-replay-record"
-          :build-effects #{:build/read-file}
-          :hermetic? true}
-         :policy-compatibility-report
-         {:artifact :gravity/cache-policy-compatibility-report
-          :status :compatible
-          :profile :hosted
-          :target :jvm
-          :capabilities (:capabilities module)
-          :safety :safe}
-         :speculative-reuse-record
-         {:artifact :gravity/speculative-cache-reuse
-          :reuse :speculative
-          :interactive-build? true
-          :publish-status :blocked-from-release
-          :revalidation :required}
-         :release-rebuild-record
-         {:artifact :gravity/reproducible-release-rebuild
-          :status :reproducible
-          :recorded-inputs [source-hash dependency-hash]
-          :environment "sha256:c16-hermetic-stage0"}
-         :incremental-diagnostic-stream diagnostic-stream
-         :c16-incremental-results
-         {:documents ["C16"]
-          :task "P06-D095"
-          :required-diagnostic-ids c16-incremental-diagnostic-ids
-          :c15-input-status :complete
-          :dependency-graph-status :complete
-          :cache-key-status :complete
-          :cache-entry-status :complete
-          :invalidation-status :complete
-          :reuse-status :complete
-          :revalidation-status :complete
-          :stale-proof-status :complete
-          :stale-diagnostic-status :complete
-          :speculative-status :complete
-          :replay-status :complete
-          :release-rebuild-status :complete
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c16-incremental-validate! source-path artifact-base)
-        capability-proof (c16-incremental-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+(defn compiler-c16-incremental-source-artifact [source-path source-text]
+  (c16-call c16/compiler-c16-incremental-source-artifact
+            source-path source-text))
 
-(defn compiler-c16-incremental-file-artifact
-  [path]
-  (compiler-c16-incremental-source-artifact path (slurp path)))
+(defn compiler-c16-incremental-file-artifact [path]
+  (c16-call c16/compiler-c16-incremental-file-artifact path))
 
-(def c17-plugin-governing-document
-  "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md")
-
-(def c17-plugin-diagnostic-ids
-  ["C17-MANIFEST"
-   "C17-API"
-   "C17-CAPABILITY"
-   "C17-BUILD-EFFECT"
-   "C17-SANDBOX"
-   "C17-PASS-CONTRACT"
-   "C17-OUTPUT"
-   "C17-DOMAIN"
-   "C17-FACET"
-   "C17-TRUST"])
-
+(def c17-plugin-governing-document c17/c17-plugin-governing-document)
+(def c17-plugin-diagnostic-ids c17/c17-plugin-diagnostic-ids)
 (def c17-plugin-manifest-required-fields
-  [:artifact :plugin :package :api-version :compiler-compatibility :trust
-   :profile :build-effects :capabilities :capability-scopes :passes
-   :domains :facets :emits :conformance])
-
+  c17/c17-plugin-manifest-required-fields)
 (def c17-plugin-pass-contract-required-fields
-  [:input :output :requires :preserves :invalidates :regenerates
-   :proof-obligations :emits])
-
+  c17/c17-plugin-pass-contract-required-fields)
 (def c17-plugin-cache-key-required-fields
-  [:artifact :plugin-package :plugin-version :manifest :grants
-   :dependencies :replay-record :pass])
+  c17/c17-plugin-cache-key-required-fields)
 
-(defn c17-plugin-source-overrides
-  [module]
-  (or (get-in module [:metadata :compiler :c17-plugin])
-      (get-in module [:metadata :compiler :verification])
-      {}))
+(declare c17-plugin-source-overrides
+         c17-plugin-fail!
+         c17-plugin-validate-source-overrides!
+         c17-plugin-diagnostic-stream
+         c17-plugin-validate!
+         c17-plugin-capability-proof
+         compiler-c17-plugin-source-artifact
+         compiler-c17-plugin-file-artifact)
 
-(defn c17-plugin-fail!
-  [id source-path subject extra]
-  (fail! id
-         (get compiler-verification-diagnostic-messages id
-              "compiler plugin/pass API validation failed")
-         (merge {:source-span (or (:source-span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :compiler-plugin-api
-                 :stage (or (:stage subject) :c17-compiler-plugin)
-                 :plugin-id (:plugin-id subject)
-                 :package-id (:package-id subject)
-                 :version (:version subject)
-                 :pass-id (:pass-id subject)
-                 :manifest-entry (:manifest-entry subject)
-                 :requested-capability (:requested-capability subject)
-                 :trust-level (:trust-level subject)
-                 :compiler-api-version (:compiler-api-version subject)
-                 :artifact-id (:artifact-id subject)
-                 :remediation "Load plugins through a versioned manifest, explicit trust grant, scoped compiler capabilities, sandboxed build effects, verifier-checked outputs, cache-key integration, and C17 diagnostics."}
-                extra)))
+(defn- c17-plugin-ops []
+  {:fail! fail!
+   :source-span source-span
+   :sha256-hex sha256-hex
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c16-incremental-source-artifact
+   compiler-c16-incremental-source-artifact
+   :compiler-verification-diagnostic-messages
+   compiler-verification-diagnostic-messages
+   :compiler-verification-override-diagnostics
+   compiler-verification-override-diagnostics
+   :c17-plugin-governing-document c17-plugin-governing-document
+   :c17-plugin-diagnostic-ids c17-plugin-diagnostic-ids
+   :c17-plugin-manifest-required-fields
+   c17-plugin-manifest-required-fields
+   :c17-plugin-pass-contract-required-fields
+   c17-plugin-pass-contract-required-fields
+   :c17-plugin-cache-key-required-fields
+   c17-plugin-cache-key-required-fields
+   :c17-plugin-source-overrides c17-plugin-source-overrides
+   :c17-plugin-fail! c17-plugin-fail!
+   :c17-plugin-validate-source-overrides!
+   c17-plugin-validate-source-overrides!
+   :c17-plugin-diagnostic-stream c17-plugin-diagnostic-stream
+   :c17-plugin-validate! c17-plugin-validate!
+   :c17-plugin-capability-proof c17-plugin-capability-proof
+   :compiler-c17-plugin-source-artifact
+   compiler-c17-plugin-source-artifact
+   :compiler-c17-plugin-file-artifact compiler-c17-plugin-file-artifact})
 
-(defn c17-plugin-validate-source-overrides!
-  [source-path overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (let [[id subject-kind] (get compiler-verification-override-diagnostics
-                                 fail-kind)]
-      (when (contains? (set c17-plugin-diagnostic-ids) id)
-        (c17-plugin-fail!
-         id source-path
-         {:stage subject-kind
-          :plugin-id 'gravity.plugins.stage0/loop-fuser
-          :package-id 'gravity/stage0-loop-fuser
-          :version "0.1.0"
-          :pass-id subject-kind
-          :manifest-entry fail-kind
-          :requested-capability :compiler/ir-transform
-          :trust-level :sandboxed
-          :compiler-api-version "1"
-          :artifact-id (str "c17-plugin-artifact-" (name fail-kind))}
-         {:missing-fields [fail-kind]})))))
+(def ^:private ^:dynamic *c17-leaf-call?* false)
+(defn- c17-call [operation & args]
+  (if *c17-leaf-call?*
+    (apply operation args)
+    (binding [*c17-leaf-call?* true]
+      (c17/with-operations (c17-plugin-ops)
+        #(apply operation args)))))
 
-(defn c17-plugin-diagnostic-stream
-  [source-path plugin-manifest input-id]
-  {:artifact :gravity/c17-plugin-diagnostic-stream
-   :stage :c17-compiler-plugin
-   :input-artifact input-id
-   :ordering-key [:rule :plugin :pass]
-   :diagnostics
-   (mapv (fn [id index]
-           {:artifact :gravity/diagnostic
-            :diagnostic-id (str "diag-" (str/lower-case id) "-stage0")
-            :diagnostic id
-            :rule id
-            :severity (if (= id "C17-TRUST") :error :warning)
-            :stage :c17-compiler-plugin
-            :message-key (keyword "plugin"
-                                  (str/lower-case
-                                   (str/replace id #"_" "-")))
-            :primary {:span (source-span source-path index)
-                      :syntax-id (str "c17-plugin-syntax-" index)
-                      :artifact input-id}
-            :plugin-id (:plugin plugin-manifest)
-            :package-id (get-in plugin-manifest [:package :name])
-            :version (get-in plugin-manifest [:package :version])
-            :pass-id (get (:passes plugin-manifest) 0)
-            :manifest-entry (keyword (str/lower-case
-                                      (subs id 4)))
-            :requested-capability :compiler/ir-transform
-            :trust-level (:trust plugin-manifest)
-            :compiler-api-version (:api-version plugin-manifest)
-            :source-or-artifact-id input-id
-            :facts {:manifest-hash (:manifest-hash plugin-manifest)
-                    :capability-scopes
-                    (get-in plugin-manifest
-                            [:capability-scopes :compiler/ir-transform])
-                    :rule id}
-            :remediation [{:kind :repair-plugin-manifest}
-                          {:kind :rerun-plugin-verifier}]
-            :redactions []
-            :ordering-key [id (:plugin plugin-manifest)
-                           (get (:passes plugin-manifest) 0)]})
-         c17-plugin-diagnostic-ids
-         (range))
-   :status :complete})
+(defn c17-plugin-source-overrides [module]
+  (c17-call c17/c17-plugin-source-overrides module))
 
-(defn c17-plugin-validate!
-  [source-path artifact]
-  (let [manifest (:plugin-manifest artifact)
-        manifest-fields (set (keys manifest))
-        pass-contract-fields (set c17-plugin-pass-contract-required-fields)
-        diagnostics (get-in artifact [:plugin-diagnostic-stream
-                                      :diagnostics])
-        diagnostic-ids (set (map :diagnostic diagnostics))
-        trust-levels (set (map :trust (:trust-grants artifact)))]
-    (when-not (set/subset? (set c17-plugin-manifest-required-fields)
-                           manifest-fields)
-      (c17-plugin-fail! "C17-MANIFEST" source-path manifest
-                        {:missing-fields
-                         (vec (remove manifest-fields
-                                      c17-plugin-manifest-required-fields))}))
-    (when-not (= :compatible (get-in artifact
-                                     [:api-compatibility-report :status]))
-      (c17-plugin-fail! "C17-API" source-path
-                        (:api-compatibility-report artifact)
-                        {:missing-fields [:api-compatibility-report]}))
-    (when-not (and (contains? (:capabilities manifest)
-                              :compiler/ir-transform)
-                   (set/subset?
-                    #{:read-mir :write-mir :register-pass :emit-artifacts}
-                    (get-in manifest
-                            [:capability-scopes :compiler/ir-transform])))
-      (c17-plugin-fail! "C17-CAPABILITY" source-path manifest
-                        {:missing-fields [:capability-scopes]}))
-    (when-not (= :denied-ungranted-effects
-                 (get-in artifact
-                         [:hermetic-build-effect-report :status]))
-      (c17-plugin-fail! "C17-BUILD-EFFECT" source-path
-                        (:hermetic-build-effect-report artifact)
-                        {:missing-fields [:hermetic-build-effect-report]}))
-    (when-not (and (contains? trust-levels :sandboxed)
-                   (contains? trust-levels :trusted-package)
-                   (every? #(contains? #{:sandboxed :granted} (:status %))
-                           (:trust-grants artifact)))
-      (c17-plugin-fail! "C17-SANDBOX" source-path
-                        (first (:trust-grants artifact))
-                        {:missing-fields [:trust-grants]}))
-    (doseq [registration (:plugin-pass-registration-records artifact)]
-      (when-not (set/subset? pass-contract-fields
-                             (set (keys (:contract registration))))
-        (c17-plugin-fail! "C17-PASS-CONTRACT" source-path registration
-                          {:missing-fields
-                           (vec (remove (set (keys (:contract registration)))
-                                        pass-contract-fields))})))
-    (when-not (every? #(= :passed (:verifier-result %))
-                      (:plugin-output-artifacts artifact))
-      (c17-plugin-fail! "C17-OUTPUT" source-path
-                        (first (:plugin-output-artifacts artifact))
-                        {:missing-fields [:verifier-result]}))
-    (when-not (every? #(and (:schema %) (:verifier %)
-                            (seq (:supported-profiles %))
-                            (seq (:lowering-paths %)))
-                      (:domain-registration-records artifact))
-      (c17-plugin-fail! "C17-DOMAIN" source-path
-                        (first (:domain-registration-records artifact))
-                        {:missing-fields [:schema :verifier
-                                          :supported-profiles
-                                          :lowering-paths]}))
-    (when-not (every? #(and (:schema %) (:verifier %)
-                            (seq (:supported-profiles %))
-                            (seq (:conformance-fixtures %)))
-                      (:facet-registration-records artifact))
-      (c17-plugin-fail! "C17-FACET" source-path
-                        (first (:facet-registration-records artifact))
-                        {:missing-fields [:schema :verifier
-                                          :supported-profiles
-                                          :conformance-fixtures]}))
-    (when-not (= :accepted (get-in artifact
-                                   [:package-trust-report :status]))
-      (c17-plugin-fail! "C17-TRUST" source-path
-                        (:package-trust-report artifact)
-                        {:missing-fields [:package-trust-report]}))
-    (when-not (= (set c17-plugin-diagnostic-ids) diagnostic-ids)
-      (c17-plugin-fail! "C17-MANIFEST" source-path
-                        (:plugin-diagnostic-stream artifact)
-                        {:missing-fields [:plugin-diagnostics]})))
-  :complete)
+(defn c17-plugin-fail! [id source-path subject extra]
+  (c17-call c17/c17-plugin-fail! id source-path subject extra))
 
-(defn c17-plugin-capability-proof
-  [artifact]
-  (let [manifest (:plugin-manifest artifact)
-        trust-levels (set (map :trust (:trust-grants artifact)))
-        diagnostics (set (map :diagnostic
-                              (get-in artifact
-                                      [:plugin-diagnostic-stream
-                                       :diagnostics])))]
-    {:c16-incremental-input-verified?
-     (= :complete (get-in artifact
-                          [:c16-incremental-artifact
-                           :capability-based-proof :status]))
-     :manifest-loaded?
-     (and (= :gravity/compiler-plugin (:artifact manifest))
-          (set/subset? (set c17-plugin-manifest-required-fields)
-                       (set (keys manifest))))
-     :api-compatible?
-     (= :compatible (get-in artifact [:api-compatibility-report :status]))
-     :sandbox-and-trust-grants?
-     (and (contains? trust-levels :sandboxed)
-          (contains? trust-levels :trusted-package)
-          (every? #(contains? #{:sandboxed :granted} (:status %))
-                  (:trust-grants artifact)))
-     :capabilities-scoped?
-     (and (contains? (:capabilities manifest) :compiler/ir-transform)
-          (set/subset?
-           #{:read-mir :write-mir :register-pass :emit-artifacts}
-           (get-in manifest
-                   [:capability-scopes :compiler/ir-transform])))
-     :build-effect-denial-covered?
-     (= :denied-ungranted-effects
-        (get-in artifact [:hermetic-build-effect-report :status]))
-     :pass-contracts-registered?
-     (every? #(and (= :registered (:status %))
-                   (set/subset?
-                    (set c17-plugin-pass-contract-required-fields)
-                    (set (keys (:contract %)))))
-             (:plugin-pass-registration-records artifact))
-     :output-artifacts-verified?
-     (every? #(= :passed (:verifier-result %))
-             (:plugin-output-artifacts artifact))
-     :domain-and-facet-registrations-verified?
-     (and (every? #(= :registered (:status %))
-                  (:domain-registration-records artifact))
-          (every? #(= :registered (:status %))
-                  (:facet-registration-records artifact)))
-     :execution-trace-cache-key-integrated?
-     (and (every? #(and (= :passed (:verifier-result %))
-                        (:cache-key %))
-                  (:plugin-execution-traces artifact))
-          (every? #(set/subset?
-                    (set c17-plugin-cache-key-required-fields)
-                    (set (keys %)))
-                  (:plugin-cache-keys artifact)))
-     :diagnostics-covered?
-     (= (set c17-plugin-diagnostic-ids) diagnostics)
-     :conformance-passed?
-     (= :passed (get-in artifact [:plugin-conformance-results :status]))
-     :status :complete}))
+(defn c17-plugin-validate-source-overrides! [source-path overrides]
+  (c17-call c17/c17-plugin-validate-source-overrides!
+            source-path overrides))
 
-(defn compiler-c17-plugin-source-artifact
-  [source-path source-text]
-  (let [forms (mapv :form (read-source-form-records source-path source-text))
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        source-overrides (c17-plugin-source-overrides module)
-        _ (c17-plugin-validate-source-overrides! source-path
-                                                 source-overrides)
-        incremental-artifact (compiler-c16-incremental-source-artifact
-                              source-path source-text)
-        input-id (:artifact-id incremental-artifact)
-        manifest-base
-        {:artifact :gravity/compiler-plugin
-         :plugin 'gravity.plugins.stage0/loop-fuser
-         :package {:name 'gravity/stage0-loop-fuser
-                   :version "0.1.0"
-                   :signature "sha256:c17-stage0-loop-fuser"}
-         :api-version "1"
-         :compiler-compatibility {:min "0.1.0" :max-exclusive "0.2.0"}
-         :trust :sandboxed
-         :profile :meta
-         :build-effects #{}
-         :capabilities #{:compiler/ir-transform :compiler/diagnostics}
-         :capability-scopes {:compiler/ir-transform
-                             #{:read-mir :write-mir :register-pass
-                               :emit-artifacts}
-                             :compiler/diagnostics #{:emit-diagnostics}}
-         :passes [:fuse-adjacent-loops :emit-plugin-diagnostics]
-         :domains [:stage0-loop-domain]
-         :facets [:stage0-loop-fusion]
-         :emits #{:optimization-decision-log :verifier-report
-                  :diagnostic-stream}
-         :conformance [:compiler-c17-plugin-fixtures]
-         :status :accepted}
-        manifest (assoc manifest-base
-                        :manifest-hash
-                        (str "sha256:" (sha256-hex (pr-str manifest-base))))
-        sandbox-grant
-        {:artifact :gravity/plugin-sandbox-grant
-         :plugin (:plugin manifest)
-         :package (get-in manifest [:package :name])
-         :trust :sandboxed
-         :status :sandboxed
-         :capabilities (:capabilities manifest)
-         :capability-scopes (:capability-scopes manifest)
-         :build-effects (:build-effects manifest)
-         :denied-authority [:filesystem/write :network/http
-                            :process/spawn :environment/read
-                            :compiler/hidden-state-mutation]}
-        trusted-grant
-        {:artifact :gravity/plugin-trust-grant
-         :plugin 'gravity.plugins.stage0/proof-provider
-         :package 'gravity/stage0-proof-provider
-         :trust :trusted-package
-         :status :granted
-         :signature-status :verified
-         :capabilities #{:compiler/proof-provider}
-         :capability-scopes {:compiler/proof-provider
-                             #{:request-proof :provide-proof}}}
-        grant-hash (str "sha256:"
-                        (sha256-hex
-                         (pr-str [sandbox-grant trusted-grant])))
-        pass-contracts
-        [{:input :gravity/mir
-          :output :gravity/mir
-          :requires #{:dominators :effect-graph}
-          :preserves #{:types :source-origins :safety-outcomes}
-          :invalidates #{:dominators :loop-analysis}
-          :regenerates #{:effect-ordering}
-          :proof-obligations #{:effect-order-preserved}
-          :emits #{:optimization-decision-log :verifier-report}}
-         {:input :gravity/diagnostic-stream
-          :output :gravity/diagnostic-stream
-          :requires #{:diagnostic-schema :source-spans}
-          :preserves #{:diagnostic-ids :source-origins}
-          :invalidates #{}
-          :regenerates #{}
-          :proof-obligations #{:diagnostic-order-stable}
-          :emits #{:diagnostic-stream}}]
-        pass-registration-records
-        (mapv (fn [pass contract]
-                {:artifact :gravity/plugin-pass-registration
-                 :plugin (:plugin manifest)
-                 :pass pass
-                 :contract contract
-                 :api-version (:api-version manifest)
-                 :capabilities #{:compiler/ir-transform}
-                 :status :registered})
-              (:passes manifest)
-              pass-contracts)
-        domain-registration-records
-        [{:artifact :gravity/plugin-domain-ir-registration
-          :plugin (:plugin manifest)
-          :domain :stage0-loop-domain
-          :schema :gravity.loop-domain/schema-v1
-          :verifier :gravity.loop-domain/verify
-          :supported-profiles #{:hosted :native}
-          :effects #{}
-          :capabilities #{:compiler/ir-transform}
-          :lowering-paths [:mir :target-lowering]
-          :diagnostics ["C17-DOMAIN"]
-          :conformance-fixtures [:stage0-loop-domain-fixture]
-          :status :registered}]
-        facet-registration-records
-        [{:artifact :gravity/plugin-facet-registration
-          :plugin (:plugin manifest)
-          :facet :stage0-loop-fusion
-          :schema :gravity.loop-fusion/schema-v1
-          :verifier :gravity.loop-fusion/verify
-          :supported-profiles #{:hosted :native}
-          :effects #{}
-          :capabilities #{:compiler/ir-transform}
-          :lowering-paths [:mir :target-lowering]
-          :diagnostics ["C17-FACET"]
-          :conformance-fixtures [:stage0-loop-fusion-fixture]
-          :status :registered}]
-        plugin-cache-keys
-        (mapv (fn [registration]
-                {:artifact :gravity/plugin-cache-key
-                 :plugin-package (get-in manifest [:package :name])
-                 :plugin-version (get-in manifest [:package :version])
-                 :manifest (:manifest-hash manifest)
-                 :grants grant-hash
-                 :dependencies [input-id
-                                (str "sha256:"
-                                     (sha256-hex
-                                      (pr-str (:contract registration))))]
-                 :replay-record "sha256:c17-plugin-replay"
-                 :pass (:pass registration)})
-              pass-registration-records)
-        output-artifacts
-        [{:artifact :gravity/plugin-output-artifact
-          :kind :optimization-decision-log
-          :plugin (:plugin manifest)
-          :pass :fuse-adjacent-loops
-          :artifact-id "sha256:c17-loop-fuser-decisions"
-          :verifier-result :passed
-          :status :verified}
-         {:artifact :gravity/plugin-output-artifact
-          :kind :diagnostic-stream
-          :plugin (:plugin manifest)
-          :pass :emit-plugin-diagnostics
-          :artifact-id "sha256:c17-plugin-diagnostics"
-          :verifier-result :passed
-          :status :verified}]
-        execution-traces
-        (mapv (fn [registration cache-key output]
-                {:artifact :gravity/plugin-execution
-                 :plugin (:plugin manifest)
-                 :pass (:pass registration)
-                 :input input-id
-                 :output (:artifact-id output)
-                 :grants grant-hash
-                 :build-effects []
-                 :decisions [(:artifact-id output)]
-                 :diagnostics []
-                 :verifier-result :passed
-                 :sandbox-result :passed
-                 :cache-key (str "sha256:"
-                                 (sha256-hex (pr-str cache-key)))})
-              pass-registration-records
-              plugin-cache-keys
-              output-artifacts)
-        diagnostic-stream (c17-plugin-diagnostic-stream source-path
-                                                        manifest
-                                                        input-id)
-        artifact-base
-        {:kind :gravity/stage0-c17-compiler-plugin-artifact
-         :task "P06-D096"
-         :document-set ["C17"]
-         :governing-document c17-plugin-governing-document
-         :pass {:name :c17-compiler-plugin-api
-                :input :incremental-compilation-artifact
-                :output :compiler-plugin-artifact
-                :requires [:c16-incremental-compilation
-                           :plugin-manifest :api-version
-                           :compiler-capability-grants
-                           :build-effect-policy :sandbox-policy
-                           :pass-contracts :verifiers]
-                :preserves [:source-spans :profile :target :diagnostics
-                            :proofs :cache-keys :incremental-replay]
-                :emits [:plugin-manifest :api-compatibility-report
-                        :sandbox-grant :trust-grants
-                        :plugin-pass-registration-records
-                        :domain-registration-records
-                        :facet-registration-records
-                        :plugin-execution-traces
-                        :plugin-output-artifacts
-                        :plugin-diagnostic-stream
-                        :plugin-cache-keys
-                        :plugin-conformance-results]
-                :rejects c17-plugin-diagnostic-ids}
-         :source-overrides source-overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c16-incremental-artifact
-         (select-keys incremental-artifact
-                      [:kind :task :artifact-id :governing-document
-                       :capability-based-proof])
-         :incremental-artifact-kind (:kind incremental-artifact)
-         :incremental-artifact-hash input-id
-         :plugin-manifest manifest
-         :api-compatibility-report
-         {:artifact :gravity/plugin-api-compatibility-report
-          :plugin (:plugin manifest)
-          :api-version (:api-version manifest)
-          :compiler-compatibility (:compiler-compatibility manifest)
-          :status :compatible}
-         :sandbox-grant sandbox-grant
-         :trust-grants [sandbox-grant trusted-grant]
-         :package-trust-report
-         {:artifact :gravity/plugin-package-trust-report
-          :plugin (:plugin manifest)
-          :package (get-in manifest [:package :name])
-          :signature-status :verified
-          :policy-status :accepted
-          :status :accepted}
-         :hermetic-build-effect-report
-         {:artifact :gravity/plugin-build-effect-denial
-          :plugin (:plugin manifest)
-          :mode :hermetic
-          :requested #{:network/http :process/spawn}
-          :granted (:build-effects manifest)
-          :denied #{:network/http :process/spawn}
-          :diagnostic "C17-BUILD-EFFECT"
-          :status :denied-ungranted-effects}
-         :plugin-pass-registration-records pass-registration-records
-         :domain-registration-records domain-registration-records
-         :facet-registration-records facet-registration-records
-         :plugin-cache-keys plugin-cache-keys
-         :plugin-output-artifacts output-artifacts
-         :plugin-execution-traces execution-traces
-         :plugin-diagnostic-stream diagnostic-stream
-         :plugin-conformance-results
-         {:artifact :gravity/plugin-conformance-results
-          :task "P06-D096"
-          :fixtures [:manifest-loading :api-compatibility
-                     :sandboxed-execution :trusted-execution
-                     :capability-scope :pass-contract
-                     :output-verifier-failure :domain-registration
-                     :facet-registration :build-effect-denial
-                     :execution-trace-cache-key :diagnostics]
-          :status :passed}
-         :c17-plugin-results
-         {:documents ["C17"]
-          :task "P06-D096"
-          :required-diagnostic-ids c17-plugin-diagnostic-ids
-          :c16-input-status :complete
-          :manifest-status :complete
-          :api-status :complete
-          :sandbox-status :complete
-          :trust-status :complete
-          :capability-status :complete
-          :build-effect-status :complete
-          :pass-contract-status :complete
-          :output-verifier-status :complete
-          :domain-registration-status :complete
-          :facet-registration-status :complete
-          :execution-trace-status :complete
-          :cache-key-status :complete
-          :diagnostic-status :complete
-          :conformance-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c17-plugin-validate! source-path artifact-base)
-        capability-proof (c17-plugin-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+(defn c17-plugin-diagnostic-stream [source-path plugin-manifest input-id]
+  (c17-call c17/c17-plugin-diagnostic-stream
+            source-path plugin-manifest input-id))
 
-(defn compiler-c17-plugin-file-artifact
-  [path]
-  (compiler-c17-plugin-source-artifact path (slurp path)))
+(defn c17-plugin-validate! [source-path artifact]
+  (c17-call c17/c17-plugin-validate! source-path artifact))
+
+(defn c17-plugin-capability-proof [artifact]
+  (c17-call c17/c17-plugin-capability-proof artifact))
+
+(defn compiler-c17-plugin-source-artifact [source-path source-text]
+  (c17-call c17/compiler-c17-plugin-source-artifact
+            source-path source-text))
+
+(defn compiler-c17-plugin-file-artifact [path]
+  (c17-call c17/compiler-c17-plugin-file-artifact path))
 
 (def c18-verification-governing-document
-  "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md")
+  c18/c18-verification-governing-document)
+(def c18-verification-diagnostic-ids c18/c18-verification-diagnostic-ids)
+(def c18-pass-risk-required-fields c18/c18-pass-risk-required-fields)
+(def c18-trust-report-required-fields c18/c18-trust-report-required-fields)
 
-(def c18-verification-diagnostic-ids
-  ["C18-RISK"
-   "C18-EVIDENCE"
-   "C18-VALIDATION"
-   "C18-PROOF"
-   "C18-TRUST-REPORT"
-   "C18-RELEASE-GATE"
-   "C18-COUNTEREXAMPLE"
-   "C18-PLUGIN"
-   "C18-BACKEND"])
+(declare c18-verification-source-overrides
+         c18-verification-fail!
+         c18-verification-validate-source-overrides!
+         c18-verification-diagnostic-stream
+         c18-pass-risk-records
+         c18-verification-validate!
+         c18-verification-capability-proof
+         compiler-c18-verification-source-artifact
+         compiler-c18-verification-file-artifact)
 
-(def c18-pass-risk-required-fields
-  [:artifact :pass :version :risk :reason :affected-profiles
-   :affected-targets :artifact-kinds :minimum-evidence :release-gate])
+(defn- c18-verification-ops []
+  {:fail! fail!
+   :source-span source-span
+   :c4-artifact-id c4-artifact-id
+   :read-source-form-records read-source-form-records
+   :validate-ns-syntax! validate-ns-syntax!
+   :parse-module parse-module
+   :compiler-c17-plugin-source-artifact compiler-c17-plugin-source-artifact
+   :compiler-verification-diagnostic-messages
+   compiler-verification-diagnostic-messages
+   :compiler-verification-override-diagnostics
+   compiler-verification-override-diagnostics
+   :c18-verification-governing-document
+   c18-verification-governing-document
+   :c18-verification-diagnostic-ids c18-verification-diagnostic-ids
+   :c18-pass-risk-required-fields c18-pass-risk-required-fields
+   :c18-trust-report-required-fields c18-trust-report-required-fields
+   :c18-verification-source-overrides c18-verification-source-overrides
+   :c18-verification-fail! c18-verification-fail!
+   :c18-verification-validate-source-overrides!
+   c18-verification-validate-source-overrides!
+   :c18-verification-diagnostic-stream c18-verification-diagnostic-stream
+   :c18-pass-risk-records c18-pass-risk-records
+   :c18-verification-validate! c18-verification-validate!
+   :c18-verification-capability-proof c18-verification-capability-proof
+   :compiler-c18-verification-source-artifact
+   compiler-c18-verification-source-artifact
+   :compiler-c18-verification-file-artifact
+   compiler-c18-verification-file-artifact})
 
-(def c18-trust-report-required-fields
-  [:artifact :compiler :profiles :targets :passes :artifact-kinds
-   :known-gaps :release-gates :status])
+(def ^:private ^:dynamic *c18-leaf-call?* false)
+(defn- c18-call [operation & args]
+  (if *c18-leaf-call?*
+    (apply operation args)
+    (binding [*c18-leaf-call?* true]
+      (c18/with-operations (c18-verification-ops)
+        #(apply operation args)))))
 
-(defn c18-verification-source-overrides
-  [module]
-  (or (get-in module [:metadata :compiler :c18-verification])
-      (get-in module [:metadata :compiler :verification])
-      {}))
+(defn c18-verification-source-overrides [module]
+  (c18-call c18/c18-verification-source-overrides module))
 
-(defn c18-verification-fail!
-  [id source-path subject extra]
-  (fail! id
-         (get compiler-verification-diagnostic-messages id
-              "compiler verification/pass-correctness validation failed")
-         (merge {:source-span (or (:source-span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :compiler-pass-correctness
-                 :stage (or (:stage subject) :c18-compiler-verification)
-                 :pass-id (:pass-id subject)
-                 :version (:version subject)
-                 :risk-class (:risk-class subject)
-                 :required-evidence (:required-evidence subject)
-                 :available-evidence (:available-evidence subject)
-                 :affected-profiles (:affected-profiles subject)
-                 :affected-targets (:affected-targets subject)
-                 :artifact-id (:artifact-id subject)
-                 :remediation "Regenerate compiler verification evidence with risk classification, required evidence records, translation validation, proof or certificate replay, trust reports, release gates, counterexamples, plugin evidence, and backend conformance."}
-                extra)))
+(defn c18-verification-fail! [id source-path subject extra]
+  (c18-call c18/c18-verification-fail! id source-path subject extra))
 
-(defn c18-verification-validate-source-overrides!
-  [source-path overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (let [[id subject-kind] (get compiler-verification-override-diagnostics
-                                 fail-kind)]
-      (when (contains? (set c18-verification-diagnostic-ids) id)
-        (c18-verification-fail!
-         id source-path
-         {:stage subject-kind
-          :pass-id subject-kind
-          :version "stage0-c18"
-          :risk-class :high
-          :required-evidence #{:translation-validation
-                               :proof-certificate
-                               :conformance-fixtures}
-          :available-evidence #{}
-          :affected-profiles #{:hosted :native}
-          :affected-targets #{:jvm}
-          :artifact-id (str "c18-verification-artifact-"
-                            (name fail-kind))}
-         {:missing-fields [fail-kind]})))))
+(defn c18-verification-validate-source-overrides! [source-path overrides]
+  (c18-call c18/c18-verification-validate-source-overrides!
+            source-path overrides))
 
-(defn c18-verification-diagnostic-stream
-  [source-path input-id]
-  {:artifact :gravity/c18-verification-diagnostic-stream
-   :stage :c18-compiler-verification
-   :input-artifact input-id
-   :ordering-key [:rule :pass :risk]
-   :diagnostics
-   (mapv (fn [id index]
-           {:artifact :gravity/diagnostic
-            :diagnostic-id (str "diag-" (str/lower-case id) "-stage0")
-            :diagnostic id
-            :rule id
-            :severity :error
-            :stage :c18-compiler-verification
-            :message-key (keyword "verification"
-                                  (str/lower-case
-                                   (str/replace id #"_" "-")))
-            :primary {:span (source-span source-path index)
-                      :syntax-id (str "c18-verification-syntax-" index)
-                      :artifact input-id}
-            :related [{:role :generated-origin
-                       :span (source-span source-path index)
-                       :artifact :compiler-generated-verification-record}]
-            :origin-chain [{:producer :c18-compiler-verification
-                            :source (source-span source-path index)
-                            :generated-artifact input-id}]
-            :pass-id (case id
-                       "C18-BACKEND" :target-lowering
-                       "C18-PLUGIN" :plugin-loop-fuser
-                       "C18-VALIDATION" :bounds-check-elide
-                       :compiler-verification)
-            :version "stage0-c18"
-            :risk-class (if (#{"C18-RISK" "C18-TRUST-REPORT"
-                                "C18-RELEASE-GATE"}
-                              id)
-                          :critical
-                          :high)
-            :required-evidence #{:translation-validation
-                                 :proof-or-certificate
-                                 :conformance-fixtures}
-            :available-evidence #{:fixtures}
-            :affected-profiles #{:hosted :native}
-            :affected-targets #{:jvm}
-            :source-or-artifact-id input-id
-            :facts {:rule id
-                    :release-blocking? true
-                    :evidence-policy :risk-based}
-            :remediation [{:kind :add-required-evidence}
-                          {:kind :block-release-artifact}]
-            :redactions []
-            :ordering-key [id :compiler-verification :high]})
-         c18-verification-diagnostic-ids
-         (range))
-   :status :complete})
+(defn c18-verification-diagnostic-stream [source-path input-id]
+  (c18-call c18/c18-verification-diagnostic-stream source-path input-id))
 
-(defn c18-pass-risk-records
-  []
-  [{:artifact :gravity/pass-risk
-    :pass :reader
-    :version "stage0-c18"
-    :risk :critical
-    :reason #{:trusted-semantic-base}
-    :affected-profiles #{:core :hosted :native}
-    :affected-targets #{:jvm}
-    :artifact-kinds #{:syntax-object-stream}
-    :minimum-evidence #{:golden-fixtures :round-trip :fuzz}
-    :release-gate :required}
-   {:artifact :gravity/pass-risk
-    :pass :macro-expansion
-    :version "stage0-c18"
-    :risk :critical
-    :reason #{:generated-code :build-effects}
-    :affected-profiles #{:hosted :native}
-    :affected-targets #{:jvm}
-    :artifact-kinds #{:macro-expansion-trace :expanded-syntax}
-    :minimum-evidence #{:hygiene-fixtures :generated-origin-fixtures
-                        :build-effect-tests}
-    :release-gate :required}
-   {:artifact :gravity/pass-risk
-    :pass :type-effect-check
-    :version "stage0-c18"
-    :risk :high
-    :reason #{:semantic-legality :effect-capability-policy}
-    :affected-profiles #{:hosted :native :kernel}
-    :affected-targets #{:jvm}
-    :artifact-kinds #{:typed-core :effect-graph}
-    :minimum-evidence #{:positive-negative-fixtures :property-tests}
-    :release-gate :required}
-   {:artifact :gravity/pass-risk
-    :pass :ownership-safety
-    :version "stage0-c18"
-    :risk :critical
-    :reason #{:safety-outcomes :unsafe-boundary}
-    :affected-profiles #{:hosted :native :kernel :firmware}
-    :affected-targets #{:jvm}
-    :artifact-kinds #{:ownership-graph :safety-report}
-    :minimum-evidence #{:vulnerability-fixtures :proof-certificate-checks}
-    :release-gate :required}
-   {:artifact :gravity/pass-risk
-    :pass :mir-construction
-    :version "stage0-c18"
-    :risk :high
-    :reason #{:core-to-mir-semantics}
-    :affected-profiles #{:hosted :native}
-    :affected-targets #{:jvm}
-    :artifact-kinds #{:gravity/mir}
-    :minimum-evidence #{:mir-verifier :core-to-mir-goldens}
-    :release-gate :required}
-   {:artifact :gravity/pass-risk
-    :pass :bounds-check-elide
-    :version "stage0-c18"
-    :risk :high
-    :reason #{:removes-runtime-checks :depends-on-proof}
-    :affected-profiles #{:native :kernel :firmware :gpu}
-    :affected-targets #{:jvm :native}
-    :artifact-kinds #{:optimized-mir :safety-outcome}
-    :minimum-evidence #{:translation-validation
-                        :proof-dominance-check}
-    :release-gate :required}
-   {:artifact :gravity/pass-risk
-    :pass :target-lowering
-    :version "stage0-c18"
-    :risk :critical
-    :reason #{:emits-backend-artifacts :profile-runtime-contract}
-    :affected-profiles #{:hosted :native}
-    :affected-targets #{:jvm}
-    :artifact-kinds #{:target-artifact-manifest}
-    :minimum-evidence #{:backend-conformance :differential-execution}
-    :release-gate :required}
-   {:artifact :gravity/pass-risk
-    :pass :plugin-loop-fuser
-    :version "stage0-c18"
-    :risk :medium
-    :reason #{:plugin-ir-transform}
-    :affected-profiles #{:hosted :native}
-    :affected-targets #{:jvm}
-    :artifact-kinds #{:plugin-output-artifact}
-    :minimum-evidence #{:sandbox-tests :contract-verifier
-                        :fixture-suite}
-    :release-gate :required}])
+(defn c18-pass-risk-records []
+  (c18-call c18/c18-pass-risk-records))
 
-(defn c18-verification-validate!
-  [source-path artifact]
-  (let [risk-records (:pass-risk-classification artifact)
-        risk-passes (set (map :pass risk-records))
-        evidence-passes (set (map :pass (:pass-evidence-records artifact)))
-        diagnostics (set (map :diagnostic
-                              (get-in artifact
-                                      [:verification-diagnostic-stream
-                                       :diagnostics])))
-        trust-fields (set (keys (:compiler-trust-report artifact)))]
-    (doseq [risk risk-records]
-      (when-not (set/subset? (set c18-pass-risk-required-fields)
-                             (set (keys risk)))
-        (c18-verification-fail!
-         "C18-RISK" source-path
-         {:pass-id (:pass risk)
-          :version (:version risk)
-          :risk-class (:risk risk)
-          :required-evidence (:minimum-evidence risk)
-          :available-evidence #{}
-          :affected-profiles (:affected-profiles risk)
-          :affected-targets (:affected-targets risk)}
-         {:missing-fields
-          (vec (remove (set (keys risk))
-                       c18-pass-risk-required-fields))})))
-    (when-not (= risk-passes evidence-passes)
-      (c18-verification-fail! "C18-EVIDENCE" source-path
-                              (first risk-records)
-                              {:missing-fields [:pass-evidence-records]}))
-    (when-not (every? #(= :accepted (:result %))
-                      (:translation-validation-logs artifact))
-      (c18-verification-fail! "C18-VALIDATION" source-path
-                              (first (:translation-validation-logs artifact))
-                              {:missing-fields [:accepted-validation]}))
-    (when-not (every? #(= :accepted (:status %))
-                      (:proof-or-certificate-references artifact))
-      (c18-verification-fail! "C18-PROOF" source-path
-                              (first (:proof-or-certificate-references
-                                      artifact))
-                              {:missing-fields [:accepted-proof]}))
-    (when-not (set/subset? (set c18-trust-report-required-fields)
-                           trust-fields)
-      (c18-verification-fail! "C18-TRUST-REPORT" source-path
-                              (:compiler-trust-report artifact)
-                              {:missing-fields
-                               (vec (remove trust-fields
-                                            c18-trust-report-required-fields))}))
-    (when-not (every? #(= :blocked (:release-artifact-status %))
-                      (:release-gate-failure-fixtures artifact))
-      (c18-verification-fail! "C18-RELEASE-GATE" source-path
-                              (first (:release-gate-failure-fixtures
-                                      artifact))
-                              {:missing-fields [:blocked-release]}))
-    (when-not (every? #(and (= :captured (:status %))
-                            (true? (:regression-fixture-created? %)))
-                      (:counterexample-artifacts artifact))
-      (c18-verification-fail! "C18-COUNTEREXAMPLE" source-path
-                              (first (:counterexample-artifacts artifact))
-                              {:missing-fields [:regression-fixture]}))
-    (when-not (= :passed (get-in artifact [:plugin-evidence-report :status]))
-      (c18-verification-fail! "C18-PLUGIN" source-path
-                              (:plugin-evidence-report artifact)
-                              {:missing-fields [:plugin-evidence-report]}))
-    (when-not (every? #(= :passed (:status %))
-                      (:target-lowering-conformance artifact))
-      (c18-verification-fail! "C18-BACKEND" source-path
-                              (first (:target-lowering-conformance artifact))
-                              {:missing-fields [:target-lowering-conformance]}))
-    (when-not (= (set c18-verification-diagnostic-ids) diagnostics)
-      (c18-verification-fail! "C18-EVIDENCE" source-path
-                              (:verification-diagnostic-stream artifact)
-                              {:missing-fields [:verification-diagnostics]})))
-  :complete)
+(defn c18-verification-validate! [source-path artifact]
+  (c18-call c18/c18-verification-validate! source-path artifact))
 
-(defn c18-verification-capability-proof
-  [artifact]
-  (let [risk-records (:pass-risk-classification artifact)
-        evidence-records (:pass-evidence-records artifact)
-        diagnostics (set (map :diagnostic
-                              (get-in artifact
-                                      [:verification-diagnostic-stream
-                                       :diagnostics])))]
-    {:c17-plugin-input-verified?
-     (= :complete (get-in artifact
-                          [:c17-plugin-artifact
-                           :capability-based-proof :status]))
-     :pass-risk-classification-complete?
-     (every? #(set/subset? (set c18-pass-risk-required-fields)
-                           (set (keys %)))
-             risk-records)
-     :high-risk-evidence-present?
-     (every? (fn [risk]
-               (let [record (first (filter #(= (:pass %)
-                                               (:pass risk))
-                                           evidence-records))]
-                 (and record
-                      (= :present (:status record))
-                      (set/subset? (:minimum-evidence risk)
-                                   (:evidence record)))))
-             (filter #(#{:high :critical} (:risk %)) risk-records))
-     :translation-validation-accepted?
-     (every? #(= :accepted (:result %))
-             (:translation-validation-logs artifact))
-     :proofs-and-certificates-accepted?
-     (every? #(= :accepted (:status %))
-             (:proof-or-certificate-references artifact))
-     :diagnostics-preserve-source-and-generated-origin?
-     (every? #(and (get-in % [:primary :span])
-                   (seq (:related %))
-                   (seq (:origin-chain %)))
-             (get-in artifact [:verification-diagnostic-stream
-                               :diagnostics]))
-     :differential-and-property-fixtures-passed?
-     (= :passed (get-in artifact
-                        [:differential-and-property-fixture-results
-                         :status]))
-     :trust-report-complete?
-     (= :complete (get-in artifact [:compiler-trust-report :status]))
-     :release-gate-blocks-missing-evidence?
-     (every? #(= :blocked (:release-artifact-status %))
-             (:release-gate-failure-fixtures artifact))
-     :counterexample-regression-captured?
-     (every? #(and (= :captured (:status %))
-                   (true? (:regression-fixture-created? %)))
-             (:counterexample-artifacts artifact))
-     :experimental-gates-explicit?
-     (every? #(= :explicit-feature-gate (:gate %))
-             (:experimental-pass-gates artifact))
-     :plugin-evidence-policy-passed?
-     (= :passed (get-in artifact [:plugin-evidence-report :status]))
-     :backend-conformance-passed?
-     (every? #(= :passed (:status %))
-             (:target-lowering-conformance artifact))
-     :diagnostics-covered?
-     (= (set c18-verification-diagnostic-ids) diagnostics)
-     :status :complete}))
+(defn c18-verification-capability-proof [artifact]
+  (c18-call c18/c18-verification-capability-proof artifact))
 
-(defn compiler-c18-verification-source-artifact
-  [source-path source-text]
-  (let [forms (mapv :form (read-source-form-records source-path source-text))
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        source-overrides (c18-verification-source-overrides module)
-        _ (c18-verification-validate-source-overrides! source-path
-                                                       source-overrides)
-        plugin-artifact (compiler-c17-plugin-source-artifact source-path
-                                                             source-text)
-        input-id (:artifact-id plugin-artifact)
-        risk-records (c18-pass-risk-records)
-        pass-evidence-records
-        (mapv (fn [risk]
-                {:artifact :gravity/pass-evidence
-                 :pass (:pass risk)
-                 :version (:version risk)
-                 :risk (:risk risk)
-                 :required (:minimum-evidence risk)
-                 :evidence (:minimum-evidence risk)
-                 :evidence-artifacts [(str "sha256:c18-evidence-"
-                                           (name (:pass risk)))]
-                 :status :present})
-              risk-records)
-        translation-validation-logs
-        [{:artifact :gravity/translation-validation
-          :pass :bounds-check-elide
-          :input input-id
-          :output "sha256:c18-bounds-check-elide-output"
-          :changed-functions [:safe-index]
-          :properties #{:same-observable-result :same-effects
-                        :same-safety-outcomes}
-          :method :symbolic-plus-fixtures
-          :proofs [:proof/c18-bounds-check-dominance]
-          :counterexamples []
-          :result :accepted}
-         {:artifact :gravity/translation-validation
-          :pass :plugin-loop-fuser
-          :input input-id
-          :output "sha256:c18-loop-fuser-output"
-          :changed-functions [:loop-body]
-          :properties #{:same-observable-result :same-effects}
-          :method :differential-fixtures
-          :proofs [:proof/c18-loop-fuser-effect-order]
-          :counterexamples []
-          :result :accepted}]
-        diagnostic-stream (c18-verification-diagnostic-stream source-path
-                                                              input-id)
-        artifact-base
-        {:kind :gravity/stage0-c18-compiler-verification-artifact
-         :task "P06-D097"
-         :document-set ["C18"]
-         :governing-document c18-verification-governing-document
-         :pass {:name :c18-compiler-verification
-                :input :compiler-plugin-artifact
-                :output :compiler-verification-and-trust-artifact
-                :requires [:c17-plugin-artifact :risk-policy
-                           :evidence-policy :translation-validation
-                           :proof-certificate-policy :trust-report-policy
-                           :release-gate-policy]
-                :preserves [:source-spans :generated-origins :profile
-                            :target :diagnostics :proofs :capabilities]
-                :emits [:compiler-verification-plan
-                        :pass-risk-classification
-                        :pass-evidence-records
-                        :translation-validation-logs
-                        :proof-or-certificate-references
-                        :differential-and-property-fixture-results
-                        :compiler-trust-report :release-gate-report
-                        :release-gate-failure-fixtures
-                        :counterexample-artifacts
-                        :experimental-pass-gates
-                        :plugin-evidence-report
-                        :target-lowering-conformance
-                        :verification-diagnostic-stream]
-                :rejects c18-verification-diagnostic-ids}
-         :source-overrides source-overrides
-         :module (select-keys module [:module :source-path :profile :target
-                                      :effects :capabilities :safety
-                                      :metadata])
-         :c17-plugin-artifact
-         (select-keys plugin-artifact
-                      [:kind :task :artifact-id :governing-document
-                       :capability-based-proof])
-         :plugin-artifact-kind (:kind plugin-artifact)
-         :plugin-artifact-hash input-id
-         :compiler-verification-plan
-         {:artifact :gravity/compiler-verification-plan
-          :status :complete
-          :evidence-policy :risk-based
-          :passes (mapv :pass risk-records)
-          :required-evidence-families
-          #{:golden-fixtures :fuzz :translation-validation
-            :proof-dominance-check :backend-conformance
-            :differential-execution :sandbox-tests :contract-verifier}
-          :release-policy :block-affected-profiles-on-failure}
-         :pass-risk-classification risk-records
-         :pass-evidence-records pass-evidence-records
-         :stage-verifier-reports
-         (mapv (fn [risk]
-                 {:artifact :gravity/stage-verifier-report
-                  :pass (:pass risk)
-                  :artifact-kinds (:artifact-kinds risk)
-                  :source-or-generated-origin-preserved? true
-                  :status :passed})
-               risk-records)
-         :translation-validation-logs translation-validation-logs
-         :proof-or-certificate-references
-         [{:proof :proof/c18-bounds-check-dominance
-           :pass :bounds-check-elide
-           :status :accepted}
-          {:certificate :cert/c18-safety-check-elision
-           :pass :bounds-check-elide
-           :status :accepted}
-          {:proof :proof/c18-loop-fuser-effect-order
-           :pass :plugin-loop-fuser
-           :status :accepted}]
-         :differential-and-property-fixture-results
-         {:artifact :gravity/compiler-fixture-results
-          :status :passed
-          :families {:front-end {:golden 8 :fuzz 64 :status :passed}
-                     :optimization {:translation-validation 2
-                                    :property 12
-                                    :status :passed}
-                     :backend {:differential 5
-                               :conformance 4
-                               :status :passed}}}
-         :compiler-trust-report
-         {:artifact :gravity/compiler-trust-report
-          :compiler "gravity-stage0-clojure"
-          :profiles {:hosted {:required-evidence :high
-                              :blocked-passes []}
-                     :native {:required-evidence :critical
-                              :blocked-passes [:gpu-lowering]}}
-          :targets {:jvm {:required-evidence :high
-                          :blocked-passes []}}
-          :passes (mapv #(select-keys % [:pass :risk
-                                          :minimum-evidence
-                                          :release-gate])
-                        risk-records)
-          :artifact-kinds
-          (set (mapcat :artifact-kinds risk-records))
-          :known-gaps [{:pass :gpu-lowering
-                        :profiles #{:gpu}
-                        :targets #{:gpu}
-                        :status :experimental
-                        :gate :explicit-feature-gate}]
-          :release-gates [:verifiers :high-risk-evidence
-                          :target-lowering-conformance
-                          :stale-proof-rejection
-                          :diagnostic-goldens
-                          :self-hosting-comparison]
-          :status :complete}
-         :release-gate-report
-         {:artifact :gravity/release-gate-report
-          :status :passed
-          :checks [:verifier-pass-every-artifact
-                   :no-active-critical-failures
-                   :high-risk-evidence-present
-                   :target-lowering-conformance
-                   :stale-proof-and-certificate-rejection
-                   :diagnostic-golden-fixtures]
-          :release-artifacts :allowed-for-hosted-jvm
-          :blocked-experimental-passes [:gpu-lowering]}
-         :release-gate-failure-fixtures
-         [{:artifact :gravity/release-gate-failure
-           :pass :gpu-lowering
-           :missing-evidence #{:backend-conformance
-                               :differential-execution}
-           :affected-profiles #{:gpu}
-           :affected-targets #{:gpu}
-           :diagnostic "C18-RELEASE-GATE"
-           :release-artifact-status :blocked}]
-         :counterexample-artifacts
-         [{:artifact :gravity/counterexample
-           :source-fixture "bootstrap/clojure/fixtures/rejected/compiler-verify-c18-validation.gravity"
-           :input-artifact input-id
-           :output-artifact "sha256:c18-invalid-optimization-output"
-           :violated-property :same-safety-outcomes
-           :diagnostic-stream :gravity/c18-verification-diagnostic-stream
-           :minimized-reproducer "compiler-verify-c18-validation.gravity"
-           :affected-pass :bounds-check-elide
-           :pass-version "stage0-c18"
-           :status :captured
-           :regression-fixture-created? true}]
-         :experimental-pass-gates
-         [{:pass :gpu-lowering
-           :profiles #{:gpu}
-           :targets #{:gpu}
-           :gate :explicit-feature-gate
-           :release-default :disabled
-           :artifact-status :not-release-quality}]
-         :plugin-evidence-report
-         {:artifact :gravity/plugin-evidence-report
-          :plugin 'gravity.plugins.stage0/loop-fuser
-          :required #{:sandbox-tests :contract-verifier
-                      :fixture-suite}
-          :available #{:sandbox-tests :contract-verifier
-                       :fixture-suite}
-          :status :passed}
-         :target-lowering-conformance
-         [{:artifact :gravity/target-lowering-conformance
-           :target :jvm
-           :profiles #{:hosted}
-           :source-core-mir-intent #{:same-observable-result
-                                     :same-effects
-                                     :same-safety-outcomes}
-           :emitted-artifact-behavior :matched
-           :method :differential-execution
-           :status :passed}]
-         :verification-diagnostic-stream diagnostic-stream
-         :c18-verification-results
-         {:documents ["C18"]
-          :task "P06-D097"
-          :required-diagnostic-ids c18-verification-diagnostic-ids
-          :c17-input-status :complete
-          :plan-status :complete
-          :risk-status :complete
-          :evidence-status :complete
-          :translation-validation-status :complete
-          :proof-certificate-status :complete
-          :fixture-status :complete
-          :trust-report-status :complete
-          :release-gate-status :complete
-          :counterexample-status :complete
-          :experimental-gate-status :complete
-          :plugin-status :complete
-          :backend-status :complete
-          :diagnostic-status :complete
-          :status :complete}
-         :diagnostics []}
-        _ (c18-verification-validate! source-path artifact-base)
-        capability-proof (c18-verification-capability-proof artifact-base)]
-    (assoc artifact-base
-           :capability-based-proof capability-proof
-           :artifact-id (c4-artifact-id (assoc artifact-base
-                                               :capability-based-proof
-                                               capability-proof)))))
+(defn compiler-c18-verification-source-artifact [source-path source-text]
+  (c18-call c18/compiler-c18-verification-source-artifact
+            source-path source-text))
 
-(defn compiler-c18-verification-file-artifact
-  [path]
-  (compiler-c18-verification-source-artifact path (slurp path)))
+(defn compiler-c18-verification-file-artifact [path]
+  (c18-call c18/compiler-c18-verification-file-artifact path))
 
 (def backend-interface-governing-documents
   ["docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md"
@@ -150188,300 +142979,146 @@
   (compiler-c1-architecture-source-artifact path (slurp path)))
 
 (def c2-reader-diagnostic-ids
-  ["C2-ENCODING"
-   "C2-DELIMITER"
-   "C2-STRING"
-   "C2-NUMERIC"
-   "C2-IDENTIFIER"
-   "C2-NS-SHAPE"
-   "C2-MAP"
-   "C2-SET"
-   "C2-METADATA"
-   "C2-ABBREV"
-   "C2-EXTENSION"
-   "C2-HASH"])
+  c2-reader-diagnostics/c2-reader-diagnostic-ids)
 
 (def c2-reader-governing-document
-  "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md")
+  c2-reader-diagnostics/c2-reader-governing-document)
 
 (def c2-reader-rejected-designs
-  [{:diagnostic "C2-ENCODING"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-encoding.gravity"
-    :rejected-design :nondeterministic-source-decoding}
-   {:diagnostic "C2-DELIMITER"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-delimiter.gravity"
-    :rejected-design :malformed-delimiter-tree}
-   {:diagnostic "C2-STRING"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-string.gravity"
-    :rejected-design :lost-string-escape-facts}
-   {:diagnostic "C2-NUMERIC"
-    :fixture "bootstrap/clojure/fixtures/self-hosting/sh-03/rejected/malformed-numeric.gravity"
-    :rejected-design :malformed-numeric-reclassified-or-host-parsed}
-   {:diagnostic "C2-IDENTIFIER"
-    :fixture "bootstrap/clojure/fixtures/self-hosting/sh-03/rejected/malformed-identifier.gravity"
-    :rejected-design :malformed-symbol-or-keyword-spelling}
-   {:diagnostic "C2-NS-SHAPE"
-    :fixture "bootstrap/clojure/fixtures/self-hosting/sh-03/rejected/namespace-missing-name.gravity"
-    :rejected-design :host-owned-or-malformed-namespace-clause-shape}
-   {:diagnostic "C2-MAP"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-map.gravity"
-    :rejected-design :odd-map-literal}
-   {:diagnostic "C2-SET"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-set.gravity"
-    :rejected-design :duplicate-literal-set-entry}
-   {:diagnostic "C2-METADATA"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-metadata.gravity"
-    :rejected-design :unattached-or-invalid-metadata}
-   {:diagnostic "C2-ABBREV"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-abbrev.gravity"
-    :rejected-design :invalid-reader-abbreviation}
-   {:diagnostic "C2-EXTENSION"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-extension.gravity"
-    :rejected-design :ambient-reader-extension-authority}
-   {:diagnostic "C2-HASH"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-hash.gravity"
-    :rejected-design :unstable-reader-artifact-identity}])
+  c2-reader-diagnostics/c2-reader-rejected-designs)
 
 (def c2-reader-override-diagnostics
-  {:encoding "C2-ENCODING"
-   :abbrev "C2-ABBREV"
-   :hash "C2-HASH"})
+  c2-reader-diagnostics/c2-reader-override-diagnostics)
+
+(declare standard-reader-options
+         reader-canonical-hash
+         c2-reader-source-overrides
+         c2-reader-message
+         c2-reader-fail!
+         c2-reader-remap-exception!
+         c2-reader-validate-overrides!)
+
+(defn- c2-reader-diagnostics-ops
+  []
+  {:fail! fail!
+   :source-span source-span
+   :reader-canonical-hash reader-canonical-hash
+   :standard-reader-options standard-reader-options
+   :c2-reader-source-overrides c2-reader-source-overrides
+   :c2-reader-message c2-reader-message
+   :c2-reader-fail! c2-reader-fail!
+   :c2-reader-remap-exception! c2-reader-remap-exception!
+   :c2-reader-validate-overrides! c2-reader-validate-overrides!
+   :c2-reader-diagnostic-ids c2-reader-diagnostic-ids
+   :c2-reader-governing-document c2-reader-governing-document
+   :c2-reader-rejected-designs c2-reader-rejected-designs
+   :c2-reader-override-diagnostics c2-reader-override-diagnostics})
+
+(def ^:private ^:dynamic *c2-reader-diagnostics-leaf-call?* false)
+
+(defn- c2-reader-diagnostics-call
+  [operation-key operation & args]
+  (if *c2-reader-diagnostics-leaf-call?*
+    (c2-reader-diagnostics/call-entrypoint-body
+     operation-key operation args)
+    (binding [*c2-reader-diagnostics-leaf-call?* true]
+      (c2-reader-diagnostics/with-operations
+       (c2-reader-diagnostics-ops)
+       #(c2-reader-diagnostics/call-entrypoint-body
+         operation-key operation args)))))
 
 (defn c2-reader-source-overrides
   [module]
-  (get-in module [:metadata :compiler :c2-reader] {}))
+  (c2-reader-diagnostics-call
+   :c2-reader-source-overrides
+   c2-reader-diagnostics/c2-reader-source-overrides module))
 
 (defn c2-reader-message
   [id]
-  (case id
-    "C2-ENCODING" "source decoding failed or used an undeclared encoding"
-    "C2-DELIMITER" "reader delimiter structure is malformed"
-    "C2-STRING" "string or character literal is malformed"
-    "C2-NUMERIC" "numeric candidate fails every enabled numeric literal grammar"
-    "C2-IDENTIFIER" "symbol or keyword has an invalid surface spelling"
-    "C2-NS-SHAPE" "namespace clause has invalid reader-level syntax shape"
-    "C2-MAP" "map literal has odd arity"
-    "C2-SET" "literal set contains duplicate entries decidable at read time"
-    "C2-METADATA" "metadata is unattached or has invalid reader shape"
-    "C2-ABBREV" "reader abbreviation placement is invalid"
-    "C2-EXTENSION" "source extension is noncanonical or reader extension is unknown, disallowed, or effect-violating"
-    "C2-HASH" "reader artifact identity is unstable or incomplete"
-    "reader document coverage failed"))
+  (c2-reader-diagnostics-call
+   :c2-reader-message c2-reader-diagnostics/c2-reader-message id))
 
 (defn c2-reader-fail!
   [id source-path subject extra]
-  (let [raw-span (or (:source-span subject)
-                     (:source-span extra)
-                     (source-span source-path 0))
-        source-id (or (:source-id subject)
-                      (:source-id extra)
-                      (get-in subject [:primary :artifact])
-                      (get-in extra [:primary :artifact]))
-        span (cond-> raw-span
-               (and source-id (not (:file raw-span)))
-               (assoc :file source-id))
-        raw (or (:raw subject) (:raw-spelling subject)
-                (:raw extra) (:raw-spelling extra))
-        token-id (or (:token-id subject) (:token-id extra))
-        form-id (or (:form-id subject) (:form-id extra))
-        facts (merge (or (:facts subject) {})
-                     (or (:facts extra) {}))
-        remediation
-        "Regenerate reader artifacts with deterministic decoding, spans, raw literal facts, extension policy, and stable incremental hashes."
-        defaults
-        {:artifact :gravity/diagnostic
-         :diagnostic-id
-         (reader-canonical-hash
-          {:rule (keyword id)
-           :primary-artifact source-id
-           :stage :read-source
-           :span (dissoc span :source)
-           :token-id token-id
-           :form-id form-id
-           :facts facts})
-         :rule (keyword id)
-         :severity :error
-         :source-id source-id
-         :source-span span
-         :primary {:span span :artifact source-id}
-         :related []
-         :origin-chain [{:kind :source
-                         :source-id source-id
-                         :path source-path}]
-         :profile nil
-         :target nil
-         :facts facts
-         :diagnostic-family :c2-reader
-         :stage :read-source
-         :document-id "C2"
-         :expected-document c2-reader-governing-document
-         :involved-artifacts (cond-> [] source-id (conj source-id))
-         :token-id token-id
-         :form-id form-id
-         :raw-spelling raw
-         :reader-options (or (:reader-options subject)
-                             (:reader-options extra))
-         :extension-tag (or (:extension-tag subject)
-                            (:extension-tag extra))
-         :reader-state {:artifact :gravity/reader-state
-                        :stage :read-source
-                        :byte-offset (:byte-start span)
-                        :line (get-in span [:start :line])
-                        :column (get-in span [:start :column])
-                        :token-id token-id
-                        :form-id form-id}
-         :redactions []
-         :lifecycle :active
-         :remediation remediation
-         :remediation-records [{:kind :fix-reader-source}]}
-        payload (-> (merge defaults extra)
-                    (assoc :artifact (:artifact defaults)
-                           :diagnostic-id (:diagnostic-id defaults)
-                           :rule (:rule defaults)
-                           :severity (:severity defaults)
-                           :source-id source-id
-                           :source-span span
-                           :primary (:primary defaults)
-                           :facts facts
-                           :diagnostic-family :c2-reader
-                           :stage :read-source
-                           :document-id "C2"
-                           :expected-document c2-reader-governing-document
-                           :token-id (:token-id defaults)
-                           :form-id (:form-id defaults)
-                           :raw-spelling raw
-                           :reader-options (:reader-options defaults)
-                           :extension-tag (:extension-tag defaults)
-                           :remediation remediation
-                           :remediation-records
-                           [{:kind :fix-reader-source}]))]
-    (fail! id (c2-reader-message id) payload)))
+  (c2-reader-diagnostics-call
+   :c2-reader-fail! c2-reader-diagnostics/c2-reader-fail!
+   id source-path subject extra))
 
 (defn c2-reader-remap-exception!
   [source-path ex]
-  (let [data (ex-data ex)
-        old-id (:id data)
-        cause (str (or (:cause-message data) (:message data)))
-        reader-engine-diagnostic
-        (when (and (string? old-id) (str/starts-with? old-id "STAGE1"))
-          old-id)
-        owner-id (case old-id
-                   ("STAGE1READER001" "STAGE1READER002") "L1-DELIMITER"
-                   "STAGE1READER003" "L1-STRING"
-                   "STAGE1READER004" "L1-READER-EXTENSION"
-                   "STAGE1READER005" "L1-MAP-ARITY"
-                   "STAGE1READER007" "L1-NUMERIC"
-                   old-id)
-        id (cond
-             (= "L1-SOURCE-ENCODING" owner-id) "C2-ENCODING"
-             (= "L1-SOURCE-EXTENSION" owner-id) "C2-EXTENSION"
-             (= "L1-DELIMITER" owner-id) "C2-DELIMITER"
-             (= "L1-STRING" owner-id) "C2-STRING"
-             (= "L1-NUMERIC" owner-id) "C2-NUMERIC"
-             (= "L1-IDENTIFIER" owner-id) "C2-IDENTIFIER"
-             (= "L1-NS-SHAPE" owner-id) "C2-NS-SHAPE"
-             (= "L1-MAP-ARITY" owner-id) "C2-MAP"
-             (= "L1-METADATA" owner-id) "C2-METADATA"
-             (= "L1-READER-EXTENSION" owner-id) "C2-EXTENSION"
-             (str/includes? cause "Duplicate key") "C2-SET"
-             :else owner-id)
-        span (:source-span data)
-        reader-state
-        (or (:reader-state data)
-            {:artifact :gravity/reader-state
-             :stage (if (contains? #{"STAGE1READER003"
-                                     "STAGE1READER004"
-                                     "STAGE1READER007"}
-                                   old-id)
-                      :lexical-tokenization
-                      :recursive-form-building)
-             :byte-offset (:byte-start span)
-             :line (get-in span [:start :line])
-             :column (get-in span [:start :column])
-             :token-id (:token-id data)
-             :form-id (:form-id data)})]
-    (if (contains? (set c2-reader-diagnostic-ids) id)
-      (let [preserved-fields
-            (dissoc data :id :message :diagnostic-family :reader-options)]
-        (c2-reader-fail!
-         id source-path data
-         (cond-> (assoc preserved-fields
-                        :cause-message (or (:cause-message data)
-                                           (:message data))
-                        :reader-options standard-reader-options
-                        :reader-state reader-state)
-           (and owner-id (not= owner-id id))
-           (assoc :remapped-from owner-id)
-
-           reader-engine-diagnostic
-           (assoc :reader-engine-diagnostic reader-engine-diagnostic))))
-      (throw ex))))
+  (c2-reader-diagnostics-call
+   :c2-reader-remap-exception!
+   c2-reader-diagnostics/c2-reader-remap-exception! source-path ex))
 
 (defn c2-reader-validate-overrides!
   [source-path overrides source-unit token-stream]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c2-reader-override-diagnostics fail-kind)]
-      (let [failure-token (or (some #(when (= fail-kind (:decoded %)) %)
-                                    token-stream)
-                              (first token-stream))]
-        (c2-reader-fail! id source-path
-                         {:source-id (:source-id source-unit)
-                          :source-span (:span failure-token)
-                          :token-id (:token-id failure-token)
-                          :raw (:raw failure-token)
-                          :reader-options (:reader-options source-unit)
-                          :extension-tag (:extension-tag overrides)}
-                         {:missing-fields [fail-kind]})))))
+  (c2-reader-diagnostics-call
+   :c2-reader-validate-overrides!
+   c2-reader-diagnostics/c2-reader-validate-overrides!
+   source-path overrides source-unit token-stream))
+
+(declare reader-canonical-value
+         reader-canonical-hash
+         c2-semantic-form-hash-input
+         c2-path-neutral-span
+         c2-token-hash-input
+         c2-form-hash-input
+         c2-syntax-seed-hash-input
+         c2-extension-hash-input
+         c2-diagnostic-hash-input
+         c2-incremental-hashes
+         c2-reader-product-integrity-record
+         c2-reader-artifact-id)
+
+(defn- c2-artifact-identity-ops
+  []
+  {:sha256-hex sha256-hex
+   :c2-form-graph-metrics c2-form-graph-metrics
+   :c2-reader-fail! c2-reader-fail!
+   :source-span source-span
+   :reader-canonical-value reader-canonical-value
+   :reader-canonical-hash reader-canonical-hash
+   :c2-semantic-form-hash-input c2-semantic-form-hash-input
+   :c2-path-neutral-span c2-path-neutral-span
+   :c2-token-hash-input c2-token-hash-input
+   :c2-form-hash-input c2-form-hash-input
+   :c2-syntax-seed-hash-input c2-syntax-seed-hash-input
+   :c2-extension-hash-input c2-extension-hash-input
+   :c2-diagnostic-hash-input c2-diagnostic-hash-input
+   :c2-incremental-hashes c2-incremental-hashes
+   :c2-reader-product-integrity-record c2-reader-product-integrity-record
+   :c2-reader-artifact-id c2-reader-artifact-id
+   :max-reader-form-graph-depth max-reader-form-graph-depth})
+
+(def ^:private ^:dynamic *c2-artifact-identity-leaf-call?* false)
+
+(defn- c2-artifact-identity-call
+  [operation-key operation & args]
+  (if *c2-artifact-identity-leaf-call?*
+    (c2-artifact-identity/call-entrypoint-body
+     operation-key operation args)
+    (binding [*c2-artifact-identity-leaf-call?* true]
+      (c2-artifact-identity/with-operations
+       (c2-artifact-identity-ops)
+       #(c2-artifact-identity/call-entrypoint-body
+         operation-key operation args)))))
 
 (defn reader-canonical-value
   [value]
-  (cond
-    (map? value)
-    (let [decorated
-          (mapv
-           (fn [[key item]]
-             (let [entry [(reader-canonical-value key)
-                          (reader-canonical-value item)]]
-               [(pr-str entry) entry]))
-           value)]
-      [:map
-       (->> decorated
-            (sort-by first)
-            (mapv second))])
-
-    (set? value)
-    [:set (->> value
-               (map reader-canonical-value)
-               (sort-by pr-str)
-               vec)]
-
-    (vector? value)
-    [:vector (mapv reader-canonical-value value)]
-
-    (seq? value)
-    [:list (mapv reader-canonical-value value)]
-
-    :else value))
+  (c2-artifact-identity-call
+   :reader-canonical-value
+   c2-artifact-identity/reader-canonical-value value))
 
 (defn reader-canonical-hash
   [value]
-  (str "sha256:"
-       (sha256-hex
-        (binding [*print-length* nil
-                  *print-level* nil
-                  *print-meta* true]
-          (pr-str (reader-canonical-value value))))))
-
+  (c2-artifact-identity-call
+   :reader-canonical-hash
+   c2-artifact-identity/reader-canonical-hash value))
 (def standard-reader-policy
   {:policy :gravity/standard-reader
    :version 1
    :registered-tags ['inst 'uuid]
    :ambient-authority :denied})
-
-(def standard-reader-options
-  {:retain-comments true
-   :enabled-features #{:standard-reader}
-   :extension-policy (reader-canonical-hash standard-reader-policy)})
 
 (defn reader-project-root-path
   [source-path]
@@ -150509,37 +143146,7 @@
               (java.nio.file.Files/readAllBytes (.toPath manifest))))})
       (reader-canonical-hash {:project-root-kind :standalone-source-root}))))
 
-(defn reader-normalize-relative-path
-  [path]
-  (let [slash-path (str/replace (str path) "\\" "/")]
-    (->> (str/split slash-path #"/")
-         (reduce (fn [segments segment]
-                   (cond
-                     (or (str/blank? segment) (= "." segment))
-                     segments
-
-                     (= ".." segment)
-                     (if (and (seq segments) (not= ".." (peek segments)))
-                       (pop segments)
-                       (conj segments segment))
-
-                     :else
-                     (conj segments segment)))
-                 [])
-         (str/join "/"))))
-
-(defn reader-platform-neutral-absolute-path?
-  [path]
-  (let [slash-path (str/replace (str path) "\\" "/")]
-    (or (str/starts-with? slash-path "/")
-        (boolean (re-find #"(?i)^[a-z]:" slash-path)))))
-
-(defn reader-valid-project-relative-path?
-  [path]
-  (let [normalized-path (reader-normalize-relative-path path)]
-    (and (not (reader-platform-neutral-absolute-path? path))
-         (not (str/blank? normalized-path))
-         (not= ".." (first (str/split normalized-path #"/"))))))
+(declare reader-normalize-relative-path)
 
 (defn reader-project-context-for-source
   [source-path]
@@ -150552,360 +143159,197 @@
      :project-root-path (.getPath project-root)
      :project-relative-path (reader-normalize-relative-path relative-path)}))
 
+(declare reader-normalize-relative-path
+         reader-platform-neutral-absolute-path?
+         reader-valid-project-relative-path?
+         reader-explicit-project-context
+         reader-valid-options?
+         reader-validate-options!
+         reader-project-root-record
+         reader-source-identity-inputs
+         c2-source-unit-record
+         c2-token-record
+         c2-form-record
+         c2-literal-records
+         c2-trivia-records)
+
+(defn- c2-source-identity-ops
+  []
+  {:sha256-hex sha256-hex
+   :reader-canonical-hash reader-canonical-hash
+   :gravity-source-extension gravity-source-extension
+   :gravity-source-kind gravity-source-kind
+   :reader-normalize-relative-path reader-normalize-relative-path
+   :reader-platform-neutral-absolute-path?
+   reader-platform-neutral-absolute-path?
+   :reader-valid-project-relative-path? reader-valid-project-relative-path?
+   :reader-explicit-project-context reader-explicit-project-context
+   :reader-valid-options? reader-valid-options?
+   :reader-validate-options! reader-validate-options!
+   :reader-project-root-record reader-project-root-record
+   :reader-source-identity-inputs reader-source-identity-inputs
+   :c2-source-unit-record c2-source-unit-record
+   :c2-token-record c2-token-record
+   :c2-form-record c2-form-record
+   :c2-literal-records c2-literal-records
+   :c2-trivia-records c2-trivia-records})
+
+(def ^:private ^:dynamic *c2-source-identity-leaf-call?* false)
+
+(defn- c2-source-identity-call
+  [operation-key operation & args]
+  (if *c2-source-identity-leaf-call?*
+    (c2-source-identity/call-entrypoint-body
+     operation-key operation args)
+    (binding [*c2-source-identity-leaf-call?* true]
+      (c2-source-identity/with-operations
+       (c2-source-identity-ops)
+       #(c2-source-identity/call-entrypoint-body
+         operation-key operation args)))))
+
+(defn reader-normalize-relative-path
+  [path]
+  (c2-source-identity-call
+   :reader-normalize-relative-path
+   c2-source-identity/reader-normalize-relative-path path))
+
+(defn reader-platform-neutral-absolute-path?
+  [path]
+  (c2-source-identity-call
+   :reader-platform-neutral-absolute-path?
+   c2-source-identity/reader-platform-neutral-absolute-path? path))
+
+(defn reader-valid-project-relative-path?
+  [path]
+  (c2-source-identity-call
+   :reader-valid-project-relative-path?
+   c2-source-identity/reader-valid-project-relative-path? path))
+
 (defn reader-explicit-project-context
   [project-context]
-  (let [project-root-id (:project-root-id project-context)
-        project-relative-path (:project-relative-path project-context)
-        normalized-path (when (string? project-relative-path)
-                          (reader-normalize-relative-path
-                           project-relative-path))]
-    (when-not (and (string? project-root-id)
-                   (re-matches #"sha256:[0-9a-f]{64}" project-root-id)
-                   (string? normalized-path)
-                   (reader-valid-project-relative-path?
-                    project-relative-path))
-      (throw
-       (ex-info
-        "reader project context requires a project-root id and relative path"
-        {:id "C2-HASH"
-         :project-context project-context
-         :normalized-project-relative-path normalized-path
-         :missing-fields
-         (vec (remove #(get project-context %)
-                      [:project-root-id :project-relative-path]))})))
-    (assoc project-context
-           :project-relative-path
-           normalized-path)))
+  (c2-source-identity-call
+   :reader-explicit-project-context
+   c2-source-identity/reader-explicit-project-context project-context))
 
 (defn reader-valid-options?
   [reader-options]
-  (and (map? reader-options)
-       (boolean? (:retain-comments reader-options))
-       (set? (:enabled-features reader-options))
-       (string? (:extension-policy reader-options))
-       (boolean
-        (re-matches #"sha256:[0-9a-f]{64}"
-                    (:extension-policy reader-options)))))
+  (c2-source-identity-call
+   :reader-valid-options?
+   c2-source-identity/reader-valid-options? reader-options))
 
 (defn reader-validate-options!
   [reader-options]
-  (when-not (reader-valid-options? reader-options)
-    (throw
-     (ex-info
-      "reader options must be deterministic and content-addressed"
-      {:id "C2-HASH"
-       :reader-options reader-options
-       :required-fields
-       {:retain-comments :boolean
-        :enabled-features :set
-        :extension-policy :sha256-lowercase-hex}})))
-  reader-options)
+  (c2-source-identity-call
+   :reader-validate-options!
+   c2-source-identity/reader-validate-options! reader-options))
 
 (defn reader-project-root-record
   [project-context]
-  (let [context (reader-explicit-project-context project-context)]
-    {:path (:project-root-path context)
-     :project-root-id (:project-root-id context)}))
+  (c2-source-identity-call
+   :reader-project-root-record
+   c2-source-identity/reader-project-root-record project-context))
 
 (defn reader-source-identity-inputs
   [source-text reader-options project-context]
-  (let [context (reader-explicit-project-context project-context)
-        options (reader-validate-options! reader-options)]
-    {:project-root-id (:project-root-id context)
-     :project-relative-path (:project-relative-path context)
-     :encoding :utf-8
-     :bytes-hash (str "sha256:" (sha256-hex source-text))
-     :reader-options options
-     :enabled-features (:enabled-features options)
-     :extension-policy (:extension-policy options)}))
+  (c2-source-identity-call
+   :reader-source-identity-inputs
+   c2-source-identity/reader-source-identity-inputs
+   source-text reader-options project-context))
 
 (defn c2-source-unit-record
   ([source-path source-text reader-options]
    (c2-source-unit-record source-path source-text reader-options
                           (reader-project-context-for-source source-path)))
   ([source-path source-text reader-options project-context]
-   (let [context (reader-explicit-project-context project-context)
-         identity-inputs (reader-source-identity-inputs source-text
-                                                        reader-options
-                                                        context)
-         project-root (reader-project-root-record context)]
-     (merge
-      {:artifact :gravity/source-unit
-       :source-id (reader-canonical-hash identity-inputs)
-       :path source-path
-       :extension (gravity-source-extension source-path)
-       :source-kind (gravity-source-kind source-path)
-       :project-relative-path (:project-relative-path context)
-       :project-root (:project-root-id context)
-       :project-root-record project-root
-       :identity-inputs identity-inputs}
-      (select-keys identity-inputs
-                   [:encoding :bytes-hash :reader-options
-                    :enabled-features :extension-policy])))))
+   (c2-source-identity-call
+    :c2-source-unit-record c2-source-identity/c2-source-unit-record
+    source-path source-text reader-options project-context)))
 
 (defn c2-token-record
   [token source-unit]
-  (let [source-id (:source-id source-unit)]
-    (-> token
-        (assoc :token-id (keyword (str "tok-" (:index token)))
-               :source-id source-id
-               :source-path (:path source-unit)
-               :span (assoc (:span token) :file source-id)
-               :trivia-before []
-               :reader-origin :source)
-        (dissoc :index))))
+  (c2-source-identity-call
+   :c2-token-record c2-source-identity/c2-token-record token source-unit))
 
 (defn c2-form-record
   [record source-unit]
-  (let [source-id (:source-id source-unit)]
-    (-> record
-        (assoc :source-id source-id
-               :source-path (:path source-unit)
-               :span (assoc (:span record) :file source-id)
-               :origin (merge {:kind :source
-                               :source-id source-id
-                               :source-path (:path source-unit)}
-                              (when (map? (:origin record))
-                                (:origin record)))))))
+  (c2-source-identity-call
+   :c2-form-record c2-source-identity/c2-form-record record source-unit))
 
 (defn c2-literal-records
   [form-tree]
-  (let [literal-kinds #{:nil :boolean :integer :ratio :decimal :string
-                        :character :symbol :keyword :tagged-literal}
-        candidates (filter #(contains? literal-kinds (:kind %)) form-tree)]
-    (mapv
-     (fn [idx {:keys [kind raw value span tag form-id]}]
-       {:literal-id (keyword (str "lit-" idx))
-        :form-id form-id
-        :kind kind
-        :raw raw
-        :decoded value
-        :span span
-        :facts
-        (case kind
-          :integer
-          {:radix (cond
-                    (re-find #"^[+-]?0[xX]" raw) 16
-                    (re-find #"^[+-]?0[bB]" raw) 2
-                    :else 10)
-           :sign (cond
-                   (str/starts-with? raw "-") :negative
-                   (str/starts-with? raw "+") :explicit-positive
-                   :else :unsigned)
-           :exact? true}
-          :ratio
-          (let [[numerator denominator] (str/split raw #"/" 2)]
-            {:numerator-spelling numerator
-             :denominator-spelling denominator
-             :exact? true})
-          :decimal
-          {:exponent-spelling (second (re-find #"([eE][+-]?[0-9]+)" raw))
-           :exact? false}
-          :string
-          {:escapes (mapv (fn [[match offset]]
-                            {:raw match :character-offset offset})
-                          (map vector
-                               (re-seq #"\\(?:[btnfr\"\\]|u[0-9A-Fa-f]{4})"
-                                       raw)
-                               (keep-indexed (fn [offset ch]
-                                               (when (= \\ ch) offset))
-                                             raw)))}
-          :character {:escape raw}
-          :symbol {:namespace (namespace value)}
-          :keyword {:namespace (namespace value)}
-          :tagged-literal {:tag tag}
-          {})})
-     (range)
-     candidates)))
+  (c2-source-identity-call
+   :c2-literal-records c2-source-identity/c2-literal-records form-tree))
 
 (defn c2-trivia-records
   [token-stream]
-  (mapv (fn [token]
-          {:trivia-id (:token-id token)
-           :kind (:kind token)
-           :raw (:raw token)
-           :span (:span token)
-           :source-id (:source-id token)
-           :source-path (:source-path token)})
-        (filter :trivia? token-stream)))
+  (c2-source-identity-call
+   :c2-trivia-records c2-source-identity/c2-trivia-records token-stream))
 
 (defn c2-semantic-form-hash-input
   [form-tree]
-  (mapv #(select-keys % [:form-id :kind :collection-kind :children
-                         :parent-form-id :abbrev :tag :value :metadata])
-        form-tree))
+  (c2-artifact-identity-call
+   :c2-semantic-form-hash-input
+   c2-artifact-identity/c2-semantic-form-hash-input form-tree))
 
 (defn c2-path-neutral-span
   [span]
-  (if (map? span) (dissoc span :source) span))
+  (c2-artifact-identity-call
+   :c2-path-neutral-span
+   c2-artifact-identity/c2-path-neutral-span span))
 
 (defn c2-token-hash-input
   [token-stream]
-  (mapv #(-> %
-             (dissoc :source-path)
-             (update :span c2-path-neutral-span))
-        token-stream))
+  (c2-artifact-identity-call
+   :c2-token-hash-input
+   c2-artifact-identity/c2-token-hash-input token-stream))
 
 (defn c2-form-hash-input
   [form-tree]
-  (mapv (fn [form]
-          (-> form
-              (dissoc :source-path)
-              (update :span c2-path-neutral-span)
-              (update :surface-span c2-path-neutral-span)
-              (update :origin #(when % (dissoc % :source-path)))
-              (update :generated-origin
-                      (fn [origins]
-                        (mapv #(update % :from c2-path-neutral-span)
-                              (or origins []))))))
-        form-tree))
+  (c2-artifact-identity-call
+   :c2-form-hash-input
+   c2-artifact-identity/c2-form-hash-input form-tree))
 
 (defn c2-syntax-seed-hash-input
   [syntax-seeds]
-  (mapv (fn [seed]
-          (cond-> (update seed :span c2-path-neutral-span)
-            (contains? seed :generated-origin)
-            (update :generated-origin
-                    (fn [origins]
-                      (mapv #(cond-> %
-                               (contains? % :from)
-                               (update :from c2-path-neutral-span))
-                            origins)))))
-        syntax-seeds))
+  (c2-artifact-identity-call
+   :c2-syntax-seed-hash-input
+   c2-artifact-identity/c2-syntax-seed-hash-input syntax-seeds))
 
 (defn c2-extension-hash-input
   [extension-invocations]
-  (let [semantic-span
-        (fn [span]
-          (if (map? span)
-            (dissoc span :source :file)
-            span))]
-    (mapv
-     (fn [invocation]
-       (cond-> (dissoc invocation :source-path)
-         (contains? invocation :span)
-         (update :span semantic-span)
-
-         (contains? invocation :invocations)
-         (update :invocations
-                 (fn [records]
-                   (mapv #(cond-> %
-                            (contains? % :span)
-                            (update :span semantic-span))
-                         records)))))
-     extension-invocations)))
+  (c2-artifact-identity-call
+   :c2-extension-hash-input
+   c2-artifact-identity/c2-extension-hash-input extension-invocations))
 
 (defn c2-diagnostic-hash-input
   [diagnostics]
-  (mapv
-   (fn [diagnostic]
-     (cond-> diagnostic
-       (contains? diagnostic :source-span)
-       (update :source-span c2-path-neutral-span)
-
-       (get-in diagnostic [:primary :span])
-       (update-in [:primary :span] c2-path-neutral-span)
-
-       (contains? diagnostic :related)
-       (update :related
-               (fn [related]
-                 (mapv #(cond-> %
-                          (contains? % :span)
-                          (update :span c2-path-neutral-span))
-                       related)))
-
-       (contains? diagnostic :origin-chain)
-       (update :origin-chain
-               (fn [origins]
-                 (mapv #(cond-> (dissoc % :path)
-                          (contains? % :span)
-                          (update :span c2-path-neutral-span))
-                       origins)))))
-   diagnostics))
+  (c2-artifact-identity-call
+   :c2-diagnostic-hash-input
+   c2-artifact-identity/c2-diagnostic-hash-input diagnostics))
 
 (defn c2-incremental-hashes
   [source-unit token-stream form-tree syntax-seeds extension-invocations
   diagnostics]
-  (let [graph-metrics (c2-form-graph-metrics form-tree)
-        max-depth (:max-form-depth graph-metrics)
-        _ (when-not (:acyclic? graph-metrics)
-            (c2-reader-fail!
-             "C2-HASH" (:path source-unit)
-             {:stage :read-source
-              :source-id (:source-id source-unit)
-              :source-span (or (:span (first form-tree))
-                               (source-span (:path source-unit) 0))
-              :reader-options (:reader-options source-unit)}
-             {:missing-fields [:acyclic-reader-form-graph]
-              :facts {:failure-kind :reader-form-cycle}}))
-        _ (when (> max-depth max-reader-form-graph-depth)
-            (c2-reader-fail!
-             "C2-HASH" (:path source-unit)
-             {:stage :read-source
-              :source-id (:source-id source-unit)
-              :source-span (or (:span (first form-tree))
-                               (source-span (:path source-unit) 0))
-              :reader-options (:reader-options source-unit)}
-             {:missing-fields [:bounded-reader-form-depth]
-              :facts {:observed-form-depth max-depth
-                      :maximum-form-depth max-reader-form-graph-depth
-                      :failure-kind :reader-resource-depth-limit}}))
-        retain-trivia? (true? (get-in source-unit
-                                      [:reader-options :retain-comments]))
-        form-hash-input (if retain-trivia?
-                          (c2-form-hash-input form-tree)
-                          (c2-semantic-form-hash-input form-tree))
-        token-hash-input (c2-token-hash-input token-stream)
-        syntax-hash-input (c2-syntax-seed-hash-input syntax-seeds)
-        extension-hash-input (c2-extension-hash-input extension-invocations)
-        diagnostic-hash-input (c2-diagnostic-hash-input diagnostics)]
-    {:artifact :gravity/reader-incremental-hashes
-     :source-unit (:source-id source-unit)
-     :token-stream (reader-canonical-hash token-hash-input)
-     :form-tree (reader-canonical-hash form-hash-input)
-     :syntax-seed-stream (reader-canonical-hash syntax-hash-input)
-     :extension-invocation-set (reader-canonical-hash extension-hash-input)
-     :reader-diagnostics (reader-canonical-hash diagnostic-hash-input)
-     :retained-trivia-affects-form-tree? retain-trivia?
-     :status :stable}))
+  (c2-artifact-identity-call
+   :c2-incremental-hashes
+   c2-artifact-identity/c2-incremental-hashes
+   source-unit token-stream form-tree syntax-seeds extension-invocations
+   diagnostics))
 
 (defn c2-reader-product-integrity-record
   [source-unit top-level-form-ids incremental-hashes literal-records
    deferred-literal-records]
-  (let [literal-input
-        (mapv #(update % :span c2-path-neutral-span) literal-records)
-        deferred-input
-        (mapv #(update % :span c2-path-neutral-span)
-              deferred-literal-records)
-        input
-        {:source-id (:source-id source-unit)
-         :source-identity-inputs (:identity-inputs source-unit)
-         :source-bytes-hash (:bytes-hash source-unit)
-         :reader-options (:reader-options source-unit)
-         :top-level-form-ids (vec top-level-form-ids)
-         :incremental-reader-hashes incremental-hashes
-         :literal-records-hash (reader-canonical-hash literal-input)
-         :deferred-literal-records-hash
-         (reader-canonical-hash deferred-input)}
-        integrity-hash (reader-canonical-hash input)]
-    {:artifact :gravity/c2-reader-product-integrity
-     :algorithm :sha256
-     :input input
-     :integrity-hash integrity-hash
-     :status :verified}))
+  (c2-artifact-identity-call
+   :c2-reader-product-integrity-record
+   c2-artifact-identity/c2-reader-product-integrity-record
+   source-unit top-level-form-ids incremental-hashes literal-records
+   deferred-literal-records))
 
 (defn c2-reader-artifact-id
   [artifact]
-  (reader-canonical-hash
-   {:kind (:kind artifact)
-    :task (:task artifact)
-    :document-set (:document-set artifact)
-    :source-id (get-in artifact [:source-unit-record :source-id])
-    :reader-product-integrity (:reader-product-integrity artifact)
-    :incremental-reader-hashes (:incremental-reader-hashes artifact)
-    :representation-boundary (:representation-boundary artifact)
-    :source-overrides (:source-overrides artifact)
-    :capability-based-proof (:capability-based-proof artifact)}))
+  (c2-artifact-identity-call
+   :c2-reader-artifact-id
+   c2-artifact-identity/c2-reader-artifact-id artifact))
 
 (defn c2-prevalidate-token-depth!
   [source-path source-unit token-stream]
@@ -153284,58 +145728,59 @@
       source-path source-text source-bytes reader-options project-context
       resolved))))
 
+(declare c2-syntax-seed-stream
+         c2-deferred-semantic-literals
+         c2-top-level-products
+         c2-reader-capability-proof
+         c2-reader-overrides-from-forms
+         c2-reader-extension-invocations)
+
+(defn- c2-reader-product-projection-ops
+  []
+  {:syntax-object-stream syntax-object-stream
+   :c2-literal-records c2-literal-records
+   :c2-reader-diagnostic-ids c2-reader-diagnostic-ids
+   :standard-reader-policy standard-reader-policy
+   :c2-syntax-seed-stream c2-syntax-seed-stream
+   :c2-deferred-semantic-literals c2-deferred-semantic-literals
+   :c2-top-level-products c2-top-level-products
+   :c2-reader-capability-proof c2-reader-capability-proof
+   :c2-reader-overrides-from-forms c2-reader-overrides-from-forms
+   :c2-reader-extension-invocations c2-reader-extension-invocations})
+
+(def ^:private ^:dynamic *c2-reader-product-projection-leaf-call?* false)
+
+(defn- c2-reader-product-projection-call
+  [operation-key operation & args]
+  (if *c2-reader-product-projection-leaf-call?*
+    (c2-reader-product-projection/call-entrypoint-body
+     operation-key operation args)
+    (binding [*c2-reader-product-projection-leaf-call?* true]
+      (c2-reader-product-projection/with-operations
+       (c2-reader-product-projection-ops)
+       #(c2-reader-product-projection/call-entrypoint-body
+         operation-key operation args)))))
+
 (defn c2-syntax-seed-stream
   [source-path products module-context]
-  (let [forms-by-id (into {} (map (juxt :form-id identity)
-                                  (:form-tree products)))
-        seed-records
-        (mapv
-         (fn [idx record]
-           (let [node (forms-by-id (:form-id record))
-                 generated-origins
-                 (mapv (fn [origin]
-                         {:from (:from origin)
-                          :reader-abbreviation (:reason origin)
-                          :expanded-form (:value node)})
-                       (:generated-origin node))]
-             {:form (:form record)
-              :form-id (:form-id node)
-              :span (assoc (:span node) :form-index idx)
-              :metadata (or (:metadata node) {})
-              :reader-origin {:kind :source
-                              :raw-form-kind (:kind node)
-                              :raw-excerpt (:raw node)
-                              :abbreviation (:abbrev node)}
-              :generated-origin generated-origins}))
-         (range)
-         (:parsed-records products))]
-    (syntax-object-stream source-path seed-records module-context)))
+  (c2-reader-product-projection-call
+   :c2-syntax-seed-stream
+   c2-reader-product-projection/c2-syntax-seed-stream
+   source-path products module-context))
 
 (defn c2-deferred-semantic-literals
   [form-tree]
-  (mapv #(select-keys % [:form-id :kind :raw :value :span])
-        (filter (fn [form]
-                  (and (contains? #{:integer :ratio :decimal} (:kind form))
-                       (= :deferred
-                          (get-in form [:value :semantic-validation]))
-                       (contains?
-                        #{:gravity/deferred-ratio-literal
-                          :gravity/decimal-literal
-                          :gravity/deferred-numeric-literal}
-                        (get-in form [:value :artifact]))))
-                form-tree)))
+  (c2-reader-product-projection-call
+   :c2-deferred-semantic-literals
+   c2-reader-product-projection/c2-deferred-semantic-literals
+   form-tree))
 
 (defn c2-top-level-products
   [artifact]
-  (let [forms-by-id (into {} (map (juxt :form-id identity)
-                                  (:form-tree artifact)))
-        tokens-by-id (into {} (map (juxt :token-id identity)
-                                   (:token-stream artifact)))]
-    (mapv (fn [form-id]
-            (let [form-record (forms-by-id form-id)]
-              {:form-record form-record
-               :token-record (tokens-by-id (:open-token form-record))}))
-          (:top-level-form-ids artifact))))
+  (c2-reader-product-projection-call
+   :c2-top-level-products
+   c2-reader-product-projection/c2-top-level-products
+   artifact))
 
 (defn l1-source-unit-artifacts
   [source-path source-text reader-options project-context]
@@ -153344,376 +145789,73 @@
                           project-context)
    :reader-options reader-options})
 
+(declare c2-utf8-slice
+         c2-span-encloses?
+         c2-spans-source-ordered?
+         c2-form-graph-metrics
+         c2-lexical-product-validation)
+
+(defn- c2-lexical-validation-ops
+  []
+  {:c2-utf8-slice c2-utf8-slice
+   :c2-span-encloses? c2-span-encloses?
+   :c2-spans-source-ordered? c2-spans-source-ordered?
+   :c2-form-graph-metrics c2-form-graph-metrics
+   :c2-lexical-product-validation c2-lexical-product-validation})
+
+(def ^:private ^:dynamic *c2-lexical-validation-leaf-call?* false)
+
+(defn- c2-lexical-validation-call
+  [operation & args]
+  (if *c2-lexical-validation-leaf-call?*
+    (apply operation args)
+    (binding [*c2-lexical-validation-leaf-call?* true]
+      (c2-lexical-validation/with-operations
+       (c2-lexical-validation-ops)
+       #(apply operation args)))))
+
 (defn c2-utf8-slice
   [source-bytes byte-start byte-end]
-  (String. (java.util.Arrays/copyOfRange source-bytes byte-start byte-end)
-           java.nio.charset.StandardCharsets/UTF_8))
+  (c2-lexical-validation-call
+   c2-lexical-validation/c2-utf8-slice
+   source-bytes byte-start byte-end))
 
 (defn c2-span-encloses?
   [parent child]
-  (and (map? parent)
-       (map? child)
-       (integer? (:byte-start parent))
-       (integer? (:byte-end parent))
-       (integer? (:byte-start child))
-       (integer? (:byte-end child))
-       (<= (:byte-start parent) (:byte-start child))
-       (>= (:byte-end parent) (:byte-end child))))
+  (c2-lexical-validation-call
+   c2-lexical-validation/c2-span-encloses? parent child))
 
 (defn c2-spans-source-ordered?
   [spans]
-  (every? (fn [[left right]]
-            (and (map? left)
-                 (map? right)
-                 (integer? (:byte-end left))
-                 (integer? (:byte-start right))
-                 (<= (:byte-end left) (:byte-start right))))
-          (partition 2 1 spans)))
+  (c2-lexical-validation-call
+   c2-lexical-validation/c2-spans-source-ordered? spans))
 
 (defn c2-form-graph-metrics
   [form-tree]
-  (let [forms-by-id (into {} (map (juxt :form-id identity) form-tree))
-        form-ids (mapv :form-id form-tree)
-        indegrees
-        (reduce (fn [counts form]
-                  (reduce (fn [result child-id]
-                            (if (contains? forms-by-id child-id)
-                              (update result child-id (fnil inc 0))
-                              result))
-                          counts
-                          (:children form)))
-                (zipmap form-ids (repeat 0))
-                form-tree)
-        initial-ids (filterv #(zero? (get indegrees % 0)) form-ids)
-        initial-queue (reduce conj clojure.lang.PersistentQueue/EMPTY
-                              initial-ids)]
-    (loop [pending initial-queue
-           remaining indegrees
-           depths (zipmap initial-ids (repeat 1))
-           processed 0
-           max-depth 0]
-      (if (empty? pending)
-        {:acyclic? (= processed (count form-ids))
-         :processed-form-count processed
-         :max-form-depth max-depth}
-        (let [form-id (peek pending)
-              parent-depth (get depths form-id 1)
-              children (filterv #(contains? forms-by-id %)
-                                (:children (forms-by-id form-id)))
-              [next-queue next-remaining next-depths]
-              (reduce
-               (fn [[queue counts known-depths] child-id]
-                 (let [next-count (dec (get counts child-id 0))
-                       child-depth (max (get known-depths child-id 1)
-                                        (inc parent-depth))]
-                   [(cond-> queue (zero? next-count) (conj child-id))
-                    (assoc counts child-id next-count)
-                    (assoc known-depths child-id child-depth)]))
-               [(pop pending) remaining depths]
-               children)]
-          (recur next-queue next-remaining next-depths (inc processed)
-                 (max max-depth parent-depth)))))))
+  (c2-lexical-validation-call
+   c2-lexical-validation/c2-form-graph-metrics form-tree))
 
 (defn c2-lexical-product-validation
   [source-text token-stream form-tree root-form-ids]
-  (let [source-bytes (.getBytes source-text
-                                java.nio.charset.StandardCharsets/UTF_8)
-        source-byte-count (alength source-bytes)
-        token-ids (mapv :token-id token-stream)
-        form-ids (mapv :form-id form-tree)
-        token-ids-unique? (= token-ids (vec (distinct token-ids)))
-        form-ids-unique? (= form-ids (vec (distinct form-ids)))
-        root-form-ids-unique?
-        (= (vec root-form-ids) (vec (distinct root-form-ids)))
-        tokens-by-id (into {} (map (juxt :token-id identity) token-stream))
-        forms-by-id (into {} (map (juxt :form-id identity) form-tree))
-        form-id-set (set form-ids)
-        root-id-set (set root-form-ids)
-        child-ids (mapcat :children form-tree)
-        child-frequency (frequencies child-ids)
-        parentless-id-set
-        (set (keep #(when (nil? (:parent-form-id %)) (:form-id %)) form-tree))
-        root-form-ids-resolve?
-        (every? #(contains? forms-by-id %) root-form-ids)
-        token-links-resolve-exactly-once?
-        (and token-ids-unique?
-             (every? (fn [form]
-                       (and (contains? tokens-by-id (:open-token form))
-                            (contains? tokens-by-id (:close-token form))))
-                     form-tree))
-        child-links-resolve-exactly-once?
-        (and form-ids-unique?
-             (every? #(contains? forms-by-id %) child-ids))
-        parent-links-resolve-exactly-once?
-        (and form-ids-unique?
-             (every? #(or (nil? (:parent-form-id %))
-                          (contains? forms-by-id (:parent-form-id %)))
-                     form-tree))
-        form-links-resolve?
-        (and token-links-resolve-exactly-once?
-             child-links-resolve-exactly-once?
-             parent-links-resolve-exactly-once?)
-        children-unique?
-        (every? #(= (count (:children %))
-                    (count (distinct (:children %))))
-                form-tree)
-        roots-parentless?
-        (and root-form-ids-resolve?
-             (every? #(nil? (:parent-form-id (forms-by-id %)))
-                     root-form-ids))
-        declared-roots-match-parentless?
-        (= root-id-set parentless-id-set)
-        non-root-single-parent?
-        (every?
-         (fn [form]
-           (let [form-id (:form-id form)
-                 parent-id (:parent-form-id form)]
-             (if (contains? root-id-set form-id)
-               (and (nil? parent-id)
-                    (zero? (get child-frequency form-id 0)))
-               (let [parent (forms-by-id parent-id)]
-                 (and parent
-                      (= 1 (get child-frequency form-id 0))
-                      (= 1 (count (filter #{form-id} (:children parent)))))))))
-         form-tree)
-        parent-child-bidirectional?
-        (and non-root-single-parent?
-             (every? (fn [parent]
-                       (every? #(= (:form-id parent)
-                                   (:parent-form-id (forms-by-id %)))
-                               (:children parent)))
-                     form-tree))
-        no-orphans?
-        (every? #(if (contains? root-id-set %)
-                   (zero? (get child-frequency % 0))
-                   (= 1 (get child-frequency % 0)))
-                form-ids)
-        reachable-form-ids
-        (loop [pending (vec root-form-ids)
-               seen #{}]
-          (if-let [form-id (first pending)]
-            (let [remaining (subvec pending 1)
-                  form (forms-by-id form-id)]
-              (if (or (contains? seen form-id) (nil? form))
-                (recur remaining seen)
-                (recur (into remaining (:children form))
-                       (conj seen form-id))))
-            seen))
-        all-forms-reachable? (= form-id-set reachable-form-ids)
-        graph-metrics (c2-form-graph-metrics form-tree)
-        acyclic? (:acyclic? graph-metrics)
-        children-source-ordered?
-        (every? (fn [form]
-                  (let [children (mapv forms-by-id (:children form))]
-                    (and (every? some? children)
-                         (c2-spans-source-ordered? (mapv :span children)))))
-                form-tree)
-        root-forms-source-ordered?
-        (let [roots (mapv forms-by-id root-form-ids)]
-          (and (every? some? roots)
-               (c2-spans-source-ordered? (mapv :span roots))))
-        parent-spans-enclose?
-        (and form-links-resolve?
-             (every?
-              (fn [form]
-                (and (c2-span-encloses? (:span form)
-                                        (:span (tokens-by-id
-                                                (:open-token form))))
-                     (c2-span-encloses? (:span form)
-                                        (:span (tokens-by-id
-                                                (:close-token form))))
-                     (every? #(c2-span-encloses?
-                               (:span form) (:span (forms-by-id %)))
-                             (:children form))))
-              form-tree))
-        collection-delimiters-resolve?
-        (and token-links-resolve-exactly-once?
-             (every?
-              (fn [form]
-                (if-let [collection-kind (:collection-kind form)]
-                  (let [open (tokens-by-id (:open-token form))
-                        close (tokens-by-id (:close-token form))
-                        expected-open ({:list ["(" :list-open]
-                                        :vector ["[" :vector-open]
-                                        :map ["{" :map-open]
-                                        :set ["#{" :set-open]}
-                                       collection-kind)
-                        expected-close ({:list ")" :vector "]" :map "}"
-                                         :set "}"} collection-kind)]
-                    (and expected-open
-                         (= (first expected-open) (:raw open))
-                         (= (second expected-open) (:kind open))
-                         (= expected-close (:raw close))
-                         (= :close (:kind close))))
-                  true))
-              form-tree))
-        maps-even-logical-children?
-        (every? #(if (= :map (:collection-kind %))
-                   (even? (count (:children %)))
-                   true)
-                form-tree)
-        max-depth (:max-form-depth graph-metrics)
-        valid-byte-range?
-        (fn [span]
-          (and (map? span)
-               (integer? (:byte-start span))
-               (integer? (:byte-end span))
-               (<= 0 (:byte-start span) (:byte-end span) source-byte-count)))
-        root-raw
-        (set (keep (fn [form-id]
-                     (let [form (forms-by-id form-id)]
-                       (when (and form
-                                  (or (:collection-kind form)
-                                      (seq (:children form))))
-                         (:raw form))))
-                   root-form-ids))
-        token-raw-slices-exact?
-        (every? (fn [token]
-                  (let [span (:span token)]
-                    (and (string? (:raw token))
-                         (pos? (count (:raw token)))
-                         (valid-byte-range? span)
-                         (= (:raw token)
-                            (c2-utf8-slice source-bytes
-                                          (:byte-start span)
-                                          (:byte-end span))))))
-                token-stream)
-        form-raw-slices-exact?
-        (every? (fn [form]
-                  (let [span (:span form)]
-                    (and (string? (:raw form))
-                         (pos? (count (:raw form)))
-                         (valid-byte-range? span)
-                         (= (:raw form)
-                            (c2-utf8-slice source-bytes
-                                          (:byte-start span)
-                                          (:byte-end span))))))
-                form-tree)
-        graph-valid?
-        (every? true?
-                [token-ids-unique? form-ids-unique? root-form-ids-unique?
-                 root-form-ids-resolve? token-links-resolve-exactly-once?
-                 child-links-resolve-exactly-once?
-                 parent-links-resolve-exactly-once? children-unique?
-                 roots-parentless? declared-roots-match-parentless?
-                 non-root-single-parent? parent-child-bidirectional?
-                 no-orphans? all-forms-reachable? acyclic?
-                 children-source-ordered? root-forms-source-ordered?
-                 parent-spans-enclose? collection-delimiters-resolve?
-                 maps-even-logical-children? form-raw-slices-exact?])]
-    {:artifact :gravity/c2-lexical-product-validation
-     :ordered-token-ids-unique? token-ids-unique?
-     :form-ids-unique? form-ids-unique?
-     :root-form-ids-unique? root-form-ids-unique?
-     :token-count-exceeds-top-level-form-count?
-     (> (count token-stream) (count root-form-ids))
-     :token-raw-slices-exact? token-raw-slices-exact?
-     :form-raw-slices-exact? form-raw-slices-exact?
-     :token-provenance-complete?
-     (every? #(and (:source-id %) (:source-path %)
-                   (= (:source-id %) (get-in % [:span :file]))
-                   (get-in % [:span :start :line])
-                   (get-in % [:span :start :column])
-                   (get-in % [:span :end :line])
-                   (get-in % [:span :end :column]))
-             token-stream)
-     :no-token-contains-top-level-form?
-     (not-any? (fn [token]
-                 (some #(str/includes? (:raw token) %) root-raw))
-               token-stream)
-     :root-form-ids-resolve? root-form-ids-resolve?
-     :token-links-resolve-exactly-once? token-links-resolve-exactly-once?
-     :child-links-resolve-exactly-once? child-links-resolve-exactly-once?
-     :parent-links-resolve-exactly-once? parent-links-resolve-exactly-once?
-     :form-links-resolve? form-links-resolve?
-     :children-unique? children-unique?
-     :roots-parentless? roots-parentless?
-     :declared-roots-match-parentless? declared-roots-match-parentless?
-     :non-root-single-parent? non-root-single-parent?
-     :parent-child-bidirectional? parent-child-bidirectional?
-     :no-orphans? no-orphans?
-     :all-forms-reachable? all-forms-reachable?
-     :acyclic? acyclic?
-     :children-source-ordered? children-source-ordered?
-     :root-forms-source-ordered? root-forms-source-ordered?
-     :parent-spans-enclose-children? parent-spans-enclose?
-     :collection-delimiters-resolve? collection-delimiters-resolve?
-     :maps-even-logical-children? maps-even-logical-children?
-     :recursive-children-present? (boolean (some #(seq (:children %)) form-tree))
-     :nested-depth-at-least-three? (>= max-depth 3)
-     :max-form-depth max-depth
-     :graph-valid? graph-valid?
-     :status (if graph-valid? :passed :failed)}))
+  (c2-lexical-validation-call
+   c2-lexical-validation/c2-lexical-product-validation
+   source-text token-stream form-tree root-form-ids))
+
+;; Keep the reader policy value after all C2 artifact-identity operation Vars
+;; used by its strict validation boundary are bound.  The policy hash is
+;; computed while this namespace is loading; defining it earlier would pass an
+;; unbound c2-form-graph-metrics Var into c2-artifact-identity/with-operations.
+(def standard-reader-options
+  {:retain-comments true
+   :enabled-features #{:standard-reader}
+   :extension-policy (reader-canonical-hash standard-reader-policy)})
+
 (defn c2-reader-capability-proof
   [artifact]
-  (let [diagnostics (set (map :diagnostic (:rejected-design-coverage artifact)))
-        hashes (:incremental-reader-hashes artifact)
-        lexical (:lexical-product-validation artifact)
-        abbreviation-forms (filter #(contains? #{:abbreviation
-                                                  :metadata-wrapper}
-                                                (:kind %))
-                                   (:form-tree artifact))]
-    {:source-unit-hash-stable?
-     (boolean
-      (re-find #"^sha256:" (get-in artifact [:source-unit-record
-                                             :source-id])))
-     :token-and-form-spans-present?
-     (and (every? #(and (:token-id %) (get-in % [:span :byte-start])
-                        (get-in % [:span :byte-end]))
-                  (:token-stream artifact))
-          (every? #(and (:form-id %) (get-in % [:span :byte-start])
-                        (get-in % [:span :byte-end]))
-                  (:form-tree artifact)))
-     :abbreviation-origins-present?
-     (every? #(seq (:generated-origin %)) abbreviation-forms)
-     :literal-facts-present?
-     (let [records (:literal-decoding-records artifact)
-           expected-records (c2-literal-records (:form-tree artifact))]
-       (and (= (count expected-records) (count records))
-            (every? #(and (:literal-id %)
-                          (:form-id %)
-                          (:kind %)
-                          (string? (:raw %))
-                          (:span %)
-                          (contains? % :decoded)
-                          (map? (:facts %)))
-                    records)))
-     :trivia-retained?
-     (and (true? (get-in artifact [:source-unit-record :reader-options
-                                   :retain-comments]))
-          (= (mapv :token-id (filter :trivia? (:token-stream artifact)))
-             (mapv :trivia-id (:trivia-retention-records artifact))))
-     :extension-policy-recorded?
-     (= :registered (get-in artifact [:reader-extension-policy :status]))
-     :incremental-hashes-stable?
-     (and (= :stable (:status hashes))
-          (every? #(re-find #"^sha256:" (str (get hashes %)))
-                  [:source-unit :token-stream :form-tree
-                   :syntax-seed-stream :extension-invocation-set
-                   :reader-diagnostics]))
-     :diagnostics-covered?
-     (= (set c2-reader-diagnostic-ids) diagnostics)
-     :semantic-errors-deferred?
-     (true? (get-in artifact [:semantic-error-deferment-record :deferred?]))
-     :lexical-token-stream?
-     (every? true?
-             (map lexical
-                  [:ordered-token-ids-unique?
-                   :token-raw-slices-exact?
-                   :token-provenance-complete?
-                   :no-token-contains-top-level-form?]))
-     :nested-form-tree?
-     (every? true?
-             (map lexical
-                  [:form-ids-unique?
-                   :graph-valid?
-                   :root-form-ids-resolve?
-                   :form-raw-slices-exact?
-                   :form-links-resolve?
-                   :parent-spans-enclose-children?
-                   :collection-delimiters-resolve?]))
-     :representation-status :genuine-lexical-token-and-recursive-form-tree
-     :status :partial}))
+  (c2-reader-product-projection-call
+   :c2-reader-capability-proof
+   c2-reader-product-projection/c2-reader-capability-proof
+   artifact))
 
 (defn c2-reader-validate!
   [source-path artifact]
@@ -153744,30 +145886,17 @@
 
 (defn c2-reader-overrides-from-forms
   [forms]
-  (let [ns-form (first forms)
-        metadata-clause (when (and (seq? ns-form) (= 'ns (first ns-form)))
-                          (first (filter #(and (seq? %)
-                                               (= :metadata (first %)))
-                                         (drop 2 ns-form))))
-        metadata (second metadata-clause)]
-    (get-in metadata [:compiler :c2-reader] {})))
+  (c2-reader-product-projection-call
+   :c2-reader-overrides-from-forms
+   c2-reader-product-projection/c2-reader-overrides-from-forms
+   forms))
 
 (defn c2-reader-extension-invocations
   [form-tree]
-  (mapv
-   (fn [tag]
-     (let [forms (filterv #(= tag (:tag %)) form-tree)]
-       {:artifact :gravity/reader-extension-invocation
-        :tag tag
-        :handler ({'inst 'gravity.reader.standard/read-inst
-                   'uuid 'gravity.reader.standard/read-uuid}
-                  tag)
-        :build-effects #{}
-        :capabilities #{}
-        :profiles #{:kernel :core :hosted :meta}
-        :invocations (mapv #(select-keys % [:form-id :span :raw]) forms)
-        :status (if (seq forms) :invoked :registered-not-invoked)}))
-   (:registered-tags standard-reader-policy)))
+  (c2-reader-product-projection-call
+   :c2-reader-extension-invocations
+   c2-reader-product-projection/c2-reader-extension-invocations
+   form-tree))
 
 (def ^:private sh03-reader-internal-product-authority (Object.))
 
@@ -154175,6 +146304,353 @@
                   :maximum-source-bytes sh03-reader-maximum-source-bytes}}))
       (java.util.Arrays/copyOf buffer observed))))
 
+(def ^:private c2-pass-cache-compiler-contract
+  {:implementation :gravity-stage0-clojure-bootstrap
+   :implementation-contract-version 1
+   :c2-artifact-schema-version 1
+   :c2-artifact-identity-version 1
+   :canonical-reader :gravity-sh03-reader
+   :adapter-contract :gravity/sh03-to-c2-reader-products-v2
+   :clojure-adapter-residual? true
+   :self-hosted? false
+   :release-authority? false})
+
+(def ^:private c2-pass-cache-pass-contract
+  {:name :c2-reader-document-coverage
+   :input :source-bytes
+   :output :reader-document-proof
+   :requires [:source-unit :reader-policy]
+   :preserves [:source-spans :raw-literal-facts
+               :reader-origin :trivia :diagnostics]
+   :emits [:source-unit-record :token-stream :form-tree
+           :syntax-seed-stream :reader-source-map
+           :literal-decoding-records
+           :reader-extension-invocation-records
+           :reader-diagnostics :incremental-reader-hash]
+   :rejects c2-reader-diagnostic-ids})
+
+(def ^:private c2-pass-cache-boundary-contract
+  {:slice :SH-03
+   :owner :gravity-source
+   :adapter-contract :gravity/sh03-to-c2-reader-products-v2
+   :plan-binding-contract :exact-current-sh03-plan-binding
+   :semantic-value-table-contract
+   :authenticated-reader-product-identity-projection
+   :authenticated-envelope-contract
+   {:stage :c2-reader
+    :artifact-kind :gravity/sh03-reader-products
+    :verification :fresh-sh02-descriptor-envelope-reconstruction}
+   :target-source-reread? false
+   :uncredited-source-models
+   {:status :not-executed
+    :entrypoints sh03-reader-uncredited-source-model-entrypoints
+    :self-hosting-credit? false
+    :seed-retirement-credit? false
+    :release-credit? false}
+   :clojure-adapter-residual? true
+   :self-hosted? false})
+
+(def ^:private c2-pass-cache-sh03-semantic-binding-fields
+  [:artifact :status :semantic-authority :compiled-by :executed-by
+   :generic-bridge-residual? :self-hosted?
+   :source-byte-count :source-content-hash :plan-id
+   :plan-semantic-hash :functions-semantic-hash :function-count
+   :function-names-hash :function-shapes-hash
+   :entrypoint-semantic-hash :verifier-semantic-hash
+   :builtin-functions-hash :instruction-summary])
+
+(defn- c2-pass-cache-current-binding!
+  [source-path]
+  (let [exact-sh03-binding
+        (dissoc (sh03-reader-current-binding! source-path) :plan)
+        sh03-semantic-binding
+        (select-keys exact-sh03-binding
+                     c2-pass-cache-sh03-semantic-binding-fields)
+        sh03-binding-id
+        (c2-pass-cache/canonical-content-id
+         {:domain :gravity/c2-pass-cache-sh03-binding-v1
+          :binding sh03-semantic-binding})
+        compiler-input
+        (assoc c2-pass-cache-compiler-contract
+               :sh03-binding-id sh03-binding-id
+               :sh03-binding sh03-semantic-binding)
+        compiler-id
+        (c2-pass-cache/canonical-content-id
+         {:domain :gravity/c2-pass-cache-compiler-binding-v1
+          :compiler compiler-input})
+        pass-contract-id
+        (c2-pass-cache/canonical-content-id
+         {:domain :gravity/c2-pass-cache-pass-contract-v1
+          :pass c2-pass-cache-pass-contract})
+        plan-binding-id
+        (c2-pass-cache/canonical-content-id
+         {:domain :gravity/c2-pass-cache-exact-sh03-plan-binding-v1
+          :binding exact-sh03-binding})
+        semantic-value-table-contract-id
+        (c2-pass-cache/canonical-content-id
+         {:domain :gravity/c2-pass-cache-semantic-value-table-contract-v1
+          :contract
+          (:semantic-value-table-contract c2-pass-cache-boundary-contract)})
+        authenticated-envelope-contract-id
+        (c2-pass-cache/canonical-content-id
+         {:domain :gravity/c2-pass-cache-authenticated-envelope-contract-v1
+          :contract
+          (:authenticated-envelope-contract c2-pass-cache-boundary-contract)})
+        boundary-binding-base
+        (assoc c2-pass-cache-boundary-contract
+               :plan-binding-id plan-binding-id
+               :semantic-value-table-contract-id
+               semantic-value-table-contract-id
+               :authenticated-envelope-contract-id
+               authenticated-envelope-contract-id)
+        boundary-binding
+        (assoc boundary-binding-base
+               :identity
+               (c2-pass-cache/canonical-content-id
+                {:domain :gravity/c2-pass-cache-boundary-binding-v1
+                 :binding boundary-binding-base}))
+        compiler-binding (assoc compiler-input :compiler-id compiler-id)
+        pass-binding {:pass :c2-reader
+                      :pass-contract c2-pass-cache-pass-contract
+                      :pass-contract-id pass-contract-id}
+        entry-binding
+        {:artifact :gravity/c2-pass-cache-producer-binding
+         :schema-version 1
+         :compiler-id compiler-id
+         :pass-contract-id pass-contract-id
+         :sh03-binding-id sh03-binding-id
+         :boundary-binding-id (:identity boundary-binding)
+         :exact-sh03-plan-binding exact-sh03-binding
+         :adapter-contract :gravity/sh03-to-c2-reader-products-v2
+         :clojure-adapter-residual? true
+         :self-hosted? false
+         :release-authority? false}]
+    {:compiler-binding compiler-binding
+     :pass-binding pass-binding
+     :boundary-binding boundary-binding
+     :entry-binding entry-binding
+     :exact-sh03-binding exact-sh03-binding}))
+
+(defn- c2-pass-cache-key-context!
+  [source-path snapshot current-binding]
+  (let [source-bytes (:bytes snapshot)
+        source-text
+        (sh03-reader-strict-source-text! source-path source-path source-bytes)
+        project-context (reader-project-context-for-source source-path)
+        source-unit (c2-source-unit-record source-path source-text
+                                           standard-reader-options
+                                           project-context)
+        dependency-binding
+        {:dependencies :not-consumed-at-c2
+         :project-root-id (:project-root-id project-context)
+         :identity
+         (c2-pass-cache/canonical-content-id
+          {:domain :gravity/c2-pass-cache-dependency-binding-v1
+           :stage :c2-reader
+           :project-root-id (:project-root-id project-context)
+           :dependencies :not-consumed-at-c2})}
+        build-effect-input
+        {:ambient-authority :denied
+         :registered-tags (:registered-tags standard-reader-policy)
+         :build-effects #{}}
+        build-effect-binding
+        (assoc build-effect-input
+               :identity
+               (c2-pass-cache/canonical-content-id
+                {:domain :gravity/c2-pass-cache-build-effect-binding-v1
+                 :binding build-effect-input}))
+        capability-input {:capabilities #{}
+                          :ambient-authority :denied}
+        capability-binding
+        (assoc capability-input
+               :identity
+               (c2-pass-cache/canonical-content-id
+                {:domain :gravity/c2-pass-cache-capability-binding-v1
+                 :binding capability-input}))
+        facet-input {:facets (:enabled-features standard-reader-options)}
+        facet-binding
+        (assoc facet-input
+               :identity
+               (c2-pass-cache/canonical-content-id
+                {:domain :gravity/c2-pass-cache-facet-binding-v1
+                 :binding facet-input}))
+        key
+        (c2-pass-cache/cache-key
+         {:source-unit
+          (select-keys source-unit
+                       [:source-id :bytes-hash :reader-options
+                        :identity-inputs])
+          :source-snapshot
+          (select-keys snapshot
+                       [:artifact :schema-version :byte-count :bytes-hash
+                        :maximum-source-bytes])
+          :reader-policy
+          {:reader-options standard-reader-options
+           :extension-policy (:extension-policy standard-reader-options)
+           :standard-reader-policy-id
+           (reader-canonical-hash standard-reader-policy)}
+          :project-binding
+          {:project-root-id (:project-root-id project-context)
+           :project-relative-path (:project-relative-path project-context)}
+          :compiler-binding (:compiler-binding current-binding)
+          :pass-binding (:pass-binding current-binding)
+          :dependency-binding dependency-binding
+          :build-effect-binding build-effect-binding
+          :capability-binding capability-binding
+          :facet-binding facet-binding
+          :profile-binding {:applicability :not-applicable-at-c2}
+          :target-binding {:applicability :not-applicable-at-c2}
+          :boundary-binding (:boundary-binding current-binding)
+          :path-provenance
+          {:canonical-path (:canonical-path snapshot)
+           :supplied-path (str source-path)}})]
+    {:key key
+     :source-text source-text
+     :source-unit source-unit
+    :project-context project-context}))
+
+(defn- c2-pass-cache-boundary-projection-id
+  [artifact]
+  (c2-pass-cache/canonical-content-id
+   {:domain :gravity/c2-pass-cache-artifact-boundary-projection-v1
+    :gravity-reader-boundary (:gravity-reader-boundary artifact)}))
+
+(defn- c2-pass-cache-revalidate-artifact!
+  [source-path source-text expected-source-unit current-binding
+   artifact entry key]
+  (let [source-unit (:source-unit-record artifact)
+        token-stream (:token-stream artifact)
+        form-tree (:form-tree artifact)
+        syntax-seeds (:syntax-seed-stream artifact)
+        extension-invocations
+        (:reader-extension-invocation-records artifact)
+        diagnostics (:reader-diagnostics artifact)
+        incremental-hashes
+        (c2-incremental-hashes source-unit token-stream form-tree syntax-seeds
+                               extension-invocations diagnostics)
+        integrity-record
+        (c2-reader-product-integrity-record
+         source-unit (:top-level-form-ids artifact) incremental-hashes
+         (:literal-decoding-records artifact)
+         (get-in artifact
+                 [:semantic-error-deferment-record
+                  :deferred-literal-records]))
+        artifact-id (c2-reader-artifact-id artifact)
+        reconstructed-source
+        (c2-reader-artifact-source-text source-path artifact)
+        accepted-reader-boundary
+        (:gravity-reader-boundary artifact)
+        envelope-descriptor
+        (:authenticated-envelope-descriptor accepted-reader-boundary)
+        envelope (:authenticated-envelope accepted-reader-boundary)
+        descriptor-summary
+        (:value
+         (some #(when (= :reader-product-identities (:name %)) %)
+               (:semantic-projections envelope-descriptor)))
+        expected-uncredited
+        (:uncredited-source-models c2-pass-cache-boundary-contract)
+        boundary-projection-id
+        (c2-pass-cache-boundary-projection-id artifact)]
+    (p15-s23-stage2-sh02-descriptor-envelope-verify!
+     envelope :c2-reader :gravity/sh03-reader-products
+     envelope-descriptor source-path)
+    (when-not
+     (and (= :gravity/stage0-c2-reader-document-artifact (:kind artifact))
+          (= "P06-D081" (:task artifact))
+          (= ["C2"] (:document-set artifact))
+          (= c2-pass-cache-pass-contract (:pass artifact))
+          (= expected-source-unit source-unit)
+          (= source-text reconstructed-source)
+          (= (get-in key [:semantic-preimage :source-unit :source-id])
+             (:source-id source-unit))
+          (= :gravity/sh03-to-c2-reader-products-v2
+             (:adapter-contract accepted-reader-boundary))
+          (= #{:slice :owner :plan-binding :resolved-reader-result
+               :adapter-contract :uncredited-source-models
+               :semantic-value-table-id
+               :authenticated-envelope-descriptor
+               :authenticated-envelope :target-source-reread?
+               :clojure-adapter-residual? :self-hosted?}
+             (set (keys accepted-reader-boundary)))
+          (= :SH-03 (:slice accepted-reader-boundary))
+          (= :gravity-source (:owner accepted-reader-boundary))
+          (= (:exact-sh03-binding current-binding)
+             (:plan-binding accepted-reader-boundary))
+          (= (get-in current-binding [:boundary-binding :plan-binding-id])
+             (c2-pass-cache/canonical-content-id
+              {:domain :gravity/c2-pass-cache-exact-sh03-plan-binding-v1
+               :binding (:plan-binding accepted-reader-boundary)}))
+          (= :accepted
+             (get-in accepted-reader-boundary
+                     [:resolved-reader-result :status]))
+          (= expected-uncredited
+             (:uncredited-source-models accepted-reader-boundary))
+          (= (:semantic-value-table-id descriptor-summary)
+             (:semantic-value-table-id accepted-reader-boundary))
+          (false? (:target-source-reread? accepted-reader-boundary))
+          (true? (:clojure-adapter-residual? accepted-reader-boundary))
+          (false? (:self-hosted? accepted-reader-boundary))
+          (empty? diagnostics)
+          (empty? (:diagnostics artifact))
+          (= incremental-hashes (:incremental-reader-hashes artifact))
+          (= integrity-record (:reader-product-integrity artifact))
+          (= artifact-id (:artifact-id artifact))
+          (or (nil? entry)
+              (and (= boundary-projection-id
+                      (:boundary-projection-id entry))
+                   (= (get-in incremental-hashes [:reader-diagnostics])
+                      (:diagnostics entry)))))
+      (throw
+       (ex-info
+        "cached C2 artifact failed current compiler/pass/SH03 revalidation"
+        {:id "C16-STALE"
+         :stage :c2-reader
+         :artifact-id (:artifact-id artifact)
+         :cache-key (:semantic-key-id key)
+         :release-authority? false
+         :self-hosted? false})))
+    (c2-reader-validate! source-path artifact)
+    artifact))
+
+(defn compiler-c2-reader-file-artifact-cached
+  "Opt in to the local persistent C2 pass cache for one source file.
+
+  The existing `compiler-c2-reader-file-artifact` path remains the default.
+  This function returns an operational envelope containing the unchanged C2
+  artifact and explicit hit/miss evidence.  A validated hit does not execute
+  the target reader.  This local cache has no release, proof, equivalence, or
+  self-hosting authority."
+  [path cache-base]
+  (let [snapshot (c2-pass-cache/bounded-source-snapshot!
+                  path sh03-reader-maximum-source-bytes)
+        current-binding (c2-pass-cache-current-binding! path)
+        {:keys [key source-text source-unit]}
+        (c2-pass-cache-key-context! path snapshot current-binding)
+        store (c2-pass-cache/open-local-store cache-base)
+        result
+        (c2-pass-cache/lookup-or-compute!
+         store key
+         {:current-binding (:entry-binding current-binding)
+          :artifact-id-of c2-reader-artifact-id
+          :boundary-projection-id-of
+          c2-pass-cache-boundary-projection-id
+          :validate-artifact!
+          (fn [artifact entry cache-key]
+            (c2-pass-cache-revalidate-artifact!
+             path source-text source-unit current-binding
+             artifact entry cache-key))
+          :compute! #(compiler-c2-reader-file-artifact path)})]
+    {:kind :gravity/local-c2-pass-cache-result
+     :stage :c2-reader
+     :c2-reader-artifact (:artifact result)
+     :cache-evidence (:cache-evidence result)
+     :cache-contract (c2-pass-cache/cache-contract)
+     :clojure-adapter-residual? true
+     :self-hosted? false
+     :release-authority? false
+     :proof-authority? false
+     :equivalence-authority? false}))
+
 (defn compiler-c2-reader-file-artifact
   [path]
   (let [source-bytes (sh03-reader-read-target-source-bytes! path)
@@ -154194,846 +146670,277 @@
      sh03-reader-internal-product-authority)))
 
 (def c3-syntax-diagnostic-ids
-  ["C3-SHAPE"
-   "C3-ID"
-   "C3-SPAN"
-   "C3-ORIGIN"
-   "C3-HYGIENE"
-   "C3-CAPTURE"
-   "C3-METADATA"
-   "C3-FACT-STALE"
-   "C3-SERIALIZE"])
+  c3-syntax-diagnostics/c3-syntax-diagnostic-ids)
 
 (def c3-syntax-governing-document
-  "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md")
+  c3-syntax-diagnostics/c3-syntax-governing-document)
 
 (def c3-syntax-rejected-designs
-  [{:diagnostic "C3-SHAPE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c3-shape.gravity"
-    :rejected-design :raw-list-macro-api}
-   {:diagnostic "C3-ID"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c3-id.gravity"
-    :rejected-design :unstable-syntax-identity}
-   {:diagnostic "C3-SPAN"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c3-span.gravity"
-    :rejected-design :syntax-without-resolvable-span}
-   {:diagnostic "C3-ORIGIN"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c3-origin.gravity"
-    :rejected-design :syntax-without-source-or-generated-origin}
-   {:diagnostic "C3-HYGIENE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c3-hygiene.gravity"
-    :rejected-design :hidden-hygiene-state}
-   {:diagnostic "C3-CAPTURE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c3-capture.gravity"
-    :rejected-design :undeclared-or-accidental-capture}
-   {:diagnostic "C3-METADATA"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c3-metadata.gravity"
-    :rejected-design :metadata-loss-or-invalid-shape}
-   {:diagnostic "C3-FACT-STALE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c3-fact-stale.gravity"
-    :rejected-design :stale-semantic-fact-use}
-   {:diagnostic "C3-SERIALIZE"
-    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c3-serialize.gravity"
-    :rejected-design :non-round-tripping-syntax-artifact}])
+  c3-syntax-diagnostics/c3-syntax-rejected-designs)
 
 (def c3-syntax-override-diagnostics
-  {:shape "C3-SHAPE"
-   :id "C3-ID"
-   :span "C3-SPAN"
-   :origin "C3-ORIGIN"
-   :hygiene "C3-HYGIENE"
-   :capture "C3-CAPTURE"
-   :metadata "C3-METADATA"
-   :fact-stale "C3-FACT-STALE"
-   :serialize "C3-SERIALIZE"})
+  c3-syntax-diagnostics/c3-syntax-override-diagnostics)
+
+(declare c3-syntax-source-overrides
+         c3-syntax-overrides-from-forms
+         c3-syntax-message
+         c3-syntax-fail!
+         c3-syntax-validate-overrides!)
+
+(defn- c3-syntax-diagnostics-ops
+  []
+  {:fail! fail!
+   :source-span source-span
+   :c3-syntax-source-overrides c3-syntax-source-overrides
+   :c3-syntax-overrides-from-forms c3-syntax-overrides-from-forms
+   :c3-syntax-message c3-syntax-message
+   :c3-syntax-fail! c3-syntax-fail!
+   :c3-syntax-validate-overrides! c3-syntax-validate-overrides!
+   :c3-syntax-diagnostic-ids c3-syntax-diagnostic-ids
+   :c3-syntax-governing-document c3-syntax-governing-document
+   :c3-syntax-rejected-designs c3-syntax-rejected-designs
+   :c3-syntax-override-diagnostics c3-syntax-override-diagnostics})
+
+(def ^:private ^:dynamic *c3-syntax-diagnostics-leaf-call?* false)
+
+(defn- c3-syntax-diagnostics-call
+  [operation & args]
+  (if *c3-syntax-diagnostics-leaf-call?*
+    (apply operation args)
+    (binding [*c3-syntax-diagnostics-leaf-call?* true]
+      (c3-syntax-diagnostics/with-operations
+       (c3-syntax-diagnostics-ops)
+       #(apply operation args)))))
 
 (defn c3-syntax-source-overrides
   [module]
-  (get-in module [:metadata :compiler :c3-syntax] {}))
+  (c3-syntax-diagnostics-call
+   c3-syntax-diagnostics/c3-syntax-source-overrides module))
 
 (defn c3-syntax-overrides-from-forms
   [forms]
-  (let [ns-form (first forms)
-        metadata-clause
-        (when (and (seq? ns-form) (= 'ns (first ns-form)))
-          (first (filter #(and (seq? %)
-                               (= :metadata (first %)))
-                         (drop 2 ns-form))))]
-    (get-in (second metadata-clause) [:compiler :c3-syntax] {})))
+  (c3-syntax-diagnostics-call
+   c3-syntax-diagnostics/c3-syntax-overrides-from-forms forms))
 
 (defn c3-syntax-message
   [id]
-  (case id
-    "C3-SHAPE" "syntax object fields are malformed or incomplete"
-    "C3-ID" "syntax object identity is unstable or inconsistent"
-    "C3-SPAN" "syntax object span is not resolvable"
-    "C3-ORIGIN" "syntax object origin chain is missing or broken"
-    "C3-HYGIENE" "syntax object hygiene context is malformed or hidden"
-    "C3-CAPTURE" "syntax object captures a binding without explicit capture"
-    "C3-METADATA" "syntax object metadata is invalid or lost"
-    "C3-FACT-STALE" "syntax object facts are stale after transformation"
-    "C3-SERIALIZE" "syntax object artifact does not round-trip"
-    "syntax object model failed"))
+  (c3-syntax-diagnostics-call
+   c3-syntax-diagnostics/c3-syntax-message id))
 
 (defn c3-syntax-fail!
   [id source-path subject extra]
-  (fail! id
-         (c3-syntax-message id)
-         (merge {:source-span (or (:source-span subject)
-                                  (:span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :c3-syntax-object
-                 :stage :syntax-object-model
-                 :document-id "C3"
-                 :expected-document c3-syntax-governing-document
-                 :syntax-id (or (:syntax-id subject)
-                                (:syntax/id subject))
-                 :form-kind (:form-kind subject)
-                 :phase (:phase subject)
-                 :producer (:producer subject)
-                 :origin-chain (:origin subject)
-                 :hygiene-summary (:hygiene subject)
-                 :remediation "Rebuild syntax objects with stable ids, spans, origin chains, exposed hygiene, versioned facts, and round-tripping serialization."}
-                extra)))
+  (c3-syntax-diagnostics-call
+   c3-syntax-diagnostics/c3-syntax-fail!
+   id source-path subject extra))
 
 (defn c3-syntax-validate-overrides!
   [source-path overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get c3-syntax-override-diagnostics fail-kind)]
-      (c3-syntax-fail! id source-path
-                       {:source-span (source-span source-path 0)
-                        :producer :fixture-override
-                        :form-kind fail-kind
-                        :hygiene {:marks [] :captures []}}
-                       {:missing-fields [fail-kind]}))))
+  (c3-syntax-diagnostics-call
+   c3-syntax-diagnostics/c3-syntax-validate-overrides!
+   source-path overrides))
 
 (defn c3-origin-chain
   [seed source-unit]
-  (let [source-entry {:kind :source
-                      :producer {:kind :reader
-                                 :name 'gravity.stage0/reader
-                                 :version "stage0"}
-                      :source-id (get source-unit :source-id)
-                      :span (:span seed)
-                      :input-syntax-ids []
-                      :reason :source-read
-                      :build-effects []}
-        generated (mapv (fn [origin]
-                          {:kind :generated
-                           :producer {:kind :reader
-                                      :name 'gravity.stage0/reader-abbreviation
-                                      :version "stage0"}
-                           :inputs [(:syntax-id seed)]
-                           :generated-span (str "generated:reader:"
-                                                (name (or (:reader-abbreviation origin)
-                                                          :abbreviation))
-                                                ":"
-                                                (get-in seed [:span :form-index]))
-                           :source-span (:from origin)
-                           :reason (:reader-abbreviation origin)
-                           :build-effects []})
-                        (:generated-origin seed))]
-    (vec (cons source-entry generated))))
+  (syntax-origin/c3-origin-chain seed source-unit))
+
+(declare c3-c2-reader-integrity-report
+         c3-validate-c2-reader-artifact!)
+
+(defn- c3-reader-integrity-ops
+  []
+  {:c2-lexical-product-validation c2-lexical-product-validation
+   :c2-incremental-hashes c2-incremental-hashes
+   :c2-literal-records c2-literal-records
+   :c2-deferred-semantic-literals c2-deferred-semantic-literals
+   :c3-deferred-ratio-descriptor-from-raw
+   c3-deferred-ratio-descriptor-from-raw
+   :c2-reader-product-integrity-record c2-reader-product-integrity-record
+   :reader-canonical-hash reader-canonical-hash
+   :sha256-hex sha256-hex
+   :c2-reader-artifact-id c2-reader-artifact-id
+   :c3-c2-reader-integrity-report c3-c2-reader-integrity-report
+   :c3-validate-c2-reader-artifact! c3-validate-c2-reader-artifact!
+   :c3-syntax-fail! c3-syntax-fail!
+   :source-span source-span
+   :max-reader-form-graph-depth max-reader-form-graph-depth})
+
+(def ^:private ^:dynamic *c3-reader-integrity-leaf-call?* false)
+
+(defn- c3-reader-integrity-call
+  [operation & args]
+  (if *c3-reader-integrity-leaf-call?*
+    (apply operation args)
+    (binding [*c3-reader-integrity-leaf-call?* true]
+      (c3-reader-integrity/with-operations
+       (c3-reader-integrity-ops)
+       #(apply operation args)))))
 
 (defn c3-c2-reader-integrity-report
   [c2-artifact]
-  (try
-    (let [source-unit (:source-unit-record c2-artifact)
-          token-stream (:token-stream c2-artifact)
-          form-tree (:form-tree c2-artifact)
-          top-level-form-ids (:top-level-form-ids c2-artifact)
-          syntax-seeds (:syntax-seed-stream c2-artifact)
-          extension-invocations
-          (or (:reader-extension-invocation-records c2-artifact) [])
-          diagnostics (or (:reader-diagnostics c2-artifact) [])
-          raw-source-available? (every? #(string? (:raw %)) token-stream)
-          source-text (when raw-source-available?
-                        (apply str (map :raw token-stream)))
-          lexical (when source-text
-                    (c2-lexical-product-validation
-                     source-text token-stream form-tree top-level-form-ids))
-          graph-valid? (true? (:graph-valid? lexical))
-          depth-valid? (and (integer? (:max-form-depth lexical))
-                            (<= (:max-form-depth lexical)
-                                max-reader-form-graph-depth))
-          recomputed-hashes
-          (when (and graph-valid? depth-valid?)
-            (c2-incremental-hashes source-unit token-stream form-tree
-                                   syntax-seeds extension-invocations
-                                   diagnostics))
-          literal-records (c2-literal-records form-tree)
-          deferred-records (c2-deferred-semantic-literals form-tree)
-          forms-by-id (into {} (map (juxt :form-id identity) form-tree))
-          canonical-form-ids
-          (loop [pending (vec (reverse top-level-form-ids))
-                 ordered []
-                 seen #{}]
-            (if-let [form-id (peek pending)]
-              (let [remaining (pop pending)
-                    form (forms-by-id form-id)]
-                (if (or (contains? seen form-id) (nil? form))
-                  (recur remaining ordered seen)
-                  (recur (into remaining (reverse (:children form)))
-                         (conj ordered form-id)
-                         (conj seen form-id))))
-              ordered))
-          deferred-descriptors-valid?
-          (every?
-           (fn [form]
-             (let [ratio-form
-                   (cond
-                     (= :ratio (:kind form)) form
-                     (= :metadata-wrapper (:kind form))
-                     (let [ratios (filterv #(= :ratio (:kind %))
-                                           (keep forms-by-id
-                                                 (:children form)))]
-                       (when (= 1 (count ratios)) (first ratios)))
-                     :else nil)]
-               (if (and ratio-form
-                        (= :gravity/deferred-ratio-literal
-                           (get-in ratio-form [:value :artifact])))
-                 (let [expected
-                       (c3-deferred-ratio-descriptor-from-raw
-                        (:raw ratio-form))]
-                   (and expected
-                        (= expected (:value ratio-form))
-                        (if (= :metadata-wrapper (:kind form))
-                          (= expected (:value form) (:expanded-form form))
-                          true)))
-                 true)))
-           form-tree)
-          expected-integrity
-          (when recomputed-hashes
-            (c2-reader-product-integrity-record
-             source-unit top-level-form-ids recomputed-hashes literal-records
-             deferred-records))
-          source-id (:source-id source-unit)
-          source-path (:path source-unit)
-          expected-source-map
-          (mapv #(select-keys % [:syntax-id :form-id :span]) syntax-seeds)
-          expected-parsed-values
-          (mapv #(get-in forms-by-id [% :value]) top-level-form-ids)
-          parsed-semantic-values-valid?
-          (and (= expected-parsed-values
-                  (:parsed-semantic-values c2-artifact))
-               (= expected-parsed-values (mapv :form syntax-seeds))
-               (= (count top-level-form-ids)
-                  (count (:parsed-semantic-values c2-artifact))
-                  (count syntax-seeds)))
-          stable-token-ids?
-          (= (mapv :token-id token-stream)
-             (mapv #(keyword (str "tok-" %)) (range (count token-stream))))
-          stable-form-ids?
-          (and (= (mapv :form-id form-tree) canonical-form-ids)
-               (= canonical-form-ids
-                  (mapv #(keyword (str "form-" %))
-                        (range (count form-tree)))))
-          stable-seed-ids?
-          (and (= (mapv :syntax-id syntax-seeds)
-                  (mapv #(str "stage0-syntax-" %)
-                        (range (count syntax-seeds))))
-               (= (mapv :form-id syntax-seeds)
-                  (vec top-level-form-ids))
-               (= (mapv #(get-in % [:span :form-index]) syntax-seeds)
-                  (vec (range (count syntax-seeds)))))
-          stable-literal-ids?
-          (= (mapv :literal-id (:literal-decoding-records c2-artifact))
-             (mapv #(keyword (str "lit-" %))
-                   (range (count (:literal-decoding-records c2-artifact)))))
-          source-id-valid?
-          (= source-id (reader-canonical-hash (:identity-inputs source-unit)))
-          source-bytes-valid?
-          (and source-text
-               (= (:bytes-hash source-unit)
-                  (str "sha256:" (sha256-hex source-text))))
-          product-provenance-valid?
-          (and
-           (every? #(and (= source-id (:source-id %))
-                         (= source-id (get-in % [:span :file]))
-                         (= source-path (:source-path %))
-                         (= source-path (get-in % [:span :source])))
-                   token-stream)
-           (every? #(and (= source-id (:source-id %))
-                         (= source-id (get-in % [:span :file]))
-                         (= source-path (:source-path %))
-                         (= source-path (get-in % [:span :source]))
-                         (= source-id (get-in % [:origin :source-id]))
-                         (= source-path (get-in % [:origin :source-path])))
-                   form-tree)
-           (every? #(and (:form-id %)
-                         (= source-id (get-in % [:span :file]))
-                         (= source-path (get-in % [:span :source])))
-                   syntax-seeds))
-          checks
-          {:artifact-kind-valid?
-           (= :gravity/stage0-c2-reader-document-artifact
-              (:kind c2-artifact))
-           :artifact-id-valid?
-           (= (:artifact-id c2-artifact)
-              (c2-reader-artifact-id (dissoc c2-artifact :artifact-id)))
-           :stable-token-ids? stable-token-ids?
-           :stable-form-ids? stable-form-ids?
-           :stable-seed-ids? stable-seed-ids?
-           :stable-literal-ids? stable-literal-ids?
-           :source-id-valid? source-id-valid?
-           :source-bytes-valid? (boolean source-bytes-valid?)
-           :lexical-graph-valid? graph-valid?
-           :reader-depth-valid? depth-valid?
-           :product-provenance-valid? product-provenance-valid?
-           :reader-source-map-valid?
-           (= expected-source-map (:reader-source-map c2-artifact))
-           :parsed-semantic-values-valid?
-           parsed-semantic-values-valid?
-           :incremental-hashes-valid?
-           (= recomputed-hashes (:incremental-reader-hashes c2-artifact))
-           :literal-records-valid?
-           (= literal-records (:literal-decoding-records c2-artifact))
-           :deferment-records-valid?
-           (= deferred-records
-              (get-in c2-artifact
-                      [:semantic-error-deferment-record
-                       :deferred-literal-records]))
-           :deferment-policy-valid?
-           (and (true? (get-in c2-artifact
-                               [:semantic-error-deferment-record :deferred?]))
-                (false? (get-in c2-artifact
-                                [:semantic-error-deferment-record
-                                 :semantic-analysis-in-reader?])))
-           :deferred-descriptors-valid? deferred-descriptors-valid?
-           :integrity-record-valid?
-           (= expected-integrity (:reader-product-integrity c2-artifact))}]
-      (assoc checks
-             :authentic? (every? true? (vals checks))
-             :failures (vec (keep (fn [[field passed?]]
-                                    (when-not passed? field))
-                                  checks))))
-    (catch StackOverflowError _
-      {:authentic? false
-       :failures [:reader-depth-stack-overflow-contained?]})
-    (catch Exception ex
-      {:authentic? false
-       :failures [:reader-product-validation-exception]
-       :cause-class (.getName (class ex))})))
+  (c3-reader-integrity-call
+   c3-reader-integrity/c3-c2-reader-integrity-report c2-artifact))
 
 (defn c3-validate-c2-reader-artifact!
   [source-path c2-artifact]
-  (let [base-report (c3-c2-reader-integrity-report c2-artifact)
-        source-path-binding-valid?
-        (= source-path (get-in c2-artifact [:source-unit-record :path]))
-        report (-> base-report
-                   (assoc :source-path-binding-valid?
-                          source-path-binding-valid?)
-                   (update :failures
-                           #(cond-> (vec %)
-                              (not source-path-binding-valid?)
-                              (conj :source-path-binding-valid?)))
-                   (assoc :authentic?
-                          (and (:authentic? base-report)
-                               source-path-binding-valid?)))]
-    (when-not (:authentic? report)
-      (c3-syntax-fail!
-       "C3-FACT-STALE" source-path
-       {:source-span (or (get-in c2-artifact [:form-tree 0 :span])
-                         (source-span source-path 0))
-        :producer :c2-reader-artifact
-        :form-kind (get-in c2-artifact [:form-tree 0 :kind])}
-       {:missing-fields (:failures report)
-        :facts {:reader-product-integrity report}}))
-    report))
+  (c3-reader-integrity-call
+   c3-reader-integrity/c3-validate-c2-reader-artifact!
+   source-path c2-artifact))
+
+(declare c3-deferred-ratio-descriptor-from-raw
+         c3-ratio-descriptor-from-raw
+         c3-lossless-literal-descriptor
+         c3-tagged-literal-descriptor
+         c3-source-form-kind
+         c3-source-facts)
+
+(defn- c3-literal-projection-ops
+  []
+  {:c3-c2-reader-integrity-report c3-c2-reader-integrity-report
+   :form-kind form-kind
+   :c3-deferred-ratio-descriptor-from-raw
+   c3-deferred-ratio-descriptor-from-raw
+   :c3-ratio-descriptor-from-raw c3-ratio-descriptor-from-raw
+   :c3-lossless-literal-descriptor c3-lossless-literal-descriptor
+   :c3-tagged-literal-descriptor c3-tagged-literal-descriptor
+   :c3-source-form-kind c3-source-form-kind
+   :c3-source-facts c3-source-facts})
+
+(def ^:private ^:dynamic *c3-literal-projection-leaf-call?* false)
+
+(defn- c3-literal-projection-call
+  [operation & args]
+  (if *c3-literal-projection-leaf-call?*
+    (apply operation args)
+    (binding [*c3-literal-projection-leaf-call?* true]
+      (c3-literal-projection/with-operations
+       (c3-literal-projection-ops)
+       #(apply operation args)))))
 
 (defn c3-deferred-ratio-descriptor-from-raw
   [raw]
-  (when-let [[_ numerator-spelling denominator-spelling]
-             (and (string? raw)
-                  (re-matches #"([+-]?[0-9]+)/([+-]?[0-9]+)" raw))]
-    (try
-      (let [numerator (bigint numerator-spelling)
-            denominator (bigint denominator-spelling)]
-        (when (zero? denominator)
-          {:artifact :gravity/deferred-ratio-literal
-           :kind :ratio
-           :raw raw
-           :numerator-spelling numerator-spelling
-           :denominator-spelling denominator-spelling
-           :numerator numerator
-           :denominator denominator
-           :semantic-validation :deferred
-           :reason :zero-denominator}))
-      (catch NumberFormatException _ nil))))
+  (c3-literal-projection-call
+   c3-literal-projection/c3-deferred-ratio-descriptor-from-raw raw))
 
 (defn c3-ratio-descriptor-from-raw
   [raw]
-  (when-let [[_ numerator-spelling denominator-spelling]
-             (and (string? raw)
-                  (re-matches #"([+-]?[0-9]+)/([+-]?[0-9]+)" raw))]
-    (try
-      (let [numerator (bigint numerator-spelling)
-            denominator (bigint denominator-spelling)]
-        (if (zero? denominator)
-          {:artifact :gravity/deferred-ratio-literal
-           :kind :ratio
-           :raw raw
-           :numerator-spelling numerator-spelling
-           :denominator-spelling denominator-spelling
-           :numerator numerator
-           :denominator denominator
-           :semantic-validation :deferred
-           :reason :zero-denominator}
-          {:artifact :gravity/ratio-literal
-           :kind :ratio
-           :raw raw
-           :numerator-spelling numerator-spelling
-           :denominator-spelling denominator-spelling
-           :numerator numerator
-           :denominator denominator
-           :semantic-validation :accepted}))
-      (catch NumberFormatException _ nil))))
+  (c3-literal-projection-call
+   c3-literal-projection/c3-ratio-descriptor-from-raw raw))
 
 (defn c3-lossless-literal-descriptor
   [seed form-record c2-artifact integrity-report]
-  (let [integrity-report (or integrity-report
-                             (c3-c2-reader-integrity-report c2-artifact))
-        forms-by-id (into {} (map (juxt :form-id identity)
-                                  (:form-tree c2-artifact)))
-        tokens-by-id (into {} (map (juxt :token-id identity)
-                                   (:token-stream c2-artifact)))
-        root-form-id (:form-id form-record)
-        ratio-form
-        (case (:kind form-record)
-          :ratio form-record
-          :metadata-wrapper
-          (let [ratio-children
-                (filterv #(= :ratio (:kind %))
-                         (keep forms-by-id (:children form-record)))]
-            (when (= 1 (count ratio-children)) (first ratio-children)))
-          nil)
-        ratio-token (when ratio-form
-                      (tokens-by-id (:open-token ratio-form)))
-        descriptor (when ratio-token
-                     (c3-ratio-descriptor-from-raw (:raw ratio-token)))
-        literal-records
-        (filterv #(= (:form-id ratio-form) (:form-id %))
-                 (:literal-decoding-records c2-artifact))
-        deferred-records
-        (filterv #(= (:form-id ratio-form) (:form-id %))
-                 (get-in c2-artifact
-                         [:semantic-error-deferment-record
-                          :deferred-literal-records]))
-        wrapper? (= :metadata-wrapper (:kind form-record))
-        expected-seed-span (when form-record
-                             (assoc (:span form-record)
-                                    :form-index
-                                    (get-in seed [:span :form-index])))]
-    (when
-     (and (:authentic? integrity-report)
-          descriptor ratio-form ratio-token
-          (= root-form-id (:form-id seed))
-          (if (= :deferred (:semantic-validation descriptor))
-            (and (= descriptor (:form seed))
-                 (= descriptor (:value ratio-form) (:decoded ratio-token)))
-            (= (:form seed) (:value ratio-form) (:decoded ratio-token)))
-          (= :ratio (:kind ratio-form) (:kind ratio-token))
-          (= (:open-token ratio-form) (:close-token ratio-form)
-             (:token-id ratio-token))
-          (= (:raw ratio-form) (:raw ratio-token) (:lexeme ratio-token)
-             (:raw descriptor))
-          (= (:span ratio-form) (:span ratio-token))
-          (= 1 (count literal-records))
-          (= (if (= :deferred (:semantic-validation descriptor))
-               descriptor
-               (:form seed))
-             (:decoded (first literal-records)))
-          (= (:raw descriptor) (:raw (first literal-records)))
-          (= (:span ratio-form) (:span (first literal-records)))
-          (= {:numerator-spelling (:numerator-spelling descriptor)
-              :denominator-spelling (:denominator-spelling descriptor)
-              :exact? true}
-             (:facts (first literal-records)))
-          (if (= :deferred (:semantic-validation descriptor))
-            (and (= 1 (count deferred-records))
-                 (= descriptor (:value (first deferred-records)))
-                 (= (:raw descriptor) (:raw (first deferred-records)))
-                 (= (:span ratio-form) (:span (first deferred-records))))
-            (and (empty? deferred-records)
-                 (= (:form seed) (:decoded (first literal-records))
-                    (:value ratio-form) (:decoded ratio-token))))
-          (= expected-seed-span (:span seed))
-          (= (:raw form-record) (get-in seed [:reader-origin :raw-excerpt]))
-          (= (:kind form-record)
-             (get-in seed [:reader-origin :raw-form-kind]))
-          (if wrapper?
-            (and (= :metadata (:abbrev form-record)
-                    (get-in seed [:reader-origin :abbreviation]))
-                 (= (if (= :deferred (:semantic-validation descriptor))
-                      descriptor
-                      (:form seed))
-                    (:value form-record)
-                    (:expanded-form form-record)
-                    (get-in seed [:generated-origin 0 :expanded-form]))
-                 (= :metadata
-                    (get-in seed [:generated-origin 0
-                                  :reader-abbreviation]))
-                 (= (:surface-span form-record)
-                    (get-in seed [:generated-origin 0 :from]))
-                 (= (:form-id ratio-form)
-                    (get-in form-record
-                            [:generated-origin 0 :child-form-id])))
-            (and (= (if (= :deferred (:semantic-validation descriptor))
-                      descriptor
-                      (:form seed))
-                    (:value form-record))
-                 (nil? (:abbrev form-record))
-                 (empty? (:generated-origin seed)))))
-     descriptor)))
+  (c3-literal-projection-call
+   c3-literal-projection/c3-lossless-literal-descriptor
+   seed form-record c2-artifact integrity-report))
 
 (defn c3-tagged-literal-descriptor
   [seed form-record c2-artifact integrity-report]
-  (when (= :tagged-literal (:kind form-record))
-    (let [integrity-report
-          (or integrity-report (c3-c2-reader-integrity-report c2-artifact))
-          forms-by-id
-          (into {} (map (juxt :form-id identity) (:form-tree c2-artifact)))
-          payload-record (get forms-by-id (first (:children form-record)))
-          literal-record
-          (first
-           (filter #(= (:form-id form-record) (:form-id %))
-                   (:literal-decoding-records c2-artifact)))
-          tag (:tag form-record)]
-      (when (and (:authentic? integrity-report)
-                 (= (:form-id seed) (:form-id form-record))
-                 (= 1 (count (:children form-record)))
-                 (= :string (:kind payload-record))
-                 (= tag (get-in literal-record [:facts :tag]))
-                 (= (:raw form-record) (:raw literal-record))
-                 (= (:span form-record) (:span literal-record)))
-        {:artifact :gravity/tagged-literal-descriptor
-         :kind :tagged-literal
-         :tag tag
-         :raw (:raw form-record)
-         :payload (:value payload-record)
-         :semantic-validation :accepted}))))
+  (c3-literal-projection-call
+   c3-literal-projection/c3-tagged-literal-descriptor
+   seed form-record c2-artifact integrity-report))
 
 (defn c3-source-form-kind
   [seed form-record c2-artifact integrity-report]
-  (if (or (c3-lossless-literal-descriptor seed form-record c2-artifact
-                                          integrity-report)
-          (c3-tagged-literal-descriptor seed form-record c2-artifact
-                                        integrity-report))
-    (:kind form-record)
-    (form-kind (:form seed))))
+  (c3-literal-projection-call
+   c3-literal-projection/c3-source-form-kind
+   seed form-record c2-artifact integrity-report))
 
 (defn c3-source-facts
   [seed form-record c2-artifact integrity-report]
-  (if-let [descriptor
-           (or (c3-lossless-literal-descriptor
-                seed form-record c2-artifact integrity-report)
-               (c3-tagged-literal-descriptor
-                seed form-record c2-artifact integrity-report))]
-    {:reader-literal-kind (:kind descriptor)
-     :reader-literal-descriptor descriptor
-     :reader-product-integrity-hash
-     (get-in c2-artifact [:reader-product-integrity :integrity-hash])
-     :reader-source-id (get-in c2-artifact [:source-unit-record :source-id])
-     :reader-form-id (:form-id form-record)
-     :reader-seed-id (:syntax-id seed)
-     :reader-container-kind
-     (when (= :metadata-wrapper (:kind form-record)) :metadata-wrapper)
-     :reader-literal-facts
-     (select-keys descriptor
-                  [:raw :numerator-spelling :denominator-spelling
-                   :numerator :denominator :tag :payload
-                   :semantic-validation :reason])}
-    {}))
+  (c3-literal-projection-call
+   c3-literal-projection/c3-source-facts
+   seed form-record c2-artifact integrity-report))
+
+(declare c3-path-neutral-origin
+         c3-identity-input
+         c3-stable-syntax-id
+         c3-syntax-object
+         c3-generated-syntax-object)
+
+(defn- c3-syntax-construction-ops
+  []
+  {:c2-path-neutral-span c2-path-neutral-span
+   :sha256-hex sha256-hex
+   :c3-origin-chain c3-origin-chain
+   :c3-source-form-kind c3-source-form-kind
+   :c3-source-facts c3-source-facts
+   :c3-path-neutral-origin c3-path-neutral-origin
+   :c3-identity-input c3-identity-input
+   :c3-stable-syntax-id c3-stable-syntax-id
+   :c3-syntax-object c3-syntax-object
+   :c3-generated-syntax-object c3-generated-syntax-object})
+
+(def ^:private ^:dynamic *c3-syntax-construction-leaf-call?* false)
+
+(defn- c3-syntax-construction-call
+  [operation & args]
+  (if *c3-syntax-construction-leaf-call?*
+    (apply operation args)
+    (binding [*c3-syntax-construction-leaf-call?* true]
+      (c3-syntax-construction/with-operations
+       (c3-syntax-construction-ops)
+       #(apply operation args)))))
 
 (defn c3-path-neutral-origin
   [origin]
-  (cond-> origin
-    (contains? origin :span) (update :span c2-path-neutral-span)
-    (contains? origin :source-span) (update :source-span c2-path-neutral-span)
-    (contains? origin :from) (update :from c2-path-neutral-span)))
+  (c3-syntax-construction-call
+   c3-syntax-construction/c3-path-neutral-origin origin))
 
 (defn c3-identity-input
   [seed origin namespace-context hygiene-context source-form-kind]
-  {:form-kind source-form-kind
-   :form (pr-str (:form seed))
-   :span (c2-path-neutral-span (:span seed))
-   :origin (mapv c3-path-neutral-origin origin)
-   :namespace namespace-context
-   :phase (:phase seed)
-   :profile (:profile seed)
-   :metadata (:metadata seed)
-   :hygiene hygiene-context
-   :version 1})
+  (c3-syntax-construction-call
+   c3-syntax-construction/c3-identity-input
+   seed origin namespace-context hygiene-context source-form-kind))
 
 (defn c3-stable-syntax-id
   [identity-input]
-  (str "sha256:" (sha256-hex (pr-str identity-input))))
+  (c3-syntax-construction-call
+   c3-syntax-construction/c3-stable-syntax-id identity-input))
 
 (defn c3-syntax-object
   [seed form-record token-record source-unit c2-artifact integrity-report]
-  (let [namespace-context {:current (:namespace seed)
-                           :aliases {}
-                           :imports []}
-        hygiene-context {:marks []
-                         :lexical-scopes []
-                         :renames {}
-                         :captures []
-                         :introduced-identifiers []
-                         :macro-definition-namespace nil
-                         :macro-call-site-namespace (:namespace seed)}
-        origin (c3-origin-chain seed source-unit)
-        source-form-kind (c3-source-form-kind seed form-record c2-artifact
-                                              integrity-report)
-        identity-input (c3-identity-input seed origin namespace-context
-                                          hygiene-context source-form-kind)
-        syntax-id (c3-stable-syntax-id identity-input)]
-    {:artifact :gravity/syntax-object
-     :syntax/id syntax-id
-     :identity {:algorithm :sha256
-                :semantic-fields [:form-kind :form :span :origin
-                                  :namespace :phase :profile :metadata
-                                  :hygiene :version]
-                :input-hash (str "sha256:" (sha256-hex (pr-str identity-input)))}
-     :form {:kind source-form-kind
-            :value (:form seed)
-            :raw (get-in seed [:reader-origin :raw-excerpt])}
-     :span {:primary (:span seed)
-            :all [(:span seed)]}
-     :source {:source-id (:source-id source-unit)
-              :form-id (:form-id form-record)
-              :token-range [(:open-token form-record)
-                            (:close-token form-record)]
-              :token-id (:token-id token-record)}
-     :namespace namespace-context
-     :phase (:phase seed)
-     :profile (:profile seed)
-     :metadata (:metadata seed)
-     :hygiene hygiene-context
-     :origin origin
-     :facts (c3-source-facts seed form-record c2-artifact integrity-report)
-     :version 1
-     :prior-syntax-ids []
-     :immutable? true}))
+  (c3-syntax-construction-call
+   c3-syntax-construction/c3-syntax-object
+   seed form-record token-record source-unit c2-artifact integrity-report))
 
 (defn c3-generated-syntax-object
   [base-object]
-  (let [origin [{:kind :generated
-                 :producer {:kind :macro
-                            :name 'compiler.c3/with-capture-demo
-                            :version "stage0"}
-                 :inputs [(:syntax/id base-object)]
-                 :generated-span "generated:compiler.c3/with-capture-demo:1"
-                 :reason :generated-syntax-conformance
-                 :build-effects []}]
-        hygiene-context {:marks [:c3/generated-mark]
-                         :lexical-scopes [:caller-scope :introduced-scope]
-                         :renames {'tmp__auto__ 'tmp__c3__1}
-                         :captures [{:identifier 'captured-binding
-                                     :macro-api 'gravity.syntax/capture
-                                     :call-site-namespace (get-in base-object
-                                                                  [:namespace :current])
-                                     :intentional? true
-                                     :authority-bearing? false}]
-                         :introduced-identifiers ['tmp__c3__1]
-                         :macro-definition-namespace 'compiler.c3
-                         :macro-call-site-namespace (get-in base-object
-                                                            [:namespace :current])}
-        namespace-context (:namespace base-object)
-        identity-input {:form-kind :generated-form
-                        :form "(do tmp__c3__1)"
-                        :span "generated:compiler.c3/with-capture-demo:1"
-                        :origin origin
-                        :namespace namespace-context
-                        :phase :macro-expanded
-                        :profile (:profile base-object)
-                        :metadata {:generated true}
-                        :hygiene hygiene-context
-                        :version 1}
-        syntax-id (c3-stable-syntax-id identity-input)]
-    {:artifact :gravity/syntax-object
-     :syntax/id syntax-id
-     :identity {:algorithm :sha256
-                :semantic-fields [:form-kind :form :span :origin
-                                  :namespace :phase :profile :metadata
-                                  :hygiene :version]
-                :input-hash (str "sha256:" (sha256-hex (pr-str identity-input)))}
-     :form {:kind :generated-form
-            :value '(do tmp__c3__1)
-            :raw "(do tmp__c3__1)"}
-     :span {:primary "generated:compiler.c3/with-capture-demo:1"
-            :all ["generated:compiler.c3/with-capture-demo:1"
-                  (get-in base-object [:span :primary])]}
-     :source {:source-id (get-in base-object [:source :source-id])
-              :form-id :generated-form-0
-              :token-range []
-              :token-id nil}
-     :namespace namespace-context
-     :phase :macro-expanded
-     :profile (:profile base-object)
-     :metadata {:generated true
-                :source-metadata (:metadata base-object)}
-     :hygiene hygiene-context
-     :origin origin
-     :facts {}
-     :version 1
-     :prior-syntax-ids [(:syntax/id base-object)]
-     :immutable? true}))
+  (c3-syntax-construction-call
+   c3-syntax-construction/c3-generated-syntax-object base-object))
 
-(def c3-required-form-kinds
-  [:list :vector :map :set :symbol :keyword :string :character :integer
-   :ratio :decimal :boolean :nil :tagged-literal :metadata-wrapper
-   :abbreviation-expansion :generated-form])
+(def c3-required-form-kinds c3-syntax-evidence/c3-required-form-kinds)
 
 (defn c3-syntax-schema
   []
-  {:artifact :gravity/syntax-object-schema
-   :required-fields [:artifact :syntax/id :form :span :source :namespace
-                     :phase :profile :metadata :hygiene :origin :facts
-                     :reader-binding :reader-source-revision :ownership
-                     :version :prior-syntax-ids :immutable?]
-   :form-kinds c3-required-form-kinds
-   :identity :content-derived
-   :mutation :immutable
-   :fact-policy :versioned-and-invalidated})
+  (c3-syntax-evidence/c3-syntax-schema c3-required-form-kinds))
 
 (defn c3-hygiene-context-map
   [syntax-stream]
-  {:artifact :gravity/hygiene-context-map
-   :contexts
-   (mapv (fn [syntax]
-           {:syntax-id (:syntax/id syntax)
-            :marks (get-in syntax [:hygiene :marks])
-            :lexical-scopes (get-in syntax [:hygiene :lexical-scopes])
-            :renames (get-in syntax [:hygiene :renames])
-            :captures (get-in syntax [:hygiene :captures])
-            :introduced-identifiers (get-in syntax
-                                             [:hygiene :introduced-identifiers])
-            :macro-definition-namespace
-            (get-in syntax [:hygiene :macro-definition-namespace])
-            :macro-call-site-namespace
-            (get-in syntax [:hygiene :macro-call-site-namespace])})
-         syntax-stream)
-   :status :complete})
+  (c3-syntax-evidence/c3-hygiene-context-map syntax-stream))
 
 (defn c3-origin-chain-graph
   [syntax-stream]
-  {:artifact :gravity/syntax-origin-chain-graph
-   :nodes (mapv (fn [syntax]
-                  {:syntax-id (:syntax/id syntax)
-                   :origin (:origin syntax)
-                   :prior-syntax-ids (:prior-syntax-ids syntax)})
-                syntax-stream)
-   :status :complete})
+  (c3-syntax-evidence/c3-origin-chain-graph syntax-stream))
 
 (defn c3-metadata-ledger
   [syntax-stream]
-  (let [source-metadata (vec (keep (fn [syntax]
-                                     (when (and (not= :generated-form
-                                                      (get-in syntax
-                                                              [:form :kind]))
-                                                (seq (:metadata syntax)))
-                                       {:syntax-id (:syntax/id syntax)
-                                        :action :preserved
-                                        :metadata (:metadata syntax)}))
-                                   syntax-stream))
-        generated (first (filter #(= :generated-form (get-in % [:form :kind]))
-                                 syntax-stream))]
-    {:artifact :gravity/syntax-metadata-ledger
-     :source-metadata source-metadata
-     :explicit-changes
-     (if generated
-       [{:syntax-id (:syntax/id generated)
-         :action :explicit-change
-         :producer 'compiler.c3/with-capture-demo
-         :metadata (:metadata generated)}]
-       [])
-     :status :complete}))
+  (c3-syntax-evidence/c3-metadata-ledger syntax-stream))
 
 (defn c3-fact-ledger
   [syntax-stream]
-  (let [target (first syntax-stream)
-        generated (first (filter #(= :generated-form (get-in % [:form :kind]))
-                                 syntax-stream))]
-    {:artifact :gravity/syntax-fact-ledger
-     :attached [{:syntax-id (:syntax/id target)
-                 :fact :declared-profile
-                 :value (:profile target)
-                 :producer :syntax-object-model
-                 :version 1
-                 :invalidation-conditions [:macro-expansion
-                                           :metadata-change
-                                           :namespace-change]}]
-     :invalidated [{:syntax-id (:syntax/id target)
-                    :successor-syntax-id (:syntax/id generated)
-                    :fact :declared-profile
-                    :stale-version 1
-                    :new-version 2
-                    :reason :syntax-transformation
-                    :replacement-fact :declared-profile}]
-     :status :complete}))
+  (c3-syntax-evidence/c3-fact-ledger syntax-stream))
 
 (defn c3-generated-syntax-report
   [syntax-stream]
-  {:artifact :gravity/generated-syntax-report
-   :generated
-   (mapv (fn [syntax]
-           {:syntax-id (:syntax/id syntax)
-            :producer (get-in syntax [:origin 0 :producer])
-            :input-syntax-ids (or (get-in syntax
-                                          [:origin 0 :input-syntax-ids])
-                                  (get-in syntax [:origin 0 :inputs]))
-            :expansion-step 1
-            :generated-span (or (get-in syntax [:origin 0 :span])
-                                (get-in syntax
-                                        [:origin 0 :generated-span]))
-            :caller-profile (:profile syntax)
-            :hygiene (:hygiene syntax)})
-         (filter #(= :generated-form (get-in % [:form :kind])) syntax-stream))
-   :status :complete})
+  (c3-syntax-evidence/c3-generated-syntax-report syntax-stream))
 
 (defn c3-syntax-serialization-fixture
   [syntax-stream]
-  (let [payload {:artifact :gravity/syntax-serialization-fixture
-                 :syntax-ids (mapv :syntax/id syntax-stream)
-                 :forms (mapv #(get-in % [:form :kind]) syntax-stream)
-                 :origins (mapv #(mapv :kind (:origin %)) syntax-stream)
-                 :identity-input-hashes
-                 (mapv #(get-in % [:identity :input-hash]) syntax-stream)
-                 :source-links (mapv :source syntax-stream)
-                 :reader-facts (mapv :facts syntax-stream)
-                 :versions (mapv :version syntax-stream)}
-        serialized (pr-str payload)
-        semantic-payload
-        (-> payload
-            (update :source-links
-                    #(mapv (fn [source]
-                             (dissoc source :actual-path :path))
-                           (or % []))))
-        round-trip (read-string serialized)]
-    {:artifact :gravity/syntax-serialization-fixture
-     :format :edn
-     :payload payload
-     :canonical serialized
-     :hash (reader-canonical-hash
-            {:domain :gravity/c3-syntax-serialization-fixture-v2
-             :semantic-payload semantic-payload})
-     :roundtrip? (= payload round-trip)}))
+  (c3-syntax-evidence/c3-syntax-serialization-fixture
+   syntax-stream reader-canonical-hash))
 
 (defn c3-resolvable-span?
   [span]
-  (let [primary (:primary span)]
-    (or (and (map? primary)
-             (:source primary)
-             (contains? primary :byte-start)
-             (contains? primary :byte-end))
-        (and (string? primary)
-             (str/starts-with? primary "generated:"))
-        (and (map? primary)
-             (= :generated (:kind primary))
-             (string? (:producer-id primary))
-             (re-find #"^sha256:[0-9a-f]{64}$" (:producer-id primary))
-             (integer? (:ordinal primary))
-             (not (neg? (:ordinal primary)))))))
+  (c3-syntax-evidence/c3-resolvable-span? span))
 
 (declare sh04-syntax-current-binding!
          sh04-syntax-execute!
@@ -155268,153 +147175,57 @@
      (catch StackOverflowError _ false)
      (catch Exception _ false))))
 
+(declare c3-syntax-verification-report
+         c3-syntax-capability-proof
+         c3-syntax-validate!)
+
+(defn- c3-syntax-verification-ops
+  []
+  {:c3-syntax-schema c3-syntax-schema
+   :c3-resolvable-span? c3-resolvable-span?
+   :c3-syntax-serialization-fixture c3-syntax-serialization-fixture
+   :c3-syntax-stream-reader-products-authentic?
+   c3-syntax-stream-reader-products-authentic?
+   :c3-syntax-verification-report c3-syntax-verification-report
+   :c3-syntax-capability-proof c3-syntax-capability-proof
+   :c3-syntax-validate! c3-syntax-validate!
+   :c3-syntax-fail! c3-syntax-fail!
+   :c3-syntax-diagnostic-ids c3-syntax-diagnostic-ids})
+
+(def ^:private ^:dynamic *c3-syntax-verification-leaf-call?* false)
+
+(defn- c3-syntax-verification-call
+  [operation & args]
+  (if *c3-syntax-verification-leaf-call?*
+    (apply operation args)
+    (binding [*c3-syntax-verification-leaf-call?* true]
+      (c3-syntax-verification/with-operations
+       (c3-syntax-verification-ops)
+       #(apply operation args)))))
+
 (defn c3-syntax-verification-report
   ([syntax-stream serialization]
-   (c3-syntax-verification-report syntax-stream serialization nil))
+   (c3-syntax-verification-call
+    c3-syntax-verification/c3-syntax-verification-report
+    syntax-stream serialization))
   ([syntax-stream serialization c2-artifact]
-   (c3-syntax-verification-report
-    syntax-stream serialization c2-artifact nil))
+   (c3-syntax-verification-call
+    c3-syntax-verification/c3-syntax-verification-report
+    syntax-stream serialization c2-artifact))
   ([syntax-stream serialization c2-artifact gravity-boundary]
-   (let [required-fields (set (:required-fields (c3-syntax-schema)))
-         checks
-         {:required-fields-present?
-          (every? #(set/subset? required-fields (set (keys %)))
-                  syntax-stream)
-          :source-spans-resolve?
-          (every? #(c3-resolvable-span? (:span %)) syntax-stream)
-          :generated-origins-valid?
-          (every? #(and (get-in % [:origin 0 :producer])
-                        (seq (or (get-in %
-                                         [:origin 0 :input-syntax-ids])
-                                 (get-in % [:origin 0 :inputs])))
-                        (or (get-in % [:origin 0 :span])
-                            (get-in %
-                                    [:origin 0 :generated-span])))
-                  (filter #(= :generated-form (get-in % [:form :kind]))
-                          syntax-stream))
-          :hygiene-visible? (every? #(map? (:hygiene %)) syntax-stream)
-          :metadata-valid? (every? #(map? (:metadata %)) syntax-stream)
-          :namespace-context-valid?
-          (every? #(map? (:namespace %)) syntax-stream)
-          :phase-transitions-allowed?
-          (every? #{:read :macro-expanded} (map :phase syntax-stream))
-          :serialization-round-trips? (true? (:roundtrip? serialization))
-          :serialization-current?
-          (= serialization (c3-syntax-serialization-fixture syntax-stream))
-          :reader-products-authentic?
-          (if c2-artifact
-            (c3-syntax-stream-reader-products-authentic?
-             syntax-stream c2-artifact gravity-boundary)
-            true)}]
-     (assoc checks
-            :artifact :gravity/syntax-verification-report
-            :status (if (every? true? (vals checks)) :passed :failed)))))
+   (c3-syntax-verification-call
+    c3-syntax-verification/c3-syntax-verification-report
+    syntax-stream serialization c2-artifact gravity-boundary)))
 
 (defn c3-syntax-capability-proof
   [artifact]
-  (let [syntax-stream (:syntax-object-stream artifact)
-        source-syntax (remove #(= :generated-form (get-in % [:form :kind]))
-                              syntax-stream)
-        diagnostics (set (map :diagnostic (:rejected-design-coverage artifact)))
-        metadata-ledger (:metadata-ledger artifact)
-        expected-metadata-syntax-ids
-        (set (map :syntax/id (filter #(seq (:metadata %)) source-syntax)))
-        recorded-metadata-syntax-ids
-        (set (map :syntax-id (:source-metadata metadata-ledger)))
-        fact-ledger (:fact-ledger artifact)
-        serialization (:syntax-serialization-fixture artifact)
-        fresh-serialization (c3-syntax-serialization-fixture syntax-stream)
-        generated-report (:generated-syntax-report artifact)
-        verifier (:syntax-verification-report artifact)
-        gravity-result
-        (get-in artifact
-                [:gravity-syntax-boundary :resolved-syntax-result])
-        gravity-ownership (:gravity-syntax-ownership-product artifact)
-        fresh-verifier
-        (c3-syntax-verification-report syntax-stream fresh-serialization
-                                       (:c2-reader-artifact artifact)
-                                       (:gravity-syntax-boundary artifact))
-        checks
-        {:construction-from-reader-seeds?
-     (boolean (and (seq syntax-stream)
-                   (= (inc (count (:syntax-seed-stream (:c2-reader-artifact
-                                                        artifact))))
-                      (count syntax-stream))))
-     :stable-syntax-ids?
-     (boolean (and (every? #(re-find #"^sha256:" (:syntax/id %))
-                           syntax-stream)
-                   (= (count syntax-stream)
-                      (count (set (map :syntax/id syntax-stream))))))
-     :source-and-generated-origins?
-     (boolean (and (every? #(some (comp #{:source} :kind) (:origin %))
-                           (remove #(= :generated-form (get-in % [:form :kind]))
-                                   syntax-stream))
-                   (seq (:generated generated-report))))
-     :hygiene-propagated?
-     (boolean (and (= :complete (get-in artifact [:hygiene-context-map
-                                                 :status]))
-                   (some #(seq (get-in % [:hygiene :marks]))
-                         syntax-stream)))
-     :intentional-capture-recorded?
-     (boolean (some #(seq (get-in % [:hygiene :captures])) syntax-stream))
-     :capture-rejection-covered?
-     (contains? diagnostics "C3-CAPTURE")
-     :metadata-preservation-and-change?
-     (boolean (and (= expected-metadata-syntax-ids
-                      recorded-metadata-syntax-ids)
-                   (seq (:explicit-changes metadata-ledger))))
-     :fact-invalidation-recorded?
-     (boolean (and (seq (:attached fact-ledger))
-                   (seq (:invalidated fact-ledger))))
-     :serialization-round-trips?
-     (and (true? (:roundtrip? serialization))
-          (= serialization fresh-serialization))
-     :reader-products-authentic?
-     (true? (:reader-products-authentic? fresh-verifier))
-     :syntax-verifier-current? (= verifier fresh-verifier)
-     :syntax-verifier-passed? (= :passed (:status fresh-verifier))
-     :gravity-authoritative-products-current?
-     (boolean
-      (and (= (:gravity-hygiene-context-map artifact)
-              (:hygiene-context-map gravity-result))
-           (= (:gravity-metadata-ledger artifact)
-              (:metadata-ledger gravity-result))
-           (= (:gravity-fact-invalidation-ledger artifact)
-              (:fact-invalidation-ledger gravity-result))
-           (= (:gravity-origin-chain-graph artifact)
-              (:origin-chain-graph gravity-result))
-           (= gravity-ownership (:ownership-product gravity-result))
-           (= :gravity-source (:owner gravity-ownership))
-           (= 'gravity.bootstrap.syntax (:module gravity-ownership))
-           (= (mapv :ownership (:syntax-object-stream gravity-result))
-              (:syntax-ownership gravity-ownership))))
-     :diagnostics-covered?
-     (= (set c3-syntax-diagnostic-ids) diagnostics)}]
-    (assoc checks :status (if (every? true? (vals checks))
-                            :complete
-                            :failed))))
+  (c3-syntax-verification-call
+   c3-syntax-verification/c3-syntax-capability-proof artifact))
 
 (defn c3-syntax-validate!
   [source-path artifact]
-  (let [proof (c3-syntax-capability-proof artifact)]
-    (doseq [[field id] [[:construction-from-reader-seeds? "C3-SHAPE"]
-                        [:stable-syntax-ids? "C3-ID"]
-                        [:source-and-generated-origins? "C3-ORIGIN"]
-                        [:hygiene-propagated? "C3-HYGIENE"]
-                        [:intentional-capture-recorded? "C3-CAPTURE"]
-                        [:metadata-preservation-and-change? "C3-METADATA"]
-                        [:fact-invalidation-recorded? "C3-FACT-STALE"]
-                        [:serialization-round-trips? "C3-SERIALIZE"]
-                        [:reader-products-authentic? "C3-FACT-STALE"]
-                        [:syntax-verifier-current? "C3-FACT-STALE"]
-                        [:syntax-verifier-passed? "C3-SHAPE"]
-                        [:gravity-authoritative-products-current?
-                         "C3-FACT-STALE"]
-                        [:diagnostics-covered? "C3-SHAPE"]]]
-      (when-not (get proof field)
-        (c3-syntax-fail! id source-path {:stage :syntax-object-model}
-                         {:missing-fields [field]}))))
-  :complete)
+  (c3-syntax-verification-call
+   c3-syntax-verification/c3-syntax-validate! source-path artifact))
 
 (defn sh04-syntax-registered-literal-fail!
   [source-path form-record missing-fields facts]
@@ -155729,116 +147540,62 @@
        (assoc base :registered-literal-projection projection))
       base)))
 
+(declare c3-path-neutral-reader-artifact-view
+         c3-path-neutral-syntax-object
+         c3-gravity-syntax-boundary-identity-view
+         c3-artifact-identity-input
+         c3-artifact-id)
+
+(defn- c3-artifact-identity-ops
+  []
+  {:c2-token-hash-input c2-token-hash-input
+   :c2-form-hash-input c2-form-hash-input
+   :c2-syntax-seed-hash-input c2-syntax-seed-hash-input
+   :c2-extension-hash-input c2-extension-hash-input
+   :c2-path-neutral-span c2-path-neutral-span
+   :c3-path-neutral-origin c3-path-neutral-origin
+   :reader-canonical-hash reader-canonical-hash
+   :c3-path-neutral-reader-artifact-view c3-path-neutral-reader-artifact-view
+   :c3-path-neutral-syntax-object c3-path-neutral-syntax-object
+   :c3-gravity-syntax-boundary-identity-view
+   c3-gravity-syntax-boundary-identity-view
+   :c3-artifact-identity-input c3-artifact-identity-input
+   :c3-artifact-id c3-artifact-id})
+
+(def ^:private ^:dynamic *c3-artifact-identity-leaf-call?* false)
+
+(defn- c3-artifact-identity-call
+  [operation & args]
+  (if *c3-artifact-identity-leaf-call?*
+    (apply operation args)
+    (binding [*c3-artifact-identity-leaf-call?* true]
+      (c3-artifact-identity/with-operations
+       (c3-artifact-identity-ops)
+       #(apply operation args)))))
+
 (defn c3-path-neutral-reader-artifact-view
   [c2-view]
-  (-> c2-view
-      (update :sh03-reader-authentication
-              #(dissoc % :provenance-binding-id))
-      (update :source-unit-record
-              #(-> %
-                   (dissoc :path)
-                   (update :project-root-record dissoc :path)))
-      (update :token-stream c2-token-hash-input)
-      (update :form-tree c2-form-hash-input)
-      (update :syntax-seed-stream c2-syntax-seed-hash-input)
-      (update :reader-extension-invocation-records c2-extension-hash-input)
-      (update :reader-source-map
-              (fn [records]
-                (mapv #(update % :span c2-path-neutral-span) records)))
-      (update :literal-decoding-records
-              (fn [records]
-                (mapv #(update % :span c2-path-neutral-span) records)))
-      (update-in [:semantic-error-deferment-record
-                  :deferred-literal-records]
-                 (fn [records]
-                   (mapv #(update % :span c2-path-neutral-span) records)))))
+  (c3-artifact-identity-call
+   c3-artifact-identity/c3-path-neutral-reader-artifact-view c2-view))
 
 (defn c3-path-neutral-syntax-object
   [syntax]
-  (-> syntax
-      (update :span
-              (fn [span]
-                (-> span
-                    (update :primary c2-path-neutral-span)
-                    (update :all
-                            #(mapv c2-path-neutral-span (or % []))))))
-      (update :origin #(mapv c3-path-neutral-origin (or % [])))))
+  (c3-artifact-identity-call
+   c3-artifact-identity/c3-path-neutral-syntax-object syntax))
 
 (defn c3-gravity-syntax-boundary-identity-view
   [boundary]
-  (let [binding (:plan-binding boundary)
-        result (:resolved-syntax-result boundary)
-        envelope (:authenticated-envelope boundary)]
-    {:slice (:slice boundary)
-     :owner (:owner boundary)
-     :adapter-contract (:adapter-contract boundary)
-     :plan-binding
-     (select-keys
-      binding
-      [:artifact :status :semantic-authority :source-byte-count
-       :source-content-hash :plan-semantic-hash
-       :functions-semantic-hash :function-count
-       :function-names-hash :function-shapes-hash
-       :public-function-hashes :public-function-shapes])
-     :reader-semantic-binding (:reader-semantic-binding boundary)
-     :reader-source-revision (:reader-source-revision boundary)
-     :resolved-syntax-result
-     (select-keys
-      result
-      [:artifact :kind :schema-version :status :artifact-id
-       :semantic-source-id
-       :reader-binding :root-syntax-ids :graph-verification-report
-       :syntax-serialization :authority :trusted-boundary])
-     :semantic-envelope-id (:semantic-envelope-id envelope)
-     :resolved-stream-verification
-     (select-keys (:resolved-stream-verification boundary)
-                  [:artifact :schema-version :status :checks])
-     :stream-digest-requests (:stream-digest-requests boundary)
-     :stream-resolved-digests (:stream-resolved-digests boundary)
-     :gravity-syntax-serialization
-     (select-keys (:gravity-syntax-serialization boundary)
-                  [:artifact :schema-version :status :encoding
-                   :payload-id-request])
-     :gravity-syntax-deserialization
-     (select-keys (:gravity-syntax-deserialization boundary)
-                  [:artifact :schema-version :status :encoding])
-     :uncredited-compatibility-facade
-     (:uncredited-compatibility-facade boundary)
-     :target-source-reread? (:target-source-reread? boundary)
-     :clojure-adapter-residual? (:clojure-adapter-residual? boundary)
-     :self-hosted? (:self-hosted? boundary)}))
+  (c3-artifact-identity-call
+   c3-artifact-identity/c3-gravity-syntax-boundary-identity-view boundary))
 
 (defn c3-artifact-identity-input
   [artifact]
-  (let [boundary (:gravity-syntax-boundary artifact)]
-    (cond->
-     (-> artifact
-         (dissoc :artifact-id)
-         (update :c2-reader-artifact c3-path-neutral-reader-artifact-view)
-         (update :syntax-object-stream
-                 #(mapv c3-path-neutral-syntax-object (or % [])))
-         (update-in [:origin-chain-graph :nodes]
-                    (fn [nodes]
-                      (mapv #(update % :origin
-                                     (fn [origins]
-                                       (mapv c3-path-neutral-origin
-                                             (or origins []))))
-                            (or nodes []))))
-         (update-in [:gravity-origin-chain-graph :nodes]
-                    (fn [nodes]
-                      (mapv #(update % :origin
-                                     (fn [origins]
-                                       (mapv c3-path-neutral-origin
-                                             (or origins []))))
-                            (or nodes [])))))
-      boundary
-      (assoc :c2-reader-artifact (:reader-semantic-binding boundary)
-             :gravity-syntax-boundary
-             (c3-gravity-syntax-boundary-identity-view boundary)))))
+  (c3-artifact-identity-call
+   c3-artifact-identity/c3-artifact-identity-input artifact))
 
 (defn c3-artifact-id
   [artifact]
-  (reader-canonical-hash (c3-artifact-identity-input artifact)))
+  (c3-artifact-identity-call c3-artifact-identity/c3-artifact-id artifact))
 
 (defn- sh03-c3-precomputed-c2-verify!
   [candidate source-path c2-artifact]
