@@ -6,7 +6,10 @@
              c15-diagnostic-stream-contract
              c15-diagnostic-catalog
              build-c15-diagnostic
-             verify-c15-diagnostic-stream])
+             verify-c15-diagnostic-stream
+             sh15-diagnostic-input-valid?
+             sh15-build-diagnostic-boundary
+             sh15-verify-diagnostic-boundary])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -136,3 +139,670 @@
                       :origin-chains :related-spans
                       :diagnostic-facts :remediation-records
                       :redaction-markers :golden-fixture-identity]}))
+
+; SH-15 is a bounded, non-authoritative preservation boundary over small
+; external references.  Tests derive these references only after fresh SH13
+; and SH14 verification, but C15 itself authenticates neither the projection
+; nor the upstream semantics.  Self-consistent forged references are therefore
+; admissible external shape/equality inputs, not authority evidence.
+
+(defn sh15-exact-keys? [value expected]
+  (if (map? value) (= (set (keys value)) expected) false))
+
+(defn sh15-member? [values value]
+  (if (= 0 (count values))
+    false
+    (if (= value (first values))
+      true
+      (sh15-member? (rest values) value))))
+
+(defn sh15-lowercase-hex? [characters]
+  (if (= 0 (count characters))
+    true
+    (if (sh15-member?
+         [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f]
+         (first characters))
+      (sh15-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh15-sha256-shape? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (let [characters (vec value)]
+        (if (= [\s \h \a \2 \5 \6 \:] (subvec characters 0 7))
+          (sh15-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh15-aggregate? [value]
+  (if (map? value) true
+      (if (vector? value) true (if (set? value) true false))))
+
+(defn sh15-children [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= 0 (count remaining))
+        result
+        (recur (rest remaining)
+               (conj (conj result (first remaining))
+                     (get value (first remaining))))))
+    (if (vector? value) value (if (set? value) (vec value) []))))
+
+(defn sh15-scalar-valid? [value]
+  (if (= nil value) true
+    (if (boolean? value) true
+      (if (keyword? value) (<= (count (str value)) 512)
+        (if (symbol? value) (<= (count (str value)) 512)
+          (if (string? value) (<= (count value) 4096)
+            (if (integer? value)
+              (if (<= -9007199254740991 value)
+                (<= value 9007199254740991)
+                false)
+              (if (char? value) true false))))))))
+
+(defn sh15-scalar-units [value]
+  (if (string? value) (count value)
+    (if (symbol? value) (count (str value))
+      (if (keyword? value) (count (str value)) 1))))
+
+(defn sh15-push-children [frontier children depth]
+  (loop [remaining children result frontier]
+    (if (= 0 (count remaining))
+      result
+      (recur (rest remaining)
+             (conj result [(first remaining) (+ depth 1)])))))
+
+(defn sh15-carrier-preflight [value]
+  (if (seq? value)
+    {:status :rejected :reason :arbitrary-seq}
+    (loop [frontier [[value 0]] nodes 0 enqueued 1 scalar-units 0]
+      (if (= 0 (count frontier))
+        {:status :accepted :nodes nodes :scalar-units scalar-units}
+        (let [entry (first frontier)
+              remaining (subvec frontier 1 (count frontier))
+              current (first entry)
+              depth (second entry)
+              next-nodes (+ nodes 1)]
+          (if (> next-nodes 16384)
+            {:status :rejected :reason :carrier-node-bound}
+            (if (> depth 128)
+              {:status :rejected :reason :carrier-depth-bound}
+              (if (seq? current)
+                {:status :rejected :reason :arbitrary-seq}
+                (if (sh15-aggregate? current)
+                  (let [width (count current)
+                        limit (if (vector? current) 1024 512)
+                        children (sh15-children current)
+                        next-enqueued (+ enqueued (count children))]
+                    (if (> width limit)
+                      {:status :rejected :reason :carrier-width-bound}
+                      (if (> next-enqueued 16384)
+                        {:status :rejected :reason :carrier-frontier-bound}
+                        (recur (sh15-push-children remaining children depth)
+                               next-nodes next-enqueued scalar-units))))
+                  (if (sh15-scalar-valid? current)
+                    (let [next-units
+                          (+ scalar-units (sh15-scalar-units current))]
+                      (if (> next-units 65536)
+                        {:status :rejected :reason :carrier-scalar-unit-bound}
+                        (recur remaining next-nodes enqueued next-units)))
+                    {:status :rejected :reason :carrier-scalar-shape}))))))))))
+
+(defn sh15-domain-checks []
+  [:bounded-c11-input-carriers
+   :exact-proof-reference-anchor-and-payload
+   :exact-c8-c9-c10-lineage
+   :path-neutral-semantic-identity
+   :separate-physical-provenance
+   :external-resolution-shape-checked
+   :fresh-c12-recomputation])
+
+(defn sh15-domain-nonclaims []
+  [:generic-mir-verifier :executable-load :target-backend-lowering
+   :c12-authority :proof-authority :self-hosting :release
+   :trusted-digest-resolution :independent-canonical-digest-verification])
+
+(defn sh15-layout-nonclaims []
+  [:physical-allocation :target-abi :pointer-semantics :lifetime-semantics
+   :backend-lowering :runtime-execution :executable-artifact
+   :compiler-authority :proof-certificate :trusted-digest-resolution
+   :independent-canonical-digest-verification :c11-mir-verifier
+   :self-hosting :release :seed-retirement])
+
+(defn sh15-pending []
+  [:upstream-semantic-authentication :reference-projection-authentication
+   :trusted-digest-resolution :independent-canonical-digest-verification
+   :complete-c11-mir-adapter :event-binding :all-renderers
+   :complete-redaction-policy :deterministic-ordering-proof
+   :golden-diagnostic-corpus :backend-lowering :runtime-execution
+   :public-compiler-integration :semantic-authority :proof-certificate
+   :self-hosting :release :seed-retirement])
+
+(defn sh15-nonclaims []
+  [:upstream-semantic-authentication :production-authenticated-upstream
+   :reference-projection-authentication :full-upstream-carrier-replay
+   :digest-authority :trusted-digest-resolution
+   :independent-canonical-digest-verification
+   :diagnostic-event-binding :complete-c15-conformance
+   :diagnostic-rendering :complete-redaction :deterministic-ordering
+   :golden-fixture-conformance :backend-diagnostics :runtime-diagnostics
+   :executable-artifact :compiler-authority :proof-certificate
+   :self-hosting :release :seed-retirement])
+
+(defn sh15-domain-reference-keys []
+  #{:artifact :schema-version :source-artifact :source-schema-version
+    :source-status :artifact-id :source-identity-binding-status
+    :source-scope :source-lowering-status :profile :target})
+
+(defn sh15-layout-reference-keys []
+  #{:artifact :schema-version :source-artifact :source-schema-version
+    :source-status :source-identity-binding-status :layout-model
+    :physical-layout? :target-independent? :executable-load?
+    :source-lowering-status :source-semantic-authority :profile :target})
+
+(defn sh15-domain-verification-reference-keys []
+  #{:artifact :schema-version :status :source-verifier-artifact
+    :source-verifier-schema-version :source-verifier-status :scope
+    :checks :nonclaims :expected-reference :candidate-reference})
+
+(defn sh15-layout-verification-reference-keys []
+  #{:artifact :schema-version :status :source-verifier-artifact
+    :source-verifier-schema-version :source-verifier-status :nonclaims
+    :expected-reference :candidate-reference})
+
+(defn sh15-request-keys []
+  #{:artifact :schema-version :domain-reference
+    :domain-verification-reference :layout-reference
+    :layout-verification-reference :upstream-diagnostics
+    :profile :target :provenance})
+
+(defn sh15-result-keys []
+  #{:artifact :schema-version :status :diagnostic-stream :profile :target
+    :semantic-authority :executable? :lowering-status :seed-boundary?
+    :self-hosted? :identity-binding-status :verification-status
+    :diagnostic-input-status :identity-input :provenance :diagnostics
+    :pending :nonclaims})
+
+(defn sh15-domain-reference-valid? [reference profile target]
+  (if (sh15-exact-keys? reference (sh15-domain-reference-keys))
+    (if (= :gravity/sh15-external-sh13-evidence-reference
+           (get reference :artifact))
+      (if (= 1 (get reference :schema-version))
+        (if (= :gravity/sh13-c11-domain-evidence
+               (get reference :source-artifact))
+          (if (= 1 (get reference :source-schema-version))
+            (if (= :accepted (get reference :source-status))
+              (if (sh15-sha256-shape? (get reference :artifact-id))
+                (if (= :coordinator-resolution-shape-checked
+                       (get reference :source-identity-binding-status))
+                  (if (= :proof-reference-shape-only
+                         (get reference :source-scope))
+                    (if (= :rejected
+                           (get reference :source-lowering-status))
+                      (if (= profile (get reference :profile))
+                        (= target (get reference :target))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh15-layout-reference-valid? [reference profile target]
+  (if (sh15-exact-keys? reference (sh15-layout-reference-keys))
+    (if (= :gravity/sh15-external-sh14-layout-reference
+           (get reference :artifact))
+      (if (= 1 (get reference :schema-version))
+        (if (= :gravity/sh14-authenticated-layout
+               (get reference :source-artifact))
+          (if (= 1 (get reference :source-schema-version))
+            (if (= :accepted (get reference :source-status))
+              (if (= :unbound
+                     (get reference :source-identity-binding-status))
+                (if (= :fixed-slot-v1 (get reference :layout-model))
+                  (if (= false (get reference :physical-layout?))
+                    (if (= true (get reference :target-independent?))
+                      (if (= false (get reference :executable-load?))
+                        (if (= :rejected
+                               (get reference :source-lowering-status))
+                          (if (= :none
+                                 (get reference :source-semantic-authority))
+                            (if (= profile (get reference :profile))
+                              (= target (get reference :target))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh15-domain-verification-reference-valid? [verification reference]
+  (if (sh15-exact-keys?
+       verification (sh15-domain-verification-reference-keys))
+    (if (= :gravity/sh15-external-sh13-verification-reference
+           (get verification :artifact))
+      (if (= 1 (get verification :schema-version))
+        (if (= :external-reference-shape-and-equality-only
+               (get verification :status))
+          (if (= :gravity/sh13-c11-domain-evidence-verification
+                 (get verification :source-verifier-artifact))
+            (if (= 1 (get verification :source-verifier-schema-version))
+              (if (= :passed (get verification :source-verifier-status))
+                (if (= :proof-reference-shape-only
+                       (get verification :scope))
+                  (if (= (sh15-domain-checks) (get verification :checks))
+                    (if (= (sh15-domain-nonclaims)
+                           (get verification :nonclaims))
+                      (if (= reference
+                             (get verification :expected-reference))
+                        (= reference
+                           (get verification :candidate-reference))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh15-layout-verification-reference-valid? [verification reference]
+  (if (sh15-exact-keys?
+       verification (sh15-layout-verification-reference-keys))
+    (if (= :gravity/sh15-external-sh14-verification-reference
+           (get verification :artifact))
+      (if (= 1 (get verification :schema-version))
+        (if (= :external-reference-shape-and-equality-only
+               (get verification :status))
+          (if (= :gravity/sh14-authenticated-layout-verification
+                 (get verification :source-verifier-artifact))
+            (if (= 1 (get verification :source-verifier-schema-version))
+              (if (= :passed (get verification :source-verifier-status))
+                (if (= (sh15-layout-nonclaims)
+                       (get verification :nonclaims))
+                  (if (= reference
+                         (get verification :expected-reference))
+                    (= reference
+                       (get verification :candidate-reference))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh15-upstream-diagnostic-keys []
+  #{:diagnostic-id :rule :family :reason :missing-fact :stage :domain
+    :artifact-id :semantic-anchor :owner-document :verifier :value-id
+    :kind :profile :target :source-span :generated-origin-chain
+    :remediation})
+
+(defn sh15-point-valid? [point]
+  (if (sh15-exact-keys? point #{:byte :line :column})
+    (if (integer? (get point :byte))
+      (if (<= 0 (get point :byte))
+        (if (<= (get point :byte) 2147483647)
+          (if (integer? (get point :line))
+            (if (<= 1 (get point :line))
+              (if (<= (get point :line) 2147483647)
+                (if (integer? (get point :column))
+                  (if (<= 1 (get point :column))
+                    (<= (get point :column) 2147483647)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh15-source-span-valid? [span]
+  (if (sh15-exact-keys?
+       span #{:source-id :actual-source-path :start :end})
+    (if (keyword? (get span :source-id))
+      (if (string? (get span :actual-source-path))
+        (if (<= (count (get span :actual-source-path)) 512)
+          (if (sh15-point-valid? (get span :start))
+            (if (sh15-point-valid? (get span :end))
+              (<= (get (get span :start) :byte)
+                  (get (get span :end) :byte))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh15-origin-valid? [origin]
+  (if (sh15-exact-keys?
+       origin #{:kind :source-id :actual-source-path})
+    (if (keyword? (get origin :kind))
+      (if (keyword? (get origin :source-id))
+        (if (string? (get origin :actual-source-path))
+          (<= (count (get origin :actual-source-path)) 512)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh15-origins-valid-from? [origins index]
+  (if (= index (count origins))
+    true
+    (if (sh15-origin-valid? (get origins index))
+      (sh15-origins-valid-from? origins (+ index 1))
+      false)))
+
+(defn sh15-bounded-string? [value maximum-units]
+  (if (string? value)
+    (<= (count value) maximum-units)
+    false))
+
+(defn sh15-optional-sha256-shape? [value]
+  (if (= nil value)
+    true
+    (sh15-sha256-shape? value)))
+
+(defn sh15-optional-bounded-string? [value maximum-units]
+  (if (= nil value)
+    true
+    (sh15-bounded-string? value maximum-units)))
+
+(defn sh15-upstream-diagnostic-valid? [diagnostic profile target]
+  (if (sh15-exact-keys? diagnostic (sh15-upstream-diagnostic-keys))
+    (= [true true true true true true true true true true true true true true
+        true true true true true true]
+       [(sh15-bounded-string? (get diagnostic :diagnostic-id) 128)
+        (sh15-bounded-string? (get diagnostic :rule) 128)
+        (keyword? (get diagnostic :family))
+        (keyword? (get diagnostic :reason))
+        (keyword? (get diagnostic :missing-fact))
+        (keyword? (get diagnostic :stage))
+        (keyword? (get diagnostic :domain))
+        (sh15-optional-sha256-shape? (get diagnostic :artifact-id))
+        (sh15-optional-bounded-string?
+         (get diagnostic :semantic-anchor) 512)
+        (= :authenticated-fixed-slots (get diagnostic :value-id))
+        (= :tuple (get diagnostic :kind))
+        (= "C12" (get diagnostic :owner-document))
+        (= :gravity.compiler.c12-domain-ir-architecture/sh14-verify-authenticated-layout
+           (get diagnostic :verifier))
+        (= profile (get diagnostic :profile))
+        (= target (get diagnostic :target))
+        (sh15-source-span-valid? (get diagnostic :source-span))
+        (vector? (get diagnostic :generated-origin-chain))
+        (if (vector? (get diagnostic :generated-origin-chain))
+          (<= (count (get diagnostic :generated-origin-chain)) 64)
+          false)
+        (if (vector? (get diagnostic :generated-origin-chain))
+          (sh15-origins-valid-from?
+           (get diagnostic :generated-origin-chain) 0)
+          false)
+        (keyword? (get diagnostic :remediation))])
+    false))
+
+(defn sh15-diagnostics-valid-from? [diagnostics index profile target]
+  (if (= index (count diagnostics))
+    true
+    (if (sh15-upstream-diagnostic-valid?
+         (get diagnostics index) profile target)
+      (sh15-diagnostics-valid-from? diagnostics (+ index 1) profile target)
+      false)))
+
+(defn sh15-id-present-from? [diagnostics index diagnostic-id]
+  (if (= index (count diagnostics))
+    false
+    (if (= diagnostic-id (get (get diagnostics index) :diagnostic-id))
+      true
+      (sh15-id-present-from? diagnostics (+ index 1) diagnostic-id))))
+
+(defn sh15-unique-diagnostic-ids-from? [diagnostics index]
+  (if (= index (count diagnostics))
+    true
+    (if (sh15-id-present-from?
+         diagnostics (+ index 1)
+         (get (get diagnostics index) :diagnostic-id))
+      false
+      (sh15-unique-diagnostic-ids-from? diagnostics (+ index 1)))))
+
+(defn sh15-request-semantics-error [request]
+  (if (= :gravity/sh15-diagnostic-boundary-request
+         (get request :artifact))
+    (if (= 1 (get request :schema-version))
+      (let [profile (get request :profile)
+            target (get request :target)
+            domain-reference (get request :domain-reference)
+            layout-reference (get request :layout-reference)
+            diagnostics (get request :upstream-diagnostics)]
+        (if (keyword? profile)
+          (if (keyword? target)
+            (if (sh15-domain-reference-valid?
+                 domain-reference profile target)
+              (if (sh15-domain-verification-reference-valid?
+                   (get request :domain-verification-reference)
+                   domain-reference)
+                (if (sh15-layout-reference-valid?
+                     layout-reference profile target)
+                  (if (sh15-layout-verification-reference-valid?
+                       (get request :layout-verification-reference)
+                       layout-reference)
+                    (if (vector? diagnostics)
+                      (if (<= (count diagnostics) 256)
+                        (if (sh15-diagnostics-valid-from?
+                             diagnostics 0 profile target)
+                          (if (sh15-unique-diagnostic-ids-from?
+                               diagnostics 0)
+                            nil
+                            :duplicate-upstream-diagnostic-id)
+                          :upstream-diagnostic-schema)
+                        :diagnostic-count-bound)
+                      :diagnostics-not-vector)
+                    :layout-verification-reference-invalid)
+                  :layout-reference-invalid)
+                :domain-verification-reference-invalid)
+              :domain-reference-invalid)
+            :target-not-keyword)
+          :profile-not-keyword))
+      :schema-version-mismatch)
+    :artifact-mismatch))
+
+(defn sh15-preflighted-request-error [request]
+  (let [preflight (sh15-carrier-preflight request)]
+    (if (= :accepted (get preflight :status))
+      (sh15-request-semantics-error request)
+      :request-carrier-rejected)))
+
+(defn sh15-request-error [request]
+  (if (map? request)
+    (if (= 10 (count request))
+      (if (sh15-exact-keys? request (sh15-request-keys))
+        (let [diagnostics (get request :upstream-diagnostics)]
+          (if (vector? diagnostics)
+            (if (> (count diagnostics) 256)
+              :diagnostic-count-bound
+              (sh15-preflighted-request-error request))
+            (sh15-preflighted-request-error request)))
+        :request-schema-mismatch)
+      :request-schema-mismatch)
+    :request-schema-mismatch))
+
+(defn sh15-diagnostic-input-valid? [request]
+  (= nil (sh15-request-error request)))
+
+(defn sh15-preserved-facts [diagnostic]
+  {:family (get diagnostic :family) :reason (get diagnostic :reason)
+   :missing-fact (get diagnostic :missing-fact)
+   :domain (get diagnostic :domain)
+   :artifact-id (get diagnostic :artifact-id)
+   :semantic-anchor (get diagnostic :semantic-anchor)
+   :owner-document (get diagnostic :owner-document)
+   :verifier (get diagnostic :verifier)
+   :value-id (get diagnostic :value-id) :kind (get diagnostic :kind)})
+
+(defn sh15-preserve-diagnostic [diagnostic]
+  (let [facts (sh15-preserved-facts diagnostic)
+        primary {:span (get diagnostic :source-span)
+                 :artifact (get diagnostic :artifact-id)}]
+    {:artifact :gravity/sh15-partial-diagnostic
+     :diagnostic-id [:coordinator-digest-required
+                     (get diagnostic :rule) primary
+                     (get diagnostic :stage) facts]
+     :upstream-diagnostic-id (get diagnostic :diagnostic-id)
+     :rule (get diagnostic :rule) :severity :error :lifecycle :active
+     :stage (get diagnostic :stage)
+     :message-key :upstream-compiler-rejection
+     :primary primary :related []
+     :origin-chain (get diagnostic :generated-origin-chain)
+     :profile (get diagnostic :profile) :target (get diagnostic :target)
+     :facts facts :remediation [(get diagnostic :remediation)]
+     :redactions :not-evaluated :conformance-status :partial
+     :ordering-status :caller-order-preserved
+     :source-status :external-unverified-preservation-input}))
+
+(defn sh15-preserve-diagnostics-from [diagnostics index result]
+  (if (= index (count diagnostics))
+    result
+    (sh15-preserve-diagnostics-from
+     diagnostics (+ index 1)
+     (conj result (sh15-preserve-diagnostic (get diagnostics index))))))
+
+(defn sh15-identity-span [span]
+  {:source-id (get span :source-id)
+   :start (get span :start) :end (get span :end)})
+
+(defn sh15-identity-origins-from [origins index result]
+  (if (= index (count origins))
+    result
+    (let [origin (get origins index)]
+      (sh15-identity-origins-from
+       origins (+ index 1)
+       (conj result {:kind (get origin :kind)
+                     :source-id (get origin :source-id)})))))
+
+(defn sh15-identity-diagnostic [diagnostic]
+  (let [primary
+        (assoc (get diagnostic :primary) :span
+               (sh15-identity-span (get (get diagnostic :primary) :span)))
+        facts (get diagnostic :facts)
+        normalized
+        (assoc
+         (assoc diagnostic :primary primary)
+         :origin-chain
+         (sh15-identity-origins-from (get diagnostic :origin-chain) 0 []))]
+    (assoc
+     (assoc normalized :diagnostic-id
+            [:coordinator-digest-required
+             (get diagnostic :rule) primary (get diagnostic :stage) facts])
+     :upstream-diagnostic-id :external-unbound)))
+
+(defn sh15-identity-diagnostics-from [diagnostics index result]
+  (if (= index (count diagnostics))
+    result
+    (sh15-identity-diagnostics-from
+     diagnostics (+ index 1)
+     (conj result (sh15-identity-diagnostic (get diagnostics index))))))
+
+(defn sh15-summary [diagnostics]
+  {:error (count diagnostics) :warning 0 :info 0 :hint 0 :internal-error 0})
+
+(defn sh15-identity-input [request diagnostics]
+  {:domain :gravity/sh15-diagnostic-boundary-v1 :schema-version 1
+   :domain-reference (get request :domain-reference)
+   :domain-verification-reference (get request :domain-verification-reference)
+   :layout-reference (get request :layout-reference)
+   :layout-verification-reference (get request :layout-verification-reference)
+   :diagnostics (sh15-identity-diagnostics-from diagnostics 0 [])
+   :profile (get request :profile) :target (get request :target)
+   :verification-status :external-reference-shape-and-equality-only
+   :diagnostic-input-status :external-unverified-preservation-input
+   :semantic-authority :none :executable? false
+   :lowering-status :rejected :seed-boundary? true :self-hosted? false
+   :identity-binding-status :unbound
+   :pending (sh15-pending) :nonclaims (sh15-nonclaims)})
+
+(defn sh15-owned-diagnostic [request reason]
+  {:diagnostic-id [:coordinator-digest-required "C15-SCHEMA" reason
+                   :external-reference-diagnostic-boundary]
+   :rule "C15-SCHEMA" :severity :error :lifecycle :active
+   :stage :compiler-diagnostics :message-key :diagnostic-boundary-invalid
+   :primary {:span nil :syntax-id nil :artifact nil}
+   :related [] :origin-chain []
+   :profile (if (keyword? (get request :profile)) (get request :profile) nil)
+   :target (if (keyword? (get request :target)) (get request :target) nil)
+   :facts {:reason reason :schema-field :external-reference-boundary}
+   :remediation [:supply-exact-bounded-external-reference-request]
+   :redactions [:upstream-carrier-omitted]})
+
+(defn sh15-rejection [request reason]
+  {:artifact :gravity/sh15-diagnostic-boundary :schema-version 1
+   :status :rejected :diagnostics [(sh15-owned-diagnostic request reason)]
+   :pending [:valid-external-reference-request]})
+
+(defn sh15-build-diagnostic-boundary [request]
+  (let [error (sh15-request-error request)]
+    (if (= nil error)
+      (let [diagnostics
+            (sh15-preserve-diagnostics-from
+             (get request :upstream-diagnostics) 0 [])]
+        {:artifact :gravity/sh15-diagnostic-boundary :schema-version 1
+         :status :accepted
+         :diagnostic-stream
+         {:artifact :gravity/sh15-diagnostic-stream :schema-version 1
+          :stage :compiler-diagnostics
+          :input-references [(get request :domain-reference)
+                             (get request :layout-reference)]
+          :diagnostics diagnostics :summary-counts (sh15-summary diagnostics)
+          :ordering-status :caller-order-preserved-unverified
+          :redaction-status :not-evaluated :rendering-version :pending}
+         :profile (get request :profile) :target (get request :target)
+         :semantic-authority :none :executable? false
+         :lowering-status :rejected :seed-boundary? true :self-hosted? false
+         :identity-binding-status :unbound
+         :verification-status :external-reference-shape-and-equality-only
+         :diagnostic-input-status :external-unverified-preservation-input
+         :identity-input (sh15-identity-input request diagnostics)
+         :provenance (get request :provenance) :diagnostics []
+         :pending (sh15-pending) :nonclaims (sh15-nonclaims)})
+      (sh15-rejection request error))))
+
+(defn sh15-verify-diagnostic-boundary [request candidate]
+  (let [error (sh15-request-error request)
+        preflight (sh15-carrier-preflight candidate)]
+    (if (= nil error)
+      (if (= :accepted (get preflight :status))
+        (let [expected (sh15-build-diagnostic-boundary request)]
+          (if (sh15-exact-keys? candidate (sh15-result-keys))
+            (if (= expected candidate)
+              {:artifact :gravity/sh15-diagnostic-boundary-verification
+               :schema-version 1 :status :passed
+               :expected expected :candidate candidate
+               :semantic-authority :none :nonclaims (sh15-nonclaims)}
+              (assoc (sh15-rejection request :candidate-substitution)
+                     :artifact :gravity/sh15-diagnostic-boundary-verification))
+            (assoc (sh15-rejection request :candidate-schema-mismatch)
+                   :artifact :gravity/sh15-diagnostic-boundary-verification)))
+        (assoc (sh15-rejection request :candidate-carrier-rejected)
+               :artifact :gravity/sh15-diagnostic-boundary-verification))
+      (assoc (sh15-rejection request error)
+             :artifact :gravity/sh15-diagnostic-boundary-verification))))
