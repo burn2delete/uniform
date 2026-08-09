@@ -1,0 +1,1569 @@
+; W5-owned executable compiler-pipeline verification leaf.
+; This bounded :meta component checks the C1/C2/C7/C8/C9/C10 evidence spine
+; for one explicitly selected native target.  It is a verifier record, not an
+; authority: the Clojure seed, stage2 JVM harness, independent review, and
+; full-language/release surfaces remain explicit residual boundaries.
+(ns gravity.compiler.w5-compiler-pipeline-verifier
+  (:profile :meta)
+  ; Stage2 source declaration is the existing JVM compiler-plan harness only;
+  ; verifier records below pin and enforce the native candidate target.
+  (:target :jvm)
+  (:exports [w5-pipeline-policy
+             w5-pipeline-stage-order
+             w5-pipeline-target-contract
+             w5-pipeline-diagnostic
+             w5-pipeline-diagnostic-valid?
+             w5-pipeline-identity-input
+             w5-pipeline-request-shape-valid?
+             w5-pipeline-cross-links-valid?
+             w5-pipeline-verify
+             w5-pipeline-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage2
+               :component :w5-compiler-pipeline-verifier
+               :owner :w5
+               :source-language :gravity
+               :seed :clojure-stage0
+               :status :executable-leaf
+               :scope :stage-owned-nonauthority
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :clojure-seed-boundary? true
+               :self-hosted? false
+               :release? false
+               :public-authority? false
+               :authority :non-authority
+               :non-authoritative? true
+               :jvm-execution? false
+               :residual-boundaries #{:clojure-stage2-compiler-plan
+                                      :jvm-stage2-runtime
+                                      :full-language-surfaces
+                                      :independent-review}
+               :governing-document-ids ["C1" "C2" "C7" "C8" "C9"
+                                        "C10" "D1" "D3" "D8" "D9"]
+               :implements [:canonical-pipeline-order
+                             :stage-artifact-contract
+                             :pass-contract-verifier
+                             :reader-evidence-verifier
+                             :typed-core-evidence-verifier
+                             :effect-capability-verifier
+                             :ownership-lifetime-verifier
+                             :profile-safety-verifier
+                             :safe1-outcome-verifier
+                             :target-lowering-verifier
+                             :path-neutral-identity
+                             :stable-diagnostics]
+               :does-not-claim [:global-pipeline-authority
+                                :full-language-completion
+                                :self-host-completion
+                                :release-readiness
+                                :public-proof-authority
+                                :seed-retirement]
+               :conformance {:accepted-fixtures
+                             ["self-hosting/w5-pipeline/accepted/pipeline-verification.gravity"
+                              "self-hosting/w5-pipeline/accepted/pipeline-verification.qst"]
+                             :rejected-fixtures
+                             ["self-hosting/w5-pipeline/rejected/invalid-pipeline-verification.gravity"
+                              "self-hosting/w5-pipeline/rejected/invalid-pipeline-verification.qst"]}}}))
+
+(def w5-pipeline-stage-order
+  [:read-source
+   :build-syntax
+   :macro-expand
+   :resolve-names
+   :lower-to-core
+   :type-check
+   :effect-check
+   :profile-validate
+   :safety-analyze
+   :build-mir
+   :verify-mir
+   :optimize-mir
+   :lower-domain-ir
+   :verify-domain-ir
+   :lower-target
+   :emit-artifacts])
+
+(def w5-pipeline-safe1-outcomes
+  #{:proven-safe :runtime-checked :rejected :unsafe-island})
+
+(def w5-pipeline-target-contract
+  {:target :llvm-x86_64-linux
+   :os :linux
+   :arch :x86_64
+   :backend :llvm
+   :object-format :elf
+   :abi :sysv-amd64
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :candidate-fallback? false
+   :no-fallback? true
+   :allowed-targets #{:llvm-x86_64-linux}
+   :forbidden-targets #{:jvm :darwin :macos :windows
+                        :llvm-aarch64-linux :cross-target-inference}})
+
+(def w5-pipeline-pass-identities
+  [:pass/read-source :pass/build-syntax :pass/macro-expand
+   :pass/resolve-names :pass/lower-to-core :pass/type-check
+   :pass/effect-check :pass/profile-validate :pass/safety-analyze
+   :pass/build-mir :pass/verify-mir :pass/optimize-mir
+   :pass/lower-domain-ir :pass/verify-domain-ir :pass/lower-target
+   :pass/emit-artifacts])
+
+(def w5-pipeline-artifact-identities
+  [:artifact/source :artifact/syntax :artifact/expanded-syntax
+   :artifact/resolved-names :artifact/core :artifact/typed-core
+   :artifact/effect-checked-core :artifact/profile-validated-core
+   :artifact/safety-checked-core :artifact/mir :artifact/verified-mir
+   :artifact/optimized-mir :artifact/domain-ir :artifact/verified-domain-ir
+   :artifact/target-ir :artifact/emission])
+
+(def w5-pipeline-request-keys
+  #{:artifact :compiler-id :compiler-version :pipeline-id
+    :pipeline-version :source-root-id :source-span :provenance :profile :target
+    :stage-order :stage-identities :pass-identities :artifact-identities
+    :manifest-target-exact? :clojure-seed-boundary? :self-hosted? :release?
+    :public-authority? :authority :verifier-gates-complete?
+    :domain-anchor-preserved? :reader :stage-artifacts :passes :typed-core
+    :effects :capabilities :profile-validation :ownership :safety
+    :sensitive-operations :mir :target-lowering :artifacts})
+
+(def w5-pipeline-diagnostic-catalog
+  ; C10 has no separate verifier id; malformed safety artifacts use its
+  ; inventory/no-outcome family and remain within the named C10 catalog.
+  ["C1-PIPELINE" "C1-PASS-CONTRACT" "C1-EVIDENCE-DROP"
+   "C1-UNCHECKED-BACKEND" "C1-DOMAIN-ANCHOR" "C1-MANIFEST"
+   "C1-SELF-HOST"
+   "C2-ENCODING" "C2-DELIMITER" "C2-STRING" "C2-NUMERIC"
+   "C2-IDENTIFIER" "C2-NS-SHAPE" "C2-MAP" "C2-SET"
+   "C2-METADATA" "C2-ABBREV" "C2-EXTENSION" "C2-HASH"
+   "C7-TYPE-MISMATCH" "C7-ANNOTATION" "C7-DYNAMIC" "C7-CAST"
+   "C7-NULLABILITY" "C7-GENERIC" "C7-PROTOCOL" "C7-LAYOUT"
+   "C7-SCHEMA" "C7-VERIFY"
+   "C8-UNDECLARED" "C8-PROFILE" "C8-CAPABILITY" "C8-BUILD"
+   "C8-REPLAY" "C8-ORDER" "C8-RUNTIME" "C8-UNKNOWN" "C8-VERIFY"
+   "C9-USE-AFTER-MOVE" "C9-USE-AFTER-CONSUME" "C9-BORROW-ESCAPE"
+   "C9-MUT-ALIAS" "C9-MOVE-WHILE-BORROWED" "C9-REGION-ESCAPE"
+   "C9-ARENA-GENERATION" "C9-LINEAR-LEAK" "C9-LINEAR-DOUBLE"
+   "C9-TRANSFER" "C9-RUNTIME-CHECK" "C9-UNSAFE"
+   "C10-NO-OUTCOME" "C10-PROOF" "C10-CHECK" "C10-UNSAFE"
+   "C10-GENERATED" "C10-TAINT" "C10-CAPABILITY" "C10-FFI"
+   "C10-NUMERIC" "C10-OPTIMIZATION"])
+
+(def w5-pipeline-diagnostic-lifecycle
+  [:active :suppressed-by-policy :redacted :resolved-by-fix
+   :stale-after-edit])
+
+(def w5-pipeline-diagnostic-fallback-span
+  {:source-id :gravity.self-hosting/w5-pipeline
+   :start 0
+   :end 0})
+
+(def w5-pipeline-diagnostic-fallback-origin-chain
+  [{:kind :source
+    :source-id :gravity.self-hosting/w5-pipeline
+    :origin-id "diagnostic/explicit-provenance-fallback"}])
+
+(defn w5-pipeline-policy
+  []
+  {:artifact :gravity/w5-compiler-pipeline-policy
+   :schema-version 1
+   :scope :w5-compiler-pipeline-executable-leaf
+   :profile :meta
+   :target-contract w5-pipeline-target-contract
+   :pipeline-order w5-pipeline-stage-order
+   :stage-artifact-required-fields
+   [:stage :artifact-identity :input-id :output-id :requires :preserves :invalidates
+    :regenerates :effects :capabilities :profile :target :diagnostics
+    :artifact-edges :source-span :generated-origin]
+   :pass-contract-required-fields
+   [:pass-id :version :stage :input-ir :output-ir :requires :preserves
+    :invalidates :regenerates :effects :capabilities :profile :target
+    :diagnostics :source-span :generated-origin]
+   :reader-required-fields
+   [:source-id :encoding :delimiter-balanced? :string-terminated?
+    :numeric-forms-valid? :identifiers-valid? :namespace-shape-valid?
+    :map-forms-valid? :set-forms-valid? :metadata-valid?
+    :abbreviations-valid? :extensions-declared? :source-hash]
+   :type-required-fields
+   [:core-nodes :type-facts :constraints :dynamic-boundaries :casts
+    :layout-facts :schema-links :verifier-status]
+   :effect-required-fields
+   [:nodes :functions :declared :inferred :build-effects :runtime-effects
+    :replay-obligations :ordering-constraints :capability-proofs
+    :runtime-providers :verifier-status]
+   :ownership-required-fields
+   [:owners :moves :borrows :lifetimes :regions :arenas :linear
+    :transfers :runtime-checks :unsafe-audit-references :verifier-status]
+   :safety-required-fields
+   [:operations :outcomes :runtime-checks :proof-obligations
+    :certificate-references :unsafe-islands :taint-report
+    :capability-report :generated-code-provenance :ffi-boundaries
+    :numeric-safety :optimization-invalidation :verifier-status]
+   :verifier-gates [:syntax :macro :core :type-effect :profile
+                    :capability :ownership :safety :mir :optimization
+                    :domain :target :artifact]
+   :safe1-outcomes w5-pipeline-safe1-outcomes
+   :diagnostics w5-pipeline-diagnostic-catalog
+   :diagnostic-lifecycle w5-pipeline-diagnostic-lifecycle
+   :flags {:clojure-seed-boundary? true
+           :self-hosted? false
+           :release? false
+           :public-authority? false
+           :non-authoritative? true
+           :authority :non-authority}
+   :residual-boundaries
+   {:clojure-seed-boundary {:status :present
+                            :required-action :retire-clojure-seed}
+    :stage2-jvm-harness {:status :harness-only
+                         :required-action :replace-jvm-stage2-harness}
+    :full-language-surfaces {:status :incomplete
+                             :required-action :integrate-supported-surface}
+    :independent-review {:status :pending
+                         :required-action :obtain-independent-review}}
+   :denied-authority #{:filesystem :network :process :environment :clock
+                       :random :model-call :tool-call :registry :ffi
+                       :raw-memory :host-reflection}})
+
+(defn w5-pipeline-present? [value]
+  (if (= nil value) false true))
+
+(defn w5-pipeline-string? [value]
+  (if (string? value)
+    (> (count value) 0)
+    false))
+
+(defn w5-pipeline-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn w5-pipeline-suffix-match? [value suffix index]
+  (if (= index (count suffix))
+    true
+    (if (> (count suffix) (count value))
+      false
+      (if (= (get value (- (count value) (+ index 1)))
+             (get suffix (- (count suffix) (+ index 1))))
+        (w5-pipeline-suffix-match? value suffix (+ index 1))
+        false))))
+
+(defn w5-pipeline-path-ends-with? [value suffix]
+  (if (string? value)
+    (if (string? suffix)
+      (w5-pipeline-suffix-match? value suffix 0)
+      false)
+    false))
+
+(defn w5-pipeline-fields-present? [value fields]
+  (if (map? value)
+    (if (= (count fields) 0)
+      true
+      (if (w5-pipeline-present? (get value (first fields)))
+        (w5-pipeline-fields-present? value (rest fields))
+        false))
+    false))
+
+(defn w5-pipeline-subset? [required available]
+  (if (= (count required) 0)
+    true
+    (if (contains? available (first required))
+      (w5-pipeline-subset? (rest required) available)
+      false)))
+
+(defn w5-pipeline-vector-equal? [left right index]
+  (if (= index (count left))
+    (= (count left) (count right))
+    (if (= (get left index) (get right index))
+      (w5-pipeline-vector-equal? left right (+ index 1))
+      false)))
+
+(defn w5-pipeline-source-span-valid? [span]
+  (if (map? span)
+    (if (w5-pipeline-exact-keys?
+         span #{:source-id :start :end})
+      (if (keyword? (get span :source-id))
+      (if (integer? (get span :start))
+        (if (integer? (get span :end))
+          (if (<= 0 (get span :start))
+            (<= (get span :start) (get span :end))
+            false)
+          false)
+        false)
+      false)
+      false)
+    false))
+
+(defn w5-pipeline-origin-valid? [origin]
+  (if (map? origin)
+    (if (w5-pipeline-exact-keys?
+         origin #{:kind :source-id :origin-id})
+      (if (keyword? (get origin :kind))
+      (if (keyword? (get origin :source-id))
+        (w5-pipeline-string? (get origin :origin-id))
+        false)
+      false)
+      false)
+    false))
+
+(defn w5-pipeline-origins-valid? [origins]
+  (if (vector? origins)
+    (if (> (count origins) 0)
+      (loop [remaining origins]
+        (if (= (count remaining) 0)
+          true
+          (if (w5-pipeline-origin-valid? (first remaining))
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn w5-pipeline-provenance-valid? [provenance]
+  (if (map? provenance)
+    (if (keyword? (get provenance :source-id))
+      (if (w5-pipeline-string? (get provenance :actual-source-path))
+        (if (w5-pipeline-string? (get provenance :compiler-id))
+          (if (w5-pipeline-string? (get provenance :compiler-version))
+            (if (w5-pipeline-origins-valid?
+                 (get provenance :generated-origin-chain))
+              true
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-pipeline-canonical-diagnostic-stage [stage]
+  (if (= stage :reader) :read-source
+    (if (= stage :type-checking) :type-check
+      (if (= stage :effect-checking) :effect-check
+        (if (= stage :capability-validation) :effect-check
+          (if (= stage :profile-validation) :profile-validate
+            (if (= stage :ownership-lifetime) :safety-analyze
+              (if (= stage :safety-analysis) :safety-analyze
+                (if (= stage :safety-artifact) :safety-analyze
+                  (if (= stage :mir) :verify-mir
+                    (if (= stage :target-lowering) :lower-target
+                      (if (= stage :artifact-emission) :emit-artifacts
+                        (if (= stage :pipeline) :emit-artifacts
+                          (if (= stage :manifest) :emit-artifacts
+                            (if (= stage :verifier-gate) :emit-artifacts
+                              (if (= stage :verifier-result) :emit-artifacts
+                                (if (= stage :request) :read-source
+                                  (if (= stage :unknown) :read-source
+                                    stage))))))))))))))))))
+
+(defn w5-pipeline-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (w5-pipeline-member-from? values value (+ index 1)))))
+
+(defn w5-pipeline-diagnostic
+  [rule record stage pass remediation]
+  (let [pass-value (if (map? pass) pass {})
+        pass-id (if (w5-pipeline-present? (get pass-value :pass-id))
+                  (get pass-value :pass-id)
+                  :w5/compiler-pipeline)
+        stage-value (w5-pipeline-canonical-diagnostic-stage stage)
+        pass-version (if (w5-pipeline-present?
+                           (get pass-value :version))
+                       (get pass-value :version)
+                       "w5-pipeline-v1")
+        risk (if (w5-pipeline-present? (get pass-value :risk))
+               (get pass-value :risk)
+               :critical)
+        profiles (if (set? (get pass-value :affected-profiles))
+                   (get pass-value :affected-profiles)
+                   #{(get record :profile)})
+        targets (if (set? (get pass-value :affected-targets))
+                  (get pass-value :affected-targets)
+                  #{(get record :target)})
+        record-span (get record :source-span)
+        requested-span record-span
+        source-span-preserved
+        (w5-pipeline-source-span-valid? requested-span)
+        source-span (if source-span-preserved
+                      requested-span
+                      w5-pipeline-diagnostic-fallback-span)
+        span-source (if (w5-pipeline-source-span-valid? record-span)
+                      :request
+                      :explicit-fallback)
+        primary-artifact (if (w5-pipeline-present?
+                              (get pass-value :input-ir))
+                           (get pass-value :input-ir)
+                           (get record :source-root-id))
+        related-artifact (if (w5-pipeline-present?
+                              (get pass-value :output-ir))
+                           (get pass-value :output-ir)
+                           (get record :pipeline-id))
+        provenance-origins
+        (get (get record :provenance) :generated-origin-chain)
+        generated-origin-preserved
+        (w5-pipeline-origins-valid? provenance-origins)
+        origin-chain (if generated-origin-preserved
+                       provenance-origins
+                       w5-pipeline-diagnostic-fallback-origin-chain)
+        origin-source (if generated-origin-preserved
+                        :request-provenance
+                        :explicit-fallback)]
+    {:artifact :gravity/diagnostic
+     :diagnostic-id (str "diagnostic:" rule ":" stage-value ":"
+                         primary-artifact ":" pass-id ":"
+                         pass-version ":" risk)
+     :rule rule
+     :severity :error
+     :lifecycle :active
+     :stage stage-value
+     :message-key :compiler.pipeline.verification-failed
+     :primary {:span source-span
+               :syntax-id (get record :source-root-id)
+               :artifact primary-artifact}
+     :related [{:role :pipeline-output
+                :span source-span
+                :artifact related-artifact}]
+     :origin-chain origin-chain
+     :profile (get record :profile)
+     :target (get record :target)
+     :involved-artifacts {:input primary-artifact
+                          :output related-artifact}
+     :facts {:failure-rule rule
+             :pass-id pass-id
+             :pass-version pass-version
+             :risk risk
+             :affected-profiles profiles
+             :affected-targets targets
+             :source-id (get record :source-root-id)
+             :failing-stage stage-value
+             :source-span-preserved source-span-preserved
+             :generated-origin-preserved generated-origin-preserved
+             :provenance-recovery
+             {:span-source span-source
+              :origin-source origin-source
+              :requested-span requested-span
+              :requested-origin-chain provenance-origins}
+             :actual-path-in-provenance-only true}
+     :remediation [{:kind remediation}]
+     :redactions []}))
+
+(defn w5-pipeline-diagnostic-span-provenance-valid?
+  [primary related facts recovery]
+  (if (= true (get facts :source-span-preserved))
+    (and (w5-pipeline-source-span-valid? (get recovery :requested-span))
+         (= (get primary :span) (get recovery :requested-span))
+         (= (get related :span) (get recovery :requested-span))
+         (not= :explicit-fallback (get recovery :span-source)))
+    (and (not (w5-pipeline-source-span-valid?
+               (get recovery :requested-span)))
+         (= (get primary :span) w5-pipeline-diagnostic-fallback-span)
+         (= (get related :span) w5-pipeline-diagnostic-fallback-span)
+         (= :explicit-fallback (get recovery :span-source)))))
+
+(defn w5-pipeline-diagnostic-origin-provenance-valid?
+  [diagnostic facts recovery]
+  (if (= true (get facts :generated-origin-preserved))
+    (and (w5-pipeline-origins-valid?
+          (get recovery :requested-origin-chain))
+         (= (get diagnostic :origin-chain)
+            (get recovery :requested-origin-chain))
+         (= :request-provenance (get recovery :origin-source)))
+    (and (not (w5-pipeline-origins-valid?
+               (get recovery :requested-origin-chain)))
+         (= (get diagnostic :origin-chain)
+            w5-pipeline-diagnostic-fallback-origin-chain)
+         (= :explicit-fallback (get recovery :origin-source)))))
+
+(defn w5-pipeline-diagnostic-shape-valid? [diagnostic]
+  (if (map? diagnostic)
+    (let [primary (get diagnostic :primary)
+          related-values (get diagnostic :related)
+          related (get related-values 0)
+          involved (get diagnostic :involved-artifacts)
+          facts (get diagnostic :facts)
+          recovery (get facts :provenance-recovery)
+          remediation-values (get diagnostic :remediation)
+          remediation (get remediation-values 0)]
+      (and
+       (w5-pipeline-exact-keys?
+        diagnostic
+        #{:artifact :diagnostic-id :rule :severity :lifecycle :stage
+          :message-key :primary :related :origin-chain :profile :target
+          :involved-artifacts :facts :remediation :redactions})
+       (= :gravity/diagnostic (get diagnostic :artifact))
+       (= (get diagnostic :diagnostic-id)
+          (str "diagnostic:" (get diagnostic :rule) ":"
+               (get diagnostic :stage) ":" (get primary :artifact) ":"
+               (get facts :pass-id) ":" (get facts :pass-version) ":"
+               (get facts :risk)))
+       (w5-pipeline-member-from?
+        w5-pipeline-diagnostic-catalog (get diagnostic :rule) 0)
+       (= :error (get diagnostic :severity))
+       (= :active (get diagnostic :lifecycle))
+       (w5-pipeline-member-from?
+        w5-pipeline-stage-order (get diagnostic :stage) 0)
+       (= :compiler.pipeline.verification-failed
+          (get diagnostic :message-key))
+       (w5-pipeline-exact-keys? primary #{:span :syntax-id :artifact})
+       (w5-pipeline-source-span-valid? (get primary :span))
+       (w5-pipeline-present? (get primary :syntax-id))
+       (w5-pipeline-present? (get primary :artifact))
+       (vector? related-values)
+       (= 1 (count related-values))
+       (w5-pipeline-exact-keys? related #{:role :span :artifact})
+       (= :pipeline-output (get related :role))
+       (w5-pipeline-source-span-valid? (get related :span))
+       (w5-pipeline-present? (get related :artifact))
+       (w5-pipeline-origins-valid? (get diagnostic :origin-chain))
+       (w5-pipeline-exact-keys? involved #{:input :output})
+       (= (get primary :artifact) (get involved :input))
+       (= (get related :artifact) (get involved :output))
+       (w5-pipeline-exact-keys?
+        facts
+        #{:failure-rule :pass-id :pass-version :risk :affected-profiles
+          :affected-targets :source-id :failing-stage
+          :source-span-preserved :generated-origin-preserved
+          :provenance-recovery :actual-path-in-provenance-only})
+       (= (get diagnostic :rule) (get facts :failure-rule))
+       (= (get diagnostic :stage) (get facts :failing-stage))
+       (w5-pipeline-exact-keys?
+        recovery
+        #{:span-source :origin-source :requested-span
+          :requested-origin-chain})
+       (w5-pipeline-diagnostic-span-provenance-valid?
+        primary related facts recovery)
+       (w5-pipeline-diagnostic-origin-provenance-valid?
+        diagnostic facts recovery)
+       (= true (get facts :actual-path-in-provenance-only))
+       (vector? remediation-values)
+       (= 1 (count remediation-values))
+       (w5-pipeline-exact-keys? remediation #{:kind})
+       (keyword? (get remediation :kind))
+       (= [] (get diagnostic :redactions))))
+    false))
+
+(defn w5-pipeline-identity-input [record]
+  {:compiler-id (get record :compiler-id)
+   :compiler-version (get record :compiler-version)
+   :pipeline-id (get record :pipeline-id)
+   :pipeline-version (get record :pipeline-version)
+   :source-root-id (get record :source-root-id)
+   :profile (get record :profile)
+   :target (get record :target)
+   :stage-order (get record :stage-order)
+   :stage-identities (get record :stage-identities)
+   :pass-identities (get record :pass-identities)
+   :pass-contracts (get record :passes)
+   :artifact-identities (get record :artifact-identities)})
+
+(defn w5-pipeline-rejected [record diagnostic]
+  {:artifact :gravity/w5-compiler-pipeline-verification
+   :status :rejected
+   :diagnostics [diagnostic]
+   :identity-input nil
+   :provenance (get record :provenance)
+   :verifier-gate {:status :blocked
+                   :decision :reject
+                   :release-eligible? false
+                   :authority :non-authority}
+   :residual-boundaries (:residual-boundaries (w5-pipeline-policy))
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :authority :non-authority
+   :non-authoritative? true})
+
+(defn w5-pipeline-stage-contract-error [record stage-artifact]
+  (if (map? stage-artifact)
+    (if (w5-pipeline-exact-keys?
+         stage-artifact
+         #{:stage :artifact-identity :input-id :output-id :requires :preserves :invalidates
+           :regenerates :effects :capabilities :profile :target :diagnostics
+           :artifact-edges :source-span :generated-origin})
+      (if (w5-pipeline-fields-present?
+           stage-artifact (:stage-artifact-required-fields
+                           (w5-pipeline-policy)))
+      (if (w5-pipeline-source-span-valid? (get stage-artifact :source-span))
+        (if (w5-pipeline-origins-valid? (get stage-artifact :generated-origin))
+          (if (= (get record :profile) (get stage-artifact :profile))
+            (if (= (get record :target) (get stage-artifact :target))
+              (if (set? (get stage-artifact :requires))
+                (if (set? (get stage-artifact :preserves))
+                  (if (set? (get stage-artifact :invalidates))
+                    (if (set? (get stage-artifact :regenerates))
+                      (if (w5-pipeline-subset?
+                           #{:source-spans :generated-origins}
+                           (get stage-artifact :preserves))
+                        (if (vector? (get stage-artifact :artifact-edges))
+                          nil
+                          (w5-pipeline-diagnostic
+                           "C1-PASS-CONTRACT" record (get stage-artifact :stage)
+                           stage-artifact :artifact-edges-required))
+                        (w5-pipeline-diagnostic
+                         "C1-EVIDENCE-DROP" record (get stage-artifact :stage)
+                         stage-artifact :preserved-facts-not-represented))
+                      (w5-pipeline-diagnostic
+                       "C1-PASS-CONTRACT" record (get stage-artifact :stage)
+                       stage-artifact :regenerates-set-required))
+                    (w5-pipeline-diagnostic
+                     "C1-PASS-CONTRACT" record (get stage-artifact :stage)
+                     stage-artifact :invalidates-set-required))
+                  (w5-pipeline-diagnostic
+                   "C1-PASS-CONTRACT" record (get stage-artifact :stage)
+                   stage-artifact :preserves-set-required))
+                (w5-pipeline-diagnostic
+                 "C1-PASS-CONTRACT" record (get stage-artifact :stage)
+                 stage-artifact :requires-set-required))
+              (w5-pipeline-diagnostic
+               "C1-MANIFEST" record (get stage-artifact :stage)
+               stage-artifact :target-contract-mismatch))
+            (w5-pipeline-diagnostic
+             "C1-MANIFEST" record (get stage-artifact :stage)
+             stage-artifact :profile-contract-mismatch))
+          (w5-pipeline-diagnostic
+           "C1-EVIDENCE-DROP" record (get stage-artifact :stage)
+           stage-artifact :generated-origin-required))
+        (w5-pipeline-diagnostic
+         "C1-EVIDENCE-DROP" record (get stage-artifact :stage)
+         stage-artifact :source-span-required))
+        (w5-pipeline-diagnostic
+         "C1-PASS-CONTRACT" record (get stage-artifact :stage)
+         stage-artifact :stage-artifact-fields-required))
+      (w5-pipeline-diagnostic
+       "C1-PASS-CONTRACT" record (get stage-artifact :stage)
+       stage-artifact :stage-artifact-keyset-required))
+    (w5-pipeline-diagnostic "C1-PASS-CONTRACT" record :unknown
+                            stage-artifact :stage-artifact-map-required)))
+
+(defn w5-pipeline-stage-contract-errors [record stages index]
+  (if (= index (count stages))
+    nil
+    (let [error (w5-pipeline-stage-contract-error record (get stages index))]
+      (if (w5-pipeline-present? error)
+        error
+        (w5-pipeline-stage-contract-errors record stages (+ index 1))))))
+
+(defn w5-pipeline-pass-contract-error [record pass]
+  (if (map? pass)
+    (if (w5-pipeline-exact-keys?
+         pass
+         #{:pass-id :version :stage :risk :affected-profiles
+           :affected-targets :input-ir :output-ir :requires :preserves
+           :invalidates :regenerates :effects :capabilities :profile :target
+           :diagnostics :source-span :generated-origin})
+      (if (w5-pipeline-fields-present?
+           pass (:pass-contract-required-fields (w5-pipeline-policy)))
+      (if (w5-pipeline-source-span-valid? (get pass :source-span))
+        (if (w5-pipeline-origins-valid? (get pass :generated-origin))
+          (if (= (get record :profile) (get pass :profile))
+            (if (= (get record :target) (get pass :target))
+              (if (w5-pipeline-subset?
+                   (get pass :invalidates)
+                   (get pass :regenerates))
+                (if (w5-pipeline-subset?
+                     #{:source-spans :generated-origins}
+                     (get pass :preserves))
+                  nil
+                  (w5-pipeline-diagnostic
+                   "C1-EVIDENCE-DROP" record (get pass :stage)
+                   pass :preserved-facts-not-represented))
+                (w5-pipeline-diagnostic
+                 "C1-EVIDENCE-DROP" record (get pass :stage)
+                 pass :invalidated-facts-not-regenerated))
+              (w5-pipeline-diagnostic
+               "C1-MANIFEST" record (get pass :stage)
+               pass :target-contract-mismatch))
+            (w5-pipeline-diagnostic
+             "C1-MANIFEST" record (get pass :stage)
+             pass :profile-contract-mismatch))
+          (w5-pipeline-diagnostic "C1-EVIDENCE-DROP" record (get pass :stage)
+                                  pass :generated-origin-required))
+        (w5-pipeline-diagnostic "C1-EVIDENCE-DROP" record (get pass :stage)
+                                pass :source-span-required))
+        (w5-pipeline-diagnostic "C1-PASS-CONTRACT" record (get pass :stage)
+                                pass :pass-contract-fields-required))
+      (w5-pipeline-diagnostic "C1-PASS-CONTRACT" record (get pass :stage)
+                              pass :pass-contract-keyset-required))
+    (w5-pipeline-diagnostic "C1-PASS-CONTRACT" record :unknown pass
+                            :pass-contract-map-required)))
+
+(defn w5-pipeline-pass-contract-errors [record passes index]
+  (if (= index (count passes))
+    nil
+    (let [error (w5-pipeline-pass-contract-error record (get passes index))]
+      (if (w5-pipeline-present? error)
+        error
+        (w5-pipeline-pass-contract-errors record passes (+ index 1))))))
+
+(defn w5-pipeline-reader-error [record reader]
+  (if (map? reader)
+    (if (w5-pipeline-fields-present?
+         reader (:reader-required-fields (w5-pipeline-policy)))
+      (if (= :utf-8 (get reader :encoding))
+        (if (= true (get reader :delimiter-balanced?))
+          (if (= true (get reader :string-terminated?))
+            (if (= true (get reader :numeric-forms-valid?))
+              (if (= true (get reader :identifiers-valid?))
+                (if (= true (get reader :namespace-shape-valid?))
+                  (if (= true (get reader :map-forms-valid?))
+                    (if (= true (get reader :set-forms-valid?))
+                      (if (= true (get reader :metadata-valid?))
+                        (if (= true (get reader :abbreviations-valid?))
+                          (if (= true (get reader :extensions-declared?))
+                            (if (w5-pipeline-string? (get reader :source-hash))
+                              nil
+                              (w5-pipeline-diagnostic
+                               "C2-HASH" record :reader nil
+                               :source-hash-required))
+                            (w5-pipeline-diagnostic
+                             "C2-EXTENSION" record :reader nil
+                             :extensions-must-be-declared))
+                          (w5-pipeline-diagnostic
+                           "C2-ABBREV" record :reader nil
+                           :abbreviation-shape-invalid))
+                        (w5-pipeline-diagnostic
+                         "C2-METADATA" record :reader nil
+                         :metadata-shape-invalid))
+                      (w5-pipeline-diagnostic "C2-SET" record :reader nil
+                                              :set-form-invalid))
+                    (w5-pipeline-diagnostic "C2-MAP" record :reader nil
+                                            :map-form-invalid))
+                  (w5-pipeline-diagnostic
+                   "C2-NS-SHAPE" record :reader nil
+                   :namespace-shape-invalid))
+                (w5-pipeline-diagnostic "C2-IDENTIFIER" record :reader nil
+                                        :identifier-invalid))
+              (w5-pipeline-diagnostic "C2-NUMERIC" record :reader nil
+                                      :numeric-form-invalid))
+            (w5-pipeline-diagnostic "C2-STRING" record :reader nil
+                                    :unterminated-string))
+          (w5-pipeline-diagnostic "C2-DELIMITER" record :reader nil
+                                  :unbalanced-delimiter))
+        (w5-pipeline-diagnostic "C2-ENCODING" record :reader nil
+                                :utf-8-required))
+      (w5-pipeline-diagnostic "C2-HASH" record :reader nil
+                              :reader-fields-required))
+    (w5-pipeline-diagnostic "C2-ENCODING" record :reader nil
+                            :reader-map-required)))
+
+(defn w5-pipeline-bool-check [record stage pass rule value remediation]
+  (if (= true value)
+    nil
+    (w5-pipeline-diagnostic rule record stage pass remediation)))
+
+(defn w5-pipeline-type-error [record typed]
+  (if (map? typed)
+    (if (w5-pipeline-fields-present?
+         typed (:type-required-fields (w5-pipeline-policy)))
+      (if (= true (get typed :every-core-node-typed?))
+        (if (= true (get typed :constraints-solved?))
+          (if (= true (get typed :dynamic-boundaries-explicit?))
+            (if (= true (get typed :casts-checked?))
+              (if (= true (get typed :nullability-wrapped?))
+                (if (= true (get typed :generics-resolved?))
+                  (if (= true (get typed :protocols-resolved?))
+                    (if (= true (get typed :layout-facts-present?))
+                      (if (= true (get typed :schema-identity-preserved?))
+                        (if (= :passed (get typed :verifier-status))
+                          nil
+                          (w5-pipeline-diagnostic
+                           "C7-VERIFY" record :type-checking nil
+                           :typed-core-verifier-must-pass))
+                        (w5-pipeline-diagnostic
+                         "C7-SCHEMA" record :type-checking nil
+                         :schema-identity-required))
+                      (w5-pipeline-diagnostic "C7-LAYOUT" record
+                                              :type-checking nil
+                                              :layout-facts-required))
+                    (w5-pipeline-diagnostic "C7-PROTOCOL" record
+                                            :type-checking nil
+                                            :protocol-implementation-required))
+                  (w5-pipeline-diagnostic "C7-GENERIC" record
+                                          :type-checking nil
+                                          :generic-instantiation-required))
+                (w5-pipeline-diagnostic "C7-NULLABILITY" record
+                                        :type-checking nil
+                                        :nullability-boundary-required))
+              (w5-pipeline-diagnostic "C7-CAST" record :type-checking nil
+                                      :checked-cast-required))
+            (w5-pipeline-diagnostic "C7-DYNAMIC" record :type-checking nil
+                                    :dynamic-boundary-must-be-explicit))
+          (w5-pipeline-diagnostic "C7-TYPE-MISMATCH" record :type-checking nil
+                                  :constraint-solution-required))
+        (w5-pipeline-diagnostic "C7-ANNOTATION" record :type-checking nil
+                                :type-fact-required-for-every-core-node))
+      (w5-pipeline-diagnostic "C7-VERIFY" record :type-checking nil
+                              :typed-core-fields-required))
+    (w5-pipeline-diagnostic "C7-VERIFY" record :type-checking nil
+                            :typed-core-map-required)))
+
+(defn w5-pipeline-effect-error [record effects]
+  (if (map? effects)
+    (if (w5-pipeline-fields-present?
+         effects (:effect-required-fields (w5-pipeline-policy)))
+      (if (= true (get effects :effects-within-declarations?))
+        (if (= true (get effects :profile-allows-effects?))
+          (if (= true (get effects :capability-grants-cover-effects?))
+            (if (= true (get effects :build-runtime-separated?))
+              (if (= true (get effects :replay-obligations-complete?))
+                (if (= true (get effects :ordering-constraints-complete?))
+                  (if (= true (get effects :runtime-providers-resolved?))
+                    (if (= true (get effects :effect-names-known?))
+                      (if (= :passed (get effects :verifier-status))
+                        nil
+                        (w5-pipeline-diagnostic
+                         "C8-VERIFY" record :effect-checking nil
+                         :effect-verifier-must-pass))
+                      (w5-pipeline-diagnostic "C8-UNKNOWN" record
+                                              :effect-checking nil
+                                              :effect-name-must-be-registered))
+                    (w5-pipeline-diagnostic "C8-RUNTIME" record
+                                            :effect-checking nil
+                                            :runtime-provider-required))
+                  (w5-pipeline-diagnostic "C8-ORDER" record
+                                          :effect-checking nil
+                                          :effect-ordering-required))
+                (w5-pipeline-diagnostic "C8-REPLAY" record
+                                        :effect-checking nil
+                                        :replay-obligation-required))
+              (w5-pipeline-diagnostic "C8-BUILD" record :effect-checking nil
+                                      :build-runtime-separation-required))
+            (w5-pipeline-diagnostic "C8-CAPABILITY" record :effect-checking nil
+                                    :capability-proof-required))
+          (w5-pipeline-diagnostic "C8-PROFILE" record :effect-checking nil
+                                  :profile-effect-allowance-required))
+        (w5-pipeline-diagnostic "C8-UNDECLARED" record :effect-checking nil
+                                :declared-effect-superset-required))
+      (w5-pipeline-diagnostic "C8-VERIFY" record :effect-checking nil
+                              :effect-artifact-fields-required))
+    (w5-pipeline-diagnostic "C8-VERIFY" record :effect-checking nil
+                            :effect-artifact-map-required)))
+
+(defn w5-pipeline-ownership-error [record ownership]
+  (if (map? ownership)
+    (if (w5-pipeline-fields-present?
+         ownership (:ownership-required-fields (w5-pipeline-policy)))
+      (if (= true (get ownership :no-use-after-move?))
+        (if (= true (get ownership :no-use-after-consume?))
+          (if (= true (get ownership :borrows-within-lifetimes?))
+            (if (= true (get ownership :mutable-aliases-exclusive?))
+              (if (= true (get ownership :no-move-while-borrowed?))
+                (if (= true (get ownership :regions-do-not-escape?))
+                  (if (= true (get ownership :arena-generations-valid?))
+                    (if (= true (get ownership :linear-resources-terminal?))
+                      (if (= true (get ownership :no-linear-double-terminal?))
+                        (if (= true (get ownership :transfers-explicit?))
+                          (if (= true (get ownership :runtime-checks-profile-legal?))
+                            (if (= true (get ownership :unsafe-audits-present?))
+                              (if (= :passed (get ownership :verifier-status))
+                                nil
+                                (w5-pipeline-diagnostic
+                                 "C9-RUNTIME-CHECK" record
+                                 :ownership-lifetime nil
+                                 :ownership-verifier-must-pass))
+                              (w5-pipeline-diagnostic "C9-UNSAFE" record
+                                                      :ownership-lifetime nil
+                                                      :unsafe-audit-required))
+                            (w5-pipeline-diagnostic
+                             "C9-RUNTIME-CHECK" record :ownership-lifetime nil
+                             :runtime-check-profile-legality-required))
+                          (w5-pipeline-diagnostic "C9-TRANSFER" record
+                                                  :ownership-lifetime nil
+                                                  :explicit-transfer-required))
+                        (w5-pipeline-diagnostic "C9-LINEAR-DOUBLE" record
+                                                :ownership-lifetime nil
+                                                :linear-terminal-at-most-once))
+                      (w5-pipeline-diagnostic "C9-LINEAR-LEAK" record
+                                              :ownership-lifetime nil
+                                              :linear-terminal-state-required))
+                    (w5-pipeline-diagnostic "C9-ARENA-GENERATION" record
+                                            :ownership-lifetime nil
+                                            :arena-generation-check-required))
+                  (w5-pipeline-diagnostic "C9-REGION-ESCAPE" record
+                                          :ownership-lifetime nil
+                                          :region-escape-rejected))
+                (w5-pipeline-diagnostic "C9-MOVE-WHILE-BORROWED" record
+                                        :ownership-lifetime nil
+                                        :move-during-borrow-rejected))
+              (w5-pipeline-diagnostic "C9-MUT-ALIAS" record
+                                      :ownership-lifetime nil
+                                      :exclusive-mutable-borrow-required))
+            (w5-pipeline-diagnostic "C9-BORROW-ESCAPE" record
+                                    :ownership-lifetime nil
+                                    :borrow-lifetime-required))
+          (w5-pipeline-diagnostic "C9-USE-AFTER-CONSUME" record
+                                  :ownership-lifetime nil
+                                  :consumed-value-unavailable))
+        (w5-pipeline-diagnostic "C9-USE-AFTER-MOVE" record
+                                :ownership-lifetime nil
+                                :moved-value-unavailable))
+      (w5-pipeline-diagnostic "C9-RUNTIME-CHECK" record
+                              :ownership-lifetime nil
+                              :ownership-artifact-fields-required))
+    (w5-pipeline-diagnostic "C9-RUNTIME-CHECK" record :ownership-lifetime nil
+                            :ownership-artifact-map-required)))
+
+(defn w5-pipeline-sensitive-operation-error [record operation]
+  (if (map? operation)
+    (if (w5-pipeline-fields-present?
+         operation [:operation-id :kind :core-node-id :source-span
+                    :generated-origin-chain :profile :target
+                    :type-fact-id :effect-fact-id :capability-proof-id
+                    :ownership-fact-id :safety-mode :outcome])
+      (if (w5-pipeline-source-span-valid? (get operation :source-span))
+        (if (w5-pipeline-origins-valid?
+             (get operation :generated-origin-chain))
+          (if (= (get record :profile) (get operation :profile))
+            (if (= (get record :target) (get operation :target))
+              (if (contains? w5-pipeline-safe1-outcomes
+                             (get operation :outcome))
+                (if (= 1 (w5-pipeline-true-count
+                           [(get operation :proven-safe)
+                            (get operation :runtime-checked)
+                            (get operation :rejected)
+                            (get operation :unsafe-island)]))
+                  (if (w5-pipeline-outcome-matches? operation)
+                    nil
+                    (w5-pipeline-diagnostic
+                     "C10-NO-OUTCOME" record :safety-analysis nil
+                     :safe1-outcome-flag-must-match-classification))
+                  (w5-pipeline-diagnostic
+                   "C10-NO-OUTCOME" record :safety-analysis nil
+                   :exactly-one-safe1-outcome-required))
+                (w5-pipeline-diagnostic "C10-NO-OUTCOME" record
+                                        :safety-analysis nil
+                                        :safe1-outcome-required))
+              (w5-pipeline-diagnostic "C1-MANIFEST" record :safety-analysis
+                                      nil :safety-target-contract-mismatch))
+            (w5-pipeline-diagnostic "C1-MANIFEST" record :safety-analysis nil
+                                    :safety-profile-contract-mismatch))
+          (w5-pipeline-diagnostic "C10-GENERATED" record :safety-analysis nil
+                                  :generated-origin-required))
+        (w5-pipeline-diagnostic "C10-GENERATED" record :safety-analysis nil
+                                :operation-source-span-required))
+      (w5-pipeline-diagnostic "C10-NO-OUTCOME" record :safety-analysis nil
+                              :operation-fields-required))
+    (w5-pipeline-diagnostic "C10-NO-OUTCOME" record :safety-analysis nil
+                            :operation-map-required)))
+
+(defn w5-pipeline-sensitive-operation-errors [record operations index]
+  (if (= index (count operations))
+    nil
+    (let [error (w5-pipeline-sensitive-operation-error
+                 record (get operations index))]
+      (if (w5-pipeline-present? error)
+        error
+        (w5-pipeline-sensitive-operation-errors
+         record operations (+ index 1))))))
+
+(defn w5-pipeline-safety-error [record safety]
+  (if (map? safety)
+    (if (w5-pipeline-fields-present?
+         safety (:safety-required-fields (w5-pipeline-policy)))
+      (if (= :passed (get safety :verifier-status))
+        (if (= true (get safety :proofs-fresh?))
+          (if (= true (get safety :runtime-checks-defined?))
+            (if (= true (get safety :unsafe-islands-audited?))
+              (if (= true (get safety :generated-origins-preserved?))
+                (if (= true (get safety :taint-facts-preserved?))
+                  (if (= true (get safety :capability-proofs-preserved?))
+                    (if (= true (get safety :ffi-boundaries-checked?))
+                      (if (= true (get safety :numeric-operations-checked?))
+                        (if (= true (get safety :optimization-evidence-current?))
+                          nil
+                          (w5-pipeline-diagnostic
+                           "C10-OPTIMIZATION" record :safety-analysis nil
+                           :optimization-safety-evidence-stale))
+                        (w5-pipeline-diagnostic "C10-NUMERIC" record
+                                                :safety-analysis nil
+                                                :numeric-proof-or-check-required))
+                      (w5-pipeline-diagnostic "C10-FFI" record
+                                              :safety-analysis nil
+                                              :ffi-boundary-facts-required))
+                    (w5-pipeline-diagnostic "C10-CAPABILITY" record
+                                            :safety-analysis nil
+                                            :capability-proof-required))
+                  (w5-pipeline-diagnostic "C10-TAINT" record
+                                          :safety-analysis nil
+                                          :taint-facts-must-reach-sinks))
+                (w5-pipeline-diagnostic "C10-GENERATED" record
+                                        :safety-analysis nil
+                                        :generated-provenance-required))
+              (w5-pipeline-diagnostic "C10-UNSAFE" record :safety-analysis nil
+                                      :unsafe-island-audit-required))
+            (w5-pipeline-diagnostic "C10-CHECK" record :safety-analysis nil
+                                    :runtime-check-failure-behavior-required))
+          (w5-pipeline-diagnostic "C10-PROOF" record :safety-analysis nil
+                                  :fresh-proof-or-certificate-required))
+        (w5-pipeline-diagnostic "C10-NO-OUTCOME" record :safety-analysis nil
+                                :safety-verifier-must-pass))
+      (w5-pipeline-diagnostic "C10-NO-OUTCOME" record :safety-artifact nil
+                              :safety-artifact-fields-required))
+    (w5-pipeline-diagnostic "C10-NO-OUTCOME" record :safety-analysis nil
+                            :safety-artifact-map-required)))
+
+(defn w5-pipeline-profile-error [record profile]
+  (if (map? profile)
+    (if (= :meta (get profile :profile))
+      (if (= :llvm-x86_64-linux (get profile :target))
+        (if (= true (get profile :effects-checked?))
+          (if (= true (get profile :capabilities-checked?))
+            (if (= true (get profile :ownership-checked?))
+              (if (= true (get profile :safety-checked?))
+                nil
+                (w5-pipeline-diagnostic "C1-MANIFEST" record
+                                        :profile-validation nil
+                                        :safety-profile-validation-required))
+              (w5-pipeline-diagnostic "C1-MANIFEST" record
+                                      :profile-validation nil
+                                      :ownership-profile-validation-required))
+            (w5-pipeline-diagnostic "C1-MANIFEST" record
+                                    :profile-validation nil
+                                    :capability-profile-validation-required))
+          (w5-pipeline-diagnostic "C1-MANIFEST" record :profile-validation nil
+                                  :effect-profile-validation-required))
+        (w5-pipeline-diagnostic "C1-MANIFEST" record :profile-validation nil
+                                :native-target-required))
+      (w5-pipeline-diagnostic "C1-MANIFEST" record :profile-validation nil
+                              :meta-profile-required))
+    (w5-pipeline-diagnostic "C1-MANIFEST" record :profile-validation nil
+                            :profile-validation-map-required)))
+
+(defn w5-pipeline-capability-error [record capability]
+  (if (map? capability)
+    (if (= true (get capability :declared-capabilities?))
+      (if (= true (get capability :grants-are-scoped?))
+        (if (= true (get capability :ambient-authority-denied?))
+          (if (= true (get capability :effect-capability-links-complete?))
+            (if (= :passed (get capability :verifier-status))
+              nil
+              (w5-pipeline-diagnostic "C8-VERIFY" record
+                                      :capability-validation nil
+                                      :capability-verifier-must-pass))
+            (w5-pipeline-diagnostic "C8-CAPABILITY" record
+                                    :capability-validation nil
+                                    :effect-capability-link-required))
+          (w5-pipeline-diagnostic "C8-CAPABILITY" record
+                                  :capability-validation nil
+                                  :ambient-authority-rejected))
+        (w5-pipeline-diagnostic "C8-CAPABILITY" record
+                                :capability-validation nil
+                                :scoped-capability-grant-required))
+      (w5-pipeline-diagnostic "C8-CAPABILITY" record
+                              :capability-validation nil
+                              :declared-capability-required))
+    (w5-pipeline-diagnostic "C8-VERIFY" record :capability-validation nil
+                            :capability-artifact-map-required)))
+
+(defn w5-pipeline-mir-error [record mir]
+  (if (map? mir)
+    (if (= true (get mir :safety-facts-preserved?))
+      (if (= true (get mir :type-facts-preserved?))
+        (if (= true (get mir :effect-facts-preserved?))
+          (if (= true (get mir :ownership-facts-preserved?))
+            (if (= true (get mir :source-origins-preserved?))
+              (if (= :passed (get mir :verifier-status))
+                nil
+                (w5-pipeline-diagnostic "C1-PIPELINE" record :mir nil
+                                        :mir-verifier-must-pass))
+              (w5-pipeline-diagnostic "C1-EVIDENCE-DROP" record :mir nil
+                                      :mir-source-origin-required))
+            (w5-pipeline-diagnostic "C1-EVIDENCE-DROP" record :mir nil
+                                    :mir-ownership-facts-required))
+          (w5-pipeline-diagnostic "C1-EVIDENCE-DROP" record :mir nil
+                                  :mir-effect-facts-required))
+        (w5-pipeline-diagnostic "C1-EVIDENCE-DROP" record :mir nil
+                                :mir-type-facts-required))
+      (w5-pipeline-diagnostic "C1-EVIDENCE-DROP" record :mir nil
+                              :mir-safety-facts-required))
+    (w5-pipeline-diagnostic "C1-PIPELINE" record :mir nil
+                            :mir-artifact-map-required)))
+
+(defn w5-pipeline-target-error [record target]
+  (if (map? target)
+    (if (= :llvm (get target :backend))
+      (if (= :linux (get target :os))
+        (if (= :x86_64 (get target :arch))
+          (if (= :elf (get target :object-format))
+            (if (= :sysv-amd64 (get target :abi))
+              (if (= false (get target :invokes-clojure?))
+                (if (= false (get target :links-jvm?))
+                  (if (= false (get target :fallback?))
+                    (if (= :llvm-x86_64-linux (get target :target))
+                      (if (= true (get target :source-intent-preserved?))
+                        (if (= true (get target :cross-target-inference-rejected?))
+                          (if (= true (get target :jvm-fallback-rejected?))
+                            nil
+                            (w5-pipeline-diagnostic
+                             "C1-UNCHECKED-BACKEND" record :target-lowering nil
+                             :jvm-fallback-rejected))
+                          (w5-pipeline-diagnostic
+                           "C1-UNCHECKED-BACKEND" record :target-lowering nil
+                           :cross-target-inference-rejected))
+                        (w5-pipeline-diagnostic
+                         "C1-DOMAIN-ANCHOR" record :target-lowering nil
+                         :source-intent-anchor-required))
+                      (w5-pipeline-diagnostic "C1-MANIFEST" record :target-lowering
+                                              nil :exact-llvm-linux-target-required))
+                    (w5-pipeline-diagnostic "C1-UNCHECKED-BACKEND" record
+                                            :target-lowering nil
+                                            :fallback-rejected))
+                  (w5-pipeline-diagnostic "C1-UNCHECKED-BACKEND" record
+                                          :target-lowering nil
+                                          :jvm-linkage-rejected))
+                (w5-pipeline-diagnostic "C1-UNCHECKED-BACKEND" record
+                                        :target-lowering nil
+                                        :clojure-invocation-rejected))
+              (w5-pipeline-diagnostic "C1-MANIFEST" record :target-lowering nil
+                                      :sysv-abi-required))
+            (w5-pipeline-diagnostic "C1-MANIFEST" record :target-lowering nil
+                                    :elf-object-format-required))
+          (w5-pipeline-diagnostic "C1-MANIFEST" record :target-lowering nil
+                                  :x86-64-architecture-required))
+        (w5-pipeline-diagnostic "C1-MANIFEST" record :target-lowering nil
+                                :linux-target-required))
+      (w5-pipeline-diagnostic "C1-UNCHECKED-BACKEND" record :target-lowering
+                              nil :llvm-backend-required))
+    (w5-pipeline-diagnostic "C1-UNCHECKED-BACKEND" record :target-lowering nil
+                            :target-contract-map-required)))
+
+(defn w5-pipeline-artifact-error [record artifacts]
+  (if (map? artifacts)
+    (if (= true (get artifacts :content-addressed?))
+      (if (= true (get artifacts :provenance-complete?))
+        (if (= true (get artifacts :source-and-generated-origins?))
+          (if (= true (get artifacts :manifest-bound?))
+            (if (= :passed (get artifacts :verifier-status))
+              nil
+              (w5-pipeline-diagnostic "C1-MANIFEST" record
+                                      :artifact-emission nil
+                                      :artifact-verifier-must-pass))
+            (w5-pipeline-diagnostic "C1-MANIFEST" record :artifact-emission nil
+                                    :artifact-manifest-binding-required))
+          (w5-pipeline-diagnostic "C1-EVIDENCE-DROP" record :artifact-emission
+                                  nil :artifact-provenance-required))
+        (w5-pipeline-diagnostic "C1-EVIDENCE-DROP" record :artifact-emission nil
+                                :artifact-provenance-required))
+      (w5-pipeline-diagnostic "C1-DOMAIN-ANCHOR" record :artifact-emission nil
+                              :content-addressed-artifact-required))
+    (w5-pipeline-diagnostic "C1-MANIFEST" record :artifact-emission nil
+                            :artifact-map-required)))
+
+(defn w5-pipeline-canonical-error [record]
+  (if (w5-pipeline-vector-equal?
+       w5-pipeline-stage-order (get record :stage-order) 0)
+    nil
+    (w5-pipeline-diagnostic "C1-PIPELINE" record :pipeline nil
+                            :canonical-stage-order-required)))
+
+(defn w5-pipeline-target-contract-record-error [record]
+  (if (= :llvm-x86_64-linux (get record :target))
+    (if (= :meta (get record :profile))
+      (if (= true (get record :manifest-target-exact?))
+        nil
+        (w5-pipeline-diagnostic "C1-MANIFEST" record :pipeline nil
+                                :exact-target-manifest-required))
+      (w5-pipeline-diagnostic "C1-MANIFEST" record :pipeline nil
+                              :meta-profile-required))
+    (w5-pipeline-diagnostic "C1-UNCHECKED-BACKEND" record :pipeline nil
+                            :jvm-darwin-and-cross-target-fallback-rejected)))
+
+(defn w5-pipeline-request-shape-valid? [record]
+  (if (w5-pipeline-exact-keys? record w5-pipeline-request-keys)
+    (if (= :gravity/w5-compiler-pipeline-request (get record :artifact))
+      (if (= "gravity-stage2-w5-pipeline" (get record :compiler-id))
+        (if (= "stage2-w5-pipeline-v1" (get record :compiler-version))
+          (if (= :gravity/canonical-pipeline (get record :pipeline-id))
+            (if (= "C1-C10-v1" (get record :pipeline-version))
+              (if (= :meta (get record :profile))
+                (if (= :llvm-x86_64-linux (get record :target))
+                  (if (vector? (get record :stage-artifacts))
+                    (if (= (count w5-pipeline-stage-order)
+                           (count (get record :stage-artifacts)))
+                      (if (vector? (get record :passes))
+                        (= (count w5-pipeline-stage-order)
+                           (count (get record :passes)))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-pipeline-stage-output-id [stage index]
+  (str "artifact:stage-output:" stage ":" index))
+
+(defn w5-pipeline-stage-input-id [index]
+  (if (= index 0)
+    "artifact:pipeline-source:0"
+    (w5-pipeline-stage-output-id
+     (get w5-pipeline-stage-order (- index 1)) (- index 1))))
+
+(defn w5-pipeline-stage-links-valid-from?
+  [record stages index]
+  (if (= index (count w5-pipeline-stage-order))
+    true
+    (let [stage-name (get w5-pipeline-stage-order index)
+          stage (get stages index)
+          edge (get (get stage :artifact-edges) 0)
+          span (get stage :source-span)
+          origin (get (get stage :generated-origin) 0)]
+      (if (= stage-name (get stage :stage))
+        (if (= (get w5-pipeline-artifact-identities index)
+               (get stage :artifact-identity))
+          (if (= (w5-pipeline-stage-input-id index)
+               (get stage :input-id))
+          (if (= (w5-pipeline-stage-output-id stage-name index)
+                 (get stage :output-id))
+            (if (= 1 (count (get stage :artifact-edges)))
+              (if (w5-pipeline-exact-keys? edge #{:from :to})
+              (if (= (get edge :from) (get stage :input-id))
+                (if (= (get edge :to) (get stage :output-id))
+                  (if (= (get span :source-id)
+                         (get (get record :provenance) :source-id))
+                    (if (= (get origin :source-id)
+                           (get (get record :provenance) :source-id))
+                      (if (= (get stage :profile) (get record :profile))
+                        (if (= (get stage :target) (get record :target))
+                          (w5-pipeline-stage-links-valid-from?
+                           record stages (+ index 1))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+              false)
+            false)
+          false)
+        false)
+      false))))
+
+(defn w5-pipeline-pass-links-valid-from?
+  [record passes index]
+  (if (= index (count w5-pipeline-stage-order))
+    true
+    (let [stage-name (get w5-pipeline-stage-order index)
+          stage (get (get record :stage-artifacts) index)
+          pass (get passes index)
+          span (get pass :source-span)
+          origin (get (get pass :generated-origin) 0)]
+      (if (= stage-name (get pass :stage))
+        (if (= (get w5-pipeline-pass-identities index)
+               (get pass :pass-id))
+          (if (contains? (get pass :affected-profiles)
+                         (get record :profile))
+            (if (contains? (get pass :affected-targets)
+                           (get record :target))
+              (if (= (get span :source-id)
+                     (get (get record :provenance) :source-id))
+                (if (= (get origin :source-id)
+                       (get (get record :provenance) :source-id))
+                  (if (= (get pass :input-ir) (get stage :input-id))
+                    (if (= (get pass :output-ir) (get stage :output-id))
+                      (if (= index 0)
+                        (w5-pipeline-pass-links-valid-from?
+                         record passes (+ index 1))
+                        (if (= (get pass :input-ir)
+                               (get (get passes (- index 1)) :output-ir))
+                          (w5-pipeline-pass-links-valid-from?
+                           record passes (+ index 1))
+                          false))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))))
+
+(defn w5-pipeline-sensitive-links-valid-from?
+  [record operations index]
+  (if (= index (count operations))
+    true
+    (let [operation (get operations index)
+          span (get operation :source-span)
+          origin (get (get operation :generated-origin-chain) 0)]
+      (if (= (get span :source-id)
+             (get (get record :provenance) :source-id))
+        (if (= (get origin :source-id)
+               (get (get record :provenance) :source-id))
+          (if (= (get operation :profile) (get record :profile))
+            (if (= (get operation :target) (get record :target))
+              (w5-pipeline-sensitive-links-valid-from?
+               record operations (+ index 1))
+              false)
+            false)
+          false)
+        false))))
+
+(defn w5-pipeline-exact-graph-vectors? [record]
+  (and (vector? (get record :stage-order))
+       (w5-pipeline-vector-equal?
+        w5-pipeline-stage-order (get record :stage-order) 0)
+       (vector? (get record :stage-artifacts))
+       (= (count w5-pipeline-stage-order)
+          (count (get record :stage-artifacts)))
+       (vector? (get record :passes))
+       (= (count w5-pipeline-stage-order)
+          (count (get record :passes)))))
+
+(defn w5-pipeline-cross-links-valid? [record]
+  (if (w5-pipeline-exact-graph-vectors? record)
+  (let [provenance (get record :provenance)
+        reader (get record :reader)
+        profile (get record :profile-validation)
+        capabilities (get record :capabilities)
+        target (get record :target-lowering)
+        artifacts (get record :artifacts)]
+    (if (= (get (get record :source-span) :source-id)
+           (get provenance :source-id))
+      (if (= (get reader :source-id) (get record :source-root-id))
+        (if (= (get provenance :compiler-id) (get record :compiler-id))
+          (if (= (get provenance :compiler-version)
+                 (get record :compiler-version))
+            (if (or (w5-pipeline-path-ends-with?
+                    (get provenance :actual-source-path) ".gravity")
+                    (w5-pipeline-path-ends-with?
+                     (get provenance :actual-source-path) ".qst"))
+              (if (= (get profile :profile) (get record :profile))
+                (if (= (get profile :target) (get record :target))
+                  (if (= (get record :stage-identities)
+                         (get record :stage-order))
+                    (if (= w5-pipeline-pass-identities
+                           (get record :pass-identities))
+                      (if (= w5-pipeline-artifact-identities
+                             (get record :artifact-identities))
+                        (if (w5-pipeline-stage-links-valid-from?
+                             record (get record :stage-artifacts) 0)
+                          (if (w5-pipeline-pass-links-valid-from?
+                               record (get record :passes) 0)
+                            (if (w5-pipeline-sensitive-links-valid-from?
+                                 record (get record :sensitive-operations) 0)
+                              (if (w5-pipeline-exact-keys?
+                                   target
+                                   #{:backend :target :os :arch :object-format
+                                     :abi :invokes-clojure? :links-jvm?
+                                     :fallback? :unsupported-targets
+                                     :unsupported-target-policies
+                                     :source-intent-preserved?
+                                     :cross-target-inference-rejected?
+                                     :jvm-fallback-rejected?})
+                                (if (= (get target :unsupported-targets)
+                                       (:unsupported-targets
+                                        w5-pipeline-target-contract))
+                                  (if (= (get target
+                                               :unsupported-target-policies)
+                                         (:unsupported-target-policies
+                                          w5-pipeline-target-contract))
+                                    (if (= true (get capabilities
+                                                     :ambient-authority-denied?))
+                                      (if (set? (get capabilities :declared))
+                                        (if (map? (get capabilities :grants))
+                                          (if (= (set (keys (get capabilities
+                                                               :grants)))
+                                                 (get capabilities :declared))
+                                            (if (w5-pipeline-exact-keys?
+                                                 artifacts
+                                                 #{:content-addressed?
+                                                   :provenance-complete?
+                                                   :source-and-generated-origins?
+                                                   :manifest-bound?
+                                                   :verifier-status})
+                                              true
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+  false)
+
+(defn w5-pipeline-true-count [values]
+  (if (= (count values) 0)
+    0
+    (+ (if (= true (first values)) 1 0)
+       (w5-pipeline-true-count (rest values)))))
+
+(defn w5-pipeline-outcome-matches? [operation]
+  (if (= :proven-safe (get operation :outcome))
+    (= true (get operation :proven-safe))
+    (if (= :runtime-checked (get operation :outcome))
+      (= true (get operation :runtime-checked))
+      (if (= :rejected (get operation :outcome))
+        (= true (get operation :rejected))
+        (if (= :unsafe-island (get operation :outcome))
+          (= true (get operation :unsafe-island))
+          false)))))
+
+(defn w5-pipeline-self-host-error [record]
+  (if (= true (get record :clojure-seed-boundary?))
+    (if (= false (get record :self-hosted?))
+      (if (= false (get record :release?))
+        (if (= false (get record :public-authority?))
+          (if (= :non-authority (get record :authority))
+            nil
+            (w5-pipeline-diagnostic "C1-SELF-HOST" record :manifest nil
+                                    :non-authority-required))
+          (w5-pipeline-diagnostic "C1-SELF-HOST" record :manifest nil
+                                  :public-authority-must-remain-false))
+        (w5-pipeline-diagnostic "C1-SELF-HOST" record :manifest nil
+                                :release-flag-must-remain-false))
+      (w5-pipeline-diagnostic "C1-SELF-HOST" record :manifest nil
+                              :self-hosted-flag-must-remain-false))
+    (w5-pipeline-diagnostic "C1-SELF-HOST" record :manifest nil
+                            :clojure-seed-boundary-must-be-explicit)))
+
+(defn w5-pipeline-verifier-gate-error [record]
+  (if (= true (get record :verifier-gates-complete?))
+    (if (= true (get record :domain-anchor-preserved?))
+      nil
+      (w5-pipeline-diagnostic "C1-DOMAIN-ANCHOR" record :verifier-gate nil
+                              :domain-anchor-required))
+    (w5-pipeline-diagnostic "C1-PIPELINE" record :verifier-gate nil
+                            :all-verifier-gates-required)))
+
+(defn w5-pipeline-first-error [record]
+  (let [errors [(if (w5-pipeline-request-shape-valid? record)
+                 nil
+                 (w5-pipeline-diagnostic
+                  "C1-PIPELINE" record :request nil
+                  :request-keyset-and-identity-required))
+                (w5-pipeline-self-host-error record)
+                (w5-pipeline-canonical-error record)
+                (w5-pipeline-target-contract-record-error record)
+                (w5-pipeline-verifier-gate-error record)
+                (w5-pipeline-reader-error record (get record :reader))
+                (w5-pipeline-stage-contract-errors
+                 record (get record :stage-artifacts) 0)
+                (w5-pipeline-pass-contract-errors
+                 record (get record :passes) 0)
+                (w5-pipeline-type-error record (get record :typed-core))
+                (w5-pipeline-effect-error record (get record :effects))
+                (w5-pipeline-capability-error
+                 record (get record :capabilities))
+                (w5-pipeline-profile-error
+                 record (get record :profile-validation))
+                (w5-pipeline-ownership-error
+                 record (get record :ownership))
+                (w5-pipeline-safety-error record (get record :safety))
+                (w5-pipeline-sensitive-operation-errors
+                 record (get record :sensitive-operations) 0)
+                (w5-pipeline-mir-error record (get record :mir))
+                (w5-pipeline-target-error
+                 record (get record :target-lowering))
+                (w5-pipeline-artifact-error
+                 record (get record :artifacts))
+                (if (w5-pipeline-cross-links-valid? record)
+                  nil
+                  (w5-pipeline-diagnostic
+                   "C1-MANIFEST" record :pipeline nil
+                   :cross-stage-artifact-provenance-links-required))]]
+    (loop [remaining errors]
+      (if (= (count remaining) 0)
+        nil
+        (if (w5-pipeline-present? (first remaining))
+          (first remaining)
+          (recur (rest remaining)))))))
+
+(defn w5-pipeline-diagnostic-valid? [record diagnostic]
+  ; A diagnostic is valid only when it is the exact first failure recomputed
+  ; from this request.  This binds its catalog rule, stable id, message, facts,
+  ; remediation, lifecycle, artifacts, and provenance-recovery semantics.
+  (and (w5-pipeline-diagnostic-shape-valid? diagnostic)
+       (= diagnostic (w5-pipeline-first-error record))))
+
+(defn w5-pipeline-accepted-result [record]
+  {:artifact :gravity/w5-compiler-pipeline-verification
+   :status :accepted
+   :diagnostics []
+   :identity-input (w5-pipeline-identity-input record)
+   :provenance (get record :provenance)
+   :pipeline-order w5-pipeline-stage-order
+   :target-contract w5-pipeline-target-contract
+   :verifier-gate {:status :passed
+                   :decision :blocked
+                   :release-eligible? false
+                   :reason :residual-boundaries
+                   :gates (:verifier-gates (w5-pipeline-policy))
+                   :authority :non-authority}
+   :residual-boundaries (:residual-boundaries (w5-pipeline-policy))
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :authority :non-authority
+   :non-authoritative? true
+   :completion :incomplete})
+
+(defn w5-pipeline-verify [record]
+  (let [diagnostic (w5-pipeline-first-error record)]
+    (if (w5-pipeline-present? diagnostic)
+      (w5-pipeline-rejected record diagnostic)
+      (w5-pipeline-accepted-result record))))
+
+(defn w5-pipeline-verify-result [record result]
+  (let [expected (w5-pipeline-verify record)]
+    (if (= expected result)
+      {:artifact :gravity/w5-compiler-pipeline-verifier-report
+       :status :passed
+       :diagnostics []
+       :identity-input (w5-pipeline-identity-input record)
+       :provenance (get record :provenance)
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :authority :non-authority
+       :non-authoritative? true}
+      {:artifact :gravity/w5-compiler-pipeline-verifier-report
+       :status :rejected
+       :diagnostics
+       [(w5-pipeline-diagnostic
+         "C1-SELF-HOST" record :verifier-result nil
+         :verifier-result-must-be-recomputed)]
+       :identity-input nil
+       :provenance (get record :provenance)
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :authority :non-authority
+       :non-authoritative? true})))
