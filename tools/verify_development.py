@@ -67,6 +67,11 @@ STATUSES = ("passed", "failed", "blocked", "reused", "planned", "timeout")
 REQUIRED_RESOURCE_CLASSES = frozenset(
     {"python-cheap", "leaf-jvm", "bootstrap-hosted", "memory-heavy"}
 )
+_PRODUCTION_PROCESS_RESERVATIONS = {
+    "stage0-orchestrator-unit": 6,
+    "stage1-sh01-unit": 4,
+    "stage2-authority-admission-unit": 4,
+}
 CANONICAL_HEAVY_LOCK = "/tmp/gravity-sh07-heavy.lock"
 _GLOB_CHARS = frozenset("*?[")
 _MAX_OUTPUT_BYTES = 64 * 1024
@@ -478,10 +483,20 @@ def check_resource_declaration(
             f"check {check.get('id')!r} resource_class must name a declared resource class"
         )
     resource_class = policy["classes"][class_name]
+    reserved_processes = check.get(
+        "reserved_processes", resource_class["default_processes"]
+    )
+    if type(reserved_processes) is not int or not (
+        1 <= reserved_processes <= policy["aggregate"]["max_processes"]
+    ):
+        raise ManifestError(
+            f"check {check.get('id')!r} reserved_processes must be a positive integer "
+            "within the aggregate process limit"
+        )
     return {
         "class": class_name,
         "reserved_rss_mb": resource_class["default_rss_mb"],
-        "reserved_processes": resource_class["default_processes"],
+        "reserved_processes": reserved_processes,
         "class_max_concurrency": resource_class["max_concurrency"],
         "jvm_xmx_mb": resource_class["jvm_xmx_mb"],
         "capacity_lock": resource_class["capacity_lock"],
@@ -1636,6 +1651,27 @@ def validate_manifest(
 
     if resource_policy["classes"]["memory-heavy"]["max_concurrency"] != 1:
         raise ManifestError("memory-heavy checks must remain serialized")
+
+    if require_production_contracts:
+        production_defaults = {
+            class_name: resource_policy["classes"][class_name]["default_processes"]
+            for class_name in ("python-cheap", "bootstrap-hosted")
+        }
+        if production_defaults != {"python-cheap": 1, "bootstrap-hosted": 2}:
+            raise ManifestError(
+                "production process defaults must remain python-cheap=1 and bootstrap-hosted=2"
+            )
+        observed_process_reservations = {
+            str(check["id"]): check["reserved_processes"]
+            for check in checks
+            if "reserved_processes" in check
+        }
+        if observed_process_reservations != _PRODUCTION_PROCESS_RESERVATIONS:
+            raise ManifestError(
+                "production reserved_processes overrides must equal the reviewed per-check set: "
+                f"expected {_PRODUCTION_PROCESS_RESERVATIONS!r}, "
+                f"observed {observed_process_reservations!r}"
+            )
 
     stage8_ids = {check_id for check_id in ids if check_id.startswith("stage8-")}
     expected_stage8_ids = set(_STAGE8_FIXED_NODE_POLICIES)

@@ -655,12 +655,21 @@
          c11-source-ns (source-deftest-selectors
                         c11-source-ns
                         "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj")
+         sh12-adapter-ns (source-deftest-selectors
+                          sh12-adapter-ns
+                          "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj")
          c12-shape-ns (source-deftest-selectors
                        c12-shape-ns
                        "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj")
          sh13-adapter-ns (source-deftest-selectors
                           sh13-adapter-ns
                           "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj")
+         c13-shape-ns (source-deftest-selectors
+                       c13-shape-ns
+                       "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj")
+         sh16-evidence-ns (source-deftest-selectors
+                           sh16-evidence-ns
+                           "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}
         missing (update base primitive-ns pop)

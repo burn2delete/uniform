@@ -196,7 +196,11 @@ the merge is related.
 concurrency, default RSS, and default process reservations are admission
 estimates. They are not runtime measurements, resource enforcement, benchmark
 evidence, or authority claims. Every planned, executed, reused, or blocked
-check receipt records the resolved non-authoritative reservation.
+check receipt records the resolved non-authoritative reservation. A check may
+carry a strict reviewed process override; the canonical manifest permits only
+`stage0-orchestrator-unit: 6`, `stage1-sh01-unit: 4`, and
+`stage2-authority-admission-unit: 4`. All other checks use their class default,
+and each receipt binds the resolved value.
 
 Executed checks also record bounded best-effort process-tree observations at a
 0.25-second interval, including sampled peak RSS and process count. These

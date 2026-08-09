@@ -204,6 +204,16 @@ class VerifyDevelopmentTests(unittest.TestCase):
         unknown_class["checks"][0]["resource_class"] = "typo"
         mutations.append((unknown_class, "resource_class must name"))
 
+        for value in (True, 0, 17):
+            invalid_process_reservation = json.loads(json.dumps(baseline))
+            invalid_process_reservation["checks"][0]["reserved_processes"] = value
+            mutations.append(
+                (
+                    invalid_process_reservation,
+                    "reserved_processes must be a positive integer within the aggregate process limit",
+                )
+            )
+
         invalid_limit = json.loads(json.dumps(baseline))
         invalid_limit["resource_policy"]["classes"]["python-cheap"]["max_concurrency"] = True
         mutations.append((invalid_limit, "max_concurrency must be a positive integer"))
@@ -695,6 +705,51 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 self.assertLessEqual(count, policy["classes"][class_name]["max_concurrency"])
             if any(verifier._effective_lock(by_id[item]) is not None for item in group):
                 self.assertEqual(len(group), 1)
+
+    def test_production_process_reservations_are_exact_and_proportional(self) -> None:
+        manifest = verifier.load_manifest(TOOLS / "development_verification_manifest.json")
+        self.assertEqual(
+            {
+                class_name: manifest["resource_policy"]["classes"][class_name]["default_processes"]
+                for class_name in ("python-cheap", "bootstrap-hosted")
+            },
+            {"python-cheap": 1, "bootstrap-hosted": 2},
+        )
+        self.assertEqual(
+            {
+                item["id"]: item["reserved_processes"]
+                for item in manifest["checks"]
+                if "reserved_processes" in item
+            },
+            {
+                "stage0-orchestrator-unit": 6,
+                "stage1-sh01-unit": 4,
+                "stage2-authority-admission-unit": 4,
+            },
+        )
+
+        mutations = []
+        missing = json.loads(json.dumps(manifest))
+        next(item for item in missing["checks"] if item["id"] == "stage0-orchestrator-unit").pop(
+            "reserved_processes"
+        )
+        mutations.append(missing)
+        wrong = json.loads(json.dumps(manifest))
+        next(item for item in wrong["checks"] if item["id"] == "stage2-authority-admission-unit")[
+            "reserved_processes"
+        ] = 3
+        mutations.append(wrong)
+        extra = json.loads(json.dumps(manifest))
+        next(item for item in extra["checks"] if item["id"] == "m0-docs")[
+            "reserved_processes"
+        ] = 1
+        mutations.append(extra)
+        for mutated in mutations:
+            with self.assertRaisesRegex(
+                verifier.ManifestError,
+                "production reserved_processes overrides must equal",
+            ):
+                verifier.validate_manifest(mutated, require_production_contracts=True)
 
     def test_manifest_requires_explicit_daemonization_forbidden_policy(self) -> None:
         item = check("policy", [sys.executable, "-c", "pass"])
@@ -2821,7 +2876,22 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage0-project-structure-extraction",
             ],
         )
+        orchestrator_unit = next(
+            item for item in manifest["checks"] if item["id"] == "stage0-orchestrator-unit"
+        )
+        self.assertEqual(orchestrator_unit["reserved_processes"], 6)
+        self.assertEqual(
+            verifier.check_resource_declaration(manifest, orchestrator_unit)["reserved_processes"],
+            6,
+        )
+        ordinary_python = next(item for item in manifest["checks"] if item["id"] == "m0-docs")
+        self.assertNotIn("reserved_processes", ordinary_python)
+        self.assertEqual(
+            verifier.check_resource_declaration(manifest, ordinary_python)["reserved_processes"],
+            1,
+        )
         sh01_unit = next(item for item in manifest["checks"] if item["id"] == "stage1-sh01-unit")
+        self.assertEqual(sh01_unit["reserved_processes"], 4)
         self.assertEqual(sh01_unit["lane"], "preflight")
         self.assertEqual(sh01_unit["command"], ["clojure", "-M:sh01-test"])
         self.assertIs(sh01_unit["fresh"], True)
@@ -2876,6 +2946,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             },
         )
         self.assertEqual(stage2_admission_unit["depends_on"], ["stage1-sh01-unit"])
+        self.assertEqual(stage2_admission_unit["reserved_processes"], 4)
         leaf_checks = [item for item in manifest["checks"] if item["id"].startswith("stage0-leaf-")]
         self.assertEqual(3, len(leaf_checks))
         self.assertTrue(all(item.get("fresh") is False for item in leaf_checks))

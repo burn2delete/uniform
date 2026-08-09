@@ -62,7 +62,7 @@
       "python-cheap": {
         "max_concurrency": 6,
         "default_rss_mb": 256,
-        "default_processes": 4,
+        "default_processes": 1,
         "jvm_xmx_mb": null,
         "capacity_lock": null
       },
@@ -606,6 +606,7 @@
       "lane": "preflight",
       "cost": "cheap",
       "resource_class": "python-cheap",
+      "reserved_processes": 6,
       "lock": null,
       "exclusive": false,
       "authority": "none",
@@ -689,6 +690,7 @@
       "id": "stage1-sh01-unit",
       "lane": "preflight",
       "cost": "cheap",
+      "reserved_processes": 4,
       "lock": null,
       "exclusive": false,
       "authority": "none",
@@ -744,6 +746,7 @@
       "id": "stage2-authority-admission-unit",
       "lane": "preflight",
       "cost": "cheap",
+      "reserved_processes": 4,
       "lock": null,
       "exclusive": false,
       "authority": "none",
