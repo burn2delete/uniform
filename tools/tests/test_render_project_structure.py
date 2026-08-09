@@ -375,6 +375,7 @@ class ProjectStructureRendererTests(unittest.TestCase):
             "bootstrap/clojure/src/gravity/c18_verification.clj": "sh-verification",
             "bootstrap/clojure/src/gravity/capability_validation.clj": "sh-capability",
             "bootstrap/clojure/src/gravity/compiler_verification_shared.clj": "sh-verification",
+            "bootstrap/clojure/src/gravity/pass_cache.clj": "sh-incremental",
             "bootstrap/clojure/src/gravity/pass_execution.clj": "sh-verification",
             "bootstrap/clojure/src/gravity/profile_validation.clj": "sh-profile",
             "bootstrap/clojure/test/gravity/c16_incremental_test.clj": "sh-incremental",
@@ -382,6 +383,7 @@ class ProjectStructureRendererTests(unittest.TestCase):
             "bootstrap/clojure/test/gravity/c18_verification_test.clj": "sh-verification",
             "bootstrap/clojure/test/gravity/capability_validation_test.clj": "sh-capability",
             "bootstrap/clojure/test/gravity/compiler_verification_shared_test.clj": "sh-verification",
+            "bootstrap/clojure/test/gravity/pass_cache_test.clj": "sh-incremental",
             "bootstrap/clojure/test/gravity/pass_execution_test.clj": "sh-verification",
             "bootstrap/clojure/test/gravity/profile_validation_test.clj": "sh-profile",
         }
