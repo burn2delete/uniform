@@ -5,10 +5,10 @@
   "scope": {
     "roots": ["src/gravity", "tools"],
     "excluded_segments": ["__pycache__"],
-    "inventory_count": 157,
-    "inventory_sha256": "sha256:72011db09b8a3030d36d406f9ed8d573daf4221284c8232ed46d16fad40de84e",
-    "dependency_edge_count": 187,
-    "dependency_edge_sha256": "sha256:0b25688183d73a2397099e0aaab96cebf939058a9a8795015ae451cc46985978"
+    "inventory_count": 159,
+    "inventory_sha256": "sha256:57f0a92b0089b26b9607876c8fb0b8a2220f6a7234d42864c4b4b9fcad28720c",
+    "dependency_edge_count": 189,
+    "dependency_edge_sha256": "sha256:a97e2ad3dec16159064a0a225788a9ce7771aed2e9658e0f4e108fe6b5893b31"
   },
   "enums": {
     "categories": [
@@ -357,6 +357,7 @@
         "tools/validate_change_control.py",
         "tools/validate_contract_traceability.py",
         "tools/validate_evidence_producers.py",
+        "tools/validate_artifact_census.py",
         "tools/validate_foundation_document_coverage.py",
         "tools/validate_full_language_roadmap.py",
         "tools/validate_gravity_docs.py",
@@ -383,6 +384,22 @@
       "import_safety": "guarded-cli",
       "execution_mode": "parallel-safe",
       "test_surfaces": ["import-smoke", "validator-cli"]
+    },
+    {
+      "id": "artifact-census-validator",
+      "includes": ["tools/validate_artifact_census.py"],
+      "excludes": [],
+      "category": "validator",
+      "role": "artifact-validator",
+      "allowed_dependency_categories": [],
+      "effects": ["clock", "filesystem-read", "process", "stdout"],
+      "output_classes": ["stdout-diagnostic"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
+      "import_safety": "guarded-cli",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "validator-cli", "unit-test"]
     },
     {
       "id": "read-only-contract-validators",
