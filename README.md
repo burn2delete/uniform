@@ -305,8 +305,12 @@ run the 3 GiB direct carrier-mutation discriminator and the independent 8 GiB
 SH25/SH26 consumer checks. The expensive packet-substitution check is retained
 only in the manual `stage10-w1-hostile-stable` batch, ordered after the direct
 mutation check so one JVM can reuse its namespace-local C14 plan and prepared
-carrier. All four production nodes are fresh, no-resume, capacity-one users of
-the canonical command-owned lock with `authority: none`; none is proof,
+carrier. The consumer receipt binds the SH25 ownership catalog and every
+owned Gravity source it hashes, both SH25 fixture pairs, the exercised SH26
+fixtures, and the authenticated-envelope helper/source; changes to those
+inputs therefore select that downstream consumer rather than reuse stale
+catalog evidence. All four production nodes are fresh, no-resume, capacity-one
+users of the canonical command-owned lock with `authority: none`; none is proof,
 attestation, release, or generalized performance evidence.
 
 Every Stage 0 manifest check explicitly sets `daemonization: forbidden`.
