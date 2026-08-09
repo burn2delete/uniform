@@ -571,7 +571,7 @@ complete seven-test target-hardening catalog. It branches to the automatic
 SH25/SH26 consumer batch.
 
 The consumer node declares the SH25 ownership map, the complete
-`bootstrap/gravity/src/**` catalog that its selected test hashes, the SH19
+`bootstrap/gravity/src/**/*.gravity` catalog that its selected test hashes, the SH19
 runtime member, both SH25 fixture pairs, the exercised SH26 engine/accepted
 pair, and the authenticated-envelope source/helper. Those are receipt inputs,
 not incidental namespace loads; changes route to the downstream consumer and

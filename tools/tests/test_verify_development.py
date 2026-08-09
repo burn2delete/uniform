@@ -4953,6 +4953,22 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertEqual(direct["jvm_heap"], "-J-Xmx3g")
         self.assertEqual(stable["jvm_heap"], "-J-Xmx3g")
         self.assertEqual(consumer["jvm_heap"], "-J-Xmx8g")
+        gravity_catalog_declaration = "bootstrap/gravity/src/**/*.gravity"
+        self.assertIn(gravity_catalog_declaration, consumer["inputs"])
+        observed_catalog = {
+            relative
+            for relative, path in verifier._input_files(
+                ROOT, gravity_catalog_declaration
+            )
+            if path is not None
+        }
+        expected_catalog = {
+            path.relative_to(ROOT).as_posix()
+            for path in (ROOT / "bootstrap/gravity/src").rglob("*.gravity")
+            if path.is_file()
+        }
+        self.assertEqual(len(expected_catalog), 42)
+        self.assertEqual(observed_catalog, expected_catalog)
         self.assertEqual(
             static["tool_inputs"].count(
                 "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_census.clj"

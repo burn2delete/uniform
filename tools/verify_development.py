@@ -748,7 +748,7 @@ _STAGE10_FIXED_NODE_POLICIES = {
         "automatic": True,
         "inputs": (
             "docs/self-hosting-slice-ownership.edn",
-            "bootstrap/gravity/src/**",
+            "bootstrap/gravity/src/**/*.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
             "bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity",
