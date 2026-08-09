@@ -297,6 +297,18 @@ SHA `sha256:6d56e7a0...a8348d9`. No Stage8 proof node exists, and the combined
 three-node graph has not yet been rerun on this exact tool/input composition;
 earlier C12/SH13 measurements remain non-authoritative planning evidence only.
 
+The fixed Stage10 W1 graph provides proportional non-authoritative admission
+for the frozen C14/B1-B4 lowering boundary. A 2 GiB static batch starts with
+the source-only C14 parser, binds the exact source/plan tuples, and runs the
+complete continuity and target-hardening catalogs. Automatic branches then
+run the 3 GiB direct carrier-mutation discriminator and the independent 8 GiB
+SH25/SH26 consumer checks. The expensive packet-substitution check is retained
+only in the manual `stage10-w1-hostile-stable` batch, ordered after the direct
+mutation check so one JVM can reuse its namespace-local C14 plan and prepared
+carrier. All four production nodes are fresh, no-resume, capacity-one users of
+the canonical command-owned lock with `authority: none`; none is proof,
+attestation, release, or generalized performance evidence.
+
 Every Stage 0 manifest check explicitly sets `daemonization: forbidden`.
 Commands run in a new process group; ordinary descendants are cleaned before a
 resource lock is released, with one bounded host-wide `ps eww` environment
