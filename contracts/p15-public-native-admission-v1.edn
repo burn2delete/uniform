@@ -1,0 +1,782 @@
+{:artifact :gravity/p15-public-native-admission-contract
+ :schema-version "gravity.p15-public-native-admission-contract/v1"
+
+ :public-native-admission-contract
+ {:future-request-v2-exact-keys
+  #{:schema :status :missing-contracts :request-field? :policy-field?
+    :result-field? :artifact-field? :authority?}
+  :future-request-v2
+  {:schema "gravity.p15-public-native-admission-request/v2"
+   :status :unfrozen
+   :missing-contracts
+   #{:accepted-w1-replay-owner-contract
+     :accepted-w2-replay-owner-contract
+     :accepted-w3-replay-owner-contract
+     :same-object-replay-component-dirfd-observer
+     :captured-size-read-loop-and-immediate-eof
+     :post-read-descriptor-identity
+     :payload-containing-b-git-blob-binding
+     :semantic-verifier-implementation-id-and-a-tree-binding
+     :descriptor-bound-non-jvm-semantic-verifier
+     :nonrecursive-verifier-execution-authority
+     :verifier-execution-receipt-and-review
+     :symlink-raw-semantic-hostile-fixtures
+     :w6-registry-c-binding
+     :independent-sol-review}
+   :request-field? false
+   :policy-field? false
+   :result-field? false
+   :artifact-field? false
+   :authority? false}
+  :replay-owner-policy-exact-keys
+  #{:state :replay-contract-frozen? :missing-fields :claims}
+  :replay-owner-policies
+  {:w1
+   {:state :unfrozen
+    :replay-contract-frozen? false
+    :missing-fields
+    #{:accepted-replay-artifact-path
+      :accepted-replay-artifact-kind
+      :accepted-replay-schema
+      :accepted-replay-schema-version
+      :non-jvm-semantic-verifier-predicate
+      :non-jvm-semantic-verifier-predicate-version
+      :semantic-verifier-implementation-kind
+      :semantic-verifier-implementation-schema
+      :semantic-verifier-implementation-schema-version
+      :semantic-verifier-implementation-path
+      :semantic-verifier-implementation-artifact-id-rule
+      :semantic-verifier-implementation-raw-content-hash
+      :semantic-verifier-reviewed-a-tree-blob-binding
+      :semantic-verifier-call-abi
+      :semantic-verifier-result-schema
+      :semantic-verifier-nonrecursive-execution-evidence
+      :semantic-verifier-independent-review
+      :replay-payload-containing-b-tree-blob-binding
+      :w6-registry-c-binding}
+    :claims {:public-route? false
+             :clojure-seed-boundary? true
+             :self-hosted? false
+             :release? false}}
+   :w2
+   {:state :unfrozen
+    :replay-contract-frozen? false
+    :missing-fields
+    #{:accepted-replay-artifact-path
+      :accepted-replay-artifact-kind
+      :accepted-replay-schema
+      :accepted-replay-schema-version
+      :non-jvm-semantic-verifier-predicate
+      :non-jvm-semantic-verifier-predicate-version
+      :semantic-verifier-implementation-kind
+      :semantic-verifier-implementation-schema
+      :semantic-verifier-implementation-schema-version
+      :semantic-verifier-implementation-path
+      :semantic-verifier-implementation-artifact-id-rule
+      :semantic-verifier-implementation-raw-content-hash
+      :semantic-verifier-reviewed-a-tree-blob-binding
+      :semantic-verifier-call-abi
+      :semantic-verifier-result-schema
+      :semantic-verifier-nonrecursive-execution-evidence
+      :semantic-verifier-independent-review
+      :replay-payload-containing-b-tree-blob-binding
+      :w6-registry-c-binding
+      :accepted-tracked-native-fd0-wire-replay-contract
+      :accepted-static-elf-no-pt-interp-provider-replay}
+    :claims {:public-route? false
+             :clojure-seed-boundary? true
+             :self-hosted? false
+             :release? false}}
+   :w3
+   {:state :unfrozen
+    :replay-contract-frozen? false
+    :missing-fields
+    #{:accepted-replay-artifact-path
+      :accepted-replay-artifact-kind
+      :accepted-replay-schema
+      :accepted-replay-schema-version
+      :non-jvm-semantic-verifier-predicate
+      :non-jvm-semantic-verifier-predicate-version
+      :semantic-verifier-implementation-kind
+      :semantic-verifier-implementation-schema
+      :semantic-verifier-implementation-schema-version
+      :semantic-verifier-implementation-path
+      :semantic-verifier-implementation-artifact-id-rule
+      :semantic-verifier-implementation-raw-content-hash
+      :semantic-verifier-reviewed-a-tree-blob-binding
+      :semantic-verifier-call-abi
+      :semantic-verifier-result-schema
+      :semantic-verifier-nonrecursive-execution-evidence
+      :semantic-verifier-independent-review
+      :replay-payload-containing-b-tree-blob-binding
+      :w6-registry-c-binding
+      :accepted-native-replay-v2-schema
+      :accepted-native-replay-v3-3-supplements
+      :accepted-w2-native-fd0-wire-cross-binding
+      :accepted-nonrecursive-w3-semantic-verifier}
+    :claims {:public-route? false
+             :clojure-seed-boundary? true
+             :self-hosted? false
+             :release? false}}}
+  :replay-diagnostic-precedence
+  [:pin-keys-not-exact
+   :pin-replay-artifact-path-invalid
+   :pin-replay-artifact-kind-invalid
+   :pin-replay-schema-invalid
+   :pin-replay-schema-version-invalid
+   :pin-replay-artifact-id-invalid
+   :pin-replay-raw-content-hash-invalid
+   :pin-checkout-root-id-invalid
+   :pin-checkout-root-commit-invalid
+   :pin-checkout-root-tree-invalid
+   :pin-checkout-root-commit-does-not-match-payload-containing-commit
+   :pin-checkout-root-tree-does-not-match-payload-containing-tree
+   :pin-checkout-root-id-does-not-match-derived-b-identity
+   :observation-keys-not-exact
+   :observation-replay-artifact-path-invalid
+   :observation-replay-artifact-kind-invalid
+   :observation-replay-schema-invalid
+   :observation-replay-schema-version-invalid
+   :observation-replay-artifact-id-invalid
+   :observation-replay-raw-content-hash-invalid
+   :observation-checkout-root-id-invalid
+   :observation-checkout-root-commit-invalid
+   :observation-checkout-root-tree-invalid
+   :observation-replay-artifact-path-does-not-match-pin
+   :observation-replay-artifact-kind-does-not-match-pin
+   :observation-replay-schema-does-not-match-pin
+   :observation-replay-schema-version-does-not-match-pin
+   :observation-replay-artifact-id-does-not-match-pin
+   :observation-replay-raw-content-hash-does-not-match-pin
+   :observation-checkout-root-id-does-not-match-pin
+   :observation-checkout-root-commit-does-not-match-pin
+   :observation-checkout-root-tree-does-not-match-pin
+   :replay-owner-contract-forged-or-incomplete
+   :w1-replay-contract-unfrozen
+   :w2-replay-contract-unfrozen
+   :w3-native-replay-schema-unfrozen]}
+
+ :request
+ {:exact-keys #{:artifact :schema-version :pins :observations :source-extension}
+  :artifact :gravity/p15-public-native-admission-request
+  :schema-version "gravity.p15-public-native-admission-request/v1"
+  :source-extensions #{".gravity" ".qst"}
+  :workstreams [:w1 :w2 :w3]}
+
+ :exact-key-sets
+ {:pin #{:artifact-path :raw-content-hash :payload-containing-commit
+         :payload-containing-tree :replay-artifact-path
+         :replay-artifact-kind :replay-schema :replay-schema-version
+         :replay-artifact-id :replay-raw-content-hash
+         :checkout-root-id :checkout-root-commit :checkout-root-tree
+         :implementation-commit :implementation-tree :artifact-id
+         :interface-kind :interface-schema :verifier-predicate
+         :predicate-version}
+  :observation #{:artifact-path :raw-content-hash :payload-containing-commit
+                 :payload-containing-tree :replay-artifact-path
+                 :replay-artifact-kind :replay-schema
+                 :replay-schema-version :replay-artifact-id
+                 :replay-raw-content-hash :checkout-root-id
+                 :checkout-root-commit :checkout-root-tree
+                 :consumer-handoff}
+  :consumer-handoff #{:contract :contract-version :workstream
+                      :interface-kind :interface-schema :artifact-id
+                      :producer-commit :producer-tree :verifier :review
+                      :bindings :claims}
+  :verifier #{:predicate :predicate-version :replay-artifact-id
+              :replay-content-hash :status}
+  :review #{:status :reviewer-class :reviewed-commit :review-artifact-id}
+  :claims #{:public-route? :clojure-seed-boundary? :self-hosted? :release?}
+  :bindings
+  {:w1 #{:carrier-artifact-id :carrier-content-hash :carrier-schema
+         :source-id :semantic-id :profile :target :effects :capabilities
+         :safety :accepted-diagnostic-ids :rejected-diagnostic-ids
+         :provenance-edges}
+   :w2 #{:accepted-carrier-artifact-id :accepted-carrier-content-hash
+         :provider-artifact-id :provider-executable-path
+         :provider-executable-content-hash :runtime-manifest-id
+         :packet-schema :source-rule-id :abi :inherited-fds :effects
+         :capabilities :no-clojure-evidence-id :no-jvm-evidence-id
+         :accepted-diagnostic-ids :rejected-diagnostic-ids
+         :residual-authority}
+   :w3 #{:admitted-executable-artifact-id :admitted-executable-path
+         :admitted-executable-content-hash :identity-binding-method
+         :os-gate :process-tree-containment :receipt-schema :timeout-policy
+         :signal-policy :output-policy :resource-policy :cleanup-policy
+         :negative-guarantees :unsupported-platforms
+         :accepted-diagnostic-ids :rejected-diagnostic-ids}}
+  :identity-binding-method #{:method :descriptor-relative-execution?
+                             :fd-bound-launch-evidence-id
+                             :identity-stable-snapshot? :seatbelt-contained?}
+  :os-gate #{:target :tier :evidence-id}
+ :process-tree-containment #{:os-process-tree-containment? :method
+                              :evidence-id}
+  :abi #{:target :binary-format :architecture :calling-convention}}
+
+ :w1-json-key-serialization
+ {:final-outer-key "consumer-handoff"
+  :development-candidate-outer-key "consumer_handoff_candidate"
+  :nested-key-spelling :exact-kebab-case-ascii-string
+  :parsed-key-mapping :remove-leading-edn-colon-only
+  :snake-case-final-keys-admissible? false
+ :unknown-or-extra-keys-admissible? false
+  :duplicate-transformed-keys-admissible? false}
+
+ :replay-binding
+ {:field-contract
+  {:replay-artifact-path
+   {:type :string
+    :nonempty? true
+    :encoding :ascii
+    :codepoint-range-inclusive [33 126]
+    :normalized :repo-relative-posix
+    :normalization-operation :none
+    :absolute-path? false
+    :drive-path? false
+    :unc-path? false
+    :leading-slash? false
+    :trailing-slash? false
+    :double-slash? false
+    :backslash? false
+    :nul-or-control? false
+   :empty-dot-or-dotdot-segment? false}
+   :replay-artifact-kind {:type :keyword
+                          :encoding :ascii
+                          :checked-text [:subs [:str :value] 1]
+                          :codepoint-range-inclusive [33 126]
+                          :normalization :none}
+   :replay-schema {:type :string
+                   :nonempty? true
+                   :encoding :ascii
+                   :codepoint-range-inclusive [33 126]
+                   :normalization :none}
+   :replay-schema-version {:type :positive-integer}
+   :replay-artifact-id {:format :sha256-lowercase-64hex}
+   :replay-raw-content-hash {:format :sha256-lowercase-64hex}
+   :checkout-root-id {:format :sha256-lowercase-64hex}
+   :checkout-root-commit {:format :lowercase-40hex}
+   :checkout-root-tree {:format :lowercase-40hex}}
+  :observation-pin-equalities
+  {:observation-replay-artifact-path :equals-pin-replay-artifact-path
+   :observation-replay-artifact-kind :equals-pin-replay-artifact-kind
+   :observation-replay-schema :equals-pin-replay-schema
+   :observation-replay-schema-version :equals-pin-replay-schema-version
+   :observation-replay-artifact-id :equals-pin-replay-artifact-id
+   :observation-replay-raw-content-hash
+   :equals-pin-replay-raw-content-hash
+   :observation-checkout-root-id :equals-pin-checkout-root-id
+   :observation-checkout-root-commit :equals-pin-checkout-root-commit
+   :observation-checkout-root-tree :equals-pin-checkout-root-tree}
+  :lineage-relations
+  {:pin-checkout-root-commit :equals-pin-payload-containing-commit
+   :pin-checkout-root-tree :equals-pin-payload-containing-tree}
+  :verifier-relations
+  {:consumer-handoff-verifier-replay-artifact-id
+   :equals-observation-replay-artifact-id
+   :consumer-handoff-verifier-replay-content-hash
+   :equals-observation-replay-raw-content-hash}
+  :checkout-root-id
+  {:encoding :ascii
+   :formula
+   [:sha256-lowercase-64hex
+    [:concat-ascii
+     "gravity-w4-checkout-root-v1" 0
+     [:pins ws :payload-containing-commit] 0
+     [:pins ws :payload-containing-tree]]]}
+  :field-paths
+  {:a {:commit [:pins ws :implementation-commit]
+       :tree [:pins ws :implementation-tree]}
+   :b {:commit [:pins ws :payload-containing-commit]
+       :tree [:pins ws :payload-containing-tree]}}
+  :derivation-roles
+  #{:producer-envelope-raw-content-hash
+    :replay-raw-content-hash
+    :replay-artifact-id}
+  :io-performed? false}
+
+ :stable-diagnostics
+ #{:pin-keys-not-exact
+   :pin-replay-artifact-path-invalid
+   :pin-replay-artifact-kind-invalid
+   :pin-replay-schema-invalid
+   :pin-replay-schema-version-invalid
+   :pin-replay-artifact-id-invalid
+   :pin-replay-raw-content-hash-invalid
+   :pin-checkout-root-id-invalid
+   :pin-checkout-root-commit-invalid
+   :pin-checkout-root-tree-invalid
+   :pin-checkout-root-commit-does-not-match-payload-containing-commit
+   :pin-checkout-root-tree-does-not-match-payload-containing-tree
+   :pin-checkout-root-id-does-not-match-derived-b-identity
+   :observation-keys-not-exact
+   :observation-replay-artifact-path-invalid
+   :observation-replay-artifact-kind-invalid
+   :observation-replay-schema-invalid
+   :observation-replay-schema-version-invalid
+   :observation-replay-artifact-id-invalid
+   :observation-replay-raw-content-hash-invalid
+   :observation-checkout-root-id-invalid
+   :observation-checkout-root-commit-invalid
+   :observation-checkout-root-tree-invalid
+   :observation-replay-artifact-path-does-not-match-pin
+   :observation-replay-artifact-kind-does-not-match-pin
+   :observation-replay-schema-does-not-match-pin
+   :observation-replay-schema-version-does-not-match-pin
+   :observation-replay-artifact-id-does-not-match-pin
+   :observation-replay-raw-content-hash-does-not-match-pin
+   :observation-checkout-root-id-does-not-match-pin
+   :observation-checkout-root-commit-does-not-match-pin
+   :observation-checkout-root-tree-does-not-match-pin
+   :replay-owner-contract-forged-or-incomplete
+   :w1-replay-contract-unfrozen
+   :w2-replay-contract-unfrozen
+   :w3-native-replay-schema-unfrozen
+   :verifier-replay-artifact-id-does-not-match-observation
+   :verifier-replay-content-hash-does-not-match-observation
+   :w1-provenance-edges-keys-not-exact
+   :w1-provenance-artifact-kind-mismatch
+   :w1-provenance-schema-version-mismatch}
+
+ :replay-diagnostic-semantics
+ {:replay-owner-contract-forged-or-incomplete
+  :before-applicable-owner-blocker
+  :public-result-cardinality {:diagnostics 1 :rejections 1}
+  :nil-request-terminal :missing-reviewed-w1-w2-w3-observations
+  :public-predicate-nonmap-uses-default? true
+  :request-shape-precedence :first-existing-shape-issue
+  :replay-structure-precedence :first-match-exact-replay-diagnostic-order
+  :valid-unfrozen-owner-terminal :w1-replay-contract-unfrozen
+  :later-owner-blockers-emitted? false
+  :legacy-validation-after-terminal? false
+  :legacy-diagnostics-exposed? false}
+
+ :producer-policies
+ {:w1 {:frozen? true
+       :artifact-path
+       "docs/artifacts/workstreams/w1/w1-executable-carrier-interface.json"
+       :interface-kind :w1/executable-c13-c14-b1-llvm-x86_64-linux-backend
+       :interface-schema "gravity.w1.executable-carrier-interface/v1"
+       :target :llvm-x86_64-linux
+       :verifier-predicate "gravity.bootstrap/p15-s23-stage2-b3-llvm-verify!"
+       :predicate-version 1
+       :b3-artifact-kind
+       :gravity/p15-s23-b3-authenticated-llvm-x86_64-linux-artifact
+       :b3-schema-version 1
+       :development-candidate
+       {:artifact-path
+        "docs/artifacts/workstreams/w1/development/w1-executable-carrier-linux-amd64-emulated-evidence.json"
+        :interface-kind
+        :gravity/w1-executable-carrier-linux-amd64-emulated-development-evidence
+        :interface-schema
+        "gravity.w1.executable-carrier-development-evidence/v1"
+        :path-and-shape :distinct-from-final
+        :consumer_handoff_candidate :only
+        :consumer_handoff :forbidden
+        :authoritative? false}}
+  :w2 {:artifact-path
+       "docs/artifacts/phase-15/native-runtime/p15-s23-gravity-native-runtime-provider-interface.edn"
+       :interface-kind "gravity-authored-native-runtime-provider"
+       :interface-schema
+       "gravity/p15-s23-gravity-native-runtime-provider-interface-v1"
+       :verifier-predicate
+       "gravity.p15-gravity-native-runtime-provider/consumer-handoff-valid?"
+       :predicate-version 1}
+  :w3 {:artifact-path
+       "docs/artifacts/phase-15/native-launcher/p15-s23-contained-execution-authority.edn"
+       :interface-kind :linux-execveat-cgroup-contained-execution-authority
+       :interface-schema
+       "gravity.p15-linux-execveat-cgroup-contained-execution-authority/v1"
+       :verifier-predicate
+       "gravity.p15-containment-authority/verify-consumer-handoff"
+       :predicate-version 1
+       :development-candidate
+       {:artifact-path
+        "docs/artifacts/phase-15/native-launcher/p15-s23-contained-execution-authority-candidate.edn"
+        :consumer-handoff :omitted
+        :authoritative? false}
+       :darwin-negative-evidence
+       {:paths #{:darwin :darwin-arm64 :darwin-x86_64}
+        :probe-admissible? false
+        :authoritative? false}
+       :verifier-command-policy :strict-exact
+       :fallback? false
+       :final-value-schema-frozen? true
+       :native-replay-schema-frozen? false
+       :core-interface-verdict
+       {:accepted? true
+        :preserves #{:identity-binding :os-gate :process-tree-containment
+                     :cross-workstream-executable-links
+                     :candidate-final-separation}}
+       :native-replay
+       {:artifact-path
+        "docs/artifacts/phase-15/native-launcher/p15-s23-contained-execution-replay.edn"
+        :kind :gravity/p15-linux-contained-execution-native-replay
+        :supplement-version :v3.2
+        :supplement-frozen? true
+        :authoritatively-supersedes :replay-v1
+        :schema-version
+        "gravity.p15-linux-execveat-cgroup-contained-execution-replay/v2"
+        :predicate "gravity.p15-containment-authority/verify-native-replay"
+        :predicate-version 2
+        :third-permitted-symbol
+        {:path [:authority :platform-gate :toolchain :predicate]
+         :value-kind :native-toolchain-verifier-symbol}
+        :top-keys
+        #{:artifact :schema-version :status :artifact-id :interface-kind
+          :interface-schema :target :platform :implementation
+          :admitted-executable :facts :policies :cases :cleanup
+          :producer-commit :producer-tree :claims}
+        :evidence-id-equality
+        #{:fd-bound-launch-evidence-id :os-gate-evidence-id
+          :process-tree-containment-evidence-id :verifier-replay-artifact-id}
+        :raw-content-relations
+        {:observation-raw-content-hash
+         :independently-computed-native-replay-bytes
+         :verifier-replay-content-hash :equals-observation-raw-content-hash}}
+       :native-replay-verdict
+       {:frozen? false
+        :admissible? false
+        :diagnostic "P18T04002"
+        :reason :w3-native-replay-schema-unfrozen
+        :w4-contradictions []
+        :authority? false
+        :evidence :none-recorded
+        :v3.2-accepted? false
+        :pending-gaps
+        [:transcript-output-hash-cardinality-conflict
+         :receipt-staging-fields-unfrozen
+         :external-stimulus-evidence-unfrozen
+         :dedicated-run-identity-unproven
+         :accepted-case-semantics-unfrozen]
+        :external-dependency-blocker
+        {:reason :w2-native-fd0-wire-artifact-unfrozen
+         :current-hosted-in-memory-wire
+         {:path [:wire]
+          :exact-keys
+          #{:format :text :bytes :content-hash :packet-bytes :rule-sha256
+            :source-path-hex :source-sha256 :payload :payload-bytes
+            :payload-sha256 :instruction-count}
+          :format "gravity-native-runtime-v1"
+          :content-hash-relation :sha256-of-bytes
+          :classification #{:development-only :nontracked :non-native
+                            :nonauthoritative}}
+         :target-neutral-stage2-packet-substitutes? false
+         :synthetic-final-path-kind-or-ids-permitted? false}}}}
+
+ :required-literals
+ {:w1 {:carrier-schema 1
+       :provenance-edges-exact-keys #{:artifact-kind :schema-version}
+       :provenance-edges
+       {:artifact-kind
+        :gravity/p15-s23-b3-authenticated-llvm-x86_64-linux-artifact
+        :schema-version 1}
+       :accepted-and-rejected-diagnostic-values
+       :structured-but-not-frozen}
+  :common
+  {:consumer-handoff {:artifact-id "sha256:<64hex>"}
+   :verifier {:replay-artifact-id "sha256:<64hex>"}
+   :review {:status :accepted
+            :reviewer-class :independent-sol
+            :review-artifact-id "sha256:<64hex>"}}
+  :w2 {:abi {:target :llvm-x86_64-linux
+             :binary-format :elf
+             :architecture :x86_64
+             :calling-convention :sysv-amd64}
+       :provider-executable-path
+       "target/phase-15/native-runtime/linux-x86_64/p15-s23-gravity-native-runtime-provider"
+       :packet-schema "gravity-native-runtime-v1"
+       :inherited-fds {:stdin 0 :stdout 1 :stderr 2}
+       :effects {:exact-keys #{:declared :inferred :required}}
+       :capabilities {:exact-keys #{:declared :required}}
+       :residual-authority {:clojure-seed-boundary? true
+                            :public-route? false
+                            :self-hosted? false
+                            :release? false}
+       :accepted-diagnostic-ids #{}
+       :rejected-diagnostic-ids
+       #{"P15GNR001" "P15GNR002" "P15GNR003" "P15GNR004"
+         "P15NR001" "P15NR002" "P15NR003" "P15NR004" "P15NR005"
+         "P15NR006" "P15NR007" "P15NR008" "P15NR009" "P15NR010"}
+       :identity-formats
+       {:sha256-fields
+        [:accepted-carrier-artifact-id :accepted-carrier-content-hash
+         :provider-artifact-id :provider-executable-content-hash
+         :runtime-manifest-id :no-clojure-evidence-id :no-jvm-evidence-id]
+        :commit-fields [:payload-containing-commit :payload-containing-tree
+                        :implementation-commit :implementation-tree]
+        :commit-format :lowercase-40hex}
+       :interface-schema-match :exact-equality
+       :generic-v1-regex-admissible? false
+       :development-candidate
+       {:artifact-path
+        "docs/artifacts/phase-15/native-runtime/p15-s23-gravity-native-runtime-provider-candidate.edn"
+        :consumer-handoff :omitted
+        :authoritative? false}}
+  :w3 {:identity-binding-method
+       {:method :linux-execveat-at-empty-path
+        :descriptor-relative-execution? true
+        :fd-bound-launch-evidence-id "sha256:<64hex>"
+        :identity-stable-snapshot? true
+        :seatbelt-contained? false}
+       :os-gate {:target :llvm-x86_64-linux
+                 :tier :supported
+                 :evidence-id "sha256:<64hex>"}
+       :process-tree-containment
+       {:os-process-tree-containment? true
+        :method :linux-cgroup-v2-clone-into-cgroup-v1
+        :evidence-id "sha256:<64hex>"}
+       :receipt-schema
+       "gravity.p15-linux-execveat-cgroup-contained-execution-receipt/v1"
+       :native-evidence
+       {:os-gate-fact-required? true
+        :process-tree-containment-fact-required? true
+        :native-linux-replay-required? true
+        :fallback? false}
+       :timeout-policy {:clock :clock-monotonic
+                        :minimum-ms 1
+                        :maximum-ms 600000
+                        :poll-ms 10
+                        :on-expiry :cgroup-kill}
+       :signal-policy {:handled [:sigint :sigterm :sighup]
+                       :handler :record-and-clean
+                       :cleanup :cgroup-kill
+                       :cleanup-wait-ms 250}
+       :output-policy {:stdout-max-bytes 65536
+                       :stderr-max-bytes 65536
+                       :retained-prefix-bytes 4096
+                       :forwarding :bounded-prefix
+                       :on-overflow :cgroup-kill}
+       :resource-policy {:pids-max 1
+                         :memory-max-bytes 1073741824
+                         :cpu-max {:quota-us 100000 :period-us 100000}
+                         :rlimit-cpu-seconds 600
+                         :rlimit-address-space-bytes 1073741824
+                         :rlimit-open-files 64
+                         :rlimit-file-size-bytes 16777216
+                         :rlimit-core-bytes 0
+                         :run-uid :explicit-nonzero-dedicated
+                         :run-gid :explicit-nonzero-dedicated}
+       :cleanup-policy {:process-cleanup :cgroup-kill
+                        :empty-census :cgroup-procs-empty
+                        :cleanup-wait-ms 250
+                        :private-stage-cleanup :unlink-then-rmdir
+                        :receipt-path :absolute-new-o-excl-no-follow
+                        :no-survivors? true
+                        :no-stage-residue? true}
+       :negative-guarantees
+       {:rename-replacement-blocked? true
+        :in-place-mutation-blocked? true
+        :pathname-exec-used? false
+        :extra-inherited-fds? false
+        :fork-descendant-created? false
+        :posix-spawn-descendant-created? false
+        :setsid-descendant-escape? false
+        :double-fork-escape? false
+        :leader-exit-survivors? false
+        :cgroup-migration-escape? false
+        :namespace-escape? false
+        :timeout-survivors? false
+        :interrupt-survivors? false
+        :output-overflow-survivors? false
+        :resource-ceilings-enforced? true
+        :stage-residue? false
+        :fallback-used? false}
+       :unsupported-platforms
+       {:targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+        :support :unsupported
+        :fallback :none
+        :public-fallback? false
+        :diagnostic-id "P15CEA100"}
+       :accepted-diagnostic-ids ["P15CEA000"]
+       :rejected-diagnostic-ids
+       ["P15CEA100" "P15CEA101" "P15CEA102" "P15CEA103" "P15CEA104"
+        "P15CEA105" "P15CEA106" "P15CEA107" "P15CEA108" "P15CEA109"
+        "P15CEA110" "P15CEA111" "P15CEA112" "P15CEA113" "P15CEA114"
+        "P15CEA115" "P15CEA116" "P15CEA117" "P15CEA118" "P15CEA119"
+        "P15CEA120" "P15CEA121" "P15CEA199"]}}
+
+ :cross-workstream-conjunction
+ {:status :unavailable
+  :diagnostic "P18T04002"
+  :w1-envelope
+  {:artifact-id :distinct-from-b3-carrier-artifact-id
+   :content-hash :distinct-from-b3-carrier-content-hash
+   :w2-crosslinks #{:carrier-artifact-id :carrier-content-hash}
+   :other-w1-envelope-crosslinks-admissible? false}
+  :requires [[:w1 :bindings :target]
+             [:w2 :bindings :abi :target]
+             [:w3 :bindings :os-gate :target]]
+  :target-relation :exactly-equal
+  :executable-relations
+  [[:w2 :bindings :provider-artifact-id
+    :equals :w3 :bindings :admitted-executable-artifact-id]
+   [:w2 :bindings :provider-executable-path
+    :equals :w3 :bindings :admitted-executable-path]
+   [:w2 :bindings :provider-executable-content-hash
+    :equals :w3 :bindings :admitted-executable-content-hash]
+   [:w3 :consumer-handoff :artifact-id
+    :not-equals :w2 :bindings :provider-artifact-id]]}
+
+ :commit-semantics
+ {:kind :two-commit
+  :payload-containing-b
+  {:pin [:payload-containing-commit :payload-containing-tree]
+   :observation [:payload-containing-commit :payload-containing-tree]
+   :relation :exactly-equal}
+  :implementation {:pin [:implementation-commit :implementation-tree]
+                   :consumer-handoff [:producer-commit :producer-tree]
+                   :review [:reviewed-commit]
+                   :relation :exactly-bound}}
+
+ :non-circular-lineage
+ {:applies-to #{:w1 :w2 :w3}
+  :frozen-common-envelope
+  {:producer-commit :reviewed-implementation-a
+   :producer-tree :reviewed-implementation-a-tree
+   :reviewed-commit :equals-reviewed-implementation-a
+   :payload-may-contain #{:producer-commit :producer-tree :reviewed-commit}
+   :payload-must-not-contain
+   #{:payload-containing-commit :payload-containing-tree :registry-c}}
+  :external-request
+  {:pin-and-observation
+   {:payload-containing-commit :first-artifact-containing-b
+    :payload-containing-tree :first-artifact-containing-b-tree}
+   :producer-payload-occurrence :forbidden}
+  :distinctness
+  {:reviewed-implementation-a :not-equal-first-artifact-containing-b
+   :reviewed-implementation-a-tree
+   :not-equal-first-artifact-containing-b-tree}
+  :registry-c {:location :external
+               :producer-payload-occurrence :forbidden}
+  :payload-contains-b-or-c? false
+  :separate-w5-w6-variant
+  {:names #{:payload-containing-commit :payload-containing-tree
+            :reviewed-implementation-commit
+            :reviewed-implementation-tree}
+   :w4-may-infer-paths-or-schemas? false
+   :status :w5-interface-unfrozen}}
+
+ :payload-containing-commit-registry
+ {:artifact-path
+  "docs/artifacts/phase-18/release/p18-t06-payload-containing-commit-bindings.edn"
+  :artifact :gravity/p18-t06-payload-containing-commit-bindings
+  :schema "gravity/p18-t06-payload-containing-commit-bindings/v1"
+  :schema-version 1
+  :contract :gravity/p18-payload-containing-commit-bindings
+  :contract-version 1
+  :target :llvm-x86_64-linux
+  :top-keys
+  #{:artifact :schema :schema-version :status :contract :contract-version
+    :target :binding-slots :bindings :claims}
+  :binding-slots
+  [:w1-executable-carrier
+   :w2-runtime-provider
+   :w3-contained-execution
+   :w4-public-native-route
+   :w5-self-host-full-language
+   :w6-p18-t03-final-closure
+   :w6-p18-t05-seedless-boundary
+   :w6-p18-t06-release-proof]
+  :entry-keys
+  #{:slot :workstream :target :payload-path :payload-kind :payload-schema
+    :payload-artifact-id :payload-raw-content-hash
+    :reviewed-implementation-commit :reviewed-implementation-tree
+    :payload-containing-commit :payload-containing-tree
+    :verifier :review :claims}
+  :entry-verifier-keys
+  #{:predicate :predicate-version :command :replay-path
+    :replay-artifact-id :replay-raw-content-hash :status}
+  :entry-review-keys
+  #{:status :reviewer-class :reviewed-commit :reviewed-tree :review-path
+    :review-artifact-id :review-raw-content-hash}
+  :strict-command
+  "python3 tools/verify_p18_payload_commit_bindings.py --bindings docs/artifacts/phase-18/release/p18-t06-payload-containing-commit-bindings.edn --bindings-commit <C> --bindings-tree <C-tree>"
+  :separate-registry-predicate-symbol? false
+  :claims {:public-route? false
+           :clojure-seed-boundary? true
+           :self-hosted? false
+           :release? false}
+  :location :external-registry-c
+  :self-artifact-id? false
+  :c-identity-recorded? false
+  :artifact-created? false
+  :authority? false}
+
+ :current-results
+ {:authority :dependency-authentication-only
+ :dependency-authentication :unreachable
+ :w3-native-replay-schema-frozen? false
+ :diagnostic "P18T04002"
+  :reason :w1-replay-contract-unfrozen
+  :allowed-statuses #{:incomplete :rejected}
+  :missing-final-evidence #{:w1-accepted-carrier :w2-accepted-carrier}
+  :remaining-requirements #{:target-coherent-native-linux-replay
+                            :independent-sol-review
+                            :a-and-b-identities}
+  :bounded-native-route-admitted? false
+  :io-authorized? false
+  :public-route? false
+  :clojure-seed-boundary? true
+  :self-hosted? false
+  :release? false}
+
+ :future-public-route
+ {:artifact-path
+  "docs/artifacts/phase-15/public-native/p15-s23-public-native-admission.edn"
+  :interface-kind :gravity/p15-public-native-route-admission
+  :interface-schema "gravity.p15-public-native-route-admission/v1"
+  :verifier-predicate
+  "gravity.p15-public-native-admission/verified-public-route-handoff?"
+  :predicate-version 1
+  :claims {:public-route? false
+           :clojure-seed-boundary? true
+           :self-hosted? false
+           :release? false}
+  :predicate-state :fail-closed-unimplemented
+  :blocked-until :exact-tracked-route-schema}
+
+ :recovery
+ {:command "bin/gravity-bootstrap"
+  :boundary :outside-public-native-route}
+
+ :development-evidence
+ {:image
+  "gcc@sha256:c74b2d34b775e6a1b14b13b1d41dc7233f62a18f7a6a4e139e0cf59eeab2e070"
+  :platform "linux/amd64"
+  :pull-policy :never
+  :observed {:architecture :x86_64
+             :compiler "GCC 15.2.0"
+             :linker "ld 2.40"
+             :libc "glibc 2.36"}
+  :required-records #{:docker-host :qemu :binfmt :kernel :cgroup
+                      :execveat :command :digest}
+  :authority :development-only
+  :final-admissible? false
+  :final-replay {:target-coherent-native-linux? true
+                 :emulator? false}
+  :secondary-toolchain
+  {:image
+   "silkeh/clang@sha256:ae2f3deffd84470fbb2904cfb990db208a5f9880b4bcf9d3eae080a50a8900b4"
+   :platform "linux/amd64"
+   :pull-policy :never
+   :observed {:architecture :x86_64
+              :compiler "LLVM/Clang 20.1.8"}
+   :required-parent-verified-full-hashes
+   [:clang :llc :opt :llvm-as :llvm-dis :llvm-readobj :llvm-objdump :ld.lld]
+   :required-authority-records #{:docker-host :qemu :binfmt :host}
+   :authority :development-only
+   :final-admissible? false
+   :final-replay {:target-coherent-native-linux? true
+                  :emulator? false}}}
+
+ :reject
+ #{:fallback-route :cross-target-route :narrative-only-evidence
+   :opaque-tracked-route
+   :consumer-handoff-candidate
+   :consumer_handoff_candidate
+   :incomplete-final-shaped-envelope
+   :unaccepted-final-shaped-envelope
+   :artifact-identity-mismatch :path-mismatch :raw-content-hash-mismatch
+   :commit-or-tree-mismatch :producer-consumer-binding-mismatch
+   :generic-contained-fact :method-only-containment-evidence
+   :macho-binary-format :arm64-architecture}}
