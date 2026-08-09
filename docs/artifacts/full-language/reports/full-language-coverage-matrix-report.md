@@ -1,13 +1,13 @@
 # Full Language Coverage Matrix Report
 
-Generated on: 2026-08-08
+Generated on: 2026-08-09
 
 ## Contract
 
 - Matrix kind/schema: `gravity/full-language-coverage-matrix` / `1`
 - Matrix status: `incomplete`
-- Matrix semantic identity: `sha256:f771100e478f77ae4d1dbd284a29fd5bef3da83ba382b1ba31be64fac3906508`
-- Gap-report semantic identity: `sha256:feb35aeb9e81514add43160d06fba5a6d0f9fabf8a3d038627d62ef3735e3ee8`
+- Matrix semantic identity: `sha256:3290090fedc33b46ed0b14746d88cc8ec19540db0ed9158a068f0e3ad7245d2a`
+- Gap-report semantic identity: `sha256:55b8416f1d1039c4c375883e196a6c9aee624dc93d95d0ba491f6063ef21c311`
 - Authority: non-authoritative observation
 - Completion, public authority, release readiness, self-hosting, and seed retirement are not claimed.
 
@@ -16,10 +16,10 @@ Generated on: 2026-08-08
 - Normative documents: 240
 - Full-language complete documents: 0
 - Documents with no executable owner: 7
-- Documents with no accepted fixture: 162
+- Documents with no accepted fixture: 160
 - Documents with no rejected fixture: 48
 - Documents with no stable diagnostic: 49
-- Documents with no Gravity-authored implementation: 206
+- Documents with no Gravity-authored implementation: 204
 
 ## Static Public Reachability Audit
 
@@ -33,8 +33,8 @@ Generated on: 2026-08-08
 
 ## Coverage Classes
 
-- `clojure-seed-artifact-surface`: 184
-- `current-public-executable-surface`: 48
+- `clojure-seed-artifact-surface`: 182
+- `current-public-executable-surface`: 50
 - `gravity-authored-seed-slice`: 1
 - `no-executable-owner`: 7
 
