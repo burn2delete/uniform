@@ -1995,7 +1995,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "gravity.bootstrap-compatibility.c2-test/c2-artifact-identity-compatibility-wrappers-preserve-interposition",
         ]
         self.assertEqual(
-            ["clojure", "-M:dev-test", "--namespace", "gravity.bootstrap-compatibility.c2-test"]
+            ["clojure", "-M:dev-test",
+             "--namespace", "gravity.bootstrap-compatibility.c2-test"]
             + [part for name in qualified for part in ("--exact", name)],
             item["command"],
         )
@@ -2006,6 +2007,77 @@ class VerifyDevelopmentTests(unittest.TestCase):
         resource = verifier.check_resource_declaration(manifest, item)
         self.assertEqual(verifier.CANONICAL_HEAVY_LOCK, resource["capacity_lock"])
         self.assertEqual(1, resource["class_max_concurrency"])
+
+    def test_c2_pass_cache_integration_is_a_serialized_heavy_gate(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(
+            check for check in manifest["checks"]
+            if check["id"] == "stage0-c2-pass-cache-integration"
+        )
+        qualified = [
+            "gravity.c2-pass-cache-test/canonical-semantic-key-is-bounded-type-sensitive-and-path-scoped",
+            "gravity.c2-pass-cache-test/bounded-source-snapshot-rejects-size-links-and-traversal",
+            "gravity.c2-pass-cache-test/generic-v2-adapter-preserves-c2-results-and-ignores-v1",
+            "gravity.c2-pass-cache-test/generic-v2-adapter-binds-current-c2-producer-policy",
+            "gravity.c2-pass-cache-test/generic-v2-adapter-corruption-is-rejected-and-not-replaced",
+            "gravity.c2-pass-cache-test/generic-v2-adapter-direct-store-mints-a-current-receipt",
+            "gravity.c2-pass-cache-test/generic-v2-adapter-same-key-concurrency-executes-one-c2-producer",
+            "gravity.c2-pass-cache-test/leaf-contract-is-explicitly-local-and-nonauthoritative",
+            "gravity.c2-pass-cache-test/opt-in-bootstrap-integration-reuses-without-reader-execution",
+        ]
+        self.assertEqual(
+            ["clojure", "-M:dev-test", "--namespace", "gravity.c2-pass-cache-test"]
+            + [part for name in qualified for part in ("--exact", name)],
+            item["command"],
+        )
+        self.assertEqual("heavy-candidate", item["lane"])
+        self.assertEqual("memory-heavy", item["resource_class"])
+        self.assertEqual(verifier.CANONICAL_HEAVY_LOCK, item["lock"])
+        self.assertTrue(item["exclusive"])
+        self.assertTrue(item["fresh"])
+        self.assertEqual("none", item["authority"])
+        self.assertEqual(1800, item["timeout_seconds"])
+        for changed_path in (
+            "bootstrap/clojure/src/gravity/c2_pass_cache.clj",
+            "bootstrap/clojure/src/gravity/pass_cache.clj",
+            "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj",
+        ):
+            selection = verifier.select_impacted_checks(
+                manifest, ROOT, changed_paths=[changed_path]
+            )
+            self.assertIn(item["id"], selection["selected_ids"])
+            self.assertEqual([], selection["unmatched_changes"])
+
+    def test_c2_pass_cache_envelope_profile_is_a_serialized_heavy_gate(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        item = next(
+            check for check in manifest["checks"]
+            if check["id"] == "stage0-c2-pass-cache-envelope-profile"
+        )
+        self.assertEqual(
+            ["clojure", "-M:dev-test",
+             "--namespace", "gravity.c2-pass-cache-test",
+             "--exact",
+             "gravity.c2-pass-cache-test/generic-v2-adapter-preserves-opaque-c2-size-and-depth-profile"],
+            item["command"],
+        )
+        self.assertEqual("heavy-candidate", item["lane"])
+        self.assertEqual("memory-heavy", item["resource_class"])
+        self.assertEqual(verifier.CANONICAL_HEAVY_LOCK, item["lock"])
+        self.assertTrue(item["exclusive"])
+        self.assertTrue(item["fresh"])
+        self.assertEqual("none", item["authority"])
+        self.assertEqual(1800, item["timeout_seconds"])
+        for changed_path in (
+            "bootstrap/clojure/src/gravity/c2_pass_cache.clj",
+            "bootstrap/clojure/src/gravity/pass_cache.clj",
+            "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj",
+        ):
+            selection = verifier.select_impacted_checks(
+                manifest, ROOT, changed_paths=[changed_path]
+            )
+            self.assertIn(item["id"], selection["selected_ids"])
+            self.assertEqual([], selection["unmatched_changes"])
 
     def test_c2_compatibility_paths_route_and_invalidate_cache_identity(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
@@ -2349,7 +2421,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 self.assertIn("stage0-clojure-suite", selection["selected_ids"])
                 self.assertEqual([], selection["unmatched_changes"])
 
-    def test_development_runner_catalog_has_exact_22_static_namespaces(self) -> None:
+    def test_development_runner_catalog_has_exact_23_static_namespaces(self) -> None:
         source = (
             ROOT / "bootstrap/clojure/test/gravity/development_test_runner.clj"
         ).read_text()
@@ -2359,13 +2431,18 @@ class VerifyDevelopmentTests(unittest.TestCase):
         observed = re.findall(r"\{:namespace '([^\s]+)\s+:path \"([^\"]+)\"", catalog_source)
         expected = [
             ("gravity.bootstrap-test", "bootstrap/clojure/test/gravity/bootstrap_test.clj"),
-            *[
-                (
-                    f"gravity.bootstrap-compatibility.c{stage}-test",
-                    f"bootstrap/clojure/test/gravity/bootstrap_compatibility/c{stage}_test.clj",
-                )
-                for stage in range(2, 4)
-            ],
+            (
+                "gravity.bootstrap-compatibility.c2-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj",
+            ),
+            (
+                "gravity.c2-pass-cache-test",
+                "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj",
+            ),
+            (
+                "gravity.bootstrap-compatibility.c3-test",
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj",
+            ),
             (
                 "gravity.bootstrap-compatibility.module-analysis-test",
                 "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj",
@@ -2475,6 +2552,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage0-hosted-hello-qst",
                 "stage0-selective-smoke",
                 "stage0-c2-compatibility",
+                "stage0-c2-pass-cache-integration",
+                "stage0-c2-pass-cache-envelope-profile",
                 "stage0-c3-compatibility",
                 "stage0-foundation-compatibility",
                 "stage0-c4-c6-compatibility",

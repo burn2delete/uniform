@@ -75,6 +75,19 @@
            :path "bootstrap/clojure/test/gravity/bootstrap_test.clj"}
           {:namespace 'gravity.bootstrap-compatibility.c2-test
            :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj"}
+          {:namespace 'gravity.c2-pass-cache-test
+           :path "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj"
+           :selectors
+           ["gravity.c2-pass-cache-test/canonical-semantic-key-is-bounded-type-sensitive-and-path-scoped"
+            "gravity.c2-pass-cache-test/bounded-source-snapshot-rejects-size-links-and-traversal"
+            "gravity.c2-pass-cache-test/generic-v2-adapter-preserves-c2-results-and-ignores-v1"
+            "gravity.c2-pass-cache-test/generic-v2-adapter-binds-current-c2-producer-policy"
+            "gravity.c2-pass-cache-test/generic-v2-adapter-corruption-is-rejected-and-not-replaced"
+            "gravity.c2-pass-cache-test/generic-v2-adapter-direct-store-mints-a-current-receipt"
+            "gravity.c2-pass-cache-test/generic-v2-adapter-same-key-concurrency-executes-one-c2-producer"
+            "gravity.c2-pass-cache-test/generic-v2-adapter-preserves-opaque-c2-size-and-depth-profile"
+            "gravity.c2-pass-cache-test/leaf-contract-is-explicitly-local-and-nonauthoritative"
+            "gravity.c2-pass-cache-test/opt-in-bootstrap-integration-reuses-without-reader-execution"]}
           {:namespace 'gravity.bootstrap-compatibility.c3-test
            :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"}
           {:namespace 'gravity.bootstrap-compatibility.module-analysis-test
