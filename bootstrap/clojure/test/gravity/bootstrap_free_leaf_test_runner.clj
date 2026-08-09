@@ -25,7 +25,7 @@
 (def ^:const summary-schema
   :gravity/bootstrap-free-leaf-test-summary-v1)
 
-(def ^:const expected-catalog-count 44)
+(def ^:const expected-catalog-count 45)
 
 (def excluded-top-level-test-files
   "The six top-level tests that intentionally remain outside the leaf runner."
@@ -78,6 +78,7 @@
    "macro_expansion"
    "module_analysis"
    "optimization_lowering"
+   "pass_cache"
    "pass_execution"
    "profile_validation"
    "reader_cursor"
@@ -689,7 +690,7 @@
    "Usage: clojure -M:leaf-test [options]\n"
    "\n"
    "Runs each reviewed bootstrap-free top-level Stage 0 test in a fresh JVM.\n"
-   "With no selector, all 44 catalog entries run in canonical order.\n"
+   "With no selector, all 45 catalog entries run in canonical order.\n"
    "\n"
    "Options (repeatable):\n"
    "  --namespace NAME  select one namespace exactly\n"

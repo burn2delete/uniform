@@ -1,7 +1,7 @@
 (ns gravity.self-hosting.sh01-stage0-leaf-test-runner-test
   "Contract tests for the bootstrap-free Stage 0 leaf catalog and CLI.
 
-  Running all 44 leaf namespaces remains the :leaf-test command's aggregate
+  Running all 45 leaf namespaces remains the :leaf-test command's aggregate
   acceptance check; this namespace also exercises its adversarial boundaries."
   (:require [clojure.string :as str]
             [clojure.test :as test]
@@ -115,9 +115,9 @@
                      runner/catalog)]
     (is (= "gravity/stage0-clojure-components-v1"
            (get contract "schema")))
-    (is (= 44 (count expected)))
+    (is (= 45 (count expected)))
     (is (= expected actual))
-    (is (= {:foundation-reader 9 :c2-c3 12 :compiler 23}
+    (is (= {:foundation-reader 9 :c2-c3 12 :compiler 24}
            (frequencies (map :group expected))))))
 
 (deftest component-contract-json-is-strict

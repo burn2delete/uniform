@@ -172,6 +172,7 @@
   "bootstrap/clojure/src/gravity/macro_expansion.clj" :sh-macro
   "bootstrap/clojure/src/gravity/module_analysis.clj" :sh-resolution
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" :sh-optimization
+  "bootstrap/clojure/src/gravity/pass_cache.clj" :sh-incremental
   "bootstrap/clojure/src/gravity/pass_execution.clj" :sh-verification
   "bootstrap/clojure/src/gravity/profile_validation.clj" :sh-profile
   "bootstrap/clojure/src/gravity/reader_cursor.clj" :sh-reader
@@ -246,6 +247,7 @@
   "bootstrap/clojure/test/gravity/macro_expansion_test.clj" :sh-macro
   "bootstrap/clojure/test/gravity/module_analysis_test.clj" :sh-resolution
   "bootstrap/clojure/test/gravity/optimization_lowering_test.clj" :sh-optimization
+  "bootstrap/clojure/test/gravity/pass_cache_test.clj" :sh-incremental
   "bootstrap/clojure/test/gravity/pass_execution_test.clj" :sh-verification
   "bootstrap/clojure/test/gravity/profile_validation_test.clj" :sh-profile
   "bootstrap/clojure/test/gravity/reader_cursor_test.clj" :sh-reader
@@ -298,6 +300,7 @@
   "macro-expansion" :sh-macro
   "module-analysis" :sh-resolution
   "optimization-lowering" :sh-optimization
+  "pass-cache" :sh-incremental
   "pass-execution" :sh-verification
   "profile-validation" :sh-profile
   "reader-cursor" :sh-reader
