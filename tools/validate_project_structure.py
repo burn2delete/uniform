@@ -110,6 +110,18 @@ STAGE0_COORDINATOR_INTEGRATION_RESERVATIONS = [
         ],
     },
     {
+        "id": "p15-public-native-admission-negative-only",
+        "owner": "master-coordinator",
+        "authority_ceiling": "none",
+        "ordinary_component": False,
+        "focused_check_id": "stage0-coordinator-integration-reservations",
+        "paths": [
+            "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj",
+            "contracts/p15-public-native-admission-v1.edn",
+        ],
+    },
+    {
         "id": "project-structure-runner-integration",
         "owner": "master-coordinator",
         "authority_ceiling": "none",
