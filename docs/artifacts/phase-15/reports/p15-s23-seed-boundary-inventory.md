@@ -46,33 +46,38 @@ conformance claim is added.
 The proof record preserves the supervised run, its first bounded timeout, the
 successful retry receipt, adapter/test hashes, and exact residual boundaries.
 
-## Completed internal plan-specialization prerequisite
+## Completed internal Gravity C-emitter semantic-owner sub-gate
 
 The next internal slice consumes a real target-neutral stage2 packet and its
 trusted context through
 `gravity.p15-native-plan-specialization/specialize-native-runtime-plan`. It
-authenticates the packet/context before plan traversal, invokes the existing
-bounded C-plan validator, and emits direct plan-specialized C. The generic
-host-C packet interpreter is unused on this selected evidence path. The
-production runner remains `:not-exposed`; compilation and execution are
-test-owned in a private root and do not establish a public process or file-I/O
-boundary.
+authenticates the packet/context before plan traversal and invokes the existing
+bounded C-plan validator. It then compiles and executes the pinned Gravity
+helper `bootstrap/gravity/p15_s23/native_plan_c_emitter.gravity`; that helper
+owns the printable-ASCII `println`/`str` plan walk and deterministic C-source
+construction. The generic host-C packet interpreter is unused on this selected
+evidence path. The production runner remains `:not-exposed`; compilation and
+execution are test-owned in a private root and do not establish a public
+process or file-I/O boundary.
 
 Accepted evidence compiles and runs real ARM64 macOS C for
 `accepted-print.gravity`, `accepted-print.qst`, and `accepted-str.gravity`,
 with exact `Hello Gravity\n` and `name42\n` output. Packet/context tamper and
 authenticated unsupported plans reject before the validator or emitter, with
 `P15NS001` and `P15NS002`; the overbound tamper case is authenticated as
-`P15NS001` and does not claim `P15NS003`. The stable-input supervised run
-passed 4 tests and 48 assertions in 783.481 seconds, peaked at
-1,379,516,416 bytes RSS and two processes, matched the tracked before/after input hashes, and
-had 0 failures/errors.
+`P15NS001` and does not claim `P15NS003`. Validator-accepted boolean,
+non-ASCII, control-string, and C11-trigraph inputs reach the Gravity helper and
+reject with `P15GCE002`; helper-source substitution rejects with `P15GCE001`.
+The final stable-input fail-fast run passed 6 exact vars and 89 assertions in
+1594.489 seconds, peaked at 1,397,178,368 bytes RSS and three processes, matched all
+tracked before/after input hashes, and had 0 failures/errors.
 
-This advances only the selected internal evidence path by removing use of the
-generic packet interpreter. The generated child and selected runtime record no
-Clojure/JVM availability, but authentication, plan validation, C emission,
+This advances only bounded C-source construction semantic ownership. The
+generated child and selected runtime record no Clojure/JVM availability, but
+authentication, plan validation, helper compilation/execution via stage0,
 artifact construction, process/file I/O, compiler, public wrapper, and global
-boundaries remain Clojure-seed-bound. The provider and compiler are not
+boundaries remain Clojure-seed-bound. The helper's `pr-str` primitive remains
+an explicit host boundary. The provider and compiler are not
 authored in Gravity, the production runner is not exposed, and the public
 `P18T04002` / `:missing-fact :contained-public-native-run` admission block is
 unchanged. Self-hosting, release, backend-complete, full-language, and 0/240

@@ -1,0 +1,168 @@
+; Gravity-authored semantic C source construction for the bounded native
+; plan-specialization child. The Clojure adapter authenticates the packet,
+; validates the public C subset, and proves the printable-ASCII precondition.
+; This module owns the remaining plan walk and deterministic translation for
+; that deliberately small slice. It is not a provider, compiler, or runner.
+(ns gravity.bootstrap.p15-s23.native-plan-c-emitter
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn p15-s23-native-c-emitter-value-complete
+  [value]
+  (hash-map :status :complete :value value))
+
+(defn p15-s23-native-c-emitter-rejected
+  [facts]
+  (hash-map :status :rejected
+            :diagnostic "P15GCE002"
+            :facts facts))
+
+(defn p15-s23-native-c-emitter-complete
+  [source]
+  (hash-map :status :complete
+            :source source
+            :contract :p15-s23-native-plan-c-emitter-v1
+            :implementation :gravity-source))
+
+(defn p15-s23-native-c-emitter-join
+  [parts]
+  (if (= 0 (count parts))
+    ""
+    (str (first parts)
+         (p15-s23-native-c-emitter-join (rest parts)))))
+
+(defn p15-s23-native-c-emitter-scalar-text
+  [instruction]
+  (let [op (get instruction :op)]
+    (if (= :literal op)
+      (p15-s23-native-c-emitter-value-complete
+       (str (get instruction :value)))
+      (if (= :quote op)
+        (p15-s23-native-c-emitter-value-complete
+         (str (get instruction :value)))
+        (if (= :builtin-call op)
+          (if (= 'str (get instruction :function))
+            (let [joined
+                  (p15-s23-native-c-emitter-join-scalar-text
+                   (get instruction :args))]
+              joined)
+            (p15-s23-native-c-emitter-rejected
+             (hash-map :missing-fact :native-plan-c-emitter-subset
+                       :observed-op op
+                       :observed-function (get instruction :function))))
+          (p15-s23-native-c-emitter-rejected
+           (hash-map :missing-fact :native-plan-c-emitter-subset
+                     :observed-op op)))))))
+
+(defn p15-s23-native-c-emitter-join-scalar-text
+  [instructions]
+  (if (= 0 (count instructions))
+    (p15-s23-native-c-emitter-value-complete "")
+    (let [head-result
+          (p15-s23-native-c-emitter-scalar-text (first instructions))]
+      (if (= :complete (get head-result :status))
+        (let [tail-result
+              (p15-s23-native-c-emitter-join-scalar-text (rest instructions))]
+          (if (= :complete (get tail-result :status))
+            (p15-s23-native-c-emitter-value-complete
+             (str (get head-result :value)
+                  (get tail-result :value)))
+            tail-result))
+        head-result))))
+
+(defn p15-s23-native-c-emitter-println-args
+  [args first?]
+  (if (= 0 (count args))
+    (p15-s23-native-c-emitter-value-complete "")
+    (let [value-result
+          (p15-s23-native-c-emitter-scalar-text (first args))]
+      (if (= :complete (get value-result :status))
+        (let [prefix
+              (if (= false first?)
+                ""
+                "  fputs(\" \", stdout);\n")
+              line
+              (str prefix
+                   "  fputs("
+                   (pr-str (get value-result :value))
+                   ", stdout);\n")
+              tail-result
+              (p15-s23-native-c-emitter-println-args
+               (rest args) true)]
+          (if (= :complete (get tail-result :status))
+            (p15-s23-native-c-emitter-value-complete
+             (str line (get tail-result :value)))
+            tail-result))
+        value-result))))
+
+(defn p15-s23-native-c-emitter-instruction
+  [instruction]
+  (let [op (get instruction :op)]
+    (if (= :literal op)
+      (p15-s23-native-c-emitter-value-complete "")
+      (if (= :quote op)
+        (p15-s23-native-c-emitter-value-complete "")
+        (if (= :println op)
+          (let [args-result
+                (p15-s23-native-c-emitter-println-args
+                 (get instruction :args) false)]
+            (if (= :complete (get args-result :status))
+              (p15-s23-native-c-emitter-value-complete
+               (str (get args-result :value)
+                    "  fputs(\"\\n\", stdout);\n"))
+              args-result))
+          (if (= :do op)
+            (p15-s23-native-c-emitter-instructions
+             (get instruction :body))
+            (p15-s23-native-c-emitter-rejected
+             (hash-map :missing-fact :native-plan-c-emitter-subset
+                       :observed-op op))))))))
+
+(defn p15-s23-native-c-emitter-instructions
+  [instructions]
+  (if (= 0 (count instructions))
+    (p15-s23-native-c-emitter-value-complete "")
+    (let [head-result
+          (p15-s23-native-c-emitter-instruction (first instructions))]
+      (if (= :complete (get head-result :status))
+        (let [tail-result
+              (p15-s23-native-c-emitter-instructions (rest instructions))]
+          (if (= :complete (get tail-result :status))
+            (p15-s23-native-c-emitter-value-complete
+             (str (get head-result :value)
+                  (get tail-result :value)))
+            tail-result))
+        head-result))))
+
+(defn p15-s23-native-c-emitter-plan-safe
+  [plan]
+  (let [entrypoint (get plan :entrypoint)
+        functions (get plan :functions)
+        entry-function (get functions entrypoint)
+        body-result
+        (p15-s23-native-c-emitter-instructions
+         (get entry-function :instructions))]
+    (if (= :complete (get body-result :status))
+      (p15-s23-native-c-emitter-complete
+       (str "#include <stdio.h>\n\n"
+            "int main(void) {\n"
+            (get body-result :value)
+            "  return 0;\n"
+            "}\n"))
+      body-result)))
+
+(defn p15-s23-native-c-emit-plan
+  [request]
+  (if (= true (get request :safe-printable-ascii?))
+    (p15-s23-native-c-emitter-plan-safe (get request :plan))
+    (p15-s23-native-c-emitter-rejected
+     (get request :safety-facts))))
+
+(defn main
+  []
+  (hash-map :artifact :gravity/p15-s23-native-plan-c-emitter
+            :status :ready
+            :contract :p15-s23-native-plan-c-emitter-v1))

@@ -1,8 +1,9 @@
 (ns gravity.p15-native-plan-specialization-test
   "Focused evidence for authenticated plan-specialized C artifacts.
 
-  The namespace consumes real stage2 runtime packets and emits the direct C
-  backend source.  Tests compile/run that source only inside a test-owned
+  The namespace consumes real stage2 runtime packets and executes a
+  Gravity-authored C-emitter helper through the bounded Clojure rule-runner
+  seam. Tests compile/run the returned C source only inside a test-owned
   private root; production does not expose a second process runner.
   "
   (:require [clojure.test :refer [deftest is testing run-tests]]
@@ -182,8 +183,35 @@
               (is (= :external-focused-test-only
                      (get-in artifact [:generated-c :execution-evidence]))
                   artifact)
-              (is (= :clojure-emitted-plan-specialized-c
+              (is (= :gravity-source-emitted-plan-specialized-c
                      (get-in artifact [:generated-c :implementation]))
+                  artifact)
+              (is (= :gravity-source
+                     (get-in artifact [:emitter :semantic-owner])) artifact)
+              (is (= :gravity
+                     (get-in artifact [:emitter :source-language])) artifact)
+              (is (= 'p15-s23-native-c-emit-plan
+                     (get-in artifact [:emitter :helper-function])) artifact)
+              (is (re-matches
+                   #"sha256:[0-9a-f]{64}"
+                   (get-in artifact [:emitter
+                                     :helper-source-content-hash])) artifact)
+              (is (re-matches
+                   #"sha256:[0-9a-f]{64}"
+                   (get-in artifact [:emitter
+                                     :helper-function-semantic-hash])) artifact)
+              (is (re-matches
+                   #"sha256:[0-9a-f]{64}"
+                   (get-in artifact [:emitter :helper-contract-hash])) artifact)
+              (is (true? (get-in artifact
+                                  [:provenance :c-emitter-helper-executed?]))
+                  artifact)
+              (is (true? (get-in artifact
+                                  [:provenance
+                                   :c-emitter-pr-str-primitive-boundary?]))
+                  artifact)
+              (is (= :gravity
+                     (get-in artifact [:provenance :c-emitter-source-language]))
                   artifact)
               (is (false? (get-in artifact
                                   [:provenance
@@ -202,9 +230,10 @@
   (let [{:keys [packet context]}
         (real-packet (fixture-relative "accepted-print.gravity"))
         validator (var-get #'bootstrap/c-backend-validate-runtime-plan!)
-        emitter (var-get #'bootstrap/c-backend-runtime-source)
         validator-calls (atom 0)
-        emitter-calls (atom 0)
+        helper-loader (var-get
+                       #'specialization/*p15-native-plan-c-emitter-source-loader*)
+        helper-loader-calls (atom 0)
         changed-source (str (:source-text context) "\n")
         changed-context
         (bootstrap/p15-s23-closed-runtime-packet-context
@@ -212,36 +241,37 @@
         cases [[(assoc packet :status :tampered) context]
                [packet changed-context]
                [(assoc-in packet [:plan :entrypoint] 'tampered) context]]]
-    (with-redefs [bootstrap/c-backend-validate-runtime-plan!
+      (with-redefs [bootstrap/c-backend-validate-runtime-plan!
+                    (fn [& args]
+                      (swap! validator-calls inc)
+                      (apply validator args))
+                  specialization/*p15-native-plan-c-emitter-source-loader*
                   (fn [& args]
-                    (swap! validator-calls inc)
-                    (apply validator args))
-                  bootstrap/c-backend-runtime-source
-                  (fn [& args]
-                    (swap! emitter-calls inc)
-                    (apply emitter args))]
+                    (swap! helper-loader-calls inc)
+                    (apply helper-loader args))]
       (doseq [[candidate candidate-context] cases]
         (is (= "P15NS001"
                (diagnostic-id
                 #(specialization/specialize-native-runtime-plan
                   candidate candidate-context)))))
       (is (zero? @validator-calls))
-      (is (zero? @emitter-calls)))))
+      (is (zero? @helper-loader-calls)))))
 
 (deftest authenticated-unsupported-plan-rejects-before-emitter
   (let [{:keys [packet context]}
         (real-packet (fixture-relative "unsupported-builtin.gravity"))
-        emitter (var-get #'bootstrap/c-backend-runtime-source)
-        emitter-calls (atom 0)]
-    (with-redefs [bootstrap/c-backend-runtime-source
+        helper-loader (var-get
+                       #'specialization/*p15-native-plan-c-emitter-source-loader*)
+        helper-loader-calls (atom 0)]
+    (with-redefs [specialization/*p15-native-plan-c-emitter-source-loader*
                   (fn [& args]
-                    (swap! emitter-calls inc)
-                    (apply emitter args))]
+                    (swap! helper-loader-calls inc)
+                    (apply helper-loader args))]
       (is (= "P15NS002"
              (diagnostic-id
               #(specialization/specialize-native-runtime-plan
                 packet context))))
-      (is (zero? @emitter-calls)))))
+      (is (zero? @helper-loader-calls)))))
 
 (deftest overbound-packet-tamper-rejects-before-validator
   (let [{:keys [packet context]}
@@ -252,16 +282,64 @@
         (assoc-in packet [:plan :functions entrypoint :instructions]
                   (vec (concat instructions (repeat 128 (first instructions)))))
         validator (var-get #'bootstrap/c-backend-validate-runtime-plan!)
-        validator-calls (atom 0)]
+        validator-calls (atom 0)
+        helper-loader (var-get
+                       #'specialization/*p15-native-plan-c-emitter-source-loader*)
+        helper-loader-calls (atom 0)]
     (with-redefs [bootstrap/c-backend-validate-runtime-plan!
                   (fn [& args]
                     (swap! validator-calls inc)
-                    (apply validator args))]
+                    (apply validator args))
+                  specialization/*p15-native-plan-c-emitter-source-loader*
+                  (fn [& args]
+                    (swap! helper-loader-calls inc)
+                    (apply helper-loader args))]
       (is (= "P15NS001"
              (diagnostic-id
               #(specialization/specialize-native-runtime-plan
                 overbound-packet context))))
-      (is (zero? @validator-calls)))))
+      (is (zero? @validator-calls))
+      (is (zero? @helper-loader-calls)))))
+
+(deftest authenticated-validator-accepted-unsupported-helper-values-reject
+  (doseq [[filename expected-fact]
+          [["accepted-bool.gravity" :gravity-c-emitter-printable-ascii-subset]
+           ["accepted-nonascii.gravity"
+            :gravity-c-emitter-printable-ascii-subset]
+           ["accepted-control.gravity"
+            :gravity-c-emitter-printable-ascii-subset]
+           ["accepted-trigraph.gravity"
+            :gravity-c-emitter-printable-ascii-subset]]]
+    (testing filename
+      (let [{:keys [packet context]}
+            (real-packet (fixture-relative filename))
+            error-data
+            (try
+              (specialization/specialize-native-runtime-plan
+               packet context)
+              nil
+              (catch clojure.lang.ExceptionInfo error
+                (ex-data error)))]
+        (is (= "P15GCE002" (:id error-data)) error-data)
+        (is (= expected-fact (:missing-fact error-data)) error-data)
+        (is (= :gravity-c-emitter-authenticated-subset
+               (:diagnostic-family error-data)) error-data)))))
+
+(deftest tampered-gravity-c-emitter-source-rejects-before-helper-execution
+  (let [{:keys [packet context]}
+        (real-packet (fixture-relative "accepted-print.gravity"))
+        loader (var-get
+                #'specialization/*p15-native-plan-c-emitter-source-loader*)]
+    (with-redefs [specialization/*p15-native-plan-c-emitter-source-loader*
+                  (fn [request-source]
+                    (let [snapshot (loader request-source)]
+                      (assoc snapshot
+                             :source-text
+                             (str (:source-text snapshot) "\n"))))]
+      (is (= "P15GCE001"
+             (diagnostic-id
+              #(specialization/specialize-native-runtime-plan
+                packet context)))))))
 
 (defn -main
   [& _]

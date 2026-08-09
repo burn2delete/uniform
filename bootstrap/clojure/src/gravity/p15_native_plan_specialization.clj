@@ -6,13 +6,36 @@
   that machinery here would widen the trusted boundary.  Focused tests compile
   and run the returned source in a test-owned private directory instead.
   "
-  (:require [gravity.bootstrap :as bootstrap])
-  (:import [java.nio.charset StandardCharsets]))
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
+            [gravity.bootstrap :as bootstrap])
+  (:import [java.nio ByteBuffer]
+           [java.nio.charset CodingErrorAction StandardCharsets]
+           [java.nio.file Files LinkOption OpenOption Path Paths]
+           [java.nio.file.attribute BasicFileAttributes]))
 
 (def ^:private max-plan-instructions 128)
 (def ^:private max-generated-source-bytes 65536)
 (def ^:private max-reference-output-bytes 8192)
 (def ^:private max-scalar-bytes 1024)
+(def ^:private max-helper-source-bytes 65536)
+(def ^:private helper-source-relative
+  "bootstrap/gravity/p15_s23/native_plan_c_emitter.gravity")
+(def ^:private helper-function
+  'p15-s23-native-c-emit-plan)
+(def ^:private helper-contract
+  :p15-s23-native-plan-c-emitter-v1)
+(def ^:private helper-function-shape
+  {:function helper-function
+   :arity 1
+   :params ['request]})
+(def ^:private no-follow-options
+  (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
+
+;; Filled after the source is finalized. Keeping this hash pinned prevents a
+;; classpath or worktree substitution from silently changing the helper.
+(def ^:private helper-source-content-hash
+  "sha256:04645a82e66d024c6505ea3ec80c9789a7d0545ef8e7222c5d78cad68fc92adc")
 
 (defn- fail!
   [id message source-path facts]
@@ -54,9 +77,394 @@
                  :remediation :reduce_the_authenticated_plan_or_output}
                 facts)))
 
+(defn- helper-contract-fail!
+  [source-path message facts]
+  (fail! "P15GCE001" message source-path
+         (merge {:diagnostic-family :gravity-c-emitter-helper-contract
+                 :remediation :restore_the_pinned_gravity_c_emitter_helper}
+                facts)))
+
+(defn- helper-rejected-fail!
+  [source-path message facts]
+  (fail! "P15GCE002" message source-path
+         (merge {:diagnostic-family :gravity-c-emitter-authenticated-subset
+                 :remediation :restrict_to_printable_ascii_string_println_and_str}
+                facts)))
+
+(defn- repository-root
+  []
+  (let [resource (io/resource "gravity/p15_native_plan_specialization.clj")]
+    (when-not resource
+      (helper-contract-fail!
+       nil
+       "native plan specialization source is not on the classpath"
+       {:missing-fact :specialization-source-resource}))
+    (loop [candidate
+           (.getParent (.toPath (io/file (.toURI resource))))]
+      (cond
+        (nil? candidate)
+        (helper-contract-fail!
+         nil
+         "repository root is unavailable for the Gravity C emitter helper"
+         {:missing-fact :repository-root})
+
+        (Files/isRegularFile (.resolve ^Path candidate "deps.edn")
+                             (make-array LinkOption 0))
+        candidate
+
+        :else
+        (recur (.getParent ^Path candidate))))))
+
+(def ^:private root (delay (repository-root)))
+
+(defn- helper-source-path!
+  [request-source]
+  (let [repository-root (.normalize (.toAbsolutePath ^Path @root))
+        relative-path (Paths/get helper-source-relative
+                                 (make-array String 0))
+        source-path (.normalize (.resolve repository-root relative-path))]
+    (when-not (.startsWith source-path repository-root)
+      (helper-contract-fail!
+       request-source
+       "Gravity C emitter helper escaped the repository root"
+       {:missing-fact :bounded-helper-source-location
+        :source-path (str source-path)}))
+    ;; Check every path component without following links. This keeps the
+    ;; source identity rooted even when a parent component is replaced.
+    (loop [current repository-root
+           components (seq (iterator-seq
+                            (.iterator
+                             (.relativize repository-root source-path))))]
+      (let [attributes
+            (try
+              (Files/readAttributes current BasicFileAttributes
+                                     no-follow-options)
+              (catch java.io.IOException error
+                (helper-contract-fail!
+                 request-source
+                 "Gravity C emitter helper path is unreadable"
+                 {:missing-fact :bounded-helper-source-location
+                  :source-path (str source-path)
+                  :observed-component (str current)
+                  :cause-message (.getMessage error)})))]
+        (when (or (.isSymbolicLink attributes)
+                  (and (seq components) (not (.isDirectory attributes)))
+                  (and (nil? components) (not (.isRegularFile attributes))))
+          (helper-contract-fail!
+           request-source
+           "Gravity C emitter helper path is not a regular non-symlink file"
+           {:missing-fact :bounded-helper-source-location
+            :source-path (str source-path)
+            :observed-component (str current)
+            :symbolic-link? (.isSymbolicLink attributes)
+            :directory? (.isDirectory attributes)
+            :regular-file? (.isRegularFile attributes)}))
+        (if-let [component (first components)]
+          (recur (.resolve ^Path current ^Path component)
+                 (next components))
+          {:source-path source-path
+           :attributes attributes})))))
+
+(defn- strict-utf8
+  [request-source source-path bytes]
+  (try
+    (let [decoder
+          (doto (.newDecoder StandardCharsets/UTF_8)
+            (.onMalformedInput CodingErrorAction/REPORT)
+            (.onUnmappableCharacter CodingErrorAction/REPORT))]
+      (.toString (.decode decoder (ByteBuffer/wrap ^bytes bytes))))
+    (catch java.nio.charset.CharacterCodingException error
+      (helper-contract-fail!
+       request-source
+       "Gravity C emitter helper is not strict UTF-8"
+       {:missing-fact :strict-utf8-helper-source
+        :source-path (str source-path)
+        :cause-message (.getMessage error)}))))
+
+(defn- helper-source-snapshot!
+  "Read one bounded, regular-file, NOFOLLOW UTF-8 snapshot of the tracked
+  Gravity helper. The open channel and before/after identity checks close the
+  replacement window between path validation and hashing."
+  [request-source]
+  (let [{:keys [source-path attributes]} (helper-source-path! request-source)
+        before-size (.size ^BasicFileAttributes attributes)]
+    (when (> before-size max-helper-source-bytes)
+      (helper-contract-fail!
+       request-source
+       "Gravity C emitter helper source exceeds its bounded snapshot size"
+       {:maximum-helper-source-bytes max-helper-source-bytes
+        :observed-helper-source-bytes before-size
+        :missing-fact :bounded-helper-source-snapshot}))
+    (let [buffer (ByteBuffer/allocate (inc max-helper-source-bytes))]
+      (try
+        (with-open [channel
+                    (java.nio.channels.FileChannel/open
+                     source-path
+                     (into-array OpenOption
+                                 [java.nio.file.StandardOpenOption/READ
+                                  LinkOption/NOFOLLOW_LINKS]))]
+          (let [channel-size-before (.size channel)
+                observed-byte-count
+                (loop [zero-reads 0]
+                  (if-not (.hasRemaining buffer)
+                    (.position buffer)
+                    (let [read-count (.read channel buffer)]
+                      (cond
+                        (neg? read-count) (.position buffer)
+                        (zero? read-count)
+                        (if (= 8 zero-reads)
+                          (helper-contract-fail!
+                           request-source
+                           "Gravity C emitter helper source did not make progress"
+                           {:missing-fact :bounded-helper-source-read
+                            :source-path (str source-path)})
+                          (recur (inc zero-reads)))
+                        :else
+                        (recur 0)))))
+                channel-size-after (.size channel)
+                after
+                (try
+                  (Files/readAttributes source-path BasicFileAttributes
+                                         no-follow-options)
+                  (catch java.io.IOException error
+                    (helper-contract-fail!
+                     request-source
+                     "Gravity C emitter helper source disappeared while reading"
+                     {:missing-fact :stable-helper-source-snapshot
+                      :source-path (str source-path)
+                      :cause-message (.getMessage error)})))
+                bytes (java.util.Arrays/copyOf (.array buffer)
+                                               observed-byte-count)
+                content-hash
+                (str "sha256:" (bootstrap/sha256-bytes-hex bytes))]
+            (when-not
+             (and (= channel-size-before channel-size-after
+                     (long observed-byte-count))
+                  (= (.fileKey ^BasicFileAttributes attributes)
+                     (.fileKey ^BasicFileAttributes after))
+                  (= (.lastModifiedTime ^BasicFileAttributes attributes)
+                     (.lastModifiedTime ^BasicFileAttributes after))
+                  (= (.size ^BasicFileAttributes attributes)
+                     (.size ^BasicFileAttributes after)
+                     (long observed-byte-count))
+                  (<= observed-byte-count max-helper-source-bytes))
+              (helper-contract-fail!
+               request-source
+               "Gravity C emitter helper source changed while being read"
+               {:missing-fact :stable-helper-source-snapshot
+                :source-path (str source-path)
+                :observed-helper-source-bytes observed-byte-count}))
+            {:source-path (str source-path)
+             :source-byte-count observed-byte-count
+             :source-content-hash content-hash
+             :source-text (strict-utf8 request-source source-path bytes)}))
+        (catch java.io.IOException error
+          (helper-contract-fail!
+           request-source
+           "Gravity C emitter helper source cannot be read"
+           {:missing-fact :stable-helper-source-snapshot
+            :source-path (str source-path)
+            :cause-message (.getMessage error)}))))))
+
+(def ^:dynamic *p15-native-plan-c-emitter-source-loader*
+  helper-source-snapshot!)
+
 (defn- utf8-bytes
   [value]
   (.getBytes ^String (str value) StandardCharsets/UTF_8))
+
+(defn- printable-ascii-string?
+  [value]
+  (and (string? value)
+       (every? (fn [character]
+                 (<= 0x20 (int character) 0x7e))
+               value)
+       ;; The Gravity helper deliberately delegates literal spelling to the
+       ;; stage0 `pr-str` primitive. C11 recognizes trigraphs before parsing
+       ;; string escapes, so a raw printable sequence such as `??/` is not a
+       ;; safe C literal spelling. Reject every trigraph introducer until a
+       ;; Gravity-authored byte encoder owns C escaping.
+       (not (re-find #"\?\?[=/'()!<>-]" value))))
+
+(defn- helper-scalar-safe?
+  [instruction]
+  (case (:op instruction)
+    :literal (printable-ascii-string? (:value instruction))
+    :quote (printable-ascii-string? (:value instruction))
+    :builtin-call
+    (and (= 'str (:function instruction))
+         (seq (:args instruction))
+         (every? helper-scalar-safe? (:args instruction)))
+    false))
+
+(defn- helper-statement-safe?
+  [instruction]
+  (case (:op instruction)
+    ;; Literal and quote statements are no-ops in the public C subset. They
+    ;; need no C representation and therefore do not weaken the proof.
+    :literal true
+    :quote true
+    :println (every? helper-scalar-safe? (:args instruction))
+    :do (every? helper-statement-safe? (:body instruction))
+    false))
+
+(defn- helper-safety-proof
+  [plan]
+  (let [entrypoint (:entrypoint plan)
+        entry-function (get-in plan [:functions entrypoint])
+        instructions (:instructions entry-function)
+        safe? (and (vector? instructions)
+                    (every? helper-statement-safe? instructions))]
+    {:safe? safe?
+     :facts (if safe?
+              {:contract helper-contract
+               :proof :printable-ascii-string-println-str
+               :non-ascii-allowed? false
+               :control-allowed? false
+               :nul-allowed? false
+               :c11-trigraph-sequence-allowed? false}
+              {:contract helper-contract
+               :proof :printable-ascii-string-println-str
+               :non-ascii-allowed? false
+               :control-allowed? false
+               :nul-allowed? false
+               :c11-trigraph-sequence-allowed? false
+               :missing-fact :gravity-c-emitter-printable-ascii-subset
+               :observed-instructions instructions})}))
+
+(defn- helper-function-semantic-hash
+  [definition]
+  (str "sha256:"
+       (bootstrap/sha256-hex
+        (pr-str (bootstrap/c-backend-canonical-value definition)))))
+
+(defn- helper-contract-hash
+  [source-content-hash]
+  (str "sha256:"
+       (bootstrap/sha256-hex
+        (pr-str
+         (bootstrap/c-backend-canonical-value
+          {:source-content-hash source-content-hash
+           :function-shape helper-function-shape
+           :contract helper-contract})))))
+
+(defn- compile-gravity-c-emitter-helper!
+  [request-source]
+  (let [snapshot
+        (try
+          (*p15-native-plan-c-emitter-source-loader* request-source)
+          (catch clojure.lang.ExceptionInfo error
+            (throw error))
+          (catch Throwable error
+            (helper-contract-fail!
+             request-source
+             "Gravity C emitter helper source loader failed"
+             {:missing-fact :gravity-c-emitter-source-loader
+              :cause-message (.getMessage error)})))
+        _ (when-not (and (map? snapshot)
+                         (= #{:source-path :source-byte-count
+                              :source-content-hash :source-text}
+                            (set (keys snapshot)))
+                         (string? (:source-path snapshot))
+                         (string? (:source-text snapshot))
+                         (integer? (:source-byte-count snapshot))
+                         (string? (:source-content-hash snapshot)))
+            (helper-contract-fail!
+             request-source
+             "Gravity C emitter helper source snapshot is malformed"
+             {:missing-fact :gravity-c-emitter-source-snapshot
+              :observed-snapshot snapshot}))
+        _ (when-not (str/ends-with? (:source-path snapshot)
+                                     helper-source-relative)
+            (helper-contract-fail!
+             request-source
+             "Gravity C emitter helper source path is not the tracked helper"
+             {:missing-fact :gravity-c-emitter-source-path
+              :expected-relative-path helper-source-relative
+              :observed-source-path (:source-path snapshot)}))
+        _ (when (> (:source-byte-count snapshot) max-helper-source-bytes)
+            (helper-contract-fail!
+             request-source
+             "Gravity C emitter helper source snapshot exceeds its bound"
+             {:maximum-helper-source-bytes max-helper-source-bytes
+              :observed-helper-source-bytes (:source-byte-count snapshot)
+              :missing-fact :bounded-helper-source-snapshot}))
+        actual-source-content-hash
+        (str "sha256:" (bootstrap/sha256-hex (:source-text snapshot)))]
+    (when-not (= actual-source-content-hash
+                (:source-content-hash snapshot)
+                helper-source-content-hash)
+      (helper-contract-fail!
+       request-source
+       "Gravity C emitter helper source content hash is not pinned"
+       {:expected-source-content-hash helper-source-content-hash
+        :observed-source-content-hash actual-source-content-hash
+        :snapshot-source-content-hash (:source-content-hash snapshot)
+        :missing-fact :pinned-gravity-c-emitter-source-content-hash}))
+    (let [emitter-rule
+          (try
+            (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+             request-source :jvm)
+            (catch clojure.lang.ExceptionInfo error
+              (helper-contract-fail!
+               request-source
+               "Pinned Gravity plan-emitter rule could not be loaded"
+               {:missing-fact :pinned-stage2-plan-emitter-rule
+                :cause-diagnostic (:id (ex-data error))
+                :cause-facts (ex-data error)}))
+            (catch Throwable error
+              (helper-contract-fail!
+               request-source
+               "Pinned Gravity plan-emitter rule could not be loaded"
+               {:missing-fact :pinned-stage2-plan-emitter-rule
+                :cause-message (.getMessage error)})))
+          helper-plan
+          (try
+            (bootstrap/p15-s23-stage2-plan-emitter-compile-source
+             (:emitter emitter-rule)
+             (:source-path snapshot)
+             (:source-text snapshot))
+            (catch clojure.lang.ExceptionInfo error
+              (helper-contract-fail!
+               request-source
+               "Gravity C emitter helper source did not compile"
+               {:missing-fact :gravity-c-emitter-source-compilation
+                :cause-diagnostic (:id (ex-data error))
+                :cause-facts (ex-data error)}))
+            (catch Throwable error
+              (helper-contract-fail!
+               request-source
+               "Gravity C emitter helper source did not compile"
+               {:missing-fact :gravity-c-emitter-source-compilation
+                :cause-message (.getMessage error)})))
+          definition (get-in helper-plan [:functions helper-function])
+          observed-shape (when (map? definition)
+                           {:function helper-function
+                            :arity (:arity definition)
+                            :params (:params definition)})]
+      (when-not (and (map? helper-plan)
+                     (= :gravity/stage2-hosted-core-compiled-plan
+                        (:kind helper-plan))
+                     (= :hosted (get-in helper-plan [:module :profile]))
+                     (= :jvm (get-in helper-plan [:module :target]))
+                     (= 'main (:entrypoint helper-plan))
+                     (map? definition)
+                     (= helper-function-shape observed-shape))
+        (helper-contract-fail!
+         request-source
+         "Gravity C emitter helper export shape is not exact"
+         {:missing-fact :gravity-c-emitter-export-shape
+          :expected-function-shape helper-function-shape
+          :observed-function-shape observed-shape
+          :observed-plan-kind (:kind helper-plan)
+          :observed-plan-entrypoint (:entrypoint helper-plan)}))
+      {:snapshot snapshot
+       :emitter-rule emitter-rule
+       :plan helper-plan
+       :function definition
+       :function-semantic-hash (helper-function-semantic-hash definition)
+       :contract-hash (helper-contract-hash
+                       (:source-content-hash snapshot))})))
 
 (defn- scalar-value?
   [value]
@@ -206,22 +614,60 @@
          "runtime-derived C plan validation failed"
          {:missing-fact :public-c-backend-runtime-plan-validation
           :cause-message (.getMessage error)})))
-    (let [source
+    (let [helper (compile-gravity-c-emitter-helper! source-path)
+          safety (helper-safety-proof plan)
+          helper-result
           (try
-            (bootstrap/c-backend-runtime-source plan)
+            ;; The flag is an explicit record of the compiler-artifact host
+            ;; boundary requested by this helper. It does not relabel the
+            ;; ordinary helper plan as a compiler artifact.
+            (bootstrap/p15-s23-stage2-runtime-execute-function
+             {:engine :gravity-native-plan-c-emitter-host-runner
+              :compiler-artifact-plan? true}
+             (:plan helper)
+             helper-function
+             [{:plan plan
+               :safe-printable-ascii? (:safe? safety)
+               :safety-facts (:facts safety)}])
             (catch clojure.lang.ExceptionInfo error
-              (unsupported-fail!
+              (helper-contract-fail!
                source-path
-               "runtime-derived C source emission failed"
-               {:cause-diagnostic (:id (ex-data error))
-                :cause-facts (ex-data error)
-                :missing-fact :public-c-backend-runtime-source}))
+               "Gravity C emitter helper invocation failed"
+               {:missing-fact :gravity-c-emitter-runtime-invocation
+                :cause-diagnostic (:id (ex-data error))
+                :cause-facts (ex-data error)}))
             (catch Throwable error
-              (unsupported-fail!
+              (helper-contract-fail!
                source-path
-               "runtime-derived C source emission failed"
-               {:missing-fact :public-c-backend-runtime-source
+               "Gravity C emitter helper invocation failed"
+               {:missing-fact :gravity-c-emitter-runtime-invocation
                 :cause-message (.getMessage error)})))
+          _ (when-not (map? helper-result)
+              (helper-contract-fail!
+               source-path
+               "Gravity C emitter helper returned a malformed record"
+               {:missing-fact :gravity-c-emitter-result-record
+                :observed-result helper-result}))
+          _ (when (= :rejected (:status helper-result))
+              (helper-rejected-fail!
+               source-path
+               "authenticated plan is outside the Gravity C emitter subset"
+               {:helper-diagnostic (:diagnostic helper-result)
+                :helper-facts (:facts helper-result)
+                :missing-fact
+                (or (get-in helper-result [:facts :missing-fact])
+                    :gravity-c-emitter-authenticated-subset)}))
+          _ (when-not (and (= :complete (:status helper-result))
+                           (= helper-contract (:contract helper-result))
+                           (= :gravity-source (:implementation helper-result))
+                           (string? (:source helper-result)))
+              (helper-contract-fail!
+               source-path
+               "Gravity C emitter helper returned the wrong completion record"
+               {:missing-fact :gravity-c-emitter-result-contract
+                :expected-contract helper-contract
+                :observed-result helper-result}))
+          source (:source helper-result)
           source-bytes (utf8-bytes source)
           expected-output (:reference-output packet)
           expected-output-bytes (when (string? expected-output)
@@ -247,7 +693,10 @@
        :source source
        :source-bytes source-bytes
        :source-content-hash (str "sha256:" (bootstrap/sha256-hex source))
-       :expected-output expected-output})))
+       :expected-output expected-output
+       :helper helper
+       :helper-safety safety
+       :helper-result helper-result})))
 
 (defn specialize-native-runtime-plan
   "Authenticate PACKET against CONTEXT and emit a bounded plan-specialized C
@@ -260,7 +709,8 @@
   "
   [packet context]
   (let [packet (authenticate! packet context)
-        {:keys [source source-bytes source-content-hash expected-output bounds]}
+        {:keys [source source-bytes source-content-hash expected-output bounds
+                helper helper-safety helper-result]}
         (validate-and-emit! packet context)
         compiler-record (:stage2-compiler-artifact-record packet)]
     {:artifact :gravity/p15-native-plan-specialization
@@ -291,10 +741,25 @@
                 :artifact-hash (:artifact-hash compiler-record)
                 :source-content-hash (:source-content-hash compiler-record)
                 :semantic-hash (:semantic-hash compiler-record)}
-     :emitter {:emitter 'gravity.bootstrap/c-backend-runtime-source
+     :emitter {:emitter 'gravity.p15-native-plan-specialization/gravity-source-c-emitter
                :source-rule-hash
                (get-in packet [:stage2-plan-emitter-rule :source-rule-hash])
-               :status :emitted}
+               :status :emitted
+               :semantic-owner :gravity-source
+               :source-language :gravity
+               :helper-source-path
+               (get-in helper [:snapshot :source-path])
+               :helper-source-content-hash
+               (get-in helper [:snapshot :source-content-hash])
+               :helper-function helper-function
+               :helper-function-semantic-hash
+               (:function-semantic-hash helper)
+               :helper-contract helper-contract
+               :helper-contract-hash (:contract-hash helper)
+               :helper-safety-proof (:facts helper-safety)
+               :helper-result-contract
+               (select-keys helper-result
+                            [:status :contract :implementation])}
      :driver {:driver-rule-hash
               (get-in packet [:stage2-compiler-driver-rule :driver-rule-hash])
               :record-status
@@ -309,7 +774,7 @@
                    :source source
                    :bytes source-bytes
                    :content-hash source-content-hash
-                   :implementation :clojure-emitted-plan-specialized-c
+                   :implementation :gravity-source-emitted-plan-specialized-c
                    :provider-kind :host-c
                    :execution :not-run
                    :execution-evidence :external-focused-test-only}
@@ -326,6 +791,10 @@
                   :authentication-clojure-seed-boundary? true
                   :validator-clojure-seed-boundary? true
                   :c-emitter-clojure-seed-boundary? true
+                  :c-emitter-semantic-owner :gravity-source
+                  :c-emitter-source-language :gravity
+                  :c-emitter-helper-executed? true
+                  :c-emitter-pr-str-primitive-boundary? true
                   :artifact-clojure-seed-boundary? true
                   :artifact-construction-clojure-seed-boundary? true
                   :process-clojure-seed-boundary? true
