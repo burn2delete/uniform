@@ -2251,7 +2251,12 @@ def _input_files(root: Path, declaration: str) -> list[tuple[str, Path | None]]:
         prefix_path = root / static_prefix.rstrip("/") if static_prefix.rstrip("/") else root
         _reject_symlink_components(root, prefix_path, declaration)
         matches: list[Path] = []
-        for item in root.glob(declaration):
+        # pathlib treats a terminal ``/**`` as a recursive directory match,
+        # not a recursive member match. Manifest runtime-tree declarations
+        # use that form to bind every file, so expand it as ``/**/*`` while
+        # preserving the reviewed declaration string in receipts.
+        expansion = declaration + "/*" if declaration.endswith("/**") else declaration
+        for item in root.glob(expansion):
             _reject_symlink_components(root, item, declaration)
             if item.is_file():
                 _assert_within_root(root, item, declaration)

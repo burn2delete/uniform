@@ -1324,6 +1324,18 @@ class VerifyDevelopmentTests(unittest.TestCase):
             self.assertTrue(record["mutation_observed"])
             self.assertNotIn("nested-glob", verifier.load_cache(cache)["checks"])
 
+    def test_terminal_recursive_glob_binds_every_regular_file(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-verify-terminal-glob-") as directory:
+            root = Path(directory).resolve()
+            nested = root / "tree" / "child"
+            nested.mkdir(parents=True)
+            (root / "tree" / "root.txt").write_text("root\n", encoding="ascii")
+            (nested / "leaf.txt").write_text("leaf\n", encoding="ascii")
+            self.assertEqual(
+                [path for path, _ in verifier._input_files(root, "tree/**")],
+                ["tree/child/leaf.txt", "tree/root.txt"],
+            )
+
     def test_manifest_environment_is_redacted_and_changes_invalidate_cache_identity(self) -> None:
         command = [sys.executable, "-c", "import sys; sys.exit(0)"]
         manifest = manifest_for(check("env", command, env={"MANIFEST_SECRET": "super-secret-value"}))
@@ -4969,6 +4981,21 @@ class VerifyDevelopmentTests(unittest.TestCase):
         }
         self.assertEqual(len(expected_catalog), 42)
         self.assertEqual(observed_catalog, expected_catalog)
+        clojure_runtime_declaration = "bootstrap/clojure/src/**"
+        observed_clojure_runtime = {
+            relative
+            for relative, path in verifier._input_files(
+                ROOT, clojure_runtime_declaration
+            )
+            if path is not None
+        }
+        expected_clojure_runtime = {
+            path.relative_to(ROOT).as_posix()
+            for path in (ROOT / "bootstrap/clojure/src").rglob("*")
+            if path.is_file()
+        }
+        self.assertEqual(len(expected_clojure_runtime), 54)
+        self.assertEqual(observed_clojure_runtime, expected_clojure_runtime)
         self.assertEqual(
             static["tool_inputs"].count(
                 "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_census.clj"
