@@ -4,7 +4,8 @@
             [gravity.c2-pass-cache :as cache])
   (:import [java.nio.charset StandardCharsets]
            [java.nio.file Files LinkOption OpenOption Path StandardOpenOption]
-           [java.nio.file.attribute PosixFilePermissions]))
+           [java.nio.file.attribute PosixFilePermissions]
+           [java.util.concurrent CountDownLatch TimeUnit]))
 
 (defn- delete-tree!
   [^Path root]
@@ -245,6 +246,11 @@
                      (cache/open-local-store (.resolve directory "../escape"))
                      nil
                      (catch clojure.lang.ExceptionInfo error error)))))))))
+
+(comment
+  "Frozen legacy-v1 filesystem fixtures.  The compatibility API no longer
+  executes these helpers; v1 bytes remain forensic-only and are never read or
+  reinterpreted by the generic-v2 adapter."
 
 (deftest persistent-store-misses-stores-and-hits-without-reexecution
   (with-temporary-directory [directory]
@@ -791,10 +797,248 @@
              (ns-resolve 'gravity.c2-pass-cache
                          'in-process-key-locks)))))))
 
+)
+
+(deftest generic-v2-adapter-preserves-c2-results-and-ignores-v1
+  (with-temporary-directory [directory]
+    (let [source (.resolve directory "adapter.gravity")
+          _ (Files/write source (.getBytes "(ns adapter)\n"
+                                                StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          snapshot (cache/bounded-source-snapshot! source)
+          key (cache/cache-key (key-request snapshot))
+          artifact (accepted-artifact :adapter)
+          calls (atom 0)
+          ops (validation-ops #(do (swap! calls inc) artifact))
+          v1 (.resolve directory ".cpcache/compiler-pass/v1")
+          _ (Files/createDirectories
+             v1 (make-array java.nio.file.attribute.FileAttribute 0))
+          sentinel (.resolve v1 "forensic-only.bin")
+          sentinel-bytes (.getBytes "legacy-v1-must-not-be-read"
+                                    StandardCharsets/UTF_8)
+          _ (Files/write sentinel sentinel-bytes
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          store (cache/open-local-store directory)
+          miss (cache/lookup! store key ops)
+          stored (cache/lookup-or-compute! store key ops)
+          hit (cache/lookup-or-compute!
+               store key (assoc ops :compute!
+                                #(throw (ex-info "producer reran" {}))))]
+      (is (= ".cpcache/compiler-pass/v2"
+             (:storage-root (cache/cache-contract))))
+      (is (= :miss (get-in miss [:cache-evidence :status])))
+      (is (= :stored (get-in stored [:cache-evidence :status])))
+      (is (= :hit (get-in hit [:cache-evidence :status])))
+      (is (= 1 @calls))
+      (is (= artifact (:artifact stored) (:artifact hit)))
+      (is (= {:line 7} (meta (:value (:artifact hit)))))
+      (is (= :gravity/c2-local-pass-cache-evidence
+             (get-in hit [:cache-evidence :artifact])))
+      (is (false? (get-in hit [:cache-evidence :reader-executed?])))
+      (is (true? (get-in hit [:cache-evidence :artifact-reused?])))
+      (is (java.util.Arrays/equals
+           sentinel-bytes (Files/readAllBytes sentinel)))
+      (is (Files/isDirectory (.resolve directory
+                                       ".cpcache/compiler-pass/v2")
+                             (make-array LinkOption 0))))))
+
+(deftest generic-v2-adapter-binds-current-c2-producer-policy
+  (with-temporary-directory [directory]
+    (let [source (.resolve directory "binding.gravity")
+          _ (Files/write source (.getBytes "(ns binding)\n"
+                                                StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          key (cache/cache-key
+               (key-request (cache/bounded-source-snapshot! source)))
+          artifact-a (accepted-artifact :binding-a)
+          artifact-b (accepted-artifact :binding-b)
+          calls (atom [])
+          base-ops (validation-ops #(do (swap! calls conj :a) artifact-a))
+          changed-ops
+          (assoc (validation-ops #(do (swap! calls conj :b) artifact-b))
+                 :current-binding
+                 (assoc (:current-binding base-ops)
+                        :compiler-id (hash-id :compiler-v2)))
+          store (cache/open-local-store directory)
+          first-result (cache/lookup-or-compute! store key base-ops)
+          changed-result (cache/lookup-or-compute! store key changed-ops)
+          warm-result (cache/lookup-or-compute!
+                       store key
+                       (assoc changed-ops :compute!
+                              #(throw (ex-info "changed producer reran" {}))))]
+      (is (= [:a :b] @calls))
+      (is (= :stored (get-in first-result [:cache-evidence :status])))
+      (is (= :stored (get-in changed-result [:cache-evidence :status])))
+      (is (= :hit (get-in warm-result [:cache-evidence :status])))
+      (is (= artifact-b (:artifact warm-result)))
+      (is (not= (get-in first-result [:cache-evidence :artifact-id])
+                (get-in changed-result [:cache-evidence :artifact-id])))
+      (is (not= (get-in first-result [:cache-evidence :entry-id])
+                (get-in changed-result [:cache-evidence :entry-id]))))))
+
+(deftest generic-v2-adapter-corruption-is-rejected-and-not-replaced
+  (with-temporary-directory [directory]
+    (let [source (.resolve directory "corrupt.gravity")
+          _ (Files/write source (.getBytes "(ns corrupt)\n"
+                                                StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          key (cache/cache-key
+               (key-request (cache/bounded-source-snapshot! source)))
+          artifact (accepted-artifact :corrupt)
+          calls (atom 0)
+          ops (validation-ops #(do (swap! calls inc) artifact))
+          store (cache/open-local-store directory)
+          _ (cache/lookup-or-compute! store key ops)
+          entry-path
+          (with-open [entries (Files/list (:entries store))]
+            (first (vec (.toArray entries))))
+          corrupt-bytes (.getBytes "[:corrupt]" StandardCharsets/UTF_8)
+          _ (Files/write ^Path entry-path corrupt-bytes
+                         (into-array OpenOption
+                                     [StandardOpenOption/TRUNCATE_EXISTING
+                                      StandardOpenOption/WRITE]))
+          rejected (cache/lookup! store key ops)
+          withheld (cache/lookup-or-compute! store key ops)]
+      (is (= :rejected (get-in rejected [:cache-evidence :status])))
+      (is (= :miss (get-in withheld [:cache-evidence :status])))
+      (is (= :withheld
+             (get-in withheld [:cache-evidence :cache-publication])))
+      (is (= artifact (:artifact withheld)))
+      (is (= 2 @calls))
+      (is (java.util.Arrays/equals
+           corrupt-bytes (Files/readAllBytes ^Path entry-path))))))
+
+(deftest generic-v2-adapter-direct-store-mints-a-current-receipt
+  (with-temporary-directory [directory]
+    (let [source (.resolve directory "store.gravity")
+          _ (Files/write source (.getBytes "(ns store)\n"
+                                                StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          key (cache/cache-key
+               (key-request (cache/bounded-source-snapshot! source)))
+          artifact (accepted-artifact :direct-store)
+          ops (validation-ops (constantly artifact))
+          store (cache/open-local-store directory)
+          stored (cache/store! store key artifact ops)
+          hit (cache/lookup! store key ops)]
+      (is (= :stored (get-in stored [:cache-evidence :status])))
+      (is (= :published
+             (get-in stored [:cache-evidence :blob-publication])))
+      (is (= :published
+             (get-in stored [:cache-evidence :entry-publication])))
+      (is (= :hit (get-in hit [:cache-evidence :status])))
+      (is (= artifact (:artifact hit)))
+      (is (string? (get-in stored [:cache-evidence :entry-id])))
+      (is (false? (get-in stored [:cache-evidence :release-authority?])))
+      (is (false? (get-in stored [:cache-evidence :proof-authority?]))))))
+
+(deftest generic-v2-adapter-same-key-concurrency-executes-one-c2-producer
+  (with-temporary-directory [directory]
+    (let [source (.resolve directory "concurrent.gravity")
+          _ (Files/write source (.getBytes "(ns concurrent)\n"
+                                                StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          key (cache/cache-key
+               (key-request (cache/bounded-source-snapshot! source)))
+          artifact (accepted-artifact :concurrent)
+          calls (atom 0)
+          ready (CountDownLatch. 2)
+          start (CountDownLatch. 1)
+          store (cache/open-local-store directory)
+          task (fn []
+                 (.countDown ready)
+                 (.await start 10 TimeUnit/SECONDS)
+                 (cache/lookup-or-compute!
+                  store key
+                  (validation-ops
+                   #(do (swap! calls inc)
+                        (Thread/sleep 100)
+                        artifact))))
+          left (future (task))
+          right (future (task))]
+      (is (.await ready 10 TimeUnit/SECONDS))
+      (.countDown start)
+      (let [results [(deref left 30000 ::timeout)
+                     (deref right 30000 ::timeout)]]
+        (is (not-any? #{::timeout} results))
+        (is (= [:hit :stored]
+               (sort (map #(get-in % [:cache-evidence :status]) results))))
+        (is (= 1 @calls))
+        (is (every? #(= artifact (:artifact %)) results))))))
+
+(deftest generic-v2-adapter-preserves-opaque-c2-size-and-depth-profile
+  (with-temporary-directory [directory]
+    (let [large-source (.resolve directory "large.gravity")
+          deep-source (.resolve directory "deep.gravity")
+          _ (Files/write large-source (.getBytes "(ns large)\n"
+                                                      StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          _ (Files/write deep-source (.getBytes "(ns deep)\n"
+                                                     StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          large-key
+          (cache/cache-key
+           (key-request (cache/bounded-source-snapshot! large-source)))
+          deep-key
+          (cache/cache-key
+           (key-request (cache/bounded-source-snapshot! deep-source)))
+          large-payload (byte-array (* 10 1024 1024) (byte 37))
+          deep-payload (nth (iterate #(list %) :leaf) 120)
+          large-artifact (accepted-artifact large-payload)
+          deep-artifact (accepted-artifact deep-payload)
+          store (cache/open-local-store directory)
+          _ (cache/lookup-or-compute!
+             store large-key (validation-ops (constantly large-artifact)))
+          _ (cache/lookup-or-compute!
+             store deep-key (validation-ops (constantly deep-artifact)))
+          large-hit
+          (cache/lookup!
+           store large-key (validation-ops (constantly large-artifact)))
+          deep-hit
+          (cache/lookup!
+           store deep-key (validation-ops (constantly deep-artifact)))
+          observed-large (second (:value (:artifact large-hit)))
+          observed-deep (second (:value (:artifact deep-hit)))]
+      (is (= :hit (get-in large-hit [:cache-evidence :status])))
+      (is (= :hit (get-in deep-hit [:cache-evidence :status])))
+      (is (= (:artifact-id large-artifact)
+             (get-in large-hit [:artifact :artifact-id])))
+      (is (= (:artifact-id deep-artifact)
+             (get-in deep-hit [:artifact :artifact-id])))
+      (is (java.util.Arrays/equals large-payload observed-large))
+      (is (= deep-payload observed-deep))
+      (is (= {:line 7} (meta (:value (:artifact large-hit)))))
+      (is (= {:line 7} (meta (:value (:artifact deep-hit))))))))
+
 (deftest leaf-contract-is-explicitly-local-and-nonauthoritative
   (let [contract (cache/cache-contract)]
-    (is (= :hosted-c2-local-pass-cache-v1 (:contract-boundary contract)))
-    (is (= ".cpcache/compiler-pass/v1" (:storage-root contract)))
+    (is (= :hosted-c2-local-pass-cache-v2-adapter
+           (:contract-boundary contract)))
+    (is (= ".cpcache/compiler-pass/v2" (:storage-root contract)))
+    (is (= ".cpcache/compiler-pass/v1" (:legacy-storage-root contract)))
+    (is (= :forensic-only-never-read-or-reinterpreted
+           (:legacy-storage-policy contract)))
+    (is (= {:encoding :opaque-c2-canonical-envelope
+            :metadata-preserving? true
+            :maximum-c2-canonical-bytes (* 32 1024 1024)
+            :maximum-v2-envelope-bytes (* 48 1024 1024)}
+           (:adapter-artifact-policy contract)))
     (is (true? (get-in contract [:authority :local-development-only?])))
     (is (false? (get-in contract [:authority :release-authority?])))
     (doseq [nonclaim [:c2-reader-authority :c16-language-conformance

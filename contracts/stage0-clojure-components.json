@@ -565,7 +565,9 @@
         "execution_requires_bootstrap": true
       },
       "direct_source_dependencies": [
-        "digest"
+        "digest",
+        "pass-cache",
+        "pass-execution"
       ],
       "direct_test_dependencies": [
         "bootstrap",

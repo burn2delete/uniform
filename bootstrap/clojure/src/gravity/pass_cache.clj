@@ -28,7 +28,7 @@
 (def ^:private cache-root-relative [".cpcache" "compiler-pass" "v2"])
 (def ^:private maximum-depth 96)
 (def ^:private maximum-nodes 32768)
-(def ^:private maximum-file-bytes (* 16 1024 1024))
+(def ^:private maximum-file-bytes (* 48 1024 1024))
 (def ^:private maximum-canonical-bytes maximum-file-bytes)
 (def ^:private maximum-entry-bytes (* 4 1024 1024))
 (def ^:private maximum-blob-bytes maximum-file-bytes)
@@ -246,14 +246,24 @@
 
 (defn- bounded-string-bytes
   [text]
-  (when (> (* 4 (.length ^String text)) maximum-canonical-bytes)
-    (fail! "C16-KEY" "canonical scalar exceeds its byte bound"
-           {:maximum-bytes maximum-canonical-bytes}))
-  (let [bytes (.getBytes ^String text StandardCharsets/UTF_8)]
-    (when (> (alength bytes) maximum-canonical-bytes)
-      (fail! "C16-KEY" "canonical scalar exceeds its byte bound"
-             {:maximum-bytes maximum-canonical-bytes}))
-    (alength bytes)))
+  ;; Count exact UTF-8 bytes without first allocating an encoded copy.  The
+  ;; former `4 * UTF-16-length` shortcut was safe but rejected large ASCII and
+  ;; Base64 payloads far below the declared artifact bound.
+  (loop [index 0 total 0]
+    (if (= index (.length ^String text))
+      total
+      (let [code-point (.codePointAt ^String text index)
+            width (Character/charCount code-point)
+            encoded-width (cond
+                            (<= code-point 0x7f) 1
+                            (<= code-point 0x7ff) 2
+                            (<= code-point 0xffff) 3
+                            :else 4)
+            next-total (+ total encoded-width)]
+        (when (> next-total maximum-canonical-bytes)
+          (fail! "C16-KEY" "canonical scalar exceeds its byte bound"
+                 {:maximum-bytes maximum-canonical-bytes}))
+        (recur (+ index width) next-total)))))
 
 (defn- byte-array?
   [value]
@@ -2539,39 +2549,51 @@
                    {:artifact-id artifact-id
                     :receipt-artifact-id (:output-artifact-id producer-receipt)}))
         entry (cache-entry key artifact-id artifact-bytes producer-receipt
-                           validation-ops)]
+                           validation-ops)
         ;; Content-addressed blobs and receipts are immutable.  Admission and
         ;; all publication occur under the short global CAS gate; the producer
         ;; itself ran only under its per-key lock.
+        publication
         (with-global-store-lock
-         store
-         (fn []
-           ;; Recovery consumes one bounded iterator per newly opened secure
-           ;; directory.  Close that set before publication admission opens a
-           ;; fresh set, while retaining the global store lock across phases.
-           (recover-orphans! store validation-ops)
-           (with-secure-store-directories
-            store
-            (fn [directories]
-              (let [receipt-bytes (encoded-value producer-receipt
-                                                  maximum-entry-bytes)
-                    entry-bytes (encoded-value entry maximum-entry-bytes)
-                    {:keys [blob-name receipt-name entry-name]}
-                    (secure-admit-publication!
-                     store directories key entry artifact-bytes receipt-bytes
-                     entry-bytes)]
-                (publish-create-or-verify!
-                 store directories :blobs (:blobs directories) blob-name
-                 artifact-bytes maximum-blob-bytes)
-                (publish-create-or-verify!
-                 store directories :receipts (:receipts directories)
-                 receipt-name receipt-bytes maximum-entry-bytes)
-                (publish-create-or-verify!
-                 store directories :entries (:entries directories) entry-name
-                 entry-bytes maximum-entry-bytes))))
-           ;; Verify the post-publication store under the same global lock, but
-           ;; with a newly opened secure-directory set.
-           (inventory! store)))
+          store
+          (fn []
+            ;; Recovery consumes one bounded iterator per newly opened secure
+            ;; directory.  Close that set before publication admission opens a
+            ;; fresh set, while retaining the global store lock across phases.
+            (recover-orphans! store validation-ops)
+            (let [statuses
+                  (with-secure-store-directories
+                   store
+                   (fn [directories]
+                     (let [receipt-bytes
+                           (encoded-value producer-receipt maximum-entry-bytes)
+                           entry-bytes
+                           (encoded-value entry maximum-entry-bytes)
+                           {:keys [blob-name receipt-name entry-name]}
+                           (secure-admit-publication!
+                            store directories key entry artifact-bytes
+                            receipt-bytes entry-bytes)
+                           blob-publication
+                           (publish-create-or-verify!
+                            store directories :blobs (:blobs directories)
+                            blob-name artifact-bytes maximum-blob-bytes)
+                           receipt-publication
+                           (publish-create-or-verify!
+                            store directories :receipts (:receipts directories)
+                            receipt-name receipt-bytes maximum-entry-bytes)
+                           entry-publication
+                           (publish-create-or-verify!
+                            store directories :entries (:entries directories)
+                            entry-name entry-bytes maximum-entry-bytes)]
+                       {:blob-publication blob-publication
+                        :receipt-publication receipt-publication
+                        :entry-publication entry-publication})))
+                  ;; Verify the post-publication store under the same global
+                  ;; lock, but with a newly opened secure-directory set.
+                  post-publication-inventory (inventory! store)]
+              (assoc statuses
+                     :post-publication-inventory
+                     post-publication-inventory))))]
         {:status :stored
          :key key
          :artifact artifact
@@ -2587,6 +2609,12 @@
                           :producer-executed? true
                           :artifact-reused? false
                           :cache-publication :published
+                          :blob-publication (:blob-publication publication)
+                          :receipt-publication
+                          (:receipt-publication publication)
+                          :entry-publication (:entry-publication publication)
+                          :post-publication-inventory
+                          (:post-publication-inventory publication)
                           :local? true :speculative? true
                           :authoritative? false :release? false :proof? false
                           :equivalence? false :self-hosting? false}}))
