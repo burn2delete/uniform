@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import copy
+import ast
 import json
 import os
 from pathlib import Path
@@ -73,6 +74,156 @@ class PythonToolingContractTests(unittest.TestCase):
         with self.assertRaises(validator.DuplicateKeyError):
             json.loads('{"schema_version": 1, "schema_version": 2}', object_pairs_hook=validator._object_no_duplicates)
 
+    def test_os_open_effect_keeps_read_only_census_least_privilege(self) -> None:
+        def effects(flags: str) -> set[str]:
+            tree = ast.parse(f"import os\nos.open('artifact', {flags})\n")
+            return validator.observed_effects(tree)
+
+        self.assertNotIn("filesystem-write", effects("os.O_RDONLY | os.O_NOFOLLOW"))
+        for flags in (
+            "os.O_WRONLY",
+            "os.O_RDWR",
+            "os.O_CREAT",
+            "getattr(os, 'O_RDWR', 0)",
+            "getattr(os, selected_flag, 0)",
+            "selected_flags",
+        ):
+            self.assertIn("filesystem-write", effects(flags), flags)
+
+        admitted_alias = ast.parse(
+            "import os as operating\n"
+            "operating.open('artifact', operating.O_RDONLY | operating.O_NOFOLLOW)\n"
+        )
+        self.assertNotIn("filesystem-write", validator.observed_effects(admitted_alias))
+        hostile_sources = (
+            "import os\ndef read(os):\n os.open('artifact', os.O_RDONLY)\n",
+            "import os\ndef read():\n os = object()\n os.open('artifact', os.O_RDONLY)\n",
+            "import os\ndef outer():\n os = object()\n def read():\n  os.open('artifact', os.O_RDONLY)\n",
+            "import os\ndef read(values):\n return [os.open('artifact', os.O_RDONLY) for os in values]\n",
+            "import os\ndef read(getattr):\n os.open('artifact', getattr(os, 'O_RDONLY', 0))\n",
+            "import os\ngetattr = lambda *args: 0\ndef read():\n os.open('artifact', getattr(os, 'O_RDONLY', 0))\n",
+            "import os as operating\ndef read(operating):\n operating.open('artifact', operating.O_RDONLY)\n",
+            "import os\nflags = object()\nos.open('artifact', flags.O_RDONLY)\n",
+            "os = object()\ndef read(value=os.open('artifact', os.O_RDONLY)):\n import os\n",
+            "os = object()\n@os.open('artifact', os.O_RDONLY)\ndef read():\n import os\n",
+            "os = object()\nclass Reader(os.open('artifact', os.O_RDONLY)):\n import os\n",
+            "os = object()\nclass Reader:\n import os\n def read(self):\n  os.open('artifact', os.O_RDONLY)\n",
+            "os = object()\nclass Reader:\n os.open('artifact', os.O_RDONLY)\n import os\n",
+            "class Reader:\n import os\n os.open('artifact', os.O_RDONLY)\n",
+            "def outer():\n import os\n def middle():\n  def inner():\n   nonlocal os\n   os = object()\n  inner()\n middle()\n os.open('artifact', os.O_RDONLY)\n",
+            "def outer():\n import os\n def inner():\n  nonlocal os\n  (os := object())\n inner()\n os.open('artifact', os.O_RDONLY)\n",
+            "def outer():\n import os\n def inner(values):\n  nonlocal os\n  [(os := value) for value in values]\n inner([object()])\n os.open('artifact', os.O_RDONLY)\n",
+            "import os\n*os, = [object()]\nos.open('artifact', os.O_RDONLY)\n",
+            "import os\nfor *os, in [[object()]]:\n os.open('artifact', os.O_RDONLY)\n",
+            "def unrelated():\n import os as operating\ndef read():\n operating.open('artifact', operating.O_RDONLY)\n",
+        )
+        for source in hostile_sources:
+            self.assertIn(
+                "filesystem-write",
+                validator.observed_effects(ast.parse(source)),
+                source,
+            )
+
+    def test_os_write_only_whitelists_proven_subprocess_stdin(self) -> None:
+        pipe_source = "import os\nimport subprocess\nprocess = subprocess.Popen([])\nos.write(process.stdin.fileno(), b'x')\n"
+        self.assertNotIn("filesystem-write", validator.observed_effects(ast.parse(pipe_source)))
+        arbitrary_source = "import os\nhandle = open('artifact', 'rb')\nos.write(handle.fileno(), b'x')\n"
+        self.assertIn("filesystem-write", validator.observed_effects(ast.parse(arbitrary_source)))
+        reassigned_source = "import os\nimport subprocess\nprocess = subprocess.Popen([])\nprocess = object()\nos.write(process.stdin.fileno(), b'x')\n"
+        self.assertIn("filesystem-write", validator.observed_effects(ast.parse(reassigned_source)))
+        reassigned_stdin_source = "import os\nimport subprocess\nprocess = subprocess.Popen([])\nprocess.stdin = open('artifact', 'rb')\nos.write(process.stdin.fileno(), b'x')\n"
+        self.assertIn("filesystem-write", validator.observed_effects(ast.parse(reassigned_stdin_source)))
+        setattr_stdin_source = "import os\nimport subprocess\nprocess = subprocess.Popen([])\nsetattr(process, 'stdin', open('artifact', 'rb'))\nos.write(process.stdin.fileno(), b'x')\n"
+        self.assertIn("filesystem-write", validator.observed_effects(ast.parse(setattr_stdin_source)))
+        closure_stdin_source = "import os\nimport subprocess\ndef outer():\n process = subprocess.Popen([])\n def inner():\n  process.stdin = object()\n inner()\n os.write(process.stdin.fileno(), b'x')\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(closure_stdin_source)),
+        )
+        closure_setattr_source = "import os\nimport subprocess\ndef outer():\n process = subprocess.Popen([])\n def inner():\n  setattr(process, 'stdin', object())\n inner()\n os.write(process.stdin.fileno(), b'x')\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(closure_setattr_source)),
+        )
+        shadowed_parameter_source = "import os\nimport subprocess\nprocess = subprocess.Popen([])\ndef write(process):\n os.write(process.stdin.fileno(), b'x')\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(shadowed_parameter_source)),
+        )
+        sibling_scope_source = "import os\nimport subprocess\ndef create():\n process = subprocess.Popen([])\ndef write(process):\n os.write(process.stdin.fileno(), b'x')\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(sibling_scope_source)),
+        )
+        sibling_import_source = "import os\ndef unrelated():\n import subprocess as child_process\ndef write():\n process = child_process.Popen([])\n os.write(process.stdin.fileno(), b'x')\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(sibling_import_source)),
+        )
+        shadowed_module_source = "import os\nimport subprocess\ndef write(subprocess):\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(shadowed_module_source)),
+        )
+        shadowed_os_parameter = "import os\nimport subprocess\ndef write(os):\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(shadowed_os_parameter)),
+        )
+        shadowed_os_local = "import os\nimport subprocess\ndef write():\n os = object()\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(shadowed_os_local)),
+        )
+        shadowed_os_alias = "import os as operating\nimport subprocess\ndef write(operating):\n process = subprocess.Popen([])\n operating.write(process.stdin.fileno(), b'x')\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(shadowed_os_alias)),
+        )
+        imported_alias_pipe = "import os as operating\nimport subprocess as child_process\ndef write():\n process = child_process.Popen([])\n operating.write(process.stdin.fileno(), b'x')\n"
+        self.assertNotIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(imported_alias_pipe)),
+        )
+        local_import_arbitrary = "def write(handle):\n import os as operating\n operating.write(handle, b'x')\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(local_import_arbitrary)),
+        )
+        local_import_pipe = "def write():\n import os as operating\n import subprocess as child_process\n process = child_process.Popen([])\n operating.write(process.stdin.fileno(), b'x')\n"
+        local_import_effects = validator.observed_effects(ast.parse(local_import_pipe))
+        self.assertNotIn("filesystem-write", local_import_effects)
+        self.assertIn("process", local_import_effects)
+        comprehension_shadow = "import os\nimport subprocess\ndef write(handles):\n process = subprocess.Popen([])\n return [os.write(process.stdin.fileno(), b'x') for os in handles]\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(comprehension_shadow)),
+        )
+        for pattern_shadow in (
+            "import os, subprocess\ndef write(value):\n process = subprocess.Popen([])\n match value:\n  case process:\n   os.write(process.stdin.fileno(), b'x')\n",
+            "import os, subprocess\ndef write(value):\n process = subprocess.Popen([])\n match value:\n  case [*process]:\n   os.write(process.stdin.fileno(), b'x')\n",
+            "import os, subprocess\ndef write(value):\n process = subprocess.Popen([])\n match value:\n  case {**os}:\n   os.write(process.stdin.fileno(), b'x')\n",
+            "import os, subprocess\ndef write(value):\n process = subprocess.Popen([])\n match value:\n  case Box(value=process):\n   os.write(process.stdin.fileno(), b'x')\n",
+            "import os, subprocess\ndef write(value):\n process = subprocess.Popen([])\n match value:\n  case [process] | {'p': process}:\n   os.write(process.stdin.fileno(), b'x')\n",
+        ):
+            self.assertIn(
+                "filesystem-write",
+                validator.observed_effects(ast.parse(pattern_shadow)),
+            )
+        for walrus_shadow in (
+            "import os, subprocess\ndef write(values):\n process = subprocess.Popen([])\n return [os.write(process.stdin.fileno(), b'x') for value in values if (process := value)]\n",
+            "import os, subprocess\ndef write(values):\n process = subprocess.Popen([])\n return [os.write(process.stdin.fileno(), b'x') for value in values if (os := value)]\n",
+        ):
+            self.assertIn(
+                "filesystem-write",
+                validator.observed_effects(ast.parse(walrus_shadow)),
+            )
+        local_pipe_source = "import os\nimport subprocess\ndef write():\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n"
+        self.assertNotIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(local_pipe_source)),
+        )
+
     def test_inventory_addition_fails_closed_even_when_pattern_matches(self) -> None:
         inventory = list(self.inventory) + ["src/gravity/unreviewed_new_module.py"]
         errors = self.validate(
@@ -81,6 +232,52 @@ class PythonToolingContractTests(unittest.TestCase):
         )
         self.assertTrue(any("inventory_count" in error for error in errors), errors)
         self.assertTrue(any("inventory_sha256" in error for error in errors), errors)
+
+    def test_pipe_proof_obeys_class_declaration_and_definition_scopes(self) -> None:
+        negatives = (
+            "import os, subprocess\nclass C:\n import os as class_os\n process = subprocess.Popen([])\n def f(self):\n  class_os.write(process.stdin.fileno(), b'x')\n",
+            "import os\nclass C:\n import subprocess as child_process\n def f(self):\n  process = child_process.Popen([])\n  os.write(process.stdin.fileno(), b'x')\n",
+            "class C:\n import os as operating\n import subprocess as child_process\n def f(self):\n  process = child_process.Popen([])\n  operating.write(process.stdin.fileno(), b'x')\n",
+            "import os, subprocess\nos = object()\nprocess = subprocess.Popen([])\ndef f(value=os.write(process.stdin.fileno(), b'x')):\n import os\n return value\n",
+            "import os, subprocess\nos = object()\nprocess = subprocess.Popen([])\n@os.write(process.stdin.fileno(), b'x')\ndef f():\n import os\n pass\n",
+            "import os, subprocess\nos = object()\nprocess = subprocess.Popen([])\ndef f(value: os.write(process.stdin.fileno(), b'x')):\n import os\n pass\n",
+            "import os, subprocess\nos = object()\nprocess = subprocess.Popen([])\nf = lambda value=os.write(process.stdin.fileno(), b'x'): value\n",
+            "import os, subprocess\ndef f():\n global os\n os = object()\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n",
+        )
+        for source in negatives:
+            self.assertIn("filesystem-write", validator.observed_effects(ast.parse(source)))
+
+        class_definition_scope_negative = "import os, subprocess\nos = object()\nprocess = subprocess.Popen([])\n@operating.write(process.stdin.fileno(), b'x')\nclass C(os.write(process.stdin.fileno(), b'x')):\n import os as operating\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(class_definition_scope_negative)),
+        )
+        class_comprehension_inner = "class C:\n import os\n import subprocess\n process = subprocess.Popen([])\n values = [os.write(process.stdin.fileno(), b'x') for item in ()]\n"
+        self.assertIn(
+            "filesystem-write",
+            validator.observed_effects(ast.parse(class_comprehension_inner)),
+        )
+
+        class_body = "class C:\n import os as operating\n import subprocess as child_process\n process = child_process.Popen([])\n operating.write(process.stdin.fileno(), b'x')\n"
+        class_comprehension_outer = "class C:\n import os\n import subprocess\n process = subprocess.Popen([])\n values = [item for item in os.write(process.stdin.fileno(), b'x')]\n"
+        late_class_bindings = (
+            "os = object()\nimport subprocess\nclass C:\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n import os\n",
+            "import os, subprocess\nprocess = object()\nclass C:\n os.write(process.stdin.fileno(), b'x')\n process = subprocess.Popen([])\n",
+            "os = object()\nimport subprocess\nprocess = object()\nclass C:\n os.write(process.stdin.fileno(), b'x')\n import os\n process = subprocess.Popen([])\n",
+        )
+        for source in (class_body, class_comprehension_outer, *late_class_bindings):
+            self.assertIn(
+                "filesystem-write",
+                validator.observed_effects(ast.parse(source)),
+                source,
+            )
+        method_local = "class C:\n def f(self):\n  import os as operating\n  import subprocess as child_process\n  process = child_process.Popen([])\n  operating.write(process.stdin.fileno(), b'x')\n"
+        declared_global = "import os, subprocess\ndef f():\n global os, subprocess\n process = subprocess.Popen([])\n os.write(process.stdin.fileno(), b'x')\n"
+        declared_nonlocal = "def outer():\n import os as operating\n import subprocess as child_process\n def inner():\n  nonlocal operating, child_process\n  process = child_process.Popen([])\n  operating.write(process.stdin.fileno(), b'x')\n"
+        for source in (method_local, declared_global, declared_nonlocal):
+            effects = validator.observed_effects(ast.parse(source))
+            self.assertNotIn("filesystem-write", effects)
+            self.assertIn("process", effects)
 
     def test_overlapping_component_classification_is_rejected(self) -> None:
         contract = copy.deepcopy(self.contract)

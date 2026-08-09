@@ -86,6 +86,7 @@ EXPECTED_EXCLUDED_PATTERNS = [
     "tools/tests/**",
     "tools/output_publication.py",
     "tools/validate_gravity_toolchain.py",
+    "tools/validate_artifact_census.py",
     "tools/validate_w1_executable_carrier_interface.py",
 ]
 EXACT_OUTPUT_POLICY_PROFILES = {
@@ -131,6 +132,7 @@ EXACT_WRITER_PROFILES = {
     "reviewed-source-rewrite": {"id": "reviewed-source-rewrite", "implementation": "pathlib.Path.write_text", "mechanisms": ["write_text"], "regular_nosymlink_current_owner": False, "atomic_replace": False, "provenance_added_by_writer": False},
     "development-receipt-writer": {"id": "development-receipt-writer", "implementation": "tools/measure_development_baseline.py#_write_receipt", "mechanisms": ["temporary-file-fsync-replace"], "regular_nosymlink_current_owner": False, "atomic_replace": True, "provenance_added_by_writer": True},
     "development-cache-writer": {"id": "development-cache-writer", "implementation": "tools/verify_development.py#_write_json", "mechanisms": ["dirfd-nofollow-fsync-replace"], "regular_nosymlink_current_owner": True, "atomic_replace": True, "provenance_added_by_writer": True},
+    "stage3-state-writer": {"id": "stage3-state-writer", "implementation": "tools/run_stage3_verification.py#atomic_receipt_write", "mechanisms": ["dirfd-nofollow-exclusive-link", "bounded-private-snapshot"], "regular_nosymlink_current_owner": True, "atomic_replace": False, "provenance_added_by_writer": True},
     "sh07-checkpoint-writer": {"id": "sh07-checkpoint-writer", "implementation": "tools/run_sh07_authoritative_modules.py#atomic_json_write", "mechanisms": ["temporary-file-fsync-replace", "bounded-log"], "regular_nosymlink_current_owner": True, "atomic_replace": True, "provenance_added_by_writer": True},
     "heartbeat-state-writer": {"id": "heartbeat-state-writer", "implementation": "tools/run_with_heartbeat.py#atomic_json_write", "mechanisms": ["temporary-file-fsync-replace", "durable-log"], "regular_nosymlink_current_owner": False, "atomic_replace": True, "provenance_added_by_writer": True},
 }
@@ -172,6 +174,7 @@ PRODUCER_PROVENANCE_REQUIREMENTS = {
     "sh07-module-checkpoints": {"producer-source", "runner-identity", "command", "runtime", "input-identities", "dependency-identities", "child-output-identities", "schema", "output-sha256"},
     "long-running-command-heartbeat": {"producer-source", "command", "runtime", "environment-bindings", "input-identities", "status-identity", "schema", "output-sha256"},
     "development-verification-state": {"producer-source", "manifest-identity", "command", "input-identities", "dependency-results", "cache-keys", "schema", "output-sha256"},
+    "stage3-verification-state": {"producer-source", "command", "runtime", "input-identities", "dependency-identities", "schema", "output-sha256"},
 }
 PRODUCER_SCHEMA_REQUIREMENTS = {
     "isolated-artifact-validators": {"source-defined-json-kind-v1"},
@@ -184,12 +187,14 @@ PRODUCER_SCHEMA_REQUIREMENTS = {
     "sh07-module-checkpoints": {"gravity/sh07-authoritative-module-checkpoints-v2", "opaque-bounded-log-v1"},
     "long-running-command-heartbeat": {"opaque-durable-log-v1", "gravity/long-running-command-status-v1"},
     "development-verification-state": {"gravity/development-verification-cache-v1", "gravity/development-verification-receipt-v1"},
+    "stage3-verification-state": {"gravity/stage3-verification-receipt-v1", "opaque-stage3-authority-snapshot-v1"},
 }
 WRITER_CALL_REQUIREMENTS = {
     "isolated-atomic-publication": {"atomic_write_json", "atomic_write_text"},
     "reviewed-source-rewrite": {"write_text"},
     "development-receipt-writer": {"_write_receipt"},
     "development-cache-writer": {"_write_json"},
+    "stage3-state-writer": {"atomic_receipt_write"},
     "sh07-checkpoint-writer": {"atomic_json_write"},
     "heartbeat-state-writer": {"atomic_json_write"},
 }
@@ -406,6 +411,344 @@ def _call_name(node: ast.Call) -> str | None:
     return None
 
 
+def _static_import_aliases(tree: ast.Module) -> dict[str, str]:
+    aliases: dict[str, str] = {}
+    for node in tree.body:
+        if isinstance(node, ast.Import):
+            for item in node.names:
+                aliases[item.asname or item.name.split(".", 1)[0]] = item.name
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            for item in node.names:
+                if item.name != "*":
+                    aliases[item.asname or item.name] = f"{node.module}.{item.name}"
+    return aliases
+
+
+def _qualified_call_name(node: ast.Call, aliases: Mapping[str, str]) -> str | None:
+    target = node.func
+    parts: list[str] = []
+    while isinstance(target, ast.Attribute):
+        parts.append(target.attr)
+        target = target.value
+    if isinstance(target, ast.Name):
+        parts.append(target.id)
+    else:
+        return None
+    name = ".".join(reversed(parts))
+    first, separator, rest = name.partition(".")
+    return aliases.get(first, first) + (separator + rest if separator else "")
+
+
+def _proven_subprocess_pipe_writes(tree: ast.Module) -> tuple[set[int], set[int]]:
+    """Return candidate and proven same-scope ``Popen.stdin`` writes."""
+    aliases = _static_import_aliases(tree)
+    bindings: dict[int, dict[str, set[str]]] = {}
+    stdin_mutated: dict[int, set[str]] = {}
+    call_scopes: dict[int, int] = {}
+    scope_parents: dict[int, int | None] = {}
+    scope_nodes: dict[int, ast.AST] = {}
+    global_names: dict[int, set[str]] = {}
+    nonlocal_names: dict[int, set[str]] = {}
+    stack: list[ast.AST] = []
+
+    def binding_scope(scope_id: int, name: str) -> int:
+        if name in global_names.get(scope_id, set()):
+            return id(tree)
+        if name in nonlocal_names.get(scope_id, set()):
+            current = scope_parents.get(scope_id)
+            while current is not None:
+                if isinstance(scope_nodes[current], (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                    return current
+                current = scope_parents.get(current)
+        return scope_id
+
+    def record(name: str, kind: str = "other") -> None:
+        record_in(binding_scope(id(stack[-1]), name), name, kind)
+
+    def record_in(scope_id: int, name: str, kind: str = "other") -> None:
+        bindings.setdefault(scope_id, {}).setdefault(name, set()).add(kind)
+
+    def target_names(target: ast.AST) -> list[str]:
+        if isinstance(target, ast.Name):
+            return [target.id]
+        if isinstance(target, (ast.Tuple, ast.List)):
+            return [name for item in target.elts for name in target_names(item)]
+        return []
+
+    def pattern_names(pattern: ast.pattern) -> list[str]:
+        if isinstance(pattern, ast.MatchAs):
+            return ([pattern.name] if pattern.name else []) + (
+                pattern_names(pattern.pattern) if pattern.pattern else []
+            )
+        if isinstance(pattern, ast.MatchStar):
+            return [pattern.name] if pattern.name else []
+        if isinstance(pattern, ast.MatchMapping):
+            return ([pattern.rest] if pattern.rest else []) + [
+                name for child in pattern.patterns for name in pattern_names(child)
+            ]
+        if isinstance(pattern, ast.MatchSequence):
+            return [name for child in pattern.patterns for name in pattern_names(child)]
+        if isinstance(pattern, ast.MatchClass):
+            return [
+                name
+                for child in [*pattern.patterns, *pattern.kwd_patterns]
+                for name in pattern_names(child)
+            ]
+        if isinstance(pattern, ast.MatchOr):
+            return [name for child in pattern.patterns for name in pattern_names(child)]
+        return []
+
+    module_aliases = {
+        name: target for name, target in aliases.items() if target in {"os", "subprocess"}
+    }
+    os_alias_names = {name for name, target in module_aliases.items() if target == "os"}
+
+    def declarations(body: Sequence[ast.AST]) -> tuple[set[str], set[str]]:
+        found_global: set[str] = set()
+        found_nonlocal: set[str] = set()
+
+        class DeclarationVisitor(ast.NodeVisitor):
+            def visit_Global(self, node: ast.Global) -> None:
+                found_global.update(node.names)
+
+            def visit_Nonlocal(self, node: ast.Nonlocal) -> None:
+                found_nonlocal.update(node.names)
+
+            def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+                return None
+
+            visit_AsyncFunctionDef = visit_FunctionDef
+            visit_ClassDef = visit_FunctionDef
+            visit_Lambda = visit_FunctionDef
+
+        visitor = DeclarationVisitor()
+        for child in body:
+            visitor.visit(child)
+        return found_global, found_nonlocal
+
+    def imported_receiver(scope_id: int, name: str, module: str) -> bool:
+        current: int | None = scope_id
+        while current is not None:
+            redirected = binding_scope(current, name)
+            if redirected != current:
+                current = redirected
+                continue
+            local = bindings.get(current, {}).get(name)
+            if local is not None:
+                return local == {f"module-import:{module}"}
+            current = scope_parents.get(current)
+            if current is not None and isinstance(scope_nodes[current], ast.ClassDef):
+                current = scope_parents.get(current)
+        return module_aliases.get(name) == module
+
+    class Visitor(ast.NodeVisitor):
+        def enter(self, node: ast.AST, body: Sequence[ast.AST]) -> None:
+            scope_parents[id(node)] = id(stack[-1]) if stack else None
+            scope_nodes[id(node)] = node
+            stack.append(node)
+            bindings.setdefault(id(node), {})
+            stdin_mutated.setdefault(id(node), set())
+            global_names[id(node)], nonlocal_names[id(node)] = declarations(body)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                args = node.args
+                for item in [*args.posonlyargs, *args.args, *args.kwonlyargs]:
+                    record(item.arg)
+                if args.vararg:
+                    record(args.vararg.arg)
+                if args.kwarg:
+                    record(args.kwarg.arg)
+            for child in body:
+                self.visit(child)
+            stack.pop()
+
+        def visit_Module(self, node: ast.Module) -> None:
+            self.enter(node, node.body)
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            if stack:
+                record(node.name)
+            for expression in [*node.decorator_list, *node.args.defaults, *[item for item in node.args.kw_defaults if item], *[item.annotation for item in [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs] if item.annotation], node.args.vararg.annotation if node.args.vararg else None, node.args.kwarg.annotation if node.args.kwarg else None, node.returns]:
+                if expression is not None:
+                    self.visit(expression)
+            self.enter(node, node.body)
+
+        visit_AsyncFunctionDef = visit_FunctionDef
+
+        def visit_ClassDef(self, node: ast.ClassDef) -> None:
+            if stack:
+                record(node.name)
+            for expression in [*node.decorator_list, *node.bases, *[item.value for item in node.keywords]]:
+                self.visit(expression)
+            self.enter(node, node.body)
+
+        def visit_Lambda(self, node: ast.Lambda) -> None:
+            for expression in [*node.args.defaults, *[item for item in node.args.kw_defaults if item]]:
+                self.visit(expression)
+            self.enter(node, [node.body])
+
+        def visit_ListComp(self, node: ast.ListComp) -> None:
+            self.visit(node.generators[0].iter)
+            scope_parents[id(node)] = id(stack[-1])
+            scope_nodes[id(node)] = node
+            stack.append(node)
+            bindings.setdefault(id(node), {})
+            stdin_mutated.setdefault(id(node), set())
+            global_names[id(node)] = set()
+            nonlocal_names[id(node)] = set()
+            for index, generator in enumerate(node.generators):
+                self.assign([generator.target], None)
+                if index:
+                    self.visit(generator.iter)
+                for condition in generator.ifs:
+                    self.visit(condition)
+            if isinstance(node, ast.DictComp):
+                self.visit(node.key)
+                self.visit(node.value)
+            else:
+                self.visit(node.elt)
+            stack.pop()
+
+        visit_SetComp = visit_ListComp
+        visit_DictComp = visit_ListComp
+        visit_GeneratorExp = visit_ListComp
+
+        def visit_comprehension(self, node: ast.comprehension) -> None:
+            self.assign([node.target], None)
+            self.generic_visit(node)
+
+        def visit_Call(self, node: ast.Call) -> None:
+            scope_id = id(stack[-1])
+            call_scopes[id(node)] = scope_id
+            if isinstance(node.func, ast.Name) and node.func.id == "setattr" and node.args and isinstance(node.args[0], ast.Name):
+                stdin_mutated[scope_id].add(node.args[0].id)
+            self.generic_visit(node)
+
+        def assign(self, targets: Sequence[ast.AST], value: ast.AST | None) -> None:
+            kind = "other"
+            if (
+                isinstance(value, ast.Call)
+                and isinstance(value.func, ast.Attribute)
+                and value.func.attr == "Popen"
+                and isinstance(value.func.value, ast.Name)
+                and imported_receiver(
+                    id(stack[-1]), value.func.value.id, "subprocess"
+                )
+            ):
+                kind = "popen"
+            for target in targets:
+                for name in target_names(target):
+                    record(name, kind)
+                if isinstance(target, ast.Attribute) and isinstance(target.value, ast.Name):
+                    stdin_mutated[id(stack[-1])].add(target.value.id)
+
+        def visit_Assign(self, node: ast.Assign) -> None:
+            self.assign(node.targets, node.value)
+            self.generic_visit(node)
+
+        def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+            self.assign([node.target], node.value)
+            self.generic_visit(node)
+
+        def visit_AugAssign(self, node: ast.AugAssign) -> None:
+            self.assign([node.target], None)
+            self.generic_visit(node)
+
+        def visit_Delete(self, node: ast.Delete) -> None:
+            self.assign(node.targets, None)
+            self.generic_visit(node)
+
+        def visit_NamedExpr(self, node: ast.NamedExpr) -> None:
+            target_scope = next(
+                scope
+                for scope in reversed(stack)
+                if not isinstance(scope, (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp))
+            )
+            for name in target_names(node.target):
+                record_in(binding_scope(id(target_scope), name), name)
+            self.visit(node.value)
+
+        def visit_Import(self, node: ast.Import) -> None:
+            for item in node.names:
+                name = item.asname or item.name.split(".", 1)[0]
+                module = item.name if item.name in {"os", "subprocess"} else None
+                if module == "os":
+                    os_alias_names.add(name)
+                record(name, f"module-import:{module}" if module else "other")
+
+        def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+            for item in node.names:
+                if item.name != "*":
+                    record(item.asname or item.name)
+
+        def visit_For(self, node: ast.For) -> None:
+            self.assign([node.target], None)
+            self.generic_visit(node)
+
+        visit_AsyncFor = visit_For
+
+        def visit_With(self, node: ast.With) -> None:
+            self.assign([item.optional_vars for item in node.items if item.optional_vars], None)
+            self.generic_visit(node)
+
+        visit_AsyncWith = visit_With
+
+        def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
+            if node.name:
+                record(node.name)
+            self.generic_visit(node)
+
+        def visit_match_case(self, node: ast.match_case) -> None:
+            for name in pattern_names(node.pattern):
+                record(name)
+            if node.guard:
+                self.visit(node.guard)
+            for statement in node.body:
+                self.visit(statement)
+
+    Visitor().visit(tree)
+    proven = {
+        scope_id: {name for name, kinds in values.items() if kinds == {"popen"} and name not in stdin_mutated[scope_id]}
+        for scope_id, values in bindings.items()
+    }
+    candidates: set[int] = set()
+    result: set[int] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        scope_id = call_scopes.get(id(node), -1)
+        if (
+            isinstance(node.func, ast.Attribute)
+            and node.func.attr == "write"
+            and isinstance(node.func.value, ast.Name)
+            and (
+                node.func.value.id in os_alias_names
+                or bindings[scope_id].get(node.func.value.id) == {"module-import:os"}
+            )
+        ):
+            candidates.add(id(node))
+        if _qualified_call_name(node, aliases) != "os.write" and id(node) not in candidates:
+            continue
+        if not node.args:
+            continue
+        if (
+            not isinstance(node.func, ast.Attribute)
+            or isinstance(scope_nodes.get(scope_id), ast.ClassDef)
+            or not isinstance(node.func.value, ast.Name)
+            or not imported_receiver(
+                call_scopes.get(id(node), -1), node.func.value.id, "os"
+            )
+        ):
+            continue
+        fileno = node.args[0]
+        if not isinstance(fileno, ast.Call) or not isinstance(fileno.func, ast.Attribute) or fileno.func.attr != "fileno":
+            continue
+        stdin = fileno.func.value
+        if isinstance(stdin, ast.Attribute) and stdin.attr == "stdin" and isinstance(stdin.value, ast.Name):
+            if stdin.value.id in proven.get(call_scopes.get(id(node), -1), set()):
+                result.add(id(node))
+    return candidates, result
+
+
 def _parse_source(path: str, root: Path, overrides: Mapping[str, str] | None) -> ast.Module:
     candidate = root / path
     if overrides is not None and path in overrides:
@@ -441,7 +784,18 @@ def discover_producers(
         except (OSError, UnicodeError, SyntaxError, ValueError) as exc:
             raise ValueError(f"cannot parse {path}: {exc}") from exc
         calls = {_call_name(node) for node in ast.walk(tree) if isinstance(node, ast.Call)}
-        if calls.intersection(WRITE_CALL_NAMES):
+        aliases = _static_import_aliases(tree)
+        os_write_calls, pipe_writes = _proven_subprocess_pipe_writes(tree)
+        unproven_os_write = any(
+            isinstance(node, ast.Call)
+            and (
+                _qualified_call_name(node, aliases) == "os.write"
+                or id(node) in os_write_calls
+            )
+            and id(node) not in pipe_writes
+            for node in ast.walk(tree)
+        )
+        if calls.intersection(WRITE_CALL_NAMES) or unproven_os_write:
             result.append(path)
     return sorted(result)
 

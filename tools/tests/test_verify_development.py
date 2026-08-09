@@ -5107,6 +5107,10 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 path_expected_ids = set(expected_ids)
                 if owned_path == "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj":
                     path_expected_ids.add("stage0-coordinator-integration-reservations")
+                if owned_path.startswith(("docs/artifacts/", "target/")):
+                    path_expected_ids.update(
+                        {"artifact-census-contract", "artifact-census-unit", "m0-docs"}
+                    )
                 selection = verifier.select_impacted_checks(
                     manifest, ROOT, changed_paths=[owned_path]
                 )
@@ -5437,6 +5441,11 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 if owned_path == "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj":
                     expected_direct.add("stage0-p15-native-plan-specialization-prerequisite")
                 expected_ids = {orchestrator_id} | expected_direct
+                if owned_path.startswith(("docs/artifacts/", "target/")):
+                    expected_direct.add("artifact-census-contract")
+                    expected_ids.update(
+                        {"artifact-census-contract", "artifact-census-unit", "m0-docs"}
+                    )
                 self.assertEqual(set(selection["selected_ids"]), expected_ids)
                 self.assertEqual(selection["unmatched_changes"], [])
                 self.assertEqual(direct, expected_direct)
@@ -5457,6 +5466,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                         auth_id,
                         "stage0-coordinator-integration-reservations",
                         "stage0-p15-native-plan-specialization-prerequisite",
+                        "artifact-census-contract",
+                        "artifact-census-unit",
                     }
                 )
                 receipt = verifier.run_verification(
