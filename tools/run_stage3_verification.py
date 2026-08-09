@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the reviewed Stage 3--8 fixed verification boundary.
+"""Run the reviewed Stage 3--9 fixed verification boundary.
 
 The development verifier deliberately treats this file as the only command
 that may own the SH-07 heavy lock.  The command is intentionally boring: its
@@ -11,7 +11,9 @@ The enabled modes are ``pure`` and ``proof-candidate``.  Stage7 exposes exact
 C11 source, cache-affine SH12 adapter, and public C11 batches.  Stage8 exposes
 a moving-source C12 shape gate, a cache-affine SH13 C11-domain evidence batch,
 and the exact C12 public compatibility check; it deliberately exposes no C12
-proof candidate.  The Stage7 shape profile is an execution alias of the
+proof candidate.  Stage9 exposes the evidence-only C13 boundary over that
+prepared C12 carrier and likewise exposes no proof candidate.  The Stage7
+shape profile is an execution alias of the
 complete source profile and does not add catalog ownership.  A public/pure batch
 acquires the canonical SH-07 lease and runs one of the reviewed Clojure
 batches.  A proof-candidate batch starts a *new* checkpoint directory and
@@ -118,6 +120,8 @@ FIXED_BATCHES = (
     "stage8-c12-source-shape",
     "stage8-public-c12",
     "stage8-sh13-c11-domain-evidence",
+    "stage9-c13-source-shape",
+    "stage9-sh16-c13-evidence-boundary",
     "authority",
     "c8-authority",
     "c9-authority",
@@ -163,6 +167,8 @@ _BATCH_HEAP = {
     "stage8-c12-source-shape": "-J-Xmx512m",
     "stage8-public-c12": "-J-Xmx2g",
     "stage8-sh13-c11-domain-evidence": "-J-Xmx8g",
+    "stage9-c13-source-shape": "-J-Xmx512m",
+    "stage9-sh16-c13-evidence-boundary": "-J-Xmx8g",
     "c10-authority": "-J-Xmx8g",
     "c11-authority": "-J-Xmx8g",
 }
@@ -328,6 +334,16 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
         "gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-fact-table-and-id-mutations",
         "gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-hostile-carriers-and-recomputation",
         "gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-path-neutral-provenance",
+    ),
+    "stage9-c13-source-shape": (
+        "gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test/sh07-c13-mir-optimization-source-shape-and-control",
+        "gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test/sh07-c13-mir-optimization-export-completeness",
+    ),
+    "stage9-sh16-c13-evidence-boundary": (
+        "gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-surface",
+        "gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-positive",
+        "gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-rejects-substitution-and-hostile-carriers",
+        "gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-separates-top-level-provenance",
     ),
 }
 

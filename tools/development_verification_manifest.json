@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "gravity-stage0-development-verification",
-  "description": "Stage 0 and Milestone 0 verification graph with bounded Stage1/Stage2 handoffs and fixed, non-authoritative Stage3--8 compiler candidate graphs for evidence-producing development loops.",
+  "description": "Stage 0 and Milestone 0 verification graph with bounded Stage1/Stage2 handoffs and fixed, non-authoritative Stage3--9 compiler candidate graphs for evidence-producing development loops.",
   "scope": {
     "stage": "stage0",
     "stage1_handoff": "SH-01 planner and parallel-runner unit preflight",
@@ -12,6 +12,7 @@
     "stage6_handoff": "fixed C10 safety source, kernel, C9 adapter, public, and manual proof-candidate nodes; no legacy broad replay or authority promotion",
     "stage7_handoff": "fixed C11 MIR source, C10 adapter, public, and manual proof-candidate nodes; no legacy broad replay or authority promotion",
     "stage8_handoff": "fixed C12 shape, C11-domain evidence, and public development nodes; no proof candidate or authority promotion",
+    "stage9_handoff": "fixed C13 source-shape gate followed by an evidence-only boundary over a reconstructed C12 carrier; no optimization credit, proof candidate, target lowering, or authority promotion",
     "milestones": [
       "M0-documentation-lock",
       "M1-hosted-hello-slice"
@@ -26,6 +27,7 @@
       "the fixed Stage6 C10 safety development graph",
       "the fixed Stage7 C11 MIR development graph",
       "the fixed Stage8 C12/SH13 development graph",
+      "the fixed Stage9 SH16/C13 evidence-only development boundary",
       "hosted reader validator",
       "first hosted hello and core application fixtures",
       "the focused project-structure extraction compatibility gate",
@@ -286,7 +288,9 @@
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj",
-        "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj"
+        "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj"
       ],
       "depends_on": [
         "stage0-orchestrator-unit"
@@ -2258,6 +2262,122 @@
       ]
     },
     {
+      "id": "stage9-c13-source-shape",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 600,
+      "command": [
+        "python3",
+        "tools/run_stage3_verification.py"
+      ],
+      "stage3_mode": "pure",
+      "stage3_batch": "stage9-c13-source-shape",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj",
+        "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+        "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+        "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+        "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+        "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+        "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/p15_s23/emitter.gravity",
+        "bootstrap/gravity/src/gravity/macro.gravity",
+        "bootstrap/gravity/src/gravity/resolution.gravity",
+        "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/clojure/src/**"
+      ],
+      "depends_on": [
+        "stage3-runner-unit"
+      ],
+      "jvm_heap": "-J-Xmx512m",
+      "minimum_heap_bytes": 536870912,
+      "automatic": true,
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+      ]
+    },
+    {
+      "id": "stage9-sh16-c13-evidence-boundary",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1800,
+      "command": [
+        "python3",
+        "tools/run_stage3_verification.py"
+      ],
+      "stage3_mode": "pure",
+      "stage3_batch": "stage9-sh16-c13-evidence-boundary",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/p15_s23/emitter.gravity",
+        "bootstrap/gravity/src/gravity/macro.gravity",
+        "bootstrap/gravity/src/gravity/resolution.gravity",
+        "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/clojure/src/**"
+      ],
+      "depends_on": [
+        "stage9-c13-source-shape"
+      ],
+      "jvm_heap": "-J-Xmx8g",
+      "minimum_heap_bytes": 8589934592,
+      "automatic": true,
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+      ]
+    },
+    {
       "id": "stage0-reader",
       "lane": "focused",
       "cost": "cheap",
@@ -2306,6 +2426,7 @@
         "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
         "bootstrap/gravity/p15_s23/compiler.gravity",
         "bootstrap/gravity/p15_s23/emitter.gravity",
         "bootstrap/gravity/src/gravity/macro.gravity",
@@ -2378,6 +2499,7 @@
         "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
         "bootstrap/gravity/p15_s23/compiler.gravity",
         "bootstrap/gravity/p15_s23/emitter.gravity",
         "bootstrap/gravity/src/gravity/macro.gravity",
@@ -2454,6 +2576,7 @@
         "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
         "bootstrap/gravity/p15_s23/compiler.gravity",
         "bootstrap/gravity/p15_s23/emitter.gravity",
         "bootstrap/gravity/src/gravity/macro.gravity",
@@ -2608,6 +2731,7 @@
         "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
         "bootstrap/gravity/p15_s23/compiler.gravity",
         "bootstrap/gravity/p15_s23/emitter.gravity",
         "bootstrap/gravity/src/gravity/macro.gravity",
@@ -2894,6 +3018,7 @@
         "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
         "bootstrap/gravity/p15_s23/compiler.gravity",
         "bootstrap/gravity/p15_s23/emitter.gravity",
         "bootstrap/gravity/src/gravity/macro.gravity",
@@ -2971,6 +3096,7 @@
         "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
         "bootstrap/clojure/fixtures/self-hosting/sh-08/**",
         "bootstrap/clojure/fixtures/self-hosting/sh-10/**",
         "bootstrap/clojure/fixtures/self-hosting/sh-11/**",
@@ -3067,6 +3193,7 @@
         "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
         "bootstrap/clojure/fixtures/self-hosting/sh-10/**",
         "bootstrap/native/p15_public_native_launcher.c",
         "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",

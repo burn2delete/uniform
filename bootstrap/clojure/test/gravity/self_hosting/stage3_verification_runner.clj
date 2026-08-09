@@ -1,5 +1,5 @@
 (ns gravity.self-hosting.stage3-verification-runner
-  "Runs the fixed, non-authoritative Stage3--Stage8 development batches.
+  "Runs the fixed, non-authoritative Stage3--Stage9 development batches.
 
   Stage7 exposes the exact C11 source profiles, one cache-affine SH12 adapter
   batch, and one public C11 check.  The shape profile remains an execution-only
@@ -52,6 +52,10 @@
   'gravity.self-hosting.sh07-c12-domain-ir-shape-preflight-test)
 (def ^:private sh13-c11-domain-evidence-test-namespace
   'gravity.self-hosting.sh13-c11-domain-evidence-adapter-test)
+(def ^:private c13-shape-test-namespace
+  'gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test)
+(def ^:private sh16-c13-evidence-boundary-test-namespace
+  'gravity.self-hosting.sh16-c12-domain-evidence-boundary-test)
 (def ^:private public-test-namespace
   'gravity.bootstrap-test)
 
@@ -249,6 +253,19 @@
 (def stage8-public-c12-selectors
   ['gravity.bootstrap-test/public-check-accepts-gravity-authored-c12-domain-ir-architecture])
 
+(def stage9-c13-source-shape-selectors
+  ['gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test/sh07-c13-mir-optimization-source-shape-and-control
+   'gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test/sh07-c13-mir-optimization-export-completeness])
+
+;; One namespace, one C13 plan, and the exact prepared C11->C12 evidence chain.
+;; The surface stays first, the complete positive precedes every mutation, and
+;; provenance separation remains the final non-authoritative boundary.
+(def stage9-sh16-c13-evidence-boundary-selectors
+  ['gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-surface
+   'gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-positive
+   'gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-rejects-substitution-and-hostile-carriers
+   'gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-separates-top-level-provenance])
+
 (def ^:private execution-profile-batches
   {:stage7-c11-shape-preflight
    {:owner :stage7-c11-source-preflight
@@ -286,7 +303,9 @@
    :stage7-public-c11
    :stage8-c12-source-shape
    :stage8-public-c12
-   :stage8-sh13-c11-domain-evidence])
+   :stage8-sh13-c11-domain-evidence
+   :stage9-c13-source-shape
+   :stage9-sh16-c13-evidence-boundary])
 
 (def ^:private batch-selectors
   (array-map
@@ -320,7 +339,10 @@
    :stage8-c12-source-shape stage8-c12-source-shape-selectors
    :stage8-public-c12 stage8-public-c12-selectors
    :stage8-sh13-c11-domain-evidence
-   stage8-sh13-c11-domain-evidence-selectors))
+   stage8-sh13-c11-domain-evidence-selectors
+   :stage9-c13-source-shape stage9-c13-source-shape-selectors
+   :stage9-sh16-c13-evidence-boundary
+   stage9-sh16-c13-evidence-boundary-selectors))
 
 (def fixed-batch-ids
   "The complete CLI allowlist, in deterministic presentation order."
@@ -375,7 +397,9 @@
     sh12-c10-mir-adapter-test-namespace
     c11-source-test-namespace
     c12-shape-test-namespace
-    sh13-c11-domain-evidence-test-namespace})
+    sh13-c11-domain-evidence-test-namespace
+    c13-shape-test-namespace
+    sh16-c13-evidence-boundary-test-namespace})
 
 (def ^:private partial-selector-namespaces
   #{'gravity.self-hosting.sh07-authoritative-coverage-census-test

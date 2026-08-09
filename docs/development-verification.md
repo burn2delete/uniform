@@ -992,7 +992,37 @@ reviewed attestation, or release evidence is claimed. The exact three-node
 closure must be rerun after final composition; earlier C12/SH13 runs are only
 historical non-authoritative planning evidence.
 
-### 13. Full release gate
+### 13. Fixed Stage9 C13 evidence boundary
+
+Stage9 is an automatic non-authoritative evidence-only boundary with no proof
+or public node. `stage9-c13-source-shape` uses a 512 MiB JVM and runs exactly,
+in order, `sh07-c13-mir-optimization-source-shape-and-control` followed by
+`sh07-c13-mir-optimization-export-completeness`. The 8 GiB
+`stage9-sh16-c13-evidence-boundary` node then keeps these four selectors in one
+JVM, in source order, to reuse its namespace-local C13 plan and prepared C12
+carrier:
+
+1. `sh16-c13-evidence-boundary-surface`
+2. `sh16-c13-evidence-boundary-positive`
+3. `sh16-c13-evidence-boundary-rejects-substitution-and-hostile-carriers`
+4. `sh16-c13-evidence-boundary-separates-top-level-provenance`
+
+C13 source, the C13 shape test, and the SH16 evidence test select only the four
+cheap unit prerequisites plus the Stage9 shape and evidence nodes; they do not
+force Stage8 production. C12 and SH13 changes still select their true Stage8
+consumers and Stage9 as a downstream consumer. Both Stage9 nodes are fresh,
+no-resume, exclusive, capacity one, command-owned on the canonical heavy lock,
+and declare `authority: none`. They establish no proof, public compatibility,
+optimization credit, lowering, executable-load, self-hosting, or release claim.
+
+Historical direct-command measurements passed the shape namespace at 2 tests
+and 41 assertions in 1.187 seconds with peak RSS 111,738,880 bytes, and the
+evidence namespace at 4 tests and 69 assertions in 60.797 seconds with peak RSS
+1,602,322,432 bytes. Both are non-authoritative planning evidence only, not
+current wrapper receipts. A receipt-bearing run on the final composed tool and
+input identity is still required.
+
+### 14. Full release gate
 
 Run only after the candidate is stable, the selected authoritative modules
 pass, and the worktree is ready for release review. This preserves every

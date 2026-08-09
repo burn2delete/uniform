@@ -1498,10 +1498,14 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage8-sh13-c11-domain-evidence",
             "stage8-public-c12",
         }
+        stage9_batches = {
+            "stage9-c13-source-shape",
+            "stage9-sh16-c13-evidence-boundary",
+        }
         self.assertEqual(
             set(verifier._stage3.FIXED_BATCHES)
-            & (stage7_batches | stage7_runner_only_batches | stage8_batches),
-            stage7_batches | stage7_runner_only_batches | stage8_batches,
+            & (stage7_batches | stage7_runner_only_batches | stage8_batches | stage9_batches),
+            stage7_batches | stage7_runner_only_batches | stage8_batches | stage9_batches,
         )
         stage3_fixed_batches = (
             set(verifier._stage3.FIXED_BATCHES)
@@ -1511,6 +1515,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             - stage7_batches
             - stage7_runner_only_batches
             - stage8_batches
+            - stage9_batches
         )
         self.assertTrue(stage7_batches.isdisjoint(stage3_fixed_batches))
         self.assertEqual(
@@ -2365,6 +2370,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage7-sh12-c10-mir-adapter",
                 "stage8-c12-source-shape",
                 "stage8-sh13-c11-domain-evidence",
+                "stage9-c13-source-shape",
+                "stage9-sh16-c13-evidence-boundary",
             },
         )
         kernel = selected(
@@ -2392,6 +2399,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage7-sh12-c10-mir-adapter",
                 "stage8-c12-source-shape",
                 "stage8-sh13-c11-domain-evidence",
+                "stage9-c13-source-shape",
+                "stage9-sh16-c13-evidence-boundary",
             },
         )
         for upstream in (
@@ -2634,6 +2643,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage7-sh12-c10-mir-adapter",
             "stage8-c12-source-shape",
             "stage8-sh13-c11-domain-evidence",
+            "stage9-c13-source-shape",
+            "stage9-sh16-c13-evidence-boundary",
         }
         self.assertEqual(source_selected, expected_c8_change_selection)
         self.assertTrue(
@@ -2803,6 +2814,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 public["id"],
                 "stage8-c12-source-shape",
                 "stage8-sh13-c11-domain-evidence",
+                "stage9-c13-source-shape",
+                "stage9-sh16-c13-evidence-boundary",
             },
         )
         self.assertEqual(
@@ -2813,6 +2826,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 adapter["id"],
                 "stage8-c12-source-shape",
                 "stage8-sh13-c11-domain-evidence",
+                "stage9-c13-source-shape",
+                "stage9-sh16-c13-evidence-boundary",
             },
         )
         self.assertEqual(
@@ -2896,7 +2911,11 @@ class VerifyDevelopmentTests(unittest.TestCase):
             )
 
         c12_path = "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
-        self.assertEqual(selected(c12_path), units | stage8_ids)
+        stage9_ids = {
+            "stage9-c13-source-shape",
+            "stage9-sh16-c13-evidence-boundary",
+        }
+        self.assertEqual(selected(c12_path), units | stage8_ids | stage9_ids)
         self.assertEqual(
             selected(
                 "bootstrap/clojure/test/gravity/self_hosting/"
@@ -2909,7 +2928,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "bootstrap/clojure/test/gravity/self_hosting/"
                 "sh13_c11_domain_evidence_adapter_test.clj"
             ),
-            units | {source["id"], adapter["id"]},
+            units | {source["id"], adapter["id"]} | stage9_ids,
         )
         for unrelated in (
             "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
@@ -2956,6 +2975,163 @@ class VerifyDevelopmentTests(unittest.TestCase):
         )
         self.assertFalse(any(check_id.endswith("proof-candidate") for check_id in stage8_ids))
         self.assertNotIn("c12-authority", verifier._stage3.FIXED_MODULE_POLICIES)
+
+    def test_real_manifest_stage9_evidence_boundary_is_exact_and_proportional(self) -> None:
+        manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
+        by_id = verifier.checks_by_id(manifest)
+        stage9_ids = {
+            check_id for check_id in by_id if check_id.startswith("stage9-")
+        }
+        self.assertEqual(
+            stage9_ids,
+            {
+                "stage9-c13-source-shape",
+                "stage9-sh16-c13-evidence-boundary",
+            },
+        )
+        shape = by_id["stage9-c13-source-shape"]
+        boundary = by_id["stage9-sh16-c13-evidence-boundary"]
+        self.assertEqual(shape["stage3_batch"], shape["id"])
+        self.assertEqual(shape["stage3_mode"], verifier._stage3.MODE_PURE)
+        self.assertEqual(shape["depends_on"], ["stage3-runner-unit"])
+        self.assertEqual(shape["jvm_heap"], "-J-Xmx512m")
+        self.assertEqual(shape["minimum_heap_bytes"], 536870912)
+        self.assertEqual(shape["timeout_seconds"], 600)
+        self.assertEqual(boundary["stage3_batch"], boundary["id"])
+        self.assertEqual(boundary["stage3_mode"], verifier._stage3.MODE_PURE)
+        self.assertEqual(boundary["depends_on"], [shape["id"]])
+        self.assertEqual(boundary["jvm_heap"], "-J-Xmx8g")
+        self.assertEqual(boundary["minimum_heap_bytes"], 8589934592)
+        self.assertEqual(boundary["timeout_seconds"], 1800)
+        for check in (shape, boundary):
+            self.assertEqual(check["authority"], "none")
+            self.assertTrue(check["automatic"])
+            self.assertTrue(check["fresh"])
+            self.assertFalse(check["resume"])
+            self.assertEqual(check["state_dir_policy"], "new-per-invocation")
+            self.assertEqual(check["lock"], "/private/tmp/gravity-sh07-heavy.lock")
+            self.assertEqual(check["lock_owner"], "command")
+            self.assertTrue(check["exclusive"])
+            self.assertEqual(check["capacity"], 1)
+
+        shape_selectors = verifier._stage3._FIXED_BATCH_SELECTORS[shape["stage3_batch"]]
+        self.assertEqual(2, len(shape_selectors))
+        self.assertEqual(2, len(set(shape_selectors)))
+        selectors = verifier._stage3._FIXED_BATCH_SELECTORS[boundary["stage3_batch"]]
+        self.assertEqual(4, len(selectors))
+        self.assertEqual(4, len(set(selectors)))
+        self.assertTrue(selectors[0].endswith("/sh16-c13-evidence-boundary-surface"))
+        self.assertTrue(
+            selectors[-1].endswith(
+                "/sh16-c13-evidence-boundary-separates-top-level-provenance"
+            )
+        )
+
+        units = {
+            "stage0-orchestrator-unit",
+            "stage1-sh01-unit",
+            "stage2-authority-admission-unit",
+            "stage3-runner-unit",
+        }
+
+        def selected(path: str) -> set[str]:
+            return set(
+                verifier.select_impacted_checks(
+                    manifest, ROOT, changed_paths=[path]
+                )["selected_ids"]
+            )
+
+        c13_path = "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+        sh16_path = (
+            "bootstrap/clojure/test/gravity/self_hosting/"
+            "sh16_c12_domain_evidence_boundary_test.clj"
+        )
+        self.assertEqual(selected(c13_path), units | stage9_ids)
+        self.assertEqual(selected(sh16_path), units | stage9_ids)
+        self.assertNotIn("stage8-c12-source-shape", selected(c13_path))
+        self.assertNotIn("stage8-sh13-c11-domain-evidence", selected(c13_path))
+        self.assertNotIn("stage8-public-c12", selected(c13_path))
+        self.assertFalse(any(check_id.endswith("proof-candidate") for check_id in stage9_ids))
+
+        legacy_ids = {
+            "stage0-hosted-hello",
+            "stage0-hosted-hello-qst",
+            "stage0-selective-smoke",
+            "stage0-hosted-core-app",
+            "stage0-hosted-core-compiled-app",
+            "stage0-clojure-suite",
+            "stage0-bootstrap-authority",
+        }
+        for check_id in legacy_ids:
+            self.assertEqual(
+                by_id[check_id]["impact_excludes"].count(c13_path), 1, check_id
+            )
+        self.assertEqual(
+            by_id["stage1-sh01-unit"]["impact_excludes"].count(sh16_path), 1
+        )
+        self.assertEqual(
+            by_id["stage1-sh01-unit"]["impact_excludes"].count(
+                "bootstrap/clojure/test/gravity/self_hosting/"
+                "sh07_c13_mir_optimization_shape_preflight_test.clj"
+            ),
+            1,
+        )
+
+    def test_stage9_runtime_resource_lifecycle_and_node_drift_fail_closed(self) -> None:
+        manifest = verifier.load_manifest(
+            ROOT / "tools" / "development_verification_manifest.json"
+        )
+        wrong_same_heap_batch = {
+            "stage9-c13-source-shape": "stage8-c12-source-shape",
+            "stage9-sh16-c13-evidence-boundary": "stage8-sh13-c11-domain-evidence",
+        }
+        for check_id, policy in verifier._STAGE9_FIXED_NODE_POLICIES.items():
+            mutations = (
+                ("timeout_seconds", policy["timeout_seconds"] - 1),
+                ("fresh", False),
+                ("resume", True),
+                ("automatic", False),
+                ("exclusive", False),
+                ("capacity", 2),
+                ("state_dir_policy", "reused"),
+                ("lock", "/private/tmp/gravity-stage9-wrong.lock"),
+                ("lock_owner", "runner"),
+                ("stage3_batch", wrong_same_heap_batch[check_id]),
+                ("depends_on", []),
+                ("stage3_mode", verifier._stage3.MODE_PROOF_CANDIDATE),
+                ("command", [sys.executable, "-c", "pass"]),
+                ("authority", "declared"),
+            )
+            for field, value in mutations:
+                broken = json.loads(json.dumps(manifest))
+                target = next(
+                    item for item in broken["checks"] if item["id"] == check_id
+                )
+                target[field] = value
+                with self.assertRaisesRegex(verifier.ManifestError, field):
+                    verifier.validate_manifest(broken)
+            for required_input in policy["inputs"]:
+                broken = json.loads(json.dumps(manifest))
+                target = next(
+                    item for item in broken["checks"] if item["id"] == check_id
+                )
+                target["inputs"].remove(required_input)
+                with self.assertRaisesRegex(verifier.ManifestError, "inputs"):
+                    verifier.validate_manifest(broken)
+            for field, value in (
+                ("inputs", [*policy["inputs"], "README.md"]),
+                ("tool_inputs", [*policy["tool_inputs"], "tools/validate_reader.py"]),
+                ("impact_excludes", []),
+                ("impact_excludes", [*policy["impact_excludes"], "README.md"]),
+                ("impact_excludes", [*policy["impact_excludes"], policy["inputs"][0]]),
+            ):
+                broken = json.loads(json.dumps(manifest))
+                target = next(
+                    item for item in broken["checks"] if item["id"] == check_id
+                )
+                target[field] = list(value)
+                with self.assertRaisesRegex(verifier.ManifestError, field):
+                    verifier.validate_manifest(broken)
 
     def test_stage8_runtime_resource_lifecycle_and_node_drift_fail_closed(self) -> None:
         manifest = verifier.load_manifest(
@@ -3711,7 +3887,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         stage8_drifted["checks"] = [
             item
             for item in stage8_drifted["checks"]
-            if not item["id"].startswith("stage8-")
+            if not item["id"].startswith(("stage8-", "stage9-"))
         ]
         # A generic fixture may omit production Stage8.  Trusted explicit or
         # canonical-path validation must require the exact set regardless of
@@ -3725,6 +3901,25 @@ class VerifyDevelopmentTests(unittest.TestCase):
             Path, "read_text", return_value=json.dumps(stage8_drifted)
         ):
             with self.assertRaisesRegex(verifier.ManifestError, "Stage8 fixed graph ids"):
+                verifier.load_manifest(manifest_path)
+
+        stage9_drifted = json.loads(json.dumps(manifest))
+        stage9_drifted["name"] = "test-development-verification"
+        stage9_drifted["scope"] = {"stage": "synthetic"}
+        stage9_drifted["checks"] = [
+            item
+            for item in stage9_drifted["checks"]
+            if not item["id"].startswith("stage9-")
+        ]
+        verifier.validate_manifest(stage9_drifted)
+        with self.assertRaisesRegex(verifier.ManifestError, "Stage9 fixed graph ids"):
+            verifier.validate_manifest(
+                stage9_drifted, require_production_contracts=True
+            )
+        with mock.patch.object(
+            Path, "read_text", return_value=json.dumps(stage9_drifted)
+        ):
+            with self.assertRaisesRegex(verifier.ManifestError, "Stage9 fixed graph ids"):
                 verifier.load_manifest(manifest_path)
 
     def _run_mocked_resource_check(

@@ -107,6 +107,8 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage8-c12-source-shape": "stage8-c12-source-shape-selectors",
             "stage8-public-c12": "stage8-public-c12-selectors",
             "stage8-sh13-c11-domain-evidence": "stage8-sh13-c11-domain-evidence-selectors",
+            "stage9-c13-source-shape": "stage9-c13-source-shape-selectors",
+            "stage9-sh16-c13-evidence-boundary": "stage9-sh16-c13-evidence-boundary-selectors",
         }
         for batch, definition in selector_definitions.items():
             self.assertEqual(
@@ -147,6 +149,8 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage8-c12-source-shape": "-J-Xmx512m",
             "stage8-public-c12": "-J-Xmx2g",
             "stage8-sh13-c11-domain-evidence": "-J-Xmx8g",
+            "stage9-c13-source-shape": "-J-Xmx512m",
+            "stage9-sh16-c13-evidence-boundary": "-J-Xmx8g",
             "c10-authority": "-J-Xmx8g",
             "c11-authority": "-J-Xmx8g",
         }
@@ -235,6 +239,30 @@ class Stage3WrapperTests(unittest.TestCase):
                 "gravity.bootstrap-test/public-check-accepts-gravity-authored-c12-domain-ir-architecture",
             ),
             stage3._FIXED_BATCH_SELECTORS["stage8-public-c12"],
+        )
+        c13_boundary = stage3._FIXED_BATCH_SELECTORS[
+            "stage9-sh16-c13-evidence-boundary"
+        ]
+        c13_shape = stage3._FIXED_BATCH_SELECTORS["stage9-c13-source-shape"]
+        self.assertEqual(2, len(c13_shape))
+        self.assertEqual(2, len(set(c13_shape)))
+        self.assertTrue(
+            c13_shape[0].endswith(
+                "/sh07-c13-mir-optimization-source-shape-and-control"
+            )
+        )
+        self.assertTrue(
+            c13_shape[1].endswith(
+                "/sh07-c13-mir-optimization-export-completeness"
+            )
+        )
+        self.assertEqual(4, len(c13_boundary))
+        self.assertEqual(4, len(set(c13_boundary)))
+        self.assertTrue(c13_boundary[0].endswith("/sh16-c13-evidence-boundary-surface"))
+        self.assertTrue(
+            c13_boundary[-1].endswith(
+                "/sh16-c13-evidence-boundary-separates-top-level-provenance"
+            )
         )
 
     def test_retired_singleton_batch_ids_are_rejected(self) -> None:

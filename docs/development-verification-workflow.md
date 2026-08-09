@@ -532,6 +532,30 @@ fresh combined Stage8 closure on the final tool/input composition is still
 required; earlier source and six-selector semantic runs are planning evidence,
 not current admission, proof, attestation, or release evidence.
 
+## Fixed Stage9 C13 evidence boundary
+
+Stage9 is a two-node automatic, non-authoritative boundary. The 512 MiB
+`stage9-c13-source-shape` node runs the C13 source-control selector followed by
+the export-completeness selector. Its dependent 8 GiB
+`stage9-sh16-c13-evidence-boundary` node runs, in exact source order, the SH16
+surface, positive, substitution/hostile-carrier, and top-level-provenance
+selectors. Keeping the four evidence selectors in one JVM preserves the
+namespace-local C13 plan and prepared C12 carrier cache affinity.
+
+C13 and SH16 changes select the four cheap units plus these two Stage9 nodes;
+they do not execute Stage8. C12 and SH13 changes independently select their
+true Stage8 consumers and the Stage9 downstream consumer. Both Stage9 nodes
+are fresh, no-resume, capacity-one, command-owned users of
+`/private/tmp/gravity-sh07-heavy.lock` with `authority: none`. There is no
+Stage9 proof or public node, and the boundary claims no optimization credit,
+lowering, executable load, self-hosting, or release status.
+
+Prior direct commands measured the shape checks at 2 tests/41 assertions in
+1.187 seconds with peak RSS 111,738,880 bytes and the evidence checks at 4/69
+in 60.797 seconds with peak RSS 1,602,322,432 bytes. These are historical
+non-authoritative planning measurements, not current wrapper receipts. The
+composed graph still requires a fresh receipt-bearing run.
+
 ## Selection and execution flow
 
 1. Normalize changed paths and validate the manifest before starting a command.

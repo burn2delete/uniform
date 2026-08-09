@@ -393,6 +393,51 @@ _STAGE8_FIXED_NODE_POLICIES = {
     },
 }
 
+_STAGE9_FIXED_NODE_POLICIES = {
+    "stage9-c13-source-shape": {
+        "timeout_seconds": 600,
+        "stage3_batch": "stage9-c13-source-shape",
+        "depends_on": ["stage3-runner-unit"],
+        "inputs": (
+            "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+            "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj",
+            "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+            "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+            "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+            "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+            "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+            "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md",
+        ),
+        "tool_inputs": tuple(_stage3.STAGE3_RUNTIME_DEPENDENCIES),
+        "impact_excludes": (
+            "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        ),
+    },
+    "stage9-sh16-c13-evidence-boundary": {
+        "timeout_seconds": 1800,
+        "stage3_batch": "stage9-sh16-c13-evidence-boundary",
+        "depends_on": ["stage9-c13-source-shape"],
+        "inputs": (
+            "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+            "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj",
+        ),
+        "tool_inputs": tuple(_stage3.STAGE3_RUNTIME_DEPENDENCIES),
+        "impact_excludes": (
+            "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        ),
+    },
+}
+
 
 _P15_NATIVE_LAUNCHER_CHECK_ID = "stage0-p15-native-launcher-prerequisite"
 _P15_NATIVE_LAUNCHER_COMMAND = [
@@ -750,14 +795,14 @@ def _resource_receipt_error(record: Mapping[str, Any]) -> str | None:
 def _is_fixed_stage_check(check_id: str) -> bool:
     """Return whether a manifest node invokes the fixed stage wrapper.
 
-    Stage3 through Stage8 all use the same command-owned
+    Stage3 through Stage9 all use the same command-owned
     ``run_stage3_verification.py`` boundary.  Keep this predicate centralized
     so a newly added fixed stage cannot accidentally bypass heap, runtime
     identity, lock-owner, or receipt validation.
     """
 
     return check_id.startswith(
-        ("stage3-", "stage4-", "stage5-", "stage6-", "stage7-", "stage8-")
+        ("stage3-", "stage4-", "stage5-", "stage6-", "stage7-", "stage8-", "stage9-")
     )
 
 
@@ -908,6 +953,63 @@ def _validate_stage8_node_contract(check: Mapping[str, Any]) -> None:
         raise ManifestError(
             f"check {check_id!r} omits required Stage8 inputs: {missing_inputs}"
         )
+
+
+def _validate_stage9_node_contract(check: Mapping[str, Any]) -> None:
+    """Pin the evidence-only Stage9 lifecycle and exact predecessor boundary."""
+
+    check_id = str(check.get("id", ""))
+    if not check_id.startswith("stage9-"):
+        return
+    policy = _STAGE9_FIXED_NODE_POLICIES.get(check_id)
+    if policy is None:
+        raise ManifestError(f"unreviewed Stage9 check id: {check_id!r}")
+    timeout = check.get("timeout_seconds")
+    if type(timeout) is not int or timeout != policy["timeout_seconds"]:
+        raise ManifestError(
+            f"check {check_id!r} timeout_seconds must equal the fixed Stage9 bound"
+        )
+    for field, value in {
+        "fresh": True,
+        "resume": False,
+        "automatic": True,
+        "exclusive": True,
+    }.items():
+        if check.get(field) is not value:
+            raise ManifestError(
+                f"check {check_id!r} {field} must equal fixed Stage9 value {value!r}"
+            )
+    for field, value in {
+        "state_dir_policy": "new-per-invocation",
+        "lock": "/private/tmp/gravity-sh07-heavy.lock",
+        "lock_owner": "command",
+    }.items():
+        if check.get(field) != value or not isinstance(check.get(field), str):
+            raise ManifestError(
+                f"check {check_id!r} {field} must equal fixed Stage9 value {value!r}"
+            )
+    if type(check.get("capacity")) is not int or check.get("capacity") != 1:
+        raise ManifestError(
+            f"check {check_id!r} capacity must equal fixed Stage9 value 1"
+        )
+    for field, value in {
+        "command": ["python3", "tools/run_stage3_verification.py"],
+        "stage3_mode": _stage3.MODE_PURE,
+        "stage3_batch": policy["stage3_batch"],
+        "depends_on": policy["depends_on"],
+        "authority": "none",
+    }.items():
+        if check.get(field) != value or type(check.get(field)) is not type(value):
+            raise ManifestError(
+                f"check {check_id!r} {field} must equal fixed Stage9 value {value!r}"
+            )
+    for field in ("inputs", "tool_inputs", "impact_excludes"):
+        expected = list(policy[field])
+        observed = check.get(field)
+        if type(observed) is not list or observed != expected:
+            raise ManifestError(
+                f"check {check_id!r} {field} must equal the exact Stage9 list"
+            )
 
 
 def _lock_owner(check: Mapping[str, Any]) -> str:
@@ -1091,6 +1193,19 @@ def validate_manifest(
                 f"expected {sorted(expected_stage8_ids)}, "
                 f"observed {sorted(observed_stage8_ids)}"
             )
+        observed_stage9_ids = {
+            str(item.get("id"))
+            for item in checks
+            if isinstance(item, Mapping)
+            and str(item.get("id", "")).startswith("stage9-")
+        }
+        expected_stage9_ids = set(_STAGE9_FIXED_NODE_POLICIES)
+        if observed_stage9_ids != expected_stage9_ids:
+            raise ManifestError(
+                "Stage9 fixed graph ids must equal the reviewed production set: "
+                f"expected {sorted(expected_stage9_ids)}, "
+                f"observed {sorted(observed_stage9_ids)}"
+            )
 
     ids: set[str] = set()
     dependencies: dict[str, list[str]] = {}
@@ -1112,6 +1227,7 @@ def validate_manifest(
         _validate_stage3_resource_contract(check)
         _validate_stage3_runtime_inputs(check)
         _validate_stage8_node_contract(check)
+        _validate_stage9_node_contract(check)
         if check.get("daemonization") != "forbidden":
             raise ManifestError(
                 f"check {check_id!r} must declare daemonization='forbidden'; "
@@ -1223,6 +1339,13 @@ def validate_manifest(
         raise ManifestError(
             "Stage8 fixed graph ids must equal the reviewed set: "
             f"expected {sorted(expected_stage8_ids)}, observed {sorted(stage8_ids)}"
+        )
+    stage9_ids = {check_id for check_id in ids if check_id.startswith("stage9-")}
+    expected_stage9_ids = set(_STAGE9_FIXED_NODE_POLICIES)
+    if (require_production_contracts or stage9_ids) and stage9_ids != expected_stage9_ids:
+        raise ManifestError(
+            "Stage9 fixed graph ids must equal the reviewed set: "
+            f"expected {sorted(expected_stage9_ids)}, observed {sorted(stage9_ids)}"
         )
 
     for check_id, deps in dependencies.items():
