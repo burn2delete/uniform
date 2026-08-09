@@ -1,0 +1,297 @@
+(ns gravity.self-hosting.w5-c18.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-c18-invalid-risk
+             w5-c18-invalid-evidence
+             w5-c18-invalid-validation
+             w5-c18-invalid-proof
+             w5-c18-invalid-trust-report
+             w5-c18-invalid-release-gate
+             w5-c18-invalid-counterexample
+             w5-c18-invalid-plugin
+             w5-c18-invalid-backend
+             w5-c18-invalid-source-span
+             w5-c18-invalid-provenance
+             w5-c18-invalid-origin-chain
+             w5-c18-invalid-translation-link
+             w5-c18-invalid-proof-link
+             w5-c18-orphan-evidence
+             w5-c18-duplicate-evidence
+             w5-c18-invalid-backend-link
+             w5-c18-invalid-pass-chain
+             w5-c18-invalid-validation-proof-reference
+             w5-c18-coherent-evidence-owner-substitution
+             w5-c18-coherent-validation-owner-permutation
+             w5-c18-coherent-proof-owner-permutation
+             w5-c18-coherent-certificate-owner-permutation
+             w5-c18-empty-validation-proof-references
+             w5-c18-empty-validation-certificate-references
+             w5-c18-substituted-validation-certificate-reference
+             w5-c18-coherent-translation-hash-substitution
+             w5-c18-coherent-proof-hash-substitution
+             w5-c18-added-backend-artifact])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-c18-rejected-fixture
+     :scope :stage-owned-nonauthority
+     :clojure-seed-boundary? true
+     :stage2-target :jvm
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-arm64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-x86_64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :windows :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}]
+     :cross-target-inference? false
+     :fallback? false
+     :authority :non-authority
+     :self-hosted? false
+     :release? false
+     :full-language-credit? false}}))
+
+(defn w5-c18-target-scope []
+  {:candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :cross-target-inference? false
+   :fallback? false})
+
+(defn w5-c18-vector-entry-assoc [record collection index field value]
+  (let [entries (get record collection)
+        entry (get entries index)]
+    (assoc record collection (assoc entries index (assoc entry field value)))))
+
+(defn w5-c18-vector-entry-nested-assoc
+  [record collection index nested field value]
+  (let [entries (get record collection)
+        entry (get entries index)
+        nested-value (get entry nested)]
+    (assoc record collection
+           (assoc entries index
+                  (assoc entry nested
+                         (assoc nested-value field value))))))
+
+(defn w5-c18-invalid-risk [record]
+  (w5-c18-vector-entry-assoc record :passes 0 :risk :unclassified))
+
+(defn w5-c18-invalid-evidence [record]
+  (w5-c18-vector-entry-assoc record :evidence 0 :freshness :stale))
+
+(defn w5-c18-invalid-validation [record]
+  (w5-c18-vector-entry-assoc
+   record :translation-validations 0 :result :rejected))
+
+(defn w5-c18-invalid-proof [record]
+  (w5-c18-vector-entry-assoc record :proofs 0 :freshness :stale))
+
+(defn w5-c18-invalid-trust-report [record]
+  (assoc record
+         :trust-report
+         {:artifact :gravity/w5-c18-trust-report-substitution
+          :release-decision :accepted}))
+
+(defn w5-c18-invalid-release-gate [record]
+  (assoc record
+         :release-gate
+         {:artifact :gravity/w5-c18-release-gate
+          :gate-id "gate:w5-c18:stage2-leaf"
+          :decision :accepted
+          :release-eligible? true}))
+
+(defn w5-c18-invalid-counterexample [record]
+  (w5-c18-vector-entry-assoc
+   record :counterexamples 0 :source-fixture
+   "/checkout-secret/not-a-semantic-fixture"))
+
+(defn w5-c18-invalid-plugin [record]
+  (w5-c18-vector-entry-assoc
+   record :plugins 0 :ambient-authority #{:filesystem/read}))
+
+(defn w5-c18-invalid-backend [record]
+  (w5-c18-vector-entry-nested-assoc
+   record :backends 0 :mir-intent :intent-id
+   "intent:substituted-backend-behavior"))
+
+(defn w5-c18-invalid-source-span [record]
+  (assoc record :source-span
+         {:source-id :gravity.self-hosting/w5-c18
+          :start -1
+          :end 2}))
+
+(defn w5-c18-invalid-provenance [record]
+  (assoc record :provenance
+         (assoc (get record :provenance) :forged-field true)))
+
+(defn w5-c18-invalid-origin-chain [record]
+  (assoc record :origin-chain []))
+
+(defn w5-c18-invalid-translation-link [record]
+  (w5-c18-vector-entry-assoc
+   record :translation-validations 0 :pass-version "3.2.1-substituted"))
+
+(defn w5-c18-invalid-proof-link [record]
+  (w5-c18-vector-entry-assoc
+   record :proofs 0 :input-artifact-id "artifact:orphan-proof-input"))
+
+(defn w5-c18-orphan-evidence [record]
+  (w5-c18-vector-entry-assoc
+   record :evidence 0 :pass-id :pass/not-registered))
+
+(defn w5-c18-duplicate-evidence [record]
+  (let [evidence (get record :evidence)
+        first-id (get (get evidence 0) :evidence-id)]
+    (w5-c18-vector-entry-assoc record :evidence 1 :evidence-id first-id)))
+
+(defn w5-c18-invalid-backend-link [record]
+  (w5-c18-vector-entry-assoc
+   record :backends 0 :candidate-target :darwin))
+
+(defn w5-c18-invalid-pass-chain [record]
+  (let [passes (get record :passes)
+        reader (get passes 0)]
+    (assoc record :passes
+           (assoc passes 0
+                  (assoc reader
+                         :output-ir "artifact:mir-before"
+                         :output-content-hash "sha256:mir-before")))))
+
+(defn w5-c18-invalid-validation-proof-reference [record]
+  (w5-c18-vector-entry-assoc
+   record :translation-validations 0 :proofs
+   ["proof:lowerer-certificate"]))
+
+(defn w5-c18-coherent-evidence-owner-substitution [record]
+  (let [evidence (get record :evidence)
+        entry (get evidence 0)]
+    (assoc record :evidence
+           (assoc evidence 0
+                  (assoc entry
+                         :pass-id :pass/analyzer
+                         :pass-version "2.1.0"
+                         :kind :verifier-report
+                         :inputs ["artifact:syntax-tree"
+                                  "artifact:mir-before"]
+                         :artifact-id "artifact:mir-before"
+                         :checker :checker/analyzer)))))
+
+(defn w5-c18-coherent-validation-owner-permutation [record]
+  (let [validations (get record :translation-validations)
+        entry (get validations 0)]
+    (assoc record :translation-validations
+           (assoc validations 0
+                  (assoc entry
+                         :pass-id :pass/target-lowering
+                         :kind :translation-validation
+                         :checker :checker/c18-translation
+                         :pass-version "4.0.0"
+                         :input-artifact-id "artifact:mir-after"
+                         :output-artifact-id
+                         "artifact:llvm-x86_64-linux:w5-c18"
+                         :input-content-hash "sha256:mir-after"
+                         :output-content-hash "sha256:llvm-x86_64-linux"
+                         :proofs ["proof:lowerer-certificate"]
+                         :certificates ["certificate:lowerer"])))))
+
+(defn w5-c18-coherent-proof-owner-permutation [record]
+  (let [proofs (get record :proofs)
+        entry (get proofs 0)]
+    (assoc record :proofs
+           (assoc proofs 0
+                  (assoc entry
+                         :pass-id :pass/target-lowering
+                         :kind :checked-certificate-proof
+                         :pass-version "4.0.0"
+                         :input-artifact-id "artifact:mir-after"
+                         :output-artifact-id
+                         "artifact:llvm-x86_64-linux:w5-c18"
+                         :source-content-hash "sha256:proof-source-lowerer"
+                         :certificate-content-hash
+                         "sha256:certificate-lowerer"
+                         :certificate-id "certificate:lowerer"
+                         :certificate-kind :checked-certificate
+                         :certificate-checker :checker/c18-certificate
+                         :checker :checker/c18-certificate)))))
+
+(defn w5-c18-coherent-certificate-owner-permutation [record]
+  (let [proofs (get record :proofs)
+        entry (get proofs 0)]
+    (assoc record :proofs
+           (assoc proofs 0
+                  (assoc entry
+                         :certificate-kind :checked-certificate
+                         :certificate-checker
+                         :checker/c18-certificate)))))
+
+(defn w5-c18-empty-validation-proof-references [record]
+  (w5-c18-vector-entry-assoc
+   record :translation-validations 0 :proofs []))
+
+(defn w5-c18-empty-validation-certificate-references [record]
+  (w5-c18-vector-entry-assoc
+   record :translation-validations 0 :certificates []))
+
+(defn w5-c18-substituted-validation-certificate-reference [record]
+  (w5-c18-vector-entry-assoc
+   record :translation-validations 0 :certificates
+   ["certificate:lowerer"]))
+
+(defn w5-c18-coherent-translation-hash-substitution [record]
+  (let [passes (get record :passes)
+        optimizer (get passes 2)
+        validations (get record :translation-validations)
+        validation (get validations 0)
+        substituted "sha256:coherent-substituted-mir-before"]
+    (assoc record
+           :passes
+           (assoc passes 2
+                  (assoc optimizer :input-content-hash substituted))
+           :translation-validations
+           (assoc validations 0
+                  (assoc validation :input-content-hash substituted)))))
+
+(defn w5-c18-coherent-proof-hash-substitution [record]
+  (let [passes (get record :passes)
+        lowerer (get passes 3)
+        proofs (get record :proofs)
+        proof (get proofs 1)
+        substituted "sha256:coherent-substituted-proof-source"]
+    (assoc record
+           :passes
+           (assoc passes 3
+                  (assoc lowerer :proof-content-hash substituted))
+           :proofs
+           (assoc proofs 1
+                  (assoc proof :source-content-hash substituted)))))
+
+(defn w5-c18-added-backend-artifact [record]
+  (let [backends (get record :backends)
+        backend (get backends 0)
+        artifacts (get backend :emitted-artifacts)
+        orphan
+        (assoc (get artifacts 0)
+               :artifact-id "artifact:orphan-backend-output")]
+    (assoc record :backends
+           (assoc backends 0
+                  (assoc backend :emitted-artifacts
+                         (conj artifacts orphan))))))
