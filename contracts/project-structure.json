@@ -1025,7 +1025,7 @@
       {"id": "reserved", "description": "A future path reservation; workers may add leaves but may not edit shared paths."}
     ],
     "owners": [
-      {"id": "master-coordinator", "category": "coordinator", "exclusive": true, "path_policy_ids": ["reviewed-central-routing", "reviewed-host-boundary", "reviewed-backlog", "reviewed-coordinator-integration", "reviewed-artifact-module", "generated-evidence", "generated-coverage", "reserved-fixtures", "reserved-tests", "reviewed-stage0-clojure-master-coordinator"]},
+      {"id": "master-coordinator", "category": "coordinator", "exclusive": true, "path_policy_ids": ["reviewed-central-routing", "reviewed-host-boundary", "reviewed-backlog", "reviewed-coordinator-integration", "reviewed-artifact-module", "generated-evidence", "generated-coverage", "reserved-fixtures", "reserved-tests", "reviewed-stage0-clojure-master-coordinator", "reviewed-python-semantic-support"]},
       {"id": "sh-01-leaf", "category": "leaf-module", "exclusive": true, "path_policy_ids": []},
       {"id": "sh-envelope", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-envelope-module"]},
       {"id": "sh-reader", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-reader-module", "reviewed-stage0-clojure-sh-reader"]},
@@ -1252,6 +1252,16 @@
         "kind": "reviewed",
         "owner": "master-coordinator",
         "patterns": ["deps.edn", "bin/gravity", "bin/gravity-bootstrap", "contracts/project-structure.json", "bootstrap/clojure/java/gravity/cli/Main.java", "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c5_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c6_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c7_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c8_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c9_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c10_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c12_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c13_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c14_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c15_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c16_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c17_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj", "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj", "bootstrap/clojure/test/gravity/bootstrap_test.clj", "bootstrap/clojure/test/gravity/development_test_runner.clj", "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj", "tools/"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-python-semantic-support",
+        "kind": "reviewed",
+        "owner": "master-coordinator",
+        "patterns": ["src/gravity/"],
         "editable": true,
         "review_required": true,
         "reviewer": "master-coordinator",
