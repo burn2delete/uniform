@@ -1495,7 +1495,11 @@
         "id": "generated-coverage",
         "kind": "generated",
         "owner": "master-coordinator",
-        "patterns": ["docs/artifacts/full-language/coverage/", "docs/artifacts/full-language/reports/full-language-coverage-"],
+        "patterns": [
+          "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
+          "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
+          "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md"
+        ],
         "editable": false,
         "review_required": true,
         "generator": "tools/generate_full_language_coverage_matrix.py",

@@ -1,0 +1,17 @@
+{
+  "attestations": [],
+  "inputIdentities": {
+    "contractSha256": "sha256:912d42f0b789f2a290d81d01450230de834b5529c93df29dfe1c1f648a377142",
+    "documentInventorySha256": "sha256:2c8d1fb60b7306c10f3e67ba2014ad7a8b6d876bdce8c47a79015f725f0638dc"
+  },
+  "inventoryCount": 240,
+  "kind": "gravity/full-language-completion-attestations",
+  "producer": {
+    "authority": "none",
+    "owner": "master-coordinator",
+    "role": "reviewed-input"
+  },
+  "schemaVersion": 1,
+  "semanticId": "sha256:183f87d395d88ef16095954268308561298266067e7dd044a8e3692796324853",
+  "status": "incomplete"
+}

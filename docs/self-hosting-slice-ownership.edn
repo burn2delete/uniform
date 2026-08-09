@@ -80,7 +80,8 @@
   ["tools/generate_full_language_coverage_matrix.py"
    "tools/validate_full_language_roadmap.py"]
   :completion-state-paths
-  ["docs/artifacts/full-language/coverage/full-language-completion-attestations.json"
+  ["contracts/full-language-coverage.json"
+   "docs/artifacts/full-language/coverage/full-language-completion-attestations.json"
    "docs/self-hosting-slice-backlog.md"]}
 
  :module-owners

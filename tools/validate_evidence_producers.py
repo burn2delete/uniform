@@ -98,7 +98,11 @@ EXACT_OUTPUT_POLICY_PROFILES = {
     },
     "generated-coverage": {
         "id": "generated-coverage",
-        "patterns": ["docs/artifacts/full-language/coverage/**", "docs/artifacts/full-language/reports/full-language-coverage-*"],
+        "patterns": [
+            "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
+            "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
+            "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md",
+        ],
         "python_tooling_policy": "generated-coverage",
         "project_structure_policy": "generated-coverage",
         "reviewed_source": False,

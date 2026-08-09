@@ -120,8 +120,9 @@
       "id": "generated-coverage",
       "kind": "generated",
       "patterns": [
-        "docs/artifacts/full-language/coverage/",
-        "docs/artifacts/full-language/reports/full-language-coverage-"
+        "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
+        "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
+        "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md"
       ],
       "authorizes_edits": false,
       "review_required": true,

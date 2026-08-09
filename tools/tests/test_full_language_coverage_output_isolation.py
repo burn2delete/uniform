@@ -3,6 +3,9 @@
 
 from __future__ import annotations
 
+import contextlib
+import copy
+import io
 import json
 import os
 from pathlib import Path
@@ -19,9 +22,109 @@ from tools import generate_full_language_coverage_matrix as coverage
 
 
 class FullLanguageCoverageOutputIsolationTests(unittest.TestCase):
+    def test_versioned_repository_outputs_validate_and_remain_incomplete(self) -> None:
+        matrix, gaps = coverage.validate_repository_outputs_v1()
+        self.assertEqual(matrix["kind"], coverage.MATRIX_KIND)
+        self.assertEqual(matrix["schemaVersion"], 1)
+        self.assertEqual(matrix["status"], "incomplete")
+        self.assertEqual(matrix["summary"]["fullLanguageCompleteDocuments"], 0)
+        self.assertEqual(matrix["inventoryCount"], 240)
+        self.assertEqual(gaps["status"], "incomplete")
+        self.assertEqual(gaps["gapCount"], 240)
+        self.assertTrue(coverage.sha256_id(matrix["semanticId"]))
+        self.assertTrue(coverage.sha256_id(gaps["semanticId"]))
+
+    def test_semantic_identity_ignores_only_date_and_own_identity(self) -> None:
+        payload = {
+            "generatedOn": "2026-08-08",
+            "kind": "example",
+            "semanticId": "sha256:" + "0" * 64,
+            "value": 1,
+        }
+        baseline = coverage.semantic_id_v1(payload)
+        changed_date = dict(payload, generatedOn="2026-08-09")
+        changed_identity = dict(payload, semanticId="sha256:" + "1" * 64)
+        changed_value = dict(payload, value=2)
+        self.assertEqual(coverage.semantic_id_v1(changed_date), baseline)
+        self.assertEqual(coverage.semantic_id_v1(changed_identity), baseline)
+        self.assertNotEqual(coverage.semantic_id_v1(changed_value), baseline)
+
+    def test_exact_schema_and_identity_mutations_fail_closed(self) -> None:
+        inventory = coverage.read_inventory()
+        contract = coverage.read_contract()
+        matrix = json.loads(coverage.DEFAULT_MATRIX.read_text(encoding="utf-8"))
+        attestations = json.loads(
+            coverage.DEFAULT_COMPLETION_ATTESTATIONS.read_text(encoding="utf-8")
+        )
+        mutations = []
+        extra_matrix_key = copy.deepcopy(matrix)
+        extra_matrix_key["unexpected"] = True
+        mutations.append(
+            lambda: coverage.validate_matrix_v1(extra_matrix_key, inventory, contract)
+        )
+        stale_matrix_id = copy.deepcopy(matrix)
+        stale_matrix_id["semanticId"] = "sha256:" + "0" * 64
+        mutations.append(
+            lambda: coverage.validate_matrix_v1(stale_matrix_id, inventory, contract)
+        )
+        forged_attestation_status = copy.deepcopy(attestations)
+        forged_attestation_status["status"] = "complete"
+        forged_attestation_status["semanticId"] = coverage.semantic_id_v1(
+            forged_attestation_status
+        )
+        mutations.append(
+            lambda: coverage.validate_completion_attestations_v1(
+                forged_attestation_status, inventory, contract
+            )
+        )
+        for mutation in mutations:
+            with self.subTest(mutation=mutation), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit):
+                    mutation()
+
+    def test_v1_rejects_every_nonempty_completion_attestation(self) -> None:
+        inventory = coverage.read_inventory()
+        contract = coverage.read_contract()
+        empty = json.loads(
+            coverage.DEFAULT_COMPLETION_ATTESTATIONS.read_text(encoding="utf-8")
+        )
+        forged_entries = [
+            {},
+            {
+                "attestationId": "sha256:" + "1" * 64,
+                "documentId": inventory[0]["id"],
+                "governingDocument": inventory[0]["path"],
+                "governingDocumentSha256": coverage.sha256_file(
+                    coverage.ROOT / inventory[0]["path"]
+                ),
+                "review": {
+                    "reviewedBy": "independent-sol",
+                    "reviewedCommit": "a" * 40,
+                    "reviewedTree": "b" * 40,
+                },
+                "state": "complete",
+            },
+            {"status": "passed", "semanticId": "sha256:" + "2" * 64},
+        ]
+        for entry in forged_entries:
+            candidate = copy.deepcopy(empty)
+            candidate["attestations"] = [entry]
+            candidate["semanticId"] = coverage.semantic_id_v1(candidate)
+            stderr = io.StringIO()
+            with self.subTest(entry=entry), contextlib.redirect_stderr(stderr):
+                with self.assertRaises(SystemExit):
+                    coverage.validate_completion_attestations_v1(
+                        candidate, inventory, contract
+                    )
+            self.assertIn("completion admission is disabled", stderr.getvalue())
+
     def test_custom_outputs_are_isolated_and_report_links_custom_paths(self) -> None:
         matrix = {
             "generatedOn": "2026-08-07",
+            "kind": coverage.MATRIX_KIND,
+            "schemaVersion": 1,
+            "semanticId": "sha256:" + "1" * 64,
+            "status": "incomplete",
             "summary": {
                 "documents": 1,
                 "fullLanguageCompleteDocuments": 0,
@@ -42,7 +145,11 @@ class FullLanguageCoverageOutputIsolationTests(unittest.TestCase):
                 "coverageClasses": {"incomplete": 1},
             },
         }
-        gaps = {"gapCount": 1, "noExecutableOwnerCount": 1}
+        gaps = {
+            "gapCount": 1,
+            "noExecutableOwnerCount": 1,
+            "semanticId": "sha256:" + "2" * 64,
+        }
         matrix_path = Path("target/coverage/custom-matrix.json")
         gaps_path = Path("target/coverage/custom-gaps.json")
         report_path = Path("target/coverage/custom-report.md")

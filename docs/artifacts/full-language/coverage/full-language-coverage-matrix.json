@@ -5,6 +5,15 @@
       "artifacts": [
         "docs/artifacts/phase-00/fixtures/foundation-document-coverage/accepted-d0-d1-coverage.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -41,6 +50,15 @@
       "artifacts": [
         "docs/artifacts/phase-00/fixtures/foundation-document-coverage/accepted-d0-d1-coverage.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -75,6 +93,17 @@
     {
       "acceptedFixtures": [],
       "artifacts": [],
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -111,6 +140,15 @@
       "artifacts": [
         "docs/artifacts/phase-00/fixtures/terminology-boundaries/accepted-concept-records.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -145,6 +183,17 @@
     {
       "acceptedFixtures": [],
       "artifacts": [],
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -179,6 +228,17 @@
     {
       "acceptedFixtures": [],
       "artifacts": [],
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -213,6 +273,17 @@
     {
       "acceptedFixtures": [],
       "artifacts": [],
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -247,6 +318,17 @@
     {
       "acceptedFixtures": [],
       "artifacts": [],
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -281,6 +363,17 @@
     {
       "acceptedFixtures": [],
       "artifacts": [],
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -315,6 +408,17 @@
     {
       "acceptedFixtures": [],
       "artifacts": [],
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -356,6 +460,9 @@
         "docs/artifacts/phase-01/document-coverage/l1-surface-syntax-coverage.json",
         "docs/artifacts/phase-01/reports/p01-d011-l1-document-coverage-report.md",
         "docs/artifacts/phase-01/reports/p01-t01-reader-surface-syntax-report.md"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -407,6 +514,9 @@
       "artifacts": [
         "docs/artifacts/phase-01/document-coverage/l2-core-semantics-coverage.json",
         "docs/artifacts/phase-01/reports/p01-d012-l2-document-coverage-report.md"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -463,6 +573,13 @@
         "docs/artifacts/phase-01/namespace/stage0-module-capability-proof.edn",
         "docs/artifacts/phase-01/reports/p01-d013-l3-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -505,6 +622,15 @@
         "docs/artifacts/phase-01/document-coverage/l4-macro-system-coverage.json",
         "docs/artifacts/phase-01/reports/p01-d014-l4-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -542,6 +668,15 @@
         "docs/artifacts/phase-01/document-coverage/l5-type-system-coverage.json",
         "docs/artifacts/phase-01/reports/p01-d015-l5-document-coverage-report.md",
         "docs/artifacts/phase-01/typed/stage0-l5-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -581,6 +716,15 @@
         "docs/artifacts/phase-01/effects/stage0-l6-document-coverage-proof.edn",
         "docs/artifacts/phase-01/reports/p01-d016-l6-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -619,6 +763,15 @@
         "docs/artifacts/phase-01/patterns/stage0-l7-document-coverage-proof.edn",
         "docs/artifacts/phase-01/reports/p01-d017-l7-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -656,6 +809,15 @@
         "docs/artifacts/phase-01/dispatch/stage0-l8-document-coverage-proof.edn",
         "docs/artifacts/phase-01/document-coverage/l8-dispatch-coverage.json",
         "docs/artifacts/phase-01/reports/p01-d018-l8-document-coverage-report.md"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -698,6 +860,14 @@
         "docs/artifacts/phase-01/errors/stage0-l9-document-coverage-proof.edn",
         "docs/artifacts/phase-01/reports/p01-d019-l9-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -736,6 +906,15 @@
         "docs/artifacts/phase-01/document-coverage/l10-memory-model-coverage.json",
         "docs/artifacts/phase-01/memory/stage0-l10-document-coverage-proof.edn",
         "docs/artifacts/phase-01/reports/p01-d020-l10-document-coverage-report.md"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -786,6 +965,13 @@
         "docs/artifacts/phase-08/runtime/stage0-p08-d117-r6-concurrency-runtime-proof.edn",
         "docs/artifacts/phase-08/runtime/stage0-p08-t04-concurrency-distributed-proof.edn"
       ],
+      "completionGaps": [
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -835,6 +1021,14 @@
         "docs/artifacts/phase-01/compile-time/stage0-l12-document-coverage-proof.edn",
         "docs/artifacts/phase-01/document-coverage/l12-compile-time-evaluation-coverage.json",
         "docs/artifacts/phase-01/reports/p01-d022-l12-document-coverage-report.md"
+      ],
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -914,6 +1108,12 @@
         "docs/artifacts/phase-16/reports/p16-t01-t06-standard-library-report.md",
         "docs/artifacts/phase-16/standard-library/stage0-p16-standard-library-proof.edn",
         "docs/artifacts/phase-16/standard-library/standard-library.accepted.json"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -1010,6 +1210,15 @@
         "docs/artifacts/phase-01/fixtures/l14/rejected-profile.json",
         "docs/artifacts/phase-01/reports/p01-d024-l14-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -1063,6 +1272,12 @@
         "docs/artifacts/phase-01/reports/p01-d025-l15-document-coverage-report.md",
         "docs/artifacts/phase-02/fixtures/capability-supply-chain/rejected-provider.json",
         "docs/artifacts/phase-11/fixtures/ai/rejected-a2-provider-capability.json"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -1120,6 +1335,14 @@
         "docs/artifacts/phase-01/fixtures/l16/rejected-syntax-object.json",
         "docs/artifacts/phase-01/reports/p01-d026-l16-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -1171,6 +1394,15 @@
         "docs/artifacts/phase-01/fixtures/l17/rejected-soundness.json",
         "docs/artifacts/phase-01/fixtures/l17/rejected-unsafe-cast.json",
         "docs/artifacts/phase-01/reports/p01-d027-l17-document-coverage-report.md"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -1228,6 +1460,14 @@
         "docs/artifacts/phase-01/reports/p01-d028-l18-document-coverage-report.md",
         "docs/artifacts/phase-02/fixtures/memory-safety/rejected-provider-contract.json"
       ],
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -1280,6 +1520,15 @@
         "docs/artifacts/phase-01/fixtures/l19/rejected-type-map.json",
         "docs/artifacts/phase-01/interop/stage0-l19-document-coverage-proof.edn",
         "docs/artifacts/phase-01/reports/p01-d029-l19-document-coverage-report.md"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -1337,6 +1586,13 @@
         "docs/artifacts/phase-02/safety-conformance/stage0-safe13-document-coverage-proof.edn",
         "docs/artifacts/phase-02/safety-conformance/stage0-safe15-document-coverage-proof.edn",
         "docs/artifacts/phase-02/safety-conformance/stage0-safe16-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -1541,6 +1797,12 @@
         "docs/artifacts/phase-02/memory-safety/stage0-safe5-document-coverage-proof.edn",
         "docs/artifacts/phase-02/reports/p02-d031-safe2-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "SAFE2-ALIAS",
@@ -1605,6 +1867,13 @@
         "docs/artifacts/phase-02/memory-safety/stage0-safe3-document-coverage-proof.edn",
         "docs/artifacts/phase-02/reports/p02-d032-safe3-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "SAFE3-BORROW-ESCAPE",
@@ -1665,6 +1934,13 @@
         "docs/artifacts/phase-02/memory-safety/stage0-p02-t02-memory-ownership-region-linear-proof.edn",
         "docs/artifacts/phase-02/memory-safety/stage0-safe4-document-coverage-proof.edn",
         "docs/artifacts/phase-02/reports/p02-d033-safe4-document-coverage-report.md"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -1727,6 +2003,13 @@
         "docs/artifacts/phase-02/memory-safety/stage0-p02-t02-memory-ownership-region-linear-proof.edn",
         "docs/artifacts/phase-02/memory-safety/stage0-safe5-document-coverage-proof.edn",
         "docs/artifacts/phase-02/reports/p02-d034-safe5-document-coverage-report.md"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -1808,6 +2091,12 @@
         "docs/artifacts/phase-15/bootstrap/p15-s23-unsafe-audit-report.edn",
         "docs/artifacts/phase-15/reports/p15-s23-unsafe-audit-report.md"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "PKG8001",
@@ -1876,6 +2165,13 @@
         "docs/artifacts/phase-02/boundary-safety/stage0-safe7-document-coverage-proof.edn",
         "docs/artifacts/phase-02/reports/p02-d036-safe7-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "SAFE7-CALLBACK",
@@ -1936,6 +2232,13 @@
         "docs/artifacts/phase-02/fixtures/domain-safety/rejected-concurrency-task-capture.json",
         "docs/artifacts/phase-02/fixtures/domain-safety/rejected-concurrency-workflow-replay.json",
         "docs/artifacts/phase-02/reports/p02-d037-safe8-document-coverage-report.md"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -2000,6 +2303,13 @@
         "docs/artifacts/phase-02/fixtures/domain-safety/rejected-numeric-overflow.json",
         "docs/artifacts/phase-02/reports/p02-d038-safe9-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "SAFE9-APPROX",
@@ -2058,6 +2368,13 @@
       "artifacts": [
         "docs/artifacts/phase-02/capability-supply-chain/stage0-safe10-document-coverage-proof.edn",
         "docs/artifacts/phase-02/reports/p02-d039-safe10-document-coverage-report.md"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -2120,6 +2437,13 @@
         "docs/artifacts/phase-02/fixtures/domain-safety/rejected-taint-sink.json",
         "docs/artifacts/phase-02/reports/p02-d040-safe11-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "SAFE11-DESERIALIZATION",
@@ -2179,6 +2503,13 @@
         "docs/artifacts/phase-02/reports/p02-d041-safe12-document-coverage-report.md",
         "docs/artifacts/phase-02/safety-conformance/stage0-safe12-document-coverage-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "SAFE12-BUILD-EFFECT",
@@ -2237,6 +2568,13 @@
         "docs/artifacts/phase-02/fixtures/document-coverage/rejected-safe13-prompt-injection.json",
         "docs/artifacts/phase-02/reports/p02-d042-safe13-document-coverage-report.md",
         "docs/artifacts/phase-02/safety-conformance/stage0-safe13-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -2322,6 +2660,12 @@
         "docs/artifacts/phase-02/reports/p02-d043-safe14-document-coverage-report.md",
         "docs/artifacts/phase-02/reports/p02-t05-capability-supply-chain-report.md"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "SAFE14-AUTHORITY-DIFF",
@@ -2404,6 +2748,13 @@
         "docs/artifacts/phase-02/safety-conformance/stage0-safe16-document-coverage-proof.edn",
         "docs/artifacts/phase-06/compiler/stage0-p06-d089-c10-safety-analysis-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "SAFE15-BACKEND",
@@ -2468,6 +2819,12 @@
         "docs/artifacts/phase-02/safety-conformance/stage0-safe15-document-coverage-proof.edn",
         "docs/artifacts/phase-02/safety-conformance/stage0-safe16-document-coverage-proof.edn"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "SAFE16-ARTIFACT",
@@ -2526,6 +2883,15 @@
         "docs/artifacts/phase-03/profile-manifest/stage0-p1-document-coverage-proof.edn",
         "docs/artifacts/phase-03/reports/p03-d046-p1-document-coverage-report.md"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -2564,6 +2930,15 @@
         "docs/artifacts/phase-03/profile-set/stage0-p2-core-document-coverage-proof.edn",
         "docs/artifacts/phase-03/reports/p03-d047-p2-core-profile-report.md"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -2601,6 +2976,15 @@
         "docs/artifacts/phase-03/fixtures/profiles/rejected-p3-build-effect.json",
         "docs/artifacts/phase-03/profile-set/stage0-p3-meta-document-coverage-proof.edn",
         "docs/artifacts/phase-03/reports/p03-d048-p3-meta-profile-report.md"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -2646,6 +3030,12 @@
         "docs/artifacts/phase-03/reports/p03-d049-p4-hosted-profile-report.md",
         "docs/artifacts/phase-03/reports/p03-s1-hosted-core-compiled-profile-report.md",
         "docs/artifacts/phase-03/reports/p03-t02-core-meta-hosted-native-profile-set-report.md"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -2711,6 +3101,12 @@
         "docs/artifacts/phase-03/reports/p03-d050-p5-native-profile-report.md",
         "docs/artifacts/phase-03/reports/p03-t02-core-meta-hosted-native-profile-set-report.md"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "P5-ALLOC",
@@ -2770,6 +3166,12 @@
         "docs/artifacts/phase-03/fixtures/profiles/rejected-p6-unbounded-alloc.json",
         "docs/artifacts/phase-03/profile-validation/stage0-p6-firmware-document-coverage-proof.edn",
         "docs/artifacts/phase-03/reports/p03-d051-p6-firmware-profile-report.md"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -2831,6 +3233,12 @@
         "docs/artifacts/phase-03/profile-validation/stage0-p7-kernel-document-coverage-proof.edn",
         "docs/artifacts/phase-03/reports/p03-d052-p7-kernel-profile-report.md"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "P7-ABI",
@@ -2890,6 +3298,12 @@
         "docs/artifacts/phase-03/fixtures/profiles/rejected-p8-tag-loss.json",
         "docs/artifacts/phase-03/profile-validation/stage0-p8-hardware-document-coverage-proof.edn",
         "docs/artifacts/phase-03/reports/p03-d053-p8-hardware-profile-report.md"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -2966,6 +3380,12 @@
         "docs/artifacts/phase-03/reports/p03-d054-p9-distributed-profile-report.md",
         "docs/artifacts/phase-03/reports/p03-t04-distributed-ai-profile-report.md"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "P9-CAPABILITY",
@@ -3030,6 +3450,15 @@
         "docs/artifacts/phase-10/reports/p10-t01-t06-schema-interop-report.md",
         "docs/artifacts/phase-10/schema/stage0-p10-schema-interop-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -3072,6 +3501,15 @@
         "docs/artifacts/phase-11/reports/p11-document-coverage-report.md",
         "docs/artifacts/phase-11/reports/p11-s1-hosted-core-compiled-ai-report.md",
         "docs/artifacts/phase-11/reports/p11-t01-t06-ai-agentic-report.md"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -3118,6 +3556,12 @@
         "docs/artifacts/phase-12/reports/p12-document-coverage-report.md",
         "docs/artifacts/phase-12/reports/p12-s1-hosted-core-compiled-package-report.md",
         "docs/artifacts/phase-12/reports/p12-t01-t06-package-artifacts-report.md"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -3184,6 +3628,12 @@
         "docs/artifacts/phase-13/reports/p13-t01-t06-tooling-experience-report.md",
         "docs/artifacts/phase-13/tooling/stage0-p13-tooling-experience-proof.edn"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "P13-ARTIFACT",
@@ -3244,6 +3694,15 @@
         "docs/artifacts/phase-04/performance/stage0-perf1-document-coverage-proof.edn",
         "docs/artifacts/phase-04/performance/stage0-perf10-document-coverage-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -3280,6 +3739,15 @@
       "artifacts": [
         "docs/artifacts/phase-04/fixtures/performance/rejected-perf2-residual.json",
         "docs/artifacts/phase-04/performance/stage0-perf2-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -3319,6 +3787,14 @@
       "artifacts": [
         "docs/artifacts/phase-04/fixtures/performance/rejected-perf3-key.json",
         "docs/artifacts/phase-04/performance/stage0-perf3-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -3362,6 +3838,14 @@
         "docs/artifacts/phase-04/performance/stage0-perf4-document-coverage-proof.edn",
         "docs/artifacts/phase-04/reports/p04-t04-layout-optimization-report.md"
       ],
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -3404,6 +3888,12 @@
         "docs/artifacts/phase-04/performance/stage0-p04-t06-realtime-governance-proof.edn",
         "docs/artifacts/phase-04/performance/stage0-perf5-document-coverage-proof.edn",
         "docs/artifacts/phase-04/reports/p04-t05-performance-governance-report.md"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -3459,6 +3949,13 @@
         "docs/artifacts/phase-04/fixtures/performance/rejected-perf6-stale.json",
         "docs/artifacts/phase-04/performance/stage0-perf6-document-coverage-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "P5-OPTIMIZATION"
@@ -3498,6 +3995,15 @@
         "docs/artifacts/phase-04/fixtures/performance/rejected-perf7-fallback.json",
         "docs/artifacts/phase-04/performance/stage0-perf7-document-coverage-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -3534,6 +4040,15 @@
       "artifacts": [
         "docs/artifacts/phase-04/fixtures/performance/rejected-perf8-lane.json",
         "docs/artifacts/phase-04/performance/stage0-perf8-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -3572,6 +4087,13 @@
         "docs/artifacts/phase-04/fixtures/performance/rejected-perf9-loop.json",
         "docs/artifacts/phase-04/performance/stage0-p04-t06-realtime-governance-proof.edn",
         "docs/artifacts/phase-04/performance/stage0-perf9-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -3639,6 +4161,12 @@
         "docs/artifacts/phase-04/performance/stage0-perf10-document-coverage-proof.edn",
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t11-check-elision.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "C10-NO-OUTCOME",
@@ -3694,6 +4222,15 @@
         "docs/artifacts/phase-05/math/stage0-math10-document-coverage-proof.edn",
         "docs/artifacts/phase-05/math/stage0-math11-document-coverage-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -3730,6 +4267,15 @@
       "artifacts": [
         "docs/artifacts/phase-05/fixtures/math/rejected-math2-provider.json",
         "docs/artifacts/phase-05/math/stage0-math2-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -3768,6 +4314,15 @@
         "docs/artifacts/phase-05/fixtures/math/rejected-math3-branch.json",
         "docs/artifacts/phase-05/math/stage0-math3-document-coverage-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -3804,6 +4359,15 @@
       "artifacts": [
         "docs/artifacts/phase-05/fixtures/math/rejected-math4-candidate.json",
         "docs/artifacts/phase-05/math/stage0-math4-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -3842,6 +4406,15 @@
         "docs/artifacts/phase-05/fixtures/math/rejected-math5-error.json",
         "docs/artifacts/phase-05/math/stage0-math5-document-coverage-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -3878,6 +4451,15 @@
       "artifacts": [
         "docs/artifacts/phase-05/fixtures/math/rejected-math6-unresolved.json",
         "docs/artifacts/phase-05/math/stage0-math6-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -3917,6 +4499,12 @@
       "artifacts": [
         "docs/artifacts/phase-05/fixtures/math/rejected-math7-target-default.json",
         "docs/artifacts/phase-05/math/stage0-math7-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -3958,6 +4546,15 @@
         "docs/artifacts/phase-05/fixtures/math/rejected-math8-fma.json",
         "docs/artifacts/phase-05/math/stage0-math8-document-coverage-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -3994,6 +4591,15 @@
       "artifacts": [
         "docs/artifacts/phase-05/fixtures/math/rejected-math9-equality.json",
         "docs/artifacts/phase-05/math/stage0-math9-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -4032,6 +4638,15 @@
         "docs/artifacts/phase-05/fixtures/math/rejected-math10-proof.json",
         "docs/artifacts/phase-05/math/stage0-math10-document-coverage-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -4068,6 +4683,15 @@
       "artifacts": [
         "docs/artifacts/phase-05/fixtures/math/rejected-math11-diagnostic.json",
         "docs/artifacts/phase-05/math/stage0-math11-document-coverage-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [],
@@ -4144,6 +4768,7 @@
         "bootstrap/clojure/fixtures/accepted/compiler-passes.gravity",
         "bootstrap/clojure/fixtures/accepted/compiler-verification.gravity",
         "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity",
         "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
@@ -4156,12 +4781,15 @@
         "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity",
         "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity",
         "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity",
-        "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+        "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity",
+        "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity"
       ],
       "artifacts": [
         "docs/artifacts/phase-06/compiler/compiler-architecture.accepted.json",
@@ -4233,6 +4861,9 @@
         "docs/artifacts/phase-15/reports/p15-s23-whole-language-compiler-artifact-report.md",
         "docs/artifacts/phase-15/reports/stage1-reader-compiler-driver-proof-report.md",
         "docs/artifacts/phase-18/self-hosted/p18-t03-compiler-path.edn"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -4421,6 +5052,7 @@
         ],
         "gravityAuthored": [
           "bootstrap/gravity/p15_s23/compiler.gravity",
+          "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity",
           "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
           "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
           "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
@@ -4433,12 +5065,15 @@
           "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity",
           "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity",
           "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity",
+          "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity",
+          "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity",
           "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity",
           "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
           "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
           "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
           "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity",
-          "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+          "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity",
+          "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity"
         ],
         "publicBinary": [
           "target/phase-18/release/gravity"
@@ -5273,6 +5908,9 @@
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c2-hash.json",
         "docs/artifacts/phase-06/reports/p06-d081-c2-reader-report.md"
       ],
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "C2-ABBREV",
@@ -5352,6 +5990,9 @@
         "docs/artifacts/phase-06/compiler/stage0-p06-d082-c3-syntax-object-proof.edn",
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c3-origin.json",
         "docs/artifacts/phase-06/reports/p06-d082-c3-syntax-object-report.md"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -5449,6 +6090,9 @@
         "docs/artifacts/phase-06/compiler/stage0-p06-d083-c4-macro-expansion-proof.edn",
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c4-trace.json",
         "docs/artifacts/phase-06/reports/p06-d083-c4-macro-expansion-report.md"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -5551,6 +6195,9 @@
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c5-unresolved.json",
         "docs/artifacts/phase-06/reports/p06-d084-c5-name-resolution-report.md"
       ],
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "C5-ALIAS",
@@ -5651,6 +6298,8 @@
         "bootstrap/clojure/fixtures/accepted/compiler-c6-core-lowering.qst",
         "bootstrap/clojure/fixtures/accepted/compiler-optimization-lowering.gravity",
         "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity",
         "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
       ],
       "artifacts": [
@@ -5672,6 +6321,9 @@
         "docs/artifacts/phase-07/reports/p07-t04-specialized-lowering-report.md",
         "docs/artifacts/phase-15/bootstrap/p15-s23-core-lowering-diagnostic-preservation.edn",
         "docs/artifacts/phase-15/reports/p15-s23-core-lowering-diagnostic-preservation-report.md"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -5705,6 +6357,8 @@
         ],
         "gravityAuthored": [
           "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+          "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity",
+          "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity",
           "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
         ],
         "publicBinary": [
@@ -5852,6 +6506,9 @@
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c7-verify.json",
         "docs/artifacts/phase-06/reports/p06-d086-c7-type-checker-report.md"
       ],
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "C7-ANNOTATION",
@@ -5949,6 +6606,9 @@
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c8-capability.json",
         "docs/artifacts/phase-06/reports/p06-d087-c8-effect-checker-report.md"
       ],
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "C8-BUILD",
@@ -6042,6 +6702,9 @@
         "docs/artifacts/phase-06/compiler/stage0-p06-d088-c9-ownership-checker-proof.edn",
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c9-linear.json",
         "docs/artifacts/phase-06/reports/p06-d088-c9-ownership-checker-report.md"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -6143,12 +6806,16 @@
       "acceptedFixtures": [
         "bootstrap/clojure/fixtures/accepted/compiler-c10-safety-analysis.gravity",
         "bootstrap/clojure/fixtures/accepted/compiler-c10-safety-analysis.qst",
-        "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+        "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
       ],
       "artifacts": [
         "docs/artifacts/phase-06/compiler/stage0-p06-d089-c10-safety-analysis-proof.edn",
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c10-outcome.json",
         "docs/artifacts/phase-06/reports/p06-d089-c10-safety-analysis-report.md"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -6171,7 +6838,8 @@
           "bootstrap/clojure/src/gravity/bootstrap.clj"
         ],
         "gravityAuthored": [
-          "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+          "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
+          "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
         ],
         "publicBinary": [
           "target/phase-18/release/gravity"
@@ -6247,6 +6915,12 @@
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c11-type.json",
         "docs/artifacts/phase-06/reports/p06-d090-c11-mir-spec-report.md"
       ],
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -6295,6 +6969,12 @@
         "docs/artifacts/phase-06/compiler/stage0-p06-d091-c12-domain-ir-proof.edn",
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c12-anchor.json",
         "docs/artifacts/phase-06/reports/p06-d091-c12-domain-ir-report.md"
+      ],
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [],
@@ -6345,6 +7025,12 @@
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c13-proof.json",
         "docs/artifacts/phase-06/reports/p06-d092-c13-optimization-report.md"
       ],
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [],
       "fullLanguageComplete": false,
@@ -6393,6 +7079,9 @@
         "docs/artifacts/phase-06/compiler/stage0-p06-d093-c14-lowering-proof.edn",
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c14-input.json",
         "docs/artifacts/phase-06/reports/p06-d093-c14-lowering-report.md"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -6446,6 +7135,9 @@
         "docs/artifacts/phase-06/compiler/stage0-p06-d094-c15-diagnostics-proof.edn",
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c15-redaction.json",
         "docs/artifacts/phase-06/reports/p06-d094-c15-diagnostics-report.md"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -6540,6 +7232,9 @@
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c16-proof.json",
         "docs/artifacts/phase-06/reports/p06-d095-c16-incremental-report.md"
       ],
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "C16-DIAGNOSTIC",
@@ -6632,6 +7327,9 @@
         "docs/artifacts/phase-06/compiler/stage0-p06-d096-c17-plugin-proof.edn",
         "docs/artifacts/phase-06/fixtures/compiler/rejected-c17-capability.json",
         "docs/artifacts/phase-06/reports/p06-d096-c17-plugin-report.md"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -6749,6 +7447,9 @@
         "docs/artifacts/phase-06/reports/p06-d097-c18-verification-report.md",
         "docs/artifacts/phase-06/reports/p06-t06-compiler-verification-report.md"
       ],
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "C18-BACKEND",
@@ -6846,6 +7547,9 @@
         "docs/artifacts/phase-07/fixtures/backend/rejected-b1-input.json",
         "docs/artifacts/phase-07/reports/p07-d098-b1-document-report.md",
         "docs/artifacts/phase-07/reports/p07-t01-backend-interface-report.md"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -6945,6 +7649,10 @@
         "docs/artifacts/phase-07/fixtures/backend/rejected-b2-ub.json",
         "docs/artifacts/phase-07/reports/p07-d099-b2-c-backend-report.md"
       ],
+      "completionGaps": [
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "B2-ABI",
@@ -7029,12 +7737,18 @@
     },
     {
       "acceptedFixtures": [
+        "bootstrap/clojure/fixtures/accepted/p15-s23-b3-llvm-arm64-macos.gravity",
+        "bootstrap/clojure/fixtures/accepted/p15-s23-b3-llvm-arm64-macos.qst",
         "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
       ],
       "artifacts": [
         "docs/artifacts/phase-07/backend/stage0-p07-d100-b3-llvm-backend-proof.edn",
         "docs/artifacts/phase-07/fixtures/backend/rejected-b3-metadata.json",
         "docs/artifacts/phase-07/reports/p07-d100-b3-llvm-backend-report.md"
+      ],
+      "completionGaps": [
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -7116,7 +7830,9 @@
         "bootstrap/clojure/fixtures/rejected/backend-b3-target.gravity",
         "bootstrap/clojure/fixtures/rejected/backend-b3-target.qst",
         "bootstrap/clojure/fixtures/rejected/backend-b3-ub.gravity",
-        "bootstrap/clojure/fixtures/rejected/backend-b3-ub.qst"
+        "bootstrap/clojure/fixtures/rejected/backend-b3-ub.qst",
+        "bootstrap/clojure/fixtures/rejected/p15-s23-b3-llvm-declared-target.gravity",
+        "bootstrap/clojure/fixtures/rejected/p15-s23-b3-llvm-declared-target.qst"
       ],
       "scaffoldOnlyCoverage": false,
       "sequence": 100,
@@ -7130,6 +7846,10 @@
         "docs/artifacts/phase-07/backend/stage0-p07-d101-b4-wasm-backend-proof.edn",
         "docs/artifacts/phase-07/fixtures/backend/rejected-b4-import.json",
         "docs/artifacts/phase-07/reports/p07-d101-b4-wasm-backend-report.md"
+      ],
+      "completionGaps": [
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -7247,6 +7967,10 @@
         "docs/artifacts/phase-07/fixtures/backend/rejected-b5-null.json",
         "docs/artifacts/phase-07/reports/p07-d102-b5-jvm-backend-report.md"
       ],
+      "completionGaps": [
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "B5-CLASSLOADING",
@@ -7347,6 +8071,10 @@
         "docs/artifacts/phase-07/fixtures/backend/rejected-b6-global.json",
         "docs/artifacts/phase-07/reports/p07-d103-b6-js-ts-backend-report.md"
       ],
+      "completionGaps": [
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "B6-ASYNC",
@@ -7446,6 +8174,9 @@
         "docs/artifacts/phase-07/fixtures/backend/rejected-b7-metadata.json",
         "docs/artifacts/phase-07/reports/p07-d104-b7-mlir-backend-report.md"
       ],
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "B7-ALIAS",
@@ -7542,6 +8273,9 @@
         "docs/artifacts/phase-07/fixtures/backend/rejected-b8-host-effect.json",
         "docs/artifacts/phase-07/reports/p07-d105-b8-gpu-backend-report.md"
       ],
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "B8-ATOMIC",
@@ -7637,6 +8371,9 @@
         "docs/artifacts/phase-07/fixtures/backend/rejected-b9-width.json",
         "docs/artifacts/phase-07/reports/p07-d106-b9-hdl-backend-report.md"
       ],
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "B9-CDC",
@@ -7731,6 +8468,9 @@
         "docs/artifacts/phase-07/backend/stage0-p07-d107-b10-workflow-graph-backend-proof.edn",
         "docs/artifacts/phase-07/fixtures/backend/rejected-b10-replay.json",
         "docs/artifacts/phase-07/reports/p07-d107-b10-workflow-graph-backend-report.md"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -7832,6 +8572,9 @@
         "docs/artifacts/phase-07/fixtures/backend/rejected-b11-taint.json",
         "docs/artifacts/phase-07/reports/p07-d108-b11-query-relational-backend-report.md"
       ],
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "B11-CAPABILITY",
@@ -7931,6 +8674,9 @@
         "docs/artifacts/phase-07/fixtures/backend/rejected-b12-permission.json",
         "docs/artifacts/phase-07/reports/p07-d109-b12-mobile-backend-report.md"
       ],
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "B12-BACKGROUND",
@@ -8028,6 +8774,10 @@
         "docs/artifacts/phase-07/fixtures/backend/rejected-b13-evidence.json",
         "docs/artifacts/phase-07/reports/p07-d110-b13-artifact-emission-report.md",
         "docs/artifacts/phase-07/reports/p07-t05-artifact-emission-report.md"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -8138,6 +8888,10 @@
         "docs/artifacts/phase-07/backend/stage0-p07-d111-b14-backend-conformance-proof.edn",
         "docs/artifacts/phase-07/fixtures/backend/rejected-b14-coverage.json",
         "docs/artifacts/phase-07/reports/p07-d111-b14-backend-conformance-report.md"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -8251,6 +9005,12 @@
         "docs/artifacts/phase-08/reports/p08-d112-r1-runtime-architecture-report.md",
         "docs/artifacts/phase-08/runtime/stage0-p08-d112-r1-runtime-architecture-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "R1-CAPABILITY",
@@ -8330,6 +9090,12 @@
         "docs/artifacts/phase-08/reports/p08-d113-r2-no-runtime-report.md",
         "docs/artifacts/phase-08/runtime/stage0-p08-d113-r2-no-runtime-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "R2-CAPABILITY",
@@ -8403,16 +9169,25 @@
     },
     {
       "acceptedFixtures": [
-        "bootstrap/clojure/fixtures/accepted/runtime-minimal-native-memory.gravity"
+        "bootstrap/clojure/fixtures/accepted/runtime-minimal-native-memory.gravity",
+        "bootstrap/gravity/p15_s23/native_runtime_driver.gravity"
       ],
       "artifacts": [
         "docs/artifacts/phase-08/fixtures/runtime/rejected-r3-capability.json",
         "docs/artifacts/phase-08/reports/p08-d114-r3-minimal-native-report.md",
         "docs/artifacts/phase-08/reports/p08-t02-minimal-native-memory-report.md",
         "docs/artifacts/phase-08/runtime/stage0-p08-d114-r3-minimal-native-proof.edn",
-        "docs/artifacts/phase-08/runtime/stage0-p08-t02-minimal-native-memory-proof.edn"
+        "docs/artifacts/phase-08/runtime/stage0-p08-t02-minimal-native-memory-proof.edn",
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "docs/artifacts/phase-15/native-runtime/p15-s23-native-plan-specialization-input-comparison.edn",
+        "docs/artifacts/phase-15/native-runtime/p15-s23-native-plan-specialization.edn"
       ],
-      "coverageClass": "clojure-seed-artifact-surface",
+      "completionGaps": [
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "gravity-authored-seed-slice",
       "diagnostics": [
         "P5-RUNTIME",
         "R3-ALLOCATOR",
@@ -8427,7 +9202,6 @@
       ],
       "fullLanguageComplete": false,
       "gaps": [
-        "no-gravity-authored-implementation",
         "no-public-gravity-accepted-proof",
         "no-public-gravity-rejected-proof"
       ],
@@ -8436,7 +9210,9 @@
         "clojureSeed": [
           "bootstrap/clojure/src/gravity/bootstrap.clj"
         ],
-        "gravityAuthored": [],
+        "gravityAuthored": [
+          "bootstrap/gravity/p15_s23/native_runtime_driver.gravity"
+        ],
         "publicBinary": [],
         "pythonScaffold": []
       },
@@ -8479,6 +9255,10 @@
         "docs/artifacts/phase-08/reports/p08-t03-managed-runtime-report.md",
         "docs/artifacts/phase-08/runtime/stage0-p08-d115-r4-managed-runtime-proof.edn",
         "docs/artifacts/phase-08/runtime/stage0-p08-t03-managed-runtime-proof.edn"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -8569,6 +9349,11 @@
         "docs/artifacts/phase-08/runtime/stage0-p08-d116-r5-memory-runtime-proof.edn",
         "docs/artifacts/phase-08/runtime/stage0-p08-t02-minimal-native-memory-proof.edn"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "R2-MEMORY",
@@ -8642,6 +9427,12 @@
         "docs/artifacts/phase-08/runtime/stage0-p08-d117-r6-concurrency-runtime-proof.edn",
         "docs/artifacts/phase-08/runtime/stage0-p08-t04-concurrency-distributed-proof.edn"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "R6-ACTOR",
@@ -8707,6 +9498,12 @@
         "docs/artifacts/phase-08/runtime/stage0-p08-d118-r7-distributed-runtime-proof.edn",
         "docs/artifacts/phase-08/runtime/stage0-p08-t04-concurrency-distributed-proof.edn"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "R7-ACTOR",
@@ -8768,6 +9565,13 @@
         "docs/artifacts/phase-08/fixtures/runtime/rejected-r8-tool.json",
         "docs/artifacts/phase-08/reports/p08-d119-r8-ai-runtime-report.md",
         "docs/artifacts/phase-08/runtime/stage0-p08-d119-r8-ai-runtime-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -8832,6 +9636,13 @@
         "docs/artifacts/phase-08/reports/p08-d120-r9-repl-runtime-report.md",
         "docs/artifacts/phase-08/runtime/stage0-p08-d120-r9-repl-runtime-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "R9-AUDIT",
@@ -8890,6 +9701,13 @@
         "docs/artifacts/phase-08/fixtures/runtime/rejected-r10-pointer.json",
         "docs/artifacts/phase-08/reports/p08-d121-r10-ffi-runtime-report.md",
         "docs/artifacts/phase-08/runtime/stage0-p08-d121-r10-ffi-runtime-proof.edn"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -8959,6 +9777,11 @@
         "docs/artifacts/phase-08/runtime/stage0-p08-t05-ai-repl-ffi-capability-proof.edn",
         "docs/artifacts/phase-15/bootstrap/p15-s23-runtime-manifest-capability-enforcement.edn",
         "docs/artifacts/phase-15/reports/p15-s23-runtime-manifest-capability-enforcement-report.md"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -9053,6 +9876,12 @@
         "docs/artifacts/phase-08/runtime/stage0-p08-d123-r12-runtime-observability-proof.edn",
         "docs/artifacts/phase-08/runtime/stage0-p08-t06-runtime-observability-proof.edn"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "R11-OBSERVABILITY",
@@ -9123,6 +9952,13 @@
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom18-tool.json",
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom19-zk-setup.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "DOM1-WIDTH",
@@ -9183,6 +10019,13 @@
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom20-taint.json",
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom21-edge.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "DOM2-MMIO",
@@ -9225,6 +10068,13 @@
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom3-raw.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "DOM3-RAW"
@@ -9262,6 +10112,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom4-dma.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -9301,6 +10158,13 @@
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom5-optimization.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "DOM5-OPTIMIZATION"
@@ -9338,6 +10202,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom6-taint.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -9377,6 +10248,13 @@
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom7-permission.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "DOM7-PERMISSION"
@@ -9414,6 +10292,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom8-schema.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -9453,6 +10338,13 @@
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom9-convergence.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "DOM9-CONVERGENCE"
@@ -9490,6 +10382,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom10-query.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -9529,6 +10428,13 @@
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom10-query.json",
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom11-lineage.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -9574,6 +10480,13 @@
         "docs/artifacts/phase-02/fixtures/domain-safety/rejected-numeric-overflow.json",
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom12-certificate.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "DOM12-CERTIFICATE"
@@ -9611,6 +10524,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom13-host-effect.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -9650,6 +10570,13 @@
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom14-determinism.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "DOM14-DETERMINISM"
@@ -9688,6 +10615,13 @@
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom15-boundary.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "DOM15-BOUNDARY"
@@ -9725,6 +10659,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom16-aa-profile.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -9770,6 +10711,9 @@
         "docs/artifacts/phase-06/compiler/stage0-p06-d091-c12-domain-ir-proof.edn",
         "docs/artifacts/phase-06/compiler/stage0-p06-t04-domain-ir-proof.edn",
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom17-metadata.json"
+      ],
+      "completionGaps": [
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -9883,6 +10827,13 @@
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom18-tool.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "DOM18-TOOL"
@@ -9920,6 +10871,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom19-zk-setup.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -9959,6 +10917,13 @@
       "artifacts": [
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom20-taint.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "DOM20-TAINT"
@@ -9997,6 +10962,13 @@
       "artifacts": [
         "docs/artifacts/phase-02/fixtures/domain-safety/rejected-concurrency-workflow-replay.json",
         "docs/artifacts/phase-09/fixtures/domain/rejected-dom21-edge.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -10050,6 +11022,13 @@
         "docs/artifacts/phase-13/reports/p13-s1-hosted-core-compiled-tooling-report.md",
         "docs/artifacts/phase-14/reports/p14-s1-hosted-core-compiled-conformance-report.md"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "S1-PROJECTION"
@@ -10090,6 +11069,13 @@
         "docs/artifacts/phase-10/fixtures/schema/rejected-s2-taint.json",
         "docs/artifacts/phase-15/bootstrap/p15-s23-source-syntax-serialization-proof.edn",
         "docs/artifacts/phase-15/reports/p15-s23-source-syntax-serialization-proof-report.md"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -10134,6 +11120,13 @@
       "artifacts": [
         "docs/artifacts/phase-10/fixtures/schema/rejected-s3-hash.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "S3-HASH"
@@ -10171,6 +11164,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-10/fixtures/schema/rejected-s4-resolver.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -10210,6 +11210,13 @@
       "artifacts": [
         "docs/artifacts/phase-10/fixtures/schema/rejected-s5-schema.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "S5-SCHEMA"
@@ -10247,6 +11254,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-10/fixtures/schema/rejected-s6-data-loss.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -10286,6 +11300,13 @@
       "artifacts": [
         "docs/artifacts/phase-10/fixtures/schema/rejected-s7-pointer.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "S7-POINTER"
@@ -10323,6 +11344,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-10/fixtures/schema/rejected-s8-secret.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -10382,6 +11410,13 @@
         "docs/artifacts/phase-10/schema/stage0-hosted-core-compiled-schema-proof.edn",
         "docs/artifacts/phase-10/schema/stage0-p10-schema-interop-proof.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "B13-SCHEMA",
@@ -10421,6 +11456,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-11/fixtures/ai/rejected-a1-tool-authority.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -10473,7 +11515,13 @@
         "docs/artifacts/phase-02/fixtures/memory-safety/rejected-linear-wrong-provider.json",
         "docs/artifacts/phase-02/fixtures/memory-safety/rejected-provider-contract.json",
         "docs/artifacts/phase-05/fixtures/math/rejected-math2-provider.json",
-        "docs/artifacts/phase-11/fixtures/ai/rejected-a2-provider-capability.json"
+        "docs/artifacts/phase-11/fixtures/ai/rejected-a2-provider-capability.json",
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -10559,6 +11607,13 @@
       "artifacts": [
         "docs/artifacts/phase-11/fixtures/ai/rejected-a3-authority.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "A3003"
@@ -10596,6 +11651,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-11/fixtures/ai/rejected-a4-human-review.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -10635,6 +11697,13 @@
       "artifacts": [
         "docs/artifacts/phase-11/fixtures/ai/rejected-a5-eval-gate.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "A5005"
@@ -10673,6 +11742,13 @@
       "artifacts": [
         "docs/artifacts/phase-11/fixtures/ai/rejected-a6-replay-mode.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "A6001"
@@ -10710,6 +11786,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-11/fixtures/ai/rejected-a7-cross-tenant.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -10750,6 +11833,13 @@
         "docs/artifacts/phase-02/fixtures/safety/rejected-unsafe-mode-policy.json",
         "docs/artifacts/phase-11/fixtures/ai/rejected-a8-taint-policy.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "A8004"
@@ -10787,6 +11877,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-11/fixtures/ai/rejected-a9-eval-gate.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -10826,6 +11923,13 @@
       "artifacts": [
         "docs/artifacts/phase-11/fixtures/ai/rejected-a10-payload.json",
         "docs/artifacts/phase-11/fixtures/ai/rejected-a4-human-review.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -10874,6 +11978,13 @@
         "docs/artifacts/phase-02/fixtures/domain-safety/rejected-taint-prompt-injection.json",
         "docs/artifacts/phase-11/fixtures/ai/rejected-a11-tool-escalation.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "A11002",
@@ -10919,6 +12030,13 @@
         "docs/artifacts/phase-12/fixtures/package/rejected-pkg11-implicit-host-target.json",
         "docs/artifacts/phase-12/fixtures/package/rejected-pkg12-noncanonical-signature.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "PKG10001",
@@ -10963,6 +12081,13 @@
       "artifacts": [
         "docs/artifacts/phase-12/fixtures/package/rejected-pkg2-undeclared-effect.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "PKG2001"
@@ -11004,9 +12129,6 @@
       ],
       "artifacts": [
         "docs/artifacts/README.md",
-        "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
-        "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
-        "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md",
         "docs/artifacts/phase-00/change-control-workflow.json",
         "docs/artifacts/phase-00/contract-traceability.json",
         "docs/artifacts/phase-00/cross-phase-ambiguity-log.json",
@@ -11906,6 +13028,10 @@
         "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot7-compiler-identity.json",
         "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot8-lineage.json",
         "docs/artifacts/phase-15/fixtures/document-coverage/accepted-bootstrap-document-coverage.json",
+        "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "docs/artifacts/phase-15/native-runtime/p15-s23-native-plan-specialization-input-comparison.edn",
+        "docs/artifacts/phase-15/native-runtime/p15-s23-native-plan-specialization.edn",
         "docs/artifacts/phase-15/reports/p15-document-coverage-report.md",
         "docs/artifacts/phase-15/reports/p15-s23-accepted-app-execution-report.md",
         "docs/artifacts/phase-15/reports/p15-s23-compiler-pipeline-manifest-report.md",
@@ -11913,10 +13039,12 @@
         "docs/artifacts/phase-15/reports/p15-s23-core-lowering-diagnostic-preservation-report.md",
         "docs/artifacts/phase-15/reports/p15-s23-final-seed-retirement-proof-report.md",
         "docs/artifacts/phase-15/reports/p15-s23-governance-and-package-release-record-report.md",
+        "docs/artifacts/phase-15/reports/p15-s23-native-plan-specialization-report.md",
         "docs/artifacts/phase-15/reports/p15-s23-provenance-attestation-report.md",
         "docs/artifacts/phase-15/reports/p15-s23-rejected-app-diagnostic-report.md",
         "docs/artifacts/phase-15/reports/p15-s23-reproducible-rebuild-log-report.md",
         "docs/artifacts/phase-15/reports/p15-s23-runtime-manifest-capability-enforcement-report.md",
+        "docs/artifacts/phase-15/reports/p15-s23-seed-boundary-inventory.md",
         "docs/artifacts/phase-15/reports/p15-s23-self-hosting-conformance-report.md",
         "docs/artifacts/phase-15/reports/p15-s23-source-syntax-serialization-proof-report.md",
         "docs/artifacts/phase-15/reports/p15-s23-stage-comparison-report.md",
@@ -12069,6 +13197,10 @@
         "docs/artifacts/phase-18/source-extensions/p18-t00-co-canonical-source-extensions-proof.edn",
         "docs/artifacts/phase-18/source-extensions/p18-t00-rejected-extension-parity.edn"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
         "B13-CONFORMANCE",
@@ -12158,6 +13290,13 @@
       "artifacts": [
         "docs/artifacts/phase-12/fixtures/package/rejected-pkg4-download-verification.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "PKG4001"
@@ -12195,6 +13334,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-12/fixtures/package/rejected-pkg5-capability-incompatible.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -12236,6 +13382,13 @@
         "docs/artifacts/phase-12/fixtures/package/rejected-pkg6-denied-authority.json",
         "docs/artifacts/phase-15/bootstrap/p15-s23-runtime-manifest-capability-enforcement.edn",
         "docs/artifacts/phase-15/reports/p15-s23-runtime-manifest-capability-enforcement-report.md"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -12282,6 +13435,13 @@
         "docs/artifacts/phase-18/jvm-cli/p18-t02-reproducible-build.edn",
         "docs/artifacts/phase-18/release/p18-t06-reproducible-build-recipe.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "PKG7003"
@@ -12325,6 +13485,13 @@
         "docs/artifacts/phase-02/fixtures/unsafe-audit/rejected-missing-metadata.json",
         "docs/artifacts/phase-12/fixtures/package/rejected-pkg8-unsafe-audit.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "PKG8001"
@@ -12365,6 +13532,13 @@
       "artifacts": [
         "docs/artifacts/phase-00/diagnostic-namespace-registry.json",
         "docs/artifacts/phase-12/fixtures/package/rejected-pkg9-private-registry.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -12433,6 +13607,12 @@
         "docs/artifacts/phase-02/reports/p02-t05-capability-supply-chain-report.md",
         "docs/artifacts/phase-12/fixtures/package/rejected-pkg10-provenance.json"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "PKG10001"
@@ -12473,6 +13653,12 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-12/fixtures/package/rejected-pkg11-implicit-host-target.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -12530,6 +13716,13 @@
         "docs/artifacts/phase-18/release/p18-t06-signing-record.edn",
         "docs/artifacts/phase-18/reports/p18-t06-reproducibility-provenance-sbom-signing-governance-report.md"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "PKG12002"
@@ -12567,6 +13760,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t1-authority-denial.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -12606,6 +13806,13 @@
       "artifacts": [
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t2-missing-capability.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "T2002"
@@ -12643,6 +13850,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t3-round-trip.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -12683,6 +13897,13 @@
       "artifacts": [
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t4-unsafe-autofix.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "T4003"
@@ -12720,6 +13941,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t5-diagnostic-mismatch.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -12759,6 +13987,13 @@
       "artifacts": [
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t6-redacted-access.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "T6004"
@@ -12796,6 +14031,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t7-stale-docs.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -12835,6 +14077,13 @@
       "artifacts": [
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t8-hot-reload.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "T8003"
@@ -12873,6 +14122,13 @@
       "artifacts": [
         "docs/artifacts/phase-12/fixtures/package/rejected-pkg9-private-registry.json",
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t9-hidden-capability-diff.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -12915,6 +14171,13 @@
       "artifacts": [
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t10-lost-origin.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "T10002"
@@ -12952,6 +14215,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t11-check-elision.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -12991,6 +14261,13 @@
       "artifacts": [
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t12-unsafe-island.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "T12001"
@@ -13029,6 +14306,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-13/fixtures/tooling/rejected-t13-generated-source.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -13071,6 +14355,13 @@
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test11-proof.json",
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test12-semantic-gate.json",
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test13-provenance.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -13118,6 +14409,13 @@
       "artifacts": [
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test2-preserved-fact.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "TEST2002"
@@ -13155,6 +14453,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test3-capability.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -13197,6 +14502,12 @@
         "docs/artifacts/phase-03/profile-compliance/stage0-p03-t06-profile-compliance-suite-proof.edn",
         "docs/artifacts/phase-03/reports/p03-t06-profile-compliance-suite-report.md",
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test4-profile-target.json"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -13247,6 +14558,12 @@
         "docs/artifacts/phase-02/safety-conformance/stage0-safe16-document-coverage-proof.edn",
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test5-unsafe-audit.json"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "TEST5002"
@@ -13294,6 +14611,10 @@
         "docs/artifacts/phase-07/backend/stage0-p07-d111-b14-backend-conformance-proof.edn",
         "docs/artifacts/phase-07/reports/p07-d111-b14-backend-conformance-report.md",
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test6-artifact-manifest.json"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -13381,6 +14702,12 @@
         "docs/artifacts/phase-16/standard-library/stage0-p16-standard-library-proof.edn",
         "docs/artifacts/phase-16/standard-library/standard-library.accepted.json"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "STD10001",
@@ -13464,6 +14791,13 @@
       "artifacts": [
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test8-replay-trace.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "TEST8003"
@@ -13501,6 +14835,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test9-seed.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -13540,6 +14881,13 @@
       "artifacts": [
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test10-divergence.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "TEST10002"
@@ -13577,6 +14925,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test11-proof.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -13616,6 +14971,13 @@
       "artifacts": [
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test12-semantic-gate.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "TEST12003"
@@ -13653,6 +15015,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-14/fixtures/conformance/rejected-test13-provenance.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -13692,6 +15061,13 @@
       "artifacts": [
         "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot1-stage-evidence.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "BOOT1001"
@@ -13729,6 +15105,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot2-profile.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -13771,6 +15154,13 @@
         "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot3-ambient-authority.json",
         "docs/artifacts/phase-18/self-hosted/p18-t03-compiler-path.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "BOOT3002"
@@ -13811,6 +15201,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot4-preserved-fact.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -13857,6 +15254,12 @@
         "docs/artifacts/phase-07/backend/stage0-p07-t06-backend-test-matrix-proof.edn",
         "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot5-conformance-link.json"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "BOOT5003",
@@ -13898,6 +15301,12 @@
       "artifacts": [
         "docs/artifacts/phase-15/bootstrap/p15-s23-reproducible-rebuild-log.edn",
         "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot6-environment.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -13957,6 +15366,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot7-compiler-identity.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -14076,6 +15492,10 @@
         "docs/artifacts/phase-18/seedless/p18-t05-bootstrap-audit-record.edn",
         "docs/artifacts/phase-18/seedless/p18-t05-provenance-attestation.edn",
         "docs/artifacts/phase-18/self-hosted/p18-t03-provenance.edn"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "completion-admission-disabled"
       ],
       "coverageClass": "current-public-executable-surface",
       "diagnostics": [
@@ -14211,6 +15631,12 @@
         "docs/artifacts/phase-16/standard-library/stage0-p16-standard-library-proof.edn",
         "docs/artifacts/phase-16/standard-library/standard-library.accepted.json"
       ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "STD10001",
@@ -14293,6 +15719,13 @@
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std2-host-state.json",
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std20-stability.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "STD20001",
@@ -14333,6 +15766,13 @@
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std3-allocation.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "STD3001"
@@ -14370,6 +15810,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std4-text-boundary.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -14409,6 +15856,13 @@
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std5-certificate.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "STD5003"
@@ -14446,6 +15900,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std6-borrow.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -14485,6 +15946,13 @@
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std7-race.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "STD7001"
@@ -14522,6 +15990,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std8-capability.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -14561,6 +16036,13 @@
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std9-capability.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "STD9001"
@@ -14598,6 +16080,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std10-validation.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -14637,6 +16126,13 @@
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std11-query.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "STD11002"
@@ -14674,6 +16170,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std12-replay.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -14713,6 +16216,13 @@
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std13-ai-metadata.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "STD13001"
@@ -14750,6 +16260,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std14-test-effect.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -14789,6 +16306,13 @@
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std15-generated-code.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "STD15002"
@@ -14826,6 +16350,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std16-target-host.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -14865,6 +16396,13 @@
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std17-hardware-capability.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "STD17001"
@@ -14903,6 +16441,13 @@
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std18-algorithm.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "STD18001"
@@ -14940,6 +16485,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-16/fixtures/standard-library/rejected-std19-component-metadata.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -15010,6 +16562,12 @@
         "docs/artifacts/phase-16/reports/p16-t01-t06-standard-library-report.md",
         "docs/artifacts/phase-16/standard-library/stage0-p16-standard-library-proof.edn",
         "docs/artifacts/phase-16/standard-library/standard-library.accepted.json"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -15093,6 +16651,13 @@
         "docs/artifacts/phase-17/fixtures/governance/rejected-gov1-owner.json",
         "docs/artifacts/phase-17/fixtures/governance/rejected-gov10-package-identity.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "GOV10001",
@@ -15132,6 +16697,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-17/fixtures/governance/rejected-gov2-baseline.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -15203,6 +16775,12 @@
         "docs/artifacts/phase-16/standard-library/stage0-p16-standard-library-proof.edn",
         "docs/artifacts/phase-16/standard-library/standard-library.accepted.json",
         "docs/artifacts/phase-17/fixtures/governance/rejected-gov3-stdlib-owner.json"
+      ],
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -15288,6 +16866,13 @@
         "docs/artifacts/phase-17/fixtures/governance/rejected-gov4-security-review.json",
         "docs/artifacts/phase-18/release/p18-t06-security-review.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "GOV4001"
@@ -15327,6 +16912,13 @@
         "docs/artifacts/phase-17/fixtures/governance/rejected-gov5-target-tier.json",
         "docs/artifacts/phase-18/release/p18-t06-target-support-policy.edn"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "GOV5001"
@@ -15364,6 +16956,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-17/fixtures/governance/rejected-gov6-rfc-owner.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -15403,6 +17002,13 @@
       "artifacts": [
         "docs/artifacts/phase-17/fixtures/governance/rejected-gov7-experiment-metadata.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "GOV7001"
@@ -15440,6 +17046,13 @@
       "acceptedFixtures": [],
       "artifacts": [
         "docs/artifacts/phase-17/fixtures/governance/rejected-gov8-stabilization-evidence.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -15480,6 +17093,13 @@
         "docs/artifacts/phase-02/fixtures/safety/rejected-unsafe-mode-policy.json",
         "docs/artifacts/phase-02/fixtures/unsafe-audit/rejected-forbidden-policy.json",
         "docs/artifacts/phase-17/fixtures/governance/rejected-gov9-unsafe-record.json"
+      ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
       ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
@@ -15522,6 +17142,13 @@
         "docs/artifacts/phase-15/reports/p15-s23-governance-and-package-release-record-report.md",
         "docs/artifacts/phase-17/fixtures/governance/rejected-gov10-package-identity.json"
       ],
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "diagnostics": [
         "GOV10001"
@@ -15560,31 +17187,49 @@
       "title": "Ecosystem Package Governance Policy"
     }
   ],
-  "generatedOn": "2026-07-08",
+  "generatedOn": "2026-08-08",
+  "inputIdentities": {
+    "completionAttestationsSemanticId": "sha256:183f87d395d88ef16095954268308561298266067e7dd044a8e3692796324853",
+    "completionAttestationsSha256": "sha256:a417a2fcdfe82a3e787292d85a5437dee7f230955a261c471526413cc4baed4e",
+    "contractSha256": "sha256:912d42f0b789f2a290d81d01450230de834b5529c93df29dfe1c1f648a377142",
+    "documentInventorySha256": "sha256:2c8d1fb60b7306c10f3e67ba2014ad7a8b6d876bdce8c47a79015f725f0638dc",
+    "evidenceCorpusSemanticId": "sha256:474a7a8fefe96b780d2caf49e5c01dfcfff07951e4fe23d26f6d8008c539a293",
+    "generatorSha256": "sha256:972feb2ace8c71b86093acd6f542985f31bce834dcf9104a21be4720172a4613",
+    "publicRouteSha256": "sha256:83c9d8d877de08482736b47cc79bd8f49af6ef001bff5a6f8320147945ddeab0"
+  },
   "inventoryCount": 240,
   "kind": "gravity/full-language-coverage-matrix",
+  "producer": {
+    "authority": "non-authoritative-observation",
+    "module": "tools.generate_full_language_coverage_matrix",
+    "predicateVersion": 1
+  },
   "publicAuditEnabled": true,
+  "schemaVersion": 1,
+  "semanticId": "sha256:9b02a5bfbcc2a3149a4d4f589da8b8b9e19e84cc646c1e38afd774f42d5c72eb",
+  "status": "incomplete",
   "summary": {
     "coverageClasses": {
-      "clojure-seed-artifact-surface": 185,
+      "clojure-seed-artifact-surface": 184,
       "current-public-executable-surface": 48,
+      "gravity-authored-seed-slice": 1,
       "no-executable-owner": 7
     },
     "documents": 240,
     "documentsWithNoAcceptedFixture": 162,
     "documentsWithNoExecutableOwner": 7,
-    "documentsWithNoGravityAuthoredImplementation": 207,
+    "documentsWithNoGravityAuthoredImplementation": 206,
     "documentsWithNoRejectedFixture": 48,
     "documentsWithNoStableDiagnostic": 49,
     "fullLanguageCompleteDocuments": 0,
     "publicAudit": {
-      "acceptedFail": 107,
+      "acceptedFail": 124,
       "acceptedPass": 74,
-      "acceptedTotal": 181,
+      "acceptedTotal": 198,
       "enabled": true,
-      "rejectedGenericUnsupported": 1054,
+      "rejectedGenericUnsupported": 1056,
       "rejectedSpecificDiagnostic": 664,
-      "rejectedTotal": 1718
+      "rejectedTotal": 1720
     }
   }
 }

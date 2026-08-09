@@ -42,8 +42,9 @@
     {
       "id": "generated-coverage",
       "patterns": [
-        "docs/artifacts/full-language/coverage/**",
-        "docs/artifacts/full-language/reports/full-language-coverage-*"
+        "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
+        "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
+        "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md"
       ],
       "python_tooling_policy": "generated-coverage",
       "project_structure_policy": "generated-coverage",
@@ -190,11 +191,33 @@
     {
       "id": "full-language-coverage-generator",
       "sources": {"includes": ["tools/generate_full_language_coverage_matrix.py"], "excludes": []},
-      "commands": ["python3 tools/generate_full_language_coverage_matrix.py --write [--audit-public]"],
+      "commands": [
+        "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --self-test",
+        "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --validate",
+        "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --write --audit-public"
+      ],
       "cli_output_options": ["--gaps", "--matrix", "--report"],
-      "input_patterns": ["docs/document-inventory.json", "docs/phase-*/**", "src/gravity/**", "bootstrap/**", "tools/fixtures/full_language_coverage/**"],
+      "input_patterns": [
+        "contracts/full-language-coverage.json",
+        "docs/artifacts/full-language/coverage/full-language-completion-attestations.json",
+        "docs/artifacts/**",
+        "docs/document-inventory.json",
+        "docs/README.md",
+        "docs/implementation-roadmap.md",
+        "docs/roadmap-capability-audit.md",
+        "docs/phase-*/**",
+        "examples/**",
+        "src/gravity/**",
+        "bootstrap/**",
+        "target/phase-18/release/gravity",
+        "tools/fixtures/full_language_coverage/**"
+      ],
       "output_policy_refs": ["generated-coverage"],
-      "output_patterns": ["docs/artifacts/full-language/coverage/*.json", "docs/artifacts/full-language/reports/full-language-coverage-*.md"],
+      "output_patterns": [
+        "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
+        "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
+        "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md"
+      ],
       "output_kinds": ["full-language-coverage-matrix", "full-language-gap-report", "coverage-report"],
       "schemas": ["gravity/full-language-coverage-matrix", "gravity/full-language-coverage-gap-report", "markdown-report-v1"],
       "writer": "isolated-atomic-publication",
