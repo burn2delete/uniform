@@ -513,11 +513,477 @@ def _open_effect(node: ast.Call) -> str:
     return "filesystem-write" if mode and any(mark in mode for mark in "wax+") else "filesystem-read"
 
 
+def _os_open_effect(node: ast.Call, proven_read_only_calls: set[int]) -> str:
+    """Admit only lexically proven imported-module ``os.open`` read calls."""
+    return "filesystem-read" if id(node) in proven_read_only_calls else "filesystem-write"
+
+
+def _proven_subprocess_pipe_writes(
+    tree: ast.AST, aliases: Mapping[str, str]
+) -> tuple[set[int], set[int], set[int], set[int], set[int]]:
+    """Return candidate and proven ``os.write`` call identities.
+
+    Bindings are kept per module/function/class/lambda scope.  In particular,
+    a parameter or local binding cannot inherit proof from an identically
+    named ``Popen`` binding in an outer or sibling scope.
+    """
+    assignment_kinds: dict[int, dict[str, set[str]]] = {}
+    stdin_mutated: dict[int, set[str]] = {}
+    call_scopes: dict[int, int] = {}
+    scope_parents: dict[int, int | None] = {}
+    scope_nodes: dict[int, ast.AST] = {}
+    global_names: dict[int, set[str]] = {}
+    nonlocal_names: dict[int, set[str]] = {}
+    nonlocal_targets: dict[tuple[int, str], int] = {}
+    pending_nonlocal_bindings: list[tuple[int, str, str]] = []
+    pending_stdin_mutations: list[tuple[int, str]] = []
+    scope_stack: list[ast.AST] = []
+
+    def binding_scope(scope_id: int, name: str) -> int:
+        if name in global_names.get(scope_id, set()):
+            return id(tree)
+        if name in nonlocal_names.get(scope_id, set()):
+            return nonlocal_targets.get((scope_id, name), scope_id)
+        return scope_id
+
+    def record(name: str, kind: str = "other") -> None:
+        record_for_scope(id(scope_stack[-1]), name, kind)
+
+    def record_for_scope(scope_id: int, name: str, kind: str = "other") -> None:
+        if name in nonlocal_names.get(scope_id, set()):
+            pending_nonlocal_bindings.append((scope_id, name, kind))
+        else:
+            record_in(binding_scope(scope_id, name), name, kind)
+
+    def record_in(scope_id: int, name: str, kind: str = "other") -> None:
+        assignment_kinds.setdefault(scope_id, {}).setdefault(name, set()).add(kind)
+
+    def names_in_target(target: ast.AST) -> list[str]:
+        if isinstance(target, ast.Name):
+            return [target.id]
+        if isinstance(target, ast.Starred):
+            return names_in_target(target.value)
+        if isinstance(target, (ast.Tuple, ast.List)):
+            return [name for child in target.elts for name in names_in_target(child)]
+        return []
+
+    def names_in_pattern(pattern: ast.pattern) -> list[str]:
+        if isinstance(pattern, ast.MatchAs):
+            return ([pattern.name] if pattern.name else []) + (
+                names_in_pattern(pattern.pattern) if pattern.pattern else []
+            )
+        if isinstance(pattern, ast.MatchStar):
+            return [pattern.name] if pattern.name else []
+        if isinstance(pattern, ast.MatchMapping):
+            return ([pattern.rest] if pattern.rest else []) + [
+                name for child in pattern.patterns for name in names_in_pattern(child)
+            ]
+        if isinstance(pattern, ast.MatchSequence):
+            return [name for child in pattern.patterns for name in names_in_pattern(child)]
+        if isinstance(pattern, ast.MatchClass):
+            return [
+                name
+                for child in [*pattern.patterns, *pattern.kwd_patterns]
+                for name in names_in_pattern(child)
+            ]
+        if isinstance(pattern, ast.MatchOr):
+            return [name for child in pattern.patterns for name in names_in_pattern(child)]
+        return []
+
+    module_aliases = {
+        name: target for name, target in aliases.items() if target in {"os", "subprocess"}
+    }
+    os_alias_names = {"os", *(name for name, target in module_aliases.items() if target == "os")}
+
+    def declarations(body: Sequence[ast.AST]) -> tuple[set[str], set[str]]:
+        found_global: set[str] = set()
+        found_nonlocal: set[str] = set()
+
+        class DeclarationVisitor(ast.NodeVisitor):
+            def visit_Global(self, node: ast.Global) -> None:
+                found_global.update(node.names)
+
+            def visit_Nonlocal(self, node: ast.Nonlocal) -> None:
+                found_nonlocal.update(node.names)
+
+            def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+                return None
+
+            visit_AsyncFunctionDef = visit_FunctionDef
+            visit_ClassDef = visit_FunctionDef
+            visit_Lambda = visit_FunctionDef
+
+        visitor = DeclarationVisitor()
+        for child in body:
+            visitor.visit(child)
+        return found_global, found_nonlocal
+
+    def imported_receiver(scope_id: int, name: str, module: str) -> bool:
+        current: int | None = scope_id
+        while current is not None:
+            redirected = binding_scope(current, name)
+            if redirected != current:
+                current = redirected
+                continue
+            local = assignment_kinds.get(current, {}).get(name)
+            if local is not None:
+                return local == {f"module-import:{module}"}
+            current = scope_parents.get(current)
+            if current is not None and isinstance(scope_nodes[current], ast.ClassDef):
+                current = scope_parents.get(current)
+        # Every admitted import is recorded in its actual lexical scope by
+        # BindingVisitor.  The file-wide alias table is only for rendering
+        # call names; using it as binding proof would let a sibling-scope
+        # import authenticate an otherwise unbound receiver.
+        return False
+
+    def unshadowed_builtin(scope_id: int, name: str) -> bool:
+        current: int | None = scope_id
+        while current is not None:
+            redirected = binding_scope(current, name)
+            if redirected != current:
+                current = redirected
+                continue
+            if assignment_kinds.get(current, {}).get(name) is not None:
+                return False
+            current = scope_parents.get(current)
+            if current is not None and isinstance(scope_nodes[current], ast.ClassDef):
+                current = scope_parents.get(current)
+        return True
+
+    class BindingVisitor(ast.NodeVisitor):
+        def _visit_scope(self, node: ast.AST, body: Sequence[ast.AST]) -> None:
+            scope_parents[id(node)] = id(scope_stack[-1]) if scope_stack else None
+            scope_nodes[id(node)] = node
+            scope_stack.append(node)
+            assignment_kinds.setdefault(id(node), {})
+            stdin_mutated.setdefault(id(node), set())
+            global_names[id(node)], nonlocal_names[id(node)] = declarations(body)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                arguments = node.args
+                for argument in [*arguments.posonlyargs, *arguments.args, *arguments.kwonlyargs]:
+                    record(argument.arg)
+                if arguments.vararg:
+                    record(arguments.vararg.arg)
+                if arguments.kwarg:
+                    record(arguments.kwarg.arg)
+            for child in body:
+                self.visit(child)
+            scope_stack.pop()
+
+        def visit_Module(self, node: ast.Module) -> None:
+            self._visit_scope(node, node.body)
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            if scope_stack:
+                record(node.name)
+            for expression in [*node.decorator_list, *node.args.defaults, *[item for item in node.args.kw_defaults if item], *[item.annotation for item in [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs] if item.annotation], node.args.vararg.annotation if node.args.vararg else None, node.args.kwarg.annotation if node.args.kwarg else None, node.returns]:
+                if expression is not None:
+                    self.visit(expression)
+            self._visit_scope(node, node.body)
+
+        visit_AsyncFunctionDef = visit_FunctionDef
+
+        def visit_ClassDef(self, node: ast.ClassDef) -> None:
+            if scope_stack:
+                record(node.name)
+            for expression in [*node.decorator_list, *node.bases, *[item.value for item in node.keywords]]:
+                self.visit(expression)
+            self._visit_scope(node, node.body)
+
+        def visit_Lambda(self, node: ast.Lambda) -> None:
+            for expression in [*node.args.defaults, *[item for item in node.args.kw_defaults if item]]:
+                self.visit(expression)
+            self._visit_scope(node, [node.body])
+
+        def visit_ListComp(self, node: ast.ListComp) -> None:
+            self.visit(node.generators[0].iter)
+            scope_parents[id(node)] = id(scope_stack[-1])
+            scope_nodes[id(node)] = node
+            scope_stack.append(node)
+            assignment_kinds.setdefault(id(node), {})
+            stdin_mutated.setdefault(id(node), set())
+            global_names[id(node)] = set()
+            nonlocal_names[id(node)] = set()
+            for index, generator in enumerate(node.generators):
+                self._record_assignment([generator.target], None)
+                if index:
+                    self.visit(generator.iter)
+                for condition in generator.ifs:
+                    self.visit(condition)
+            if isinstance(node, ast.DictComp):
+                self.visit(node.key)
+                self.visit(node.value)
+            else:
+                self.visit(node.elt)
+            scope_stack.pop()
+
+        visit_SetComp = visit_ListComp
+        visit_DictComp = visit_ListComp
+        visit_GeneratorExp = visit_ListComp
+
+        def visit_comprehension(self, node: ast.comprehension) -> None:
+            self._record_assignment([node.target], None)
+            self.generic_visit(node)
+
+        def visit_Call(self, node: ast.Call) -> None:
+            scope_id = id(scope_stack[-1])
+            call_scopes[id(node)] = scope_id
+            if (
+                isinstance(node.func, ast.Name)
+                and node.func.id == "setattr"
+                and node.args
+                and isinstance(node.args[0], ast.Name)
+            ):
+                # A dynamic attribute name may be ``stdin``; fail closed.
+                pending_stdin_mutations.append((scope_id, node.args[0].id))
+            self.generic_visit(node)
+
+        def _record_assignment(self, targets: list[ast.AST], value: ast.AST | None) -> None:
+            kind = "other"
+            if (
+                isinstance(value, ast.Call)
+                and isinstance(value.func, ast.Attribute)
+                and value.func.attr == "Popen"
+                and isinstance(value.func.value, ast.Name)
+                and imported_receiver(
+                    id(scope_stack[-1]), value.func.value.id, "subprocess"
+                )
+            ):
+                kind = "popen"
+            for target in targets:
+                for name in names_in_target(target):
+                    record(name, kind)
+                if isinstance(target, ast.Attribute) and isinstance(target.value, ast.Name):
+                    pending_stdin_mutations.append((id(scope_stack[-1]), target.value.id))
+
+        def visit_Assign(self, node: ast.Assign) -> None:
+            self._record_assignment(list(node.targets), node.value)
+            self.generic_visit(node)
+
+        def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+            self._record_assignment([node.target], node.value)
+            self.generic_visit(node)
+
+        def visit_AugAssign(self, node: ast.AugAssign) -> None:
+            self._record_assignment([node.target], None)
+            self.generic_visit(node)
+
+        def visit_Delete(self, node: ast.Delete) -> None:
+            self._record_assignment(list(node.targets), None)
+            self.generic_visit(node)
+
+        def visit_NamedExpr(self, node: ast.NamedExpr) -> None:
+            target_scope = next(
+                scope
+                for scope in reversed(scope_stack)
+                if not isinstance(scope, (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp))
+            )
+            for name in names_in_target(node.target):
+                record_for_scope(id(target_scope), name)
+            self.visit(node.value)
+
+        def visit_Import(self, node: ast.Import) -> None:
+            for item in node.names:
+                name = item.asname or item.name.split(".", 1)[0]
+                module = item.name if item.name in {"os", "subprocess"} else None
+                if module == "os":
+                    os_alias_names.add(name)
+                record(name, f"module-import:{module}" if module else "other")
+
+        def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+            for item in node.names:
+                if item.name != "*":
+                    record(item.asname or item.name)
+
+        def visit_For(self, node: ast.For) -> None:
+            self._record_assignment([node.target], None)
+            self.generic_visit(node)
+
+        visit_AsyncFor = visit_For
+
+        def visit_With(self, node: ast.With) -> None:
+            self._record_assignment([item.optional_vars for item in node.items if item.optional_vars], None)
+            self.generic_visit(node)
+
+        visit_AsyncWith = visit_With
+
+        def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
+            if node.name:
+                record(node.name)
+            self.generic_visit(node)
+
+        def visit_match_case(self, node: ast.match_case) -> None:
+            for name in names_in_pattern(node.pattern):
+                record(name)
+            if node.guard:
+                self.visit(node.guard)
+            for statement in node.body:
+                self.visit(statement)
+
+    BindingVisitor().visit(tree)
+    for source_scope, name, kind in pending_nonlocal_bindings:
+        current = scope_parents.get(source_scope)
+        target: int | None = None
+        while current is not None:
+            if (
+                isinstance(scope_nodes[current], (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda))
+                and name in assignment_kinds.get(current, {})
+                and name not in nonlocal_names.get(current, set())
+            ):
+                target = current
+                break
+            current = scope_parents.get(current)
+        if target is None:
+            # Invalid/nonresolving ``nonlocal`` cannot grant imported-module
+            # proof.  Keep a hostile local marker so analysis fails closed.
+            record_in(source_scope, name, "other")
+            nonlocal_targets[(source_scope, name)] = source_scope
+        else:
+            nonlocal_targets[(source_scope, name)] = target
+            record_in(target, name, kind)
+    for source_scope, name in pending_stdin_mutations:
+        current = binding_scope(source_scope, name)
+        owner: int | None = None
+        while current is not None:
+            if name in assignment_kinds.get(current, {}):
+                owner = current
+                break
+            current = scope_parents.get(current)
+            if current is not None and isinstance(scope_nodes[current], ast.ClassDef):
+                current = scope_parents.get(current)
+        stdin_mutated[owner if owner is not None else source_scope].add(name)
+    proven_by_scope = {
+        scope_id: {
+            name
+            for name, kinds in bindings.items()
+            if kinds == {"popen"} and name not in stdin_mutated.get(scope_id, set())
+        }
+        for scope_id, bindings in assignment_kinds.items()
+    }
+    candidates: set[int] = set()
+    result: set[int] = set()
+    process_calls: set[int] = set()
+    os_open_calls: set[int] = set()
+    read_only_open_calls: set[int] = set()
+
+    def read_only_flags(value: ast.AST, scope_id: int) -> bool:
+        allowed = {"O_RDONLY", "O_NOFOLLOW", "O_CLOEXEC", "O_NONBLOCK", "O_DIRECTORY"}
+        if isinstance(value, ast.Constant):
+            return type(value.value) is int and value.value == 0
+        if isinstance(value, ast.Attribute):
+            return (
+                isinstance(value.value, ast.Name)
+                and imported_receiver(scope_id, value.value.id, "os")
+                and value.attr in allowed
+            )
+        if isinstance(value, ast.BinOp) and isinstance(value.op, ast.BitOr):
+            return read_only_flags(value.left, scope_id) and read_only_flags(value.right, scope_id)
+        if not isinstance(value, ast.Call):
+            return False
+        if not (
+            isinstance(value.func, ast.Name)
+            and value.func.id == "getattr"
+            and unshadowed_builtin(scope_id, "getattr")
+            and len(value.args) == 3
+            and not value.keywords
+        ):
+            return False
+        module, flag_name, fallback = value.args
+        return (
+            isinstance(module, ast.Name)
+            and imported_receiver(scope_id, module.id, "os")
+            and isinstance(flag_name, ast.Constant)
+            and flag_name.value in allowed
+            and isinstance(fallback, ast.Constant)
+            and type(fallback.value) is int
+            and fallback.value == 0
+        )
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        scope_id = call_scopes.get(id(node), -1)
+        if (
+            isinstance(node.func, ast.Attribute)
+            and node.func.attr == "Popen"
+            and isinstance(node.func.value, ast.Name)
+            and imported_receiver(scope_id, node.func.value.id, "subprocess")
+        ):
+            process_calls.add(id(node))
+        if (
+            isinstance(node.func, ast.Attribute)
+            and node.func.attr == "open"
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id in os_alias_names
+        ):
+            os_open_calls.add(id(node))
+            if (
+                not isinstance(scope_nodes.get(scope_id), ast.ClassDef)
+                and imported_receiver(scope_id, node.func.value.id, "os")
+                and len(node.args) >= 2
+                and read_only_flags(node.args[1], scope_id)
+            ):
+                read_only_open_calls.add(id(node))
+        if (
+            isinstance(node.func, ast.Attribute)
+            and node.func.attr == "write"
+            and isinstance(node.func.value, ast.Name)
+            and (
+                node.func.value.id in os_alias_names
+                or assignment_kinds[scope_id].get(node.func.value.id)
+                == {"module-import:os"}
+            )
+        ):
+            candidates.add(id(node))
+        if not node.args or not isinstance(node.args[0], ast.Call):
+            continue
+        fileno = node.args[0]
+        stdin = fileno.func.value if isinstance(fileno.func, ast.Attribute) else None
+        process = stdin.value if isinstance(stdin, ast.Attribute) else None
+        if (
+            id(node) in candidates
+            and not isinstance(scope_nodes.get(scope_id), ast.ClassDef)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and imported_receiver(
+                call_scopes.get(id(node), -1), node.func.value.id, "os"
+            )
+            and isinstance(fileno.func, ast.Attribute)
+            and fileno.func.attr == "fileno"
+            and isinstance(stdin, ast.Attribute)
+            and stdin.attr == "stdin"
+            and isinstance(process, ast.Name)
+            and process.id in proven_by_scope.get(call_scopes.get(id(node), -1), set())
+        ):
+            result.add(id(node))
+    return candidates, result, process_calls, os_open_calls, read_only_open_calls
+
+
+def _os_write_effect(node: ast.Call, proven_pipe_writes: set[int]) -> str | None:
+    """Treat only a proven ``Popen.stdin.fileno()`` write as process IPC."""
+    if node.args and isinstance(node.args[0], ast.Call):
+        fileno = node.args[0]
+        stdin = fileno.func.value if isinstance(fileno.func, ast.Attribute) else None
+        process = stdin.value if isinstance(stdin, ast.Attribute) else None
+        if (
+            isinstance(fileno.func, ast.Attribute)
+            and fileno.func.attr == "fileno"
+            and isinstance(stdin, ast.Attribute)
+            and stdin.attr == "stdin"
+            and isinstance(process, ast.Name)
+            and id(node) in proven_pipe_writes
+        ):
+            return None
+    return "filesystem-write"
+
+
 def observed_effects(
     tree: ast.AST, *, aliases: Mapping[str, str] | None = None
 ) -> set[str]:
     effects: set[str] = set()
     known_aliases = dict(aliases) if aliases is not None else _static_aliases(tree)
+    os_write_calls, proven_pipe_writes, lexical_process_calls, os_open_calls, read_only_os_open_calls = _proven_subprocess_pipe_writes(tree, known_aliases)
     for node in ast.walk(tree):
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             for imported in _import_names(node, ""):
@@ -535,16 +1001,26 @@ def observed_effects(
         name = _normalized_call_name(node, known_aliases)
         if name is None:
             continue
-        if name in {"open", "Path.open"} or name.endswith(".open"):
+        if id(node) in os_write_calls:
+            effect = _os_write_effect(node, proven_pipe_writes)
+            if effect is not None:
+                effects.add(effect)
+        if id(node) in lexical_process_calls:
+            effects.add("process")
+        if id(node) not in os_open_calls and name != "os.open" and (name in {"open", "Path.open"} or name.endswith(".open")):
             effects.add(_open_effect(node))
-            if name == "os.open":
-                # Integer flag expressions are intentionally not interpreted;
-                # conservatively include write authority.
-                effects.add("filesystem-write")
+        if id(node) in os_open_calls or name == "os.open":
+            effects.add(_os_open_effect(node, read_only_os_open_calls))
         if name in READ_CALLS:
             effects.add("filesystem-read")
         if name in WRITE_CALLS:
-            effects.add("filesystem-write")
+            if name == "os.write":
+                if id(node) not in os_write_calls:
+                    effect = _os_write_effect(node, proven_pipe_writes)
+                    if effect is not None:
+                        effects.add(effect)
+            else:
+                effects.add("filesystem-write")
         if name in PROCESS_CALLS:
             effects.add("process")
         if name in SIGNAL_CALLS:
