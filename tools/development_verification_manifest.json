@@ -353,6 +353,7 @@
       ],
       "impact_excludes": [
         "bin/gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
@@ -542,6 +543,7 @@
       ],
       "impact_excludes": [
         "bin/gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
@@ -818,6 +820,7 @@
         "deps.edn"
       ],
       "impact_excludes": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_safety_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj",
@@ -3269,15 +3272,18 @@
       "stage3_mode": "pure",
       "stage3_batch": "stage10-w1-sh25-sh26-consumer",
       "inputs": [
-        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
-        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
-        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
-        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
-        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
-        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
+        "docs/self-hosting-slice-ownership.edn",
+        "bootstrap/gravity/src/**",
+        "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
         "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
         "bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity",
         "bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/rejected/invalid-component-builds.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/rejected/invalid-component-builds.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-26/stage_rebuild_engine.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.qst",
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj"
       ],
@@ -3604,6 +3610,7 @@
       ],
       "impact_excludes": [
         "bin/gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
@@ -3825,6 +3832,7 @@
       ],
       "impact_excludes": [
         "bin/gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
@@ -5591,7 +5599,11 @@
         "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-value-overflow.payload",
         "bootstrap/clojure/fixtures/self-hosting/sh-08/**",
         "bootstrap/clojure/fixtures/self-hosting/sh-10/**",
+        "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
         "bootstrap/clojure/fixtures/self-hosting/sh-25/**",
+        "bootstrap/clojure/fixtures/self-hosting/sh-26/stage_rebuild_engine.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.qst",
         "bootstrap/clojure/fixtures/self-hosting/sh-11/**",
         "bootstrap/clojure/src/gravity/diagnostics.clj",
         "bootstrap/clojure/src/gravity/digest.clj",

@@ -4040,6 +4040,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage8-sh14-authenticated-layout",
                 "stage9-c13-source-shape",
                 "stage9-sh16-c13-evidence-boundary",
+                "stage10-w1-static-admission",
+                "stage10-w1-sh25-sh26-consumer",
             },
         )
         kernel = selected(
@@ -4315,6 +4317,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage8-sh14-authenticated-layout",
             "stage9-c13-source-shape",
             "stage9-sh16-c13-evidence-boundary",
+            "stage10-w1-static-admission",
+            "stage10-w1-sh25-sh26-consumer",
         }
         self.assertEqual(source_selected, expected_c8_change_selection)
         self.assertTrue(
@@ -4346,7 +4350,14 @@ class VerifyDevelopmentTests(unittest.TestCase):
         adapter_path = "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj"
         adapter_selection = verifier.select_impacted_checks(manifest, ROOT, changed_paths=[adapter_path])
         adapter_selected = set(adapter_selection["selected_ids"])
-        self.assertEqual(adapter_selected, expected_c8_change_selection)
+        self.assertEqual(
+            adapter_selected,
+            expected_c8_change_selection
+            - {
+                "stage10-w1-static-admission",
+                "stage10-w1-sh25-sh26-consumer",
+            },
+        )
         self.assertTrue(
             {
                 "stage4-sh09-adapter",
@@ -4595,7 +4606,14 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage9-c13-source-shape",
             "stage9-sh16-c13-evidence-boundary",
         }
-        self.assertEqual(selected(c12_path), units | stage8_ids | stage9_ids)
+        stage10_catalog_ids = {
+            "stage10-w1-static-admission",
+            "stage10-w1-sh25-sh26-consumer",
+        }
+        self.assertEqual(
+            selected(c12_path),
+            units | stage8_ids | stage9_ids | stage10_catalog_ids,
+        )
         self.assertEqual(
             selected(
                 "bootstrap/clojure/test/gravity/self_hosting/"
@@ -4963,6 +4981,26 @@ class VerifyDevelopmentTests(unittest.TestCase):
             selected("bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity"),
             units | {static["id"], consumer["id"]},
         )
+        for transitive_input in (
+            "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
+            "bootstrap/clojure/fixtures/self-hosting/sh-25/rejected/invalid-component-builds.gravity",
+            "bootstrap/clojure/fixtures/self-hosting/sh-26/stage_rebuild_engine.gravity",
+            "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.qst",
+            "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
+        ):
+            self.assertEqual(
+                selected(transitive_input),
+                units | {static["id"], consumer["id"]},
+                transitive_input,
+            )
+        catalog_source_selection = selected(
+            "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+        )
+        self.assertTrue(
+            {static["id"], consumer["id"]} <= catalog_source_selection
+        )
+        self.assertNotIn(stable["id"], catalog_source_selection)
+        self.assertNotIn(direct["id"], catalog_source_selection)
         explicit = set(verifier.select_impacted_checks(
             manifest, ROOT, requested_ids=[stable["id"]]
         )["selected_ids"])
@@ -4985,6 +5023,31 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
             ):
                 self.assertEqual(excludes.count(path), 1, (check_id, path))
+
+        legacy_suite_excludes = by_id["stage0-clojure-suite"]["impact_excludes"]
+        for path in (
+            "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
+            "bootstrap/clojure/fixtures/self-hosting/sh-26/stage_rebuild_engine.gravity",
+            "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.gravity",
+            "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.qst",
+        ):
+            self.assertEqual(legacy_suite_excludes.count(path), 1, path)
+        helper_path = (
+            "bootstrap/clojure/test/gravity/self_hosting/"
+            "sh02_authenticated_envelope_test.clj"
+        )
+        for check_id in (
+            "stage0-project-structure",
+            "stage0-project-structure-unit",
+            "stage0-sh01-leaf-runner-control",
+            "stage0-sh01-ownership-control",
+            "stage1-sh01-unit",
+        ):
+            self.assertEqual(
+                by_id[check_id]["impact_excludes"].count(helper_path),
+                1,
+                check_id,
+            )
 
         missing = json.loads(json.dumps(manifest))
         missing["checks"] = [

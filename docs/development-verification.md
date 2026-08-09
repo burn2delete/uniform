@@ -1084,6 +1084,13 @@ catalogs. The automatic edit path then runs one 3 GiB direct carrier-mutation
 selector. A separate 8 GiB branch checks the four SH25/SH26 consumers without
 forcing the hostile packet matrix for fixture-only changes.
 
+The SH25 catalog selector rereads the reviewed ownership map and every owned
+Gravity source, while the SH26 selectors consume the SH19 runtime member,
+SH25 accepted/rejected fixtures, the exercised SH26 engine/accepted fixtures,
+and the authenticated-envelope source/helper. The manifest binds those exact
+transitive inputs; their changes invalidate and select the consumer instead of
+silently preserving an earlier receipt.
+
 `stage10-w1-hostile-stable` is manual. It owns the complete two-test carrier
 namespace and executes direct mutation before packet substitution in one JVM;
 the automatic direct node is only an execution-profile subset of that owner.

@@ -570,6 +570,13 @@ complete seven-test target-hardening catalog. It branches to the automatic
 3 GiB direct carrier-mutation discriminator and an independent automatic 8 GiB
 SH25/SH26 consumer batch.
 
+The consumer node declares the SH25 ownership map, the complete
+`bootstrap/gravity/src/**` catalog that its selected test hashes, the SH19
+runtime member, both SH25 fixture pairs, the exercised SH26 engine/accepted
+pair, and the authenticated-envelope source/helper. Those are receipt inputs,
+not incidental namespace loads; changes route to the downstream consumer and
+cannot leave its non-authoritative catalog result looking current.
+
 The packet-substitution matrix is deliberately absent from ordinary change
 impact. Explicit stable-candidate selection runs `stage10-w1-hostile-stable`:
 direct mutation first and packet substitution second in the same JVM, with
