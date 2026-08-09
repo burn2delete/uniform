@@ -1,0 +1,1647 @@
+; W5 Wave4 compiler-identity verifier.
+; This is an executable, static-only :meta leaf.  It validates supplied
+; compiler-identity records as data and never invokes a compiler, verifier,
+; linker, toolchain, process, filesystem, network, JVM, native artifact, or
+; container.  The :jvm target is only the stage2 plan/runtime harness.
+(ns gravity.self-hosting.w5-compiler-identity-verifier
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-compiler-identity-policy
+             w5-compiler-identity-diagnostic-catalog
+             w5-compiler-identity-target-valid?
+             w5-compiler-identity-source-inventory-valid?
+             w5-compiler-identity-constructors-valid?
+             w5-compiler-identity-executables-valid?
+             w5-compiler-identity-stages-valid?
+             w5-compiler-identity-lineage-valid?
+             w5-compiler-identity-build-recipe-valid?
+             w5-compiler-identity-environment-valid?
+             w5-compiler-identity-lock-valid?
+             w5-compiler-identity-toolchain-valid?
+             w5-compiler-identity-provenance-valid?
+             w5-compiler-identity-conformance-valid?
+             w5-compiler-identity-evidence-valid?
+             w5-compiler-identity-authority-valid?
+             w5-ci-source-span?
+             w5-ci-source-span-for?
+             w5-ci-path-ends-with?
+             w5-ci-source-extension
+             w5-ci-source-path?
+             w5-ci-repository-root
+             w5-ci-path-at-root?
+             w5-ci-path-provenance?
+             w5-ci-provenance-crosslinks-valid?
+             w5-ci-diagnostic-source-span
+             w5-compiler-identity-request-valid?
+             w5-compiler-identity-input
+             w5-compiler-identity-record
+             w5-compiler-identity
+             w5-compiler-identity-diagnostic
+             w5-compiler-identity-verify
+             w5-compiler-identity-execute
+             w5-compiler-identity-run
+             w5-compiler-identity-recompute
+             w5-ci-result-shape?
+             w5-compiler-identity-verify-result
+             w5-ci-policy
+             w5-ci-diagnostic-catalog
+             w5-ci-target-valid?
+             w5-ci-request-valid?
+             w5-ci-verify
+             w5-ci-execute
+             w5-ci-run
+             w5-ci-recompute
+             w5-ci-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-compiler-identity-verifier
+     :owner :workstream-5
+     :source-language :gravity
+     :seed :clojure-stage0
+     :scope :wave4-static-only
+     :status :executable-leaf
+     :static-only? true
+     :authority :non-authority
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :public-authority? false
+     :release? false
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :support :unsupported
+       :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-arm64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-x86_64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :windows :support :unsupported
+       :invokes-clojure? false :links-jvm? false
+       :fallback? false}]
+     :cross-target-inference? false
+     :darwin-fallback? false
+     :residual-seed-harness
+     {:compiler-plan :clojure-stage0-stage2-compiler-plan
+      :runtime :jvm-stage2-runtime
+      :authority :seed-only
+      :execution-status :harness-only}
+     :residual-boundaries
+     #{:clojure-stage0-seed :jvm-stage2-runtime
+       :native-linux-candidate-execution :independent-stage-equivalence
+       :independent-review}
+     :governing-documents [:D0 :D1 :D2 :D3 :D8 :D9 :C1 :C14 :C15 :C18
+                           :BOOT1 :BOOT2 :BOOT3 :BOOT4 :BOOT5 :BOOT6 :BOOT7
+                           :BOOT8]
+     :does-not-claim [:native-execution :self-hosting-completion
+                      :seed-retirement :release-readiness
+                      :public-authority :cross-target-inference]}}))
+
+(def w5-ci-candidate-target :llvm-x86_64-linux)
+(def w5-ci-candidate-platform
+  {:os :linux :arch :x86_64 :backend :llvm
+   :artifact-format :elf :abi :sysv-amd64})
+(def w5-ci-unsupported-targets
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+(def w5-ci-unsupported-target-policies
+  [{:target :darwin :support :unsupported
+    :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :darwin-arm64 :support :unsupported
+    :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :darwin-x86_64 :support :unsupported
+    :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :windows :support :unsupported
+    :invokes-clojure? false :links-jvm? false
+    :fallback? false}])
+(def w5-ci-stage-order [:stage1 :stage2 :stage3])
+(def w5-ci-diagnostic-rules
+  ["W5-CI-SCHEMA" "W5-CI-SOURCE" "W5-CI-CONSTRUCTOR"
+   "W5-CI-EXECUTABLE" "W5-CI-STAGE" "W5-CI-LINEAGE"
+   "W5-CI-RECIPE" "W5-CI-ENVIRONMENT" "W5-CI-LOCK"
+   "W5-CI-TOOLCHAIN" "W5-CI-PROVENANCE" "W5-CI-TARGET"
+   "W5-CI-CONFORMANCE" "W5-CI-EVIDENCE" "W5-CI-AUTHORITY"
+   "W5-CI-SUBSTITUTION"])
+
+(def w5-ci-placeholder-source-inventory-id
+  "sha256:1111111111111111111111111111111111111111111111111111111111111111")
+(def w5-ci-compiler-source-id
+  "sha256:2222222222222222222222222222222222222222222222222222222222222222")
+(def w5-ci-verifier-source-id
+  "sha256:3333333333333333333333333333333333333333333333333333333333333333")
+(def w5-ci-artifact-constructor-source-id
+  "sha256:4444444444444444444444444444444444444444444444444444444444444444")
+(def w5-ci-top-source-id
+  :gravity.self-hosting/w5-compiler-identity)
+(def w5-ci-compiler-executable-id
+  "sha256:5555555555555555555555555555555555555555555555555555555555555555")
+(def w5-ci-verifier-executable-id
+  "sha256:6666666666666666666666666666666666666666666666666666666666666666")
+(def w5-ci-artifact-constructor-executable-id
+  "sha256:7777777777777777777777777777777777777777777777777777777777777777")
+(def w5-ci-stage1-output-id
+  "sha256:8888888888888888888888888888888888888888888888888888888888888888")
+(def w5-ci-stage2-output-id
+  "sha256:9999999999999999999999999999999999999999999999999999999999999999")
+(def w5-ci-stage3-output-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+(def w5-ci-recipe-id
+  "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+(def w5-ci-environment-id
+  "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
+(def w5-ci-lock-id
+  "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd")
+(def w5-ci-toolchain-id
+  "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+(def w5-ci-conformance-id
+  "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+
+(defn w5-ci-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (w5-ci-member-from? values value (+ index 1)))))
+
+(defn w5-ci-member? [values value]
+  (if (vector? values)
+    (w5-ci-member-from? values value 0)
+    false))
+
+(defn w5-ci-nonempty-string? [value]
+  (if (string? value)
+    (> (count value) 0)
+    false))
+
+(defn w5-ci-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn w5-ci-lowercase-hex? [character]
+  (w5-ci-member? (vec "0123456789abcdef") character))
+
+(defn w5-ci-sha-tail? [value index]
+  (if (= index 71)
+    true
+    (if (w5-ci-lowercase-hex? (get value index))
+      (w5-ci-sha-tail? value (+ index 1))
+      false)))
+
+(defn w5-ci-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (if (= (get value 0) \s)
+        (if (= (get value 1) \h)
+          (if (= (get value 2) \a)
+            (if (= (get value 3) \2)
+              (if (= (get value 4) \5)
+                (if (= (get value 5) \6)
+                  (if (= (get value 6) \:)
+                    (w5-ci-sha-tail? value 7)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ci-all-sha-from? [values index]
+  (if (= index (count values))
+    true
+    (if (w5-ci-sha256-id? (get values index))
+      (w5-ci-all-sha-from? values (+ index 1))
+      false)))
+
+(defn w5-ci-all-sha? [values]
+  (if (vector? values)
+    (w5-ci-all-sha-from? values 0)
+    false))
+
+(defn w5-ci-source-span? [span]
+  (if (w5-ci-exact-keys?
+       span #{:source-id :start-byte :end-byte :line :column})
+    (if (contains?
+         #{w5-ci-top-source-id
+           w5-ci-compiler-source-id
+           w5-ci-verifier-source-id
+           w5-ci-artifact-constructor-source-id}
+         (get span :source-id))
+      (if (integer? (get span :start-byte))
+        (if (>= (get span :start-byte) 0)
+          (if (integer? (get span :end-byte))
+            (if (>= (get span :end-byte) 0)
+              (if (<= (get span :start-byte) (get span :end-byte))
+                (if (integer? (get span :line))
+                  (if (>= (get span :line) 1)
+                    (if (integer? (get span :column))
+                      (>= (get span :column) 1)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ci-source-span-for? [span source-id]
+  (if (w5-ci-source-span? span)
+    (= source-id (get span :source-id))
+    false))
+
+(defn w5-ci-suffix-match? [value suffix index]
+  (if (= index (count suffix))
+    true
+    (if (> (count suffix) (count value))
+      false
+      (if (= (get value (- (count value) (+ index 1)))
+             (get suffix (- (count suffix) (+ index 1))))
+        (w5-ci-suffix-match? value suffix (+ index 1))
+        false))))
+
+(defn w5-ci-path-ends-with? [value suffix]
+  (if (and (string? value) (string? suffix))
+    (w5-ci-suffix-match? value suffix 0)
+    false))
+
+(defn w5-ci-source-extension [value]
+  (if (w5-ci-path-ends-with? value ".gravity")
+    ".gravity"
+    (if (w5-ci-path-ends-with? value ".qst")
+      ".qst"
+      nil)))
+
+(defn w5-ci-source-path? [value]
+  (if (= nil (w5-ci-source-extension value)) false true))
+
+(defn w5-ci-copy-prefix-from? [value limit index prefix]
+  (if (= index limit)
+    prefix
+    (w5-ci-copy-prefix-from?
+     value limit (+ index 1) (str prefix (get value index)))))
+
+(defn w5-ci-repository-root [actual-source-path]
+  (let [extension (w5-ci-source-extension actual-source-path)
+        relative
+        (if (= nil extension)
+          nil
+          (str "/bootstrap/clojure/fixtures/self-hosting/"
+               "w5-compiler-identity/accepted/incomplete-compiler-identity"
+               extension))]
+    (if (= nil relative)
+      nil
+      (if (w5-ci-path-ends-with? actual-source-path relative)
+        (let [root-count (- (count actual-source-path) (count relative))]
+          (if (> root-count 0)
+            (w5-ci-copy-prefix-from? actual-source-path root-count 0 "")
+            nil))
+        nil))))
+
+(defn w5-ci-path-at-root? [actual-path root relative-path]
+  (if (and (string? actual-path)
+           (string? root)
+           (string? relative-path))
+    (= actual-path (str root relative-path))
+    false))
+
+(defn w5-ci-path-provenance? [provenance]
+  (if (w5-ci-exact-keys?
+       provenance #{:actual-source-path :actual-executable-path
+                    :actual-artifact-path})
+    (if (w5-ci-source-path? (get provenance :actual-source-path))
+      (if (w5-ci-path-ends-with? (get provenance :actual-executable-path)
+                                 ".elf")
+        (w5-ci-path-ends-with? (get provenance :actual-artifact-path)
+                               ".edn")
+        false)
+      false)
+    false))
+
+(defn w5-ci-constructor-source-extension-valid-from?
+  [constructors roles extension index]
+  (if (= index (count roles))
+    true
+    (let [role (get roles index)
+          constructor (get constructors role)
+          provenance (get constructor :provenance)]
+      (if (w5-ci-path-ends-with? (get provenance :actual-source-path)
+                                 extension)
+        (w5-ci-constructor-source-extension-valid-from?
+         constructors roles extension (+ index 1))
+        false))))
+
+(defn w5-ci-stage-source-extension-valid-from?
+  [stages extension index]
+  (if (= index (count w5-ci-stage-order))
+    true
+    (let [stage (get stages (get w5-ci-stage-order index))
+          provenance (get stage :provenance)]
+      (if (w5-ci-path-ends-with? (get provenance :actual-source-path)
+                                 extension)
+        (w5-ci-stage-source-extension-valid-from?
+         stages extension (+ index 1))
+        false))))
+
+(defn w5-ci-stage-provenance-crosslinks-valid-from?
+  [stages stage-paths artifact-paths root extension index]
+  (if (= index (count w5-ci-stage-order))
+    true
+    (let [stage (get stages (get w5-ci-stage-order index))
+          stage-id (get stage :stage-id)
+          provenance (get stage :provenance)
+          expected-source
+          (str "/stage/" (str stage-id) "/compiler" extension)
+          expected-executable
+          (str "/stage/" (str stage-id) "/compiler.elf")
+          expected-artifact
+          (str "/stage/" (str stage-id) "/artifact.edn")]
+      (if (w5-ci-path-at-root?
+           (get provenance :actual-source-path) root expected-source)
+        (if (w5-ci-path-at-root?
+             (get provenance :actual-executable-path)
+             root expected-executable)
+          (if (w5-ci-path-at-root?
+               (get provenance :actual-artifact-path)
+               root expected-artifact)
+            (if (= (get stage-paths index)
+                   (get provenance :actual-executable-path))
+              (if (= (get artifact-paths index)
+                     (get provenance :actual-artifact-path))
+                (w5-ci-stage-provenance-crosslinks-valid-from?
+                 stages stage-paths artifact-paths root extension (+ index 1))
+                false)
+              false)
+            false)
+          false)
+        false))))
+
+(defn w5-ci-constructor-provenance-root-valid-from?
+  [constructors roles root extension index]
+  (if (= index (count roles))
+    true
+    (let [role (get roles index)
+          constructor (get constructors role)
+          provenance (get constructor :provenance)
+          role-name (str role)]
+      (if (w5-ci-path-at-root?
+           (get provenance :actual-source-path)
+           root (str "/source/" role-name extension))
+        (if (w5-ci-path-at-root?
+             (get provenance :actual-executable-path)
+             root (str "/executable/" role-name ".elf"))
+          (if (w5-ci-path-at-root?
+               (get provenance :actual-artifact-path)
+               root (str "/artifact/" role-name ".edn"))
+            (w5-ci-constructor-provenance-root-valid-from?
+             constructors roles root extension (+ index 1))
+            false)
+          false)
+        false))))
+
+(defn w5-ci-provenance-crosslinks-valid? [request]
+  (let [provenance (get request :provenance)
+        constructors (get request :constructors)
+        stages (get request :stages)
+        extension (w5-ci-source-extension
+                   (get provenance :actual-source-path))
+        root (w5-ci-repository-root
+              (get provenance :actual-source-path))
+        stage-paths (get provenance :actual-stage-paths)
+        artifact-paths (get provenance :actual-artifact-paths)]
+    (if (or (= nil extension) (= nil root))
+      false
+      (if (w5-ci-path-at-root?
+           (get provenance :actual-verifier-source-path)
+           root
+           "/bootstrap/gravity/src/gravity/self_hosting/w5_compiler_identity_verifier.gravity")
+        (if (w5-ci-path-at-root?
+             (get provenance :actual-constructor-source-path)
+             root "/source/artifact-constructor.gravity")
+          (if (w5-ci-constructor-provenance-root-valid-from?
+               constructors [:compiler :verifier :artifact-constructor]
+               root extension 0)
+            (if (w5-ci-stage-provenance-crosslinks-valid-from?
+                 stages stage-paths artifact-paths root extension 0)
+              true
+              false)
+            false)
+          false)
+        false))))
+
+(defn w5-compiler-identity-policy []
+  {:artifact :gravity/w5-compiler-identity-policy
+   :schema-version 1
+   :scope :wave4-static-only
+   :profile :meta
+   :target :jvm
+   :candidate-target w5-ci-candidate-target
+   :candidate-platform w5-ci-candidate-platform
+   :unsupported-platforms w5-ci-unsupported-targets
+   :unsupported-target-policies w5-ci-unsupported-target-policies
+   :cross-target-inference? false
+   :darwin-fallback? false
+   :no-fallback? true
+   :required-evidence [:source-identities :executable-identities
+                       :constructor-identities :stage-lineage
+                       :build-recipe :environment :lock :toolchain
+                       :provenance :conformance :executable-record]
+   :required-constructors [:compiler :verifier :artifact-constructor]
+   :required-stages w5-ci-stage-order
+   :residual-seed-harness
+   {:compiler-plan :clojure-stage0-stage2-compiler-plan
+    :runtime :jvm-stage2-runtime
+    :authority :seed-only
+    :execution-status :harness-only}
+   :static-only? true
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public-authority? false
+   :release? false
+   :release-eligible? false
+   :completion-status :incomplete
+   :completion :incomplete
+   :status :incomplete
+   :residual-trusted-components
+   [:clojure-stage0-seed :jvm-stage2-runtime
+    :native-linux-candidate-execution :independent-stage-equivalence
+    :independent-review]})
+
+(defn w5-compiler-identity-diagnostic-catalog []
+  {:artifact :gravity/w5-compiler-identity-diagnostic-catalog
+   :schema-version 1
+   :rules w5-ci-diagnostic-rules
+   :remediation
+   {"W5-CI-SCHEMA" :provide-versioned-request
+    "W5-CI-SOURCE" :bind-source-inventory-identities
+    "W5-CI-CONSTRUCTOR" :bind-constructor-source-and-executable
+    "W5-CI-EXECUTABLE" :bind-executable-identity
+    "W5-CI-STAGE" :repair-stage-record
+    "W5-CI-LINEAGE" :repair-stage1-stage2-stage3-lineage
+    "W5-CI-RECIPE" :bind-recipe-to-input-identities
+    "W5-CI-ENVIRONMENT" :declare-hermetic-environment
+    "W5-CI-LOCK" :bind-frozen-dependency-lock
+    "W5-CI-TOOLCHAIN" :bind-llvm-linux-toolchain
+    "W5-CI-PROVENANCE" :retain-path-bearing-provenance
+    "W5-CI-TARGET" :use-exact-linux-x86-64-target
+    "W5-CI-CONFORMANCE" :attach-conformance-record
+    "W5-CI-EVIDENCE" :use-pending-executable-record
+    "W5-CI-AUTHORITY" :keep-seed-boundary-and-fail-closed
+    "W5-CI-SUBSTITUTION" :recompute-result-from-request}})
+
+(defn w5-ci-expected-role [ordinal]
+  (get [:compiler :verifier :artifact-constructor] ordinal))
+
+(defn w5-ci-expected-source-id [role]
+  (if (= role :compiler)
+    w5-ci-compiler-source-id
+    (if (= role :verifier)
+      w5-ci-verifier-source-id
+      (if (= role :artifact-constructor)
+        w5-ci-artifact-constructor-source-id
+        nil))))
+
+(defn w5-ci-expected-executable-id [role]
+  (if (= role :compiler)
+    w5-ci-compiler-executable-id
+    (if (= role :verifier)
+      w5-ci-verifier-executable-id
+      (if (= role :artifact-constructor)
+        w5-ci-artifact-constructor-executable-id
+        nil))))
+
+(defn w5-ci-source-entry-valid? [entry ordinal]
+  (let [role (w5-ci-expected-role ordinal)]
+    (if (w5-ci-exact-keys?
+         entry #{:ordinal :role :source-id :executable-id :status
+                 :hash-final? :source-span})
+      (and (= ordinal (get entry :ordinal))
+           (= role (get entry :role))
+           (= (w5-ci-expected-source-id role) (get entry :source-id))
+           (= (w5-ci-expected-executable-id role)
+              (get entry :executable-id))
+           (= :pending (get entry :status))
+           (= false (get entry :hash-final?))
+           (w5-ci-source-span-for?
+            (get entry :source-span) (get entry :source-id)))
+      false)))
+
+(defn w5-ci-source-entries-valid-from? [entries index]
+  (if (= index (count entries))
+    true
+    (if (w5-ci-source-entry-valid? (get entries index) index)
+      (w5-ci-source-entries-valid-from? entries (+ index 1))
+      false)))
+
+(defn w5-compiler-identity-source-inventory-valid? [inventory]
+  (if (w5-ci-exact-keys?
+       inventory #{:inventory-id :schema-version :source-language
+                   :entry-count :entries :hash-final?})
+    (if (= w5-ci-placeholder-source-inventory-id
+           (get inventory :inventory-id))
+      (if (= 1 (get inventory :schema-version))
+        (if (= :gravity (get inventory :source-language))
+          (if (= 3 (get inventory :entry-count))
+            (if (= false (get inventory :hash-final?))
+              (if (= 3 (count (get inventory :entries)))
+                (w5-ci-source-entries-valid-from? (get inventory :entries) 0)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ci-constructor-provenance-bound? [constructor]
+  (let [provenance (get constructor :provenance)
+        source-path (get provenance :actual-source-path)
+        extension (w5-ci-source-extension source-path)]
+    (if (= nil extension)
+      false
+      (w5-ci-path-ends-with?
+       source-path
+       (str "/source/" (str (get constructor :role)) extension)))))
+
+(defn w5-ci-constructor-valid? [constructor expected-role]
+  (if (w5-ci-exact-keys?
+       constructor #{:constructor-id :role :source-id :executable-id
+                     :source-kind :executable-kind :source-status
+                     :executable-status :hash-final? :source-span
+                     :provenance})
+    (if (= expected-role (get constructor :role))
+      (if (= expected-role (get constructor :constructor-id))
+        (if (= (w5-ci-expected-source-id expected-role)
+               (get constructor :source-id))
+          (if (= (w5-ci-expected-executable-id expected-role)
+                 (get constructor :executable-id))
+            (if (= :source (get constructor :source-kind))
+              (if (= :executable (get constructor :executable-kind))
+                (if (= :pending (get constructor :source-status))
+                  (if (= :pending (get constructor :executable-status))
+                    (if (= false (get constructor :hash-final?))
+                      (if (w5-ci-source-span-for?
+                           (get constructor :source-span)
+                           (get constructor :source-id))
+                        (if (w5-ci-path-provenance?
+                             (get constructor :provenance))
+                          (w5-ci-constructor-provenance-bound? constructor)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-compiler-identity-constructors-valid? [constructors]
+  (if (w5-ci-exact-keys?
+       constructors #{:compiler :verifier :artifact-constructor})
+    (if (w5-ci-constructor-valid? (get constructors :compiler) :compiler)
+      (if (w5-ci-constructor-valid? (get constructors :verifier) :verifier)
+        (w5-ci-constructor-valid?
+         (get constructors :artifact-constructor) :artifact-constructor)
+        false)
+      false)
+    false))
+
+(defn w5-ci-stage-executables-valid? [stages index]
+  (if (= index (count w5-ci-stage-order))
+    true
+    (let [stage-key (get w5-ci-stage-order index)
+          stage (get stages stage-key)]
+      (if (w5-ci-sha256-id? (get stage :compiler-executable-id))
+        (if (w5-ci-sha256-id? (get stage :verifier-executable-id))
+          (if (w5-ci-sha256-id?
+               (get stage :artifact-constructor-executable-id))
+            (w5-ci-stage-executables-valid? stages (+ index 1))
+            false)
+          false)
+        false))))
+
+(defn w5-compiler-identity-executables-valid? [request]
+  (let [constructors (get request :constructors)
+        stages (get request :stages)]
+    (if (w5-ci-sha256-id? (get (get constructors :compiler) :executable-id))
+      (if (w5-ci-sha256-id?
+           (get (get constructors :verifier) :executable-id))
+        (if (w5-ci-sha256-id?
+             (get (get constructors :artifact-constructor) :executable-id))
+          (w5-ci-stage-executables-valid? stages 0)
+          false)
+        false)
+      false)))
+
+(defn w5-ci-stage-provenance-bound? [stage]
+  (let [provenance (get stage :provenance)
+        source-path (get provenance :actual-source-path)
+        extension (w5-ci-source-extension source-path)]
+    (if (= nil extension)
+      false
+      (w5-ci-path-ends-with?
+       source-path
+       (str "/stage/" (str (get stage :stage-id))
+            "/compiler" extension)))))
+
+(defn w5-ci-stage-valid? [stage expected-stage expected-ordinal]
+  (let [expected-input
+        (if (= expected-stage :stage1)
+          nil
+          (if (= expected-stage :stage2)
+            w5-ci-stage1-output-id
+            w5-ci-stage2-output-id))
+        expected-output
+        (if (= expected-stage :stage1)
+          w5-ci-stage1-output-id
+          (if (= expected-stage :stage2)
+            w5-ci-stage2-output-id
+            w5-ci-stage3-output-id))
+        expected-parent
+        (if (= expected-stage :stage1)
+          nil
+          (if (= expected-stage :stage2) :stage1 :stage2))
+        expected-parent-executable
+        (if (= expected-stage :stage1)
+          nil
+          w5-ci-artifact-constructor-executable-id)]
+    (if (w5-ci-exact-keys?
+         stage #{:stage-id :ordinal :compiler-source-id
+                 :compiler-executable-id :verifier-source-id
+                 :verifier-executable-id :artifact-constructor-source-id
+                 :artifact-constructor-executable-id :input-artifact-id
+                 :output-artifact-id :compiled-by-stage-id
+                 :compiled-by-executable-id :target :execution-status
+                 :independent-status :source-span :provenance})
+      (and (= expected-stage (get stage :stage-id))
+           (= expected-ordinal (get stage :ordinal))
+           (= w5-ci-compiler-source-id (get stage :compiler-source-id))
+           (= w5-ci-compiler-executable-id
+              (get stage :compiler-executable-id))
+           (= w5-ci-verifier-source-id (get stage :verifier-source-id))
+           (= w5-ci-verifier-executable-id
+              (get stage :verifier-executable-id))
+           (= w5-ci-artifact-constructor-source-id
+              (get stage :artifact-constructor-source-id))
+           (= w5-ci-artifact-constructor-executable-id
+              (get stage :artifact-constructor-executable-id))
+           (= expected-input (get stage :input-artifact-id))
+           (= expected-output (get stage :output-artifact-id))
+           (= expected-parent (get stage :compiled-by-stage-id))
+           (= expected-parent-executable
+              (get stage :compiled-by-executable-id))
+           (= w5-ci-candidate-target (get stage :target))
+           (= :pending (get stage :execution-status))
+           (= :pending (get stage :independent-status))
+           (w5-ci-source-span-for?
+            (get stage :source-span) (get stage :compiler-source-id))
+           (w5-ci-path-provenance? (get stage :provenance))
+           (w5-ci-stage-provenance-bound? stage))
+      false)))
+
+(defn w5-ci-stages-valid? [stages]
+  (if (w5-ci-exact-keys? stages #{:stage1 :stage2 :stage3})
+    (if (w5-ci-stage-valid? (get stages :stage1) :stage1 1)
+      (if (w5-ci-stage-valid? (get stages :stage2) :stage2 2)
+        (w5-ci-stage-valid? (get stages :stage3) :stage3 3)
+        false)
+      false)
+    false))
+
+(defn w5-ci-lineage-edge-valid? [edge parent child parent-record child-record]
+  (if (w5-ci-exact-keys?
+       edge #{:from-stage :to-stage :parent-output-artifact-id
+              :child-input-artifact-id :compiled-by-executable-id
+              :status :source-span})
+    (if (= parent (get edge :from-stage))
+      (if (= child (get edge :to-stage))
+        (if (= (get parent-record :output-artifact-id)
+               (get edge :parent-output-artifact-id))
+          (if (= (get child-record :input-artifact-id)
+                 (get edge :child-input-artifact-id))
+            (if (= (get child-record :compiled-by-executable-id)
+                   (get edge :compiled-by-executable-id))
+              (if (= :pending (get edge :status))
+                (w5-ci-source-span-for?
+                 (get edge :source-span) w5-ci-top-source-id)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-compiler-identity-lineage-valid? [request]
+  (let [stages (get request :stages)
+        lineage (get request :lineage)
+        stage1 (get stages :stage1)
+        stage2 (get stages :stage2)
+        stage3 (get stages :stage3)]
+    (if (w5-ci-stages-valid? stages)
+      (if (= nil (get stage1 :input-artifact-id))
+        (if (= nil (get stage1 :compiled-by-stage-id))
+          (if (= nil (get stage1 :compiled-by-executable-id))
+            (if (= :stage1 (get stage2 :compiled-by-stage-id))
+              (if (= :stage2 (get stage3 :compiled-by-stage-id))
+                (if (= (get stage1 :output-artifact-id)
+                       (get stage2 :input-artifact-id))
+                  (if (= (get stage2 :output-artifact-id)
+                         (get stage3 :input-artifact-id))
+                    (if (= (get stage1 :artifact-constructor-executable-id)
+                           (get stage2 :compiled-by-executable-id))
+                      (if (= (get stage2 :artifact-constructor-executable-id)
+                             (get stage3 :compiled-by-executable-id))
+                        (if (= 2 (count lineage))
+                          (if (w5-ci-lineage-edge-valid?
+                               (get lineage 0) :stage1 :stage2 stage1 stage2)
+                            (if (w5-ci-lineage-edge-valid?
+                                 (get lineage 1) :stage2 :stage3 stage2 stage3)
+                              true
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-compiler-identity-stages-valid? [request]
+  (w5-ci-stages-valid? (get request :stages)))
+
+(defn w5-compiler-identity-build-recipe-valid? [request]
+  (let [recipe (get request :build-recipe)]
+    (if (w5-ci-exact-keys?
+         recipe #{:recipe-id :version :steps :mode :source-inventory-id
+                  :constructors-id :environment-id :lock-id :toolchain-id
+                  :status})
+      (if (= w5-ci-recipe-id (get recipe :recipe-id))
+        (if (w5-ci-nonempty-string? (get recipe :version))
+          (if (= [:inventory :constructors :verify :emit] (get recipe :steps))
+            (if (= :deterministic (get recipe :mode))
+              (if (= w5-ci-placeholder-source-inventory-id
+                     (get recipe :source-inventory-id))
+                (if (= w5-ci-compiler-source-id (get recipe :constructors-id))
+                  (if (= w5-ci-environment-id (get recipe :environment-id))
+                    (if (= w5-ci-lock-id (get recipe :lock-id))
+                      (if (= w5-ci-toolchain-id (get recipe :toolchain-id))
+                        (= :pending (get recipe :status))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-compiler-identity-environment-valid? [request]
+  (let [environment (get request :environment)]
+    (if (w5-ci-exact-keys?
+         environment #{:environment-id :locale :timezone
+                       :filesystem-order :timestamp-policy :network
+                       :random-seed :allowed-environment :status})
+      (if (= w5-ci-environment-id (get environment :environment-id))
+        (if (= "C" (get environment :locale))
+          (if (= "UTC" (get environment :timezone))
+            (if (= :sorted (get environment :filesystem-order))
+              (if (= :fixed (get environment :timestamp-policy))
+                (if (= :disabled (get environment :network))
+                  (if (= 17 (get environment :random-seed))
+                    (if (= [] (get environment :allowed-environment))
+                      (= :pending (get environment :status))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-compiler-identity-lock-valid? [request]
+  (let [lock (get request :lock)]
+    (if (w5-ci-exact-keys?
+         lock #{:lock-id :format-version :dependencies :frozen? :status})
+      (if (= w5-ci-lock-id (get lock :lock-id))
+        (if (= 1 (get lock :format-version))
+          (if (= [:gravity/core :gravity/compiler]
+                 (get lock :dependencies))
+            (if (= true (get lock :frozen?))
+              (= :pending (get lock :status))
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-compiler-identity-toolchain-valid? [request]
+  (let [toolchain (get request :toolchain)]
+    (if (w5-ci-exact-keys?
+         toolchain #{:toolchain-id :compiler :version :linker
+                     :target :object-format :abi :status})
+      (if (= w5-ci-toolchain-id (get toolchain :toolchain-id))
+        (if (= :llvm (get toolchain :compiler))
+          (if (w5-ci-nonempty-string? (get toolchain :version))
+            (if (= :lld (get toolchain :linker))
+              (if (= w5-ci-candidate-target (get toolchain :target))
+                (if (= :elf (get toolchain :object-format))
+                  (if (= :sysv-amd64 (get toolchain :abi))
+                    (= :pending (get toolchain :status))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-ci-path-vector-valid-from? [values suffix index]
+  (if (= index (count values))
+    true
+    (if (w5-ci-path-ends-with? (get values index) suffix)
+      (w5-ci-path-vector-valid-from? values suffix (+ index 1))
+      false)))
+
+(defn w5-ci-path-vector-valid? [values suffix expected-count]
+  (if (vector? values)
+    (if (= expected-count (count values))
+      (w5-ci-path-vector-valid-from? values suffix 0)
+      false)
+    false))
+
+(defn w5-compiler-identity-provenance-valid? [request]
+  (let [provenance (get request :provenance)
+        extension (w5-ci-source-extension
+                   (get provenance :actual-source-path))]
+    (if (w5-ci-exact-keys?
+         provenance #{:source-id :logical-source-id :actual-source-path
+                      :actual-verifier-source-path :actual-constructor-source-path
+                      :actual-stage-paths :actual-artifact-paths
+                      :status})
+      (if (= w5-ci-top-source-id
+             (get provenance :source-id))
+        (if (= "fixtures/w5-compiler-identity/incomplete-compiler-identity"
+               (get provenance :logical-source-id))
+          (if (not (= nil extension))
+            (if (w5-ci-path-ends-with?
+                 (get provenance :actual-source-path)
+                 (str "/w5-compiler-identity/accepted/"
+                      "incomplete-compiler-identity" extension))
+            (if (w5-ci-path-ends-with?
+                 (get provenance :actual-verifier-source-path) ".gravity")
+              (if (w5-ci-path-ends-with?
+                   (get provenance :actual-constructor-source-path) ".gravity")
+                (if (w5-ci-path-vector-valid?
+                     (get provenance :actual-stage-paths) ".elf" 3)
+                  (if (w5-ci-path-vector-valid?
+                       (get provenance :actual-artifact-paths) ".edn" 3)
+                    (if (= :pending (get provenance :status))
+                      (if (= (get provenance :source-id)
+                             (get (get request :source-span) :source-id))
+                        (w5-ci-provenance-crosslinks-valid? request)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-compiler-identity-target-valid? [target]
+  (if (w5-ci-exact-keys?
+       target #{:target :os :arch :backend :artifact-format :abi
+                :cross-target-inference? :darwin-fallback? :fallback?
+                :unsupported-targets :unsupported-target-policies
+                :candidate-invokes-clojure? :candidate-links-jvm?
+                :no-fallback?})
+    (if (= w5-ci-candidate-target (get target :target))
+      (if (= :linux (get target :os))
+        (if (= :x86_64 (get target :arch))
+          (if (= :llvm (get target :backend))
+            (if (= :elf (get target :artifact-format))
+              (if (= :sysv-amd64 (get target :abi))
+                (if (= false (get target :cross-target-inference?))
+                  (if (= false (get target :darwin-fallback?))
+                    (if (= false (get target :fallback?))
+                      (if (= w5-ci-unsupported-targets
+                             (get target :unsupported-targets))
+                        (if (= w5-ci-unsupported-target-policies
+                               (get target :unsupported-target-policies))
+                          (if (= false
+                                 (get target :candidate-invokes-clojure?))
+                            (if (= false
+                                   (get target :candidate-links-jvm?))
+                              (= true (get target :no-fallback?))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-compiler-identity-conformance-valid? [request]
+  (let [conformance (get request :conformance)]
+    (if (w5-ci-exact-keys?
+         conformance #{:conformance-id :target :suite-id
+                       :positive-fixtures :negative-fixtures
+                       :status :independent-status})
+      (if (= w5-ci-conformance-id (get conformance :conformance-id))
+        (if (= w5-ci-candidate-target (get conformance :target))
+          (if (w5-ci-nonempty-string? (get conformance :suite-id))
+            (if (= [:stage1 :stage2 :stage3]
+                   (get conformance :positive-fixtures))
+              (if (= [:source :constructor :stage :lineage :recipe
+                      :environment :lock :toolchain :provenance :target
+                      :evidence :authority]
+                     (get conformance :negative-fixtures))
+                (if (= :pending (get conformance :status))
+                  (= :pending (get conformance :independent-status))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-compiler-identity-evidence-valid? [request]
+  (let [evidence (get request :evidence)]
+    (if (w5-ci-exact-keys?
+         evidence #{:evidence-class :execution-status
+                    :independent-status :source-span-status
+                    :artifact-status :status})
+      (if (= :executable-record (get evidence :evidence-class))
+        (if (= :pending (get evidence :execution-status))
+          (if (= :pending (get evidence :independent-status))
+            (if (= :preserved (get evidence :source-span-status))
+              (if (= :pending (get evidence :artifact-status))
+                (= :incomplete (get evidence :status))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-compiler-identity-authority-valid? [authority]
+  (if (w5-ci-exact-keys?
+       authority #{:authority :clojure-seed-boundary? :self-hosted?
+                   :public-authority? :release? :candidate-invokes-clojure?
+                   :candidate-links-jvm? :cross-target-inference?
+                   :darwin-fallback? :no-fallback?
+                   :unsupported-target-policies})
+    (if (= :non-authority (get authority :authority))
+      (if (= true (get authority :clojure-seed-boundary?))
+        (if (= false (get authority :self-hosted?))
+          (if (= false (get authority :public-authority?))
+            (if (= false (get authority :release?))
+              (if (= false (get authority :candidate-invokes-clojure?))
+                (if (= false (get authority :candidate-links-jvm?))
+                  (if (= false (get authority :cross-target-inference?))
+                    (if (= false (get authority :darwin-fallback?))
+                      (if (= true (get authority :no-fallback?))
+                        (= w5-ci-unsupported-target-policies
+                           (get authority :unsupported-target-policies))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-compiler-identity-request-valid? [request]
+  (if (w5-ci-exact-keys?
+       request #{:artifact :schema-version :verifier-id :profile
+                 :claimed-status :stage2-harness :stage-order
+                 :source-inventory :constructors :stages :lineage
+                 :build-recipe :environment :lock :toolchain
+                 :candidate-target :conformance :evidence :authority
+                 :provenance :source-span})
+    (and (= :gravity/w5-compiler-identity-request (get request :artifact))
+         (= 1 (get request :schema-version))
+         (= :gravity/w5-compiler-identity-verifier
+            (get request :verifier-id))
+         (= :meta (get request :profile))
+         (= :incomplete (get request :claimed-status))
+         (w5-ci-exact-keys?
+          (get request :stage2-harness)
+          #{:target :seed :authority :execution-status})
+         (= :jvm (get (get request :stage2-harness) :target))
+         (= :clojure-stage0 (get (get request :stage2-harness) :seed))
+         (= :seed-only (get (get request :stage2-harness) :authority))
+         (= :harness-only
+            (get (get request :stage2-harness) :execution-status))
+         (= w5-ci-stage-order (get request :stage-order))
+         (w5-compiler-identity-source-inventory-valid?
+          (get request :source-inventory))
+         (w5-compiler-identity-constructors-valid?
+          (get request :constructors))
+         (w5-compiler-identity-executables-valid? request)
+         (w5-compiler-identity-lineage-valid? request)
+         (w5-compiler-identity-build-recipe-valid? request)
+         (w5-compiler-identity-environment-valid? request)
+         (w5-compiler-identity-lock-valid? request)
+         (w5-compiler-identity-toolchain-valid? request)
+         (w5-compiler-identity-provenance-valid? request)
+         (w5-compiler-identity-target-valid?
+          (get request :candidate-target))
+         (w5-compiler-identity-conformance-valid? request)
+         (w5-compiler-identity-evidence-valid? request)
+         (w5-compiler-identity-authority-valid?
+          (get request :authority))
+         (w5-ci-source-span-for?
+          (get request :source-span) w5-ci-top-source-id))
+    false))
+
+(defn w5-ci-request-header-valid? [request]
+  (if (= :gravity/w5-compiler-identity-request (get request :artifact))
+    (if (= 1 (get request :schema-version))
+      (if (= :gravity/w5-compiler-identity-verifier
+             (get request :verifier-id))
+        (if (= :meta (get request :profile))
+          (if (= :incomplete (get request :claimed-status))
+            (if (w5-ci-exact-keys?
+                 (get request :stage2-harness)
+                 #{:target :seed :authority :execution-status})
+              (if (= :jvm (get (get request :stage2-harness) :target))
+                (if (= :clojure-stage0
+                       (get (get request :stage2-harness) :seed))
+                  (if (= :seed-only
+                         (get (get request :stage2-harness) :authority))
+                    (= :harness-only
+                       (get (get request :stage2-harness)
+                            :execution-status))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ci-failure [request]
+  (if (or (not (w5-ci-exact-keys?
+                request #{:artifact :schema-version :verifier-id :profile
+                          :claimed-status :stage2-harness :stage-order
+                          :source-inventory :constructors :stages :lineage
+                          :build-recipe :environment :lock :toolchain
+                          :candidate-target :conformance :evidence :authority
+                          :provenance :source-span}))
+          (not (w5-ci-request-header-valid? request))
+          (not (= w5-ci-stage-order (get request :stage-order))))
+    {:rule "W5-CI-SCHEMA" :field :request :reason :request-shape
+     :remediation :provide-versioned-request}
+    (if (not (w5-compiler-identity-source-inventory-valid?
+              (get request :source-inventory)))
+      {:rule "W5-CI-SOURCE" :field :source-inventory :reason :source-identities
+       :remediation :bind-source-inventory-identities}
+      (if (not (w5-compiler-identity-constructors-valid?
+                (get request :constructors)))
+        {:rule "W5-CI-CONSTRUCTOR" :field :constructors
+         :reason :constructor-identities
+         :remediation :bind-constructor-source-and-executable}
+        (if (not (w5-compiler-identity-executables-valid? request))
+          {:rule "W5-CI-EXECUTABLE" :field :executable-identities
+           :reason :executable-identity
+           :remediation :bind-executable-identity}
+          (if (not (w5-compiler-identity-stages-valid? request))
+            {:rule "W5-CI-STAGE" :field :stages :reason :stage-record
+             :remediation :repair-stage-record}
+            (if (not (w5-compiler-identity-lineage-valid? request))
+            {:rule "W5-CI-LINEAGE" :field :lineage :reason :stage-lineage
+             :remediation :repair-stage1-stage2-stage3-lineage}
+            (if (not (w5-compiler-identity-build-recipe-valid? request))
+              {:rule "W5-CI-RECIPE" :field :build-recipe :reason :recipe-bindings
+               :remediation :bind-recipe-to-input-identities}
+              (if (not (w5-compiler-identity-environment-valid? request))
+                {:rule "W5-CI-ENVIRONMENT" :field :environment
+                 :reason :hermetic-environment
+                 :remediation :declare-hermetic-environment}
+                (if (not (w5-compiler-identity-lock-valid? request))
+                  {:rule "W5-CI-LOCK" :field :lock :reason :dependency-lock
+                   :remediation :bind-frozen-dependency-lock}
+                  (if (not (w5-compiler-identity-toolchain-valid? request))
+                    {:rule "W5-CI-TOOLCHAIN" :field :toolchain
+                     :reason :llvm-linux-toolchain
+                     :remediation :bind-llvm-linux-toolchain}
+                    (if (not (w5-compiler-identity-provenance-valid? request))
+                      {:rule "W5-CI-PROVENANCE" :field :provenance
+                       :reason :provenance-bindings
+                       :remediation :retain-path-bearing-provenance}
+                      (if (not (w5-compiler-identity-target-valid?
+                                (get request :candidate-target)))
+                        {:rule "W5-CI-TARGET" :field :candidate-target
+                         :reason :target-scope
+                         :remediation :use-exact-linux-x86-64-target}
+                        (if (not (w5-compiler-identity-conformance-valid?
+                                  request))
+                          {:rule "W5-CI-CONFORMANCE" :field :conformance
+                           :reason :conformance-bindings
+                           :remediation :attach-conformance-record}
+                          (if (not (w5-compiler-identity-evidence-valid?
+                                    request))
+                            {:rule "W5-CI-EVIDENCE" :field :evidence
+                             :reason :evidence-class
+                             :remediation :use-pending-executable-record}
+                            (if (not (w5-compiler-identity-authority-valid?
+                                      (get request :authority)))
+                              {:rule "W5-CI-AUTHORITY" :field :authority
+                               :reason :fail-closed-authority
+                               :remediation :keep-seed-boundary-and-fail-closed}
+                              (if (not (w5-ci-source-span-for?
+                                       (get request :source-span)
+                                       w5-ci-top-source-id))
+                                {:rule "W5-CI-SCHEMA" :field :source-span
+                                 :reason :stable-source-span
+                                 :remediation :attach-stable-source-span}
+                                nil)))))))))))))))))
+
+(defn w5-ci-diagnostic-source-span [request]
+  (if (w5-ci-source-span-for?
+       (get request :source-span) w5-ci-top-source-id)
+    (get request :source-span)
+    {:source-id w5-ci-top-source-id
+     :start-byte 0 :end-byte 0 :line 1 :column 1}))
+
+(defn w5-compiler-identity-diagnostic [failure request]
+  {:diagnostic-id (get failure :rule)
+   :rule (get failure :rule)
+   :severity :error
+   :stage :compiler-identity
+   :profile :meta
+   :target w5-ci-candidate-target
+   :field (get failure :field)
+   :facts {:reason (get failure :reason)
+           :candidate-target w5-ci-candidate-target
+           :candidate-invokes-clojure? false
+           :candidate-links-jvm? false
+           :no-fallback? true}
+   :source-span (w5-ci-diagnostic-source-span request)
+   :provenance (get request :provenance)
+   :remediation (get failure :remediation)
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :authority :non-authority})
+
+(defn w5-ci-constructor-identity [constructor]
+  {:constructor-id (get constructor :constructor-id)
+   :role (get constructor :role)
+   :source-id (get constructor :source-id)
+   :executable-id (get constructor :executable-id)
+   :source-kind (get constructor :source-kind)
+   :executable-kind (get constructor :executable-kind)
+   :source-status (get constructor :source-status)
+   :executable-status (get constructor :executable-status)
+   :hash-final? (get constructor :hash-final?)})
+
+(defn w5-ci-stage-identity [stage]
+  {:stage-id (get stage :stage-id)
+   :ordinal (get stage :ordinal)
+   :compiler-source-id (get stage :compiler-source-id)
+   :compiler-executable-id (get stage :compiler-executable-id)
+   :verifier-source-id (get stage :verifier-source-id)
+   :verifier-executable-id (get stage :verifier-executable-id)
+   :artifact-constructor-source-id
+   (get stage :artifact-constructor-source-id)
+   :artifact-constructor-executable-id
+   (get stage :artifact-constructor-executable-id)
+   :input-artifact-id (get stage :input-artifact-id)
+   :output-artifact-id (get stage :output-artifact-id)
+   :compiled-by-stage-id (get stage :compiled-by-stage-id)
+   :compiled-by-executable-id (get stage :compiled-by-executable-id)
+   :target (get stage :target)
+   :execution-status (get stage :execution-status)
+   :independent-status (get stage :independent-status)})
+
+(defn w5-compiler-identity-input [request]
+  (let [constructors (get request :constructors)
+        stages (get request :stages)
+        lineage (get request :lineage)]
+    {:artifact (get request :artifact)
+     :schema-version (get request :schema-version)
+     :verifier-id (get request :verifier-id)
+     :profile (get request :profile)
+     :claimed-status (get request :claimed-status)
+     :stage-order (get request :stage-order)
+     :source-inventory-id
+     (get (get request :source-inventory) :inventory-id)
+     :source-identities
+       [{:role :compiler
+       :source-id
+       (get (get (get (get request :source-inventory) :entries) 0)
+            :source-id)
+       :executable-id
+       (get (get (get (get request :source-inventory) :entries) 0)
+            :executable-id)
+       :status :pending}
+      {:role :verifier
+       :source-id
+       (get (get (get (get request :source-inventory) :entries) 1)
+            :source-id)
+       :executable-id
+       (get (get (get (get request :source-inventory) :entries) 1)
+            :executable-id)
+       :status :pending}
+      {:role :artifact-constructor
+       :source-id
+       (get (get (get (get request :source-inventory) :entries) 2)
+            :source-id)
+       :executable-id
+       (get (get (get (get request :source-inventory) :entries) 2)
+            :executable-id)
+       :status :pending}]
+     :constructors
+     [(w5-ci-constructor-identity (get constructors :compiler))
+      (w5-ci-constructor-identity (get constructors :verifier))
+      (w5-ci-constructor-identity
+       (get constructors :artifact-constructor))]
+     :stages
+     [(w5-ci-stage-identity (get stages :stage1))
+      (w5-ci-stage-identity (get stages :stage2))
+      (w5-ci-stage-identity (get stages :stage3))]
+     :lineage
+     [{:from-stage (get (get lineage 0) :from-stage)
+       :to-stage (get (get lineage 0) :to-stage)
+       :parent-output-artifact-id
+       (get (get lineage 0) :parent-output-artifact-id)
+       :child-input-artifact-id
+       (get (get lineage 0) :child-input-artifact-id)
+       :compiled-by-executable-id
+       (get (get lineage 0) :compiled-by-executable-id)
+       :status (get (get lineage 0) :status)}
+      {:from-stage (get (get lineage 1) :from-stage)
+       :to-stage (get (get lineage 1) :to-stage)
+       :parent-output-artifact-id
+       (get (get lineage 1) :parent-output-artifact-id)
+       :child-input-artifact-id
+       (get (get lineage 1) :child-input-artifact-id)
+       :compiled-by-executable-id
+       (get (get lineage 1) :compiled-by-executable-id)
+       :status (get (get lineage 1) :status)}]
+     :recipe-id (get (get request :build-recipe) :recipe-id)
+     :environment-id (get (get request :environment) :environment-id)
+     :lock-id (get (get request :lock) :lock-id)
+     :toolchain-id (get (get request :toolchain) :toolchain-id)
+     :target (get request :candidate-target)
+     :conformance-id (get (get request :conformance) :conformance-id)
+     :evidence-class (get (get request :evidence) :evidence-class)
+     :authority (get (get request :authority) :authority)
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :public-authority? false
+     :release? false
+     :cross-target-inference? false
+     :no-fallback? true}))
+
+(defn w5-compiler-identity-record [request]
+  {:artifact :gravity/w5-compiler-identity-record
+   :identity-input (w5-compiler-identity-input request)
+   :constructors (get request :constructors)
+   :stages (get request :stages)
+   :lineage (get request :lineage)
+   :build-recipe (get request :build-recipe)
+   :environment (get request :environment)
+   :lock (get request :lock)
+   :toolchain (get request :toolchain)
+   :provenance (get request :provenance)
+   :status :incomplete
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false})
+
+(defn w5-compiler-identity [request]
+  (w5-compiler-identity-record request))
+
+(defn w5-ci-result-base [request status completion verification diagnostics]
+  {:artifact :gravity/w5-compiler-identity-result
+   :status status
+   :completion completion
+   :completion-status completion
+   :closure-status completion
+   :verification-status verification
+   :identity-input (w5-compiler-identity-input request)
+   :provenance (get request :provenance)
+   :source-span (w5-ci-diagnostic-source-span request)
+   :target w5-ci-candidate-target
+   :candidate-target w5-ci-candidate-target
+   :candidate-platform w5-ci-candidate-platform
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :no-fallback? true
+   :cross-target-inference? false
+   :unsupported-targets w5-ci-unsupported-targets
+   :unsupported-target-policies w5-ci-unsupported-target-policies
+   :diagnostics diagnostics
+   :trust-status (if (= :accepted status) :incomplete :rejected)
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :release-eligible? false
+   :execution
+   {:compiler-plan :clojure-stage0-stage2-compiler-plan
+    :runtime :jvm-stage2-runtime
+    :status :harness-only
+    :native-execution-status :pending
+    :independent-status :pending}
+   :residual-seed-harness
+   {:compiler-plan :clojure-stage0-stage2-compiler-plan
+    :runtime :jvm-stage2-runtime
+    :authority :seed-only
+    :execution-status :harness-only}
+   :fail-closed? true
+   :residual-trusted-components
+   [:clojure-stage0-seed :jvm-stage2-runtime
+    :native-linux-candidate-execution :independent-stage-equivalence
+    :independent-review]})
+
+(defn w5-compiler-identity-verify [request]
+  (let [failure (w5-ci-failure request)]
+    (if (= nil failure)
+      (assoc
+       (w5-ci-result-base request :accepted :incomplete :blocked [])
+       :gaps [:clojure-seed-boundary-pending
+              :jvm-stage2-harness-pending
+              :native-linux-candidate-execution-pending
+              :independent-stage-equivalence-pending
+              :independent-review-pending]
+       :verifier-gate {:decision :blocked :release-eligible? false
+                       :reason :residual-seed-harness}
+       :record-status :incomplete)
+      (assoc
+       (w5-ci-result-base
+        request :rejected :blocked :rejected
+        [(w5-compiler-identity-diagnostic failure request)])
+       :gaps [:invalid-compiler-identity-record]
+       :verifier-gate {:decision :rejected :release-eligible? false
+                       :reason (get failure :reason)}
+       :record-status :rejected))))
+
+(defn w5-compiler-identity-execute [request]
+  (w5-compiler-identity-verify request))
+
+(defn w5-compiler-identity-run [request]
+  (w5-compiler-identity-verify request))
+
+(defn w5-compiler-identity-recompute [request]
+  (w5-compiler-identity-verify request))
+
+(defn w5-ci-comparable-result [result]
+  {:status (get result :status)
+   :record-status (get result :record-status)
+   :completion (get result :completion)
+   :completion-status (get result :completion-status)
+   :closure-status (get result :closure-status)
+   :verification-status (get result :verification-status)
+   :identity-input (get result :identity-input)
+   :provenance (get result :provenance)
+   :source-span (get result :source-span)
+   :target (get result :target)
+   :candidate-target (get result :candidate-target)
+   :candidate-platform (get result :candidate-platform)
+   :candidate-invokes-clojure? (get result :candidate-invokes-clojure?)
+   :candidate-links-jvm? (get result :candidate-links-jvm?)
+   :no-fallback? (get result :no-fallback?)
+   :cross-target-inference? (get result :cross-target-inference?)
+   :unsupported-targets (get result :unsupported-targets)
+   :unsupported-target-policies (get result :unsupported-target-policies)
+   :diagnostics (get result :diagnostics)
+   :gaps (get result :gaps)
+   :verifier-gate (get result :verifier-gate)
+   :trust-status (get result :trust-status)
+   :execution (get result :execution)
+   :residual-seed-harness (get result :residual-seed-harness)
+   :residual-trusted-components (get result :residual-trusted-components)
+   :authority (get result :authority)
+   :clojure-seed-boundary? (get result :clojure-seed-boundary?)
+   :self-hosted? (get result :self-hosted?)
+   :release? (get result :release?)
+   :public-authority? (get result :public-authority?)
+   :release-eligible? (get result :release-eligible?)
+   :fail-closed? (get result :fail-closed?)})
+
+(defn w5-ci-maps-have-keys-from? [values expected index]
+  (if (= index (count values))
+    true
+    (if (w5-ci-exact-keys? (get values index) expected)
+      (w5-ci-maps-have-keys-from? values expected (+ index 1))
+      false)))
+
+(defn w5-ci-identity-input-shape? [identity]
+  (if (w5-ci-exact-keys?
+       identity
+       #{:artifact :schema-version :verifier-id :profile :claimed-status
+         :stage-order :source-inventory-id :source-identities
+         :constructors :stages :lineage :recipe-id :environment-id
+         :lock-id :toolchain-id :target :conformance-id :evidence-class
+         :authority :clojure-seed-boundary? :self-hosted?
+         :public-authority? :release? :cross-target-inference?
+         :no-fallback?})
+    (if (and (vector? (get identity :source-identities))
+             (= 3 (count (get identity :source-identities)))
+             (w5-ci-maps-have-keys-from?
+              (get identity :source-identities)
+              #{:role :source-id :executable-id :status} 0))
+      (if (and (vector? (get identity :constructors))
+               (= 3 (count (get identity :constructors)))
+               (w5-ci-maps-have-keys-from?
+                (get identity :constructors)
+                #{:constructor-id :role :source-id :executable-id
+                  :source-kind :executable-kind :source-status
+                  :executable-status :hash-final?} 0))
+        (if (and (vector? (get identity :stages))
+                 (= 3 (count (get identity :stages)))
+                 (w5-ci-maps-have-keys-from?
+                  (get identity :stages)
+                  #{:stage-id :ordinal :compiler-source-id
+                    :compiler-executable-id :verifier-source-id
+                    :verifier-executable-id
+                    :artifact-constructor-source-id
+                    :artifact-constructor-executable-id
+                    :input-artifact-id :output-artifact-id
+                    :compiled-by-stage-id :compiled-by-executable-id
+                    :target :execution-status :independent-status} 0))
+          (and (vector? (get identity :lineage))
+               (= 2 (count (get identity :lineage)))
+               (w5-ci-maps-have-keys-from?
+                (get identity :lineage)
+                #{:from-stage :to-stage :parent-output-artifact-id
+                  :child-input-artifact-id :compiled-by-executable-id
+                  :status} 0))
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ci-diagnostic-result-shape? [diagnostic]
+  (if (w5-ci-exact-keys?
+       diagnostic
+       #{:diagnostic-id :rule :severity :stage :profile :target
+         :field :facts :source-span :provenance :remediation
+         :clojure-seed-boundary? :self-hosted? :release?
+         :public-authority? :authority})
+    (if (w5-ci-exact-keys?
+         (get diagnostic :facts)
+         #{:reason :candidate-target :candidate-invokes-clojure?
+           :candidate-links-jvm? :no-fallback?})
+      (w5-ci-source-span-for?
+       (get diagnostic :source-span) w5-ci-top-source-id)
+      false)
+    false))
+
+(defn w5-ci-result-diagnostics-shape-from? [diagnostics index]
+  (if (= index (count diagnostics))
+    true
+    (if (w5-ci-diagnostic-result-shape? (get diagnostics index))
+      (w5-ci-result-diagnostics-shape-from? diagnostics (+ index 1))
+      false)))
+
+(defn w5-ci-result-shape? [result]
+  (if (w5-ci-exact-keys?
+       result
+       #{:artifact :status :record-status :completion :completion-status
+         :closure-status :verification-status :identity-input :provenance
+         :source-span :target :candidate-target :candidate-platform
+         :candidate-invokes-clojure? :candidate-links-jvm? :no-fallback?
+         :cross-target-inference? :unsupported-targets
+         :unsupported-target-policies :diagnostics :gaps :verifier-gate
+         :trust-status :execution :residual-seed-harness
+         :residual-trusted-components :authority :clojure-seed-boundary?
+         :self-hosted? :release? :public-authority? :release-eligible?
+         :fail-closed?})
+    (if (= :gravity/w5-compiler-identity-result (get result :artifact))
+    (if (w5-ci-identity-input-shape? (get result :identity-input))
+      (if (w5-ci-exact-keys?
+           (get result :verifier-gate)
+           #{:decision :release-eligible? :reason})
+        (if (w5-ci-exact-keys?
+             (get result :execution)
+             #{:compiler-plan :runtime :status :native-execution-status
+               :independent-status})
+          (if (w5-ci-exact-keys?
+               (get result :residual-seed-harness)
+               #{:compiler-plan :runtime :authority :execution-status})
+            (if (vector? (get result :diagnostics))
+              (w5-ci-result-diagnostics-shape-from?
+               (get result :diagnostics) 0)
+              false)
+            false)
+          false)
+        false)
+      false)
+      false)
+    false))
+
+(defn w5-compiler-identity-verify-result [request result]
+  (let [expected (w5-compiler-identity-verify request)]
+    (if (and (w5-ci-result-shape? result)
+             (= expected result))
+      {:artifact :gravity/w5-compiler-identity-result-verification
+       :status :passed
+       :recomputed true
+       :result-status (get expected :status)
+       :completion-status (get expected :completion-status)
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false}
+      {:artifact :gravity/w5-compiler-identity-result-verification
+       :status :rejected
+       :recomputed true
+       :diagnostics
+       [{:diagnostic-id "W5-CI-SUBSTITUTION"
+         :rule "W5-CI-SUBSTITUTION"
+         :severity :error
+         :stage :compiler-identity
+         :profile :meta
+         :target w5-ci-candidate-target
+         :field :result
+         :facts {:reason :result-substitution}
+         :source-span (w5-ci-diagnostic-source-span request)
+         :provenance (get request :provenance)
+         :remediation :recompute-result-from-request
+         :authority :non-authority
+         :clojure-seed-boundary? true
+         :self-hosted? false
+         :release? false
+         :public-authority? false}]
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false})))
+
+; Short aliases are kept for stage2 callers that use the compact leaf name.
+(defn w5-ci-policy [] (w5-compiler-identity-policy))
+(defn w5-ci-diagnostic-catalog []
+  (w5-compiler-identity-diagnostic-catalog))
+(defn w5-ci-target-valid? [target]
+  (w5-compiler-identity-target-valid? target))
+(defn w5-ci-request-valid? [request]
+  (w5-compiler-identity-request-valid? request))
+(defn w5-ci-verify [request]
+  (w5-compiler-identity-verify request))
+(defn w5-ci-execute [request]
+  (w5-compiler-identity-execute request))
+(defn w5-ci-run [request]
+  (w5-compiler-identity-run request))
+(defn w5-ci-recompute [request]
+  (w5-compiler-identity-recompute request))
+(defn w5-ci-verify-result [request result]
+  (w5-compiler-identity-verify-result request result))
