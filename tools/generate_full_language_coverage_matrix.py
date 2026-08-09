@@ -256,7 +256,7 @@ def validate_contract_v1(payload: Any) -> None:
 
 
 def rel(path: Path) -> str:
-    return path.resolve().relative_to(ROOT).as_posix()
+    return path.resolve().relative_to(ROOT.resolve()).as_posix()
 
 
 def slug(text: str) -> str:
@@ -306,7 +306,11 @@ def document_aliases(entry: dict[str, Any]) -> dict[str, list[str]]:
 
 def document_matches(entry: dict[str, Any], candidate: Path | str) -> bool:
     aliases = document_aliases(entry)
-    text = slug(str(candidate))
+    # Repository paths are semantic inputs only through their repository-
+    # relative spelling.  Absolute checkout/worktree prefixes are ambient
+    # execution context and must never contribute document-match tokens.
+    logical_candidate = rel(candidate) if isinstance(candidate, Path) else candidate
+    text = slug(logical_candidate)
     if any(bounded_token(token, text) for token in aliases["id"]):
         return True
     if any(alias and alias in text for alias in aliases["exact"] if len(alias) >= 4):
