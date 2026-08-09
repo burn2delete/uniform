@@ -115,6 +115,20 @@
   [filename]
   (str fixture-root-relative "/" filename))
 
+(def ^:private fixed-real-packet-paths
+  (set (map fixture-relative
+            ["accepted-print.gravity"
+             "accepted-print.qst"
+             "accepted-str.gravity"
+             "unsupported-builtin.gravity"
+             "accepted-bool.gravity"
+             "accepted-nonascii.gravity"
+             "accepted-control.gravity"
+             "accepted-trigraph.gravity"])))
+
+(def ^:private reused-real-packet-paths
+  #{(fixture-relative "accepted-print.gravity")})
+
 (defn- source-text
   [relative]
   (let [bytes (Files/readAllBytes (path relative))
@@ -123,12 +137,121 @@
                   (.onUnmappableCharacter CodingErrorAction/REPORT))]
     (str (.decode decoder (ByteBuffer/wrap bytes)))))
 
-(defn- real-packet
-  [relative]
-  (let [text (source-text relative)]
+(def ^:dynamic ^:private *real-packet-cache* (atom {}))
+(def ^:dynamic ^:private *real-packet-derivation-counts* (atom {}))
+(def ^:dynamic ^:private *real-packet-source-loader* source-text)
+(def ^:dynamic ^:private *real-packet-deriver*
+  (fn [relative text]
     {:packet (bootstrap/stage2-runtime-derived-packet relative text :c)
      :context (bootstrap/p15-s23-closed-runtime-packet-context
                relative text :c)}))
+
+(declare diagnostic-id)
+
+(defn- derive-real-packet!
+  [relative text]
+  (let [value (*real-packet-deriver* relative text)]
+    (when-not (and (instance? clojure.lang.IPersistentMap value)
+                   (= #{:packet :context} (set (keys value)))
+                   (instance? clojure.lang.IPersistentMap (:packet value))
+                   (instance? clojure.lang.IPersistentMap (:context value)))
+      (throw (ex-info "real packet cache accepts only exact persistent products"
+                      {:id "P15NS-TEST-CACHE-PRODUCT"
+                       :source-path relative})))
+    (swap! *real-packet-derivation-counts* update relative (fnil inc 0))
+    value))
+
+(defn- real-packet
+  [relative]
+  (when-not (contains? fixed-real-packet-paths relative)
+    (throw (ex-info "real packet cache source is not allowlisted"
+                    {:id "P15NS-TEST-CACHE-SOURCE"
+                     :source-path relative})))
+  ;; Read on every call.  The process-local cache removes repeated compiler
+  ;; work, but a source mutation must never be hidden from the outer input
+  ;; watcher or from a later call in this JVM.
+  (if (contains? reused-real-packet-paths relative)
+    (locking *real-packet-cache*
+      (let [text (*real-packet-source-loader* relative)]
+        (if-let [entry (get @*real-packet-cache* relative)]
+          (if (= text (:source-text entry))
+            (:value entry)
+            (let [value (derive-real-packet! relative text)]
+              (swap! *real-packet-cache* assoc relative
+                     {:source-text text :value value})
+              value))
+          (let [value (derive-real-packet! relative text)]
+            (swap! *real-packet-cache* assoc relative
+                   {:source-text text :value value})
+            value))))
+    (derive-real-packet! relative
+                         (*real-packet-source-loader* relative))))
+
+(defn- assert-real-packet-cache-contract!
+  []
+  (let [relative (fixture-relative "accepted-print.gravity")
+        cache (atom {})
+        source (atom "source-a")
+        reads (atom 0)
+        derivations (atom 0)
+        derive (fn [path text]
+                 (swap! derivations inc)
+                 {:packet {:path path :text text}
+                  :context {:path path :text text}})]
+    (binding [*real-packet-cache* cache
+              *real-packet-derivation-counts* (atom {})
+              *real-packet-source-loader*
+              (fn [_]
+                (swap! reads inc)
+                @source)
+              *real-packet-deriver* derive]
+      (let [first-value (real-packet relative)
+            repeated-value (real-packet relative)]
+        (is (= 2 @reads) "every access rechecks the source snapshot")
+        (is (= 1 @derivations) "an unchanged fixed source derives once")
+        (is (identical? first-value repeated-value)
+            "an unchanged immutable packet/context product is reused")
+        (is (= 1 (count @cache)) "the fixed cache remains path bounded")
+        (reset! source "source-b")
+        (let [changed-value (real-packet relative)]
+          (is (= 3 @reads) "a changed source is observed")
+          (is (= 2 @derivations) "a changed source is rederived")
+          (is (not (identical? first-value changed-value))
+              "a changed source never reuses the prior product")
+          (is (= "source-b" (get-in changed-value [:packet :text]))))
+        (real-packet (fixture-relative "accepted-print.qst"))
+        (real-packet (fixture-relative "accepted-print.qst"))
+        (is (= 4 @derivations)
+            "single-use fixtures derive normally instead of accumulating")
+        (is (= 1 (count @cache))
+            "only the one repeated fixture is retained")
+        (is (= "P15NS-TEST-CACHE-SOURCE"
+               (diagnostic-id
+                #(real-packet "bootstrap/clojure/fixtures/not-reviewed.gravity"))))
+        (is (= 5 @reads) "an unreviewed path rejects before source I/O")))
+    (let [attempts (atom 0)]
+      (binding [*real-packet-cache* (atom {})
+                *real-packet-derivation-counts* (atom {})
+                *real-packet-source-loader* (constantly "source")
+                *real-packet-deriver*
+                (fn [path text]
+                  (if (= 1 (swap! attempts inc))
+                    (throw (ex-info "synthetic derivation failure"
+                                    {:id "P15NS-TEST-CACHE-DERIVE"}))
+                    (derive path text)))]
+        (is (= "P15NS-TEST-CACHE-DERIVE"
+               (diagnostic-id #(real-packet relative))))
+        (is (= {:path relative :text "source"}
+               (:packet (real-packet relative))))
+        (is (= 2 @attempts) "failed derivations are never cached")))
+    (let [cache (atom {})]
+      (binding [*real-packet-cache* cache
+                *real-packet-derivation-counts* (atom {})
+                *real-packet-source-loader* (constantly "source")
+                *real-packet-deriver* (fn [_ _] [:mutable-or-wrong-shape])]
+        (is (= "P15NS-TEST-CACHE-PRODUCT"
+               (diagnostic-id #(real-packet relative))))
+        (is (empty? @cache) "nonpersistent or malformed products are not cached")))))
 
 (defn- diagnostic-id
   [f]
@@ -155,6 +278,9 @@
          :runtime (run-process! directory [(str executable-path)])}
         {:compile compiled}))))
 
+(deftest fixed-real-packet-cache-is-bounded-and-source-coherent
+  (assert-real-packet-cache-contract!))
+
 (deftest authenticated-gravity-and-qst-packets-emit-and-run
   (if-not (arm64-darwin-toolchain-available?)
     (is true "no native claim: ARM64 macOS /usr/bin/cc is unavailable")
@@ -165,14 +291,16 @@
                  ["accepted-print.qst" "Hello Gravity\n"]
                  ["accepted-str.gravity" "name42\n"]]]
           (testing filename
-            (let [{:keys [packet context]}
-                  (real-packet (fixture-relative filename))
+            (let [relative (fixture-relative filename)
+                  {:keys [packet context]} (real-packet relative)
                   artifact
                   (specialization/specialize-native-runtime-plan
                    packet context)
                   execution (compile-and-run!
                              directory
                              (get-in artifact [:generated-c :source]))]
+              (is (= 1 (get @*real-packet-derivation-counts* relative))
+                  "each fixed fixture derives at most once per JVM")
               (is (= :complete-for-internal-plan-specialized-native-child
                      (:status artifact)) artifact)
               (is (= :authenticated
@@ -227,8 +355,8 @@
               (is (= "" (get-in execution [:runtime :err])) execution))))))))
 
 (deftest packet-and-context-tamper-reject-before-validator-or-emitter
-  (let [{:keys [packet context]}
-        (real-packet (fixture-relative "accepted-print.gravity"))
+  (let [relative (fixture-relative "accepted-print.gravity")
+        {:keys [packet context]} (real-packet relative)
         validator (var-get #'bootstrap/c-backend-validate-runtime-plan!)
         validator-calls (atom 0)
         helper-loader (var-get
@@ -241,6 +369,8 @@
         cases [[(assoc packet :status :tampered) context]
                [packet changed-context]
                [(assoc-in packet [:plan :entrypoint] 'tampered) context]]]
+      (is (= 1 (get @*real-packet-derivation-counts* relative))
+          "the first accepted-print access derives exactly once")
       (with-redefs [bootstrap/c-backend-validate-runtime-plan!
                     (fn [& args]
                       (swap! validator-calls inc)
@@ -274,8 +404,8 @@
       (is (zero? @helper-loader-calls)))))
 
 (deftest overbound-packet-tamper-rejects-before-validator
-  (let [{:keys [packet context]}
-        (real-packet (fixture-relative "accepted-print.gravity"))
+  (let [relative (fixture-relative "accepted-print.gravity")
+        {:keys [packet context]} (real-packet relative)
         entrypoint (:entrypoint (:plan packet))
         instructions (get-in packet [:plan :functions entrypoint :instructions])
         overbound-packet
@@ -286,6 +416,8 @@
         helper-loader (var-get
                        #'specialization/*p15-native-plan-c-emitter-source-loader*)
         helper-loader-calls (atom 0)]
+    (is (= 1 (get @*real-packet-derivation-counts* relative))
+        "the repeated accepted-print access reuses the first derivation")
     (with-redefs [bootstrap/c-backend-validate-runtime-plan!
                   (fn [& args]
                     (swap! validator-calls inc)
@@ -326,10 +458,12 @@
                (:diagnostic-family error-data)) error-data)))))
 
 (deftest tampered-gravity-c-emitter-source-rejects-before-helper-execution
-  (let [{:keys [packet context]}
-        (real-packet (fixture-relative "accepted-print.gravity"))
+  (let [relative (fixture-relative "accepted-print.gravity")
+        {:keys [packet context]} (real-packet relative)
         loader (var-get
                 #'specialization/*p15-native-plan-c-emitter-source-loader*)]
+    (is (= 1 (get @*real-packet-derivation-counts* relative))
+        "the emitter-tamper gate reuses the accepted-print derivation")
     (with-redefs [specialization/*p15-native-plan-c-emitter-source-loader*
                   (fn [request-source]
                     (let [snapshot (loader request-source)]
