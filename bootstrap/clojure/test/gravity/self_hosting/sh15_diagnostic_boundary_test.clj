@@ -78,7 +78,10 @@
 (defn- digest [ordinal]
   (format "sha256:%064x" (long ordinal)))
 
+(def ^:private genuine-case-build-count (atom 0))
+
 (defn- genuine-case [ordinal]
+  (swap! genuine-case-build-count inc)
   (let [prepared @(sh14-value 'prepared-c11)
         c11 (:candidate prepared)
         c11-verification (:result prepared)
@@ -154,6 +157,14 @@
       :nonclaims (get-in case [:layout-verification :nonclaims])
       :expected-reference layout-ref :candidate-reference layout-ref}}))
 
+;; Every semantic selector exercises the same authenticated upstream shape.
+;; Keep one immutable, process-local representative so the fixed batch pays
+;; the SH13/SH14 construction once.  Individual tests still build their own
+;; requests and persistent mutations, and a fresh JVM always starts cold.
+(def ^:private representative-case (delay (genuine-case 915001)))
+(def ^:private representative-references
+  (delay (external-references @representative-case)))
+
 (defn- boundary-request [references diagnostics provenance]
   {:artifact :gravity/sh15-diagnostic-boundary-request :schema-version 1
    :domain-reference (:domain-reference references)
@@ -165,10 +176,16 @@
    :target (get-in references [:domain-reference :target])
    :provenance provenance})
 
-(defn- rejected-layout-diagnostic [case]
+(defn- rejected-layout-result [case]
   (let [bad (assoc-in (:layout-request case)
-                      [:layout-request :element-size] 16)
-        result (invoke-c12 'sh14-build-authenticated-layout [bad])]
+                      [:layout-request :element-size] 16)]
+    (invoke-c12 'sh14-build-authenticated-layout [bad])))
+
+(def ^:private representative-rejected-layout
+  (delay (rejected-layout-result @representative-case)))
+
+(defn- rejected-layout-diagnostic []
+  (let [result @representative-rejected-layout]
     (is (= :rejected (:status result)) result)
     (first (:diagnostics result))))
 
@@ -198,10 +215,11 @@
               (invoke-c15 'sh15-nonclaims [])))))
 
 (deftest sh15-diagnostic-boundary-accepts-small-genuine-derived-references
-  (let [case (genuine-case 915001)]
+  (let [case @representative-case]
+    (is (= 1 @genuine-case-build-count))
     (is (= :passed (get-in case [:domain-verification :status])))
     (is (= :passed (get-in case [:layout-verification :status])))
-    (let [references (external-references case)
+    (let [references @representative-references
           request (boundary-request references [] {:actual-source-path "/a"})
           candidate (invoke-c15 'sh15-build-diagnostic-boundary [request])
           verification (invoke-c15 'sh15-verify-diagnostic-boundary
@@ -218,13 +236,13 @@
       (is (= :passed (:status verification))))))
 
 (deftest sh15-diagnostic-boundary-preserves-real-rejection-partially
-  (let [case (genuine-case 915101)
-        references (external-references case)
-        upstream (rejected-layout-diagnostic case)
+  (let [references @representative-references
+        upstream (rejected-layout-diagnostic)
         request (boundary-request references [upstream]
                                   {:actual-source-path "/a"})
         candidate (invoke-c15 'sh15-build-diagnostic-boundary [request])
         diagnostic (get-in candidate [:diagnostic-stream :diagnostics 0])]
+    (is (= 1 @genuine-case-build-count))
     (is (= :accepted (:status candidate)))
     (is (= :gravity/sh15-partial-diagnostic (:artifact diagnostic)))
     (is (= (:diagnostic-id upstream) (:upstream-diagnostic-id diagnostic)))
@@ -236,9 +254,8 @@
            (:source-status diagnostic)))))
 
 (deftest sh15-diagnostic-boundary-rejects-schema-policy-and-hostile-inputs
-  (let [case (genuine-case 915201)
-        refs (external-references case)
-        upstream (rejected-layout-diagnostic case)
+  (let [refs @representative-references
+        upstream (rejected-layout-diagnostic)
         request (boundary-request refs [upstream] {:actual-source-path "/a"})
         candidate (invoke-c15 'sh15-build-diagnostic-boundary [request])
         extra-ref (assoc-in request [:domain-reference :extra] :forbidden)
@@ -283,6 +300,7 @@
                        :expected-reference forged-domain)
                 :candidate-reference forged-domain))
         forged-request (boundary-request forged-refs [] {:path "/forged"})]
+    (is (= 1 @genuine-case-build-count))
     (doseq [[label mutation expected]
             [[:extra extra-ref :domain-reference-invalid]
              [:policy wrong-policy :domain-verification-reference-invalid]
@@ -309,9 +327,8 @@
       (is (= :candidate-substitution (reason verification))))))
 
 (deftest sh15-diagnostic-boundary-identity-is-path-neutral
-  (let [case (genuine-case 915301)
-        refs (external-references case)
-        diagnostic-a (rejected-layout-diagnostic case)
+  (let [refs @representative-references
+        diagnostic-a (rejected-layout-diagnostic)
         diagnostic-b
         (-> diagnostic-a
             (assoc-in [:source-span :actual-source-path] "/checkout/b/source")
@@ -323,6 +340,7 @@
                                     {:actual-source-path "/checkout/b"})
         candidate-a (invoke-c15 'sh15-build-diagnostic-boundary [request-a])
         candidate-b (invoke-c15 'sh15-build-diagnostic-boundary [request-b])]
+    (is (= 1 @genuine-case-build-count))
     (is (= :accepted (:status candidate-a)))
     (is (= :accepted (:status candidate-b)))
     (is (= (:identity-input candidate-a) (:identity-input candidate-b)))
