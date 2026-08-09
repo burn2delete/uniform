@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the reviewed Stage 3--9 fixed verification boundary.
+"""Run the reviewed Stage 3--10 fixed verification boundary.
 
 The development verifier deliberately treats this file as the only command
 that may own the SH-07 heavy lock.  The command is intentionally boring: its
@@ -12,7 +12,10 @@ C11 source, cache-affine SH12 adapter, and public C11 batches.  Stage8 exposes
 a moving-source C12 shape gate, a cache-affine SH13 C11-domain evidence batch,
 and the exact C12 public compatibility check; it deliberately exposes no C12
 proof candidate.  Stage9 exposes the evidence-only C13 boundary over that
-prepared C12 carrier and likewise exposes no proof candidate.  The Stage7
+prepared C12 carrier and likewise exposes no proof candidate.  Stage10 exposes
+the fixed W1/C14 static, direct-mutation, SH25/SH26 consumer, and manual hostile
+stable-candidate batches; its packet-substitution matrix is never automatic.
+The Stage7
 shape profile is an execution alias of the
 complete source profile and does not add catalog ownership.  A public/pure batch
 acquires the canonical SH-07 lease and runs one of the reviewed Clojure

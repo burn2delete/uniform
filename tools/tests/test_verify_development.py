@@ -4833,6 +4833,39 @@ class VerifyDevelopmentTests(unittest.TestCase):
         by_id = verifier.checks_by_id(manifest)
         policies = verifier._STAGE10_FIXED_NODE_POLICIES
         self.assertEqual(
+            manifest["description"], verifier._STAGE10_MANIFEST_DESCRIPTION
+        )
+        self.assertEqual(
+            manifest["scope"]["stage10_handoff"], verifier._STAGE10_HANDOFF
+        )
+        self.assertEqual(
+            manifest["scope"]["included"].count(verifier._STAGE10_INCLUDED), 1
+        )
+        self.assertIn("Stage 3--10", verifier._stage3.__doc__ or "")
+        runner_source = (
+            ROOT
+            / "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Stage3--Stage10", runner_source)
+        for field, value, diagnostic in (
+            (
+                "description",
+                manifest["description"].replace("--10", "--9"),
+                "description",
+            ),
+            ("stage10_handoff", None, "stage10_handoff"),
+            ("included", [], "included"),
+        ):
+            broken = json.loads(json.dumps(manifest))
+            if field == "description":
+                broken[field] = value
+            else:
+                broken["scope"][field] = value
+            with self.assertRaisesRegex(verifier.ManifestError, diagnostic):
+                verifier.validate_manifest(
+                    broken, require_production_contracts=True
+                )
+        self.assertEqual(
             {check_id for check_id in by_id if check_id.startswith("stage10-")},
             set(policies),
         )

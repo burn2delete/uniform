@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "gravity-stage0-development-verification",
-  "description": "Stage 0 and Milestone 0 verification graph with bounded Stage1/Stage2 handoffs and fixed, non-authoritative Stage3--9 compiler candidate graphs for evidence-producing development loops.",
+  "description": "Stage 0 and Milestone 0 verification graph with bounded Stage1/Stage2 handoffs and fixed, non-authoritative Stage3--10 compiler candidate graphs for evidence-producing development loops.",
   "scope": {
     "stage": "stage0",
     "stage1_handoff": "SH-01 planner and parallel-runner unit preflight",
@@ -13,6 +13,7 @@
     "stage7_handoff": "fixed C11 MIR source, C10 adapter, public, and manual proof-candidate nodes; no legacy broad replay or authority promotion",
     "stage8_handoff": "fixed C12 shape, C11-domain evidence, and public development nodes; no proof candidate or authority promotion",
     "stage9_handoff": "fixed C13 source-shape gate followed by an evidence-only boundary over a reconstructed C12 carrier; no optimization credit, proof candidate, target lowering, or authority promotion",
+    "stage10_handoff": "fixed W1 C14 static admission, ordinary direct-mutation discriminator, narrow SH25/SH26 consumer, and manual hostile stable-candidate nodes; no automatic packet matrix, proof candidate, or authority promotion",
     "milestones": [
       "M0-documentation-lock",
       "M1-hosted-hello-slice"
@@ -28,6 +29,7 @@
       "the fixed Stage7 C11 MIR development graph",
       "the fixed Stage8 C12/SH13 development graph",
       "the fixed Stage9 SH16/C13 evidence-only development boundary",
+      "the fixed Stage10 W1/C14 proportional development graph",
       "hosted reader validator",
       "first hosted hello and core application fixtures",
       "the focused project-structure extraction compatibility gate",

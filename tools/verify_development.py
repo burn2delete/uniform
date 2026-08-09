@@ -765,6 +765,18 @@ _STAGE10_FIXED_NODE_POLICIES = {
     },
 }
 
+_STAGE10_MANIFEST_DESCRIPTION = (
+    "Stage 0 and Milestone 0 verification graph with bounded Stage1/Stage2 "
+    "handoffs and fixed, non-authoritative Stage3--10 compiler candidate "
+    "graphs for evidence-producing development loops."
+)
+_STAGE10_HANDOFF = (
+    "fixed W1 C14 static admission, ordinary direct-mutation discriminator, "
+    "narrow SH25/SH26 consumer, and manual hostile stable-candidate nodes; "
+    "no automatic packet matrix, proof candidate, or authority promotion"
+)
+_STAGE10_INCLUDED = "the fixed Stage10 W1/C14 proportional development graph"
+
 
 _P15_NATIVE_LAUNCHER_CHECK_ID = "stage0-p15-native-launcher-prerequisite"
 _P15_NATIVE_LAUNCHER_COMMAND = [
@@ -1481,6 +1493,27 @@ def _validate_stage9_node_contract(check: Mapping[str, Any]) -> None:
             )
 
 
+def _validate_stage10_manifest_scope(manifest: Mapping[str, Any]) -> None:
+    """Keep the public manifest description aligned with its fixed graph."""
+
+    if manifest.get("description") != _STAGE10_MANIFEST_DESCRIPTION:
+        raise ManifestError(
+            "manifest description must name the fixed Stage3--10 boundary"
+        )
+    scope = manifest.get("scope")
+    if not isinstance(scope, Mapping):
+        raise ManifestError("manifest scope must be an object")
+    if scope.get("stage10_handoff") != _STAGE10_HANDOFF:
+        raise ManifestError(
+            "manifest scope stage10_handoff must equal the reviewed Stage10 contract"
+        )
+    included = scope.get("included")
+    if type(included) is not list or included.count(_STAGE10_INCLUDED) != 1:
+        raise ManifestError(
+            "manifest scope included must name the fixed Stage10 graph exactly once"
+        )
+
+
 def _validate_stage10_node_contract(check: Mapping[str, Any]) -> None:
     """Pin W1 development admission without turning it into authority."""
 
@@ -1941,6 +1974,8 @@ def validate_manifest(
             "Stage10 fixed graph ids must equal the reviewed set: "
             f"expected {sorted(expected_stage10_ids)}, observed {sorted(stage10_ids)}"
         )
+    if require_production_contracts:
+        _validate_stage10_manifest_scope(manifest)
 
     for check_id, deps in dependencies.items():
         missing = sorted(set(deps) - ids)

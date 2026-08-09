@@ -1,11 +1,16 @@
 (ns gravity.self-hosting.stage3-verification-runner
-  "Runs the fixed, non-authoritative Stage3--Stage9 development batches.
+  "Runs the fixed, non-authoritative Stage3--Stage10 development batches.
 
   Stage7 exposes the exact C11 source profiles, one cache-affine SH12 adapter
   batch, and one public C11 check.  The shape profile remains an execution-only
   alias of the complete source profile; it does not own a second copy of the
   namespace catalog.  Proof candidates are launched only by the Python policy
   boundary and remain non-authoritative pending independent attestation.
+
+  Stage10 exposes the W1/C14 source-only admission batch, the ordinary direct
+  mutation discriminator, a narrow SH25/SH26 consumer closure, and a manual
+  cache-affine hostile stable-candidate batch.  The packet-substitution matrix
+  is never selected automatically.
 
   This namespace intentionally has no compile-time dependency on the Clojure
   bootstrap, the C7 tests, or the SH-07 iteration runner.  The production
