@@ -29,6 +29,8 @@ STAGE0_COMPONENT_CONTRACT = ROOT / "contracts" / "stage0-clojure-components.json
 MAX_OWNERSHIP_EDN_BYTES = 512 * 1024
 MAX_STAGE0_COMPONENT_CONTRACT_BYTES = 512 * 1024
 SCHEMA_VERSION = 1
+PYTHON_SEMANTIC_SUPPORT_ROOT = "src/gravity/"
+PYTHON_SEMANTIC_SUPPORT_POLICY_ID = "reviewed-python-semantic-support"
 
 STAGE0_COMPONENT_SCHEMA = "gravity/stage0-clojure-components-v1"
 STAGE0_COMPONENT_KIND = "stage0-clojure-component-inventory"
@@ -880,27 +882,28 @@ def _component_file_dependencies(
 
 def parse_normative_ownership(
     path: Path = NORMATIVE_OWNERSHIP,
-) -> tuple[list[str], list[str], list[str], dict[str, str], list[str]]:
+) -> tuple[list[str], list[str], list[str], list[str], dict[str, str], list[str]]:
     """Project only coordinator ownership facts from the normative EDN.
 
     This is deliberately not a permissive EDN parser.  The parity contract
     depends on simple, stable vector shapes for coordinator routing, generated
-    evidence, and integration surfaces, plus a string-to-keyword map under
-    ``:module-owners``. Any missing marker, duplicate marker, non-ASCII input,
-    or token outside those shapes is an error rather than a best-effort parse.
+    evidence, integration surfaces, and Python semantic-support prefixes, plus
+    a string-to-keyword map under ``:module-owners``. Any missing marker,
+    duplicate marker, non-ASCII input, or token outside those shapes is an
+    error rather than a best-effort parse.
     """
 
     errors: list[str] = []
     try:
         raw = path.read_bytes()
     except OSError as exc:
-        return [], [], [], {}, [f"cannot read normative ownership EDN {path}: {exc}"]
+        return [], [], [], [], {}, [f"cannot read normative ownership EDN {path}: {exc}"]
     if len(raw) > MAX_OWNERSHIP_EDN_BYTES:
-        return [], [], [], {}, [f"normative ownership EDN exceeds {MAX_OWNERSHIP_EDN_BYTES} bytes"]
+        return [], [], [], [], {}, [f"normative ownership EDN exceeds {MAX_OWNERSHIP_EDN_BYTES} bytes"]
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError as exc:
-        return [], [], [], {}, [f"normative ownership EDN is not UTF-8: {exc}"]
+        return [], [], [], [], {}, [f"normative ownership EDN is not UTF-8: {exc}"]
     try:
         text.encode("ascii")
     except UnicodeEncodeError:
@@ -925,12 +928,12 @@ def parse_normative_ownership(
     if len(module_matches) != 1:
         errors.append("normative ownership EDN must contain exactly one :module-owners map")
     if errors:
-        return [], [], [], {}, errors
+        return [], [], [], [], {}, errors
 
     coordinator_start = coordinator_matches[0].end()
     module_start = module_matches[0].start()
     if module_start <= coordinator_start:
-        return [], [], [], {}, ["normative ownership EDN coordinator/module owner order is unrecognized"]
+        return [], [], [], [], {}, ["normative ownership EDN coordinator/module owner order is unrecognized"]
     coordinator_section = text[coordinator_start:module_start]
     central_routing = _extract_normative_string_vector(
         coordinator_section, "central-routing", errors
@@ -941,11 +944,21 @@ def parse_normative_ownership(
     integration_surfaces = _extract_normative_string_vector(
         coordinator_section, "integration-surfaces", errors
     )
+    python_semantic_support_prefixes = _extract_normative_string_vector(
+        coordinator_section, "python-semantic-support-prefixes", errors
+    )
 
     reserved_matches = list(re.finditer(r":reserved-leaf-modules\s*\{", text))
     if len(reserved_matches) != 1 or reserved_matches[0].start() <= module_matches[0].end():
         errors.append("normative ownership EDN must delimit :module-owners before :reserved-leaf-modules")
-        return central_routing, generated_evidence_prefixes, integration_surfaces, {}, errors
+        return (
+            central_routing,
+            generated_evidence_prefixes,
+            integration_surfaces,
+            python_semantic_support_prefixes,
+            {},
+            errors,
+        )
     module_section = text[module_matches[0].end() : reserved_matches[0].start()]
     entry_re = re.compile(r'"([^"\\]*(?:\\.[^"\\]*)*)"\s+:([A-Za-z0-9_-]+)')
     entries = list(entry_re.finditer(module_section))
@@ -958,7 +971,14 @@ def parse_normative_ownership(
     remainder = entry_re.sub("", module_section).replace("}", "")
     if not entries or re.search(r"[^\s]", remainder):
         errors.append("normative ownership EDN :module-owners map contains unrecognized structure")
-    return central_routing, generated_evidence_prefixes, integration_surfaces, module_owners, errors
+    return (
+        central_routing,
+        generated_evidence_prefixes,
+        integration_surfaces,
+        python_semantic_support_prefixes,
+        module_owners,
+        errors,
+    )
 
 
 def _extract_edn_delimited_section(
@@ -1555,7 +1575,9 @@ def _path_pattern_matches(pattern: str, path: str) -> bool:
 
 
 def _validate_normative_ownership_parity(
-    manifest: Mapping[str, Any], errors: list[str]
+    manifest: Mapping[str, Any],
+    errors: list[str],
+    ownership_path: Path = NORMATIVE_OWNERSHIP,
 ) -> None:
     """Ensure coordinator paths in the normative EDN have the same owner here."""
 
@@ -1563,9 +1585,10 @@ def _validate_normative_ownership_parity(
         central_routing,
         generated_evidence_prefixes,
         integration_surfaces,
+        python_semantic_support_prefixes,
         module_owners,
         parse_errors,
-    ) = parse_normative_ownership()
+    ) = parse_normative_ownership(ownership_path)
     for parse_error in parse_errors:
         _add_error(errors, "normative ownership parity", parse_error)
     if parse_errors:
@@ -1624,6 +1647,18 @@ def _validate_normative_ownership_parity(
                 "kind": "generated",
                 "editable": False,
                 "review_required": True,
+            },
+        ),
+        (
+            PYTHON_SEMANTIC_SUPPORT_POLICY_ID,
+            python_semantic_support_prefixes,
+            {
+                "owner": "master-coordinator",
+                "kind": "reviewed",
+                "editable": True,
+                "review_required": True,
+                "reviewer": "master-coordinator",
+                "allow_overlap": False,
             },
         ),
     ):
@@ -1867,7 +1902,19 @@ def _validate_slices(
             _add_error(errors, f"{location}.owner", f"unknown owner {item.get('owner')!r}")
         for field in ("artifact_inputs", "artifact_outputs"):
             _validate_id_list(item.get(field), f"{location}.{field}", errors, artifact_ids)
-        _validate_id_list(item.get("path_policy_ids"), f"{location}.path_policy_ids", errors, policy_ids)
+        slice_policy_ids = item.get("path_policy_ids")
+        _validate_id_list(
+            slice_policy_ids, f"{location}.path_policy_ids", errors, policy_ids
+        )
+        if (
+            isinstance(slice_policy_ids, list)
+            and PYTHON_SEMANTIC_SUPPORT_POLICY_ID in slice_policy_ids
+        ):
+            _add_error(
+                errors,
+                f"{location}.path_policy_ids",
+                "src/gravity semantic support must remain outside Stage0 slices",
+            )
         _validate_cost(item.get("cost"), f"{location}.cost", errors)
         _validate_authority(item.get("authority"), f"{location}.authority", errors)
     expected = {f"SH-{index:02d}" for index in range(30)}
@@ -1929,6 +1976,12 @@ def _validate_ownership_and_paths(
                 _add_error(errors, location, "module owner paths must be exact paths")
             if owner not in owner_ids:
                 _add_error(errors, location, f"unknown owner {owner!r}")
+            if source_path.startswith(PYTHON_SEMANTIC_SUPPORT_ROOT):
+                _add_error(
+                    errors,
+                    location,
+                    "src/gravity support paths must remain outside ownership.module_paths",
+                )
 
     path_policy = manifest.get("path_policy")
     if not _is_mapping(path_policy):
@@ -1978,6 +2031,55 @@ def _validate_ownership_and_paths(
         elif kind == "reserved":
             if not isinstance(item.get("reservation"), str) or not item.get("reservation"):
                 _add_error(errors, location, "reserved policy needs a reservation description")
+
+    python_support_policy = policy_by_id.get(PYTHON_SEMANTIC_SUPPORT_POLICY_ID)
+    if python_support_policy is None:
+        _add_error(
+            errors,
+            "path_policy.policies",
+            f"missing required policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+        )
+    else:
+        if python_support_policy.get("kind") != "reviewed":
+            _add_error(
+                errors,
+                f"path policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+                "must remain reviewed",
+            )
+        if python_support_policy.get("owner") != "master-coordinator":
+            _add_error(
+                errors,
+                f"path policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+                "must remain coordinator-owned",
+            )
+        if python_support_policy.get("patterns") != [PYTHON_SEMANTIC_SUPPORT_ROOT]:
+            _add_error(
+                errors,
+                f"path policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+                f"must cover only {PYTHON_SEMANTIC_SUPPORT_ROOT!r}",
+            )
+        for field, expected in (
+            ("editable", True),
+            ("review_required", True),
+            ("reviewer", "master-coordinator"),
+            ("allow_overlap", False),
+        ):
+            if python_support_policy.get(field) != expected:
+                _add_error(
+                    errors,
+                    f"path policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+                    f"must set {field}={expected!r}",
+                )
+
+    coordinator_claims = owner_policies.get("master-coordinator", []).count(
+        PYTHON_SEMANTIC_SUPPORT_POLICY_ID
+    )
+    if coordinator_claims != 1:
+        _add_error(
+            errors,
+            "ownership owner 'master-coordinator'",
+            f"must claim {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r} exactly once",
+        )
 
     for owner, references in owner_policies.items():
         for policy_id in references:

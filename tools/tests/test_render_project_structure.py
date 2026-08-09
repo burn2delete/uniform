@@ -51,7 +51,7 @@ class ProjectStructureRendererTests(unittest.TestCase):
         self.assertEqual(18, first["summary"]["canonical_pass_count"])
         self.assertEqual(30, first["summary"]["slice_count"])
         self.assertEqual(18, len(first["canonical_pass_table"]))
-        self.assertEqual(53, len(first["owner_path_view"]["policies"]))
+        self.assertEqual(54, len(first["owner_path_view"]["policies"]))
         self.assertEqual([], first["changed_path_impact"]["changed_paths"])
         self.assertIn("contract_identity", first)
 

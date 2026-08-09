@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
 from unittest import mock
 
@@ -189,19 +190,262 @@ def hidden_effects():
         self.assertTrue(any("must remain false" in error for error in errors), errors)
         self.assertTrue(any("cannot grant authority" in error or "must be declared" in error for error in errors), errors)
 
-    def test_unresolved_semantic_policy_cannot_authorize_edits(self) -> None:
+    def test_semantic_support_policy_cannot_authorize_edits(self) -> None:
         contract = copy.deepcopy(self.contract)
-        policy = next(item for item in contract["policies"] if item["id"] == "unresolved-semantic-source")
+        policy = next(item for item in contract["policies"] if item["id"] == "reviewed-python-semantic-support")
         policy["authorizes_edits"] = True
         errors = self.validate(contract)
-        self.assertTrue(any("unresolved policy must not authorize edits" in error for error in errors), errors)
+        self.assertTrue(any("non-writable" in error for error in errors), errors)
 
-    def test_semantic_component_cannot_replace_unresolved_ownership(self) -> None:
+    def test_semantic_component_cannot_replace_reviewed_support_ownership(self) -> None:
         contract = copy.deepcopy(self.contract)
         component = self.component(contract, "semantic-library")
         component["source_path_policy_refs"] = ["reviewed-central-routing"]
         errors = self.validate(contract)
-        self.assertTrue(any("must retain only the unresolved" in error for error in errors), errors)
+        self.assertTrue(any("must retain only the reviewed external support" in error for error in errors), errors)
+
+    def test_semantic_support_policy_cannot_be_generated_or_unresolved(self) -> None:
+        for kind in ("generated", "unresolved"):
+            contract = copy.deepcopy(self.contract)
+            policy = next(item for item in contract["policies"] if item["id"] == "reviewed-python-semantic-support")
+            policy["kind"] = kind
+            errors = self.validate(contract)
+            self.assertTrue(any("must name a reviewed semantic-support policy" in error for error in errors), errors)
+
+    def test_semantic_support_cannot_receive_authority(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        self.component(contract, "semantic-library")["authority_ceiling"] = "non-authoritative-observation"
+        errors = self.validate(contract)
+        self.assertTrue(any("semantic support requires authority ceiling none" in error for error in errors), errors)
+
+    def test_external_semantic_support_policy_shape_and_claim_are_exact(self) -> None:
+        project = validator.load_json(ROOT / "contracts" / "project-structure.json")
+        mutations = {
+            "owner": "sh-reader",
+            "reviewer": "sh-reader",
+            "editable": False,
+            "review_required": False,
+            "allow_overlap": True,
+        }
+
+        def policy_errors(project_contract: dict) -> list[str]:
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                contracts = root / "contracts"
+                contracts.mkdir()
+                (contracts / "project-structure.json").write_text(
+                    json.dumps(project_contract), encoding="utf-8"
+                )
+                errors: list[str] = []
+                enums = validator._validate_enums(self.contract, errors)
+                validator._validate_policies(self.contract, enums, root, errors)
+                return errors
+
+        for field, value in mutations.items():
+            changed = copy.deepcopy(project)
+            policy = next(
+                item
+                for item in changed["path_policy"]["policies"]
+                if item["id"] == "reviewed-python-semantic-support"
+            )
+            policy[field] = value
+            errors = policy_errors(changed)
+            self.assertTrue(
+                any(f"must set {field}=" in error for error in errors), errors
+            )
+
+        for duplicate in (False, True):
+            changed = copy.deepcopy(project)
+            coordinator = next(
+                item
+                for item in changed["ownership"]["owners"]
+                if item["id"] == "master-coordinator"
+            )
+            if duplicate:
+                coordinator["path_policy_ids"].append(
+                    "reviewed-python-semantic-support"
+                )
+            else:
+                coordinator["path_policy_ids"].remove(
+                    "reviewed-python-semantic-support"
+                )
+            errors = policy_errors(changed)
+            self.assertTrue(
+                any("claimed exactly once by master-coordinator" in error for error in errors),
+                errors,
+            )
+
+        changed = copy.deepcopy(project)
+        changed["ownership"]["module_paths"]["src/gravity/reader.py"] = (
+            "master-coordinator"
+        )
+        errors = policy_errors(changed)
+        self.assertTrue(
+            any("outside ownership.module_paths" in error for error in errors), errors
+        )
+
+        changed = copy.deepcopy(project)
+        changed["slices"][0]["path_policy_ids"].append(
+            "reviewed-python-semantic-support"
+        )
+        errors = policy_errors(changed)
+        self.assertTrue(
+            any("outside Stage0 slices" in error for error in errors), errors
+        )
+
+    def test_semantic_selector_lists_cannot_weaken_concrete_components(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        contract["constraints"]["semantic_categories"].remove("semantic")
+        self.component(contract, "semantic-library")["authority_ceiling"] = "reviewed"
+        errors = self.validate(contract)
+        self.assertTrue(any("exact semantic-support boundary" in error for error in errors), errors)
+        self.assertTrue(any("semantic support requires authority ceiling none" in error for error in errors), errors)
+
+        contract = copy.deepcopy(self.contract)
+        contract["constraints"]["semantic_forbidden_effects"].remove(
+            "filesystem-write"
+        )
+        path = "src/gravity/reader.py"
+        source = (ROOT / path).read_text(encoding="utf-8") + (
+            "\nfrom pathlib import Path\n"
+            "def hidden_write():\n"
+            "    Path('x').write_text('x')\n"
+        )
+        errors = self.validate(contract, source_overrides={path: source})
+        self.assertTrue(any("exact semantic-support boundary" in error for error in errors), errors)
+        self.assertTrue(any("observed forbidden effects: filesystem-write" in error for error in errors), errors)
+
+        contract = copy.deepcopy(self.contract)
+        contract["constraints"]["semantic_forbidden_import_roots"].remove(
+            "subprocess"
+        )
+        source = (ROOT / path).read_text(encoding="utf-8") + "\nimport subprocess\n"
+        errors = self.validate(contract, source_overrides={path: source})
+        self.assertTrue(any("exact semantic-support boundary" in error for error in errors), errors)
+        self.assertTrue(any("imports forbidden roots: subprocess" in error for error in errors), errors)
+
+    def test_semantic_components_cannot_become_inert_guarded_clis(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        for identifier in ("semantic-library", "semantic-document-coverage"):
+            self.component(contract, identifier)["import_safety"] = "guarded-cli"
+        overrides = {}
+        for path in ("src/gravity/reader.py", "src/gravity/ai_document_coverage.py"):
+            overrides[path] = (ROOT / path).read_text(encoding="utf-8") + (
+                "\nif __name__ == '__main__':\n"
+                "    pass\n"
+            )
+        errors = self.validate(contract, source_overrides=overrides)
+        self.assertTrue(any("must retain import_safety='library'" in error for error in errors), errors)
+        self.assertTrue(any("semantic support must not expose a CLI main guard" in error for error in errors), errors)
+
+    def test_semantic_component_partition_and_dependency_shape_are_exact(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        library = self.component(contract, "semantic-library")
+        coverage = self.component(contract, "semantic-document-coverage")
+        library["includes"], coverage["includes"] = (
+            coverage["includes"],
+            library["includes"],
+        )
+        errors = self.validate(contract)
+        self.assertTrue(
+            any("semantic support must retain includes=" in error for error in errors),
+            errors,
+        )
+
+        contract = copy.deepcopy(self.contract)
+        self.component(contract, "semantic-library")["includes"] = [
+            "src/gravity/reader.py"
+        ]
+        errors = self.validate(contract)
+        self.assertTrue(
+            any("semantic support must retain includes=" in error for error in errors),
+            errors,
+        )
+
+        contract = copy.deepcopy(self.contract)
+        self.component(contract, "semantic-library")["role"] = "package-marker"
+        errors = self.validate(contract)
+        self.assertTrue(
+            any("semantic support must retain role='semantic-library'" in error for error in errors),
+            errors,
+        )
+
+        contract = copy.deepcopy(self.contract)
+        self.component(contract, "semantic-document-coverage")[
+            "allowed_dependency_categories"
+        ] = ["semantic", "orchestration"]
+        errors = self.validate(contract)
+        self.assertTrue(
+            any(
+                "semantic support must retain allowed_dependency_categories=['semantic']"
+                in error
+                for error in errors
+            ),
+            errors,
+        )
+
+    def test_semantic_component_output_and_test_surfaces_are_exact(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        self.component(contract, "semantic-package")["output_path_policy_refs"] = [
+            "generated-evidence"
+        ]
+        errors = self.validate(contract)
+        self.assertTrue(
+            any("semantic support must retain output_path_policy_refs=[]" in error for error in errors),
+            errors,
+        )
+
+        contract = copy.deepcopy(self.contract)
+        self.component(contract, "semantic-library")["test_surfaces"] = [
+            "import-smoke"
+        ]
+        errors = self.validate(contract)
+        self.assertTrue(
+            any(
+                "semantic support must retain test_surfaces=['import-smoke', 'validator-cli']"
+                in error
+                for error in errors
+            ),
+            errors,
+        )
+
+    def test_semantic_root_and_policy_identity_are_exact(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        contract["constraints"]["semantic_root"] = "src"
+        errors = self.validate(contract)
+        self.assertTrue(
+            any("must retain the exact semantic-support root 'src/gravity'" in error for error in errors),
+            errors,
+        )
+
+        contract = copy.deepcopy(self.contract)
+        alias = "reviewed-python-semantic-support-alias"
+        policy = next(
+            item
+            for item in contract["policies"]
+            if item["id"] == "reviewed-python-semantic-support"
+        )
+        policy["id"] = alias
+        contract["constraints"]["semantic_source_policy"] = alias
+        for identifier in (
+            "semantic-package",
+            "semantic-library",
+            "semantic-document-coverage",
+        ):
+            self.component(contract, identifier)["source_path_policy_refs"] = [alias]
+        errors = self.validate(contract)
+        self.assertTrue(
+            any(
+                "must retain the exact semantic-support policy 'reviewed-python-semantic-support'"
+                in error
+                for error in errors
+            ),
+            errors,
+        )
+        self.assertTrue(
+            any("must name a reviewed semantic-support policy" in error for error in errors),
+            errors,
+        )
 
     def test_semantic_root_cannot_be_reclassified_as_tooling(self) -> None:
         contract = copy.deepcopy(self.contract)
