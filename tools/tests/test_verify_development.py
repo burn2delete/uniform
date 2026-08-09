@@ -2533,6 +2533,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage8-c12-source-shape",
                 "stage8-public-c12",
                 "stage8-sh13-c11-domain-evidence",
+                "stage8-sh14-authenticated-layout",
                 "stage9-c13-source-shape",
                 "stage9-sh16-c13-evidence-boundary",
             },
@@ -3149,6 +3150,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         stage8_batches = {
             "stage8-c12-source-shape",
             "stage8-sh13-c11-domain-evidence",
+            "stage8-sh14-authenticated-layout",
             "stage8-public-c12",
         }
         stage9_batches = {
@@ -4023,6 +4025,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage7-sh12-c10-mir-adapter",
                 "stage8-c12-source-shape",
                 "stage8-sh13-c11-domain-evidence",
+                "stage8-sh14-authenticated-layout",
                 "stage9-c13-source-shape",
                 "stage9-sh16-c13-evidence-boundary",
             },
@@ -4052,6 +4055,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "stage7-sh12-c10-mir-adapter",
                 "stage8-c12-source-shape",
                 "stage8-sh13-c11-domain-evidence",
+                "stage8-sh14-authenticated-layout",
                 "stage9-c13-source-shape",
                 "stage9-sh16-c13-evidence-boundary",
             },
@@ -4296,6 +4300,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "stage7-sh12-c10-mir-adapter",
             "stage8-c12-source-shape",
             "stage8-sh13-c11-domain-evidence",
+            "stage8-sh14-authenticated-layout",
             "stage9-c13-source-shape",
             "stage9-sh16-c13-evidence-boundary",
         }
@@ -4467,6 +4472,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 public["id"],
                 "stage8-c12-source-shape",
                 "stage8-sh13-c11-domain-evidence",
+                "stage8-sh14-authenticated-layout",
                 "stage9-c13-source-shape",
                 "stage9-sh16-c13-evidence-boundary",
             },
@@ -4479,6 +4485,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 adapter["id"],
                 "stage8-c12-source-shape",
                 "stage8-sh13-c11-domain-evidence",
+                "stage8-sh14-authenticated-layout",
                 "stage9-c13-source-shape",
                 "stage9-sh16-c13-evidence-boundary",
             },
@@ -4524,6 +4531,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         stage8_ids = {
             "stage8-c12-source-shape",
             "stage8-sh13-c11-domain-evidence",
+            "stage8-sh14-authenticated-layout",
             "stage8-public-c12",
         }
         self.assertEqual(
@@ -4532,16 +4540,20 @@ class VerifyDevelopmentTests(unittest.TestCase):
         )
         source = by_id["stage8-c12-source-shape"]
         adapter = by_id["stage8-sh13-c11-domain-evidence"]
+        layout = by_id["stage8-sh14-authenticated-layout"]
         public = by_id["stage8-public-c12"]
         self.assertEqual(source["stage3_batch"], "stage8-c12-source-shape")
         self.assertEqual(adapter["stage3_batch"], "stage8-sh13-c11-domain-evidence")
+        self.assertEqual(layout["stage3_batch"], "stage8-sh14-authenticated-layout")
         self.assertEqual(public["stage3_batch"], "stage8-public-c12")
         self.assertEqual(source["jvm_heap"], "-J-Xmx512m")
         self.assertEqual(adapter["jvm_heap"], "-J-Xmx8g")
+        self.assertEqual(layout["jvm_heap"], "-J-Xmx8g")
         self.assertEqual(public["jvm_heap"], "-J-Xmx2g")
         self.assertEqual(adapter["depends_on"], [source["id"]])
+        self.assertEqual(layout["depends_on"], [source["id"], adapter["id"]])
         self.assertEqual(public["depends_on"], [source["id"]])
-        for check in (source, adapter, public):
+        for check in (source, adapter, layout, public):
             self.assertEqual(check["authority"], "none")
             self.assertTrue(check["automatic"])
             self.assertEqual(check["lock"], "/private/tmp/gravity-sh07-heavy.lock")
@@ -4581,7 +4593,14 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 "bootstrap/clojure/test/gravity/self_hosting/"
                 "sh13_c11_domain_evidence_adapter_test.clj"
             ),
-            units | {source["id"], adapter["id"]} | stage9_ids,
+            units | {source["id"], adapter["id"], layout["id"]} | stage9_ids,
+        )
+        self.assertEqual(
+            selected(
+                "bootstrap/clojure/test/gravity/self_hosting/"
+                "sh14_authenticated_layout_test.clj"
+            ),
+            units | {source["id"], adapter["id"], layout["id"]},
         )
         for unrelated in (
             "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
@@ -4610,6 +4629,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         for test_path in (
             "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj",
             "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj",
         ):
             self.assertEqual(
                 by_id["stage1-sh01-unit"]["impact_excludes"].count(test_path),
@@ -4620,7 +4640,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         c12_sha = "sha256:" + hashlib.sha256(c12_source.read_bytes()).hexdigest()
         self.assertEqual(
             c12_sha,
-            "sha256:6d56e7a0484be3abdf395ef41d5ecae85c47f090c263c08010f08ce82a8348d9",
+            "sha256:827610557f96b2e54e5b89c675f44f7110e3c2658bebef4aafba981abfec9233",
         )
         self.assertIn(
             c12_sha,
@@ -4793,11 +4813,13 @@ class VerifyDevelopmentTests(unittest.TestCase):
         check_ids = (
             "stage8-c12-source-shape",
             "stage8-sh13-c11-domain-evidence",
+            "stage8-sh14-authenticated-layout",
             "stage8-public-c12",
         )
         wrong_same_heap_batch = {
             "stage8-c12-source-shape": "stage7-c11-shape-preflight",
             "stage8-sh13-c11-domain-evidence": "stage7-sh12-c10-mir-adapter",
+            "stage8-sh14-authenticated-layout": "stage7-sh12-c10-mir-adapter",
             "stage8-public-c12": "stage7-public-c11",
         }
         for check_id in check_ids:

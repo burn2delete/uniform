@@ -1025,20 +1025,24 @@ node. `stage8-c12-source-shape` uses a 512 MiB JVM for exactly two source-only
 checks: control-form shape and export-definition completeness. It branches to
 `stage8-sh13-c11-domain-evidence`, which runs six exact selectors in one 8 GiB
 JVM, and `stage8-public-c12`, which runs one exact public compatibility selector
-in a 2 GiB JVM. Keeping the six SH13 selectors together preserves namespace-
-local C12 plan affinity and exact fail-fast skipped-tail reporting.
+in a 2 GiB JVM. A fourth node, `stage8-sh14-authenticated-layout`, depends on
+both the shape and SH13 nodes and runs its exact five selectors in source order
+in one 8 GiB JVM. Keeping each semantic selector family together preserves
+namespace-local plan affinity and exact fail-fast skipped-tail reporting.
 
-The bound C12 source is 140,951 bytes with SHA
-`sha256:6d56e7a0484be3abdf395ef41d5ecae85c47f090c263c08010f08ce82a8348d9`.
+The bound C12 source is 162,404 bytes with SHA
+`sha256:827610557f96b2e54e5b89c675f44f7110e3c2658bebef4aafba981abfec9233`.
 Every production node is fresh, exclusive, capacity one, command-owned on the
 canonical heavy lock, and declares `authority: none`. C12 source changes select
-only the four cheap unit prerequisites plus the three Stage8 nodes. The C12
-source is excluded exactly once from all seven legacy broad Stage0 owners, and
-the two Stage8 test files are excluded from the broad Stage1 test glob while
+the four cheap unit prerequisites, the four Stage8 nodes, and the two
+downstream Stage9 evidence nodes described below. The C12 source is excluded
+exactly once from all seven legacy broad Stage0 owners, and
+the three Stage8 test files are excluded from the broad Stage1 test glob while
 remaining exact declared inputs. No current Stage8 authority, proof candidate,
-reviewed attestation, or release evidence is claimed. The exact three-node
-closure must be rerun after final composition; earlier C12/SH13 runs are only
-historical non-authoritative planning evidence.
+reviewed attestation, or release evidence is claimed. The exact four-node
+closure must be rerun after final composition. The separate SH14 R3 result
+(5 tests/304 assertions) is non-authoritative and its receipt did not bind the
+source snapshot, so it is runtime calibration rather than graph admission.
 
 ### 13. Fixed Stage9 C13 evidence boundary
 

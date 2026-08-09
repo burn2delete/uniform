@@ -107,6 +107,7 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage8-c12-source-shape": "stage8-c12-source-shape-selectors",
             "stage8-public-c12": "stage8-public-c12-selectors",
             "stage8-sh13-c11-domain-evidence": "stage8-sh13-c11-domain-evidence-selectors",
+            "stage8-sh14-authenticated-layout": "stage8-sh14-authenticated-layout-selectors",
             "stage9-c13-source-shape": "stage9-c13-source-shape-selectors",
             "stage9-sh16-c13-evidence-boundary": "stage9-sh16-c13-evidence-boundary-selectors",
         }
@@ -149,6 +150,7 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage8-c12-source-shape": "-J-Xmx512m",
             "stage8-public-c12": "-J-Xmx2g",
             "stage8-sh13-c11-domain-evidence": "-J-Xmx8g",
+            "stage8-sh14-authenticated-layout": "-J-Xmx8g",
             "stage9-c13-source-shape": "-J-Xmx512m",
             "stage9-sh16-c13-evidence-boundary": "-J-Xmx8g",
             "c10-authority": "-J-Xmx8g",
@@ -234,6 +236,11 @@ class Stage3WrapperTests(unittest.TestCase):
         self.assertEqual(6, len(c12_adapter))
         self.assertEqual(6, len(set(c12_adapter)))
         self.assertTrue(c12_adapter[-1].endswith("/sh13-c11-domain-evidence-path-neutral-provenance"))
+        sh14_layout = stage3._FIXED_BATCH_SELECTORS["stage8-sh14-authenticated-layout"]
+        self.assertEqual(5, len(sh14_layout))
+        self.assertEqual(5, len(set(sh14_layout)))
+        self.assertTrue(sh14_layout[0].endswith("/sh14-authenticated-layout-source-parses-before-compilation"))
+        self.assertTrue(sh14_layout[-1].endswith("/sh14-authenticated-layout-identity-is-path-neutral-with-separate-provenance"))
         self.assertEqual(
             (
                 "gravity.bootstrap-test/public-check-accepts-gravity-authored-c12-domain-ir-architecture",

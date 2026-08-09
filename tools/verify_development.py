@@ -599,6 +599,27 @@ _STAGE8_FIXED_NODE_POLICIES = {
             "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj",
         ),
     },
+    "stage8-sh14-authenticated-layout": {
+        "timeout_seconds": 1200,
+        "stage3_batch": "stage8-sh14-authenticated-layout",
+        "depends_on": [
+            "stage8-c12-source-shape",
+            "stage8-sh13-c11-domain-evidence",
+        ],
+        "required_inputs": (
+            "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
+            "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+            "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj",
+        ),
+    },
 }
 
 _STAGE9_FIXED_NODE_POLICIES = {

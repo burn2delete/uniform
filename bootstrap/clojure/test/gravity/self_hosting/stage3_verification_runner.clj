@@ -250,6 +250,15 @@
    'gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-hostile-carriers-and-recomputation
    'gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-path-neutral-provenance])
 
+;; One namespace and one authenticated C11 carrier.  Source parsing and the
+;; public surface precede the positive; hostile mutations precede provenance.
+(def stage8-sh14-authenticated-layout-selectors
+  ['gravity.self-hosting.sh14-authenticated-layout-test/sh14-authenticated-layout-source-parses-before-compilation
+   'gravity.self-hosting.sh14-authenticated-layout-test/sh14-authenticated-layout-surface-arity-and-nonclaims
+   'gravity.self-hosting.sh14-authenticated-layout-test/sh14-authenticated-layout-genuine-positive-computes-logical-offsets
+   'gravity.self-hosting.sh14-authenticated-layout-test/sh14-authenticated-layout-rejects-mutations-and-hostile-carriers
+   'gravity.self-hosting.sh14-authenticated-layout-test/sh14-authenticated-layout-identity-is-path-neutral-with-separate-provenance])
+
 (def stage8-public-c12-selectors
   ['gravity.bootstrap-test/public-check-accepts-gravity-authored-c12-domain-ir-architecture])
 
@@ -304,6 +313,7 @@
    :stage8-c12-source-shape
    :stage8-public-c12
    :stage8-sh13-c11-domain-evidence
+   :stage8-sh14-authenticated-layout
    :stage9-c13-source-shape
    :stage9-sh16-c13-evidence-boundary])
 
@@ -340,6 +350,8 @@
    :stage8-public-c12 stage8-public-c12-selectors
    :stage8-sh13-c11-domain-evidence
    stage8-sh13-c11-domain-evidence-selectors
+   :stage8-sh14-authenticated-layout
+   stage8-sh14-authenticated-layout-selectors
    :stage9-c13-source-shape stage9-c13-source-shape-selectors
    :stage9-sh16-c13-evidence-boundary
    stage9-sh16-c13-evidence-boundary-selectors))
