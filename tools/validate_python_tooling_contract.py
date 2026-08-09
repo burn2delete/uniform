@@ -32,6 +32,56 @@ MAX_SOURCE_BYTES = 4 * 1024 * 1024
 MAX_AST_DEPTH = 256
 SHA256_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+SEMANTIC_ROOT = "src/gravity"
+SEMANTIC_POLICY_ID = "reviewed-python-semantic-support"
+SEMANTIC_CATEGORIES = ["semantic", "semantic-coverage"]
+SEMANTIC_FORBIDDEN_EFFECTS = ["filesystem-write", "process", "network"]
+SEMANTIC_FORBIDDEN_IMPORT_ROOTS = [
+    "tools",
+    "subprocess",
+    "multiprocessing",
+    "socket",
+    "urllib",
+    "urllib3",
+    "requests",
+    "http",
+    "aiohttp",
+]
+SEMANTIC_COMPONENT_INVARIANTS = {
+    "semantic-package": {
+        "includes": ["src/gravity/__init__.py"],
+        "excludes": [],
+        "category": "semantic",
+        "role": "package-marker",
+        "allowed_dependency_categories": [],
+        "effects": [],
+        "output_path_policy_refs": [],
+        "test_surfaces": ["import-smoke"],
+    },
+    "semantic-library": {
+        "includes": ["src/gravity/*.py"],
+        "excludes": [
+            "src/gravity/__init__.py",
+            "src/gravity/*_document_coverage.py",
+        ],
+        "category": "semantic",
+        "role": "semantic-library",
+        "allowed_dependency_categories": ["semantic"],
+        "effects": ["filesystem-read"],
+        "output_path_policy_refs": [],
+        "test_surfaces": ["import-smoke", "validator-cli"],
+    },
+    "semantic-document-coverage": {
+        "includes": ["src/gravity/*_document_coverage.py"],
+        "excludes": [],
+        "category": "semantic-coverage",
+        "role": "semantic-coverage-library",
+        "allowed_dependency_categories": ["semantic"],
+        "effects": ["filesystem-read"],
+        "output_path_policy_refs": [],
+        "test_surfaces": ["import-smoke", "validator-cli"],
+    },
+}
 
 TOP_LEVEL_FIELDS = {
     "schema_version",
@@ -108,7 +158,7 @@ CONSTRAINT_FIELDS = {
     "semantic_root",
     "tooling_root",
     "test_pattern",
-    "unresolved_semantic_policy",
+    "semantic_source_policy",
 }
 README_FIELDS = {"path", "required_statements"}
 
@@ -645,21 +695,56 @@ def _validate_scope(contract: Mapping[str, Any], errors: list[str]) -> None:
             _error(errors, f"scope.{name}", "must be a lowercase sha256 identity")
 
 
-def _project_policies(root: Path, errors: list[str]) -> dict[str, Mapping[str, Any]]:
+def _project_policy_context(
+    root: Path, errors: list[str]
+) -> tuple[
+    dict[str, Mapping[str, Any]],
+    dict[str, list[str]],
+    Mapping[str, Any],
+    Sequence[Any],
+]:
     try:
         project = load_json(root / "contracts" / "project-structure.json")
         policies = project["path_policy"]["policies"]
+        owners = project["ownership"]["owners"]
+        module_paths = project["ownership"]["module_paths"]
+        slices = project["slices"]
     except (OSError, ValueError, KeyError, TypeError) as exc:
         _error(errors, "policies", f"cannot read project structure policies: {exc}")
-        return {}
+        return {}, {}, {}, []
     result: dict[str, Mapping[str, Any]] = {}
+    claims: dict[str, list[str]] = {}
     if not isinstance(policies, list):
         _error(errors, "policies", "project structure policies must be a list")
-        return result
+        policies = []
     for policy in policies:
         if isinstance(policy, Mapping) and isinstance(policy.get("id"), str):
+            if policy["id"] in result:
+                _error(
+                    errors,
+                    "policies",
+                    f"project structure repeats policy {policy['id']!r}",
+                )
             result[policy["id"]] = policy
-    return result
+    if not isinstance(owners, list):
+        _error(errors, "policies", "project structure owners must be a list")
+        owners = []
+    for owner in owners:
+        if not isinstance(owner, Mapping) or not isinstance(owner.get("id"), str):
+            continue
+        references = owner.get("path_policy_ids")
+        if not isinstance(references, list):
+            continue
+        for policy_id in references:
+            if isinstance(policy_id, str):
+                claims.setdefault(policy_id, []).append(owner["id"])
+    if not isinstance(module_paths, Mapping):
+        _error(errors, "policies", "project structure module_paths must be an object")
+        module_paths = {}
+    if not isinstance(slices, list):
+        _error(errors, "policies", "project structure slices must be a list")
+        slices = []
+    return result, claims, module_paths, slices
 
 
 def _validate_policies(
@@ -672,7 +757,9 @@ def _validate_policies(
     if not isinstance(raw, list):
         _error(errors, "policies", "must be a list")
         return {}
-    external = _project_policies(root, errors)
+    external, external_claims, external_module_paths, external_slices = (
+        _project_policy_context(root, errors)
+    )
     result: dict[str, Mapping[str, Any]] = {}
     for index, policy in enumerate(raw):
         location = f"policies[{index}]"
@@ -713,6 +800,54 @@ def _validate_policies(
                 for pattern in patterns:
                     if pattern not in external_patterns:
                         _error(errors, f"{location}.patterns", f"pattern {pattern!r} is not declared by external policy")
+            if external_id == SEMANTIC_POLICY_ID and target is not None:
+                expected_external = {
+                    "id": SEMANTIC_POLICY_ID,
+                    "kind": "reviewed",
+                    "owner": "master-coordinator",
+                    "patterns": ["src/gravity/"],
+                    "editable": True,
+                    "review_required": True,
+                    "reviewer": "master-coordinator",
+                    "allow_overlap": False,
+                }
+                for field, expected in expected_external.items():
+                    if target.get(field) != expected:
+                        _error(
+                            errors,
+                            f"{location}.external_policy_id",
+                            f"external semantic-support policy must set {field}={expected!r}",
+                        )
+                if external_claims.get(external_id, []).count("master-coordinator") != 1 or external_claims.get(external_id, []) != ["master-coordinator"]:
+                    _error(
+                        errors,
+                        f"{location}.external_policy_id",
+                        "external semantic-support policy must be claimed exactly once by master-coordinator",
+                    )
+                if any(
+                    isinstance(path, str)
+                    and (
+                        path == SEMANTIC_ROOT
+                        or path.startswith(SEMANTIC_ROOT.rstrip("/") + "/")
+                    )
+                    for path in external_module_paths
+                ):
+                    _error(
+                        errors,
+                        f"{location}.external_policy_id",
+                        "external project structure must keep src/gravity outside ownership.module_paths",
+                    )
+                if any(
+                    isinstance(item, Mapping)
+                    and isinstance(item.get("path_policy_ids"), list)
+                    and external_id in item["path_policy_ids"]
+                    for item in external_slices
+                ):
+                    _error(
+                        errors,
+                        f"{location}.external_policy_id",
+                        "external project structure must keep semantic support outside Stage0 slices",
+                    )
         if policy.get("kind") == "unresolved":
             if policy.get("authorizes_edits") is not False:
                 _error(errors, location, "unresolved policy must not authorize edits")
@@ -929,18 +1064,43 @@ def _validate_graph_and_ast(
             _error(errors, f"import-safety[{path}]", f"top-level effects: {', '.join(sorted(top_effects))}")
 
         category = component.get("category")
-        if category in set(constraints.get("semantic_categories", [])):
-            forbidden_effects = set(constraints.get("semantic_forbidden_effects", []))
+        semantic_path = path.startswith(SEMANTIC_ROOT.rstrip("/") + "/")
+        if semantic_path:
+            for field, expected in (
+                ("authority_ceiling", "none"),
+                ("import_safety", "library"),
+                ("execution_mode", "parallel-safe"),
+                ("output_classes", ["none"]),
+            ):
+                if component.get(field) != expected:
+                    _error(
+                        errors,
+                        f"semantic[{path}]",
+                        f"src/gravity component must retain {field}={expected!r}",
+                    )
+            if component.get("category") not in set(SEMANTIC_CATEGORIES):
+                _error(
+                    errors,
+                    f"semantic[{path}]",
+                    "src/gravity component must retain a semantic category",
+                )
+            forbidden_effects = set(SEMANTIC_FORBIDDEN_EFFECTS)
             present_forbidden = sorted(declared_effects.intersection(forbidden_effects))
             if present_forbidden:
                 _error(errors, f"semantic[{path}]", f"declares forbidden effects: {', '.join(present_forbidden)}")
             observed_forbidden = sorted(observed.intersection(forbidden_effects))
             if observed_forbidden:
                 _error(errors, f"semantic[{path}]", f"observed forbidden effects: {', '.join(observed_forbidden)}")
-            forbidden_roots = set(constraints.get("semantic_forbidden_import_roots", []))
+            forbidden_roots = set(SEMANTIC_FORBIDDEN_IMPORT_ROOTS)
             imported_forbidden = sorted(_import_roots(tree, path).intersection(forbidden_roots))
             if imported_forbidden:
                 _error(errors, f"semantic[{path}]", f"imports forbidden roots: {', '.join(imported_forbidden)}")
+            if guard:
+                _error(
+                    errors,
+                    f"semantic[{path}]",
+                    "semantic support must not expose a CLI main guard",
+                )
         if constraints.get("network_forbidden") is True and "network" in observed:
             _error(errors, f"effects[{path}]", "network use is forbidden throughout this contract")
 
@@ -1057,24 +1217,77 @@ def _validate_constraints(
         "reviewed_source_paths",
     ):
         _string_list(constraints.get(name), f"constraints.{name}", errors, allow_empty=False)
+    for name, expected in (
+        ("semantic_categories", SEMANTIC_CATEGORIES),
+        ("semantic_forbidden_effects", SEMANTIC_FORBIDDEN_EFFECTS),
+        ("semantic_forbidden_import_roots", SEMANTIC_FORBIDDEN_IMPORT_ROOTS),
+    ):
+        if constraints.get(name) != expected:
+            _error(
+                errors,
+                f"constraints.{name}",
+                f"must retain the exact semantic-support boundary {expected!r}",
+            )
     for name in ("semantic_root", "tooling_root"):
         _safe_relative_path(constraints.get(name), f"constraints.{name}", errors)
+    if constraints.get("semantic_root") != SEMANTIC_ROOT:
+        _error(
+            errors,
+            "constraints.semantic_root",
+            f"must retain the exact semantic-support root {SEMANTIC_ROOT!r}",
+        )
     _safe_pattern(constraints.get("test_pattern"), "constraints.test_pattern", errors)
-    unresolved_id = constraints.get("unresolved_semantic_policy")
-    unresolved = policies.get(unresolved_id)
-    if unresolved is None or unresolved.get("kind") != "unresolved":
-        _error(errors, "constraints.unresolved_semantic_policy", "must name an unresolved policy")
-    elif unresolved.get("authorizes_edits") is not False:
-        _error(errors, "constraints.unresolved_semantic_policy", "must not authorize edits")
+    semantic_policy_id = constraints.get("semantic_source_policy")
+    if semantic_policy_id != SEMANTIC_POLICY_ID:
+        _error(
+            errors,
+            "constraints.semantic_source_policy",
+            f"must retain the exact semantic-support policy {SEMANTIC_POLICY_ID!r}",
+        )
+    semantic_policy = policies.get(SEMANTIC_POLICY_ID)
+    if semantic_policy is None or semantic_policy.get("kind") != "reviewed":
+        _error(
+            errors,
+            "constraints.semantic_source_policy",
+            "must name a reviewed semantic-support policy",
+        )
+    elif (
+        semantic_policy.get("authorizes_edits") is not False
+        or semantic_policy.get("blocking") is not False
+        or semantic_policy.get("review_required") is not True
+        or semantic_policy.get("external_contract") != "contracts/project-structure.json"
+        or semantic_policy.get("external_policy_id") != "reviewed-python-semantic-support"
+    ):
+        _error(
+            errors,
+            "constraints.semantic_source_policy",
+            "must be coordinator-linked, review-required, non-writable, and non-blocking",
+        )
 
-    semantic_categories = set(constraints.get("semantic_categories", []))
-    for identifier, component in components.items():
-        if component.get("category") not in semantic_categories:
+    for identifier, expected in SEMANTIC_COMPONENT_INVARIANTS.items():
+        component = components.get(identifier)
+        if component is None:
+            _error(errors, "components", f"missing required semantic component {identifier!r}")
             continue
-        if component.get("source_path_policy_refs") != [unresolved_id]:
-            _error(errors, f"components[{identifier}]", "semantic source must retain only the unresolved external ownership policy")
+        if component.get("source_path_policy_refs") != [SEMANTIC_POLICY_ID]:
+            _error(
+                errors,
+                f"components[{identifier}]",
+                "semantic source must retain only the reviewed external support policy",
+            )
         if component.get("authority_ceiling") != "none":
-            _error(errors, f"components[{identifier}]", "semantic ownership gap requires authority ceiling none")
+            _error(errors, f"components[{identifier}]", "semantic support requires authority ceiling none")
+        for field, value in tuple(expected.items()) + (
+            ("import_safety", "library"),
+            ("execution_mode", "parallel-safe"),
+            ("output_classes", ["none"]),
+        ):
+            if component.get(field) != value:
+                _error(
+                    errors,
+                    f"components[{identifier}]",
+                    f"semantic support must retain {field}={value!r}",
+                )
 
     reviewed_roles = set(constraints.get("reviewed_source_roles", []))
     reviewed_paths = set(constraints.get("reviewed_source_paths", []))

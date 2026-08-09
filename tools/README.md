@@ -27,7 +27,7 @@ perform in-memory computation. It may not import `tools`, execute processes,
 use the network, or write files. The semantic layer is import-only: it has no
 CLI main guards and no import-time effects.
 
-`src/gravity` ownership: unresolved and blocking in the external project-structure contract; this contract classifies the files but does not authorize edits.
+`src/gravity` ownership: coordinator-reviewed semantic support in the external project-structure contract. This contract does not authorize Python edits or compiler authority, and these paths remain outside Stage0 module ownership and slices.
 
 `tools/` is coordinator-owned reviewed tooling under the external
 `reviewed-central-routing` policy. CLI tools must keep work behind an explicit
