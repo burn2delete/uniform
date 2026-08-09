@@ -1,0 +1,291 @@
+; W5 Wave6 Slice A rejected performance/math request mutators.
+(ns gravity.fixtures.w5-performance-math.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-performance-math-execution-request
+             w5-performance-math-execution-request-at
+             w5-performance-math-alternate-path-request
+             w5-pm-invalid-schema w5-pm-invalid-target
+             w5-pm-invalid-performance
+             w5-pm-invalid-benchmark-harness
+             w5-pm-invalid-benchmark-baseline
+             w5-pm-invalid-benchmark-sample-count
+             w5-pm-invalid-target-fingerprint
+             w5-pm-invalid-compiler-identity
+             w5-pm-invalid-source-identity
+             w5-pm-invalid-optimization-manifest
+             w5-pm-invalid-semantic
+             w5-pm-invalid-lineage w5-pm-invalid-efir w5-pm-invalid-eml
+             w5-pm-invalid-numeric w5-pm-invalid-certificate
+             w5-pm-invalid-proof w5-pm-invalid-proof-duplicate
+             w5-pm-invalid-proof-reordered w5-pm-invalid-safety-mode
+             w5-pm-invalid-domain w5-pm-invalid-layout
+             w5-pm-invalid-effects w5-pm-invalid-capabilities
+             w5-pm-invalid-erased-checks w5-pm-invalid-check-elision
+             w5-pm-invalid-provenance w5-pm-invalid-evidence
+             w5-pm-invalid-authority
+             w5-pm-invalid-gravity-path-suffix
+             w5-pm-invalid-qst-path-suffix
+             w5-pm-invalid-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-pm-invalid-schema [request]
+  (assoc request :schema-version 2))
+
+(defn w5-pm-invalid-target [request]
+  (assoc request :target-contract
+         (assoc (get request :target-contract)
+                :candidate-target :darwin-arm64)))
+
+(defn w5-pm-invalid-performance [request]
+  (assoc request :benchmark-evidence
+         (assoc (get request :benchmark-evidence)
+                :claim-id :substituted-claim)))
+
+(defn w5-pm-invalid-benchmark-harness [request]
+  (assoc request :benchmark-evidence
+         (assoc (get request :benchmark-evidence)
+                :harness :perf/substituted-harness)))
+
+(defn w5-pm-invalid-benchmark-baseline [request]
+  (assoc request :benchmark-evidence
+         (assoc (get request :benchmark-evidence)
+                :baseline :substituted-baseline)))
+
+(defn w5-pm-invalid-benchmark-sample-count [request]
+  (assoc request :benchmark-evidence
+         (assoc (get request :benchmark-evidence)
+                :sample-count :single-sample)))
+
+(defn w5-pm-invalid-target-fingerprint [request]
+  (assoc request :benchmark-evidence
+         (assoc (get request :benchmark-evidence)
+                :target-fingerprint-id :substituted-target-fingerprint)))
+
+(defn w5-pm-invalid-compiler-identity [request]
+  (assoc request :benchmark-evidence
+         (assoc (get request :benchmark-evidence)
+                :compiler-identity-id :substituted-compiler-identity)))
+
+(defn w5-pm-invalid-source-identity [request]
+  (assoc request :benchmark-evidence
+         (assoc (get request :benchmark-evidence)
+                :source-identity-id :substituted-source-identity)))
+
+(defn w5-pm-invalid-optimization-manifest [request]
+  (assoc request :benchmark-evidence
+         (assoc (get request :benchmark-evidence)
+                :optimization-manifest-id
+                :substituted-optimization-manifest)))
+
+(defn w5-pm-invalid-safety-mode [request]
+  (assoc request :performance-claim
+         (assoc (get request :performance-claim)
+                :safety-mode :audited-unsafe)))
+
+(defn w5-pm-invalid-domain [request]
+  (assoc request :performance-claim
+         (assoc (get request :performance-claim)
+                :input-domain {:x [:closed -2 2]})))
+
+(defn w5-pm-invalid-layout [request]
+  (assoc request :performance-claim
+         (assoc (get request :performance-claim)
+                :layout {:input :strided-f64 :output :contiguous-f64})))
+
+(defn w5-pm-invalid-effects [request]
+  (assoc request :performance-claim
+         (assoc (get request :performance-claim) :effects [:io])))
+
+(defn w5-pm-invalid-capabilities [request]
+  (assoc request :performance-claim
+         (assoc (get request :performance-claim)
+                :capabilities [:filesystem])))
+
+(defn w5-pm-invalid-erased-checks [request]
+  (assoc request :performance-claim
+         (assoc (get request :performance-claim)
+                :erased-checks [:bounds])))
+
+(defn w5-pm-invalid-check-elision [request]
+  (assoc request :check-elision
+         (assoc (get request :check-elision)
+                :certificate-accepted? true)))
+
+(defn w5-pm-invalid-semantic [request]
+  (assoc request :semantic-evidence
+         (assoc (get request :semantic-evidence)
+                :benchmark-independent? false)))
+
+(defn w5-pm-invalid-lineage [request]
+  (assoc request :semantic-evidence
+         (assoc (get request :semantic-evidence)
+                :semantic-evidence-id :pending-vector-sine-benchmark)))
+
+(defn w5-pm-invalid-efir [request]
+  (assoc request :efir
+         (assoc (get request :efir) :role :proof-search-tree)))
+
+(defn w5-pm-invalid-eml [request]
+  (assoc request :eml
+         (assoc (get request :eml)
+                :tree-identity-implies-equality? true)))
+
+(defn w5-pm-invalid-numeric [request]
+  (assoc request :numeric-contract
+         (assoc (get request :numeric-contract) :mode :target-default)))
+
+(defn w5-pm-invalid-certificate [request]
+  (assoc request :certificate
+         (assoc (get request :certificate)
+                :efir-graph-id :substituted-efir)))
+
+(defn w5-pm-invalid-proof [request]
+  (assoc request :check-elision
+         (assoc (get request :check-elision) :erased-checks [:range])))
+
+(defn w5-pm-invalid-proof-duplicate [request]
+  (assoc request :performance-claim
+         (assoc (get request :performance-claim)
+                :proof-obligations
+                [:approximation-bound :approximation-bound])))
+
+(defn w5-pm-invalid-proof-reordered [request]
+  (assoc request :performance-claim
+         (assoc (get request :performance-claim)
+                :proof-obligations
+                [:roundoff-bound :approximation-bound])))
+
+(defn w5-pm-invalid-provenance [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) :status :authoritative)))
+
+(defn w5-pm-invalid-evidence [request]
+  (assoc request :evidence
+         (assoc (get request :evidence) :proof-checked? true)))
+
+(defn w5-pm-invalid-authority [request]
+  (assoc request :authority
+         (assoc (get request :authority) :release? true)))
+
+(defn w5-pm-invalid-gravity-path-suffix [request]
+  (let [provenance (get request :provenance)
+        path (get provenance :actual-source-path)]
+    (assoc request :provenance
+           (assoc provenance :actual-source-path (str path ".qst")))))
+
+(defn w5-pm-invalid-qst-path-suffix [request]
+  (let [provenance (get request :provenance)
+        path (get provenance :actual-source-path)]
+    (assoc request :provenance
+           (assoc provenance :actual-source-path (str path ".gravity")))))
+
+(defn w5-pm-invalid-result [result]
+  (assoc result :status :authoritative))
+
+(defn w5-pm-provenance-record [path extension source-kind]
+  {:provenance-id :w5-performance-math-provenance
+   :logical-source-id "w5-performance-math"
+   :actual-source-path path
+   :actual-source-extension extension
+   :source-kind source-kind
+   :evidence-origins
+   [:perf-origin :semantic-origin :efir-origin :eml-origin :safe15-origin]
+   :status :pending})
+
+(defn w5-pm-request-with-path [path extension source-kind]
+  {:artifact :gravity/w5-performance-math-request
+   :schema-version 1
+   :request-id :w5-performance-math-request
+   :performance-claim
+   {:artifact :gravity/performance-claim
+    :claim-id :vector-sine-throughput
+    :profile :meta :target :llvm-x86_64-linux :backend :llvm
+    :runtime :pending-native-runtime :safety-mode :safe-optimized
+    :input-domain {:x [:closed -1 1]}
+    :layout {:input :contiguous-f64 :output :contiguous-f64}
+    :effects [] :capabilities [] :erased-checks []
+    :proof-obligations [:approximation-bound :roundoff-bound]
+    :benchmark-id :pending-vector-sine-benchmark :status :pending}
+   :benchmark-evidence
+   {:artifact :gravity/benchmark-evidence
+    :benchmark-id :pending-vector-sine-benchmark
+    :claim-id :vector-sine-throughput
+    :harness :perf/vector-sine :baseline :c-o3 :sample-count :pending
+    :target-fingerprint-id :pending-target-fingerprint
+    :compiler-identity-id :pending-compiler-identity
+    :source-identity-id :pending-source-identity
+    :optimization-manifest-id :pending-optimization-manifest
+    :status :pending}
+   :semantic-evidence
+   {:artifact :gravity/semantic-correctness-evidence
+    :semantic-evidence-id :pending-vector-sine-semantics
+    :typed-core-anchor :typed-core-vector-sine
+    :efir-graph-id :efir-vector-sine
+    :numeric-mode-id :numeric-mode-vector-sine
+    :benchmark-independent? true :status :pending}
+   :efir
+   {:artifact :gravity/efir-graph :graph-id :efir-vector-sine
+    :typed-core-anchor :typed-core-vector-sine
+    :role :runtime-semantic-carrier
+    :numeric-mode-id :numeric-mode-vector-sine
+    :precision-contract-id :precision-vector-sine :status :pending}
+   :eml
+   {:artifact :gravity/eml-candidate :candidate-id :eml-vector-sine-candidate
+    :efir-graph-id :efir-vector-sine
+    :role :proof-normalization-synthesis-search
+    :runtime-representation? false
+    :tree-identity-implies-equality? false
+    :equality-status :requires-proof :status :pending}
+   :numeric-contract
+   {:artifact :gravity/numeric-contract
+    :numeric-mode-id :numeric-mode-vector-sine
+    :mode :certified-approx :domain {:x [:closed -1 1]}
+    :precision-contract-id :precision-vector-sine
+    :rounding :nearest-even :certificate-required? true :status :pending}
+   :certificate
+   {:artifact :gravity/safe15-certificate-reference
+    :certificate-id :pending-vector-sine-certificate
+    :claim :bounded-approximation
+    :efir-graph-id :efir-vector-sine
+    :eml-candidate-id :eml-vector-sine-candidate
+    :numeric-mode-id :numeric-mode-vector-sine
+    :precision-contract-id :precision-vector-sine
+    :checker-id :pending-independent-checker
+    :trust-status :unverified :verification-status :pending :status :pending}
+   :check-elision
+   {:artifact :gravity/performance-check-elision
+    :claim-id :vector-sine-throughput
+    :erased-checks [] :retained-checks [:range :roundoff]
+    :certificate-id :pending-vector-sine-certificate
+    :certificate-accepted? false :status :checks-retained}
+   :target-contract
+   {:candidate-target :llvm-x86_64-linux
+    :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                         :artifact-format :elf :abi :sysv-amd64}
+    :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+    :unsupported-target-policies
+    [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]
+    :cross-target-inference? false :fallback? false}
+   :provenance (w5-pm-provenance-record path extension source-kind)
+   :evidence {:status :incomplete :closure-status :blocked
+              :benchmark-executed? false :proof-checked? false
+              :candidate-executed? false :seed-retired? false}
+   :authority {:authority :non-authority :clojure-seed-boundary? true
+               :self-hosted? false :public-authority? false :release? false
+               :full-language-credit? false :fl-240-credit? false}
+   :claimed-status :incomplete})
+
+(defn w5-performance-math-execution-request-at [path extension source-kind]
+  (w5-pm-request-with-path path extension source-kind))
+
+(defn w5-performance-math-execution-request [path extension source-kind]
+  (w5-performance-math-execution-request-at path extension source-kind))
+
+(defn w5-performance-math-alternate-path-request [path extension source-kind]
+  (w5-performance-math-execution-request-at path extension source-kind))

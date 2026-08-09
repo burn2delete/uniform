@@ -1,0 +1,201 @@
+; W5 Wave6 Slice C accepted tooling/conformance record.
+; This is a structurally valid, incomplete, nonauthoritative evidence record.
+(ns gravity.self-hosting.w5-tooling-conformance.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-tooling-conformance-request
+             w5-tooling-conformance-request-at
+             w5-tooling-conformance-alternate-path-request
+             w5-tc-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-tooling-conformance-fixture
+     :owner :workstream-5
+     :scope :wave6-slice-c-static-only
+     :static-only? true
+     :authority :non-authority
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :public-authority? false
+     :release? false
+     :full-language-credit? false
+     :matrix-240-credit? false
+     :public-binary? false
+     :plugin-authority? false
+     :package-authority? false
+     :backend-conformance? false}}))
+
+(defn w5-tc-span [source start end]
+  {:source-id source :start-byte start :end-byte end
+   :line 1 :column 1})
+
+(defn w5-tc-provenance [path extension source-kind]
+  {:source-id :gravity.self-hosting/w5-tooling-conformance
+   :logical-source-id "fixtures/w5-tooling-conformance/tooling-conformance"
+   :actual-source-path path
+   :actual-source-extension extension
+   :source-kind source-kind
+   :project-relative-path
+   (str "bootstrap/clojure/fixtures/self-hosting/"
+        "w5-tooling-conformance/accepted/tooling-conformance" extension)
+   :check-artifact-path (str path ".tooling-check.pending")
+   :replay-artifact-path (str path ".tooling-replay.pending")
+   :status :pending})
+
+(defn w5-tc-source [path extension source-kind]
+  {:artifact :gravity/tooling-source-record
+   :schema-version 1
+   :source-id :tooling-source-v1
+   :profile :meta
+   :target :jvm
+   :extension-policy [".qst" ".gravity"]
+   :source-kind source-kind
+   :source-content-status :pending
+   :hash-final? false
+   :source-span (w5-tc-span :tooling-source 0 320)
+   :provenance (w5-tc-provenance path extension source-kind)})
+
+(defn w5-tc-check []
+  {:artifact :gravity/tooling-check-record
+   :schema-version 1
+   :checker-id :gravity-tooling-checker-v1
+   :tool-family :cli
+   :source-id :tooling-source-v1
+   :profile :meta
+   :target :jvm
+   :diagnostics []
+   :facts-consumed [:source-spans :profile :target :capabilities]
+   :facts-preserved [:diagnostic-codes :source-spans :provenance]
+   :result :accepted
+   :status :pending
+   :authority-claims? false
+   :backend-conformance? false
+   :plugin-authority? false
+   :package-authority? false
+   :source-span (w5-tc-span :tooling-check 32 96)})
+
+(defn w5-tc-replay []
+  {:artifact :gravity/tooling-replay-record
+   :schema-version 1
+   :replay-id :tooling-replay-v1
+   :source-id :tooling-source-v1
+   :check-id :tooling-check-v1
+   :events [:source-loaded :check-requested :diagnostics-recorded]
+   :deterministic? true
+   :environment {:network :disabled :filesystem :declared
+                 :secrets :redacted}
+   :status :pending
+   :source-span (w5-tc-span :tooling-replay 97 160)})
+
+(defn w5-tc-narrative []
+  {:artifact :gravity/tooling-narrative-record
+   :schema-version 1
+   :narrative-id :tooling-narrative-v1
+   :source-id :tooling-source-v1
+   :claims [:diagnostics-traceable :artifacts-traceable]
+   :authority-claims []
+   :source-span (w5-tc-span :tooling-narrative 161 224)
+   :status :pending
+   :structured-evidence-only? true
+   :text-status :pending})
+
+(defn w5-tc-suite []
+  {:artifact :gravity/tooling-conformance-suite
+   :schema-version 1
+   :suite-id :tooling-conformance-suite-v1
+   :tool-order [:source :check :replay :narrative :suite]
+   :positive-fixtures [:source :check :replay :narrative]
+   :negative-fixtures [:source :check :replay :narrative]
+   :diagnostic-codes ["T1001" "T1002" "T1003" "T1004"]
+   :profile :meta
+   :target :jvm
+   :status :pending
+   :backend-conformance? false
+   :plugin-authority? false
+   :package-authority? false
+   :matrix-240-credit? false})
+
+(defn w5-tc-target []
+  {:target :llvm-x86_64-linux :os :linux :arch :x86_64
+   :backend :llvm :artifact-format :elf :abi :sysv-amd64
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :cross-target-inference? false :fallback? false
+   :candidate-invokes-clojure? false :candidate-links-jvm? false
+   :no-fallback? true})
+
+(defn w5-tc-separation []
+  {:structured-evidence-source [:source :check :replay :suite]
+   :narrative-role :explanation-only
+   :replay-role :deterministic-replay-only
+   :checker-role :structured-facts-only
+   :public-binary-claim? false
+   :plugin-package-claim? false
+   :backend-conformance-claim? false
+   :matrix-240-claim? false})
+
+(defn w5-tc-evidence []
+  {:evidence-class :executable-record
+   :execution-status :pending
+   :source-span-status :preserved
+   :artifact-status :pending
+   :status :incomplete
+   :full-language-credit? false
+   :matrix-240-credit? false})
+
+(defn w5-tc-authority []
+  {:authority :non-authority
+   :clojure-seed-boundary? true :self-hosted? false
+   :public-authority? false :release? false
+   :full-language-credit? false :matrix-240-credit? false
+   :public-binary? false :plugin-authority? false
+   :package-authority? false :backend-conformance? false
+   :cross-target-inference? false :fallback? false
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]})
+
+(defn w5-tc-request-with-path [path extension source-kind]
+  {:artifact :gravity/w5-tooling-conformance-request
+   :schema-version 1
+   :verifier-id :gravity/w5-tooling-conformance-verifier
+   :profile :meta :target :jvm
+   :claimed-status :incomplete :completion-status :incomplete
+   :target-contract (w5-tc-target)
+   :source (w5-tc-source path extension source-kind)
+   :check (w5-tc-check)
+   :replay (w5-tc-replay)
+   :narrative (w5-tc-narrative)
+   :suite (w5-tc-suite)
+   :separation (w5-tc-separation)
+   :evidence (w5-tc-evidence)
+   :authority (w5-tc-authority)
+   :residual-seed-harness
+   {:compiler-plan :clojure-stage0-stage2-compiler-plan
+    :runtime :jvm-stage2-runtime :authority :seed-only
+    :execution-status :harness-only}
+   :provenance (w5-tc-provenance path extension source-kind)
+   :source-span (w5-tc-span :tooling-request 0 512)})
+
+(defn w5-tooling-conformance-request-at [path extension source-kind]
+  (w5-tc-request-with-path path extension source-kind))
+
+(defn w5-tooling-conformance-request [path extension source-kind]
+  (w5-tooling-conformance-request-at path extension source-kind))
+
+(defn w5-tooling-conformance-alternate-path-request
+  [path extension source-kind]
+  (w5-tooling-conformance-request-at path extension source-kind))
+
+(defn w5-tc-request [path extension source-kind]
+  (w5-tooling-conformance-request-at path extension source-kind))

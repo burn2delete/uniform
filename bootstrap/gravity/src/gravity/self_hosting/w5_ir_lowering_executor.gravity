@@ -1,0 +1,1301 @@
+; W5 Slice C executable MIR/domain-IR/optimization/lowering leaf.
+; The leaf consumes supplied C11-C15 records, validates their contracts, and
+; emits only a bounded stage2 orchestration record.  It does not run LLVM,
+; native code, a JVM candidate, or the Stage10a C14 evidence carrier.
+(ns gravity.self-hosting.w5-ir-lowering-executor
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-ir-lowering-policy
+             w5-ir-c11-mir-schema
+             w5-ir-c12-domain-schema
+             w5-ir-c13-pass-contract
+             w5-ir-c14-lowering-policy
+             w5-ir-c15-diagnostic-catalog
+             w5-ir-source-span
+             w5-ir-path-ends-with?
+             w5-ir-diagnostic
+             w5-ir-mir-valid?
+             w5-ir-domain-valid?
+             w5-ir-pass-valid?
+             w5-ir-optimization-valid?
+             w5-ir-lowering-valid?
+             w5-ir-stage10a-valid?
+             w5-ir-diagnostics-valid?
+             w5-ir-request-valid?
+             w5-ir-identity-input
+             w5-ir-provenance
+             w5-ir-lowering-execute
+             w5-ir-execute
+             w5-ir-run
+             w5-ir-verify
+             w5-ir-verify-result
+             w5-ir-recompute])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-ir-lowering-executor
+     :owner :w5-wave5-slice-c
+     :source-language :gravity
+     :seed :clojure-stage0
+     :status :executable-leaf
+     :scope :stage-owned-nonauthority
+     :static-only? true
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :release? false
+     :public-authority? false
+     :authority :non-authority
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux
+                          :arch :x86_64
+                          :backend :llvm
+                          :artifact-format :elf
+                          :abi :sysv-amd64}
+     :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-arm64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-x86_64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :windows :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}]
+     :candidate-invokes-clojure? false
+     :candidate-links-jvm? false
+     :candidate-fallback? false
+     :stage10a-executable-continuity? false
+     :residual-boundaries {:stage2-compiler-plan :clojure-bootstrap
+                           :stage2-runtime :jvm
+                           :native-llvm-execution :pending
+                           :independent-c14-replay :pending
+                           :independent-proof-check :pending
+                           :filesystem-authority false
+                           :network-authority false
+                           :process-authority false}
+     :governing-documents ["C11" "C12" "C13" "C14" "C15"
+                           "D6" "D8" "D9" "BOOT5" "BOOT6"
+                           "BOOT7" "BOOT8" "TEST11" "TEST13"]
+     :non-goals [:full-language-completion
+                 :native-execution
+                 :llvm-execution
+                 :stage10a-executable-continuity
+                 :public-release
+                 :seed-retirement]}}))
+
+(def w5-ir-candidate-target
+  {:backend :llvm
+   :os :linux
+   :arch :x86_64
+   :artifact-format :elf
+   :abi :sysv-amd64
+   :triple "x86_64-unknown-linux-gnu"})
+
+(def w5-ir-unsupported-targets
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+
+(def w5-ir-unsupported-target-policies
+  [{:target :darwin :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-arm64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-x86_64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :windows :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}])
+
+(def w5-ir-mir-facts
+  #{:types :effects :ownership :capabilities :safety :proofs
+    :source-origins :profile :target})
+
+(def w5-ir-operation-opcodes #{:const :add :domain-anchor})
+
+(def w5-ir-diagnostic-ids
+  ["W5-IR-SCHEMA" "W5-IR-TARGET" "C11-MODULE" "C11-BLOCK"
+   "C11-DOMINANCE" "C11-TYPE" "C11-EFFECT" "C11-SAFETY"
+   "C11-ORIGIN" "C11-DOMAIN" "C11-TARGET-LEAK" "C11-VERIFY"
+   "C12-REGISTRATION" "C12-ANCHOR" "C12-SCHEMA" "C12-FACTS"
+   "C12-VERIFY" "C12-PROOF" "C12-LOWERING" "C12-FALLBACK"
+   "C13-CONTRACT" "C13-PRESERVE" "C13-INVALIDATE" "C13-PROOF"
+   "C13-CHECK-ELISION" "C13-EFFECT" "C13-SAFETY"
+   "C13-DOMAIN" "C13-NONDETERMINISM" "C13-VERIFY"
+   "C14-INPUT" "C14-PROFILE" "C14-TARGET" "C14-ABI"
+   "C14-RUNTIME" "C14-PROVIDER" "C14-PROOF-METADATA"
+   "C14-CAPABILITY" "C14-UNSUPPORTED" "C14-MANIFEST"
+   "C15-SCHEMA" "C15-ID" "C15-SPAN" "C15-ORIGIN"
+   "C15-FACTS" "C15-REMEDIATION" "C15-REDACTION"
+   "C15-ORDER" "C15-GOLDEN"])
+
+(def w5-ir-diagnostic-remediations
+  {"W5-IR-SCHEMA" :repair-request-schema
+   "W5-IR-TARGET" :use-frozen-linux-target
+   "C11-MODULE" :repair-mir-module
+   "C11-BLOCK" :terminate-every-block
+   "C11-DOMINANCE" :repair-def-use-dominance
+   "C11-TYPE" :restore-operation-types
+   "C11-EFFECT" :restore-effect-ordering
+   "C11-SAFETY" :restore-safety-outcome
+   "C11-ORIGIN" :restore-source-origin
+   "C11-DOMAIN" :restore-domain-anchor
+   "C11-TARGET-LEAK" :remove-target-opcode
+   "C11-VERIFY" :rerun-mir-verifier
+   "C12-REGISTRATION" :register-domain-ir
+   "C12-ANCHOR" :restore-semantic-anchor
+   "C12-SCHEMA" :repair-domain-payload
+   "C12-FACTS" :restore-domain-facts
+   "C12-VERIFY" :rerun-domain-verifier
+   "C12-PROOF" :attach-domain-proof
+   "C12-LOWERING" :repair-domain-lowering
+   "C12-FALLBACK" :declare-legal-fallback
+   "C13-CONTRACT" :repair-pass-contract
+   "C13-PRESERVE" :restore-preserved-facts
+   "C13-INVALIDATE" :regenerate-invalidated-facts
+   "C13-PROOF" :attach-fresh-optimization-proof
+   "C13-CHECK-ELISION" :retain-or-prove-check
+   "C13-EFFECT" :restore-effect-order
+   "C13-SAFETY" :refresh-safety-facts
+   "C13-DOMAIN" :rerun-domain-validation
+   "C13-NONDETERMINISM" :record-deterministic-replay
+   "C13-VERIFY" :rerun-post-pass-verifier
+   "C14-INPUT" :supply-verified-mir
+   "C14-PROFILE" :use-profile-eligible-backend
+   "C14-TARGET" :use-frozen-target
+   "C14-ABI" :repair-abi-manifest
+   "C14-RUNTIME" :declare-runtime-provider
+   "C14-PROVIDER" :declare-provider
+   "C14-PROOF-METADATA" :attach-target-proof
+   "C14-CAPABILITY" :restore-capability-provider
+   "C14-UNSUPPORTED" :reject-unsupported-operation
+   "C14-MANIFEST" :complete-target-manifest
+   "C15-SCHEMA" :repair-diagnostic-schema
+   "C15-ID" :restore-stable-diagnostic-id
+   "C15-SPAN" :restore-primary-span
+   "C15-ORIGIN" :restore-origin-chain
+   "C15-FACTS" :restore-structured-facts
+   "C15-REMEDIATION" :add-remediation
+   "C15-REDACTION" :apply-redaction
+   "C15-ORDER" :sort-diagnostic-stream
+   "C15-GOLDEN" :refresh-golden-fixture})
+
+(defn w5-ir-present? [value]
+  (if (= nil value) false true))
+
+(defn w5-ir-nonempty-string? [value]
+  (if (string? value)
+    (> (count value) 0)
+    false))
+
+(defn w5-ir-suffix-match? [value suffix index]
+  (if (= index (count suffix))
+    true
+    (if (> (count suffix) (count value))
+      false
+      (if (= (get value (- (count value) (+ index 1)))
+             (get suffix (- (count suffix) (+ index 1))))
+        (w5-ir-suffix-match? value suffix (+ index 1))
+        false))))
+
+(defn w5-ir-path-ends-with? [value suffix]
+  (if (and (string? value) (string? suffix))
+    (w5-ir-suffix-match? value suffix 0)
+    false))
+
+(defn w5-ir-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn w5-ir-fields-present? [value fields]
+  (if (= (count fields) 0)
+    true
+    (if (w5-ir-present? (get value (first fields)))
+      (w5-ir-fields-present? value (rest fields))
+      false)))
+
+(defn w5-ir-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (w5-ir-member-from? values value (+ index 1)))))
+
+(defn w5-ir-member? [values value]
+  (if (vector? values)
+    (w5-ir-member-from? values value 0)
+    false))
+
+(defn w5-ir-subset? [required available]
+  (if (= (count required) 0)
+    true
+    (if (contains? available (first required))
+      (w5-ir-subset? (rest required) available)
+      false)))
+
+(defn w5-ir-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (if (= (get value 0) \s)
+        (if (= (get value 1) \h)
+          (if (= (get value 2) \a)
+            (if (= (get value 3) \2)
+              (if (= (get value 4) \5)
+                (if (= (get value 5) \6)
+                  (= (get value 6) \:)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-nonnegative-integer? [value]
+  (if (integer? value)
+    (>= value 0)
+    false))
+
+(defn w5-ir-source-span-valid? [span]
+  (if (w5-ir-exact-keys?
+       span #{:source-id :start-byte :end-byte :line :column})
+    (if (keyword? (get span :source-id))
+      (if (w5-ir-nonnegative-integer? (get span :start-byte))
+        (if (w5-ir-nonnegative-integer? (get span :end-byte))
+          (if (<= (get span :start-byte) (get span :end-byte))
+            (if (w5-ir-nonnegative-integer? (get span :line))
+              (w5-ir-nonnegative-integer? (get span :column))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-origin-chain-valid? [chain]
+  (if (vector? chain)
+    (> (count chain) 0)
+    false))
+
+(defn w5-ir-fact-table-valid? [facts]
+  (if (w5-ir-exact-keys?
+       facts #{:types :effects :ownership :capabilities :safety :proofs
+               :source-origins :profile :target})
+    (if (w5-ir-sha256-id? (get facts :types))
+      (if (w5-ir-sha256-id? (get facts :effects))
+        (if (w5-ir-sha256-id? (get facts :ownership))
+          (if (w5-ir-sha256-id? (get facts :capabilities))
+            (if (w5-ir-sha256-id? (get facts :safety))
+              (if (w5-ir-sha256-id? (get facts :proofs))
+                (if (w5-ir-sha256-id? (get facts :source-origins))
+                  (if (= :native (get facts :profile))
+                    (= :llvm-x86_64-linux (get facts :target))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-operation-source-valid? [source]
+  (if (w5-ir-exact-keys? source #{:core-node :span :origin-chain})
+    (if (keyword? (get source :core-node))
+      (if (w5-ir-source-span-valid? (get source :span))
+        (w5-ir-origin-chain-valid? (get source :origin-chain))
+        false)
+      false)
+    false))
+
+(defn w5-ir-operation-valid? [operation]
+  (if (w5-ir-exact-keys?
+       operation #{:op-id :opcode :operands :result :type :effects
+                    :ordering :source :profile :facts :domain-anchor})
+    (if (keyword? (get operation :op-id))
+      (if (contains? w5-ir-operation-opcodes (get operation :opcode))
+        (if (vector? (get operation :operands))
+          (if (or (= nil (get operation :result))
+                  (keyword? (get operation :result)))
+            (if (keyword? (get operation :type))
+              (if (set? (get operation :effects))
+                (if (keyword? (get operation :ordering))
+                  (if (w5-ir-operation-source-valid? (get operation :source))
+                    (if (= :native (get operation :profile))
+                      (if (w5-ir-fact-table-valid? (get operation :facts))
+                        (if (= nil (get operation :domain-anchor))
+                          true
+                          (keyword? (get operation :domain-anchor)))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-operations-valid? [operations index]
+  (if (= index (count operations))
+    true
+    (if (w5-ir-operation-valid? (get operations index))
+      (w5-ir-operations-valid? operations (+ index 1))
+      false)))
+
+(defn w5-ir-terminator-valid? [terminator]
+  (if (w5-ir-exact-keys? terminator #{:kind :operands :source})
+    (if (= :return (get terminator :kind))
+      (if (vector? (get terminator :operands))
+        (w5-ir-source-span-valid? (get terminator :source))
+        false)
+      false)
+    false))
+
+(defn w5-ir-block-valid? [block]
+  (if (w5-ir-exact-keys? block #{:block-id :params :operations :terminator :source})
+    (if (keyword? (get block :block-id))
+      (if (vector? (get block :params))
+        (if (vector? (get block :operations))
+          (if (w5-ir-operations-valid? (get block :operations) 0)
+            (if (w5-ir-terminator-valid? (get block :terminator))
+              (w5-ir-source-span-valid? (get block :source))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-function-valid? [function]
+  (if (w5-ir-exact-keys?
+       function #{:fn-id :name :params :returns :latent-effects
+                   :blocks :entry :source})
+    (if (w5-ir-sha256-id? (get function :fn-id))
+      (if (keyword? (get function :name))
+        (if (vector? (get function :params))
+          (if (keyword? (get function :returns))
+            (if (set? (get function :latent-effects))
+              (if (map? (get function :blocks))
+                (if (= (set (keys (get function :blocks))) #{:entry})
+                  (if (= :entry (get function :entry))
+                    (if (w5-ir-source-span-valid? (get function :source))
+                      (w5-ir-block-valid? (get (get function :blocks) :entry))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-mir-valid? [mir]
+  (if (w5-ir-exact-keys?
+       mir #{:artifact :schema-version :module-id :source-core :profile
+             :target-request :functions :globals :types :effects :ownership
+             :safety :domain-anchors :diagnostics})
+    (if (= :gravity/mir-module (get mir :artifact))
+      (if (= 1 (get mir :schema-version))
+        (if (w5-ir-sha256-id? (get mir :module-id))
+          (if (w5-ir-sha256-id? (get mir :source-core))
+            (if (= :native (get mir :profile))
+              (if (= :llvm-x86_64-linux (get mir :target-request))
+                (if (map? (get mir :functions))
+                  (if (= (set (keys (get mir :functions))) #{:main})
+                    (if (w5-ir-function-valid? (get (get mir :functions) :main))
+                      (if (map? (get mir :globals))
+                        (if (= 0 (count (keys (get mir :globals))))
+                          (if (w5-ir-sha256-id? (get mir :types))
+                            (if (w5-ir-sha256-id? (get mir :effects))
+                              (if (w5-ir-sha256-id? (get mir :ownership))
+                                (if (w5-ir-sha256-id? (get mir :safety))
+                                  (if (vector? (get mir :domain-anchors))
+                                    (if (vector? (get mir :diagnostics))
+                                      true
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-domain-valid? [domain]
+  (if (w5-ir-exact-keys?
+       domain #{:artifact :domain :artifact-id :source :semantic-anchor
+                :profile :target-request :facts :verifier :proofs
+                :lowering-status :payload})
+    (if (= :gravity/domain-ir (get domain :artifact))
+      (if (= :efir (get domain :domain))
+        (if (w5-ir-sha256-id? (get domain :artifact-id))
+          (if (w5-ir-exact-keys? (get domain :source)
+                                  #{:syntax-id :span :origin-chain})
+            (if (w5-ir-sha256-id? (get (get domain :source) :syntax-id))
+              (if (w5-ir-source-span-valid? (get (get domain :source) :span))
+                (if (w5-ir-origin-chain-valid? (get (get domain :source) :origin-chain))
+                  (if (w5-ir-exact-keys? (get domain :semantic-anchor)
+                                          #{:mir-ops :typed-core})
+                    (if (vector? (get (get domain :semantic-anchor) :mir-ops))
+                      (if (vector? (get (get domain :semantic-anchor) :typed-core))
+                        (if (= :native (get domain :profile))
+                          (if (= :llvm-x86_64-linux (get domain :target-request))
+                            (if (w5-ir-fact-table-valid? (get domain :facts))
+                              (if (w5-ir-exact-keys? (get domain :verifier)
+                                                      #{:name :result :diagnostic-id})
+                                (if (= :accepted (get (get domain :verifier) :result))
+                                  (if (w5-ir-sha256-id? (get (get domain :verifier) :diagnostic-id))
+                                    (if (vector? (get domain :proofs))
+                                      (if (> (count (get domain :proofs)) 0)
+                                        (if (w5-ir-sha256-id? (first (get domain :proofs)))
+                                          (if (= :eligible (get domain :lowering-status))
+                                            (map? (get domain :payload))
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-pass-valid? [pass]
+  (if (w5-ir-exact-keys?
+       pass #{:artifact :pass-id :version :input :output :requires
+              :preserves :invalidates :regenerates :proof-obligations
+              :profile-constraints :target-assumptions :risk :emits
+              :source-span})
+    (if (= :gravity/mir-pass-contract (get pass :artifact))
+      (if (keyword? (get pass :pass-id))
+        (if (w5-ir-nonempty-string? (get pass :version))
+          (if (= :gravity/mir (get pass :input))
+            (if (= :gravity/mir (get pass :output))
+              (if (set? (get pass :requires))
+                (if (w5-ir-subset? [:types :effects :safety]
+                                    (get pass :preserves))
+                  (if (set? (get pass :invalidates))
+                    (if (set? (get pass :regenerates))
+                      (if (set? (get pass :proof-obligations))
+                        (if (w5-ir-exact-keys? (get pass :profile-constraints)
+                                                #{:profile :target})
+                          (if (= :native (get (get pass :profile-constraints) :profile))
+                            (if (= :llvm-x86_64-linux
+                                   (get (get pass :profile-constraints) :target))
+                              (if (set? (get pass :target-assumptions))
+                                (if (= :high (get pass :risk))
+                                  (if (set? (get pass :emits))
+                                    (w5-ir-source-span-valid? (get pass :source-span))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-decision-valid? [decision pass mir]
+  (if (w5-ir-exact-keys?
+       decision #{:artifact :decision-id :pass-id :input-mir :output-mir
+                  :changed-ops :reason :preserved :invalidated :regenerated
+                  :proofs-used :translation-validation :residual-checks
+                  :verifier-result :diagnostics :source-span})
+    (if (= :gravity/optimization-decision (get decision :artifact))
+      (if (w5-ir-sha256-id? (get decision :decision-id))
+        (if (= (get pass :pass-id) (get decision :pass-id))
+          (if (= (get mir :module-id) (get decision :input-mir))
+            (if (= (get mir :module-id) (get decision :output-mir))
+              (if (vector? (get decision :changed-ops))
+                (if (keyword? (get decision :reason))
+                  (if (set? (get decision :preserved))
+                    (if (set? (get decision :invalidated))
+                      (if (set? (get decision :regenerated))
+                        (if (= (get decision :invalidated)
+                               (get decision :regenerated))
+                          (if (vector? (get decision :proofs-used))
+                            (if (> (count (get decision :proofs-used)) 0)
+                              (if (w5-ir-exact-keys?
+                                   (get decision :translation-validation)
+                                   #{:status :method :input-id :output-id
+                                     :proof-id :source-span})
+                                (if (= :accepted
+                                       (get (get decision :translation-validation)
+                                            :status))
+                                  (if (= (get mir :module-id)
+                                         (get (get decision :translation-validation)
+                                              :input-id))
+                                    (if (= (get mir :module-id)
+                                           (get (get decision :translation-validation)
+                                                :output-id))
+                                      (if (w5-ir-sha256-id?
+                                           (get (get decision :translation-validation)
+                                                :proof-id))
+                                        (if (w5-ir-source-span-valid?
+                                             (get (get decision :translation-validation)
+                                                  :source-span))
+                                          (if (= :passed (get decision :verifier-result))
+                                            (if (vector? (get decision :diagnostics))
+                                              (if (w5-ir-source-span-valid?
+                                                   (get decision :source-span))
+                                                true
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-optimization-valid? [optimization mir]
+  (if (w5-ir-exact-keys?
+       optimization #{:artifact :intent :input-kind :output-kind :passes
+                       :decisions :facts-before :facts-after
+                       :invalidated-facts :regenerated-facts :eligibility
+                       :semantic-equivalence :source-span})
+    (if (= :gravity/optimization-pipeline (get optimization :artifact))
+      (if (= :preserve-semantics (get optimization :intent))
+        (if (= :gravity/mir (get optimization :input-kind))
+          (if (= :gravity/mir (get optimization :output-kind))
+            (if (vector? (get optimization :passes))
+              (if (= 1 (count (get optimization :passes)))
+                (if (vector? (get optimization :decisions))
+                  (if (= 1 (count (get optimization :decisions)))
+                    (if (w5-ir-pass-valid? (first (get optimization :passes)))
+                      (if (w5-ir-decision-valid?
+                           (first (get optimization :decisions))
+                           (first (get optimization :passes)) mir)
+                        (if (set? (get optimization :facts-before))
+                          (if (w5-ir-subset? w5-ir-mir-facts
+                                              (get optimization :facts-before))
+                            (if (set? (get optimization :facts-after))
+                              (if (w5-ir-subset? w5-ir-mir-facts
+                                                  (get optimization :facts-after))
+                                (if (= (get optimization :invalidated-facts)
+                                       (get optimization :regenerated-facts))
+                                  (if (set? (get optimization :invalidated-facts))
+                                    (if (= :accepted (get optimization :eligibility))
+                                      (if (w5-ir-exact-keys?
+                                           (get optimization :semantic-equivalence)
+                                           #{:status :proof-id :input-id :output-id
+                                             :source-span})
+                                        (if (= :accepted
+                                               (get (get optimization
+                                                          :semantic-equivalence)
+                                                    :status))
+                                          (if (w5-ir-sha256-id?
+                                               (get (get optimization
+                                                          :semantic-equivalence)
+                                                    :proof-id))
+                                            (if (= (get mir :module-id)
+                                                   (get (get optimization
+                                                              :semantic-equivalence)
+                                                        :input-id))
+                                              (if (= (get mir :module-id)
+                                                     (get (get optimization
+                                                                :semantic-equivalence)
+                                                          :output-id))
+                                                (if (w5-ir-source-span-valid?
+                                                     (get (get optimization
+                                                                :semantic-equivalence)
+                                                          :source-span))
+                                                  (w5-ir-source-span-valid?
+                                                   (get optimization :source-span))
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-lowering-valid? [lowering mir domain optimization]
+  (if (w5-ir-exact-keys?
+       lowering #{:artifact :schema-version :input :profile :target :abi
+                   :runtime :providers :required-evidence :domain-anchors
+                   :eligibility :fallback-status :manifest :diagnostics
+                   :source-span})
+    (if (= :gravity/lowering-request (get lowering :artifact))
+      (if (= 1 (get lowering :schema-version))
+        (if (w5-ir-exact-keys? (get lowering :input) #{:kind :id})
+          (if (= :gravity/mir (get (get lowering :input) :kind))
+            (if (= (get mir :module-id) (get (get lowering :input) :id))
+              (if (= :native (get lowering :profile))
+                (if (= w5-ir-candidate-target (get lowering :target))
+                  (if (w5-ir-exact-keys? (get lowering :abi)
+                                          #{:abi :calling-convention :layout
+                                            :source-span})
+                    (if (= :sysv-amd64 (get (get lowering :abi) :abi))
+                      (if (= :sysv-amd64
+                             (get (get lowering :abi) :calling-convention))
+                        (if (w5-ir-sha256-id?
+                             (get (get lowering :abi) :layout))
+                          (if (w5-ir-source-span-valid?
+                               (get (get lowering :abi) :source-span))
+                            (if (= :none (get lowering :runtime))
+                              (if (map? (get lowering :providers))
+                                (if (= :accepted (get lowering :eligibility))
+                                  (if (= :rejected (get lowering :fallback-status))
+                                    (if (w5-ir-exact-keys?
+                                         (get lowering :required-evidence)
+                                         #{:safety :proofs :capabilities})
+                                      (if (w5-ir-sha256-id?
+                                           (get (get lowering :required-evidence)
+                                                :safety))
+                                        (if (w5-ir-sha256-id?
+                                             (get (get lowering :required-evidence)
+                                                  :proofs))
+                                          (if (w5-ir-sha256-id?
+                                               (get (get lowering :required-evidence)
+                                                    :capabilities))
+                                            (if (= (get domain :artifact-id)
+                                                   (first (get lowering
+                                                               :domain-anchors)))
+                                              (if (= (get mir :module-id)
+                                                     (get (get optimization
+                                                                :semantic-equivalence)
+                                                          :input-id))
+                                                (if (map? (get lowering :manifest))
+                                                  (if (vector? (get lowering :diagnostics))
+                                                    (w5-ir-source-span-valid?
+                                                     (get lowering :source-span))
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-stage10a-valid? [record]
+  (if (w5-ir-exact-keys?
+       record #{:artifact :schema-version :status :lowering-status
+                :executable-load? :semantic-authority :identity-binding-status
+                :identity-resolution :target-independent? :self-hosted?
+                :seed-retired? :residual-check-report :nonclaims :source-span})
+    (if (= :gravity/sh16-c13-evidence-boundary (get record :artifact))
+      (if (= 1 (get record :schema-version))
+        (if (= :accepted (get record :status))
+          (if (= :rejected (get record :lowering-status))
+            (if (= false (get record :executable-load?))
+              (if (= :none (get record :semantic-authority))
+                (if (= :unbound (get record :identity-binding-status))
+                  (if (= :coordinator-digest-required
+                         (get record :identity-resolution))
+                    (if (= true (get record :target-independent?))
+                      (if (= false (get record :self-hosted?))
+                        (if (= false (get record :seed-retired?))
+                          (if (w5-ir-exact-keys?
+                               (get record :residual-check-report)
+                               #{:status :open-proof-obligations})
+                            (if (= :incomplete-evidence-only
+                                   (get (get record :residual-check-report) :status))
+                              (if (vector? (get (get record :residual-check-report)
+                                               :open-proof-obligations))
+                                (if (w5-ir-member?
+                                     (get record :nonclaims) :backend-lowering)
+                                  (if (w5-ir-member?
+                                       (get record :nonclaims) :executable-load)
+                                    (if (w5-ir-member?
+                                         (get record :nonclaims) :semantic-authority)
+                                      (w5-ir-source-span-valid?
+                                       (get record :source-span))
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-diagnostic-valid? [diagnostic]
+  (if (w5-ir-exact-keys?
+       diagnostic #{:diagnostic-id :rule :severity :stage :message-key
+                    :primary :related :origin-chain :profile :target :facts
+                    :remediation :redactions})
+    (if (w5-ir-nonempty-string? (get diagnostic :diagnostic-id))
+      (if (w5-ir-nonempty-string? (get diagnostic :rule))
+        (if (= :error (get diagnostic :severity))
+          (if (keyword? (get diagnostic :stage))
+            (if (keyword? (get diagnostic :message-key))
+              (if (w5-ir-exact-keys? (get diagnostic :primary)
+                                      #{:span :syntax-id :artifact})
+                (if (w5-ir-source-span-valid? (get (get diagnostic :primary) :span))
+                  (if (w5-ir-sha256-id? (get (get diagnostic :primary) :syntax-id))
+                    (if (keyword? (get (get diagnostic :primary) :artifact))
+                      (if (vector? (get diagnostic :related))
+                        (if (w5-ir-origin-chain-valid? (get diagnostic :origin-chain))
+                          (if (= :meta (get diagnostic :profile))
+                            (if (= w5-ir-candidate-target (get diagnostic :target))
+                              (if (map? (get diagnostic :facts))
+                                (if (vector? (get diagnostic :remediation))
+                                  (if (> (count (get diagnostic :remediation)) 0)
+                                    (if (vector? (get diagnostic :redactions))
+                                      true
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-diagnostics-valid? [diagnostics index]
+  (if (= index (count diagnostics))
+    true
+    (if (w5-ir-diagnostic-valid? (get diagnostics index))
+      (w5-ir-diagnostics-valid? diagnostics (+ index 1))
+      false)))
+
+(defn w5-ir-provenance-valid? [provenance]
+  (if (w5-ir-exact-keys?
+       provenance #{:actual-source-path :actual-manifest-path
+                    :source-id :compiler-id :compiler-version
+                    :generated-origin-chain :source-extension :source-kind})
+    (if (w5-ir-nonempty-string? (get provenance :actual-source-path))
+      (if (w5-ir-nonempty-string? (get provenance :actual-manifest-path))
+        (if (keyword? (get provenance :source-id))
+          (if (w5-ir-nonempty-string? (get provenance :compiler-id))
+            (if (w5-ir-nonempty-string? (get provenance :compiler-version))
+              (if (= ".gravity" (get provenance :source-extension))
+                (if (= :gravity (get provenance :source-kind))
+                  (if (w5-ir-path-ends-with?
+                       (get provenance :actual-source-path) ".gravity")
+                    (w5-ir-origin-chain-valid?
+                     (get provenance :generated-origin-chain)) false)
+                false)
+                (if (= ".qst" (get provenance :source-extension))
+                  (if (= :qst (get provenance :source-kind))
+                    (if (w5-ir-path-ends-with?
+                         (get provenance :actual-source-path) ".qst")
+                      (w5-ir-origin-chain-valid?
+                       (get provenance :generated-origin-chain)) false)
+                    false)
+                  false))
+              false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)
+
+(defn w5-ir-targets-valid? [request]
+  (if (= :jvm (get request :stage2-target))
+    (if (= w5-ir-candidate-target (get request :candidate-target))
+      (if (= w5-ir-unsupported-targets (get request :unsupported-targets))
+        (= w5-ir-unsupported-target-policies
+           (get request :unsupported-target-policies))
+        false)
+      false)
+    false))
+
+(defn w5-ir-claims-valid? [claims]
+  (if (w5-ir-exact-keys?
+       claims #{:producer-boolean? :narrative? :source-ownership-only?
+                :check-only? :replay-only? :global-advancement? :authority-claim?})
+    (if (= false (get claims :producer-boolean?))
+      (if (= false (get claims :narrative?))
+        (if (= false (get claims :source-ownership-only?))
+          (if (= false (get claims :check-only?))
+            (if (= false (get claims :replay-only?))
+              (if (= false (get claims :global-advancement?))
+                (= false (get claims :authority-claim?))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-authority-valid? [authority]
+  (if (w5-ir-exact-keys?
+       authority #{:authority :seed :self-hosted? :public? :release?
+                    :closure-status :execution-status :executable?
+                    :full-language-credit? :stage10a-executable-continuity?})
+    (if (= :non-authority (get authority :authority))
+      (if (= true (get authority :seed))
+        (if (= false (get authority :self-hosted?))
+          (if (= false (get authority :public?))
+            (if (= false (get authority :release?))
+              (if (= :blocked (get authority :closure-status))
+                (if (= :incomplete (get authority :execution-status))
+                  (if (= false (get authority :executable?))
+                    (if (= false (get authority :full-language-credit?))
+                      (= false (get authority :stage10a-executable-continuity?))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-request-valid? [request]
+  (if (w5-ir-exact-keys?
+       request #{:artifact :schema-version :profile :stage2-target
+                 :candidate-target :unsupported-targets
+                 :unsupported-target-policies :mir :domain-ir
+                 :optimization :lowering :stage10a :diagnostics
+                 :provenance :claims :authority :source-span})
+    (if (= :gravity/w5-ir-lowering-execution-request (get request :artifact))
+      (if (= 1 (get request :schema-version))
+        (if (= :meta (get request :profile))
+          (if (w5-ir-targets-valid? request)
+            (if (w5-ir-source-span-valid? (get request :source-span))
+              (if (w5-ir-mir-valid? (get request :mir))
+                (if (w5-ir-domain-valid? (get request :domain-ir))
+                  (if (w5-ir-optimization-valid?
+                       (get request :optimization) (get request :mir))
+                    (if (w5-ir-lowering-valid?
+                         (get request :lowering)
+                         (get request :mir)
+                         (get request :domain-ir)
+                         (get request :optimization))
+                      (if (w5-ir-stage10a-valid? (get request :stage10a))
+                        (if (vector? (get request :diagnostics))
+                          (if (w5-ir-diagnostics-valid?
+                               (get request :diagnostics) 0)
+                            (if (w5-ir-provenance-valid? (get request :provenance))
+                              (if (w5-ir-claims-valid? (get request :claims))
+                                (w5-ir-authority-valid? (get request :authority))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-ir-c11-mir-schema []
+  {:artifact :gravity/w5-c11-mir-schema
+   :schema-version 1
+   :required-facts w5-ir-mir-facts
+   :operation-opcodes w5-ir-operation-opcodes
+   :terminators #{:return}
+   :verifier :w5-ir-mir-valid?
+   :diagnostics ["C11-MODULE" "C11-BLOCK" "C11-DOMINANCE"
+                 "C11-TYPE" "C11-EFFECT" "C11-SAFETY"
+                 "C11-ORIGIN" "C11-DOMAIN" "C11-TARGET-LEAK"
+                 "C11-VERIFY"]})
+
+(defn w5-ir-c12-domain-schema []
+  {:artifact :gravity/w5-c12-domain-ir-schema
+   :schema-version 1
+   :domains #{:efir :schema :workflow :query :gpu :hdl :ai}
+   :required-anchor-fields #{:mir-ops :typed-core}
+   :required-facts #{:types :effects :capabilities :safety}
+   :verifier :w5-ir-domain-valid?
+   :diagnostics ["C12-REGISTRATION" "C12-ANCHOR" "C12-SCHEMA"
+                 "C12-FACTS" "C12-VERIFY" "C12-PROOF"
+                 "C12-LOWERING" "C12-FALLBACK"]})
+
+(defn w5-ir-c13-pass-contract []
+  {:artifact :gravity/w5-c13-pass-contract
+   :schema-version 1
+   :pass-id :w5/identity-optimization
+   :input :gravity/mir
+   :output :gravity/mir
+   :risk :high
+   :requires #{:mir-verifier-passed :proof-certificate
+               :translation-validation}
+   :preserves #{:types :effects :safety :source-origins :profile}
+   :invalidates #{:data-flow-cache}
+   :regenerates #{:data-flow-cache}
+   :proof-obligations #{:proof-dominates-check :translation-validation}
+   :target-assumptions #{ }
+   :verifier :w5-ir-optimization-valid?
+   :diagnostics ["C13-CONTRACT" "C13-PRESERVE" "C13-INVALIDATE"
+                 "C13-PROOF" "C13-CHECK-ELISION" "C13-EFFECT"
+                 "C13-SAFETY" "C13-DOMAIN" "C13-NONDETERMINISM"
+                 "C13-VERIFY"]})
+
+(defn w5-ir-c14-lowering-policy []
+  {:artifact :gravity/w5-c14-lowering-policy
+   :schema-version 1
+   :stage2-target :jvm
+   :candidate-target w5-ir-candidate-target
+   :unsupported-targets w5-ir-unsupported-targets
+   :unsupported-target-policies w5-ir-unsupported-target-policies
+   :runtime :none
+   :fallback-status :rejected
+   :stage10a {:accepted-evidence-only? true
+              :executable-continuity? false}
+   :diagnostics ["C14-INPUT" "C14-PROFILE" "C14-TARGET"
+                 "C14-ABI" "C14-RUNTIME" "C14-PROVIDER"
+                 "C14-PROOF-METADATA" "C14-CAPABILITY"
+                 "C14-UNSUPPORTED" "C14-MANIFEST"]})
+
+(defn w5-ir-c15-diagnostic-catalog []
+  {:artifact :gravity/w5-c15-diagnostic-catalog
+   :schema-version 1
+   :diagnostic-ids w5-ir-diagnostic-ids
+   :remediations w5-ir-diagnostic-remediations
+   :stable-fields [:diagnostic-id :rule :severity :stage :primary
+                   :related :origin-chain :profile :target :facts
+                   :remediation :redactions]
+   :ordering [:stage :source-id :start-byte :diagnostic-id]})
+
+(defn w5-ir-lowering-policy []
+  {:artifact :gravity/w5-ir-lowering-execution-policy
+   :schema-version 1
+   :profile :meta
+   :stage2-target :jvm
+   :candidate-target w5-ir-candidate-target
+   :unsupported-targets w5-ir-unsupported-targets
+   :unsupported-target-policies w5-ir-unsupported-target-policies
+   :mir-schema :gravity/w5-c11-mir-schema
+   :domain-schema :gravity/w5-c12-domain-ir-schema
+   :optimization-contract :gravity/w5-c13-pass-contract
+   :lowering-policy :gravity/w5-c14-lowering-policy
+   :diagnostic-catalog :gravity/w5-c15-diagnostic-catalog
+   :fallback-status :rejected
+   :stage10a-executable-continuity? false
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public-authority? false
+   :release? false
+   :authority :non-authority
+   :residual-boundaries #{:native-llvm-execution
+                          :independent-c14-replay
+                          :independent-proof-check}})
+
+(defn w5-ir-source-span []
+  {:source-id :gravity.self-hosting/w5-ir-lowering
+   :start-byte 0
+   :end-byte 1
+   :line 1
+   :column 1})
+
+(defn w5-ir-diagnostic [request rule stage field]
+  (let [span (if (w5-ir-source-span-valid? (get request :source-span))
+               (get request :source-span)
+               (w5-ir-source-span))
+        profile (if (= nil (get request :profile)) :meta (get request :profile))]
+    {:diagnostic-id rule
+     :rule rule
+     :severity :error
+     :stage stage
+     :message-key :gravity.w5-ir/contract
+     :primary {:span span
+               :syntax-id "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+               :artifact :gravity/w5-ir-lowering-execution-request}
+     :related [{:role :input-artifact
+                :span span
+                :artifact :gravity/mir-module}
+               {:role :generated-by
+                :span span
+                :artifact :gravity/w5-ir-lowering-executor}]
+     :origin-chain [{:kind :fixture :source-id :gravity.self-hosting/w5-ir-lowering}]
+     :profile profile
+     :target w5-ir-candidate-target
+     :facts {:field field :fail-closed true :stage10a-executable-continuity? false}
+     :remediation [(get w5-ir-diagnostic-remediations rule)]
+     :redactions []}))
+
+(defn w5-ir-first-failure [request]
+  (if (not (w5-ir-exact-keys?
+            request #{:artifact :schema-version :profile :stage2-target
+                      :candidate-target :unsupported-targets
+                      :unsupported-target-policies :mir :domain-ir
+                      :optimization :lowering :stage10a :diagnostics
+                      :provenance :claims :authority :source-span}))
+    (w5-ir-diagnostic request "W5-IR-SCHEMA" :schema :request)
+    (if (not (and (= :gravity/w5-ir-lowering-execution-request
+                     (get request :artifact))
+                   (= 1 (get request :schema-version))
+                   (= :meta (get request :profile))))
+      (w5-ir-diagnostic request "W5-IR-SCHEMA" :schema :request)
+      (if (not (w5-ir-targets-valid? request))
+      (w5-ir-diagnostic request "W5-IR-TARGET" :target :target)
+      (if (not (w5-ir-source-span-valid? (get request :source-span)))
+        (w5-ir-diagnostic request "C15-SPAN" :diagnostics :source-span)
+        (if (not (w5-ir-mir-valid? (get request :mir)))
+          (w5-ir-diagnostic request "C11-VERIFY" :mir :mir)
+          (if (not (w5-ir-domain-valid? (get request :domain-ir)))
+            (w5-ir-diagnostic request "C12-VERIFY" :domain-ir :domain-ir)
+            (if (not (w5-ir-optimization-valid?
+                      (get request :optimization) (get request :mir)))
+              (if (= nil (get (get request :optimization) :intent))
+                (w5-ir-diagnostic request "C13-CONTRACT" :optimization :intent)
+                (let [decisions (get (get request :optimization) :decisions)
+                      decision (get decisions 0)]
+                  (if (= #{} (get decision :regenerated))
+                    (w5-ir-diagnostic request "C13-INVALIDATE" :optimization
+                                      :regenerated-facts)
+                    (w5-ir-diagnostic request "C13-PROOF" :optimization
+                                      :proofs-used))))
+              (if (not (w5-ir-lowering-valid?
+                        (get request :lowering)
+                        (get request :mir)
+                        (get request :domain-ir)
+                        (get request :optimization)))
+                (w5-ir-diagnostic request "C14-INPUT" :target-lowering :lowering)
+                (if (not (w5-ir-stage10a-valid? (get request :stage10a)))
+                  (w5-ir-diagnostic request "C14-INPUT" :target-lowering :stage10a)
+                  (if (not (w5-ir-diagnostics-valid?
+                            (get request :diagnostics) 0))
+                    (w5-ir-diagnostic request "C15-SCHEMA" :diagnostics
+                                      :diagnostics)
+                    (if (not (w5-ir-provenance-valid? (get request :provenance)))
+                      (w5-ir-diagnostic request "C15-ORIGIN" :diagnostics
+                                        :provenance)
+                      (if (not (w5-ir-claims-valid? (get request :claims)))
+                        (w5-ir-diagnostic request "D9-PROOF-MISSING" :authority
+                                          :claims)
+                        (if (not (w5-ir-authority-valid? (get request :authority)))
+                          (w5-ir-diagnostic request "W5-IR-TARGET" :authority
+                                            :authority)
+                          (if (w5-ir-request-valid? request)
+                            nil
+                            (w5-ir-diagnostic request "W5-IR-SCHEMA"
+                                              :schema :request))))))))))))))))
+
+(defn w5-ir-identity-input [request]
+  (let [mir (get request :mir)
+        domain (get request :domain-ir)
+        optimization (get request :optimization)
+        lowering (get request :lowering)]
+    {:artifact :gravity/w5-ir-lowering-identity
+     :schema-version 1
+     :profile (get request :profile)
+     :stage2-target (get request :stage2-target)
+     :candidate-target (get request :candidate-target)
+     :mir-id (get mir :module-id)
+     :domain-id (get domain :artifact-id)
+     :pass-id (get (first (get optimization :passes)) :pass-id)
+     :decision-id (get (first (get optimization :decisions)) :decision-id)
+     :lowering-input-id (get (get lowering :input) :id)
+     :stage10a-status (get (get request :stage10a) :lowering-status)
+     :claims (get request :claims)
+     :authority {:authority (get (get request :authority) :authority)
+                 :seed (get (get request :authority) :seed)
+                 :self-hosted? (get (get request :authority) :self-hosted?)
+                 :public? (get (get request :authority) :public?)
+                 :release? (get (get request :authority) :release?)}}))
+
+(defn w5-ir-provenance [request]
+  {:actual-source-path (get (get request :provenance) :actual-source-path)
+   :actual-manifest-path (get (get request :provenance) :actual-manifest-path)
+   :source-id (get (get request :provenance) :source-id)
+   :compiler-id (get (get request :provenance) :compiler-id)
+   :compiler-version (get (get request :provenance) :compiler-version)
+   :generated-origin-chain (get (get request :provenance) :generated-origin-chain)
+   :source-extension (get (get request :provenance) :source-extension)
+   :source-kind (get (get request :provenance) :source-kind)
+   :source-span (get request :source-span)
+   :mir-source-span (get (get (get (get request :mir) :functions) :main) :source)
+   :domain-source-span (get (get request :domain-ir) :source)
+   :optimization-source-span (get (get request :optimization) :source-span)
+   :lowering-source-span (get (get request :lowering) :source-span)
+   :stage10a-source-span (get (get request :stage10a) :source-span)})
+
+(defn w5-ir-accepted-result [request]
+  {:artifact :gravity/w5-ir-lowering-execution-result
+   :schema-version 1
+   :status :accepted
+   :execution-status :incomplete
+   :diagnostics []
+   :identity-input (w5-ir-identity-input request)
+   :provenance (w5-ir-provenance request)
+   :mir-status :verified
+   :domain-status :verified
+   :optimization-status :verified
+   :lowering-status :eligible-but-not-emitted
+   :target (get request :candidate-target)
+   :stage10a-status :evidence-only-rejected
+   :executable-load? false
+   :semantic-authority :none
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public? false
+   :release? false
+   :closure-status :blocked
+   :full-language-credit? false
+   :residual-boundaries {:stage2-compiler-plan :clojure-bootstrap
+                         :stage2-runtime :jvm
+                         :native-llvm-execution :pending
+                         :independent-c14-replay :pending
+                         :independent-proof-check :pending}})
+
+(defn w5-ir-rejected-result [request diagnostic]
+  {:artifact :gravity/w5-ir-lowering-execution-result
+   :schema-version 1
+   :status :rejected
+   :execution-status :blocked
+   :diagnostics [diagnostic]
+   :identity-input nil
+   :provenance (if (map? (get request :provenance))
+                 (w5-ir-provenance request)
+                 nil)
+   :mir-status :unverified
+   :domain-status :unverified
+   :optimization-status :unverified
+   :lowering-status :rejected
+   :target w5-ir-candidate-target
+   :stage10a-status :evidence-only-rejected
+   :executable-load? false
+   :semantic-authority :none
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public? false
+   :release? false
+   :closure-status :blocked
+   :full-language-credit? false})
+
+(defn w5-ir-lowering-execute [request]
+  (let [failure (w5-ir-first-failure request)]
+    (if (and (= nil failure) (w5-ir-request-valid? request))
+      (w5-ir-accepted-result request)
+      (w5-ir-rejected-result
+       request
+       (if (= nil failure)
+         (w5-ir-diagnostic request "W5-IR-SCHEMA" :schema :request)
+         failure)))))
+
+(defn w5-ir-execute [request]
+  (w5-ir-lowering-execute request))
+
+(defn w5-ir-run [request]
+  (w5-ir-lowering-execute request))
+
+(defn w5-ir-verify [request]
+  (w5-ir-lowering-execute request))
+
+(defn w5-ir-recompute [request]
+  (w5-ir-lowering-execute request))
+
+(defn w5-ir-verify-result [request result]
+  (let [expected (w5-ir-lowering-execute request)]
+    (if (= expected result)
+      {:artifact :gravity/w5-ir-lowering-result-verification
+       :schema-version 1
+       :status :passed
+       :expected expected
+       :candidate result
+       :diagnostics []}
+      {:artifact :gravity/w5-ir-lowering-result-verification
+       :schema-version 1
+       :status :rejected
+       :expected expected
+       :candidate result
+       :diagnostics
+       [(w5-ir-diagnostic request "C15-GOLDEN" :verification :result)]})))

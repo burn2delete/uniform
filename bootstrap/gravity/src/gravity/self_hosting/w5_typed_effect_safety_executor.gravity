@@ -1,0 +1,633 @@
+; W5 Wave5 Slice B typed/effect/profile/capability/ownership/safety executor.
+; This :meta leaf consumes validation receipts owned by C7-C10 and P1-P3.
+; It never reimplements those validators and grants no compiler authority.
+(ns gravity.self-hosting.w5-typed-effect-safety-executor
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-typed-effect-safety-policy
+             w5-typed-effect-safety-diagnostic-catalog
+             w5-tes-string-suffix?
+             w5-tes-extension-path-valid?
+             w5-tes-target-valid?
+             w5-tes-validator-results-valid?
+             w5-tes-safe1-outcomes-valid?
+             w5-tes-request-valid?
+             w5-tes-identity-input
+             w5-tes-provenance
+             w5-tes-diagnostic
+             w5-tes-execute
+             w5-tes-run
+             w5-tes-verify
+             w5-tes-recompute
+             w5-tes-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-typed-effect-safety-executor
+     :owner :workstream-5
+     :source-language :gravity
+     :scope :wave5-slice-b-static-only
+     :status :executable-leaf
+     :static-only? true
+     :authority :non-authority
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :public-authority? false
+     :release? false
+     :full-language-credit? false
+     :fl-240-credit? false
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :windows :invokes-clojure? false :links-jvm? false
+       :fallback? false}]
+     :consumes-validators
+     [:gravity.compiler/verify-c7-type-checker
+      :gravity.compiler/verify-c8-effect-checker
+      :gravity.profile/verify-profile-contract
+      :gravity.capability/verify-capability-proof
+      :gravity.compiler/verify-c9-ownership-checker
+      :gravity.compiler/verify-c10-safety-analysis]
+     :redefines-validator-semantics? false
+     :governing-documents [:P1 :P2 :P3 :L7 :L8 :C7 :C8 :C9 :C10
+                           :SAFE1 :D8 :D9]
+     :does-not-claim [:validator-ownership :native-execution
+                      :self-hosting-completion :full-language-support
+                      :fl-240-credit :release-readiness :public-authority]}}))
+
+(def w5-tes-candidate-target :llvm-x86_64-linux)
+(def w5-tes-candidate-platform
+  {:os :linux :arch :x86_64 :backend :llvm
+   :artifact-format :elf :abi :sysv-amd64})
+(def w5-tes-unsupported-targets
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+(def w5-tes-unsupported-policies
+  [{:target :darwin :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :windows :invokes-clojure? false :links-jvm? false
+    :fallback? false}])
+(def w5-tes-safe1-outcomes
+  [:proven-safe :runtime-checked :rejected :unsafe-island])
+(def w5-tes-validator-order
+  [:type :effect :profile :capability :ownership :safety])
+(def w5-tes-validator-provenance-ids
+  [:prov-c7 :prov-c8 :prov-profile :prov-capability :prov-c9 :prov-c10])
+(def w5-tes-rules
+  ["W5-TES-SCHEMA" "W5-TES-TARGET" "W5-TES-TYPE"
+   "W5-TES-EFFECT" "W5-TES-PROFILE" "W5-TES-CAPABILITY"
+   "W5-TES-OWNERSHIP" "W5-TES-SAFETY" "W5-TES-SAFE1"
+   "W5-TES-LINEAGE" "W5-TES-PROVENANCE" "W5-TES-EVIDENCE"
+   "W5-TES-AUTHORITY" "W5-TES-SUBSTITUTION"])
+(def w5-tes-remediations
+  {:schema :restore-execution-request-schema
+   :target :use-exact-llvm-linux-target
+   :type :attach-c7-validator-receipt
+   :effect :attach-c8-validator-receipt
+   :profile :attach-profile-validator-receipt
+   :capability :attach-capability-validator-receipt
+   :ownership :attach-c9-validator-receipt
+   :safety :attach-c10-validator-receipt
+   :safe1 :classify-each-operation-exactly-once
+   :lineage :restore-validator-input-output-lineage
+   :provenance :restore-source-and-validator-provenance
+   :evidence :retain-incomplete-seed-evidence
+   :authority :deny-public-self-host-and-release-authority
+   :substitution :recompute-result-from-request})
+
+(defn w5-typed-effect-safety-policy []
+  {:artifact :gravity/w5-typed-effect-safety-policy
+   :schema-version 1
+   :scope :wave5-slice-b-static-only
+   :profile :meta
+   :stage2-target :jvm
+   :candidate-target w5-tes-candidate-target
+   :candidate-platform w5-tes-candidate-platform
+   :unsupported-platforms w5-tes-unsupported-targets
+   :unsupported-targets w5-tes-unsupported-targets
+   :unsupported-target-policies w5-tes-unsupported-policies
+   :validator-order w5-tes-validator-order
+   :validator-provenance-ids w5-tes-validator-provenance-ids
+   :consumes [:P1 :P2 :P3 :L7 :L8 :C7 :C8 :C9 :C10 :SAFE1]
+   :effects-capabilities-separate? true
+   :redefines-validator-semantics? false
+   :safe1-outcomes w5-tes-safe1-outcomes
+   :completion-status :incomplete
+   :static-only? true
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public-authority? false
+   :release? false
+   :full-language-credit? false
+   :fl-240-credit? false
+   :authority :non-authority
+   :cross-target-inference? false
+   :fallback? false})
+
+(defn w5-typed-effect-safety-diagnostic-catalog []
+  {:artifact :gravity/w5-typed-effect-safety-diagnostic-catalog
+   :schema-version 1
+   :rules w5-tes-rules
+   :remediations w5-tes-remediations
+   :stable-fields [:diagnostic-id :rule :severity :stage :profile :target
+                   :source-span :provenance :facts :remediation]
+   :authority :non-authority})
+
+(defn w5-tes-exact-keys? [value expected]
+  (if (map? value) (= (set (keys value)) expected) false))
+
+(defn w5-tes-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (w5-tes-member-from? values value (+ index 1)))))
+
+(defn w5-tes-member? [values value]
+  (if (vector? values) (w5-tes-member-from? values value 0) false))
+
+(defn w5-tes-string-suffix-from? [value suffix index]
+  (if (= index (count suffix))
+    true
+    (if (= (get value (+ (- (count value) (count suffix)) index))
+           (get suffix index))
+      (w5-tes-string-suffix-from? value suffix (+ index 1))
+      false)))
+
+(defn w5-tes-string-suffix? [value suffix]
+  (if (string? value)
+    (if (string? suffix)
+      (if (>= (count value) (count suffix))
+        (w5-tes-string-suffix-from? value suffix 0)
+        false)
+      false)
+    false))
+
+(defn w5-tes-keyword-vector-valid-from? [values index]
+  (if (= index (count values))
+    true
+    (if (keyword? (get values index))
+      (w5-tes-keyword-vector-valid-from? values (+ index 1))
+      false)))
+
+(defn w5-tes-extension-path-valid? [extension path]
+  (if (= extension ".gravity")
+    (w5-tes-string-suffix? path ".gravity")
+    (if (= extension ".qst")
+      (w5-tes-string-suffix? path ".qst")
+      false)))
+
+(defn w5-tes-governed-span-valid? [span]
+  (if (w5-tes-exact-keys?
+       span #{:source-id :start-byte :end-byte :line :column})
+    (if (keyword? (get span :source-id))
+      (if (integer? (get span :start-byte))
+        (if (integer? (get span :end-byte))
+          (if (>= (get span :start-byte) 0)
+            (if (>= (get span :end-byte) 0)
+              (if (<= (get span :start-byte) (get span :end-byte))
+                (if (integer? (get span :line))
+                  (if (>= (get span :line) 1)
+                    (if (integer? (get span :column))
+                      (if (>= (get span :column) 1)
+                        true
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tes-origin-entry-valid? [entry]
+  (if (w5-tes-exact-keys?
+       entry #{:origin-kind :source-span :producer-id :producer-version
+               :input-ids :reason})
+    (if (keyword? (get entry :origin-kind))
+      (if (w5-tes-governed-span-valid? (get entry :source-span))
+        (if (keyword? (get entry :producer-id))
+          (if (integer? (get entry :producer-version))
+            (if (>= (get entry :producer-version) 1)
+              (if (vector? (get entry :input-ids))
+                (if (> (count (get entry :input-ids)) 0)
+                  (if (w5-tes-keyword-vector-valid-from?
+                       (get entry :input-ids) 0)
+                    (keyword? (get entry :reason))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tes-origin-chain-valid-from? [origin-chain index]
+  (if (= index (count origin-chain))
+    true
+    (if (w5-tes-origin-entry-valid? (get origin-chain index))
+      (w5-tes-origin-chain-valid-from? origin-chain (+ index 1))
+      false)))
+
+(defn w5-tes-origin-chain-valid? [origin-chain]
+  (if (vector? origin-chain)
+    (if (> (count origin-chain) 0)
+      (w5-tes-origin-chain-valid-from? origin-chain 0)
+      false)
+    false))
+
+(defn w5-tes-target-valid? [target-contract]
+  (if (w5-tes-exact-keys?
+       target-contract #{:candidate-target :candidate-platform
+                         :unsupported-targets :unsupported-target-policies
+                         :cross-target-inference? :fallback?})
+    (if (= w5-tes-candidate-target
+           (get target-contract :candidate-target))
+      (if (= w5-tes-candidate-platform
+             (get target-contract :candidate-platform))
+        (if (= w5-tes-unsupported-targets
+               (get target-contract :unsupported-targets))
+          (if (= w5-tes-unsupported-policies
+                 (get target-contract :unsupported-target-policies))
+            (if (= false (get target-contract :cross-target-inference?))
+              (= false (get target-contract :fallback?))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tes-validator-receipt-provenance-ids [results]
+  [(get (get results :type) :provenance-id)
+   (get (get results :effect) :provenance-id)
+   (get (get results :profile) :provenance-id)
+   (get (get results :capability) :provenance-id)
+   (get (get results :ownership) :provenance-id)
+   (get (get results :safety) :provenance-id)])
+
+(defn w5-tes-validator-receipt-valid?
+  [receipt artifact validator input-id output-id expected-provenance-id]
+  (if (w5-tes-exact-keys?
+       receipt #{:artifact :validator :input-id :output-id :status
+                 :diagnostics :provenance-id})
+    (if (= artifact (get receipt :artifact))
+      (if (= validator (get receipt :validator))
+        (if (= input-id (get receipt :input-id))
+          (if (= output-id (get receipt :output-id))
+            (if (= :accepted (get receipt :status))
+              (if (= [] (get receipt :diagnostics))
+                (= expected-provenance-id
+                   (get receipt :provenance-id))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tes-validator-results-valid? [request]
+  (let [results (get request :validator-results)
+        core-id (get request :typed-core-id)]
+    (if (w5-tes-exact-keys?
+         results #{:type :effect :profile :capability :ownership :safety})
+      (let [type-result (get results :type)
+            effect-result (get results :effect)
+            profile-result (get results :profile)
+            capability-result (get results :capability)
+            ownership-result (get results :ownership)
+            safety-result (get results :safety)
+            typed-id (get type-result :output-id)
+            effected-id (get effect-result :output-id)
+            ownership-id (get ownership-result :output-id)
+            receipt-provenance-ids
+            (w5-tes-validator-receipt-provenance-ids results)
+            top-level-provenance-ids
+            (get (get request :provenance) :validator-provenance-ids)]
+        (if (= w5-tes-validator-provenance-ids receipt-provenance-ids)
+          (if (= receipt-provenance-ids top-level-provenance-ids)
+            (if (w5-tes-validator-receipt-valid?
+                 type-result :gravity/c7-validation-receipt
+                 :gravity.compiler/verify-c7-type-checker core-id
+                 :w5-typed-core (get w5-tes-validator-provenance-ids 0))
+              (if (w5-tes-validator-receipt-valid?
+                   effect-result :gravity/c8-validation-receipt
+                   :gravity.compiler/verify-c8-effect-checker typed-id
+                   :w5-effected-core (get w5-tes-validator-provenance-ids 1))
+                (if (w5-tes-validator-receipt-valid?
+                     profile-result :gravity/profile-validation-receipt
+                     :gravity.profile/verify-profile-contract effected-id
+                     :w5-profile-facts (get w5-tes-validator-provenance-ids 2))
+                  (if (w5-tes-validator-receipt-valid?
+                       capability-result :gravity/capability-validation-receipt
+                       :gravity.capability/verify-capability-proof effected-id
+                       :w5-capability-facts
+                       (get w5-tes-validator-provenance-ids 3))
+                    (if (not= (get profile-result :output-id)
+                              (get capability-result :output-id))
+                      (if (w5-tes-validator-receipt-valid?
+                           ownership-result :gravity/c9-validation-receipt
+                           :gravity.compiler/verify-c9-ownership-checker
+                           effected-id :w5-ownership-core
+                           (get w5-tes-validator-provenance-ids 4))
+                        (w5-tes-validator-receipt-valid?
+                         safety-result :gravity/c10-validation-receipt
+                         :gravity.compiler/verify-c10-safety-analysis
+                         ownership-id :w5-safety-core
+                         (get w5-tes-validator-provenance-ids 5))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false))
+      false)))
+
+(defn w5-tes-operation-valid? [operation]
+  (if (w5-tes-exact-keys?
+       operation #{:operation-id :kind :outcome :evidence-id
+                   :source-span :origin-chain})
+    (if (keyword? (get operation :operation-id))
+      (if (keyword? (get operation :kind))
+        (if (w5-tes-member? w5-tes-safe1-outcomes
+                            (get operation :outcome))
+          (if (keyword? (get operation :evidence-id))
+            (if (w5-tes-governed-span-valid?
+                 (get operation :source-span))
+              (w5-tes-origin-chain-valid?
+               (get operation :origin-chain))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tes-operation-ids [operations index ids]
+  (if (= index (count operations))
+    ids
+    (w5-tes-operation-ids
+     operations (+ index 1) (conj ids (get (get operations index) :operation-id)))))
+
+(defn w5-tes-operations-valid-from? [operations index]
+  (if (= index (count operations))
+    true
+    (if (w5-tes-operation-valid? (get operations index))
+      (w5-tes-operations-valid-from? operations (+ index 1))
+      false)))
+
+(defn w5-tes-safe1-outcomes-valid? [operations]
+  (if (vector? operations)
+    (if (> (count operations) 0)
+      (if (w5-tes-operations-valid-from? operations 0)
+        (= (count operations)
+           (count (set (w5-tes-operation-ids operations 0 []))))
+        false)
+      false)
+    false))
+
+(defn w5-tes-provenance-valid? [provenance]
+  (if (w5-tes-exact-keys?
+       provenance #{:provenance-id :logical-source-id :actual-source-path
+                    :actual-source-extension :source-kind
+                    :validator-provenance-ids :source-span :origin-chain
+                    :status})
+    (if (keyword? (get provenance :provenance-id))
+      (if (string? (get provenance :logical-source-id))
+        (if (string? (get provenance :actual-source-path))
+          (if (= ".gravity" (get provenance :actual-source-extension))
+            (if (= :gravity (get provenance :source-kind))
+              (if (w5-tes-extension-path-valid?
+                   ".gravity" (get provenance :actual-source-path))
+                (if (= w5-tes-validator-provenance-ids
+                       (get provenance :validator-provenance-ids))
+                  (if (w5-tes-governed-span-valid?
+                       (get provenance :source-span))
+                    (if (w5-tes-origin-chain-valid?
+                         (get provenance :origin-chain))
+                      (= :pending (get provenance :status))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            (if (= ".qst" (get provenance :actual-source-extension))
+              (if (= :qst (get provenance :source-kind))
+                (if (w5-tes-extension-path-valid?
+                     ".qst" (get provenance :actual-source-path))
+                  (if (= w5-tes-validator-provenance-ids
+                         (get provenance :validator-provenance-ids))
+                    (if (w5-tes-governed-span-valid?
+                         (get provenance :source-span))
+                      (if (w5-tes-origin-chain-valid?
+                           (get provenance :origin-chain))
+                        (= :pending (get provenance :status))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false))
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tes-evidence-valid? [evidence]
+  (if (w5-tes-exact-keys?
+       evidence #{:class :status :candidate-executed? :independent-proof?
+                  :seed-retired?})
+    (if (= :executable-record (get evidence :class))
+      (if (= :incomplete (get evidence :status))
+        (if (= false (get evidence :candidate-executed?))
+          (if (= false (get evidence :independent-proof?))
+            (= false (get evidence :seed-retired?))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tes-authority-valid? [authority]
+  (= authority
+     {:authority :non-authority :clojure-seed-boundary? true
+      :self-hosted? false :public-authority? false :release? false
+      :full-language-credit? false :fl-240-credit? false}))
+
+(defn w5-tes-request-valid? [request]
+  (if (w5-tes-exact-keys?
+       request #{:artifact :schema-version :request-id :typed-core-id
+                 :validator-results :operations :target-contract
+                 :provenance :evidence :authority :claimed-status})
+    (if (= :gravity/w5-typed-effect-safety-request
+           (get request :artifact))
+      (if (= 1 (get request :schema-version))
+        (if (keyword? (get request :request-id))
+          (if (keyword? (get request :typed-core-id))
+            (if (w5-tes-target-valid? (get request :target-contract))
+              (if (w5-tes-validator-results-valid? request)
+                (if (w5-tes-safe1-outcomes-valid? (get request :operations))
+                  (if (w5-tes-provenance-valid? (get request :provenance))
+                    (if (w5-tes-evidence-valid? (get request :evidence))
+                      (if (w5-tes-authority-valid?
+                           (get request :authority))
+                        (= :incomplete (get request :claimed-status))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tes-identity-input [request]
+  {:request-id (get request :request-id)
+   :typed-core-id (get request :typed-core-id)
+   :validator-results (get request :validator-results)
+   :operations (get request :operations)
+   :candidate-target w5-tes-candidate-target
+   :completion-status :incomplete})
+
+(defn w5-tes-provenance [request]
+  (get request :provenance))
+
+(defn w5-tes-diagnostic [request rule field remediation]
+  {:diagnostic-id rule
+   :rule rule
+   :severity :error
+   :stage :typed-effect-safety
+   :profile :meta
+   :target w5-tes-candidate-target
+   :source-span {:source-id (get request :request-id)
+                 :start-byte 0 :end-byte 0 :line 1 :column 1}
+   :provenance (get request :provenance)
+   :facts {:field field :status :rejected}
+   :remediation remediation})
+
+(defn w5-tes-first-invalid-rule [request]
+  (if (not (map? request))
+    ["W5-TES-SCHEMA" :request :restore-execution-request-schema]
+    (if (not (w5-tes-target-valid? (get request :target-contract)))
+      ["W5-TES-TARGET" :target-contract :use-exact-llvm-linux-target]
+      (let [results (get request :validator-results)]
+        (if (not (map? results))
+          ["W5-TES-SCHEMA" :validator-results :restore-execution-request-schema]
+          (if (not= :accepted (get (get results :type) :status))
+            ["W5-TES-TYPE" :type :attach-c7-validator-receipt]
+            (if (not= :accepted (get (get results :effect) :status))
+              ["W5-TES-EFFECT" :effect :attach-c8-validator-receipt]
+              (if (not= :accepted (get (get results :profile) :status))
+                ["W5-TES-PROFILE" :profile :attach-profile-validator-receipt]
+                (if (not= :accepted (get (get results :capability) :status))
+                  ["W5-TES-CAPABILITY" :capability :attach-capability-validator-receipt]
+                  (if (not= :accepted (get (get results :ownership) :status))
+                    ["W5-TES-OWNERSHIP" :ownership :attach-c9-validator-receipt]
+                    (if (not= :accepted (get (get results :safety) :status))
+                      ["W5-TES-SAFETY" :safety :attach-c10-validator-receipt]
+                      (if (not (w5-tes-validator-results-valid? request))
+                        ["W5-TES-LINEAGE" :validator-results
+                         :restore-validator-input-output-lineage]
+                        (if (not (w5-tes-safe1-outcomes-valid?
+                                  (get request :operations)))
+                          ["W5-TES-SAFE1" :operations
+                           :classify-each-operation-exactly-once]
+                          (if (not (w5-tes-provenance-valid?
+                                    (get request :provenance)))
+                            ["W5-TES-PROVENANCE" :provenance
+                             :restore-source-and-validator-provenance]
+                            (if (not (w5-tes-evidence-valid?
+                                      (get request :evidence)))
+                              ["W5-TES-EVIDENCE" :evidence
+                               :retain-incomplete-seed-evidence]
+                              (if (not (w5-tes-authority-valid?
+                                        (get request :authority)))
+                                ["W5-TES-AUTHORITY" :authority
+                                 :deny-public-self-host-and-release-authority]
+                                ["W5-TES-SCHEMA" :request
+                                 :restore-execution-request-schema]))))))))))))))))
+
+(defn w5-tes-accepted-result [request]
+  {:artifact :gravity/w5-typed-effect-safety-execution
+   :schema-version 1
+   :request-id (get request :request-id)
+   :status :accepted
+   :execution-status :incomplete
+   :authority :non-authority
+   :identity-input (w5-tes-identity-input request)
+   :provenance (w5-tes-provenance request)
+   :validator-order w5-tes-validator-order
+   :effects-capabilities-separate? true
+   :safe1-outcomes (get request :operations)
+   :diagnostics []
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public-authority? false
+   :release? false
+   :full-language-credit? false
+   :fl-240-credit? false})
+
+(defn w5-tes-verify [request]
+  (if (w5-tes-request-valid? request)
+    (w5-tes-accepted-result request)
+    (let [failure (w5-tes-first-invalid-rule request)]
+      {:artifact :gravity/w5-typed-effect-safety-execution
+       :schema-version 1
+       :request-id (get request :request-id)
+       :status :rejected
+       :execution-status :incomplete
+       :authority :non-authority
+       :identity-input (w5-tes-identity-input request)
+       :provenance (get request :provenance)
+       :validator-order w5-tes-validator-order
+       :effects-capabilities-separate? true
+       :safe1-outcomes []
+       :diagnostics
+       [(w5-tes-diagnostic request (get failure 0) (get failure 1)
+                           (get failure 2))]
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :public-authority? false
+       :release? false
+       :full-language-credit? false
+       :fl-240-credit? false})))
+
+(defn w5-tes-execute [request] (w5-tes-verify request))
+(defn w5-tes-run [request] (w5-tes-execute request))
+(defn w5-tes-recompute [request] (w5-tes-verify request))
+
+(defn w5-tes-verify-result [request candidate]
+  (if (= candidate (w5-tes-recompute request))
+    {:artifact :gravity/w5-typed-effect-safety-result-verification
+     :status :passed :diagnostics [] :authority :non-authority}
+    {:artifact :gravity/w5-typed-effect-safety-result-verification
+     :status :rejected
+     :diagnostics
+     [(w5-tes-diagnostic request "W5-TES-SUBSTITUTION" :result
+                         :recompute-result-from-request)]
+     :authority :non-authority}))

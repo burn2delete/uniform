@@ -1,0 +1,245 @@
+; W5 Wave5 Slice A accepted reader-module record.
+; The record is executable data but remains incomplete and nonauthoritative.
+(ns gravity.self-hosting.w5-reader-module.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-reader-module-execution-request
+             w5-reader-module-execution-request-at
+             w5-reader-module-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-reader-module-fixture
+     :owner :workstream-5
+     :scope :wave5-slice-a-static-only
+     :static-only? true
+     :authority :non-authority
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :public-authority? false
+     :release? false
+     :full-language-credit? false
+     :fl-240-credit? false}}))
+
+(defn w5-rm-span [source start end]
+  {:source-id source :start-byte start :end-byte end
+   :line 1 :column 1})
+
+(defn w5-rm-provenance [root extension source-kind]
+  {:source-id :gravity.self-hosting/w5-reader-module
+   :logical-source-id "fixtures/w5-reader-module/reader-module-execution"
+   :actual-source-path
+   (str root "/bootstrap/clojure/fixtures/self-hosting/"
+        "w5-reader-module/accepted/reader-module-execution" extension)
+   :actual-source-extension extension
+   :source-kind source-kind
+   :project-relative-path
+   (str "bootstrap/clojure/fixtures/self-hosting/w5-reader-module/accepted/"
+        "reader-module-execution" extension)
+   :status :pending})
+
+(defn w5-rm-source-unit [root extension source-kind]
+  {:artifact :gravity/c2-source-unit
+   :schema-version 1
+   :source-unit-id :reader-module-source-unit
+   :logical-source-id "reader-module/source-unit-v1"
+   :project-root-id :gravity-project
+   :encoding :utf-8
+   :extension-policy [".qst" ".gravity"]
+   :source-kind source-kind
+   :source-byte-count :pending
+   :source-content-status :pending
+   :hash-final? false
+   :provenance (w5-rm-provenance root extension source-kind)
+   :source-span (w5-rm-span :reader-module-source 0 512)})
+
+(defn w5-rm-syntax-origin [root]
+  {:artifact :gravity/c3-syntax-origin-stream
+   :schema-version 1
+   :syntax-stream-id :reader-syntax-stream
+   :source-unit-id :reader-module-source-unit
+   :form-count 3
+   :syntax-ids [:reader-form-0 :reader-form-1 :reader-form-2]
+   :origins
+   [{:syntax-id :reader-form-0 :origin-kind :source
+     :source-span (w5-rm-span :reader-form-0 0 8)
+     :parent-syntax-id nil :generated? false :metadata-preserved? true}
+    {:syntax-id :reader-form-1 :origin-kind :reader-abbreviation
+     :source-span (w5-rm-span :reader-form-1 9 32)
+     :parent-syntax-id :reader-form-0 :generated? false
+     :metadata-preserved? true}
+    {:syntax-id :reader-form-2 :origin-kind :macro-generated
+     :source-span (w5-rm-span :reader-form-2 33 64)
+     :parent-syntax-id :reader-form-1 :generated? true
+     :metadata-preserved? true}]
+   :metadata-preserved? true
+   :source-span (w5-rm-span :reader-syntax-stream 0 64)
+   :status :pending})
+
+(defn w5-rm-macro-hygiene []
+  {:artifact :gravity/c4-macro-hygiene-trace
+   :schema-version 1
+   :macro-id :reader-module/identity-macro
+   :input-syntax-id :reader-form-1
+   :output-syntax-id :expanded-form-1
+   :generated-origin-chain [:reader-form-1 :macro-identity]
+   :hygiene-mark :fresh-mark-1
+   :capture-policy :hygienic
+   :capture-records []
+   :build-effects []
+   :profile :meta
+   :metadata-preserved? true
+   :status :pending})
+
+(defn w5-rm-binding [id name kind visibility span]
+  {:binding-id id :name name :kind kind :visibility visibility
+   :source-span span})
+
+(defn w5-rm-namespace-module []
+  {:artifact :gravity/c5-module-artifact
+   :schema-version 1
+   :module-id :reader-module/module-v1
+   :namespace :gravity.self-hosting.w5-reader-module.accepted
+   :profile :meta
+   :target :jvm
+   :requires []
+   :aliases []
+   :imports []
+   :exports [:reader-module-execution]
+   :effects []
+   :capabilities []
+   :bindings
+   [(w5-rm-binding :reader-module/namespace
+                   :reader-module :namespace :private
+                   (w5-rm-span :reader-module-namespace 0 16))
+    (w5-rm-binding :reader-module/execution
+                   :reader-module-execution :var :public
+                   (w5-rm-span :reader-module-definition 17 40))]
+   :dependency-graph {:nodes [:reader-module] :edges [] :acyclic? true}
+   :source-span (w5-rm-span :reader-module-module 0 64)
+   :status :pending})
+
+(defn w5-rm-core-lowering []
+  {:artifact :gravity/c6-core-lowering
+   :schema-version 1
+   :surface-root :expanded-form-1
+   :core-root :core-root-1
+   :core-forms [:do :let :if]
+   :desugaring-trace
+   [{:rule-id :reader-module-lowering
+     :source-kind :module-form
+     :generated-origin [:expanded-form-1]
+     :invalidates [:typed-core :diagnostics]}]
+   :evaluation-order [:left-to-right]
+   :preserved-facts [:source-span :origin-chain :metadata
+                     :effects :capabilities :profile :target]
+   :domain-boundaries []
+   :unsafe-metadata-preserved? true
+   :profile :meta
+   :target :jvm
+   :source-span (w5-rm-span :reader-module-core 0 96)
+   :status :pending})
+
+(defn w5-rm-target []
+  {:target :llvm-x86_64-linux
+   :os :linux :arch :x86_64 :backend :llvm
+   :artifact-format :elf :abi :sysv-amd64
+   :cross-target-inference? false
+   :fallback? false :darwin-fallback? false
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false
+     :fallback? false}]
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :no-fallback? true})
+
+(defn w5-rm-lineage []
+  {:phase-order [:c2-reader :c3-syntax-origin :c4-macro-hygiene
+                 :c5-namespace-module :c6-core-lowering]
+   :edges
+   [{:from :c2-reader :to :c3-syntax-origin
+     :preserves [:source-span :syntax-id :extension-provenance]}
+    {:from :c3-syntax-origin :to :c4-macro-hygiene
+     :preserves [:origin-chain :metadata :hygiene-mark]}
+    {:from :c4-macro-hygiene :to :c5-namespace-module
+     :preserves [:generated-origin :build-effects :profile]}
+    {:from :c5-namespace-module :to :c6-core-lowering
+     :preserves [:binding-identity :effects :capabilities :target]}]})
+
+(defn w5-rm-evidence []
+  {:evidence-class :executable-record
+   :execution-status :pending
+   :proof-status :pending
+   :source-span-status :preserved
+   :artifact-status :pending
+   :status :incomplete
+   :full-language-credit? false
+   :fl-240-credit? false})
+
+(defn w5-rm-authority []
+  {:authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public-authority? false
+   :release? false
+   :full-language-credit? false
+   :fl-240-credit? false
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :cross-target-inference? false
+   :fallback? false
+   :darwin-fallback? false
+   :no-fallback? true
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false
+     :fallback? false}]})
+
+(defn w5-rm-request-with-root [root extension source-kind]
+  {:artifact :gravity/w5-reader-module-request
+   :schema-version 1
+   :verifier-id :gravity/w5-reader-module-executor
+   :profile :meta
+   :target :jvm
+   :claimed-status :incomplete
+   :completion-status :incomplete
+   :target-contract (w5-rm-target)
+   :source-unit (w5-rm-source-unit root extension source-kind)
+   :syntax-origin (w5-rm-syntax-origin root)
+   :macro-hygiene (w5-rm-macro-hygiene)
+   :namespace-module (w5-rm-namespace-module)
+   :core-lowering (w5-rm-core-lowering)
+   :lineage (w5-rm-lineage)
+   :evidence (w5-rm-evidence)
+   :authority (w5-rm-authority)
+   :residual-seed-harness
+   {:compiler-plan :clojure-stage0-stage2-compiler-plan
+    :runtime :jvm-stage2-runtime
+    :authority :seed-only
+    :execution-status :harness-only}
+   :provenance (w5-rm-provenance root extension source-kind)
+   :source-span (w5-rm-span :reader-module-request 0 512)})
+
+(defn w5-reader-module-execution-request-at [root extension source-kind]
+  (w5-rm-request-with-root root extension source-kind))
+
+(defn w5-reader-module-execution-request [root extension source-kind]
+  (w5-reader-module-execution-request-at root extension source-kind))
+
+(defn w5-reader-module-alternate-path-request [root extension source-kind]
+  (w5-reader-module-execution-request-at root extension source-kind))

@@ -1,0 +1,130 @@
+; W5 Wave5 Slice B accepted typed/effect/safety execution request.
+(ns gravity.fixtures.w5-typed-effect-safety.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-typed-effect-safety-execution-request
+             w5-typed-effect-safety-execution-request-at
+             w5-typed-effect-safety-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-tes-receipts []
+  {:type {:artifact :gravity/c7-validation-receipt
+          :validator :gravity.compiler/verify-c7-type-checker
+          :input-id :w5-lowered-core :output-id :w5-typed-core
+          :status :accepted :diagnostics [] :provenance-id :prov-c7}
+   :effect {:artifact :gravity/c8-validation-receipt
+            :validator :gravity.compiler/verify-c8-effect-checker
+            :input-id :w5-typed-core :output-id :w5-effected-core
+            :status :accepted :diagnostics [] :provenance-id :prov-c8}
+   :profile {:artifact :gravity/profile-validation-receipt
+             :validator :gravity.profile/verify-profile-contract
+             :input-id :w5-effected-core :output-id :w5-profile-facts
+             :status :accepted :diagnostics [] :provenance-id :prov-profile}
+   :capability {:artifact :gravity/capability-validation-receipt
+                :validator :gravity.capability/verify-capability-proof
+                :input-id :w5-effected-core :output-id :w5-capability-facts
+                :status :accepted :diagnostics []
+                :provenance-id :prov-capability}
+   :ownership {:artifact :gravity/c9-validation-receipt
+               :validator :gravity.compiler/verify-c9-ownership-checker
+               :input-id :w5-effected-core :output-id :w5-ownership-core
+               :status :accepted :diagnostics [] :provenance-id :prov-c9}
+   :safety {:artifact :gravity/c10-validation-receipt
+            :validator :gravity.compiler/verify-c10-safety-analysis
+            :input-id :w5-ownership-core :output-id :w5-safety-core
+            :status :accepted :diagnostics [] :provenance-id :prov-c10}})
+
+(defn w5-tes-span []
+  {:source-id :w5-typed-effect-safety-fixture
+   :start-byte 0 :end-byte 1 :line 1 :column 1})
+
+(defn w5-tes-operation-origin [origin-kind reason]
+  {:origin-kind origin-kind
+   :source-span (w5-tes-span)
+   :producer-id :w5-typed-effect-safety-fixture
+   :producer-version 1
+   :input-ids [:w5-typed-effect-safety-request]
+   :reason reason})
+
+(defn w5-tes-operations []
+  [{:operation-id :safe-read :kind :memory-read :outcome :proven-safe
+    :evidence-id :proof-safe-read :source-span (w5-tes-span)
+    :origin-chain
+    [(w5-tes-operation-origin :source :operation-source)]}
+   {:operation-id :checked-index :kind :index :outcome :runtime-checked
+    :evidence-id :check-index :source-span (w5-tes-span)
+    :origin-chain
+    [(w5-tes-operation-origin :source :operation-source)]}
+   {:operation-id :denied-call :kind :capability-use :outcome :rejected
+    :evidence-id :diagnostic-denied-call :source-span (w5-tes-span)
+    :origin-chain
+    [(w5-tes-operation-origin :source :operation-source)]}
+   {:operation-id :audited-ffi :kind :ffi-call :outcome :unsafe-island
+    :evidence-id :audit-ffi :source-span (w5-tes-span)
+    :origin-chain
+    [(w5-tes-operation-origin :source :operation-source)
+     (w5-tes-operation-origin :generated :safe-wrapper)]}])
+
+(defn w5-tes-target-contract []
+  {:candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false
+     :fallback? false}]
+   :cross-target-inference? false
+   :fallback? false})
+
+(defn w5-tes-provenance [path extension kind]
+  {:provenance-id :w5-tes-provenance
+   :logical-source-id "w5-typed-effect-safety"
+   :actual-source-path path
+   :actual-source-extension extension
+   :source-kind kind
+   :validator-provenance-ids
+   [:prov-c7 :prov-c8 :prov-profile :prov-capability :prov-c9 :prov-c10]
+   :source-span (w5-tes-span)
+   :origin-chain
+   [{:origin-kind :source
+     :source-span (w5-tes-span)
+     :producer-id :w5-typed-effect-safety-fixture
+     :producer-version 1
+     :input-ids [:w5-typed-effect-safety-request]
+     :reason :source-provenance}]
+   :status :pending})
+
+(defn w5-tes-request-with-path [path extension kind]
+  {:artifact :gravity/w5-typed-effect-safety-request
+   :schema-version 1
+   :request-id :w5-typed-effect-safety-request
+   :typed-core-id :w5-lowered-core
+   :validator-results (w5-tes-receipts)
+   :operations (w5-tes-operations)
+   :target-contract (w5-tes-target-contract)
+   :provenance (w5-tes-provenance path extension kind)
+   :evidence {:class :executable-record :status :incomplete
+              :candidate-executed? false :independent-proof? false
+              :seed-retired? false}
+   :authority {:authority :non-authority :clojure-seed-boundary? true
+               :self-hosted? false :public-authority? false :release? false
+               :full-language-credit? false :fl-240-credit? false}
+   :claimed-status :incomplete})
+
+(defn w5-typed-effect-safety-execution-request-at [path extension kind]
+  (w5-tes-request-with-path path extension kind))
+
+(defn w5-typed-effect-safety-execution-request [path extension kind]
+  (w5-typed-effect-safety-execution-request-at path extension kind))
+
+(defn w5-typed-effect-safety-alternate-path-request
+  [path extension kind]
+  (w5-typed-effect-safety-execution-request-at path extension kind))

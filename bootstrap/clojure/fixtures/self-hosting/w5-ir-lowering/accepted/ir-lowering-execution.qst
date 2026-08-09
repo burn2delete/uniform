@@ -1,0 +1,201 @@
+(ns gravity.self-hosting.w5-ir-lowering.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-ir-lowering-request
+             w5-ir-lowering-alternate-path-request
+             w5-ir-lowering-request-for-source])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def w5-ir-id
+  "sha256:1111111111111111111111111111111111111111111111111111111111111111")
+(def w5-ir-id-2
+  "sha256:2222222222222222222222222222222222222222222222222222222222222222")
+(def w5-ir-id-3
+  "sha256:3333333333333333333333333333333333333333333333333333333333333333")
+(def w5-ir-id-4
+  "sha256:4444444444444444444444444444444444444444444444444444444444444444")
+
+(defn w5-ir-span [start end]
+  {:source-id :gravity.self-hosting/w5-ir-lowering
+   :start-byte start :end-byte end :line 1 :column 1})
+
+(defn w5-ir-facts []
+  {:types w5-ir-id :effects w5-ir-id-2 :ownership w5-ir-id-3
+   :capabilities w5-ir-id-4 :safety w5-ir-id :proofs w5-ir-id-2
+   :source-origins w5-ir-id-3 :profile :native :target :llvm-x86_64-linux})
+
+(defn w5-ir-operation [op-id opcode operands result type start end]
+  {:op-id op-id :opcode opcode :operands operands :result result
+   :type type :effects #{} :ordering :sequence
+   :source {:core-node :core/main :span (w5-ir-span start end)
+            :origin-chain [{:kind :source :source-id :core/main}]}
+   :profile :native :facts (w5-ir-facts) :domain-anchor nil})
+
+(defn w5-ir-mir []
+  {:artifact :gravity/mir-module :schema-version 1 :module-id w5-ir-id
+   :source-core w5-ir-id-2 :profile :native
+   :target-request :llvm-x86_64-linux
+   :functions
+   {:main
+    {:fn-id w5-ir-id-3 :name :main :params [] :returns :i64
+     :latent-effects #{} :entry :entry
+     :source (w5-ir-span 0 40)
+     :blocks
+     {:entry
+      {:block-id :entry :params
+       []
+       :operations
+       [(w5-ir-operation :op-const :const [] :v0 :i64 1 10)
+        (w5-ir-operation :op-add :add [:v0 :v0] :v1 :i64 11 20)]
+       :terminator {:kind :return :operands [:v1]
+                    :source (w5-ir-span 21 30)}
+       :source (w5-ir-span 0 30)}}}}
+   :globals {}
+   :types w5-ir-id
+   :effects w5-ir-id-2
+   :ownership w5-ir-id-3
+   :safety w5-ir-id-4
+   :domain-anchors []
+   :diagnostics []})
+
+(defn w5-ir-domain []
+  {:artifact :gravity/domain-ir :domain :efir :artifact-id w5-ir-id-4
+   :source {:syntax-id w5-ir-id :span (w5-ir-span 0 20)
+            :origin-chain [{:kind :source :source-id :core/main}]}
+   :semantic-anchor {:mir-ops [:op-const :op-add] :typed-core [:core/main]}
+   :profile :native :target-request :llvm-x86_64-linux
+   :facts (w5-ir-facts)
+   :verifier {:name :w5-efir-verifier :result :accepted
+              :diagnostic-id w5-ir-id-2}
+   :proofs [w5-ir-id-3]
+   :lowering-status :eligible
+   :payload {:schema-version 1 :expression :identity
+             :numeric-mode :exact-real :branch-policy :total}})
+
+(defn w5-ir-pass []
+  {:artifact :gravity/mir-pass-contract :pass-id :w5/identity-optimization
+   :version "1" :input :gravity/mir :output :gravity/mir
+   :requires #{:mir-verifier-passed :proof-certificate
+               :translation-validation}
+   :preserves #{:types :effects :safety :source-origins :profile}
+   :invalidates #{:data-flow-cache} :regenerates #{:data-flow-cache}
+   :proof-obligations #{:proof-dominates-check :translation-validation}
+   :profile-constraints {:profile :native :target :llvm-x86_64-linux}
+   :target-assumptions #{} :risk :high
+   :emits #{:decision-log :invalidated-fact-ledger :verifier-report}
+   :source-span (w5-ir-span 31 44)})
+
+(defn w5-ir-decision [mir]
+  {:artifact :gravity/optimization-decision :decision-id w5-ir-id-2
+   :pass-id :w5/identity-optimization :input-mir (get mir :module-id)
+   :output-mir (get mir :module-id) :changed-ops [:op-add] :reason :identity
+   :preserved #{:types :effects :safety :source-origins :profile}
+   :invalidated #{:data-flow-cache} :regenerated #{:data-flow-cache}
+   :proofs-used [w5-ir-id-3]
+   :translation-validation
+   {:status :accepted :method :checked-translation
+    :input-id (get mir :module-id) :output-id (get mir :module-id)
+    :proof-id w5-ir-id-3 :source-span (w5-ir-span 45 55)}
+   :residual-checks [:runtime-check-table]
+   :verifier-result :passed :diagnostics []
+   :source-span (w5-ir-span 56 65)})
+
+(defn w5-ir-optimization [mir]
+  {:artifact :gravity/optimization-pipeline :intent :preserve-semantics
+   :input-kind :gravity/mir :output-kind :gravity/mir
+   :passes [(w5-ir-pass)] :decisions [(w5-ir-decision mir)]
+   :facts-before #{:types :effects :ownership :capabilities :safety
+                   :proofs :source-origins :profile :target}
+   :facts-after #{:types :effects :ownership :capabilities :safety
+                  :proofs :source-origins :profile :target}
+   :invalidated-facts #{:data-flow-cache}
+   :regenerated-facts #{:data-flow-cache}
+   :eligibility :accepted
+   :semantic-equivalence
+   {:status :accepted :proof-id w5-ir-id-4
+    :input-id (get mir :module-id) :output-id (get mir :module-id)
+    :source-span (w5-ir-span 66 75)}
+   :source-span (w5-ir-span 76 85)})
+
+(def w5-ir-target
+  {:backend :llvm :os :linux :arch :x86_64 :artifact-format :elf
+   :abi :sysv-amd64 :triple "x86_64-unknown-linux-gnu"})
+
+(defn w5-ir-lowering [mir domain optimization]
+  {:artifact :gravity/lowering-request :schema-version 1
+   :input {:kind :gravity/mir :id (get mir :module-id)} :profile :native
+   :target w5-ir-target
+   :abi {:abi :sysv-amd64 :calling-convention :sysv-amd64
+         :layout w5-ir-id-2 :source-span (w5-ir-span 86 95)}
+   :runtime :none :providers {:panic :trap :allocator :none}
+   :required-evidence {:safety w5-ir-id-4 :proofs w5-ir-id-3
+                       :capabilities w5-ir-id}
+   :domain-anchors [(get domain :artifact-id)] :eligibility :accepted
+   :fallback-status :rejected
+   :manifest {:artifact :gravity/target-artifact-manifest
+              :backend :llvm :profile :native :target w5-ir-target
+              :source-map w5-ir-id-2 :proof-map w5-ir-id-3
+              :safety w5-ir-id-4 :dependencies w5-ir-id}
+   :diagnostics [] :source-span (w5-ir-span 96 105)})
+
+(defn w5-ir-stage10a []
+  {:artifact :gravity/sh16-c13-evidence-boundary :schema-version 1
+   :status :accepted :lowering-status :rejected :executable-load? false
+   :semantic-authority :none :identity-binding-status :unbound
+   :identity-resolution :coordinator-digest-required :target-independent? true
+   :self-hosted? false :seed-retired? false
+   :residual-check-report
+   {:status :incomplete-evidence-only
+    :open-proof-obligations [:exact-c12-evidence-validation
+                             :backend-lowering :executable-load]}
+   :nonclaims [:backend-lowering :executable-load :semantic-authority]
+   :source-span (w5-ir-span 106 115)})
+
+(defn w5-ir-authority []
+  {:authority :non-authority :seed true :self-hosted? false :public? false
+   :release? false :closure-status :blocked :execution-status :incomplete
+   :executable? false :full-language-credit? false
+   :stage10a-executable-continuity? false})
+
+(defn w5-ir-request [path source-extension source-kind]
+  (let [mir (w5-ir-mir)
+        domain (w5-ir-domain)
+        optimization (w5-ir-optimization mir)]
+    {:artifact :gravity/w5-ir-lowering-execution-request :schema-version 1
+     :profile :meta :stage2-target :jvm :candidate-target w5-ir-target
+     :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-arm64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-x86_64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :windows :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}]
+     :mir mir :domain-ir domain :optimization optimization
+     :lowering (w5-ir-lowering mir domain optimization)
+     :stage10a (w5-ir-stage10a) :diagnostics []
+     :provenance
+     {:actual-source-path path
+      :actual-manifest-path (str path ".manifest.edn")
+      :source-extension source-extension
+      :source-kind source-kind
+      :source-id :gravity.self-hosting/w5-ir-lowering
+      :compiler-id "gravity-stage2-w5-ir-lowering"
+      :compiler-version "stage2-w5-ir-lowering-v1"
+      :generated-origin-chain
+      [{:kind :source :source-id :gravity.self-hosting/w5-ir-lowering}]}
+     :claims {:producer-boolean? false :narrative? false
+              :source-ownership-only? false :check-only? false
+              :replay-only? false :global-advancement? false
+              :authority-claim? false}
+     :authority (w5-ir-authority)
+     :source-span (w5-ir-span 116 125)}))
+
+(defn w5-ir-lowering-request [source-path source-extension source-kind]
+  (w5-ir-request source-path source-extension source-kind))
+
+(defn w5-ir-lowering-alternate-path-request [source-path source-extension source-kind]
+  (w5-ir-request source-path source-extension source-kind))
+
+(defn w5-ir-lowering-request-for-source [source-path source-extension source-kind]
+  (w5-ir-request source-path source-extension source-kind))

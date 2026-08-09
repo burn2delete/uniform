@@ -1,0 +1,992 @@
+; W5 Wave5 Slice A reader-module execution leaf.
+; This :meta component validates C2-C6 reader/module records as data. It has
+; no compiler, runtime, filesystem, network, process, native, or host access.
+; The declared :jvm target is only the stage2 seed compiler-plan harness.
+(ns gravity.self-hosting.w5-reader-module-executor
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-reader-module-policy
+             w5-reader-module-diagnostic-catalog
+             w5-reader-module-target-valid?
+             w5-reader-module-source-unit-valid?
+             w5-reader-module-syntax-origin-valid?
+             w5-reader-module-macro-hygiene-valid?
+             w5-reader-module-namespace-valid?
+             w5-reader-module-module-valid?
+             w5-reader-module-core-lowering-valid?
+             w5-reader-module-request-valid?
+             w5-reader-module-input
+             w5-reader-module-record
+             w5-reader-module-diagnostic
+             w5-rm-diagnostic-source-span
+             w5-reader-module-verify
+             w5-reader-module-execute
+             w5-reader-module-run
+             w5-reader-module-recompute
+             w5-reader-module-verify-result
+             w5-rm-policy
+             w5-rm-diagnostic-catalog
+             w5-rm-string-suffix?
+             w5-rm-extension-paths-valid?
+             w5-rm-target-valid?
+             w5-rm-request-valid?
+             w5-rm-verify
+             w5-rm-execute
+             w5-rm-run
+             w5-rm-recompute
+             w5-rm-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-reader-module-executor
+     :owner :workstream-5
+     :source-language :gravity
+     :scope :wave5-slice-a-static-only
+     :status :executable-leaf
+     :static-only? true
+     :authority :non-authority
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :public-authority? false
+     :release? false
+     :full-language-credit? false
+     :fl-240-credit? false
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :windows :invokes-clojure? false :links-jvm? false
+       :fallback? false}]
+     :cross-target-inference? false
+     :fallback? false
+     :darwin-fallback? false
+     :residual-seed-harness
+     {:compiler-plan :clojure-stage0-stage2-compiler-plan
+      :runtime :jvm-stage2-runtime
+      :authority :seed-only
+      :execution-status :harness-only}
+     :residual-boundaries
+     #{:clojure-stage0-seed :jvm-stage2-runtime
+       :candidate-linux-execution :pending
+       :independent-c2-c6-evidence :pending
+       :full-language-coverage :incomplete}
+     :governing-documents [:D0 :D1 :D2 :D3 :D8 :D9 :L1 :L2 :L3 :L4 :L5 :L6
+                           :P1 :C2 :C3 :C4 :C5 :C6 :BOOT1 :BOOT2 :BOOT3
+                           :BOOT4 :BOOT5 :BOOT6 :BOOT7 :BOOT8]
+     :does-not-claim [:native-execution :reader-completion
+                      :self-hosting-completion :full-language-support
+                      :fl-240-credit :release-readiness :public-authority
+                      :cross-target-inference]}}))
+
+(def w5-rm-candidate-target :llvm-x86_64-linux)
+(def w5-rm-candidate-platform
+  {:os :linux :arch :x86_64 :backend :llvm
+   :artifact-format :elf :abi :sysv-amd64})
+(def w5-rm-unsupported-targets
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+(def w5-rm-unsupported-target-policies
+  [{:target :darwin :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :windows :invokes-clojure? false :links-jvm? false
+    :fallback? false}])
+(def w5-rm-phase-order
+  [:c2-reader :c3-syntax-origin :c4-macro-hygiene
+   :c5-namespace-module :c6-core-lowering])
+(def w5-rm-diagnostic-rules
+  ["W5-RM-SCHEMA" "W5-RM-TARGET" "W5-RM-SOURCE-UNIT"
+   "W5-RM-SYNTAX-ORIGIN" "W5-RM-MACRO-HYGIENE"
+   "W5-RM-NAMESPACE-MODULE" "W5-RM-CORE-LOWERING"
+   "W5-RM-LINEAGE"
+   "W5-RM-C2" "W5-RM-C3" "W5-RM-C4" "W5-RM-C5" "W5-RM-C6"
+   "W5-RM-PROVENANCE" "W5-RM-EVIDENCE" "W5-RM-AUTHORITY"
+   "W5-RM-SUBSTITUTION"])
+(def w5-rm-remediations
+  {:schema :restore-reader-module-schema
+   :target :use-exact-llvm-linux-target
+   :source-unit :restore-c2-source-unit-and-extension-provenance
+   :syntax-origin :restore-c3-syntax-origin-chain
+   :macro-hygiene :restore-c4-hygiene-and-build-trace
+   :namespace-module :restore-c5-namespace-and-module-bindings
+   :core-lowering :restore-c6-core-lowering-and-evaluation-order
+   :lineage :restore-c2-to-c6-phase-lineage
+   :c2 :restore-reader-diagnostic-and-source-facts
+   :c3 :restore-syntax-object-origin-and-hygiene-facts
+   :c4 :restore-macro-expansion-hygiene-and-build-effects
+   :c5 :restore-name-resolution-and-module-boundary
+   :c6 :restore-core-lowering-preserved-facts
+   :provenance :retain-actual-path-and-extension-provenance
+   :evidence :attach-executable-record-with-pending-proof
+   :authority :deny-authority-and-fallback
+   :substitution :recompute-result-from-request})
+(def w5-rm-residual-seed-harness
+  {:compiler-plan :clojure-stage0-stage2-compiler-plan
+   :runtime :jvm-stage2-runtime
+   :authority :seed-only
+   :execution-status :harness-only})
+(def w5-rm-diagnostic-fallback-span
+  {:source-id :gravity/w5-reader-module-diagnostic
+   :start-byte 0 :end-byte 0 :line 1 :column 1})
+
+(defn w5-rm-policy []
+  {:artifact :gravity/w5-reader-module-execution-policy
+   :schema-version 1
+   :scope :wave5-slice-a-static-only
+   :stage :stage2
+   :profile :meta
+   :target :jvm
+   :candidate-target w5-rm-candidate-target
+   :candidate-platform w5-rm-candidate-platform
+   :phase-order w5-rm-phase-order
+   :consumes [:C2 :C3 :C4 :C5 :C6]
+   :required-fields [:source-unit :syntax-origin :macro-hygiene
+                     :namespace-module :core-lowering :provenance
+                     :target-contract :evidence :authority]
+   :required-evidence-class :executable-record
+   :completion-status :incomplete
+   :diagnostics w5-rm-diagnostic-rules
+   :remediations w5-rm-remediations
+   :unsupported-platforms w5-rm-unsupported-targets
+   :unsupported-targets w5-rm-unsupported-targets
+   :unsupported-target-policies w5-rm-unsupported-target-policies
+   :cross-target-inference? false
+   :fallback? false
+   :darwin-fallback? false
+   :static-only? true
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :full-language-credit? false
+   :fl-240-credit? false
+   :authority :non-authority
+   :residual-seed-harness w5-rm-residual-seed-harness
+   :pending [:source-byte-resolution :reader-execution :macro-expansion
+             :namespace-resolution :core-lowering :candidate-execution
+             :independent-evidence :seed-retirement]})
+
+(defn w5-rm-diagnostic-catalog []
+  {:artifact :gravity/w5-reader-module-diagnostic-catalog
+   :schema-version 1
+   :stage :reader-module
+   :phase-order w5-rm-phase-order
+   :rules w5-rm-diagnostic-rules
+   :remediations w5-rm-remediations
+   :family-rules
+   {:c2 ["C2-ENCODING" "C2-DELIMITER" "C2-STRING" "C2-NUMERIC"
+         "C2-IDENTIFIER" "C2-NS-SHAPE" "C2-MAP" "C2-SET"
+         "C2-METADATA" "C2-ABBREV" "C2-EXTENSION" "C2-HASH"]
+    :c3 ["C3-SHAPE" "C3-ID" "C3-SPAN" "C3-ORIGIN" "C3-HYGIENE"
+         "C3-CAPTURE" "C3-METADATA" "C3-FACT-STALE" "C3-SERIALIZE"]
+    :c4 ["C4-NOT-MACRO" "C4-RETURN" "C4-DEPTH" "C4-SIZE"
+         "C4-BUILD-EFFECT" "C4-HYGIENE" "C4-CAPTURE"
+         "C4-GENERATED-UNSAFE" "C4-PROFILE" "C4-TRACE"]
+    :c5 ["C5-UNRESOLVED" "C5-AMBIGUOUS" "C5-PRIVATE" "C5-ALIAS"
+         "C5-SHADOW" "C5-CYCLE" "C5-CROSS-PROFILE" "C5-CAPABILITY"
+         "C5-TARGET" "C5-FOREIGN"]
+    :c6 ["C6-LOWERING-GAP" "C6-CORE-SHAPE" "C6-EVAL-ORDER"
+         "C6-ORIGIN" "C6-EFFECT-DROP" "C6-UNSAFE-DROP"
+         "C6-DOMAIN-BOUNDARY" "C6-VERIFY"]}
+   :stable-fields [:diagnostic-id :rule :severity :stage :profile :target
+                   :source-span :provenance :facts :remediation]
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false})
+
+(defn w5-rm-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (w5-rm-member-from? values value (+ index 1)))))
+
+(defn w5-rm-member? [values value]
+  (if (vector? values)
+    (w5-rm-member-from? values value 0)
+    false))
+
+(defn w5-rm-nonempty-string? [value]
+  (if (string? value)
+    (> (count value) 0)
+    false))
+
+(defn w5-rm-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn w5-rm-string-suffix-from? [value suffix index]
+  (if (= index (count suffix))
+    true
+    (if (= (get value (+ (- (count value) (count suffix)) index))
+           (get suffix index))
+      (w5-rm-string-suffix-from? value suffix (+ index 1))
+      false)))
+
+(defn w5-rm-string-suffix? [value suffix]
+  (if (string? value)
+    (if (string? suffix)
+      (if (>= (count value) (count suffix))
+        (w5-rm-string-suffix-from? value suffix 0)
+        false)
+      false))
+
+(defn w5-rm-extension-paths-valid? [extension actual-path project-path]
+  (if (= extension ".gravity")
+    (if (w5-rm-string-suffix? actual-path ".gravity")
+      (w5-rm-string-suffix? project-path ".gravity")
+      false)
+    (if (= extension ".qst")
+      (if (w5-rm-string-suffix? actual-path ".qst")
+        (w5-rm-string-suffix? project-path ".qst")
+        false)
+      false)))
+
+(defn w5-rm-span-valid? [span]
+  (if (w5-rm-exact-keys?
+       span #{:source-id :start-byte :end-byte :line :column})
+    (if (keyword? (get span :source-id))
+      (if (integer? (get span :start-byte))
+        (if (integer? (get span :end-byte))
+          (if (>= (get span :start-byte) 0)
+            (if (>= (get span :end-byte) 0)
+              (if (<= (get span :start-byte) (get span :end-byte))
+                (if (integer? (get span :line))
+                  (if (>= (get span :line) 1)
+                    (if (integer? (get span :column))
+                      (>= (get span :column) 1)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+      false)
+    false))
+
+(defn w5-rm-provenance-valid? [provenance]
+  (if (w5-rm-exact-keys?
+       provenance #{:source-id :logical-source-id :actual-source-path
+                    :actual-source-extension :source-kind
+                    :project-relative-path :status})
+    (if (keyword? (get provenance :source-id))
+      (if (w5-rm-nonempty-string? (get provenance :logical-source-id))
+        (if (w5-rm-nonempty-string? (get provenance :actual-source-path))
+          (if (= (get provenance :actual-source-extension) ".gravity")
+            (if (= (get provenance :source-kind) :gravity)
+              (if (w5-rm-nonempty-string?
+                   (get provenance :project-relative-path))
+                (if (w5-rm-extension-paths-valid?
+                     ".gravity"
+                     (get provenance :actual-source-path)
+                     (get provenance :project-relative-path))
+                  (= (get provenance :status) :pending)
+                  false)
+                false)
+              false)
+            (if (= (get provenance :actual-source-extension) ".qst")
+              (if (= (get provenance :source-kind) :qst)
+                (if (w5-rm-nonempty-string?
+                     (get provenance :project-relative-path))
+                  (if (w5-rm-extension-paths-valid?
+                       ".qst"
+                       (get provenance :actual-source-path)
+                       (get provenance :project-relative-path))
+                    (= (get provenance :status) :pending)
+                    false)
+                  false)
+                false)
+              false))
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-rm-provenance-cross-bound-valid? [request]
+  (= (get (get request :source-unit) :provenance)
+     (get request :provenance)))
+
+(defn w5-rm-source-unit-valid? [source-unit]
+  (if (w5-rm-exact-keys?
+       source-unit #{:artifact :schema-version :source-unit-id
+                     :logical-source-id :project-root-id :encoding
+                     :extension-policy :source-kind :source-byte-count
+                     :source-content-status :hash-final? :provenance
+                     :source-span})
+    (if (= (get source-unit :artifact) :gravity/c2-source-unit)
+      (if (= (get source-unit :schema-version) 1)
+        (if (keyword? (get source-unit :source-unit-id))
+          (if (w5-rm-nonempty-string? (get source-unit :logical-source-id))
+            (if (keyword? (get source-unit :project-root-id))
+              (if (= (get source-unit :encoding) :utf-8)
+                (if (= (get source-unit :extension-policy)
+                       [".qst" ".gravity"])
+                  (if (w5-rm-member? [:gravity :qst]
+                                      (get source-unit :source-kind))
+                    (if (= (get source-unit :source-byte-count) :pending)
+                      (if (= (get source-unit :source-content-status)
+                             :pending)
+                        (if (= (get source-unit :hash-final?) false)
+                          (if (w5-rm-provenance-valid?
+                               (get source-unit :provenance))
+                            (w5-rm-span-valid? (get source-unit :source-span))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-rm-syntax-origin-valid? [syntax-origin]
+  (if (w5-rm-exact-keys?
+       syntax-origin #{:artifact :schema-version :syntax-stream-id
+                       :source-unit-id :form-count :syntax-ids
+                       :origins :metadata-preserved? :source-span
+                       :status})
+    (if (= (get syntax-origin :artifact) :gravity/c3-syntax-origin-stream)
+      (if (= (get syntax-origin :schema-version) 1)
+        (if (= (get syntax-origin :source-unit-id) :reader-module-source-unit)
+          (if (= (get syntax-origin :form-count) 3)
+            (if (= (get syntax-origin :syntax-ids)
+                   [:reader-form-0 :reader-form-1 :reader-form-2])
+              (if (vector? (get syntax-origin :origins))
+                (if (= (count (get syntax-origin :origins)) 3)
+                  (if (= (get syntax-origin :metadata-preserved?) true)
+                    (if (w5-rm-span-valid? (get syntax-origin :source-span))
+                      (= (get syntax-origin :status) :pending)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-rm-origin-entry-valid? [entry expected-id]
+  (if (w5-rm-exact-keys?
+       entry #{:syntax-id :origin-kind :source-span :parent-syntax-id
+               :generated? :metadata-preserved?})
+    (if (= (get entry :syntax-id) expected-id)
+      (if (w5-rm-member? [:source :reader-abbreviation :macro-generated]
+                         (get entry :origin-kind))
+        (if (w5-rm-span-valid? (get entry :source-span))
+          (if (boolean? (get entry :generated?))
+            (if (boolean? (get entry :metadata-preserved?))
+              true
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-rm-origins-valid-from? [origins expected index]
+  (if (= index (count expected))
+    (= index (count origins))
+    (if (w5-rm-origin-entry-valid? (get origins index) (get expected index))
+      (w5-rm-origins-valid-from? origins expected (+ index 1))
+      false)))
+
+(defn w5-rm-syntax-origin-record-valid? [syntax-origin]
+  (if (w5-rm-syntax-origin-valid? syntax-origin)
+    (w5-rm-origins-valid-from?
+     (get syntax-origin :origins)
+     [:reader-form-0 :reader-form-1 :reader-form-2] 0)
+    false))
+
+(defn w5-rm-macro-hygiene-valid? [hygiene]
+  (if (w5-rm-exact-keys?
+       hygiene #{:artifact :schema-version :macro-id :input-syntax-id
+                 :output-syntax-id :generated-origin-chain :hygiene-mark
+                 :capture-policy :capture-records :build-effects
+                 :profile :metadata-preserved? :status})
+    (if (= (get hygiene :artifact) :gravity/c4-macro-hygiene-trace)
+      (if (= (get hygiene :schema-version) 1)
+        (if (keyword? (get hygiene :macro-id))
+          (if (= (get hygiene :input-syntax-id) :reader-form-1)
+            (if (= (get hygiene :output-syntax-id) :expanded-form-1)
+              (if (= (get hygiene :generated-origin-chain)
+                     [:reader-form-1 :macro-identity])
+                (if (keyword? (get hygiene :hygiene-mark))
+                  (if (= (get hygiene :capture-policy) :hygienic)
+                    (if (= (get hygiene :capture-records) [])
+                      (if (= (get hygiene :build-effects) [])
+                        (if (= (get hygiene :profile) :meta)
+                          (if (= (get hygiene :metadata-preserved?) true)
+                            (= (get hygiene :status) :pending)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-rm-binding-valid? [binding]
+  (if (w5-rm-exact-keys?
+       binding #{:binding-id :name :kind :visibility :source-span})
+    (if (keyword? (get binding :binding-id))
+      (if (keyword? (get binding :name))
+        (if (w5-rm-member? [:var :macro :namespace]
+                           (get binding :kind))
+          (if (w5-rm-member? [:private :public]
+                             (get binding :visibility))
+            (w5-rm-span-valid? (get binding :source-span))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-rm-bindings-valid-from? [bindings index]
+  (if (= index (count bindings))
+    true
+    (if (w5-rm-binding-valid? (get bindings index))
+      (w5-rm-bindings-valid-from? bindings (+ index 1))
+      false)))
+
+(defn w5-rm-namespace-valid? [namespace-module]
+  (if (w5-rm-exact-keys?
+       namespace-module #{:artifact :schema-version :module-id
+                          :namespace :profile :target :requires :aliases
+                          :imports :exports :effects :capabilities
+                          :bindings :dependency-graph :source-span
+                          :status})
+    (if (= (get namespace-module :artifact) :gravity/c5-module-artifact)
+      (if (= (get namespace-module :schema-version) 1)
+        (if (keyword? (get namespace-module :module-id))
+          (if (keyword? (get namespace-module :namespace))
+            (if (= (get namespace-module :profile) :meta)
+              (if (= (get namespace-module :target) :jvm)
+                (if (= (get namespace-module :requires) [])
+                  (if (= (get namespace-module :aliases) [])
+                    (if (= (get namespace-module :imports) [])
+                      (if (= (get namespace-module :exports)
+                             [:reader-module-execution])
+                        (if (= (get namespace-module :effects) [])
+                          (if (= (get namespace-module :capabilities) [])
+                            (if (w5-rm-bindings-valid-from?
+                                 (get namespace-module :bindings) 0)
+                              (if (= (get namespace-module :dependency-graph)
+                                     {:nodes [:reader-module]
+                                      :edges [] :acyclic? true})
+                                (if (w5-rm-span-valid?
+                                     (get namespace-module :source-span))
+                                  (= (get namespace-module :status) :pending)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-rm-module-valid? [namespace-module]
+  (w5-rm-namespace-valid? namespace-module))
+
+(defn w5-rm-core-lowering-valid? [core-lowering]
+  (if (w5-rm-exact-keys?
+       core-lowering #{:artifact :schema-version :surface-root
+                       :core-root :core-forms :desugaring-trace
+                       :evaluation-order :preserved-facts
+                       :domain-boundaries :unsafe-metadata-preserved?
+                       :profile :target :source-span :status})
+    (if (= (get core-lowering :artifact) :gravity/c6-core-lowering)
+      (if (= (get core-lowering :schema-version) 1)
+        (if (= (get core-lowering :surface-root) :expanded-form-1)
+          (if (= (get core-lowering :core-root) :core-root-1)
+            (if (= (get core-lowering :core-forms) [:do :let :if])
+              (if (= (get core-lowering :desugaring-trace)
+                     [{:rule-id :reader-module-lowering
+                       :source-kind :module-form
+                       :generated-origin [:expanded-form-1]
+                       :invalidates [:typed-core :diagnostics]}])
+                (if (= (get core-lowering :evaluation-order)
+                       [:left-to-right])
+                  (if (= (get core-lowering :preserved-facts)
+                         [:source-span :origin-chain :metadata
+                          :effects :capabilities :profile :target])
+                    (if (= (get core-lowering :domain-boundaries) [])
+                      (if (= (get core-lowering
+                                 :unsafe-metadata-preserved?) true)
+                        (if (= (get core-lowering :profile) :meta)
+                          (if (= (get core-lowering :target) :jvm)
+                            (if (w5-rm-span-valid?
+                                 (get core-lowering :source-span))
+                              (= (get core-lowering :status) :pending)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-rm-target-policy-valid? [target]
+  (if (w5-rm-exact-keys?
+       target #{:target :os :arch :backend :artifact-format :abi
+                :cross-target-inference? :fallback? :darwin-fallback?
+                :unsupported-targets :unsupported-target-policies
+                :candidate-invokes-clojure? :candidate-links-jvm?
+                :no-fallback?})
+    (if (= (get target :target) w5-rm-candidate-target)
+      (if (= (get target :os) :linux)
+        (if (= (get target :arch) :x86_64)
+          (if (= (get target :backend) :llvm)
+            (if (= (get target :artifact-format) :elf)
+              (if (= (get target :abi) :sysv-amd64)
+                (if (= (get target :unsupported-targets)
+                       w5-rm-unsupported-targets)
+                  (if (= (get target :unsupported-target-policies)
+                         w5-rm-unsupported-target-policies)
+                    (if (= (get target :cross-target-inference?) false)
+                      (if (= (get target :fallback?) false)
+                        (if (= (get target :darwin-fallback?) false)
+                          (if (= (get target :candidate-invokes-clojure?)
+                                 false)
+                            (if (= (get target :candidate-links-jvm?) false)
+                              (= (get target :no-fallback?) true)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-reader-module-target-valid? [target]
+  (if (map? target)
+    (w5-rm-target-policy-valid? target)
+    false))
+
+(defn w5-rm-evidence-valid? [evidence]
+  (if (w5-rm-exact-keys?
+       evidence #{:evidence-class :execution-status :proof-status
+                  :source-span-status :artifact-status :status
+                  :full-language-credit? :fl-240-credit?})
+    (if (= (get evidence :evidence-class) :executable-record)
+      (if (= (get evidence :execution-status) :pending)
+        (if (= (get evidence :proof-status) :pending)
+          (if (= (get evidence :source-span-status) :preserved)
+            (if (= (get evidence :artifact-status) :pending)
+              (if (= (get evidence :status) :incomplete)
+                (if (= (get evidence :full-language-credit?) false)
+                  (= (get evidence :fl-240-credit?) false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-rm-authority-valid? [authority]
+  (if (w5-rm-exact-keys?
+       authority #{:authority :clojure-seed-boundary? :self-hosted?
+                   :public-authority? :release? :full-language-credit?
+                   :fl-240-credit? :candidate-invokes-clojure?
+                   :candidate-links-jvm? :cross-target-inference?
+                   :fallback? :darwin-fallback? :no-fallback?
+                   :unsupported-target-policies})
+    (if (= (get authority :authority) :non-authority)
+      (if (= (get authority :clojure-seed-boundary?) true)
+        (if (= (get authority :self-hosted?) false)
+          (if (= (get authority :public-authority?) false)
+            (if (= (get authority :release?) false)
+              (if (= (get authority :full-language-credit?) false)
+                (if (= (get authority :fl-240-credit?) false)
+                  (if (= (get authority :candidate-invokes-clojure?) false)
+                    (if (= (get authority :candidate-links-jvm?) false)
+                      (if (= (get authority :cross-target-inference?) false)
+                        (if (= (get authority :fallback?) false)
+                          (if (= (get authority :darwin-fallback?) false)
+                            (if (= (get authority :no-fallback?) true)
+                              (= (get authority
+                                     :unsupported-target-policies)
+                                 w5-rm-unsupported-target-policies)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-rm-lineage-valid? [lineage]
+  (if (= (get lineage :phase-order) w5-rm-phase-order)
+    (if (= (get lineage :edges)
+           [{:from :c2-reader :to :c3-syntax-origin
+             :preserves [:source-span :syntax-id :extension-provenance]}
+            {:from :c3-syntax-origin :to :c4-macro-hygiene
+             :preserves [:origin-chain :metadata :hygiene-mark]}
+            {:from :c4-macro-hygiene :to :c5-namespace-module
+             :preserves [:generated-origin :build-effects :profile]}
+            {:from :c5-namespace-module :to :c6-core-lowering
+             :preserves [:binding-identity :effects :capabilities :target]}])
+      true
+      false)
+    false))
+
+(defn w5-rm-request-shape-valid? [request]
+  (w5-rm-exact-keys?
+   request #{:artifact :schema-version :verifier-id :profile :target
+             :claimed-status :completion-status :target-contract
+             :source-unit :syntax-origin :macro-hygiene
+             :namespace-module :core-lowering :lineage
+             :evidence :authority :residual-seed-harness
+             :provenance :source-span}))
+
+(defn w5-rm-request-valid? [request]
+  (if (w5-rm-request-shape-valid? request)
+    (if (= (get request :artifact) :gravity/w5-reader-module-request)
+      (if (= (get request :schema-version) 1)
+        (if (= (get request :verifier-id)
+               :gravity/w5-reader-module-executor)
+          (if (= (get request :profile) :meta)
+            (if (= (get request :target) :jvm)
+              (if (= (get request :claimed-status) :incomplete)
+                (if (= (get request :completion-status) :incomplete)
+                  (if (w5-reader-module-target-valid?
+                       (get request :target-contract))
+                    (if (w5-rm-source-unit-valid?
+                         (get request :source-unit))
+                      (if (w5-rm-syntax-origin-record-valid?
+                           (get request :syntax-origin))
+                        (if (w5-rm-macro-hygiene-valid?
+                             (get request :macro-hygiene))
+                          (if (w5-rm-module-valid?
+                               (get request :namespace-module))
+                            (if (w5-rm-core-lowering-valid?
+                                 (get request :core-lowering))
+                              (if (w5-rm-lineage-valid?
+                                   (get request :lineage))
+                                (if (w5-rm-evidence-valid?
+                                     (get request :evidence))
+                                  (if (w5-rm-authority-valid?
+                                       (get request :authority))
+                                    (if (= (get request
+                                                :residual-seed-harness)
+                                           w5-rm-residual-seed-harness)
+                                      (if (w5-rm-provenance-valid?
+                                           (get request :provenance))
+                                        (if (w5-rm-provenance-cross-bound-valid?
+                                             request)
+                                          (w5-rm-span-valid?
+                                           (get request :source-span))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-rm-first-invalid-rule [request]
+  (if (not (w5-rm-request-shape-valid? request))
+    ["W5-RM-SCHEMA" :schema]
+    (if (not (= (get request :artifact)
+                :gravity/w5-reader-module-request))
+      ["W5-RM-SCHEMA" :schema]
+      (if (not (= (get request :schema-version) 1))
+        ["W5-RM-SCHEMA" :schema]
+        (if (not (= (get request :verifier-id)
+                    :gravity/w5-reader-module-executor))
+          ["W5-RM-SCHEMA" :schema]
+          (if (not (= (get request :profile) :meta))
+            ["W5-RM-SCHEMA" :schema]
+            (if (not (= (get request :target) :jvm))
+              ["W5-RM-TARGET" :target]
+              (if (not (= (get request :claimed-status) :incomplete))
+                ["W5-RM-SCHEMA" :schema]
+                (if (not (= (get request :completion-status) :incomplete))
+                  ["W5-RM-SCHEMA" :schema]
+                  (if (not (w5-reader-module-target-valid?
+                            (get request :target-contract)))
+                    ["W5-RM-TARGET" :target]
+                    (if (not (w5-rm-source-unit-valid?
+                              (get request :source-unit)))
+                      ["W5-RM-SOURCE-UNIT" :source-unit]
+                      (if (not (w5-rm-syntax-origin-record-valid?
+                                (get request :syntax-origin)))
+                        ["W5-RM-SYNTAX-ORIGIN" :syntax-origin]
+                        (if (not (w5-rm-macro-hygiene-valid?
+                                  (get request :macro-hygiene)))
+                          ["W5-RM-MACRO-HYGIENE" :macro-hygiene]
+                          (if (not (w5-rm-module-valid?
+                                    (get request :namespace-module)))
+                            ["W5-RM-NAMESPACE-MODULE" :namespace-module]
+                            (if (not (w5-rm-core-lowering-valid?
+                                      (get request :core-lowering)))
+                              ["W5-RM-CORE-LOWERING" :core-lowering]
+                              (if (not (w5-rm-lineage-valid?
+                                        (get request :lineage)))
+                                ["W5-RM-LINEAGE" :lineage]
+                                (if (not (w5-rm-evidence-valid?
+                                          (get request :evidence)))
+                                  ["W5-RM-EVIDENCE" :evidence]
+                                  (if (not (w5-rm-authority-valid?
+                                            (get request :authority)))
+                                    ["W5-RM-AUTHORITY" :authority]
+                                    (if (not (= (get request
+                                                        :residual-seed-harness)
+                                                w5-rm-residual-seed-harness))
+                                      ["W5-RM-AUTHORITY" :authority]
+                                      (if (not (w5-rm-provenance-valid?
+                                                (get request :provenance)))
+                                        ["W5-RM-PROVENANCE" :provenance]
+                                        (if (not (w5-rm-provenance-cross-bound-valid?
+                                                  request))
+                                          ["W5-RM-PROVENANCE" :provenance]
+                                          (if (not (w5-rm-span-valid?
+                                                    (get request :source-span)))
+                                            ["W5-RM-SCHEMA" :schema]
+                                            ["W5-RM-C2" :source-unit]))))))))))))))))))))))
+
+(defn w5-reader-module-request-valid? [request]
+  (w5-rm-request-valid? request))
+
+(defn w5-rm-identity-input [request]
+  {:artifact :gravity/w5-reader-module-identity-input
+   :schema-version 1
+   :profile (get request :profile)
+   :target (get request :target)
+   :candidate-target
+   (get (get request :target-contract) :target)
+   :source-unit-id (get (get request :source-unit) :source-unit-id)
+   :logical-source-id (get (get request :source-unit) :logical-source-id)
+   :source-kind (get (get request :source-unit) :source-kind)
+   :syntax-stream-id (get (get request :syntax-origin) :syntax-stream-id)
+   :macro-id (get (get request :macro-hygiene) :macro-id)
+   :module-id (get (get request :namespace-module) :module-id)
+   :core-root (get (get request :core-lowering) :core-root)
+   :phase-order (get (get request :lineage) :phase-order)
+   :hash-final? false
+   :path-neutral? true})
+
+(defn w5-reader-module-input [request]
+  (w5-rm-identity-input request))
+
+(defn w5-reader-module-record [request]
+  {:artifact :gravity/w5-reader-module-record
+   :schema-version 1
+   :status (if (w5-rm-request-valid? request) :accepted :rejected)
+   :request request
+   :identity-input (w5-rm-identity-input request)
+   :provenance (get request :provenance)
+   :authority (get request :authority)
+   :completion-status :incomplete
+   :static-only? true
+   :hash-final? false})
+
+(defn w5-rm-diagnostic-source-span [request]
+  (let [span (get request :source-span)]
+    (if (w5-rm-span-valid? span)
+      span
+      w5-rm-diagnostic-fallback-span)))
+
+(defn w5-rm-diagnostic [request rule reason]
+  {:diagnostic-id rule
+   :rule rule
+   :severity :error
+   :stage :reader-module
+   :profile :meta
+   :target w5-rm-candidate-target
+   :source-span (w5-rm-diagnostic-source-span request)
+   :provenance (get request :provenance)
+   :facts {:reason reason
+           :phase-order w5-rm-phase-order
+           :hash-final? false}
+   :remediation (get w5-rm-remediations reason)
+   :authority :non-authority})
+
+(defn w5-rm-rejected [request rule reason]
+  {:artifact :gravity/w5-reader-module-execution-result
+   :schema-version 1
+   :status :rejected
+   :completion-status :incomplete
+   :diagnostics [(w5-rm-diagnostic request rule reason)]
+   :identity-input (w5-rm-identity-input request)
+   :provenance (get request :provenance)
+   :verifier-gate {:decision :blocked :release-eligible? false
+                   :reason :diagnostic}
+   :execution-status :not-executed
+   :residual-seed-harness w5-rm-residual-seed-harness
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public-authority? false
+   :release? false
+   :full-language-credit? false
+   :fl-240-credit? false
+   :fail-closed? true})
+
+(defn w5-rm-accepted [request]
+  {:artifact :gravity/w5-reader-module-execution-result
+   :schema-version 1
+   :status :accepted
+   :completion-status :incomplete
+   :diagnostics []
+   :identity-input (w5-rm-identity-input request)
+   :provenance (get request :provenance)
+   :phase-order w5-rm-phase-order
+   :lineage (get request :lineage)
+   :execution-record
+   {:source-unit :pending
+    :syntax-origin :pending
+    :macro-hygiene :pending
+    :namespace-module :pending
+    :core-lowering :pending}
+   :verifier-gate {:decision :blocked :release-eligible? false
+                   :reason :incomplete-evidence}
+   :execution-status :pending
+   :residual-seed-harness w5-rm-residual-seed-harness
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public-authority? false
+   :release? false
+   :full-language-credit? false
+   :fl-240-credit? false
+   :fail-closed? true})
+
+(defn w5-reader-module-verify [request]
+  (if (w5-rm-request-valid? request)
+    (w5-rm-accepted request)
+    (let [failure (w5-rm-first-invalid-rule request)]
+      (w5-rm-rejected request (get failure 0) (get failure 1)))))
+
+(defn w5-reader-module-execute [request]
+  (w5-reader-module-verify request))
+
+(defn w5-reader-module-run [request]
+  (w5-reader-module-execute request))
+
+(defn w5-reader-module-recompute [request]
+  (w5-reader-module-verify request))
+
+(defn w5-reader-module-verify-result [request result]
+  (let [recomputed (w5-reader-module-recompute request)]
+    (if (= result recomputed)
+      {:artifact :gravity/w5-reader-module-result-verification
+       :schema-version 1
+       :status :passed
+       :recomputed? true
+       :recomputed true
+       :completion-status (get recomputed :completion-status)
+       :diagnostics []
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :fail-closed? true}
+      {:artifact :gravity/w5-reader-module-result-verification
+       :schema-version 1
+       :status :rejected
+       :recomputed? true
+       :recomputed true
+       :completion-status :incomplete
+       :diagnostics [(w5-rm-diagnostic request
+                                       "W5-RM-SUBSTITUTION"
+                                       :substitution)]
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :fail-closed? true})))
+
+(def w5-reader-module-policy w5-rm-policy)
+(def w5-reader-module-diagnostic-catalog w5-rm-diagnostic-catalog)
+(def w5-reader-module-source-unit-valid? w5-rm-source-unit-valid?)
+(def w5-reader-module-syntax-origin-valid? w5-rm-syntax-origin-valid?)
+(def w5-reader-module-macro-hygiene-valid? w5-rm-macro-hygiene-valid?)
+(def w5-reader-module-namespace-valid? w5-rm-namespace-valid?)
+(def w5-reader-module-module-valid? w5-rm-module-valid?)
+(def w5-reader-module-core-lowering-valid? w5-rm-core-lowering-valid?)
+(def w5-reader-module-diagnostic w5-rm-diagnostic)
+(def w5-rm-target-valid? w5-reader-module-target-valid?)
+(def w5-rm-request-valid? w5-reader-module-request-valid?)
+(def w5-rm-verify w5-reader-module-verify)
+(def w5-rm-execute w5-reader-module-execute)
+(def w5-rm-run w5-reader-module-run)
+(def w5-rm-recompute w5-reader-module-recompute)
+(def w5-rm-verify-result w5-reader-module-verify-result)

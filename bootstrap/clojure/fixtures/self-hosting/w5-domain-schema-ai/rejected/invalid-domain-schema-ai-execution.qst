@@ -1,0 +1,625 @@
+(ns gravity.self-hosting.w5-domain-schema-ai.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-domain-schema-ai-request
+             w5-domain-schema-ai-alternate-path-request
+             w5-domain-schema-ai-request-for-source
+             w5-domain-schema-ai-invalid-model-budget-missing-token
+             w5-domain-schema-ai-invalid-model-budget-missing-wall-time
+             w5-domain-schema-ai-invalid-model-budget-missing-retry
+             w5-domain-schema-ai-invalid-model-budget-missing-cost
+             w5-domain-schema-ai-invalid-model-budget-extra-key
+             w5-domain-schema-ai-invalid-model-budget-wrong-type
+             w5-domain-schema-ai-invalid-model-budget-negative
+             w5-domain-schema-ai-invalid-model-budget-zero
+             w5-domain-schema-ai-invalid-model-budget-out-of-bound
+             w5-domain-schema-ai-invalid-model-budget-substituted
+             w5-domain-schema-ai-invalid-agent-budget-missing-model-calls
+             w5-domain-schema-ai-invalid-agent-budget-missing-tool-calls
+             w5-domain-schema-ai-invalid-agent-budget-missing-wall-time
+             w5-domain-schema-ai-invalid-agent-budget-missing-token
+             w5-domain-schema-ai-invalid-agent-budget-missing-retry
+             w5-domain-schema-ai-invalid-agent-budget-missing-cost
+             w5-domain-schema-ai-invalid-agent-budget-missing-human-reviews
+             w5-domain-schema-ai-invalid-agent-budget-extra-key
+             w5-domain-schema-ai-invalid-agent-budget-wrong-type
+             w5-domain-schema-ai-invalid-agent-budget-negative
+             w5-domain-schema-ai-invalid-agent-budget-zero
+             w5-domain-schema-ai-invalid-agent-budget-out-of-bound
+             w5-domain-schema-ai-invalid-agent-budget-substituted
+             w5-domain-schema-ai-invalid-agent-max-tool-calls
+             w5-domain-schema-ai-invalid-agent-max-cost
+             w5-domain-schema-ai-invalid-artifact
+             w5-domain-schema-ai-invalid-request-schema
+             w5-domain-schema-ai-invalid-profile
+             w5-domain-schema-ai-invalid-model
+             w5-domain-schema-ai-invalid-diagnostics
+             w5-domain-schema-ai-invalid-keyword-model
+             w5-domain-schema-ai-invalid-missing-link
+             w5-domain-schema-ai-invalid-mismatched-link
+             w5-domain-schema-ai-invalid-duplicate-link
+             w5-domain-schema-ai-invalid-ambient-capability
+             w5-domain-schema-ai-invalid-extra-capability
+             w5-domain-schema-ai-invalid-schema
+             w5-domain-schema-ai-invalid-serializer
+             w5-domain-schema-ai-invalid-migration
+             w5-domain-schema-ai-invalid-provider
+             w5-domain-schema-ai-invalid-prompt
+             w5-domain-schema-ai-invalid-tool
+             w5-domain-schema-ai-invalid-agent
+             w5-domain-schema-ai-invalid-workflow
+             w5-domain-schema-ai-invalid-memory
+             w5-domain-schema-ai-invalid-policy
+             w5-domain-schema-ai-invalid-evaluation
+             w5-domain-schema-ai-invalid-human-review
+             w5-domain-schema-ai-invalid-defense
+             w5-domain-schema-ai-invalid-effects
+             w5-domain-schema-ai-invalid-target
+             w5-domain-schema-ai-invalid-authority
+             w5-domain-schema-ai-invalid-migration-extra-process
+             w5-domain-schema-ai-invalid-migration-extra-shell
+             w5-domain-schema-ai-invalid-tool-extra-process
+             w5-domain-schema-ai-invalid-tool-extra-shell
+             w5-domain-schema-ai-invalid-agent-extra-process
+             w5-domain-schema-ai-invalid-agent-extra-shell
+             w5-domain-schema-ai-invalid-memory-extra-process
+             w5-domain-schema-ai-invalid-memory-extra-shell
+             w5-domain-schema-ai-invalid-policy-extra-process
+             w5-domain-schema-ai-invalid-policy-extra-shell
+             w5-domain-schema-ai-invalid-provider-identity-provider-id
+             w5-domain-schema-ai-invalid-provider-identity-model-id
+             w5-domain-schema-ai-invalid-provider-identity-version
+             w5-domain-schema-ai-invalid-provider-identity-adapter-version
+             w5-domain-schema-ai-invalid-provider-identity-schema-mode
+             w5-domain-schema-ai-invalid-gravity-path-suffix
+             w5-domain-schema-ai-invalid-qst-path-suffix
+             w5-domain-schema-ai-invalid-source-path-gravity
+             w5-domain-schema-ai-invalid-source-path-qst
+             w5-domain-schema-ai-invalid-source-span-missing
+             w5-domain-schema-ai-invalid-source-span-extra
+             w5-domain-schema-ai-invalid-source-span-wrong-type
+             w5-domain-schema-ai-invalid-source-span-negative
+             w5-domain-schema-ai-invalid-source-span-negative-byte
+             w5-domain-schema-ai-invalid-source-span-negative-column
+             w5-domain-schema-ai-invalid-source-span-order
+             w5-domain-schema-ai-invalid-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def dsai-id
+  "sha256:1111111111111111111111111111111111111111111111111111111111111111")
+(def dsai-id-2
+  "sha256:2222222222222222222222222222222222222222222222222222222222222222")
+(def dsai-id-3
+  "sha256:3333333333333333333333333333333333333333333333333333333333333333")
+(def dsai-id-4
+  "sha256:4444444444444444444444444444444444444444444444444444444444444444")
+
+(defn dsai-span [start end]
+  {:source-id :gravity.self-hosting/w5-domain-schema-ai
+   :start-byte start :end-byte end :line 1 :column 1})
+
+(defn dsai-domain []
+  {:domain :ai-agentic :profiles #{:ai :distributed :hosted}
+   :backends #{:workflow-graph :javascript-typescript :jvm}
+   :artifacts #{:agent-manifest :tool-policy :prompt-hashes :eval-report
+                :replay-log}
+   :examples #{:support-agent :data-extractor :code-reviewer
+               :human-review-workflow}
+   :rejects #{:tool-without-human-review :schema-less-output
+              :prompt-policy-escalation :unvalidated-generated-code}
+   :source-span (dsai-span 0 1)
+   :provenance [{:kind :source :source-id :DOM18}]})
+
+(defn dsai-schema []
+  {:schema-id :TicketClassification :version 2 :compatibility :additive
+   :fields {:priority #{:low :medium :high} :category :String
+            :confidence :F64}
+   :derives #{:validator :json-schema :graphql :openapi :ai-output}
+   :boundaries #{:api-input :database-row :model-output :workflow-state}
+   :schema-hash dsai-id :source-span (dsai-span 2 3)
+   :provenance [{:kind :source :source-id :S1}]})
+
+(defn dsai-serializer []
+  {:artifact :gravity/serializer :schema-id :TicketClassification
+   :schema-version 2 :format :json :unknown-fields :reject
+   :numeric-policy :exact-or-diagnostic :decoded-trust :untrusted
+   :canonical false :roundtrip-fixtures [:accepted-json-roundtrip]
+   :source-span (dsai-span 4 5)
+   :provenance [{:kind :source :source-id :S2}]})
+
+(defn dsai-migration []
+  {:artifact :gravity/database-migration :migration-id dsai-id-2
+   :from-schema :TicketClassification :to-schema :TicketClassification
+   :policy :additive :dialect :postgresql :effects #{:database/write}
+   :capabilities #{:db/migrate} :data-loss :none :rollback :rollback
+   :deployment-order :after-application :review :not-required
+   :fixtures [:additive-migration-plan]
+   :source-span (dsai-span 6 7)
+   :provenance [{:kind :source :source-id :S6}]})
+
+(defn dsai-provider []
+  {:provider-id :primary-ai :adapter :declared-provider
+   :model-id "gpt-support" :version-policy :pinned
+   :modes #{:text :structured-output :tool-calls :embeddings}
+   :credential-source :declared-secret-source :redaction :redact-secrets
+   :replay :recorded :identity
+   {:provider-id :primary-ai :model-id "gpt-support" :version "1"
+    :adapter-version "1" :schema-mode :provider-and-runtime}
+   :fallback-eval-required? true :source-span (dsai-span 8 9)
+   :provenance [{:kind :source :source-id :A2}]})
+
+(defn dsai-model []
+  {:model-id "gpt-support" :provider-id :primary-ai :version :pinned
+   :modes #{:text :structured-output} :input-schema :TicketClassification
+   :output-schema :TicketClassification
+   :budget {:max-output-tokens 4096 :max-retries 2
+            :max-wall-time-ms 30000 :max-cost-usd 0.25}
+   :replay :recorded :source-span (dsai-span 10 11)
+   :provenance [{:kind :source :source-id :A1}]})
+
+(defn dsai-prompt []
+  {:prompt-id :classify-ticket :input-schema :TicketClassification
+   :output-schema :TicketClassification
+   :authority {:system :system-trusted :developer :developer-trusted
+               :user-data :user-data :retrieved-data :retrieved-data
+               :tool-result-data :tool-result-data}
+   :taint {:ticket-body :untrusted :retrieved-context :untrusted}
+   :visible-tools [:ticket/read] :validation :schema-validated :repair 1
+   :refusal :explicit :compatibility :additive :prompt-hash dsai-id-3
+   :source-span (dsai-span 12 13)
+   :provenance [{:kind :source :source-id :A3}]})
+
+(defn dsai-tool []
+  {:tool-id :ticket/read :version 1 :input-schema :TicketClassification
+   :output-schema :TicketClassification :effects #{:database/read}
+   :capabilities #{:ticket/read} :idempotency :idempotent :retry :safe
+   :timeout 30 :human-review :not-required :replay :recorded-result
+   :taint :untrusted-input :redaction :redact-secrets
+   :source-span (dsai-span 14 15)
+   :provenance [{:kind :source :source-id :A4}]})
+
+(defn dsai-agent []
+  {:agent-id :support-triage :version 1 :model "gpt-support"
+   :prompts [:classify-ticket] :tools [:ticket/read]
+   :memory {:memory-id :support-memory :mode :read}
+   :policy :support-policy
+   :budget {:max-model-calls 3 :max-tool-calls 8 :max-retries 2
+            :max-wall-time-ms 120000 :max-output-tokens 12288
+            :max-cost-usd 1.0 :max-human-reviews 1}
+   :evals [:support-triage-release]
+   :input-schema :TicketClassification :output-schema :TicketClassification
+   :effects #{:ai/model-call :ai/output-validate}
+   :capabilities #{:provider/model :tool/read :memory/read}
+   :deployment :staging :source-span (dsai-span 16 17)
+   :provenance [{:kind :source :source-id :A5}]})
+
+(defn dsai-workflow []
+  {:workflow-id :triage-ticket :state-schema :TicketClassification
+   :event-schema :TicketClassification :replay :recorded-effects
+   :nodes [{:node-id :classify :kind :model-call
+            :source-span (dsai-span 18 19)
+            :effects #{:ai/model-call} :capabilities #{:provider/model}
+            :replay :recorded}]
+   :migration :preserve :budget-accounting :preserve
+   :model-id "gpt-support" :prompt-id :classify-ticket
+   :tool-id :ticket/read :agent-id :support-triage :memory-id :support-memory
+   :source-span (dsai-span 20 21)
+   :provenance [{:kind :source :source-id :A6}]})
+
+(defn dsai-memory []
+  {:memory-id :support-memory :item-schema :TicketClassification
+   :metadata-schema :TicketClassification
+   :embedding {:model :support-embedding :dimension 1536}
+   :effects #{:ai/memory-read :ai/memory-write :ai/embedding}
+   :capabilities #{:memory/read :memory/write}
+   :partition [:tenant-id :project-id] :retention {:days 90}
+   :redaction [:secrets :customer-pii]
+   :prompt-policy :quote-as-untrusted-data :replay :record-result-ids
+   :source-span (dsai-span 22 23)
+   :provenance [{:kind :source :source-id :A7}]})
+
+(defn dsai-policy []
+  {:policy-id :support-policy
+   :allow #{:repo/read :ai/model-call :ai/memory-read}
+   :deny #{:secrets/read :shell/exec :package/publish}
+   :human-review {:required-for #{:database/write}
+                  :role :repo-maintainer :expiry 900}
+   :taint {:ai-output :untrusted-until-schema-validated
+           :retrieved-memory :data-only}
+   :fallback :requires-eval
+   :generated-code {:must-compile true :must-pass-tests true}
+   :eval-required true :source-span (dsai-span 24 25)
+   :provenance [{:kind :source :source-id :A8}]})
+
+(defn dsai-evaluation []
+  {:eval-id :support-triage-release :subject-id dsai-id-4
+   :dataset {:schema-id :TicketClassification :version 2
+             :provenance dsai-id}
+   :metrics {:schema-validity :equals-one :unsafe-tool-denial :equals-one}
+   :thresholds {:schema-validity 1.0 :unsafe-tool-denial 1.0}
+   :probes [:prompt-injection :tool-escalation :secret-exfiltration]
+   :provider-policy :pinned-or-eval-gated :budget {:max-cost 25}
+   :status :pending :report-id dsai-id-4 :source-span (dsai-span 26 27)
+   :provenance [{:kind :source :source-id :A9}]})
+
+(defn dsai-human-review []
+  {:review-id :submit-review :action-schema :TicketClassification
+   :requires-role :repo-maintainer :evidence dsai-id
+   :payload-hash-rule :canonical-payload-hash :expiry 900
+   :on-deny :finish-without-write
+   :replay :reuse-recorded-decision-if-payload-matches :status :requested
+   :source-span (dsai-span 28 29)
+   :provenance [{:kind :source :source-id :A10}]})
+
+(defn dsai-defense []
+  {:authority-levels #{:system-trusted :developer-trusted :tool-schema-trusted}
+   :untrusted-levels #{:retrieved-data :user-data :ai-output-data
+                       :generated-source-data}
+   :taint-rules {:retrieved-data :data-only :ai-output-data :untrusted}
+   :denied-escalations [:model-text-to-tool-grant :memory-to-policy-override]
+   :secret-policy :never :generated-source-policy :parse-check-before-execute
+   :required-probes [:prompt-injection :tool-escalation :secret-exfiltration]
+   :source-span (dsai-span 30 31)
+   :provenance [{:kind :source :source-id :A11}]})
+
+(defn dsai-authority []
+  {:authority :non-authority :seed true :self-hosted? false :public? false
+   :release? false :closure-status :blocked :execution-status :incomplete
+   :executable? false :full-language-credit? false})
+
+(defn dsai-request [source-path source-extension source-kind]
+  {:artifact :gravity/w5-domain-schema-ai-request :schema-version 1
+   :profile :meta :stage2-target :jvm
+   :candidate-target {:backend :llvm :os :linux :arch :x86_64
+                      :artifact-format :elf :abi :sysv-amd64
+                      :triple "x86_64-unknown-linux-gnu"}
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :domain-manifest (dsai-domain) :schema-manifest (dsai-schema)
+   :serializer (dsai-serializer) :migration (dsai-migration)
+   :provider (dsai-provider) :model (dsai-model) :prompt (dsai-prompt)
+   :tool (dsai-tool) :agent (dsai-agent) :workflow (dsai-workflow)
+   :memory (dsai-memory) :policy (dsai-policy)
+   :evaluation (dsai-evaluation) :human-review (dsai-human-review)
+   :defense (dsai-defense)
+   :effects #{:ai/model-call :ai/output-validate :ai/tool-call
+              :ai/memory-read :ai/memory-write :ai/embedding
+              :ai/human-review :ai/eval-run}
+   :capabilities #{:provider/model :tool/read :ticket/read :memory/read
+                   :memory/write :db/migrate :human-review}
+   :diagnostics []
+   :provenance {:actual-source-path source-path
+                :actual-manifest-path (str source-path ".manifest.edn")
+                :source-id :gravity.self-hosting/w5-domain-schema-ai
+                :compiler-id "gravity-stage2-w5-domain-schema-ai"
+                :compiler-version "stage2-w5-domain-schema-ai-v1"
+                :source-extension source-extension :source-kind source-kind
+                :origin-chain [{:kind :source
+                                :source-id :gravity.self-hosting/w5-domain-schema-ai}]}
+   :claims {:producer-boolean? false :narrative? false
+            :source-ownership-only? false :check-only? false
+            :replay-only? false :global-advancement? false
+            :authority-claim? false}
+   :authority (dsai-authority) :source-span (dsai-span 32 33)})
+
+(defn w5-domain-schema-ai-request [source-path source-extension source-kind]
+  (dsai-request source-path source-extension source-kind))
+(defn w5-domain-schema-ai-alternate-path-request [source-path source-extension source-kind]
+  (dsai-request source-path source-extension source-kind))
+(defn w5-domain-schema-ai-request-for-source [source-path source-extension source-kind]
+  (dsai-request source-path source-extension source-kind))
+
+(defn dsai-budget-assoc [request owner key value]
+  (let [record (get request owner)
+        budget (get record :budget)
+        changed-budget (assoc budget key value)
+        changed-record (assoc record :budget changed-budget)]
+    (assoc request owner changed-record)))
+
+(defn dsai-budget-remove [request owner key]
+  (let [record (get request owner)
+        budget (get record :budget)
+        changed-budget (dissoc budget key)
+        changed-record (assoc record :budget changed-budget)]
+    (assoc request owner changed-record)))
+
+(defn w5-domain-schema-ai-invalid-model-budget-missing-token [request]
+  (dsai-budget-remove request :model :max-output-tokens))
+(defn w5-domain-schema-ai-invalid-model-budget-missing-wall-time [request]
+  (dsai-budget-remove request :model :max-wall-time-ms))
+(defn w5-domain-schema-ai-invalid-model-budget-missing-retry [request]
+  (dsai-budget-remove request :model :max-retries))
+(defn w5-domain-schema-ai-invalid-model-budget-missing-cost [request]
+  (dsai-budget-remove request :model :max-cost-usd))
+(defn w5-domain-schema-ai-invalid-model-budget-extra-key [request]
+  (dsai-budget-assoc request :model :unexpected-budget 1))
+(defn w5-domain-schema-ai-invalid-model-budget-wrong-type [request]
+  (dsai-budget-assoc request :model :max-output-tokens "4096"))
+(defn w5-domain-schema-ai-invalid-model-budget-negative [request]
+  (dsai-budget-assoc request :model :max-wall-time-ms -1))
+(defn w5-domain-schema-ai-invalid-model-budget-zero [request]
+  (dsai-budget-assoc request :model :max-retries 0))
+(defn w5-domain-schema-ai-invalid-model-budget-out-of-bound [request]
+  (dsai-budget-assoc request :model :max-output-tokens 131072))
+(defn w5-domain-schema-ai-invalid-model-budget-substituted [request]
+  (dsai-budget-assoc request :model :max-cost-usd 1.0))
+
+(defn w5-domain-schema-ai-invalid-agent-budget-missing-model-calls [request]
+  (dsai-budget-remove request :agent :max-model-calls))
+(defn w5-domain-schema-ai-invalid-agent-budget-missing-tool-calls [request]
+  (dsai-budget-remove request :agent :max-tool-calls))
+(defn w5-domain-schema-ai-invalid-agent-budget-missing-wall-time [request]
+  (dsai-budget-remove request :agent :max-wall-time-ms))
+(defn w5-domain-schema-ai-invalid-agent-budget-missing-token [request]
+  (dsai-budget-remove request :agent :max-output-tokens))
+(defn w5-domain-schema-ai-invalid-agent-budget-missing-retry [request]
+  (dsai-budget-remove request :agent :max-retries))
+(defn w5-domain-schema-ai-invalid-agent-budget-missing-cost [request]
+  (dsai-budget-remove request :agent :max-cost-usd))
+(defn w5-domain-schema-ai-invalid-agent-budget-missing-human-reviews [request]
+  (dsai-budget-remove request :agent :max-human-reviews))
+(defn w5-domain-schema-ai-invalid-agent-budget-extra-key [request]
+  (dsai-budget-assoc request :agent :unexpected-budget 1))
+(defn w5-domain-schema-ai-invalid-agent-budget-wrong-type [request]
+  (dsai-budget-assoc request :agent :max-tool-calls "8"))
+(defn w5-domain-schema-ai-invalid-agent-budget-negative [request]
+  (dsai-budget-assoc request :agent :max-model-calls -1))
+(defn w5-domain-schema-ai-invalid-agent-budget-zero [request]
+  (dsai-budget-assoc request :agent :max-tool-calls 0))
+(defn w5-domain-schema-ai-invalid-agent-budget-out-of-bound [request]
+  (dsai-budget-assoc request :agent :max-output-tokens 999999))
+(defn w5-domain-schema-ai-invalid-agent-budget-substituted [request]
+  (dsai-budget-assoc request :agent :max-cost-usd 0.25))
+(defn w5-domain-schema-ai-invalid-agent-max-tool-calls [request]
+  (w5-domain-schema-ai-invalid-agent-budget-zero request))
+(defn w5-domain-schema-ai-invalid-agent-max-cost [request]
+  (w5-domain-schema-ai-invalid-agent-budget-substituted request))
+
+(defn w5-domain-schema-ai-invalid-artifact [request]
+  (assoc request :artifact :gravity/not-domain-schema-ai))
+
+(defn w5-domain-schema-ai-invalid-request-schema [request]
+  (assoc request :schema-version 2))
+
+(defn w5-domain-schema-ai-invalid-profile [request]
+  (assoc request :profile :core))
+
+(defn w5-domain-schema-ai-invalid-model [request]
+  (let [model (get request :model)
+        changed (assoc model :model-id :gpt-support)]
+    (assoc request :model changed)))
+
+(defn w5-domain-schema-ai-invalid-diagnostics [request]
+  (assoc request :diagnostics [{:unexpected true}]))
+
+(defn w5-domain-schema-ai-invalid-keyword-model [request]
+  (let [agent (get request :agent)
+        changed (assoc agent :model :gpt-support)]
+    (assoc request :agent changed)))
+
+(defn w5-domain-schema-ai-invalid-missing-link [request]
+  (let [agent (get request :agent)
+        changed (assoc agent :prompts [])]
+    (assoc request :agent changed)))
+
+(defn w5-domain-schema-ai-invalid-mismatched-link [request]
+  (let [workflow (get request :workflow)
+        changed (assoc workflow :model-id "other-model")]
+    (assoc request :workflow changed)))
+
+(defn w5-domain-schema-ai-invalid-duplicate-link [request]
+  (let [agent (get request :agent)
+        changed (assoc agent :prompts [:classify-ticket :classify-ticket])]
+    (assoc request :agent changed)))
+
+(defn w5-domain-schema-ai-invalid-ambient-capability [request]
+  (let [capabilities (get request :capabilities)
+        changed (conj capabilities :network/read)]
+    (assoc request :capabilities changed)))
+
+(defn w5-domain-schema-ai-invalid-extra-capability [request]
+  (let [agent (get request :agent)
+        capabilities (get agent :capabilities)
+        changed-agent (assoc agent :capabilities (conj capabilities :network/read))]
+    (assoc request :agent changed-agent)))
+
+(defn w5-domain-schema-ai-invalid-schema [request]
+  (let [schema (get request :schema-manifest)
+        changed (assoc schema :compatibility :breaking)]
+    (assoc request :schema-manifest changed)))
+
+(defn w5-domain-schema-ai-invalid-serializer [request]
+  (let [serializer (get request :serializer)
+        changed (assoc serializer :decoded-trust :validated-for-sink)]
+    (assoc request :serializer changed)))
+
+(defn w5-domain-schema-ai-invalid-migration [request]
+  (let [migration (get request :migration)
+        changed (assoc migration :data-loss :destructive)]
+    (assoc request :migration changed)))
+
+(defn w5-domain-schema-ai-invalid-provider [request]
+  (let [provider (get request :provider)
+        changed (assoc provider :credential-source :ambient)]
+    (assoc request :provider changed)))
+
+(defn w5-domain-schema-ai-invalid-prompt [request]
+  (let [prompt (get request :prompt)
+        authority (get prompt :authority)
+        changed-authority (assoc authority :retrieved-data :developer-trusted)
+        changed-prompt (assoc prompt :authority changed-authority)]
+    (assoc request :prompt changed-prompt)))
+
+(defn w5-domain-schema-ai-invalid-tool [request]
+  (let [tool (get request :tool)
+        changed (assoc tool :human-review :missing)]
+    (assoc request :tool changed)))
+
+(defn w5-domain-schema-ai-invalid-agent [request]
+  (let [agent (get request :agent)
+        memory (get agent :memory)
+        changed-memory (assoc memory :mode :write)
+        changed-agent (assoc agent :memory changed-memory)]
+    (assoc request :agent changed-agent)))
+
+(defn w5-domain-schema-ai-invalid-workflow [request]
+  (let [workflow (get request :workflow)
+        changed (assoc workflow :replay :live-ok)]
+    (assoc request :workflow changed)))
+
+(defn w5-domain-schema-ai-invalid-memory [request]
+  (let [memory (get request :memory)
+        changed (assoc memory :prompt-policy :system-authority)]
+    (assoc request :memory changed)))
+
+(defn w5-domain-schema-ai-invalid-policy [request]
+  (let [policy (get request :policy)
+        changed (assoc policy :fallback :allow-without-eval)]
+    (assoc request :policy changed)))
+
+(defn w5-domain-schema-ai-invalid-evaluation [request]
+  (let [evaluation (get request :evaluation)
+        probes (get evaluation :probes)
+        changed (assoc evaluation :probes (rest probes))]
+    (assoc request :evaluation changed)))
+
+(defn w5-domain-schema-ai-invalid-human-review [request]
+  (let [review (get request :human-review)
+        changed (assoc review :status :granted)]
+    (assoc request :human-review changed)))
+
+(defn w5-domain-schema-ai-invalid-defense [request]
+  (let [defense (get request :defense)
+        changed (assoc defense :secret-policy :expose)]
+    (assoc request :defense changed)))
+
+(defn w5-domain-schema-ai-invalid-effects [request]
+  (assoc request :effects #{:ai/model-call}))
+
+(defn w5-domain-schema-ai-invalid-target [request]
+  (let [target (get request :candidate-target)
+        changed (assoc target :os :darwin)]
+    (assoc request :candidate-target changed)))
+
+(defn w5-domain-schema-ai-invalid-authority [request]
+  (let [authority (get request :authority)
+        changed (assoc authority :public? true)]
+    (assoc request :authority changed)))
+
+(defn dsai-extra-nested-set [request record-key set-key value]
+  (let [record (get request record-key)
+        changed (assoc record set-key (conj (get record set-key) value))]
+    (assoc request record-key changed)))
+
+(defn w5-domain-schema-ai-invalid-migration-extra-process [request]
+  (dsai-extra-nested-set request :migration :effects :process/exec))
+
+(defn w5-domain-schema-ai-invalid-migration-extra-shell [request]
+  (dsai-extra-nested-set request :migration :capabilities :shell/exec))
+
+(defn w5-domain-schema-ai-invalid-tool-extra-process [request]
+  (dsai-extra-nested-set request :tool :effects :process/exec))
+
+(defn w5-domain-schema-ai-invalid-tool-extra-shell [request]
+  (dsai-extra-nested-set request :tool :capabilities :shell/exec))
+
+(defn w5-domain-schema-ai-invalid-agent-extra-process [request]
+  (dsai-extra-nested-set request :agent :effects :process/exec))
+
+(defn w5-domain-schema-ai-invalid-agent-extra-shell [request]
+  (dsai-extra-nested-set request :agent :capabilities :shell/exec))
+
+(defn w5-domain-schema-ai-invalid-memory-extra-process [request]
+  (dsai-extra-nested-set request :memory :effects :process/exec))
+
+(defn w5-domain-schema-ai-invalid-memory-extra-shell [request]
+  (dsai-extra-nested-set request :memory :capabilities :shell/exec))
+
+(defn w5-domain-schema-ai-invalid-policy-extra-process [request]
+  (dsai-extra-nested-set request :policy :allow :process/exec))
+
+(defn w5-domain-schema-ai-invalid-policy-extra-shell [request]
+  (dsai-extra-nested-set request :policy :allow :shell/exec))
+
+(defn dsai-substitute-provider-identity [request field value]
+  (let [provider (get request :provider)
+        identity (get provider :identity)
+        changed-identity (assoc identity field value)
+        changed-provider (assoc provider :identity changed-identity)]
+    (assoc request :provider changed-provider)))
+
+(defn w5-domain-schema-ai-invalid-provider-identity-provider-id [request]
+  (dsai-substitute-provider-identity
+   request :provider-id :substituted-provider))
+
+(defn w5-domain-schema-ai-invalid-provider-identity-model-id [request]
+  (dsai-substitute-provider-identity
+   request :model-id "substituted-model"))
+
+(defn w5-domain-schema-ai-invalid-provider-identity-version [request]
+  (dsai-substitute-provider-identity request :version "2"))
+
+(defn w5-domain-schema-ai-invalid-provider-identity-adapter-version [request]
+  (dsai-substitute-provider-identity request :adapter-version "2"))
+
+(defn w5-domain-schema-ai-invalid-provider-identity-schema-mode [request]
+  (dsai-substitute-provider-identity request :schema-mode :runtime-only))
+
+(defn w5-domain-schema-ai-invalid-result [result]
+  (assoc result :execution-status :complete))
+
+(defn dsai-invalid-source-path [request path]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :actual-source-path path)))
+
+(defn w5-domain-schema-ai-invalid-gravity-path-suffix [request]
+  (dsai-invalid-source-path
+   request
+   "/substituted/domain-schema-ai-execution.qst"))
+
+(defn w5-domain-schema-ai-invalid-qst-path-suffix [request]
+  (dsai-invalid-source-path
+   request
+   "/substituted/domain-schema-ai-execution.gravity"))
+
+(defn w5-domain-schema-ai-invalid-source-path-gravity [request]
+  (w5-domain-schema-ai-invalid-gravity-path-suffix request))
+
+(defn w5-domain-schema-ai-invalid-source-path-qst [request]
+  (w5-domain-schema-ai-invalid-qst-path-suffix request))
+
+(defn w5-domain-schema-ai-invalid-source-span-missing [request]
+  (assoc request :source-span
+         (dissoc (get request :source-span) :line)))
+
+(defn w5-domain-schema-ai-invalid-source-span-extra [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :unexpected 1)))
+
+(defn w5-domain-schema-ai-invalid-source-span-wrong-type [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :line "1")))
+
+(defn w5-domain-schema-ai-invalid-source-span-negative [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :line -1)))
+
+(defn w5-domain-schema-ai-invalid-source-span-negative-byte [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :start-byte -1)))
+
+(defn w5-domain-schema-ai-invalid-source-span-negative-column [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :column -1)))
+
+(defn w5-domain-schema-ai-invalid-source-span-order [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :start-byte 2
+                :end-byte 1)))

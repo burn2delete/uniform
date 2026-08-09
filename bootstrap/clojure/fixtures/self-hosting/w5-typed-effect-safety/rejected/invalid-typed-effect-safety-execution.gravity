@@ -1,0 +1,342 @@
+; W5 Wave5 Slice B rejected typed/effect/safety request mutators.
+(ns gravity.fixtures.w5-typed-effect-safety.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-tes-invalid-schema
+             w5-tes-invalid-target
+             w5-tes-invalid-type
+             w5-tes-invalid-effect
+             w5-tes-invalid-profile
+             w5-tes-invalid-capability
+             w5-tes-invalid-ownership
+             w5-tes-invalid-safety
+             w5-tes-invalid-lineage
+             w5-tes-invalid-safe1
+             w5-tes-invalid-operation-span-missing
+             w5-tes-invalid-operation-span-extra
+             w5-tes-invalid-operation-span-type
+             w5-tes-invalid-operation-span-negative
+             w5-tes-invalid-operation-span-order
+             w5-tes-invalid-operation-origin-missing
+             w5-tes-invalid-operation-origin-extra
+             w5-tes-invalid-operation-origin-type
+             w5-tes-invalid-operation-origin-negative
+             w5-tes-invalid-operation-origin-order
+             w5-tes-invalid-operation-origin-empty
+             w5-tes-invalid-provenance
+             w5-tes-invalid-provenance-duplicate
+             w5-tes-invalid-provenance-reordered
+             w5-tes-invalid-provenance-substituted
+             w5-tes-invalid-gravity-path-suffix
+             w5-tes-invalid-qst-path-suffix
+             w5-tes-invalid-provenance-span-missing
+             w5-tes-invalid-provenance-span-extra
+             w5-tes-invalid-provenance-span-type
+             w5-tes-invalid-provenance-span-negative
+             w5-tes-invalid-provenance-span-order
+             w5-tes-invalid-provenance-origin-missing
+             w5-tes-invalid-provenance-origin-extra
+             w5-tes-invalid-provenance-origin-type
+             w5-tes-invalid-provenance-origin-negative
+             w5-tes-invalid-provenance-origin-order
+             w5-tes-invalid-provenance-origin-empty
+             w5-tes-invalid-receipt-provenance-substituted
+             w5-tes-invalid-receipt-provenance-duplicate
+             w5-tes-invalid-receipt-provenance-reordered
+             w5-tes-invalid-evidence
+             w5-tes-invalid-authority
+             w5-tes-invalid-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-tes-invalid-schema [request]
+  (assoc request :schema-version 2))
+
+(defn w5-tes-invalid-target [request]
+  (assoc request :target-contract
+         (assoc (get request :target-contract)
+                :candidate-target :darwin-arm64)))
+
+(defn w5-tes-invalid-validator-status [request field]
+  (let [results (get request :validator-results)
+        receipt (get results field)]
+    (assoc request :validator-results
+           (assoc results field (assoc receipt :status :rejected)))))
+
+(defn w5-tes-invalid-type [request]
+  (w5-tes-invalid-validator-status request :type))
+
+(defn w5-tes-invalid-effect [request]
+  (w5-tes-invalid-validator-status request :effect))
+
+(defn w5-tes-invalid-profile [request]
+  (w5-tes-invalid-validator-status request :profile))
+
+(defn w5-tes-invalid-capability [request]
+  (w5-tes-invalid-validator-status request :capability))
+
+(defn w5-tes-invalid-ownership [request]
+  (w5-tes-invalid-validator-status request :ownership))
+
+(defn w5-tes-invalid-safety [request]
+  (w5-tes-invalid-validator-status request :safety))
+
+(defn w5-tes-invalid-lineage [request]
+  (let [results (get request :validator-results)
+        effect (get results :effect)]
+    (assoc request :validator-results
+           (assoc results :effect
+                  (assoc effect :input-id :substituted-typed-core)))))
+
+(defn w5-tes-invalid-safe1 [request]
+  (let [operations (get request :operations)
+        operation (get operations 0)]
+    (assoc request :operations
+           (assoc operations 0 (assoc operation :outcome :undefined)))))
+
+(defn w5-tes-invalid-operation-span-missing [request]
+  (let [operations (get request :operations)
+        operation (get operations 0)]
+    (assoc request :operations
+           (assoc operations 0 (dissoc operation :source-span)))))
+
+(defn w5-tes-invalid-operation-span-extra [request]
+  (let [operations (get request :operations)
+        operation (get operations 0)]
+    (assoc request :operations
+           (assoc operations 0
+                  (assoc operation :source-span
+                         (assoc (get operation :source-span)
+                                :extra true))))))
+
+(defn w5-tes-invalid-operation-span-type [request]
+  (let [operations (get request :operations)
+        operation (get operations 0)]
+    (assoc request :operations
+           (assoc operations 0
+                  (assoc operation :source-span
+                         (assoc (get operation :source-span)
+                                :start-byte "zero"))))))
+
+(defn w5-tes-invalid-operation-span-negative [request]
+  (let [operations (get request :operations)
+        operation (get operations 0)]
+    (assoc request :operations
+           (assoc operations 0
+                  (assoc operation :source-span
+                         (assoc (get operation :source-span)
+                                :start-byte -1))))))
+
+(defn w5-tes-invalid-operation-span-order [request]
+  (let [operations (get request :operations)
+        operation (get operations 0)]
+    (assoc request :operations
+           (assoc operations 0
+                  (assoc operation :source-span
+                         (assoc (get operation :source-span)
+                                :start-byte 2 :end-byte 1))))))
+
+(defn w5-tes-invalid-operation-origin-missing [request]
+  (let [operations (get request :operations)
+        operation (get operations 0)]
+    (assoc request :operations
+           (assoc operations 0 (dissoc operation :origin-chain)))))
+
+(defn w5-tes-invalid-operation-origin-extra [request]
+  (let [operations (get request :operations)
+        operation (get operations 0)
+        origin-chain (get operation :origin-chain)]
+    (assoc request :operations
+           (assoc operations 0
+                  (assoc operation :origin-chain
+                         (assoc origin-chain 0
+                                (assoc (get origin-chain 0)
+                                       :extra true)))))))
+
+(defn w5-tes-invalid-operation-origin-type [request]
+  (let [operations (get request :operations)
+        operation (get operations 0)
+        origin-chain (get operation :origin-chain)]
+    (assoc request :operations
+           (assoc operations 0
+                  (assoc operation :origin-chain
+                         (assoc origin-chain 0
+                                (assoc (get origin-chain 0)
+                                       :producer-version "one")))))))
+
+(defn w5-tes-invalid-operation-origin-negative [request]
+  (let [operations (get request :operations)
+        operation (get operations 0)
+        origin-chain (get operation :origin-chain)]
+    (assoc request :operations
+           (assoc operations 0
+                  (assoc operation :origin-chain
+                         (assoc origin-chain 0
+                                (assoc (get origin-chain 0)
+                                       :producer-version -1)))))))
+
+(defn w5-tes-invalid-operation-origin-order [request]
+  (let [operations (get request :operations)
+        operation (get operations 0)
+        origin-chain (get operation :origin-chain)
+        origin (get origin-chain 0)]
+    (assoc request :operations
+           (assoc operations 0
+                  (assoc operation :origin-chain
+                         (assoc origin-chain 0
+                                (assoc origin :source-span
+                                       (assoc (get origin :source-span)
+                                              :start-byte 2
+                                              :end-byte 1))))))))
+
+(defn w5-tes-invalid-operation-origin-empty [request]
+  (let [operations (get request :operations)
+        operation (get operations 0)]
+    (assoc request :operations
+           (assoc operations 0
+                  (assoc operation :origin-chain [])))))
+
+(defn w5-tes-invalid-provenance [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) :status :authoritative)))
+
+(defn w5-tes-invalid-provenance-duplicate [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) :validator-provenance-ids
+                [:prov-c7 :prov-c8 :prov-profile :prov-capability
+                 :prov-c9 :prov-c9])))
+
+(defn w5-tes-invalid-provenance-reordered [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) :validator-provenance-ids
+                [:prov-c7 :prov-c8 :prov-capability :prov-profile
+                 :prov-c9 :prov-c10])))
+
+(defn w5-tes-invalid-provenance-substituted [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) :validator-provenance-ids
+                [:prov-c7 :prov-c8 :prov-profile :prov-capability
+                 :prov-c9 :prov-foreign])))
+
+(defn w5-tes-invalid-gravity-path-suffix [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :actual-source-path
+                "/checkout-a/bootstrap/typed-effect-safety.qst")))
+
+(defn w5-tes-invalid-qst-path-suffix [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :actual-source-path
+                "/checkout-a/bootstrap/typed-effect-safety.gravity")))
+
+(defn w5-tes-invalid-provenance-span-missing [request]
+  (assoc request :provenance
+         (dissoc (get request :provenance) :source-span)))
+
+(defn w5-tes-invalid-provenance-span-extra [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) :source-span
+                (assoc (get (get request :provenance) :source-span)
+                       :extra true))))
+
+(defn w5-tes-invalid-provenance-span-type [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) :source-span
+                (assoc (get (get request :provenance) :source-span)
+                       :start-byte "zero"))))
+
+(defn w5-tes-invalid-provenance-span-negative [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) :source-span
+                (assoc (get (get request :provenance) :source-span)
+                       :start-byte -1))))
+
+(defn w5-tes-invalid-provenance-span-order [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) :source-span
+                (assoc (get (get request :provenance) :source-span)
+                       :start-byte 2 :end-byte 1))))
+
+(defn w5-tes-invalid-provenance-origin-missing [request]
+  (assoc request :provenance
+         (dissoc (get request :provenance) :origin-chain)))
+
+(defn w5-tes-invalid-provenance-origin-extra [request]
+  (let [provenance (get request :provenance)
+        origin-chain (get provenance :origin-chain)]
+    (assoc request :provenance
+           (assoc provenance :origin-chain
+                  (assoc origin-chain 0
+                         (assoc (get origin-chain 0) :extra true))))))
+
+(defn w5-tes-invalid-provenance-origin-type [request]
+  (let [provenance (get request :provenance)
+        origin-chain (get provenance :origin-chain)]
+    (assoc request :provenance
+           (assoc provenance :origin-chain
+                  (assoc origin-chain 0
+                         (assoc (get origin-chain 0)
+                                :producer-version "one"))))))
+
+(defn w5-tes-invalid-provenance-origin-negative [request]
+  (let [provenance (get request :provenance)
+        origin-chain (get provenance :origin-chain)]
+    (assoc request :provenance
+           (assoc provenance :origin-chain
+                  (assoc origin-chain 0
+                         (assoc (get origin-chain 0)
+                                :producer-version -1))))))
+
+(defn w5-tes-invalid-provenance-origin-order [request]
+  (let [provenance (get request :provenance)
+        origin-chain (get provenance :origin-chain)
+        origin (get origin-chain 0)]
+    (assoc request :provenance
+           (assoc provenance :origin-chain
+                  (assoc origin-chain 0
+                         (assoc origin :source-span
+                                (assoc (get origin :source-span)
+                                       :start-byte 2 :end-byte 1)))))))
+
+(defn w5-tes-invalid-provenance-origin-empty [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) :origin-chain [])))
+
+(defn w5-tes-invalid-receipt-provenance-substituted [request]
+  (let [results (get request :validator-results)
+        effect (get results :effect)]
+    (assoc request :validator-results
+           (assoc results :effect
+                  (assoc effect :provenance-id :prov-foreign)))))
+
+(defn w5-tes-invalid-receipt-provenance-duplicate [request]
+  (let [results (get request :validator-results)
+        effect (get results :effect)]
+    (assoc request :validator-results
+           (assoc results :effect
+                  (assoc effect :provenance-id :prov-c7)))))
+
+(defn w5-tes-invalid-receipt-provenance-reordered [request]
+  (let [results (get request :validator-results)
+        type-result (get results :type)
+        effect (get results :effect)
+        swapped-type
+        (assoc type-result :provenance-id :prov-c8)
+        swapped-effect
+        (assoc effect :provenance-id :prov-c7)
+        swapped-results (assoc results :type swapped-type)]
+    (assoc request :validator-results
+           (assoc swapped-results :effect swapped-effect))))
+
+(defn w5-tes-invalid-evidence [request]
+  (assoc request :evidence
+         (assoc (get request :evidence) :seed-retired? true)))
+
+(defn w5-tes-invalid-authority [request]
+  (assoc request :authority
+         (assoc (get request :authority) :public-authority? true)))
+
+(defn w5-tes-invalid-result [result]
+  (assoc result :authority :public-authority))

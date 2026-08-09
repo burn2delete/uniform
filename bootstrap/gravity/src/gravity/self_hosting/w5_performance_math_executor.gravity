@@ -1,0 +1,679 @@
+; W5 Wave6 Slice A performance and elementary-math execution leaf.
+; This static :meta component consumes evidence records without benchmarking,
+; proving, compiling native code, or granting authority.
+(ns gravity.self-hosting.w5-performance-math-executor
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-performance-math-policy
+             w5-performance-math-diagnostic-catalog
+             w5-pm-benchmark-evidence-contract
+             w5-pm-target-valid?
+             w5-pm-performance-valid?
+             w5-pm-semantic-valid?
+             w5-pm-efir-valid?
+             w5-pm-eml-valid?
+             w5-pm-numeric-valid?
+             w5-pm-certificate-valid?
+             w5-pm-check-elision-valid?
+             w5-pm-path-ends-with?
+             w5-pm-request-valid?
+             w5-pm-identity-input
+             w5-pm-provenance
+             w5-pm-diagnostic
+             w5-pm-execute
+             w5-pm-run
+             w5-pm-verify
+             w5-pm-recompute
+             w5-pm-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-performance-math-executor
+     :owner :workstream-5
+     :source-language :gravity
+     :scope :wave6-slice-a-static-only
+     :status :executable-leaf
+     :static-only? true
+     :authority :non-authority
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :public-authority? false
+     :release? false
+     :full-language-credit? false
+     :fl-240-credit? false
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :windows :invokes-clojure? false :links-jvm? false
+       :fallback? false}]
+     :governing-documents [:D6 :PERF1 :PERF5 :PERF10 :MATH1 :MATH2
+                           :MATH3 :MATH4 :MATH5 :MATH6 :MATH7 :SAFE15]
+     :semantic-boundaries
+     {:benchmark-proves-semantics? false
+      :benchmark-proves-numeric-correctness? false
+      :efir-runtime-semantic-carrier? true
+      :eml-tree-identity-implies-equality? false}
+     :does-not-claim [:benchmark-execution :proof-checking :native-execution
+                      :self-hosting-completion :full-language-support
+                      :fl-240-credit :release-readiness :public-authority]}}))
+
+(def w5-pm-candidate-target :llvm-x86_64-linux)
+(def w5-pm-candidate-platform
+  {:os :linux :arch :x86_64 :backend :llvm
+   :artifact-format :elf :abi :sysv-amd64})
+(def w5-pm-unsupported-targets
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+(def w5-pm-unsupported-policies
+  [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}])
+(def w5-pm-claim-id :vector-sine-throughput)
+(def w5-pm-benchmark-id :pending-vector-sine-benchmark)
+(def w5-pm-benchmark-harness :perf/vector-sine)
+(def w5-pm-benchmark-baseline :c-o3)
+(def w5-pm-benchmark-sample-policy :pending)
+(def w5-pm-target-fingerprint-id :pending-target-fingerprint)
+(def w5-pm-compiler-identity-id :pending-compiler-identity)
+(def w5-pm-source-identity-id :pending-source-identity)
+(def w5-pm-optimization-manifest-id :pending-optimization-manifest)
+(def w5-pm-semantic-id :pending-vector-sine-semantics)
+(def w5-pm-typed-core-id :typed-core-vector-sine)
+(def w5-pm-efir-id :efir-vector-sine)
+(def w5-pm-numeric-mode-id :numeric-mode-vector-sine)
+(def w5-pm-precision-id :precision-vector-sine)
+(def w5-pm-eml-id :eml-vector-sine-candidate)
+(def w5-pm-certificate-id :pending-vector-sine-certificate)
+(def w5-pm-runtime-id :pending-native-runtime)
+(def w5-pm-input-domain {:x [:closed -1 1]})
+(def w5-pm-layout
+  {:input :contiguous-f64 :output :contiguous-f64})
+(def w5-pm-effects [])
+(def w5-pm-capabilities [])
+(def w5-pm-erased-checks [])
+(def w5-pm-proof-obligations [:approximation-bound :roundoff-bound])
+(def w5-pm-retained-checks [:range :roundoff])
+(def w5-pm-evidence-origins
+  [:perf-origin :semantic-origin :efir-origin :eml-origin :safe15-origin])
+(def w5-pm-rules
+  ["W5-PM-SCHEMA" "W5-PM-TARGET" "W5-PM-PERFORMANCE"
+   "W5-PM-SEMANTIC" "W5-PM-NUMERIC" "W5-PM-EFIR" "W5-PM-EML"
+   "W5-PM-CERTIFICATE" "W5-PM-PROOF" "W5-PM-LINEAGE"
+   "W5-PM-PROVENANCE" "W5-PM-EVIDENCE" "W5-PM-AUTHORITY"
+   "W5-PM-SUBSTITUTION"])
+(def w5-pm-remediations
+  {:schema :restore-performance-math-request-schema
+   :target :use-exact-llvm-linux-target
+   :performance :restore-d6-benchmark-evidence
+   :semantic :restore-semantic-correctness-evidence
+   :numeric :restore-explicit-numeric-mode-and-precision
+   :efir :restore-efir-runtime-semantic-carrier
+   :eml :treat-eml-as-proof-search-not-equality
+   :certificate :restore-safe15-certificate-linkage
+   :proof :retain-check-until-proof-is-accepted
+   :lineage :restore-evidence-identity-lineage
+   :provenance :restore-path-bearing-provenance
+   :evidence :retain-incomplete-blocked-evidence
+   :authority :deny-public-self-host-and-release-authority
+   :substitution :recompute-result-from-request})
+
+(defn w5-pm-benchmark-evidence-contract []
+  {:artifact :gravity/benchmark-evidence
+   :benchmark-id w5-pm-benchmark-id
+   :claim-id w5-pm-claim-id
+   :harness w5-pm-benchmark-harness
+   :baseline w5-pm-benchmark-baseline
+   :sample-count w5-pm-benchmark-sample-policy
+   :target-fingerprint-id w5-pm-target-fingerprint-id
+   :compiler-identity-id w5-pm-compiler-identity-id
+   :source-identity-id w5-pm-source-identity-id
+   :optimization-manifest-id w5-pm-optimization-manifest-id
+   :status :pending})
+
+(defn w5-performance-math-policy []
+  {:artifact :gravity/w5-performance-math-policy
+   :schema-version 1
+   :scope :wave6-slice-a-static-only
+   :profile :meta
+   :stage2-target :jvm
+   :candidate-target w5-pm-candidate-target
+   :candidate-platform w5-pm-candidate-platform
+   :unsupported-platforms w5-pm-unsupported-targets
+   :unsupported-targets w5-pm-unsupported-targets
+   :unsupported-target-policies w5-pm-unsupported-policies
+   :benchmark-evidence-contract (w5-pm-benchmark-evidence-contract)
+   :benchmark-evidence-domain :performance-only
+   :semantic-evidence-domain :correctness-only
+   :numeric-evidence-domain :correctness-only
+   :benchmark-proves-semantics? false
+   :benchmark-proves-numeric-correctness? false
+   :efir-runtime-semantic-carrier? true
+   :eml-tree-identity-implies-equality? false
+   :completion-status :incomplete
+   :closure-status :blocked
+   :static-only? true
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public-authority? false
+   :release? false
+   :full-language-credit? false
+   :fl-240-credit? false
+   :authority :non-authority
+   :fallback? false})
+
+(defn w5-performance-math-diagnostic-catalog []
+  {:artifact :gravity/w5-performance-math-diagnostic-catalog
+   :schema-version 1
+   :rules w5-pm-rules
+   :remediations w5-pm-remediations
+   :stable-fields [:diagnostic-id :rule :severity :stage :profile :target
+                   :source-span :provenance :facts :remediation]
+   :authority :non-authority})
+
+(defn w5-pm-exact-keys? [value expected]
+  (if (map? value) (= (set (keys value)) expected) false))
+
+(defn w5-pm-suffix-match? [value suffix index]
+  (if (= index (count suffix))
+    true
+    (if (> (count suffix) (count value))
+      false
+      (if (= (get value (- (count value) (+ index 1)))
+             (get suffix (- (count suffix) (+ index 1))))
+        (w5-pm-suffix-match? value suffix (+ index 1))
+        false))))
+
+(defn w5-pm-path-ends-with? [value suffix]
+  (if (and (string? value) (string? suffix))
+    (w5-pm-suffix-match? value suffix 0)
+    false))
+
+(defn w5-pm-target-valid? [target]
+  (= target
+     {:candidate-target :llvm-x86_64-linux
+      :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                           :artifact-format :elf :abi :sysv-amd64}
+      :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+      :unsupported-target-policies w5-pm-unsupported-policies
+      :cross-target-inference? false :fallback? false}))
+
+(defn w5-pm-performance-valid? [request]
+  (let [claim (get request :performance-claim)
+        evidence (get request :benchmark-evidence)]
+    (if (w5-pm-exact-keys?
+         claim #{:artifact :claim-id :profile :target :backend :runtime
+                 :safety-mode :input-domain :layout :effects :capabilities
+                 :erased-checks :proof-obligations :benchmark-id :status})
+      (if (w5-pm-exact-keys?
+           evidence #{:artifact :benchmark-id :claim-id :harness :baseline
+                      :sample-count :target-fingerprint-id
+                      :compiler-identity-id :source-identity-id
+                      :optimization-manifest-id :status})
+        (if (= :gravity/performance-claim (get claim :artifact))
+          (if (= w5-pm-claim-id (get claim :claim-id))
+            (if (= :meta (get claim :profile))
+              (if (= w5-pm-candidate-target (get claim :target))
+                (if (= :llvm (get claim :backend))
+                  (if (= w5-pm-runtime-id (get claim :runtime))
+                    (if (= :safe-optimized (get claim :safety-mode))
+                      (if (= w5-pm-input-domain (get claim :input-domain))
+                        (if (= w5-pm-layout (get claim :layout))
+                          (if (= w5-pm-effects (get claim :effects))
+                            (if (= w5-pm-capabilities
+                                   (get claim :capabilities))
+                              (if (= w5-pm-erased-checks
+                                     (get claim :erased-checks))
+                                (if (= w5-pm-proof-obligations
+                                       (get claim :proof-obligations))
+                                  (if (= w5-pm-benchmark-id
+                                         (get claim :benchmark-id))
+                                    (if (= :pending (get claim :status))
+                                      (if (= :gravity/benchmark-evidence
+                                             (get evidence :artifact))
+                                        (if (= w5-pm-benchmark-id
+                                               (get evidence :benchmark-id))
+                                          (if (= w5-pm-claim-id
+                                                 (get evidence :claim-id))
+                                            (if (= w5-pm-benchmark-harness
+                                                   (get evidence :harness))
+                                              (if (= w5-pm-benchmark-baseline
+                                                     (get evidence :baseline))
+                                                (if (= w5-pm-benchmark-sample-policy
+                                                       (get evidence :sample-count))
+                                                  (if (= w5-pm-target-fingerprint-id
+                                                         (get evidence :target-fingerprint-id))
+                                                    (if (= w5-pm-compiler-identity-id
+                                                           (get evidence :compiler-identity-id))
+                                                      (if (= w5-pm-source-identity-id
+                                                             (get evidence :source-identity-id))
+                                                        (if (= w5-pm-optimization-manifest-id
+                                                               (get evidence :optimization-manifest-id))
+                                                          (= :pending
+                                                             (get evidence :status))
+                                                          false)
+                                                        false)
+                                                      false)
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-pm-semantic-valid? [request]
+  (let [semantic (get request :semantic-evidence)]
+    (if (w5-pm-exact-keys?
+         semantic #{:artifact :semantic-evidence-id :typed-core-anchor
+                    :efir-graph-id :numeric-mode-id :benchmark-independent?
+                    :status})
+      (if (= :gravity/semantic-correctness-evidence
+             (get semantic :artifact))
+        (if (= w5-pm-semantic-id (get semantic :semantic-evidence-id))
+          (if (= w5-pm-typed-core-id (get semantic :typed-core-anchor))
+            (if (= w5-pm-efir-id (get semantic :efir-graph-id))
+              (if (= w5-pm-numeric-mode-id
+                     (get semantic :numeric-mode-id))
+                (if (= true (get semantic :benchmark-independent?))
+                  (= :pending (get semantic :status))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-pm-efir-valid? [request]
+  (let [efir (get request :efir)]
+    (if (w5-pm-exact-keys?
+         efir #{:artifact :graph-id :typed-core-anchor :role
+                :numeric-mode-id :precision-contract-id :status})
+      (if (= :gravity/efir-graph (get efir :artifact))
+        (if (= w5-pm-efir-id (get efir :graph-id))
+          (if (= w5-pm-typed-core-id (get efir :typed-core-anchor))
+            (if (= :runtime-semantic-carrier (get efir :role))
+              (if (= w5-pm-numeric-mode-id
+                     (get efir :numeric-mode-id))
+                (if (= w5-pm-precision-id
+                       (get efir :precision-contract-id))
+                  (if (= (get (get request :semantic-evidence)
+                              :efir-graph-id)
+                         (get efir :graph-id))
+                    (= :pending (get efir :status))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-pm-eml-valid? [request]
+  (let [eml (get request :eml)]
+    (if (w5-pm-exact-keys?
+         eml #{:artifact :candidate-id :efir-graph-id :role
+               :runtime-representation? :tree-identity-implies-equality?
+               :equality-status :status})
+      (if (= :gravity/eml-candidate (get eml :artifact))
+        (if (= w5-pm-eml-id (get eml :candidate-id))
+          (if (= w5-pm-efir-id (get eml :efir-graph-id))
+            (if (= :proof-normalization-synthesis-search
+                   (get eml :role))
+              (if (= false (get eml :runtime-representation?))
+                (if (= false (get eml :tree-identity-implies-equality?))
+                  (if (= :requires-proof (get eml :equality-status))
+                    (if (= (get (get request :efir) :graph-id)
+                           (get eml :efir-graph-id))
+                      (= :pending (get eml :status))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-pm-numeric-valid? [request]
+  (let [numeric (get request :numeric-contract)]
+    (if (w5-pm-exact-keys?
+         numeric #{:artifact :numeric-mode-id :mode :domain
+                   :precision-contract-id :rounding :certificate-required?
+                   :status})
+      (if (= :gravity/numeric-contract (get numeric :artifact))
+        (if (= w5-pm-numeric-mode-id (get numeric :numeric-mode-id))
+          (if (= :certified-approx (get numeric :mode))
+            (if (= (get (get request :performance-claim) :input-domain)
+                   (get numeric :domain))
+              (if (= :nearest-even (get numeric :rounding))
+                (if (= true (get numeric :certificate-required?))
+                  (if (= (get numeric :numeric-mode-id)
+                         (get (get request :efir) :numeric-mode-id))
+                    (if (= w5-pm-precision-id
+                           (get numeric :precision-contract-id))
+                      (if (= (get numeric :precision-contract-id)
+                             (get (get request :efir)
+                                  :precision-contract-id))
+                        (= :pending (get numeric :status))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-pm-certificate-valid? [request]
+  (let [certificate (get request :certificate)]
+    (if (w5-pm-exact-keys?
+         certificate #{:artifact :certificate-id :claim :efir-graph-id
+                       :eml-candidate-id :numeric-mode-id
+                       :precision-contract-id :checker-id :trust-status
+                       :verification-status :status})
+      (if (= :gravity/safe15-certificate-reference
+             (get certificate :artifact))
+        (if (= w5-pm-certificate-id (get certificate :certificate-id))
+          (if (= :bounded-approximation (get certificate :claim))
+            (if (= w5-pm-efir-id (get certificate :efir-graph-id))
+              (if (= w5-pm-eml-id (get certificate :eml-candidate-id))
+                (if (= w5-pm-numeric-mode-id
+                       (get certificate :numeric-mode-id))
+                  (if (= w5-pm-precision-id
+                         (get certificate :precision-contract-id))
+                    (if (= (get certificate :efir-graph-id)
+                           (get (get request :efir) :graph-id))
+                      (if (= (get certificate :eml-candidate-id)
+                             (get (get request :eml) :candidate-id))
+                        (if (= (get certificate :numeric-mode-id)
+                               (get (get request :numeric-contract)
+                                    :numeric-mode-id))
+                          (if (= (get certificate :precision-contract-id)
+                                 (get (get request :numeric-contract)
+                                      :precision-contract-id))
+                            (if (= :unverified
+                                   (get certificate :trust-status))
+                              (if (= :pending
+                                     (get certificate :verification-status))
+                                (= :pending (get certificate :status))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-pm-check-elision-valid? [request]
+  (let [elision (get request :check-elision)
+        claim (get request :performance-claim)
+        certificate (get request :certificate)]
+    (if (w5-pm-exact-keys?
+         elision #{:artifact :claim-id :erased-checks :retained-checks
+                   :certificate-id :certificate-accepted? :status})
+      (if (= :gravity/performance-check-elision (get elision :artifact))
+        (if (= (get elision :claim-id)
+               (get claim :claim-id))
+          (if (= (get claim :erased-checks)
+                 (get elision :erased-checks))
+            (if (= w5-pm-retained-checks
+                   (get elision :retained-checks))
+              (if (= (get elision :certificate-id)
+                     (get certificate :certificate-id))
+                (if (= :unverified (get certificate :trust-status))
+                  (if (= :pending (get certificate :verification-status))
+                    (if (= :pending (get certificate :status))
+                      (if (= false (get elision :certificate-accepted?))
+                        (= :checks-retained (get elision :status))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-pm-provenance-valid? [value]
+  (if (w5-pm-exact-keys?
+       value #{:provenance-id :logical-source-id :actual-source-path
+               :actual-source-extension :source-kind :evidence-origins
+               :status})
+      (if (keyword? (get value :provenance-id))
+      (if (string? (get value :actual-source-path))
+        (if (= w5-pm-evidence-origins
+               (get value :evidence-origins))
+          (if (= :pending (get value :status))
+            (if (= ".gravity" (get value :actual-source-extension))
+              (if (= :gravity (get value :source-kind))
+                (w5-pm-path-ends-with?
+                 (get value :actual-source-path) ".gravity")
+                false)
+              (if (= ".qst" (get value :actual-source-extension))
+                (if (= :qst (get value :source-kind))
+                  (w5-pm-path-ends-with?
+                   (get value :actual-source-path) ".qst")
+                  false)
+                false))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-pm-evidence-valid? [value]
+  (= value {:status :incomplete :closure-status :blocked
+            :benchmark-executed? false :proof-checked? false
+            :candidate-executed? false :seed-retired? false}))
+
+(defn w5-pm-authority-valid? [value]
+  (= value {:authority :non-authority :clojure-seed-boundary? true
+            :self-hosted? false :public-authority? false :release? false
+            :full-language-credit? false :fl-240-credit? false}))
+
+(defn w5-pm-request-valid? [request]
+  (if (w5-pm-exact-keys?
+       request #{:artifact :schema-version :request-id :performance-claim
+                 :benchmark-evidence :semantic-evidence :efir :eml
+                 :numeric-contract :certificate :check-elision
+                 :target-contract :provenance :evidence :authority
+                 :claimed-status})
+    (if (= :gravity/w5-performance-math-request (get request :artifact))
+      (if (= 1 (get request :schema-version))
+        (if (keyword? (get request :request-id))
+          (if (w5-pm-target-valid? (get request :target-contract))
+            (if (w5-pm-performance-valid? request)
+              (if (w5-pm-semantic-valid? request)
+                (if (not= (get (get request :benchmark-evidence) :benchmark-id)
+                          (get (get request :semantic-evidence)
+                               :semantic-evidence-id))
+                  (if (w5-pm-efir-valid? request)
+                    (if (w5-pm-eml-valid? request)
+                      (if (w5-pm-numeric-valid? request)
+                        (if (w5-pm-certificate-valid? request)
+                          (if (w5-pm-check-elision-valid? request)
+                            (if (w5-pm-provenance-valid?
+                                 (get request :provenance))
+                              (if (w5-pm-evidence-valid?
+                                   (get request :evidence))
+                                (if (w5-pm-authority-valid?
+                                     (get request :authority))
+                                  (= :incomplete
+                                     (get request :claimed-status))
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-pm-identity-input [request]
+  {:request-id (get request :request-id)
+   :performance-claim (get request :performance-claim)
+   :benchmark-evidence (get request :benchmark-evidence)
+   :semantic-evidence (get request :semantic-evidence)
+   :efir (get request :efir)
+   :eml (get request :eml)
+   :numeric-contract (get request :numeric-contract)
+   :certificate (get request :certificate)
+   :check-elision (get request :check-elision)
+   :target-contract (get request :target-contract)})
+
+(defn w5-pm-provenance [request] (get request :provenance))
+
+(defn w5-pm-diagnostic [request rule field remediation]
+  {:diagnostic-id rule :rule rule :severity :error
+   :stage :performance-math :profile :meta :target w5-pm-candidate-target
+   :source-span {:source-id (get request :request-id)
+                 :start-byte 0 :end-byte 0 :line 1 :column 1}
+   :provenance (get request :provenance)
+   :facts {:field field :status :rejected}
+   :remediation remediation})
+
+(defn w5-pm-failure [request]
+  (if (not (map? request))
+    ["W5-PM-SCHEMA" :request :restore-performance-math-request-schema]
+    (if (not (w5-pm-target-valid? (get request :target-contract)))
+      ["W5-PM-TARGET" :target-contract :use-exact-llvm-linux-target]
+      (if (not (w5-pm-performance-valid? request))
+        ["W5-PM-PERFORMANCE" :benchmark-evidence
+         :restore-d6-benchmark-evidence]
+        (if (not (w5-pm-semantic-valid? request))
+          ["W5-PM-SEMANTIC" :semantic-evidence
+           :restore-semantic-correctness-evidence]
+          (if (= (get (get request :benchmark-evidence) :benchmark-id)
+                 (get (get request :semantic-evidence)
+                      :semantic-evidence-id))
+            ["W5-PM-LINEAGE" :evidence-domains
+             :restore-evidence-identity-lineage]
+            (if (not (w5-pm-efir-valid? request))
+              ["W5-PM-EFIR" :efir :restore-efir-runtime-semantic-carrier]
+              (if (not (w5-pm-eml-valid? request))
+                ["W5-PM-EML" :eml :treat-eml-as-proof-search-not-equality]
+                (if (not (w5-pm-numeric-valid? request))
+                  ["W5-PM-NUMERIC" :numeric-contract
+                   :restore-explicit-numeric-mode-and-precision]
+                  (if (not (w5-pm-certificate-valid? request))
+                    ["W5-PM-CERTIFICATE" :certificate
+                     :restore-safe15-certificate-linkage]
+                    (if (not (w5-pm-check-elision-valid? request))
+                      ["W5-PM-PROOF" :check-elision
+                       :retain-check-until-proof-is-accepted]
+                      (if (not (w5-pm-provenance-valid?
+                                (get request :provenance)))
+                        ["W5-PM-PROVENANCE" :provenance
+                         :restore-path-bearing-provenance]
+                        (if (not (w5-pm-evidence-valid?
+                                  (get request :evidence)))
+                          ["W5-PM-EVIDENCE" :evidence
+                           :retain-incomplete-blocked-evidence]
+                          (if (not (w5-pm-authority-valid?
+                                    (get request :authority)))
+                            ["W5-PM-AUTHORITY" :authority
+                             :deny-public-self-host-and-release-authority]
+                            ["W5-PM-SCHEMA" :request
+                             :restore-performance-math-request-schema]))))))))))))))
+
+(defn w5-pm-result [request]
+  {:artifact :gravity/w5-performance-math-execution
+   :schema-version 1 :request-id (get request :request-id)
+   :status :accepted :execution-status :incomplete :closure-status :blocked
+   :authority :non-authority
+   :identity-input (w5-pm-identity-input request)
+   :provenance (w5-pm-provenance request)
+   :benchmark-evidence-domain :performance-only
+   :semantic-evidence-domain :correctness-only
+   :numeric-evidence-domain :correctness-only
+   :efir-runtime-semantic-carrier? true
+   :eml-tree-identity-implies-equality? false
+   :diagnostics []
+   :clojure-seed-boundary? true :self-hosted? false
+   :public-authority? false :release? false
+   :full-language-credit? false :fl-240-credit? false})
+
+(defn w5-pm-verify [request]
+  (if (w5-pm-request-valid? request)
+    (w5-pm-result request)
+    (let [failure (w5-pm-failure request)]
+      {:artifact :gravity/w5-performance-math-execution
+       :schema-version 1 :request-id (get request :request-id)
+       :status :rejected :execution-status :incomplete :closure-status :blocked
+       :authority :non-authority
+       :identity-input (w5-pm-identity-input request)
+       :provenance (get request :provenance)
+       :benchmark-evidence-domain :performance-only
+       :semantic-evidence-domain :correctness-only
+       :numeric-evidence-domain :correctness-only
+       :efir-runtime-semantic-carrier? true
+       :eml-tree-identity-implies-equality? false
+       :diagnostics [(w5-pm-diagnostic request (get failure 0)
+                                       (get failure 1) (get failure 2))]
+       :clojure-seed-boundary? true :self-hosted? false
+       :public-authority? false :release? false
+       :full-language-credit? false :fl-240-credit? false})))
+
+(defn w5-pm-execute [request] (w5-pm-verify request))
+(defn w5-pm-run [request] (w5-pm-execute request))
+(defn w5-pm-recompute [request] (w5-pm-verify request))
+
+(defn w5-pm-verify-result [request candidate]
+  (if (= candidate (w5-pm-recompute request))
+    {:artifact :gravity/w5-performance-math-result-verification
+     :status :passed :diagnostics [] :authority :non-authority}
+    {:artifact :gravity/w5-performance-math-result-verification
+     :status :rejected
+     :diagnostics [(w5-pm-diagnostic request "W5-PM-SUBSTITUTION" :result
+                                     :recompute-result-from-request)]
+     :authority :non-authority}))

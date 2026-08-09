@@ -1,0 +1,868 @@
+; W5 Wave6 Slice C tooling/conformance contract consumer.
+; This is a static :meta leaf. It validates structured tooling evidence as data
+; and never invokes a CLI, server, package, plugin, backend, runtime, or host.
+(ns gravity.self-hosting.w5-tooling-conformance-verifier
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-tooling-conformance-policy
+             w5-tooling-conformance-diagnostic-catalog
+             w5-tooling-conformance-target-valid?
+             w5-tooling-conformance-source-valid?
+             w5-tooling-conformance-check-valid?
+             w5-tooling-conformance-replay-valid?
+             w5-tooling-conformance-narrative-valid?
+             w5-tooling-conformance-suite-valid?
+             w5-tooling-conformance-request-valid?
+             w5-tc-path-ends-with?
+             w5-tc-source-provenance-bindings-valid?
+             w5-tooling-conformance-input
+             w5-tooling-conformance-record
+             w5-tooling-conformance-diagnostic
+             w5-tooling-conformance-verify
+             w5-tooling-conformance-execute
+             w5-tooling-conformance-run
+             w5-tooling-conformance-recompute
+             w5-tooling-conformance-verify-result
+             w5-tc-policy
+             w5-tc-diagnostic-catalog
+             w5-tc-target-valid?
+             w5-tc-request-valid?
+             w5-tc-verify
+             w5-tc-execute
+             w5-tc-run
+             w5-tc-recompute
+             w5-tc-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-tooling-conformance-verifier
+     :owner :workstream-5
+     :scope :wave6-slice-c-static-only
+     :source-language :gravity
+     :status :executable-leaf
+     :static-only? true
+     :authority :non-authority
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :public-authority? false
+     :release? false
+     :full-language-credit? false
+     :matrix-240-credit? false
+     :public-binary? false
+     :plugin-authority? false
+     :package-authority? false
+     :backend-conformance? false
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :windows :invokes-clojure? false :links-jvm? false
+       :fallback? false}]
+     :cross-target-inference? false
+     :fallback? false
+     :residual-seed-harness
+     {:compiler-plan :clojure-stage0-stage2-compiler-plan
+      :runtime :jvm-stage2-runtime
+      :authority :seed-only
+      :execution-status :harness-only}
+     :does-not-claim [:public-bin-gravity :plugin-authority
+                      :package-authority :backend-conformance
+                      :full-language-support :matrix-240-credit
+                      :self-hosting-completion :release-readiness]}}))
+
+(def w5-tc-candidate-target :llvm-x86_64-linux)
+(def w5-tc-candidate-platform
+  {:os :linux :arch :x86_64 :backend :llvm
+   :artifact-format :elf :abi :sysv-amd64})
+(def w5-tc-unsupported-targets
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+(def w5-tc-unsupported-target-policies
+  [{:target :darwin :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :windows :invokes-clojure? false :links-jvm? false
+    :fallback? false}])
+(def w5-tc-tool-order [:source :check :replay :narrative :suite])
+(def w5-tc-rules
+  ["W5-TC-SCHEMA" "W5-TC-TARGET" "W5-TC-SOURCE" "W5-TC-CHECK"
+   "W5-TC-REPLAY" "W5-TC-NARRATIVE" "W5-TC-SUITE"
+   "W5-TC-PROVENANCE" "W5-TC-AUTHORITY" "W5-TC-SUBSTITUTION"
+   "W5-TC-SOURCE-SUBSTITUTION" "W5-TC-CHECK-SUBSTITUTION"
+   "W5-TC-REPLAY-SUBSTITUTION" "W5-TC-NARRATIVE-SUBSTITUTION"])
+(def w5-tc-remediations
+  {:schema :restore-tooling-conformance-schema
+   :target :use-exact-llvm-linux-target
+   :source :restore-source-id-and-origin
+   :check :restore-structured-checker-record
+   :replay :restore-deterministic-replay-record
+   :narrative :restore-traceable-narrative-record
+   :suite :restore-conformance-suite-contract
+   :provenance :retain-actual-path-and-extension-provenance
+   :authority :deny-public-plugin-package-and-backend-authority
+   :substitution :recompute-result-from-request
+   :source-substitution :rebind-source-content-and-span
+   :check-substitution :rebind-checker-output-and-diagnostics
+   :replay-substitution :replay-record-must-match-source-and-check
+   :narrative-substitution :narrative-cannot-change-structured-evidence})
+(def w5-tc-seed-harness
+  {:compiler-plan :clojure-stage0-stage2-compiler-plan
+   :runtime :jvm-stage2-runtime
+   :authority :seed-only
+   :execution-status :harness-only})
+
+(defn w5-tc-policy []
+  {:artifact :gravity/w5-tooling-conformance-policy
+   :schema-version 1
+   :scope :wave6-slice-c-static-only
+   :stage :stage2
+   :profile :meta
+   :target :jvm
+   :candidate-target w5-tc-candidate-target
+   :candidate-platform w5-tc-candidate-platform
+   :tool-order w5-tc-tool-order
+   :required-fields [:source :check :replay :narrative :suite
+                     :provenance :target-contract :evidence :authority]
+   :required-evidence-class :executable-record
+   :completion-status :incomplete
+   :diagnostics w5-tc-rules
+   :remediations w5-tc-remediations
+   :unsupported-platforms w5-tc-unsupported-targets
+   :unsupported-targets w5-tc-unsupported-targets
+   :unsupported-target-policies w5-tc-unsupported-target-policies
+   :cross-target-inference? false
+   :fallback? false
+   :static-only? true
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public-authority? false
+   :release? false
+   :full-language-credit? false
+   :matrix-240-credit? false
+   :public-binary? false
+   :plugin-authority? false
+   :package-authority? false
+   :backend-conformance? false
+   :authority :non-authority
+   :residual-seed-harness w5-tc-seed-harness
+   :pending [:source-resolution :checker-execution :replay-execution
+             :narrative-review :suite-run :candidate-execution
+             :independent-evidence :seed-retirement]})
+
+(defn w5-tc-diagnostic-catalog []
+  {:artifact :gravity/w5-tooling-conformance-diagnostic-catalog
+   :schema-version 1
+   :stage :tooling-conformance
+   :tool-order w5-tc-tool-order
+   :rules w5-tc-rules
+   :remediations w5-tc-remediations
+   :stable-fields [:diagnostic-id :rule :severity :stage :profile :target
+                   :source-span :provenance :facts :remediation]
+   :forbidden-claims [:public-bin-gravity :plugin-authority
+                      :package-authority :backend-conformance
+                      :full-language-support :matrix-240-credit]
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public-authority? false
+   :release? false})
+
+(defn w5-tc-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (w5-tc-member-from? values value (+ index 1)))))
+
+(defn w5-tc-member? [values value]
+  (if (vector? values)
+    (w5-tc-member-from? values value 0)
+    false))
+
+(defn w5-tc-nonempty-string? [value]
+  (if (string? value)
+    (> (count value) 0)
+    false))
+
+(defn w5-tc-suffix-match? [value suffix index]
+  (if (= index (count suffix))
+    true
+    (if (= (get value (- (count value) (+ index 1)))
+           (get suffix (- (count suffix) (+ index 1))))
+      (w5-tc-suffix-match? value suffix (+ index 1))
+      false)))
+
+(defn w5-tc-path-ends-with? [value suffix]
+  (if (and (string? value) (string? suffix))
+    (if (<= (count suffix) (count value))
+      (w5-tc-suffix-match? value suffix 0)
+      false)
+    false))
+
+(defn w5-tc-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn w5-tc-span-valid? [span]
+  (if (w5-tc-exact-keys?
+       span #{:source-id :start-byte :end-byte :line :column})
+    (if (keyword? (get span :source-id))
+      (if (integer? (get span :start-byte))
+      (if (integer? (get span :end-byte))
+          (if (<= 0 (get span :start-byte))
+            (if (<= 0 (get span :end-byte))
+              (if (<= (get span :start-byte) (get span :end-byte))
+                (if (integer? (get span :line))
+                  (if (>= (get span :line) 1)
+                    (if (integer? (get span :column))
+                      (>= (get span :column) 1)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tc-provenance-valid? [provenance]
+  (if (w5-tc-exact-keys?
+       provenance #{:source-id :logical-source-id :actual-source-path
+                    :actual-source-extension :source-kind
+                    :project-relative-path :check-artifact-path
+                    :replay-artifact-path :status})
+    (if (keyword? (get provenance :source-id))
+      (if (w5-tc-nonempty-string? (get provenance :logical-source-id))
+        (if (w5-tc-nonempty-string? (get provenance :actual-source-path))
+          (if (w5-tc-member? [".gravity" ".qst"]
+                             (get provenance :actual-source-extension))
+            (if (= ".gravity"
+                   (get provenance :actual-source-extension))
+              (if (= :gravity (get provenance :source-kind))
+                (if (w5-tc-path-ends-with?
+                     (get provenance :actual-source-path) ".gravity")
+                  (if (w5-tc-nonempty-string?
+                       (get provenance :project-relative-path))
+                    (if (w5-tc-nonempty-string?
+                         (get provenance :check-artifact-path))
+                      (if (w5-tc-nonempty-string?
+                           (get provenance :replay-artifact-path))
+                        (= (get provenance :status) :pending)
+                        false)
+                      false)
+                    false)
+                  false)
+              false)
+              (if (= :qst (get provenance :source-kind))
+                (if (w5-tc-path-ends-with?
+                     (get provenance :actual-source-path) ".qst")
+                  (if (w5-tc-nonempty-string?
+                       (get provenance :project-relative-path))
+                    (if (w5-tc-nonempty-string?
+                         (get provenance :check-artifact-path))
+                      (if (w5-tc-nonempty-string?
+                           (get provenance :replay-artifact-path))
+                        (= (get provenance :status) :pending)
+                        false)
+                      false)
+                    false)
+                  false)
+                false))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tc-target-contract-valid? [target]
+  (if (w5-tc-exact-keys?
+       target #{:target :os :arch :backend :artifact-format :abi
+                :unsupported-targets :unsupported-target-policies
+                :cross-target-inference? :fallback?
+                :candidate-invokes-clojure? :candidate-links-jvm?
+                :no-fallback?})
+    (if (= (get target :target) w5-tc-candidate-target)
+      (if (= (get target :os) :linux)
+        (if (= (get target :arch) :x86_64)
+          (if (= (get target :backend) :llvm)
+            (if (= (get target :artifact-format) :elf)
+              (if (= (get target :abi) :sysv-amd64)
+                (if (= (get target :unsupported-targets)
+                       w5-tc-unsupported-targets)
+                  (if (= (get target :unsupported-target-policies)
+                         w5-tc-unsupported-target-policies)
+                    (if (= (get target :cross-target-inference?) false)
+                      (if (= (get target :fallback?) false)
+                        (if (= (get target :candidate-invokes-clojure?) false)
+                          (if (= (get target :candidate-links-jvm?) false)
+                            (= (get target :no-fallback?) true)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tooling-conformance-target-valid? [target]
+  (w5-tc-target-contract-valid? target))
+
+(defn w5-tc-source-valid? [source]
+  (if (w5-tc-exact-keys?
+       source #{:artifact :schema-version :source-id :profile :target
+                :extension-policy :source-kind :source-content-status
+                :hash-final? :source-span :provenance})
+    (if (= (get source :artifact) :gravity/tooling-source-record)
+      (if (= (get source :schema-version) 1)
+        (if (= (get source :source-id) :tooling-source-v1)
+          (if (= (get source :profile) :meta)
+            (if (= (get source :target) :jvm)
+              (if (= (get source :extension-policy) [".qst" ".gravity"])
+                (if (w5-tc-member? [:gravity :qst]
+                                   (get source :source-kind))
+                  (if (= (get source :source-kind)
+                         (get (get source :provenance) :source-kind))
+                    (if (= (get source :source-content-status) :pending)
+                      (if (= (get source :hash-final?) false)
+                        (if (w5-tc-span-valid? (get source :source-span))
+                          (if (w5-tc-provenance-valid?
+                               (get source :provenance))
+                            true
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    )
+
+(defn w5-tc-source-provenance-bindings-valid? [request]
+  (if (= (get (get request :source) :provenance)
+         (get request :provenance))
+    true false))
+
+(defn w5-tc-check-valid? [check]
+  (if (w5-tc-exact-keys?
+       check #{:artifact :schema-version :checker-id :tool-family
+               :source-id :profile :target :diagnostics
+               :facts-consumed :facts-preserved :result :status
+               :authority-claims? :backend-conformance? :plugin-authority?
+               :package-authority? :source-span})
+    (if (= (get check :artifact) :gravity/tooling-check-record)
+      (if (= (get check :schema-version) 1)
+        (if (= (get check :checker-id) :gravity-tooling-checker-v1)
+          (if (w5-tc-member? [:cli :linter :lsp :inspector]
+                             (get check :tool-family))
+            (if (= (get check :source-id) :tooling-source-v1)
+              (if (= (get check :profile) :meta)
+                (if (= (get check :target) :jvm)
+                  (if (vector? (get check :diagnostics))
+                    (if (vector? (get check :facts-consumed))
+                      (if (vector? (get check :facts-preserved))
+                        (if (= (get check :result) :accepted)
+                          (if (= (get check :status) :pending)
+                            (if (= (get check :authority-claims?) false)
+                              (if (= (get check :backend-conformance?) false)
+                                (if (= (get check :plugin-authority?) false)
+                                  (if (= (get check :package-authority?) false)
+                                    (w5-tc-span-valid?
+                                     (get check :source-span))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tc-replay-valid? [replay]
+  (if (w5-tc-exact-keys?
+       replay #{:artifact :schema-version :replay-id :source-id
+                :check-id :events :deterministic? :environment
+                :status :source-span})
+    (if (= (get replay :artifact) :gravity/tooling-replay-record)
+      (if (= (get replay :schema-version) 1)
+        (if (= (get replay :replay-id) :tooling-replay-v1)
+          (if (= (get replay :source-id) :tooling-source-v1)
+            (if (= (get replay :check-id) :tooling-check-v1)
+              (if (vector? (get replay :events))
+                (if (= (get replay :deterministic?) true)
+                  (if (= (get replay :environment)
+                         {:network :disabled :filesystem :declared
+                          :secrets :redacted})
+                    (if (= (get replay :status) :pending)
+                      (w5-tc-span-valid? (get replay :source-span))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tc-narrative-valid? [narrative]
+  (if (w5-tc-exact-keys?
+       narrative #{:artifact :schema-version :narrative-id :source-id
+                   :claims :authority-claims :source-span :status
+                   :structured-evidence-only? :text-status})
+    (if (= (get narrative :artifact) :gravity/tooling-narrative-record)
+      (if (= (get narrative :schema-version) 1)
+        (if (= (get narrative :narrative-id) :tooling-narrative-v1)
+          (if (= (get narrative :source-id) :tooling-source-v1)
+            (if (= (get narrative :claims)
+                   [:diagnostics-traceable :artifacts-traceable])
+              (if (= (get narrative :authority-claims) [])
+                (if (w5-tc-span-valid? (get narrative :source-span))
+                  (if (= (get narrative :status) :pending)
+                    (if (= (get narrative :structured-evidence-only?) true)
+                      (= (get narrative :text-status) :pending)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tc-suite-valid? [suite]
+  (if (w5-tc-exact-keys?
+       suite #{:artifact :schema-version :suite-id :tool-order
+               :positive-fixtures :negative-fixtures :diagnostic-codes
+               :profile :target :status :backend-conformance?
+               :plugin-authority? :package-authority? :matrix-240-credit?})
+    (if (= (get suite :artifact) :gravity/tooling-conformance-suite)
+      (if (= (get suite :schema-version) 1)
+        (if (keyword? (get suite :suite-id))
+          (if (= (get suite :tool-order) w5-tc-tool-order)
+            (if (= (get suite :positive-fixtures)
+                   [:source :check :replay :narrative])
+              (if (= (get suite :negative-fixtures)
+                     [:source :check :replay :narrative])
+                (if (= (get suite :diagnostic-codes)
+                       ["T1001" "T1002" "T1003" "T1004"])
+                  (if (= (get suite :profile) :meta)
+                    (if (= (get suite :target) :jvm)
+                      (if (= (get suite :status) :pending)
+                        (if (= (get suite :backend-conformance?) false)
+                          (if (= (get suite :plugin-authority?) false)
+                            (if (= (get suite :package-authority?) false)
+                              (= (get suite :matrix-240-credit?) false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tc-evidence-valid? [evidence]
+  (if (w5-tc-exact-keys?
+       evidence #{:evidence-class :execution-status :source-span-status
+                  :artifact-status :status :full-language-credit?
+                  :matrix-240-credit?})
+    (if (= (get evidence :evidence-class) :executable-record)
+      (if (= (get evidence :execution-status) :pending)
+        (if (= (get evidence :source-span-status) :preserved)
+          (if (= (get evidence :artifact-status) :pending)
+            (if (= (get evidence :status) :incomplete)
+              (if (= (get evidence :full-language-credit?) false)
+                (= (get evidence :matrix-240-credit?) false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tc-authority-valid? [authority]
+  (if (w5-tc-exact-keys?
+       authority #{:authority :clojure-seed-boundary? :self-hosted?
+                   :public-authority? :release? :full-language-credit?
+                   :matrix-240-credit? :public-binary? :plugin-authority?
+                   :package-authority? :backend-conformance?
+                   :cross-target-inference? :fallback?
+                   :unsupported-target-policies})
+    (if (= (get authority :authority) :non-authority)
+      (if (= (get authority :clojure-seed-boundary?) true)
+        (if (= (get authority :self-hosted?) false)
+          (if (= (get authority :public-authority?) false)
+            (if (= (get authority :release?) false)
+              (if (= (get authority :full-language-credit?) false)
+                (if (= (get authority :matrix-240-credit?) false)
+                  (if (= (get authority :public-binary?) false)
+                    (if (= (get authority :plugin-authority?) false)
+                      (if (= (get authority :package-authority?) false)
+                        (if (= (get authority :backend-conformance?) false)
+                          (if (= (get authority :cross-target-inference?) false)
+                            (if (= (get authority :fallback?) false)
+                              (if (= (get authority
+                                         :unsupported-target-policies)
+                                     w5-tc-unsupported-target-policies)
+                                true
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tc-separation-valid? [separation]
+  (if (w5-tc-exact-keys?
+       separation #{:structured-evidence-source :narrative-role
+                     :replay-role :checker-role :public-binary-claim?
+                     :plugin-package-claim? :backend-conformance-claim?
+                     :matrix-240-claim?})
+    (if (= (get separation :structured-evidence-source)
+           [:source :check :replay :suite])
+      (if (= (get separation :narrative-role) :explanation-only)
+        (if (= (get separation :replay-role) :deterministic-replay-only)
+          (if (= (get separation :checker-role) :structured-facts-only)
+            (if (= (get separation :public-binary-claim?) false)
+              (if (= (get separation :plugin-package-claim?) false)
+                (if (= (get separation :backend-conformance-claim?) false)
+                  (= (get separation :matrix-240-claim?) false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tc-request-shape-valid? [request]
+  (w5-tc-exact-keys?
+   request #{:artifact :schema-version :verifier-id :profile :target
+             :claimed-status :completion-status :target-contract :source
+             :check :replay :narrative :suite :separation :evidence
+             :authority :residual-seed-harness :provenance :source-span}))
+
+(defn w5-tc-request-valid? [request]
+  (if (w5-tc-request-shape-valid? request)
+    (if (= (get request :artifact) :gravity/w5-tooling-conformance-request)
+      (if (= (get request :schema-version) 1)
+        (if (= (get request :verifier-id)
+               :gravity/w5-tooling-conformance-verifier)
+          (if (= (get request :profile) :meta)
+            (if (= (get request :target) :jvm)
+              (if (= (get request :claimed-status) :incomplete)
+                (if (= (get request :completion-status) :incomplete)
+                  (if (w5-tc-target-contract-valid?
+                       (get request :target-contract))
+                    (if (w5-tc-source-valid? (get request :source))
+                      (if (w5-tc-source-provenance-bindings-valid? request)
+                        (if (w5-tc-check-valid? (get request :check))
+                          (if (w5-tc-replay-valid? (get request :replay))
+                            (if (w5-tc-narrative-valid?
+                                 (get request :narrative))
+                              (if (w5-tc-suite-valid? (get request :suite))
+                                (if (w5-tc-separation-valid?
+                                     (get request :separation))
+                                  (if (w5-tc-evidence-valid?
+                                       (get request :evidence))
+                                    (if (w5-tc-authority-valid?
+                                         (get request :authority))
+                                      (if (= (get request
+                                                  :residual-seed-harness)
+                                             w5-tc-seed-harness)
+                                        (if (w5-tc-provenance-valid?
+                                             (get request :provenance))
+                                          (w5-tc-span-valid?
+                                           (get request :source-span))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-tooling-conformance-request-valid? [request]
+  (w5-tc-request-valid? request))
+
+(defn w5-tc-identity-input [request]
+  {:artifact :gravity/w5-tooling-conformance-identity-input
+   :schema-version 1
+   :profile (get request :profile)
+   :target (get request :target)
+   :candidate-target (get (get request :target-contract) :target)
+   :source-id (get (get request :source) :source-id)
+   :checker-id (get (get request :check) :checker-id)
+   :replay-id (get (get request :replay) :replay-id)
+   :narrative-id (get (get request :narrative) :narrative-id)
+   :suite-id (get (get request :suite) :suite-id)
+   :tool-order (get (get request :suite) :tool-order)
+   :structured-evidence-source
+   (get (get request :separation) :structured-evidence-source)
+   :hash-final? false
+   :path-neutral? true})
+
+(defn w5-tooling-conformance-input [request]
+  (w5-tc-identity-input request))
+
+(defn w5-tooling-conformance-record [request]
+  {:artifact :gravity/w5-tooling-conformance-record
+   :schema-version 1
+   :status (if (w5-tc-request-valid? request) :accepted :rejected)
+   :request request
+   :identity-input (w5-tc-identity-input request)
+   :provenance (get request :provenance)
+   :authority (get request :authority)
+   :completion-status :incomplete
+   :static-only? true
+   :hash-final? false})
+
+(defn w5-tc-diagnostic [request rule reason]
+  {:diagnostic-id rule
+   :rule rule
+   :severity :error
+   :stage :tooling-conformance
+   :profile :meta
+   :target w5-tc-candidate-target
+   :source-span (get request :source-span)
+   :provenance (get request :provenance)
+   :facts {:reason reason
+           :tool-order w5-tc-tool-order
+           :structured-evidence-only? true
+           :public-binary? false
+           :plugin-authority? false
+           :package-authority? false
+           :backend-conformance? false
+           :matrix-240-credit? false}
+   :remediation (get w5-tc-remediations reason)
+   :authority :non-authority})
+
+(defn w5-tc-rejected [request rule reason]
+  {:artifact :gravity/w5-tooling-conformance-result
+   :schema-version 1
+   :status :rejected
+   :completion-status :incomplete
+   :diagnostics [(w5-tc-diagnostic request rule reason)]
+   :identity-input (w5-tc-identity-input request)
+   :provenance (get request :provenance)
+   :verifier-gate {:decision :blocked :release-eligible? false
+                   :reason :diagnostic}
+   :execution-status :not-executed
+   :residual-seed-harness w5-tc-seed-harness
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public-authority? false
+   :release? false
+   :full-language-credit? false
+   :matrix-240-credit? false
+   :public-binary? false
+   :plugin-authority? false
+   :package-authority? false
+   :backend-conformance? false
+   :fail-closed? true})
+
+(defn w5-tc-accepted [request]
+  {:artifact :gravity/w5-tooling-conformance-result
+   :schema-version 1
+   :status :accepted
+   :completion-status :incomplete
+   :diagnostics []
+   :identity-input (w5-tc-identity-input request)
+   :provenance (get request :provenance)
+   :tool-order w5-tc-tool-order
+   :source-status :accepted
+   :check-status :accepted
+   :replay-status :pending
+   :narrative-status :pending
+   :suite-status :pending
+   :performance-status :not-claimed
+   :verifier-gate {:decision :blocked :release-eligible? false
+                   :reason :incomplete-evidence}
+   :execution-status :pending
+   :residual-seed-harness w5-tc-seed-harness
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :public-authority? false
+   :release? false
+   :full-language-credit? false
+   :matrix-240-credit? false
+   :public-binary? false
+   :plugin-authority? false
+   :package-authority? false
+   :backend-conformance? false
+   :fail-closed? true})
+
+(defn w5-tooling-conformance-verify [request]
+  (if (w5-tc-request-valid? request)
+    (w5-tc-accepted request)
+    (if (not (w5-tc-request-shape-valid? request))
+      (w5-tc-rejected request "W5-TC-SCHEMA" :schema)
+      (if (not (w5-tc-target-contract-valid?
+                (get request :target-contract)))
+        (w5-tc-rejected request "W5-TC-TARGET" :target)
+        (if (not (w5-tc-provenance-valid?
+                  (get request :provenance)))
+          (w5-tc-rejected request "W5-TC-PROVENANCE" :provenance)
+          (if (not (w5-tc-source-provenance-bindings-valid? request))
+            (w5-tc-rejected request "W5-TC-PROVENANCE" :provenance)
+            (if (not (w5-tc-source-valid? (get request :source)))
+              (w5-tc-rejected request "W5-TC-SOURCE" :source)
+              (if (not (w5-tc-check-valid? (get request :check)))
+            (w5-tc-rejected request "W5-TC-CHECK" :check)
+            (if (not (w5-tc-replay-valid? (get request :replay)))
+              (w5-tc-rejected request "W5-TC-REPLAY" :replay)
+                      (if (not (w5-tc-narrative-valid?
+                               (get request :narrative)))
+                (w5-tc-rejected request "W5-TC-NARRATIVE" :narrative)
+                (if (not (w5-tc-suite-valid? (get request :suite)))
+                  (w5-tc-rejected request "W5-TC-SUITE" :suite)
+                  (if (not (w5-tc-separation-valid?
+                            (get request :separation)))
+                    (w5-tc-rejected request "W5-TC-CHECK" :check)
+                    (if (not (w5-tc-evidence-valid?
+                              (get request :evidence)))
+                      (w5-tc-rejected request "W5-TC-SCHEMA" :schema)
+                      (if (not (w5-tc-authority-valid?
+                                (get request :authority)))
+                        (w5-tc-rejected request "W5-TC-AUTHORITY"
+                                        :authority)
+                      (if (not (= (get request :residual-seed-harness)
+                                    w5-tc-seed-harness))
+                          (w5-tc-rejected request "W5-TC-AUTHORITY"
+                                          :authority)
+                          (if (not (w5-tc-provenance-valid?
+                                    (get request :provenance)))
+                            (w5-tc-rejected request "W5-TC-PROVENANCE"
+                                            :provenance)
+                            (w5-tc-rejected request "W5-TC-SOURCE"
+                                            :source)))))))))))))))))
+
+(defn w5-tooling-conformance-execute [request]
+  (w5-tooling-conformance-verify request))
+
+(defn w5-tooling-conformance-run [request]
+  (w5-tooling-conformance-execute request))
+
+(defn w5-tooling-conformance-recompute [request]
+  (w5-tooling-conformance-verify request))
+
+(defn w5-tooling-conformance-verify-result [request result]
+  (let [recomputed (w5-tooling-conformance-recompute request)]
+    (if (= result recomputed)
+      {:artifact :gravity/w5-tooling-conformance-result-verification
+       :schema-version 1
+       :status :passed
+       :recomputed? true
+       :recomputed true
+       :completion-status (get recomputed :completion-status)
+       :diagnostics []
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :matrix-240-credit? false
+       :fail-closed? true}
+      {:artifact :gravity/w5-tooling-conformance-result-verification
+       :schema-version 1
+       :status :rejected
+       :recomputed? true
+       :recomputed true
+       :completion-status :incomplete
+       :diagnostics [(w5-tc-diagnostic request
+                                       "W5-TC-SUBSTITUTION"
+                                       :substitution)]
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :matrix-240-credit? false
+       :fail-closed? true})))
+
+(def w5-tooling-conformance-policy w5-tc-policy)
+(def w5-tooling-conformance-diagnostic-catalog w5-tc-diagnostic-catalog)
+(def w5-tooling-conformance-diagnostic w5-tc-diagnostic)
+(def w5-tooling-conformance-source-valid? w5-tc-source-valid?)
+(def w5-tooling-conformance-check-valid? w5-tc-check-valid?)
+(def w5-tooling-conformance-replay-valid? w5-tc-replay-valid?)
+(def w5-tooling-conformance-narrative-valid? w5-tc-narrative-valid?)
+(def w5-tooling-conformance-suite-valid? w5-tc-suite-valid?)
+(def w5-tc-target-valid? w5-tooling-conformance-target-valid?)
+(def w5-tc-request-valid? w5-tooling-conformance-request-valid?)
+(def w5-tc-verify w5-tooling-conformance-verify)
+(def w5-tc-execute w5-tooling-conformance-execute)
+(def w5-tc-run w5-tooling-conformance-run)
+(def w5-tc-recompute w5-tooling-conformance-recompute)
+(def w5-tc-verify-result w5-tooling-conformance-verify-result)
