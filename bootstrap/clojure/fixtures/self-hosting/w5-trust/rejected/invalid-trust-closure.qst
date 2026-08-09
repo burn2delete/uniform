@@ -1,0 +1,355 @@
+(ns gravity.self-hosting.w5-trust.rejected.invalid-trust-closure
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-trust-invalid-upstream-request
+             w5-trust-invalid-span-request
+             w5-trust-invalid-source-span-order-request
+             w5-trust-invalid-provenance-request
+             w5-trust-invalid-lineage-cycle-request
+             w5-trust-invalid-lineage-gap-request
+             w5-trust-invalid-lineage-unreachable-request
+             w5-trust-invalid-lineage-order-request
+             w5-trust-invalid-lineage-cross-binding-request
+             w5-trust-invalid-r3-recipe-request
+             w5-trust-invalid-dependency-request
+             w5-trust-invalid-lock-request
+             w5-trust-invalid-environment-request
+             w5-trust-invalid-toolchain-request
+             w5-trust-invalid-recipe-request
+             w5-trust-invalid-diversity-request
+             w5-trust-invalid-diverse-recipe-switch-request
+             w5-trust-invalid-diverse-coherent-recipe-swap-request
+             w5-trust-invalid-anchor-request
+             w5-trust-invalid-attestation-request
+             w5-trust-invalid-attestation-subject-request
+             w5-trust-invalid-attestation-other-builder-request
+             w5-trust-invalid-sbom-request
+             w5-trust-invalid-signature-request
+             w5-trust-invalid-signature-payload-request
+             w5-trust-invalid-signature-other-recipe-request
+             w5-trust-invalid-signature-other-signer-anchor-request
+             w5-trust-invalid-revocation-request
+             w5-trust-invalid-revocation-subject-request
+             w5-trust-invalid-revocation-compiler-subject-request
+             w5-trust-invalid-revocation-provenance-subject-request
+             w5-trust-invalid-revocation-dropped-package-request
+             w5-trust-invalid-hash-status-request
+             w5-trust-invalid-unsafe-audit-request
+             w5-trust-invalid-tcb-request
+             w5-trust-invalid-tcb-components-request
+             w5-trust-invalid-equivalence-request
+             w5-trust-invalid-replay-request
+             w5-trust-invalid-replay-cross-binding-request
+             w5-trust-invalid-target-request
+             w5-trust-invalid-cross-target-request
+             w5-trust-invalid-fallback-request
+             w5-trust-invalid-authority-request
+             w5-trust-invalid-review-request
+             w5-trust-invalid-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-trust-invalid-upstream-request [request]
+  (assoc request :upstream-ids
+         (assoc (get request :upstream-ids) :w1
+                (assoc (get (get request :upstream-ids) :w1)
+                       :content-hash
+                       "sha256:a8eaa6e667b15f54cc09194bbb1ad6cdec176b81509f413d3d7bc90481b6f4b2"))))
+
+(defn w5-trust-invalid-span-request [request]
+  (assoc request :source-span
+         (assoc (get request :source-span)
+                :start (assoc (get (get request :source-span) :start)
+                              :byte -1))))
+
+(defn w5-trust-invalid-source-span-order-request [request]
+  (let [sbom (get request :sbom)
+        generated (get sbom :generated-sources)
+        source (get generated 0)
+        span (get source :source-span)]
+    (assoc request :sbom
+           (assoc sbom :generated-sources
+                  (assoc generated 0
+                         (assoc source :source-span
+                                (assoc span :end
+                                       (assoc (get span :end)
+                                              :byte 0 :line 0 :column 0))))))))
+
+(defn w5-trust-invalid-provenance-request [request]
+  (assoc request :repository
+         (assoc (get request :repository) :actual-repository-root "")))
+
+(defn w5-trust-invalid-lineage-cycle-request [request]
+  (assoc request :lineage
+         (assoc (get request :lineage) 1
+                (assoc (get (get request :lineage) 1)
+                       :rebuild-parent-ids
+                       [(get request :root-artifact-id)]))))
+
+(defn w5-trust-invalid-lineage-gap-request [request]
+  (assoc request :lineage
+         (assoc (get request :lineage) 2
+                (assoc (get (get request :lineage) 2)
+                       :compiled-by-executable-id
+                       "sha256:2474582b0911f80174bb0572b69e5a09f59833051d3eb132caf426c26ca45f21"))))
+
+(defn w5-trust-invalid-lineage-unreachable-request [request]
+  (assoc request :lineage
+         (assoc (get request :lineage) 2
+                (assoc (get (get request :lineage) 2)
+                       :rebuild-parent-ids
+                       ["sha256:63fb9b53de1eabe0581423aba43874571e509d36d1b8d6adfa740f3e62a14c0d"]))))
+
+(defn w5-trust-invalid-lineage-order-request [request]
+  (assoc request :lineage
+         (assoc (get request :lineage) 1
+                (assoc (get (get request :lineage) 1)
+                       :stage-id
+                       :stage3))))
+
+(defn w5-trust-invalid-lineage-cross-binding-request [request]
+  (assoc request :build-recipes
+         (assoc (get request :build-recipes) 2
+                (assoc (get (get request :build-recipes) 2)
+                       :source-graph-id
+                       (get (get (get request :source-graphs) 0)
+                            :source-graph-id)))))
+
+(defn w5-trust-invalid-r3-recipe-request [request]
+  (assoc request :locks
+         (assoc (get request :locks) 0
+                (assoc (get (get request :locks) 0)
+                       :lock-id
+                       "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))))
+
+(defn w5-trust-invalid-dependency-request [request]
+  (assoc request :dependency-graphs
+         (assoc (get request :dependency-graphs) 0
+                (assoc (get (get request :dependency-graphs) 0)
+                       :dependency-content-hashes
+                       ["sha256:a8eaa6e667b15f54cc09194bbb1ad6cdec176b81509f413d3d7bc90481b6f4b2"]))))
+
+(defn w5-trust-invalid-lock-request [request]
+  (assoc request :locks
+         (assoc (get request :locks) 0
+                (assoc (get (get request :locks) 0) :complete? false))))
+
+(defn w5-trust-invalid-environment-request [request]
+  (assoc request :environments
+         (assoc (get request :environments) 0
+                (assoc (get (get request :environments) 0)
+                       :network-policy :enabled))))
+
+(defn w5-trust-invalid-toolchain-request [request]
+  (assoc request :toolchains
+         (assoc (get request :toolchains) 0
+                (assoc (get (get request :toolchains) 0)
+                       :identity-status :unknown))))
+
+(defn w5-trust-invalid-recipe-request [request]
+  (assoc request :build-recipes
+         (assoc (get request :build-recipes) 2
+                (assoc (get (get request :build-recipes) 2)
+                       :compiler-executable-id
+                       "sha256:1030aaebc323b80dd182f3cd044dad34edfca7de1f1db4d0f65836e66ddd2f69"))))
+
+(defn w5-trust-invalid-diversity-request [request]
+  (assoc request :diverse-rebuilds
+         (assoc (get request :diverse-rebuilds) 1
+                (assoc (get (get request :diverse-rebuilds) 1)
+                       :toolchain-id
+                       "sha256:137a19e0fce6e159cd751e31bf7534965b6442e18bf92fcadbd623815a695b85"))))
+
+(defn w5-trust-invalid-diverse-recipe-switch-request [request]
+  (let [records (get request :diverse-rebuilds)
+        first-record (get records 0)
+        second-record (get records 1)]
+    (assoc request :diverse-rebuilds
+           (assoc records 0
+                  (assoc first-record :build-recipe-id
+                         (get second-record :build-recipe-id))))))
+
+(defn w5-trust-invalid-diverse-coherent-recipe-swap-request [request]
+  (let [records (get request :diverse-rebuilds)
+        left (get records 0)
+        right (get records 1)
+        swapped-left
+        (assoc left
+               :source-graph-id (get right :source-graph-id)
+               :compiler-executable-id (get right :compiler-executable-id)
+               :lock-id (get right :lock-id)
+               :dependency-graph-id (get right :dependency-graph-id)
+               :build-recipe-id (get right :build-recipe-id)
+               :toolchain-id (get right :toolchain-id)
+               :environment-id (get right :environment-id))
+        swapped-right
+        (assoc right
+               :source-graph-id (get left :source-graph-id)
+               :compiler-executable-id (get left :compiler-executable-id)
+               :lock-id (get left :lock-id)
+               :dependency-graph-id (get left :dependency-graph-id)
+               :build-recipe-id (get left :build-recipe-id)
+               :toolchain-id (get left :toolchain-id)
+               :environment-id (get left :environment-id))]
+    (assoc request :diverse-rebuilds [swapped-left swapped-right])))
+
+(defn w5-trust-invalid-anchor-request [request]
+  (assoc request :trust-anchors
+         (assoc (get request :trust-anchors) 1
+                (assoc (get (get request :trust-anchors) 1)
+                       :operator-id
+                       "sha256:3730b81a7131257e8f7b753584eb4f381d1b442a1439a0cd697ecd8dd257b391"))))
+
+(defn w5-trust-invalid-attestation-request [request]
+  (assoc request :attestations
+         (assoc (get request :attestations) 0
+                (assoc (get (get request :attestations) 0)
+                       :artifact-id
+                       "sha256:63fb9b53de1eabe0581423aba43874571e509d36d1b8d6adfa740f3e62a14c0d"))))
+
+(defn w5-trust-invalid-attestation-subject-request [request]
+  (assoc request :attestations
+         (assoc (get request :attestations) 0
+                (assoc (get (get request :attestations) 0)
+                       :source-graph-id
+                       (get (get (get request :source-graphs) 0)
+                            :source-graph-id)))))
+
+(defn w5-trust-invalid-attestation-other-builder-request [request]
+  (let [records (get request :attestations)
+        other-builder-id (get (get records 1) :builder-id)]
+    (assoc request :attestations
+           (assoc records 0
+                  (assoc (get records 0) :builder-id other-builder-id)))))
+
+(defn w5-trust-invalid-sbom-request [request]
+  (assoc request :sbom
+         (assoc (get request :sbom) :capabilities [])))
+
+(defn w5-trust-invalid-signature-request [request]
+  (assoc request :signatures
+         (assoc (get request :signatures) 0
+                (assoc (get (get request :signatures) 0)
+                       :canonical? false))))
+
+(defn w5-trust-invalid-signature-payload-request [request]
+  (assoc request :signatures
+         (assoc (get request :signatures) 0
+                (assoc (get (get request :signatures) 0)
+                       :payload-hash
+                       "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))))
+
+(defn w5-trust-invalid-signature-other-recipe-request [request]
+  (let [records (get request :signatures)
+        other-recipe-id (get (get records 1) :build-recipe-id)]
+    (assoc request :signatures
+           (assoc records 0
+                  (assoc (get records 0)
+                         :build-recipe-id other-recipe-id)))))
+
+(defn w5-trust-invalid-signature-other-signer-anchor-request [request]
+  (let [records (get request :signatures)
+        other-signer-id (get (get records 1) :signer-id)]
+    (assoc request :signatures
+           (assoc records 0
+                  (assoc (get records 0) :signer-id other-signer-id)))))
+
+(defn w5-trust-invalid-revocation-request [request]
+  (assoc request :revocations
+         (assoc (get request :revocations) 0
+                (assoc (get (get request :revocations) 0)
+                       :status :revoked))))
+
+(defn w5-trust-invalid-revocation-subject-request [request]
+  (assoc request :revocations
+         (assoc (get request :revocations) 0
+                (assoc (get (get request :revocations) 0)
+                       :subject-id
+                       "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))))
+
+(defn w5-trust-invalid-revocation-compiler-subject-request [request]
+  (assoc request :revocations
+         (assoc (get request :revocations) 2
+                (assoc (get (get request :revocations) 2)
+                       :subject-id
+                       "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))))
+
+(defn w5-trust-invalid-revocation-provenance-subject-request [request]
+  (assoc request :revocations
+         (assoc (get request :revocations) 7
+                (assoc (get (get request :revocations) 7)
+                       :subject-id
+                       "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))))
+
+(defn w5-trust-invalid-revocation-dropped-package-request [request]
+  (assoc request :revocations
+         (assoc (get request :revocations) 1
+                (assoc (get (get request :revocations) 1)
+                       :subject-kind :dependency))))
+
+(defn w5-trust-invalid-hash-status-request [request]
+  (assoc request :lineage
+         (assoc (get request :lineage) 2
+                (assoc (get (get request :lineage) 2)
+                       :content-hash-status :verified))))
+
+(defn w5-trust-invalid-unsafe-audit-request [request]
+  (assoc request :unsafe-audits
+         (assoc (get request :unsafe-audits) 0
+                (assoc (get (get request :unsafe-audits) 0)
+                       :review-status :pending))))
+
+(defn w5-trust-invalid-tcb-request [request]
+  (assoc request :tcb-delta
+         (assoc (get request :tcb-delta)
+                :residual-trusted-components [])))
+
+(defn w5-trust-invalid-tcb-components-request [request]
+  (assoc request :tcb-delta
+         (assoc (get request :tcb-delta)
+                :candidate-trusted-components [:forged-component])))
+
+(defn w5-trust-invalid-equivalence-request [request]
+  (assoc request :equivalence
+         (assoc (get request :equivalence)
+                :stage-b-artifact-id
+                "sha256:36361d5e5f23d96d2323228c48950317476c89cfcff98c312adf0edfba444a36")))
+
+(defn w5-trust-invalid-replay-request [request]
+  (assoc request :replay
+         (assoc (get request :replay) :native
+                (assoc (get (get request :replay) :native)
+                       :native-host? true))))
+
+(defn w5-trust-invalid-replay-cross-binding-request [request]
+  (assoc request :replay
+         (assoc (get request :replay) :native
+                (assoc (get (get request :replay) :native)
+                       :environment-id
+                       "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))))
+
+(defn w5-trust-invalid-target-request [request]
+  (assoc request :target-scope
+         (assoc (get request :target-scope) :candidate-target :jvm)))
+
+(defn w5-trust-invalid-cross-target-request [request]
+  (assoc request :target-scope
+         (assoc (get request :target-scope)
+                :cross-target-inference? true)))
+
+(defn w5-trust-invalid-fallback-request [request]
+  (assoc request :target-scope
+         (assoc (get request :target-scope) :darwin-fallback? true)))
+
+(defn w5-trust-invalid-authority-request [request]
+  (assoc request :authority
+         (assoc (get request :authority)
+                :candidate-invokes-clojure? true)))
+
+(defn w5-trust-invalid-review-request [request]
+  (assoc request :review
+         (assoc (get request :review) :reviewer-class :producer-assertion)))
+
+(defn w5-trust-invalid-result [result]
+  (assoc result :closure-status :complete))

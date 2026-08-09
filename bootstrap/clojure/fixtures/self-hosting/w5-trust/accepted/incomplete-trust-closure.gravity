@@ -1,0 +1,467 @@
+(ns gravity.self-hosting.w5-trust.accepted.incomplete-trust-closure
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-trust-provenance-request
+             w5-trust-provenance-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def w5-target
+  {:candidate-target :llvm-x86_64-linux
+   :os :linux
+   :arch :x86_64
+   :backend :llvm
+   :artifact-format :elf
+   :abi :sysv-amd64
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :cross-target-inference? false
+   :darwin-fallback? false})
+
+(defn w5-path [root suffix]
+  (str root suffix))
+
+(defn w5-upstream [artifact content verifier verification commit tree path]
+  {:artifact-id artifact
+   :content-hash content
+   :independent-verifier-id verifier
+   :independent-verification-id verification
+   :status :pending
+   :producer-commit commit
+   :producer-tree tree
+   :actual-artifact-path path})
+
+(defn w5-source [graph root-hash component generator path]
+  {:source-graph-id graph
+   :root-content-hash root-hash
+   :component-ids component
+   :component-content-hashes component
+   :generator-input-ids generator
+   :canonical? true
+   :verification-status :descriptor-only
+   :actual-source-root path})
+
+(defn w5-stage [artifact stage compiler compiled-by source graph lock env tool recipe commit tree content path parents]
+  {:artifact-id artifact
+   :stage-id stage
+   :compiler-executable-id compiler
+   :compiled-by-executable-id compiled-by
+   :source-graph-id source
+   :dependency-graph-id graph
+   :lock-id lock
+   :environment-id env
+   :toolchain-id tool
+   :build-recipe-id recipe
+   :rebuild-parent-ids parents
+   :producer-commit commit
+   :producer-tree tree
+   :content-hash content
+   :content-hash-status :pending
+   :actual-artifact-path path})
+
+(defn w5-recipe [id source lock graph compiler tool env cap content path]
+  {:build-recipe-id id
+   :source-graph-id source
+   :lock-id lock
+   :dependency-graph-id graph
+   :compiler-executable-id compiler
+   :toolchain-id tool
+   :environment-id env
+   :target-scope w5-target
+   :capability-inventory-id cap
+   :content-hash content
+   :verification-status :descriptor-only
+   :actual-recipe-path path})
+
+(defn w5-rebuild [id root artifact content source compiler lock graph recipe
+                  builder role tool env anchor path]
+  {:rebuild-id id
+   :artifact-id artifact
+   :content-hash content
+   :source-graph-id source
+   :compiler-executable-id compiler
+   :lock-id lock
+   :dependency-graph-id graph
+   :build-recipe-id recipe
+   :builder-id builder
+   :builder-role role
+   :toolchain-id tool
+   :environment-id env
+   :trust-anchor-id anchor
+   :comparison-status :matching
+   :independence-status :pending-independent
+   :content-hash-status :pending
+   :actual-build-root path})
+
+(defn w5-anchor [id kind operator root-id identity policy path]
+  {:anchor-id id
+   :anchor-kind kind
+   :operator-id operator
+   :root-metadata-id root-id
+   :public-identity-id identity
+   :verification-status :descriptor-only
+   :revocation-status :current
+   :policy-id policy
+   :actual-anchor-location path})
+
+(defn w5-attestation [id manifest provenance rebuild path]
+  {:attestation-id id
+   :schema-version 1
+   :artifact-id (get rebuild :artifact-id)
+   :manifest-id manifest
+   :provenance-id provenance
+   :rebuild-id (get rebuild :rebuild-id)
+   :builder-id (get rebuild :builder-id)
+   :builder-role (get rebuild :builder-role)
+   :artifact-content-hash (get rebuild :content-hash)
+   :source-graph-id (get rebuild :source-graph-id)
+   :compiler-executable-id (get rebuild :compiler-executable-id)
+   :lock-id (get rebuild :lock-id)
+   :dependency-graph-id (get rebuild :dependency-graph-id)
+   :build-recipe-id (get rebuild :build-recipe-id)
+   :toolchain-id (get rebuild :toolchain-id)
+   :environment-id (get rebuild :environment-id)
+   :trust-anchor-id (get rebuild :trust-anchor-id)
+   :policy-level :hermetic
+   :verification-status :pending
+   :actual-attestation-path path})
+
+(defn w5-request [root]
+  (let [a1 "sha256:63fb9b53de1eabe0581423aba43874571e509d36d1b8d6adfa740f3e62a14c0d"
+        a2 "sha256:36361d5e5f23d96d2323228c48950317476c89cfcff98c312adf0edfba444a36"
+        a3 "sha256:a7be047986cd8bf0fe07dea99ea754d572a96bb93c7a729a91920c2cc33e5961"
+        a4 "sha256:1eaaa0408e072bdea577964e524bf1831abed881e3a1fe8ca34a9bcc57c8ba3a"
+        c0 "sha256:2474582b0911f80174bb0572b69e5a09f59833051d3eb132caf426c26ca45f21"
+        c1 "sha256:1030aaebc323b80dd182f3cd044dad34edfca7de1f1db4d0f65836e66ddd2f69"
+        c2 "sha256:f0779677207e312dab52bc2dcd9efdce6280e01017ecefa41609eaab8d406de0"
+        c3 "sha256:df0ff28381bc98d37e7371bfdc17bac5e7495b7658e07311fc59c317160f0abd"
+        c4 "sha256:e35f3c531a2e70ea3c60673b325d4ef3cb3ce6328edc8d714ffddbad276eeaca"
+        s1 "sha256:c85b4b2dedf315e24f7a40cb9b9f8912168b5bfb4ceb7d34006d93672e18f979"
+        s2 "sha256:4b5af9a3b351fe0356dbc4615521a76342943e258cb699b8a2e68e97e7900ba2"
+        s3 "sha256:12466c4bcd064d33769f10d775ed962ca4ed85de6a5b8d2472de70618e092747"
+        s4 "sha256:80bbe85f55c412ec08bb3dc9bb403d1ece368185a4f8d8fa33eab3750eadce6a"
+        depgraph "sha256:7362c796f44d595a81145a9cc75e9c11fcaf4d8a680b6f68a8e5fb7ed61de451"
+        dep "sha256:30dae6d46c8a914bf8f72242d8b219418ccf53ad025d600e0ad711271df47c9b"
+        prov "sha256:a92ec47dbc8ad1b7440f83d0348d1b6066927759c0225dbad4c1b84aeef55b37"
+        lock "sha256:9198356418d3d91646aa1a499602f846c5b40974ceff95d2ffb2b6734293bfea"
+        env1 "sha256:8185b4927c995d41c7c7de07824dd810f246b1efc288a9477f2d856c1bcd4341"
+        env2 "sha256:b99000e7bd4e2fb9c0f99c9bfa1fdb024c437f7e171c0921fc775121e83f7ea8"
+        tool1 "sha256:137a19e0fce6e159cd751e31bf7534965b6442e18bf92fcadbd623815a695b85"
+        tool2 "sha256:7b3fa653944383bfbdd20955e048bd0f9531a870ce8d18164e32b9fe98f1a6fa"
+        files1 "sha256:eec7b2bc50be91297129ef1b610162fa82d4de8d0f026f38b9757c049e3d82f0"
+        files2 "sha256:3da4a9f71485118c74ebdb7131eba327d01fe6a9753b9a019e038a0c6b06219c"
+        r1 "sha256:b5b399e26e9aaf4f14ee88b1ddc25b23fead170880884d081675d7d312340598"
+        r2 "sha256:e2de3920f12d9f366c190df6b7256962e742550d6503f93f945236e194f242c0"
+        r3 "sha256:1af1cc8b6b56071b5d9154a84239a9435c5f170d832be6c163ba888e6118fd95"
+        r4 "sha256:42928b2d1b01b57940042a74cff3c266ebe4b447d2a33b3544174de586ff0ee9"
+        r5 "sha256:ce6953e8d51691e803c2bae676e2beb08e3822081ab11a4110632ab976f7171e"
+        r6 "sha256:52e88d87153e60b0bcba2279c95a75f47dbf93898db7ff3ea82d88553b01917f"
+        capinv "sha256:cc6ae6c964eaeddc21d6b55039403d5a95ff52177ab93fcffd3835507502a736"
+        b1 "sha256:dd5536ef349d9978d0980313dcdd7a43edb7e22498ad1a8bab82416f802c9170"
+        b2 "sha256:b31e5e2a23c2368e8e473351087b88c27c8d450af73c9be59886071ee2758088"
+        anc1 "sha256:100610e92896adc0a9fe1d1b2640ed79790846dbcdc56b0800a596e03b582f42"
+        anc2 "sha256:a17343c9e25cd0021ddcdb8eac2ce4bd404c9e2be3403f4bb4a0fe37bfd5b22f"
+        manifest "sha256:695222caf6f9e87877089b0454c462c80e6d4e767c57d35a146085b89db436b0"
+        att1 "sha256:e1cff44867a0f828c40a17d6bf473f2563b7b57f3583ae61ffc24738fa584fe7"
+        att2 "sha256:a9506e06175d7b65d4dac249e772d78177539ef6c7a083b9f71907e47e287f42"
+        provenance1 "sha256:1a7355a328b9d0c4b82bd381306eeb352957dababc4520e4979bfd4083d99a20"
+        provenance2 "sha256:b638905706199f71e60921edefeb50b1cc91cf6a14ea296673ebdac73f9b6960"
+        sbom-id "sha256:778ecb129a43e54f4a6f42a6d8b13faef6b34f77d50befb2f344f396fd07d082"
+        cap-id "sha256:09152e0c315b58a89e48fdd7e6a0df3e9463b087d0b804501877cc13206a8d23"
+        generated-id "sha256:936b0b645cfabf0ce41084caf031f01ca0e770f3de17b1658d94aa0fe3725f29"
+        blob-id "sha256:e5344dc9bd666e3a5abc17a60566697aba26094125119df0e5c8139b192d6210"
+        sig1 "sha256:ad3c02832063953d42849979c22db41b4f553b63217a8ffad00c21dc37f5be9d"
+        sig2 "sha256:24a34fc7500b271e3d477427ba302c857e591987d15385e85449f836ad840085"
+        signer1 "sha256:3730b81a7131257e8f7b753584eb4f381d1b442a1439a0cd697ecd8dd257b391"
+        signer2 "sha256:65bf291de86a8c52e2b95177d886f67da0b663cf7da2e6295906b7fdf812bf14"
+        unsafe-id "sha256:3601a64f3a834e2bde16885d7c1b699df384789e81e31c6e219df18caacc1b37"
+        island-id "sha256:9cae1cc5c1c4e5097fe1d92393a0bb20f765f6dc70cb123959bc890b576de079"
+        boundary-id "sha256:3b6f162cb72c44a863ded91954550c5ee13888ca3529c583c24d24455478fae8"
+        review-id "sha256:7607c066471729ea056e5d4b022ab5076e797a02b58cf2b2d1b40cbccf1f126b"
+        equiv-id "sha256:d4b3b48a56efa4b70bca248d77f64f71a2980d0493a01c1e699677d7fc8f3716"
+        replay-kernel "sha256:dcd637b0c16a1384e9b20674b5ddd37440e01c9b33d87e9f87b33aa9c6cc9dd1"
+        replay-cgroup "sha256:e16fa3379d0e28da68eeb7ea0a2365451e549bc893d104b930104a8bb30a292d"
+        replay-execveat "sha256:6fafd12a394cbe4267ef2416d5ee2700602a4fedbaa0ef1452548975866df9c7"
+        replay-command "sha256:a2f084f291e154b5f25d6953c75d050404abbecbf9fbfeb54cc62f7b8aba57c8"
+        replay-result "sha256:c0175e994d2348ce07034fb8223ff698e4f067780c14f7c803de0884313af018"
+        replay-gcc "sha256:eec7b2bc50be91297129ef1b610162fa82d4de8d0f026f38b9757c049e3d82f0"
+        replay-llvm "sha256:3da4a9f71485118c74ebdb7131eba327d01fe6a9753b9a019e038a0c6b06219c"
+        tcb-id "sha256:e90b0089d4993911874b53149c31ad5c2be3bbe020a4b4478500b9dcd96f5969"
+        source-root "sha256:2474582b0911f80174bb0572b69e5a09f59833051d3eb132caf426c26ca45f21"
+        git-a "1111111111111111111111111111111111111111"
+        git-b "2222222222222222222222222222222222222222"
+        rebuild1
+        (w5-rebuild "sha256:eeaae1930e57101bb78e8c452198913d5a3effe836154f6e1066e5624427182a"
+                    root a4 a4 s4 c4 lock depgraph r5 b1
+                    :primary-independent-builder tool1 env1 anc1
+                    (w5-path root "/rebuilds/a"))
+        rebuild2
+        (w5-rebuild "sha256:0f9d6f0e8e988252a2fabb47061eb819fa603a0bf0d17b4e39dc4a5d095bc9df"
+                    root a4 a4 s4 c4 lock depgraph r6 b2
+                    :diverse-independent-builder tool2 env2 anc2
+                    (w5-path root "/rebuilds/b"))]
+    {:artifact :gravity/w5-trust-provenance-request
+     :schema-version 1
+     :claimed-status :incomplete
+     :target-scope w5-target
+     :repository {:artifact-containing-commit git-a
+                  :artifact-containing-tree git-b
+                  :source-root-id source-root
+                  :actual-repository-root root}
+     :root-artifact-id a4
+     :seed-compiler-id c0
+     :upstream-ids
+     {:w1 (w5-upstream a1 s1 capinv generated-id git-a git-b
+                       (w5-path root "/upstream/w1.edn"))
+      :w2 (w5-upstream a2 s2 cap-id generated-id git-a git-b
+                       (w5-path root "/upstream/w2.edn"))
+      :w3 (w5-upstream a3 s3 generated-id cap-id git-a git-b
+                       (w5-path root "/upstream/w3.edn"))
+      :w4 (w5-upstream a4 s4 equiv-id replay-result git-a git-b
+                       (w5-path root "/upstream/w4.edn"))}
+     :w2-w3-cross-binding
+     {:w2-provider-id cap-id
+      :w2-provider-path (w5-path root "/w2/native-runtime-provider")
+      :w2-provider-hash s2
+      :w3-admitted-executable-id cap-id
+      :w3-admitted-executable-path (w5-path root "/w2/native-runtime-provider")
+      :w3-admitted-executable-hash s2
+      :w3-envelope-artifact-id replay-result
+      :verification-id equiv-id
+      :status :pending
+      :actual-verification-path (w5-path root "/w2-w3/cross-binding.edn")}
+     :source-graphs
+     [(w5-source s1 s1 [a1] [] (w5-path root "/sources/stage1"))
+      (w5-source s2 s2 [a2] [] (w5-path root "/sources/stage2"))
+      (w5-source s3 s3 [a3] [] (w5-path root "/sources/stage3"))
+      (w5-source s4 s4 [a4] [] (w5-path root "/sources/release"))]
+     :lineage
+     [(w5-stage a1 :stage1 c1 c0 s1 depgraph lock env1 tool1 r1 git-a git-b a1
+                (w5-path root "/artifacts/stage1") [])
+      (w5-stage a2 :stage2 c2 c1 s2 depgraph lock env1 tool1 r2 git-a git-b a2
+                (w5-path root "/artifacts/stage2") [a1])
+      (w5-stage a3 :stage3 c3 c2 s3 depgraph lock env2 tool2 r3 git-a git-b a3
+                (w5-path root "/artifacts/stage3") [a2])
+      (w5-stage a4 :release c4 c3 s4 depgraph lock env2 tool2 r4 git-a git-b a4
+                (w5-path root "/artifacts/release") [a3])]
+     :dependencies
+     [{:dependency-id dep :version "1.0.0" :content-hash s1
+       :provenance-id prov :license-id capinv :advisory-status :clear
+       :revocation-status :current}]
+     :dependency-graphs
+     [{:dependency-graph-id depgraph :dependency-ids [dep]
+       :dependency-content-hashes [s1] :dependency-provenance-ids [prov]
+       :graph-content-hash depgraph :topological? true :complete? true
+       :verification-status :descriptor-only
+       :actual-graph-path (w5-path root "/locks/dependency-graph.edn")}]
+     :locks
+     [{:lock-id lock :dependency-graph-id depgraph :dependency-ids [dep]
+       :dependency-content-hashes [s1] :complete? true :offline? true
+       :content-hash lock :verification-status :descriptor-only
+       :actual-lock-path (w5-path root "/locks/gravity.lock")}]
+     :environments
+     [{:environment-id env1 :manifest-id manifest :locale "C"
+       :timezone "UTC" :filesystem-order :sorted :timestamp-policy :fixed
+       :random-seed 17 :network-policy :disabled :allowed-environment []
+       :content-hash env1 :verification-status :descriptor-only
+       :actual-build-root (w5-path root "/env/a")}
+      {:environment-id env2 :manifest-id manifest :locale "C"
+       :timezone "UTC" :filesystem-order :sorted :timestamp-policy :fixed
+       :random-seed 29 :network-policy :disabled :allowed-environment []
+       :content-hash env2 :verification-status :descriptor-only
+       :actual-build-root (w5-path root "/env/b")}]
+     :toolchains
+     [{:toolchain-id tool1 :family :gravity-native :version "1.0"
+       :target :llvm-x86_64-linux :files-id files1 :content-hash tool1
+       :identity-status :pending
+       :actual-toolchain-path (w5-path root "/toolchains/llvm-a")}
+      {:toolchain-id tool2 :family :diverse-llvm :version "1.0"
+       :target :llvm-x86_64-linux :files-id files2 :content-hash tool2
+       :identity-status :pending
+       :actual-toolchain-path (w5-path root "/toolchains/llvm-b")}]
+     :build-recipes
+     [(w5-recipe r1 s1 lock depgraph c1 tool1 env1 capinv s1
+                 (w5-path root "/recipes/stage1"))
+      (w5-recipe r2 s2 lock depgraph c2 tool1 env1 capinv s2
+                 (w5-path root "/recipes/stage2"))
+      (w5-recipe r3 s3 lock depgraph c3 tool2 env2 capinv s3
+                 (w5-path root "/recipes/stage3"))
+      (w5-recipe r4 s4 lock depgraph c4 tool2 env2 capinv s4
+                 (w5-path root "/recipes/release"))
+      (w5-recipe r5 s4 lock depgraph c4 tool1 env1 capinv s4
+                 (w5-path root "/recipes/rebuild-a"))
+      (w5-recipe r6 s4 lock depgraph c4 tool2 env2 capinv s4
+                 (w5-path root "/recipes/rebuild-b"))]
+     :diverse-rebuilds
+     [rebuild1 rebuild2]
+     :trust-anchors
+     [(w5-anchor anc1 :offline-root signer1 files1 capinv cap-id
+                 (w5-path root "/anchors/offline-root"))
+      (w5-anchor anc2 :transparency-root signer2 replay-gcc replay-llvm
+                 equiv-id (w5-path root "/anchors/transparency-root"))]
+     :attestations
+     [(w5-attestation att1 manifest provenance1
+                      rebuild1
+                      (w5-path root "/attestations/a"))
+      (w5-attestation att2 manifest provenance2
+                      rebuild2
+                      (w5-path root "/attestations/b"))]
+     :sbom
+     {:sbom-id sbom-id :artifact-id a4 :manifest-id manifest :source-graph-id s4
+      :dependency-ids [dep]
+      :capabilities
+      [{:capability-id cap-id :name :build/read-source :effect :filesystem-read
+        :scope :compiler-build :source-id s4 :privileged? false}]
+      :generated-sources
+      [{:generated-source-id generated-id :generator-id capinv
+        :input-hashes [s1 s2] :content-hash generated-id
+        :source-span {:source-id :generated-source
+                      :actual-source-path (w5-path root "/generated/source.gravity")
+                      :start {:byte 0 :line 1 :column 1}
+                      :end {:byte 12 :line 1 :column 13}}}]
+      :binary-blobs
+      [{:blob-id blob-id :source-id s4 :content-hash blob-id
+        :license-id capinv :policy-id cap-id :safety-status :audited}]
+      :unsafe-audit-ids [unsafe-id] :provenance-id provenance1
+      :content-hash sbom-id :verification-status :descriptor-only
+      :actual-sbom-path (w5-path root "/sbom/release.spdx.edn")}
+     :signatures
+     [{:signature-id sig1 :artifact-id a4 :manifest-id manifest
+       :provenance-id provenance1 :sbom-id sbom-id :attestation-id att1
+       :unsafe-audit-id unsafe-id :build-recipe-id r5 :payload-hash sbom-id
+       :signer-id signer1 :policy-id capinv :canonical? true
+       :verification-status :pending
+       :actual-signature-path (w5-path root "/signatures/a.sig")}
+      {:signature-id sig2 :artifact-id a4 :manifest-id manifest
+       :provenance-id provenance2 :sbom-id sbom-id :attestation-id att2
+       :unsafe-audit-id unsafe-id :build-recipe-id r6 :payload-hash sbom-id
+       :signer-id signer2 :policy-id cap-id :canonical? true
+       :verification-status :pending
+       :actual-signature-path (w5-path root "/signatures/b.sig")}]
+     :revocations
+     [{:subject-kind :dependency :subject-id dep :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :package :subject-id dep :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :compiler :subject-id c1 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :compiler :subject-id c2 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :compiler :subject-id c3 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :compiler :subject-id c4 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :provenance :subject-id provenance1 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :provenance :subject-id provenance2 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :builder :subject-id b1 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :builder :subject-id b2 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :anchor :subject-id anc1 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :anchor :subject-id anc2 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :attestation :subject-id att1 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :attestation :subject-id att2 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :signature :subject-id sig1 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :signature :subject-id sig2 :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}
+      {:subject-kind :unsafe-audit :subject-id unsafe-id :status :current
+       :source-id capinv :checked-at manifest :failure-policy :release-blocking}]
+     :unsafe-audits
+     [{:audit-id unsafe-id :island-id island-id
+       :source-span {:source-id :native-allocator
+                     :actual-source-path (w5-path root "/src/allocator.gravity")
+                     :start {:byte 128 :line 8 :column 3}
+                     :end {:byte 180 :line 9 :column 25}}
+       :profiles [:native] :effects [:memory-raw] :capabilities [:allocator]
+       :preconditions [:aligned-pointer] :postconditions [:owned-buffer]
+       :safe-boundary-id boundary-id :review-id review-id
+       :review-status :passed :verification-status :descriptor-only
+       :actual-audit-path (w5-path root "/audits/allocator.edn")}]
+     :tcb-delta
+     {:delta-id tcb-id
+      :prior-trusted-components [:clojure-stage0-seed :jvm-stage2-runtime]
+      :candidate-trusted-components [:llvm-toolchain :native-linux-replay]
+      :added-components [:llvm-toolchain :native-linux-replay]
+      :removed-components []
+      :retained-components [:clojure-stage0-seed :jvm-stage2-runtime]
+      :residual-trusted-components
+      [:clojure-stage0-seed :jvm-stage2-runtime :native-linux-replay
+       :independent-trust-anchors :independent-sol-review :stage-equivalence
+       :external-signing]
+      :derived? true :status :open
+      :actual-report-path (w5-path root "/provenance/tcb-delta.edn")}
+     :equivalence
+     {:report-id equiv-id :target w5-target :stage-a-artifact-id a3
+      :stage-b-artifact-id a4 :modes
+      [:artifact :manifest :diagnostic :conformance :runtime-output
+       :ir-modulo-id :reviewed-delta]
+      :status :pending :diagnostic-span-parity :pending
+      :independent-recomputation :pending
+      :actual-report-path (w5-path root "/equivalence/stages.edn")}
+     :replay
+     {:predicate-symbol
+      'gravity.self-hosting.w5-trust-provenance-verifier/w5-verify-result
+      :predicate-version 1
+      :development
+      {:gcc {:image-id replay-gcc :platform :linux-amd64 :pull-policy :never
+             :toolchain :gcc :toolchain-version "14.1"
+             :toolchain-files-id files1 :docker-engine-id replay-command
+             :docker-host-id replay-result :qemu-observation-id replay-gcc
+             :binfmt-observation-id replay-llvm :kernel-id replay-kernel
+             :cgroup-observation-id replay-cgroup
+             :execveat-observation-id replay-execveat :command-id replay-command
+             :result-id replay-result :status :pending
+             :authority :development-only}
+       :llvm {:image-id replay-llvm :platform :linux-amd64 :pull-policy :never
+              :toolchain :llvm :toolchain-version "18.1"
+              :toolchain-files-id files2 :docker-engine-id replay-command
+              :docker-host-id replay-result :qemu-observation-id replay-gcc
+              :binfmt-observation-id replay-llvm :kernel-id replay-kernel
+              :cgroup-observation-id replay-cgroup
+              :execveat-observation-id replay-execveat :command-id replay-command
+              :result-id replay-result :status :pending
+              :authority :development-only}}
+      :native
+      {:platform :linux-amd64 :native-host? false :emulator-authority? true
+       :kernel-id replay-kernel :cgroup-observation-id replay-cgroup
+       :execveat-observation-id replay-execveat :environment-id env2
+       :lock-id lock :command-id replay-command :result-id replay-result
+       :status :pending :authority :development-only}
+      :actual-replay-root (w5-path root "/replay")}
+     :authority
+     {:candidate-invokes-clojure? false :candidate-links-jvm? false
+      :build-invokes-clojure? false :public-route-invokes-clojure? false
+      :uses-ambient-process? false :uses-ambient-filesystem? false
+      :uses-hidden-file-authority? false
+      :unsupported-target-invokes-clojure? false
+      :unsupported-target-links-jvm? false :recovery-path-separated? true
+      :reported-clojure-seed-boundary? true :self-hosted? false
+      :release? false :public-authority? false}
+     :review {:reviewer-class :independent-sol-review :review-status :pending
+              :review-id review-id :findings []
+              :actual-review-path (w5-path root "/review/sol")}
+     :claims {:producer-asserted? true :narrative-only? true
+              :source-ownership-only? false :check-only? false
+              :container-evidence? true :closure-authority? false}
+     :source-span {:source-id :w5-trust-request
+                   :actual-source-path (w5-path root "/accepted/incomplete-trust-closure.gravity")
+                   :start {:byte 0 :line 1 :column 1}
+                   :end {:byte 1000 :line 1 :column 1}}}))
+
+(defn w5-trust-provenance-request []
+  (w5-request "/checkout-a"))
+
+(defn w5-trust-provenance-alternate-path-request []
+  (w5-request "/checkout-b"))
