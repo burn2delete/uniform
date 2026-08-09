@@ -4940,6 +4940,18 @@ class VerifyDevelopmentTests(unittest.TestCase):
         check_id = "stage0-p15-native-plan-specialization-prerequisite"
         check = verifier.checks_by_id(manifest)[check_id]
         self.assertEqual(check["command"], verifier._p15_native_plan_command())
+        self.assertEqual(
+            verifier._P15_NATIVE_PLAN_TEST_VARS,
+            [
+                "gravity.p15-native-plan-specialization-test/fixed-real-packet-cache-is-bounded-and-source-coherent",
+                "gravity.p15-native-plan-specialization-test/packet-and-context-tamper-reject-before-validator-or-emitter",
+                "gravity.p15-native-plan-specialization-test/authenticated-unsupported-plan-rejects-before-emitter",
+                "gravity.p15-native-plan-specialization-test/overbound-packet-tamper-rejects-before-validator",
+                "gravity.p15-native-plan-specialization-test/authenticated-validator-accepted-unsupported-helper-values-reject",
+                "gravity.p15-native-plan-specialization-test/tampered-gravity-c-emitter-source-rejects-before-helper-execution",
+                "gravity.p15-native-plan-specialization-test/authenticated-gravity-and-qst-packets-emit-and-run",
+            ],
+        )
         self.assertEqual(check["inputs"], verifier._P15_NATIVE_PLAN_INPUTS)
         self.assertEqual(check["tool_inputs"], verifier._P15_NATIVE_PLAN_TOOL_INPUTS)
         self.assertEqual(check["depends_on"], ["stage0-orchestrator-unit"])
@@ -4969,7 +4981,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                 self.assertEqual(selection["unmatched_changes"], [])
 
         for label, mutate in (
-            ("positive-first", lambda item: item["command"].__setitem__(9, verifier._P15_NATIVE_PLAN_TEST_VARS[-1])),
+            ("missing-cache-contract", lambda item: item["command"].__setitem__(9, verifier._P15_NATIVE_PLAN_TEST_VARS[-1])),
             ("extra-input", lambda item: item["inputs"].append("extra.gravity")),
             ("missing-tool", lambda item: item["tool_inputs"].pop()),
             ("wide-heap", lambda item: item.__setitem__("jvm_heap", "-J-Xmx8g")),

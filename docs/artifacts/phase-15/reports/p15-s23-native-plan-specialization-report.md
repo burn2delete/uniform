@@ -50,6 +50,24 @@ before/after hashes for the implementation, test, Gravity helper, fixtures,
 and runner.  The evidence is focused integrated semantic evidence, not a
 release-authority or whole-suite receipt.
 
+The focused test namespace now keeps one immutable packet/context product for
+the repeatedly used `accepted-print.gravity` fixture in a process-local,
+fixed-path cache.  Every access rereads the source text; a changed source is
+rederived, failed or malformed derivations are not retained, unreviewed paths
+reject before I/O, and the other seven allowlisted fixtures remain uncached.
+The standalone cache contract passed 1 test and 17 assertions.  A same-base,
+same-command paired observation compared the six semantic selectors before
+and after the cache change.  The uncached run passed 6/89 in 2094.376 seconds
+with peak process-tree RSS 1,676,001,280 bytes.  The cached run passed 6/95 in
+2005.887 seconds with peak RSS 1,765,834,752 bytes.  The four selectors that
+reuse `accepted-print.gravity` improved from 1,096,581 to 882,484 milliseconds
+(19.524 percent); the full selector sum improved 4.240 percent while peak RSS
+rose 5.360 percent.  This is one non-authoritative paired observation and
+supports only the fixed-batch repeated-work optimization, not a generalized
+speedup claim.  The durable development node now runs the 1/17 cache contract
+first and then the six semantic selectors in fail-fast order; its combined
+7-test/112-assertion receipt remains pending the next naturally required run.
+
 Boundary accounting remains explicit:
 
 - The generated child is a direct C program and has no Clojure/JVM runtime

@@ -672,6 +672,7 @@ _P15_NATIVE_LAUNCHER_TOOL_INPUTS = [
 _P15_NATIVE_PLAN_CHECK_ID = "stage0-p15-native-plan-specialization-prerequisite"
 _P15_NATIVE_PLAN_TEST_NAMESPACE = "gravity.p15-native-plan-specialization-test"
 _P15_NATIVE_PLAN_TEST_VARS = [
+    f"{_P15_NATIVE_PLAN_TEST_NAMESPACE}/fixed-real-packet-cache-is-bounded-and-source-coherent",
     f"{_P15_NATIVE_PLAN_TEST_NAMESPACE}/packet-and-context-tamper-reject-before-validator-or-emitter",
     f"{_P15_NATIVE_PLAN_TEST_NAMESPACE}/authenticated-unsupported-plan-rejects-before-emitter",
     f"{_P15_NATIVE_PLAN_TEST_NAMESPACE}/overbound-packet-tamper-rejects-before-validator",
@@ -857,7 +858,7 @@ def _validate_p15_native_plan_contract(check: Mapping[str, Any]) -> None:
             )
     if check.get("command") != _p15_native_plan_command():
         raise ManifestError(
-            f"check {_P15_NATIVE_PLAN_CHECK_ID!r} command must equal the reviewed six-selector order"
+            f"check {_P15_NATIVE_PLAN_CHECK_ID!r} command must equal the reviewed cache-contract-first seven-selector order"
         )
     if check.get("inputs") != _P15_NATIVE_PLAN_INPUTS:
         raise ManifestError(
