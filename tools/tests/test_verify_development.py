@@ -1673,6 +1673,8 @@ class VerifyDevelopmentTests(unittest.TestCase):
             "bootstrap/clojure/test/gravity/c7_type_checker_test.clj": {"stage0-leaf-compiler"},
             "bootstrap/clojure/src/gravity/core_ast_lowering.clj": {"stage0-leaf-compiler"},
             "bootstrap/clojure/test/gravity/core_ast_lowering_test.clj": {"stage0-leaf-compiler"},
+            "bootstrap/clojure/src/gravity/pass_cache.clj": {"stage0-leaf-compiler"},
+            "bootstrap/clojure/test/gravity/pass_cache_test.clj": {"stage0-leaf-compiler"},
             "bootstrap/clojure/src/gravity/reader_cursor.clj": {"stage0-leaf-foundation-reader"},
             "bootstrap/clojure/test/gravity/reader_cursor_test.clj": {"stage0-leaf-foundation-reader"},
             "bootstrap/clojure/src/gravity/module_analysis.clj": {"stage0-leaf-foundation-reader"},
@@ -1696,7 +1698,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         )
         components = {component["id"]: component for component in contract["components"]}
         checks = {item["id"]: item for item in manifest["checks"]}
-        expected_counts = {"foundation-reader": 9, "c2-c3": 12, "compiler": 23}
+        expected_counts = {"foundation-reader": 9, "c2-c3": 12, "compiler": 24}
         all_roots: set[str] = set()
         for group, expected_count in expected_counts.items():
             roots = {
@@ -1730,7 +1732,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             expected_tests = {components[component_id]["test"]["path"] for component_id in roots}
             self.assertEqual(expected_sources, actual_sources, group)
             self.assertEqual(expected_tests, actual_tests, group)
-        self.assertEqual(44, len(all_roots))
+        self.assertEqual(45, len(all_roots))
         self.assertEqual(
             {
                 component_id

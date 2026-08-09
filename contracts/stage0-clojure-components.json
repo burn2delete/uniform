@@ -6,10 +6,10 @@
   "source_root": "bootstrap/clojure/src",
   "test_root": "bootstrap/clojure/test",
   "counts": {
-    "components": 50,
-    "sources": 50,
-    "tests": 50,
-    "bootstrap_free_tests": 44,
+    "components": 51,
+    "sources": 51,
+    "tests": 51,
+    "bootstrap_free_tests": 45,
     "compatibility_tests": 5,
     "coordinator_tests": 1
   },
@@ -1455,6 +1455,40 @@
       },
       "contract_var": "shared-engine-contract",
       "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "pass-cache",
+      "owner": "sh-incremental",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/pass_cache.clj",
+        "namespace": "gravity.pass-cache"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/pass_cache_test.clj",
+        "namespace": "gravity.pass-cache-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest",
+        "pass-execution"
+      ],
+      "direct_test_dependencies": [
+        "pass-cache"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "pass-cache-contract",
+      "stage0_group": "compatibility-support",
       "leaf_execution_group": "compiler"
     },
     {
