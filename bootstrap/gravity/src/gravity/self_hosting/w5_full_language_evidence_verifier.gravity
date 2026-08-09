@@ -1,0 +1,1890 @@
+; Wave4 full-language evidence consumer.
+; This is a static, fail-closed :meta consumer for the coordinator-owned
+; 240-document inventory.  It does not generate or attest the inventory, run
+; a compiler, execute a fixture, or grant completion authority.
+(ns gravity.self-hosting.w5-full-language-evidence-verifier
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-full-language-evidence-policy
+             w5-full-language-evidence-diagnostic-catalog
+             w5-full-target-valid?
+             w5-full-source-fixture-path?
+             w5-full-inventory-valid?
+             w5-full-coverage-matrix-valid?
+             w5-full-gap-report-valid?
+             w5-full-task-list-valid?
+             w5-full-attestations-valid?
+             w5-full-reporting-valid?
+             w5-full-evidence-valid?
+             w5-full-claims-valid?
+             w5-full-authority-valid?
+             w5-full-request-valid?
+             w5-full-identity-input
+             w5-full-provenance
+             w5-full-language-evidence-verify
+             w5-full-language-evidence-execute
+             w5-full-language-evidence-run
+             w5-full-language-evidence-recompute
+             w5-full-language-evidence-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-full-language-evidence-verifier
+     :owner :workstream-5
+     :source-language :gravity
+     :seed :clojure-stage0
+     :status :executable-consumer
+     :scope :wave4-full-language-evidence
+     :static-only? true
+     :authority :non-authority
+     :provisional? true
+     :inventory-count 240
+     :named-gap-task-count 38
+     :attestation-count 0
+     :full-language-complete-count 0
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-arm64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-x86_64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :windows :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}]
+     :cross-target-inference? false
+     :fallback? false
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :release? false
+     :public-authority? false
+     :full-language-completion-authority? false
+     :governing-inputs [:document-inventory :coverage-matrix :gap-report
+                        :completion-attestations :full-language-roadmap]
+     :non-goals [:inventory-generation :attestation-generation
+                 :full-language-completion :public-authority]}}))
+
+(def w5-full-document-ids
+  ["D0" "D1" "D2" "D3" "D4" "D5" "D6" "D7" "D8" "D9"
+   "L1" "L2" "L3" "L4" "L5" "L6" "L7" "L8" "L9" "L10"
+   "L11" "L12" "L13" "L14" "L15" "L16" "L17" "L18" "L19"
+   "SAFE1" "SAFE2" "SAFE3" "SAFE4" "SAFE5" "SAFE6" "SAFE7"
+   "SAFE8" "SAFE9" "SAFE10" "SAFE11" "SAFE12" "SAFE13" "SAFE14"
+   "SAFE15" "SAFE16" "P1" "P2" "P3" "P4" "P5" "P6" "P7"
+   "P8" "P9" "P10" "P11" "P12" "P13" "PERF1" "PERF2" "PERF3"
+   "PERF4" "PERF5" "PERF6" "PERF7" "PERF8" "PERF9" "PERF10"
+   "MATH1" "MATH2" "MATH3" "MATH4" "MATH5" "MATH6" "MATH7"
+   "MATH8" "MATH9" "MATH10" "MATH11" "C1" "C2" "C3" "C4"
+   "C5" "C6" "C7" "C8" "C9" "C10" "C11" "C12" "C13" "C14"
+   "C15" "C16" "C17" "C18" "B1" "B2" "B3" "B4" "B5" "B6"
+   "B7" "B8" "B9" "B10" "B11" "B12" "B13" "B14" "R1" "R2"
+   "R3" "R4" "R5" "R6" "R7" "R8" "R9" "R10" "R11" "R12"
+   "DOM1" "DOM2" "DOM3" "DOM4" "DOM5" "DOM6" "DOM7" "DOM8"
+   "DOM9" "DOM10" "DOM11" "DOM12" "DOM13" "DOM14" "DOM15"
+   "DOM16" "DOM17" "DOM18" "DOM19" "DOM20" "DOM21" "S1" "S2"
+   "S3" "S4" "S5" "S6" "S7" "S8" "S9" "A1" "A2" "A3" "A4"
+   "A5" "A6" "A7" "A8" "A9" "A10" "A11" "PKG1" "PKG2" "PKG3"
+   "PKG4" "PKG5" "PKG6" "PKG7" "PKG8" "PKG9" "PKG10" "PKG11"
+   "PKG12" "T1" "T2" "T3" "T4" "T5" "T6" "T7" "T8" "T9"
+   "T10" "T11" "T12" "T13" "TEST1" "TEST2" "TEST3" "TEST4"
+   "TEST5" "TEST6" "TEST7" "TEST8" "TEST9" "TEST10" "TEST11"
+   "TEST12" "TEST13" "BOOT1" "BOOT2" "BOOT3" "BOOT4" "BOOT5"
+   "BOOT6" "BOOT7" "BOOT8" "STD1" "STD2" "STD3" "STD4" "STD5"
+   "STD6" "STD7" "STD8" "STD9" "STD10" "STD11" "STD12" "STD13"
+   "STD14" "STD15" "STD16" "STD17" "STD18" "STD19" "STD20" "GOV1"
+   "GOV2" "GOV3" "GOV4" "GOV5" "GOV6" "GOV7" "GOV8" "GOV9" "GOV10"])
+
+(def w5-full-document-content-id-suffixes
+  ["01" "02" "03" "04" "05" "06" "07" "08" "09" "0a" "0b" "0c" "0d" "0e" "0f" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "1a" "1b" "1c" "1d" "1e" "1f" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "2a" "2b" "2c" "2d" "2e" "2f" "30" "31" "32" "33" "34" "35" "36" "37" "38" "39" "3a" "3b" "3c" "3d" "3e" "3f" "40" "41" "42" "43" "44" "45" "46" "47" "48" "49" "4a" "4b" "4c" "4d" "4e" "4f" "50" "51" "52" "53" "54" "55" "56" "57" "58" "59" "5a" "5b" "5c" "5d" "5e" "5f" "60" "61" "62" "63" "64" "65" "66" "67" "68" "69" "6a" "6b" "6c" "6d" "6e" "6f" "70" "71" "72" "73" "74" "75" "76" "77" "78" "79" "7a" "7b" "7c" "7d" "7e" "7f" "80" "81" "82" "83" "84" "85" "86" "87" "88" "89" "8a" "8b" "8c" "8d" "8e" "8f" "90" "91" "92" "93" "94" "95" "96" "97" "98" "99" "9a" "9b" "9c" "9d" "9e" "9f" "a0" "a1" "a2" "a3" "a4" "a5" "a6" "a7" "a8" "a9" "aa" "ab" "ac" "ad" "ae" "af" "b0" "b1" "b2" "b3" "b4" "b5" "b6" "b7" "b8" "b9" "ba" "bb" "bc" "bd" "be" "bf" "c0" "c1" "c2" "c3" "c4" "c5" "c6" "c7" "c8" "c9" "ca" "cb" "cc" "cd" "ce" "cf" "d0" "d1" "d2" "d3" "d4" "d5" "d6" "d7" "d8" "d9" "da" "db" "dc" "dd" "de" "df" "e0" "e1" "e2" "e3" "e4" "e5" "e6" "e7" "e8" "e9" "ea" "eb" "ec" "ed" "ee" "ef" "f0"])
+
+(defn w5-full-expected-document-content-id [index]
+  (str "sha256:00000000000000000000000000000000000000000000000000000000000000"
+       (get w5-full-document-content-id-suffixes index)))
+
+; Exact reporting-v1 inventory content, frozen from
+; docs/document-inventory.json in its canonical sequence.  This is a
+; structural consumer binding, not a claim that synthetic content ids are
+; cryptographically authoritative.
+(def w5-full-document-contract
+  [
+   {:sequence 1 :id "D0" :title "Gravity Vision & Design Thesis"
+    :path "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md" :phase 0
+    :phaseName "Foundation and Thesis" :category "foundation"}
+   {:sequence 2 :id "D1" :title "System Architecture Overview"
+    :path "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md" :phase 0
+    :phaseName "Foundation and Thesis" :category "foundation"}
+   {:sequence 3 :id "D2" :title "Implementation Roadmap & Milestones"
+    :path "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md" :phase 0
+    :phaseName "Foundation and Thesis" :category "foundation"}
+   {:sequence 4 :id "D3" :title "Terminology & Concept Model"
+    :path "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md" :phase 0
+    :phaseName "Foundation and Thesis" :category "foundation"}
+   {:sequence 5 :id "D4" :title "Universal Computing Coverage Charter"
+    :path "docs/phase-00-foundation-and-thesis/005-d4-universal-computing-coverage-charter.md" :phase 0
+    :phaseName "Foundation and Thesis" :category "foundation"}
+   {:sequence 6 :id "D5" :title "Language Replacement Strategy"
+    :path "docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md" :phase 0
+    :phaseName "Foundation and Thesis" :category "foundation"}
+   {:sequence 7 :id "D6" :title "Performance Philosophy & Charter"
+    :path "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md" :phase 0
+    :phaseName "Foundation and Thesis" :category "foundation"}
+   {:sequence 8 :id "D7" :title "Extensibility Philosophy"
+    :path "docs/phase-00-foundation-and-thesis/008-d7-extensibility-philosophy.md" :phase 0
+    :phaseName "Foundation and Thesis" :category "foundation"}
+   {:sequence 9 :id "D8" :title "Safety Philosophy & Charter"
+    :path "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md" :phase 0
+    :phaseName "Foundation and Thesis" :category "foundation"}
+   {:sequence 10 :id "D9" :title "Verifiability & Mathematical Correctness Charter"
+    :path "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md" :phase 0
+    :phaseName "Foundation and Thesis" :category "foundation"}
+   {:sequence 11 :id "L1" :title "Surface Syntax Specification"
+    :path "docs/phase-01-core-language/011-l1-surface-syntax-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 12 :id "L2" :title "Core Language Semantics"
+    :path "docs/phase-01-core-language/012-l2-core-language-semantics.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 13 :id "L3" :title "Namespace & Module System Specification"
+    :path "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 14 :id "L4" :title "Macro System Specification"
+    :path "docs/phase-01-core-language/014-l4-macro-system-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 15 :id "L5" :title "Type System Specification"
+    :path "docs/phase-01-core-language/015-l5-type-system-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 16 :id "L6" :title "Effect System Specification"
+    :path "docs/phase-01-core-language/016-l6-effect-system-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 17 :id "L7" :title "Pattern Matching Specification"
+    :path "docs/phase-01-core-language/017-l7-pattern-matching-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 18 :id "L8" :title "Protocols, Interfaces & Dispatch Specification"
+    :path "docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 19 :id "L9" :title "Error Handling Specification"
+    :path "docs/phase-01-core-language/019-l9-error-handling-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 20 :id "L10" :title "Memory Model Specification"
+    :path "docs/phase-01-core-language/020-l10-memory-model-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 21 :id "L11" :title "Concurrency Model Specification"
+    :path "docs/phase-01-core-language/021-l11-concurrency-model-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 22 :id "L12" :title "Compile-Time Evaluation Specification"
+    :path "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 23 :id "L13" :title "Standard Library Design Principles"
+    :path "docs/phase-01-core-language/023-l13-standard-library-design-principles.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 24 :id "L14" :title "Language Facet System Specification"
+    :path "docs/phase-01-core-language/024-l14-language-facet-system-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 25 :id "L15" :title "Capability Provider Specification"
+    :path "docs/phase-01-core-language/025-l15-capability-provider-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 26 :id "L16" :title "Alternative Macro System Contract"
+    :path "docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 27 :id "L17" :title "Alternative Type System Contract"
+    :path "docs/phase-01-core-language/027-l17-alternative-type-system-contract.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 28 :id "L18" :title "Alternative Memory Model Contract"
+    :path "docs/phase-01-core-language/028-l18-alternative-memory-model-contract.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 29 :id "L19" :title "Language Interoperability & Migration Specification"
+    :path "docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md" :phase 1
+    :phaseName "Core Language" :category "language"}
+   {:sequence 30 :id "SAFE1" :title "Safe Gravity Semantics"
+    :path "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 31 :id "SAFE2" :title "Memory Safety Model"
+    :path "docs/phase-02-safety/031-safe2-memory-safety-model.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 32 :id "SAFE3" :title "Ownership, Borrowing & Lifetimes"
+    :path "docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 33 :id "SAFE4" :title "Region and Arena Safety"
+    :path "docs/phase-02-safety/033-safe4-region-and-arena-safety.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 34 :id "SAFE5" :title "Linear Resource Safety"
+    :path "docs/phase-02-safety/034-safe5-linear-resource-safety.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 35 :id "SAFE6" :title "Unsafe Code and Audit Model"
+    :path "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 36 :id "SAFE7" :title "FFI Safety"
+    :path "docs/phase-02-safety/036-safe7-ffi-safety.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 37 :id "SAFE8" :title "Concurrency and Data-Race Safety"
+    :path "docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 38 :id "SAFE9" :title "Numeric Safety"
+    :path "docs/phase-02-safety/038-safe9-numeric-safety.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 39 :id "SAFE10" :title "Capability Security Model"
+    :path "docs/phase-02-safety/039-safe10-capability-security-model.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 40 :id "SAFE11" :title "Taint Tracking and Input Safety"
+    :path "docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 41 :id "SAFE12" :title "Macro Safety"
+    :path "docs/phase-02-safety/041-safe12-macro-safety.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 42 :id "SAFE13" :title "AI Tool Safety"
+    :path "docs/phase-02-safety/042-safe13-ai-tool-safety.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 43 :id "SAFE14" :title "Supply-Chain Safety"
+    :path "docs/phase-02-safety/043-safe14-supply-chain-safety.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 44 :id "SAFE15" :title "Safety Proof and Certificate Model"
+    :path "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 45 :id "SAFE16" :title "Safety Conformance Test Plan"
+    :path "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md" :phase 2
+    :phaseName "Safety" :category "safety"}
+   {:sequence 46 :id "P1" :title "Profile System Specification"
+    :path "docs/phase-03-profile-system/046-p1-profile-system-specification.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 47 :id "P2" :title ":core Profile Specification"
+    :path "docs/phase-03-profile-system/047-p2-core-profile-specification.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 48 :id "P3" :title ":meta Profile Specification"
+    :path "docs/phase-03-profile-system/048-p3-meta-profile-specification.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 49 :id "P4" :title ":hosted Profile Specification"
+    :path "docs/phase-03-profile-system/049-p4-hosted-profile-specification.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 50 :id "P5" :title ":native Profile Specification"
+    :path "docs/phase-03-profile-system/050-p5-native-profile-specification.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 51 :id "P6" :title ":firmware Profile Specification"
+    :path "docs/phase-03-profile-system/051-p6-firmware-profile-specification.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 52 :id "P7" :title ":kernel Profile Specification"
+    :path "docs/phase-03-profile-system/052-p7-kernel-profile-specification.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 53 :id "P8" :title ":hardware Profile Specification"
+    :path "docs/phase-03-profile-system/053-p8-hardware-profile-specification.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 54 :id "P9" :title ":distributed Profile Specification"
+    :path "docs/phase-03-profile-system/054-p9-distributed-profile-specification.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 55 :id "P10" :title ":ai Profile Specification"
+    :path "docs/phase-03-profile-system/055-p10-ai-profile-specification.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 56 :id "P11" :title ":gpu / Accelerator Profile Specification"
+    :path "docs/phase-03-profile-system/056-p11-gpu-accelerator-profile-specification.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 57 :id "P12" :title ":formal Verification Profile Specification"
+    :path "docs/phase-03-profile-system/057-p12-formal-verification-profile-specification.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 58 :id "P13" :title "Profile Compatibility Matrix"
+    :path "docs/phase-03-profile-system/058-p13-profile-compatibility-matrix.md" :phase 3
+    :phaseName "Profile System" :category "profile"}
+   {:sequence 59 :id "PERF1" :title "Performance Model Specification"
+    :path "docs/phase-04-performance-model/059-perf1-performance-model-specification.md" :phase 4
+    :phaseName "Performance Model" :category "performance"}
+   {:sequence 60 :id "PERF2" :title "Zero-Cost Abstractions Specification"
+    :path "docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md" :phase 4
+    :phaseName "Performance Model" :category "performance"}
+   {:sequence 61 :id "PERF3" :title "Specialization & Partial Evaluation Design"
+    :path "docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md" :phase 4
+    :phaseName "Performance Model" :category "performance"}
+   {:sequence 62 :id "PERF4" :title "Memory Layout Optimization Design"
+    :path "docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md" :phase 4
+    :phaseName "Performance Model" :category "performance"}
+   {:sequence 63 :id "PERF5" :title "Benchmark Suite & Performance Governance"
+    :path "docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md" :phase 4
+    :phaseName "Performance Model" :category "performance"}
+   {:sequence 64 :id "PERF6" :title "Profile-Guided Optimization Design"
+    :path "docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md" :phase 4
+    :phaseName "Performance Model" :category "performance"}
+   {:sequence 65 :id "PERF7" :title "Autotuning & Multiversioning Design"
+    :path "docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md" :phase 4
+    :phaseName "Performance Model" :category "performance"}
+   {:sequence 66 :id "PERF8" :title "SIMD, Vectorization & Cache Optimization Strategy"
+    :path "docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md" :phase 4
+    :phaseName "Performance Model" :category "performance"}
+   {:sequence 67 :id "PERF9" :title "Realtime and Deterministic-Latency Performance Model"
+    :path "docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md" :phase 4
+    :phaseName "Performance Model" :category "performance"}
+   {:sequence 68 :id "PERF10" :title "Performance/Safety Check Elision Rules"
+    :path "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md" :phase 4
+    :phaseName "Performance Model" :category "performance"}
+   {:sequence 69 :id "MATH1" :title "Numeric Tower Specification"
+    :path "docs/phase-05-mathematical-and-elementary-function-system/069-math1-numeric-tower-specification.md" :phase 5
+    :phaseName "Mathematical and Elementary Function System" :category "math"}
+   {:sequence 70 :id "MATH2" :title "Elementary Function System Specification"
+    :path "docs/phase-05-mathematical-and-elementary-function-system/070-math2-elementary-function-system-specification.md" :phase 5
+    :phaseName "Mathematical and Elementary Function System" :category "math"}
+   {:sequence 71 :id "MATH3" :title "Elementary Function IR - EFIR Specification"
+    :path "docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md" :phase 5
+    :phaseName "Mathematical and Elementary Function System" :category "math"}
+   {:sequence 72 :id "MATH4" :title "EML Normalization & Search Design"
+    :path "docs/phase-05-mathematical-and-elementary-function-system/072-math4-eml-normalization-and-search-design.md" :phase 5
+    :phaseName "Mathematical and Elementary Function System" :category "math"}
+   {:sequence 73 :id "MATH5" :title "Certified Approximation Specification"
+    :path "docs/phase-05-mathematical-and-elementary-function-system/073-math5-certified-approximation-specification.md" :phase 5
+    :phaseName "Mathematical and Elementary Function System" :category "math"}
+   {:sequence 74 :id "MATH6" :title "Interval Arithmetic & Real Proof Engine"
+    :path "docs/phase-05-mathematical-and-elementary-function-system/074-math6-interval-arithmetic-and-real-proof-engine.md" :phase 5
+    :phaseName "Mathematical and Elementary Function System" :category "math"}
+   {:sequence 75 :id "MATH7" :title "Numeric Modes & Precision Contracts"
+    :path "docs/phase-05-mathematical-and-elementary-function-system/075-math7-numeric-modes-and-precision-contracts.md" :phase 5
+    :phaseName "Mathematical and Elementary Function System" :category "math"}
+   {:sequence 76 :id "MATH8" :title "Floating-Point Semantics Specification"
+    :path "docs/phase-05-mathematical-and-elementary-function-system/076-math8-floating-point-semantics-specification.md" :phase 5
+    :phaseName "Mathematical and Elementary Function System" :category "math"}
+   {:sequence 77 :id "MATH9" :title "Symbolic Math and Rewrite System Specification"
+    :path "docs/phase-05-mathematical-and-elementary-function-system/077-math9-symbolic-math-and-rewrite-system-specification.md" :phase 5
+    :phaseName "Mathematical and Elementary Function System" :category "math"}
+   {:sequence 78 :id "MATH10" :title "Elementary Function Optimization Strategy"
+    :path "docs/phase-05-mathematical-and-elementary-function-system/078-math10-elementary-function-optimization-strategy.md" :phase 5
+    :phaseName "Mathematical and Elementary Function System" :category "math"}
+   {:sequence 79 :id "MATH11" :title "Math Verification and Conformance Test Plan"
+    :path "docs/phase-05-mathematical-and-elementary-function-system/079-math11-math-verification-and-conformance-test-plan.md" :phase 5
+    :phaseName "Mathematical and Elementary Function System" :category "math"}
+   {:sequence 80 :id "C1" :title "Compiler Architecture Overview"
+    :path "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 81 :id "C2" :title "Reader Implementation Design"
+    :path "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 82 :id "C3" :title "Syntax Object Model"
+    :path "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 83 :id "C4" :title "Macro Expansion Engine Design"
+    :path "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 84 :id "C5" :title "Name Resolution & Namespace Analyzer Design"
+    :path "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 85 :id "C6" :title "AST and Core Lowering Design"
+    :path "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 86 :id "C7" :title "Type Checker Design"
+    :path "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 87 :id "C8" :title "Effect Checker Design"
+    :path "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 88 :id "C9" :title "Ownership, Lifetime and Region Checker Design"
+    :path "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 89 :id "C10" :title "Safety Analysis Pipeline Design"
+    :path "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 90 :id "C11" :title "Gravity MIR Specification"
+    :path "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 91 :id "C12" :title "Domain IR Architecture"
+    :path "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 92 :id "C13" :title "MIR Optimization Passes Design"
+    :path "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 93 :id "C14" :title "Target Lowering Architecture"
+    :path "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 94 :id "C15" :title "Compiler Diagnostics Specification"
+    :path "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 95 :id "C16" :title "Incremental Compilation Design"
+    :path "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 96 :id "C17" :title "Compiler Plugin and Pass API Specification"
+    :path "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 97 :id "C18" :title "Compiler Verification and Pass-Correctness Strategy"
+    :path "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md" :phase 6
+    :phaseName "Compiler Architecture" :category "compiler"}
+   {:sequence 98 :id "B1" :title "Backend Interface Specification"
+    :path "docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 99 :id "B2" :title "C Backend Design"
+    :path "docs/phase-07-backend-architecture/099-b2-c-backend-design.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 100 :id "B3" :title "LLVM Backend Design"
+    :path "docs/phase-07-backend-architecture/100-b3-llvm-backend-design.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 101 :id "B4" :title "Wasm Backend Design"
+    :path "docs/phase-07-backend-architecture/101-b4-wasm-backend-design.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 102 :id "B5" :title "JVM Backend Design"
+    :path "docs/phase-07-backend-architecture/102-b5-jvm-backend-design.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 103 :id "B6" :title "JavaScript / TypeScript Backend Design"
+    :path "docs/phase-07-backend-architecture/103-b6-javascript-typescript-backend-design.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 104 :id "B7" :title "MLIR Backend Design"
+    :path "docs/phase-07-backend-architecture/104-b7-mlir-backend-design.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 105 :id "B8" :title "GPU Backend Design"
+    :path "docs/phase-07-backend-architecture/105-b8-gpu-backend-design.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 106 :id "B9" :title "HDL Backend Design"
+    :path "docs/phase-07-backend-architecture/106-b9-hdl-backend-design.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 107 :id "B10" :title "Workflow Graph Backend Design"
+    :path "docs/phase-07-backend-architecture/107-b10-workflow-graph-backend-design.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 108 :id "B11" :title "Query / Relational Backend Design"
+    :path "docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 109 :id "B12" :title "Mobile Backend Design"
+    :path "docs/phase-07-backend-architecture/109-b12-mobile-backend-design.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 110 :id "B13" :title "Artifact Emission Specification"
+    :path "docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 111 :id "B14" :title "Backend Conformance Test Plan"
+    :path "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md" :phase 7
+    :phaseName "Backend Architecture" :category "backend"}
+   {:sequence 112 :id "R1" :title "Runtime Architecture Overview"
+    :path "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md" :phase 8
+    :phaseName "Runtime Architecture" :category "runtime"}
+   {:sequence 113 :id "R2" :title "No-Runtime Execution Model"
+    :path "docs/phase-08-runtime-architecture/113-r2-no-runtime-execution-model.md" :phase 8
+    :phaseName "Runtime Architecture" :category "runtime"}
+   {:sequence 114 :id "R3" :title "Minimal Native Runtime Design"
+    :path "docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md" :phase 8
+    :phaseName "Runtime Architecture" :category "runtime"}
+   {:sequence 115 :id "R4" :title "Managed Runtime Design"
+    :path "docs/phase-08-runtime-architecture/115-r4-managed-runtime-design.md" :phase 8
+    :phaseName "Runtime Architecture" :category "runtime"}
+   {:sequence 116 :id "R5" :title "Memory Runtime Design"
+    :path "docs/phase-08-runtime-architecture/116-r5-memory-runtime-design.md" :phase 8
+    :phaseName "Runtime Architecture" :category "runtime"}
+   {:sequence 117 :id "R6" :title "Concurrency Runtime Design"
+    :path "docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md" :phase 8
+    :phaseName "Runtime Architecture" :category "runtime"}
+   {:sequence 118 :id "R7" :title "Distributed Runtime Design"
+    :path "docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md" :phase 8
+    :phaseName "Runtime Architecture" :category "runtime"}
+   {:sequence 119 :id "R8" :title "AI Runtime Design"
+    :path "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md" :phase 8
+    :phaseName "Runtime Architecture" :category "runtime"}
+   {:sequence 120 :id "R9" :title "REPL and Interactive Runtime Design"
+    :path "docs/phase-08-runtime-architecture/120-r9-repl-and-interactive-runtime-design.md" :phase 8
+    :phaseName "Runtime Architecture" :category "runtime"}
+   {:sequence 121 :id "R10" :title "FFI Runtime Design"
+    :path "docs/phase-08-runtime-architecture/121-r10-ffi-runtime-design.md" :phase 8
+    :phaseName "Runtime Architecture" :category "runtime"}
+   {:sequence 122 :id "R11" :title "Runtime Capability Enforcement Design"
+    :path "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md" :phase 8
+    :phaseName "Runtime Architecture" :category "runtime"}
+   {:sequence 123 :id "R12" :title "Runtime Observability and Diagnostics Design"
+    :path "docs/phase-08-runtime-architecture/123-r12-runtime-observability-and-diagnostics-design.md" :phase 8
+    :phaseName "Runtime Architecture" :category "runtime"}
+   {:sequence 124 :id "DOM1" :title "Hardware Computing Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 125 :id "DOM2" :title "Firmware and Embedded Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 126 :id "DOM3" :title "Operating System and Kernel Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 127 :id "DOM4" :title "Drivers and Device Interaction Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 128 :id "DOM5" :title "High-Performance Native Computing Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/128-dom5-high-performance-native-computing-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 129 :id "DOM6" :title "Web Frontend and UI Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 130 :id "DOM7" :title "Mobile Application Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/130-dom7-mobile-application-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 131 :id "DOM8" :title "Backend Services Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/131-dom8-backend-services-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 132 :id "DOM9" :title "Distributed Systems Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/132-dom9-distributed-systems-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 133 :id "DOM10" :title "Database and Storage Engine Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 134 :id "DOM11" :title "Data, Query and Analytics Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 135 :id "DOM12" :title "Scientific and Numeric Computing Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/135-dom12-scientific-and-numeric-computing-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 136 :id "DOM13" :title "GPU and Accelerator Computing Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 137 :id "DOM14" :title "Game Engine and Simulation Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/137-dom14-game-engine-and-simulation-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 138 :id "DOM15" :title "Security and Cryptography Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 139 :id "DOM16" :title "Blockchain and Smart Contract Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/139-dom16-blockchain-and-smart-contract-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 140 :id "DOM17" :title "Compiler and Language Tooling Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 141 :id "DOM18" :title "AI and Agentic Computing Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/141-dom18-ai-and-agentic-computing-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 142 :id "DOM19" :title "Formal Verification Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/142-dom19-formal-verification-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 143 :id "DOM20" :title "Scripting, Shell and Automation Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/143-dom20-scripting-shell-and-automation-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 144 :id "DOM21" :title "Low-Code, Visual Programming and Workflow Domain Specification"
+    :path "docs/phase-09-domain-specific-computing-coverage/144-dom21-low-code-visual-programming-and-workflow-domain-specification.md" :phase 9
+    :phaseName "Domain-Specific Computing Coverage" :category "domain"}
+   {:sequence 145 :id "S1" :title "Schema System Specification"
+    :path "docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md" :phase 10
+    :phaseName "Schema, Data and Interop" :category "schema"}
+   {:sequence 146 :id "S2" :title "Serialization Specification"
+    :path "docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md" :phase 10
+    :phaseName "Schema, Data and Interop" :category "schema"}
+   {:sequence 147 :id "S3" :title "Canonical Data Format Specification"
+    :path "docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md" :phase 10
+    :phaseName "Schema, Data and Interop" :category "schema"}
+   {:sequence 148 :id "S4" :title "GraphQL Generation Design"
+    :path "docs/phase-10-schema-data-and-interop/148-s4-graphql-generation-design.md" :phase 10
+    :phaseName "Schema, Data and Interop" :category "schema"}
+   {:sequence 149 :id "S5" :title "OpenAPI Generation Design"
+    :path "docs/phase-10-schema-data-and-interop/149-s5-openapi-generation-design.md" :phase 10
+    :phaseName "Schema, Data and Interop" :category "schema"}
+   {:sequence 150 :id "S6" :title "Database Mapping and Migration Design"
+    :path "docs/phase-10-schema-data-and-interop/150-s6-database-mapping-and-migration-design.md" :phase 10
+    :phaseName "Schema, Data and Interop" :category "schema"}
+   {:sequence 151 :id "S7" :title "Binary Encoding and ABI Schema Specification"
+    :path "docs/phase-10-schema-data-and-interop/151-s7-binary-encoding-and-abi-schema-specification.md" :phase 10
+    :phaseName "Schema, Data and Interop" :category "schema"}
+   {:sequence 152 :id "S8" :title "Typed Configuration and Environment Specification"
+    :path "docs/phase-10-schema-data-and-interop/152-s8-typed-configuration-and-environment-specification.md" :phase 10
+    :phaseName "Schema, Data and Interop" :category "schema"}
+   {:sequence 153 :id "S9" :title "Artifact Schema Specification"
+    :path "docs/phase-10-schema-data-and-interop/153-s9-artifact-schema-specification.md" :phase 10
+    :phaseName "Schema, Data and Interop" :category "schema"}
+   {:sequence 154 :id "A1" :title "AI Programming Model Specification"
+    :path "docs/phase-11-ai-and-agentic-programming/154-a1-ai-programming-model-specification.md" :phase 11
+    :phaseName "AI and Agentic Programming" :category "ai"}
+   {:sequence 155 :id "A2" :title "Model Provider Specification"
+    :path "docs/phase-11-ai-and-agentic-programming/155-a2-model-provider-specification.md" :phase 11
+    :phaseName "AI and Agentic Programming" :category "ai"}
+   {:sequence 156 :id "A3" :title "Prompt and Structured Output Specification"
+    :path "docs/phase-11-ai-and-agentic-programming/156-a3-prompt-and-structured-output-specification.md" :phase 11
+    :phaseName "AI and Agentic Programming" :category "ai"}
+   {:sequence 157 :id "A4" :title "Tool Definition Specification"
+    :path "docs/phase-11-ai-and-agentic-programming/157-a4-tool-definition-specification.md" :phase 11
+    :phaseName "AI and Agentic Programming" :category "ai"}
+   {:sequence 158 :id "A5" :title "Agent Definition Specification"
+    :path "docs/phase-11-ai-and-agentic-programming/158-a5-agent-definition-specification.md" :phase 11
+    :phaseName "AI and Agentic Programming" :category "ai"}
+   {:sequence 159 :id "A6" :title "Agent Workflow Specification"
+    :path "docs/phase-11-ai-and-agentic-programming/159-a6-agent-workflow-specification.md" :phase 11
+    :phaseName "AI and Agentic Programming" :category "ai"}
+   {:sequence 160 :id "A7" :title "Memory and Retrieval Specification"
+    :path "docs/phase-11-ai-and-agentic-programming/160-a7-memory-and-retrieval-specification.md" :phase 11
+    :phaseName "AI and Agentic Programming" :category "ai"}
+   {:sequence 161 :id "A8" :title "AI Policy and Safety Model"
+    :path "docs/phase-11-ai-and-agentic-programming/161-a8-ai-policy-and-safety-model.md" :phase 11
+    :phaseName "AI and Agentic Programming" :category "ai"}
+   {:sequence 162 :id "A9" :title "AI Evaluation Framework Design"
+    :path "docs/phase-11-ai-and-agentic-programming/162-a9-ai-evaluation-framework-design.md" :phase 11
+    :phaseName "AI and Agentic Programming" :category "ai"}
+   {:sequence 163 :id "A10" :title "Human-in-the-Loop and Human-Review Workflow Specification"
+    :path "docs/phase-11-ai-and-agentic-programming/163-a10-human-in-the-loop-and-human-review-workflow-specification.md" :phase 11
+    :phaseName "AI and Agentic Programming" :category "ai"}
+   {:sequence 164 :id "A11" :title "Prompt Injection and Tool Misuse Defense Specification"
+    :path "docs/phase-11-ai-and-agentic-programming/164-a11-prompt-injection-and-tool-misuse-defense-specification.md" :phase 11
+    :phaseName "AI and Agentic Programming" :category "ai"}
+   {:sequence 165 :id "PKG1" :title "Project File Specification"
+    :path "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md" :phase 12
+    :phaseName "Build, Package and Artifact System" :category "package"}
+   {:sequence 166 :id "PKG2" :title "Build System Architecture"
+    :path "docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md" :phase 12
+    :phaseName "Build, Package and Artifact System" :category "package"}
+   {:sequence 167 :id "PKG3" :title "Artifact Model Specification"
+    :path "docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md" :phase 12
+    :phaseName "Build, Package and Artifact System" :category "package"}
+   {:sequence 168 :id "PKG4" :title "Package Manager Specification"
+    :path "docs/phase-12-build-package-and-artifact-system/168-pkg4-package-manager-specification.md" :phase 12
+    :phaseName "Build, Package and Artifact System" :category "package"}
+   {:sequence 169 :id "PKG5" :title "Dependency Resolution Specification"
+    :path "docs/phase-12-build-package-and-artifact-system/169-pkg5-dependency-resolution-specification.md" :phase 12
+    :phaseName "Build, Package and Artifact System" :category "package"}
+   {:sequence 170 :id "PKG6" :title "Capability and Permission Manifest Specification"
+    :path "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md" :phase 12
+    :phaseName "Build, Package and Artifact System" :category "package"}
+   {:sequence 171 :id "PKG7" :title "Reproducible Build Specification"
+    :path "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md" :phase 12
+    :phaseName "Build, Package and Artifact System" :category "package"}
+   {:sequence 172 :id "PKG8" :title "Package Safety and Audit Metadata Specification"
+    :path "docs/phase-12-build-package-and-artifact-system/172-pkg8-package-safety-and-audit-metadata-specification.md" :phase 12
+    :phaseName "Build, Package and Artifact System" :category "package"}
+   {:sequence 173 :id "PKG9" :title "Private Registry and Latent Package Space Design"
+    :path "docs/phase-12-build-package-and-artifact-system/173-pkg9-private-registry-and-latent-package-space-design.md" :phase 12
+    :phaseName "Build, Package and Artifact System" :category "package"}
+   {:sequence 174 :id "PKG10" :title "Supply-Chain Security and Provenance Specification"
+    :path "docs/phase-12-build-package-and-artifact-system/174-pkg10-supply-chain-security-and-provenance-specification.md" :phase 12
+    :phaseName "Build, Package and Artifact System" :category "package"}
+   {:sequence 175 :id "PKG11" :title "Cross-Compilation and Target Matrix Specification"
+    :path "docs/phase-12-build-package-and-artifact-system/175-pkg11-cross-compilation-and-target-matrix-specification.md" :phase 12
+    :phaseName "Build, Package and Artifact System" :category "package"}
+   {:sequence 176 :id "PKG12" :title "Artifact Signing, Verification and SBOM Specification"
+    :path "docs/phase-12-build-package-and-artifact-system/176-pkg12-artifact-signing-verification-and-sbom-specification.md" :phase 12
+    :phaseName "Build, Package and Artifact System" :category "package"}
+   {:sequence 177 :id "T1" :title "CLI Specification"
+    :path "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 178 :id "T2" :title "REPL UX Specification"
+    :path "docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 179 :id "T3" :title "Formatter Specification"
+    :path "docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 180 :id "T4" :title "Linter Specification"
+    :path "docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 181 :id "T5" :title "Language Server Protocol Design"
+    :path "docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 182 :id "T6" :title "Debugger Design"
+    :path "docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 183 :id "T7" :title "Documentation Generator Design"
+    :path "docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 184 :id "T8" :title "Dev Server Design"
+    :path "docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 185 :id "T9" :title "Package Registry UX Specification"
+    :path "docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 186 :id "T10" :title "Compiler Explorer and IR Inspector Design"
+    :path "docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 187 :id "T11" :title "Profiler and Performance Inspector Design"
+    :path "docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 188 :id "T12" :title "Safety Audit Explorer Design"
+    :path "docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 189 :id "T13" :title "AI-Assisted Development Tooling Specification"
+    :path "docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md" :phase 13
+    :phaseName "Tooling and Developer Experience" :category "tooling"}
+   {:sequence 190 :id "TEST1" :title "Language Conformance Test Plan"
+    :path "docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 191 :id "TEST2" :title "Compiler Test Strategy"
+    :path "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 192 :id "TEST3" :title "Runtime Test Strategy"
+    :path "docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 193 :id "TEST4" :title "Profile Compliance Test Plan"
+    :path "docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 194 :id "TEST5" :title "Safety Conformance Test Plan"
+    :path "docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 195 :id "TEST6" :title "Backend Conformance Test Plan"
+    :path "docs/phase-14-testing-verification-and-conformance/195-test6-backend-conformance-test-plan.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 196 :id "TEST7" :title "Standard Library Test Strategy"
+    :path "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 197 :id "TEST8" :title "AI and Workflow Evaluation Strategy"
+    :path "docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 198 :id "TEST9" :title "Fuzzing and Property Testing Plan"
+    :path "docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 199 :id "TEST10" :title "Differential Testing Strategy"
+    :path "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 200 :id "TEST11" :title "Formal Semantics and Verification Plan"
+    :path "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 201 :id "TEST12" :title "Performance Regression Test Plan"
+    :path "docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 202 :id "TEST13" :title "Self-Hosting Validation Plan"
+    :path "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md" :phase 14
+    :phaseName "Testing, Verification and Conformance" :category "testing"}
+   {:sequence 203 :id "BOOT1" :title "Bootstrap Strategy"
+    :path "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md" :phase 15
+    :phaseName "Bootstrap and Self-Hosting" :category "bootstrap"}
+   {:sequence 204 :id "BOOT2" :title "Seed Compiler Design"
+    :path "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md" :phase 15
+    :phaseName "Bootstrap and Self-Hosting" :category "bootstrap"}
+   {:sequence 205 :id "BOOT3" :title "Self-Hosted Compiler Plan"
+    :path "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md" :phase 15
+    :phaseName "Bootstrap and Self-Hosting" :category "bootstrap"}
+   {:sequence 206 :id "BOOT4" :title "Compiler-in-Gravity Coding Standard"
+    :path "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md" :phase 15
+    :phaseName "Bootstrap and Self-Hosting" :category "bootstrap"}
+   {:sequence 207 :id "BOOT5" :title "Stage Compatibility Matrix"
+    :path "docs/phase-15-bootstrap-and-self-hosting/207-boot5-stage-compatibility-matrix.md" :phase 15
+    :phaseName "Bootstrap and Self-Hosting" :category "bootstrap"}
+   {:sequence 208 :id "BOOT6" :title "Trusting Trust and Reproducible Bootstrap Plan"
+    :path "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md" :phase 15
+    :phaseName "Bootstrap and Self-Hosting" :category "bootstrap"}
+   {:sequence 209 :id "BOOT7" :title "Self-Hosting Validation and Equivalence Plan"
+    :path "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md" :phase 15
+    :phaseName "Bootstrap and Self-Hosting" :category "bootstrap"}
+   {:sequence 210 :id "BOOT8" :title "Bootstrap Artifact Provenance Specification"
+    :path "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md" :phase 15
+    :phaseName "Bootstrap and Self-Hosting" :category "bootstrap"}
+   {:sequence 211 :id "STD1" :title "Standard Library Architecture"
+    :path "docs/phase-16-standard-library/211-std1-standard-library-architecture.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 212 :id "STD2" :title "Core Library Specification"
+    :path "docs/phase-16-standard-library/212-std2-core-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 213 :id "STD3" :title "Collections Library Specification"
+    :path "docs/phase-16-standard-library/213-std3-collections-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 214 :id "STD4" :title "String and Text Library Specification"
+    :path "docs/phase-16-standard-library/214-std4-string-and-text-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 215 :id "STD5" :title "Numeric and Math Library Specification"
+    :path "docs/phase-16-standard-library/215-std5-numeric-and-math-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 216 :id "STD6" :title "Memory and Resource Library Specification"
+    :path "docs/phase-16-standard-library/216-std6-memory-and-resource-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 217 :id "STD7" :title "Concurrency Library Specification"
+    :path "docs/phase-16-standard-library/217-std7-concurrency-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 218 :id "STD8" :title "IO and Filesystem Library Specification"
+    :path "docs/phase-16-standard-library/218-std8-io-and-filesystem-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 219 :id "STD9" :title "Network and HTTP Library Specification"
+    :path "docs/phase-16-standard-library/219-std9-network-and-http-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 220 :id "STD10" :title "Serialization and Schema Library Specification"
+    :path "docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 221 :id "STD11" :title "Database and Query Library Specification"
+    :path "docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 222 :id "STD12" :title "Workflow Library Specification"
+    :path "docs/phase-16-standard-library/222-std12-workflow-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 223 :id "STD13" :title "AI and Agent Library Specification"
+    :path "docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 224 :id "STD14" :title "Testing Library Specification"
+    :path "docs/phase-16-standard-library/224-std14-testing-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 225 :id "STD15" :title "Compiler Meta-Programming Library Specification"
+    :path "docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 226 :id "STD16" :title "Platform and OS Library Specification"
+    :path "docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 227 :id "STD17" :title "Hardware and Firmware Library Specification"
+    :path "docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 228 :id "STD18" :title "Cryptography Library Specification"
+    :path "docs/phase-16-standard-library/228-std18-cryptography-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 229 :id "STD19" :title "UI and Application Library Specification"
+    :path "docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 230 :id "STD20" :title "Standard Library Stability Policy"
+    :path "docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md" :phase 16
+    :phaseName "Standard Library" :category "standard-library"}
+   {:sequence 231 :id "GOV1" :title "Language Evolution Process"
+    :path "docs/phase-17-governance-and-evolution/231-gov1-language-evolution-process.md" :phase 17
+    :phaseName "Governance and Evolution" :category "governance"}
+   {:sequence 232 :id "GOV2" :title "Compatibility Policy"
+    :path "docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md" :phase 17
+    :phaseName "Governance and Evolution" :category "governance"}
+   {:sequence 233 :id "GOV3" :title "Standard Library Governance"
+    :path "docs/phase-17-governance-and-evolution/233-gov3-standard-library-governance.md" :phase 17
+    :phaseName "Governance and Evolution" :category "governance"}
+   {:sequence 234 :id "GOV4" :title "Security Review Process"
+    :path "docs/phase-17-governance-and-evolution/234-gov4-security-review-process.md" :phase 17
+    :phaseName "Governance and Evolution" :category "governance"}
+   {:sequence 235 :id "GOV5" :title "Target Support Policy"
+    :path "docs/phase-17-governance-and-evolution/235-gov5-target-support-policy.md" :phase 17
+    :phaseName "Governance and Evolution" :category "governance"}
+   {:sequence 236 :id "GOV6" :title "RFC Process"
+    :path "docs/phase-17-governance-and-evolution/236-gov6-rfc-process.md" :phase 17
+    :phaseName "Governance and Evolution" :category "governance"}
+   {:sequence 237 :id "GOV7" :title "Experimental Feature Policy"
+    :path "docs/phase-17-governance-and-evolution/237-gov7-experimental-feature-policy.md" :phase 17
+    :phaseName "Governance and Evolution" :category "governance"}
+   {:sequence 238 :id "GOV8" :title "Deprecation and Stabilization Policy"
+    :path "docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md" :phase 17
+    :phaseName "Governance and Evolution" :category "governance"}
+   {:sequence 239 :id "GOV9" :title "Unsafe Code Governance Policy"
+    :path "docs/phase-17-governance-and-evolution/239-gov9-unsafe-code-governance-policy.md" :phase 17
+    :phaseName "Governance and Evolution" :category "governance"}
+   {:sequence 240 :id "GOV10" :title "Ecosystem Package Governance Policy"
+    :path "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md" :phase 17
+    :phaseName "Governance and Evolution" :category "governance"}
+   ])
+
+(def w5-full-gap-task-ids
+  ["FL-P00-T00" "FL-P00-T01" "FL-P00-T02"
+   "FL-P01-T01" "FL-P01-T02" "FL-P01-T03"
+   "FL-P02-T01" "FL-P02-T02" "FL-P03-T01" "FL-P03-T02"
+   "FL-P04-T01" "FL-P04-T02" "FL-P05-T01" "FL-P05-T02"
+   "FL-P06-T01" "FL-P06-T02" "FL-P06-T03" "FL-P07-T01"
+   "FL-P07-T02" "FL-P07-T03" "FL-P08-T01" "FL-P08-T02"
+   "FL-P08-T03" "FL-P09-T01" "FL-P10-T01" "FL-P11-T01"
+   "FL-P12-T01" "FL-P13-T01" "FL-P13-T02" "FL-P14-T01"
+   "FL-P14-T02" "FL-P15-T01" "FL-P15-T02" "FL-P15-T03"
+   "FL-P16-T01" "FL-P17-T01" "FL-P18-T01" "FL-P18-T02"])
+
+(def w5-full-unsupported-target-policies
+  [{:target :darwin :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-arm64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-x86_64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :windows :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}])
+
+(def w5-full-target-scope
+  {:candidate-target :llvm-x86_64-linux
+   :os :linux :arch :x86_64 :backend :llvm :artifact-format :elf
+   :abi :sysv-amd64
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies w5-full-unsupported-target-policies
+   :cross-target-inference? false
+   :fallback? false})
+
+; This is the reviewed reporting-v1 observation consumed by this slice.  The
+; producer is deliberately not trusted: every identity, keyset, counter, and
+; admission value is bound before any evidence is interpreted.
+(def w5-full-reporting-observation
+  {:observation {:version "reporting-v1"
+                 :commit "5b8dd5b6d987c34b36dc71f3be1dfa54b2ce0d88"
+                 :tree "53561999651023ba439f94bea508d3fe9e663785"}
+   :contract {:path "contracts/full-language-coverage.json"
+              :kind "gravity/full-language-coverage-contract"
+              :schema-version 1
+              :raw-sha256 "sha256:912d42f0b789f2a290d81d01450230de834b5529c93df29dfe1c1f648a377142"
+              :authority "non-authoritative-observation"
+              :admission "disabled-pending-target-coherent-public-native-evidence-v2"}
+   :inventory {:path "docs/document-inventory.json"
+               :count 240
+               :raw-sha256 "sha256:2c8d1fb60b7306c10f3e67ba2014ad7a8b6d876bdce8c47a79015f725f0638dc"}
+   :generator {:path "tools/generate_full_language_coverage_matrix.py"
+               :raw-sha256 "sha256:972feb2ace8c71b86093acd6f542985f31bce834dcf9104a21be4720172a4613"
+               :module "tools.generate_full_language_coverage_matrix"
+               :predicate-version 1
+               :predicates ["validate_contract_v1"
+                            "validate_completion_attestations_v1"
+                            "validate_matrix_v1"
+                            "validate_gap_report_v1"
+                            "validate_repository_outputs_v1"]
+               :commands
+               {:generate "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --write --audit-public"
+                :require-complete "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --validate --require-full-language"
+                :self-test "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --self-test"
+                :validate "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --validate"}}
+   :attestations {:path "docs/artifacts/full-language/coverage/full-language-completion-attestations.json"
+                  :kind "gravity/full-language-completion-attestations"
+                  :schema-version 1
+                  :top-keys ["attestations" "inventoryCount" "inputIdentities"
+                             "kind" "producer" "schemaVersion" "semanticId" "status"]
+                  :input-identity-keys ["contractSha256" "documentInventorySha256"]
+                  :status :incomplete
+                  :inventory-count 240
+                  :attestations []
+                  :input-identities
+                  {:contract-sha256 "sha256:912d42f0b789f2a290d81d01450230de834b5529c93df29dfe1c1f648a377142"
+                   :document-inventory-sha256 "sha256:2c8d1fb60b7306c10f3e67ba2014ad7a8b6d876bdce8c47a79015f725f0638dc"}
+                  :producer "authority:none owner:master-coordinator role:reviewed-input"
+                  :semantic-id "sha256:183f87d395d88ef16095954268308561298266067e7dd044a8e3692796324853"
+                  :raw-sha256 "sha256:a417a2fcdfe82a3e787292d85a5437dee7f230955a261c471526413cc4baed4e"
+                  :admission-mode "disabled-pending-target-coherent-public-native-evidence-v2"}
+   :matrix {:path "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json"
+            :kind "gravity/full-language-coverage-matrix"
+            :schema-version 1
+            :top-keys ["entries" "generatedOn" "inputIdentities" "kind"
+                       "producer" "publicAuditEnabled" "schemaVersion"
+                       "semanticId" "status" "summary"]
+            :entry-keys ["acceptedFixtures" "artifacts" "completionGaps"
+                         "coverageClass" "diagnostics" "fullLanguageComplete"
+                         "gaps" "id" "implementationModules" "path" "phase"
+                         "phaseName" "proofCommands" "publicAccepted"
+                         "publicRejectedSpecific" "rejectedFixtures"
+                         "scaffoldOnlyCoverage" "sequence" "title"]
+            :implementation-module-keys ["clojureSeed" "gravityAuthored"
+                                         "publicBinary" "pythonScaffold"]
+            :input-identity-keys ["completionAttestationsSemanticId"
+                                  "completionAttestationsSha256" "contractSha256"
+                                  "documentInventorySha256" "evidenceCorpusSemanticId"
+                                  "generatorSha256" "publicRouteSha256"]
+            :summary-keys ["coverageClasses" "documents"
+                           "documentsWithNoAcceptedFixture"
+                           "documentsWithNoExecutableOwner"
+                           "documentsWithNoGravityAuthoredImplementation"
+                           "documentsWithNoRejectedFixture"
+                           "documentsWithNoStableDiagnostic"
+                           "fullLanguageCompleteDocuments" "publicAudit"]
+            :public-audit-keys ["acceptedFail" "acceptedPass" "acceptedTotal"
+                                "enabled" "rejectedGenericUnsupported"
+                                "rejectedSpecificDiagnostic" "rejectedTotal"]
+            :status :incomplete
+            :inventory-count 240
+            :public-audit-enabled true
+            :input-identities
+            {:completion-attestations-semantic-id "sha256:183f87d395d88ef16095954268308561298266067e7dd044a8e3692796324853"
+             :completion-attestations-sha256 "sha256:a417a2fcdfe82a3e787292d85a5437dee7f230955a261c471526413cc4baed4e"
+             :contract-sha256 "sha256:912d42f0b789f2a290d81d01450230de834b5529c93df29dfe1c1f648a377142"
+             :document-inventory-sha256 "sha256:2c8d1fb60b7306c10f3e67ba2014ad7a8b6d876bdce8c47a79015f725f0638dc"
+             :evidence-corpus-semantic-id "sha256:474a7a8fefe96b780d2caf49e5c01dfcfff07951e4fe23d26f6d8008c539a293"
+             :generator-sha256 "sha256:972feb2ace8c71b86093acd6f542985f31bce834dcf9104a21be4720172a4613"
+             :public-route-sha256 "sha256:83c9d8d877de08482736b47cc79bd8f49af6ef001bff5a6f8320147945ddeab0"}
+            :summary {:documents 240
+                      :full-language-complete-documents 0
+                      :documents-with-no-accepted-fixture 162
+                      :documents-with-no-executable-owner 7
+                      :documents-with-no-gravity-authored-implementation 206
+                      :documents-with-no-rejected-fixture 48
+                      :documents-with-no-stable-diagnostic 49
+                      :coverage-classes {:clojure-seed-artifact-surface 184
+                                        :current-public-executable-surface 48
+                                        :gravity-authored-seed-slice 1
+                                        :no-executable-owner 7}
+                      :public-audit {:enabled true :accepted-total 198
+                                     :accepted-pass 74 :accepted-fail 124
+                                     :rejected-total 1720
+                                     :rejected-specific-diagnostic 664
+                                     :rejected-generic-unsupported 1056}}
+            :producer "non-authoritative-observation"
+            :semantic-id "sha256:9b02a5bfbcc2a3149a4d4f589da8b8b9e19e84cc646c1e38afd774f42d5c72eb"
+            :raw-sha256 "sha256:c2f4c2d527e79a31454dbb166f62ffe252f0757aec8cce4db9236bdaa0c336d7"}
+   :gap-report {:path "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json"
+                :kind "gravity/full-language-coverage-gap-report"
+                :schema-version 1
+                :top-keys ["gapCount" "gaps" "generatedOn" "inventoryCount"
+                           "inputIdentities" "kind" "noExecutableOwnerCount"
+                           "producer" "schemaVersion" "semanticId" "status"]
+                :entry-keys ["completionGaps" "coverageClass" "gaps" "id"
+                             "path" "sequence"]
+                :input-identity-keys ["contractSha256" "generatorSha256"
+                                      "matrixSemanticId"]
+                :status :incomplete :inventory-count 240 :gap-count 240
+                :no-executable-owner-count 7
+                :input-identities
+                {:contract-sha256 "sha256:912d42f0b789f2a290d81d01450230de834b5529c93df29dfe1c1f648a377142"
+                 :generator-sha256 "sha256:972feb2ace8c71b86093acd6f542985f31bce834dcf9104a21be4720172a4613"
+                 :matrix-semantic-id "sha256:9b02a5bfbcc2a3149a4d4f589da8b8b9e19e84cc646c1e38afd774f42d5c72eb"}
+                :producer "non-authoritative-observation"
+                :semantic-id "sha256:392f904d1887a44183b501fd0cabfcffe7efb1c596365a898e58bd40437f7d4e"
+                :raw-sha256 "sha256:583dc31c24a90d00805c10615e04360cb05d45f0052e402af8d409dafca56f00"}
+   :report {:path "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md"
+            :kind "markdown-report-v1"
+            :raw-sha256 "sha256:e4764fddd7af1c254f1dbb505caa818595e469b6cda5f02970199b005917c0f9"}
+   :counter-contract {:complete-when "fullLanguageCompleteDocuments == documents == inventoryCount and gapCount == 0"
+                      :current-expected-status :incomplete
+                      :inventory-count 240
+                      :supported-surface-is-not-completion true}})
+
+(def w5-full-diagnostic-ids
+  ["W5-FULL-SCHEMA" "W5-FULL-TARGET" "W5-FULL-INVENTORY"
+   "W5-FULL-MATRIX" "W5-FULL-GAPS" "W5-FULL-TASKS"
+   "W5-FULL-ATTESTATION" "W5-FULL-EVIDENCE" "W5-FULL-CLAIMS"
+   "W5-FULL-AUTHORITY" "W5-FULL-PROVENANCE" "W5-FULL-REPORTING"
+   "W5-FULL-SUBSTITUTION"])
+
+(def w5-full-reporting-v1-document-gaps
+  [:no-executable-positive :no-rejected-specific :no-stable-diagnostic
+   :no-gravity-authored-implementation :no-public-gravity-accepted-proof
+   :no-public-gravity-rejected-proof])
+
+(defn w5-full-exact-keys? [value expected]
+  (if (map? value) (= (set (keys value)) expected) false))
+
+(defn w5-full-nonempty-string? [value]
+  (if (string? value) (> (count value) 0) false))
+
+(defn w5-full-lower-hex? [value]
+  (if (or (= value "0") (= value "1") (= value "2") (= value "3")
+          (= value "4") (= value "5") (= value "6") (= value "7")
+          (= value "8") (= value "9") (= value "a") (= value "b")
+          (= value "c") (= value "d") (= value "e") (= value "f"))
+    true false))
+
+(defn w5-full-sha-prefix? [value index]
+  (if (= index 7)
+    true
+    (if (= (get value index) (get "sha256:" index))
+      (w5-full-sha-prefix? value (+ index 1)) false)))
+
+(defn w5-full-sha-tail? [value index]
+  (if (= index 71)
+    true
+    (if (w5-full-lower-hex? (str (get value index)))
+      (w5-full-sha-tail? value (+ index 1)) false)))
+
+(defn w5-full-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (if (w5-full-sha-prefix? value 0)
+        (w5-full-sha-tail? value 7) false)
+      false)
+    false))
+
+(defn w5-full-member-from? [values value index]
+  (if (= index (count values)) false
+    (if (= value (get values index)) true
+      (w5-full-member-from? values value (+ index 1)))))
+
+(defn w5-full-member? [values value]
+  (if (vector? values) (w5-full-member-from? values value 0) false))
+
+(defn w5-full-position? [value]
+  (if (w5-full-exact-keys? value #{:byte :line :column})
+    (if (integer? (get value :byte))
+      (if (>= (get value :byte) 0)
+        (if (integer? (get value :line))
+          (if (>= (get value :line) 1)
+            (if (integer? (get value :column))
+              (>= (get value :column) 1) false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-position-order-valid? [start end]
+  (if (<= (get start :byte) (get end :byte))
+    (if (<= (get start :line) (get end :line))
+      (if (= (get start :line) (get end :line))
+        (<= (get start :column) (get end :column))
+        true)
+      false)
+    false))
+
+(defn w5-full-suffix-match? [value suffix index]
+  (if (= index (count suffix)) true
+    (if (> (count suffix) (count value)) false
+      (if (= (get value (- (count value) (+ index 1)))
+             (get suffix (- (count suffix) (+ index 1))))
+        (w5-full-suffix-match? value suffix (+ index 1)) false))))
+
+(defn w5-full-path-ends-with? [value suffix]
+  (if (and (string? value) (string? suffix))
+    (w5-full-suffix-match? value suffix 0) false))
+
+(defn w5-full-source-fixture-path? [value]
+  (if (w5-full-path-ends-with? value ".gravity") true
+    (w5-full-path-ends-with? value ".qst")))
+
+(defn w5-full-span? [value]
+  (if (w5-full-exact-keys?
+       value #{:source-id :actual-source-path :start :end})
+    (if (keyword? (get value :source-id))
+      (if (w5-full-nonempty-string? (get value :actual-source-path))
+        (if (w5-full-position? (get value :start))
+          (if (w5-full-position? (get value :end))
+            (w5-full-position-order-valid?
+             (get value :start) (get value :end))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-document-span-valid?
+  [span source-id path sequence]
+  (if (w5-full-span? span)
+    (if (= source-id (get span :source-id))
+      (if (w5-full-path-ends-with?
+           (get span :actual-source-path) path)
+        (if (= {:byte 0 :line (+ sequence 1) :column 1}
+               (get span :start))
+          (= {:byte 128 :line (+ sequence 1) :column 1}
+             (get span :end))
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-target-valid? [value]
+  (if (= value w5-full-target-scope)
+    true false))
+
+(defn w5-full-inventory-row-valid? [row index]
+  (let [expected (get w5-full-document-contract index)]
+    (if (w5-full-exact-keys?
+         row #{:sequence :id :title :path :phase :phaseName
+               :category :content-id})
+      (if (= (get expected :sequence) (get row :sequence))
+        (if (= (get expected :id) (get row :id))
+          (if (= (get expected :title) (get row :title))
+            (if (= (get expected :path) (get row :path))
+              (if (= (get expected :phase) (get row :phase))
+                (if (= (get expected :phaseName) (get row :phaseName))
+                  (if (= (get expected :category) (get row :category))
+                    (if (w5-full-sha256-id? (get row :content-id))
+                      (= (w5-full-expected-document-content-id index)
+                         (get row :content-id))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-full-inventory-valid? [inventory]
+  (if (vector? inventory)
+    (if (= 240 (count inventory))
+      (loop [remaining inventory index 0]
+        (if (= 0 (count remaining)) true
+          (if (w5-full-inventory-row-valid? (first remaining) index)
+            (recur (rest remaining) (+ index 1)) false)))
+      false)
+    false))
+
+(defn w5-full-provenance-record-valid? [value content-id source-path]
+  (if (w5-full-exact-keys?
+       value #{:provenance-id :content-id :actual-source-path
+               :stage :consumer-status})
+    (if (w5-full-sha256-id? (get value :provenance-id))
+      (if (= content-id (get value :content-id))
+        (if (= content-id (get value :provenance-id))
+          (if (= source-path (get value :actual-source-path))
+            (if (= :wave4-consumer (get value :stage))
+              (= :pending (get value :consumer-status)) false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-evidence-positive-valid? [value content-id]
+  (if (w5-full-exact-keys?
+       value #{:evidence-id :status :executable? :content-id
+               :provenance-id :source-span})
+    (if (w5-full-sha256-id? (get value :evidence-id))
+      (if (= :pending (get value :status))
+        (if (= false (get value :executable?))
+          (if (= content-id (get value :content-id))
+            (if (= content-id (get value :evidence-id))
+            (if (w5-full-sha256-id? (get value :provenance-id))
+              (w5-full-span? (get value :source-span)) false)
+            false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-evidence-rejected-valid? [value content-id diagnostic-id]
+  (if (w5-full-exact-keys?
+       value #{:evidence-id :status :specific? :diagnostic-id
+               :content-id :provenance-id :source-span})
+    (if (w5-full-sha256-id? (get value :evidence-id))
+      (if (= :pending (get value :status))
+        (if (= false (get value :specific?))
+          (if (= diagnostic-id (get value :diagnostic-id))
+            (if (= content-id (get value :content-id))
+              (if (= content-id (get value :evidence-id))
+                (if (w5-full-sha256-id? (get value :provenance-id))
+                  (w5-full-span? (get value :source-span)) false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-matrix-row-valid? [row inventory-row index]
+  (if (w5-full-exact-keys?
+       row #{:sequence :document-id :title :path :phase :phaseName :category
+             :content-id :positive :rejected :provenance :source-span
+             :diagnostic})
+    (if (= (+ index 1) (get row :sequence))
+      (if (= (get inventory-row :id) (get row :document-id))
+        (if (= (get inventory-row :title) (get row :title))
+          (if (= (get inventory-row :path) (get row :path))
+            (if (= (get inventory-row :phase) (get row :phase))
+              (if (= (get inventory-row :phaseName) (get row :phaseName))
+                (if (= (get inventory-row :category) (get row :category))
+                  (if (= (get inventory-row :content-id) (get row :content-id))
+          (if (w5-full-path-ends-with?
+               (get (get row :source-span) :actual-source-path)
+               (get inventory-row :path))
+          (if (w5-full-evidence-positive-valid?
+               (get row :positive) (get row :content-id))
+            (if (w5-full-evidence-rejected-valid?
+                 (get row :rejected) (get row :content-id)
+                 (str "FULL-" (get inventory-row :id) "-PENDING"))
+              (if (= (get (get row :positive) :provenance-id)
+                     (get (get row :provenance) :provenance-id))
+              (if (= (get (get row :rejected) :provenance-id)
+                     (get (get row :provenance) :provenance-id))
+              (if (= (get (get row :positive) :source-span)
+                     (get row :source-span))
+              (if (= (get (get row :rejected) :source-span)
+                     (get row :source-span))
+              (if (w5-full-provenance-record-valid?
+                   (get row :provenance) (get row :content-id)
+                   (get (get row :source-span) :actual-source-path))
+                (if (w5-full-document-span-valid?
+                     (get row :source-span) :full-language-evidence
+                     (get inventory-row :path) (get inventory-row :sequence))
+                  (if (w5-full-exact-keys?
+                       (get row :diagnostic)
+                       #{:diagnostic-id :reason :severity :source-span})
+                    (if (= (str "FULL-" (get inventory-row :id) "-PENDING")
+                           (get (get row :diagnostic) :diagnostic-id))
+                      (if (= :specific-diagnostic-pending
+                             (get (get row :diagnostic) :reason))
+                        (if (= :error (get (get row :diagnostic) :severity))
+                          (= (get row :source-span)
+                             (get (get row :diagnostic) :source-span)) false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+              false)
+              false)
+              false)
+              false)
+              false)
+              false)
+              false)
+              false)
+              false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-coverage-matrix-valid? [request]
+  (let [inventory (get request :inventory)
+        matrix (get request :coverage-matrix)]
+    (if (and (vector? matrix) (= 240 (count matrix))
+             (vector? inventory) (= 240 (count inventory)))
+      (loop [remaining matrix rows inventory index 0]
+        (if (= 0 (count remaining)) true
+          (if (w5-full-matrix-row-valid? (first remaining)
+                                          (first rows) index)
+            (recur (rest remaining) (rest rows) (+ index 1)) false)))
+      false)))
+
+(defn w5-full-gap-entry-valid? [value inventory-row index]
+  (if (w5-full-exact-keys? value #{:sequence :document-id :gaps
+                                    :status :content-id :provenance-id
+                                    :source-span :title :path :phase
+                                    :phaseName :category})
+    (if (= (+ index 1) (get value :sequence))
+      (if (= (get inventory-row :id) (get value :document-id))
+        (if (= (get inventory-row :title) (get value :title))
+          (if (= (get inventory-row :path) (get value :path))
+            (if (= (get inventory-row :phase) (get value :phase))
+              (if (= (get inventory-row :phaseName) (get value :phaseName))
+                (if (= (get inventory-row :category) (get value :category))
+                  (if (= (get inventory-row :content-id) (get value :content-id))
+          (if (= w5-full-reporting-v1-document-gaps (get value :gaps))
+            (if (= 6 (count (get value :gaps)))
+              (if (= :blocked (get value :status))
+                (if (= (get inventory-row :content-id)
+                       (get value :provenance-id))
+                  (if (w5-full-document-span-valid?
+                       (get value :source-span) :full-language-gap-report
+                       (get inventory-row :path) (get inventory-row :sequence))
+                    true
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+          false)
+          false)
+          false)
+          false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-gap-report-valid? [request]
+  (let [report (get request :gap-report)
+        inventory (get request :inventory)]
+    (if (w5-full-exact-keys?
+         report #{:inventory-count :gap-count :no-executable-owner-count
+                  :entries :status})
+      (if (= 240 (get report :inventory-count))
+        (if (= 240 (get report :gap-count))
+          (if (= 7 (get report :no-executable-owner-count))
+            (if (= :blocked (get report :status))
+              (if (and (vector? (get report :entries))
+                       (= 240 (count (get report :entries))))
+                (loop [remaining (get report :entries)
+                       rows inventory index 0]
+                  (if (= 0 (count remaining)) true
+                    (if (w5-full-gap-entry-valid? (first remaining)
+                                                   (first rows) index)
+                      (recur (rest remaining) (rest rows) (+ index 1)) false)))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-full-task-record-valid? [record index]
+  (if (w5-full-exact-keys?
+       record #{:task-id :status :title :evidence-class
+                :provenance-id :source-span})
+    (if (= (get w5-full-gap-task-ids index) (get record :task-id))
+      (if (= :open (get record :status))
+        (if (w5-full-nonempty-string? (get record :title))
+            (if (= :blocked (get record :evidence-class))
+            (if (= "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                   (get record :provenance-id))
+              (w5-full-document-span-valid?
+               (get record :source-span) :full-language-roadmap
+               "docs/full-language-implementation-gap-map.md" (+ index 1))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-task-list-valid? [tasks]
+  (if (and (vector? tasks) (= 38 (count tasks)))
+    (loop [remaining tasks index 0]
+      (if (= 0 (count remaining)) true
+        (if (w5-full-task-record-valid? (first remaining) index)
+          (recur (rest remaining) (+ index 1)) false)))
+    false))
+
+(defn w5-full-attestations-valid? [attestations]
+  (if (and (vector? attestations) (= 0 (count attestations))) true false))
+
+(defn w5-full-reporting-valid? [value]
+  (if (w5-full-exact-keys?
+       value #{:observation :contract :inventory :generator :attestations
+               :matrix :gap-report :report :counter-contract})
+    (if (= value w5-full-reporting-observation)
+      (if (= :incomplete
+             (get (get value :attestations) :status))
+        (if (= [] (get (get value :attestations) :attestations))
+          (if (= 240 (get (get value :matrix) :inventory-count))
+            (if (= 240 (get (get value :gap-report) :gap-count))
+              (if (= true (get (get value :counter-contract)
+                               :supported-surface-is-not-completion)) true false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-evidence-valid? [request]
+  (if (w5-full-coverage-matrix-valid? request)
+    (if (w5-full-gap-report-valid? request)
+      (if (w5-full-task-list-valid? (get request :gap-tasks))
+        (if (= 0 (get (get request :coverage) :attestation-count))
+          (if (= 0 (get (get request :coverage)
+                        :full-language-complete-count))
+            (if (= [] (get (get request :coverage)
+                            :satisfied-task-ids)) true false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-claims-valid? [claims]
+  (if (w5-full-exact-keys?
+       claims #{:producer-boolean? :narrative? :source-ownership-only?
+                :check-only? :replay-only? :global-advancement?
+                :closure-authority?})
+    (if (= false (get claims :producer-boolean?))
+      (if (= false (get claims :narrative?))
+        (if (= false (get claims :source-ownership-only?))
+          (if (= false (get claims :check-only?))
+            (if (= false (get claims :replay-only?))
+              (if (= false (get claims :global-advancement?))
+                (= false (get claims :closure-authority?)) false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-authority-valid? [authority]
+  (if (w5-full-exact-keys?
+       authority #{:authority :public-authority? :self-hosted? :release?
+                    :clojure-seed-boundary? :full-language-completion?
+                    :replay-only? :container-only?})
+    (if (= :non-authority (get authority :authority))
+      (if (= false (get authority :public-authority?))
+        (if (= false (get authority :self-hosted?))
+          (if (= false (get authority :release?))
+            (if (= true (get authority :clojure-seed-boundary?))
+              (if (= false (get authority :full-language-completion?))
+                (if (= false (get authority :replay-only?))
+                  (= true (get authority :container-only?)) false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-repository-valid? [repository]
+  (if (w5-full-exact-keys?
+       repository #{:actual-root :consumer-id :actual-manifest-path})
+    (if (w5-full-nonempty-string? (get repository :actual-root))
+      (if (w5-full-sha256-id? (get repository :consumer-id))
+        (w5-full-nonempty-string? (get repository :actual-manifest-path))
+        false)
+      false)
+    false))
+
+(defn w5-full-coverage-shape-valid? [coverage]
+  (if (w5-full-exact-keys?
+       coverage #{:inventory-count :full-language-complete-count
+                  :attestation-count :blocked? :satisfied-task-ids
+                  :status})
+    (if (= 240 (get coverage :inventory-count))
+      (if (= 0 (get coverage :full-language-complete-count))
+        (if (= 0 (get coverage :attestation-count))
+          (if (= true (get coverage :blocked?))
+            (if (= [] (get coverage :satisfied-task-ids))
+              (= :blocked (get coverage :status)) false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-request-shape-valid? [request]
+  (w5-full-exact-keys?
+   request #{:artifact :schema-version :claimed-status :profile
+             :target-scope :repository :inventory :coverage-matrix
+             :gap-report :gap-tasks :attestations :coverage
+             :claims :authority :source-span :reporting}))
+
+(defn w5-full-request-source-span-valid? [span]
+  (if (w5-full-span? span)
+    (if (= :full-language-evidence-request (get span :source-id))
+      (if (= {:byte 0 :line 1 :column 1} (get span :start))
+        (= {:byte 128 :line 1 :column 1} (get span :end)) false)
+      false)
+    false))
+
+(defn w5-full-request-valid? [request]
+  (if (w5-full-request-shape-valid? request)
+    (if (= :gravity/w5-full-language-evidence-request (get request :artifact))
+      (if (= 1 (get request :schema-version))
+        (if (= :incomplete (get request :claimed-status))
+          (if (= :meta (get request :profile))
+            (if (w5-full-target-valid? (get request :target-scope))
+              (if (w5-full-reporting-valid? (get request :reporting))
+                (if (w5-full-repository-valid? (get request :repository))
+                  (if (w5-full-inventory-valid? (get request :inventory))
+                    (if (w5-full-coverage-shape-valid? (get request :coverage))
+                      (if (w5-full-evidence-valid? request)
+                        (if (w5-full-attestations-valid?
+                             (get request :attestations))
+                          (if (w5-full-claims-valid? (get request :claims))
+                            (if (w5-full-authority-valid?
+                                 (get request :authority))
+                              (if (w5-full-request-source-span-valid?
+                                   (get request :source-span))
+                                (w5-full-source-fixture-path?
+                                 (get (get request :source-span)
+                                      :actual-source-path))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-full-id-vector [rows field]
+  (loop [remaining rows result []]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining)
+             (conj result (get (first remaining) field))))))
+
+(defn w5-full-span-semantic-input [span]
+  {:source-id (get span :source-id)
+   :start (get span :start)
+   :end (get span :end)})
+
+(defn w5-full-matrix-semantic-row [row]
+  (let [positive (get row :positive)
+        rejected (get row :rejected)
+        provenance (get row :provenance)
+        diagnostic (get row :diagnostic)]
+    {:sequence (get row :sequence)
+     :document-id (get row :document-id)
+     :title (get row :title)
+     :path (get row :path)
+     :phase (get row :phase)
+     :phaseName (get row :phaseName)
+     :category (get row :category)
+     :content-id (get row :content-id)
+     :positive
+     {:evidence-id (get positive :evidence-id)
+      :status (get positive :status)
+      :executable? (get positive :executable?)
+      :content-id (get positive :content-id)
+      :provenance-id (get positive :provenance-id)
+      :source-span (w5-full-span-semantic-input (get positive :source-span))}
+     :rejected
+     {:evidence-id (get rejected :evidence-id)
+      :status (get rejected :status)
+      :specific? (get rejected :specific?)
+      :diagnostic-id (get rejected :diagnostic-id)
+      :content-id (get rejected :content-id)
+      :provenance-id (get rejected :provenance-id)
+      :source-span (w5-full-span-semantic-input (get rejected :source-span))}
+     :provenance
+     {:provenance-id (get provenance :provenance-id)
+      :content-id (get provenance :content-id)
+      :stage (get provenance :stage)
+      :consumer-status (get provenance :consumer-status)}
+     :source-span (w5-full-span-semantic-input (get row :source-span))
+     :diagnostic
+     {:diagnostic-id (get diagnostic :diagnostic-id)
+      :reason (get diagnostic :reason)
+      :severity (get diagnostic :severity)
+      :source-span
+      (w5-full-span-semantic-input (get diagnostic :source-span))}}))
+
+(defn w5-full-matrix-semantic-input [rows]
+  (loop [remaining rows result []]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining)
+             (conj result
+                   (w5-full-matrix-semantic-row (first remaining)))))))
+
+(defn w5-full-gap-semantic-row [row]
+  {:sequence (get row :sequence)
+   :document-id (get row :document-id)
+   :title (get row :title)
+   :path (get row :path)
+   :phase (get row :phase)
+   :phaseName (get row :phaseName)
+   :category (get row :category)
+   :gaps (get row :gaps)
+   :status (get row :status)
+   :content-id (get row :content-id)
+   :provenance-id (get row :provenance-id)
+   :source-span (w5-full-span-semantic-input (get row :source-span))})
+
+(defn w5-full-gap-semantic-input [rows]
+  (loop [remaining rows result []]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining)
+             (conj result (w5-full-gap-semantic-row (first remaining)))))))
+
+(defn w5-full-identity-input [request]
+  {:artifact (get request :artifact)
+   :schema-version (get request :schema-version)
+   :claimed-status (get request :claimed-status)
+   :profile (get request :profile)
+   :target-scope (get request :target-scope)
+   :inventory-records (get request :inventory)
+   :inventory-ids (w5-full-id-vector (get request :inventory) :id)
+   :inventory-content-ids (w5-full-id-vector (get request :inventory)
+                                             :content-id)
+   :matrix-content-ids (w5-full-id-vector (get request :coverage-matrix)
+                                          :content-id)
+   :matrix-evidence-diagnostic-records
+   (w5-full-matrix-semantic-input (get request :coverage-matrix))
+   :gap-report-semantic-entries
+   (w5-full-gap-semantic-input (get (get request :gap-report) :entries))
+   :gap-task-ids (w5-full-id-vector (get request :gap-tasks) :task-id)
+   :reporting-contract-sha256
+   (get (get (get request :reporting) :contract) :raw-sha256)
+   :reporting-inventory-sha256
+   (get (get (get request :reporting) :inventory) :raw-sha256)
+   :reporting-matrix-semantic-id
+   (get (get (get request :reporting) :matrix) :semantic-id)
+   :reporting-gap-semantic-id
+   (get (get (get request :reporting) :gap-report) :semantic-id)
+   :coverage (get request :coverage)
+   :claims (get request :claims)
+   :authority (get request :authority)})
+
+(defn w5-full-path-vector [rows field]
+  (loop [remaining rows result []]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining)
+             (conj result (get (first remaining) field))))))
+
+(defn w5-full-provenance [request]
+  {:repository-root (get (get request :repository) :actual-root)
+   :manifest-path (get (get request :repository) :actual-manifest-path)
+   :source-span-path (get (get request :source-span) :actual-source-path)
+   :inventory-paths (w5-full-path-vector (get request :inventory) :path)
+   :matrix-span-paths
+   (w5-full-path-vector (get request :coverage-matrix) :source-span)
+   :gap-task-span-paths
+   (w5-full-path-vector (get request :gap-tasks) :source-span)})
+
+(defn w5-full-diagnostic-source-span [request]
+  (if (w5-full-request-source-span-valid? (get request :source-span))
+    (get request :source-span)
+    {:source-id :gravity/w5-full-language-evidence
+     :actual-source-path "<unavailable>"
+     :start {:byte 0 :line 1 :column 1}
+     :end {:byte 0 :line 1 :column 1}}))
+
+(defn w5-full-diagnostic [request rule reason field remediation]
+  {:artifact :gravity/w5-full-language-evidence-diagnostic
+   :rule rule :diagnostic-id rule :severity :error
+   :stage :w5-wave4-full-language-evidence
+   :reason reason :field field :remediation remediation
+   :source-span (w5-full-diagnostic-source-span request)
+   :profile :meta :target :llvm-x86_64-linux
+   :authority :non-authority :clojure-seed-boundary? true
+   :self-hosted? false :release? false :public-authority? false})
+
+(defn w5-full-first-failure [request]
+  (if (not (w5-full-request-shape-valid? request))
+    [(w5-full-diagnostic request "W5-FULL-SCHEMA"
+                          :invalid-versioned-request-shape :request
+                          :provide-exact-versioned-request)]
+    (if (not (and (= :gravity/w5-full-language-evidence-request
+                     (get request :artifact))
+                   (= 1 (get request :schema-version))
+                   (= :incomplete (get request :claimed-status))
+                   (= :meta (get request :profile))))
+      [(w5-full-diagnostic request "W5-FULL-SCHEMA"
+                            :invalid-versioned-request-header :request
+                            :provide-exact-versioned-request)]
+      (if (not (w5-full-span? (get request :source-span)))
+        [(w5-full-diagnostic request "W5-FULL-SCHEMA"
+                              :source-span-missing :source-span
+                              :provide-stable-source-span)]
+      (if (not (w5-full-request-source-span-valid?
+                (get request :source-span)))
+        [(w5-full-diagnostic
+          request "W5-FULL-SCHEMA"
+          :source-span-origin-or-coordinate-mismatch
+          :source-span
+          :bind-exact-source-id-start-and-end)]
+      (if (not (w5-full-source-fixture-path?
+                (get (get request :source-span) :actual-source-path)))
+        [(w5-full-diagnostic
+          request "W5-FULL-PROVENANCE"
+          :source-fixture-path-extension-mismatch
+          :source-span
+          :bind-actual-gravity-or-qst-source-path)]
+      (if (not (w5-full-target-valid? (get request :target-scope)))
+      [(w5-full-diagnostic request "W5-FULL-TARGET"
+                            :candidate-target-incoherent :target-scope
+                            :use-exact-linux-x86-64-llvm-elf-sysv-scope)]
+      (if (not (w5-full-reporting-valid? (get request :reporting)))
+        [(w5-full-diagnostic request "W5-FULL-REPORTING"
+                              :reporting-identity-keyset-counter-or-admission-mismatch
+                              :reporting :bind-frozen-reporting-v1-observation)]
+      (if (not (w5-full-inventory-valid? (get request :inventory)))
+        [(w5-full-diagnostic request "W5-FULL-INVENTORY"
+                              :inventory-sequence-or-substitution :inventory
+                              :bind-exact-240-document-inventory)]
+        (if (not (w5-full-coverage-shape-valid? (get request :coverage)))
+          [(w5-full-diagnostic request "W5-FULL-MATRIX"
+                                :global-advancement-or-coverage-count-mismatch
+                                :coverage :keep-zero-completion-blocked)]
+          (if (not (w5-full-coverage-matrix-valid? request))
+          [(w5-full-diagnostic request "W5-FULL-MATRIX"
+                                :per-document-executable-evidence-incomplete
+                                :coverage-matrix
+                                :bind-positive-and-rejected-specific-evidence)]
+          (if (not (w5-full-gap-report-valid? request))
+            [(w5-full-diagnostic request "W5-FULL-GAPS"
+                                  :gap-report-sequence-or-provenance-mismatch
+                                  :gap-report :bind-current-gap-report)]
+            (if (not (w5-full-task-list-valid? (get request :gap-tasks)))
+              [(w5-full-diagnostic request "W5-FULL-TASKS"
+                                    :named-gap-task-list-mismatch :gap-tasks
+                                    :bind-all-38-named-gap-task-ids)]
+              (if (not (w5-full-attestations-valid?
+                        (get request :attestations)))
+                [(w5-full-diagnostic request "W5-FULL-ATTESTATION"
+                                      :completion-attestation-present-or-mismatch
+                                      :attestations
+                                      :keep-zero-current-attestations)]
+                (if (not (w5-full-claims-valid? (get request :claims)))
+                  [(w5-full-diagnostic request "W5-FULL-CLAIMS"
+                                        :forbidden-evidence-claim
+                                        :claims
+                                        :reject-narrative-producer-owner-check-replay-claims)]
+                  (if (not (w5-full-authority-valid?
+                            (get request :authority)))
+                    [(w5-full-diagnostic request "W5-FULL-AUTHORITY"
+                                          :authority-or-seed-boundary-forgery
+                                          :authority
+                                          :keep-provisional-nonauthority-boundary)]
+                    (if (not (w5-full-repository-valid?
+                              (get request :repository)))
+                      [(w5-full-diagnostic request "W5-FULL-PROVENANCE"
+                                            :consumer-provenance-missing
+                                            :repository
+                                            :bind-path-bearing-consumer-provenance)]
+                      [])))))))))))))))))
+
+(def w5-full-gaps
+  [:inventory-incomplete :positive-evidence-pending
+   :rejected-specific-evidence-pending :provenance-pending
+   :attestations-zero :all-38-gap-tasks-open :global-advancement-blocked
+   :clojure-seed-boundary :independent-review-pending])
+
+(defn w5-full-accepted-result [request]
+  {:status :accepted
+   :artifact :gravity/w5-full-language-evidence-verification
+   :schema-version 1
+   :trust-status :incomplete
+   :closure-status :blocked
+   :inventory-count 240
+   :full-language-complete-count 0
+   :attestation-count 0
+   :named-gap-task-count 38
+   :named-task-satisfied-count 0
+   :identity-input (w5-full-identity-input request)
+   :provenance (w5-full-provenance request)
+   :gaps w5-full-gaps
+   :diagnostics []
+   :authority :non-authority
+   :public-authority? false
+   :full-language-completion-authority? false
+   :reporting-observation (get request :reporting)
+   :completion-admission
+   "disabled-pending-target-coherent-public-native-evidence-v2"
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :attestations-current? false
+   :all-named-gap-tasks-satisfied? false
+   :actual-stage2-harness :jvm})
+
+(defn w5-full-language-evidence-verify [request]
+  (let [diagnostics (w5-full-first-failure request)]
+    (if (= 0 (count diagnostics))
+      (w5-full-accepted-result request)
+      {:status :rejected
+       :artifact :gravity/w5-full-language-evidence-verification
+       :schema-version 1
+       :trust-status :incomplete
+       :closure-status :blocked
+       :inventory-count 0
+       :full-language-complete-count 0
+       :attestation-count 0
+       :named-gap-task-count 38
+       :named-task-satisfied-count 0
+       :identity-input nil
+       :provenance nil
+       :gaps w5-full-gaps
+       :diagnostics diagnostics
+       :authority :non-authority
+       :public-authority? false
+       :full-language-completion-authority? false
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false})))
+
+(defn w5-full-language-evidence-execute [request]
+  (w5-full-language-evidence-verify request))
+
+(defn w5-full-language-evidence-run [request]
+  (w5-full-language-evidence-verify request))
+
+(defn w5-full-language-evidence-recompute [request]
+  (w5-full-language-evidence-verify request))
+
+(defn w5-full-language-evidence-verify-result [request candidate]
+  (let [expected (w5-full-language-evidence-verify request)]
+    (if (= expected candidate)
+      {:status :passed :artifact :gravity/w5-full-language-evidence-result
+       :schema-version 1 :trust-status (get expected :trust-status)
+       :closure-status (get expected :closure-status) :diagnostics []
+       :authority :non-authority :clojure-seed-boundary? true
+       :self-hosted? false :release? false}
+      {:status :rejected :artifact :gravity/w5-full-language-evidence-result
+       :schema-version 1 :trust-status :incomplete
+       :closure-status :blocked
+       :diagnostics
+       [(w5-full-diagnostic request "W5-FULL-SUBSTITUTION"
+                             :verification-result-substitution :result
+                             :recompute-consumer-result)]
+       :authority :non-authority :clojure-seed-boundary? true
+       :self-hosted? false :release? false})))
+
+(defn w5-full-language-evidence-policy []
+  {:artifact :gravity/w5-full-language-evidence-policy
+   :schema-version 1 :scope :wave4-full-language-evidence-consumer
+   :profile :meta :target :jvm :inventory-count 240
+   :named-gap-task-count 38 :named-gap-task-ids w5-full-gap-task-ids
+   :attestation-count 0 :full-language-complete-count 0
+   :candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies w5-full-unsupported-target-policies
+   :cross-target-inference? false :fallback? false
+   :required-document-evidence [:executable-positive :rejected-specific
+                                :provenance :source-span :diagnostic :content-id]
+   :forbidden-completion-evidence
+   [:narrative :producer-boolean :source-ownership :check-only :replay-only
+    :global-advancement]
+   :completion-status :blocked :interface-status :provisional-nonauthority
+   :authority :non-authority :public-authority? false
+   :reporting-observation w5-full-reporting-observation
+   :completion-admission
+   "disabled-pending-target-coherent-public-native-evidence-v2"
+   :clojure-seed-boundary? true :self-hosted? false :release? false
+   :full-language-completion-authority? false
+   :pending [:gravity-authored-240-document-coverage
+             :per-document-executable-positive-evidence
+             :per-document-rejected-specific-evidence
+             :completion-attestations :independent-review]})
+
+(defn w5-full-language-evidence-diagnostic-catalog []
+  {:artifact :gravity/w5-full-language-evidence-diagnostic-catalog
+   :schema-version 1 :diagnostics w5-full-diagnostic-ids
+   :remediation
+   {"W5-FULL-SCHEMA" :provide-exact-versioned-request
+    "W5-FULL-TARGET" :use-exact-linux-x86-64-llvm-elf-sysv-scope
+    "W5-FULL-INVENTORY" :bind-exact-240-document-inventory
+    "W5-FULL-MATRIX" :bind-positive-and-rejected-specific-evidence
+    "W5-FULL-GAPS" :bind-current-gap-report
+    "W5-FULL-TASKS" :bind-all-38-named-gap-task-ids
+    "W5-FULL-ATTESTATION" :keep-zero-current-attestations
+    "W5-FULL-EVIDENCE" :provide-executable-evidence
+    "W5-FULL-CLAIMS" :reject-narrative-producer-owner-check-replay-claims
+    "W5-FULL-AUTHORITY" :keep-provisional-nonauthority-boundary
+    "W5-FULL-PROVENANCE" :bind-path-bearing-consumer-provenance
+    "W5-FULL-REPORTING" :bind-frozen-reporting-v1-observation
+    "W5-FULL-SUBSTITUTION" :recompute-consumer-result}})
