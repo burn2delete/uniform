@@ -2049,6 +2049,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertTrue(item["fresh"])
         self.assertEqual("none", item["authority"])
         self.assertEqual(1800, item["timeout_seconds"])
+        self.assertEqual(["bootstrap/gravity/**"], item["impact_excludes"])
         for changed_path in (
             "bootstrap/clojure/src/gravity/c2_pass_cache.clj",
             "bootstrap/clojure/src/gravity/pass_cache.clj",
@@ -2080,6 +2081,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertTrue(item["fresh"])
         self.assertEqual("none", item["authority"])
         self.assertEqual(1800, item["timeout_seconds"])
+        self.assertEqual(["bootstrap/gravity/**"], item["impact_excludes"])
         for changed_path in (
             "bootstrap/clojure/src/gravity/c2_pass_cache.clj",
             "bootstrap/clojure/src/gravity/pass_cache.clj",
@@ -5326,7 +5328,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             for path in (ROOT / "bootstrap/clojure/src").rglob("*")
             if path.is_file()
         }
-        self.assertEqual(len(expected_clojure_runtime), 54)
+        self.assertEqual(len(expected_clojure_runtime), 56)
         self.assertEqual(observed_clojure_runtime, expected_clojure_runtime)
         self.assertEqual(
             static["tool_inputs"].count(

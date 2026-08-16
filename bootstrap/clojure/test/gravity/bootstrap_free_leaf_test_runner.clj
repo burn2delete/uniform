@@ -28,13 +28,19 @@
 (def ^:const expected-catalog-count 47)
 
 (def excluded-top-level-test-files
-  "The six top-level tests that intentionally remain outside the leaf runner."
+  "The top-level tests that intentionally remain outside the leaf runner."
   #{"bootstrap_test.clj"
     "cli_test.clj"
     "diagnostics_test.clj"
     "reader_primitives_test.clj"
     "source_span_test.clj"
-    "c2_pass_cache_test.clj"})
+    "c2_pass_cache_test.clj"
+    "p15_native_launcher_test.clj"
+    "p15_native_plan_specialization_test.clj"
+    "p15_native_runtime_driver_test.clj"
+    "p15_public_native_run_test.clj"
+    "p15_public_native_run_wrapper_test.clj"
+    "project_structure_test_runner_test.clj"})
 
 (def groups
   "The only groups accepted by --group."

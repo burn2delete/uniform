@@ -42,19 +42,19 @@
     {
       "path": "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
       "mode": "100644",
-      "blob_oid": "7d1bd37884515655e938098ca75549d9a2839321",
+      "blob_oid": "e92886ea1ecf9589abc377d84d4635f87acbb52e",
       "byte_count": 146205
     },
     {
       "path": "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
       "mode": "100644",
-      "blob_oid": "9341d02e0f4a04aece27e899b68bed7391e515b5",
+      "blob_oid": "b1695e57f9288c4633197519ddabbc5295c25509",
       "byte_count": 803704
     },
     {
       "path": "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md",
       "mode": "100644",
-      "blob_oid": "38deee77fbf05b1dbfad695bed1667e392453af8",
+      "blob_oid": "0c9e71c44ed3c5e940432b15a301ac7441fcf884",
       "byte_count": 1843
     },
     {
@@ -6068,6 +6068,12 @@
       "mode": "100644",
       "blob_oid": "eed98c37ce519156bedc119d85aaabe4da3285f9",
       "byte_count": 7635
+    },
+    {
+      "path": "docs/artifacts/phase-15/native-runtime/replay/contracts/p15-s23-gravity-native-runtime-provider-fragment-d-payload-binding-contract.edn",
+      "mode": "100644",
+      "blob_oid": "a41506d65ca86bd61c10c60f08149bd4e7e5891c",
+      "byte_count": 187111
     },
     {
       "path": "docs/artifacts/phase-15/reports/p15-document-coverage-report.md",
@@ -13558,7 +13564,7 @@
       "disposition": "generated-nonauthoritative",
       "file_count": 3,
       "byte_count": 951752,
-      "record_sha256": "sha256:bff404ff61c1c5ac2c1c39da300f4eba8dfc3b45ab28c6e83c91deb953d86670",
+      "record_sha256": "sha256:a8fe5bc4bbf4093eb1127d26e7eeef931a4209a77ed08573b54ce26c5bcafa9f",
       "path_rule": "exact:{docs/artifacts/full-language/coverage/full-language-coverage-gaps.json,docs/artifacts/full-language/coverage/full-language-coverage-matrix.json,docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md}"
     },
     {
@@ -13596,18 +13602,18 @@
     {
       "id": "unclassified-artifacts",
       "disposition": "unclassified-blocking",
-      "file_count": 590,
-      "byte_count": 10530262,
-      "record_sha256": "sha256:f42a65407b2780ed1c366ca7171f9e485ab39997d53e51f10753ae54c5a921f4",
+      "file_count": 591,
+      "byte_count": 10717373,
+      "record_sha256": "sha256:a4f762e7173aba219e3020bd2ffd02ba3ccbaf4b2173b5d5b70aaf15ce582e5a",
       "path_rule": "fallback:docs/artifacts/** or target/** after all known rules"
     }
   ],
   "totals": {
-    "file_count": 2254,
-    "byte_count": 29050171,
-    "record_sha256": "sha256:1a890698289f9f726e8fa75304e244fece87abb83d94a220e5a69bed718f649d",
-    "unclassified_file_count": 590,
-    "unclassified_byte_count": 10530262
+    "file_count": 2255,
+    "byte_count": 29237282,
+    "record_sha256": "sha256:b85399e653394a8ddcc1ff5ca44ea4547aa88ffddf85e587ac25091d361fba64",
+    "unclassified_file_count": 591,
+    "unclassified_byte_count": 10717373
   },
   "nonclaims": [
     "artifact-authority",
