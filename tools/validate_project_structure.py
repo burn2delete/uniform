@@ -29,14 +29,16 @@ STAGE0_COMPONENT_CONTRACT = ROOT / "contracts" / "stage0-clojure-components.json
 MAX_OWNERSHIP_EDN_BYTES = 512 * 1024
 MAX_STAGE0_COMPONENT_CONTRACT_BYTES = 512 * 1024
 SCHEMA_VERSION = 1
+PYTHON_SEMANTIC_SUPPORT_ROOT = "src/gravity/"
+PYTHON_SEMANTIC_SUPPORT_POLICY_ID = "reviewed-python-semantic-support"
 
 STAGE0_COMPONENT_SCHEMA = "gravity/stage0-clojure-components-v1"
 STAGE0_COMPONENT_KIND = "stage0-clojure-component-inventory"
 STAGE0_COMPONENT_COUNTS = {
-    "components": 50,
-    "sources": 50,
-    "tests": 50,
-    "bootstrap_free_tests": 44,
+    "components": 53,
+    "sources": 53,
+    "tests": 53,
+    "bootstrap_free_tests": 47,
     "compatibility_tests": 5,
     "coordinator_tests": 1,
 }
@@ -224,7 +226,9 @@ STAGE0_LEAF_EXECUTION_GROUP_COMPONENT_IDS = {
         "c13-optimization",
         "c14-lowering",
         "c15-diagnostics",
+        "c15-c16-pass-cache",
         "c16-incremental",
+        "c17-c18-pass-cache",
         "c17-plugin",
         "c18-verification",
         "c4-macro-evidence",
@@ -239,6 +243,7 @@ STAGE0_LEAF_EXECUTION_GROUP_COMPONENT_IDS = {
         "darwin-publication",
         "macro-expansion",
         "optimization-lowering",
+        "pass-cache",
         "pass-execution",
         "profile-validation",
     },
@@ -246,7 +251,7 @@ STAGE0_LEAF_EXECUTION_GROUP_COMPONENT_IDS = {
 STAGE0_LEAF_EXECUTION_GROUP_COUNTS = {
     "foundation-reader": 9,
     "c2-c3": 12,
-    "compiler": 23,
+    "compiler": 26,
 }
 STAGE0_LEAF_EXECUTION_GROUP_BY_COMPONENT = {
     component_id: group
@@ -295,7 +300,9 @@ STAGE0_COMPATIBILITY_AUTHORITY_COMPONENT_IDS = {
     "c13-optimization",
     "c14-lowering",
     "c15-diagnostics",
+    "c15-c16-pass-cache",
     "c16-incremental",
+    "c17-c18-pass-cache",
     "c17-plugin",
     "c18-verification",
     "capability-validation",
@@ -303,6 +310,7 @@ STAGE0_COMPATIBILITY_AUTHORITY_COMPONENT_IDS = {
     "core-ast-lowering",
     "module-analysis",
     "optimization-lowering",
+    "pass-cache",
     "pass-execution",
     "profile-validation",
 }
@@ -1197,7 +1205,7 @@ def _validate_stage0_component_contract(
         _add_error(errors, "stage0 component contract.components", "must be a list")
         return
     if len(components) != STAGE0_COMPONENT_COUNTS["components"]:
-        _add_error(errors, "stage0 component contract.components", "must contain exactly 50 components")
+        _add_error(errors, "stage0 component contract.components", "must contain exactly 53 components")
 
     # Every source file in this slice is a direct child of the reviewed source
     # root.  The test root also contains runner infrastructure; only the
@@ -1440,7 +1448,7 @@ def _validate_stage0_component_contract(
 
     lanes = [component.get("test", {}).get("lane") for component in component_by_id.values() if _is_mapping(component.get("test"))]
     if lanes.count("bootstrap-free") != STAGE0_COMPONENT_COUNTS["bootstrap_free_tests"]:
-        _add_error(errors, "stage0 component test lanes", "must contain exactly 44 bootstrap-free tests")
+        _add_error(errors, "stage0 component test lanes", "must contain exactly 47 bootstrap-free tests")
     if lanes.count("compatibility") != STAGE0_COMPONENT_COUNTS["compatibility_tests"]:
         _add_error(errors, "stage0 component test lanes", "must contain exactly 5 compatibility tests")
     if lanes.count("coordinator") != STAGE0_COMPONENT_COUNTS["coordinator_tests"]:
@@ -1460,7 +1468,7 @@ def _validate_stage0_component_contract(
         _add_error(
             errors,
             "stage0 component leaf execution groups",
-            "must contain exactly 44 grouped bootstrap-free components",
+            "must contain exactly 47 grouped bootstrap-free components",
         )
 
     reserved, compatibility_tests, ownership_errors = parse_stage0_component_ownership()
@@ -1867,7 +1875,19 @@ def _validate_slices(
             _add_error(errors, f"{location}.owner", f"unknown owner {item.get('owner')!r}")
         for field in ("artifact_inputs", "artifact_outputs"):
             _validate_id_list(item.get(field), f"{location}.{field}", errors, artifact_ids)
-        _validate_id_list(item.get("path_policy_ids"), f"{location}.path_policy_ids", errors, policy_ids)
+        slice_policy_ids = item.get("path_policy_ids")
+        _validate_id_list(
+            slice_policy_ids, f"{location}.path_policy_ids", errors, policy_ids
+        )
+        if (
+            isinstance(slice_policy_ids, list)
+            and PYTHON_SEMANTIC_SUPPORT_POLICY_ID in slice_policy_ids
+        ):
+            _add_error(
+                errors,
+                f"{location}.path_policy_ids",
+                "src/gravity semantic support must remain outside Stage0 slices",
+            )
         _validate_cost(item.get("cost"), f"{location}.cost", errors)
         _validate_authority(item.get("authority"), f"{location}.authority", errors)
     expected = {f"SH-{index:02d}" for index in range(30)}
@@ -1929,6 +1949,12 @@ def _validate_ownership_and_paths(
                 _add_error(errors, location, "module owner paths must be exact paths")
             if owner not in owner_ids:
                 _add_error(errors, location, f"unknown owner {owner!r}")
+            if source_path.startswith(PYTHON_SEMANTIC_SUPPORT_ROOT):
+                _add_error(
+                    errors,
+                    location,
+                    "src/gravity support paths must remain outside ownership.module_paths",
+                )
 
     path_policy = manifest.get("path_policy")
     if not _is_mapping(path_policy):
@@ -1978,6 +2004,55 @@ def _validate_ownership_and_paths(
         elif kind == "reserved":
             if not isinstance(item.get("reservation"), str) or not item.get("reservation"):
                 _add_error(errors, location, "reserved policy needs a reservation description")
+
+    python_support_policy = policy_by_id.get(PYTHON_SEMANTIC_SUPPORT_POLICY_ID)
+    if python_support_policy is None:
+        _add_error(
+            errors,
+            "path_policy.policies",
+            f"missing required policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+        )
+    else:
+        if python_support_policy.get("kind") != "reviewed":
+            _add_error(
+                errors,
+                f"path policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+                "must remain reviewed",
+            )
+        if python_support_policy.get("owner") != "master-coordinator":
+            _add_error(
+                errors,
+                f"path policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+                "must remain coordinator-owned",
+            )
+        if python_support_policy.get("patterns") != [PYTHON_SEMANTIC_SUPPORT_ROOT]:
+            _add_error(
+                errors,
+                f"path policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+                f"must cover only {PYTHON_SEMANTIC_SUPPORT_ROOT!r}",
+            )
+        for field, expected in (
+            ("editable", True),
+            ("review_required", True),
+            ("reviewer", "master-coordinator"),
+            ("allow_overlap", False),
+        ):
+            if python_support_policy.get(field) != expected:
+                _add_error(
+                    errors,
+                    f"path policy {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r}",
+                    f"must set {field}={expected!r}",
+                )
+
+    coordinator_claims = owner_policies.get("master-coordinator", []).count(
+        PYTHON_SEMANTIC_SUPPORT_POLICY_ID
+    )
+    if coordinator_claims != 1:
+        _add_error(
+            errors,
+            "ownership owner 'master-coordinator'",
+            f"must claim {PYTHON_SEMANTIC_SUPPORT_POLICY_ID!r} exactly once",
+        )
 
     for owner, references in owner_policies.items():
         for policy_id in references:

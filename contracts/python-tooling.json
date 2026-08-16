@@ -5,10 +5,10 @@
   "scope": {
     "roots": ["src/gravity", "tools"],
     "excluded_segments": ["__pycache__"],
-    "inventory_count": 160,
-    "inventory_sha256": "sha256:00e26fbc34dc55459f397e0c0f9e6fdf0eb5ea74fe77368db2750f4676841f1c",
-    "dependency_edge_count": 188,
-    "dependency_edge_sha256": "sha256:6c6e79cde46a127ffb0e9c480505502ecd813a1e152b0a4648b250c79d271c25"
+    "inventory_count": 162,
+    "inventory_sha256": "sha256:14eff241793913f1fad415922bbde1370e48988ed65387d494389a2ae5b02224",
+    "dependency_edge_count": 190,
+    "dependency_edge_sha256": "sha256:265fcf887320b01426f863779b8708d3d9952c743f638a304056afcdb82f6d62"
   },
   "enums": {
     "categories": [
@@ -87,14 +87,14 @@
   },
   "policies": [
     {
-      "id": "unresolved-semantic-source",
-      "kind": "unresolved",
+      "id": "reviewed-python-semantic-support",
+      "kind": "reviewed",
       "patterns": ["src/gravity/"],
       "authorizes_edits": false,
       "review_required": true,
-      "blocking": true,
-      "external_contract": null,
-      "external_policy_id": null
+      "blocking": false,
+      "external_contract": "contracts/project-structure.json",
+      "external_policy_id": "reviewed-python-semantic-support"
     },
     {
       "id": "reviewed-central-routing",
@@ -162,7 +162,7 @@
       "effects": [],
       "output_classes": ["none"],
       "authority_ceiling": "none",
-      "source_path_policy_refs": ["unresolved-semantic-source"],
+      "source_path_policy_refs": ["reviewed-python-semantic-support"],
       "output_path_policy_refs": [],
       "import_safety": "library",
       "execution_mode": "parallel-safe",
@@ -181,7 +181,7 @@
       "effects": ["filesystem-read"],
       "output_classes": ["none"],
       "authority_ceiling": "none",
-      "source_path_policy_refs": ["unresolved-semantic-source"],
+      "source_path_policy_refs": ["reviewed-python-semantic-support"],
       "output_path_policy_refs": [],
       "import_safety": "library",
       "execution_mode": "parallel-safe",
@@ -197,7 +197,7 @@
       "effects": ["filesystem-read"],
       "output_classes": ["none"],
       "authority_ceiling": "none",
-      "source_path_policy_refs": ["unresolved-semantic-source"],
+      "source_path_policy_refs": ["reviewed-python-semantic-support"],
       "output_path_policy_refs": [],
       "import_safety": "library",
       "execution_mode": "parallel-safe",
@@ -357,6 +357,7 @@
         "tools/validate_change_control.py",
         "tools/validate_contract_traceability.py",
         "tools/validate_evidence_producers.py",
+        "tools/validate_artifact_census.py",
         "tools/validate_foundation_document_coverage.py",
         "tools/validate_full_language_roadmap.py",
         "tools/validate_gravity_docs.py",
@@ -384,6 +385,22 @@
       "import_safety": "guarded-cli",
       "execution_mode": "parallel-safe",
       "test_surfaces": ["import-smoke", "validator-cli"]
+    },
+    {
+      "id": "artifact-census-validator",
+      "includes": ["tools/validate_artifact_census.py"],
+      "excludes": [],
+      "category": "validator",
+      "role": "artifact-validator",
+      "allowed_dependency_categories": [],
+      "effects": ["clock", "filesystem-read", "process", "stdout"],
+      "output_classes": ["stdout-diagnostic"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
+      "import_safety": "guarded-cli",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "validator-cli", "unit-test"]
     },
     {
       "id": "read-only-contract-validators",
@@ -547,7 +564,7 @@
     "semantic_root": "src/gravity",
     "tooling_root": "tools",
     "test_pattern": "tools/tests/test_*.py",
-    "unresolved_semantic_policy": "unresolved-semantic-source"
+    "semantic_source_policy": "reviewed-python-semantic-support"
   },
   "readme_contract": {
     "path": "tools/README.md",
@@ -556,7 +573,7 @@
       "Validator: `python3 tools/validate_python_tooling_contract.py`",
       "Scope: every tracked or intentional untracked non-`__pycache__` Python file under `src/gravity/` and `tools/`.",
       "Python authority: none; observations and generated outputs remain non-authoritative unless a separate normative contract and coordinator admission establish otherwise.",
-      "`src/gravity` ownership: unresolved and blocking in the external project-structure contract; this contract classifies the files but does not authorize edits.",
+      "`src/gravity` ownership: coordinator-reviewed semantic support in the external project-structure contract. This contract does not authorize Python edits or compiler authority, and these paths remain outside Stage0 module ownership and slices.",
       "Generated evidence and coverage outputs use the isolated atomic publication layer and remain separate from reviewed source.",
       "Reviewed-source generators require coordinator review and nonparallel execution; this contract does not authorize running them or admitting their output.",
       "Static-analysis limit: AST checks cannot prove dynamically constructed imports, calls, or runtime behavior; such behavior requires separate execution evidence and review.",

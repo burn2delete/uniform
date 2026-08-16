@@ -138,7 +138,9 @@
   "bootstrap/clojure/src/gravity/c13_optimization.clj" :sh-optimization
   "bootstrap/clojure/src/gravity/c14_lowering.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/c15_diagnostics.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/c15_c16_pass_cache.clj" :sh-incremental
   "bootstrap/clojure/src/gravity/c16_incremental.clj" :sh-incremental
+  "bootstrap/clojure/src/gravity/c17_c18_pass_cache.clj" :sh-verification
   "bootstrap/clojure/src/gravity/c17_plugin.clj" :sh-pass-api
   "bootstrap/clojure/src/gravity/c18_verification.clj" :sh-verification
   "bootstrap/clojure/src/gravity/c2_artifact_identity.clj" :sh-reader
@@ -170,6 +172,7 @@
   "bootstrap/clojure/src/gravity/macro_expansion.clj" :sh-macro
   "bootstrap/clojure/src/gravity/module_analysis.clj" :sh-resolution
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" :sh-optimization
+  "bootstrap/clojure/src/gravity/pass_cache.clj" :sh-incremental
   "bootstrap/clojure/src/gravity/pass_execution.clj" :sh-verification
   "bootstrap/clojure/src/gravity/profile_validation.clj" :sh-profile
   "bootstrap/clojure/src/gravity/reader_cursor.clj" :sh-reader
@@ -212,7 +215,9 @@
   "bootstrap/clojure/test/gravity/c13_optimization_test.clj" :sh-optimization
   "bootstrap/clojure/test/gravity/c14_lowering_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/c15_diagnostics_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/c15_c16_pass_cache_test.clj" :sh-incremental
   "bootstrap/clojure/test/gravity/c16_incremental_test.clj" :sh-incremental
+  "bootstrap/clojure/test/gravity/c17_c18_pass_cache_test.clj" :sh-verification
   "bootstrap/clojure/test/gravity/c17_plugin_test.clj" :sh-pass-api
   "bootstrap/clojure/test/gravity/c18_verification_test.clj" :sh-verification
   "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj" :sh-reader
@@ -244,6 +249,7 @@
   "bootstrap/clojure/test/gravity/macro_expansion_test.clj" :sh-macro
   "bootstrap/clojure/test/gravity/module_analysis_test.clj" :sh-resolution
   "bootstrap/clojure/test/gravity/optimization_lowering_test.clj" :sh-optimization
+  "bootstrap/clojure/test/gravity/pass_cache_test.clj" :sh-incremental
   "bootstrap/clojure/test/gravity/pass_execution_test.clj" :sh-verification
   "bootstrap/clojure/test/gravity/profile_validation_test.clj" :sh-profile
   "bootstrap/clojure/test/gravity/reader_cursor_test.clj" :sh-reader
@@ -264,7 +270,9 @@
   "c13-optimization" :sh-optimization
   "c14-lowering" :master-coordinator
   "c15-diagnostics" :master-coordinator
+  "c15-c16-pass-cache" :sh-incremental
   "c16-incremental" :sh-incremental
+  "c17-c18-pass-cache" :sh-verification
   "c17-plugin" :sh-pass-api
   "c18-verification" :sh-verification
   "c2-artifact-identity" :sh-reader
@@ -296,6 +304,7 @@
   "macro-expansion" :sh-macro
   "module-analysis" :sh-resolution
   "optimization-lowering" :sh-optimization
+  "pass-cache" :sh-incremental
   "pass-execution" :sh-verification
   "profile-validation" :sh-profile
   "reader-cursor" :sh-reader

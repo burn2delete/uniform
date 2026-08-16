@@ -266,6 +266,65 @@
       "impact_excludes": []
     },
     {
+      "id": "artifact-census-contract",
+      "lane": "preflight",
+      "cost": "cheap",
+      "resource_class": "python-cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "command": [
+        "python3",
+        "tools/validate_artifact_census.py"
+      ],
+      "inputs": [
+        "contracts/artifact-census.json",
+        "tools/validate_artifact_census.py",
+        "tools/tests/test_validate_artifact_census.py",
+        "contracts/python-tooling.json",
+        "contracts/evidence-producers.json",
+        "tools/development_verification_manifest.json",
+        "docs/artifacts/**",
+        "target/**"
+      ],
+      "depends_on": [
+        "m0-docs"
+      ],
+      "impact_excludes": []
+    },
+    {
+      "id": "artifact-census-unit",
+      "lane": "preflight",
+      "cost": "cheap",
+      "resource_class": "python-cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "tools.tests.test_validate_artifact_census",
+        "-v"
+      ],
+      "inputs": [
+        "contracts/artifact-census.json",
+        "tools/validate_artifact_census.py",
+        "tools/tests/test_validate_artifact_census.py",
+        "contracts/python-tooling.json",
+        "contracts/evidence-producers.json",
+        "tools/development_verification_manifest.json"
+      ],
+      "depends_on": [
+        "artifact-census-contract"
+      ],
+      "impact_excludes": []
+    },
+    {
       "id": "stage0-project-structure",
       "lane": "preflight",
       "cost": "cheap",
@@ -3076,7 +3135,9 @@
         "bootstrap/clojure/src/gravity/c13_optimization.clj",
         "bootstrap/clojure/src/gravity/c14_lowering.clj",
         "bootstrap/clojure/src/gravity/c15_diagnostics.clj",
+        "bootstrap/clojure/src/gravity/c15_c16_pass_cache.clj",
         "bootstrap/clojure/src/gravity/c16_incremental.clj",
+        "bootstrap/clojure/src/gravity/c17_c18_pass_cache.clj",
         "bootstrap/clojure/src/gravity/c17_plugin.clj",
         "bootstrap/clojure/src/gravity/c18_verification.clj",
         "bootstrap/clojure/src/gravity/c4_macro_evidence.clj",
@@ -3092,6 +3153,7 @@
         "bootstrap/clojure/src/gravity/digest.clj",
         "bootstrap/clojure/src/gravity/macro_expansion.clj",
         "bootstrap/clojure/src/gravity/optimization_lowering.clj",
+        "bootstrap/clojure/src/gravity/pass_cache.clj",
         "bootstrap/clojure/src/gravity/pass_execution.clj",
         "bootstrap/clojure/src/gravity/profile_validation.clj",
         "bootstrap/clojure/test/gravity/c10_safety_analysis_test.clj",
@@ -3100,7 +3162,9 @@
         "bootstrap/clojure/test/gravity/c13_optimization_test.clj",
         "bootstrap/clojure/test/gravity/c14_lowering_test.clj",
         "bootstrap/clojure/test/gravity/c15_diagnostics_test.clj",
+        "bootstrap/clojure/test/gravity/c15_c16_pass_cache_test.clj",
         "bootstrap/clojure/test/gravity/c16_incremental_test.clj",
+        "bootstrap/clojure/test/gravity/c17_c18_pass_cache_test.clj",
         "bootstrap/clojure/test/gravity/c17_plugin_test.clj",
         "bootstrap/clojure/test/gravity/c18_verification_test.clj",
         "bootstrap/clojure/test/gravity/c4_macro_evidence_test.clj",
@@ -3115,6 +3179,7 @@
         "bootstrap/clojure/test/gravity/darwin_publication_test.clj",
         "bootstrap/clojure/test/gravity/macro_expansion_test.clj",
         "bootstrap/clojure/test/gravity/optimization_lowering_test.clj",
+        "bootstrap/clojure/test/gravity/pass_cache_test.clj",
         "bootstrap/clojure/test/gravity/pass_execution_test.clj",
         "bootstrap/clojure/test/gravity/profile_validation_test.clj"
       ],
@@ -4332,6 +4397,82 @@
       ]
     },
     {
+      "id": "stage0-c2-pass-cache-integration",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "resource_class": "memory-heavy",
+      "lock": "/tmp/gravity-sh07-heavy.lock",
+      "exclusive": true,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "timeout_seconds": 1800,
+      "command": [
+        "clojure", "-M:dev-test",
+        "--namespace", "gravity.c2-pass-cache-test",
+        "--exact", "gravity.c2-pass-cache-test/canonical-semantic-key-is-bounded-type-sensitive-and-path-scoped",
+        "--exact", "gravity.c2-pass-cache-test/bounded-source-snapshot-rejects-size-links-and-traversal",
+        "--exact", "gravity.c2-pass-cache-test/generic-v2-adapter-preserves-c2-results-and-ignores-v1",
+        "--exact", "gravity.c2-pass-cache-test/generic-v2-adapter-binds-current-c2-producer-policy",
+        "--exact", "gravity.c2-pass-cache-test/generic-v2-adapter-corruption-is-rejected-and-not-replaced",
+        "--exact", "gravity.c2-pass-cache-test/generic-v2-adapter-direct-store-mints-a-current-receipt",
+        "--exact", "gravity.c2-pass-cache-test/generic-v2-adapter-same-key-concurrency-executes-one-c2-producer",
+        "--exact", "gravity.c2-pass-cache-test/leaf-contract-is-explicitly-local-and-nonauthoritative",
+        "--exact", "gravity.c2-pass-cache-test/opt-in-bootstrap-integration-reuses-without-reader-execution"
+      ],
+      "inputs": [
+        "deps.edn",
+        "bin/gravity",
+        "bootstrap/gravity/**",
+        "contracts/project-structure.json",
+        "contracts/stage0-clojure-components.json",
+        "docs/self-hosting-slice-ownership.edn",
+        "bootstrap/clojure/src/gravity/c2_pass_cache.clj",
+        "bootstrap/clojure/src/gravity/digest.clj",
+        "bootstrap/clojure/src/gravity/pass_cache.clj",
+        "bootstrap/clojure/src/gravity/pass_execution.clj",
+        "bootstrap/clojure/test/gravity/development_test_runner.clj",
+        "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj"
+      ],
+      "tool_inputs": ["tools/validate_project_structure.py"],
+      "depends_on": ["stage0-project-structure"],
+      "impact_excludes": ["bootstrap/gravity/**"]
+    },
+    {
+      "id": "stage0-c2-pass-cache-envelope-profile",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "resource_class": "memory-heavy",
+      "lock": "/tmp/gravity-sh07-heavy.lock",
+      "exclusive": true,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "timeout_seconds": 1800,
+      "command": [
+        "clojure", "-M:dev-test",
+        "--namespace", "gravity.c2-pass-cache-test",
+        "--exact", "gravity.c2-pass-cache-test/generic-v2-adapter-preserves-opaque-c2-size-and-depth-profile"
+      ],
+      "inputs": [
+        "deps.edn",
+        "bin/gravity",
+        "bootstrap/gravity/**",
+        "contracts/project-structure.json",
+        "contracts/stage0-clojure-components.json",
+        "docs/self-hosting-slice-ownership.edn",
+        "bootstrap/clojure/src/gravity/c2_pass_cache.clj",
+        "bootstrap/clojure/src/gravity/digest.clj",
+        "bootstrap/clojure/src/gravity/pass_cache.clj",
+        "bootstrap/clojure/src/gravity/pass_execution.clj",
+        "bootstrap/clojure/test/gravity/development_test_runner.clj",
+        "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj"
+      ],
+      "tool_inputs": ["tools/validate_project_structure.py"],
+      "depends_on": ["stage0-project-structure"],
+      "impact_excludes": ["bootstrap/gravity/**"]
+    },
+    {
       "id": "stage0-c3-compatibility",
       "lane": "focused",
       "cost": "cheap",
@@ -4979,7 +5120,9 @@
         "bootstrap/clojure/test/gravity/c13_optimization_test.clj",
         "bootstrap/clojure/test/gravity/c14_lowering_test.clj",
         "bootstrap/clojure/test/gravity/c15_diagnostics_test.clj",
+        "bootstrap/clojure/test/gravity/c15_c16_pass_cache_test.clj",
         "bootstrap/clojure/test/gravity/c16_incremental_test.clj",
+        "bootstrap/clojure/test/gravity/c17_c18_pass_cache_test.clj",
         "bootstrap/clojure/test/gravity/c17_plugin_test.clj",
         "bootstrap/clojure/test/gravity/c18_verification_test.clj",
         "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj",
@@ -5011,6 +5154,7 @@
         "bootstrap/clojure/test/gravity/macro_expansion_test.clj",
         "bootstrap/clojure/test/gravity/module_analysis_test.clj",
         "bootstrap/clojure/test/gravity/optimization_lowering_test.clj",
+        "bootstrap/clojure/test/gravity/pass_cache_test.clj",
         "bootstrap/clojure/test/gravity/pass_execution_test.clj",
         "bootstrap/clojure/test/gravity/profile_validation_test.clj",
         "bootstrap/clojure/test/gravity/reader_cursor_test.clj",

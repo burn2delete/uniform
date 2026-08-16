@@ -25,16 +25,22 @@
 (def ^:const summary-schema
   :gravity/bootstrap-free-leaf-test-summary-v1)
 
-(def ^:const expected-catalog-count 44)
+(def ^:const expected-catalog-count 47)
 
 (def excluded-top-level-test-files
-  "The six top-level tests that intentionally remain outside the leaf runner."
+  "The top-level tests that intentionally remain outside the leaf runner."
   #{"bootstrap_test.clj"
     "cli_test.clj"
     "diagnostics_test.clj"
     "reader_primitives_test.clj"
     "source_span_test.clj"
-    "c2_pass_cache_test.clj"})
+    "c2_pass_cache_test.clj"
+    "p15_native_launcher_test.clj"
+    "p15_native_plan_specialization_test.clj"
+    "p15_native_runtime_driver_test.clj"
+    "p15_public_native_run_test.clj"
+    "p15_public_native_run_wrapper_test.clj"
+    "project_structure_test_runner_test.clj"})
 
 (def groups
   "The only groups accepted by --group."
@@ -49,7 +55,9 @@
    "c13_optimization"
    "c14_lowering"
    "c15_diagnostics"
+   "c15_c16_pass_cache"
    "c16_incremental"
+   "c17_c18_pass_cache"
    "c17_plugin"
    "c18_verification"
    "c2_artifact_identity"
@@ -78,6 +86,7 @@
    "macro_expansion"
    "module_analysis"
    "optimization_lowering"
+   "pass_cache"
    "pass_execution"
    "profile_validation"
    "reader_cursor"
@@ -689,7 +698,7 @@
    "Usage: clojure -M:leaf-test [options]\n"
    "\n"
    "Runs each reviewed bootstrap-free top-level Stage 0 test in a fresh JVM.\n"
-   "With no selector, all 44 catalog entries run in canonical order.\n"
+   "With no selector, all 47 catalog entries run in canonical order.\n"
    "\n"
    "Options (repeatable):\n"
    "  --namespace NAME  select one namespace exactly\n"

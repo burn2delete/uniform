@@ -42,6 +42,97 @@ class ProjectStructureValidationTests(unittest.TestCase):
     def test_canonical_manifest_is_valid(self) -> None:
         self.assertEqual([], validator.validate_manifest(self.manifest))
 
+    def test_python_semantic_support_is_reviewed_coordinator_path_outside_stage_modules(self) -> None:
+        policy = next(
+            item
+            for item in self.manifest["path_policy"]["policies"]
+            if item["id"] == "reviewed-python-semantic-support"
+        )
+        self.assertEqual("reviewed", policy["kind"])
+        self.assertEqual("master-coordinator", policy["owner"])
+        self.assertEqual(["src/gravity/"], policy["patterns"])
+        self.assertTrue(policy["editable"])
+        self.assertTrue(policy["review_required"])
+        self.assertNotIn("src/gravity/reader.py", self.manifest["ownership"]["module_paths"])
+
+    def test_python_semantic_support_cannot_be_assigned_to_stage_module_paths(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["ownership"]["module_paths"]["src/gravity/reader.py"] = "master-coordinator"
+
+        errors = self.errors_for(mutate)
+        self.assertTrue(
+            any("src/gravity support paths must remain outside ownership.module_paths" in error for error in errors),
+            errors,
+        )
+
+    def test_python_semantic_support_policy_is_required_even_without_owner_reference(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["path_policy"]["policies"] = [
+                item
+                for item in manifest["path_policy"]["policies"]
+                if item["id"] != "reviewed-python-semantic-support"
+            ]
+            coordinator = next(item for item in manifest["ownership"]["owners"] if item["id"] == "master-coordinator")
+            coordinator["path_policy_ids"].remove("reviewed-python-semantic-support")
+
+        errors = self.errors_for(mutate)
+        self.assertTrue(any("missing required policy 'reviewed-python-semantic-support'" in error for error in errors), errors)
+
+    def test_python_semantic_support_policy_shape_is_exact(self) -> None:
+        fields_and_values = {
+            "owner": "sh-reader",
+            "reviewer": "sh-reader",
+            "editable": False,
+            "review_required": False,
+            "allow_overlap": True,
+        }
+        for field, value in fields_and_values.items():
+            def mutate(manifest: dict, field=field, value=value) -> None:
+                policy = next(
+                    item
+                    for item in manifest["path_policy"]["policies"]
+                    if item["id"] == "reviewed-python-semantic-support"
+                )
+                policy[field] = value
+
+            errors = self.errors_for(mutate)
+            self.assertTrue(any(f"must set {field}=" in error or "coordinator-owned" in error for error in errors), errors)
+
+    def test_python_semantic_support_requires_exact_coordinator_claim(self) -> None:
+        for duplicate in (False, True):
+            def mutate(manifest: dict, duplicate=duplicate) -> None:
+                coordinator = next(
+                    item
+                    for item in manifest["ownership"]["owners"]
+                    if item["id"] == "master-coordinator"
+                )
+                if duplicate:
+                    coordinator["path_policy_ids"].append(
+                        "reviewed-python-semantic-support"
+                    )
+                else:
+                    coordinator["path_policy_ids"].remove(
+                        "reviewed-python-semantic-support"
+                    )
+
+            errors = self.errors_for(mutate)
+            self.assertTrue(
+                any("must claim 'reviewed-python-semantic-support' exactly once" in error for error in errors),
+                errors,
+            )
+
+    def test_python_semantic_support_cannot_be_assigned_to_a_stage0_slice(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["slices"][0]["path_policy_ids"].append(
+                "reviewed-python-semantic-support"
+            )
+
+        errors = self.errors_for(mutate)
+        self.assertTrue(
+            any("src/gravity semantic support must remain outside Stage0 slices" in error for error in errors),
+            errors,
+        )
+
     def test_stage0_component_contract_projection_is_valid(self) -> None:
         contract = validator.load_stage0_component_contract()
         errors: list[str] = []
@@ -79,7 +170,7 @@ class ProjectStructureValidationTests(unittest.TestCase):
         contract = validator.load_stage0_component_contract()
         by_id = {component["id"]: component for component in contract["components"]}
         expected_by_id = validator.STAGE0_LEAF_EXECUTION_GROUP_BY_COMPONENT
-        self.assertEqual(44, len(expected_by_id))
+        self.assertEqual(47, len(expected_by_id))
         self.assertEqual(
             validator.STAGE0_LEAF_EXECUTION_GROUP_COUNTS,
             {
@@ -109,6 +200,7 @@ class ProjectStructureValidationTests(unittest.TestCase):
             "module-analysis": ("compiler", "foundation-reader"),
             "compiler-verification-shared": ("compatibility-support", "compiler"),
             "darwin-publication": ("compatibility-support", "compiler"),
+            "pass-cache": ("compatibility-support", "compiler"),
         }
         for component_id, expected in expected_distinctions.items():
             component = by_id[component_id]
@@ -206,7 +298,7 @@ class ProjectStructureValidationTests(unittest.TestCase):
     def test_stage0_edn_projection_has_exact_reserved_and_compatibility_shapes(self) -> None:
         reserved, compatibility, errors = validator.parse_stage0_component_ownership()
         self.assertEqual([], errors)
-        self.assertEqual(50, len(reserved))
+        self.assertEqual(53, len(reserved))
         self.assertEqual(5, len(compatibility))
         self.assertEqual(sorted(compatibility), compatibility)
 

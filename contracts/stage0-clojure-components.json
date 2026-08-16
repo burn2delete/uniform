@@ -6,10 +6,10 @@
   "source_root": "bootstrap/clojure/src",
   "test_root": "bootstrap/clojure/test",
   "counts": {
-    "components": 50,
-    "sources": 50,
-    "tests": 50,
-    "bootstrap_free_tests": 44,
+    "components": 53,
+    "sources": 53,
+    "tests": 53,
+    "bootstrap_free_tests": 47,
     "compatibility_tests": 5,
     "coordinator_tests": 1
   },
@@ -413,6 +413,44 @@
       "leaf_execution_group": "compiler"
     },
     {
+      "id": "c15-c16-pass-cache",
+      "owner": "sh-incremental",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c15_c16_pass_cache.clj",
+        "namespace": "gravity.c15-c16-pass-cache"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c15_c16_pass_cache_test.clj",
+        "namespace": "gravity.c15-c16-pass-cache-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "pass-cache",
+        "pass-execution"
+      ],
+      "direct_test_dependencies": [
+        "c15-c16-pass-cache",
+        "c15-diagnostics",
+        "c16-incremental",
+        "digest",
+        "pass-cache"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "c15-c16-pass-cache-contract",
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": "compiler"
+    },
+    {
       "id": "c15-diagnostics",
       "owner": "master-coordinator",
       "source": {
@@ -478,6 +516,47 @@
       },
       "contract_var": "namespace-contract",
       "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c17-c18-pass-cache",
+      "owner": "sh-verification",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c17_c18_pass_cache.clj",
+        "namespace": "gravity.c17-c18-pass-cache"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c17_c18_pass_cache_test.clj",
+        "namespace": "gravity.c17-c18-pass-cache-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "pass-cache",
+        "pass-execution"
+      ],
+      "direct_test_dependencies": [
+        "c15-c16-pass-cache",
+        "c15-diagnostics",
+        "c16-incremental",
+        "c17-c18-pass-cache",
+        "c17-plugin",
+        "c18-verification",
+        "digest",
+        "pass-cache"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "c17-c18-pass-cache-contract",
+      "stage0_group": "compatibility-support",
       "leaf_execution_group": "compiler"
     },
     {
@@ -628,7 +707,9 @@
         "execution_requires_bootstrap": true
       },
       "direct_source_dependencies": [
-        "digest"
+        "digest",
+        "pass-cache",
+        "pass-execution"
       ],
       "direct_test_dependencies": [
         "bootstrap",
@@ -1518,6 +1599,40 @@
       },
       "contract_var": "shared-engine-contract",
       "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "pass-cache",
+      "owner": "sh-incremental",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/pass_cache.clj",
+        "namespace": "gravity.pass-cache"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/pass_cache_test.clj",
+        "namespace": "gravity.pass-cache-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest",
+        "pass-execution"
+      ],
+      "direct_test_dependencies": [
+        "pass-cache"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "pass-cache-contract",
+      "stage0_group": "compatibility-support",
       "leaf_execution_group": "compiler"
     },
     {
