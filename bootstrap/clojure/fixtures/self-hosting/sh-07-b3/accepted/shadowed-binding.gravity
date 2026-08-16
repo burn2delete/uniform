@@ -1,0 +1,14 @@
+; SH-07-B3 nested shadowing retains distinct binding identities.
+(ns self-hosting.sh07-b3.shadowed-binding
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [shadowed-value])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B3 :fixture :shadowed-binding}))
+
+(def shadowed-value
+  (let [value 1]
+    (let [value value]
+      value)))

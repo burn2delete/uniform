@@ -1,0 +1,17 @@
+; SH-07-B10 lowers literal clauses followed by an explicit wildcard.
+(ns self-hosting.sh07-b10.literal-clauses-wildcard
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [classify-small])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10
+              :fixture :literal-clauses-wildcard
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn classify-small [value]
+  (match value
+    0 :zero
+    1 :one
+    _ :other))

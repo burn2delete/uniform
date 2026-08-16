@@ -1,0 +1,111 @@
+(ns gravity.self-hosting.sh25.rejected.invalid-component-builds
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh25-incomplete-catalog-request
+             sh25-forward-dependency-request
+             sh25-invalid-source-identity-request
+             sh25-invalid-envelope-request
+             sh25-incomplete-output-request
+             sh25-illegal-meta-request
+             sh25-invalid-prerequisite-request
+             sh25-ambient-effect-request
+             sh25-coherent-substitution-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh25-replace-component [request index replacement]
+  (assoc request :components
+         (assoc (get request :components) index replacement)))
+
+(defn sh25-incomplete-catalog-request [request]
+  (assoc request :components []))
+
+(defn sh25-forward-dependency-request [request]
+  (let [component (get (get request :components) 1)]
+    (sh25-replace-component
+     request 1
+     (assoc component :dependencies [:runtime-subset]))))
+
+(defn sh25-invalid-source-identity-request [request]
+  (let [component (get (get request :components) 2)
+        identity (get component :source-identity)]
+    (sh25-replace-component
+     request 2
+     (assoc component :source-identity
+            (assoc identity :content-hash "sha256:changed")))))
+
+(defn sh25-invalid-envelope-request [request]
+  (let [component (get (get request :components) 3)
+        envelope (get component :authenticated-input)]
+    (sh25-replace-component
+     request 3
+     (assoc component :authenticated-input
+            (assoc envelope :subject
+                   (assoc (get envelope :subject)
+                          :component-id :other-component))))))
+
+(defn sh25-incomplete-output-request [request]
+  (let [component (get (get request :components) 4)
+        product (get component :build-product)]
+    (sh25-replace-component
+     request 4
+     (assoc component :build-product
+            (assoc product :records
+                   (assoc (get product :records) :manifest {}))))))
+
+(defn sh25-illegal-meta-request [request]
+  (let [component (get (get request :components) 5)
+        legality (get component :meta-legality)]
+    (sh25-replace-component
+     request 5
+     (assoc component :meta-legality
+            (assoc legality :effects #{:filesystem/read})))))
+
+(defn sh25-invalid-prerequisite-request [request]
+  (assoc request :sh24-driver
+         (assoc (get request :sh24-driver)
+                :verification
+                (assoc
+                 (get (get request :sh24-driver) :verification)
+                 :status :rejected))))
+
+(defn sh25-ambient-effect-request [request]
+  (assoc request :effects #{:filesystem/read}))
+
+(defn sh25-coherent-substitution-request [request]
+  (let [component (get (get request :components) 2)
+        source (get component :source-identity)
+        envelope (get component :authenticated-input)
+        subject (get envelope :subject)
+        legality (get component :meta-legality)
+        product (get component :build-product)
+        records (get product :records)
+        artifact-record (get records :artifact)
+        manifest (get records :manifest)
+        provenance (get records :provenance)
+        changed "sha256:coherent-substitution"]
+    (sh25-replace-component
+     request 2
+     (assoc
+      (assoc
+       (assoc
+        (assoc component :source-identity
+               (assoc source :content-hash changed))
+        :authenticated-input
+        (assoc envelope :subject
+               (assoc subject :source-content-hash changed)))
+       :meta-legality
+       (assoc legality :source-content-hash changed))
+      :build-product
+      (assoc
+       (assoc product :source-content-hash changed)
+       :records
+       (assoc
+        (assoc
+         (assoc records :artifact
+                (assoc artifact-record :source-content-hash changed))
+         :manifest
+         (assoc manifest :source-content-hash changed))
+        :provenance
+        (assoc provenance :source-content-hash changed)))))))

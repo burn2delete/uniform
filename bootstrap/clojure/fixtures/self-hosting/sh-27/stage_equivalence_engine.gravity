@@ -1,0 +1,1039 @@
+(ns gravity.self-hosting.sh27.stage-equivalence-engine
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh27-stage-equivalence-policy
+             sh27-compare-stages
+             sh27-verify-comparison])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh27-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (sh27-member-from? values value (+ index 1)))))
+
+(defn sh27-member? [values value]
+  (if (vector? values)
+    (sh27-member-from? values value 0)
+    false))
+
+(defn sh27-nonempty-string? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (<= (count value) 4096)
+      false)
+    false))
+
+(defn sh27-unique-from? [values index]
+  (if (= index (count values))
+    true
+    (if
+     (sh27-member-from?
+      values (get values index) (+ index 1))
+      false
+      (sh27-unique-from? values (+ index 1)))))
+
+(defn sh27-unique? [values]
+  (if (vector? values)
+    (sh27-unique-from? values 0)
+    false))
+
+(defn sh27-keywords-from? [values index]
+  (if (= index (count values))
+    true
+    (if (keyword? (get values index))
+      (sh27-keywords-from? values (+ index 1))
+      false)))
+
+(defn sh27-keyword-vector? [values maximum]
+  (if (vector? values)
+    (if (<= (count values) maximum)
+      (if (sh27-keywords-from? values 0)
+        (sh27-unique? values)
+        false)
+      false)
+    false))
+
+(defn sh27-nonnegative-integer? [value]
+  (if (integer? value)
+    (>= value 0)
+    false))
+
+(defn sh27-lowercase-hex-from? [value index]
+  (if (= index 71)
+    true
+    (if
+     (sh27-member-from?
+      (vec "0123456789abcdef") (get value index) 0)
+      (sh27-lowercase-hex-from? value (+ index 1))
+      false)))
+
+(defn sh27-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (if (= (get value 0) (get "sha256:" 0))
+        (if (= (get value 1) (get "sha256:" 1))
+          (if (= (get value 2) (get "sha256:" 2))
+            (if (= (get value 3) (get "sha256:" 3))
+              (if (= (get value 4) (get "sha256:" 4))
+                (if (= (get value 5) (get "sha256:" 5))
+                  (if (= (get value 6) (get "sha256:" 6))
+                    (sh27-lowercase-hex-from? value 7)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-stage-equivalence-policy []
+  {:artifact :gravity/sh27-stage-equivalence-policy
+   :schema-version 1
+   :governing-documents [:BOOT6 :BOOT7 :PKG7]
+   :required-modes
+   [:artifact
+    :manifest
+    :diagnostic
+    :conformance
+    :runtime-output
+    :ir-modulo-id
+    :reviewed-delta]
+   :maximum-products 32
+   :maximum-deltas 32
+   :maximum-mode-values 256
+   :maximum-string-length 4096
+   :maximum-carrier-nodes 32768
+   :maximum-carrier-depth 64
+   :maximum-container-width 1024
+   :maximum-scalar-units 1048576
+   :target-independent-opcodes
+   [:argument :literal :call :branch :jump :phi
+    :runtime-check :return :error-return :panic]
+   :diagnostics
+   ["BOOT7001" "BOOT7002" "BOOT7003" "BOOT7004"
+    "BOOT7005" "BOOT7006" "BOOT7007"]
+   :unsupported-strategies
+   [:authentic-sh26-stage-rebuild-ingress
+    :diverse-toolchain-rebuild
+    :release-revocation-decision
+    :performance-bound-equivalence]
+   :pending
+   [:authenticated-sh26-stage-pair
+    :canonical-artifact-decoder
+    :independent-stage-comparator
+    :public-bootstrap-routing
+    :seedless-execution
+    :sh27-completion]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh27-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        (seq? value)))))
+
+(defn sh27-aggregate-width [value]
+  (if (map? value)
+    (* 2 (count value))
+    (count value)))
+
+(defn sh27-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (vec value)))
+
+(defn sh27-max [left right]
+  (if (> left right) left right))
+
+(defn sh27-carrier-preflight [value]
+  (loop [frontier [[value 0]]
+         nodes 0
+         scalar-units 0
+         observed-depth 0
+         observed-width 0]
+    (if (= (count frontier) 0)
+      {:status :accepted
+       :nodes nodes
+       :scalar-units scalar-units
+       :maximum-depth observed-depth
+       :maximum-width observed-width}
+      (let [entry (first frontier)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (> next-nodes 32768)
+          {:status :rejected :reason :carrier-node-bound}
+          (if (> depth 64)
+            {:status :rejected :reason :carrier-depth-bound}
+            (if (sh27-aggregate? current)
+              (let [width (sh27-aggregate-width current)]
+                (if (> width 1024)
+                  {:status :rejected :reason :carrier-width-bound}
+                  (let [components
+                        (sh27-aggregate-components current)
+                        next-frontier
+                        (loop [remaining components
+                               result (rest frontier)]
+                          (if (= (count remaining) 0)
+                            result
+                            (recur
+                             (rest remaining)
+                             (conj result
+                                   [(first remaining)
+                                    (+ depth 1)]))))]
+                    (recur
+                     next-frontier next-nodes scalar-units
+                     (sh27-max observed-depth depth)
+                     (sh27-max observed-width width)))))
+              (let [next-scalar-units
+                    (+ scalar-units
+                       (count (vec (str current))))]
+                (if (> next-scalar-units 1048576)
+                  {:status :rejected
+                   :reason :carrier-scalar-bound}
+                  (recur
+                   (rest frontier) next-nodes
+                   next-scalar-units
+                   (sh27-max observed-depth depth)
+                   observed-width))))))))))
+
+(defn sh27-stage-valid? [stage]
+  (if (map? stage)
+    (if (= 7 (count stage))
+      (if (keyword? (get stage :stage-id))
+        (if (sh27-nonempty-string? (get stage :compiler-id))
+          (if (sh27-nonempty-string? (get stage :compiler-lineage-id))
+            (if (sh27-nonempty-string? (get stage :source-id))
+              (if (sh27-nonempty-string? (get stage :build-id))
+                (if (sh27-nonempty-string? (get stage :artifact-set-id))
+                  (sh27-nonempty-string?
+                   (get stage :actual-artifact-root))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-stage-transition-valid? [transition stage-a stage-b]
+  (if (map? transition)
+    (if (= 8 (count transition))
+      (if (= (get transition :parent-stage-id)
+             (get stage-a :stage-id))
+        (if (= (get transition :parent-compiler-id)
+               (get stage-a :compiler-id))
+          (if (= (get transition :parent-output-artifact-set-id)
+                 (get stage-a :artifact-set-id))
+            (if (= (get transition :child-stage-id)
+                   (get stage-b :stage-id))
+              (if (= (get transition :child-compiler-id)
+                     (get stage-b :compiler-id))
+                (if (= (get transition :child-compiler-lineage-id)
+                       (get stage-b :compiler-lineage-id))
+                  (if (= (get transition :child-compiler-parent-id)
+                         (get stage-a :compiler-id))
+                    (= (get transition
+                            :child-compiler-input-artifact-set-id)
+                       (get stage-a :artifact-set-id))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-environment-valid? [environment]
+  (if (map? environment)
+    (if (= 10 (count environment))
+      (if (sh27-nonempty-string? (get environment :environment-id))
+        (if (sh27-sha256-id? (get environment :toolchain-id))
+          (if (= true (get environment :locked-dependencies))
+            (if (= "C" (get environment :locale))
+              (if (= "UTC" (get environment :timezone))
+                (if (= :sorted (get environment :filesystem-order))
+                  (if (= :fixed (get environment :timestamp-policy))
+                    (if (integer? (get environment :random-seed))
+                      (if (= :disabled (get environment :network))
+                        (sh27-keyword-vector?
+                         (get environment :allowed-environment) 32)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-canonical-form-for-mode [mode]
+  (if (= mode :artifact)
+    :canonical-content-hash
+    (if (= mode :manifest)
+      :canonical-manifest
+      (if (= mode :diagnostic)
+        :stable-code-and-source-span
+        (if (= mode :conformance)
+          :conformance-result
+          (if (= mode :runtime-output)
+            :canonical-runtime-output
+            (if (= mode :ir-modulo-id)
+              :stable-id-renaming
+              (if (= mode :reviewed-delta)
+                :reviewed-provenance-delta
+                nil))))))))
+
+(defn sh27-manifest-valid? [value]
+  (if (map? value)
+    (if (= 1 (count value))
+      (sh27-keyword-vector? (get value :modules) 32)
+      false)
+    false))
+
+(defn sh27-runtime-output-valid? [value]
+  (if (map? value)
+    (if (= 3 (count value))
+      (if (string? (get value :stdout))
+        (if (<= (count (get value :stdout)) 4096)
+          (if (string? (get value :stderr))
+            (if (<= (count (get value :stderr)) 4096)
+              (if (integer? (get value :exit))
+                (if (>= (get value :exit) 0)
+                  (<= (get value :exit) 255)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-reviewed-value-valid? [value]
+  (if (map? value)
+    (if (= 1 (count value))
+      (sh27-nonempty-string? (get value :builder-note))
+      false)
+    false))
+
+(defn sh27-source-span-valid? [span]
+  (if (map? span)
+    (if (= 3 (count span))
+      (if (keyword? (get span :source-id))
+        (if (sh27-nonnegative-integer? (get span :start-byte))
+          (if (sh27-nonnegative-integer? (get span :end-byte))
+            (<= (get span :start-byte) (get span :end-byte))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-source-spans-valid-from? [spans index]
+  (if (= index (count spans))
+    true
+    (if (sh27-source-span-valid? (get spans index))
+      (sh27-source-spans-valid-from? spans (+ index 1))
+      false)))
+
+(defn sh27-source-spans-valid? [spans]
+  (if (vector? spans)
+    (if (<= (count spans) 256)
+      (sh27-source-spans-valid-from? spans 0)
+      false)
+    false))
+
+(defn sh27-product-basic-valid? [product]
+  (if (map? product)
+    (if (= 6 (count product))
+      (if (keyword? (get product :product-id))
+        (if
+         (sh27-member?
+          [:artifact :manifest :diagnostic :conformance
+           :runtime-output :ir-modulo-id :reviewed-delta]
+          (get product :mode))
+          (if (contains? product :left)
+            (if (contains? product :right)
+              (if (= (get product :canonical-form)
+                     (sh27-canonical-form-for-mode
+                      (get product :mode)))
+                (sh27-source-spans-valid?
+                 (get product :source-spans))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-modes-valid-from? [modes expected index]
+  (if (= index (count expected))
+    (= index (count modes))
+    (if (= (get modes index) (get expected index))
+      (sh27-modes-valid-from? modes expected (+ index 1))
+      false)))
+
+(defn sh27-modes-valid? [modes]
+  (if (vector? modes)
+    (sh27-modes-valid-from?
+     modes
+     (get (sh27-stage-equivalence-policy) :required-modes)
+     0)
+    false))
+
+(defn sh27-product-valid? [product]
+  (if (sh27-product-basic-valid? product)
+    (let [mode (get product :mode)
+          left (get product :left)
+          right (get product :right)]
+      (if (= mode :artifact)
+        (if (sh27-sha256-id? left)
+          (sh27-sha256-id? right)
+          false)
+        (if (= mode :manifest)
+          (if (sh27-manifest-valid? left)
+            (sh27-manifest-valid? right)
+            false)
+          (if (= mode :diagnostic)
+            true
+            (if (= mode :conformance)
+              (if (boolean? left) (boolean? right) false)
+              (if (= mode :runtime-output)
+                (if (sh27-runtime-output-valid? left)
+                  (sh27-runtime-output-valid? right)
+                  false)
+                (if (= mode :ir-modulo-id)
+                  true
+                  (if (sh27-reviewed-value-valid? left)
+                    (sh27-reviewed-value-valid? right)
+                    false))))))))
+    false))
+
+(defn sh27-products-valid-from? [products index]
+  (if (= index (count products))
+    true
+    (if (sh27-product-valid? (get products index))
+      (sh27-products-valid-from? products (+ index 1))
+      false)))
+
+(defn sh27-products-valid? [products]
+  (if (vector? products)
+    (if (= 7 (count products))
+      (if (sh27-products-valid-from? products 0)
+        (let [product-ids
+              (loop [remaining products result []]
+                (if (= (count remaining) 0)
+                  result
+                  (recur
+                   (rest remaining)
+                   (conj result
+                         (get (first remaining) :product-id)))))
+              product-modes
+              (loop [remaining products result []]
+                (if (= (count remaining) 0)
+                  result
+                  (recur
+                   (rest remaining)
+                   (conj result
+                         (get (first remaining) :mode)))))]
+          (if (sh27-unique? product-ids)
+            (sh27-unique? product-modes)
+            false))
+        false)
+      false)
+    false))
+
+(defn sh27-find-product-from? [products mode index]
+  (if (= index (count products))
+    nil
+    (if (= mode (get (get products index) :mode))
+      (get products index)
+      (sh27-find-product-from? products mode (+ index 1)))))
+
+(defn sh27-find-product [products mode]
+  (sh27-find-product-from? products mode 0))
+
+(defn sh27-products-cover-modes-from? [products modes index]
+  (if (= index (count modes))
+    true
+    (if (map? (sh27-find-product products (get modes index)))
+      (sh27-products-cover-modes-from? products modes (+ index 1))
+      false)))
+
+(defn sh27-products-cover-modes? [products modes]
+  (sh27-products-cover-modes-from? products modes 0))
+
+(defn sh27-products-match-modes-from? [products modes index]
+  (if (= index (count modes))
+    (= index (count products))
+    (if (= (get (get products index) :mode)
+           (get modes index))
+      (sh27-products-match-modes-from?
+       products modes (+ index 1))
+      false)))
+
+(defn sh27-products-match-modes? [products modes]
+  (sh27-products-match-modes-from? products modes 0))
+
+(defn sh27-diagnostic-entry-valid? [entry]
+  (if (map? entry)
+    (if (= 3 (count entry))
+      (if (sh27-nonempty-string? (get entry :code))
+        (if (sh27-source-span-valid? (get entry :source-span))
+          (sh27-member?
+           [:error :warning :information]
+           (get entry :severity))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-diagnostics-valid-from? [entries index]
+  (if (= index (count entries))
+    true
+    (if (sh27-diagnostic-entry-valid? (get entries index))
+      (sh27-diagnostics-valid-from? entries (+ index 1))
+      false)))
+
+(defn sh27-diagnostics-valid? [entries]
+  (if (vector? entries)
+    (if (<= (count entries) 256)
+      (sh27-diagnostics-valid-from? entries 0)
+      false)
+    false))
+
+(defn sh27-ir-operands-valid-from? [operands ordinal index]
+  (if (= index (count operands))
+    true
+    (if (sh27-nonnegative-integer? (get operands index))
+      (if (< (get operands index) ordinal)
+        (sh27-ir-operands-valid-from?
+         operands ordinal (+ index 1))
+        false)
+      false)))
+
+(defn sh27-ir-operation-valid? [operation expected-ordinal]
+  (if (map? operation)
+    (if (= 3 (count operation))
+      (if (= expected-ordinal (get operation :ordinal))
+        (if
+         (sh27-member?
+          [:argument :literal :call :branch :jump :phi
+           :runtime-check :return :error-return :panic]
+          (get operation :opcode))
+          (if (vector? (get operation :operands))
+            (if (<= (count (get operation :operands)) 32)
+              (sh27-ir-operands-valid-from?
+               (get operation :operands) expected-ordinal 0)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-ir-operations-valid-from? [operations index]
+  (if (= index (count operations))
+    true
+    (if (sh27-ir-operation-valid? (get operations index) index)
+      (sh27-ir-operations-valid-from? operations (+ index 1))
+      false)))
+
+(defn sh27-ir-renaming-valid? [entry maximum]
+  (if (map? entry)
+    (if (= 2 (count entry))
+      (if (sh27-nonempty-string? (get entry :original))
+        (if (sh27-nonnegative-integer? (get entry :ordinal))
+          (< (get entry :ordinal) maximum)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-ir-renamings-valid-from? [renamings maximum index]
+  (if (= index (count renamings))
+    true
+    (if (sh27-ir-renaming-valid? (get renamings index) maximum)
+      (sh27-ir-renamings-valid-from?
+       renamings maximum (+ index 1))
+      false)))
+
+(defn sh27-ir-renaming-coverage-from? [renamings ordinal index]
+  (if (= index (count renamings))
+    false
+    (if (= ordinal (get (get renamings index) :ordinal))
+      true
+      (sh27-ir-renaming-coverage-from?
+       renamings ordinal (+ index 1)))))
+
+(defn sh27-ir-renaming-covers-all-from? [renamings ordinal maximum]
+  (if (= ordinal maximum)
+    true
+    (if (sh27-ir-renaming-coverage-from? renamings ordinal 0)
+      (sh27-ir-renaming-covers-all-from?
+       renamings (+ ordinal 1) maximum)
+      false)))
+
+(defn sh27-ir-renamings-unique? [renamings]
+  (let [originals
+        (loop [remaining renamings result []]
+          (if (= (count remaining) 0)
+            result
+            (recur
+             (rest remaining)
+             (conj result (get (first remaining) :original)))))
+        ordinals
+        (loop [remaining renamings result []]
+          (if (= (count remaining) 0)
+            result
+            (recur
+             (rest remaining)
+             (conj result (get (first remaining) :ordinal)))))]
+    (if (sh27-unique? originals)
+      (sh27-unique? ordinals)
+      false)))
+
+(defn sh27-ir-value-valid? [value]
+  (if (map? value)
+    (if (= 3 (count value))
+      (if (vector? (get value :normalized-operations))
+        (if (<= (count (get value :normalized-operations)) 256)
+          (if (> (count (get value :normalized-operations)) 0)
+            (if
+             (sh27-ir-operations-valid-from?
+              (get value :normalized-operations) 0)
+              (if (vector? (get value :id-renaming))
+                (if (= (count (get value :id-renaming))
+                       (count (get value :normalized-operations)))
+                  (if
+                   (sh27-ir-renamings-valid-from?
+                    (get value :id-renaming)
+                    (count (get value :normalized-operations))
+                    0)
+                    (if
+                     (sh27-ir-renamings-unique?
+                      (get value :id-renaming))
+                      (if
+                       (sh27-ir-renaming-covers-all-from?
+                        (get value :id-renaming)
+                        0
+                        (count
+                         (get value :normalized-operations)))
+                        (= true (get value :target-independent))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-delta-valid? [delta]
+  (if (map? delta)
+    (if (= 9 (count delta))
+      (if (keyword? (get delta :delta-id))
+        (if (keyword? (get delta :product-id))
+          (if (= :reviewed-delta (get delta :mode))
+            (if (= :approved (get delta :status))
+              (if (sh27-nonempty-string? (get delta :reviewer))
+                (if (sh27-nonempty-string? (get delta :policy-id))
+                  (if (sh27-nonempty-string? (get delta :reason))
+                    (if (contains? delta :left)
+                      (contains? delta :right)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-deltas-valid-from? [deltas index]
+  (if (= index (count deltas))
+    true
+    (if (sh27-delta-valid? (get deltas index))
+      (sh27-deltas-valid-from? deltas (+ index 1))
+      false)))
+
+(defn sh27-deltas-valid? [deltas]
+  (if (vector? deltas)
+    (if (<= (count deltas) 32)
+      (if (sh27-deltas-valid-from? deltas 0)
+        (let [delta-ids
+              (loop [remaining deltas result []]
+                (if (= (count remaining) 0)
+                  result
+                  (recur
+                   (rest remaining)
+                   (conj result
+                         (get (first remaining) :delta-id)))))
+              product-ids
+              (loop [remaining deltas result []]
+                (if (= (count remaining) 0)
+                  result
+                  (recur
+                   (rest remaining)
+                   (conj result
+                         (get (first remaining) :product-id)))))]
+          (if (sh27-unique? delta-ids)
+            (sh27-unique? product-ids)
+            false))
+        false)
+      false)
+    false))
+
+(defn sh27-find-delta-from? [deltas product-id index]
+  (if (= index (count deltas))
+    nil
+    (if (= product-id (get (get deltas index) :product-id))
+      (get deltas index)
+      (sh27-find-delta-from? deltas product-id (+ index 1)))))
+
+(defn sh27-find-delta [deltas product-id]
+  (sh27-find-delta-from? deltas product-id 0))
+
+(defn sh27-delta-binds-product? [delta product]
+  (if (map? delta)
+    (if (= (get delta :product-id) (get product :product-id))
+      (if (= (get delta :mode) (get product :mode))
+        (if (= (get delta :left) (get product :left))
+          (= (get delta :right) (get product :right))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh27-deltas-bind-products-from? [deltas products index]
+  (if (= index (count deltas))
+    true
+    (let [delta (get deltas index)
+          product
+          (loop [remaining products]
+            (if (= (count remaining) 0)
+              nil
+              (if (= (get delta :product-id)
+                     (get (first remaining) :product-id))
+                (first remaining)
+                (recur (rest remaining)))))]
+      (if (sh27-delta-binds-product? delta product)
+        (sh27-deltas-bind-products-from?
+         deltas products (+ index 1))
+        false))))
+
+(defn sh27-deltas-bind-products? [deltas products]
+  (sh27-deltas-bind-products-from? deltas products 0))
+
+(defn sh27-mode-outcome [product deltas]
+  (let [mode (get product :mode)
+        left (get product :left)
+        right (get product :right)
+        equal (= left right)
+        delta (sh27-find-delta deltas (get product :product-id))]
+    (if (= mode :diagnostic)
+      (if (sh27-diagnostics-valid? left)
+        (if (sh27-diagnostics-valid? right)
+          (if equal
+            {:status :equivalent :reason :stable-diagnostics}
+            {:status :rejected :reason :diagnostic-drift})
+          {:status :rejected :reason :diagnostic-shape})
+        {:status :rejected :reason :diagnostic-shape})
+      (if (= mode :conformance)
+        (if (= true left)
+          (if (= true right)
+            {:status :equivalent :reason :conformance-passed}
+            {:status :rejected :reason :conformance-failure})
+          {:status :rejected :reason :conformance-failure})
+        (if (= mode :ir-modulo-id)
+          (if (sh27-ir-value-valid? left)
+            (if (sh27-ir-value-valid? right)
+              (if (= (get left :normalized-operations)
+                     (get right :normalized-operations))
+                {:status :equivalent :reason :ir-equal-modulo-id}
+                {:status :rejected :reason :ir-semantic-drift})
+              {:status :rejected :reason :ir-shape})
+            {:status :rejected :reason :ir-shape})
+          (if (= mode :reviewed-delta)
+            (if equal
+              {:status :equivalent :reason :no-delta-required}
+              (if (sh27-delta-binds-product? delta product)
+                {:status :equivalent :reason :reviewed-delta}
+                {:status :rejected :reason :unreviewed-delta}))
+            (if equal
+              {:status :equivalent :reason :canonical-equality}
+              {:status :rejected :reason :artifact-drift})))))))
+
+(defn sh27-compare-products-from? [products deltas index result]
+  (if (= index (count products))
+    result
+    (sh27-compare-products-from?
+     products deltas (+ index 1)
+     (conj result
+           {:product-id (get (get products index) :product-id)
+            :mode (get (get products index) :mode)
+            :outcome
+            (sh27-mode-outcome (get products index) deltas)}))))
+
+(defn sh27-compare-products [products deltas]
+  (sh27-compare-products-from? products deltas 0 []))
+
+(defn sh27-outcomes-pass-from? [outcomes index]
+  (if (= index (count outcomes))
+    true
+    (if (= :equivalent
+           (get (get (get outcomes index) :outcome) :status))
+      (sh27-outcomes-pass-from? outcomes (+ index 1))
+      false)))
+
+(defn sh27-outcomes-pass? [outcomes]
+  (sh27-outcomes-pass-from? outcomes 0))
+
+(defn sh27-first-failure-from? [outcomes index]
+  (if (= index (count outcomes))
+    nil
+    (if (= :rejected
+           (get (get (get outcomes index) :outcome) :status))
+      (get outcomes index)
+      (sh27-first-failure-from? outcomes (+ index 1)))))
+
+(defn sh27-first-failure [outcomes]
+  (sh27-first-failure-from? outcomes 0))
+
+(defn sh27-diagnostic-rule [reason]
+  (if (= reason :diagnostic-drift)
+    "BOOT7003"
+    (if (= reason :unreviewed-delta)
+      "BOOT7004"
+      (if (= reason :conformance-failure)
+        "BOOT7006"
+        (if (= reason :artifact-drift)
+          "BOOT7002"
+          (if (= reason :ir-semantic-drift)
+            "BOOT7002"
+            "BOOT7005"))))))
+
+(defn sh27-diagnostic [request rule reason]
+  {:artifact :gravity/sh27-stage-equivalence-diagnostic
+   :rule rule
+   :severity :error
+   :stage :bootstrap-equivalence
+   :source-span
+   {:source (get request :actual-comparison-path)}
+   :facts {:reason reason :fail-closed true}
+   :remediation
+   "Supply complete canonical stage products or an approved policy-linked delta."})
+
+(defn sh27-rejected [request rule reason]
+  {:artifact :gravity/sh27-stage-equivalence-report
+   :schema-version 1
+   :status :rejected
+   :diagnostics [(sh27-diagnostic request rule reason)]
+   :pending
+   (get (sh27-stage-equivalence-policy) :pending)
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh27-request-valid? [request]
+  (if (map? request)
+    (if (= 14 (count request))
+      (if (= :gravity/sh27-stage-equivalence-request
+             (get request :artifact))
+        (if (= 1 (get request :schema-version))
+          (if (keyword? (get request :comparison-id))
+            (if (sh27-stage-valid? (get request :stage-a))
+              (if (sh27-stage-valid? (get request :stage-b))
+                (if (sh27-stage-transition-valid?
+                     (get request :stage-transition)
+                     (get request :stage-a)
+                     (get request :stage-b))
+                  (if
+                   (sh27-environment-valid?
+                    (get request :environment-a))
+                    (if
+                     (sh27-environment-valid?
+                      (get request :environment-b))
+                      (if (sh27-modes-valid? (get request :modes))
+                      (if
+                       (sh27-products-valid?
+                        (get request :products))
+                        (if
+                         (sh27-products-cover-modes?
+                          (get request :products)
+                          (get request :modes))
+                          (if
+                           (sh27-products-match-modes?
+                            (get request :products)
+                            (get request :modes))
+                            (if
+                             (sh27-deltas-valid?
+                              (get request :accepted-deltas))
+                              (if
+                               (sh27-deltas-bind-products?
+                                (get request :accepted-deltas)
+                                (get request :products))
+                                (if
+                                 (sh27-nonempty-string?
+                                  (get request :recipe-id))
+                                  (if
+                                   (sh27-nonempty-string?
+                                    (get request :lock-id))
+                                    (if
+                                     (sh27-nonempty-string?
+                                      (get request
+                                           :actual-comparison-path))
+                                      true
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                        false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn sh27-identity-stage [stage]
+  {:stage-id (get stage :stage-id)
+   :compiler-id (get stage :compiler-id)
+   :compiler-lineage-id (get stage :compiler-lineage-id)
+   :source-id (get stage :source-id)
+   :build-id (get stage :build-id)
+   :artifact-set-id (get stage :artifact-set-id)})
+
+(defn sh27-identity-environment [environment]
+  {:environment-id (get environment :environment-id)
+   :toolchain-id (get environment :toolchain-id)
+   :locked-dependencies (get environment :locked-dependencies)
+   :locale (get environment :locale)
+   :timezone (get environment :timezone)
+   :filesystem-order (get environment :filesystem-order)
+   :timestamp-policy (get environment :timestamp-policy)
+   :random-seed (get environment :random-seed)
+   :network (get environment :network)
+   :allowed-environment (get environment :allowed-environment)})
+
+(defn sh27-compare-stages [request]
+  (let [preflight (sh27-carrier-preflight request)]
+  (if (= :accepted (get preflight :status))
+  (if (sh27-request-valid? request)
+    (let [outcomes
+          (sh27-compare-products
+           (get request :products)
+           (get request :accepted-deltas))
+          failure (sh27-first-failure outcomes)]
+      (if (sh27-outcomes-pass? outcomes)
+        {:artifact :gravity/sh27-stage-equivalence-report
+         :schema-version 1
+         :status :accepted
+         :comparison-id (get request :comparison-id)
+         :stage-a (sh27-identity-stage (get request :stage-a))
+         :stage-b (sh27-identity-stage (get request :stage-b))
+         :modes (get request :modes)
+         :outcomes outcomes
+         :accepted-deltas (get request :accepted-deltas)
+         :identity-input
+         {:comparison-id (get request :comparison-id)
+          :stage-a (sh27-identity-stage (get request :stage-a))
+          :stage-b (sh27-identity-stage (get request :stage-b))
+          :stage-transition (get request :stage-transition)
+          :environment-a
+          (sh27-identity-environment (get request :environment-a))
+          :environment-b
+          (sh27-identity-environment (get request :environment-b))
+          :recipe-id (get request :recipe-id)
+          :lock-id (get request :lock-id)
+          :modes (get request :modes)
+          :products (get request :products)
+          :accepted-deltas (get request :accepted-deltas)}
+         :provenance
+         {:actual-comparison-path
+          (get request :actual-comparison-path)
+          :stage-a-artifact-root
+          (get (get request :stage-a) :actual-artifact-root)
+          :stage-b-artifact-root
+          (get (get request :stage-b) :actual-artifact-root)}
+         :diagnostics []
+         :pending
+         (get (sh27-stage-equivalence-policy) :pending)
+         :self-hosted? false
+         :clojure-seed-boundary? true}
+        (sh27-rejected
+         request
+         (sh27-diagnostic-rule
+          (get (get failure :outcome) :reason))
+         (get (get failure :outcome) :reason))))
+    (if
+     (if (map? request)
+       (if (contains? request :products)
+         (if (vector? (get request :products))
+           (= 0 (count (get request :products)))
+           false)
+         true)
+       false)
+      (sh27-rejected request "BOOT7005" :missing-stage-output)
+      (sh27-rejected request "BOOT7001" :invalid-request)))
+  (sh27-rejected
+   request "BOOT7005" (get preflight :reason)))))
+
+(defn sh27-verify-comparison [request candidate]
+  (let [candidate-preflight (sh27-carrier-preflight candidate)
+        expected (sh27-compare-stages request)]
+    {:artifact :gravity/sh27-stage-equivalence-verification
+     :status
+     (if (= :accepted (get candidate-preflight :status))
+       (if (= expected candidate) :passed :rejected)
+       :rejected)
+     :checks
+     [:exact-request-replay
+      :stage-output-to-child-compiler-lineage-bound
+      :controlled-environments-bound
+      :all-declared-modes-compared
+      :stable-diagnostics-and-spans
+      :reviewed-deltas-policy-linked
+      :path-neutral-identity
+      :actual-path-provenance-separated]
+     :expected expected
+     :candidate
+     (if (= :accepted (get candidate-preflight :status))
+       candidate
+       :candidate-carrier-bound)}))

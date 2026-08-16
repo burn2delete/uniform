@@ -1,0 +1,22 @@
+; SH-08-HO1 rejection: closure/free capture remains outside this leaf.
+(ns self-hosting.sh08.function-value-capture
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh08-ho1-make
+             sh08-ho1-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-08-HO1
+    :fixture :function-value-capture
+    :expected-rejection :closure-free-capture
+    :diagnostic "C7-ANNOTATION"}))
+
+(defn sh08-ho1-make [value]
+  (let [captured value]
+    (fn [argument]
+      captured)))
+
+(def sh08-ho1-result
+  (sh08-ho1-make 7))

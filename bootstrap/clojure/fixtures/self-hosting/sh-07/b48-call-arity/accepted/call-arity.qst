@@ -1,0 +1,27 @@
+; SH-07-B48 accepted direct-call arity controls.
+(ns self-hosting.sh07-b48.call-arity
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [zero-target one-target pair-target
+             zero-caller one-caller pair-caller
+             unresolved-caller]))
+
+(defn zero-target [] nil)
+
+(defn one-target [value]
+  value)
+
+(defn pair-target [left right]
+  [left right])
+
+(defn zero-caller []
+  (zero-target))
+
+(defn one-caller [value]
+  (one-target value))
+
+(defn pair-caller [left right]
+  (pair-target left right))
+
+(defn unresolved-caller [value]
+  (println value))

@@ -1,0 +1,5 @@
+{:phase :serialize
+ :operation :assoc-in
+ :path [:syntax-object-stream 0 :metadata :substituted]
+ :value true
+ :expected-rule "C3-SERIALIZE"}

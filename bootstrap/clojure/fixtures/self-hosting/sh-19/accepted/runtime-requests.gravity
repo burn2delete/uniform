@@ -1,0 +1,190 @@
+(ns gravity.self-hosting.sh19.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh19-startup-request
+             sh19-allocation-request
+             sh19-no-allocation-request
+             sh19-string-request
+             sh19-file-read-request
+             sh19-stdout-request
+             sh19-stderr-request
+             sh19-panic-request
+             sh19-exit-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh19-base-request
+  [request-id action-id operation effects capabilities provider]
+  {:artifact :gravity/sh19-runtime-request
+   :request-id request-id
+   :action-id action-id
+   :operation operation
+   :caller-artifact-id
+   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+   :principal :gravity/self-hosting-compiler
+   :declared-effects effects
+   :capability-grants capabilities
+   :provider provider
+   :profile :meta
+   :target :native
+   :source-span
+   {:source "runtime-requests.gravity"
+    :start-byte 0
+    :end-byte 1}
+   :origin-chain []})
+
+(defn sh19-startup-request []
+  (assoc
+   (sh19-base-request
+    "sha256:0000000000000000000000000000000000000000000000000000000000000001"
+    "sha256:1000000000000000000000000000000000000000000000000000000000000001"
+    :startup #{} #{}
+    {:provider-id
+     "sha256:b000000000000000000000000000000000000000000000000000000000000001"
+     :kind :startup})
+   :entrypoint :gravity.compiler/main
+   :initialization-order [:runtime :compiler]
+   :cleanup-order [:compiler :runtime]))
+
+(defn sh19-allocation-request []
+  (assoc
+   (sh19-base-request
+    "sha256:0000000000000000000000000000000000000000000000000000000000000002"
+    "sha256:1000000000000000000000000000000000000000000000000000000000000002"
+    :allocate
+    #{:memory/allocate} #{:memory/allocate}
+    {:provider-id
+     "sha256:b000000000000000000000000000000000000000000000000000000000000002"
+     :kind :memory
+     :scope
+     {:scope-id
+      "sha256:c000000000000000000000000000000000000000000000000000000000000002"
+      :provider-id
+      "sha256:b000000000000000000000000000000000000000000000000000000000000002"
+      :principal :gravity/self-hosting-compiler
+      :grant :memory/allocate
+      :resource :bounded-region
+      :maximum-bytes 65536
+      :maximum-alignment 16}})
+   :allocation-policy :bounded
+   :size-bytes 4096
+   :allocation-limit-bytes 65536
+   :alignment 16
+   :failure-behavior :result-boundary))
+
+(defn sh19-no-allocation-request []
+  (assoc
+   (sh19-base-request
+    "sha256:0000000000000000000000000000000000000000000000000000000000000003"
+    "sha256:1000000000000000000000000000000000000000000000000000000000000003"
+    :no-allocation #{} #{} nil)
+   :size-bytes 0))
+
+(defn sh19-string-request []
+  (assoc
+   (sh19-base-request
+    "sha256:0000000000000000000000000000000000000000000000000000000000000004"
+    "sha256:1000000000000000000000000000000000000000000000000000000000000004"
+    :string-from-utf8 #{} #{} nil)
+   :bytes [71 114 97 118 105 116 121 32
+           226 156 147 32 240 159 140 141]))
+
+(defn sh19-file-read-request []
+  (assoc
+   (sh19-base-request
+    "sha256:0000000000000000000000000000000000000000000000000000000000000005"
+    "sha256:1000000000000000000000000000000000000000000000000000000000000005"
+    :file-read
+    #{:filesystem/read} #{:fs/read}
+    {:provider-id
+     "sha256:b000000000000000000000000000000000000000000000000000000000000005"
+     :kind :filesystem
+     :scope
+     {:scope-id
+      "sha256:c000000000000000000000000000000000000000000000000000000000000005"
+      :provider-id
+      "sha256:b000000000000000000000000000000000000000000000000000000000000005"
+      :principal :gravity/self-hosting-compiler
+      :grant :fs/read
+      :resource :compiler-source-root
+      :path-token :compiler/source-unit
+      :maximum-bytes 1048576}})
+   :path-token :compiler/source-unit
+   :maximum-bytes 1048576))
+
+(defn sh19-stdout-request []
+  (assoc
+   (sh19-base-request
+    "sha256:0000000000000000000000000000000000000000000000000000000000000006"
+    "sha256:1000000000000000000000000000000000000000000000000000000000000006"
+    :stream-write
+    #{:io/write} #{:io/stdout}
+    {:provider-id
+     "sha256:b000000000000000000000000000000000000000000000000000000000000006"
+     :kind :stdout
+     :scope
+     {:scope-id
+      "sha256:c000000000000000000000000000000000000000000000000000000000000006"
+      :provider-id
+      "sha256:b000000000000000000000000000000000000000000000000000000000000006"
+      :principal :gravity/self-hosting-compiler
+      :grant :io/stdout
+      :resource :stdout}})
+   :stream :stdout
+   :bytes [71 114 97 118 105 116 121 10]))
+
+(defn sh19-stderr-request []
+  (assoc
+   (sh19-base-request
+    "sha256:0000000000000000000000000000000000000000000000000000000000000007"
+    "sha256:1000000000000000000000000000000000000000000000000000000000000007"
+    :stream-write
+    #{:io/write} #{:io/stderr}
+    {:provider-id
+     "sha256:b000000000000000000000000000000000000000000000000000000000000007"
+     :kind :stderr
+     :scope
+     {:scope-id
+      "sha256:c000000000000000000000000000000000000000000000000000000000000007"
+      :provider-id
+      "sha256:b000000000000000000000000000000000000000000000000000000000000007"
+      :principal :gravity/self-hosting-compiler
+      :grant :io/stderr
+      :resource :stderr}})
+   :stream :stderr
+   :bytes [101 114 114 111 114 10]))
+
+(defn sh19-panic-request []
+  (assoc
+   (sh19-base-request
+    "sha256:0000000000000000000000000000000000000000000000000000000000000008"
+    "sha256:1000000000000000000000000000000000000000000000000000000000000008"
+    :panic #{:error/raise} #{}
+    {:provider-id
+     "sha256:b000000000000000000000000000000000000000000000000000000000000008"
+     :kind :panic})
+   :failure-mode :abort-with-report
+   :message-bytes [112 97 110 105 99]))
+
+(defn sh19-exit-request []
+  (assoc
+   (sh19-base-request
+    "sha256:0000000000000000000000000000000000000000000000000000000000000009"
+    "sha256:1000000000000000000000000000000000000000000000000000000000000009"
+    :process-exit
+    #{:process/exit} #{:process/exit}
+    {:provider-id
+     "sha256:b000000000000000000000000000000000000000000000000000000000000009"
+     :kind :process
+     :scope
+     {:scope-id
+      "sha256:c000000000000000000000000000000000000000000000000000000000000009"
+      :provider-id
+      "sha256:b000000000000000000000000000000000000000000000000000000000000009"
+      :principal :gravity/self-hosting-compiler
+      :grant :process/exit
+      :resource :current-process
+      :minimum-exit-code 0
+      :maximum-exit-code 255}})
+   :exit-code 0))

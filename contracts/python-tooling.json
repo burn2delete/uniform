@@ -1,0 +1,570 @@
+{
+  "schema_version": 1,
+  "contract_id": "gravity-python-tooling-v1",
+  "description": "Static, non-authorizing structure contract for the stage0 Python semantic and development-tooling layers.",
+  "scope": {
+    "roots": ["src/gravity", "tools"],
+    "excluded_segments": ["__pycache__"],
+    "inventory_count": 160,
+    "inventory_sha256": "sha256:00e26fbc34dc55459f397e0c0f9e6fdf0eb5ea74fe77368db2750f4676841f1c",
+    "dependency_edge_count": 188,
+    "dependency_edge_sha256": "sha256:6c6e79cde46a127ffb0e9c480505502ecd813a1e152b0a4648b250c79d271c25"
+  },
+  "enums": {
+    "categories": [
+      "semantic",
+      "semantic-coverage",
+      "tooling-support",
+      "orchestration",
+      "reviewed-generator",
+      "generated-output-tool",
+      "validator",
+      "test"
+    ],
+    "roles": [
+      "package-marker",
+      "semantic-library",
+      "semantic-coverage-library",
+      "publication-library",
+      "process-tree-telemetry-library",
+      "read-only-development-tool",
+      "nonauthoritative-evidence-composer",
+      "bounded-development-runner",
+      "reviewed-source-generator",
+      "isolated-coverage-generator",
+      "artifact-validator",
+      "contract-validator",
+      "environment-validator",
+      "unit-test"
+    ],
+    "effects": [
+      "filesystem-read",
+      "filesystem-write",
+      "process",
+      "signal",
+      "clock",
+      "host-metrics",
+      "environment",
+      "stdout",
+      "network"
+    ],
+    "output_classes": [
+      "none",
+      "stdout-diagnostic",
+      "publication-primitive",
+      "generated-evidence-isolated",
+      "generated-coverage-isolated",
+      "development-state-isolated",
+      "reviewed-source",
+      "temporary-test-output",
+      "temporary-scratch"
+    ],
+    "authority_ceilings": [
+      "none",
+      "non-authoritative-observation"
+    ],
+    "import_safety_modes": [
+      "library",
+      "guarded-cli",
+      "test-module"
+    ],
+    "execution_modes": [
+      "parallel-safe",
+      "resource-bounded",
+      "coordinator-reviewed-serial"
+    ],
+    "test_surfaces": [
+      "import-smoke",
+      "validator-cli",
+      "unit-test",
+      "coordinator-review"
+    ],
+    "policy_kinds": [
+      "reviewed",
+      "generated",
+      "unresolved"
+    ]
+  },
+  "policies": [
+    {
+      "id": "unresolved-semantic-source",
+      "kind": "unresolved",
+      "patterns": ["src/gravity/"],
+      "authorizes_edits": false,
+      "review_required": true,
+      "blocking": true,
+      "external_contract": null,
+      "external_policy_id": null
+    },
+    {
+      "id": "reviewed-central-routing",
+      "kind": "reviewed",
+      "patterns": ["tools/"],
+      "authorizes_edits": false,
+      "review_required": true,
+      "blocking": false,
+      "external_contract": "contracts/project-structure.json",
+      "external_policy_id": "reviewed-central-routing"
+    },
+    {
+      "id": "generated-evidence",
+      "kind": "generated",
+      "patterns": ["docs/artifacts/", "target/"],
+      "authorizes_edits": false,
+      "review_required": true,
+      "blocking": false,
+      "external_contract": "contracts/project-structure.json",
+      "external_policy_id": "generated-evidence"
+    },
+    {
+      "id": "generated-coverage",
+      "kind": "generated",
+      "patterns": [
+        "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
+        "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
+        "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md"
+      ],
+      "authorizes_edits": false,
+      "review_required": true,
+      "blocking": false,
+      "external_contract": "contracts/project-structure.json",
+      "external_policy_id": "generated-coverage"
+    },
+    {
+      "id": "development-private-state",
+      "kind": "generated",
+      "patterns": [".cpcache/"],
+      "authorizes_edits": false,
+      "review_required": false,
+      "blocking": false,
+      "external_contract": null,
+      "external_policy_id": null
+    },
+    {
+      "id": "unresolved-reviewed-document-source",
+      "kind": "unresolved",
+      "patterns": ["docs/"],
+      "authorizes_edits": false,
+      "review_required": true,
+      "blocking": true,
+      "external_contract": null,
+      "external_policy_id": null
+    }
+  ],
+  "components": [
+    {
+      "id": "semantic-package",
+      "includes": ["src/gravity/__init__.py"],
+      "excludes": [],
+      "category": "semantic",
+      "role": "package-marker",
+      "allowed_dependency_categories": [],
+      "effects": [],
+      "output_classes": ["none"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["unresolved-semantic-source"],
+      "output_path_policy_refs": [],
+      "import_safety": "library",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke"]
+    },
+    {
+      "id": "semantic-library",
+      "includes": ["src/gravity/*.py"],
+      "excludes": [
+        "src/gravity/__init__.py",
+        "src/gravity/*_document_coverage.py"
+      ],
+      "category": "semantic",
+      "role": "semantic-library",
+      "allowed_dependency_categories": ["semantic"],
+      "effects": ["filesystem-read"],
+      "output_classes": ["none"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["unresolved-semantic-source"],
+      "output_path_policy_refs": [],
+      "import_safety": "library",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "validator-cli"]
+    },
+    {
+      "id": "semantic-document-coverage",
+      "includes": ["src/gravity/*_document_coverage.py"],
+      "excludes": [],
+      "category": "semantic-coverage",
+      "role": "semantic-coverage-library",
+      "allowed_dependency_categories": ["semantic"],
+      "effects": ["filesystem-read"],
+      "output_classes": ["none"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["unresolved-semantic-source"],
+      "output_path_policy_refs": [],
+      "import_safety": "library",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "validator-cli"]
+    },
+    {
+      "id": "publication-support",
+      "includes": ["tools/output_publication.py"],
+      "excludes": [],
+      "category": "tooling-support",
+      "role": "publication-library",
+      "allowed_dependency_categories": [],
+      "effects": ["filesystem-read", "filesystem-write", "environment"],
+      "output_classes": ["publication-primitive"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": ["generated-evidence", "generated-coverage"],
+      "import_safety": "library",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "unit-test"]
+    },
+    {
+      "id": "process-tree-telemetry-support",
+      "includes": ["tools/process_tree_telemetry.py"],
+      "excludes": [],
+      "category": "tooling-support",
+      "role": "process-tree-telemetry-library",
+      "allowed_dependency_categories": [],
+      "effects": ["process", "host-metrics"],
+      "output_classes": ["none"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
+      "import_safety": "library",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "unit-test"]
+    },
+    {
+      "id": "read-development-tools",
+      "includes": [
+        "tools/compose_development_receipts.py",
+        "tools/render_project_structure.py"
+      ],
+      "excludes": [],
+      "category": "orchestration",
+      "role": "read-only-development-tool",
+      "allowed_dependency_categories": ["orchestration", "validator"],
+      "effects": ["filesystem-read", "stdout"],
+      "output_classes": ["stdout-diagnostic"],
+      "authority_ceiling": "non-authoritative-observation",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
+      "import_safety": "guarded-cli",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "unit-test"]
+    },
+    {
+      "id": "authoritative-evidence-composition",
+      "includes": ["tools/compose_authoritative_evidence.py"],
+      "excludes": [],
+      "category": "orchestration",
+      "role": "nonauthoritative-evidence-composer",
+      "allowed_dependency_categories": [
+        "tooling-support",
+        "orchestration",
+        "validator"
+      ],
+      "effects": [
+        "filesystem-read",
+        "filesystem-write",
+        "process",
+        "environment",
+        "stdout"
+      ],
+      "output_classes": [
+        "stdout-diagnostic",
+        "development-state-isolated"
+      ],
+      "authority_ceiling": "non-authoritative-observation",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": ["generated-evidence"],
+      "import_safety": "guarded-cli",
+      "execution_mode": "coordinator-reviewed-serial",
+      "test_surfaces": ["import-smoke", "unit-test", "coordinator-review"]
+    },
+    {
+      "id": "process-development-tools",
+      "includes": [
+        "tools/measure_development_baseline.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "tools/run_stage3_verification.py",
+        "tools/run_with_heartbeat.py",
+        "tools/stage2_authority_admission.py",
+        "tools/verify_development.py"
+      ],
+      "excludes": [],
+      "category": "orchestration",
+      "role": "bounded-development-runner",
+      "allowed_dependency_categories": ["tooling-support", "orchestration"],
+      "effects": [
+        "filesystem-read",
+        "filesystem-write",
+        "process",
+        "signal",
+        "clock",
+        "host-metrics",
+        "environment",
+        "stdout"
+      ],
+      "output_classes": ["stdout-diagnostic", "development-state-isolated"],
+      "authority_ceiling": "non-authoritative-observation",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": ["generated-evidence", "development-private-state"],
+      "import_safety": "guarded-cli",
+      "execution_mode": "resource-bounded",
+      "test_surfaces": ["import-smoke", "unit-test"]
+    },
+    {
+      "id": "reviewed-source-generators",
+      "includes": [
+        "tools/enrich_remaining_docs.py",
+        "tools/generate_gravity_docs.py"
+      ],
+      "excludes": [],
+      "category": "reviewed-generator",
+      "role": "reviewed-source-generator",
+      "allowed_dependency_categories": [],
+      "effects": ["filesystem-read", "filesystem-write", "stdout"],
+      "output_classes": ["stdout-diagnostic", "reviewed-source"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": ["unresolved-reviewed-document-source"],
+      "import_safety": "guarded-cli",
+      "execution_mode": "coordinator-reviewed-serial",
+      "test_surfaces": ["import-smoke", "coordinator-review"]
+    },
+    {
+      "id": "isolated-coverage-generator",
+      "includes": ["tools/generate_full_language_coverage_matrix.py"],
+      "excludes": [],
+      "category": "generated-output-tool",
+      "role": "isolated-coverage-generator",
+      "allowed_dependency_categories": ["tooling-support"],
+      "effects": ["filesystem-read", "filesystem-write", "stdout"],
+      "output_classes": ["stdout-diagnostic", "generated-coverage-isolated"],
+      "authority_ceiling": "non-authoritative-observation",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": ["generated-coverage"],
+      "import_safety": "guarded-cli",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "unit-test"]
+    },
+    {
+      "id": "isolated-artifact-validators",
+      "includes": ["tools/validate_*.py"],
+      "excludes": [
+        "tools/validate_change_control.py",
+        "tools/validate_contract_traceability.py",
+        "tools/validate_evidence_producers.py",
+        "tools/validate_foundation_document_coverage.py",
+        "tools/validate_full_language_roadmap.py",
+        "tools/validate_gravity_docs.py",
+        "tools/validate_gravity_toolchain.py",
+        "tools/validate_milestone_evidence.py",
+        "tools/validate_project_structure.py",
+        "tools/validate_python_tooling_contract.py",
+        "tools/validate_repository_hygiene.py",
+        "tools/validate_safety_performance_gates.py",
+        "tools/validate_terminology_boundaries.py",
+        "tools/validate_w1_executable_carrier_interface.py"
+      ],
+      "category": "validator",
+      "role": "artifact-validator",
+      "allowed_dependency_categories": [
+        "semantic",
+        "semantic-coverage",
+        "tooling-support"
+      ],
+      "effects": ["filesystem-read", "filesystem-write", "stdout"],
+      "output_classes": ["stdout-diagnostic", "generated-evidence-isolated"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": ["generated-evidence", "generated-coverage"],
+      "import_safety": "guarded-cli",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "validator-cli"]
+    },
+    {
+      "id": "read-only-contract-validators",
+      "includes": [
+        "tools/validate_change_control.py",
+        "tools/validate_contract_traceability.py",
+        "tools/validate_foundation_document_coverage.py",
+        "tools/validate_full_language_roadmap.py",
+        "tools/validate_gravity_docs.py",
+        "tools/validate_milestone_evidence.py",
+        "tools/validate_project_structure.py",
+        "tools/validate_safety_performance_gates.py",
+        "tools/validate_terminology_boundaries.py",
+        "tools/validate_w1_executable_carrier_interface.py"
+      ],
+      "excludes": [],
+      "category": "validator",
+      "role": "contract-validator",
+      "allowed_dependency_categories": ["validator"],
+      "effects": ["filesystem-read", "stdout"],
+      "output_classes": ["stdout-diagnostic"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
+      "import_safety": "guarded-cli",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke", "validator-cli"]
+    },
+    {
+      "id": "evidence-producer-contract-validator",
+      "includes": ["tools/validate_evidence_producers.py"],
+      "excludes": [],
+      "category": "validator",
+      "role": "contract-validator",
+      "allowed_dependency_categories": [],
+      "effects": ["filesystem-read", "filesystem-write", "process", "environment", "stdout"],
+      "output_classes": ["stdout-diagnostic"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
+      "import_safety": "guarded-cli",
+      "execution_mode": "resource-bounded",
+      "test_surfaces": ["import-smoke", "validator-cli", "unit-test"]
+    },
+    {
+      "id": "environment-contract-validators",
+      "includes": [
+        "tools/validate_gravity_toolchain.py",
+        "tools/validate_python_tooling_contract.py",
+        "tools/validate_repository_hygiene.py"
+      ],
+      "excludes": [],
+      "category": "validator",
+      "role": "environment-validator",
+      "allowed_dependency_categories": [],
+      "effects": [
+        "filesystem-read",
+        "filesystem-write",
+        "process",
+        "environment",
+        "stdout"
+      ],
+      "output_classes": ["stdout-diagnostic", "temporary-scratch"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
+      "import_safety": "guarded-cli",
+      "execution_mode": "resource-bounded",
+      "test_surfaces": ["import-smoke", "validator-cli", "unit-test"]
+    },
+    {
+      "id": "fragment-d-pure-verifier",
+      "includes": ["tools/verify_p15_s23_gravity_native_runtime_provider_fragment_d.py"],
+      "excludes": [],
+      "category": "validator",
+      "role": "contract-validator",
+      "allowed_dependency_categories": [],
+      "effects": [],
+      "output_classes": ["none"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
+      "import_safety": "library",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["import-smoke"]
+    },
+    {
+      "id": "tool-unit-tests",
+      "includes": ["tools/tests/test_*.py"],
+      "excludes": [],
+      "category": "test",
+      "role": "unit-test",
+      "allowed_dependency_categories": [
+        "tooling-support",
+        "orchestration",
+        "generated-output-tool",
+        "validator"
+      ],
+      "effects": [
+        "filesystem-read",
+        "filesystem-write",
+        "process",
+        "signal",
+        "clock",
+        "environment"
+      ],
+      "output_classes": ["temporary-test-output"],
+      "authority_ceiling": "none",
+      "source_path_policy_refs": ["reviewed-central-routing"],
+      "output_path_policy_refs": [],
+      "import_safety": "test-module",
+      "execution_mode": "parallel-safe",
+      "test_surfaces": ["unit-test"]
+    }
+  ],
+  "constraints": {
+    "python_authority_granted": false,
+    "allowed_dependency_cycles": [
+      [
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_stage3_verification.py"
+      ]
+    ],
+    "semantic_categories": ["semantic", "semantic-coverage"],
+    "semantic_forbidden_effects": [
+      "filesystem-write",
+      "process",
+      "network"
+    ],
+    "semantic_forbidden_import_roots": [
+      "tools",
+      "subprocess",
+      "multiprocessing",
+      "socket",
+      "urllib",
+      "urllib3",
+      "requests",
+      "http",
+      "aiohttp"
+    ],
+    "network_forbidden": true,
+    "validator_pattern": "tools/validate_*.py",
+    "isolated_output_options": ["--artifact-out", "--coverage-out"],
+    "output_publication_path": "tools/output_publication.py",
+    "isolated_output_classes": [
+      "generated-evidence-isolated",
+      "generated-coverage-isolated"
+    ],
+    "isolated_output_policy_refs": [
+      "generated-evidence",
+      "generated-coverage"
+    ],
+    "reviewed_source_roles": ["reviewed-source-generator"],
+    "reviewed_source_output_class": "reviewed-source",
+    "reviewed_source_execution_mode": "coordinator-reviewed-serial",
+    "reviewed_source_paths": [
+      "tools/enrich_remaining_docs.py",
+      "tools/generate_gravity_docs.py"
+    ],
+    "semantic_root": "src/gravity",
+    "tooling_root": "tools",
+    "test_pattern": "tools/tests/test_*.py",
+    "unresolved_semantic_policy": "unresolved-semantic-source"
+  },
+  "readme_contract": {
+    "path": "tools/README.md",
+    "required_statements": [
+      "Contract: `contracts/python-tooling.json`",
+      "Validator: `python3 tools/validate_python_tooling_contract.py`",
+      "Scope: every tracked or intentional untracked non-`__pycache__` Python file under `src/gravity/` and `tools/`.",
+      "Python authority: none; observations and generated outputs remain non-authoritative unless a separate normative contract and coordinator admission establish otherwise.",
+      "`src/gravity` ownership: unresolved and blocking in the external project-structure contract; this contract classifies the files but does not authorize edits.",
+      "Generated evidence and coverage outputs use the isolated atomic publication layer and remain separate from reviewed source.",
+      "Reviewed-source generators require coordinator review and nonparallel execution; this contract does not authorize running them or admitting their output.",
+      "Static-analysis limit: AST checks cannot prove dynamically constructed imports, calls, or runtime behavior; such behavior requires separate execution evidence and review.",
+      "Alias-analysis limit: direct imports and simple module-level aliases are checked, but dynamic `getattr`, monkey-patching, and runtime alias construction require separate review.",
+      "Output-policy limit: custom or dynamically constructed argument parsing and writers are outside this static check and require separate review.",
+      "Authoritative evidence composition: Python candidates and reviewed-promotion candidates remain non-authoritative; pass/slice/artifact/policy/check data is nonclaim context; no digest is a signature; v1 has no trusted admission root and cannot mint authority.",
+      "Evidence producer inventory: `contracts/evidence-producers.json` classifies every production Python filesystem producer separately from the compiler artifact graph; `python3 tools/validate_evidence_producers.py` fails closed on uncovered or overlapping producers, output-policy drift, unreviewed reviewed-path generation, incomplete provenance/schema/nonclaims, and forged or stale promotion records.",
+      "Evidence promotion commit policy: an admitted record's full commit ID must name an existing commit in this repository and be reachable as an ancestor of the current `HEAD`; current source and output bytes are opened by component-wise no-follow traversal. The validator separately inventories the seven validators that expose `--coverage-out`, pins non-producer exclusions exactly, and rejects reviewed-document output patterns that overlap generated artifact policies."
+    ]
+  }
+}

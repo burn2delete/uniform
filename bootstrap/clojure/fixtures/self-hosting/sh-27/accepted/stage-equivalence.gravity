@@ -1,0 +1,141 @@
+(ns gravity.self-hosting.sh27.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh27-equivalent-stage-request
+             sh27-equivalent-stage-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh27-stage [stage-id compiler-id lineage-id build-id root]
+  {:stage-id stage-id
+   :compiler-id compiler-id
+   :compiler-lineage-id lineage-id
+   :source-id "sha256:compiler-source"
+   :build-id build-id
+   :artifact-set-id "sha256:compiler-artifact-set"
+   :actual-artifact-root root})
+
+(defn sh27-environment [environment-id]
+  {:environment-id environment-id
+   :toolchain-id
+   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+   :locked-dependencies true
+   :locale "C"
+   :timezone "UTC"
+   :filesystem-order :sorted
+   :timestamp-policy :fixed
+   :random-seed 27
+   :network :disabled
+   :allowed-environment []})
+
+(defn sh27-product [product-id mode left right canonical-form spans]
+  {:product-id product-id
+   :mode mode
+   :left left
+   :right right
+   :canonical-form canonical-form
+   :source-spans spans})
+
+(defn sh27-ir [prefix]
+  {:normalized-operations
+   [{:ordinal 0 :opcode :literal :operands []}
+    {:ordinal 1 :opcode :return :operands [0]}]
+   :id-renaming
+   [{:original (str prefix ":literal") :ordinal 0}
+    {:original (str prefix ":return") :ordinal 1}]
+   :target-independent true})
+
+(defn sh27-products []
+  [(sh27-product
+    :product/compiler :artifact
+    "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    :canonical-content-hash [])
+   (sh27-product
+    :product/manifest :manifest
+    {:modules [:reader :syntax :mir]}
+    {:modules [:reader :syntax :mir]}
+    :canonical-manifest [])
+   (sh27-product
+    :product/diagnostics :diagnostic
+    [{:code "C11-TYPE"
+      :source-span {:source-id :compiler :start-byte 10 :end-byte 12}
+      :severity :error}]
+    [{:code "C11-TYPE"
+      :source-span {:source-id :compiler :start-byte 10 :end-byte 12}
+      :severity :error}]
+    :stable-code-and-source-span
+    [{:source-id :compiler :start-byte 10 :end-byte 12}])
+   (sh27-product
+    :product/conformance :conformance
+    true true :conformance-result [])
+   (sh27-product
+    :product/runtime :runtime-output
+    {:stdout "ok\n" :stderr "" :exit 0}
+    {:stdout "ok\n" :stderr "" :exit 0}
+    :canonical-runtime-output [])
+   (sh27-product
+    :product/mir :ir-modulo-id
+    (sh27-ir "stage-n")
+    (sh27-ir "stage-n-plus-one")
+    :stable-id-renaming [])
+   (sh27-product
+    :product/provenance-note :reviewed-delta
+    {:builder-note "stage-n"}
+    {:builder-note "stage-n-plus-one"}
+    :reviewed-provenance-delta [])])
+
+(defn sh27-deltas []
+  [{:delta-id :delta/provenance-note
+    :product-id :product/provenance-note
+    :mode :reviewed-delta
+    :status :approved
+    :reviewer "bootstrap-reviewer"
+    :policy-id "BOOT7:accepted-delta"
+    :reason "Stage label differs while semantic products remain identical."
+    :left {:builder-note "stage-n"}
+    :right {:builder-note "stage-n-plus-one"}}])
+
+(defn sh27-request [checkout]
+  (let [stage-a
+        (sh27-stage
+         :stage/n "sha256:compiler-n" "sha256:lineage-n"
+         "sha256:build-n" (str checkout "/stage-n"))
+        stage-b
+        (sh27-stage
+         :stage/n-plus-one "sha256:compiler-n-plus-one"
+         "sha256:lineage-n-plus-one" "sha256:build-n-plus-one"
+         (str checkout "/stage-n-plus-one"))]
+    {:artifact :gravity/sh27-stage-equivalence-request
+     :schema-version 1
+     :comparison-id :comparison/stage-n-stage-n-plus-one
+     :stage-a stage-a
+     :stage-b stage-b
+     :stage-transition
+     {:parent-stage-id (get stage-a :stage-id)
+      :parent-compiler-id (get stage-a :compiler-id)
+      :parent-output-artifact-set-id (get stage-a :artifact-set-id)
+      :child-stage-id (get stage-b :stage-id)
+      :child-compiler-id (get stage-b :compiler-id)
+      :child-compiler-lineage-id (get stage-b :compiler-lineage-id)
+      :child-compiler-parent-id (get stage-a :compiler-id)
+      :child-compiler-input-artifact-set-id
+      (get stage-a :artifact-set-id)}
+     :environment-a (sh27-environment "sha256:environment-a")
+     :environment-b (sh27-environment "sha256:environment-b")
+     :modes
+     [:artifact :manifest :diagnostic :conformance
+      :runtime-output :ir-modulo-id :reviewed-delta]
+     :products (sh27-products)
+     :accepted-deltas (sh27-deltas)
+     :recipe-id "sha256:reproducible-build-recipe"
+     :lock-id "sha256:bootstrap-lock"
+     :actual-comparison-path
+     (str checkout "/reports/stage-equivalence.edn")}))
+
+(defn sh27-equivalent-stage-request []
+  (sh27-request "/checkout-a"))
+
+(defn sh27-equivalent-stage-alternate-path-request []
+  (sh27-request "/checkout-b"))

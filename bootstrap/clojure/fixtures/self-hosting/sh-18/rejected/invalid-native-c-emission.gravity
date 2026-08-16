@@ -1,0 +1,162 @@
+(ns gravity.self-hosting.sh18.rejected-native-c-emission
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh18-unverified-mir-request
+             sh18-wrong-profile-request
+             sh18-unsupported-dialect-request
+             sh18-foreign-target-request
+             sh18-hidden-runtime-request
+             sh18-missing-capability-request
+             sh18-unchecked-arithmetic-request
+             sh18-unsupported-operation-request
+             sh18-incomplete-source-map-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh18-valid-request []
+  {:artifact :gravity/sh18-native-c-request
+   :schema-version 1
+   :request-id :argv-checked-sum
+   :input
+   {:kind :gravity/mir-module
+    :artifact-id :mir/argv-checked-sum
+    :semantic-hash
+    "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    :verified true
+    :verifier :gravity.mir/c11
+    :verifier-report :passed}
+   :profile :native
+   :target
+   {:backend :gravity.backend/c
+    :dialect :hosted-c11
+    :triple :host-native
+    :abi :c-main}
+   :runtime
+   {:family :minimal-native
+    :services
+    [:startup :runtime-checks :stdout :stderr :process-exit]
+    :forbidden [:gc :reflection :dynamic-eval :shell :network]}
+   :effects #{:io/write :process/exit}
+   :capabilities #{:io/stdout :io/stderr :process/exit}
+   :safety
+   {:numeric-mode :checked
+    :outcome :runtime-checked
+    :check-id :check/argv-add-overflow
+    :failure-exit 67}
+   :program
+   {:kind :argv-checked-sum
+    :entry :main
+    :functions
+    [:main :gravity-parse-i64 :gravity-checked-add]
+    :argument-count 2
+    :stdout-label "sum="
+    :operations
+    [:argv-parse-i64
+     :checked-add-i64
+     :direct-call
+     :stdout-write
+     :process-exit]
+    :source-span
+    {:source-id :gravity.example/argv-sum
+     :start-byte 0
+     :end-byte 128}
+    :origin-chain
+    [{:kind :source
+      :source-id :gravity.example/argv-sum}]}
+   :source-map
+   [{:target-symbol :gravity-parse-i64
+     :mir-operation :mir/argv-parse
+     :source-span
+     {:source-id :gravity.example/argv-sum
+      :start-byte 16
+      :end-byte 47}
+     :origin-chain
+     [{:kind :source
+       :source-id :gravity.example/argv-sum}]
+     :generated-helper true}
+    {:target-symbol :gravity-checked-add
+     :mir-operation :mir/checked-add
+     :source-span
+     {:source-id :gravity.example/argv-sum
+      :start-byte 48
+      :end-byte 64}
+     :origin-chain
+     [{:kind :source
+       :source-id :gravity.example/argv-sum}]
+     :generated-helper true}
+    {:target-symbol :main
+     :mir-operation :mir/main
+     :source-span
+     {:source-id :gravity.example/argv-sum
+      :start-byte 0
+      :end-byte 128}
+     :origin-chain
+     [{:kind :source
+       :source-id :gravity.example/argv-sum}]
+     :generated-helper false}]
+   :actual-source-path
+   "/checkout-rejected/examples/argv-checked-sum.gravity"})
+
+(defn sh18-unverified-mir-request []
+  (assoc
+   (sh18-valid-request)
+   :input
+   (assoc (get (sh18-valid-request) :input) :verified false)))
+
+(defn sh18-wrong-profile-request []
+  (assoc (sh18-valid-request) :profile :hosted))
+
+(defn sh18-unsupported-dialect-request []
+  (assoc
+   (sh18-valid-request)
+   :target
+   (assoc (get (sh18-valid-request) :target)
+          :dialect :gnu11)))
+
+(defn sh18-foreign-target-request []
+  (assoc
+   (sh18-valid-request)
+   :target
+   (assoc (get (sh18-valid-request) :target)
+          :triple :foreign-native)))
+
+(defn sh18-hidden-runtime-request []
+  (assoc
+   (sh18-valid-request)
+   :runtime
+   (assoc (get (sh18-valid-request) :runtime)
+          :services [:startup :stdout :stderr :process-exit :gc])))
+
+(defn sh18-missing-capability-request []
+  (assoc
+   (sh18-valid-request)
+   :capabilities #{:io/stdout :process/exit}))
+
+(defn sh18-unchecked-arithmetic-request []
+  (assoc
+   (sh18-valid-request)
+   :safety
+   {:numeric-mode :unchecked
+    :outcome :proven-safe
+    :check-id nil
+    :failure-exit 67}))
+
+(defn sh18-unsupported-operation-request []
+  (assoc
+   (sh18-valid-request)
+   :program
+   (assoc
+    (get (sh18-valid-request) :program)
+    :operations
+    [:argv-parse-i64
+     :unchecked-add-i64
+     :direct-call
+     :stdout-write
+     :process-exit])))
+
+(defn sh18-incomplete-source-map-request []
+  (assoc
+   (sh18-valid-request)
+   :source-map
+   [(get (get (sh18-valid-request) :source-map) 0)]))

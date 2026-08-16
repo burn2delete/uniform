@@ -1,0 +1,17 @@
+; SH-07-B8 records one typed handler candidate without claiming runtime selection.
+(ns self-hosting.sh07-b8.top-level-typed-catch
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [handled-value])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B8
+              :fixture :top-level-typed-catch
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(def handled-value
+  (try
+    (throw "top-level")
+    (catch Exception error
+      error)))

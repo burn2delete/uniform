@@ -22,7 +22,11 @@
              stage1-read-source-verified-boot-chain
              stage1-read-source-diverse-bootstrap-verification
              stage1-read-source-release-attestation-seed-retirement
-             stage1-read-source-formal-release-governance-seed-retirement])
+             stage1-read-source-formal-release-governance-seed-retirement
+             sh03-reader-contract
+             sh03-reader-bounds
+             sh03-read-source-unit
+             sh03-verify-reader-result])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -58,8 +62,18 @@
                              :reader-verified-boot-chain
                              :reader-diverse-bootstrap-verification
                              :reader-release-attestation-seed-retirement
-                             :reader-formal-release-governance-seed-retirement]
+                             :reader-formal-release-governance-seed-retirement
+                             :unicode-scalar-carrier-validation
+                             :gravity-token-classification
+                             :gravity-delimiter-form-building
+                             :gravity-literal-policy
+                             :gravity-reader-abbreviations
+                             :gravity-reader-metadata
+                             :gravity-reader-extension-policy
+                             :gravity-reader-diagnostics
+                             :gravity-reader-result-replay]
                :preserves #{:source-spans :syntax-identity
+                            :raw-spellings :literal-descriptors
                             :diagnostic-codes :artifact-provenance}
                :lineage {:verified-by :clojure-stage0
                          :compiled-by :clojure-stage0
@@ -1279,8 +1293,4586 @@
    {:owner :gravity-source
     :stage :stage1
     :purpose :reader-formal-release-governance-assumption-replacement
-    :retirement-objective
-    :replace-human-release-governance-and-deployment-custody-with-formal-release-governance-while-keeping-full-compiler-self-hosting-explicit}})
+   :retirement-objective
+   :replace-human-release-governance-and-deployment-custody-with-formal-release-governance-while-keeping-full-compiler-self-hosting-explicit}})
+
+; SH-03 moves strict UTF-8 decoding, lexical policy, delimiter linking, and
+; literal projection into executable Gravity.  The coordinator supplies one
+; raw-byte snapshot and resolves canonical digest requests; those remaining
+; boundaries are explicit and are not counted as reader ownership.
+(def sh03-reader-contract
+  {:artifact :gravity/sh03-reader-contract
+   :schema-version 1
+   :owner :gravity-source
+   :input [:gravity/sh03-source-unit
+           :gravity/sh03-source-byte-vector
+           :gravity/sh03-reader-policy]
+   :output :gravity/sh03-reader-result
+   :gravity-owned [:token-classification
+                   :strict-utf8-decoding
+                   :unicode-scalar-indexing
+                   :delimiter-linked-form-building
+                   :literal-shape-and-decoding-policy
+                   :reader-abbreviation-expansion
+                   :metadata-shape-policy
+                   :registered-reader-tag-policy
+                   :structured-reader-diagnostics
+                   :fresh-result-replay]
+   :clojure-seed-boundary [:single-snapshot-source-byte-read
+                           :canonical-encoding
+                           :sha256-resolution
+                           :contextual-envelope-reconstruction
+                           :stage2-instruction-runner]
+   :forbidden-reader-delegation
+   [:read-source-form-records
+    :read-source-form-records-host-oracle
+    :read-forms
+    :read-source-artifact
+    :stage1-reader-token-stream
+    :stage1-reader-products-from-token-stream
+    :c2-reader-products
+    :stage1-reader-decode-atom
+    :stage1-reader-decode-string
+    :stage1-reader-decode-character
+    :c2-syntax-seed-stream]
+   :source-extensions [".gravity" ".qst"]
+   :reader-tags ["inst" "uuid"]
+   :semantic-identity-excludes [:actual-path-provenance]
+   :self-hosted? false
+   :whole-language? false
+   :clojure-seed-boundary? true})
+
+(def sh03-reader-bounds
+  {:maximum-source-bytes 1048576
+   :maximum-characters 1048576
+   :maximum-tokens 131072
+   :maximum-forms 65536
+   :maximum-delimiter-depth 512
+   :maximum-semantic-work-units 8437834
+   :maximum-container-width 65536
+   :maximum-token-scalars 262144
+   :maximum-numeric-semantic-scalars 256
+   :maximum-numeric-semantic-work-units 65536
+   :maximum-canonical-scalar-bytes 1048576
+   :maximum-canonical-total-scalar-bytes 67108864
+   :maximum-source-identity-utf8-bytes 4096
+   :maximum-logical-source-id-code-units 1024
+   :maximum-actual-path-code-units 1024
+   :maximum-reader-tags 32
+   :maximum-reader-tag-codepoints 4
+   :maximum-result-carrier-nodes 167772160
+   :maximum-result-carrier-depth 2048
+   :maximum-result-carrier-width 1048576
+   :result-carrier-node-budget
+   {:fixed-nodes 1048576
+    :nodes-per-source-byte 24
+    :nodes-per-token 320
+    :nodes-per-form 1024
+    :nodes-per-reader-tag 2048
+    :derived-maximum-nodes 135331840}})
+
+(defn sh03-bounds-record []
+  {:maximum-source-bytes 1048576
+   :maximum-characters 1048576
+   :maximum-tokens 131072
+   :maximum-forms 65536
+   :maximum-delimiter-depth 512
+   :maximum-semantic-work-units 8437834
+   :maximum-container-width 65536
+   :maximum-token-scalars 262144
+   :maximum-numeric-semantic-scalars 256
+   :maximum-numeric-semantic-work-units 65536
+   :maximum-canonical-scalar-bytes 1048576
+   :maximum-canonical-total-scalar-bytes 67108864
+   :maximum-source-identity-utf8-bytes 4096
+   :maximum-logical-source-id-code-units 1024
+   :maximum-actual-path-code-units 1024
+   :maximum-reader-tags 32
+   :maximum-reader-tag-codepoints 4
+   :maximum-result-carrier-nodes 167772160
+   :maximum-result-carrier-depth 2048
+   :maximum-result-carrier-width 1048576
+   :result-carrier-node-budget
+   {:fixed-nodes 1048576
+    :nodes-per-source-byte 24
+    :nodes-per-token 320
+    :nodes-per-form 1024
+    :nodes-per-reader-tag 2048
+    :derived-maximum-nodes 135331840}})
+
+(defn sh03-execution-boundary-record []
+  {:artifact :gravity/sh03-reader-execution-boundary
+   :schema-version 1
+   :owner :gravity-source
+   :gravity-owned [:token-classification
+                   :strict-utf8-decoding
+                   :unicode-scalar-indexing
+                   :delimiter-linked-form-building
+                   :literal-shape-and-decoding-policy
+                   :reader-abbreviation-expansion
+                   :metadata-shape-policy
+                   :registered-reader-tag-policy
+                   :structured-reader-diagnostics
+                   :fresh-result-replay]
+   :clojure-seed-boundary [:single-snapshot-source-byte-read
+                           :canonical-encoding
+                           :sha256-resolution
+                           :contextual-envelope-reconstruction
+                           :bounded-result-carrier-validation
+                           :stage2-instruction-runner]
+   :clojure-boundary-responsibility
+   {:responsibility :result-carrier-validation
+    :maximum-nodes 167772160
+    :maximum-depth 2048
+    :maximum-width 1048576
+    :maximum-canonical-scalar-bytes 1048576
+    :maximum-canonical-total-scalar-bytes 67108864
+    :failure-rule "C2-HASH"
+    :result-committed? false}
+   :gravity-input-responsibility
+   {:maximum-source-identity-utf8-bytes 4096
+    :maximum-logical-source-id-code-units 1024
+    :maximum-actual-path-code-units 1024
+    :maximum-source-bytes 1048576
+    :maximum-reader-tags 32
+    :maximum-reader-tag-codepoints 4
+    :invalid-input-carrier-policy :bounded-summary}
+   :forbidden-reader-delegation
+   [:read-source-form-records
+    :read-source-form-records-host-oracle
+    :read-forms
+    :read-source-artifact
+    :stage1-reader-token-stream
+    :stage1-reader-products-from-token-stream
+    :c2-reader-products
+    :stage1-reader-decode-atom
+    :stage1-reader-decode-string
+    :stage1-reader-decode-character
+    :c2-syntax-seed-stream]
+   :legacy-source-reread? false
+   :self-hosted? false
+   :whole-language? false
+   :clojure-seed-boundary? true})
+
+(defn sh03-vector-contains? [values value]
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      false
+      (if (= (first remaining) value)
+        true
+        (recur (rest remaining))))))
+
+(defn sh03-all-unique? [values]
+  (loop [remaining values observed []]
+    (if (= (count remaining) 0)
+      true
+      (if (sh03-vector-contains? observed (first remaining))
+        false
+        (recur (rest remaining) (conj observed (first remaining)))))))
+
+(defn sh03-append [left right]
+  (loop [remaining right result left]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining) (conj result (first remaining))))))
+
+(defn sh03-join-scalars [scalars]
+  (loop [remaining scalars result ""]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining) (str result (first remaining))))))
+
+(defn sh03-exact-keys? [value expected]
+  (if (map? value)
+    (if (= (count value) (count expected))
+      (= (set (keys value)) expected)
+      false)
+    false))
+
+(defn sh03-lowercase-hex? [characters]
+  (loop [remaining characters]
+    (if (= (count remaining) 0)
+      true
+      (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                       \a \b \c \d \e \f}
+                     (first remaining))
+        (recur (rest remaining))
+        false))))
+
+(defn sh03-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (sh03-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh03-nonnegative-integer? [value]
+  (if (integer? value) (>= value 0) false))
+
+(defn sh03-positive-integer? [value]
+  (if (integer? value) (> value 0) false))
+
+(defn sh03-actual-provenance [source-unit]
+  (get source-unit :actual-path-provenance))
+
+(defn sh03-actual-path [source-unit]
+  (get (sh03-actual-provenance source-unit) :path))
+
+(defn sh03-bounded-nonempty-string? [value maximum-code-units]
+  (if (string? value)
+    (if (> (count value) 0)
+      (<= (count value) maximum-code-units)
+      false)
+    false))
+
+(defn sh03-source-unit-valid? [source-unit]
+  (if (sh03-exact-keys?
+       source-unit
+       #{:artifact :schema-version :project-root-id :logical-source-id
+         :source-content-hash :source-byte-count :encoding
+         :actual-path-provenance})
+    (let [provenance (sh03-actual-provenance source-unit)
+          extension (get provenance :extension)
+          source-kind (get provenance :source-kind)
+          source-bytes (get source-unit :source-byte-count)]
+      (if (= (get source-unit :artifact) :gravity/sh03-source-unit)
+        (if (= (get source-unit :schema-version) 1)
+          (if (sh03-sha256-id? (get source-unit :project-root-id))
+            (if (sh03-bounded-nonempty-string?
+                 (get source-unit :logical-source-id)
+                 (get (sh03-bounds-record)
+                      :maximum-logical-source-id-code-units))
+                (if (sh03-sha256-id? (get source-unit :source-content-hash))
+                  (if (sh03-nonnegative-integer? source-bytes)
+                    (if (<= source-bytes
+                            (get (sh03-bounds-record)
+                                 :maximum-source-bytes))
+                      (if (= (get source-unit :encoding) :utf-8)
+                        (if (sh03-exact-keys?
+                             provenance
+                             #{:path :extension :source-kind})
+                          (if (sh03-bounded-nonempty-string?
+                               (get provenance :path)
+                               (get (sh03-bounds-record)
+                                    :maximum-actual-path-code-units))
+                            (if (sh03-vector-contains?
+                                 [".gravity" ".qst"] extension)
+                              (if (= extension ".gravity")
+                                (= source-kind :gravity)
+                                (= source-kind :qst))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh03-source-unit-extension-policy-failure? [source-unit]
+  (if (map? source-unit)
+    (let [provenance (get source-unit :actual-path-provenance)]
+      (if (map? provenance)
+        (let [extension (get provenance :extension)
+              source-kind (get provenance :source-kind)]
+          (if (string? extension)
+            (if (= extension ".gravity")
+              (if (= source-kind :gravity) false true)
+              (if (= extension ".qst")
+                (if (= source-kind :qst) false true)
+                true))
+            false))
+        false))
+    false))
+
+(defn sh03-valid-tag-codepoints? [tag]
+  (if (vector? tag)
+    (if (> (count tag) 0)
+      (if (<= (count tag)
+              (get (sh03-bounds-record)
+                   :maximum-reader-tag-codepoints))
+        (loop [remaining tag]
+          (if (= (count remaining) 0)
+            true
+            (if (integer? (first remaining))
+              (if (> (first remaining) 0)
+                (recur (rest remaining))
+                false)
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh03-registered-tag? [tag]
+  (if (= tag [105 110 115 116])
+    true
+    (= tag [117 117 105 100])))
+
+(defn sh03-reader-policy-valid? [policy]
+  (if (sh03-exact-keys?
+       policy
+       #{:artifact :schema-version :retain-trivia :enabled-reader-tags})
+    (if (= (get policy :artifact) :gravity/sh03-reader-policy)
+      (if (= (get policy :schema-version) 1)
+        (if (boolean? (get policy :retain-trivia))
+          (let [tags (get policy :enabled-reader-tags)]
+            (if (vector? tags)
+              (if (<= (count tags)
+                      (get (sh03-bounds-record) :maximum-reader-tags))
+                (if (sh03-reader-tags-registered-shape? tags)
+                  (sh03-all-unique? tags)
+                  false)
+                false)
+              false))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh03-input-kind [value]
+  (if (map? value)
+    :map
+    (if (vector? value)
+      :vector
+      (if (set? value)
+        :set
+        (if (seq? value)
+          :sequence
+          (if (string? value)
+            :string
+            (if (integer? value)
+              :integer
+              (if (boolean? value)
+                :boolean
+                (if (= value nil) :nil :scalar)))))))))
+
+(defn sh03-source-unit-input-summary [source-unit]
+  (let [provenance
+        (if (map? source-unit)
+          (get source-unit :actual-path-provenance)
+          nil)
+        logical-source-id
+        (if (map? source-unit) (get source-unit :logical-source-id) nil)
+        actual-path
+        (if (map? provenance) (get provenance :path) nil)]
+    {:input-kind (sh03-input-kind source-unit)
+     :map-entry-count (if (map? source-unit) (count source-unit) nil)
+     :exact-key-count? (if (map? source-unit)
+                         (= (count source-unit) 8)
+                         false)
+     :artifact-valid? (if (map? source-unit)
+                        (= (get source-unit :artifact)
+                           :gravity/sh03-source-unit)
+                        false)
+     :schema-version-valid? (if (map? source-unit)
+                              (= (get source-unit :schema-version) 1)
+                              false)
+     :project-root-id-valid? (if (map? source-unit)
+                               (sh03-sha256-id?
+                                (get source-unit :project-root-id))
+                               false)
+     :logical-source-id-string? (string? logical-source-id)
+     :logical-source-id-code-units
+     (if (string? logical-source-id) (count logical-source-id) nil)
+     :logical-source-id-within-bound?
+     (sh03-bounded-nonempty-string?
+      logical-source-id
+      (get (sh03-bounds-record)
+           :maximum-logical-source-id-code-units))
+     :source-content-hash-valid?
+     (if (map? source-unit)
+       (sh03-sha256-id? (get source-unit :source-content-hash))
+       false)
+     :source-byte-count-valid?
+     (if (map? source-unit)
+       (let [source-byte-count (get source-unit :source-byte-count)]
+         (if (sh03-nonnegative-integer? source-byte-count)
+           (<= source-byte-count
+               (get (sh03-bounds-record) :maximum-source-bytes))
+           false))
+       false)
+     :encoding-valid? (if (map? source-unit)
+                        (= (get source-unit :encoding) :utf-8)
+                        false)
+     :provenance-map? (map? provenance)
+     :actual-path-string? (string? actual-path)
+     :actual-path-code-units
+     (if (string? actual-path) (count actual-path) nil)
+     :actual-path-within-bound?
+     (sh03-bounded-nonempty-string?
+      actual-path
+      (get (sh03-bounds-record) :maximum-actual-path-code-units))
+     :extension-policy-valid?
+     (if (sh03-source-unit-extension-policy-failure? source-unit)
+       false
+       true)}))
+
+(defn sh03-reader-tags-codepoint-bounded? [tags]
+  (if (vector? tags)
+    (if (<= (count tags)
+            (get (sh03-bounds-record) :maximum-reader-tags))
+      (loop [remaining tags]
+        (if (= (count remaining) 0)
+          true
+          (let [tag (first remaining)]
+            (if (vector? tag)
+              (if (if (> (count tag) 0)
+                    (<= (count tag)
+                        (get (sh03-bounds-record)
+                             :maximum-reader-tag-codepoints))
+                    false)
+                (recur (rest remaining))
+                false)
+              false))))
+      false)
+    false))
+
+(defn sh03-reader-tags-registered-shape? [tags]
+  (if (vector? tags)
+    (if (<= (count tags)
+            (get (sh03-bounds-record) :maximum-reader-tags))
+      (loop [remaining tags]
+        (if (= (count remaining) 0)
+          true
+          (let [tag (first remaining)]
+            (if (sh03-valid-tag-codepoints? tag)
+              (if (sh03-registered-tag? tag)
+                (recur (rest remaining))
+                false)
+              false))))
+      false)
+    false))
+
+(defn sh03-reader-policy-input-summary [reader-policy]
+  (let [tags
+        (if (map? reader-policy)
+          (get reader-policy :enabled-reader-tags)
+          nil)
+        tag-count-within-bound?
+        (if (vector? tags)
+          (<= (count tags)
+              (get (sh03-bounds-record) :maximum-reader-tags))
+          false)
+        tag-codepoints-within-bound?
+        (sh03-reader-tags-codepoint-bounded? tags)
+        registered-tag-shapes?
+        (sh03-reader-tags-registered-shape? tags)
+        reader-tags-unique?
+        (if registered-tag-shapes? (sh03-all-unique? tags) false)]
+    {:input-kind (sh03-input-kind reader-policy)
+     :map-entry-count (if (map? reader-policy) (count reader-policy) nil)
+     :exact-key-count? (if (map? reader-policy)
+                         (= (count reader-policy) 4)
+                         false)
+     :artifact-valid? (if (map? reader-policy)
+                        (= (get reader-policy :artifact)
+                           :gravity/sh03-reader-policy)
+                        false)
+     :schema-version-valid? (if (map? reader-policy)
+                              (= (get reader-policy :schema-version) 1)
+                              false)
+     :retain-trivia-boolean?
+     (if (map? reader-policy)
+       (boolean? (get reader-policy :retain-trivia))
+       false)
+     :enabled-reader-tags-vector? (vector? tags)
+     :enabled-reader-tag-count (if (vector? tags) (count tags) nil)
+     :reader-tag-count-within-bound? tag-count-within-bound?
+     :reader-tag-codepoints-within-bound?
+     tag-codepoints-within-bound?
+     :registered-reader-tag-shapes?
+     registered-tag-shapes?
+     :reader-tags-unique? reader-tags-unique?}))
+
+(defn sh03-source-byte-vector-input-summary [source-unit source-bytes]
+  (let [expected
+        (if (sh03-source-unit-valid? source-unit)
+          (get source-unit :source-byte-count)
+          nil)
+        observed (if (vector? source-bytes) (count source-bytes) nil)]
+    {:input-kind (sh03-input-kind source-bytes)
+     :vector? (vector? source-bytes)
+     :expected-byte-count expected
+     :observed-byte-count observed
+     :count-matches? (if (vector? source-bytes)
+                       (= expected observed)
+                       false)
+     :within-source-byte-bound?
+     (if (vector? source-bytes)
+       (<= observed (get (sh03-bounds-record) :maximum-source-bytes))
+       false)}))
+
+(defn sh03-neutral-position [position]
+  {:line (get position :line)
+   :column (get position :column)
+   :column-unit :unicode-scalar
+   :char (get position :char)
+   :byte (get position :byte)})
+
+(defn sh03-neutral-span [span]
+  {:start (sh03-neutral-position (get span :start))
+   :end (sh03-neutral-position (get span :end))
+   :byte-start (get span :byte-start)
+   :byte-end (get span :byte-end)})
+
+(defn sh03-byte-at [source-bytes position]
+  (first (subvec source-bytes position (+ position 1))))
+
+(defn sh03-continuation-byte? [value]
+  (if (integer? value)
+    (if (>= value 128) (<= value 191) false)
+    false))
+
+(defn sh03-source-byte-vector-valid? [source-unit source-bytes]
+  (if (vector? source-bytes)
+    (if (= (count source-bytes) (get source-unit :source-byte-count))
+      (if (<= (count source-bytes)
+              (get (sh03-bounds-record) :maximum-source-bytes))
+        (loop [remaining source-bytes]
+          (if (= (count remaining) 0)
+            true
+            (if (integer? (first remaining))
+              (if (>= (first remaining) 0)
+                (if (<= (first remaining) 255)
+                  (recur (rest remaining))
+                  false)
+                false)
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh03-utf8-rejection [reason position observed]
+  {:status :rejected
+   :reason reason
+   :byte-position position
+   :observed observed})
+
+(defn sh03-utf8-scalar [codepoint width raw-bytes]
+  {:status :accepted
+   :codepoint codepoint
+   :width width
+   :raw-bytes raw-bytes})
+
+(defn sh03-decode-one-utf8-scalar [source-bytes position]
+  (let [size (count source-bytes)
+        first-byte (sh03-byte-at source-bytes position)]
+    (if (<= first-byte 127)
+      (sh03-utf8-scalar first-byte 1 [first-byte])
+      (if (if (>= first-byte 194) (<= first-byte 223) false)
+        (if (<= (+ position 2) size)
+          (let [second-byte (sh03-byte-at source-bytes (+ position 1))]
+            (if (sh03-continuation-byte? second-byte)
+              (sh03-utf8-scalar
+               (+ (* (- first-byte 192) 64) (- second-byte 128))
+               2
+               [first-byte second-byte])
+              (sh03-utf8-rejection
+               :invalid-continuation-byte position
+               [first-byte second-byte])))
+          (sh03-utf8-rejection
+           :truncated-two-byte-sequence position [first-byte]))
+        (if (if (>= first-byte 224) (<= first-byte 239) false)
+          (if (<= (+ position 3) size)
+            (let [second-byte (sh03-byte-at source-bytes (+ position 1))
+                  third-byte (sh03-byte-at source-bytes (+ position 2))
+                  second-valid
+                  (if (= first-byte 224)
+                    (if (>= second-byte 160) (<= second-byte 191) false)
+                    (if (= first-byte 237)
+                      (if (>= second-byte 128) (<= second-byte 159) false)
+                      (sh03-continuation-byte? second-byte)))]
+              (if second-valid
+                (if (sh03-continuation-byte? third-byte)
+                  (let [codepoint
+                        (+ (* (- first-byte 224) 4096)
+                           (* (- second-byte 128) 64)
+                           (- third-byte 128))]
+                    (if (if (>= codepoint 55296) (<= codepoint 57343) false)
+                      (sh03-utf8-rejection
+                       :surrogate-codepoint position
+                       [first-byte second-byte third-byte])
+                      (sh03-utf8-scalar
+                       codepoint 3 [first-byte second-byte third-byte])))
+                  (sh03-utf8-rejection
+                   :invalid-continuation-byte position
+                   [first-byte second-byte third-byte]))
+                (sh03-utf8-rejection
+                 (if (= first-byte 224)
+                   :overlong-three-byte-sequence
+                   (if (= first-byte 237)
+                     :surrogate-codepoint
+                     :invalid-continuation-byte))
+                 position
+                 [first-byte second-byte third-byte])))
+            (sh03-utf8-rejection
+             :truncated-three-byte-sequence position [first-byte]))
+          (if (if (>= first-byte 240) (<= first-byte 244) false)
+            (if (<= (+ position 4) size)
+              (let [second-byte (sh03-byte-at source-bytes (+ position 1))
+                    third-byte (sh03-byte-at source-bytes (+ position 2))
+                    fourth-byte (sh03-byte-at source-bytes (+ position 3))
+                    second-valid
+                    (if (= first-byte 240)
+                      (if (>= second-byte 144) (<= second-byte 191) false)
+                      (if (= first-byte 244)
+                        (if (>= second-byte 128) (<= second-byte 143) false)
+                        (sh03-continuation-byte? second-byte)))]
+                (if second-valid
+                  (if (sh03-continuation-byte? third-byte)
+                    (if (sh03-continuation-byte? fourth-byte)
+                      (let [codepoint
+                            (+ (* (- first-byte 240) 262144)
+                               (* (- second-byte 128) 4096)
+                               (* (- third-byte 128) 64)
+                               (- fourth-byte 128))]
+                        (if (<= codepoint 1114111)
+                          (sh03-utf8-scalar
+                           codepoint 4
+                           [first-byte second-byte third-byte fourth-byte])
+                          (sh03-utf8-rejection
+                           :codepoint-above-unicode-maximum
+                           position
+                           [first-byte second-byte third-byte fourth-byte])))
+                      (sh03-utf8-rejection
+                       :invalid-continuation-byte position
+                       [first-byte second-byte third-byte fourth-byte]))
+                    (sh03-utf8-rejection
+                     :invalid-continuation-byte position
+                     [first-byte second-byte third-byte fourth-byte]))
+                  (sh03-utf8-rejection
+                   (if (= first-byte 240)
+                     :overlong-four-byte-sequence
+                     (if (= first-byte 244)
+                       :codepoint-above-unicode-maximum
+                       :invalid-continuation-byte))
+                   position
+                   [first-byte second-byte third-byte fourth-byte])))
+              (sh03-utf8-rejection
+               :truncated-four-byte-sequence position [first-byte]))
+            (sh03-utf8-rejection
+             (if (if (>= first-byte 128) (<= first-byte 191) false)
+               :unexpected-continuation-byte
+               (if (if (>= first-byte 192) (<= first-byte 193) false)
+                 :overlong-two-byte-sequence
+                 :invalid-leading-byte))
+             position [first-byte])))))))
+
+(defn sh03-scalar-span [byte-start byte-end char-start char-end
+                        line-start column-start line-end column-end]
+  {:start {:line line-start
+           :column column-start
+           :column-unit :unicode-scalar
+           :char char-start
+           :byte byte-start}
+   :end {:line line-end
+         :column column-end
+         :column-unit :unicode-scalar
+         :char char-end
+         :byte byte-end}
+   :byte-start byte-start
+   :byte-end byte-end})
+
+(defn sh03-decode-source-bytes [source-unit source-bytes]
+  (if (sh03-source-byte-vector-valid? source-unit source-bytes)
+    (loop [position 0
+           scalar-index 0
+           utf16-index 0
+           line 1
+           column 1
+           characters []]
+      (if (= position (count source-bytes))
+        {:status :accepted
+         :characters characters
+         :character-count scalar-index
+         :utf16-unit-count utf16-index
+         :source-byte-count position}
+        (if (>= scalar-index
+                (get (sh03-bounds-record) :maximum-characters))
+          {:status :rejected
+           :reason :character-count-limit
+           :byte-position position
+           :observed []
+           :line line
+           :column column
+           :char-position utf16-index
+           :scalar-index scalar-index}
+          (let [decoded (sh03-decode-one-utf8-scalar source-bytes position)]
+            (if (= (get decoded :status) :accepted)
+              (let [codepoint (get decoded :codepoint)
+                  width (get decoded :width)
+                  byte-end (+ position width)
+                  char-end (+ utf16-index (if (> codepoint 65535) 2 1))
+                  crlf?
+                  (if (= codepoint 13)
+                    (if (< byte-end (count source-bytes))
+                      (= (sh03-byte-at source-bytes byte-end) 10)
+                      false)
+                    false)
+                  line-end
+                  (if (= codepoint 10)
+                    (+ line 1)
+                    (if (= codepoint 13)
+                      (if crlf? line (+ line 1))
+                      line))
+                  column-end
+                  (if (= codepoint 10)
+                    1
+                    (if (= codepoint 13)
+                      (if crlf? (+ column 1) 1)
+                      (+ column 1)))
+                  character
+                  {:index scalar-index
+                   :codepoint codepoint
+                   :raw-bytes (get decoded :raw-bytes)
+                   :span (sh03-scalar-span
+                          position byte-end utf16-index char-end
+                          line column line-end column-end)}]
+                (recur byte-end
+                       (+ scalar-index 1)
+                       char-end
+                       line-end
+                       column-end
+                       (conj characters character)))
+              (assoc
+               (assoc
+                (assoc
+                 (assoc decoded :line line)
+                 :column column)
+                :char-position utf16-index)
+               :scalar-index scalar-index))))))
+    (sh03-utf8-rejection
+     :source-byte-vector-contract 0 source-bytes)))
+
+(defn sh03-character-at [characters position]
+  (first (subvec characters position (+ position 1))))
+
+(defn sh03-codepoint-at [characters position]
+  (get (sh03-character-at characters position) :codepoint))
+
+(defn sh03-ascii-whitespace? [codepoint]
+  (contains? #{9 10 13 32 44} codepoint))
+
+(defn sh03-open-delimiter? [codepoint]
+  (contains? #{40 91 123} codepoint))
+
+(defn sh03-close-delimiter? [codepoint]
+  (contains? #{41 93 125} codepoint))
+
+(defn sh03-reader-prefix? [codepoint]
+  (contains? #{34 35 39 64 92 94 96 126} codepoint))
+
+(defn sh03-atom-boundary? [codepoint]
+  (if (sh03-ascii-whitespace? codepoint)
+    true
+    (if (sh03-open-delimiter? codepoint)
+      true
+      (if (sh03-close-delimiter? codepoint)
+        true
+        (if (= codepoint 59)
+          true
+          (sh03-reader-prefix? codepoint))))))
+
+(defn sh03-digit? [codepoint]
+  (if (>= codepoint 48) (<= codepoint 57) false))
+
+(defn sh03-hex-digit? [codepoint]
+  (if (sh03-digit? codepoint)
+    true
+    (if (if (>= codepoint 65) (<= codepoint 70) false)
+      true
+      (if (>= codepoint 97) (<= codepoint 102) false))))
+
+(defn sh03-binary-digit? [codepoint]
+  (contains? #{48 49} codepoint))
+
+(defn sh03-octal-digit? [codepoint]
+  (if (>= codepoint 48) (<= codepoint 55) false))
+
+(defn sh03-digit-value [codepoint]
+  (if (sh03-digit? codepoint)
+    (- codepoint 48)
+    (if (if (>= codepoint 65) (<= codepoint 70) false)
+      (+ 10 (- codepoint 65))
+      (+ 10 (- codepoint 97)))))
+
+(defn sh03-character-range-codepoints [characters start end]
+  (loop [position start result []]
+    (if (= position end)
+      result
+      (recur (+ position 1)
+             (conj result (sh03-codepoint-at characters position))))))
+
+(defn sh03-character-range-bytes [characters start end]
+  (loop [position start result []]
+    (if (= position end)
+      result
+      (recur (+ position 1)
+             (sh03-append
+              result
+              (get (sh03-character-at characters position) :raw-bytes))))))
+
+(defn sh03-range-raw-spelling [characters start end]
+  {:encoding :utf-8
+   :bytes (sh03-character-range-bytes characters start end)
+   :unicode-scalars (sh03-character-range-codepoints characters start end)})
+
+(defn sh03-span-between-characters [characters start end]
+  (let [first-character (sh03-character-at characters start)
+        last-character (sh03-character-at characters (- end 1))
+        first-span (get first-character :span)
+        last-span (get last-character :span)]
+    {:start (get first-span :start)
+     :end (get last-span :end)
+     :byte-start (get first-span :byte-start)
+     :byte-end (get last-span :byte-end)}))
+
+(defn sh03-empty-span-at-byte [byte-position]
+  {:start {:line 1 :column 1 :column-unit :unicode-scalar
+           :char 0 :byte byte-position}
+   :end {:line 1 :column 1 :column-unit :unicode-scalar
+         :char 0 :byte byte-position}
+   :byte-start byte-position
+   :byte-end byte-position})
+
+(defn sh03-empty-span-at-position [byte-position char-position line column]
+  {:start {:line line :column column :column-unit :unicode-scalar
+           :char char-position :byte byte-position}
+   :end {:line line :column column :column-unit :unicode-scalar
+         :char char-position :byte byte-position}
+   :byte-start byte-position
+   :byte-end byte-position})
+
+(defn sh03-source-slice [span scalar-start scalar-end]
+  {:artifact :gravity/source-slice
+   :schema-version 1
+   :encoding :utf-8
+   :source-content-id {:digest-ref 0}
+   :byte-start (get span :byte-start)
+   :byte-end (get span :byte-end)
+   :scalar-start scalar-start
+   :scalar-end scalar-end})
+
+(defn sh03-invalid-byte-span [source-byte-count byte-position
+                              char-position line column]
+  (let [byte-end (if (< byte-position source-byte-count)
+                   (+ byte-position 1)
+                   byte-position)]
+    {:start {:line line :column column :column-unit :unicode-scalar
+             :char char-position :byte byte-position}
+     :end {:line line :column column :column-unit :unicode-scalar
+           :char char-position :byte byte-end}
+     :byte-start byte-position
+     :byte-end byte-end}))
+
+(defn sh03-scan-run-end [characters start mode]
+  (loop [position start]
+    (if (= position (count characters))
+      position
+      (let [codepoint (sh03-codepoint-at characters position)
+            continue?
+            (if (= mode :whitespace)
+              (sh03-ascii-whitespace? codepoint)
+              (if (= mode :comment)
+                (if (= codepoint 10)
+                  false
+                  (if (= codepoint 13) false true))
+                (if (sh03-atom-boundary? codepoint) false true)))]
+        (if continue?
+          (recur (+ position 1))
+          position)))))
+
+(defn sh03-all-base-digits? [codepoints base]
+  (if (> (count codepoints) 0)
+    (loop [remaining codepoints]
+      (if (= (count remaining) 0)
+        true
+        (if (= base 2)
+          (if (sh03-binary-digit? (first remaining))
+            (recur (rest remaining))
+            false)
+          (if (= base 16)
+            (if (sh03-hex-digit? (first remaining))
+              (recur (rest remaining))
+              false)
+            (if (sh03-digit? (first remaining))
+              (recur (rest remaining))
+              false)))))
+    false))
+
+(defn sh03-parse-unsigned-integer [codepoints base]
+  (loop [remaining codepoints value 0]
+    (if (= (count remaining) 0)
+      value
+      (recur (rest remaining)
+             (+ (* value base) (sh03-digit-value (first remaining)))))))
+
+(defn sh03-host-integer-magnitude-safe? [digits base]
+  (if (= base 10)
+    (<= (count digits) 18)
+    (if (= base 16)
+      (<= (count digits) 15)
+      (<= (count digits) 62))))
+
+(defn sh03-arbitrary-integer-value [sign base digits]
+  {:artifact :gravity/arbitrary-precision-integer
+   :sign (if (= sign -1) :negative :positive)
+   :radix base
+   :digit-codepoints digits})
+
+(defn sh03-zero-digits? [digits]
+  (if (= (count digits) 0)
+    false
+    (loop [remaining digits]
+      (if (= (count remaining) 0)
+        true
+        (if (= (first remaining) 48)
+          (recur (rest remaining))
+          false)))))
+
+(defn sh03-signed-components [codepoints]
+  (if (= (count codepoints) 0)
+    {:sign 1 :digits []}
+    (if (= (first codepoints) 45)
+      {:sign -1 :digits (vec (rest codepoints))}
+      (if (= (first codepoints) 43)
+        {:sign 1 :digits (vec (rest codepoints))}
+        {:sign 1 :digits codepoints}))))
+
+(defn sh03-decimal-integer-shape? [codepoints]
+  (let [components (sh03-signed-components codepoints)]
+    (sh03-all-base-digits? (get components :digits) 10)))
+
+(defn sh03-radix-integer-shape? [codepoints]
+  (let [components (sh03-signed-components codepoints)
+        digits (get components :digits)]
+    (if (>= (count digits) 3)
+      (if (= (first digits) 48)
+        (if (contains? #{120 88} (second digits))
+          (sh03-all-base-digits? (vec (rest (rest digits))) 16)
+          (if (contains? #{98 66} (second digits))
+            (sh03-all-base-digits? (vec (rest (rest digits))) 2)
+            false))
+        false)
+      false)))
+
+(defn sh03-integer-value [codepoints]
+  (let [components (sh03-signed-components codepoints)
+        sign (get components :sign)
+        digits (get components :digits)]
+    (if (sh03-radix-integer-shape? codepoints)
+      (let [radix-codepoint (second digits)
+            base (if (contains? #{120 88} radix-codepoint) 16 2)
+            magnitude-digits (vec (rest (rest digits)))]
+        (if (sh03-zero-digits? magnitude-digits)
+          0
+          (if (sh03-host-integer-magnitude-safe? magnitude-digits base)
+            (* sign (sh03-parse-unsigned-integer magnitude-digits base))
+            (sh03-arbitrary-integer-value sign base magnitude-digits))))
+      (if (sh03-zero-digits? digits)
+        0
+        (if (sh03-host-integer-magnitude-safe? digits 10)
+          (* sign (sh03-parse-unsigned-integer digits 10))
+          (sh03-arbitrary-integer-value sign 10 digits))))))
+
+(defn sh03-split-once [values separator]
+  (loop [remaining values left [] found false right []]
+    (if (= (count remaining) 0)
+      {:found found :left left :right right}
+      (if (= (first remaining) separator)
+        (if found
+          {:found :multiple :left left :right right}
+          (recur (rest remaining) left true right))
+        (if found
+          (recur (rest remaining) left found (conj right (first remaining)))
+          (recur (rest remaining) (conj left (first remaining)) found right))))))
+
+(defn sh03-ratio-shape? [codepoints]
+  (let [split (sh03-split-once codepoints 47)]
+    (if (= (get split :found) true)
+      (if (sh03-decimal-integer-shape? (get split :left))
+        (sh03-all-base-digits? (get split :right) 10)
+        false)
+      false)))
+
+(defn sh03-decimal-shape? [codepoints]
+  (let [components (sh03-signed-components codepoints)
+        digits (get components :digits)
+        lower (sh03-split-once digits 101)
+        upper (sh03-split-once digits 69)
+        lower-found (= (get lower :found) true)
+        upper-found (= (get upper :found) true)
+        exponent-present (if lower-found true upper-found)
+        exponent-split (if lower-found lower upper)
+        mantissa (if exponent-present
+                   (get exponent-split :left)
+                   digits)
+        exponent (if exponent-present
+                   (get exponent-split :right)
+                   [])
+        point (sh03-split-once mantissa 46)
+        point-present (= (get point :found) true)
+        integer-digits (if point-present (get point :left) mantissa)
+        fraction-digits (if point-present (get point :right) [])
+        exponent-components (sh03-signed-components exponent)]
+    (if (if lower-found upper-found false)
+      false
+      (if (= (get point :found) :multiple)
+        false
+        (if (if (= (count integer-digits) 0)
+              (= (count fraction-digits) 0)
+              false)
+          false
+          (if (if (> (count integer-digits) 0)
+                (sh03-all-base-digits? integer-digits 10)
+                true)
+            (if (if (> (count fraction-digits) 0)
+                  (sh03-all-base-digits? fraction-digits 10)
+                  true)
+              (if exponent-present
+                (sh03-all-base-digits?
+                 (get exponent-components :digits) 10)
+                point-present)
+              false)
+            false))))))
+
+(defn sh03-numeric-looking? [codepoints]
+  (if (= (count codepoints) 0)
+    false
+    (if (sh03-digit? (first codepoints))
+      true
+      (if (= (first codepoints) 46)
+        (if (> (count codepoints) 1)
+          (sh03-digit? (second codepoints))
+          false)
+      (if (contains? #{43 45} (first codepoints))
+        (if (> (count codepoints) 1)
+          (if (sh03-digit? (second codepoints))
+            true
+            (if (= (second codepoints) 46)
+              (if (> (count codepoints) 2)
+                (sh03-digit? (first (rest (rest codepoints))))
+                false)
+              false))
+          false)
+        false)))))
+
+(defn sh03-trim-leading-zeroes [digits]
+  (loop [remaining digits]
+    (if (<= (count remaining) 1)
+      (vec remaining)
+      (if (= (first remaining) 48)
+        (recur (rest remaining))
+        (vec remaining)))))
+
+(defn sh03-trim-trailing-zeroes [digits]
+  (loop [end (count digits) removed 0]
+    (if (<= end 1)
+      {:digits (subvec digits 0 end) :removed removed}
+      (if (= (first (subvec digits (- end 1) end)) 48)
+        (recur (- end 1) (+ removed 1))
+        {:digits (subvec digits 0 end) :removed removed}))))
+
+(defn sh03-normalize-decimal-digits [digits]
+  (if (= (count digits) 0)
+    [48]
+    (sh03-trim-leading-zeroes digits)))
+
+(defn sh03-nonnegative-integer-decimal-digits [value]
+  (if (= value 0)
+    [48]
+    (loop [remaining value result []]
+      (if (= remaining 0)
+        result
+        (let [next (quot remaining 10)
+              digit (- remaining (* next 10))]
+          (recur next (sh03-append [(+ 48 digit)] result)))))))
+
+(defn sh03-canonical-decimal-power [sign digits]
+  (let [digits (sh03-normalize-decimal-digits digits)]
+    (if (= digits [48])
+      0
+      (if (<= (count digits) 18)
+        (* sign (sh03-parse-unsigned-integer digits 10))
+        {:artifact :gravity/signed-decimal-power
+         :sign (if (= sign -1) :negative :positive)
+         :digit-codepoints digits}))))
+
+(defn sh03-decimal-power-host-range-safe? [power]
+  (if (integer? power)
+    (if (>= power -2147483647) (<= power 2147483647) false)
+    false))
+
+(defn sh03-decimal-power-value [exponent-sign exponent-digits adjustment]
+  (let [left (sh03-normalize-decimal-digits exponent-digits)
+        right-sign (if (< adjustment 0) -1 1)
+        right
+        (sh03-nonnegative-integer-decimal-digits
+         (if (< adjustment 0) (- 0 adjustment) adjustment))]
+    (if (= right [48])
+      (sh03-canonical-decimal-power exponent-sign left)
+      (if (= left [48])
+        (sh03-canonical-decimal-power right-sign right)
+        (if (= exponent-sign right-sign)
+          (sh03-canonical-decimal-power
+           exponent-sign (sh03-decimal-digits-add left right))
+          (let [comparison (sh03-decimal-digits-compare left right)]
+            (if (= comparison 0)
+              0
+              (if (> comparison 0)
+                (sh03-canonical-decimal-power
+                 exponent-sign (sh03-decimal-digits-subtract left right))
+                (sh03-canonical-decimal-power
+                 right-sign (sh03-decimal-digits-subtract right left))))))))))
+
+(defn sh03-decimal-semantic-key-from-codepoints [codepoints]
+  (let [components (sh03-signed-components codepoints)
+        sign (get components :sign)
+        digits (get components :digits)
+        lower (sh03-split-once digits 101)
+        upper (sh03-split-once digits 69)
+        exponent-split (if (= (get lower :found) true) lower upper)
+        exponent-present
+        (if (= (get lower :found) true)
+          true
+          (= (get upper :found) true))
+        mantissa (if exponent-present
+                   (get exponent-split :left)
+                   digits)
+        exponent-spelling (if exponent-present
+                            (get exponent-split :right)
+                            [])
+        point (sh03-split-once mantissa 46)
+        point-present (= (get point :found) true)
+        integer-digits (if point-present (get point :left) mantissa)
+        fraction-digits (if point-present (get point :right) [])
+        coefficient
+        (sh03-trim-leading-zeroes
+         (sh03-append integer-digits fraction-digits))
+        trailing (sh03-trim-trailing-zeroes coefficient)
+        exponent-components (sh03-signed-components exponent-spelling)
+        exponent-digits (get exponent-components :digits)]
+    (if (sh03-zero-digits? coefficient)
+      {:kind :decimal :sign 1 :coefficient [48] :decimal-power 0}
+      {:kind :decimal
+       :sign sign
+       :coefficient (get trailing :digits)
+       :decimal-power
+       (sh03-decimal-power-value
+        (get exponent-components :sign)
+        exponent-digits
+        (- (get trailing :removed) (count fraction-digits)))})))
+
+(defn sh03-bounded-decimal-spelling-key [codepoints]
+  (let [components (sh03-signed-components codepoints)
+        digits (get components :digits)
+        lower (sh03-split-once digits 101)
+        upper (sh03-split-once digits 69)
+        exponent-split (if (= (get lower :found) true) lower upper)
+        exponent-present
+        (if (= (get lower :found) true)
+          true
+          (= (get upper :found) true))
+        mantissa (if exponent-present
+                   (get exponent-split :left)
+                   digits)
+        exponent (if exponent-present (get exponent-split :right) [])
+        exponent-components (sh03-signed-components exponent)
+        point (sh03-split-once mantissa 46)
+        all-mantissa-digits
+        (sh03-append (get point :left)
+                     (if (= (get point :found) true)
+                       (get point :right)
+                       []))
+        zero? (sh03-zero-digits? all-mantissa-digits)]
+    {:kind :decimal
+     :normalization :reader-semantic-work-boundary
+     :sign (if zero? 1 (get components :sign))
+     :zero? zero?
+     :integer-digits
+     (sh03-trim-leading-zeroes (get point :left))
+     :fraction-digits
+     (if (= (get point :found) true) (get point :right) [])
+     :exponent-sign (get exponent-components :sign)
+     :exponent-digits
+     (sh03-trim-leading-zeroes (get exponent-components :digits))}))
+
+(defn sh03-decimal-descriptor [codepoints raw]
+  (let [exponent-lower (sh03-split-once codepoints 101)
+        exponent-upper (sh03-split-once codepoints 69)
+        exponent-split
+        (if (= (get exponent-lower :found) true)
+          exponent-lower
+          exponent-upper)
+        mantissa
+        (if (= (get exponent-split :found) true)
+          (get exponent-split :left)
+          codepoints)
+        exponent
+        (if (= (get exponent-split :found) true)
+          (get exponent-split :right)
+          [])
+        point-split (sh03-split-once mantissa 46)
+        normalization-deferred?
+        (> (count codepoints)
+           (get (sh03-bounds-record) :maximum-numeric-semantic-scalars))
+        semantic-key
+        (if normalization-deferred?
+          (sh03-bounded-decimal-spelling-key codepoints)
+          (sh03-decimal-semantic-key-from-codepoints codepoints))
+        host-range-deferred?
+        (if normalization-deferred?
+          false
+          (if (sh03-decimal-power-host-range-safe?
+               (get semantic-key :decimal-power))
+            false
+            true))]
+    {:artifact :gravity/decimal-literal
+     :kind :decimal
+     :raw raw
+     :integer-spelling (get point-split :left)
+     :fraction-spelling
+     (if (= (get point-split :found) true)
+       (get point-split :right)
+       [])
+     :exponent-spelling exponent
+     :semantic-key semantic-key
+     :semantic-validation
+     (if normalization-deferred?
+       :deferred
+       (if host-range-deferred? :deferred :accepted))
+     :normalization-reason
+     (if normalization-deferred?
+       :reader-semantic-work-boundary
+       nil)
+     :reason
+     (if host-range-deferred? :host-independent-decimal-range nil)}))
+
+(defn sh03-ratio-descriptor [codepoints raw]
+  (let [split (sh03-split-once codepoints 47)
+        numerator (sh03-integer-value (get split :left))
+        denominator-spelling (get split :right)
+        denominator
+        (if (sh03-host-integer-magnitude-safe? denominator-spelling 10)
+          (sh03-parse-unsigned-integer denominator-spelling 10)
+          (sh03-arbitrary-integer-value 1 10 denominator-spelling))]
+    (if (sh03-zero-digits? denominator-spelling)
+      {:artifact :gravity/deferred-ratio-literal
+       :kind :ratio
+       :raw raw
+       :numerator-spelling (get split :left)
+       :denominator-spelling denominator-spelling
+       :numerator numerator
+       :denominator denominator
+       :semantic-validation :deferred
+       :reason :zero-denominator}
+      {:artifact :gravity/ratio-literal
+       :kind :ratio
+       :raw raw
+       :numerator-spelling (get split :left)
+       :denominator-spelling denominator-spelling
+       :numerator numerator
+       :denominator denominator
+       :value
+       {:artifact :gravity/exact-ratio-value
+        :numerator numerator
+        :denominator denominator}
+       :semantic-validation :accepted})))
+
+(defn sh03-character-named-codepoint [body]
+  (if (= body [110 101 119 108 105 110 101])
+    10
+    (if (= body [114 101 116 117 114 110])
+      13
+      (if (= body [115 112 97 99 101])
+        32
+        (if (= body [116 97 98])
+          9
+          (if (= body [98 97 99 107 115 112 97 99 101])
+            8
+            (if (= body [102 111 114 109 102 101 101 100])
+              12
+              nil)))))))
+
+(defn sh03-character-unicode-descriptor [body raw]
+  (let [digits (vec (rest body))]
+    (if (sh03-all-base-digits? digits 16)
+      (let [codepoint (sh03-parse-unsigned-integer digits 16)]
+        (if (if (>= codepoint 55296) (<= codepoint 57343) false)
+          {:status :rejected :reason :surrogate-character-literal}
+          {:status :accepted
+           :descriptor
+           {:artifact :gravity/character-literal
+            :kind :character :raw raw
+            :escape-kind :unicode :codepoint codepoint}}))
+      {:status :rejected :reason :invalid-unicode-character-escape})))
+
+(defn sh03-character-octal-descriptor [body raw]
+  (let [digits (vec (rest body))]
+    (if (loop [remaining digits]
+          (if (= (count remaining) 0)
+            true
+            (if (sh03-octal-digit? (first remaining))
+              (recur (rest remaining))
+              false)))
+      (let [codepoint (sh03-parse-unsigned-integer digits 8)]
+        (if (<= codepoint 255)
+          {:status :accepted
+           :descriptor
+           {:artifact :gravity/character-literal
+            :kind :character :raw raw
+            :escape-kind :octal :codepoint codepoint}}
+          {:status :rejected :reason :octal-character-out-of-range}))
+      {:status :rejected :reason :invalid-octal-character-escape})))
+
+(defn sh03-character-descriptor [codepoints raw]
+  (let [body (vec (rest codepoints))
+        named-codepoint (sh03-character-named-codepoint body)]
+    (if (= (count body) 1)
+      (if (<= (first body) 1114111)
+        (if (if (>= (first body) 55296) (<= (first body) 57343) false)
+          {:status :rejected :reason :surrogate-character-literal}
+          {:status :accepted
+           :descriptor
+           {:artifact :gravity/character-literal
+            :kind :character :raw raw
+            :escape-kind :scalar :codepoint (first body)}})
+        {:status :rejected :reason :character-codepoint-out-of-range})
+      (if (integer? named-codepoint)
+        {:status :accepted
+         :descriptor
+         {:artifact :gravity/character-literal
+          :kind :character :raw raw
+          :escape-kind :named :codepoint named-codepoint}}
+        (if (if (= (count body) 5) (= (first body) 117) false)
+          (sh03-character-unicode-descriptor body raw)
+          (if (if (>= (count body) 2)
+                (if (<= (count body) 4) (= (first body) 111) false)
+                false)
+            (sh03-character-octal-descriptor body raw)
+            {:status :rejected :reason :invalid-character-literal}))))))
+
+(defn sh03-qualified-name-shape? [codepoints]
+  (if (= codepoints [47])
+    true
+    (if (= (count codepoints) 0)
+      false
+      (if (= (first codepoints) 47)
+        false
+        (loop [remaining codepoints
+               previous-separator false
+               separator-count 0]
+          (if (= (count remaining) 0)
+            (if previous-separator
+              false
+              (<= separator-count 1))
+            (let [codepoint (first remaining)]
+              (if (= codepoint 58)
+                false
+                (if (= codepoint 47)
+                  (if previous-separator
+                    false
+                    (recur (rest remaining) true (+ separator-count 1)))
+                  (recur (rest remaining) false separator-count))))))))))
+
+(defn sh03-classify-atom [codepoints raw]
+  (if (= codepoints [110 105 108])
+    {:status :accepted :kind :nil
+     :descriptor {:kind :nil :raw raw :value nil}}
+    (if (= codepoints [116 114 117 101])
+      {:status :accepted :kind :boolean
+       :descriptor {:kind :boolean :raw raw :value true}}
+      (if (= codepoints [102 97 108 115 101])
+        {:status :accepted :kind :boolean
+         :descriptor {:kind :boolean :raw raw :value false}}
+        (if (= (first codepoints) 92)
+          (let [character (sh03-character-descriptor codepoints raw)]
+            (if (= (get character :status) :accepted)
+              {:status :accepted :kind :character
+               :descriptor (get character :descriptor)}
+              character))
+          (if (sh03-decimal-integer-shape? codepoints)
+            {:status :accepted :kind :integer
+             :descriptor {:kind :integer
+                          :raw raw
+                          :radix 10
+                          :value (sh03-integer-value codepoints)}}
+            (if (sh03-radix-integer-shape? codepoints)
+              {:status :accepted :kind :integer
+               :descriptor {:kind :integer
+                            :raw raw
+                            :radix
+                            (if (contains? #{120 88}
+                                           (second
+                                            (get (sh03-signed-components
+                                                  codepoints)
+                                                 :digits)))
+                              16 2)
+                            :value (sh03-integer-value codepoints)}}
+              (if (sh03-ratio-shape? codepoints)
+                {:status :accepted :kind :ratio
+                 :descriptor (sh03-ratio-descriptor codepoints raw)}
+                (if (sh03-decimal-shape? codepoints)
+                  {:status :accepted :kind :decimal
+                   :descriptor (sh03-decimal-descriptor codepoints raw)}
+                  (if (sh03-numeric-looking? codepoints)
+                    {:status :rejected
+                     :reason :malformed-numeric
+                     :rule "C2-NUMERIC"
+                     :engine "STAGE1READER007"}
+                    (if (= (first codepoints) 58)
+                      (if (sh03-qualified-name-shape?
+                           (vec (rest codepoints)))
+                        {:status :accepted :kind :keyword
+                         :descriptor {:kind :keyword
+                                      :raw raw
+                                      :name-codepoints (vec (rest codepoints))}}
+                        {:status :rejected
+                         :reason :malformed-keyword
+                         :rule "C2-IDENTIFIER"
+                         :engine nil})
+                      (if (sh03-qualified-name-shape? codepoints)
+                        {:status :accepted :kind :symbol
+                         :descriptor {:kind :symbol
+                                      :raw raw
+                                      :name-codepoints codepoints}}
+                        {:status :rejected
+                         :reason :malformed-symbol
+                         :rule "C2-IDENTIFIER"
+                         :engine nil}))))))))))))
+
+(defn sh03-defer-numeric-classification [classified codepoints]
+  (let [descriptor (get classified :descriptor)
+        observed-scalars (count codepoints)]
+    (assoc
+     classified :descriptor
+     (assoc
+      (assoc
+       (assoc
+        (assoc descriptor :semantic-validation :deferred)
+        :normalization-reason :reader-semantic-work-boundary)
+       :spelling-codepoints codepoints)
+      :numeric-semantic-work
+      {:observed-scalars observed-scalars
+       :maximum-scalars
+       (get (sh03-bounds-record) :maximum-numeric-semantic-scalars)
+       :observed-work-units (* observed-scalars observed-scalars)
+       :maximum-work-units
+       (get (sh03-bounds-record)
+            :maximum-numeric-semantic-work-units)}))))
+
+(defn sh03-classify-bounded-deferred-numeric [codepoints raw]
+  (if (sh03-decimal-integer-shape? codepoints)
+    {:status :accepted :kind :integer
+     :descriptor {:kind :integer :raw raw :radix 10
+                  :value (sh03-integer-value codepoints)}}
+    (if (sh03-radix-integer-shape? codepoints)
+      {:status :accepted :kind :integer
+       :descriptor
+       {:kind :integer
+        :raw raw
+        :radix
+        (if (contains? #{120 88}
+                       (second
+                        (get (sh03-signed-components codepoints) :digits)))
+          16 2)
+        :value (sh03-integer-value codepoints)}}
+      (if (sh03-ratio-shape? codepoints)
+        {:status :accepted :kind :ratio
+         :descriptor (sh03-ratio-descriptor codepoints raw)}
+        (if (sh03-decimal-shape? codepoints)
+          {:status :accepted :kind :decimal
+           :descriptor (sh03-decimal-descriptor codepoints raw)}
+          {:status :rejected
+           :reason :malformed-numeric
+           :rule "C2-NUMERIC"
+           :engine "STAGE1READER007"})))))
+
+(defn sh03-string-escape [codepoint]
+  (if (= codepoint 34)
+    {:status :accepted :codepoint 34}
+    (if (= codepoint 92)
+      {:status :accepted :codepoint 92}
+      (if (= codepoint 110)
+        {:status :accepted :codepoint 10}
+        (if (= codepoint 114)
+          {:status :accepted :codepoint 13}
+          (if (= codepoint 116)
+            {:status :accepted :codepoint 9}
+            (if (= codepoint 98)
+              {:status :accepted :codepoint 8}
+              (if (= codepoint 102)
+                {:status :accepted :codepoint 12}
+                {:status :rejected :reason :invalid-string-escape}))))))))
+
+(defn sh03-string-unicode-escape [characters position]
+  (if (<= (+ position 5) (count characters))
+    (let [digits (sh03-character-range-codepoints
+                  characters (+ position 1) (+ position 5))]
+      (if (sh03-all-base-digits? digits 16)
+        (let [codepoint (sh03-parse-unsigned-integer digits 16)]
+          (if (if (>= codepoint 55296) (<= codepoint 57343) false)
+            {:status :rejected
+             :reason :surrogate-string-escape
+             :position position}
+            {:status :accepted
+             :codepoint codepoint
+             :end (+ position 5)}))
+        {:status :rejected
+         :reason :invalid-unicode-string-escape
+         :position position}))
+    {:status :rejected
+     :reason :truncated-unicode-string-escape
+     :position position}))
+
+(defn sh03-scan-string [characters start]
+  (loop [position (+ start 1)
+         decoded []
+         escape false]
+    (if (= position (count characters))
+      {:status :rejected
+       :reason :unclosed-string
+       :position position
+       :start start}
+      (let [codepoint (sh03-codepoint-at characters position)]
+        (if escape
+          (if (= codepoint 117)
+            (let [escaped
+                  (sh03-string-unicode-escape characters position)]
+              (if (= (get escaped :status) :accepted)
+                (recur (get escaped :end)
+                       (conj decoded (get escaped :codepoint))
+                       false)
+                {:status :rejected
+                 :reason (get escaped :reason)
+                 :position (get escaped :position)
+                 :start start}))
+            (let [escaped (sh03-string-escape codepoint)]
+              (if (= (get escaped :status) :accepted)
+                (recur (+ position 1)
+                       (conj decoded (get escaped :codepoint))
+                       false)
+                {:status :rejected
+                 :reason (get escaped :reason)
+                 :position position
+                 :start start})))
+          (if (= codepoint 92)
+            (recur (+ position 1) decoded true)
+            (if (= codepoint 34)
+              {:status :accepted
+               :end (+ position 1)
+               :decoded-codepoints decoded}
+              (recur (+ position 1)
+                     (conj decoded codepoint)
+                     false))))))))
+
+(defn sh03-token-id [index]
+  (str "token/" index))
+
+(defn sh03-make-token [characters index kind start end descriptor extra]
+  (let [base
+        {:token-id (sh03-token-id index)
+         :index index
+         :kind kind
+         :scalar-start start
+         :scalar-end end
+         :raw (sh03-range-raw-spelling characters start end)
+         :span (sh03-span-between-characters characters start end)
+         :descriptor descriptor
+         :reader-origin :source
+         :trivia? (contains? #{:whitespace :comment} kind)}]
+    (if (= extra nil) base (sh03-append-map base extra))))
+
+(defn sh03-semantic-value-token-index [value-table]
+  (loop [remaining value-table result {}]
+    (if (= (count remaining) 0)
+      result
+      (let [entry (first remaining)]
+        (recur
+         (rest remaining)
+         (assoc result
+                (get entry :token-id)
+                {:artifact :gravity/semantic-value-reference
+                 :schema-version 1
+                 :value-id (get entry :value-id)
+                 :field :descriptor}))))))
+
+(defn sh03-compact-token-descriptor [token value-index]
+  (let [descriptor (get token :descriptor)
+        value-reference (get value-index (get token :token-id))
+        source-slice
+        (sh03-source-slice
+         (get token :span)
+         (get token :scalar-start)
+         (get token :scalar-end))]
+    (if (= value-reference nil)
+      (if (map? descriptor)
+        (if (contains? descriptor :raw)
+          (assoc descriptor :raw source-slice)
+          descriptor)
+        descriptor)
+      value-reference)))
+
+(defn sh03-compact-token-record [token value-index]
+  (let [source-slice
+        (sh03-source-slice
+         (get token :span)
+         (get token :scalar-start)
+         (get token :scalar-end))]
+    (assoc
+     (assoc
+      token
+      :raw source-slice)
+     :descriptor (sh03-compact-token-descriptor token value-index))))
+
+(defn sh03-compact-token-records [tokens value-index]
+  (loop [remaining tokens result []]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining)
+             (conj result
+                   (sh03-compact-token-record
+                    (first remaining) value-index))))))
+
+(defn sh03-append-map [left right]
+  (loop [remaining (keys right) result left]
+    (if (= (count remaining) 0)
+      result
+      (let [key (first remaining)]
+        (recur (rest remaining) (assoc result key (get right key)))))))
+
+(defn sh03-lexical-rejection [rule engine reason span raw facts token-id]
+  {:status :rejected
+   :rule rule
+   :engine engine
+   :reason reason
+   :span span
+   :raw raw
+   :facts facts
+   :token-id token-id
+   :form-id nil
+   :related []})
+
+(defn sh03-scan-tokens [characters]
+  (loop [position 0 token-index 0 tokens []]
+    (if (= position (count characters))
+      {:status :accepted :tokens tokens}
+      (if (>= token-index (get (sh03-bounds-record) :maximum-tokens))
+        (sh03-lexical-rejection
+         "C2-HASH" "STAGE1READER006" :token-count-limit
+         (get (sh03-character-at characters position) :span)
+         nil
+         {:maximum-tokens (get (sh03-bounds-record) :maximum-tokens)}
+         (sh03-token-id token-index))
+        (let [codepoint (sh03-codepoint-at characters position)]
+          (if (sh03-ascii-whitespace? codepoint)
+            (let [end (sh03-scan-run-end characters position :whitespace)
+                  token (sh03-make-token
+                         characters token-index :whitespace
+                         position end
+                         {:kind :whitespace} nil)]
+              (recur end (+ token-index 1) (conj tokens token)))
+            (if (= codepoint 59)
+              (let [end (sh03-scan-run-end
+                         characters (+ position 1) :comment)
+                    token (sh03-make-token
+                           characters token-index :comment
+                           position end
+                           {:kind :comment} nil)]
+                (recur end (+ token-index 1) (conj tokens token)))
+              (if (= codepoint 34)
+                (let [scanned (sh03-scan-string characters position)]
+                  (if (= (get scanned :status) :accepted)
+                    (let [end (get scanned :end)
+                          raw (sh03-range-raw-spelling
+                               characters position end)
+                          descriptor
+                          {:artifact :gravity/string-literal
+                           :kind :string
+                           :raw raw
+                           :decoded-codepoints
+                           (get scanned :decoded-codepoints)}
+                          token (sh03-make-token
+                                 characters token-index :string
+                                 position end descriptor nil)]
+                      (recur end (+ token-index 1) (conj tokens token)))
+                    (sh03-lexical-rejection
+                     "C2-STRING" "STAGE1READER003"
+                     (get scanned :reason)
+                     (if (= (get scanned :position) (count characters))
+                       (get (sh03-character-at characters position) :span)
+                       (get (sh03-character-at
+                             characters (get scanned :position))
+                            :span))
+                     (sh03-range-raw-spelling
+                      characters position
+                      (if (= (get scanned :position) (count characters))
+                        (count characters)
+                        (+ (get scanned :position) 1)))
+                     {}
+                     (sh03-token-id token-index))))
+                (if (sh03-open-delimiter? codepoint)
+                  (let [kind
+                        (if (= codepoint 40)
+                          :list-open
+                          (if (= codepoint 91) :vector-open :map-open))
+                        closes
+                        (if (= codepoint 40)
+                          41
+                          (if (= codepoint 91) 93 125))
+                        token
+                        (sh03-make-token
+                         characters token-index kind position (+ position 1)
+                         {:kind kind :closes-codepoint closes}
+                         {:delimiter-codepoint codepoint
+                          :closes-codepoint closes})]
+                    (recur (+ position 1)
+                           (+ token-index 1)
+                           (conj tokens token)))
+                  (if (sh03-close-delimiter? codepoint)
+                    (let [token
+                          (sh03-make-token
+                           characters token-index :close
+                           position (+ position 1)
+                           {:kind :close
+                            :delimiter-codepoint codepoint}
+                           {:delimiter-codepoint codepoint})]
+                      (recur (+ position 1)
+                             (+ token-index 1)
+                             (conj tokens token)))
+                    (if (= codepoint 35)
+                      (if (< (+ position 1) (count characters))
+                        (let [next-codepoint
+                              (sh03-codepoint-at characters (+ position 1))]
+                          (if (= next-codepoint 123)
+                            (let [token
+                                  (sh03-make-token
+                                   characters token-index :set-open
+                                   position (+ position 2)
+                                   {:kind :set-open :closes-codepoint 125}
+                                   {:delimiter-codepoint 123
+                                    :dispatch-codepoint 35
+                                    :closes-codepoint 125})]
+                              (recur (+ position 2)
+                                     (+ token-index 1)
+                                     (conj tokens token)))
+                            (if (sh03-atom-boundary? next-codepoint)
+                              (sh03-lexical-rejection
+                               "C2-EXTENSION" "STAGE1READER004"
+                               :unsupported-dispatch
+                               (get (sh03-character-at characters position)
+                                    :span)
+                               (sh03-range-raw-spelling
+                                characters position (+ position 1))
+                               {}
+                               (sh03-token-id token-index))
+                              (let [end (sh03-scan-run-end
+                                         characters (+ position 1) :atom)
+                                    tag-codepoints
+                                    (sh03-character-range-codepoints
+                                     characters (+ position 1) end)
+                                    token
+                                    (sh03-make-token
+                                     characters token-index :reader-tag
+                                     position end
+                                     {:kind :reader-tag
+                                      :tag-codepoints tag-codepoints}
+                                     {:tag-codepoints tag-codepoints})]
+                                (recur end (+ token-index 1)
+                                       (conj tokens token))))))
+                        (sh03-lexical-rejection
+                         "C2-EXTENSION" "STAGE1READER004"
+                         :truncated-dispatch
+                         (get (sh03-character-at characters position) :span)
+                         (sh03-range-raw-spelling
+                          characters position (+ position 1))
+                         {}
+                         (sh03-token-id token-index)))
+                      (if (contains? #{39 64 94 96 126} codepoint)
+                        (let [splice?
+                              (if (= codepoint 126)
+                                (if (< (+ position 1) (count characters))
+                                  (= (sh03-codepoint-at
+                                      characters (+ position 1)) 64)
+                                  false)
+                                false)
+                              end (+ position (if splice? 2 1))
+                              abbrev
+                              (if (= codepoint 39)
+                                :quote
+                                (if (= codepoint 96)
+                                  :syntax-quote
+                                  (if (= codepoint 126)
+                                    (if splice?
+                                      :splice-unquote
+                                      :unquote)
+                                    (if (= codepoint 94)
+                                      :metadata
+                                      :deref))))
+                              token
+                              (sh03-make-token
+                               characters token-index :abbreviation
+                               position end
+                               {:kind :abbreviation :abbreviation abbrev}
+                               {:abbreviation abbrev})]
+                          (recur end (+ token-index 1)
+                                 (conj tokens token)))
+                        (let [character-next
+                              (if (if (= codepoint 92)
+                                    (< (+ position 1) (count characters))
+                                    false)
+                                (sh03-codepoint-at
+                                 characters (+ position 1))
+                                nil)
+                              character-single?
+                              (if (= codepoint 92)
+                                (if (= character-next nil)
+                                  false
+                                  (sh03-atom-boundary? character-next))
+                                false)
+                              end (if character-single?
+                                    (+ position 2)
+                                    (sh03-scan-run-end
+                                     characters
+                                     (if (= codepoint 92)
+                                       (+ position 1)
+                                       position)
+                                     :atom))
+                              codepoints
+                              (sh03-character-range-codepoints
+                               characters position end)
+                              raw (sh03-range-raw-spelling
+                                   characters position end)
+                              base-classification
+                              (if (sh03-numeric-looking? codepoints)
+                                (if (> (count codepoints)
+                                       (get (sh03-bounds-record)
+                                            :maximum-numeric-semantic-scalars))
+                                  (sh03-classify-bounded-deferred-numeric
+                                   codepoints raw)
+                                  (sh03-classify-atom codepoints raw))
+                                (sh03-classify-atom codepoints raw))
+                              classified
+                              (if (= (get base-classification :status)
+                                     :accepted)
+                                (if (contains? #{:integer :ratio :decimal}
+                                               (get base-classification :kind))
+                                  (if (> (count codepoints)
+                                         (get (sh03-bounds-record)
+                                              :maximum-numeric-semantic-scalars))
+                                    (sh03-defer-numeric-classification
+                                     base-classification codepoints)
+                                    base-classification)
+                                  base-classification)
+                                base-classification)]
+                          (if (= (get classified :status) :accepted)
+                            (let [token
+                                  (sh03-make-token
+                                   characters token-index
+                                   (get classified :kind)
+                                   position end
+                                   (get classified :descriptor) nil)]
+                              (recur end (+ token-index 1)
+                                     (conj tokens token)))
+                            (sh03-lexical-rejection
+                             (if (= (get classified :rule) nil)
+                               "C2-STRING"
+                               (get classified :rule))
+                             (if (= (get classified :rule) nil)
+                               "STAGE1READER003"
+                               (get classified :engine))
+                             (get classified :reason)
+                             (sh03-span-between-characters
+                              characters position end)
+                             raw
+                             (if (= (get classified :facts) nil)
+                               (if (= (get classified :rule) "C2-NUMERIC")
+                                 {:literal-kind :numeric :raw-spelling raw}
+                                 (if (= (get classified :rule)
+                                        "C2-IDENTIFIER")
+                                   {:literal-kind :identifier
+                                    :raw-spelling raw}
+                                   {}))
+                               (get classified :facts))
+                             (sh03-token-id token-index))))))))))))))))
+
+(defn sh03-token-trivia? [token]
+  (= (get token :trivia?) true))
+
+(defn sh03-filter-output-tokens [tokens retain-trivia]
+  (if retain-trivia
+    tokens
+    (loop [remaining tokens result []]
+      (if (= (count remaining) 0)
+        result
+        (if (sh03-token-trivia? (first remaining))
+          (recur (rest remaining) result)
+          (recur (rest remaining) (conj result (first remaining))))))))
+
+(defn sh03-token-at [tokens position]
+  (first (subvec tokens position (+ position 1))))
+
+(defn sh03-skip-trivia [tokens position]
+  (loop [cursor position]
+    (if (= cursor (count tokens))
+      cursor
+      (if (sh03-token-trivia? (sh03-token-at tokens cursor))
+        (recur (+ cursor 1))
+        cursor))))
+
+(defn sh03-token-range-raw [tokens start end]
+  (loop [position start bytes [] scalars []]
+    (if (= position (+ end 1))
+      {:encoding :utf-8 :bytes bytes :unicode-scalars scalars}
+      (let [raw (get (sh03-token-at tokens position) :raw)]
+        (recur (+ position 1)
+               (sh03-append bytes (get raw :bytes))
+               (sh03-append scalars (get raw :unicode-scalars)))))))
+
+(defn sh03-token-range-span [tokens start end]
+  (let [first-span (get (sh03-token-at tokens start) :span)
+        last-span (get (sh03-token-at tokens end) :span)]
+    {:start (get first-span :start)
+     :end (get last-span :end)
+     :byte-start (get first-span :byte-start)
+     :byte-end (get last-span :byte-end)}))
+
+(defn sh03-token-range-source-slice [tokens start end]
+  (let [first-token (sh03-token-at tokens start)
+        last-token (sh03-token-at tokens end)]
+    (sh03-source-slice
+     (sh03-token-range-span tokens start end)
+     (get first-token :scalar-start)
+     (get last-token :scalar-end))))
+
+(defn sh03-end-of-token-stream-span [tokens]
+  (if (= (count tokens) 0)
+    (sh03-empty-span-at-byte 0)
+    (let [end-position
+          (get (get (sh03-token-at tokens (- (count tokens) 1)) :span)
+               :end)]
+      {:start end-position
+       :end end-position
+       :byte-start (get end-position :byte)
+       :byte-end (get end-position :byte)})))
+
+(defn sh03-form-id [index]
+  (str "form/" index))
+
+(defn sh03-form-record [form-id form-index kind collection-kind parent-id
+                        children open-token close-token open-token-index
+                        close-token-index span raw value semantic-key
+                        subtree-form-count metadata abbreviation
+                        tag-codepoints]
+  {:form-id form-id
+   :form-index form-index
+   :kind kind
+   :collection-kind collection-kind
+   :parent-form-id parent-id
+   :children children
+   :open-token open-token
+   :close-token close-token
+   :open-token-index open-token-index
+   :close-token-index close-token-index
+   :token-range [open-token close-token]
+   :span span
+   :raw raw
+   :value value
+   :semantic-key semantic-key
+   :subtree-form-count subtree-form-count
+   :metadata metadata
+   :surface-span nil
+   :abbreviation abbreviation
+   :abbrev abbreviation
+   :tag-codepoints tag-codepoints
+   :generated-origin []
+   :origin :source})
+
+(defn sh03-atomic-output-form? [form]
+  (contains? #{:nil :boolean :integer :decimal :ratio :string :character
+               :symbol :keyword}
+             (get form :kind)))
+
+(defn sh03-compact-form-generated-origins [origins]
+  (loop [remaining origins result []]
+    (if (= (count remaining) 0)
+      result
+      (let [origin (first remaining)]
+        (recur
+         (rest remaining)
+         (conj result
+               {:kind (get origin :kind)
+                :producer (get origin :producer)
+                :reason (get origin :reason)
+                :from (get origin :from)
+                :child-form-id (get origin :child-form-id)}))))))
+
+(defn sh03-semantic-value-id [form]
+  (str "value/" (get form :form-index)))
+
+(defn sh03-semantic-value-reference [form field]
+  {:artifact :gravity/semantic-value-reference
+   :schema-version 1
+   :value-id (sh03-semantic-value-id form)
+   :field field})
+
+(defn sh03-semantic-value-entry [tokens form]
+  (let [open-token
+        (sh03-token-at tokens (get form :open-token-index))
+        source-slice
+        (sh03-source-slice
+         (get form :span)
+         (get open-token :scalar-start)
+         (get open-token :scalar-end))
+        descriptor (get form :value)]
+    {:artifact :gravity/semantic-value
+     :schema-version 1
+     :value-id (sh03-semantic-value-id form)
+     :form-id (get form :form-id)
+     :token-id (get form :open-token)
+     :kind (get form :kind)
+     :descriptor
+     (if (if (map? descriptor) (contains? descriptor :raw) false)
+       (assoc descriptor :raw source-slice)
+       descriptor)
+     :semantic-key (get form :semantic-key)}))
+
+(defn sh03-semantic-value-table [tokens forms]
+  (loop [remaining forms result []]
+    (if (= (count remaining) 0)
+      result
+      (let [form (first remaining)]
+        (if (sh03-atomic-output-form? form)
+          (recur
+           (rest remaining)
+           (conj result (sh03-semantic-value-entry tokens form)))
+          (recur (rest remaining) result))))))
+
+(defn sh03-semantic-value-form-index [value-table]
+  (loop [remaining value-table result {}]
+    (if (= (count remaining) 0)
+      result
+      (let [entry (first remaining)]
+        (recur
+         (rest remaining)
+         (assoc result (get entry :form-id) entry))))))
+
+(defn sh03-compact-form-record [tokens form]
+  (let [open-position (get form :open-token-index)
+        close-position (get form :close-token-index)
+        open-token (sh03-token-at tokens open-position)
+        close-token (sh03-token-at tokens close-position)
+        source-slice
+        (sh03-source-slice
+         (get form :span)
+         (get open-token :scalar-start)
+         (get close-token :scalar-end))]
+    (assoc
+     (assoc
+      (assoc
+       (assoc
+        (assoc form :raw source-slice)
+        :value
+        (if (sh03-atomic-output-form? form)
+          (sh03-semantic-value-reference form :descriptor)
+          nil))
+       :semantic-key
+       (if (sh03-atomic-output-form? form)
+         (sh03-semantic-value-reference form :semantic-key)
+         nil))
+      :metadata nil)
+     :generated-origin
+     (sh03-compact-form-generated-origins
+      (get form :generated-origin)))))
+
+(defn sh03-compact-form-records [tokens forms]
+  (loop [remaining forms result []]
+    (if (= (count remaining) 0)
+      result
+      (recur
+       (rest remaining)
+       (conj result
+             (sh03-compact-form-record tokens (first remaining)))))))
+
+(defn sh03-form-value-reference [form-id]
+  {:artifact :gravity/form-value-reference
+   :schema-version 1
+   :form-id form-id})
+
+(defn sh03-absolute-integer [value]
+  (if (< value 0) (- 0 value) value))
+
+(defn sh03-greatest-common-divisor [left right]
+  (loop [a (sh03-absolute-integer left)
+         b (sh03-absolute-integer right)]
+    (if (= b 0)
+      (if (= a 0) 1 a)
+      (recur b (- a (* (quot a b) b))))))
+
+(defn sh03-decimal-digits-compare [left right]
+  (let [left (sh03-trim-leading-zeroes left)
+        right (sh03-trim-leading-zeroes right)]
+    (if (< (count left) (count right))
+      -1
+      (if (> (count left) (count right))
+        1
+        (loop [left left right right]
+          (if (= (count left) 0)
+            0
+            (if (< (first left) (first right))
+              -1
+              (if (> (first left) (first right))
+                1
+                (recur (rest left) (rest right))))))))))
+
+(defn sh03-decimal-digits-multiply-small [digits factor]
+  (if (= factor 0)
+    [48]
+    (loop [position (- (count digits) 1) carry 0 result []]
+      (if (< position 0)
+        (sh03-trim-leading-zeroes
+         (if (= carry 0)
+           result
+           (sh03-append [(+ 48 carry)] result)))
+        (let [value
+              (+ (* (- (first (subvec digits position (+ position 1))) 48)
+                    factor)
+                 carry)
+              next-carry (quot value 10)
+              next-digit (- value (* next-carry 10))]
+          (recur (- position 1)
+                 next-carry
+                 (sh03-append [(+ 48 next-digit)] result)))))))
+
+(defn sh03-decimal-digits-add [left right]
+  (loop [left-position (- (count left) 1)
+         right-position (- (count right) 1)
+         carry 0
+         result []]
+    (if (if (< left-position 0) (< right-position 0) false)
+      (sh03-trim-leading-zeroes
+       (if (= carry 0)
+         result
+         (sh03-append [(+ 48 carry)] result)))
+      (let [left-digit
+            (if (< left-position 0)
+              0
+              (- (first
+                  (subvec left left-position (+ left-position 1)))
+                 48))
+            right-digit
+            (if (< right-position 0)
+              0
+              (- (first
+                  (subvec right right-position (+ right-position 1)))
+                 48))
+            value (+ (+ left-digit right-digit) carry)
+            next-carry (quot value 10)
+            digit (- value (* next-carry 10))]
+        (recur (- left-position 1)
+               (- right-position 1)
+               next-carry
+               (sh03-append [(+ 48 digit)] result))))))
+
+(defn sh03-decimal-digits-subtract [left right]
+  (loop [left-position (- (count left) 1)
+         right-position (- (count right) 1)
+         borrow 0
+         result []]
+    (if (< left-position 0)
+      (sh03-trim-leading-zeroes result)
+      (let [left-digit
+            (- (first (subvec left left-position (+ left-position 1))) 48)
+            right-digit
+            (if (< right-position 0)
+              0
+              (- (first
+                  (subvec right right-position (+ right-position 1)))
+                 48))
+            difference (- (- left-digit right-digit) borrow)
+            next-borrow (if (< difference 0) 1 0)
+            digit (if (< difference 0) (+ difference 10) difference)]
+        (recur (- left-position 1)
+               (- right-position 1)
+               next-borrow
+               (sh03-append [(+ 48 digit)] result))))))
+
+(defn sh03-decimal-quotient-digit [remainder divisor]
+  (loop [candidate 9]
+    (if (= candidate 0)
+      0
+      (if (>= (sh03-decimal-digits-compare
+               remainder
+               (sh03-decimal-digits-multiply-small divisor candidate))
+              0)
+        candidate
+        (recur (- candidate 1))))))
+
+(defn sh03-decimal-digits-divmod [dividend divisor]
+  (loop [remaining (sh03-trim-leading-zeroes dividend)
+         remainder [48]
+         quotient []]
+    (if (= (count remaining) 0)
+      {:quotient (sh03-trim-leading-zeroes quotient)
+       :remainder (sh03-trim-leading-zeroes remainder)}
+      (let [next-remainder
+            (sh03-trim-leading-zeroes
+             (conj remainder (first remaining)))
+            digit (sh03-decimal-quotient-digit next-remainder divisor)
+            product (sh03-decimal-digits-multiply-small divisor digit)
+            reduced
+            (if (= digit 0)
+              next-remainder
+              (sh03-decimal-digits-subtract next-remainder product))]
+        (recur (rest remaining)
+               reduced
+               (conj quotient (+ 48 digit)))))))
+
+(defn sh03-decimal-digits-gcd [left right]
+  (loop [left (sh03-trim-leading-zeroes left)
+         right (sh03-trim-leading-zeroes right)]
+    (if (= right [48])
+      (if (= left [48]) [49] left)
+      (recur right
+             (get (sh03-decimal-digits-divmod left right) :remainder)))))
+
+(defn sh03-canonical-ratio-number [sign digits]
+  (let [digits (sh03-trim-leading-zeroes digits)]
+    (if (= digits [48])
+      0
+      (if (sh03-host-integer-magnitude-safe? digits 10)
+        (* sign (sh03-parse-unsigned-integer digits 10))
+        (sh03-arbitrary-integer-value sign 10 digits)))))
+
+(defn sh03-decimal-digits-add-small [digits addend]
+  (loop [position (- (count digits) 1) carry addend result []]
+    (if (< position 0)
+      (sh03-trim-leading-zeroes
+       (if (= carry 0)
+         result
+         (sh03-append [(+ 48 carry)] result)))
+      (let [value
+            (+ (- (first (subvec digits position (+ position 1))) 48)
+               carry)
+            next-carry (quot value 10)
+            next-digit (- value (* next-carry 10))]
+        (recur (- position 1)
+               next-carry
+               (sh03-append [(+ 48 next-digit)] result))))))
+
+(defn sh03-radix-digits-to-decimal [digits radix]
+  (loop [remaining digits result [48]]
+    (if (= (count remaining) 0)
+      (sh03-trim-leading-zeroes result)
+      (recur
+       (rest remaining)
+       (sh03-decimal-digits-add-small
+        (sh03-decimal-digits-multiply-small result radix)
+        (sh03-digit-value (first remaining)))))))
+
+(defn sh03-integer-semantic-number [value]
+  (if (integer? value)
+    value
+    (let [sign (if (= (get value :sign) :negative) -1 1)
+          decimal-digits
+          (if (= (get value :radix) 10)
+            (sh03-trim-leading-zeroes (get value :digit-codepoints))
+            (sh03-radix-digits-to-decimal
+             (get value :digit-codepoints) (get value :radix)))]
+      (sh03-canonical-ratio-number sign decimal-digits))))
+
+(defn sh03-ratio-semantic-key [descriptor]
+  (let [numerator-components
+        (sh03-signed-components (get descriptor :numerator-spelling))
+        numerator-sign (get numerator-components :sign)
+        numerator-digits
+        (sh03-trim-leading-zeroes (get numerator-components :digits))
+        denominator-digits
+        (sh03-trim-leading-zeroes (get descriptor :denominator-spelling))]
+    (if (= denominator-digits [48])
+      {:kind :ratio
+       :numerator
+       (sh03-canonical-ratio-number numerator-sign numerator-digits)
+       :denominator 0}
+      (let [divisor
+            (sh03-decimal-digits-gcd numerator-digits denominator-digits)
+            normalized-numerator
+            (get (sh03-decimal-digits-divmod numerator-digits divisor)
+                 :quotient)
+            normalized-denominator
+            (get (sh03-decimal-digits-divmod denominator-digits divisor)
+                 :quotient)]
+        {:kind :ratio
+         :numerator
+         (sh03-canonical-ratio-number numerator-sign normalized-numerator)
+         :denominator
+         (sh03-canonical-ratio-number 1 normalized-denominator)}))))
+
+(defn sh03-deferred-numeric-semantic-key [descriptor]
+  (let [kind (get descriptor :kind)]
+    (if (= kind :integer)
+      (let [value (get descriptor :value)
+            spelling-components
+            (sh03-signed-components
+             (get descriptor :spelling-codepoints))
+            spelling-digits
+            (get spelling-components :digits)
+            radix (get descriptor :radix)
+            radix-digits
+            (if (if (contains? #{2 16} radix)
+                  (>= (count spelling-digits) 2)
+                  false)
+              (subvec spelling-digits 2 (count spelling-digits))
+              spelling-digits)
+            normalized-digits (sh03-trim-leading-zeroes radix-digits)
+            zero? (sh03-zero-digits? normalized-digits)]
+        {:kind :integer
+         :normalization :reader-semantic-work-boundary
+         :radix radix
+         :sign (if zero?
+                 :positive
+                 (get spelling-components :sign))
+         :zero? zero?
+         :digit-codepoints normalized-digits})
+      (if (= kind :ratio)
+        (let [numerator
+              (sh03-signed-components
+               (get descriptor :numerator-spelling))
+              numerator-digits
+              (sh03-trim-leading-zeroes (get numerator :digits))
+              zero? (sh03-zero-digits? numerator-digits)]
+          {:kind :ratio
+           :normalization :reader-semantic-work-boundary
+           :numerator-sign (if zero? :positive (get numerator :sign))
+           :zero? zero?
+           :numerator-digits numerator-digits
+           :denominator-digits
+           (sh03-trim-leading-zeroes
+            (get descriptor :denominator-spelling))})
+        {:kind :decimal
+         :normalization :reader-semantic-work-boundary
+         :bounded-semantic-key (get descriptor :semantic-key)}))))
+
+(defn sh03-token-semantic-key [token]
+  (let [descriptor (get token :descriptor)
+        kind (get descriptor :kind)]
+    (if (= (get descriptor :normalization-reason)
+           :reader-semantic-work-boundary)
+      (sh03-deferred-numeric-semantic-key descriptor)
+    (if (= kind :nil)
+      {:kind :nil}
+      (if (= kind :boolean)
+        {:kind :boolean :value (get descriptor :value)}
+        (if (= kind :integer)
+          {:kind :integer
+           :value (sh03-integer-semantic-number (get descriptor :value))}
+          (if (= kind :ratio)
+            (sh03-ratio-semantic-key descriptor)
+            (if (= kind :decimal)
+              (get descriptor :semantic-key)
+              (if (= kind :string)
+                {:kind :string
+                 :decoded-codepoints (get descriptor :decoded-codepoints)}
+              (if (= kind :character)
+                {:kind :character :codepoint (get descriptor :codepoint)}
+                (if (= kind :symbol)
+                  {:kind :symbol
+                   :name-codepoints (get descriptor :name-codepoints)}
+                  (if (= kind :keyword)
+                    {:kind :keyword
+                     :name-codepoints (get descriptor :name-codepoints)}
+                    descriptor))))))))))))
+
+(defn sh03-numeric-semantic-kind? [kind]
+  (contains? #{:integer :ratio :decimal} kind))
+
+(defn sh03-not-equal? [left right]
+  (if (= left right) false true))
+
+(defn sh03-semantic-key-has-deferred-numeric? [semantic-key]
+  (if (map? semantic-key)
+    (if (= (get semantic-key :normalization)
+           :reader-semantic-work-boundary)
+      true
+      (= (get semantic-key :numeric-equivalence-deferred?) true))
+    false))
+
+(defn sh03-semantic-keys-have-deferred-numeric? [semantic-keys]
+  (loop [remaining semantic-keys]
+    (if (= (count remaining) 0)
+      false
+      (if (sh03-semantic-key-has-deferred-numeric? (first remaining))
+        true
+        (recur (rest remaining))))))
+
+(defn sh03-deferred-numeric-zero? [semantic-key]
+  (if (= (get semantic-key :kind) :decimal)
+    (= (get (get semantic-key :bounded-semantic-key) :zero?) true)
+    (= (get semantic-key :zero?) true)))
+
+(defn sh03-deferred-numeric-sign [semantic-key]
+  (let [kind (get semantic-key :kind)
+        sign
+        (if (= kind :integer)
+          (get semantic-key :sign)
+          (if (= kind :ratio)
+            (get semantic-key :numerator-sign)
+            (get (get semantic-key :bounded-semantic-key) :sign)))]
+    (if (if (= sign :negative) true (= sign -1)) -1 1)))
+
+(defn sh03-deferred-numerics-provably-distinct? [left right]
+  (if (if (sh03-semantic-key-has-deferred-numeric? left)
+        (sh03-semantic-key-has-deferred-numeric? right)
+        false)
+    (if (if (sh03-numeric-semantic-kind? (get left :kind))
+          (sh03-numeric-semantic-kind? (get right :kind))
+          false)
+      (if (if (sh03-deferred-numeric-zero? left)
+            false
+            (if (sh03-deferred-numeric-zero? right) false true))
+        (sh03-not-equal? (sh03-deferred-numeric-sign left)
+                         (sh03-deferred-numeric-sign right))
+        false)
+      false)
+    false))
+
+(defn sh03-semantic-key-comparison [left right observed-work]
+  (let [next-work (+ observed-work 1)
+        maximum-work
+        (get (sh03-bounds-record) :maximum-semantic-work-units)]
+    (if (> next-work maximum-work)
+      {:decision :limit :work-units next-work}
+      (if (= left right)
+        {:decision :equal :work-units next-work}
+        (let [left-deferred?
+              (sh03-semantic-key-has-deferred-numeric? left)
+              right-deferred?
+              (sh03-semantic-key-has-deferred-numeric? right)]
+          (if (if left-deferred? true right-deferred?)
+            (let [left-kind (if (map? left) (get left :kind) nil)
+                  right-kind (if (map? right) (get right :kind) nil)
+                  both-numeric?
+                  (if (sh03-numeric-semantic-kind? left-kind)
+                    (sh03-numeric-semantic-kind? right-kind)
+                    false)]
+              (if (sh03-deferred-numerics-provably-distinct? left right)
+                {:decision :distinct :work-units next-work}
+                (if (sh03-not-equal? left-kind right-kind)
+                  {:decision (if both-numeric? :undecidable :distinct)
+                   :work-units next-work}
+                  (if (contains? #{:list :vector} left-kind)
+                    (if (sh03-not-equal?
+                         (count (get left :items))
+                         (count (get right :items)))
+                      {:decision :distinct :work-units next-work}
+                      {:decision :undecidable :work-units next-work})
+                    (if (= left-kind :tagged-literal)
+                      (if (sh03-not-equal? (get left :tag-codepoints)
+                                           (get right :tag-codepoints))
+                        {:decision :distinct :work-units next-work}
+                        {:decision :undecidable :work-units next-work})
+                      (if (= left-kind :map)
+                        (if (sh03-not-equal?
+                             (count (get left :entries))
+                             (count (get right :entries)))
+                          {:decision :distinct :work-units next-work}
+                          {:decision :undecidable :work-units next-work})
+                        (if (= left-kind :set)
+                          (if (sh03-not-equal?
+                               (count (get left :items))
+                               (count (get right :items)))
+                            {:decision :distinct :work-units next-work}
+                            {:decision :undecidable :work-units next-work})
+                          {:decision :undecidable
+                           :work-units next-work})))))))
+            {:decision :distinct :work-units next-work}))))))
+
+(defn sh03-current-parent-id [frames]
+  (if (= (count frames) 0)
+    nil
+    (get (first frames) :form-id)))
+
+(defn sh03-abbreviation-placement-valid? [frames abbreviation]
+  (if (contains? #{:unquote :splice-unquote} abbreviation)
+    (loop [remaining frames collection-observed false]
+      (if (= (count remaining) 0)
+        false
+        (let [frame (first remaining)]
+          (if (= (get frame :abbreviation) :syntax-quote)
+            (if (= abbreviation :splice-unquote)
+              collection-observed
+              true)
+            (recur
+             (rest remaining)
+             (if (= (get frame :frame-kind) :collection)
+               true
+               collection-observed))))))
+    true))
+
+(defn sh03-abbreviation-operator-codepoints [abbreviation]
+  (if (= abbreviation :quote)
+    [113 117 111 116 101]
+    (if (= abbreviation :syntax-quote)
+      [115 121 110 116 97 120 45 113 117 111 116 101]
+      (if (= abbreviation :unquote)
+        [117 110 113 117 111 116 101]
+        (if (= abbreviation :splice-unquote)
+          [115 112 108 105 99 101 45 117 110 113 117 111 116 101]
+          [100 101 114 101 102])))))
+
+(defn sh03-collection-kind-from-token [token]
+  (let [kind (get token :kind)]
+    (if (= kind :list-open)
+      :list
+      (if (= kind :vector-open)
+        :vector
+        (if (= kind :map-open) :map :set)))))
+
+(defn sh03-collection-value [kind child-values]
+  (if (= kind :map)
+    {:kind :map :entries child-values}
+    (if (= kind :set)
+      {:kind :set :items child-values}
+      {:kind kind :items child-values})))
+
+(defn sh03-semantic-map [semantic-keys]
+  (loop [remaining semantic-keys result {}]
+    (if (= (count remaining) 0)
+      result
+      (recur (subvec remaining 2 (count remaining))
+             (assoc result (first remaining) (second remaining))))))
+
+(defn sh03-collection-semantic-key [kind semantic-keys]
+  (let [base
+        (if (= kind :map)
+          {:kind :map :entries (sh03-semantic-map semantic-keys)}
+          (if (= kind :set)
+            {:kind :set :items (set semantic-keys)}
+            {:kind kind :items semantic-keys}))]
+    (if (sh03-semantic-keys-have-deferred-numeric? semantic-keys)
+      (assoc base :numeric-equivalence-deferred? true)
+      base)))
+
+(defn sh03-metadata-form-kind? [kind]
+  (contains? #{:keyword :symbol :map} kind))
+
+(defn sh03-metadata-map-keys-valid? [record]
+  (let [entries (get (get record :value) :entries)]
+    (loop [remaining entries]
+      (if (= (count remaining) 0)
+        true
+        (let [key-kind (get (first remaining) :kind)]
+          (if (contains? #{:keyword :symbol} key-kind)
+            (recur (subvec remaining 2 (count remaining)))
+            false))))))
+
+(defn sh03-metadata-form-valid? [record]
+  (let [kind (get record :kind)]
+    (if (contains? #{:keyword :symbol} kind)
+      true
+      (if (= kind :map)
+        (sh03-metadata-map-keys-valid? record)
+        false))))
+
+(defn sh03-metadata-target-valid? [record]
+  (let [kind (get record :kind)
+        value (get record :value)]
+    (if (contains? #{:symbol :list :vector :map :set
+                     :abbreviation :metadata-wrapper}
+                   kind)
+      true
+      (= (get value :artifact) :gravity/deferred-ratio-literal))))
+
+(defn sh03-codepoint-position [codepoints position]
+  (first (subvec codepoints position (+ position 1))))
+
+(defn sh03-two-decimal-digits-value [codepoints position]
+  (+ (* 10 (sh03-digit-value
+            (sh03-codepoint-position codepoints position)))
+     (sh03-digit-value
+     (sh03-codepoint-position codepoints (+ position 1)))))
+
+(defn sh03-four-decimal-digits-value [codepoints position]
+  (+ (* 1000 (sh03-digit-value
+              (sh03-codepoint-position codepoints position)))
+     (* 100 (sh03-digit-value
+             (sh03-codepoint-position codepoints (+ position 1))))
+     (* 10 (sh03-digit-value
+            (sh03-codepoint-position codepoints (+ position 2))))
+     (sh03-digit-value
+      (sh03-codepoint-position codepoints (+ position 3)))))
+
+(defn sh03-integer-remainder [value divisor]
+  (- value (* (quot value divisor) divisor)))
+
+(defn sh03-leap-year? [year]
+  (if (= (sh03-integer-remainder year 400) 0)
+    true
+    (if (= (sh03-integer-remainder year 100) 0)
+      false
+      (= (sh03-integer-remainder year 4) 0))))
+
+(defn sh03-days-in-month [year month]
+  (if (contains? #{1 3 5 7 8 10 12} month)
+    31
+    (if (contains? #{4 6 9 11} month)
+      30
+      (if (= month 2)
+        (if (sh03-leap-year? year) 29 28)
+        0))))
+
+(defn sh03-date-prefix-valid? [codepoints]
+  (if (>= (count codepoints) 10)
+    (if (= (sh03-codepoint-position codepoints 4) 45)
+      (if (= (sh03-codepoint-position codepoints 7) 45)
+        (if (loop [positions [0 1 2 3 5 6 8 9]]
+              (if (= (count positions) 0)
+                true
+                (if (sh03-digit?
+                     (sh03-codepoint-position codepoints (first positions)))
+                  (recur (rest positions))
+                  false)))
+          (let [year (sh03-four-decimal-digits-value codepoints 0)
+                month (sh03-two-decimal-digits-value codepoints 5)
+                day (sh03-two-decimal-digits-value codepoints 8)]
+            (if (>= year 1)
+              (if (if (>= month 1) (<= month 12) false)
+                (if (>= day 1)
+                  (<= day (sh03-days-in-month year month))
+                  false)
+                false)
+              false))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh03-timezone-valid-at? [codepoints position]
+  (let [remaining (- (count codepoints) position)]
+    (if (= remaining 0)
+      true
+      (if (= remaining 1)
+        (= 90 (sh03-codepoint-position codepoints position))
+        (if (= remaining 6)
+          (if (contains? #{43 45}
+                         (sh03-codepoint-position codepoints position))
+            (if (= (sh03-codepoint-position codepoints (+ position 3)) 58)
+              (if (loop [positions [(+ position 1) (+ position 2)
+                                    (+ position 4) (+ position 5)]]
+                    (if (= (count positions) 0)
+                      true
+                      (if (sh03-digit?
+                           (sh03-codepoint-position
+                            codepoints (first positions)))
+                        (recur (rest positions))
+                        false)))
+                (if (<= (sh03-two-decimal-digits-value
+                         codepoints (+ position 1)) 23)
+                  (<= (sh03-two-decimal-digits-value
+                       codepoints (+ position 4)) 59)
+                  false)
+                false)
+              false)
+            false)
+          false)))))
+
+(defn sh03-inst-fraction-and-zone-valid? [codepoints position]
+  (if (= position (count codepoints))
+    true
+    (let [codepoint (sh03-codepoint-position codepoints position)]
+      (if (= codepoint 46)
+        (loop [cursor (+ position 1) observed-digit false]
+          (if (= cursor (count codepoints))
+            observed-digit
+            (if (sh03-digit?
+                 (sh03-codepoint-position codepoints cursor))
+              (recur (+ cursor 1) true)
+              (if observed-digit
+                (sh03-timezone-valid-at? codepoints cursor)
+                false))))
+        (sh03-timezone-valid-at? codepoints position)))))
+
+(defn sh03-inst-codepoints-valid? [codepoints]
+  (if (sh03-date-prefix-valid? codepoints)
+    (if (= (count codepoints) 10)
+      true
+      (if (>= (count codepoints) 20)
+        (if (= 84 (sh03-codepoint-position codepoints 10))
+          (if (= (sh03-codepoint-position codepoints 13) 58)
+            (if (= (sh03-codepoint-position codepoints 16) 58)
+              (if (loop [positions [11 12 14 15 17 18]]
+                    (if (= (count positions) 0)
+                      true
+                      (if (sh03-digit?
+                           (sh03-codepoint-position
+                            codepoints (first positions)))
+                        (recur (rest positions))
+                        false)))
+                (let [hour (sh03-two-decimal-digits-value codepoints 11)
+                      minute (sh03-two-decimal-digits-value codepoints 14)
+                      second (sh03-two-decimal-digits-value codepoints 17)]
+                  (if (if (>= hour 0) (<= hour 23) false)
+                    (if (if (>= minute 0) (<= minute 59) false)
+                      (if (if (>= second 0) (<= second 59) false)
+                        (sh03-inst-fraction-and-zone-valid?
+                         codepoints 19)
+                        false)
+                      false)
+                    false))
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh03-uuid-codepoints-valid? [codepoints]
+  (if (= (count codepoints) 36)
+    (loop [position 0]
+      (if (= position 36)
+        true
+        (if (contains? #{8 13 18 23} position)
+          (if (= (sh03-codepoint-position codepoints position) 45)
+            (recur (+ position 1))
+            false)
+          (if (sh03-hex-digit?
+               (sh03-codepoint-position codepoints position))
+            (recur (+ position 1))
+            false))))
+    false))
+
+(defn sh03-reader-tag-payload-valid? [frame record]
+  (let [value (get record :value)
+        codepoints (get value :decoded-codepoints)
+        tag (get frame :tag-codepoints)]
+    (if (= (get record :kind) :string)
+      (if (= tag [105 110 115 116])
+        (sh03-inst-codepoints-valid? codepoints)
+        (if (= tag [117 117 105 100])
+          (sh03-uuid-codepoints-valid? codepoints)
+          false))
+      false)))
+
+(defn sh03-frame-rejection [rule engine reason span raw facts]
+  {:status :rejected
+   :rule rule
+   :engine engine
+   :reason reason
+   :span span
+   :raw raw
+   :facts facts
+   :token-id (get facts :token-id)
+   :form-id (sh03-diagnostic-form-id facts)
+   :related (if (= (get facts :related) nil)
+              []
+              (get facts :related))})
+
+(defn sh03-set-numeric-equivalence-check
+  [frame completed-key observed-work]
+  (let [candidate-deferred?
+        (sh03-semantic-key-has-deferred-numeric? completed-key)
+        comparison-keys
+        (if candidate-deferred?
+          (get frame :semantic-keys)
+          (get frame :deferred-semantic-keys))
+        comparison-form-ids
+        (if candidate-deferred?
+          (get frame :children)
+          (get frame :deferred-semantic-form-ids))]
+    (loop [remaining-keys comparison-keys
+           remaining-form-ids comparison-form-ids
+           work observed-work]
+      (if (= (count remaining-keys) 0)
+        {:status :accepted :semantic-work-units work}
+        (let [comparison
+              (sh03-semantic-key-comparison
+               (first remaining-keys) completed-key work)
+              decision (get comparison :decision)
+              next-work (get comparison :work-units)]
+          (if (= decision :distinct)
+            (recur (rest remaining-keys)
+                   (rest remaining-form-ids) next-work)
+            {:status :rejected
+             :decision decision
+             :semantic-work-units next-work
+             :first-form-id (first remaining-form-ids)}))))))
+
+(defn sh03-frame-with-child [frame record value semantic-key]
+  (let [children (conj (get frame :children) (get record :form-id))
+        child-values (conj (get frame :child-values) value)
+        semantic-keys (conj (get frame :semantic-keys) semantic-key)
+        subtree-form-counts
+        (conj (get frame :subtree-form-counts)
+              (get record :subtree-form-count))
+        semantic-key-index
+        (if (= (get frame :collection-kind) :set)
+          (assoc (get frame :semantic-key-index)
+                 semantic-key (get record :form-id))
+          (get frame :semantic-key-index))
+        result
+        (assoc
+         (assoc
+          (assoc
+           (assoc
+            (assoc frame :children children)
+            :child-values child-values)
+           :semantic-keys semantic-keys)
+          :subtree-form-counts subtree-form-counts)
+         :semantic-key-index semantic-key-index)]
+    (if (if (= (get frame :collection-kind) :set)
+          (sh03-semantic-key-has-deferred-numeric? semantic-key)
+          false)
+      (assoc
+       (assoc result
+              :deferred-semantic-keys
+              (conj (get frame :deferred-semantic-keys) semantic-key))
+       :deferred-semantic-form-ids
+       (conj (get frame :deferred-semantic-form-ids)
+             (get record :form-id)))
+      result)))
+
+(defn sh03-sum-integers [values]
+  (loop [remaining values result 0]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining) (+ result (first remaining))))))
+
+(defn sh03-frame-subtree-form-count [frame]
+  (+ 1 (sh03-sum-integers (get frame :subtree-form-counts))))
+
+(defn sh03-records-with-form [records record]
+  (let [form-index (get record :form-index)]
+    (if (= form-index (count records))
+      (conj records record)
+      (assoc records form-index record))))
+
+(defn sh03-value-index [values candidate]
+  (loop [remaining values position 0]
+    (if (= (count remaining) 0)
+      nil
+      (if (= (first remaining) candidate)
+        position
+        (recur (rest remaining) (+ position 1))))))
+
+(defn sh03-record-by-id [records form-id]
+  (loop [remaining records]
+    (if (= (count remaining) 0)
+      nil
+      (let [record (first remaining)]
+        (if (if (= record nil)
+              false
+              (= (get record :form-id) form-id))
+          record
+          (recur (rest remaining)))))))
+
+(defn sh03-finalize-wrapper [tokens frame child-record]
+  (let [kind (get frame :wrapper-kind)
+        abbreviation (get frame :abbreviation)
+        child-values (get frame :child-values)
+        semantic-keys (get frame :semantic-keys)
+        metadata-value
+        (if (= kind :metadata-wrapper) (first child-values) nil)
+        target-value
+        (if (= kind :metadata-wrapper)
+          (second child-values)
+          (first child-values))
+        target-key
+        (if (= kind :metadata-wrapper)
+          (second semantic-keys)
+          (first semantic-keys))
+        value
+        (if (= kind :metadata-wrapper)
+          target-value
+          (if (= kind :tagged-literal)
+            {:kind :tagged-literal
+             :tag-codepoints (get frame :tag-codepoints)
+             :payload target-value}
+            {:kind :list
+             :items
+             [{:kind :symbol
+               :name-codepoints
+               (sh03-abbreviation-operator-codepoints abbreviation)}
+              target-value]}))
+        semantic-key-base
+        (if (= kind :metadata-wrapper)
+          target-key
+          (if (= kind :tagged-literal)
+            {:kind :tagged-literal
+             :tag-codepoints (get frame :tag-codepoints)
+             :payload target-key}
+            {:kind :list
+             :items
+             [{:kind :symbol
+               :name-codepoints
+               (sh03-abbreviation-operator-codepoints abbreviation)}
+              target-key]}))
+        semantic-key
+        (if (sh03-semantic-key-has-deferred-numeric? target-key)
+          (if (= kind :metadata-wrapper)
+            semantic-key-base
+            (assoc semantic-key-base
+                   :numeric-equivalence-deferred? true))
+          semantic-key-base)
+        start (get frame :open-token-index)
+        end (get child-record :close-token-index)
+        open-token (get frame :open-token)
+        close-token (get child-record :close-token)
+        record
+        (sh03-form-record
+         (get frame :form-id)
+         (get frame :form-index)
+         kind nil
+         (get frame :parent-form-id)
+         (get frame :children)
+         open-token close-token start end
+         (sh03-token-range-span tokens start end)
+         (sh03-token-range-source-slice tokens start end)
+         value semantic-key (sh03-frame-subtree-form-count frame)
+         metadata-value abbreviation
+         (get frame :tag-codepoints))]
+    (if (= abbreviation nil)
+      record
+      (assoc
+       (assoc record
+              :surface-span
+              (get (sh03-token-at tokens start) :span))
+       :generated-origin
+       [{:kind :generated
+         :producer :reader-abbreviation
+         :reason abbreviation
+         :from (get (sh03-token-at tokens start) :span)
+         :child-form-id (get child-record :form-id)
+         :expanded-form value}]))))
+
+(defn sh03-attach-completed-form [tokens frames records roots root-values
+                                  record value semantic-key semantic-work]
+  (loop [remaining-frames frames
+         result-records (sh03-records-with-form records record)
+         result-roots roots
+         result-root-values root-values
+         completed-record record
+         completed-value value
+         completed-key semantic-key
+         added-semantic-work
+         (* 2 (get record :subtree-form-count))]
+    (if (= (count remaining-frames) 0)
+      {:status :accepted
+       :frames remaining-frames
+       :records result-records
+       :roots (conj result-roots (get completed-record :form-id))
+       :root-values (conj result-root-values completed-value)
+       :semantic-work-units (+ semantic-work added-semantic-work)}
+      (let [frame (first remaining-frames)
+            more-frames (rest remaining-frames)
+            frame-kind (get frame :frame-kind)]
+        (if (= frame-kind :collection)
+          (if (if (= (get frame :collection-kind) :set)
+                (contains? (get frame :semantic-key-index) completed-key)
+                false)
+            (let [first-form-id
+                  (get (get frame :semantic-key-index) completed-key)
+                  first-record
+                  (sh03-record-by-id result-records first-form-id)]
+              (sh03-frame-rejection
+               "C2-SET" nil :duplicate-set-entry
+               (get completed-record :span)
+               (get completed-record :raw)
+               {:duplicate-kind (get completed-record :kind)
+                :first-form-id first-form-id
+                :duplicate-form-id (get completed-record :form-id)
+                :form-id (get completed-record :form-id)
+                :token-id (get completed-record :open-token)
+                :related
+                [{:role :first-literal
+                  :span (get first-record :span)
+                  :artifact first-form-id}]}))
+            (let [base-semantic-work
+                  (+ semantic-work added-semantic-work)
+                  equivalence
+                  (if (= (get frame :collection-kind) :set)
+                    (sh03-set-numeric-equivalence-check
+                     frame completed-key base-semantic-work)
+                    {:status :accepted
+                     :semantic-work-units base-semantic-work})]
+              (if (= (get equivalence :status) :rejected)
+                (if (= (get equivalence :decision) :equal)
+                  (sh03-frame-rejection
+                   "C2-SET" nil :duplicate-set-entry
+                   (get completed-record :span)
+                   (get completed-record :raw)
+                   {:duplicate-kind (get completed-record :kind)
+                    :first-form-id (get equivalence :first-form-id)
+                    :duplicate-form-id (get completed-record :form-id)
+                    :form-id (get completed-record :form-id)
+                    :token-id (get completed-record :open-token)})
+                  (sh03-frame-rejection
+                   "C2-HASH" "STAGE1READER006"
+                   :numeric-set-equivalence-limit
+                   (get completed-record :span)
+                   (get completed-record :raw)
+                   {:comparison-decision (get equivalence :decision)
+                    :first-form-id (get equivalence :first-form-id)
+                    :candidate-form-id (get completed-record :form-id)
+                    :observed-semantic-work-units
+                    (get equivalence :semantic-work-units)
+                    :maximum-semantic-work-units
+                    (get (sh03-bounds-record)
+                         :maximum-semantic-work-units)
+                    :form-id (get completed-record :form-id)
+                    :token-id (get completed-record :open-token)}))
+                (if (>= (count (get frame :children))
+                        (get (sh03-bounds-record)
+                             :maximum-container-width))
+                  (sh03-frame-rejection
+                   "C2-HASH" "STAGE1READER006" :container-width-limit
+                   (get completed-record :span)
+                   (get completed-record :raw)
+                   {:maximum-container-width
+                    (get (sh03-bounds-record) :maximum-container-width)
+                    :form-id (get completed-record :form-id)
+                    :token-id (get completed-record :open-token)})
+                  {:status :accepted
+                   :frames
+                   (conj more-frames
+                         (sh03-frame-with-child
+                          frame completed-record completed-value completed-key))
+                   :records result-records
+                   :roots result-roots
+                   :root-values result-root-values
+                   :semantic-work-units
+                   (get equivalence :semantic-work-units)}))))
+          (let [child-count (count (get frame :children))]
+            (if (if (= (get frame :wrapper-kind) :metadata-wrapper)
+                  (if (= child-count 0)
+                    (sh03-metadata-form-valid? completed-record)
+                    (sh03-metadata-target-valid? completed-record))
+                  true)
+              (let [updated
+                    (sh03-frame-with-child
+                     frame completed-record completed-value completed-key)
+                    expected (get updated :expected-children)]
+                (if (= (count (get updated :children)) expected)
+                  (if (if (= (get updated :wrapper-kind) :tagged-literal)
+                        (sh03-reader-tag-payload-valid?
+                         updated completed-record)
+                        true)
+                    (let [wrapper-subtree-form-count
+                          (sh03-frame-subtree-form-count updated)
+                          wrapper-semantic-work
+                          (* 2 wrapper-subtree-form-count)
+                          observed-semantic-work
+                          (+ semantic-work added-semantic-work
+                             wrapper-semantic-work)]
+                      (if (> observed-semantic-work
+                             (get (sh03-bounds-record)
+                                  :maximum-semantic-work-units))
+                        (sh03-semantic-work-rejection
+                         (sh03-token-at
+                          tokens (get updated :open-token-index))
+                         (get updated :form-id)
+                         observed-semantic-work)
+                        (let [wrapper-record
+                              (sh03-finalize-wrapper
+                               tokens updated completed-record)]
+                          (recur more-frames
+                                 (sh03-records-with-form
+                                  result-records wrapper-record)
+                                 result-roots
+                                 result-root-values
+                                 wrapper-record
+                                 (get wrapper-record :value)
+                                 (get wrapper-record :semantic-key)
+                                 (+ added-semantic-work
+                                    wrapper-semantic-work)))))
+                    (sh03-frame-rejection
+                     "C2-EXTENSION" "STAGE1READER004"
+                     :invalid-reader-tag-payload
+                     (get completed-record :span)
+                     (get completed-record :raw)
+                     {:tag-codepoints (get updated :tag-codepoints)
+                      :payload-kind (get completed-record :kind)
+                      :form-id (get completed-record :form-id)
+                      :token-id (get completed-record :open-token)}))
+                  {:status :accepted
+                   :frames (conj more-frames updated)
+                   :records result-records
+                   :roots result-roots
+                   :root-values result-root-values
+                   :semantic-work-units
+                   (+ semantic-work added-semantic-work)}))
+              (sh03-frame-rejection
+               "C2-METADATA" nil
+               (if (= child-count 0)
+                 :invalid-metadata-shape
+                 :metadata-target-not-attachable)
+               (get completed-record :span)
+               (get completed-record :raw)
+               {:metadata-form-kind (get completed-record :kind)
+                :form-id (get completed-record :form-id)
+                :token-id (get completed-record :open-token)}))))))))
+
+(defn sh03-open-collection-frame [token token-position form-index parent-id]
+  {:frame-kind :collection
+   :form-id (sh03-form-id form-index)
+   :form-index form-index
+   :parent-form-id parent-id
+   :collection-kind (sh03-collection-kind-from-token token)
+   :open-token (get token :token-id)
+   :open-token-index token-position
+   :closes-codepoint (get token :closes-codepoint)
+   :children []
+   :child-values []
+   :semantic-keys []
+   :subtree-form-counts []
+   :semantic-key-index {}
+   :deferred-semantic-keys []
+   :deferred-semantic-form-ids []})
+
+(defn sh03-open-wrapper-frame [token token-position form-index parent-id]
+  (let [abbreviation (get token :abbreviation)
+        metadata? (= abbreviation :metadata)]
+    {:frame-kind :wrapper
+     :wrapper-kind (if metadata? :metadata-wrapper :abbreviation)
+     :form-id (sh03-form-id form-index)
+     :form-index form-index
+     :parent-form-id parent-id
+     :open-token (get token :token-id)
+     :open-token-index token-position
+     :abbreviation abbreviation
+     :tag-codepoints nil
+     :expected-children (if metadata? 2 1)
+     :children []
+     :child-values []
+     :semantic-keys []
+     :subtree-form-counts []
+     :semantic-key-index {}}))
+
+(defn sh03-open-tag-frame [token token-position form-index parent-id]
+  {:frame-kind :wrapper
+   :wrapper-kind :tagged-literal
+   :form-id (sh03-form-id form-index)
+   :form-index form-index
+   :parent-form-id parent-id
+   :open-token (get token :token-id)
+   :open-token-index token-position
+   :abbreviation nil
+   :tag-codepoints (get token :tag-codepoints)
+   :expected-children 1
+   :children []
+   :child-values []
+   :semantic-keys []
+   :subtree-form-counts []
+   :semantic-key-index {}})
+
+(defn sh03-atomic-form [token token-position form-index parent-id]
+  (let [descriptor (get token :descriptor)
+        semantic-key (sh03-token-semantic-key token)
+        form-id (sh03-form-id form-index)]
+    (sh03-form-record
+     form-id form-index (get token :kind) nil parent-id []
+     (get token :token-id) (get token :token-id)
+     token-position token-position
+     (get token :span)
+     (sh03-source-slice
+      (get token :span)
+      (get token :scalar-start)
+      (get token :scalar-end))
+     descriptor semantic-key 1 nil nil nil)))
+
+(defn sh03-finalize-collection [tokens frame close-token close-position]
+  (let [kind (get frame :collection-kind)
+        child-values (get frame :child-values)
+        value (sh03-collection-value kind child-values)
+        start (get frame :open-token-index)]
+    (sh03-form-record
+     (get frame :form-id)
+     (get frame :form-index)
+     kind kind
+     (get frame :parent-form-id)
+     (get frame :children)
+     (get frame :open-token)
+     (get close-token :token-id)
+     start close-position
+     (sh03-token-range-span tokens start close-position)
+     (sh03-token-range-source-slice tokens start close-position)
+     value
+     (sh03-collection-semantic-key
+      kind (get frame :semantic-keys))
+     (sh03-frame-subtree-form-count frame)
+     nil nil nil)))
+
+(defn sh03-semantic-work-rejection [token form-id observed]
+  (sh03-frame-rejection
+   "C2-HASH" "STAGE1READER006" :semantic-work-limit
+   (get token :span) (get token :raw)
+   {:observed-semantic-work-units observed
+    :maximum-semantic-work-units
+    (get (sh03-bounds-record) :maximum-semantic-work-units)
+    :token-id (get token :token-id)
+    :form-id form-id}))
+
+(defn sh03-parse-tokens [tokens reader-policy]
+  (loop [position 0
+         next-form-index 0
+         frames (list)
+         records []
+         roots []
+         root-values []
+         semantic-work 0]
+    (let [cursor (sh03-skip-trivia tokens position)]
+      (if (= cursor (count tokens))
+        (if (= (count frames) 0)
+          (let [namespace-validation
+                (sh03-validate-namespace-shape
+                 records roots root-values)]
+            (if (= (get namespace-validation :status) :accepted)
+              {:status :accepted
+               :form-tree records
+               :top-level-form-ids roots
+               :top-level-values root-values
+               :semantic-work-units semantic-work}
+              namespace-validation))
+          (let [frame (first frames)
+                rule
+                (if (= (get frame :frame-kind) :collection)
+                  "C2-DELIMITER"
+                  (if (= (get frame :wrapper-kind) :metadata-wrapper)
+                    "C2-METADATA"
+                    (if (= (get frame :wrapper-kind) :tagged-literal)
+                      "C2-EXTENSION"
+                      "C2-ABBREV")))
+                engine
+                (if (= (get frame :frame-kind) :collection)
+                  "STAGE1READER002"
+                  nil)]
+            (sh03-frame-rejection
+             rule engine :unexpected-end-of-source
+             (sh03-end-of-token-stream-span tokens)
+             (get (sh03-token-at tokens
+                                 (get frame :open-token-index))
+                  :raw)
+             {:open-form-id (get frame :form-id)
+              :form-id (get frame :form-id)
+              :token-id (get frame :open-token)})))
+        (if (>= next-form-index
+                (get (sh03-bounds-record) :maximum-forms))
+          (sh03-frame-rejection
+           "C2-HASH" "STAGE1READER006" :form-count-limit
+           (get (sh03-token-at tokens cursor) :span)
+           (get (sh03-token-at tokens cursor) :raw)
+           {:maximum-forms (get (sh03-bounds-record) :maximum-forms)
+            :token-id (get (sh03-token-at tokens cursor) :token-id)
+            :form-id (sh03-form-id next-form-index)})
+          (let [token (sh03-token-at tokens cursor)
+                kind (get token :kind)
+                parent-id (sh03-current-parent-id frames)]
+            (if (contains? #{:list-open :vector-open :map-open :set-open} kind)
+              (if (>= (count frames)
+                      (get (sh03-bounds-record) :maximum-delimiter-depth))
+                (sh03-frame-rejection
+                 "C2-HASH" "STAGE1READER006" :delimiter-depth-limit
+                 (get token :span) (get token :raw)
+                 {:observed-depth (+ (count frames) 1)
+                  :maximum-delimiter-depth
+                  (get (sh03-bounds-record) :maximum-delimiter-depth)
+                  :token-id (get token :token-id)
+                  :form-id (sh03-form-id next-form-index)})
+                (recur (+ cursor 1)
+                       (+ next-form-index 1)
+                       (conj frames
+                             (sh03-open-collection-frame
+                              token cursor next-form-index parent-id))
+                       (conj records nil) roots root-values semantic-work))
+              (if (= kind :abbreviation)
+                (if (sh03-abbreviation-placement-valid?
+                     frames (get token :abbreviation))
+                  (if (>= (count frames)
+                          (get (sh03-bounds-record) :maximum-delimiter-depth))
+                    (sh03-frame-rejection
+                     "C2-HASH" "STAGE1READER006"
+                     :reader-frame-depth-limit
+                     (get token :span) (get token :raw)
+                     {:observed-depth (+ (count frames) 1)
+                      :maximum-delimiter-depth
+                      (get (sh03-bounds-record) :maximum-delimiter-depth)
+                      :token-id (get token :token-id)
+                      :form-id (sh03-form-id next-form-index)})
+                    (recur (+ cursor 1)
+                           (+ next-form-index 1)
+                           (conj frames
+                                 (sh03-open-wrapper-frame
+                                  token cursor next-form-index parent-id))
+                           (conj records nil) roots root-values semantic-work))
+                  (sh03-frame-rejection
+                   "C2-ABBREV" nil :invalid-abbreviation-placement
+                   (get token :span) (get token :raw)
+                   {:abbreviation (get token :abbreviation)
+                    :token-id (get token :token-id)
+                    :form-id (sh03-form-id next-form-index)}))
+                (if (= kind :reader-tag)
+                  (if (sh03-vector-contains?
+                       (get reader-policy :enabled-reader-tags)
+                       (get token :tag-codepoints))
+                    (if (>= (count frames)
+                            (get (sh03-bounds-record)
+                                 :maximum-delimiter-depth))
+                      (sh03-frame-rejection
+                       "C2-HASH" "STAGE1READER006"
+                       :reader-frame-depth-limit
+                       (get token :span) (get token :raw)
+                       {:observed-depth (+ (count frames) 1)
+                        :maximum-delimiter-depth
+                        (get (sh03-bounds-record)
+                             :maximum-delimiter-depth)
+                        :token-id (get token :token-id)
+                        :form-id (sh03-form-id next-form-index)})
+                      (recur (+ cursor 1)
+                             (+ next-form-index 1)
+                             (conj frames
+                                   (sh03-open-tag-frame
+                                    token cursor next-form-index parent-id))
+                             (conj records nil) roots root-values semantic-work))
+                    (sh03-frame-rejection
+                     "C2-EXTENSION" "STAGE1READER004"
+                     :reader-tag-not-enabled
+                     (get token :span) (get token :raw)
+                     {:tag-codepoints (get token :tag-codepoints)
+                      :token-id (get token :token-id)
+                      :form-id (sh03-form-id next-form-index)}))
+                  (if (= kind :close)
+                    (if (= (count frames) 0)
+                      (sh03-frame-rejection
+                       "C2-DELIMITER" "STAGE1READER001"
+                       :unexpected-close-delimiter
+                       (get token :span) (get token :raw)
+                       {:observed-close-codepoint
+                        (get token :delimiter-codepoint)
+                        :token-id (get token :token-id)
+                        :form-id (sh03-form-id next-form-index)})
+                      (let [frame (first frames)]
+                        (if (= (get frame :frame-kind) :collection)
+                          (if (= (get frame :closes-codepoint)
+                                 (get token :delimiter-codepoint))
+                            (if (if (= (get frame :collection-kind) :map)
+                                  (even? (count (get frame :children)))
+                                  true)
+                              (let [next-semantic-work
+                                    (+ semantic-work
+                                       (* 2
+                                          (sh03-frame-subtree-form-count
+                                           frame)))]
+                                (if (> next-semantic-work
+                                       (get (sh03-bounds-record)
+                                            :maximum-semantic-work-units))
+                                  (sh03-semantic-work-rejection
+                                   token (get frame :form-id)
+                                   next-semantic-work)
+                                  (let [record
+                                        (sh03-finalize-collection
+                                         tokens frame token cursor)
+                                        attached
+                                        (sh03-attach-completed-form
+                                         tokens (rest frames)
+                                         records roots root-values
+                                         record (get record :value)
+                                         (get record :semantic-key)
+                                         semantic-work)]
+                                    (if (= (get attached :status) :accepted)
+                                      (recur (+ cursor 1)
+                                             next-form-index
+                                             (get attached :frames)
+                                             (get attached :records)
+                                             (get attached :roots)
+                                             (get attached :root-values)
+                                             (get attached
+                                                  :semantic-work-units))
+                                      attached))))
+                              (sh03-frame-rejection
+                               "C2-MAP" "STAGE1READER005"
+                               :odd-map-arity
+                               (sh03-token-range-span
+                                tokens
+                                (get frame :open-token-index)
+                                cursor)
+                               (sh03-token-range-source-slice
+                                tokens
+                                (get frame :open-token-index)
+                                cursor)
+                               {:observed-child-count
+                                (count (get frame :children))
+                                :token-id (get token :token-id)
+                                :form-id (get frame :form-id)}))
+                            (sh03-frame-rejection
+                             "C2-DELIMITER" "STAGE1READER001"
+                             :mismatched-close-delimiter
+                             (get token :span) (get token :raw)
+                             {:expected-close-codepoint
+                              (get frame :closes-codepoint)
+                              :observed-close-codepoint
+                              (get token :delimiter-codepoint)
+                              :token-id (get token :token-id)
+                              :form-id (get frame :form-id)}))
+                          (sh03-frame-rejection
+                           (if (= (get frame :wrapper-kind)
+                                  :metadata-wrapper)
+                             "C2-METADATA"
+                             (if (= (get frame :wrapper-kind)
+                                    :tagged-literal)
+                               "C2-EXTENSION"
+                               "C2-ABBREV"))
+                           nil
+                           :reader-prefix-missing-form
+                           (get token :span) (get token :raw)
+                           {:pending-form-id (get frame :form-id)
+                            :form-id (get frame :form-id)
+                            :token-id (get token :token-id)}))))
+                    (let [next-semantic-work
+                          (+ semantic-work 2)]
+                      (if (> next-semantic-work
+                             (get (sh03-bounds-record)
+                                  :maximum-semantic-work-units))
+                        (sh03-semantic-work-rejection
+                         token (sh03-form-id next-form-index)
+                         next-semantic-work)
+                        (let [record
+                              (sh03-atomic-form
+                               token cursor next-form-index parent-id)
+                              attached
+                              (sh03-attach-completed-form
+                               tokens frames records roots root-values
+                               record (get record :value)
+                               (get record :semantic-key)
+                               semantic-work)]
+                          (if (= (get attached :status) :accepted)
+                            (recur (+ cursor 1)
+                                   (+ next-form-index 1)
+                                   (get attached :frames)
+                                   (get attached :records)
+                                   (get attached :roots)
+                                   (get attached :root-values)
+                                   (get attached :semantic-work-units))
+                            attached))))))))))))))
+
+(defn sh03-namespace-clause-category [key-codepoints]
+  (if (contains? #{[112 114 111 102 105 108 101]
+                   [116 97 114 103 101 116]
+                   [115 97 102 101 116 121]}
+                 key-codepoints)
+    :single
+    (if (contains? #{[112 114 111 102 105 108 101 115]
+                     [116 97 114 103 101 116 115]
+                     [101 102 102 101 99 116 115]
+                     [99 97 112 97 98 105 108 105 116 105 101 115]}
+                   key-codepoints)
+      :set
+      (if (contains? #{[101 120 112 111 114 116 115]
+                       [112 114 111 118 105 100 101 114 115]}
+                     key-codepoints)
+        :vector
+        (if (contains? #{[114 101 113 117 105 114 101 115]
+                         [105 109 112 111 114 116 115]}
+                       key-codepoints)
+          :dependency
+          (if (= key-codepoints [100 111 99])
+            :doc
+            (if (= key-codepoints [109 101 116 97 100 97 116 97])
+              :metadata
+              nil)))))))
+
+(defn sh03-namespace-dependency-args-valid? [args]
+  (if (= (count args) 0)
+    false
+    (loop [remaining args]
+      (if (= (count remaining) 0)
+        true
+        (if (= (get (first remaining) :kind) :vector)
+          (recur (rest remaining))
+          false)))))
+
+(defn sh03-namespace-clause-shape-valid? [category args]
+  (let [one (= (count args) 1)
+        value (first args)]
+    (if (= category :single)
+      one
+      (if (= category :set)
+        (if one (= (get value :kind) :set) false)
+        (if (= category :vector)
+          (if one (= (get value :kind) :vector) false)
+          (if (= category :dependency)
+            (sh03-namespace-dependency-args-valid? args)
+            (if (= category :doc)
+              (if one (= (get value :kind) :string) false)
+              (if (= category :metadata)
+                (if one (= (get value :kind) :map) false)
+                false))))))))
+
+(defn sh03-namespace-shape-rejection [record reason facts]
+  (sh03-frame-rejection
+   "L1-NS-SHAPE" nil reason
+   (get record :span) (get record :raw)
+   (assoc
+    (assoc facts :form-id (get record :form-id))
+    :token-id (get record :open-token))))
+
+(defn sh03-validate-namespace-clause [record]
+  (let [value (get record :value)
+        items (get value :items)]
+    (if (= (get value :kind) :list)
+      (if (> (count items) 0)
+        (let [key-value (first items)]
+          (if (= (get key-value :kind) :keyword)
+            (let [key-codepoints (get key-value :name-codepoints)
+                  category
+                  (sh03-namespace-clause-category key-codepoints)
+                  args (vec (rest items))]
+              (if (= category nil)
+                (sh03-namespace-shape-rejection
+                 record :namespace-clause-key-unknown
+                 {:clause-key-codepoints key-codepoints
+                  :expected :allowed-l1-namespace-clause-key})
+                (if (sh03-namespace-clause-shape-valid? category args)
+                  {:status :accepted}
+                  (sh03-namespace-shape-rejection
+                   record :namespace-clause-value-shape
+                   {:clause-key-codepoints key-codepoints
+                    :clause-category category
+                    :observed-argument-count (count args)
+                    :expected :l1-namespace-clause-shape}))))
+            (sh03-namespace-shape-rejection
+             record :namespace-clause-keyword-required
+             {:observed-key-kind (get key-value :kind)
+              :expected :keyword-clause-key})))
+        (sh03-namespace-shape-rejection
+         record :namespace-clause-keyword-required
+         {:observed-argument-count 0
+          :expected :keyword-clause-key}))
+      (sh03-namespace-shape-rejection
+       record :namespace-clause-list-required
+       {:observed-clause-kind (get value :kind)
+        :expected :list-clause}))))
+
+(defn sh03-form-record-index [forms]
+  (loop [remaining forms result {}]
+    (if (= (count remaining) 0)
+      result
+      (let [record (first remaining)]
+        (recur
+         (rest remaining)
+         (assoc result (get record :form-id) record))))))
+
+(defn sh03-validate-namespace-clauses [form-index clause-form-ids]
+  (loop [remaining clause-form-ids]
+    (if (= (count remaining) 0)
+      {:status :accepted}
+      (let [record (get form-index (first remaining))
+            validation (sh03-validate-namespace-clause record)]
+        (if (= (get validation :status) :accepted)
+          (recur (rest remaining))
+          validation)))))
+
+(defn sh03-namespace-effective-record [form-index record]
+  (loop [current record]
+    (if (= (get current :kind) :metadata-wrapper)
+      (recur
+       (get form-index (second (get current :children))))
+      current)))
+
+(defn sh03-validate-namespace-shape [forms root-ids root-values]
+  (if (= (count root-ids) 0)
+    {:status :accepted}
+    (let [form-index (sh03-form-record-index forms)
+          root-value (first root-values)
+          root-items (get root-value :items)
+          head (first root-items)]
+      (if (if (= (get root-value :kind) :list)
+            (if (= (get head :kind) :symbol)
+              (= (get head :name-codepoints) [110 115])
+              false)
+            false)
+        (let [root-record
+              (sh03-namespace-effective-record
+               form-index (get form-index (first root-ids)))
+              child-form-ids (get root-record :children)]
+          (if (< (count root-items) 2)
+            (sh03-namespace-shape-rejection
+             root-record :namespace-name-required
+             {:expected :symbolic-namespace-name})
+            (if (= (get (second root-items) :kind) :symbol)
+              (sh03-validate-namespace-clauses
+               form-index (vec (rest (rest child-form-ids))))
+              (let [name-record
+                    (get form-index (second child-form-ids))]
+                (sh03-namespace-shape-rejection
+                 name-record :namespace-name-symbol-required
+                 {:observed-name-kind (get (second root-items) :kind)
+                  :expected :symbolic-namespace-name})))))
+        {:status :accepted}))))
+
+(defn sh03-rule-remapped-from [rule]
+  (if (= rule "C2-ENCODING")
+    "L1-SOURCE-ENCODING"
+    (if (= rule "C2-DELIMITER")
+      "L1-DELIMITER"
+      (if (= rule "C2-STRING")
+        "L1-STRING"
+        (if (= rule "C2-MAP")
+          "L1-MAP-ARITY"
+          (if (= rule "C2-SET")
+            "L1-SET"
+            (if (= rule "C2-METADATA")
+              "L1-METADATA"
+              (if (= rule "C2-ABBREV")
+                "L1-ABBREV"
+                (if (= rule "C2-EXTENSION")
+                  "L1-READER-EXTENSION"
+                  (if (= rule "C2-NUMERIC")
+                    "L1-NUMERIC"
+                    (if (= rule "C2-IDENTIFIER")
+                      "L1-IDENTIFIER"
+                      nil)))))))))))
+
+(defn sh03-diagnostic-form-id [facts]
+  (if (= (get facts :form-id) nil)
+    (if (= (get facts :open-form-id) nil)
+      (get facts :pending-form-id)
+      (get facts :open-form-id))
+    (get facts :form-id)))
+
+(defn sh03-diagnostic-family [rule]
+  (if (= rule "L1-NS-SHAPE")
+    :l1-surface-syntax
+    :c2-reader))
+
+(defn sh03-diagnostic [source-unit reader-policy rule engine reason span raw facts
+                       token-id form-id related]
+  (let [source-path (sh03-actual-path source-unit)
+        start-position (get span :start)
+        actual-span
+        {:source source-path
+         :start (get span :start)
+         :end (get span :end)
+         :byte-start (get span :byte-start)
+         :byte-end (get span :byte-end)}
+        remapped-from (sh03-rule-remapped-from rule)]
+    {:artifact :gravity/diagnostic
+     :diagnostic-id-request
+     {:domain :gravity/sh03-reader-diagnostic-v1
+      :rule rule
+      :logical-source-id (get source-unit :logical-source-id)
+      :source-content-hash (get source-unit :source-content-hash)
+      :reader-policy reader-policy
+      :span (sh03-neutral-span actual-span)
+      :reason reason
+      :facts facts}
+     :id rule
+     :severity :error
+     :stage :read-source
+     :diagnostic-family (sh03-diagnostic-family rule)
+     :source-span actual-span
+     :primary {:span actual-span
+               :artifact (get source-unit :source-content-hash)}
+     :related related
+     :origin-chain
+     [{:kind :source
+       :logical-source-id (get source-unit :logical-source-id)
+       :source-content-hash (get source-unit :source-content-hash)}]
+     :raw-spelling raw
+     :reader-options reader-policy
+     :facts facts
+     :remapped-from remapped-from
+     :reader-engine-diagnostic engine
+     :reader-state
+     {:artifact :gravity/reader-state
+      :owner :gravity-source
+      :stage :read-source
+      :reason reason
+      :byte-offset (get span :byte-start)
+      :line (get start-position :line)
+      :column (get start-position :column)
+      :column-unit :unicode-scalar
+      :char-position (get start-position :char)
+      :token-id token-id
+      :form-id form-id
+      :result-committed? false}
+     :remediation-records
+     [{:kind :repair-source :rule rule :reason reason}]
+     :redactions []}))
+
+(defn sh03-semantic-source-unit [source-unit reader-policy]
+  {:artifact :gravity/source-unit
+   :schema-version 1
+   :source-id {:digest-ref 1}
+   :project-root-id (get source-unit :project-root-id)
+   :logical-source-id (get source-unit :logical-source-id)
+   :encoding :utf-8
+   :bytes-hash (get source-unit :source-content-hash)
+   :source-byte-count (get source-unit :source-byte-count)
+   :reader-options reader-policy
+   :source-kinds [:gravity :qst]})
+
+(defn sh03-literal-form? [form]
+  (contains? #{:nil :boolean :integer :decimal :ratio :string :character
+               :symbol :keyword :tagged-literal}
+             (get form :kind)))
+
+(defn sh03-literal-records [forms value-index]
+  (loop [remaining forms result []]
+    (if (= (count remaining) 0)
+      result
+      (let [form (first remaining)]
+        (if (sh03-literal-form? form)
+          (let [semantic-value
+                (get value-index (get form :form-id))]
+            (recur
+             (rest remaining)
+             (conj result
+                   {:artifact :gravity/literal-decoding-record
+                    :form-id (get form :form-id)
+                    :kind (get form :kind)
+                    :raw (get form :raw)
+                    :decoded
+                    (sh03-form-value-reference (get form :form-id))
+                    :span (get form :span)
+                    :facts
+                    {:lexical-shape-validated? true
+                     :semantic-validation
+                     (get (get semantic-value :descriptor)
+                          :semantic-validation)}})))
+          (recur (rest remaining) result))))))
+
+(defn sh03-deferred-literal? [kind value]
+  (if (contains? #{:integer :ratio :decimal} kind)
+    (if (= (get value :semantic-validation) :deferred)
+      (if (= (get value :reason) nil)
+        (if (= (get value :normalization-reason) nil) false true)
+        true)
+      false)
+    false))
+
+(defn sh03-deferred-literal-records [forms value-index]
+  (loop [remaining forms result []]
+    (if (= (count remaining) 0)
+      result
+      (let [form (first remaining)
+            semantic-value
+            (get value-index (get form :form-id))
+            descriptor (get semantic-value :descriptor)]
+      (if (sh03-deferred-literal? (get form :kind) descriptor)
+        (let [form form]
+          (recur
+           (rest remaining)
+           (conj result
+                 {:form-id (get form :form-id)
+                  :kind (get form :kind)
+                  :raw (get form :raw)
+                  :descriptor
+                  (sh03-form-value-reference (get form :form-id))
+                  :semantic-validation :deferred
+                  :reason
+                  (if (= (get descriptor :reason) nil)
+                    (get descriptor :normalization-reason)
+                    (get descriptor :reason))
+                  :normalization-reason
+                  (get descriptor :normalization-reason)})))
+        (recur (rest remaining) result))))))
+
+(defn sh03-standard-reader-handler-codepoints [tag-codepoints]
+  (if (= tag-codepoints [105 110 115 116])
+    [103 114 97 118 105 116 121 46 114 101 97 100 101 114 46
+     115 116 97 110 100 97 114 100 47 114 101 97 100 45 105 110 115 116]
+    [103 114 97 118 105 116 121 46 114 101 97 100 101 114 46
+     115 116 97 110 100 97 114 100 47 114 101 97 100 45 117 117 105 100]))
+
+(defn sh03-extension-invocations-for-tag [forms tag-codepoints]
+  (loop [remaining forms result []]
+    (if (= (count remaining) 0)
+      result
+      (let [form (first remaining)]
+        (if (if (= (get form :kind) :tagged-literal)
+              (= (get form :tag-codepoints) tag-codepoints)
+              false)
+          (recur
+           (rest remaining)
+           (conj result
+                 {:form-id (get form :form-id)
+                  :payload-form-id (first (get form :children))
+                  :span (get form :span)
+                  :raw (get form :raw)}))
+          (recur (rest remaining) result))))))
+
+(defn sh03-reader-extension-invocation-record [forms tag-codepoints]
+  (let [handler-codepoints
+        (sh03-standard-reader-handler-codepoints tag-codepoints)
+        invocations
+        (sh03-extension-invocations-for-tag forms tag-codepoints)]
+    {:artifact :gravity/reader-extension-invocation
+     :schema-version 1
+     :tag {:kind :symbol :name-codepoints tag-codepoints}
+     :tag-codepoints tag-codepoints
+     :handler {:kind :symbol :name-codepoints handler-codepoints}
+     :handler-policy
+     {:artifact :gravity/reader-extension-handler-policy
+      :registered? true
+      :enabled? true
+      :input :syntax-seed
+      :output :syntax-seed
+      :ambient-authority-denied? true}
+     :build-effects #{}
+     :capabilities #{}
+     :profiles #{:kernel :core :hosted :meta}
+     :invocations invocations
+     :status (if (> (count invocations) 0)
+               :invoked
+               :registered-not-invoked)}))
+
+(defn sh03-reader-extension-invocation-records [forms reader-policy]
+  (loop [remaining (get reader-policy :enabled-reader-tags) result []]
+    (if (= (count remaining) 0)
+      result
+      (recur
+       (rest remaining)
+       (conj result
+             (sh03-reader-extension-invocation-record
+              forms (first remaining)))))))
+
+(defn sh03-source-map-record [tokens forms]
+  {:artifact :gravity/reader-source-map
+   :token-spans
+   (loop [remaining tokens result []]
+     (if (= (count remaining) 0)
+       result
+       (let [token (first remaining)]
+         (recur (rest remaining)
+                (conj result
+                      {:token-id (get token :token-id)
+                       :span (get token :span)})))))
+   :form-spans
+   (loop [remaining forms result []]
+     (if (= (count remaining) 0)
+       result
+       (let [form (first remaining)]
+         (recur (rest remaining)
+                (conj result
+                      {:form-id (get form :form-id)
+                       :span (get form :span)
+                       :parent-form-id (get form :parent-form-id)})))))})
+
+(defn sh03-top-level-records [root-ids root-values]
+  (loop [ids root-ids values root-values result []]
+    (if (= (count ids) 0)
+      result
+      (recur (rest ids)
+             (rest values)
+             (conj result
+                   {:form-id (first ids)
+                    :value (sh03-form-value-reference (first ids))})))))
+
+(defn sh03-top-level-value-references [root-ids]
+  (loop [remaining root-ids result []]
+    (if (= (count remaining) 0)
+      result
+      (recur
+       (rest remaining)
+       (conj result
+             (sh03-form-value-reference (first remaining)))))))
+
+(defn sh03-form-ids-from-records [records]
+  (loop [remaining records result []]
+    (if (= (count remaining) 0)
+      result
+      (recur
+       (rest remaining)
+       (conj result (get (first remaining) :form-id))))))
+
+(defn sh03-accepted-semantic-template
+  [tokens forms roots value-table literals deferred extension-records
+   semantic-work]
+  {:status :accepted
+   :source-unit-id {:digest-ref 1}
+   :token-stream-id {:digest-ref 2}
+   :form-tree-id {:digest-ref 3}
+   :extension-invocation-set-id {:digest-ref 4}
+   :token-count (count tokens)
+   :form-count (count forms)
+   :semantic-value-count (count value-table)
+   :semantic-work-units semantic-work
+   :top-level-form-ids roots
+   :literal-form-ids (sh03-form-ids-from-records literals)
+   :deferred-form-ids (sh03-form-ids-from-records deferred)
+   :reader-extension-record-count (count extension-records)})
+
+(defn sh03-semantic-generated-origins [origins]
+  (loop [remaining origins result []]
+    (if (= (count remaining) 0)
+      result
+      (let [origin (first remaining)]
+        (recur
+         (rest remaining)
+         (conj result
+               {:kind (get origin :kind)
+                :producer (get origin :producer)
+                :reason (get origin :reason)
+                :child-form-id (get origin :child-form-id)}))))))
+
+(defn sh03-semantic-form-identity [form]
+  {:form-id (get form :form-id)
+   :form-index (get form :form-index)
+   :kind (get form :kind)
+   :collection-kind (get form :collection-kind)
+   :parent-form-id (get form :parent-form-id)
+   :children (get form :children)
+   :semantic-key (get form :semantic-key)
+   :abbrev (get form :abbrev)
+   :tag-codepoints (get form :tag-codepoints)
+   :generated-origin
+   (sh03-semantic-generated-origins (get form :generated-origin))})
+
+(defn sh03-semantic-form-tree [forms]
+  (loop [remaining forms result []]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining)
+             (conj result
+                   (sh03-semantic-form-identity (first remaining)))))))
+
+(defn sh03-semantic-value-identity [entry]
+  {:value-id (get entry :value-id)
+   :form-id (get entry :form-id)
+   :kind (get entry :kind)
+   :descriptor (assoc (get entry :descriptor) :raw nil)
+   :semantic-key (get entry :semantic-key)})
+
+(defn sh03-semantic-value-identities [value-table]
+  (loop [remaining value-table result []]
+    (if (= (count remaining) 0)
+      result
+      (recur
+       (rest remaining)
+       (conj result
+             (sh03-semantic-value-identity (first remaining)))))))
+
+(defn sh03-semantic-extension-invocations [invocations]
+  (loop [remaining invocations result []]
+    (if (= (count remaining) 0)
+      result
+      (let [invocation (first remaining)]
+        (recur
+         (rest remaining)
+         (conj result
+               {:form-id (get invocation :form-id)
+                :payload-form-id (get invocation :payload-form-id)
+                :raw (get invocation :raw)}))))))
+
+(defn sh03-semantic-extension-records [records retain-trivia]
+  (if retain-trivia
+    records
+    (loop [remaining records result []]
+      (if (= (count remaining) 0)
+        result
+        (let [record (first remaining)]
+          (recur
+           (rest remaining)
+           (conj result
+                 {:artifact (get record :artifact)
+                  :schema-version (get record :schema-version)
+                  :tag (get record :tag)
+                  :tag-codepoints (get record :tag-codepoints)
+                  :handler (get record :handler)
+                  :handler-policy (get record :handler-policy)
+                  :build-effects (get record :build-effects)
+                  :capabilities (get record :capabilities)
+                  :profiles (get record :profiles)
+                  :invocations
+                  (sh03-semantic-extension-invocations
+                   (get record :invocations))
+                  :status (get record :status)})))))))
+
+(defn sh03-extension-records-have-invocations? [records]
+  (loop [remaining records]
+    (if (= (count remaining) 0)
+      false
+      (if (> (count (get (first remaining) :invocations)) 0)
+        true
+        (recur (rest remaining))))))
+
+(defn sh03-digest-requests
+  [source-unit source-bytes reader-policy semantic-template
+   token-stream forms value-table extension-records]
+  (let [
+        retain-trivia (get reader-policy :retain-trivia)
+        form-identity
+        (if retain-trivia forms (sh03-semantic-form-tree forms))
+        value-identity
+        (if retain-trivia
+          value-table
+          (sh03-semantic-value-identities value-table))
+        semantic-extension-records
+        (sh03-semantic-extension-records
+         extension-records retain-trivia)]
+    [{:key :source-content
+      :ordinal 0
+      :algorithm :sha256
+      :encoding :raw-byte-vector-v1
+      :depends-on []
+      :preimage source-bytes
+      :observed-id (get source-unit :source-content-hash)}
+     {:key :source-unit
+      :ordinal 1
+      :algorithm :sha256
+      :encoding :gravity-canonical-edn-v1
+      :depends-on [0]
+      :preimage
+      {:domain :gravity/sh03-source-unit-v1
+       :project-root-id (get source-unit :project-root-id)
+       :logical-source-id (get source-unit :logical-source-id)
+       :source-content-id {:digest-ref 0}
+       :encoding :utf-8
+       :reader-policy reader-policy}}
+     {:key :token-stream
+     :ordinal 2
+     :algorithm :sha256
+     :encoding :gravity-canonical-edn-v1
+      :depends-on (if (> (count token-stream) 0) [0 1] [1])
+      :preimage
+      {:domain :gravity/sh03-token-stream-v1
+       :source-id {:digest-ref 1}
+       :tokens token-stream}}
+     {:key :form-tree
+      :ordinal 3
+      :algorithm :sha256
+      :encoding :gravity-canonical-edn-v1
+      :depends-on
+      (if retain-trivia
+        (if (> (count forms) 0) [0 1 2] [1 2])
+        [])
+      :preimage
+      {:domain :gravity/sh03-form-tree-v1
+       :identity-mode (if retain-trivia :contextual :semantic)
+       :source-id (if retain-trivia {:digest-ref 1} nil)
+       :token-stream-id (if retain-trivia {:digest-ref 2} nil)
+       :forms form-identity
+       :semantic-value-table value-identity
+       :top-level-form-ids
+       (get semantic-template :top-level-form-ids)}}
+     {:key :extension-invocation-set
+      :ordinal 4
+      :algorithm :sha256
+      :encoding :gravity-canonical-edn-v1
+      :depends-on
+      (if (sh03-extension-records-have-invocations?
+           semantic-extension-records)
+        [0 3]
+        [3])
+      :preimage
+      {:domain :gravity/sh03-extension-invocation-set-v1
+       :form-tree-id {:digest-ref 3}
+       :records
+       semantic-extension-records}}
+     {:key :reader-result
+      :ordinal 5
+      :algorithm :sha256
+      :encoding :gravity-canonical-edn-v1
+      :depends-on [1 2 3 4]
+      :preimage
+      {:domain :gravity/sh03-reader-result-v1
+       :source-id {:digest-ref 1}
+       :token-stream-id {:digest-ref 2}
+       :form-tree-id {:digest-ref 3}
+       :extension-invocation-set-id {:digest-ref 4}
+       :semantic-template semantic-template}}]))
+
+(defn sh03-digest-request-summary [request]
+  {:key (get request :key)
+   :ordinal (get request :ordinal)
+   :algorithm (get request :algorithm)
+   :encoding (get request :encoding)
+   :depends-on (get request :depends-on)})
+
+(defn sh03-digest-request-summaries [requests]
+  (loop [remaining requests result []]
+    (if (= (count remaining) 0)
+      result
+      (recur
+       (rest remaining)
+       (conj result
+             (sh03-digest-request-summary (first remaining)))))))
+
+(defn sh03-placeholder-source-unit []
+  {:artifact :gravity/sh03-source-unit
+   :schema-version 1
+   :project-root-id
+   "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+   :logical-source-id "invalid-source-unit"
+   :source-content-hash
+   "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+   :source-byte-count 0
+   :encoding :utf-8
+   :actual-path-provenance
+   {:path "<invalid-source-unit>"
+    :extension ".gravity"
+    :source-kind :gravity}})
+
+(defn sh03-placeholder-reader-policy []
+  {:artifact :gravity/sh03-reader-policy
+   :schema-version 1
+   :retain-trivia true
+   :enabled-reader-tags []})
+
+(defn sh03-safe-reader-policy [reader-policy]
+  (if (sh03-reader-policy-valid? reader-policy)
+    reader-policy
+    (sh03-placeholder-reader-policy)))
+
+(defn sh03-rejected-result [source-unit source-bytes reader-policy rejection]
+  (let [rule (get rejection :rule)
+        engine (get rejection :engine)
+        reason (get rejection :reason)
+        span (get rejection :span)
+        raw (get rejection :raw)
+        facts (get rejection :facts)
+        token-id (get rejection :token-id)
+        form-id (get rejection :form-id)
+        related (if (= (get rejection :related) nil)
+                  []
+                  (get rejection :related))]
+  {:artifact :gravity/sh03-reader-result
+   :schema-version 1
+   :status :rejected
+   :source-unit (sh03-semantic-source-unit source-unit reader-policy)
+   :actual-path-provenance (sh03-actual-provenance source-unit)
+   :token-stream []
+   :form-tree []
+   :semantic-value-table []
+   :top-level-form-ids []
+   :top-level-parsed-records []
+   :parsed-semantic-values []
+   :literal-decoding-records []
+   :semantic-error-deferment-record
+   {:artifact :gravity/semantic-error-deferment-record
+    :deferred? false
+    :deferred-literal-records []}
+   :reader-extension-invocation-records []
+   :reader-source-map
+   {:artifact :gravity/reader-source-map
+    :token-spans [] :form-spans []}
+   :incremental-reader-hashes
+   {:source-unit {:digest-ref 1}
+    :token-stream nil
+    :form-tree nil
+    :extension-invocation-set nil
+    :reader-result nil
+    :status :rejected}
+   :semantic-reader-template
+   {:status :rejected
+    :source-unit-id {:digest-ref 1}
+    :rule rule
+    :reason reason
+    :span (sh03-neutral-span span)
+    :raw raw
+    :facts facts}
+   :digest-requests
+   (subvec
+    (sh03-digest-requests
+     source-unit source-bytes reader-policy
+     {:status :rejected
+      :source-unit-id {:digest-ref 1}
+      :top-level-form-ids []
+      :rule rule :reason reason}
+     [] [] [] [])
+    0 2)
+   :diagnostics
+   [(sh03-diagnostic source-unit reader-policy rule engine reason span raw facts
+                     token-id form-id related)]
+   :bounds (sh03-bounds-record)
+   :execution-boundary (sh03-execution-boundary-record)}))
+
+(defn sh03-invalid-input-result [source-unit source-bytes reader-policy
+                                 rule reason facts]
+  (let [source-unit-valid? (sh03-source-unit-valid? source-unit)
+        source-bytes-valid?
+        (if source-unit-valid?
+          (sh03-source-byte-vector-valid? source-unit source-bytes)
+          false)
+        safe-source-unit
+        (if source-bytes-valid?
+          source-unit
+          (sh03-placeholder-source-unit))
+        safe-source-bytes (if source-bytes-valid? source-bytes [])
+        safe-policy (sh03-safe-reader-policy reader-policy)]
+    (sh03-rejected-result
+     safe-source-unit
+     safe-source-bytes
+     safe-policy
+     {:rule rule :engine nil :reason reason
+      :span (sh03-empty-span-at-byte 0) :raw nil :facts facts
+      :token-id nil :form-id nil :related []})))
+
+(defn sh03-read-source-unit [source-unit source-bytes reader-policy]
+  (if (sh03-source-unit-valid? source-unit)
+    (if (sh03-reader-policy-valid? reader-policy)
+      (if (sh03-source-byte-vector-valid? source-unit source-bytes)
+        (let [decoded (sh03-decode-source-bytes source-unit source-bytes)]
+          (if (= (get decoded :status) :accepted)
+            (let [characters (get decoded :characters)
+                  scanned (sh03-scan-tokens characters)]
+              (if (= (get scanned :status) :accepted)
+                (let [tokens (get scanned :tokens)
+                      parsed (sh03-parse-tokens tokens reader-policy)]
+                  (if (= (get parsed :status) :accepted)
+                    (let [raw-output-tokens
+                          (sh03-filter-output-tokens
+                           tokens (get reader-policy :retain-trivia))
+                          raw-forms (get parsed :form-tree)
+                          roots (get parsed :top-level-form-ids)
+                          values (get parsed :top-level-values)
+                          semantic-work
+                          (get parsed :semantic-work-units)
+                          value-table
+                          (sh03-semantic-value-table tokens raw-forms)
+                          token-value-index
+                          (sh03-semantic-value-token-index value-table)
+                          form-value-index
+                          (sh03-semantic-value-form-index value-table)
+                          output-tokens
+                          (sh03-compact-token-records
+                           raw-output-tokens token-value-index)
+                          forms
+                          (sh03-compact-form-records tokens raw-forms)
+                          literals
+                          (sh03-literal-records forms form-value-index)
+                          deferred
+                          (sh03-deferred-literal-records
+                           forms form-value-index)
+                          extension-records
+                          (sh03-reader-extension-invocation-records
+                           forms reader-policy)
+                          source-map
+                          (sh03-source-map-record output-tokens forms)
+                          semantic-template
+                          (sh03-accepted-semantic-template
+                           output-tokens forms roots value-table literals
+                           deferred extension-records semantic-work)
+                          requests
+                          (sh03-digest-requests
+                           source-unit source-bytes reader-policy
+                           semantic-template output-tokens forms value-table
+                           extension-records)]
+                      {:artifact :gravity/sh03-reader-result
+                       :schema-version 1
+                       :status :accepted
+                       :source-unit
+                       (sh03-semantic-source-unit
+                        source-unit reader-policy)
+                       :actual-path-provenance
+                       (sh03-actual-provenance source-unit)
+                       :token-stream output-tokens
+                       :form-tree forms
+                       :semantic-value-table value-table
+                       :top-level-form-ids roots
+                       :top-level-parsed-records
+                       (sh03-top-level-records roots values)
+                       :parsed-semantic-values
+                       (sh03-top-level-value-references roots)
+                       :literal-decoding-records literals
+                       :semantic-error-deferment-record
+                       {:artifact
+                        :gravity/semantic-error-deferment-record
+                        :deferred? (> (count deferred) 0)
+                        :deferred-literal-records deferred}
+                       :reader-extension-invocation-records
+                       extension-records
+                       :reader-source-map source-map
+                       :incremental-reader-hashes
+                       {:source-unit {:digest-ref 1}
+                        :token-stream {:digest-ref 2}
+                        :form-tree {:digest-ref 3}
+                        :extension-invocation-set {:digest-ref 4}
+                        :reader-result {:digest-ref 5}
+                        :status :pending-resolution}
+                       :semantic-reader-template semantic-template
+                       :digest-requests requests
+                       :diagnostics []
+                       :bounds (sh03-bounds-record)
+                       :execution-boundary
+                       (sh03-execution-boundary-record)})
+                    (sh03-rejected-result
+                     source-unit source-bytes reader-policy parsed)))
+                (sh03-rejected-result
+                 source-unit source-bytes reader-policy scanned)))
+            (sh03-rejected-result
+             source-unit source-bytes reader-policy
+             {:rule (if (= (get decoded :reason) :character-count-limit)
+                      "C2-HASH"
+                      "C2-ENCODING")
+              :engine
+              (if (= (get decoded :reason) :character-count-limit)
+                "STAGE1READER006"
+                nil)
+              :reason (get decoded :reason)
+              :span
+              (sh03-invalid-byte-span
+               (count source-bytes)
+               (get decoded :byte-position)
+               (get decoded :char-position)
+               (get decoded :line)
+               (get decoded :column))
+              :raw {:encoding :utf-8
+                    :observed (get decoded :observed)}
+              :facts
+              (if (= (get decoded :reason) :character-count-limit)
+                {:byte-position (get decoded :byte-position)
+                 :char-position (get decoded :char-position)
+                 :scalar-index (get decoded :scalar-index)
+                 :line (get decoded :line)
+                 :column (get decoded :column)
+                 :maximum-characters
+                 (get (sh03-bounds-record) :maximum-characters)}
+                {:byte-position (get decoded :byte-position)
+                 :char-position (get decoded :char-position)
+                 :scalar-index (get decoded :scalar-index)
+                 :line (get decoded :line)
+                 :column (get decoded :column)})
+              :token-id nil :form-id nil :related []})))
+        (sh03-invalid-input-result
+         source-unit source-bytes reader-policy
+         "C2-HASH" :source-byte-vector-contract
+         {:source-byte-vector
+          (sh03-source-byte-vector-input-summary
+           source-unit source-bytes)}))
+      (sh03-invalid-input-result
+       source-unit source-bytes reader-policy
+       "C2-EXTENSION" :reader-policy-contract
+       {:reader-policy
+        (sh03-reader-policy-input-summary reader-policy)}))
+    (sh03-invalid-input-result
+     source-unit source-bytes reader-policy
+     (if (sh03-source-unit-extension-policy-failure? source-unit)
+       "C2-EXTENSION"
+       "C2-HASH")
+     (if (sh03-source-unit-extension-policy-failure? source-unit)
+       :source-unit-extension-policy
+       :source-unit-contract)
+     {:source-unit
+      (sh03-source-unit-input-summary source-unit)})))
+
+(defn sh03-result-envelope-shape? [result]
+  (if (sh03-exact-keys?
+       result
+       #{:artifact :schema-version :status :source-unit
+         :actual-path-provenance :token-stream :form-tree
+         :semantic-value-table :top-level-form-ids
+         :top-level-parsed-records :parsed-semantic-values
+         :literal-decoding-records :semantic-error-deferment-record
+         :reader-extension-invocation-records :reader-source-map
+         :incremental-reader-hashes :semantic-reader-template
+         :digest-requests :diagnostics :bounds :execution-boundary})
+    (if (= (get result :artifact) :gravity/sh03-reader-result)
+      (if (= (get result :schema-version) 1)
+        (if (contains? #{:accepted :rejected} (get result :status))
+          (if (vector? (get result :token-stream))
+            (if (vector? (get result :form-tree))
+              (if (vector? (get result :semantic-value-table))
+                (if (vector? (get result :digest-requests))
+                  (vector? (get result :diagnostics))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh03-result-preflight? [result]
+  (if (sh03-result-envelope-shape? result)
+    (if (<= (count (get result :token-stream))
+            (get (sh03-bounds-record) :maximum-tokens))
+      (if (<= (count (get result :form-tree))
+              (get (sh03-bounds-record) :maximum-forms))
+        (if (<= (count (get result :semantic-value-table))
+                (get (sh03-bounds-record) :maximum-forms))
+          (<= (count (get result :digest-requests)) 6)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh03-verify-reader-result [source-unit source-bytes
+                                 reader-policy result]
+  (if (sh03-result-preflight? result)
+    (let [expected
+          (sh03-read-source-unit source-unit source-bytes reader-policy)]
+      (if (= expected result)
+        {:artifact :gravity/sh03-reader-verification-report
+         :schema-version 1
+         :status :accepted
+         :verified? true
+         :reader-result-status (get result :status)
+         :semantic-reader-template
+         (get result :semantic-reader-template)
+         :digest-requests
+         (sh03-digest-request-summaries
+          (get result :digest-requests))
+         :diagnostics []
+         :bounds (sh03-bounds-record)
+         :execution-boundary (sh03-execution-boundary-record)}
+        {:artifact :gravity/sh03-reader-verification-report
+         :schema-version 1
+         :status :rejected
+         :verified? false
+         :reader-result-status (get result :status)
+         :semantic-reader-template nil
+         :digest-requests []
+         :diagnostics
+         [(sh03-diagnostic
+           source-unit reader-policy "C2-HASH" nil
+           :reader-result-replay-mismatch
+           (sh03-empty-span-at-byte 0) nil
+           {:expected-status (get expected :status)
+            :observed-status (get result :status)}
+           nil nil [])]
+         :bounds (sh03-bounds-record)
+         :execution-boundary (sh03-execution-boundary-record)}))
+    {:artifact :gravity/sh03-reader-verification-report
+     :schema-version 1
+     :status :rejected
+     :verified? false
+     :reader-result-status nil
+     :semantic-reader-template nil
+     :digest-requests []
+     :diagnostics
+     [(sh03-diagnostic
+       (if (sh03-source-unit-valid? source-unit)
+         source-unit
+         (sh03-placeholder-source-unit))
+       (sh03-safe-reader-policy reader-policy)
+       "C2-HASH" nil :reader-result-preflight
+       (sh03-empty-span-at-byte 0) nil
+       {:result-carrier :invalid-or-over-limit}
+       nil nil [])]
+     :bounds (sh03-bounds-record)
+     :execution-boundary (sh03-execution-boundary-record)}))
+
+; These locally compiled qualified functions preserve the historical source
+; shapes for audit only.  They do not delegate to a host reader and are not the
+; SH-03 entrypoint; callers must use sh03-read-source-unit with source bytes.
+(defn reader/read-with-table [source-path source-text table]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :table table
+   :replacement 'sh03-read-source-unit})
+
+(defn reader/scan-tokens [source-path source-text table]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :table table
+   :replacement 'sh03-read-source-unit})
+
+(defn reader/forms-from-tokens [source-path source-text table tokens]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :table table
+   :tokens tokens :replacement 'sh03-read-source-unit})
+
+(defn reader/source-characters [source-path source-text]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text
+   :replacement 'sh03-read-source-unit})
+
+(defn reader/tokens-from-characters [source-path source-text table characters]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :table table
+   :characters characters :replacement 'sh03-read-source-unit})
+
+(defn reader/tokens-from-classifier [source-path source-text classifier characters]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :classifier classifier
+   :characters characters :replacement 'sh03-read-source-unit})
+
+(defn reader/realize-tokens [source-path source-text classifier realizer characters]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :classifier classifier
+   :realizer realizer :characters characters
+   :replacement 'sh03-read-source-unit})
+
+(defn reader/run-token-automaton [source-path source-text classifier realizer
+                                  automaton characters]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :classifier classifier
+   :realizer realizer :automaton automaton :characters characters
+   :replacement 'sh03-read-source-unit})
+
+(defn reader/build-forms [source-path source-text classifier realizer
+                          automaton form-builder tokens]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :classifier classifier
+   :realizer realizer :automaton automaton :form-builder form-builder
+   :tokens tokens :replacement 'sh03-read-source-unit})
+
+(defn reader/execute-compiled-program [source-path source-text program]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :program program
+   :replacement 'sh03-read-source-unit})
+
+(defn reader/execute-binary [source-path source-text binary]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :binary binary
+   :replacement 'sh03-read-source-unit})
+
+(defn reader/execute-self-hosted-runtime [source-path source-text runtime]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :runtime runtime
+   :replacement 'sh03-read-source-unit})
+
+(defn reader/execute-core-bootstrap-runtime [source-path source-text runtime builtins]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :runtime runtime
+   :builtins builtins :replacement 'sh03-read-source-unit})
+
+(defn reader/execute-compiler-driver [source-path source-text driver runtime builtins]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :driver driver
+   :runtime runtime :builtins builtins :replacement 'sh03-read-source-unit})
+
+(defn reader/execute-runtime-entrypoint [source-path source-text entrypoint driver]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :entrypoint entrypoint
+   :driver driver :replacement 'sh03-read-source-unit})
+
+(defn reader/execute-runtime-image [source-path source-text image entrypoint]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :image image
+   :entrypoint entrypoint :replacement 'sh03-read-source-unit})
+
+(defn reader/execute-verified-boot-chain [source-path source-text chain image]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text :chain chain
+   :image image :replacement 'sh03-read-source-unit})
+
+(defn reader/execute-diverse-bootstrap-verification
+  [source-path source-text verification chain]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text
+   :verification verification :chain chain
+   :replacement 'sh03-read-source-unit})
+
+(defn reader/execute-release-attestation-seed-retirement
+  [source-path source-text attestation verification chain]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text
+   :attestation attestation :verification verification :chain chain
+   :replacement 'sh03-read-source-unit})
+
+(defn reader/execute-formal-release-governance-seed-retirement
+  [source-path source-text governance attestation]
+  {:status :legacy-reader-entrypoint-retired
+   :source-path source-path :source-text source-text
+   :governance governance :attestation attestation
+   :replacement 'sh03-read-source-unit})
 
 (defn stage1-read-source [source-path source-text]
   (reader/read-with-table source-path source-text stage1-reader-table))

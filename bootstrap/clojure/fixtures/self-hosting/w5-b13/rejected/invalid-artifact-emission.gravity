@@ -1,0 +1,511 @@
+(ns gravity.self-hosting.w5-b13.rejected
+  (:profile :meta)
+  ; Namespace target is the :jvm stage2 compiler-plan harness only; mutators
+  ; below must reject JVM/Darwin/cross-target artifact records.
+  (:target :jvm)
+  (:exports [w5-b13-invalid-schema-request
+             w5-b13-invalid-hash-request
+             w5-b13-invalid-coherent-supplied-hash-request
+             w5-b13-invalid-provenance-request
+             w5-b13-invalid-provenance-missing-status-request
+             w5-b13-invalid-provenance-extra-key-request
+             w5-b13-invalid-compiler-artifact-request
+             w5-b13-invalid-compiler-status-request
+             w5-b13-invalid-compiler-version-request
+             w5-b13-invalid-pass-contract-request
+             w5-b13-invalid-dependency-artifact-request
+             w5-b13-invalid-dependency-status-request
+             w5-b13-invalid-dependency-generator-request
+             w5-b13-invalid-dependency-type-request
+             w5-b13-invalid-dependency-substitution-request
+             w5-b13-invalid-coherent-dependency-substitution-request
+             w5-b13-invalid-manifest-provenance-extra-key-request
+             w5-b13-invalid-manifest-source-link-request
+             w5-b13-invalid-compiler-link-request
+             w5-b13-invalid-toolchain-link-request
+             w5-b13-invalid-sourcemap-request
+             w5-b13-invalid-sourcemap-phase-request
+             w5-b13-invalid-sourcemap-reversed-span-request
+             w5-b13-invalid-sourcemap-origin-request
+             w5-b13-invalid-evidence-request
+             w5-b13-invalid-evidence-missing-request
+             w5-b13-invalid-evidence-extra-key-request
+             w5-b13-invalid-evidence-type-request
+             w5-b13-invalid-evidence-substitution-request
+             w5-b13-invalid-evidence-effect-substitution-request
+             w5-b13-invalid-unsafe-audit-request
+             w5-b13-invalid-target-record-link-request
+             w5-b13-invalid-target-request
+             w5-b13-invalid-manifest-target-features-request
+             w5-b13-invalid-coherent-target-features-request
+             w5-b13-invalid-pointer-width-request
+             w5-b13-invalid-calling-convention-request
+             w5-b13-invalid-binary-format-request
+             w5-b13-invalid-architecture-request
+             w5-b13-invalid-evidence-link-request
+             w5-b13-invalid-conformance-request
+             w5-b13-invalid-conformance-complete-request
+             w5-b13-invalid-conformance-substitution-request
+             w5-b13-invalid-manifest-conformance-link-request
+             w5-b13-invalid-reproducibility-request
+             w5-b13-invalid-release-request
+             w5-b13-invalid-release-gate-missing-request
+             w5-b13-invalid-release-gate-extra-key-request
+             w5-b13-invalid-release-gate-substitution-request
+             w5-b13-invalid-non-authority-missing-request
+             w5-b13-invalid-non-authority-extra-key-request
+             w5-b13-invalid-non-authority-release-request
+             w5-b13-invalid-non-authority-self-host-request
+             w5-b13-invalid-non-authority-public-request
+             w5-b13-invalid-non-authority-seed-request
+             w5-b13-invalid-non-authority-full-language-request
+             w5-b13-invalid-graph-request
+             w5-b13-invalid-graph-wrong-root-request
+             w5-b13-invalid-graph-disconnected-request
+             w5-b13-invalid-graph-missing-stage-request
+             w5-b13-invalid-graph-reordered-stage-request
+             w5-b13-invalid-graph-reordered-pass-request
+             w5-b13-invalid-graph-mislabeled-stage-request
+             w5-b13-invalid-graph-digest-link-request
+             w5-b13-invalid-graph-origin-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+; Each mutator changes one B13 contract family without throwing.
+
+(defn w5-b13-invalid-schema-request [request]
+  (assoc request :manifest
+         (assoc (get request :manifest) :schema-version 2)))
+
+(defn w5-b13-invalid-hash-request [request]
+  (assoc request :hash-record
+         (assoc (get request :hash-record) :content-hash
+                "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")))
+
+(defn w5-b13-invalid-coherent-supplied-hash-request [request]
+  (let [substituted
+        "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        manifest (get request :manifest)
+        hash-record (get request :hash-record)
+        emitted (get request :emitted-artifact)
+        graph (get request :artifact-graph)
+        nodes (get graph :nodes)
+        backend-node (get nodes 8)]
+    (assoc request
+           :manifest (assoc manifest :content-hash substituted)
+           :hash-record (assoc hash-record :content-hash substituted)
+           :emitted-artifact (assoc emitted :content-hash substituted)
+           :artifact-graph
+           (assoc graph :nodes
+                  (assoc nodes 8 (assoc backend-node :digest substituted))))))
+
+(defn w5-b13-invalid-provenance-request [request]
+  (assoc request :compiler-provenance
+         (assoc (get request :compiler-provenance) :generator-id nil)))
+
+(defn w5-b13-invalid-provenance-missing-status-request [request]
+  (assoc request :provenance
+         (dissoc (get request :provenance) :status)))
+
+(defn w5-b13-invalid-provenance-extra-key-request [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) :unexpected :forbidden)))
+
+(defn w5-b13-invalid-compiler-artifact-request [request]
+  (assoc request :compiler-provenance
+         (assoc (get request :compiler-provenance)
+                :artifact :gravity/substituted-compiler-provenance-record)))
+
+(defn w5-b13-invalid-compiler-status-request [request]
+  (assoc request :compiler-provenance
+         (assoc (get request :compiler-provenance) :status :pending)))
+
+(defn w5-b13-invalid-compiler-version-request [request]
+  (assoc request :compiler-provenance
+         (assoc (get request :compiler-provenance)
+                :compiler-version "arbitrary-version")))
+
+(defn w5-b13-invalid-pass-contract-request [request]
+  (assoc request :compiler-provenance
+         (assoc (get request :compiler-provenance)
+                :pass-contract "arbitrary-pass-contract")))
+
+(defn w5-b13-invalid-dependency-artifact-request [request]
+  (assoc request :dependency-provenance
+         (assoc (get request :dependency-provenance)
+                :artifact :gravity/substituted-dependency-provenance-record)))
+
+(defn w5-b13-invalid-dependency-status-request [request]
+  (assoc request :dependency-provenance
+         (assoc (get request :dependency-provenance) :status :pending)))
+
+(defn w5-b13-invalid-dependency-generator-request [request]
+  (assoc request :dependency-provenance
+         (assoc (get request :dependency-provenance)
+                :generator "arbitrary.generator")))
+
+(defn w5-b13-invalid-dependency-type-request [request]
+  (assoc request :dependency-provenance
+         (assoc (get request :dependency-provenance)
+                :dependencies #{"gravity/compiler-core-v1"
+                                "gravity/llvm-lowering-contract-v1"})))
+
+(defn w5-b13-invalid-dependency-substitution-request [request]
+  (assoc request :dependency-provenance
+         (assoc (get request :dependency-provenance)
+                :dependencies ["arbitrary/dependency-v1"])))
+
+(defn w5-b13-invalid-coherent-dependency-substitution-request [request]
+  (let [inventory ["arbitrary/dependency-v1"]
+        provenance (get request :provenance)
+        manifest (get request :manifest)
+        manifest-provenance (get manifest :provenance)
+        dependencies (get request :dependency-provenance)
+        graph (get request :artifact-graph)]
+    (assoc request
+           :provenance (assoc provenance :dependencies inventory)
+           :manifest
+           (assoc manifest :provenance
+                  (assoc manifest-provenance :dependency-inventory inventory))
+           :dependency-provenance
+           (assoc dependencies :dependencies inventory)
+           :artifact-graph (assoc graph :dependencies inventory))))
+
+(defn w5-b13-invalid-manifest-provenance-extra-key-request [request]
+  (let [manifest (get request :manifest)
+        provenance (get manifest :provenance)]
+    (assoc request :manifest
+           (assoc manifest :provenance
+                  (assoc provenance :unexpected :forbidden)))))
+
+(defn w5-b13-invalid-manifest-source-link-request [request]
+  (let [manifest (get request :manifest)
+        inputs (get manifest :inputs)]
+    (assoc request :manifest
+           (assoc manifest :inputs
+                  (assoc inputs :source
+                         "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")))))
+
+(defn w5-b13-invalid-compiler-link-request [request]
+  (let [provenance (get request :provenance)
+        compiler (get request :compiler-provenance)]
+    (assoc request :provenance
+           (assoc provenance :compiler-id
+                  (str (get compiler :compiler-id) "-substituted")))))
+
+(defn w5-b13-invalid-toolchain-link-request [request]
+  (assoc request :dependency-provenance
+         (assoc (get request :dependency-provenance)
+                :target-toolchain "llvm-arm64-linux-substituted")))
+
+(defn w5-b13-invalid-sourcemap-request [request]
+  (assoc request :source-debug-map
+         (assoc (get request :source-debug-map) :status :lost)))
+
+(defn w5-b13-invalid-sourcemap-phase-request [request]
+  (let [source-map (get request :source-debug-map)
+        phases (get source-map :phases)]
+    (assoc request :source-debug-map
+           (assoc source-map :phases (assoc phases 5 :domain-ir)))))
+
+(defn w5-b13-invalid-sourcemap-reversed-span-request [request]
+  (let [source-map (get request :source-debug-map)
+        locations (get source-map :locations)
+        location (get locations 4)
+        span (get location :source-span)]
+    (assoc request :source-debug-map
+           (assoc source-map :locations
+                  (assoc locations 4
+                         (assoc location :source-span
+                                (assoc span :start-byte 200
+                                            :end-byte 100)))))))
+
+(defn w5-b13-invalid-sourcemap-origin-request [request]
+  (let [source-map (get request :source-debug-map)
+        locations (get source-map :locations)
+        location (get locations 6)]
+    (assoc request :source-debug-map
+           (assoc source-map :locations
+                  (assoc locations 6
+                         (assoc location :origin :substituted-origin))))))
+
+(defn w5-b13-invalid-evidence-request [request]
+  (assoc request :safety-proof-certificate-bundle
+         (assoc (get request :safety-proof-certificate-bundle)
+                :status :incomplete)))
+
+(defn w5-b13-invalid-evidence-missing-request [request]
+  (assoc request :safety-proof-certificate-bundle
+         (dissoc (get request :safety-proof-certificate-bundle)
+                 :unsafe-audit-records)))
+
+(defn w5-b13-invalid-evidence-extra-key-request [request]
+  (assoc request :safety-proof-certificate-bundle
+         (assoc (get request :safety-proof-certificate-bundle)
+                :unexpected :forbidden)))
+
+(defn w5-b13-invalid-evidence-type-request [request]
+  (assoc request :safety-proof-certificate-bundle
+         (assoc (get request :safety-proof-certificate-bundle)
+                :proofs #{"proof:manifest-schema"
+                          "proof:target-coherence"
+                          "proof:source-map-preservation"})))
+
+(defn w5-b13-invalid-evidence-substitution-request [request]
+  (assoc request :safety-proof-certificate-bundle
+         (assoc (get request :safety-proof-certificate-bundle)
+                :proofs ["proof:caller-substitution"])))
+
+(defn w5-b13-invalid-evidence-effect-substitution-request [request]
+  (let [manifest (get request :manifest)
+        evidence (get manifest :evidence)]
+    (assoc request :manifest
+           (assoc manifest :evidence
+                  (assoc evidence :effects #{:filesystem/read})))))
+
+(defn w5-b13-invalid-unsafe-audit-request [request]
+  (assoc request :safety-proof-certificate-bundle
+         (assoc (get request :safety-proof-certificate-bundle)
+                :unsafe-audit-records ["caller-supplied-unsafe-audit"])))
+
+(defn w5-b13-invalid-target-record-link-request [request]
+  (assoc request :target-runtime-abi-layout-summary
+         (assoc (get request :target-runtime-abi-layout-summary)
+                :target :llvm-arm64-linux)))
+
+(defn w5-b13-invalid-manifest-target-features-request [request]
+  (assoc request :manifest
+         (assoc (get request :manifest) :target-features #{:arm64})))
+
+(defn w5-b13-invalid-coherent-target-features-request [request]
+  (assoc request
+         :manifest
+         (assoc (get request :manifest) :target-features #{:arm64})
+         :target-runtime-abi-layout-summary
+         (assoc (get request :target-runtime-abi-layout-summary)
+                :target-features #{:arm64})))
+
+(defn w5-b13-invalid-pointer-width-request [request]
+  (let [manifest (get request :manifest)
+        target (get request :target-runtime-abi-layout-summary)]
+    (assoc request
+           :manifest
+           (assoc manifest :abi-layout
+                  (assoc (get manifest :abi-layout) :pointer-width 32))
+           :target-runtime-abi-layout-summary
+           (assoc target :abi-layout
+                  (assoc (get target :abi-layout) :pointer-width 32)))))
+
+(defn w5-b13-invalid-calling-convention-request [request]
+  (let [manifest (get request :manifest)
+        target (get request :target-runtime-abi-layout-summary)]
+    (assoc request
+           :manifest
+           (assoc manifest :abi-layout
+                  (assoc (get manifest :abi-layout)
+                         :calling-convention :aapcs64))
+           :target-runtime-abi-layout-summary
+           (assoc target :abi-layout
+                  (assoc (get target :abi-layout)
+                         :calling-convention :aapcs64)))))
+
+(defn w5-b13-invalid-binary-format-request [request]
+  (let [manifest (get request :manifest)
+        target (get request :target-runtime-abi-layout-summary)]
+    (assoc request
+           :manifest
+           (assoc manifest :abi-layout
+                  (assoc (get manifest :abi-layout) :binary-format :macho))
+           :target-runtime-abi-layout-summary
+           (assoc target :abi-layout
+                  (assoc (get target :abi-layout) :binary-format :macho)))))
+
+(defn w5-b13-invalid-architecture-request [request]
+  (let [manifest (get request :manifest)
+        target (get request :target-runtime-abi-layout-summary)]
+    (assoc request
+           :manifest
+           (assoc manifest :abi-layout
+                  (assoc (get manifest :abi-layout) :architecture :arm64))
+           :target-runtime-abi-layout-summary
+           (assoc target :abi-layout
+                  (assoc (get target :abi-layout) :architecture :arm64)))))
+
+(defn w5-b13-invalid-target-request [request]
+  (assoc request
+         :target-scope
+         {:target :llvm-arm64-darwin
+          :os :darwin
+          :arch :arm64
+          :backend :llvm
+          :object-format :macho
+          :abi :darwin
+          :runtime :jvm
+          :providers #{:jvm}
+          :darwin-supported? true
+          :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+          :unsupported-target-policies
+          [{:target :darwin :support :unsupported
+            :invokes-clojure? false :links-jvm? false :fallback? false}
+           {:target :darwin-arm64 :support :unsupported
+            :invokes-clojure? false :links-jvm? false :fallback? false}
+           {:target :darwin-x86_64 :support :unsupported
+            :invokes-clojure? false :links-jvm? false :fallback? false}
+           {:target :windows :support :unsupported
+            :invokes-clojure? false :links-jvm? false :fallback? false}]
+          :cross-target-inference? true
+          :darwin-fallback? true
+          :candidate-invokes-clojure? true
+          :candidate-links-jvm? true
+          :candidate-fallback? true
+          :no-fallback? false}))
+
+(defn w5-b13-invalid-conformance-request [request]
+  (assoc request :conformance-evidence-reference
+         (assoc (get request :conformance-evidence-reference)
+                :status :missing)))
+
+(defn w5-b13-invalid-conformance-complete-request [request]
+  (assoc request :conformance-evidence-reference
+         (assoc (get request :conformance-evidence-reference)
+                :status :complete)))
+
+(defn w5-b13-invalid-conformance-substitution-request [request]
+  (assoc request :conformance-evidence-reference
+         (assoc (get request :conformance-evidence-reference)
+                :packs ["caller-certified-substitution"])))
+
+(defn w5-b13-invalid-manifest-conformance-link-request [request]
+  (let [manifest (get request :manifest)
+        evidence (get manifest :evidence)]
+    (assoc request :manifest
+           (assoc manifest :evidence
+                  (assoc evidence :conformance
+                         "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")))))
+
+(defn w5-b13-invalid-evidence-link-request [request]
+  (assoc request :safety-proof-certificate-bundle
+         (assoc (get request :safety-proof-certificate-bundle)
+                :bundle-id
+                "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")))
+
+(defn w5-b13-invalid-reproducibility-request [request]
+  (assoc request :reproducibility-record
+         (assoc (get request :reproducibility-record) :status :unknown)))
+
+(defn w5-b13-invalid-release-request [request]
+  (assoc request :release-attempt? true))
+
+(defn w5-b13-invalid-release-gate-missing-request [request]
+  (assoc request :release-gate-record
+         (dissoc (get request :release-gate-record) :reason)))
+
+(defn w5-b13-invalid-release-gate-extra-key-request [request]
+  (assoc request :release-gate-record
+         (assoc (get request :release-gate-record)
+                :unexpected :forbidden)))
+
+(defn w5-b13-invalid-release-gate-substitution-request [request]
+  (assoc request :release-gate-record
+         (assoc (get request :release-gate-record)
+                :blocked-downstream [:signing])))
+
+(defn w5-b13-invalid-non-authority-missing-request [request]
+  (assoc request :non-authority
+         (dissoc (get request :non-authority) :full-language?)))
+
+(defn w5-b13-invalid-non-authority-extra-key-request [request]
+  (assoc request :non-authority
+         (assoc (get request :non-authority) :unexpected :forbidden)))
+
+(defn w5-b13-invalid-non-authority-release-request [request]
+  (assoc request :non-authority
+         (assoc (get request :non-authority) :release? true)))
+
+(defn w5-b13-invalid-non-authority-self-host-request [request]
+  (assoc request :non-authority
+         (assoc (get request :non-authority) :self-hosted? true)))
+
+(defn w5-b13-invalid-non-authority-public-request [request]
+  (assoc request :non-authority
+         (assoc (get request :non-authority) :public-authority? true)))
+
+(defn w5-b13-invalid-non-authority-seed-request [request]
+  (assoc request :non-authority
+         (assoc (get request :non-authority) :clojure-seed-boundary? false)))
+
+(defn w5-b13-invalid-non-authority-full-language-request [request]
+  (assoc request :non-authority
+         (assoc (get request :non-authority) :full-language? true)))
+
+(defn w5-b13-invalid-graph-request [request]
+  (let [graph (get request :artifact-graph)
+        edges (get graph :edges)
+        edge (get edges 1)]
+    (assoc request :artifact-graph
+           (assoc graph :edges
+                  (assoc edges 1 (assoc edge :to :missing-node))))))
+
+(defn w5-b13-invalid-graph-wrong-root-request [request]
+  (assoc request :artifact-graph
+         (assoc (get request :artifact-graph) :root :reader)))
+
+(defn w5-b13-invalid-graph-disconnected-request [request]
+  (let [graph (get request :artifact-graph)
+        edges (get graph :edges)
+        edge (get edges 6)]
+    (assoc request :artifact-graph
+           (assoc graph :edges
+                  (assoc edges 6 (assoc edge :from :name-resolution))))))
+
+(defn w5-b13-invalid-graph-missing-stage-request [request]
+  (let [graph (get request :artifact-graph)
+        nodes (get graph :nodes)
+        node (get nodes 6)]
+    (assoc request :artifact-graph
+           (assoc graph :nodes
+                  (assoc nodes 6 (assoc node :node-id :missing-type-checking))))))
+
+(defn w5-b13-invalid-graph-reordered-stage-request [request]
+  (let [graph (get request :artifact-graph)
+        nodes (get graph :nodes)
+        effect-node (get nodes 7)
+        profile-node (get nodes 8)]
+    (assoc request :artifact-graph
+           (assoc graph :nodes
+                  (assoc (assoc nodes 7 profile-node) 8 effect-node)))))
+
+(defn w5-b13-invalid-graph-reordered-pass-request [request]
+  (let [graph (get request :artifact-graph)
+        edges (get graph :edges)
+        edge (get edges 7)]
+    (assoc request :artifact-graph
+           (assoc graph :edges
+                  (assoc edges 7 (assoc edge :pass :validate-capabilities))))))
+
+(defn w5-b13-invalid-graph-mislabeled-stage-request [request]
+  (let [graph (get request :artifact-graph)
+        nodes (get graph :nodes)
+        node (get nodes 11)]
+    (assoc request :artifact-graph
+           (assoc graph :nodes
+                  (assoc nodes 11 (assoc node :kind :verify-mir))))))
+
+(defn w5-b13-invalid-graph-digest-link-request [request]
+  (let [graph (get request :artifact-graph)
+        nodes (get graph :nodes)
+        node (get nodes 2)]
+    (assoc request :artifact-graph
+           (assoc graph :nodes
+                  (assoc nodes 2
+                         (assoc node :digest
+                                "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"))))))
+
+(defn w5-b13-invalid-graph-origin-request [request]
+  (let [graph (get request :artifact-graph)
+        edges (get graph :edges)
+        edge (get edges 13)]
+    (assoc request :artifact-graph
+           (assoc graph :edges
+                  (assoc edges 13 (assoc edge :origin :substituted-origin))))))

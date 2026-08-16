@@ -1,0 +1,16 @@
+(ns self-hosting.sh07-b3.reject.odd-let-bindings
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B3
+              :sh07-b3 {:expected-rule "C6-CORE-SHAPE"
+                        :expected-stage :core-lowering
+                        :expected-severity :error
+                        :expected-reason :let-bindings-even-required
+                        :expected-remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}}))
+
+(def malformed-let
+  (let [first-value 1 second-value]
+    first-value))

@@ -1,0 +1,1074 @@
+(ns gravity.self-hosting.sh09.authenticated-effect-bridge
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh09-authenticated-effect-bridge-policy
+             sh09-build-authenticated-effect-request
+             sh09-bind-authenticated-effect-result
+             sh09-verify-authenticated-effect-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh09-authenticated-effect-bridge-policy []
+  {:artifact :gravity/sh09-authenticated-effect-bridge-policy
+   :schema-version 1
+   :profile :meta
+   :target :jvm
+   :operations [:pure :error-raise :compiler-read :ambient-read]
+   :required-products
+   [:authenticated-sh08-typed-core
+    :reusable-authenticated-envelope
+    :fresh-c8-effect-result
+    :fresh-c8-effect-verification]
+   :host-authority
+   [:bounded-source-snapshot
+    :compile-and-invoke-gravity-modules
+    :canonical-encode
+    :sha256
+    :resolve-declared-digest-requests]
+   :diagnostics
+   ["STD09-BRIDGE-SCHEMA"
+    "STD09-BRIDGE-SH08"
+    "STD09-BRIDGE-ENVELOPE"
+    "STD09-BRIDGE-EFFECT"
+    "STD09-BRIDGE-VERIFY"]
+   :pending
+   [:effect-inference :function-latent-effects
+    :transitive-call-effects :handled-effects
+    :namespace-and-module-summaries
+    :runtime-profile-policy :mir-preservation
+    :whole-compiler-source-set :public-routing
+    :seedless-execution :complete-effect-checker]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh09-bridge-member? [values value]
+  (if (= (count values) 0)
+    false
+    (if (= (first values) value)
+      true
+      (sh09-bridge-member? (rest values) value))))
+
+(defn sh09-bridge-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if
+     (sh09-bridge-member?
+      [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f]
+      (first characters))
+      (sh09-bridge-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh09-bridge-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (let [characters (vec value)]
+        (if
+         (= (subvec characters 0 7)
+            [\s \h \a \2 \5 \6 \:])
+          (sh09-bridge-lowercase-hex?
+           (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh09-bridge-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        (seq? value)))))
+
+(defn sh09-bridge-aggregate-width [value]
+  (if (map? value)
+    (* 2 (count value))
+    (count value)))
+
+(defn sh09-bridge-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (vec value)))
+
+(defn sh09-bridge-max [left right]
+  (if (> left right) left right))
+
+(defn sh09-bridge-carrier-preflight [value]
+  (loop [frontier [[value 0]]
+         nodes 0
+         scalar-units 0
+         observed-depth 0
+         observed-width 0]
+    (if (= (count frontier) 0)
+      {:status :accepted
+       :nodes nodes
+       :scalar-units scalar-units
+       :maximum-depth observed-depth
+       :maximum-width observed-width}
+      (let [entry (first frontier)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (> next-nodes 1048576)
+          {:status :rejected :reason :carrier-node-bound}
+          (if (> depth 128)
+            {:status :rejected :reason :carrier-depth-bound}
+            (if (sh09-bridge-aggregate? current)
+              (let [width
+                    (sh09-bridge-aggregate-width current)]
+                (if (> width 65536)
+                  {:status :rejected :reason :carrier-width-bound}
+                  (let [components
+                        (sh09-bridge-aggregate-components current)
+                        next-frontier
+                        (loop [remaining components
+                               result (rest frontier)]
+                          (if (= (count remaining) 0)
+                            result
+                            (recur
+                             (rest remaining)
+                             (conj
+                              result
+                              [(first remaining) (+ depth 1)]))))]
+                    (recur
+                     next-frontier
+                     next-nodes
+                     scalar-units
+                     (sh09-bridge-max observed-depth depth)
+                     (sh09-bridge-max observed-width width)))))
+              (let [next-scalar-units
+                    (+ scalar-units (count (vec (str current))))]
+                (if (> next-scalar-units 16777216)
+                  {:status :rejected :reason :carrier-scalar-bound}
+                  (recur
+                   (rest frontier)
+                   next-nodes
+                   next-scalar-units
+                   (sh09-bridge-max observed-depth depth)
+                   observed-width))))))))))
+
+(defn sh09-bridge-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh09-bridge-projection-value [projections name]
+  (if (= (count projections) 0)
+    nil
+    (let [projection (first projections)]
+      (if (= name (get projection :name))
+        (get projection :value)
+        (sh09-bridge-projection-value (rest projections) name)))))
+
+(defn sh09-bridge-identity-check [checks name]
+  (if (= (count checks) 0)
+    nil
+    (let [check (first checks)]
+      (if (= name (get check :name))
+        check
+        (sh09-bridge-identity-check (rest checks) name)))))
+
+(defn sh09-bridge-all-identity-checks-pass? [checks]
+  (if (= (count checks) 0)
+    true
+    (let [check (first checks)]
+      (if
+       (sh09-bridge-exact-keys?
+        check #{:name :domain :computed-id :observed-id})
+        (if (sh09-bridge-sha256-id? (get check :computed-id))
+          (if (= (get check :computed-id) (get check :observed-id))
+            (sh09-bridge-all-identity-checks-pass? (rest checks))
+            false)
+          false)
+        false))))
+
+(defn sh09-bridge-identity-checks-valid? [checks]
+  (if (vector? checks)
+    (if (= 2 (count checks))
+      (if (sh09-bridge-all-identity-checks-pass? checks)
+        (let [typed-check
+              (sh09-bridge-identity-check
+               checks :sh08-typed-core)
+              effect-check
+              (sh09-bridge-identity-check
+               checks :sh09-effect-result)]
+          (if (= false (= nil typed-check))
+            (if
+             (= :gravity/sh09-sh08-typed-core-v1
+                (get typed-check :domain))
+              (if (= false (= nil effect-check))
+                (= :gravity/sh09-effect-result-v1
+                   (get effect-check :domain))
+                false)
+              false)
+            false))
+        false)
+      false)
+    false))
+
+(defn sh09-bridge-sh08-metadata-valid? [typed]
+  (if
+   (sh09-bridge-sha256-id?
+    (get (get typed :identity-input) :semantic-envelope-id))
+    (if
+     (sh09-bridge-exact-keys?
+      (get typed :provenance)
+      #{:actual-source-path :provenance-binding-id})
+      (if
+       (sh09-bridge-sha256-id?
+        (get
+         (get typed :provenance)
+         :provenance-binding-id))
+        (if (= [] (get typed :diagnostics))
+          (if (vector? (get typed :pending))
+            (if (= false (get typed :self-hosted?))
+              (= true (get typed :clojure-seed-boundary?))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-bridge-sh08-valid? [typed verification]
+  (if (map? typed)
+    (if
+     (sh09-bridge-exact-keys?
+      typed
+      #{:artifact :schema-version :status :scope :artifact-id
+        :sh07-artifact-id :module :type-table :type-facts
+        :typed-core :identity-input :provenance :diagnostics
+        :pending :self-hosted? :clojure-seed-boundary?})
+    (if (= :gravity/sh08-authenticated-typed-core
+           (get typed :artifact))
+      (if (= 1 (get typed :schema-version))
+        (if (= :accepted (get typed :status))
+          (if
+           (=
+            :primitive-literals-vector-map-set-definitions-equal-if-joins
+            (get typed :scope))
+          (if (sh09-bridge-sha256-id? (get typed :artifact-id))
+            (if
+             (sh09-bridge-sha256-id?
+              (get typed :sh07-artifact-id))
+              (if (map? (get typed :module))
+                (if (map? (get typed :type-table))
+                  (if (vector? (get typed :type-facts))
+                    (if (> (count (get typed :type-facts)) 0)
+                      (if (map? (get typed :typed-core))
+                        (if (map? (get typed :identity-input))
+                          (if
+                           (=
+                            {:artifact
+                             :gravity/sh08-authenticated-typed-core
+                             :scope (get typed :scope)
+                             :sh07-artifact-id
+                             (get typed :sh07-artifact-id)
+                             :typed-artifact-id
+                             (get typed :artifact-id)
+                             :module (get typed :module)
+                             :type-table (get typed :type-table)
+                             :type-facts (get typed :type-facts)
+                             :typed-core (get typed :typed-core)
+                             :diagnostics (get typed :diagnostics)
+                             :semantic-envelope-id
+                            (get
+                              (get typed :identity-input)
+                              :semantic-envelope-id)}
+                            (get typed :identity-input))
+                          (if
+                           (sh09-bridge-sh08-metadata-valid? typed)
+                          (if (map? verification)
+                            (if
+                             (sh09-bridge-exact-keys?
+                              verification
+                              #{:artifact :status :checks
+                                :expected :candidate})
+                            (if
+                             (=
+                              :gravity/sh08-authenticated-type-verification
+                              (get verification :artifact))
+                              (if (= :passed
+                                     (get verification :status))
+                                (if
+                                 (=
+                                  [:verified-sh07-canonical-core
+                                   :authenticated-input-and-output-identities
+                                   :fresh-c7-result-replay
+                                   :exact-typed-result
+                                   :path-neutral-identity
+                                   :separate-actual-path-provenance]
+                                  (get verification :checks))
+                                  (if (= typed
+                                         (get verification :expected))
+                                    (= typed
+                                       (get verification :candidate))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                            false)
+                          false)
+                          false)
+                        false)
+                      false)
+                    false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+          false)
+        false)
+      false)
+    false)
+    false))
+
+(defn sh09-bridge-template-replay-valid? [replay]
+  (if
+   (sh09-bridge-exact-keys?
+    replay
+    #{:status
+      :artifact-template
+      :digest-graph-root
+      :digest-graph-roots
+      :semantic-envelope-root
+      :provenance-binding-root
+      :identity-checks
+      :identity-enforcement
+      :eligible-for-contextual-acceptance?
+      :request-count
+      :semantic-authority
+      :checks
+      :diagnostics})
+    (if (= :template-replay-passed (get replay :status))
+      (if (= :pending-host-resolution
+             (get replay :identity-enforcement))
+        (if (= false
+               (get replay :eligible-for-contextual-acceptance?))
+          (if (= :gravity-source (get replay :semantic-authority))
+            (if
+             (=
+              [:fresh-descriptor-replay
+               :exact-artifact-template-replay
+               :exact-digest-request-replay
+               :path-neutral-semantic-root
+               :separate-physical-provenance-root]
+              (get replay :checks))
+              (if (= [] (get replay :diagnostics))
+                (if (map? (get replay :artifact-template))
+                  (if
+                   (= 2 (count
+                         (get replay :digest-graph-roots)))
+                    (if
+                     (= (get replay :digest-graph-root)
+                        (get replay :semantic-envelope-root)
+                        (first
+                         (get replay :digest-graph-roots)))
+                      (=
+                       (get replay :provenance-binding-root)
+                       (second
+                        (get replay :digest-graph-roots)))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-bridge-contextual-verification-valid?
+  [verification sh08-verification]
+  (if
+   (sh09-bridge-exact-keys?
+    verification
+    #{:artifact
+      :status
+      :artifact-template
+      :semantic-envelope-root
+      :provenance-binding-root
+      :identity-checks
+      :identity-enforcement
+      :eligible-for-contextual-acceptance?
+      :host-digest-resolution
+      :identity-subject-equality
+      :fresh-envelope-reconstruction
+      :sh08-verification})
+    (if
+     (= :gravity/sh09-envelope-contextual-verification
+        (get verification :artifact))
+      (if (= :contextual-verification-passed
+             (get verification :status))
+        (if (= :passed
+               (get verification :host-digest-resolution))
+          (if (= :passed
+                 (get verification :identity-subject-equality))
+            (if (= :passed
+                   (get verification
+                        :fresh-envelope-reconstruction))
+              (= sh08-verification
+                 (get verification :sh08-verification))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-bridge-envelope-valid?
+  [descriptor envelope replay contextual typed
+   expected-effect-artifact-id sh08-verification]
+  (if (map? descriptor)
+    (if
+     (= :gravity/private-authenticated-envelope-descriptor
+        (get descriptor :artifact))
+      (if (= 1 (get descriptor :schema-version))
+        (if (= :sh09-authenticated-effect-bridge
+               (get descriptor :stage))
+          (if
+           (= :gravity/sh09-authenticated-effect-boundary
+              (get descriptor :artifact-kind))
+            (let [projections
+                  (get descriptor :semantic-projections)]
+              (if (vector? projections)
+                (if (= 2 (count projections))
+                  (if
+                   (= {:typed-artifact-id
+                       (get typed :artifact-id)}
+                      (sh09-bridge-projection-value
+                       projections :sh08-typed-core))
+                    (if
+                     (= {:effect-result-id
+                         expected-effect-artifact-id}
+                        (sh09-bridge-projection-value
+                         projections :sh09-effect-result))
+                      (if
+                       (sh09-bridge-template-replay-valid? replay)
+                        (if
+                         (sh09-bridge-contextual-verification-valid?
+                          contextual sh08-verification)
+                          (if (map? envelope)
+                            (if
+                             (= :gravity/authenticated-envelope
+                                (get envelope :artifact))
+                              (if
+                               (= :sh09-authenticated-effect-bridge
+                                  (get envelope :stage))
+                                (if
+                                 (=
+                                  :gravity/sh09-authenticated-effect-boundary
+                                  (get envelope :artifact-kind))
+                                  (if
+                                   (sh09-bridge-sha256-id?
+                                    (get envelope
+                                         :semantic-envelope-id))
+                                    (if
+                                     (sh09-bridge-sha256-id?
+                                      (get envelope
+                                           :provenance-binding-id))
+                                      (if
+                                       (= envelope
+                                          (get contextual
+                                               :artifact-template))
+                                        (if
+                                         (=
+                                          (get envelope
+                                               :semantic-envelope-id)
+                                          (get contextual
+                                               :semantic-envelope-root))
+                                          (if
+                                           (=
+                                            (get envelope
+                                                 :provenance-binding-id)
+                                            (get contextual
+                                                 :provenance-binding-root))
+                                            (if
+                                             (= :passed
+                                                (get contextual
+                                                     :identity-enforcement))
+                                              (if
+                                               (= true
+                                                  (get
+                                                   contextual
+                                                   :eligible-for-contextual-acceptance?))
+                                                (sh09-bridge-identity-checks-valid?
+                                                 (get contextual
+                                                      :identity-checks))
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-bridge-operation-valid? [operation]
+  (if (= operation :pure)
+    true
+    (if (= operation :error-raise)
+      true
+      (if (= operation :compiler-read)
+        true
+        (= operation :ambient-read)))))
+
+(defn sh09-bridge-first-type-fact [typed]
+  (first (get typed :type-facts)))
+
+(defn sh09-bridge-error-authority-valid? [authority]
+  (=
+   {:effect :error/raise
+    :required-capability nil
+    :declared-effects #{:error/raise}
+    :package-effects #{:error/raise}
+    :deployment-effects #{:error/raise}
+    :declared-capabilities #{}
+    :package-capabilities #{}
+    :deployment-capabilities #{}
+    :provider nil
+    :grant nil
+    :resource-subject nil
+    :build-policy
+    {:hermetic true
+     :allowed-effects #{:error/raise}}
+    :safety-allowed true
+    :authority-mode :declared
+    :replay-record nil
+    :ordering :sequence}
+   authority))
+
+(defn sh09-bridge-authority-operation-valid?
+  [typed operation authority]
+  (if (= operation :pure)
+    (=
+     {:effect nil
+      :required-capability nil
+      :declared-effects #{}
+      :package-effects #{}
+      :deployment-effects #{}
+      :declared-capabilities #{}
+      :package-capabilities #{}
+      :deployment-capabilities #{}
+      :provider nil
+      :grant nil
+      :resource-subject nil
+      :build-policy {:hermetic true :allowed-effects #{}}
+      :safety-allowed true
+      :authority-mode :none
+     :replay-record nil
+     :ordering nil}
+     authority)
+    (if (= operation :error-raise)
+      (sh09-bridge-error-authority-valid? authority)
+    (let [subject (get authority :resource-subject)
+          provider (get authority :provider)
+          grant (get authority :grant)
+          expected-mode
+          (if (= operation :ambient-read) :ambient :explicit)]
+      (if
+       (=
+        {:ir-level :typed-core
+         :typed-artifact-id (get typed :artifact-id)}
+        subject)
+        (if
+         (sh09-bridge-exact-keys?
+          provider
+          #{:id :effects :capabilities
+            :profiles :targets :phases})
+          (if
+           (sh09-bridge-exact-keys?
+            grant
+            #{:id :principal :capability
+              :provider :phase :scope})
+            (if (= :compiler/read-ir (get authority :effect))
+              (if
+               (= :compiler/ir-read
+                  (get authority :required-capability))
+                (if
+                 (=
+                  #{:compiler/read-ir}
+                  (get authority :declared-effects)
+                  (get authority :package-effects)
+                  (get authority :deployment-effects)
+                  (get provider :effects)
+                  (get
+                   (get authority :build-policy)
+                   :allowed-effects))
+                  (if
+                   (=
+                    #{:compiler/ir-read}
+                    (get authority :declared-capabilities)
+                    (get authority :package-capabilities)
+                    (get authority :deployment-capabilities)
+                    (get provider :capabilities))
+                    (if (= #{:meta} (get provider :profiles))
+                      (if (= #{:jvm} (get provider :targets))
+                        (if (= #{:build} (get provider :phases))
+                          (if
+                           (=
+                            {:hermetic true
+                             :allowed-effects
+                             #{:compiler/read-ir}}
+                            (get authority :build-policy))
+                            (if
+                             (= true
+                                (get authority
+                                     :safety-allowed))
+                              (if
+                               (= expected-mode
+                                  (get authority
+                                       :authority-mode))
+                                (if
+                                 (= nil
+                                    (get authority
+                                         :replay-record))
+                                  (if
+                                   (= :sequence
+                                      (get authority
+                                           :ordering))
+                                    (if
+                                     (=
+                                      (get provider :id)
+                                      (get grant :provider))
+                                      (if
+                                       (=
+                                        (get
+                                         (get typed :module)
+                                         :namespace)
+                                        (get grant :principal))
+                                        (if
+                                         (=
+                                          :compiler/ir-read
+                                          (get grant
+                                               :capability))
+                                          (if
+                                           (= :build
+                                              (get grant
+                                                   :phase))
+                                            (= subject
+                                               (get grant
+                                                    :scope))
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)))))
+
+(defn sh09-bridge-effect-request [typed operation authority]
+  (let [fact (sh09-bridge-first-type-fact typed)
+        module (get typed :module)
+        namespace (get module :namespace)]
+    {:artifact :gravity/sh09-normalized-effect-request
+     :request-id operation
+     :core-node-id (get fact :core-node-id)
+     :syntax-id (get fact :syntax-id)
+     :source-span (get fact :source-span)
+     :origin-chain (get fact :origin-chain)
+     :function
+     (quote gravity.self-hosting.sh09.authenticated-effect-bridge/check)
+     :namespace namespace
+     :profile (get fact :profile)
+     :target (get fact :target)
+     :phase :build
+     :effect (get authority :effect)
+     :required-capability (get authority :required-capability)
+     :declared-effects (get authority :declared-effects)
+     :package-effects (get authority :package-effects)
+     :deployment-effects (get authority :deployment-effects)
+     :declared-capabilities (get authority :declared-capabilities)
+     :package-capabilities (get authority :package-capabilities)
+     :deployment-capabilities
+     (get authority :deployment-capabilities)
+     :provider (get authority :provider)
+     :grant (get authority :grant)
+     :resource-subject (get authority :resource-subject)
+     :build-policy (get authority :build-policy)
+     :safety-allowed (get authority :safety-allowed)
+     :authority-mode (get authority :authority-mode)
+     :replay-record (get authority :replay-record)
+     :ordering (get authority :ordering)}))
+
+(defn sh09-bridge-upstream-error [request]
+  (if
+   (= false
+      (sh09-bridge-exact-keys?
+       request
+       #{:artifact
+         :schema-version
+         :operation
+         :effect-authority
+         :sh08-typed-core
+         :sh08-verification
+         :expected-effect-identity-input
+         :expected-effect-result
+         :expected-effect-artifact-id
+         :envelope-descriptor
+         :envelope
+         :template-replay
+         :envelope-verification
+         :actual-source-path}))
+    [:schema :request-keys]
+    (if
+     (= false
+        (= :gravity/sh09-authenticated-effect-bridge-request
+           (get request :artifact)))
+      [:schema :request-artifact]
+      (if (= false (= 1 (get request :schema-version)))
+        [:schema :request-schema]
+        (if
+         (= false
+            (sh09-bridge-operation-valid?
+             (get request :operation)))
+          [:schema :operation]
+          (if
+           (= false
+              (sh09-bridge-sh08-valid?
+               (get request :sh08-typed-core)
+               (get request :sh08-verification)))
+            [:sh08 :invalid-authenticated-typed-core]
+            (if
+             (= false
+                (sh09-bridge-exact-keys?
+                 (get request :effect-authority)
+                 #{:effect :required-capability
+                   :declared-effects :package-effects
+                   :deployment-effects :declared-capabilities
+                   :package-capabilities :deployment-capabilities
+                   :provider :grant :resource-subject
+                 :build-policy :safety-allowed
+                   :authority-mode :replay-record :ordering}))
+              [:schema :effect-authority]
+              (if
+               (= false
+                  (sh09-bridge-authority-operation-valid?
+                   (get request :sh08-typed-core)
+                   (get request :operation)
+                   (get request :effect-authority)))
+                [:effect :effect-authority-invalid]
+                (if
+                 (= false
+                  (map?
+                   (get request
+                        :expected-effect-identity-input)))
+                [:schema :expected-effect-identity]
+                (if
+                 (= false
+                  (map? (get request
+                             :expected-effect-result)))
+                  [:schema :expected-effect-result]
+                  (if
+                   (= false
+                      (sh09-bridge-sha256-id?
+                       (get request
+                            :expected-effect-artifact-id)))
+                    [:schema :expected-effect-artifact-id]
+                    (if
+                     (= false
+                        (=
+                         (get request
+                              :expected-effect-identity-input)
+                         (get
+                          (get request
+                               :expected-effect-result)
+                          :identity-input)))
+                      [:effect :effect-identity-substitution]
+                      (if
+                       (= false
+                      (=
+                       (sh09-bridge-effect-request
+                        (get request :sh08-typed-core)
+                        (get request :operation)
+                        (get request :effect-authority))
+                       (get
+                        (get request
+                             :expected-effect-identity-input)
+                        :request)))
+                        [:effect :effect-authority-substitution]
+                        (if
+                         (= false
+                            (sh09-bridge-envelope-valid?
+                             (get request :envelope-descriptor)
+                             (get request :envelope)
+                             (get request :template-replay)
+                             (get request :envelope-verification)
+                             (get request :sh08-typed-core)
+                             (get
+                              request
+                              :expected-effect-artifact-id)
+                             (get request :sh08-verification)))
+                          [:envelope
+                           :invalid-authenticated-envelope]
+                          (if
+                           (string?
+                            (get request :actual-source-path))
+                            (if
+                             (> (count
+                                 (get request
+                                      :actual-source-path))
+                                0)
+                              (if
+                               (<=
+                                (count
+                                 (get request
+                                      :actual-source-path))
+                                4096)
+                                nil
+                                [:schema :actual-path-bound])
+                              [:schema :actual-path-required])
+                            [:schema
+                             :actual-path-required])))))))))))))))
+
+(defn sh09-bridge-rule [family]
+  (if (= family :schema)
+    "STD09-BRIDGE-SCHEMA"
+    (if (= family :sh08)
+      "STD09-BRIDGE-SH08"
+      (if (= family :envelope)
+        "STD09-BRIDGE-ENVELOPE"
+        (if (= family :effect)
+          "STD09-BRIDGE-EFFECT"
+          "STD09-BRIDGE-VERIFY")))))
+
+(defn sh09-bridge-diagnostic
+  [request family reason upstream-diagnostics]
+  {:artifact :gravity/sh09-authenticated-effect-diagnostic
+   :rule (sh09-bridge-rule family)
+   :severity :error
+   :stage :effect-checking
+   :source-span {:source (get request :actual-source-path)}
+   :profile :meta
+   :target :jvm
+   :facts
+   {:reason reason
+    :upstream-diagnostics upstream-diagnostics
+    :fail-closed true}
+   :remediation
+   "Provide the exact authenticated SH-08 input and freshly verified C8 result."})
+
+(defn sh09-bridge-rejected
+  [request family reason upstream-diagnostics]
+  {:artifact :gravity/sh09-authenticated-effected-core
+   :schema-version 1
+   :status :rejected
+   :diagnostics
+   [(sh09-bridge-diagnostic
+     request family reason upstream-diagnostics)]
+   :pending
+   (get (sh09-authenticated-effect-bridge-policy) :pending)
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh09-build-authenticated-effect-request [request]
+  (let [preflight (sh09-bridge-carrier-preflight request)]
+    (if (= :rejected (get preflight :status))
+      (sh09-bridge-rejected
+       request :schema (get preflight :reason) [])
+      (let [error (sh09-bridge-upstream-error request)]
+        (if (= error nil)
+      {:artifact :gravity/sh09-authenticated-c8-request
+       :schema-version 1
+       :status :accepted
+       :operation (get request :operation)
+       :effect-request
+       (sh09-bridge-effect-request
+        (get request :sh08-typed-core)
+        (get request :operation)
+        (get request :effect-authority))
+       :expected-effect-identity-input
+       (get request :expected-effect-identity-input)
+       :expected-effect-result
+       (get request :expected-effect-result)
+       :expected-effect-artifact-id
+       (get request :expected-effect-artifact-id)
+       :typed-artifact-id
+       (get (get request :sh08-typed-core) :artifact-id)
+       :semantic-envelope-id
+       (get (get request :envelope) :semantic-envelope-id)
+       :provenance-binding-id
+       (get (get request :envelope) :provenance-binding-id)
+       :actual-source-path (get request :actual-source-path)
+       :diagnostics []}
+      (sh09-bridge-rejected
+       request (first error) (first (rest error)) []))))))
+
+(defn sh09-bridge-effect-result-valid?
+  [c8-request effect-result effect-verification]
+  (if (= :accepted (get c8-request :status))
+    (if (map? effect-result)
+      (if (= :gravity/sh09-effect-legality-result
+             (get effect-result :artifact))
+        (if (= (get c8-request :expected-effect-identity-input)
+               (get effect-result :identity-input))
+          (if (= (get c8-request :expected-effect-result)
+                 effect-result)
+            (if (map? effect-verification)
+              (if
+               (sh09-bridge-exact-keys?
+                effect-verification
+                #{:artifact :status :request-id :checks})
+                (if
+                 (= :gravity/sh09-effect-result-verification
+                    (get effect-verification :artifact))
+                (if (= :passed (get effect-verification :status))
+                  (if (= (get effect-result :request-id)
+                         (get effect-verification :request-id))
+                    (=
+                     [:complete-recomputation
+                      :policy-identity
+                      :diagnostic-identity
+                      :capability-proof-identity
+                      :source-lineage-identity]
+                     (get effect-verification :checks))
+                    false)
+                  false)
+                false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-bridge-identity-input
+  [request c8-request effect-result]
+  {:artifact :gravity/sh09-authenticated-effected-core
+   :typed-artifact-id (get c8-request :typed-artifact-id)
+   :effect-artifact-id
+   (get c8-request :expected-effect-artifact-id)
+   :operation (get request :operation)
+   :effect (get effect-result :effect)
+   :direct-effects (get effect-result :direct-effects)
+   :residual-effects (get effect-result :residual-effects)
+   :legality (get effect-result :legality)
+   :capability-proof (get effect-result :capability-proof)
+   :preserves (get effect-result :preserves)
+   :semantic-envelope-id
+   (get c8-request :semantic-envelope-id)})
+
+(defn sh09-bind-authenticated-effect-result
+  [request c8-request effect-result effect-verification]
+  (let [request-preflight
+        (sh09-bridge-carrier-preflight request)
+        c8-request-preflight
+        (sh09-bridge-carrier-preflight c8-request)
+        effect-result-preflight
+        (sh09-bridge-carrier-preflight effect-result)
+        verification-preflight
+        (sh09-bridge-carrier-preflight effect-verification)]
+    (if
+     (= false
+        (= :accepted
+           (get request-preflight :status)
+           (get c8-request-preflight :status)
+           (get effect-result-preflight :status)
+           (get verification-preflight :status)))
+      (sh09-bridge-rejected
+       request :verify :effect-result-carrier-bound [])
+      (let [expected-request
+            (sh09-build-authenticated-effect-request request)]
+    (if (= false (= expected-request c8-request))
+      (sh09-bridge-rejected
+       request :verify :c8-request-substitution [])
+      (if
+       (= false
+          (sh09-bridge-effect-result-valid?
+           c8-request effect-result effect-verification))
+        (sh09-bridge-rejected
+         request :verify :invalid-fresh-c8-result [])
+        (if (= :accepted (get effect-result :status))
+          {:artifact :gravity/sh09-authenticated-effected-core
+           :schema-version 1
+           :status :accepted
+           :artifact-id
+           (get c8-request :expected-effect-artifact-id)
+           :typed-artifact-id
+           (get c8-request :typed-artifact-id)
+           :operation (get request :operation)
+           :effect-result effect-result
+           :identity-input
+           (sh09-bridge-identity-input
+            request c8-request effect-result)
+           :provenance
+           {:actual-source-path
+            (get request :actual-source-path)
+            :provenance-binding-id
+            (get c8-request :provenance-binding-id)}
+           :diagnostics []
+           :pending
+           (get
+            (sh09-authenticated-effect-bridge-policy)
+            :pending)
+           :self-hosted? false
+           :clojure-seed-boundary? true}
+          (sh09-bridge-rejected
+           request :effect :c8-effect-rejection
+           (get effect-result :diagnostics)))))))))
+
+(defn sh09-verify-authenticated-effect-result
+  [request c8-request effect-result effect-verification candidate]
+  (let [candidate-preflight
+        (sh09-bridge-carrier-preflight candidate)
+        expected
+        (if (= :accepted (get candidate-preflight :status))
+          (sh09-bind-authenticated-effect-result
+           request c8-request effect-result effect-verification)
+          (sh09-bridge-rejected
+           request :verify :candidate-result-carrier-bound []))]
+    {:artifact
+     :gravity/sh09-authenticated-effect-verification
+     :status
+     (if (= :accepted (get candidate-preflight :status))
+       (if (= expected candidate) :passed :rejected)
+       :rejected)
+     :checks
+     [:authenticated-sh08-typed-core
+      :authenticated-input-and-output-identities
+      :fresh-c8-result-replay
+      :explicit-effect-capability-separation
+      :ambient-authority-rejected
+      :path-neutral-identity
+      :separate-actual-path-provenance]
+     :expected expected
+     :candidate candidate}))

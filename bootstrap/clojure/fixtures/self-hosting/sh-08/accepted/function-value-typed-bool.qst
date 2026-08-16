@@ -1,0 +1,27 @@
+; SH-08-HO2 accepted: authenticated one-hop identity/apply-one with Bool values.
+(ns self-hosting.sh08.function-value-typed-bool
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh08-ho2-bool-identity
+             sh08-ho2-bool-apply-one
+             sh08-ho2-bool-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-08-HO2
+    :fixture :function-value-typed-bool
+    :scope :monomorphic-named-function-value-one-hop-bool-signature-inference
+    :value-type :gravity.type/bool
+    :non-claims [:captures :lifetimes :aliases :multi-hop :polymorphism
+                 :generics :overloads :multi-arity :variadic-dispatch
+                 :protocol-dispatch :dynamic-dispatch :reflection]}))
+
+(defn sh08-ho2-bool-identity [value]
+  value)
+
+(defn sh08-ho2-bool-apply-one [callable value]
+  (callable value))
+
+(def sh08-ho2-bool-result
+  (sh08-ho2-bool-apply-one sh08-ho2-bool-identity true))

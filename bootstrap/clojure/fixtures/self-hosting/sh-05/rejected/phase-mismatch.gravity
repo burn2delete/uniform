@@ -1,0 +1,17 @@
+(ns self-hosting.sh05.reject.phase-mismatch
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-05
+              :compiler {:sh05-request
+                         {:call {:macro-name defn}
+                          :context {:phase :runtime}}}
+              :sh05 {:scenario :phase-mismatch
+                     :expected-rule "C4-NOT-MACRO"
+                     :expected-stage :macro-expansion
+                     :expected-severity :error
+                     :expected-remediation :move-binding-to-macro-phase
+                     :expected-facts {:reason :phase-mismatch
+                                      :requested-phase :macro-expansion
+                                      :available-phase :runtime
+                                      :catalog-mapping ["L12-PHASE-CAPTURE" "SAFE12-PHASE"]}}}))
+(defn candidate [x] x)

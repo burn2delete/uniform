@@ -1,0 +1,159 @@
+(ns gravity.self-hosting.sh10.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh10-uninitialized-read-request
+             sh10-use-after-move-request
+             sh10-use-after-consume-request
+             sh10-mutable-alias-request
+             sh10-owner-read-during-mutable-request
+             sh10-move-while-borrowed-request
+             sh10-consume-while-borrowed-request
+             sh10-borrow-escape-request
+             sh10-wrong-borrow-escape-request
+             sh10-missing-borrow-escape-request
+             sh10-missing-destination-escape-request
+             sh10-wrong-borrow-end-request
+             sh10-malformed-event-request
+             sh10-double-initialize-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh10-event
+  [event-id operation borrow-id destination-owner
+   destination-lifetime-end escape-destination]
+  {:event-id event-id
+   :op operation
+   :borrow-id borrow-id
+   :destination-owner destination-owner
+   :destination-lifetime-end destination-lifetime-end
+   :escape-destination escape-destination
+   :control-path :normal
+   :source-span {:source "invalid-ownership-transitions.gravity"
+                 :start-byte 0
+                 :end-byte 1}
+   :origin-chain [{:kind :source :event event-id}]})
+
+(defn sh10-request [request-id initialization events]
+  {:artifact :gravity/sh10-normalized-ownership-request
+   :request-id request-id
+   :value-id "value-buffer"
+   :owner-id "owner-local"
+   :ownership-kind :owned-mutable
+   :initialization initialization
+   :availability :available
+   :owner-lifetime-end 10
+   :events events
+   :type-fact-id
+   "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :effect-fact-id
+   "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+   :capability-proof-id nil
+   :source-span {:source "invalid-ownership-transitions.gravity"
+                 :start-byte 0
+                 :end-byte 1}
+   :origin-chain []
+   :profile :meta
+   :target :jvm})
+
+(defn sh10-uninitialized-read-request []
+  (sh10-request
+   :uninitialized-read
+   :uninitialized
+   [(sh10-event :read :read nil nil nil nil)]))
+
+(defn sh10-use-after-move-request []
+  (sh10-request
+   :use-after-move
+   :initialized
+   [(sh10-event :move :move nil "owner-destination" nil nil)
+    (sh10-event :read :read nil nil nil nil)]))
+
+(defn sh10-use-after-consume-request []
+  (sh10-request
+   :use-after-consume
+   :initialized
+   [(sh10-event :consume :consume nil nil nil nil)
+    (sh10-event :read :read nil nil nil nil)]))
+
+(defn sh10-mutable-alias-request []
+  (sh10-request
+   :mutable-alias
+   :initialized
+   [(sh10-event :borrow-immutable :borrow-immutable
+                :borrow-immutable nil nil nil)
+    (sh10-event :borrow-mutable :borrow-mutable
+                :borrow-mutable nil nil nil)]))
+
+(defn sh10-owner-read-during-mutable-request []
+  (sh10-request
+   :owner-read-during-mutable
+   :initialized
+   [(sh10-event :borrow-mutable :borrow-mutable
+                :borrow-mutable nil nil nil)
+    (sh10-event :read :read nil nil nil nil)]))
+
+(defn sh10-move-while-borrowed-request []
+  (sh10-request
+   :move-while-borrowed
+   :initialized
+   [(sh10-event :borrow :borrow-immutable :borrow nil nil nil)
+    (sh10-event :move :move nil "owner-destination" nil nil)]))
+
+(defn sh10-consume-while-borrowed-request []
+  (sh10-request
+   :consume-while-borrowed
+   :initialized
+   [(sh10-event :borrow :borrow-immutable :borrow nil nil nil)
+    (sh10-event :consume :consume nil nil nil nil)]))
+
+(defn sh10-borrow-escape-request []
+  (sh10-request
+   :borrow-escape
+   :initialized
+   [(sh10-event :borrow :borrow-immutable :borrow nil nil nil)
+    (sh10-event :escape :escape-borrow
+                :borrow nil 11 :function-return)]))
+
+(defn sh10-wrong-borrow-escape-request []
+  (sh10-request
+   :wrong-borrow-escape
+   :initialized
+   [(sh10-event :borrow :borrow-immutable :borrow nil nil nil)
+    (sh10-event :escape :escape-borrow
+                :other nil 8 :function-return)]))
+
+(defn sh10-missing-borrow-escape-request []
+  (sh10-request
+   :missing-borrow-escape
+   :initialized
+   [(sh10-event :borrow :borrow-immutable :borrow nil nil nil)
+    (sh10-event :escape :escape-borrow
+                nil nil 8 :function-return)]))
+
+(defn sh10-missing-destination-escape-request []
+  (sh10-request
+   :missing-destination-escape
+   :initialized
+   [(sh10-event :borrow :borrow-immutable :borrow nil nil nil)
+    (sh10-event :escape :escape-borrow
+                :borrow nil 8 nil)]))
+
+(defn sh10-wrong-borrow-end-request []
+  (sh10-request
+   :wrong-borrow-end
+   :initialized
+   [(sh10-event :borrow :borrow-immutable :borrow nil nil nil)
+    (sh10-event :end-other :end-borrow :other nil nil nil)]))
+
+(defn sh10-malformed-event-request []
+  (sh10-request
+   :malformed-event
+   :initialized
+   [(sh10-event :future :future/ownership nil nil nil nil)]))
+
+(defn sh10-double-initialize-request []
+  (sh10-request
+   :double-initialize
+   :initialized
+   [(sh10-event :initialize :initialize nil nil nil nil)]))

@@ -1,0 +1,308 @@
+(ns gravity.self-hosting.sh13.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh13-branch-module
+             sh13-branch-alternate-path-module
+             sh13-factorial-module
+             sh13-loop-module
+             sh13-indirect-module
+             sh13-error-module
+             sh13-throw-module
+             sh13-panic-module])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh13-span [start end]
+  {:source-id :gravity.compiler/sh13-fixture
+   :start start
+   :end end})
+
+(defn sh13-origin []
+  [{:kind :source
+    :source-id :gravity.compiler/sh13-fixture}])
+
+(defn sh13-operation [operation-id opcode operands value-type start end]
+  {:op-id operation-id
+   :result operation-id
+   :opcode opcode
+   :operands operands
+   :type value-type
+   :effects #{}
+   :ordering nil
+   :profile :native
+   :verifier-status :passed
+   :facts {:type :sh13/type-table
+           :effect :sh13/effect-table
+           :ownership :sh13/ownership-table
+           :capability :sh13/capability-table
+           :safety :sh13/safety-table}
+   :source-span (sh13-span start end)
+   :origin-chain (sh13-origin)})
+
+(defn sh13-constant [operation-id literal value-type start end]
+  (assoc
+   (sh13-operation operation-id :const [] value-type start end)
+   :literal literal))
+
+(defn sh13-call
+  [operation-id callee operands value-type dispatch allowed-callees start end]
+  (assoc
+   (assoc
+    (assoc
+     (sh13-operation operation-id :call operands value-type start end)
+     :callee callee)
+    :dispatch dispatch)
+   :allowed-callees allowed-callees))
+
+(defn sh13-terminator [opcode start end]
+  {:opcode opcode
+   :source-span (sh13-span start end)
+   :origin-chain (sh13-origin)})
+
+(defn sh13-block [block-id params param-types operations terminator start end]
+  {:block-id block-id
+   :params params
+   :param-types param-types
+   :operations operations
+   :terminator terminator
+   :source-span (sh13-span start end)
+   :origin-chain (sh13-origin)})
+
+(defn sh13-function
+  [function-id params param-types return-type latent-effects recursive
+   entry-block blocks start end]
+  {:fn-id function-id
+   :params params
+   :param-types param-types
+   :return-type return-type
+   :latent-effects latent-effects
+   :recursive recursive
+   :maximum-call-depth 16
+   :entry-block entry-block
+   :blocks blocks
+   :source-span (sh13-span start end)
+   :origin-chain (sh13-origin)})
+
+(defn sh13-conditional
+  [condition then-target then-arguments else-target else-arguments start end]
+  (assoc
+   (assoc
+    (assoc
+     (assoc
+      (assoc
+       (sh13-terminator :conditional-branch start end)
+       :condition condition)
+      :then-target then-target)
+     :then-arguments then-arguments)
+    :else-target else-target)
+   :else-arguments else-arguments))
+
+(defn sh13-branch [target arguments start end]
+  (assoc
+   (assoc
+    (sh13-terminator :branch start end)
+    :target target)
+   :arguments arguments))
+
+(defn sh13-value-exit [opcode value start end]
+  (assoc (sh13-terminator opcode start end) :value value))
+
+(defn sh13-branch-function []
+  (sh13-function
+   :choose [:condition] [:bool] :i64 #{} false
+   :choose/entry
+   [(sh13-block
+     :choose/entry [:condition] [:bool] []
+     (sh13-conditional
+      :condition :choose/then [] :choose/else [] 0 8)
+     0 8)
+    (sh13-block
+     :choose/then [] []
+     [(sh13-constant :choose/forty-two 42 :i64 9 12)]
+     (sh13-branch :choose/join [:choose/forty-two] 13 16)
+     9 16)
+    (sh13-block
+     :choose/else [] []
+     [(sh13-constant :choose/seven 7 :i64 17 20)]
+     (sh13-branch :choose/join [:choose/seven] 21 24)
+     17 24)
+    (sh13-block
+     :choose/join [:chosen] [:i64] []
+     (sh13-value-exit :return :chosen 25 28)
+     25 28)]
+   0 28))
+
+(defn sh13-factorial-function []
+  (sh13-function
+   :factorial [:n] [:i64] :i64 #{} true
+   :factorial/entry
+   [(sh13-block
+     :factorial/entry [:n] [:i64]
+     [(sh13-constant :factorial/zero 0 :i64 30 31)
+      (sh13-operation
+       :factorial/is-zero :eq [:n :factorial/zero] :bool 32 36)]
+     (sh13-conditional
+      :factorial/is-zero
+      :factorial/base []
+      :factorial/recur [:n] 37 44)
+     30 44)
+    (sh13-block
+     :factorial/base [] []
+     [(sh13-constant :factorial/base-one 1 :i64 45 46)]
+     (sh13-value-exit :return :factorial/base-one 47 50)
+     45 50)
+    (sh13-block
+     :factorial/recur [:n] [:i64]
+     [(sh13-constant :factorial/one 1 :i64 51 52)
+      (sh13-operation
+       :factorial/next :sub [:n :factorial/one] :i64 53 58)
+      (sh13-call
+       :factorial/recursive
+       :factorial
+       [:factorial/next]
+       :i64 :direct #{} 59 68)
+      (sh13-operation
+       :factorial/result
+       :mul [:n :factorial/recursive] :i64 69 74)]
+     (sh13-value-exit :return :factorial/result 75 78)
+     51 78)]
+   30 78))
+
+(defn sh13-loop-function []
+  (sh13-function
+   :sum-down [:n] [:i64] :i64 #{} false
+   :sum/entry
+   [(sh13-block
+     :sum/entry [:n] [:i64]
+     [(sh13-constant :sum/initial 0 :i64 80 81)]
+     (sh13-branch :sum/loop [:n :sum/initial] 82 88)
+     80 88)
+    (sh13-block
+     :sum/loop [:n :accumulator] [:i64 :i64]
+     [(sh13-constant :sum/zero 0 :i64 89 90)
+      (sh13-operation
+       :sum/done? :eq [:n :sum/zero] :bool 91 96)]
+     (sh13-conditional
+      :sum/done?
+      :sum/done [:accumulator]
+      :sum/body [:n :accumulator] 97 106)
+     89 106)
+    (sh13-block
+     :sum/body [:n :accumulator] [:i64 :i64]
+     [(sh13-operation
+       :sum/next-accumulator
+       :add [:accumulator :n] :i64 107 112)
+      (sh13-constant :sum/one 1 :i64 113 114)
+      (sh13-operation
+       :sum/next-n :sub [:n :sum/one] :i64 115 120)]
+     (sh13-branch
+      :sum/loop [:sum/next-n :sum/next-accumulator] 121 128)
+     107 128)
+    (sh13-block
+     :sum/done [:result] [:i64] []
+     (sh13-value-exit :return :result 129 132)
+     129 132)]
+   80 132))
+
+(defn sh13-add-one-function []
+  (sh13-function
+   :add-one [:x] [:i64] :i64 #{} false
+   :add-one/entry
+   [(sh13-block
+     :add-one/entry [:x] [:i64]
+     [(sh13-constant :add-one/one 1 :i64 134 135)
+      (sh13-operation
+       :add-one/result :add [:x :add-one/one] :i64 136 140)]
+     (sh13-value-exit :return :add-one/result 141 144)
+     134 144)]
+   134 144))
+
+(defn sh13-indirect-function []
+  (sh13-function
+   :indirect-main [:x] [:i64] :i64 #{} false
+   :indirect/entry
+   [(sh13-block
+     :indirect/entry [:x] [:i64]
+     [(sh13-call
+       :indirect/result :add-one [:x] :i64
+       :indirect #{:add-one} 146 152)]
+     (sh13-value-exit :return :indirect/result 153 156)
+     146 156)]
+   146 156))
+
+(defn sh13-exit-function [function-id opcode latent-effects]
+  (sh13-function
+   function-id [:reason] [:keyword] :keyword latent-effects false
+   :exit/entry
+   [(sh13-block
+     :exit/entry [:reason] [:keyword] []
+     (sh13-value-exit opcode :reason 158 164)
+     158 164)]
+   158 164))
+
+(defn sh13-functions []
+  [(sh13-branch-function)
+   (sh13-factorial-function)
+   (sh13-loop-function)
+   (sh13-add-one-function)
+   (sh13-indirect-function)
+   (sh13-exit-function :error-main :error-return #{})
+   (sh13-exit-function :throw-main :throw #{:error/throw})
+   (sh13-exit-function :panic-main :panic #{})])
+
+(defn sh13-module [module-id entry-function actual-source-path maximum-steps]
+  {:artifact :gravity/sh13-control-flow-module
+   :module-id module-id
+   :mir-verified true
+   :mir-verifier-report
+   {:artifact :gravity/c11-mir-verifier-report
+    :status :passed
+    :module-id module-id}
+   :checked-core-id :sh13/checked-core
+   :type-table-id :sh13/type-table
+   :effect-table-id :sh13/effect-table
+   :ownership-table-id :sh13/ownership-table
+   :capability-table-id :sh13/capability-table
+   :safety-table-id :sh13/safety-table
+   :source-map-id :sh13/source-map
+   :profile :native
+   :target :portable-mir
+   :entry-function entry-function
+   :maximum-execution-steps maximum-steps
+   :functions (sh13-functions)
+   :source-span (sh13-span 0 164)
+   :origin-chain (sh13-origin)
+   :actual-source-path actual-source-path})
+
+(defn sh13-branch-module []
+  (sh13-module
+   :sh13/control-flow :choose "/checkout-a/control.gravity" 256))
+
+(defn sh13-branch-alternate-path-module []
+  (sh13-module
+   :sh13/control-flow :choose "/checkout-b/control.gravity" 256))
+
+(defn sh13-factorial-module []
+  (sh13-module
+   :sh13/factorial :factorial "/checkout-a/control.gravity" 256))
+
+(defn sh13-loop-module []
+  (sh13-module
+   :sh13/loop :sum-down "/checkout-a/control.gravity" 256))
+
+(defn sh13-indirect-module []
+  (sh13-module
+   :sh13/indirect :indirect-main "/checkout-a/control.gravity" 256))
+
+(defn sh13-error-module []
+  (sh13-module
+   :sh13/error :error-main "/checkout-a/control.gravity" 256))
+
+(defn sh13-throw-module []
+  (sh13-module
+   :sh13/throw :throw-main "/checkout-a/control.gravity" 256))
+
+(defn sh13-panic-module []
+  (sh13-module
+   :sh13/panic :panic-main "/checkout-a/control.gravity" 256))

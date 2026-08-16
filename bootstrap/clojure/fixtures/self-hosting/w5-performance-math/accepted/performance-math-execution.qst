@@ -1,0 +1,117 @@
+; W5 Wave6 Slice A accepted performance/math execution request.
+(ns gravity.fixtures.w5-performance-math.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-performance-math-execution-request
+             w5-performance-math-execution-request-at
+             w5-performance-math-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-pm-target-contract []
+  {:candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :cross-target-inference? false :fallback? false})
+
+(defn w5-pm-provenance-record [path extension source-kind]
+  {:provenance-id :w5-performance-math-provenance
+   :logical-source-id "w5-performance-math"
+   :actual-source-path path
+   :actual-source-extension extension
+   :source-kind source-kind
+   :evidence-origins
+   [:perf-origin :semantic-origin :efir-origin :eml-origin :safe15-origin]
+   :status :pending})
+
+(defn w5-pm-request-with-path [path extension source-kind]
+  {:artifact :gravity/w5-performance-math-request
+   :schema-version 1
+   :request-id :w5-performance-math-request
+   :performance-claim
+   {:artifact :gravity/performance-claim
+    :claim-id :vector-sine-throughput
+    :profile :meta :target :llvm-x86_64-linux :backend :llvm
+    :runtime :pending-native-runtime :safety-mode :safe-optimized
+    :input-domain {:x [:closed -1 1]}
+    :layout {:input :contiguous-f64 :output :contiguous-f64}
+    :effects [] :capabilities [] :erased-checks []
+    :proof-obligations [:approximation-bound :roundoff-bound]
+    :benchmark-id :pending-vector-sine-benchmark :status :pending}
+   :benchmark-evidence
+   {:artifact :gravity/benchmark-evidence
+    :benchmark-id :pending-vector-sine-benchmark
+    :claim-id :vector-sine-throughput
+    :harness :perf/vector-sine :baseline :c-o3 :sample-count :pending
+    :target-fingerprint-id :pending-target-fingerprint
+    :compiler-identity-id :pending-compiler-identity
+    :source-identity-id :pending-source-identity
+    :optimization-manifest-id :pending-optimization-manifest
+    :status :pending}
+   :semantic-evidence
+   {:artifact :gravity/semantic-correctness-evidence
+    :semantic-evidence-id :pending-vector-sine-semantics
+    :typed-core-anchor :typed-core-vector-sine
+    :efir-graph-id :efir-vector-sine
+    :numeric-mode-id :numeric-mode-vector-sine
+    :benchmark-independent? true :status :pending}
+   :efir
+   {:artifact :gravity/efir-graph :graph-id :efir-vector-sine
+    :typed-core-anchor :typed-core-vector-sine
+    :role :runtime-semantic-carrier
+    :numeric-mode-id :numeric-mode-vector-sine
+    :precision-contract-id :precision-vector-sine :status :pending}
+   :eml
+   {:artifact :gravity/eml-candidate :candidate-id :eml-vector-sine-candidate
+    :efir-graph-id :efir-vector-sine
+    :role :proof-normalization-synthesis-search
+    :runtime-representation? false
+    :tree-identity-implies-equality? false
+    :equality-status :requires-proof :status :pending}
+   :numeric-contract
+   {:artifact :gravity/numeric-contract
+    :numeric-mode-id :numeric-mode-vector-sine
+    :mode :certified-approx :domain {:x [:closed -1 1]}
+    :precision-contract-id :precision-vector-sine
+    :rounding :nearest-even :certificate-required? true :status :pending}
+   :certificate
+   {:artifact :gravity/safe15-certificate-reference
+    :certificate-id :pending-vector-sine-certificate
+    :claim :bounded-approximation
+    :efir-graph-id :efir-vector-sine
+    :eml-candidate-id :eml-vector-sine-candidate
+    :numeric-mode-id :numeric-mode-vector-sine
+    :precision-contract-id :precision-vector-sine
+    :checker-id :pending-independent-checker
+    :trust-status :unverified :verification-status :pending :status :pending}
+   :check-elision
+   {:artifact :gravity/performance-check-elision
+    :claim-id :vector-sine-throughput
+    :erased-checks [] :retained-checks [:range :roundoff]
+    :certificate-id :pending-vector-sine-certificate
+    :certificate-accepted? false :status :checks-retained}
+   :target-contract (w5-pm-target-contract)
+   :provenance (w5-pm-provenance-record path extension source-kind)
+   :evidence {:status :incomplete :closure-status :blocked
+              :benchmark-executed? false :proof-checked? false
+              :candidate-executed? false :seed-retired? false}
+   :authority {:authority :non-authority :clojure-seed-boundary? true
+               :self-hosted? false :public-authority? false :release? false
+               :full-language-credit? false :fl-240-credit? false}
+   :claimed-status :incomplete})
+
+(defn w5-performance-math-execution-request-at [path extension source-kind]
+  (w5-pm-request-with-path path extension source-kind))
+
+(defn w5-performance-math-execution-request [path extension source-kind]
+  (w5-performance-math-execution-request-at path extension source-kind))
+
+(defn w5-performance-math-alternate-path-request [path extension source-kind]
+  (w5-performance-math-execution-request-at path extension source-kind))

@@ -1,0 +1,23 @@
+; SH-07-B11 rejects elements after a vector rest tail binding.
+(ns self-hosting.sh07-b11.reject.vector-rest-extra-tail
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B11
+    :case :malformed-vector-rest-extra-tail
+    :governing-contracts ["L7" "C6"]
+    :sh07-b11
+    {:expected-rule "C6-LOWERING-GAP"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :variable-width-vector-pattern-deferred
+     :expected-remediation
+     "Use a fixed-width vector pattern without rest markers in SH-07-B11."}}))
+
+(def invalid-match
+  (match [1 2 3]
+    [head & tail extra] head
+    _ nil))

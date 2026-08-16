@@ -1,0 +1,410 @@
+(ns gravity.self-hosting.w5-c18.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-c18-verification-request
+             w5-c18-verification-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-c18-target-scope []
+  {:candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :support :unsupported
+     :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :cross-target-inference? false
+   :fallback? false})
+
+(defn w5-c18-span [start end]
+  {:source-id :gravity.self-hosting/w5-c18
+   :start start
+   :end end})
+
+(defn w5-c18-provenance [path]
+  {:source-id :gravity.self-hosting/w5-c18
+   :actual-source-path path
+   :compiler-id "gravity-stage2-c18"
+   :compiler-version "stage2-w5-c18-v1"
+   :target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :target-scope (w5-c18-target-scope)
+   :generated-origin-chain
+   [{:kind :source
+     :source-id :gravity.self-hosting/w5-c18
+     :origin-id :fixture/pass-verification}]})
+
+(defn w5-c18-pass
+  [pass-id pass-version risk reason minimum-evidence input-ir output-ir
+   input-content-hash output-content-hash proof-content-hash
+   certificate-content-hash affected-profiles affected-targets
+   changed-facts start end]
+  {:pass-id pass-id
+   :pass-version pass-version
+   :stage :stage2
+   :risk risk
+   :reason reason
+   :input-ir input-ir
+   :output-ir output-ir
+   :input-content-hash input-content-hash
+   :output-content-hash output-content-hash
+   :proof-content-hash proof-content-hash
+   :certificate-content-hash certificate-content-hash
+   :hash-verification :unverified
+   :cryptographic-hash-verified? false
+   :affected-profiles affected-profiles
+   :affected-targets affected-targets
+   :changed-fact-families changed-facts
+   :minimum-evidence minimum-evidence
+   :release-gate :required
+   :source-span (w5-c18-span start end)})
+
+(defn w5-c18-evidence
+  [evidence-id kind pass-id pass-version profile target artifact input output
+   checker path start end]
+  {:evidence-id evidence-id
+   :kind kind
+   :claim :pass-correctness
+   :pass-id pass-id
+   :pass-version pass-version
+   :stage :stage2
+   :artifact-id artifact
+   :profile profile
+   :target target
+   :candidate-target :llvm-x86_64-linux
+   :target-scope (w5-c18-target-scope)
+   :inputs [input output]
+   :assumptions [:deterministic-inputs :path-neutral-identity]
+   :checker checker
+   :hash-verification :unverified
+   :cryptographic-hash-verified? false
+   :result :accepted
+   :freshness :fresh
+   :provenance (w5-c18-provenance path)
+   :source-span (w5-c18-span start end)})
+
+(defn w5-c18-validation
+  [validation-id pass-id pass-version input output input-hash output-hash
+   method checker proofs certificates fixtures start end]
+  {:validation-id validation-id
+   :kind :translation-validation
+   :checker checker
+   :pass-id pass-id
+   :pass-version pass-version
+   :input-artifact-id input
+   :output-artifact-id output
+   :target :llvm-x86_64-linux
+   :target-scope (w5-c18-target-scope)
+   :input-content-hash input-hash
+   :output-content-hash output-hash
+   :hash-verification :unverified
+   :cryptographic-hash-verified? false
+   :changed-functions [:fn/verified-loop]
+   :properties #{:same-observable-result
+                 :same-effects
+                 :same-safety-outcomes
+                 :source-origin-preserved}
+   :method method
+   :proofs proofs
+   :certificates certificates
+   :fixtures fixtures
+   :counterexamples []
+   :result :accepted
+   :diagnostics []
+   :source-map {:source-id :gravity.self-hosting/w5-c18
+                :generated-origin :fixture/pass-verification}
+   :source-span (w5-c18-span start end)})
+
+(defn w5-c18-proof
+  [proof-id kind certificate-id certificate-kind certificate-checker
+   pass-id pass-version input output source-hash certificate-hash checker
+   path start end]
+  {:proof-id proof-id
+   :kind kind
+   :certificate-id certificate-id
+   :certificate-kind certificate-kind
+   :certificate-checker certificate-checker
+   :pass-id pass-id
+   :pass-version pass-version
+   :input-artifact-id input
+   :output-artifact-id output
+   :target :llvm-x86_64-linux
+   :target-scope (w5-c18-target-scope)
+   :source-content-hash source-hash
+   :certificate-content-hash certificate-hash
+   :hash-verification :unverified
+   :cryptographic-hash-verified? false
+   :checker checker
+   :result :accepted
+   :freshness :fresh
+   :fresh? true
+   :source-span (w5-c18-span start end)
+   :provenance (w5-c18-provenance path)})
+
+(defn w5-c18-counterexample [path]
+  {:counterexample-id "counterexample:w5-c18:001"
+   :source-fixture :fixture/w5-c18-counterexample
+   :input-artifact-id "artifact:mir-before-counterexample"
+   :output-artifact-id "artifact:mir-after-counterexample"
+   :violated-property :same-observable-result
+   :pass-id :pass/optimizer
+   :pass-version "3.2.0"
+   :diagnostic-stream ["C18-VALIDATION"]
+   :minimized-reproducer :fixture/w5-c18-minimized
+   :affected-profiles #{:native :kernel}
+   :affected-targets #{:llvm-x86_64-linux}
+   :regression-fixture :fixture/w5-c18-regression
+   :provenance (w5-c18-provenance path)
+   :source-span (w5-c18-span 88 96)})
+
+(defn w5-c18-plugin [path]
+  {:plugin-id :plugin/w5-c18-checked
+   :package "gravity.plugin.checked"
+   :pass-id :pass/plugin-transform
+   :pass-version "1.4.0"
+   :target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :target-scope (w5-c18-target-scope)
+   :contract {:input :checked-mir
+              :output :verified-mir
+              :preserves #{:types :effects :safety}
+              :invalidates #{:layout}
+              :regenerates #{:provenance}}
+   :sandbox-policy {:ambient-authority #{}
+                    :artifact-access #{:read-mir :write-mir}
+                    :determinism :replayable}
+   :capabilities #{:compiler/ir-transform}
+   :ambient-authority #{}
+   :risk :high
+   :required-evidence #{:translation-validation :property-test}
+   :available-evidence #{:translation-validation :property-test}
+   :signature {:status :verified
+               :signature-id "signature:plugin:w5-c18"}
+   :trust-report-entry {:pass-id :pass/plugin-transform
+                        :trust-level :sandboxed}
+   :diagnostics []
+   :source-span (w5-c18-span 98 111)
+   :provenance (w5-c18-provenance path)})
+
+(defn w5-c18-backend [path]
+  {:backend :backend/native-c
+   :target :llvm-x86_64-linux
+   :candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :target-scope (w5-c18-target-scope)
+   :profile :native
+   :lowering-pass :pass/target-lowering
+   :source-intent {:intent-id "intent:w5-c18-main"
+                   :observable :return-value}
+   :core-intent {:intent-id "intent:w5-c18-main"
+                 :observable :return-value}
+   :mir-intent {:intent-id "intent:w5-c18-main"
+                :observable :return-value}
+   :emitted-artifacts
+   [{:artifact-id "artifact:llvm-x86_64-linux:w5-c18"
+     :behavior-id "intent:w5-c18-main"
+     :type-facts #{:i64}
+     :effect-facts #{:pure}
+     :profile :native
+     :target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :target-scope (w5-c18-target-scope)
+     :safety {:mode :safe}
+     :provenance (w5-c18-provenance path)}]
+   :conformance-suite [:fixture/backend-native-basic]
+   :differential-results
+   [{:result :accepted
+     :fixture :fixture/backend-native-basic
+     :behavior-id "intent:w5-c18-main"}]
+   :unsupported-features #{}
+   :diagnostics []
+   :result :accepted
+   :source-span (w5-c18-span 112 128)
+   :provenance (w5-c18-provenance path)})
+
+(defn w5-c18-verification-request-at [path]
+  (let [reader
+        (w5-c18-pass
+         :pass/reader "1.0.0" :low #{:metadata-only}
+         #{:verifier-report} "artifact:source-forms" "artifact:syntax-tree"
+         "sha256:source-forms" "sha256:syntax-tree"
+         "sha256:none-reader-proof" "sha256:none-reader-certificate"
+         #{:core :meta} #{:llvm-x86_64-linux}
+         #{:source-spans :origin-chains} 10 24)
+        analyzer
+        (w5-c18-pass
+         :pass/analyzer "2.1.0" :medium #{:ir-shape}
+         #{:verifier-report :golden-fixture}
+         "artifact:syntax-tree" "artifact:mir-before"
+         "sha256:syntax-tree" "sha256:mir-before"
+         "sha256:none-analyzer-proof" "sha256:none-analyzer-certificate"
+         #{:core :meta} #{:llvm-x86_64-linux}
+         #{:types :effects :profile-legality} 25 40)
+        optimizer
+        (w5-c18-pass
+         :pass/optimizer "3.2.0" :high #{:check-elision}
+         #{:translation-validation :property-test}
+         "artifact:mir-before" "artifact:mir-after"
+         "sha256:mir-before" "sha256:mir-after"
+         "sha256:proof-source-optimizer" "sha256:certificate-optimizer"
+         #{:native :kernel} #{:llvm-x86_64-linux}
+         #{:safety :ownership :effects} 41 64)
+        lowerer
+        (w5-c18-pass
+         :pass/target-lowering "4.0.0" :critical #{:safety-critical-target}
+         #{:checked-certificate :translation-validation :conformance-fixture}
+         "artifact:mir-after" "artifact:llvm-x86_64-linux:w5-c18"
+         "sha256:mir-after" "sha256:llvm-x86_64-linux"
+         "sha256:proof-source-lowerer" "sha256:certificate-lowerer"
+         #{:native :kernel} #{:llvm-x86_64-linux}
+         #{:profile :target :safety :provenance} 65 87)
+        passes [reader analyzer optimizer lowerer]
+        evidence
+        [(w5-c18-evidence
+          "evidence:reader:verifier" :verifier-report
+          :pass/reader "1.0.0" :core :llvm-x86_64-linux "artifact:syntax-tree"
+          "artifact:source-forms" "artifact:syntax-tree"
+          :checker/reader path 10 24)
+         (w5-c18-evidence
+          "evidence:analyzer:verifier" :verifier-report
+          :pass/analyzer "2.1.0" :core :llvm-x86_64-linux "artifact:mir-before"
+          "artifact:syntax-tree" "artifact:mir-before"
+          :checker/analyzer path 25 40)
+         (w5-c18-evidence
+          "evidence:analyzer:golden" :golden-fixture
+          :pass/analyzer "2.1.0" :core :llvm-x86_64-linux "artifact:mir-before"
+          "artifact:syntax-tree" "artifact:mir-before"
+          :checker/golden path 25 40)
+         (w5-c18-evidence
+          "evidence:optimizer:translation" :translation-validation
+          :pass/optimizer "3.2.0" :native :llvm-x86_64-linux "validation:optimizer"
+          "artifact:mir-before" "artifact:mir-after"
+          :checker/mir path 41 64)
+         (w5-c18-evidence
+          "evidence:optimizer:property" :property-test
+          :pass/optimizer "3.2.0" :native :llvm-x86_64-linux
+          "proof:optimizer-property" "artifact:mir-before" "artifact:mir-after"
+          :checker/property path 41 64)
+         (w5-c18-evidence
+          "evidence:lowerer:certificate" :checked-certificate
+          :pass/target-lowering "4.0.0" :native :llvm-x86_64-linux
+          "certificate:lowerer" "artifact:mir-after"
+          "artifact:llvm-x86_64-linux:w5-c18" :checker/certificate path 65 87)
+         (w5-c18-evidence
+          "evidence:lowerer:translation" :translation-validation
+          :pass/target-lowering "4.0.0" :native :llvm-x86_64-linux
+          "validation:lowerer" "artifact:mir-after"
+          "artifact:llvm-x86_64-linux:w5-c18" :checker/backend path 65 87)
+         (w5-c18-evidence
+          "evidence:lowerer:conformance" :conformance-fixture
+          :pass/target-lowering "4.0.0" :native :llvm-x86_64-linux
+          "artifact:llvm-x86_64-linux:w5-c18" "artifact:mir-after"
+          "artifact:llvm-x86_64-linux:w5-c18" :checker/conformance path 65 87)]
+        validations
+        [(w5-c18-validation
+          "validation:optimizer" :pass/optimizer "3.2.0"
+          "artifact:mir-before" "artifact:mir-after"
+          "sha256:mir-before" "sha256:mir-after"
+          :symbolic-plus-fixtures :checker/c18-translation
+          ["proof:optimizer-property"] ["certificate:optimizer-property"]
+          [:fixture/optimizer-equivalence] 41 64)
+         (w5-c18-validation
+          "validation:lowerer" :pass/target-lowering "4.0.0"
+          "artifact:mir-after" "artifact:llvm-x86_64-linux:w5-c18"
+          "sha256:mir-after" "sha256:llvm-x86_64-linux"
+          :backend-conformance :checker/c18-translation
+          ["proof:lowerer-certificate"] ["certificate:lowerer"]
+          [:fixture/backend-native-basic] 65 87)]
+        proofs
+        [(w5-c18-proof
+          "proof:optimizer-property" :property-proof
+          "certificate:optimizer-property" :property-certificate
+          :checker/c18-property
+          :pass/optimizer "3.2.0"
+          "artifact:mir-before" "artifact:mir-after"
+          "sha256:proof-source-optimizer" "sha256:certificate-optimizer"
+          :checker/c18-property path 41 64)
+         (w5-c18-proof
+          "proof:lowerer-certificate" :checked-certificate-proof
+          "certificate:lowerer" :checked-certificate
+          :checker/c18-certificate
+          :pass/target-lowering "4.0.0"
+          "artifact:mir-after" "artifact:llvm-x86_64-linux:w5-c18"
+          "sha256:proof-source-lowerer" "sha256:certificate-lowerer"
+          :checker/c18-certificate path 65 87)]
+        known-gaps
+        {:clojure-seed-boundary {:status :present
+                                 :required-action :retire-clojure-seed}
+         :jvm-execution {:status :present
+                         :required-action :replace-jvm-execution}
+         :independent-review {:status :pending
+                              :required-action :obtain-independent-review}}]
+    {:artifact :gravity/w5-c18-verification-request
+     :schema-version 1
+     :compiler-id "gravity-stage2-c18"
+     :compiler-version "stage2-w5-c18-v1"
+     :pipeline-manifest-id "manifest:w5-c18:stage2"
+     :source-root-id "source-root:w5-c18"
+     :profile :meta
+     :target :llvm-x86_64-linux
+     :stage2-target :jvm
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :target-scope (w5-c18-target-scope)
+     :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-arm64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-x86_64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :windows :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}]
+     :cross-target-inference? false
+     :fallback? false
+     :profiles #{:core :meta :native :kernel}
+     :targets #{:llvm-x86_64-linux}
+     :artifact-kinds #{:mir :native-artifact :diagnostic}
+     :source-span (w5-c18-span 1 160)
+     :origin-chain
+     [{:kind :source
+       :source-id :gravity.self-hosting/w5-c18
+       :origin-id :fixture/pass-verification}]
+     :provenance (w5-c18-provenance path)
+     :passes passes
+     :evidence evidence
+     :translation-validations validations
+     :proofs proofs
+     :counterexamples [(w5-c18-counterexample path)]
+     :plugins [(w5-c18-plugin path)]
+     :backends [(w5-c18-backend path)]
+     :known-gaps known-gaps
+     :experimental-passes []
+     :bootstrap-lineage
+     {:compiled-by "gravity-stage2-c18"
+      :verified-by "clojure-stage0"
+      :next-stage :stage3
+      :equivalence :pending}
+     :producer-accepted? true
+     :producer-release? true
+     :producer-proof? true}))
+
+(defn w5-c18-verification-request [actual-source-path]
+  (w5-c18-verification-request-at actual-source-path))
+
+(defn w5-c18-verification-alternate-path-request [actual-source-path]
+  (w5-c18-verification-request-at actual-source-path))

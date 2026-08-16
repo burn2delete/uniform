@@ -1,0 +1,21 @@
+(ns self-hosting.sh06.compiler-subset
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [resolve-sequence lookup-binding])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-06 :fixture :compiler-subset}))
+
+(def empty-table {})
+
+(defn lookup-binding [table name]
+  (get table name))
+
+(defn resolve-sequence [symbols table]
+  (loop [remaining symbols
+         resolved []]
+    (if (= 0 (count remaining))
+      resolved
+      (recur (rest remaining)
+             (conj resolved (lookup-binding table (first remaining)))))))

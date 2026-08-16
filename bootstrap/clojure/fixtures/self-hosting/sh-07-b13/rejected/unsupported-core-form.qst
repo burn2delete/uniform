@@ -1,0 +1,22 @@
+; SH-07-B13 rejects core forms outside its declared lowering subset.
+(ns self-hosting.sh07-b13.reject.unsupported-core-form
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B13
+    :case :unsupported-core-form
+    :governing-contracts ["L2" "C6"]
+    :sh07-b13
+    {:expected-rule "C6-LOWERING-GAP"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :unsupported-call-operator-kind
+     :expected-fail-closed true
+     :expected-remediation
+     "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}}))
+
+(def unsupported-call-form
+  (1 2))

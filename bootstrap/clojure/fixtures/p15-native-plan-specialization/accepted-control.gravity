@@ -1,0 +1,8 @@
+(ns gravity.p15-s23.native-plan-specialization.accepted-control
+  (:profile :hosted)
+  (:target :c)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(defn main [] (println "line\nbreak"))

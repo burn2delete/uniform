@@ -1,0 +1,2707 @@
+; W5 Wave3 trust, provenance, and TCB verifier.
+; This source is an executable, static-only audit leaf.  It consumes supplied
+; records; it never reads the host, runs a toolchain, signs, or promotes trust.
+(ns gravity.self-hosting.w5-trust-provenance-verifier
+  (:profile :meta)
+  ; :jvm is only the explicit stage2 seed-plan harness.  Candidate evidence
+  ; below is always exact LLVM/ELF/SysV on Linux x86_64.
+  (:target :jvm)
+  (:exports [w5-trust-provenance-policy
+             w5-trust-provenance-diagnostic-catalog
+             w5-trust-span?
+             w5-trust-diagnostic-source-span
+             w5-trust-target-valid?
+             w5-trust-upstream-valid?
+             w5-trust-lineage-valid?
+             w5-trust-dependency-graphs-valid?
+             w5-trust-locks-valid?
+             w5-trust-environments-valid?
+             w5-trust-toolchains-valid?
+             w5-trust-build-recipes-valid?
+             w5-trust-r3-recipe-cross-binding-valid?
+             w5-trust-diverse-rebuilds-valid?
+             w5-trust-anchors-valid?
+             w5-trust-attestations-valid?
+             w5-trust-sbom-valid?
+             w5-trust-signatures-valid?
+             w5-trust-revocations-valid?
+             w5-trust-revocation-subjects-valid?
+             w5-trust-unsafe-audits-valid?
+             w5-trust-tcb-delta-valid?
+             w5-trust-equivalence-valid?
+             w5-trust-replay-valid?
+             w5-trust-authority-valid?
+             w5-trust-review-valid?
+             w5-trust-claims-valid?
+             w5-trust-request-valid?
+             w5-trust-identity-input
+             w5-trust-provenance
+             w5-trust-provenance-verify
+             w5-trust-provenance-execute
+             w5-trust-provenance-run
+             w5-trust-provenance-recompute
+             w5-trust-structural-recompute
+             w5-trust-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-trust-provenance-verifier
+     :owner :workstream-5
+     :source-language :gravity
+     :seed :clojure-stage0
+     :status :executable-leaf
+     :scope :wave3-static-audit
+     :static-only? true
+     :authority :non-authority
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :release? false
+     :public-authority? false
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]
+     :cross-target-inference? false
+     :darwin-fallback? false
+     :residual-boundaries #{:clojure-stage2-compiler-plan
+                            :jvm-stage2-runtime
+                            :native-linux-replay
+                            :independent-trust-anchors
+                            :independent-sol-review
+                            :external-signing}
+     :governing-documents [:D9 :PKG7 :PKG10 :PKG12 :BOOT6 :BOOT8]
+     :non-goals [:native-execution :signing :release-promotion
+                 :seed-retirement :cross-target-inference :darwin-support]}}))
+
+(def w5-trust-equivalence-modes
+  [:artifact :manifest :diagnostic :conformance :runtime-output
+   :ir-modulo-id :reviewed-delta])
+
+(def w5-trust-target-scope
+  {:candidate-target :llvm-x86_64-linux
+   :os :linux
+   :arch :x86_64
+   :backend :llvm
+   :artifact-format :elf
+   :abi :sysv-amd64
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :cross-target-inference? false
+   :darwin-fallback? false})
+
+(def w5-trust-diagnostic-ids
+  ["W5-TRUST-SCHEMA" "W5-TRUST-TARGET" "W5-TRUST-UPSTREAM"
+   "W5-TRUST-LINEAGE" "W5-TRUST-DEPENDENCY" "W5-TRUST-LOCK"
+   "W5-TRUST-ENVIRONMENT" "W5-TRUST-TOOLCHAIN" "W5-TRUST-RECIPE"
+   "W5-TRUST-DIVERSITY" "W5-TRUST-ANCHOR" "W5-TRUST-ATTESTATION"
+   "W5-TRUST-SBOM" "W5-TRUST-SIGNATURE" "W5-TRUST-REVOCATION"
+   "W5-TRUST-UNSAFE-AUDIT" "W5-TRUST-TCB" "W5-TRUST-EQUIVALENCE"
+   "W5-TRUST-REPLAY" "W5-TRUST-AUTHORITY" "W5-TRUST-REVIEW"
+   "W5-TRUST-SUBSTITUTION"])
+
+(defn w5-trust-provenance-policy []
+  {:artifact :gravity/w5-trust-provenance-policy
+   :schema-version 1
+   :scope :wave3-static-only
+   :profile :meta
+   :target :jvm
+   :candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :cross-target-inference? false
+   :darwin-fallback? false
+   :no-fallback? true
+   :required-evidence [:exact-lineage :dependency-graphs :locks :environments
+                        :toolchains :build-recipes :diverse-rebuilds
+                        :trust-anchors :attestations :sbom :signatures
+                        :revocations :unsafe-island-audits :tcb-delta
+                        :stage-equivalence :native-replay :upstream-identities]
+   :required-sbom-fields [:dependencies :capabilities :generated-sources
+                          :binary-blobs :unsafe-audit-ids]
+   :required-equivalence-modes w5-trust-equivalence-modes
+   :pending [:native-linux-replay :independent-trust-anchors
+             :independent-sol-review :actual-stage-equivalence
+             :external-signing :attestation-verification]
+   :static-only? true
+   :release-eligible? false
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :residual-trusted-components
+   [:clojure-stage0-seed :jvm-stage2-runtime :native-linux-replay
+    :independent-trust-anchors :independent-sol-review :stage-equivalence
+    :external-signing]})
+
+(defn w5-trust-provenance-diagnostic-catalog []
+  {:artifact :gravity/w5-trust-provenance-diagnostic-catalog
+   :schema-version 1
+   :diagnostics w5-trust-diagnostic-ids
+   :remediation
+   {"W5-TRUST-SCHEMA" :provide-exact-versioned-request
+    "W5-TRUST-TARGET" :use-exact-linux-x86-64-llvm-elf-sysv-scope
+    "W5-TRUST-UPSTREAM" :bind-each-upstream-artifact-by-content-id
+    "W5-TRUST-LINEAGE" :repair-acyclic-reachable-compiler-lineage
+    "W5-TRUST-DEPENDENCY" :bind-locked-complete-dependency-graph
+    "W5-TRUST-LOCK" :record-complete-offline-lock-content
+    "W5-TRUST-ENVIRONMENT" :declare-hermetic-build-environment
+    "W5-TRUST-TOOLCHAIN" :bind-independent-toolchain-files-and-target
+    "W5-TRUST-RECIPE" :bind-recipe-to-source-lock-environment-toolchain
+    "W5-TRUST-DIVERSITY" :provide-independent-diverse-rebuilds
+    "W5-TRUST-ANCHOR" :verify-distinct-trust-anchors-and-roots
+    "W5-TRUST-ATTESTATION" :bind-signed-attestation-to-exact-subject
+    "W5-TRUST-SBOM" :include-dependencies-capabilities-generated-and-blobs
+    "W5-TRUST-SIGNATURE" :sign-canonical-manifest-provenance-and-sbom
+    "W5-TRUST-REVOCATION" :record-current-release-blocking-revocations
+    "W5-TRUST-UNSAFE-AUDIT" :attach-reviewed-unsafe-island-audit
+    "W5-TRUST-TCB" :derive-and-list-every-residual-trusted-component
+    "W5-TRUST-EQUIVALENCE" :bind-independent-stage-equivalence-report
+    "W5-TRUST-REPLAY" :bind-native-linux-replay-not-container-evidence
+    "W5-TRUST-AUTHORITY" :keep-seed-boundary-and-nonauthority-explicit
+    "W5-TRUST-REVIEW" :obtain-independent-sol-review
+    "W5-TRUST-SUBSTITUTION" :recompute-verification-result
+    :non-authority {:authority :non-authority
+                    :clojure-seed-boundary? true
+                    :self-hosted? false
+                    :release? false
+                    :public-authority? false}}})
+
+(defn w5-trust-exact-keys? [value expected]
+  (if (map? value) (= (set (keys value)) expected) false))
+
+(defn w5-trust-nonempty-string? [value]
+  (if (string? value) (> (count value) 0) false))
+
+(defn w5-trust-lower-hex? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (if (= value "0") true
+        (if (= value "1") true
+          (if (= value "2") true
+            (if (= value "3") true
+              (if (= value "4") true
+                (if (= value "5") true
+                  (if (= value "6") true
+                    (if (= value "7") true
+                      (if (= value "8") true
+                        (if (= value "9") true
+                          (if (= value "a") true
+                            (if (= value "b") true
+                              (if (= value "c") true
+                                (if (= value "d") true
+                                  (if (= value "e") true
+                                    (= value "f")))))))))))))))
+      false)
+    false)))
+
+(defn w5-trust-sha-prefix? [value index]
+  (if (= index 7)
+    true
+    (if (= (get value index) (get "sha256:" index))
+      (w5-trust-sha-prefix? value (+ index 1))
+      false)))
+
+(defn w5-trust-sha-tail? [value index]
+  (if (= index 71)
+    true
+    (if (w5-trust-lower-hex? (str (get value index)))
+      (w5-trust-sha-tail? value (+ index 1))
+      false)))
+
+(defn w5-trust-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (if (w5-trust-sha-prefix? value 0)
+        (w5-trust-sha-tail? value 7)
+        false)
+      false)
+    false))
+
+(defn w5-trust-git-tail? [value index]
+  (if (= index 40)
+    true
+    (if (w5-trust-lower-hex? (str (get value index)))
+      (w5-trust-git-tail? value (+ index 1))
+      false)))
+
+(defn w5-trust-git-id? [value]
+  (if (string? value)
+    (if (= 40 (count value)) (w5-trust-git-tail? value 0) false)
+    false))
+
+(defn w5-trust-keyword-vector? [values]
+  (if (vector? values)
+    (loop [remaining values]
+      (if (= (count remaining) 0)
+        true
+        (if (keyword? (first remaining))
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn w5-trust-sha-vector? [values]
+  (if (vector? values)
+    (loop [remaining values]
+      (if (= (count remaining) 0)
+        true
+        (if (w5-trust-sha256-id? (first remaining))
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn w5-trust-unique? [values]
+  (if (vector? values)
+    (loop [remaining values seen #{}]
+      (if (= (count remaining) 0)
+        true
+        (if (contains? seen (first remaining))
+          false
+          (recur (rest remaining) (conj seen (first remaining))))))
+    false))
+
+(defn w5-trust-find [records field value]
+  (if (= (count records) 0)
+    nil
+    (if (= value (get (first records) field))
+      (first records)
+      (w5-trust-find (rest records) field value))))
+
+(defn w5-trust-all-records? [records field]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (w5-trust-unique? (loop [remaining records result []]
+                              (if (= (count remaining) 0)
+                                result
+                                (recur (rest remaining)
+                                       (conj result (get (first remaining) field))))))
+        true false)
+      false)
+    false))
+
+(defn w5-trust-source-position? [position]
+  (if (w5-trust-exact-keys? position #{:byte :line :column})
+    (if (integer? (get position :byte))
+      (if (integer? (get position :line))
+        (if (integer? (get position :column))
+          (if (>= (get position :byte) 0)
+            (if (>= (get position :line) 0)
+              (>= (get position :column) 0)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-span? [span]
+  (if (w5-trust-exact-keys? span #{:source-id :actual-source-path :start :end})
+    (if (keyword? (get span :source-id))
+      (if (w5-trust-nonempty-string? (get span :actual-source-path))
+        (if (w5-trust-source-position? (get span :start))
+          (if (w5-trust-source-position? (get span :end))
+            (if (<= (get (get span :start) :byte)
+                    (get (get span :end) :byte))
+              (if (<= (get (get span :start) :line)
+                      (get (get span :end) :line))
+                (if (= (get (get span :start) :line)
+                       (get (get span :end) :line))
+                  (<= (get (get span :start) :column)
+                      (get (get span :end) :column))
+                  true)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-target-valid? [target]
+  (= target w5-trust-target-scope))
+
+(defn w5-trust-upstream-record-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:artifact-id :content-hash :independent-verifier-id
+                :independent-verification-id :status :producer-commit
+                :producer-tree :actual-artifact-path})
+    (if (w5-trust-sha256-id? (get record :artifact-id))
+      (if (w5-trust-sha256-id? (get record :content-hash))
+        (if (w5-trust-sha256-id? (get record :independent-verifier-id))
+          (if (w5-trust-sha256-id?
+               (get record :independent-verification-id))
+            (if (w5-trust-git-id? (get record :producer-commit))
+              (if (w5-trust-git-id? (get record :producer-tree))
+                (if (w5-trust-nonempty-string?
+                     (get record :actual-artifact-path))
+                  (or (= :pending (get record :status))
+                      (= :passed (get record :status)))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-upstream-valid? [upstream]
+  (if (w5-trust-exact-keys? upstream #{:w1 :w2 :w3 :w4})
+    (if (w5-trust-upstream-record-valid? (get upstream :w1))
+      (if (w5-trust-upstream-record-valid? (get upstream :w2))
+        (if (w5-trust-upstream-record-valid? (get upstream :w3))
+          (if (w5-trust-upstream-record-valid? (get upstream :w4))
+            (if (w5-trust-unique?
+                 [(get (get upstream :w1) :content-hash)
+                  (get (get upstream :w2) :content-hash)
+                  (get (get upstream :w3) :content-hash)
+                  (get (get upstream :w4) :content-hash)])
+              (w5-trust-unique?
+               [(get (get upstream :w1) :artifact-id)
+                (get (get upstream :w2) :artifact-id)
+                (get (get upstream :w3) :artifact-id)
+                (get (get upstream :w4) :artifact-id)])
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-source-graph-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:source-graph-id :root-content-hash :component-ids
+                :component-content-hashes :generator-input-ids :canonical?
+                :verification-status :actual-source-root})
+    (if (w5-trust-sha256-id? (get record :source-graph-id))
+      (if (w5-trust-sha256-id? (get record :root-content-hash))
+        (if (w5-trust-sha-vector? (get record :component-ids))
+          (if (> (count (get record :component-ids)) 0)
+            (if (w5-trust-sha-vector? (get record :component-content-hashes))
+              (if (= (count (get record :component-ids))
+                     (count (get record :component-content-hashes)))
+                (if (w5-trust-unique? (get record :component-ids))
+                  (if (w5-trust-sha-vector?
+                       (get record :generator-input-ids))
+                    (if (= true (get record :canonical?))
+                      (if (= :descriptor-only
+                             (get record :verification-status))
+                        (w5-trust-nonempty-string?
+                         (get record :actual-source-root))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-source-graphs-valid? [records]
+  (if (vector? records)
+    (if (= 4 (count records))
+      (if (w5-trust-unique?
+           (loop [remaining records result []]
+             (if (= (count remaining) 0)
+               result
+               (recur (rest remaining)
+                      (conj result (get (first remaining) :source-graph-id))))))
+        (loop [remaining records]
+          (if (= (count remaining) 0)
+            true
+            (if (w5-trust-source-graph-valid? (first remaining))
+              (recur (rest remaining)) false)))
+        false)
+      false)
+    false))
+
+(defn w5-trust-dependency-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:dependency-id :version :content-hash :provenance-id
+                :license-id :advisory-status :revocation-status})
+    (if (w5-trust-sha256-id? (get record :dependency-id))
+      (if (w5-trust-nonempty-string? (get record :version))
+        (if (w5-trust-sha256-id? (get record :content-hash))
+          (if (w5-trust-sha256-id? (get record :provenance-id))
+            (if (w5-trust-sha256-id? (get record :license-id))
+              (if (= :clear (get record :advisory-status))
+                (= :current (get record :revocation-status)) false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-dependency-graphs-valid? [request]
+  (let [graphs (get request :dependency-graphs)
+        deps (get request :dependencies)]
+    (if (and (vector? graphs) (= 1 (count graphs)))
+      (if (and (vector? deps) (= 1 (count deps)))
+        (let [graph (first graphs) dep (first deps)]
+          (if (w5-trust-exact-keys?
+               graph #{:dependency-graph-id :dependency-ids
+                       :dependency-content-hashes :dependency-provenance-ids
+                       :graph-content-hash :topological? :complete?
+                       :verification-status :actual-graph-path})
+            (if (w5-trust-sha256-id? (get graph :dependency-graph-id))
+            (if (w5-trust-sha-vector? (get graph :dependency-ids))
+              (if (= 1 (count (get graph :dependency-ids)))
+                (if (= (get graph :dependency-ids)
+                       [(get dep :dependency-id)])
+                    (if (w5-trust-sha-vector?
+                         (get graph :dependency-content-hashes))
+                      (if (w5-trust-sha-vector?
+                           (get graph :dependency-provenance-ids))
+                    (if (= (get graph :dependency-content-hashes)
+                       [(get dep :content-hash)])
+                      (if (= (get graph :dependency-provenance-ids)
+                             [(get dep :provenance-id)])
+                        (if (w5-trust-sha256-id?
+                             (get graph :graph-content-hash))
+                          (if (= true (get graph :topological?))
+                            (if (= true (get graph :complete?))
+                              (if (= :descriptor-only
+                                     (get graph :verification-status))
+                                (if (w5-trust-nonempty-string?
+                                     (get graph :actual-graph-path))
+                                  (w5-trust-dependency-valid? dep)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false))
+        false)
+      false)))
+
+(defn w5-trust-lock-valid? [record request]
+  (if (w5-trust-exact-keys?
+       record #{:lock-id :dependency-graph-id :dependency-ids
+                :dependency-content-hashes :complete? :offline?
+                :content-hash :verification-status :actual-lock-path})
+    (if (w5-trust-sha256-id? (get record :lock-id))
+      (if (= (get record :dependency-graph-id)
+             (get (first (get request :dependency-graphs))
+                  :dependency-graph-id))
+        (if (w5-trust-sha-vector? (get record :dependency-ids))
+          (if (= (get record :dependency-ids)
+               (get (first (get request :dependency-graphs))
+                    :dependency-ids))
+            (if (w5-trust-sha-vector?
+                 (get record :dependency-content-hashes))
+          (if (= (get record :dependency-content-hashes)
+                 (get (first (get request :dependency-graphs))
+                      :dependency-content-hashes))
+            (if (= true (get record :complete?))
+              (if (= true (get record :offline?))
+                (if (w5-trust-sha256-id? (get record :content-hash))
+                  (if (= :descriptor-only
+                         (get record :verification-status))
+                    (w5-trust-nonempty-string? (get record :actual-lock-path))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-locks-valid? [request]
+  (let [locks (get request :locks)]
+    (if (and (vector? locks) (= 1 (count locks)))
+      (w5-trust-lock-valid? (first locks) request)
+      false)))
+
+(defn w5-trust-environment-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:environment-id :manifest-id :locale :timezone
+                :filesystem-order :timestamp-policy :random-seed
+                :network-policy :allowed-environment :content-hash
+                :verification-status :actual-build-root})
+    (if (w5-trust-sha256-id? (get record :environment-id))
+      (if (w5-trust-sha256-id? (get record :manifest-id))
+        (if (= "C" (get record :locale))
+          (if (= "UTC" (get record :timezone))
+            (if (= :sorted (get record :filesystem-order))
+              (if (= :fixed (get record :timestamp-policy))
+                (if (integer? (get record :random-seed))
+                  (if (>= (get record :random-seed) 0)
+                    (if (= :disabled (get record :network-policy))
+                    (if (= [] (get record :allowed-environment))
+                      (if (w5-trust-sha256-id? (get record :content-hash))
+                        (if (= :descriptor-only
+                               (get record :verification-status))
+                          (w5-trust-nonempty-string?
+                           (get record :actual-build-root))
+                          false)
+                        false)
+                      false)
+                    false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-environments-valid? [records]
+  (if (and (vector? records) (= 2 (count records)))
+    (if (w5-trust-unique?
+         [(get (first records) :environment-id)
+          (get (second records) :environment-id)])
+      (if (w5-trust-environment-valid? (first records))
+        (if (w5-trust-environment-valid? (second records)) true false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-toolchain-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:toolchain-id :family :version :target :files-id
+                :content-hash :identity-status :actual-toolchain-path})
+    (if (w5-trust-sha256-id? (get record :toolchain-id))
+      (if (keyword? (get record :family))
+        (if (w5-trust-nonempty-string? (get record :version))
+          (if (= :llvm-x86_64-linux (get record :target))
+            (if (w5-trust-sha256-id? (get record :files-id))
+              (if (w5-trust-sha256-id? (get record :content-hash))
+                (if (= :pending (get record :identity-status))
+                  (w5-trust-nonempty-string?
+                   (get record :actual-toolchain-path)) false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-toolchains-valid? [records]
+  (if (and (vector? records) (= 2 (count records)))
+    (if (w5-trust-unique?
+         [(get (first records) :toolchain-id)
+          (get (second records) :toolchain-id)])
+      (if (w5-trust-toolchain-valid? (first records))
+        (if (w5-trust-toolchain-valid? (second records)) true false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-recipe-valid? [record request]
+  (if (w5-trust-exact-keys?
+       record #{:build-recipe-id :source-graph-id :lock-id
+                :dependency-graph-id :compiler-executable-id :toolchain-id
+                :environment-id :target-scope :capability-inventory-id
+                :content-hash :verification-status :actual-recipe-path})
+    (if (w5-trust-sha256-id? (get record :build-recipe-id))
+      (if (w5-trust-sha256-id? (get record :source-graph-id))
+        (if (w5-trust-sha256-id? (get record :lock-id))
+          (if (w5-trust-sha256-id? (get record :dependency-graph-id))
+            (if (w5-trust-sha256-id?
+                 (get record :compiler-executable-id))
+              (if (w5-trust-sha256-id? (get record :toolchain-id))
+                (if (w5-trust-sha256-id? (get record :environment-id))
+                  (if (= w5-trust-target-scope (get record :target-scope))
+                    (if (w5-trust-sha256-id?
+                         (get record :capability-inventory-id))
+                      (if (w5-trust-sha256-id?
+                           (get record :content-hash))
+                        (if (= :descriptor-only
+                               (get record :verification-status))
+                          (if (w5-trust-nonempty-string?
+                               (get record :actual-recipe-path))
+                            (if (= (get record :lock-id)
+                                   (get (first (get request :locks)) :lock-id))
+                              true false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-build-recipes-valid? [request]
+  (let [records (get request :build-recipes)]
+    (if (and (vector? records) (= 6 (count records)))
+      (if (w5-trust-unique?
+           (loop [remaining records result []]
+             (if (= (count remaining) 0)
+               result
+               (recur (rest remaining)
+                      (conj result (get (first remaining)
+                                        :build-recipe-id))))))
+        (loop [remaining records]
+          (if (= (count remaining) 0)
+            true
+            (if (w5-trust-recipe-valid? (first remaining) request)
+              (recur (rest remaining)) false)))
+        false)
+      false)))
+
+(defn w5-trust-stage-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:artifact-id :stage-id :compiler-executable-id
+                :compiled-by-executable-id :source-graph-id
+                :dependency-graph-id :lock-id :environment-id :toolchain-id
+                :build-recipe-id :rebuild-parent-ids :producer-commit
+                :producer-tree :content-hash :content-hash-status
+                :actual-artifact-path})
+    (if (w5-trust-sha256-id? (get record :artifact-id))
+      (if (keyword? (get record :stage-id))
+        (if (w5-trust-sha256-id? (get record :compiler-executable-id))
+          (if (w5-trust-sha256-id?
+               (get record :compiled-by-executable-id))
+            (if (w5-trust-sha256-id? (get record :source-graph-id))
+              (if (w5-trust-sha256-id? (get record :dependency-graph-id))
+                (if (w5-trust-sha256-id? (get record :lock-id))
+                  (if (w5-trust-sha256-id? (get record :environment-id))
+                    (if (w5-trust-sha256-id? (get record :toolchain-id))
+                      (if (w5-trust-sha256-id?
+                           (get record :build-recipe-id))
+                        (if (w5-trust-sha-vector?
+                             (get record :rebuild-parent-ids))
+                          (if (w5-trust-git-id? (get record :producer-commit))
+                            (if (w5-trust-git-id? (get record :producer-tree))
+                              (if (w5-trust-sha256-id?
+                                   (get record :content-hash))
+                                (if (= :pending
+                                       (get record :content-hash-status))
+                                  (w5-trust-nonempty-string?
+                                   (get record :actual-artifact-path))
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-lineage-order-valid? [request]
+  (let [nodes (get request :lineage)
+        sources (get request :source-graphs)
+        expected [:stage1 :stage2 :stage3 :release]]
+    (if (and (vector? nodes)
+             (vector? sources)
+             (= 4 (count nodes))
+             (= 4 (count sources)))
+      (loop [index 0]
+        (if (= index 4)
+          true
+          (if (= (get expected index)
+                 (get (get nodes index) :stage-id))
+            (if (= (get (get sources index) :source-graph-id)
+                   (get (get nodes index) :source-graph-id))
+              (recur (+ index 1))
+              false)
+            false)))
+      false)))
+
+(defn w5-trust-lineage-valid? [request]
+  (let [nodes (get request :lineage)
+        root-id (get request :root-artifact-id)
+        seed-id (get request :seed-compiler-id)]
+    (if (and (vector? nodes) (= 4 (count nodes)))
+      (if (w5-trust-sha256-id? root-id)
+        (if (= root-id (get (get nodes (- (count nodes) 1)) :artifact-id))
+          (if (w5-trust-sha256-id? seed-id)
+            (if (w5-trust-unique?
+                 (loop [remaining nodes result []]
+                   (if (= (count remaining) 0)
+                     result
+                     (recur (rest remaining)
+                            (conj result (get (first remaining) :artifact-id))))))
+              (if (w5-trust-lineage-order-valid? request)
+                (loop [remaining nodes index 0 previous nil]
+                  (if (= (count remaining) 0)
+                    true
+                    (let [node (first remaining)]
+                      (if (w5-trust-stage-valid? node)
+                        (if (if (= index 0)
+                              (= seed-id
+                                 (get node :compiled-by-executable-id))
+                              (= previous
+                                 (get node :compiled-by-executable-id)))
+                          (if (if (= index 0)
+                                (= [] (get node :rebuild-parent-ids))
+                                (= [(get (get nodes (- index 1)) :artifact-id)]
+                                   (get node :rebuild-parent-ids)))
+                            (recur (rest remaining) (+ index 1)
+                                   (get node :compiler-executable-id))
+                            false)
+                          false)
+                        false))))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-trust-diverse-rebuild-valid? [record request]
+  (if (w5-trust-exact-keys?
+       record #{:rebuild-id :artifact-id :content-hash :source-graph-id
+                :compiler-executable-id :lock-id :dependency-graph-id
+                :build-recipe-id :builder-id :builder-role :toolchain-id
+                :environment-id :trust-anchor-id :comparison-status
+                :independence-status :content-hash-status
+                :actual-build-root})
+    (if (w5-trust-sha256-id? (get record :rebuild-id))
+      (if (= (get record :artifact-id) (get request :root-artifact-id))
+        (if (w5-trust-sha256-id? (get record :content-hash))
+          (if (w5-trust-sha256-id? (get record :source-graph-id))
+            (if (w5-trust-sha256-id?
+                 (get record :compiler-executable-id))
+              (if (w5-trust-sha256-id? (get record :lock-id))
+                (if (w5-trust-sha256-id?
+                     (get record :dependency-graph-id))
+                  (if (w5-trust-sha256-id?
+                       (get record :build-recipe-id))
+                    (if (w5-trust-sha256-id? (get record :builder-id))
+                      (if (or (= :primary-independent-builder
+                                 (get record :builder-role))
+                              (= :diverse-independent-builder
+                                 (get record :builder-role)))
+                        (if (w5-trust-sha256-id? (get record :toolchain-id))
+                          (if (w5-trust-sha256-id?
+                               (get record :environment-id))
+                            (if (w5-trust-sha256-id?
+                                 (get record :trust-anchor-id))
+                              (if (= :matching
+                                     (get record :comparison-status))
+                                (if (= :pending
+                                       (get record :content-hash-status))
+                                  (if (= :pending-independent
+                                         (get record :independence-status))
+                                    (w5-trust-nonempty-string?
+                                     (get record :actual-build-root))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-diverse-rebuild-cross-bindings-valid?
+  [record request recipe-index expected-role]
+  (let [recipe (get (get request :build-recipes) recipe-index)
+        source (w5-trust-find (get request :source-graphs)
+                              :source-graph-id
+                              (get record :source-graph-id))
+        lock (w5-trust-find (get request :locks)
+                            :lock-id
+                            (get record :lock-id))
+        graph (w5-trust-find (get request :dependency-graphs)
+                             :dependency-graph-id
+                             (get record :dependency-graph-id))
+        tool (w5-trust-find (get request :toolchains)
+                            :toolchain-id
+                            (get record :toolchain-id))
+        env (w5-trust-find (get request :environments)
+                           :environment-id
+                           (get record :environment-id))
+        anchor (w5-trust-find (get request :trust-anchors)
+                              :anchor-id
+                              (get record :trust-anchor-id))
+        release (get (get request :lineage) 3)]
+    (if (and recipe source lock graph tool env anchor release)
+      (if (= expected-role (get record :builder-role))
+        (if (= (get recipe :build-recipe-id)
+               (get record :build-recipe-id))
+          (if (= (get recipe :source-graph-id)
+                 (get record :source-graph-id))
+            (if (= (get recipe :compiler-executable-id)
+                   (get record :compiler-executable-id))
+              (if (= (get recipe :lock-id) (get record :lock-id))
+                (if (= (get recipe :dependency-graph-id)
+                       (get record :dependency-graph-id))
+                  (if (= (get recipe :toolchain-id)
+                         (get record :toolchain-id))
+                    (if (= (get recipe :environment-id)
+                           (get record :environment-id))
+                      (if (= (get release :artifact-id)
+                             (get record :artifact-id))
+                        (if (= (get release :content-hash)
+                               (get record :content-hash))
+                          (if (= (get release :source-graph-id)
+                                 (get record :source-graph-id))
+                            (if (= (get release :compiler-executable-id)
+                                   (get record :compiler-executable-id))
+                              (if (= (get source :source-graph-id)
+                                     (get record :source-graph-id))
+                                (if (= (get lock :lock-id)
+                                       (get record :lock-id))
+                                  (if (= (get graph :dependency-graph-id)
+                                         (get record :dependency-graph-id))
+                                    (if (= (get tool :toolchain-id)
+                                           (get record :toolchain-id))
+                                      (if (= (get env :environment-id)
+                                             (get record :environment-id))
+                                        (= (get anchor :anchor-id)
+                                           (get record :trust-anchor-id))
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-trust-diverse-rebuilds-valid? [request]
+  (let [records (get request :diverse-rebuilds)]
+    (if (and (vector? records) (= 2 (count records)))
+      (if (w5-trust-diverse-rebuild-valid? (first records) request)
+        (if (w5-trust-diverse-rebuild-valid? (second records) request)
+          (if (w5-trust-diverse-rebuild-cross-bindings-valid?
+               (first records) request 4 :primary-independent-builder)
+            (if (w5-trust-diverse-rebuild-cross-bindings-valid?
+                 (second records) request 5 :diverse-independent-builder)
+              (if (w5-trust-unique?
+                   [(get (first records) :toolchain-id)
+                    (get (second records) :toolchain-id)
+                    (get (first records) :environment-id)
+                    (get (second records) :environment-id)
+                    (get (first records) :builder-id)
+                    (get (second records) :builder-id)
+                    (get (first records) :trust-anchor-id)
+                    (get (second records) :trust-anchor-id)])
+                (= (get (first records) :content-hash)
+                   (get (second records) :content-hash))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-trust-anchor-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:anchor-id :anchor-kind :operator-id :root-metadata-id
+                :public-identity-id :verification-status :revocation-status
+                :policy-id :actual-anchor-location})
+    (if (w5-trust-sha256-id? (get record :anchor-id))
+      (if (or (= :offline-root (get record :anchor-kind))
+              (= :transparency-root (get record :anchor-kind)))
+        (if (w5-trust-sha256-id? (get record :operator-id))
+          (if (w5-trust-sha256-id? (get record :root-metadata-id))
+            (if (w5-trust-sha256-id? (get record :public-identity-id))
+              (if (= :descriptor-only (get record :verification-status))
+                (if (= :current (get record :revocation-status))
+                  (if (w5-trust-sha256-id? (get record :policy-id))
+                    (w5-trust-nonempty-string?
+                     (get record :actual-anchor-location)) false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-anchors-valid? [request]
+  (let [records (get request :trust-anchors)]
+    (if (and (vector? records) (= 2 (count records)))
+      (if (w5-trust-anchor-valid? (first records))
+        (if (w5-trust-anchor-valid? (second records))
+          (if (w5-trust-unique?
+               [(get (first records) :operator-id)
+                (get (second records) :operator-id)
+                (get (first records) :root-metadata-id)
+                (get (second records) :root-metadata-id)])
+            true false)
+          false)
+        false)
+      false)))
+
+(defn w5-trust-attestation-valid? [record request]
+  (if (w5-trust-exact-keys?
+       record #{:attestation-id :schema-version :artifact-id :manifest-id
+                :provenance-id :rebuild-id :builder-id :builder-role
+                :artifact-content-hash :source-graph-id
+                :compiler-executable-id :lock-id :dependency-graph-id
+                :build-recipe-id :toolchain-id :environment-id
+                :trust-anchor-id :policy-level
+                :verification-status :actual-attestation-path})
+    (if (w5-trust-sha256-id? (get record :attestation-id))
+      (if (= 1 (get record :schema-version))
+        (if (= (get request :root-artifact-id) (get record :artifact-id))
+          (if (w5-trust-sha256-id? (get record :manifest-id))
+            (if (w5-trust-sha256-id? (get record :provenance-id))
+              (if (w5-trust-sha256-id? (get record :rebuild-id))
+                (if (w5-trust-sha256-id? (get record :builder-id))
+                  (if (or (= :primary-independent-builder
+                             (get record :builder-role))
+                          (= :diverse-independent-builder
+                             (get record :builder-role)))
+                    (if (w5-trust-sha256-id?
+                         (get record :artifact-content-hash))
+                      (if (w5-trust-sha256-id? (get record :source-graph-id))
+                        (if (w5-trust-sha256-id?
+                             (get record :compiler-executable-id))
+                          (if (w5-trust-sha256-id? (get record :lock-id))
+                            (if (w5-trust-sha256-id?
+                                 (get record :dependency-graph-id))
+                              (if (w5-trust-sha256-id?
+                                   (get record :build-recipe-id))
+                                (if (w5-trust-sha256-id?
+                                     (get record :toolchain-id))
+                                  (if (w5-trust-sha256-id?
+                                       (get record :environment-id))
+                                    (if (w5-trust-sha256-id?
+                                         (get record :trust-anchor-id))
+                                      (if (= :hermetic
+                                             (get record :policy-level))
+                                        (if (= :pending
+                                               (get record :verification-status))
+                                          (w5-trust-nonempty-string?
+                                           (get record :actual-attestation-path))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-attestation-cross-bindings-valid?
+  [record request rebuild-index expected-role]
+  (let [recipe (w5-trust-find (get request :build-recipes)
+                              :build-recipe-id
+                              (get record :build-recipe-id))
+        source (w5-trust-find (get request :source-graphs)
+                              :source-graph-id
+                              (get record :source-graph-id))
+        lock (w5-trust-find (get request :locks)
+                            :lock-id
+                            (get record :lock-id))
+        tool (w5-trust-find (get request :toolchains)
+                            :toolchain-id
+                            (get record :toolchain-id))
+        env (w5-trust-find (get request :environments)
+                           :environment-id
+                           (get record :environment-id))
+        rebuild (get (get request :diverse-rebuilds) rebuild-index)]
+    (if (= (get request :root-artifact-id) (get record :artifact-id))
+        (if (= (get (get request :sbom) :manifest-id)
+             (get record :manifest-id))
+        (if (= (get (get request :sbom) :source-graph-id)
+               (get record :source-graph-id))
+          (if (and recipe source lock tool env rebuild)
+          (if (= expected-role (get record :builder-role))
+            (if (= (get rebuild :rebuild-id) (get record :rebuild-id))
+              (if (= (get rebuild :builder-id) (get record :builder-id))
+                (if (= (get rebuild :builder-role)
+                       (get record :builder-role))
+                  (if (= (get rebuild :artifact-id) (get record :artifact-id))
+                    (if (= (get rebuild :content-hash)
+                           (get record :artifact-content-hash))
+                      (if (= (get rebuild :source-graph-id)
+                             (get record :source-graph-id))
+                        (if (= (get rebuild :compiler-executable-id)
+                               (get record :compiler-executable-id))
+                          (if (= (get rebuild :lock-id) (get record :lock-id))
+                            (if (= (get rebuild :dependency-graph-id)
+                                   (get record :dependency-graph-id))
+                              (if (= (get rebuild :build-recipe-id)
+                                     (get record :build-recipe-id))
+                                (if (= (get rebuild :toolchain-id)
+                                       (get record :toolchain-id))
+                                  (if (= (get rebuild :environment-id)
+                                         (get record :environment-id))
+                                    (if (= (get rebuild :trust-anchor-id)
+                                           (get record :trust-anchor-id))
+                                      (if (= (get source :source-graph-id)
+                                             (get record :source-graph-id))
+                                        (if (= (get recipe :lock-id)
+                                               (get record :lock-id))
+                                          (if (= (get recipe :dependency-graph-id)
+                                                 (get record :dependency-graph-id))
+                                            (if (= (get recipe :compiler-executable-id)
+                                                   (get record :compiler-executable-id))
+                                              (if (= (get recipe :toolchain-id)
+                                                     (get record :toolchain-id))
+                                                (if (= (get recipe :environment-id)
+                                                       (get record :environment-id))
+                                                  (= (get recipe :build-recipe-id)
+                                                     (get record :build-recipe-id))
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-trust-attestations-valid? [request]
+  (let [records (get request :attestations)]
+    (if (and (vector? records) (= 2 (count records)))
+      (if (w5-trust-attestation-valid? (first records) request)
+        (if (w5-trust-attestation-valid? (second records) request)
+          (if (w5-trust-attestation-cross-bindings-valid?
+               (first records) request 0 :primary-independent-builder)
+            (if (w5-trust-attestation-cross-bindings-valid?
+                 (second records) request 1 :diverse-independent-builder)
+          (w5-trust-unique?
+           [(get (first records) :attestation-id)
+            (get (second records) :attestation-id)])
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-trust-capability-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:capability-id :name :effect :scope :source-id :privileged?})
+    (if (w5-trust-sha256-id? (get record :capability-id))
+      (if (keyword? (get record :name))
+        (if (keyword? (get record :effect))
+          (if (keyword? (get record :scope))
+            (if (w5-trust-sha256-id? (get record :source-id))
+              (boolean? (get record :privileged?)) false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-generated-source-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:generated-source-id :generator-id :input-hashes
+                :content-hash :source-span})
+    (if (w5-trust-sha256-id? (get record :generated-source-id))
+      (if (w5-trust-sha256-id? (get record :generator-id))
+        (if (w5-trust-sha-vector? (get record :input-hashes))
+          (if (w5-trust-sha256-id? (get record :content-hash))
+            (if (w5-trust-span? (get record :source-span))
+              (= :generated-source
+                 (get (get record :source-span) :source-id))
+              false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn w5-trust-blob-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:blob-id :source-id :content-hash :license-id
+                :policy-id :safety-status})
+    (if (w5-trust-sha256-id? (get record :blob-id))
+      (if (w5-trust-sha256-id? (get record :source-id))
+        (if (w5-trust-sha256-id? (get record :content-hash))
+          (if (w5-trust-sha256-id? (get record :license-id))
+            (if (w5-trust-sha256-id? (get record :policy-id))
+              (= :audited (get record :safety-status)) false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-sbom-valid? [request]
+  (let [sbom (get request :sbom)
+        capabilities (get sbom :capabilities)
+        generated (get sbom :generated-sources)
+        blobs (get sbom :binary-blobs)]
+    (if (w5-trust-exact-keys?
+         sbom #{:sbom-id :artifact-id :manifest-id :source-graph-id
+                :dependency-ids :capabilities :generated-sources
+                :binary-blobs :unsafe-audit-ids :provenance-id
+                :content-hash :verification-status :actual-sbom-path})
+      (if (w5-trust-sha256-id? (get sbom :sbom-id))
+        (if (= (get request :root-artifact-id) (get sbom :artifact-id))
+          (if (w5-trust-sha256-id? (get sbom :manifest-id))
+            (if (w5-trust-sha256-id? (get sbom :source-graph-id))
+              (if (w5-trust-sha-vector? (get sbom :dependency-ids))
+                (if (= (get sbom :dependency-ids)
+                       [(get (first (get request :dependencies))
+                             :dependency-id)])
+                  (if (and (vector? capabilities) (= 1 (count capabilities)))
+                    (if (w5-trust-capability-valid? (first capabilities))
+                      (if (and (vector? generated) (= 1 (count generated)))
+                        (if (w5-trust-generated-source-valid?
+                             (first generated))
+                          (if (and (vector? blobs) (= 1 (count blobs)))
+                            (if (w5-trust-blob-valid? (first blobs))
+                                (if (w5-trust-sha-vector?
+                                     (get sbom :unsafe-audit-ids))
+                                (if (= 1 (count (get sbom :unsafe-audit-ids)))
+                                  (if (w5-trust-find
+                                       (get request :unsafe-audits)
+                                       :audit-id
+                                       (first (get sbom :unsafe-audit-ids)))
+                                (if (w5-trust-sha256-id?
+                                     (get sbom :provenance-id))
+                                  (if (w5-trust-sha256-id?
+                                       (get sbom :content-hash))
+                                    (if (= :descriptor-only
+                                           (get sbom :verification-status))
+                                      (w5-trust-nonempty-string?
+                                       (get sbom :actual-sbom-path)) false)
+                                    false)
+                                  false)
+                                false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-trust-signature-valid? [record request]
+  (if (w5-trust-exact-keys?
+       record #{:signature-id :artifact-id :manifest-id :provenance-id
+                :sbom-id :attestation-id :unsafe-audit-id :build-recipe-id
+                :payload-hash :signer-id :policy-id :canonical?
+                :verification-status :actual-signature-path})
+    (if (w5-trust-sha256-id? (get record :signature-id))
+      (if (= (get request :root-artifact-id) (get record :artifact-id))
+        (if (w5-trust-sha256-id? (get record :manifest-id))
+          (if (w5-trust-sha256-id? (get record :provenance-id))
+            (if (= (get record :sbom-id)
+                   (get (get request :sbom) :sbom-id))
+              (if (w5-trust-sha256-id? (get record :attestation-id))
+                (if (w5-trust-sha256-id?
+                     (get record :unsafe-audit-id))
+                  (if (w5-trust-sha256-id?
+                       (get record :build-recipe-id))
+                    (if (w5-trust-sha256-id?
+                         (get record :payload-hash))
+                      (if (= (get (get request :sbom) :content-hash)
+                             (get record :payload-hash))
+                        (if (w5-trust-sha256-id? (get record :signer-id))
+                        (if (w5-trust-sha256-id? (get record :policy-id))
+                          (if (= true (get record :canonical?))
+                            (if (= :pending
+                                   (get record :verification-status))
+                              (w5-trust-nonempty-string?
+                               (get record :actual-signature-path)) false)
+                            false)
+                          false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-signature-subject-map []
+  [{:signature-id
+    "sha256:ad3c02832063953d42849979c22db41b4f553b63217a8ffad00c21dc37f5be9d"
+    :attestation-id
+    "sha256:e1cff44867a0f828c40a17d6bf473f2563b7b57f3583ae61ffc24738fa584fe7"
+    :rebuild-id
+    "sha256:eeaae1930e57101bb78e8c452198913d5a3effe836154f6e1066e5624427182a"
+    :build-recipe-id
+    "sha256:ce6953e8d51691e803c2bae676e2beb08e3822081ab11a4110632ab976f7171e"
+    :signer-id
+    "sha256:3730b81a7131257e8f7b753584eb4f381d1b442a1439a0cd697ecd8dd257b391"
+    :trust-anchor-id
+    "sha256:100610e92896adc0a9fe1d1b2640ed79790846dbcdc56b0800a596e03b582f42"}
+   {:signature-id
+    "sha256:24a34fc7500b271e3d477427ba302c857e591987d15385e85449f836ad840085"
+    :attestation-id
+    "sha256:a9506e06175d7b65d4dac249e772d78177539ef6c7a083b9f71907e47e287f42"
+    :rebuild-id
+    "sha256:0f9d6f0e8e988252a2fabb47061eb819fa603a0bf0d17b4e39dc4a5d095bc9df"
+    :build-recipe-id
+    "sha256:52e88d87153e60b0bcba2279c95a75f47dbf93898db7ff3ea82d88553b01917f"
+    :signer-id
+    "sha256:65bf291de86a8c52e2b95177d886f67da0b663cf7da2e6295906b7fdf812bf14"
+    :trust-anchor-id
+    "sha256:a17343c9e25cd0021ddcdb8eac2ce4bd404c9e2be3403f4bb4a0fe37bfd5b22f"}])
+
+(defn w5-trust-signature-subject [record request]
+  (let [attestation (w5-trust-find (get request :attestations)
+                                   :attestation-id
+                                   (get record :attestation-id))
+        rebuild (w5-trust-find (get request :diverse-rebuilds)
+                               :rebuild-id
+                               (get attestation :rebuild-id))
+        anchor (w5-trust-find (get request :trust-anchors)
+                              :operator-id
+                              (get record :signer-id))]
+    (if (and attestation rebuild anchor)
+      {:signature-id (get record :signature-id)
+       :attestation-id (get record :attestation-id)
+       :rebuild-id (get rebuild :rebuild-id)
+       :build-recipe-id (get record :build-recipe-id)
+       :signer-id (get record :signer-id)
+       :trust-anchor-id (get anchor :anchor-id)}
+      nil)))
+
+(defn w5-trust-signature-cross-bindings-valid? [record request]
+  (let [attestation (w5-trust-find (get request :attestations)
+                                   :attestation-id
+                                   (get record :attestation-id))
+        recipe (w5-trust-find (get request :build-recipes)
+                              :build-recipe-id
+                              (get record :build-recipe-id))
+        audit (w5-trust-find (get request :unsafe-audits)
+                             :audit-id
+                             (get record :unsafe-audit-id))
+        anchor (w5-trust-find (get request :trust-anchors)
+                              :operator-id
+                              (get record :signer-id))
+        rebuild (w5-trust-find (get request :diverse-rebuilds)
+                               :rebuild-id
+                               (get attestation :rebuild-id))]
+    (if (and attestation recipe audit anchor rebuild)
+      (if (= (get (get request :sbom) :manifest-id)
+             (get record :manifest-id))
+        (if (= (get attestation :manifest-id)
+                 (get record :manifest-id))
+              (if (= (get attestation :provenance-id)
+                   (get record :provenance-id))
+              (if (= (get attestation :build-recipe-id)
+                     (get record :build-recipe-id))
+                (if (= (get recipe :build-recipe-id)
+                       (get record :build-recipe-id))
+                  (if (= (get rebuild :build-recipe-id)
+                         (get record :build-recipe-id))
+                    (if (= (get rebuild :rebuild-id)
+                           (get attestation :rebuild-id))
+                      (if (= (get anchor :anchor-id)
+                             (get attestation :trust-anchor-id))
+                        (if (= (get rebuild :trust-anchor-id)
+                               (get attestation :trust-anchor-id))
+                          (if (= (get audit :audit-id)
+                                 (get record :unsafe-audit-id))
+                            true false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+        false)
+      false)))
+
+(defn w5-trust-signatures-valid? [request]
+  (let [records (get request :signatures)
+        expected (w5-trust-signature-subject-map)]
+    (if (and (vector? records) (= 2 (count records)))
+      (if (w5-trust-signature-valid? (first records) request)
+        (if (w5-trust-signature-valid? (second records) request)
+          (if (w5-trust-signature-cross-bindings-valid?
+               (first records) request)
+            (if (w5-trust-signature-cross-bindings-valid?
+                 (second records) request)
+              (if (= (w5-trust-signature-subject (first records) request)
+                     (get expected 0))
+                (if (= (w5-trust-signature-subject (second records) request)
+                       (get expected 1))
+                  (w5-trust-unique?
+                   [(get (first records) :signature-id)
+                    (get (second records) :signature-id)
+                    (get (first records) :attestation-id)
+                    (get (second records) :attestation-id)
+                    (get (get expected 0) :rebuild-id)
+                    (get (get expected 1) :rebuild-id)
+                    (get (first records) :build-recipe-id)
+                    (get (second records) :build-recipe-id)
+                    (get (first records) :signer-id)
+                    (get (second records) :signer-id)
+                    (get (get expected 0) :trust-anchor-id)
+                    (get (get expected 1) :trust-anchor-id)])
+                  false)
+                false)
+          false)
+        false)
+        false)
+      false))))
+
+(defn w5-trust-revocation-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:subject-kind :subject-id :status :source-id
+                :checked-at :failure-policy})
+    (if (keyword? (get record :subject-kind))
+      (if (w5-trust-sha256-id? (get record :subject-id))
+        (if (= :current (get record :status))
+          (if (w5-trust-sha256-id? (get record :source-id))
+            (if (w5-trust-sha256-id? (get record :checked-at))
+              (= :release-blocking (get record :failure-policy)) false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-revocation-subject-valid? [record request]
+  (if (= :dependency (get record :subject-kind))
+    (w5-trust-find (get request :dependencies) :dependency-id
+                   (get record :subject-id))
+    (if (= :builder (get record :subject-kind))
+      (w5-trust-find (get request :diverse-rebuilds) :builder-id
+                     (get record :subject-id))
+      (if (= :anchor (get record :subject-kind))
+        (w5-trust-find (get request :trust-anchors) :anchor-id
+                       (get record :subject-id))
+        (if (= :attestation (get record :subject-kind))
+          (w5-trust-find (get request :attestations) :attestation-id
+                         (get record :subject-id))
+          (if (= :signature (get record :subject-kind))
+            (w5-trust-find (get request :signatures) :signature-id
+                           (get record :subject-id))
+            (if (= :unsafe-audit (get record :subject-kind))
+              (w5-trust-find (get request :unsafe-audits) :audit-id
+                             (get record :subject-id))
+              (if (= :compiler (get record :subject-kind))
+                (loop [remaining (get request :lineage)]
+                  (if (= (count remaining) 0)
+                    false
+                    (if (= (get (first remaining) :compiler-executable-id)
+                           (get record :subject-id))
+                      true
+                      (recur (rest remaining)))))
+                (if (= :package (get record :subject-kind))
+                  (w5-trust-find (get request :dependencies) :dependency-id
+                                 (get record :subject-id))
+                  (if (= :provenance (get record :subject-kind))
+                    (if (w5-trust-find (get request :attestations)
+                                       :provenance-id
+                                       (get record :subject-id))
+                      true
+                      (w5-trust-find (get request :upstream-ids)
+                                     :independent-verification-id
+                                     (get record :subject-id)))
+                    false))))))))))
+
+(defn w5-trust-revocation-pair-present? [records kind subject-id]
+  (if (= (count records) 0)
+    false
+    (if (and (= kind (get (first records) :subject-kind))
+             (= subject-id (get (first records) :subject-id)))
+      true
+      (recur (rest records) kind subject-id))))
+
+(defn w5-trust-revocation-subjects-valid? [request]
+  (let [records (get request :revocations)
+        lineage (get request :lineage)
+        dependency (get (first (get request :dependencies)) :dependency-id)
+        builder-a (get (first (get request :diverse-rebuilds)) :builder-id)
+        builder-b (get (second (get request :diverse-rebuilds)) :builder-id)
+        anchor-a (get (first (get request :trust-anchors)) :anchor-id)
+        anchor-b (get (second (get request :trust-anchors)) :anchor-id)
+        att-a (get (first (get request :attestations)) :attestation-id)
+        att-b (get (second (get request :attestations)) :attestation-id)
+        sig-a (get (first (get request :signatures)) :signature-id)
+        sig-b (get (second (get request :signatures)) :signature-id)
+        audit (get (first (get request :unsafe-audits)) :audit-id)
+        compiler-a (get (first lineage) :compiler-executable-id)
+        compiler-b (get (second lineage) :compiler-executable-id)
+        compiler-c (get (get lineage 2) :compiler-executable-id)
+        compiler-d (get (get lineage 3) :compiler-executable-id)
+        provenance-a (get (first (get request :attestations)) :provenance-id)
+        provenance-b (get (second (get request :attestations)) :provenance-id)]
+    (if (= 17 (count records))
+      (if (w5-trust-revocation-pair-present? records :dependency dependency)
+        (if (w5-trust-revocation-pair-present? records :package dependency)
+          (if (w5-trust-revocation-pair-present? records :builder builder-a)
+            (if (w5-trust-revocation-pair-present? records :builder builder-b)
+              (if (w5-trust-revocation-pair-present? records :anchor anchor-a)
+                (if (w5-trust-revocation-pair-present? records :anchor anchor-b)
+                  (if (w5-trust-revocation-pair-present? records :attestation att-a)
+                    (if (w5-trust-revocation-pair-present? records :attestation att-b)
+                      (if (w5-trust-revocation-pair-present? records :signature sig-a)
+                        (if (w5-trust-revocation-pair-present? records :signature sig-b)
+                          (if (w5-trust-revocation-pair-present? records :unsafe-audit audit)
+                            (if (w5-trust-revocation-pair-present? records :compiler compiler-a)
+                              (if (w5-trust-revocation-pair-present? records :compiler compiler-b)
+                                (if (w5-trust-revocation-pair-present? records :compiler compiler-c)
+                                  (if (w5-trust-revocation-pair-present? records :compiler compiler-d)
+                                    (if (w5-trust-revocation-pair-present? records :provenance provenance-a)
+                                      (w5-trust-revocation-pair-present? records :provenance provenance-b)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-trust-revocations-valid? [request]
+  (let [records (get request :revocations)]
+    (if (and (vector? records) (> (count records) 0))
+      (loop [remaining records subjects []]
+        (if (= (count remaining) 0)
+          (if (w5-trust-unique? subjects)
+            (w5-trust-revocation-subjects-valid? request)
+            false)
+          (if (w5-trust-revocation-valid? (first remaining))
+            (if (w5-trust-revocation-subject-valid?
+                 (first remaining) request)
+            (recur (rest remaining)
+                   (conj subjects [(get (first remaining) :subject-kind)
+                                  (get (first remaining) :subject-id)]))
+            false)
+            false)))
+      false)))
+
+(defn w5-trust-unsafe-audit-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:audit-id :island-id :source-span :profiles :effects
+                :capabilities :preconditions :postconditions
+                :safe-boundary-id :review-id :review-status
+                :verification-status :actual-audit-path})
+    (if (w5-trust-sha256-id? (get record :audit-id))
+      (if (w5-trust-sha256-id? (get record :island-id))
+        (if (w5-trust-span? (get record :source-span))
+          (if (= :native-allocator
+                 (get (get record :source-span) :source-id))
+            (if (w5-trust-keyword-vector? (get record :profiles))
+            (if (> (count (get record :profiles)) 0)
+              (if (w5-trust-keyword-vector? (get record :effects))
+                (if (> (count (get record :effects)) 0)
+                  (if (w5-trust-keyword-vector? (get record :capabilities))
+                    (if (> (count (get record :capabilities)) 0)
+                  (if (w5-trust-keyword-vector?
+                       (get record :preconditions))
+                    (if (> (count (get record :preconditions)) 0)
+                      (if (w5-trust-keyword-vector?
+                         (get record :postconditions))
+                        (if (> (count (get record :postconditions)) 0)
+                      (if (w5-trust-sha256-id?
+                           (get record :safe-boundary-id))
+                        (if (w5-trust-sha256-id? (get record :review-id))
+                          (if (= :passed (get record :review-status))
+                            (if (= :descriptor-only
+                                   (get record :verification-status))
+                              (w5-trust-nonempty-string?
+                               (get record :actual-audit-path)) false)
+                      false)
+                        false)
+                      false)
+                    false)
+                  false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+          false)
+        false)
+      false)
+    false)))
+
+(def w5-trust-residual-components
+  [:clojure-stage0-seed :jvm-stage2-runtime :native-linux-replay
+   :independent-trust-anchors :independent-sol-review :stage-equivalence
+   :external-signing])
+
+(defn w5-trust-tcb-delta-valid? [request]
+  (let [delta (get request :tcb-delta)]
+    (if (w5-trust-exact-keys?
+         delta #{:delta-id :prior-trusted-components
+                 :candidate-trusted-components :added-components
+                 :removed-components :retained-components
+                 :residual-trusted-components :derived? :status
+                 :actual-report-path})
+      (if (w5-trust-sha256-id? (get delta :delta-id))
+        (if (w5-trust-keyword-vector?
+             (get delta :prior-trusted-components))
+          (if (w5-trust-keyword-vector?
+               (get delta :candidate-trusted-components))
+            (if (w5-trust-keyword-vector?
+                 (get delta :added-components))
+              (if (w5-trust-keyword-vector?
+                   (get delta :removed-components))
+                (if (w5-trust-keyword-vector?
+                     (get delta :retained-components))
+                  (if (= w5-trust-residual-components
+                         (get delta :residual-trusted-components))
+                    (if (= true (get delta :derived?))
+                      (if (= [:clojure-stage0-seed :jvm-stage2-runtime]
+                             (get delta :prior-trusted-components))
+                        (if (= [:llvm-toolchain :native-linux-replay]
+                               (get delta :candidate-trusted-components))
+                          (if (= [:llvm-toolchain :native-linux-replay]
+                                 (get delta :added-components))
+                            (if (= [] (get delta :removed-components))
+                              (if (= [:clojure-stage0-seed
+                                      :jvm-stage2-runtime]
+                                     (get delta :retained-components))
+                                (if (= :open (get delta :status))
+                                  (w5-trust-nonempty-string?
+                                   (get delta :actual-report-path)) false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-trust-equivalence-valid? [request]
+  (let [record (get request :equivalence)]
+    (if (w5-trust-exact-keys?
+         record #{:report-id :target :stage-a-artifact-id
+                  :stage-b-artifact-id :modes :status
+                  :diagnostic-span-parity :independent-recomputation
+                  :actual-report-path})
+      (if (w5-trust-sha256-id? (get record :report-id))
+        (if (= w5-trust-target-scope (get record :target))
+          (if (w5-trust-sha256-id? (get record :stage-a-artifact-id))
+            (if (w5-trust-sha256-id? (get record :stage-b-artifact-id))
+                (if (= (get record :stage-a-artifact-id)
+                     (get (get (get request :lineage) 2) :artifact-id))
+                (if (= (get record :stage-b-artifact-id)
+                       (get request :root-artifact-id))
+                  (if (= w5-trust-equivalence-modes (get record :modes))
+                    (if (or (= :pending (get record :status))
+                            (= :passed (get record :status)))
+                      (if (or (= :pending
+                                 (get record :diagnostic-span-parity))
+                              (= :passed
+                                 (get record :diagnostic-span-parity)))
+                        (if (or (= :pending
+                                   (get record :independent-recomputation))
+                                (= :passed
+                                   (get record :independent-recomputation)))
+                          (w5-trust-nonempty-string?
+                           (get record :actual-report-path)) false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-trust-development-replay-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:image-id :platform :pull-policy :toolchain
+                :toolchain-version :toolchain-files-id :docker-engine-id
+                :docker-host-id :qemu-observation-id :binfmt-observation-id
+                :kernel-id :cgroup-observation-id :execveat-observation-id
+                :command-id :result-id :status :authority})
+    (if (w5-trust-sha256-id? (get record :image-id))
+      (if (= :linux-amd64 (get record :platform))
+        (if (= :never (get record :pull-policy))
+          (if (keyword? (get record :toolchain))
+            (if (w5-trust-nonempty-string?
+                 (get record :toolchain-version))
+              (if (w5-trust-sha256-id?
+                   (get record :toolchain-files-id))
+                (if (w5-trust-sha256-id?
+                     (get record :docker-engine-id))
+                  (if (w5-trust-sha256-id?
+                       (get record :docker-host-id))
+                    (if (w5-trust-sha256-id?
+                         (get record :qemu-observation-id))
+                      (if (w5-trust-sha256-id?
+                           (get record :binfmt-observation-id))
+                        (if (w5-trust-sha256-id? (get record :kernel-id))
+                          (if (w5-trust-sha256-id?
+                               (get record :cgroup-observation-id))
+                            (if (w5-trust-sha256-id?
+                                 (get record :execveat-observation-id))
+                              (if (w5-trust-sha256-id?
+                                   (get record :command-id))
+                                (if (w5-trust-sha256-id?
+                                     (get record :result-id))
+                                  (if (= :development-only
+                                         (get record :authority))
+                                    (keyword? (get record :status)) false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-replay-valid? [request]
+  (let [replay (get request :replay)
+        development (get replay :development)
+        native (get replay :native)]
+    (if (w5-trust-exact-keys?
+         replay #{:predicate-symbol :predicate-version :development
+                  :native :actual-replay-root})
+      (if (symbol? (get replay :predicate-symbol))
+        (if (= 1 (get replay :predicate-version))
+          (if (w5-trust-exact-keys? development #{:gcc :llvm})
+            (if (w5-trust-development-replay-valid? (get development :gcc))
+              (if (w5-trust-development-replay-valid?
+                   (get development :llvm))
+                (if (w5-trust-find (get request :toolchains) :files-id
+                                   (get (get development :gcc)
+                                        :toolchain-files-id))
+                  (if (w5-trust-find (get request :toolchains) :files-id
+                                     (get (get development :llvm)
+                                          :toolchain-files-id))
+                (if (w5-trust-exact-keys?
+                     native #{:platform :native-host? :emulator-authority?
+                              :kernel-id :cgroup-observation-id
+                              :execveat-observation-id :environment-id :lock-id
+                              :command-id :result-id :status :authority})
+                  (if (= :linux-amd64 (get native :platform))
+                    (if (= false (get native :native-host?))
+                      (if (= true (get native :emulator-authority?))
+                        (if (w5-trust-sha256-id? (get native :kernel-id))
+                          (if (w5-trust-sha256-id?
+                               (get native :cgroup-observation-id))
+                            (if (w5-trust-sha256-id?
+                                 (get native :execveat-observation-id))
+                              (if (w5-trust-sha256-id?
+                                   (get native :environment-id))
+                                (if (w5-trust-find (get request :environments)
+                                                   :environment-id
+                                                   (get native :environment-id))
+                                  (if (w5-trust-sha256-id?
+                                   (get native :lock-id))
+                                    (if (w5-trust-find (get request :locks)
+                                                       :lock-id
+                                                       (get native :lock-id))
+                                  (if (w5-trust-sha256-id?
+                                       (get native :command-id))
+                                    (if (w5-trust-sha256-id?
+                                         (get native :result-id))
+                                      (if (= :pending (get native :status))
+                                        (= :development-only
+                                           (get native :authority)) false)
+                                      false)
+                                    false)
+                                  false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-trust-cross-binding-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:w2-provider-id :w2-provider-path :w2-provider-hash
+                :w3-admitted-executable-id :w3-admitted-executable-path
+                :w3-admitted-executable-hash :w3-envelope-artifact-id
+                :verification-id :status :actual-verification-path})
+    (if (w5-trust-sha256-id? (get record :w2-provider-id))
+      (if (= (get record :w2-provider-id)
+             (get record :w3-admitted-executable-id))
+        (if (w5-trust-nonempty-string? (get record :w2-provider-path))
+          (if (w5-trust-nonempty-string?
+               (get record :w3-admitted-executable-path))
+            (if (= (get record :w2-provider-path)
+                   (get record :w3-admitted-executable-path))
+          (if (= (get record :w2-provider-hash)
+                 (get record :w3-admitted-executable-hash))
+            (if (w5-trust-sha256-id?
+                 (get record :w3-envelope-artifact-id))
+              (if (not (= (get record :w3-envelope-artifact-id)
+                          (get record :w2-provider-id)))
+                (if (w5-trust-sha256-id? (get record :verification-id))
+                  (if (= :pending (get record :status))
+                    (w5-trust-nonempty-string?
+                     (get record :actual-verification-path)) false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-authority-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:candidate-invokes-clojure? :candidate-links-jvm?
+                :build-invokes-clojure? :public-route-invokes-clojure?
+                :uses-ambient-process? :uses-ambient-filesystem?
+                :uses-hidden-file-authority? :unsupported-target-invokes-clojure?
+                :unsupported-target-links-jvm? :recovery-path-separated?
+                :reported-clojure-seed-boundary? :self-hosted? :release?
+                :public-authority?})
+    (if (= false (get record :candidate-invokes-clojure?))
+      (if (= false (get record :candidate-links-jvm?))
+        (if (= false (get record :build-invokes-clojure?))
+          (if (= false (get record :public-route-invokes-clojure?))
+            (if (= false (get record :uses-ambient-process?))
+              (if (= false (get record :uses-ambient-filesystem?))
+                (if (= false (get record :uses-hidden-file-authority?))
+                  (if (= false
+                         (get record :unsupported-target-invokes-clojure?))
+                    (if (= false
+                           (get record :unsupported-target-links-jvm?))
+                      (if (= true (get record :recovery-path-separated?))
+                        (if (= true
+                               (get record :reported-clojure-seed-boundary?))
+                          (if (= false (get record :self-hosted?))
+                            (if (= false (get record :release?))
+                              (= false (get record :public-authority?))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-review-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:reviewer-class :review-status :review-id :findings
+                :actual-review-path})
+    (if (= :independent-sol-review (get record :reviewer-class))
+      (if (= :pending (get record :review-status))
+        (if (w5-trust-sha256-id? (get record :review-id))
+          (if (= [] (get record :findings))
+            (w5-trust-nonempty-string? (get record :actual-review-path))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-claims-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:producer-asserted? :narrative-only?
+                :source-ownership-only? :check-only?
+                :container-evidence? :closure-authority?})
+    (if (= true (get record :producer-asserted?))
+      (if (= true (get record :narrative-only?))
+        (if (= false (get record :source-ownership-only?))
+          (if (= false (get record :check-only?))
+            (if (= true (get record :container-evidence?))
+              (= false (get record :closure-authority?))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-request-shape? [request]
+  (w5-trust-exact-keys?
+   request #{:artifact :schema-version :claimed-status :target-scope
+             :repository :root-artifact-id :seed-compiler-id :upstream-ids
+             :w2-w3-cross-binding :source-graphs :lineage :dependencies
+             :dependency-graphs :locks :environments :toolchains
+             :build-recipes :diverse-rebuilds :trust-anchors :attestations
+             :sbom :signatures :revocations :unsafe-audits :tcb-delta
+             :equivalence :replay :authority :review :claims :source-span}))
+
+(defn w5-trust-repository-valid? [record]
+  (if (w5-trust-exact-keys?
+       record #{:artifact-containing-commit :artifact-containing-tree
+                :source-root-id :actual-repository-root})
+    (if (w5-trust-git-id? (get record :artifact-containing-commit))
+      (if (w5-trust-git-id? (get record :artifact-containing-tree))
+        (if (w5-trust-sha256-id? (get record :source-root-id))
+          (w5-trust-nonempty-string? (get record :actual-repository-root))
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-trust-lineage-cross-bindings-valid? [request]
+  (let [nodes (get request :lineage)
+        sources (get request :source-graphs)
+        recipes (get request :build-recipes)
+        environments (get request :environments)
+        tools (get request :toolchains)]
+    (loop [remaining nodes]
+      (if (= (count remaining) 0)
+        true
+        (let [node (first remaining)]
+          (if (w5-trust-find sources :source-graph-id
+                             (get node :source-graph-id))
+            (if (w5-trust-find recipes :build-recipe-id
+                               (get node :build-recipe-id))
+              (if (w5-trust-find environments :environment-id
+                                 (get node :environment-id))
+                (if (w5-trust-find tools :toolchain-id
+                                   (get node :toolchain-id))
+                  (let [recipe (w5-trust-find recipes :build-recipe-id
+                                                (get node :build-recipe-id))]
+                    (if (= (get recipe :compiler-executable-id)
+                           (get node :compiler-executable-id))
+                      (if (= (get recipe :source-graph-id)
+                             (get node :source-graph-id))
+                        (if (= (get recipe :lock-id)
+                               (get node :lock-id))
+                          (if (= (get recipe :dependency-graph-id)
+                                 (get node :dependency-graph-id))
+                            (if (= (get recipe :environment-id)
+                                   (get node :environment-id))
+                              (if (= (get recipe :toolchain-id)
+                                     (get node :toolchain-id))
+                                (recur (rest remaining)) false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false))
+                  false)
+                false)
+              false)
+            false))))))
+
+(defn w5-trust-r3-recipe-cross-binding-valid? [request]
+  (let [stage3 (get (get request :lineage) 2)
+        recipe (w5-trust-find (get request :build-recipes)
+                              :build-recipe-id
+                              (get stage3 :build-recipe-id))
+        source (w5-trust-find (get request :source-graphs)
+                              :source-graph-id
+                              (get stage3 :source-graph-id))
+        graph (first (get request :dependency-graphs))
+        lock (first (get request :locks))
+        environment (w5-trust-find (get request :environments)
+                                   :environment-id
+                                   (get stage3 :environment-id))
+        toolchain (w5-trust-find (get request :toolchains)
+                                 :toolchain-id
+                                 (get stage3 :toolchain-id))]
+    (if (and stage3 recipe source graph lock environment toolchain)
+      (if (= :stage3 (get stage3 :stage-id))
+        (if (= (get recipe :build-recipe-id)
+               (get stage3 :build-recipe-id))
+          (if (= (get recipe :source-graph-id)
+                 (get source :source-graph-id))
+            (if (= (get recipe :compiler-executable-id)
+                   (get stage3 :compiler-executable-id))
+              (if (= (get recipe :toolchain-id)
+                     (get stage3 :toolchain-id))
+                (if (= (get recipe :environment-id)
+                       (get stage3 :environment-id))
+                  (if (= (get recipe :lock-id) (get lock :lock-id))
+                    (if (= (get recipe :dependency-graph-id)
+                           (get graph :dependency-graph-id))
+                      (if (= (get stage3 :lock-id) (get lock :lock-id))
+                        (if (= (get stage3 :dependency-graph-id)
+                               (get graph :dependency-graph-id))
+                          (if (= (get stage3 :environment-id)
+                                 (get environment :environment-id))
+                            (= (get stage3 :toolchain-id)
+                               (get toolchain :toolchain-id))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-trust-unsafe-audits-valid? [request]
+  (let [records (get request :unsafe-audits)]
+    (if (and (vector? records) (= 1 (count records)))
+      (w5-trust-unsafe-audit-valid? (first records))
+      false)))
+
+(defn w5-trust-request-valid? [request]
+  (if (w5-trust-request-shape? request)
+    (if (= :gravity/w5-trust-provenance-request (get request :artifact))
+      (if (= 1 (get request :schema-version))
+        (if (= :incomplete (get request :claimed-status))
+          (if (w5-trust-target-valid? (get request :target-scope))
+            (if (w5-trust-repository-valid? (get request :repository))
+              (if (w5-trust-sha256-id? (get request :root-artifact-id))
+                (if (w5-trust-sha256-id?
+                     (get request :seed-compiler-id))
+                  (if (w5-trust-upstream-valid?
+                       (get request :upstream-ids))
+                    (if (w5-trust-cross-binding-valid?
+                         (get request :w2-w3-cross-binding))
+                      (if (w5-trust-source-graphs-valid?
+                           (get request :source-graphs))
+                        (if (w5-trust-lineage-valid? request)
+                        (if (w5-trust-lineage-cross-bindings-valid? request)
+                            (if (w5-trust-r3-recipe-cross-binding-valid? request)
+                              (if (w5-trust-dependency-graphs-valid? request)
+                              (if (w5-trust-locks-valid? request)
+                                (if (w5-trust-environments-valid?
+                                     (get request :environments))
+                                  (if (w5-trust-toolchains-valid?
+                                       (get request :toolchains))
+                                    (if (w5-trust-build-recipes-valid? request)
+                                      (if (w5-trust-diverse-rebuilds-valid?
+                                           request)
+                                        (if (w5-trust-anchors-valid? request)
+                                          (if (w5-trust-attestations-valid?
+                                               request)
+                                            (if (w5-trust-sbom-valid? request)
+                                              (if (w5-trust-signatures-valid?
+                                                   request)
+                                                (if (w5-trust-revocations-valid?
+                                                     request)
+                                                  (if (w5-trust-unsafe-audits-valid?
+                                                       request)
+                                                    (if (w5-trust-tcb-delta-valid?
+                                                         request)
+                                                      (if (w5-trust-equivalence-valid?
+                                                           request)
+                                                        (if (w5-trust-replay-valid?
+                                                             request)
+                                                          (if (w5-trust-authority-valid?
+                                                               (get request :authority))
+                                                          (if (w5-trust-review-valid?
+                                                               (get request :review))
+                                                              (if (w5-trust-claims-valid?
+                                                                   (get request :claims))
+                                                                (if (w5-trust-span?
+                                                                     (get request :source-span))
+                                                                  (= :w5-trust-request
+                                                                     (get (get request :source-span)
+                                                                          :source-id))
+                                                                  false)
+                                                                false)
+                                                              false)
+                                                            false)
+                                                          false)
+                                                        false)
+                                                      false)
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn w5-trust-project [record fields]
+  (loop [remaining fields result {}]
+    (if (= (count remaining) 0)
+      result
+      (let [field (first remaining)]
+        (if (contains? record field)
+          (recur (rest remaining) (assoc result field (get record field)))
+          (recur (rest remaining) result))))))
+
+(defn w5-trust-identity-records [records fields]
+  (loop [remaining records result []]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining)
+             (conj result (w5-trust-project (first remaining) fields))))))
+
+(defn w5-trust-identity-input [request]
+  {:artifact (get request :artifact)
+   :schema-version (get request :schema-version)
+   :claimed-status (get request :claimed-status)
+   :target-scope (get request :target-scope)
+   :claims (get request :claims)
+   :repository (w5-trust-project
+                (get request :repository)
+                [:artifact-containing-commit
+                 :artifact-containing-tree :source-root-id])
+   :root-artifact-id (get request :root-artifact-id)
+   :seed-compiler-id (get request :seed-compiler-id)
+   :upstream-ids
+   {:w1 (w5-trust-project (get (get request :upstream-ids) :w1)
+                          [:artifact-id :content-hash :independent-verifier-id
+                           :independent-verification-id :status :producer-commit
+                           :producer-tree])
+    :w2 (w5-trust-project (get (get request :upstream-ids) :w2)
+                          [:artifact-id :content-hash :independent-verifier-id
+                           :independent-verification-id :status :producer-commit
+                           :producer-tree])
+    :w3 (w5-trust-project (get (get request :upstream-ids) :w3)
+                          [:artifact-id :content-hash :independent-verifier-id
+                           :independent-verification-id :status :producer-commit
+                           :producer-tree])
+    :w4 (w5-trust-project (get (get request :upstream-ids) :w4)
+                          [:artifact-id :content-hash :independent-verifier-id
+                           :independent-verification-id :status :producer-commit
+                           :producer-tree])}
+   :w2-w3-cross-binding (w5-trust-project (get request :w2-w3-cross-binding)
+                                          [:w2-provider-id :w2-provider-hash
+                                           :w3-admitted-executable-id
+                                           :w3-admitted-executable-hash
+                                           :w3-envelope-artifact-id :verification-id
+                                           :status])
+   :source-graphs
+   (w5-trust-identity-records
+    (get request :source-graphs)
+    [:source-graph-id :root-content-hash :component-ids
+     :component-content-hashes :generator-input-ids :canonical?
+     :verification-status])
+   :lineage
+   (w5-trust-identity-records
+    (get request :lineage)
+    [:artifact-id :stage-id :compiler-executable-id
+     :compiled-by-executable-id :source-graph-id :dependency-graph-id
+     :lock-id :environment-id :toolchain-id :build-recipe-id
+     :rebuild-parent-ids :producer-commit :producer-tree :content-hash
+     :content-hash-status])
+   :dependencies
+   (w5-trust-identity-records
+    (get request :dependencies)
+    [:dependency-id :version :content-hash :provenance-id :license-id
+     :advisory-status :revocation-status])
+   :dependency-graphs
+   (w5-trust-identity-records
+    (get request :dependency-graphs)
+    [:dependency-graph-id :dependency-ids :dependency-content-hashes
+     :dependency-provenance-ids :graph-content-hash :topological?
+     :complete? :verification-status])
+   :locks
+   (w5-trust-identity-records
+    (get request :locks)
+    [:lock-id :dependency-graph-id :dependency-ids
+     :dependency-content-hashes :complete? :offline? :content-hash
+     :verification-status])
+   :environments
+   (w5-trust-identity-records
+    (get request :environments)
+    [:environment-id :manifest-id :locale :timezone :filesystem-order
+     :timestamp-policy :random-seed :network-policy :allowed-environment
+     :content-hash :verification-status])
+   :toolchains
+   (w5-trust-identity-records
+    (get request :toolchains)
+    [:toolchain-id :family :version :target :files-id :content-hash
+     :identity-status])
+   :build-recipes
+   (w5-trust-identity-records
+    (get request :build-recipes)
+    [:build-recipe-id :source-graph-id :lock-id :dependency-graph-id
+     :compiler-executable-id :toolchain-id :environment-id :target-scope
+     :capability-inventory-id :content-hash :verification-status])
+   :diverse-rebuilds
+   (w5-trust-identity-records
+    (get request :diverse-rebuilds)
+    [:rebuild-id :artifact-id :content-hash :source-graph-id
+     :compiler-executable-id :lock-id :dependency-graph-id
+     :build-recipe-id :builder-id :builder-role :toolchain-id :environment-id
+     :trust-anchor-id :comparison-status :independence-status
+     :content-hash-status])
+   :trust-anchors
+   (w5-trust-identity-records
+    (get request :trust-anchors)
+    [:anchor-id :anchor-kind :operator-id :root-metadata-id
+     :public-identity-id :verification-status :revocation-status :policy-id])
+   :attestations
+   (w5-trust-identity-records
+    (get request :attestations)
+    [:attestation-id :schema-version :artifact-id :manifest-id
+     :provenance-id :rebuild-id :builder-id :builder-role
+     :artifact-content-hash :source-graph-id :compiler-executable-id
+     :lock-id :dependency-graph-id :build-recipe-id :toolchain-id
+     :environment-id :trust-anchor-id :policy-level
+     :verification-status])
+   :sbom
+   {:sbom-id (get (get request :sbom) :sbom-id)
+    :artifact-id (get (get request :sbom) :artifact-id)
+    :manifest-id (get (get request :sbom) :manifest-id)
+    :source-graph-id (get (get request :sbom) :source-graph-id)
+    :dependency-ids (get (get request :sbom) :dependency-ids)
+    :capabilities
+    (w5-trust-identity-records
+     (get (get request :sbom) :capabilities)
+     [:capability-id :name :effect :scope :source-id :privileged?])
+    :generated-sources
+    (w5-trust-identity-records
+     (get (get request :sbom) :generated-sources)
+     [:generated-source-id :generator-id :input-hashes :content-hash])
+    :binary-blobs
+    (w5-trust-identity-records
+     (get (get request :sbom) :binary-blobs)
+     [:blob-id :source-id :content-hash :license-id :policy-id
+      :safety-status])
+    :unsafe-audit-ids (get (get request :sbom) :unsafe-audit-ids)
+    :provenance-id (get (get request :sbom) :provenance-id)
+    :content-hash (get (get request :sbom) :content-hash)
+    :verification-status (get (get request :sbom) :verification-status)}
+   :signatures
+   (w5-trust-identity-records
+    (get request :signatures)
+    [:signature-id :artifact-id :manifest-id :provenance-id :sbom-id
+     :attestation-id :unsafe-audit-id :build-recipe-id :payload-hash
+     :signer-id :policy-id :canonical? :verification-status])
+   :revocations
+   (w5-trust-identity-records
+    (get request :revocations)
+    [:subject-kind :subject-id :status :source-id :checked-at
+     :failure-policy])
+   :unsafe-audits
+   (w5-trust-identity-records
+    (get request :unsafe-audits)
+    [:audit-id :island-id :profiles :effects :capabilities
+     :preconditions :postconditions :safe-boundary-id :review-id
+     :review-status :verification-status])
+   :tcb-delta
+   (w5-trust-project (get request :tcb-delta)
+                     [:delta-id :prior-trusted-components
+                      :candidate-trusted-components :added-components
+                      :removed-components :retained-components
+                      :residual-trusted-components :derived? :status])
+   :equivalence
+   (w5-trust-project (get request :equivalence)
+                     [:report-id :target :stage-a-artifact-id
+                      :stage-b-artifact-id :modes :status
+                      :diagnostic-span-parity :independent-recomputation])
+   :replay
+   (w5-trust-project (get request :replay)
+                     [:predicate-symbol :predicate-version :development :native])
+   :authority (get request :authority)
+   :review (w5-trust-project (get request :review)
+                             [:reviewer-class :review-status :review-id :findings])})
+
+(defn w5-trust-provenance [request]
+  {:repository-root (get (get request :repository) :actual-repository-root)
+   :source-span-path (get (get request :source-span) :actual-source-path)
+   :upstream-artifact-paths
+   [(get (get (get request :upstream-ids) :w1) :actual-artifact-path)
+    (get (get (get request :upstream-ids) :w2) :actual-artifact-path)
+    (get (get (get request :upstream-ids) :w3) :actual-artifact-path)
+    (get (get (get request :upstream-ids) :w4) :actual-artifact-path)]
+   :cross-binding-path (get (get request :w2-w3-cross-binding)
+                            :actual-verification-path)
+   :source-graph-roots
+   [(get (first (get request :source-graphs)) :actual-source-root)
+    (get (second (get request :source-graphs)) :actual-source-root)
+    (get (get (get request :source-graphs) 2) :actual-source-root)
+    (get (get (get request :source-graphs) 3) :actual-source-root)]
+   :lineage-artifact-roots
+   [(get (first (get request :lineage)) :actual-artifact-path)
+    (get (second (get request :lineage)) :actual-artifact-path)
+    (get (get (get request :lineage) 2) :actual-artifact-path)
+    (get (get (get request :lineage) 3) :actual-artifact-path)]
+   :dependency-graph-path (get (first (get request :dependency-graphs))
+                               :actual-graph-path)
+   :lock-path (get (first (get request :locks)) :actual-lock-path)
+   :environment-roots
+   [(get (first (get request :environments)) :actual-build-root)
+    (get (second (get request :environments)) :actual-build-root)]
+   :toolchain-paths
+   [(get (first (get request :toolchains)) :actual-toolchain-path)
+    (get (second (get request :toolchains)) :actual-toolchain-path)]
+   :recipe-paths
+   [(get (first (get request :build-recipes)) :actual-recipe-path)
+    (get (second (get request :build-recipes)) :actual-recipe-path)]
+   :rebuild-roots
+   [(get (first (get request :diverse-rebuilds)) :actual-build-root)
+    (get (second (get request :diverse-rebuilds)) :actual-build-root)]
+   :anchor-locations
+   [(get (first (get request :trust-anchors)) :actual-anchor-location)
+    (get (second (get request :trust-anchors)) :actual-anchor-location)]
+   :attestation-paths
+   [(get (first (get request :attestations)) :actual-attestation-path)
+    (get (second (get request :attestations)) :actual-attestation-path)]
+   :sbom-path (get (get request :sbom) :actual-sbom-path)
+   :signature-paths
+   [(get (first (get request :signatures)) :actual-signature-path)
+    (get (second (get request :signatures)) :actual-signature-path)]
+   :tcb-report-path (get (get request :tcb-delta) :actual-report-path)
+   :equivalence-path (get (get request :equivalence) :actual-report-path)
+   :replay-root (get (get request :replay) :actual-replay-root)
+   :unsafe-audit-path (get (first (get request :unsafe-audits))
+                           :actual-audit-path)
+   :review-path (get (get request :review) :actual-review-path)})
+
+(def w5-trust-diagnostic-source-span-value
+  {:source-id :w5-trust-request
+   :actual-source-path "bootstrap/clojure/fixtures/self-hosting/w5-trust/request.gravity"
+   :start {:byte 0 :line 1 :column 1}
+   :end {:byte 0 :line 1 :column 1}})
+
+(defn w5-trust-diagnostic-source-span [request]
+  (let [span (get request :source-span)]
+    (if (w5-trust-span? span)
+      span
+      w5-trust-diagnostic-source-span-value)))
+
+(defn w5-trust-diagnostic [request rule reason remediation field]
+  {:artifact :gravity/w5-trust-provenance-diagnostic
+   :rule rule
+   :diagnostic-id rule
+   :severity :error
+   :stage :w5-wave3-trust-provenance
+   :reason reason
+   :field field
+   :source-span (w5-trust-diagnostic-source-span request)
+   :provenance (w5-trust-provenance request)
+   :profile :meta
+   :target :llvm-x86_64-linux
+   :remediation remediation
+   :authority :non-authority
+   :clojure-seed-boundary? true})
+
+(defn w5-trust-first-failure [request]
+  (if (w5-trust-request-shape? request)
+    (if (and (= :gravity/w5-trust-provenance-request (get request :artifact))
+             (= 1 (get request :schema-version))
+             (= :incomplete (get request :claimed-status)))
+      (if (not (w5-trust-target-valid? (get request :target-scope)))
+        [(w5-trust-diagnostic request "W5-TRUST-TARGET"
+                              :candidate-target-incoherent
+                              :use-exact-linux-x86-64-llvm-elf-sysv-scope
+                              :target-scope)]
+        (if (not (w5-trust-repository-valid? (get request :repository)))
+          [(w5-trust-diagnostic request "W5-TRUST-SCHEMA"
+                                :repository-provenance-invalid
+                                :provide-exact-versioned-request
+                                :repository)]
+          (if (not (w5-trust-sha256-id? (get request :root-artifact-id)))
+            [(w5-trust-diagnostic request "W5-TRUST-SCHEMA"
+                                  :root-artifact-identity-invalid
+                                  :provide-exact-versioned-request
+                                  :root-artifact-id)]
+            (if (not (w5-trust-sha256-id? (get request :seed-compiler-id)))
+              [(w5-trust-diagnostic request "W5-TRUST-SCHEMA"
+                                    :seed-compiler-identity-invalid
+                                    :provide-exact-versioned-request
+                                    :seed-compiler-id)]
+        (if (not (w5-trust-cross-binding-valid?
+                  (get request :w2-w3-cross-binding)))
+          [(w5-trust-diagnostic request "W5-TRUST-LINEAGE"
+                                :cross-binding-invalid
+                                :repair-acyclic-reachable-compiler-lineage
+                                :w2-w3-cross-binding)]
+          (if (not (w5-trust-source-graphs-valid?
+                    (get request :source-graphs)))
+            [(w5-trust-diagnostic request "W5-TRUST-LINEAGE"
+                                  :source-graph-invalid
+                                  :repair-acyclic-reachable-compiler-lineage
+                                  :source-graphs)]
+        (if (not (w5-trust-upstream-valid? (get request :upstream-ids)))
+          [(w5-trust-diagnostic request "W5-TRUST-UPSTREAM"
+                                :upstream-content-id-or-status-mismatch
+                                :bind-each-upstream-artifact-by-content-id
+                                :upstream-ids)]
+          (if (not (w5-trust-lineage-valid? request))
+            [(w5-trust-diagnostic request "W5-TRUST-LINEAGE"
+                                  :lineage-cycle-gap-or-unreachable-node
+                                  :repair-acyclic-reachable-compiler-lineage
+                                  :lineage)]
+            (if (not (w5-trust-lineage-cross-bindings-valid? request))
+              [(w5-trust-diagnostic request "W5-TRUST-RECIPE"
+                                    :stage-recipe-lineage-mismatch
+                                    :bind-stage-recipe-to-exact-input-ids
+                                    :lineage)]
+              (if (not (w5-trust-r3-recipe-cross-binding-valid? request))
+                [(w5-trust-diagnostic request "W5-TRUST-RECIPE"
+                                      :r3-recipe-input-mismatch
+                                      :bind-recipe-to-source-lock-environment-toolchain
+                                      :build-recipes)]
+                (if (not (w5-trust-dependency-graphs-valid? request))
+                [(w5-trust-diagnostic request "W5-TRUST-DEPENDENCY"
+                                      :dependency-graph-mismatch
+                                      :bind-complete-topological-dependency-graph
+                                      :dependency-graphs)]
+                  (if (not (w5-trust-locks-valid? request))
+                  [(w5-trust-diagnostic request "W5-TRUST-LOCK"
+                                        :lock-content-or-graph-mismatch
+                                        :record-complete-offline-lock-content
+                                        :locks)]
+                                    (if (not (w5-trust-environments-valid?
+                            (get request :environments)))
+                    [(w5-trust-diagnostic request "W5-TRUST-ENVIRONMENT"
+                                          :hermetic-environment-mismatch
+                                          :declare-hermetic-build-environment
+                                          :environments)]
+                    (if (not (w5-trust-toolchains-valid?
+                              (get request :toolchains)))
+                      [(w5-trust-diagnostic request "W5-TRUST-TOOLCHAIN"
+                                            :toolchain-identity-mismatch
+                                            :bind-independent-toolchain-files
+                                            :toolchains)]
+                      (if (not (w5-trust-build-recipes-valid? request))
+                        [(w5-trust-diagnostic request "W5-TRUST-RECIPE"
+                                              :build-recipe-input-mismatch
+                                              :bind-recipe-to-source-lock-environment-toolchain
+                                              :build-recipes)]
+                        (if (not (w5-trust-diverse-rebuilds-valid? request))
+                          [(w5-trust-diagnostic request "W5-TRUST-DIVERSITY"
+                                                :non-diverse-rebuild
+                                                :provide-independent-diverse-rebuilds
+                                                :diverse-rebuilds)]
+                          (if (not (w5-trust-anchors-valid? request))
+                            [(w5-trust-diagnostic request "W5-TRUST-ANCHOR"
+                                                  :invalid-or-non-distinct-trust-anchor
+                                                  :verify-distinct-trust-anchors-and-roots
+                                                  :trust-anchors)]
+                            (if (not (w5-trust-attestations-valid? request))
+                              [(w5-trust-diagnostic request "W5-TRUST-ATTESTATION"
+                                                    :attestation-subject-or-policy-mismatch
+                                                    :bind-signed-attestation-to-exact-subject
+                                                    :attestations)]
+                              (if (not (w5-trust-sbom-valid? request))
+                                [(w5-trust-diagnostic request "W5-TRUST-SBOM"
+                                                      :sbom-inventory-mismatch
+                                                      :include-dependencies-capabilities-generated-and-blobs
+                                                      :sbom)]
+                                (if (not (w5-trust-signatures-valid? request))
+                                  [(w5-trust-diagnostic request "W5-TRUST-SIGNATURE"
+                                                        :noncanonical-or-unbound-signature
+                                                        :sign-canonical-manifest-provenance-and-sbom
+                                                        :signatures)]
+                                  (if (not (w5-trust-revocations-valid? request))
+                                    [(w5-trust-diagnostic request "W5-TRUST-REVOCATION"
+                                                          :revocation-not-current
+                                                          :record-current-release-blocking-revocations
+                                                          :revocations)]
+                                    (if (not (w5-trust-unsafe-audits-valid? request))
+                                      [(w5-trust-diagnostic request "W5-TRUST-UNSAFE-AUDIT"
+                                                            :unsafe-island-audit-missing-or-unreviewed
+                                                            :attach-reviewed-unsafe-island-audit
+                                                            :unsafe-audits)]
+                                      (if (not (w5-trust-tcb-delta-valid? request))
+                                        [(w5-trust-diagnostic request "W5-TRUST-TCB"
+                                                              :residual-trusted-component-concealed
+                                                              :derive-and-list-every-residual-trusted-component
+                                                              :tcb-delta)]
+                                        (if (not (w5-trust-equivalence-valid? request))
+                                          [(w5-trust-diagnostic request "W5-TRUST-EQUIVALENCE"
+                                                                :stage-equivalence-unbound
+                                                                :bind-independent-stage-equivalence-report
+                                                                :equivalence)]
+                                          (if (not (w5-trust-replay-valid? request))
+                                            [(w5-trust-diagnostic request "W5-TRUST-REPLAY"
+                                                                  :native-replay-or-container-authority-mismatch
+                                                                  :bind-native-linux-replay-not-container-evidence
+                                                                  :replay)]
+                                            (if (not (w5-trust-authority-valid?
+                                                      (get request :authority)))
+                                              [(w5-trust-diagnostic request "W5-TRUST-AUTHORITY"
+                                                                    :authority-or-seed-boundary-forgery
+                                                                    :keep-seed-boundary-and-nonauthority-explicit
+                                                                    :authority)]
+                                              (if (not (w5-trust-review-valid?
+                                                        (get request :review)))
+                                                [(w5-trust-diagnostic request "W5-TRUST-REVIEW"
+                                                                      :independent-sol-review-missing
+                                                                      :obtain-independent-sol-review
+                                                                      :review)]
+                                                (if (not (w5-trust-claims-valid?
+                                                          (get request :claims)))
+                                                  [(w5-trust-diagnostic request "W5-TRUST-SCHEMA"
+                                                                        :non-authoritative-producer-or-check-only-claim
+                                                                        :keep-producer-and-container-evidence-nonauthoritative
+                                                                        :claims)]
+                                                  (if (not (if (w5-trust-span?
+                                                                 (get request :source-span))
+                                                               (= :w5-trust-request
+                                                                  (get (get request :source-span)
+                                                                       :source-id))
+                                                               false))
+                                                    [(w5-trust-diagnostic request "W5-TRUST-SCHEMA"
+                                                                          :source-span-missing
+                                                                          :provide-exact-versioned-request
+                                                                          :source-span)]
+                                                    []))))))))))))))))))))))))))))
+      [(w5-trust-diagnostic request "W5-TRUST-SCHEMA"
+                            :invalid-versioned-request-shape
+                            :provide-exact-versioned-request
+                            :request)]
+    [(w5-trust-diagnostic request "W5-TRUST-SCHEMA"
+                          :invalid-versioned-request-shape
+                          :provide-exact-versioned-request
+                          :request)]))))
+
+(defn w5-trust-gaps []
+  [:native-linux-replay-pending :independent-trust-anchors-pending
+   :independent-sol-review-pending :actual-stage-equivalence-pending
+   :external-signing-pending :attestation-verification-pending
+   :upstream-independent-verification-pending :clojure-seed-boundary])
+
+(defn w5-trust-build-accepted [request]
+  {:status :accepted
+   :artifact :gravity/w5-trust-provenance-verification
+   :schema-version 1
+   :trust-status :incomplete
+   :closure-status :incomplete
+   :candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :artifact-format :elf :abi :sysv-amd64}
+   :identity-input (w5-trust-identity-input request)
+   :provenance (w5-trust-provenance request)
+   :gaps (w5-trust-gaps)
+   :residual-trusted-components w5-trust-residual-components
+   :diagnostics []
+   :authority :non-authority
+   :public-authority? false
+   :proof-authority? false
+   :release-authority? false
+   :full-language-completion-authority? false
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :independent-trust-anchors? false
+   :native-linux-replay? false
+   :stage-equivalence? false
+   :signing? false
+   :recomputation-mode :structural-only
+   :hash-validation {:status :pending
+                     :raw-byte-hashes :pending
+                     :canonical-byte-hashes :pending}
+   :actual-stage2-harness :jvm})
+
+(defn w5-trust-provenance-verify [request]
+  (let [diagnostics (w5-trust-first-failure request)]
+    (if (= 0 (count diagnostics))
+      (w5-trust-build-accepted request)
+      {:status :rejected
+       :artifact :gravity/w5-trust-provenance-verification
+       :schema-version 1
+       :trust-status :incomplete
+       :closure-status :incomplete
+       :candidate-target :llvm-x86_64-linux
+       :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                            :artifact-format :elf :abi :sysv-amd64}
+       :identity-input nil
+       :provenance nil
+       :gaps (w5-trust-gaps)
+       :residual-trusted-components w5-trust-residual-components
+       :diagnostics diagnostics
+       :authority :non-authority
+       :public-authority? false
+       :proof-authority? false
+       :release-authority? false
+       :full-language-completion-authority? false
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :recomputation-mode :structural-only
+       :hash-validation {:status :pending
+                         :raw-byte-hashes :pending
+                         :canonical-byte-hashes :pending}
+       :actual-stage2-harness :jvm})))
+
+(defn w5-trust-provenance-execute [request]
+  (w5-trust-provenance-verify request))
+
+(defn w5-trust-provenance-run [request]
+  (w5-trust-provenance-verify request))
+
+(defn w5-trust-provenance-recompute [request]
+  (w5-trust-provenance-verify request))
+
+(defn w5-trust-structural-recompute [request]
+  (w5-trust-provenance-verify request))
+
+(defn w5-trust-verify-result [request candidate]
+  (let [expected (w5-trust-provenance-verify request)]
+    (if (= expected candidate)
+      {:status :passed
+       :artifact :gravity/w5-trust-provenance-result-verification
+       :schema-version 1
+       :trust-status (get expected :trust-status)
+       :closure-status (get expected :closure-status)
+       :diagnostics []
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :recomputation-mode :structural-only
+       :hash-validation {:status :pending
+                         :raw-byte-hashes :pending
+                         :canonical-byte-hashes :pending}
+       :public-authority? false}
+      {:status :rejected
+       :artifact :gravity/w5-trust-provenance-result-verification
+       :schema-version 1
+       :trust-status :incomplete
+       :closure-status :incomplete
+       :diagnostics
+       [(w5-trust-diagnostic request "W5-TRUST-SUBSTITUTION"
+                             :verification-result-substitution
+                             :recompute-verification-result
+                             :result)]
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :recomputation-mode :structural-only
+       :hash-validation {:status :pending
+                         :raw-byte-hashes :pending
+                         :canonical-byte-hashes :pending}
+       :public-authority? false})))

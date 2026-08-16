@@ -1,0 +1,19 @@
+; SH-07-B10 records only the scrutinee as unconditional match evaluation.
+(ns self-hosting.sh07-b10.scrutinee-branch-effects
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [route-effects])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10
+              :fixture :scrutinee-branch-effects
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn route-effects [value fail-scrutinee?]
+  (match (if fail-scrutinee?
+           (throw "scrutinee")
+           value)
+    0 (throw "zero-branch")
+    1 (throw "one-branch")
+    _ value))

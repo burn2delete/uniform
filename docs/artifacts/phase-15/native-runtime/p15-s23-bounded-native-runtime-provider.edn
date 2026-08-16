@@ -1,0 +1,221 @@
+{:artifact :gravity/p15-s23-bounded-native-runtime-provider-proof
+ :schema-version 1
+ :status :complete-for-internal-bounded-native-runtime-provider
+ :scope :content-bound-precompiled-packet-runtime
+ :authority :none
+ :semantic-contract
+ {:path "bootstrap/gravity/p15_s23/native_runtime_driver.gravity"
+  :content-hash "sha256:4f7ab2fc7762c537d3ce93a0ca1faab35331f00128c6decd9ff8215dd3668a19"
+  :owner :gravity-source}
+ :provider
+ {:path "bootstrap/native/p15_native_runtime_driver.c"
+  :content-hash "sha256:ba62e0f054667daa9487d1d77e071ef2929b49ea7ffbccc83daac1b10a5f0ecd"
+  :implementation :host-authored-c
+  :target :arm64-macos
+  :profile :native
+  :runtime-provider :gravity.native/libsystem-stdio-v1
+  :allocation-provider :gravity.native/bounded-stack-storage-v1
+  :packet-transport :inherited-stdin
+  :application-output :inherited-stdout
+  :diagnostics :inherited-stderr
+  :build-command
+  ["/usr/bin/cc" "-arch" "arm64" "-std=c11" "-O0" "-Wall" "-Wextra"
+   "-Werror" "-pedantic" "-Wno-deprecated-declarations"
+   "bootstrap/native/p15_native_runtime_driver.c" "-o" "<private-output>"]
+  :observed-binary-kind "Mach-O 64-bit executable arm64"
+  :sample-binary-content-hash
+  "sha256:ebbcb45ad69700ca83588dc475bf6083b2606e5ce9981c40ffeb0873188b4879"
+  :reproducible-binary-proven? false
+  :undefined-imports
+  ["_CC_SHA256" "___chkstk_darwin" "___memcpy_chk" "___snprintf_chk"
+   "___stack_chk_fail" "___stack_chk_guard" "___stderrp" "___stdinp"
+   "___stdoutp" "_bzero" "_ferror" "_fflush" "_fprintf" "_fread"
+   "_fwrite" "_memchr" "_memcpy" "_printf" "_puts" "_strchr"
+   "_strcmp" "_strlen" "_strncmp" "_strstr"]
+  :process-imports? false
+  :filesystem-imports? false
+  :network-imports? false
+  :dynamic-loader-imports? false}
+ :packet-contract
+ {:format "gravity-native-runtime-v1"
+  :maximum-packet-bytes 65536
+  :maximum-instructions 128
+  :maximum-stack-values 128
+  :maximum-value-bytes 1024
+  :maximum-output-bytes 8192
+  :payload-content-binding :sha256
+  :runtime-rule-binding :gravity-source-sha256
+  :source-path-and-extension-preserved? true
+  :source-sha256-declared? true
+  :source-content-hash-verified-by-provider? false
+  :trusted-packet-constructor :clojure-test-and-bootstrap-boundary
+  :authenticated-packet-adapter
+  gravity.p15-native-packet-binding/bind-native-runtime-packet
+  :supported-operations
+  [push-string push-int push-bool push-nil str println jump
+   jump-if-false halt]
+  :canonical-integer-grammar? true
+  :strict-utf8? true
+  :embedded-nul-rejected? true
+  :stdout-buffered-until-complete-halt? true}
+ :packet-binding
+ {:path "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+  :public-api gravity.p15-native-packet-binding/bind-native-runtime-packet
+  :input :actual-target-neutral-stage2-runtime-packet-and-exact-trusted-context
+  :requested-target :c
+  :accepted-source-extensions [".gravity" ".qst"]
+  :packet-and-context-authenticator
+  gravity.bootstrap/p15-s23-closed-runtime-packet-authentic?
+  :authenticator-receives-both-packet-and-context? true
+  :authentication-completes-before-plan-lowering? true
+  :supported-plan-operations [literal quote str println]
+  :supported-builtin-arities [1 2]
+  :stable-diagnostics
+  {"authentication-and-tamper" "P15NP001"
+   "unsupported-plan" "P15NP002"
+   "wire-and-bound" "P15NP003"}
+  :provider-invoked-by-binding? false
+  :trusted-input :strictly-decoded-source-text-reencoded-as-utf8
+  :raw-source-bytes-consumed-by-adapter? false
+  :executed-provider-binary-bound-by-adapter? false
+  :source-content-hash-verified-by-provider? false
+  :implementation-content-hash
+  "sha256:4431797726f96a141bdfa1db7cde7a81fd3224656be8c3fa2ed8b62878b6e7b5"
+  :implementation-status :complete
+  :focused-validation-status :passed
+  :accepted-contextual-packet-executions 2
+  :pre-child-rejection-families
+  [:packet-envelope-tamper :coherent-source-context-mismatch
+   :coherent-source-path-mismatch :runtime-rule-tamper :plan-tamper
+   :unsupported-if :unsupported-let :wire-path-bound]}
+ :accepted-evidence
+ [{:source
+   "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-print.gravity"
+   :extension ".gravity"
+   :payload
+   "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-print.payload"
+   :stdout "Hello Gravity\n"
+   :exit 0}
+  {:source
+   "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-print.qst"
+   :extension ".qst"
+   :payload
+   "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-print.payload"
+   :stdout "Hello Gravity\n"
+   :exit 0}
+  {:source
+   "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-branch.gravity"
+   :payload
+   "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-branch.payload"
+   :stdout "ok\n"
+   :exit 0}
+  {:source
+   "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-str.gravity"
+   :payload
+   "bootstrap/clojure/fixtures/p15-native-runtime-driver/accepted-str.payload"
+   :stdout "name42\n"
+   :exit 0}]
+ :rejected-evidence
+ {:stable-exit 125
+  :diagnostics
+  ["P15NR001" "P15NR002" "P15NR003" "P15NR004" "P15NR005"
+   "P15NR006" "P15NR007" "P15NR008" "P15NR009" "P15NR010"]
+  :families
+  [:bad-cli-usage :packet-bound :embedded-nul :header-shape :source-extension
+   :runtime-rule-tamper :payload-hash-tamper :unsupported-operation
+   :invalid-utf8 :noncanonical-integer :noncanonical-instruction-count
+   :stack-underflow :bounded-value-overflow :bounded-output-overflow
+   :invalid-halt :missing-halt]}
+ :focused-validation
+ {:test-namespace gravity.p15-native-runtime-driver-test
+  :tests 15
+  :assertions 305
+  :failures 0
+  :errors 0
+  :receipt-scope :source-only-census
+ :test-source-content-hash
+  "sha256:cb6814c5039238c664bf2f0bda5a649b9f5d763e550a1f201b98fc87b07f87cd"
+  :profiles
+  {:fast {:tests 10 :assertions 235 :failures 0 :errors 0}
+   :authenticated-packet-binding {:tests 5 :assertions 70 :failures 0 :errors 0}}
+  :historical-receipt
+  {:tests 13
+   :assertions 303
+   :failures 0
+   :errors 0
+   :supervisor :gravity/hardened-shared-capacity-runner
+   :canonical-lock "/private/tmp/gravity-sh07-heavy.lock"
+   :run-id "c0beecca-06ed-41f2-9e28-9d22e2d804e2"
+   :elapsed-seconds 935.983
+   :peak-rss-bytes 4101619712
+   :peak-process-count 3
+   :log-content-hash
+   "sha256:3761b381b61f17c31780c24ebceeb108a097018fbef6819f478905f08d518b5f"
+   :status-content-hash
+   "sha256:60d06e7ad13b03e8f0375f67ae0e6472b4f2f2ddf46b167faa3f1a300f5e714f"
+   :test-source-content-hash
+   "sha256:08a12bfae9f7b29058c5e95b140eea0553befe3cf6413eb6e39942e78a3a9f96"
+   :attempt-history
+   [{:result :timed-out
+     :timeout-seconds 900
+     :exit-code 124
+     :child-exit-code 143
+     :peak-rss-bytes 4011704320
+     :log-content-hash
+     "sha256:feacfb9fe5ceb05c9b3545d8f82b3b57d213a3cfd407f76ede25533c8daa86b2"
+     :status-content-hash
+     "sha256:1d33743fa6c4b06b0c782320855dbbccafc3bce235979dedc453af6880d5a971"}
+    {:result :passed
+     :timeout-seconds 1800
+     :exit-code 0
+     :tests 13
+     :assertions 303}]
+   :authority :historical-nonauthority}
+  :coverage-audit
+  {:documents 240
+   :full-language-complete 0
+   :without-executable-owner 7
+   :public-accepted 74
+   :accepted-total 197
+   :public-rejected-specific 664
+   :rejected-total 1720}
+  :gravity-contract-check
+  {:verification-profile :hosted
+   :verification-target :jvm
+   :result "gravity stage0 check passed: gravity.bootstrap.p15-s23.native-runtime-driver"
+   :log-content-hash
+   "sha256:4ac705138dd19131bbddac7eb689913a5e10866f8f390fa09ba0110861d2c937"
+   :status-content-hash
+   "sha256:c1319780b6b8c506f6bcf58402d73fdb001306b278b5df9ddc9b1ed139bdef68"}}
+ :seed-boundary
+ {:selected-runtime-invokes-clojure? false
+  :selected-runtime-invokes-jvm? false
+  :selected-runtime-clojure-seed-boundary? false
+  :selected-child-clojure-seed-boundary? false
+  :compiler-clojure-seed-boundary? true
+  :adapter-clojure-seed-boundary? true
+  :verifier-clojure-seed-boundary? true
+  :artifact-clojure-seed-boundary? true
+  :artifact-construction-clojure-seed-boundary? true
+  :process-clojure-seed-boundary? true
+  :file-io-clojure-seed-boundary? true
+  :process-and-file-io-clojure-seed-boundary? true
+  :public-clojure-seed-boundary? true
+  :public-wrapper-clojure-seed-boundary? true
+  :global-clojure-seed-boundary? true
+  :public-path-boundary-reduced? false
+  :clojure-seed-boundary? true}
+ :limitations
+ {:public-command-route? false
+  :descriptor-relative-execution? false
+  :os-process-tree-containment? false
+  :packet-signature-verified? false
+  :source-content-hash-verified-by-provider? false
+  :compiler-authored-in-gravity? false
+  :provider-authored-in-gravity? false
+  :whole-language? false
+  :formal-language-complete? false
+  :full-language-completion-count 0
+  :self-hosted? false
+  :release-ready? false
+  :seedless-release? false}}

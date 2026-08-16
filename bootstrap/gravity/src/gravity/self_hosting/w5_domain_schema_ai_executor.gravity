@@ -1,0 +1,1339 @@
+; W5 Wave6 Slice B: bounded domain/schema/AI orchestration.
+; This is a static :meta consumer of supplied manifests.  It never contacts a
+; model provider, opens a database, executes a tool, or grants ambient host
+; authority.  Its accepted result is an incomplete, non-authoritative record.
+(ns gravity.self-hosting.w5-domain-schema-ai-executor
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-domain-schema-ai-policy
+             w5-domain-schema-ai-domain-manifest
+             w5-domain-schema-ai-schema-manifest
+             w5-domain-schema-ai-diagnostic-catalog
+             w5-domain-schema-ai-source-span
+             w5-domain-schema-ai-domain-valid?
+             w5-domain-schema-ai-schema-valid?
+             w5-domain-schema-ai-serializer-valid?
+             w5-domain-schema-ai-migration-valid?
+             w5-domain-schema-ai-provider-valid?
+             w5-domain-schema-ai-provider-identity-valid?
+             w5-domain-schema-ai-model-valid?
+             w5-domain-schema-ai-prompt-valid?
+             w5-domain-schema-ai-tool-valid?
+             w5-domain-schema-ai-agent-valid?
+             w5-domain-schema-ai-workflow-valid?
+             w5-domain-schema-ai-memory-valid?
+             w5-domain-schema-ai-policy-valid?
+             w5-domain-schema-ai-evaluation-valid?
+             w5-domain-schema-ai-human-review-valid?
+             w5-domain-schema-ai-defense-valid?
+             w5-domain-schema-ai-diagnostics-valid?
+             w5-domain-schema-ai-crosslinks-valid?
+             w5-domain-schema-ai-model-budget-valid?
+             w5-domain-schema-ai-agent-budget-valid?
+             w5-domain-schema-ai-budget-relations-valid?
+             w5-domain-schema-ai-request-valid?
+             w5-domain-schema-ai-path-ends-with?
+             w5-domain-schema-ai-identity-input
+             w5-domain-schema-ai-provenance
+             w5-domain-schema-ai-diagnostic
+             w5-domain-schema-ai-execute
+             w5-domain-schema-ai-run
+             w5-domain-schema-ai-verify
+             w5-domain-schema-ai-recompute
+             w5-domain-schema-ai-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-domain-schema-ai-executor
+     :owner :w5-wave6-slice-b
+     :source-language :gravity
+     :seed :clojure-stage0
+     :status :executable-leaf
+     :scope :stage-owned-nonauthority
+     :static-only? true
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :release? false
+     :public-authority? false
+     :authority :non-authority
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :artifact-format :elf :abi :sysv-amd64}
+     :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-arm64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-x86_64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :windows :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}]
+     :candidate-invokes-clojure? false
+     :candidate-links-jvm? false
+     :candidate-fallback? false
+     :residual-boundaries {:stage2-compiler-plan :clojure-bootstrap
+                           :stage2-runtime :jvm
+                           :provider-execution :pending
+                           :database-execution :pending
+                           :workflow-replay :pending
+                           :independent-policy-review :pending
+                           :filesystem-authority false
+                           :network-authority false
+                           :process-authority false}
+     :governing-documents ["DOM17" "DOM18" "S1" "S2" "S6"
+                           "A1" "A2" "A3" "A4" "A5" "A6"
+                           "A7" "A8" "A9" "A10" "A11"
+                           "D8" "D9" "P10" "SAFE10" "SAFE11"
+                           "SAFE13"]
+     :non-goals [:provider-execution :tool-execution :database-write
+                 :model-authority :production-promotion :full-language-credit
+                 :seed-retirement]}}))
+
+(def w5-domain-schema-ai-target
+  {:backend :llvm :os :linux :arch :x86_64 :artifact-format :elf
+   :abi :sysv-amd64 :triple "x86_64-unknown-linux-gnu"})
+(def w5-domain-schema-ai-unsupported-targets
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+(def w5-domain-schema-ai-unsupported-policies
+  [{:target :darwin :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-arm64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-x86_64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :windows :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}])
+(def w5-domain-schema-ai-effects
+  #{:ai/model-call :ai/output-validate :ai/tool-call :ai/memory-read
+    :ai/memory-write :ai/embedding :ai/human-review :ai/eval-run})
+(def w5-domain-schema-ai-scoped-capabilities
+  #{:provider/model :tool/read :ticket/read :memory/read :memory/write
+    :db/migrate :human-review})
+(def w5-domain-schema-ai-migration-effects #{:database/write})
+(def w5-domain-schema-ai-migration-capabilities #{:db/migrate})
+(def w5-domain-schema-ai-tool-effects #{:database/read})
+(def w5-domain-schema-ai-tool-capabilities #{:ticket/read})
+(def w5-domain-schema-ai-agent-effects
+  #{:ai/model-call :ai/output-validate})
+(def w5-domain-schema-ai-agent-capabilities
+  #{:provider/model :tool/read :memory/read})
+(def w5-domain-schema-ai-memory-effects
+  #{:ai/memory-read :ai/memory-write :ai/embedding})
+(def w5-domain-schema-ai-memory-capabilities #{:memory/read :memory/write})
+(def w5-domain-schema-ai-policy-allow
+  #{:repo/read :ai/model-call :ai/memory-read})
+(def w5-domain-schema-ai-policy-deny
+  #{:secrets/read :shell/exec :package/publish})
+(def w5-domain-schema-ai-model-budget
+  {:max-output-tokens 4096 :max-retries 2
+   :max-wall-time-ms 30000 :max-cost-usd 0.25})
+(def w5-domain-schema-ai-agent-budget
+  {:max-model-calls 3 :max-tool-calls 8 :max-retries 2
+   :max-wall-time-ms 120000 :max-output-tokens 12288
+   :max-cost-usd 1.0 :max-human-reviews 1})
+(def w5-domain-schema-ai-diagnostic-ids
+  ["W5-DSAI-SCHEMA" "W5-DSAI-TARGET" "W5-DSAI-AUTHORITY"
+   "DOM17-PASS" "DOM17-METADATA" "DOM17-PLUGIN" "DOM17-DIAGNOSTIC"
+   "DOM18-MODEL" "DOM18-PROMPT" "DOM18-TOOL" "DOM18-SCHEMA"
+   "DOM18-TAINT" "DOM18-REPLAY" "DOM18-EVAL"
+   "S1-SHAPE" "S1-REFINEMENT" "S1-BOUNDARY" "S1-COMPATIBILITY"
+   "S1-PROJECTION" "S1-TAINT" "S1-MANIFEST"
+   "S2-FORMAT" "S2-FIELD" "S2-TAINT" "S2-ROUNDTRIP" "S2-MANIFEST"
+   "S6-MAPPING" "S6-MIGRATION" "S6-DATA-LOSS" "S6-ROLLBACK"
+   "S6-CAPABILITY" "S6-FIXTURE" "S6-MANIFEST"
+   "A2001" "A2002" "A2004" "A2005" "A2007" "A3001" "A3002" "A3003"
+   "A3004" "A4001" "A4002" "A4003" "A4005" "A4007"
+   "A5001" "A5002" "A5004" "A5005" "A5006" "A5008"
+   "A6001" "A6002" "A6003" "A6004" "A6005" "A6007"
+   "A7001" "A7002" "A7003" "A7004" "A7005" "A7006" "A7007"
+   "A8001" "A8002" "A8003" "A8004" "A8005" "A8006" "A8008"
+   "A9001" "A9002" "A9003" "A9005" "A9006" "A9008"
+   "A10001" "A10002" "A10003" "A10004" "A10005" "A10007"
+   "A11001" "A11002" "A11003" "A11004" "A11005" "A11006" "A11007"])
+(def w5-domain-schema-ai-remediations
+  {"W5-DSAI-SCHEMA" :repair-request-schema
+   "W5-DSAI-TARGET" :use-frozen-target
+   "W5-DSAI-AUTHORITY" :remove-ambient-authority
+   "DOM17-PASS" :repair-domain-pass
+   "DOM17-METADATA" :restore-provenance
+   "DOM17-PLUGIN" :declare-plugin-capability
+   "DOM17-DIAGNOSTIC" :restore-origin-chain
+   "DOM18-MODEL" :declare-provider-effect-budget
+   "DOM18-PROMPT" :repair-authority-partition
+   "DOM18-TOOL" :restore-tool-policy
+   "DOM18-SCHEMA" :validate-structured-output
+   "DOM18-TAINT" :retain-taint-until-validation
+   "DOM18-REPLAY" :record-replay-boundary
+   "DOM18-EVAL" :attach-evaluation-gate
+   "S1-SHAPE" :repair-schema-shape
+   "S1-REFINEMENT" :classify-refinement
+   "S1-BOUNDARY" :declare-validation-boundary
+   "S1-COMPATIBILITY" :declare-schema-compatibility
+   "S1-PROJECTION" :reject-weakened-projection
+   "S1-TAINT" :validate-external-data
+   "S1-MANIFEST" :complete-schema-manifest
+   "S2-FORMAT" :declare-serialization-format
+   "S2-FIELD" :repair-serialized-fields
+   "S2-TAINT" :validate-decoded-value
+   "S2-ROUNDTRIP" :add-roundtrip-fixture
+   "S2-MANIFEST" :complete-serializer-manifest
+   "S6-MAPPING" :repair-schema-mapping
+   "S6-MIGRATION" :declare-migration-policy
+   "S6-DATA-LOSS" :add-data-loss-policy-and-review
+   "S6-ROLLBACK" :declare-rollback-or-forward-only
+   "S6-CAPABILITY" :grant-database-migration-capability
+   "S6-FIXTURE" :add-migration-fixture
+   "S6-MANIFEST" :complete-migration-manifest
+   "A2001" :grant-provider-capability
+   "A2002" :redact-credentials
+   "A2004" :attach-fallback-evaluation
+   "A2005" :reduce-model-budget
+   "A2007" :restore-provider-identity
+   "A3001" :declare-prompt-input-schema
+   "A3002" :declare-prompt-output-schema
+   "A3003" :separate-authority-partitions
+   "A3004" :validate-prompt-taint
+   "A4001" :declare-tool-schemas
+   "A4002" :declare-tool-effects
+   "A4003" :supply-scoped-capability
+   "A4005" :require-human-review
+   "A4007" :validate-tool-output
+   "A5001" :declare-agent-dependency
+   "A5002" :deny-ambient-authority
+   "A5004" :bind-agent-policy
+   "A5005" :attach-agent-eval
+   "A5006" :bound-agent-budget
+   "A5008" :respect-memory-mode
+   "A6001" :declare-workflow-replay
+   "A6002" :record-nondeterminism
+   "A6003" :guard-replay-side-effect
+   "A6004" :declare-workflow-state-schema
+   "A6005" :declare-idempotency-or-compensation
+   "A6007" :supply-state-migration
+   "A7001" :grant-memory-capability
+   "A7002" :validate-memory-item
+   "A7003" :deny-protected-embedding
+   "A7004" :deny-cross-tenant-read
+   "A7005" :keep-retrieval-as-data
+   "A7006" :record-memory-replay
+   "A7007" :match-embedding-index
+   "A8001" :bind-policy
+   "A8002" :record-policy-denial
+   "A8003" :require-human-review
+   "A8004" :validate-taint
+   "A8005" :eval-gate-fallback
+   "A8006" :validate-generated-code
+   "A8008" :redact-protected-data
+   "A9001" :attach-evaluation-report
+   "A9002" :match-evaluation-subject
+   "A9003" :schema-and-provenance-dataset
+   "A9005" :add-safety-probes
+   "A9006" :declare-evaluation-budget
+   "A9008" :redact-evaluation-output
+   "A10001" :supply-human-review
+   "A10002" :use-authorized-reviewer
+   "A10003" :refresh-expired-review
+   "A10004" :remove-revoked-review
+   "A10005" :match-review-payload
+   "A10007" :reuse-recorded-review
+   "A11001" :preserve-authority-partition
+   "A11002" :deny-tool-escalation
+   "A11003" :keep-memory-tainted
+   "A11004" :redact-secrets
+   "A11005" :validate-generated-source
+   "A11006" :attach-injection-eval
+   "A11007" :validate-tool-output-taint})
+
+(defn w5-domain-schema-ai-present? [value]
+  (if (= nil value) false true))
+(defn w5-domain-schema-ai-nonempty? [value]
+  (if (string? value) (> (count value) 0) false))
+(defn w5-domain-schema-ai-suffix-match? [value suffix index]
+  (if (= index (count suffix))
+    true
+    (if (= (get value (- (count value) (+ index 1)))
+           (get suffix (- (count suffix) (+ index 1))))
+      (w5-domain-schema-ai-suffix-match? value suffix (+ index 1))
+      false)))
+(defn w5-domain-schema-ai-path-ends-with? [value suffix]
+  (if (and (string? value) (string? suffix))
+    (if (<= (count suffix) (count value))
+      (w5-domain-schema-ai-suffix-match? value suffix 0)
+      false)
+    false))
+(defn w5-domain-schema-ai-exact-keys? [value expected]
+  (if (map? value) (= (set (keys value)) expected) false))
+(defn w5-domain-schema-ai-member-from? [values value index]
+  (if (= index (count values)) false
+      (if (= value (get values index)) true
+          (w5-domain-schema-ai-member-from? values value (+ index 1)))))
+(defn w5-domain-schema-ai-member? [values value]
+  (if (vector? values)
+    (w5-domain-schema-ai-member-from? values value 0)
+    false))
+(defn w5-domain-schema-ai-subset? [required available]
+  (if (= (count required) 0) true
+      (if (contains? available (first required))
+        (w5-domain-schema-ai-subset? (rest required) available)
+        false)))
+(defn w5-domain-schema-ai-sha? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (if (= (get value 0) \s)
+        (if (= (get value 1) \h)
+          (if (= (get value 2) \a)
+            (if (= (get value 3) \2)
+              (if (= (get value 4) \5)
+                (if (= (get value 5) \6)
+                  (= (get value 6) \:)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+(defn w5-domain-schema-ai-span? [span]
+  (if (w5-domain-schema-ai-exact-keys?
+       span #{:source-id :start-byte :end-byte :line :column})
+    (if (keyword? (get span :source-id))
+      (if (integer? (get span :start-byte))
+        (if (integer? (get span :end-byte))
+          (if (<= 0 (get span :start-byte))
+            (if (<= 0 (get span :end-byte))
+              (if (<= (get span :start-byte) (get span :end-byte))
+                (if (integer? (get span :line))
+                  (if (>= (get span :line) 1)
+                    (if (integer? (get span :column))
+                      (>= (get span :column) 1)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+(defn w5-domain-schema-ai-origin? [origin]
+  (if (vector? origin) (> (count origin) 0) false))
+(defn w5-domain-schema-ai-id? [value]
+  (if (keyword? value) true (w5-domain-schema-ai-sha? value)))
+
+(defn w5-domain-schema-ai-domain-valid? [manifest]
+  (if (w5-domain-schema-ai-exact-keys?
+       manifest #{:domain :profiles :backends :artifacts :examples :rejects
+                  :source-span :provenance})
+    (if (= :ai-agentic (get manifest :domain))
+      (if (set? (get manifest :profiles))
+        (if (contains? (get manifest :profiles) :ai)
+          (if (set? (get manifest :backends))
+            (if (contains? (get manifest :backends) :workflow-graph)
+              (if (set? (get manifest :artifacts))
+                (if (contains? (get manifest :artifacts) :agent-manifest)
+                  (if (set? (get manifest :examples))
+                    (if (set? (get manifest :rejects))
+                      (if (w5-domain-schema-ai-span? (get manifest :source-span))
+                        (w5-domain-schema-ai-origin? (get manifest :provenance))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-schema-valid? [schema]
+  (if (w5-domain-schema-ai-exact-keys?
+       schema #{:schema-id :version :compatibility :fields :derives
+                :boundaries :schema-hash :source-span :provenance})
+    (if (w5-domain-schema-ai-id? (get schema :schema-id))
+      (if (integer? (get schema :version))
+        (if (= :additive (get schema :compatibility))
+          (if (map? (get schema :fields))
+            (if (> (count (keys (get schema :fields))) 0)
+              (if (set? (get schema :derives))
+                (if (contains? (get schema :derives) :validator)
+                  (if (set? (get schema :boundaries))
+                    (if (contains? (get schema :boundaries) :model-output)
+                      (if (w5-domain-schema-ai-sha? (get schema :schema-hash))
+                        (if (w5-domain-schema-ai-span? (get schema :source-span))
+                          (w5-domain-schema-ai-origin? (get schema :provenance))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-serializer-valid? [serializer schema]
+  (if (w5-domain-schema-ai-exact-keys?
+       serializer #{:artifact :schema-id :schema-version :format
+                    :unknown-fields :numeric-policy :decoded-trust
+                    :canonical :roundtrip-fixtures :source-span :provenance})
+    (if (= :gravity/serializer (get serializer :artifact))
+      (if (= (get schema :schema-id) (get serializer :schema-id))
+        (if (= (get schema :version) (get serializer :schema-version))
+          (if (= :json (get serializer :format))
+            (if (= :reject (get serializer :unknown-fields))
+              (if (= :exact-or-diagnostic (get serializer :numeric-policy))
+                (if (= :untrusted (get serializer :decoded-trust))
+                  (if (= false (get serializer :canonical))
+                    (if (vector? (get serializer :roundtrip-fixtures))
+                      (if (> (count (get serializer :roundtrip-fixtures)) 0)
+                        (if (w5-domain-schema-ai-span? (get serializer :source-span))
+                          (w5-domain-schema-ai-origin? (get serializer :provenance))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-migration-valid? [migration schema]
+  (if (and
+       (w5-domain-schema-ai-exact-keys?
+        migration #{:artifact :migration-id :from-schema :to-schema
+                    :policy :dialect :effects :capabilities :data-loss
+                    :rollback :deployment-order :review :fixtures
+                    :source-span :provenance})
+       (= :gravity/database-migration (get migration :artifact))
+       (w5-domain-schema-ai-sha? (get migration :migration-id))
+       (= (get schema :schema-id) (get migration :from-schema))
+       (= (get schema :schema-id) (get migration :to-schema))
+       (= :additive (get migration :policy))
+       (= :postgresql (get migration :dialect))
+       (= w5-domain-schema-ai-migration-effects (get migration :effects))
+       (= w5-domain-schema-ai-migration-capabilities
+          (get migration :capabilities))
+       (= :none (get migration :data-loss))
+       (contains? #{:rollback :forward-only} (get migration :rollback))
+       (keyword? (get migration :deployment-order))
+       (= :not-required (get migration :review))
+       (vector? (get migration :fixtures))
+       (> (count (get migration :fixtures)) 0)
+       (w5-domain-schema-ai-span? (get migration :source-span))
+       (w5-domain-schema-ai-origin? (get migration :provenance)))
+    true false))
+
+(defn w5-domain-schema-ai-provider-valid? [provider]
+  (if (w5-domain-schema-ai-exact-keys?
+       provider #{:provider-id :adapter :model-id :version-policy :modes
+                  :credential-source :redaction :replay :identity
+                  :fallback-eval-required? :source-span :provenance})
+    (if (w5-domain-schema-ai-id? (get provider :provider-id))
+      (if (keyword? (get provider :adapter))
+        (if (w5-domain-schema-ai-nonempty? (get provider :model-id))
+          (if (= :pinned (get provider :version-policy))
+            (if (set? (get provider :modes))
+              (if (contains? (get provider :modes) :structured-output)
+                (if (= :declared-secret-source (get provider :credential-source))
+                  (if (= :redact-secrets (get provider :redaction))
+                    (if (= :recorded (get provider :replay))
+                      (if (w5-domain-schema-ai-exact-keys?
+                           (get provider :identity)
+                           #{:provider-id :model-id :version :adapter-version
+                             :schema-mode})
+                        (if (= true (get provider :fallback-eval-required?))
+                          (if (w5-domain-schema-ai-span? (get provider :source-span))
+                            (w5-domain-schema-ai-origin? (get provider :provenance))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-provider-identity-valid? [provider model schema]
+  (let [identity (get provider :identity)]
+    (if (and
+         (w5-domain-schema-ai-exact-keys?
+          identity #{:provider-id :model-id :version :adapter-version
+                     :schema-mode})
+         (= (get identity :provider-id) (get provider :provider-id))
+         (= (get identity :model-id) (get provider :model-id))
+         (= (get identity :model-id) (get model :model-id))
+         (= (get provider :provider-id) (get model :provider-id))
+         (= :pinned (get provider :version-policy))
+         (= :pinned (get model :version))
+         (= "1" (get identity :version))
+         (= :declared-provider (get provider :adapter))
+         (= "1" (get identity :adapter-version))
+         (contains? (get provider :modes) :structured-output)
+         (contains? (get model :modes) :structured-output)
+         (= (get schema :schema-id) (get model :input-schema))
+         (= (get schema :schema-id) (get model :output-schema))
+         (= :provider-and-runtime (get identity :schema-mode)))
+      true false)))
+
+(defn w5-domain-schema-ai-model-budget-valid? [budget]
+  (= w5-domain-schema-ai-model-budget budget))
+
+(defn w5-domain-schema-ai-agent-budget-valid? [budget]
+  (= w5-domain-schema-ai-agent-budget budget))
+
+(defn w5-domain-schema-ai-budget-relations-valid? [request]
+  (let [model-budget (get (get request :model) :budget)
+        agent-budget (get (get request :agent) :budget)]
+    (if (>= (get agent-budget :max-output-tokens)
+            (* (get model-budget :max-output-tokens)
+               (get agent-budget :max-model-calls)))
+      (if (>= (get agent-budget :max-wall-time-ms)
+              (* (get model-budget :max-wall-time-ms)
+                 (get agent-budget :max-model-calls)))
+        (if (>= (get agent-budget :max-retries)
+                (get model-budget :max-retries))
+          (if (>= (get agent-budget :max-cost-usd)
+                  (* (get model-budget :max-cost-usd)
+                     (get agent-budget :max-model-calls)))
+            (if (>= (get agent-budget :max-human-reviews) 1)
+              true false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-domain-schema-ai-model-valid? [model provider schema]
+  (if (w5-domain-schema-ai-exact-keys?
+       model #{:model-id :provider-id :version :modes :input-schema
+               :output-schema :budget :replay :source-span :provenance})
+    (if (= (get provider :model-id) (get model :model-id))
+      (if (= (get provider :provider-id) (get model :provider-id))
+        (if (= :pinned (get model :version))
+          (if (contains? (get model :modes) :structured-output)
+            (if (= (get schema :schema-id) (get model :input-schema))
+              (if (= (get schema :schema-id) (get model :output-schema))
+                (if (w5-domain-schema-ai-model-budget-valid?
+                     (get model :budget))
+                  (if (> (get (get model :budget) :max-output-tokens) 0)
+                    (if (= :recorded (get model :replay))
+                      (if (w5-domain-schema-ai-span? (get model :source-span))
+                        (w5-domain-schema-ai-origin?
+                         (get model :provenance))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-prompt-valid? [prompt schema]
+  (if (w5-domain-schema-ai-exact-keys?
+       prompt #{:prompt-id :input-schema :output-schema :authority
+                :taint :visible-tools :validation :repair :refusal
+                :compatibility :prompt-hash :source-span :provenance})
+    (if (w5-domain-schema-ai-id? (get prompt :prompt-id))
+      (if (= (get schema :schema-id) (get prompt :input-schema))
+        (if (= (get schema :schema-id) (get prompt :output-schema))
+          (if (w5-domain-schema-ai-exact-keys? (get prompt :authority)
+                                               #{:system :developer :user-data
+                                                 :retrieved-data :tool-result-data})
+            (if (= :system-trusted (get (get prompt :authority) :system))
+              (if (= :developer-trusted (get (get prompt :authority) :developer))
+                (if (= :user-data (get (get prompt :authority) :user-data))
+                  (if (= :retrieved-data
+                         (get (get prompt :authority) :retrieved-data))
+                    (if (= :tool-result-data
+                           (get (get prompt :authority) :tool-result-data))
+                      (if (map? (get prompt :taint))
+                        (if (vector? (get prompt :visible-tools))
+                          (if (= :schema-validated (get prompt :validation))
+                            (if (integer? (get prompt :repair))
+                              (if (= :explicit (get prompt :refusal))
+                                (if (= :additive (get prompt :compatibility))
+                                  (if (w5-domain-schema-ai-sha?
+                                       (get prompt :prompt-hash))
+                                    (if (w5-domain-schema-ai-span?
+                                         (get prompt :source-span))
+                                      (w5-domain-schema-ai-origin?
+                                       (get prompt :provenance))
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-tool-valid? [tool schema]
+  (if (and
+       (w5-domain-schema-ai-exact-keys?
+        tool #{:tool-id :version :input-schema :output-schema :effects
+               :capabilities :idempotency :retry :timeout :human-review
+               :replay :taint :redaction :source-span :provenance})
+       (w5-domain-schema-ai-id? (get tool :tool-id))
+       (= (get schema :schema-id) (get tool :input-schema))
+       (= (get schema :schema-id) (get tool :output-schema))
+       (= w5-domain-schema-ai-tool-effects (get tool :effects))
+       (= w5-domain-schema-ai-tool-capabilities (get tool :capabilities))
+       (keyword? (get tool :idempotency))
+       (keyword? (get tool :retry))
+       (integer? (get tool :timeout))
+       (= :not-required (get tool :human-review))
+       (= :recorded-result (get tool :replay))
+       (keyword? (get tool :taint))
+       (= :redact-secrets (get tool :redaction))
+       (w5-domain-schema-ai-span? (get tool :source-span))
+       (w5-domain-schema-ai-origin? (get tool :provenance)))
+    true false))
+
+(defn w5-domain-schema-ai-agent-valid? [agent schema]
+  (if (and
+       (w5-domain-schema-ai-exact-keys?
+        agent #{:agent-id :version :model :prompts :tools :memory
+                :policy :budget :evals :input-schema :output-schema
+                :effects :capabilities :deployment :source-span :provenance})
+       (w5-domain-schema-ai-id? (get agent :agent-id))
+       (= (get schema :schema-id) (get agent :input-schema))
+       (= (get schema :schema-id) (get agent :output-schema))
+       (w5-domain-schema-ai-nonempty? (get agent :model))
+       (vector? (get agent :prompts))
+       (vector? (get agent :tools))
+       (w5-domain-schema-ai-exact-keys? (get agent :memory)
+                                        #{:memory-id :mode})
+       (= :read (get (get agent :memory) :mode))
+       (w5-domain-schema-ai-id? (get (get agent :memory) :memory-id))
+       (w5-domain-schema-ai-id? (get agent :policy))
+       (w5-domain-schema-ai-agent-budget-valid? (get agent :budget))
+       (> (get (get agent :budget) :max-model-calls) 0)
+       (vector? (get agent :evals))
+       (> (count (get agent :evals)) 0)
+       (= w5-domain-schema-ai-agent-effects (get agent :effects))
+       (= w5-domain-schema-ai-agent-capabilities
+          (get agent :capabilities))
+       (= :staging (get agent :deployment))
+       (w5-domain-schema-ai-span? (get agent :source-span))
+       (w5-domain-schema-ai-origin? (get agent :provenance)))
+    true false))
+
+(defn w5-domain-schema-ai-workflow-valid? [workflow schema]
+  (if (w5-domain-schema-ai-exact-keys?
+       workflow #{:workflow-id :state-schema :event-schema :replay
+                  :nodes :migration :budget-accounting :source-span
+                  :provenance :model-id :prompt-id :tool-id :agent-id
+                  :memory-id})
+    (if (w5-domain-schema-ai-id? (get workflow :workflow-id))
+      (if (= (get schema :schema-id) (get workflow :state-schema))
+        (if (= (get schema :schema-id) (get workflow :event-schema))
+          (if (= :recorded-effects (get workflow :replay))
+            (if (vector? (get workflow :nodes))
+              (if (> (count (get workflow :nodes)) 0)
+                (if (keyword? (get workflow :migration))
+                  (if (= :preserve (get workflow :budget-accounting))
+                    (if (w5-domain-schema-ai-span? (get workflow :source-span))
+                      (w5-domain-schema-ai-origin? (get workflow :provenance))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-memory-valid? [memory schema]
+  (if (and
+       (w5-domain-schema-ai-exact-keys?
+        memory #{:memory-id :item-schema :metadata-schema :embedding
+                 :effects :capabilities :partition :retention :redaction
+                 :prompt-policy :replay :source-span :provenance})
+       (w5-domain-schema-ai-id? (get memory :memory-id))
+       (= (get schema :schema-id) (get memory :item-schema))
+       (= (get schema :schema-id) (get memory :metadata-schema))
+       (w5-domain-schema-ai-exact-keys? (get memory :embedding)
+                                        #{:model :dimension})
+       (w5-domain-schema-ai-id? (get (get memory :embedding) :model))
+       (> (get (get memory :embedding) :dimension) 0)
+       (= w5-domain-schema-ai-memory-effects (get memory :effects))
+       (= w5-domain-schema-ai-memory-capabilities
+          (get memory :capabilities))
+       (vector? (get memory :partition))
+       (= :quote-as-untrusted-data (get memory :prompt-policy))
+       (= :record-result-ids (get memory :replay))
+       (vector? (get memory :redaction))
+       (w5-domain-schema-ai-span? (get memory :source-span))
+       (w5-domain-schema-ai-origin? (get memory :provenance)))
+    true false))
+
+(defn w5-domain-schema-ai-policy-valid? [policy]
+  (if (and
+       (w5-domain-schema-ai-exact-keys?
+        policy #{:policy-id :allow :deny :human-review :taint :fallback
+                 :generated-code :eval-required :source-span :provenance})
+       (w5-domain-schema-ai-id? (get policy :policy-id))
+       (= w5-domain-schema-ai-policy-allow (get policy :allow))
+       (= w5-domain-schema-ai-policy-deny (get policy :deny))
+       (w5-domain-schema-ai-exact-keys? (get policy :human-review)
+                                        #{:required-for :role :expiry})
+       (contains? (get (get policy :human-review) :required-for)
+                  :database/write)
+       (= :untrusted-until-schema-validated
+          (get (get policy :taint) :ai-output))
+       (= :requires-eval (get policy :fallback))
+       (w5-domain-schema-ai-exact-keys?
+        (get policy :generated-code) #{:must-compile :must-pass-tests})
+       (= true (get (get policy :generated-code) :must-compile))
+       (= true (get (get policy :generated-code) :must-pass-tests))
+       (= true (get policy :eval-required))
+       (w5-domain-schema-ai-span? (get policy :source-span))
+       (w5-domain-schema-ai-origin? (get policy :provenance)))
+    true false))
+
+(defn w5-domain-schema-ai-evaluation-valid? [evaluation schema]
+  (if (w5-domain-schema-ai-exact-keys?
+       evaluation #{:eval-id :subject-id :dataset :metrics :thresholds
+                     :probes :provider-policy :budget :status :report-id
+                     :source-span :provenance})
+    (if (w5-domain-schema-ai-id? (get evaluation :eval-id))
+      (if (w5-domain-schema-ai-id? (get evaluation :subject-id))
+        (if (w5-domain-schema-ai-exact-keys? (get evaluation :dataset)
+                                             #{:schema-id :version :provenance})
+          (if (= (get schema :schema-id) (get (get evaluation :dataset) :schema-id))
+            (if (map? (get evaluation :metrics))
+              (if (map? (get evaluation :thresholds))
+                (if (w5-domain-schema-ai-subset?
+                     [:prompt-injection :tool-escalation :secret-exfiltration]
+                     (set (get evaluation :probes)))
+                  (if (= :pinned-or-eval-gated (get evaluation :provider-policy))
+                    (if (map? (get evaluation :budget))
+                      (if (contains? #{:pending :accepted} (get evaluation :status))
+                        (if (w5-domain-schema-ai-id? (get evaluation :report-id))
+                          (if (w5-domain-schema-ai-span? (get evaluation :source-span))
+                            (w5-domain-schema-ai-origin?
+                             (get evaluation :provenance))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-human-review-valid? [review]
+  (if (w5-domain-schema-ai-exact-keys?
+       review #{:review-id :action-schema :requires-role :evidence
+                :payload-hash-rule :expiry :on-deny :replay :status
+                :source-span :provenance})
+    (if (w5-domain-schema-ai-id? (get review :review-id))
+      (if (w5-domain-schema-ai-id? (get review :action-schema))
+        (if (= :repo-maintainer (get review :requires-role))
+          (if (w5-domain-schema-ai-id? (get review :evidence))
+            (if (= :canonical-payload-hash (get review :payload-hash-rule))
+              (if (integer? (get review :expiry))
+                (if (= :finish-without-write (get review :on-deny))
+                  (if (= :reuse-recorded-decision-if-payload-matches
+                         (get review :replay))
+                    (if (= :requested (get review :status))
+                      (if (w5-domain-schema-ai-span? (get review :source-span))
+                        (w5-domain-schema-ai-origin?
+                         (get review :provenance))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-defense-valid? [defense]
+  (if (w5-domain-schema-ai-exact-keys?
+       defense #{:authority-levels :untrusted-levels :taint-rules
+                 :denied-escalations :secret-policy :generated-source-policy
+                 :required-probes :source-span :provenance})
+    (if (set? (get defense :authority-levels))
+      (if (contains? (get defense :authority-levels) :system-trusted)
+        (if (set? (get defense :untrusted-levels))
+          (if (contains? (get defense :untrusted-levels) :retrieved-data)
+            (if (map? (get defense :taint-rules))
+              (if (vector? (get defense :denied-escalations))
+                (if (contains? (set (get defense :denied-escalations))
+                               :model-text-to-tool-grant)
+                  (if (= :never (get defense :secret-policy))
+                    (if (= :parse-check-before-execute
+                           (get defense :generated-source-policy))
+                      (if (vector? (get defense :required-probes))
+                        (if (w5-domain-schema-ai-member?
+                             (get defense :required-probes) :prompt-injection)
+                          (if (w5-domain-schema-ai-span? (get defense :source-span))
+                            (w5-domain-schema-ai-origin?
+                             (get defense :provenance))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-targets-valid? [request]
+  (if (= :jvm (get request :stage2-target))
+    (if (= w5-domain-schema-ai-target (get request :candidate-target))
+      (if (= w5-domain-schema-ai-unsupported-targets
+             (get request :unsupported-targets))
+        (= w5-domain-schema-ai-unsupported-policies
+           (get request :unsupported-target-policies))
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-effects-valid? [effects capabilities]
+  (if (= w5-domain-schema-ai-effects effects)
+    (if (set? capabilities)
+      (= w5-domain-schema-ai-scoped-capabilities capabilities)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-claims-valid? [claims]
+  (if (w5-domain-schema-ai-exact-keys?
+       claims #{:producer-boolean? :narrative? :source-ownership-only?
+                :check-only? :replay-only? :global-advancement?
+                :authority-claim?})
+    (if (= false (get claims :producer-boolean?))
+      (if (= false (get claims :narrative?))
+        (if (= false (get claims :source-ownership-only?))
+          (if (= false (get claims :check-only?))
+            (if (= false (get claims :replay-only?))
+              (if (= false (get claims :global-advancement?))
+                (= false (get claims :authority-claim?))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-authority-valid? [authority]
+  (if (w5-domain-schema-ai-exact-keys?
+       authority #{:authority :seed :self-hosted? :public? :release?
+                   :closure-status :execution-status :executable?
+                   :full-language-credit?})
+    (if (= :non-authority (get authority :authority))
+      (if (= true (get authority :seed))
+        (if (= false (get authority :self-hosted?))
+          (if (= false (get authority :public?))
+            (if (= false (get authority :release?))
+              (if (= :blocked (get authority :closure-status))
+                (if (= :incomplete (get authority :execution-status))
+                  (if (= false (get authority :executable?))
+                    (= false (get authority :full-language-credit?))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-provenance-valid? [provenance]
+  (if (w5-domain-schema-ai-exact-keys?
+       provenance #{:actual-source-path :actual-manifest-path :source-id
+                    :compiler-id :compiler-version :origin-chain
+                    :source-extension :source-kind})
+    (if (w5-domain-schema-ai-nonempty? (get provenance :actual-source-path))
+      (if (w5-domain-schema-ai-nonempty? (get provenance :actual-manifest-path))
+        (if (keyword? (get provenance :source-id))
+          (if (w5-domain-schema-ai-nonempty? (get provenance :compiler-id))
+            (if (w5-domain-schema-ai-nonempty? (get provenance :compiler-version))
+              (if (= ".gravity" (get provenance :source-extension))
+                (if (= :gravity (get provenance :source-kind))
+                  (if (w5-domain-schema-ai-path-ends-with?
+                       (get provenance :actual-source-path) ".gravity")
+                    (w5-domain-schema-ai-origin?
+                     (get provenance :origin-chain))
+                    false)
+                  false)
+                (if (= ".qst" (get provenance :source-extension))
+                  (if (= :qst (get provenance :source-kind))
+                    (if (w5-domain-schema-ai-path-ends-with?
+                         (get provenance :actual-source-path) ".qst")
+                      (w5-domain-schema-ai-origin?
+                       (get provenance :origin-chain))
+                      false)
+                    false)
+                  false))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-domain-schema-ai-vector-unique? [values]
+  (if (vector? values)
+    (= (count values) (count (set values)))
+    false))
+
+(defn w5-domain-schema-ai-nested-authority-crosslinks-valid?
+  [migration tool agent memory policy]
+  (if (and
+       (= w5-domain-schema-ai-migration-effects (get migration :effects))
+       (= w5-domain-schema-ai-migration-capabilities
+          (get migration :capabilities))
+       (= w5-domain-schema-ai-tool-effects (get tool :effects))
+       (= w5-domain-schema-ai-tool-capabilities
+          (get tool :capabilities))
+       (= w5-domain-schema-ai-agent-effects (get agent :effects))
+       (= w5-domain-schema-ai-agent-capabilities
+          (get agent :capabilities))
+       (= w5-domain-schema-ai-memory-effects (get memory :effects))
+       (= w5-domain-schema-ai-memory-capabilities
+          (get memory :capabilities))
+       (= w5-domain-schema-ai-policy-allow (get policy :allow))
+       (= w5-domain-schema-ai-policy-deny (get policy :deny)))
+    true false))
+
+(defn w5-domain-schema-ai-crosslinks-valid? [request]
+  (let [provider (get request :provider)
+        model (get request :model)
+        prompt (get request :prompt)
+        tool (get request :tool)
+        agent (get request :agent)
+        workflow (get request :workflow)
+        memory (get request :memory)
+        migration (get request :migration)
+        policy (get request :policy)
+        evaluation (get request :evaluation)
+        capabilities (get request :capabilities)]
+    (if (= (get provider :model-id) (get model :model-id))
+      (if (= (get provider :provider-id) (get model :provider-id))
+        (if (= (get agent :model) (get model :model-id))
+          (if (= (get agent :prompts)
+                 (conj [] (get prompt :prompt-id)))
+          (if (= (get agent :tools)
+                 (conj [] (get tool :tool-id)))
+            (if (= (get prompt :visible-tools)
+                   (conj [] (get tool :tool-id)))
+              (if (= (get (get agent :memory) :memory-id)
+                     (get memory :memory-id))
+                (if (= (get agent :policy) (get policy :policy-id))
+                  (if (= (get agent :evals)
+                         (conj [] (get evaluation :eval-id)))
+                    (if (= (get workflow :model-id) (get model :model-id))
+                      (if (= (get workflow :prompt-id) (get prompt :prompt-id))
+                        (if (= (get workflow :tool-id) (get tool :tool-id))
+                          (if (= (get workflow :agent-id) (get agent :agent-id))
+                            (if (= (get workflow :memory-id)
+                                   (get memory :memory-id))
+                            (if (and (w5-domain-schema-ai-vector-unique?
+                                        (get agent :prompts))
+                                       (w5-domain-schema-ai-vector-unique?
+                                        (get agent :tools))
+                                       (w5-domain-schema-ai-vector-unique?
+                                        (get agent :evals)))
+                                (if (w5-domain-schema-ai-nested-authority-crosslinks-valid?
+                                     migration tool agent memory policy)
+                                  (if (= #{:ticket/read} (get tool :capabilities))
+                                  (if (= #{:db/migrate} (get migration :capabilities))
+                                    (if (= #{:provider/model :tool/read :memory/read}
+                                           (get agent :capabilities))
+                                      (if (= #{:memory/read :memory/write}
+                                             (get memory :capabilities))
+                                        (if (w5-domain-schema-ai-subset?
+                                             (get tool :capabilities) capabilities)
+                                          (if (w5-domain-schema-ai-subset?
+                                               (get migration :capabilities) capabilities)
+                                            (if (w5-domain-schema-ai-subset?
+                                                 (get agent :capabilities) capabilities)
+                                              (if (w5-domain-schema-ai-subset?
+                                                   (get memory :capabilities) capabilities)
+                                                true false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+          false)
+        false)
+      false))))
+
+(defn w5-domain-schema-ai-diagnostics-valid? [diagnostics]
+  (if (vector? diagnostics)
+    (= 0 (count diagnostics))
+    false))
+
+(defn w5-domain-schema-ai-request-valid? [request]
+  (if (w5-domain-schema-ai-exact-keys?
+       request #{:artifact :schema-version :profile :stage2-target
+                 :candidate-target :unsupported-targets
+                 :unsupported-target-policies :domain-manifest
+                 :schema-manifest :serializer :migration :provider :model
+                 :prompt :tool :agent :workflow :memory :policy :evaluation
+                 :human-review :defense :effects :capabilities :diagnostics
+                 :provenance :claims :authority :source-span})
+    (if (and (= :gravity/w5-domain-schema-ai-request (get request :artifact))
+             (= 1 (get request :schema-version))
+             (= :meta (get request :profile))
+             (w5-domain-schema-ai-targets-valid? request)
+             (w5-domain-schema-ai-span? (get request :source-span))
+             (w5-domain-schema-ai-domain-valid? (get request :domain-manifest))
+             (w5-domain-schema-ai-schema-valid? (get request :schema-manifest))
+             (w5-domain-schema-ai-serializer-valid?
+              (get request :serializer) (get request :schema-manifest))
+             (w5-domain-schema-ai-migration-valid?
+              (get request :migration) (get request :schema-manifest))
+             (w5-domain-schema-ai-provider-valid? (get request :provider))
+             (w5-domain-schema-ai-model-budget-valid?
+              (get (get request :model) :budget))
+             (w5-domain-schema-ai-model-valid?
+              (get request :model) (get request :provider)
+              (get request :schema-manifest))
+             (w5-domain-schema-ai-provider-identity-valid?
+              (get request :provider) (get request :model)
+              (get request :schema-manifest))
+             (w5-domain-schema-ai-prompt-valid?
+              (get request :prompt) (get request :schema-manifest))
+             (w5-domain-schema-ai-tool-valid?
+              (get request :tool) (get request :schema-manifest))
+             (w5-domain-schema-ai-agent-budget-valid?
+              (get (get request :agent) :budget))
+             (w5-domain-schema-ai-agent-valid?
+              (get request :agent) (get request :schema-manifest))
+             (w5-domain-schema-ai-budget-relations-valid? request)
+             (w5-domain-schema-ai-workflow-valid?
+              (get request :workflow) (get request :schema-manifest))
+             (w5-domain-schema-ai-memory-valid?
+              (get request :memory) (get request :schema-manifest))
+             (w5-domain-schema-ai-policy-valid? (get request :policy))
+             (w5-domain-schema-ai-evaluation-valid?
+              (get request :evaluation) (get request :schema-manifest))
+             (w5-domain-schema-ai-human-review-valid?
+              (get request :human-review))
+             (w5-domain-schema-ai-defense-valid? (get request :defense))
+             (w5-domain-schema-ai-effects-valid?
+              (get request :effects) (get request :capabilities))
+             (w5-domain-schema-ai-diagnostics-valid?
+              (get request :diagnostics))
+             (w5-domain-schema-ai-provenance-valid?
+              (get request :provenance))
+             (w5-domain-schema-ai-claims-valid? (get request :claims))
+             (w5-domain-schema-ai-authority-valid? (get request :authority))
+             (w5-domain-schema-ai-crosslinks-valid? request))
+      true false)
+    false))
+
+(defn w5-domain-schema-ai-policy []
+  {:artifact :gravity/w5-domain-schema-ai-policy :schema-version 1
+   :profile :meta :stage2-target :jvm
+   :candidate-target w5-domain-schema-ai-target
+   :unsupported-targets w5-domain-schema-ai-unsupported-targets
+   :unsupported-target-policies w5-domain-schema-ai-unsupported-policies
+   :effects w5-domain-schema-ai-effects
+   :authority :non-authority :clojure-seed-boundary? true
+   :self-hosted? false :public-authority? false :release? false
+   :full-language-credit? false
+   :denied-authority #{:filesystem :network :process :environment :clock
+                       :random :secret :provider-credentials :database-write
+                       :tool-execution :model-execution}
+   :residual-boundaries #{:provider-execution :database-execution
+                          :workflow-replay :independent-policy-review}})
+
+(defn w5-domain-schema-ai-source-span []
+  {:source-id :gravity.self-hosting/w5-domain-schema-ai
+   :start-byte 0 :end-byte 1 :line 1 :column 1})
+
+(defn w5-domain-schema-ai-domain-manifest []
+  {:domain :ai-agentic :profiles #{:ai :distributed :hosted}
+   :backends #{:workflow-graph :javascript-typescript :jvm}
+   :artifacts #{:agent-manifest :tool-policy :prompt-hashes :eval-report
+                :replay-log}
+   :examples #{:support-agent :data-extractor :code-reviewer
+               :human-review-workflow}
+   :rejects #{:tool-without-human-review :schema-less-output
+              :prompt-policy-escalation :unvalidated-generated-code}
+   :source-span (w5-domain-schema-ai-source-span)
+   :provenance [{:kind :source :source-id :DOM18}]})
+
+(defn w5-domain-schema-ai-schema-manifest []
+  {:schema-id :TicketClassification :version 2 :compatibility :additive
+   :fields {:priority #{:low :medium :high} :category :String
+            :confidence :F64}
+   :derives #{:validator :json-schema :graphql :openapi :ai-output}
+   :boundaries #{:api-input :database-row :model-output :workflow-state}
+   :schema-hash "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :source-span (w5-domain-schema-ai-source-span)
+   :provenance [{:kind :source :source-id :S1}]})
+
+(defn w5-domain-schema-ai-diagnostic [request rule stage field]
+  {:diagnostic-id rule :rule rule :severity :error :stage stage
+   :message-key :gravity.w5-domain-schema-ai/contract
+   :primary {:span (if (w5-domain-schema-ai-span? (get request :source-span))
+                     (get request :source-span)
+                     (w5-domain-schema-ai-source-span))
+             :syntax-id "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+             :artifact :gravity/w5-domain-schema-ai-request}
+   :related [{:role :schema :span (w5-domain-schema-ai-source-span)
+              :artifact :gravity/schema}
+             {:role :policy :span (w5-domain-schema-ai-source-span)
+              :artifact :gravity/ai-policy}]
+   :origin-chain [{:kind :source :source-id :gravity.self-hosting/w5-domain-schema-ai}]
+   :profile :meta :target w5-domain-schema-ai-target
+   :facts {:field field :fail-closed true :ambient-authority false}
+   :remediation [(get w5-domain-schema-ai-remediations rule)]
+   :redactions []})
+
+(defn w5-domain-schema-ai-diagnostic-catalog []
+  {:artifact :gravity/w5-domain-schema-ai-diagnostic-catalog
+   :schema-version 1 :diagnostics w5-domain-schema-ai-diagnostic-ids
+   :remediations w5-domain-schema-ai-remediations
+   :stable-fields [:diagnostic-id :rule :severity :stage :primary :related
+                   :origin-chain :profile :target :facts :remediation :redactions]})
+
+(defn w5-domain-schema-ai-first-failure [request]
+  (if (not (w5-domain-schema-ai-exact-keys?
+            request #{:artifact :schema-version :profile :stage2-target
+                      :candidate-target :unsupported-targets
+                      :unsupported-target-policies :domain-manifest
+                      :schema-manifest :serializer :migration :provider :model
+                      :prompt :tool :agent :workflow :memory :policy :evaluation
+                      :human-review :defense :effects :capabilities :diagnostics
+                      :provenance :claims :authority :source-span}))
+    (w5-domain-schema-ai-diagnostic request "W5-DSAI-SCHEMA" :schema :request)
+    (if (not (and (= :gravity/w5-domain-schema-ai-request (get request :artifact))
+                  (= 1 (get request :schema-version))
+                  (= :meta (get request :profile))))
+      (w5-domain-schema-ai-diagnostic request "W5-DSAI-SCHEMA" :schema :request)
+      (if (not (w5-domain-schema-ai-targets-valid? request))
+        (w5-domain-schema-ai-diagnostic request "W5-DSAI-TARGET" :target :target)
+        (if (not (w5-domain-schema-ai-span? (get request :source-span)))
+          (w5-domain-schema-ai-diagnostic request "W5-DSAI-SCHEMA"
+                                          :schema :source-span)
+        (if (not (w5-domain-schema-ai-domain-valid? (get request :domain-manifest)))
+        (w5-domain-schema-ai-diagnostic request "DOM18-SCHEMA" :domain :domain-manifest)
+        (if (not (w5-domain-schema-ai-schema-valid? (get request :schema-manifest)))
+          (w5-domain-schema-ai-diagnostic request "S1-MANIFEST" :schema :schema-manifest)
+          (if (not (w5-domain-schema-ai-serializer-valid?
+                    (get request :serializer) (get request :schema-manifest)))
+            (w5-domain-schema-ai-diagnostic request "S2-MANIFEST" :serialization :serializer)
+            (if (not (w5-domain-schema-ai-migration-valid?
+                      (get request :migration) (get request :schema-manifest)))
+              (w5-domain-schema-ai-diagnostic request "S6-MIGRATION" :migration :migration)
+              (if (not (w5-domain-schema-ai-provider-valid? (get request :provider)))
+                (w5-domain-schema-ai-diagnostic request "A2001" :provider :provider)
+                (if (not (w5-domain-schema-ai-model-budget-valid?
+                          (get (get request :model) :budget)))
+                  (w5-domain-schema-ai-diagnostic request "A2005" :budget :model-budget)
+                  (if (not (w5-domain-schema-ai-model-valid?
+                          (get request :model) (get request :provider)
+                          (get request :schema-manifest)))
+                    (w5-domain-schema-ai-diagnostic request "DOM18-MODEL" :model :model)
+                    (if (not (w5-domain-schema-ai-provider-identity-valid?
+                              (get request :provider) (get request :model)
+                              (get request :schema-manifest)))
+                      (w5-domain-schema-ai-diagnostic request "A2007" :provider :identity)
+                      (if (not (w5-domain-schema-ai-prompt-valid?
+                          (get request :prompt) (get request :schema-manifest)))
+                      (w5-domain-schema-ai-diagnostic request "A3003" :prompt :prompt)
+                      (if (not (w5-domain-schema-ai-tool-valid?
+                            (get request :tool) (get request :schema-manifest)))
+                        (w5-domain-schema-ai-diagnostic request "A4005" :tool :tool)
+                        (if (not (w5-domain-schema-ai-agent-budget-valid?
+                                  (get (get request :agent) :budget)))
+                          (w5-domain-schema-ai-diagnostic request "A5006" :budget :agent-budget)
+                          (if (not (w5-domain-schema-ai-agent-valid?
+                              (get request :agent) (get request :schema-manifest)))
+                            (w5-domain-schema-ai-diagnostic request "A5002" :agent :agent)
+                            (if (not (w5-domain-schema-ai-budget-relations-valid? request))
+                              (w5-domain-schema-ai-diagnostic request "A5006" :budget :budget-relation)
+                              (if (not (w5-domain-schema-ai-workflow-valid?
+                                (get request :workflow)
+                                (get request :schema-manifest)))
+                                (w5-domain-schema-ai-diagnostic request "A6001" :workflow :workflow)
+                                (if (not (w5-domain-schema-ai-memory-valid?
+                                  (get request :memory)
+                                  (get request :schema-manifest)))
+                                  (w5-domain-schema-ai-diagnostic request "A7001" :memory :memory)
+                                  (if (not (w5-domain-schema-ai-policy-valid? (get request :policy)))
+                                    (w5-domain-schema-ai-diagnostic request "A8001" :policy :policy)
+                                    (if (not (w5-domain-schema-ai-evaluation-valid?
+                                      (get request :evaluation)
+                                      (get request :schema-manifest)))
+                                      (w5-domain-schema-ai-diagnostic request "A9001" :evaluation :evaluation)
+                                      (if (not (w5-domain-schema-ai-human-review-valid?
+                                        (get request :human-review)))
+                                        (w5-domain-schema-ai-diagnostic request "A10001" :human-review :human-review)
+                                        (if (not (w5-domain-schema-ai-defense-valid?
+                                          (get request :defense)))
+                                          (w5-domain-schema-ai-diagnostic request "A11001" :defense :defense)
+                                          (if (not (w5-domain-schema-ai-effects-valid?
+                                            (get request :effects)
+                                            (get request :capabilities)))
+                                            (w5-domain-schema-ai-diagnostic request "W5-DSAI-AUTHORITY" :authority :effects)
+                                            (if (not (w5-domain-schema-ai-diagnostics-valid?
+                                              (get request :diagnostics)))
+                                              (w5-domain-schema-ai-diagnostic request "W5-DSAI-SCHEMA" :schema :diagnostics)
+                                              (if (not (w5-domain-schema-ai-provenance-valid?
+                                              (get request :provenance)))
+                                                (w5-domain-schema-ai-diagnostic request "DOM17-DIAGNOSTIC" :provenance :provenance)
+                                                (if (not (w5-domain-schema-ai-authority-valid?
+                                                  (get request :authority)))
+                                                  (w5-domain-schema-ai-diagnostic request "W5-DSAI-AUTHORITY" :authority :authority)
+                                                  (if (not (w5-domain-schema-ai-crosslinks-valid? request))
+                                                    (w5-domain-schema-ai-diagnostic request "W5-DSAI-AUTHORITY" :authority :crosslinks)
+                                                    (if (not (w5-domain-schema-ai-claims-valid?
+                                                (get request :claims)))
+                                                      (w5-domain-schema-ai-diagnostic request "W5-DSAI-AUTHORITY" :authority :claims)
+                                                      (if (w5-domain-schema-ai-request-valid? request)
+                                                        nil
+                                                        (w5-domain-schema-ai-diagnostic request "W5-DSAI-SCHEMA" :schema :request))))))))))))))))))))))))))))))))
+
+(defn w5-domain-schema-ai-identity-input [request]
+  {:artifact :gravity/w5-domain-schema-ai-identity :schema-version 1
+   :profile (get request :profile) :stage2-target (get request :stage2-target)
+   :candidate-target (get request :candidate-target)
+   :domain (get (get request :domain-manifest) :domain)
+   :schema-id (get (get request :schema-manifest) :schema-id)
+   :schema-version (get (get request :schema-manifest) :version)
+   :provider-id (get (get request :provider) :provider-id)
+   :model-id (get (get request :provider) :model-id)
+   :prompt-id (get (get request :prompt) :prompt-id)
+   :tool-id (get (get request :tool) :tool-id)
+   :agent-id (get (get request :agent) :agent-id)
+   :workflow-id (get (get request :workflow) :workflow-id)
+   :memory-id (get (get request :memory) :memory-id)
+   :policy-id (get (get request :policy) :policy-id)
+   :evaluation-id (get (get request :evaluation) :eval-id)
+   :claims (get request :claims)
+   :authority {:authority (get (get request :authority) :authority)
+               :seed (get (get request :authority) :seed)
+               :self-hosted? (get (get request :authority) :self-hosted?)
+               :public? (get (get request :authority) :public?)
+               :release? (get (get request :authority) :release?)}})
+
+(defn w5-domain-schema-ai-provenance [request]
+  {:actual-source-path (get (get request :provenance) :actual-source-path)
+   :actual-manifest-path (get (get request :provenance) :actual-manifest-path)
+   :source-id (get (get request :provenance) :source-id)
+   :compiler-id (get (get request :provenance) :compiler-id)
+   :compiler-version (get (get request :provenance) :compiler-version)
+   :origin-chain (get (get request :provenance) :origin-chain)
+   :source-extension (get (get request :provenance) :source-extension)
+   :source-kind (get (get request :provenance) :source-kind)
+   :schema-source-span (get (get request :schema-manifest) :source-span)
+   :prompt-source-span (get (get request :prompt) :source-span)
+   :tool-source-span (get (get request :tool) :source-span)
+   :policy-source-span (get (get request :policy) :source-span)})
+
+(defn w5-domain-schema-ai-accepted-result [request]
+  {:artifact :gravity/w5-domain-schema-ai-result :schema-version 1
+   :status :accepted :execution-status :incomplete :closure-status :blocked
+   :diagnostics [] :identity-input (w5-domain-schema-ai-identity-input request)
+   :provenance (w5-domain-schema-ai-provenance request)
+   :authority :non-authority :clojure-seed-boundary? true
+   :self-hosted? false :public? false :release? false
+   :full-language-credit? false :provider-executed? false
+   :tool-executed? false :database-written? false :workflow-replayed? false
+   :ambient-authority? false
+   :candidate-target (get request :candidate-target)
+   :residual-boundaries #{:provider-execution :database-execution
+                          :workflow-replay :independent-policy-review}})
+
+(defn w5-domain-schema-ai-rejected-result [request diagnostic]
+  {:artifact :gravity/w5-domain-schema-ai-result :schema-version 1
+   :status :rejected :execution-status :blocked :closure-status :blocked
+   :diagnostics [diagnostic] :identity-input nil
+   :provenance (if (map? (get request :provenance))
+                 (w5-domain-schema-ai-provenance request) nil)
+   :authority :non-authority :clojure-seed-boundary? true
+   :self-hosted? false :public? false :release? false
+   :full-language-credit? false :provider-executed? false
+   :tool-executed? false :database-written? false :workflow-replayed? false
+   :ambient-authority? false})
+
+(defn w5-domain-schema-ai-execute [request]
+  (let [failure (w5-domain-schema-ai-first-failure request)]
+    (if (and (= nil failure) (w5-domain-schema-ai-request-valid? request))
+      (w5-domain-schema-ai-accepted-result request)
+      (w5-domain-schema-ai-rejected-result
+       request
+       (if (= nil failure)
+         (w5-domain-schema-ai-diagnostic request "W5-DSAI-SCHEMA" :schema :request)
+         failure)))))
+(defn w5-domain-schema-ai-run [request]
+  (w5-domain-schema-ai-execute request))
+(defn w5-domain-schema-ai-verify [request]
+  (w5-domain-schema-ai-execute request))
+(defn w5-domain-schema-ai-recompute [request]
+  (w5-domain-schema-ai-execute request))
+(defn w5-domain-schema-ai-verify-result [request result]
+  (let [expected (w5-domain-schema-ai-execute request)]
+    (if (= expected result)
+      {:artifact :gravity/w5-domain-schema-ai-result-verification
+       :schema-version 1 :status :passed :expected expected
+       :candidate result :diagnostics []}
+      {:artifact :gravity/w5-domain-schema-ai-result-verification
+       :schema-version 1 :status :rejected :expected expected
+       :candidate result
+       :diagnostics [(w5-domain-schema-ai-diagnostic
+                      request "A9002" :verification :result)]})))

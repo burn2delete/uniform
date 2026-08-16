@@ -1,0 +1,271 @@
+(ns gravity.self-hosting.w5-subsystem-closure.accepted.incomplete-subsystem-closure
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-subsystem-closure-request
+             w5-subsystem-closure-request-for-source
+             w5-subsystem-closure-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def w5-sc-root "/checkout-a")
+
+(def w5-sc-target
+  {:candidate-target :llvm-x86_64-linux
+   :os :linux
+   :arch :x86_64
+   :backend :llvm
+   :artifact-format :elf
+   :abi :sysv-amd64
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false
+     :fallback? false}]
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :no-fallback? true
+   :cross-target-inference? false
+   :darwin-fallback? false})
+
+(defn w5-sc-path [root suffix]
+  (str root suffix))
+
+(defn w5-sc-span [root suffix]
+  {:source-id :gravity/w5-subsystem-closure-fixture
+   :start-byte 0
+   :end-byte 64
+   :line 1
+   :column 1
+   :actual-source-path (w5-sc-path root suffix)})
+
+(defn w5-sc-subsystem [name source executable conformance provenance root]
+  {:subsystem name
+   :source-id source
+   :executable-id executable
+   :conformance-id conformance
+   :provenance-id provenance
+   :compiler-id :compiler-stage2-seed
+   :profile :meta
+   :target :llvm-x86_64-linux
+   :source-status :descriptor-only
+   :executable-status :descriptor-only
+   :conformance-status :pending
+   :provenance-status :descriptor-only
+   :execution-status :pending
+   :source-span (w5-sc-span root "/sources/subsystem.gravity")
+   :actual-source-path (w5-sc-path root "/sources/subsystem.gravity")
+   :actual-executable-path (w5-sc-path root "/executables/subsystem")
+   :actual-conformance-path (w5-sc-path root "/conformance/subsystem.edn")
+   :actual-provenance-path (w5-sc-path root "/provenance/subsystem.edn")})
+
+(defn w5-sc-compiler [root]
+  {:compiler-id :compiler-stage2-seed
+   :source-id :compiler-stage2-source
+   :executable-id :compiler-stage2-executable
+   :conformance-id :compiler-stage2-conformance
+   :provenance-id :compiler-stage2-provenance
+   :profile :meta
+   :target :llvm-x86_64-linux
+   :status :descriptor-only
+   :actual-source-path (w5-sc-path root "/compiler/source.gravity")
+   :actual-executable-path (w5-sc-path root "/compiler/executable")
+   :actual-conformance-path (w5-sc-path root "/compiler/conformance.edn")
+   :actual-provenance-path (w5-sc-path root "/compiler/provenance.edn")})
+
+(defn w5-sc-linkage [root]
+  {:runtime-source-id :runtime-source
+   :runtime-executable-id :runtime-executable
+   :runtime-conformance-id :runtime-conformance
+   :runtime-provenance-id :runtime-provenance
+   :standard-library-source-id :standard-library-source
+   :standard-library-executable-id :standard-library-executable
+   :standard-library-conformance-id :standard-library-conformance
+   :standard-library-provenance-id :standard-library-provenance
+   :package-build-source-id :package-build-source
+   :package-build-executable-id :package-build-executable
+   :package-build-conformance-id :package-build-conformance
+   :package-build-provenance-id :package-build-provenance
+   :compiler-id :compiler-stage2-seed
+   :target :llvm-x86_64-linux
+   :status :pending
+   :verification-id :subsystem-linkage-verification
+   :actual-linkage-path (w5-sc-path root "/linkage/subsystems.edn")})
+
+(defn w5-sc-transcript [subsystem-name accepted rejected diagnostic span root suffix]
+  {:subsystem subsystem-name
+   :accepted-transcript-id accepted
+   :rejected-transcript-id rejected
+   :diagnostic-parity-id diagnostic
+   :source-span-parity-id span
+   :target :llvm-x86_64-linux
+   :status :pending
+   :actual-transcript-path
+   (w5-sc-path root (str "/transcripts/" suffix ".edn"))})
+
+(defn w5-sc-replay [root]
+  [{:replay-id :runtime-replay
+    :subsystem :runtime
+    :transcript-id :runtime-accepted-transcript
+    :target :llvm-x86_64-linux
+    :native-host? false
+    :emulator-authority? false
+    :execution-status :pending
+    :status :pending
+    :actual-replay-path (w5-sc-path root "/replay/runtime.edn")}])
+
+(defn w5-sc-recipe [subsystem-name source recipe root suffix]
+  {:subsystem subsystem-name
+   :recipe-id recipe
+   :source-id source
+   :compiler-id :compiler-stage2-seed
+   :lock-id :dependency-lock
+   :environment-id :hermetic-environment
+   :toolchain-id :llvm-toolchain
+   :target :llvm-x86_64-linux
+   :status :pending
+   :actual-recipe-path
+   (w5-sc-path root (str "/recipes/" suffix ".edn"))})
+
+(defn w5-sc-environment [root]
+  [{:environment-id :hermetic-environment
+    :locale "C"
+    :timezone "UTC"
+    :filesystem-order :sorted
+    :timestamp-policy :fixed
+    :random-seed 17
+    :network-policy :disabled
+    :status :descriptor-only
+    :actual-environment-path (w5-sc-path root "/environment/manifest.edn")}])
+
+(defn w5-sc-lock [root]
+  [{:lock-id :dependency-lock
+    :dependency-graph-id :dependency-graph
+    :source-id :package-build-source
+    :complete? true
+    :offline? true
+    :status :descriptor-only
+    :actual-lock-path (w5-sc-path root "/locks/gravity.lock")}])
+
+(defn w5-sc-toolchain [root]
+  [{:toolchain-id :llvm-toolchain
+    :family :llvm
+    :version "descriptor"
+    :target :llvm-x86_64-linux
+    :files-id :llvm-toolchain-files
+    :status :descriptor-only
+    :identity-status :pending
+    :actual-toolchain-path (w5-sc-path root "/toolchains/llvm")}])
+
+(defn w5-sc-provenance [subsystem-name provenance source conformance recipe root suffix]
+  {:subsystem subsystem-name
+   :provenance-id provenance
+   :source-id source
+   :compiler-id :compiler-stage2-seed
+   :recipe-id recipe
+   :environment-id :hermetic-environment
+   :lock-id :dependency-lock
+   :toolchain-id :llvm-toolchain
+   :conformance-id conformance
+   :target :llvm-x86_64-linux
+   :status :descriptor-only
+   :actual-provenance-path
+   (w5-sc-path root (str "/provenance/" suffix ".edn"))})
+
+(defn w5-sc-request [root source-extension]
+  (let [runtime
+        (w5-sc-subsystem :runtime :runtime-source :runtime-executable
+                         :runtime-conformance :runtime-provenance root)
+        standard-library
+        (w5-sc-subsystem :standard-library :standard-library-source
+                         :standard-library-executable
+                         :standard-library-conformance
+                         :standard-library-provenance root)
+        package-build
+        (w5-sc-subsystem :package-build :package-build-source
+                         :package-build-executable :package-build-conformance
+                         :package-build-provenance root)]
+    {:artifact :gravity/w5-subsystem-closure-request
+     :schema-version 1
+     :claimed-status :incomplete
+     :repository {:source-root-id :w5-subsystem-closure-source-root
+                  :actual-repository-root root}
+     :target-scope w5-sc-target
+     :source-extension source-extension
+     :compiler (w5-sc-compiler root)
+     :subsystems {:runtime runtime
+                  :standard-library standard-library
+                  :package-build package-build}
+     :cross-subsystem-linkage (w5-sc-linkage root)
+     :transcripts
+     [(w5-sc-transcript :runtime :runtime-accepted-transcript
+                        :runtime-rejected-transcript
+                        :runtime-diagnostic-parity
+                        :runtime-source-span-parity root "runtime")
+      (w5-sc-transcript :standard-library
+                        :standard-library-accepted-transcript
+                        :standard-library-rejected-transcript
+                        :standard-library-diagnostic-parity
+                        :standard-library-source-span-parity root
+                        "standard-library")
+      (w5-sc-transcript :package-build :package-build-accepted-transcript
+                        :package-build-rejected-transcript
+                        :package-build-diagnostic-parity
+                        :package-build-source-span-parity root "package-build")]
+     :replay (w5-sc-replay root)
+     :build-recipes
+     [(w5-sc-recipe :runtime :runtime-source :runtime-recipe root "runtime")
+      (w5-sc-recipe :standard-library :standard-library-source
+                    :standard-library-recipe root "standard-library")
+      (w5-sc-recipe :package-build :package-build-source
+                    :package-build-recipe root "package-build")]
+     :environments (w5-sc-environment root)
+     :locks (w5-sc-lock root)
+     :toolchains (w5-sc-toolchain root)
+     :provenance
+     [(w5-sc-provenance :runtime :runtime-provenance :runtime-source
+                        :runtime-conformance :runtime-recipe root "runtime")
+      (w5-sc-provenance :standard-library :standard-library-provenance
+                        :standard-library-source
+                        :standard-library-conformance
+                        :standard-library-recipe root "standard-library")
+      (w5-sc-provenance :package-build :package-build-provenance
+                        :package-build-source :package-build-conformance
+                        :package-build-recipe root "package-build")]
+     :residual-tcb
+     {:residual-trusted-components
+      [:clojure-stage0-seed :jvm-stage2-runtime
+       :runtime-subsystem-execution :standard-library-subsystem-execution
+       :package-build-subsystem-execution :independent-conformance-review]
+      :status :open
+      :actual-tcb-path (w5-sc-path root "/tcb/subsystem-closure.edn")}
+     :authority
+     {:authority :non-authority
+      :candidate-invokes-clojure? false
+      :candidate-links-jvm? false
+      :no-fallback? true
+      :cross-target-inference? false
+      :darwin-fallback? false
+      :clojure-seed-boundary? true
+      :self-hosted? false
+      :release? false
+      :public-authority? false}
+     :upstream-workstreams :not-provided
+     :source-span
+     (w5-sc-span root
+                 (str "/fixtures/incomplete-subsystem-closure"
+                      source-extension))}))
+
+(def w5-subsystem-closure-request
+  (w5-sc-request w5-sc-root ".gravity"))
+
+(defn w5-subsystem-closure-request-for-source [root source-extension]
+  (w5-sc-request root source-extension))
+
+(def w5-subsystem-closure-alternate-path-request
+  (w5-sc-request "/checkout-b" ".gravity"))

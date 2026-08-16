@@ -17,6 +17,7 @@
              build-b2-pointer-provenance-record
              build-b2-runtime-helper-manifest
              build-b2-c-artifact-record
+             b2-build-bounded-hosted-c17
              verify-b2-c-backend-design])
   (:effects #{})
   (:capabilities #{})
@@ -374,7 +375,10 @@
    :compiler compiler
    :flags flags
    :proof-assumptions proof-assumptions
-   :required-fields (:required-fields b2-dialect-contract)
+   :required-fields [:dialect :hosted? :freestanding?
+                     :compiler-family :compiler-version-constraint
+                     :target-triple :flags :runtime-helper-policy
+                     :profile :target :proof-assumptions]
    :source-model-only? true})
 
 (defn build-b2-abi-layout-manifest
@@ -383,7 +387,14 @@
    :target-triple target-triple
    :data-model data-model
    :layout-records layout-records
-   :required-fields (:required-fields b2-abi-layout-contract)
+   :required-fields [:compiler-family :compiler-version-constraint
+                     :target-triple :data-model :endianness :alignment
+                     :struct-field-order :padding :enum-and-tag-widths
+                     :closure-representation
+                     :slice-and-buffer-representation
+                     :region-and-arena-handle-representation
+                     :linear-resource-handle-representation
+                     :ffi-calling-convention]
    :source-model-only? true})
 
 (defn build-b2-pointer-provenance-record
@@ -393,7 +404,10 @@
    :valid-range range
    :lifetime lifetime
    :aliasing-mode aliasing
-   :required-facts (:required-facts b2-pointer-memory-contract)
+   :required-facts [:object-identity :valid-range :alignment :lifetime
+                    :aliasing-mode :mutability :nullability
+                    :allocator-or-provider-identity
+                    :provenance-across-casts]
    :source-model-only? true})
 
 (defn build-b2-runtime-helper-manifest
@@ -401,7 +415,10 @@
   {:artifact :gravity/b2-runtime-helper-manifest
    :profile profile
    :helpers helpers
-   :helper-categories (:helper-categories b2-runtime-helper-contract)
+   :helper-categories [:panic-and-trap :bounds-check :numeric-check
+                       :allocation-provider :region-and-arena-provider
+                       :resource-cleanup :atomics :ffi-adapter
+                       :math-provider :debug-and-provenance-hook]
    :source-model-only? true})
 
 (defn build-b2-c-artifact-record
@@ -412,7 +429,10 @@
    :source-hash source-hash
    :manifest-id manifest-id
    :provenance provenance
-   :required-fields (:required-fields b2-artifact-manifest-contract)
+   :required-fields [:artifact-id :source-input-digest :compiler-identity
+                     :profile :target :dialect :effects :capabilities
+                     :safety-summary :proof-summary :unsafe-audit-links
+                     :dependency-graph :source-map :debug-map]
    :source-model-only? true})
 
 (defn verify-b2-c-backend-design
@@ -429,3 +449,2558 @@
    :diagnostics-covered? true
    :production-backend-execution? false
    :source-model-only? true})
+
+; Pure bounded hosted-C17 implementation helpers.  These functions have no
+; filesystem, process, environment, clock, or tool effect.  They accept only
+; the exact authenticated B1 C packet constructed by the preceding stages.
+(defn b2-lowercase-hex?
+  [characters]
+  (if (= (count characters) 0)
+    true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                     \a \b \c \d \e \f}
+                   (first characters))
+      (b2-lowercase-hex? (rest characters))
+      false)))
+
+(defn b2-sha256-id?
+  [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (b2-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn b2-exact-keys?
+  [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn b2-last
+  [values]
+  (if (= (count values) 0)
+    nil
+    (if (= (count values) 1)
+      (first values)
+      (b2-last (rest values)))))
+
+(defn b2-append
+  [left right]
+  (if (= (count right) 0)
+    left
+    (b2-append (conj left (first right)) (rest right))))
+
+(defn b2-content-binding-valid?
+  [binding]
+  (if (b2-exact-keys? binding #{:content-id :entry-count})
+    (if (b2-sha256-id? (get binding :content-id))
+      (if (integer? (get binding :entry-count))
+        (>= (get binding :entry-count) 0)
+        false)
+      false)
+    false))
+
+(defn b2-scalar-type-supported?
+  [type]
+  (if (= type :gravity/integer)
+    true
+    (if (= type :gravity/bool)
+      true
+      (= type :gravity/nil))))
+
+(defn b2-function-boundary-type?
+  [type]
+  (if (b2-exact-keys?
+       type
+       #{:params :return :latent-effects :capabilities :throws
+         :ownership-constraints :profile-constraints})
+    (if (= (get type :params) [])
+      (if (b2-scalar-type-supported? (get type :return))
+        (if (= (get type :latent-effects) #{})
+          (if (= (get type :capabilities) #{})
+            (if (= (get type :throws) #{})
+              (if (= (get type :ownership-constraints)
+                     #{:persistent-immutable-shareable})
+                (= (get type :profile-constraints) #{:hosted})
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-forwarded-operation?
+  [opcode]
+  (if (= opcode :local)
+    true
+    (if (= opcode :local-binding)
+      true
+      (if (= opcode :sequence)
+        true
+        (if (= opcode :lexical-scope)
+          true
+          (= opcode :function-boundary))))))
+
+(defn b2-signed-i64?
+  [value]
+  (if (integer? value)
+    (if (>= value -9223372036854775808)
+      (<= value 9223372036854775807)
+      false)
+    false))
+
+(defn b2-bounded-hosted-c17-policy-record
+  []
+  {:artifact :gravity/b2-bounded-hosted-c17-policy
+   :owner :gravity.backend/b2-c
+   :tier :experimental
+   :exposure :internal
+   :backend-status :partial-bounded-source-emission-slice
+   :source-declaration-target :jvm
+   :requested-lowering-target :c
+   :dialect :c17
+   :target-triple "arm64-apple-macosx14.0.0"
+   :object-format :mach-o
+   :architecture :arm64
+   :integer-carrier :i64
+   :process-result :i32
+   :process-result-range [0 255]
+   :maximum-operation-count 128
+   :maximum-conditional-count 1
+   :maximum-data-flow-edge-count 256
+   :runtime-helpers []
+   :root-contextual-b1-verification-required? true
+   :raw-structural-validator-is-seal-verifier? false
+   :supported-opcodes
+   [:constant :local :local-binding :sequence :lexical-scope
+    :function-boundary :truthiness :integer-eq
+    :integer-lt :integer-lte :integer-gt :integer-gte
+    :conditional-join]
+   :whole-b2? false
+   :public? false
+   :release? false
+   :self-hosted? false})
+
+(defn b2-c-target-valid?
+  [target]
+  (if (b2-exact-keys?
+       target
+       #{:request :triple :data-layout :cpu :features :object-format
+         :architecture :relocation-model :code-model :optimization-level
+         :minimum-os-version :sanitizers :instrumentation :backend :tier
+         :exposure :source-declaration-target :requested-lowering-target
+         :selection :reason :direct-source-declared-c?
+         :profile-eligibility :dialect :fingerprint})
+    (if (= [(get target :request) (get target :triple)
+            (get target :data-layout) (get target :cpu)
+            (get target :features) (get target :object-format)
+            (get target :architecture) (get target :relocation-model)
+            (get target :code-model) (get target :optimization-level)
+            (get target :minimum-os-version) (get target :sanitizers)
+            (get target :instrumentation) (get target :backend)
+            (get target :tier) (get target :exposure)
+            (get target :source-declaration-target)
+            (get target :requested-lowering-target)
+            (get target :selection) (get target :reason)
+            (get target :direct-source-declared-c?)
+            (get target :profile-eligibility) (get target :dialect)]
+           [:c "arm64-apple-macosx14.0.0"
+            "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-n32:64-S128-Fn32"
+            "generic" "+v8a,+fp-armv8,+neon" :mach-o :arm64 :pic
+            :small :O0 "14.0" [] [] :gravity.backend/c
+            :experimental :internal :jvm :c
+            :explicit-bootstrap-seed-target-override
+            :checked-core-seed-contract false [:hosted] :c17])
+      (= (get target :fingerprint)
+         "sha256:007558417ed666401204a9933843d05d93a7f481eaae3641885d854f1a7af8d0")
+      false)
+    false))
+
+(defn b2-c-abi-valid?
+  [abi]
+  (= abi
+     {:calling-convention :darwin-pcs-ccc
+      :object-format :mach-o :architecture :arm64
+      :integer-carrier :i64 :process-result :i32
+      :gravity-exception-unwind :none
+      :platform-unwind-metadata :darwin-compact-unwind-required
+      :return-type :i32}))
+
+(defn b2-c-runtime-valid?
+  [runtime]
+  (= runtime
+     {:gravity-runtime-providers []
+      :platform-runtime-providers
+      [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+      :status :no-gravity-helpers-platform-runtime-required
+      :full-conformance? false}))
+
+(defn b2-c-providers-valid?
+  [providers]
+  (= providers
+     {:semantic []
+      :build [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
+              :file-5.41 :llvm-otool-cctools-1040
+              :darwin-process-loader
+              :openjdk-26.0.1-ffm-native-access
+              :darwin-libsystem-renamex-np]
+      :platform [:darwin/process-startup :darwin/dyld
+                 :darwin/libsystem]}))
+
+(defn b2-b1-c-source-rule-valid?
+  [rule]
+  (if (b2-exact-keys?
+       rule
+       #{:artifact :owner :source-content-hash :source-byte-count
+         :plan-semantic-hash :functions-semantic-hash :builder-function
+         :builder-semantic-hash :function-shapes :semantic-authority
+         :compiled-by :executed-by :self-hosted?})
+    (= [(get rule :artifact) (get rule :owner)
+        (get rule :source-byte-count) (get rule :source-content-hash)
+        (get rule :plan-semantic-hash)
+        (get rule :functions-semantic-hash)
+        (get rule :builder-function) (get rule :builder-semantic-hash)
+        (get rule :function-shapes) (get rule :semantic-authority)
+        (get rule :compiled-by) (get rule :executed-by)
+        (get rule :self-hosted?)]
+       [:gravity/pinned-gravity-source-rule
+        :gravity.backend/b1-backend-interface 141683
+        "sha256:c827a5bcbc6dcd8778d958ae8daba30a2861bf44cfb079a5d227dfc73ddb4e8d"
+        "sha256:1953611fc5ad4dc10b2344b0158b6fb7ddd6a1589f8ac9af6d745874eebf69d1"
+        "sha256:6e952b4b7cce3091b05434d35137c5360f52c124c65c4e78d936377e784f19e2"
+        'b1-build-bounded-c-authenticated-packet
+        "sha256:9fa86940d7874c4260fea5e6c38bc6d01a5bbd3115bdd1e2c8c8d2bbf4d82760"
+        '{b1-bounded-c14-c-input-valid?
+          {:arity 1 :params [lowering]}
+          b1-bounded-c-manifest-valid?
+          {:arity 1 :params [backend-manifest]}
+          b1-build-bounded-c-authenticated-packet
+          {:arity 2 :params [lowering backend-manifest]}}
+        :gravity-source :clojure-stage0-seed
+        :clojure-stage0-rule-runner false])
+    false))
+
+; The preceding validator is the single isolated B1 source-rule literal block.
+; Its byte and semantic identities are intentionally repinned by the owning
+; bootstrap coordinator whenever the authenticated B1 source changes.
+
+(defn b2-nonnegative-integer?
+  [value]
+  (if (integer? value) (>= value 0) false))
+
+(defn b2-all-strings?
+  [values]
+  (if (= (count values) 0)
+    true
+    (if (string? (first values))
+      (b2-all-strings? (rest values))
+      false)))
+
+(defn b2-b1-c-provenance-valid?
+  [provenance]
+  (if (b2-exact-keys?
+       provenance
+       #{:source :c11-source :c13-source :c14-source :b1-source})
+    (b2-all-strings?
+     [(get provenance :source)
+      (get provenance :c11-source)
+      (get provenance :c13-source)
+      (get provenance :c14-source)
+      (get provenance :b1-source)])
+    false))
+
+(defn b2-c11-independent-verifier-valid?
+  [verifier]
+  (if (b2-exact-keys?
+       verifier
+       #{:status :module-shape-valid? :block-count :operation-count
+         :conditional-count :dominance-valid? :type-facts-valid?
+         :direct-effects-valid? :safety-facts-valid?
+         :origin-closure-valid? :runtime-checks-valid? :runtime-checks
+         :target-independent? :data-flow})
+    (if (= [(get verifier :status)
+            (get verifier :module-shape-valid?)
+            (get verifier :dominance-valid?)
+            (get verifier :type-facts-valid?)
+            (get verifier :direct-effects-valid?)
+            (get verifier :safety-facts-valid?)
+            (get verifier :origin-closure-valid?)
+            (get verifier :runtime-checks-valid?)
+            (get verifier :target-independent?)]
+           [:passed true true true true true true true true])
+      (let [blocks (get verifier :block-count)
+            operations (get verifier :operation-count)
+            conditionals (get verifier :conditional-count)
+            runtime (get verifier :runtime-checks)
+            data-flow (get verifier :data-flow)]
+        (if (b2-nonnegative-integer? blocks)
+          (if (if (b2-nonnegative-integer? operations)
+                (if (> operations 0) (<= operations 128) false)
+                false)
+            (if (contains? #{0 1} conditionals)
+              (if (= blocks (if (= conditionals 0) 1 4))
+                (if (= runtime
+                       {:runtime-check-count 0 :runtime-check-ids []})
+                  (if (b2-exact-keys?
+                       data-flow
+                       #{:edge-count :terminator-use-count
+                         :definition-count :value-count})
+                    (if (= [(get data-flow :definition-count)
+                            (get data-flow :value-count)
+                            (get data-flow :terminator-use-count)]
+                           [operations operations
+                            (if (= conditionals 0) 1 4)])
+                      (b2-nonnegative-integer?
+                       (get data-flow :edge-count))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false))
+      false)
+    false))
+
+(defn b2-c11-b1-preflight-valid?
+  [preflight]
+  (if (b2-exact-keys?
+       preflight
+       #{:artifact :status :input-kind :requires-verifier-status
+         :mir-verifier-status :binding :target-lowering-credit?
+         :backend-credit? :llvm-credit?})
+    (if (= [(get preflight :artifact) (get preflight :status)
+            (get preflight :input-kind)
+            (get preflight :requires-verifier-status)
+            (get preflight :mir-verifier-status)
+            (get preflight :target-lowering-credit?)
+            (get preflight :backend-credit?) (get preflight :llvm-credit?)]
+           [:gravity/verified-mir-candidate-for-b1
+            :verified-mir-candidate-for-b1 :gravity/mir
+            :passed :passed false false false])
+      (let [binding (get preflight :binding)]
+        (if (b2-exact-keys?
+             binding
+             #{:mir-content-id :checked-core-artifact-id
+               :independent-verifier-report-id
+               :independent-verifier-report-hash
+               :pass-execution-record-id :scope-hash})
+          (if (b2-sha256-id? (get binding :mir-content-id))
+            (if (b2-sha256-id? (get binding :checked-core-artifact-id))
+              (if (b2-sha256-id?
+                   (get binding :independent-verifier-report-id))
+                (if (b2-sha256-id?
+                     (get binding :independent-verifier-report-hash))
+                  (if (b2-sha256-id?
+                       (get binding :pass-execution-record-id))
+                    (b2-sha256-id? (get binding :scope-hash))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false))
+      false)
+    false))
+
+(defn b2-c11-verifier-valid?
+  [verifier]
+  (if (b2-exact-keys?
+       verifier
+       #{:status :mir-id :semantic-replay-parity :execution-tcb
+         :independent-verifier :b1-preflight})
+    (if (= [(get verifier :status)
+            (get verifier :semantic-replay-parity)
+            (get verifier :execution-tcb)]
+           [:passed :passed :clojure-stage0-rule-runner])
+      (if (b2-sha256-id? (get verifier :mir-id))
+        (if (b2-c11-independent-verifier-valid?
+             (get verifier :independent-verifier))
+          (b2-c11-b1-preflight-valid? (get verifier :b1-preflight))
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-b1-c-input-valid?
+  [input]
+  (if (b2-exact-keys?
+       input
+       #{:kind :id :artifact-id :c11-artifact-id :verified?
+         :verifier-report :verifier-report-id :optimization-status
+         :optimization-report :domain-status})
+    (if (= [(get input :kind) (get input :verified?)
+            (get input :optimization-status) (get input :domain-status)]
+           [:gravity/mir true :identity-pass-complete :not-applicable])
+      (if (b2-sha256-id? (get input :id))
+        (if (b2-sha256-id? (get input :artifact-id))
+          (if (b2-sha256-id? (get input :c11-artifact-id))
+            (if (b2-sha256-id? (get input :verifier-report-id))
+              (let [optimization (get input :optimization-report)]
+                (if (b2-exact-keys?
+                     optimization
+                     #{:artifact-id :semantic-id :decision-id
+                       :verifier-result})
+                  (if (= [(get optimization :artifact-id)
+                          (get optimization :semantic-id)
+                          (get optimization :verifier-result)]
+                         [(get input :artifact-id)
+                          (get input :id) :passed])
+                    (if (b2-sha256-id? (get optimization :decision-id))
+                      (b2-c11-verifier-valid?
+                       (get input :verifier-report))
+                      false)
+                    false)
+                  false))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-b1-c-safety-valid?
+  [safety]
+  (if (b2-exact-keys?
+       safety #{:outcomes :runtime-checks :unsafe-islands :binding})
+    (if (b2-nonnegative-integer? (get safety :outcomes))
+      (if (= (get safety :runtime-checks) 0)
+        (if (= (get safety :unsafe-islands) 0)
+          (b2-content-binding-valid? (get safety :binding))
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-b1-c-proofs-valid?
+  [proofs]
+  (if (b2-exact-keys? proofs #{:capability :certificates})
+    (let [capability (get proofs :capability)
+          certificates (get proofs :certificates)]
+      (if (b2-exact-keys?
+           capability #{:content-id :entry-count :proof-ids})
+        (if (b2-exact-keys?
+             certificates
+             #{:content-id :entry-count :safety-proof-count
+               :safety-proof-ids})
+          (if (b2-sha256-id? (get capability :content-id))
+            (if (b2-sha256-id? (get certificates :content-id))
+              (if (vector? (get capability :proof-ids))
+                (if (vector? (get certificates :safety-proof-ids))
+                  (if (= (count (get capability :proof-ids))
+                         (get capability :entry-count))
+                    (if (= (count (get certificates :safety-proof-ids))
+                           (get certificates :safety-proof-count))
+                      (= (count (get capability :proof-ids))
+                         (count (set (get capability :proof-ids))))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn b2-b1-c-manifest-valid?
+  [manifest]
+  (if (b2-exact-keys?
+       manifest
+       #{:artifact :backend :version :accepts :emits :requires
+         :supports-profiles :rejects :dialect :c14-request-id
+         :c14-artifact-id})
+    (if (= [(get manifest :artifact) (get manifest :backend)
+            (get manifest :version) (get manifest :accepts)
+            (get manifest :emits) (get manifest :requires)
+            (get manifest :supports-profiles) (get manifest :rejects)
+            (get manifest :dialect)]
+           [:gravity/backend-manifest :gravity.backend/c
+            :bounded-authenticated-c17-v1 [:gravity/mir]
+            [:c-source :c-header]
+            [:profile-manifest :target-manifest :c-dialect-selection
+             :abi-policy :runtime-provider-selection :effect-summary
+             :capability-proof-summary :safety-bundle :proof-table
+             :source-map :dependency-graph]
+            [:hosted]
+            [:unverified-ir :unsupported-op :missing-proof :implicit-ub
+             :ambient-capability :profile-violation :dialect-mismatch]
+            :c17])
+      (if (b2-sha256-id? (get manifest :c14-request-id))
+        (b2-sha256-id? (get manifest :c14-artifact-id))
+        false)
+      false)
+    false))
+
+(defn b2-content-bindings-valid?
+  [bindings names]
+  (if (= (count names) 0)
+    true
+    (if (b2-content-binding-valid? (get bindings (first names)))
+      (b2-content-bindings-valid? bindings (rest names))
+      false)))
+
+(defn b2-b1-c-contract-bindings-valid?
+  [bindings]
+  (if (b2-exact-keys?
+       bindings
+       #{:profile :target :abi :runtime :providers :effects
+         :capabilities :type :ownership :safety :proofs :source-map
+         :dependencies :c11-verifier :c13-optimization})
+    (b2-content-bindings-valid?
+     bindings
+     [:profile :target :abi :runtime :providers :effects
+      :capabilities :type :ownership :safety :proofs :source-map
+      :dependencies :c11-verifier :c13-optimization])
+    false))
+
+(defn b2-b1-c-fact-bindings-valid?
+  [facts bindings]
+  (if (b2-exact-keys?
+       facts
+       #{:type :effect :ownership :capability :safety
+         :runtime-checks :proofs :source-map})
+    (if (b2-content-bindings-valid?
+         facts
+         [:type :effect :ownership :capability :safety
+          :runtime-checks :proofs :source-map])
+      (= [(get facts :type) (get facts :ownership)
+          (get facts :safety) (get facts :source-map)]
+         [(get bindings :type) (get bindings :ownership)
+          (get bindings :safety) (get bindings :source-map)])
+      false)
+    false))
+
+(defn b2-b1-c-dependencies-valid?
+  [dependencies input payload]
+  (if (b2-exact-keys?
+       dependencies
+       #{:source-core :c11-source-rule :c11-pass :c13-artifact
+         :c13-source-rule :b2-source})
+    (if (b2-sha256-id? (get dependencies :source-core))
+      (if (map? (get dependencies :c11-source-rule))
+        (if (b2-sha256-id? (get dependencies :c11-pass))
+          (if (= (get dependencies :c13-artifact)
+                 (get input :artifact-id)
+                 (get payload :c13-artifact-id))
+            (if (map? (get dependencies :c13-source-rule))
+              (b2-sha256-id? (get dependencies :b2-source))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-b1-c-payload-valid?
+  [payload input bindings]
+  (if (b2-exact-keys?
+       payload
+       #{:artifact :c11-artifact-id :c13-artifact-id
+         :c13-semantic-id :mir :operation-order :fact-bindings})
+    (if (= (get payload :artifact)
+           :gravity/c14-bounded-c-lowering-payload)
+      (if (= [(get payload :c11-artifact-id)
+              (get payload :c13-artifact-id)
+              (get payload :c13-semantic-id)]
+             [(get input :c11-artifact-id)
+              (get input :artifact-id) (get input :id)])
+        (if (map? (get payload :mir))
+          (if (vector? (get payload :operation-order))
+            (if (> (count (get payload :operation-order)) 0)
+              (if (<= (count (get payload :operation-order)) 128)
+                (if (= (count (get payload :operation-order))
+                       (count (set (get payload :operation-order))))
+                  (b2-b1-c-fact-bindings-valid?
+                   (get payload :fact-bindings) bindings)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-c14-eligibility-valid?
+  [eligibility target providers]
+  (if (b2-exact-keys?
+       eligibility
+       #{:artifact :backend :profile :target :accepted? :rejections
+         :fallbacks :missing-features :required-providers
+         :proof-assumptions :explainability-record :checks})
+    (if (= [(get eligibility :artifact) (get eligibility :backend)
+            (get eligibility :profile) (get eligibility :target)
+            (get eligibility :accepted?) (get eligibility :rejections)
+            (get eligibility :fallbacks)
+            (get eligibility :missing-features)
+            (get eligibility :required-providers)
+            (get eligibility :proof-assumptions)
+            (get eligibility :explainability-record)
+            (get eligibility :checks)]
+           [:gravity/c14-target-eligibility-report :gravity.backend/c
+            :hosted target true [] [] [] providers []
+            {:decision :accepted
+             :bounded-surface
+             :pure-scalar-forwarding-do-let-if-integer-comparisons
+             :dialect :c17
+             :unsupported-diagnostic "C14-UNSUPPORTED"
+             :no-hidden-runtime? true
+             :no-hidden-effect-or-capability? true}
+            [:profile-allows-backend
+             :target-supports-required-mir-families
+             :runtime-services-explicit :abi-represents-exports
+             :effects-have-authority-preserving-providers
+             :proof-assumptions-valid-for-target]])
+      true false)
+    false))
+
+(defn b2-b1-eligibility-valid?
+  [eligibility input target]
+  (if (b2-exact-keys?
+       eligibility
+       #{:artifact :backend :input-artifact :profile :target
+         :accepted? :rejections :fallbacks :missing-evidence
+         :unsupported-operations :remediation :checks})
+    (= [(get eligibility :artifact) (get eligibility :backend)
+        (get eligibility :input-artifact) (get eligibility :profile)
+        (get eligibility :target) (get eligibility :accepted?)
+        (get eligibility :rejections) (get eligibility :fallbacks)
+        (get eligibility :missing-evidence)
+        (get eligibility :unsupported-operations)
+        (get eligibility :remediation) (get eligibility :checks)]
+       [:gravity/b1-backend-eligibility-report :gravity.backend/c
+        (get input :artifact-id) :hosted target true [] [] [] [] []
+        [:profile-backend-compatibility :target-feature-support
+         :runtime-availability-or-no-runtime-proof
+         :abi-representability :layout-representability
+         :provider-availability :effect-preservation
+         :capability-preservation :safety-bundle-completeness
+         :proof-validity-for-target-assumptions
+        :source-debug-map-preservation :c17-dialect-closure]])
+    false))
+
+(defn b2-b1-c-packet-structurally-valid?
+  [packet]
+  (if (b2-exact-keys?
+       packet
+       #{:artifact :schema-version :status :input
+         :bounded-lowering-payload :profile :target
+         :source-target-selection :dialect :abi :runtime :providers
+         :effects :capabilities :safety :proofs
+         :proof-to-target-metadata :source-map :dependencies
+         :contract-bindings :c14-eligibility :eligibility
+         :backend-manifest :unsupported-feature-report :diagnostics
+         :semantic-authority :execution-tcb :clojure-seed-boundary?
+         :whole-b1? :whole-b2? :self-hosted? :source-rule
+         :actual-path-provenance :semantic-id :artifact-id
+         :actual-path-binding-id})
+    (if (= [(get packet :artifact) (get packet :schema-version)
+            (get packet :status) (get packet :profile)
+            (get packet :source-target-selection) (get packet :dialect)
+            (get packet :effects) (get packet :capabilities)
+            (get packet :proof-to-target-metadata)
+            (get packet :diagnostics) (get packet :semantic-authority)
+            (get packet :execution-tcb)
+            (get packet :clojure-seed-boundary?)
+            (get packet :whole-b1?) (get packet :whole-b2?)
+            (get packet :self-hosted?)]
+           [:gravity/b1-verified-backend-input-packet 1
+            :accepted-for-bounded-c {:name :hosted :validated? true}
+            {:source-declaration-target :jvm
+             :requested-lowering-target :c
+             :selection :explicit-bootstrap-seed-target-override
+             :reason :checked-core-seed-contract
+             :direct-source-declared-c? false}
+            :c17 #{} #{}
+            {:entries [] :proofless-metadata-rejected? true}
+            [] :gravity-source :clojure-stage0-rule-runner
+            true false false false])
+      (let [input (get packet :input)
+            payload (get packet :bounded-lowering-payload)
+            target (get packet :target)
+            providers (get packet :providers)
+            bindings (get packet :contract-bindings)
+            source-map (get packet :source-map)
+            unsupported (get packet :unsupported-feature-report)]
+        (if (b2-b1-c-input-valid? input)
+          (if (b2-c-target-valid? target)
+            (if (b2-c-abi-valid? (get packet :abi))
+              (if (b2-c-runtime-valid? (get packet :runtime))
+                (if (b2-c-providers-valid? providers)
+                  (if (b2-b1-c-safety-valid? (get packet :safety))
+                    (if (b2-b1-c-proofs-valid? (get packet :proofs))
+                      (if (b2-b1-c-contract-bindings-valid? bindings)
+                        (if (b2-b1-c-payload-valid?
+                             payload input bindings)
+                          (if (b2-b1-c-dependencies-valid?
+                               (get packet :dependencies) input payload)
+                            (if (= source-map
+                                   {:id (get source-map :id)
+                                    :preserved? true})
+                              (if (b2-sha256-id? (get source-map :id))
+                                (if (b2-c14-eligibility-valid?
+                                     (get packet :c14-eligibility)
+                                     target providers)
+                                  (if (b2-b1-eligibility-valid?
+                                       (get packet :eligibility)
+                                       input target)
+                                    (if (b2-b1-c-manifest-valid?
+                                         (get packet :backend-manifest))
+                                      (if (= unsupported
+                                             {:status :bounded-surface-only
+                                              :policy
+                                              [:strings :quote :str :println
+                                               :runtime-checks :effects
+                                               :program-capabilities
+                                               :domain-anchors
+                                               :multiple-functions
+                                               :multiple-conditionals
+                                               :non-scalar-types
+                                               :integer-outside-signed-i64
+                                               :process-result-outside-0-to-255
+                                               :pointers :ffi :mmio :volatile
+                                               :atomics :inline-assembly]
+                                              :diagnostic "B1-UNSUPPORTED"
+                                              :fallback-status :rejected})
+                                        (if (b2-b1-c-source-rule-valid?
+                                             (get packet :source-rule))
+                                          (if (b2-b1-c-provenance-valid?
+                                               (get packet
+                                                    :actual-path-provenance))
+                                            (if (b2-sha256-id?
+                                                 (get packet :semantic-id))
+                                              (if (b2-sha256-id?
+                                                   (get packet :artifact-id))
+                                                (b2-sha256-id?
+                                                 (get packet
+                                                      :actual-path-binding-id))
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false))
+      false)
+    false))
+
+(defn b2-all-map-fields?
+  [value fields]
+  (if (= (count fields) 0)
+    true
+    (if (map? (get value (first fields)))
+      (b2-all-map-fields? value (rest fields))
+      false)))
+
+(defn b2-mir-module-valid?
+  [mir]
+  (if (b2-exact-keys?
+       mir
+       #{:artifact :schema-version :source-core :module-id :profile
+         :source-target :target-request :target-request-metadata :functions
+         :globals :control-flow-graph :data-flow-graph :type-table
+         :effect-table :effect-order-graph :ownership-table
+         :capability-table :capability-proof-table :safety-table
+         :profile-target-table :runtime-check-table
+         :proof-certificate-table :source-map :domain-anchors :diagnostics
+         :provenance :construction :pass-contract :pass-execution-record
+         :verification-status :target-independent? :b1-preflight :scope
+         :clojure-seed-boundary? :self-hosted?})
+    (if (b2-all-map-fields?
+         mir
+         [:functions :globals :control-flow-graph :data-flow-graph
+          :type-table :effect-table :effect-order-graph :ownership-table
+          :capability-table :capability-proof-table :safety-table
+          :profile-target-table :runtime-check-table
+          :proof-certificate-table :source-map :domain-anchors
+          :provenance :construction :pass-contract
+          :pass-execution-record :b1-preflight :scope
+          :target-request-metadata])
+      (if (= [(get mir :artifact) (get mir :schema-version)
+              (get mir :profile) (get mir :source-target)
+              (get mir :target-request) (get mir :verification-status)
+              (get mir :target-independent?) (get mir :globals)
+              (get mir :runtime-check-table) (get mir :domain-anchors)
+              (get mir :diagnostics) (get mir :clojure-seed-boundary?)
+              (get mir :self-hosted?)]
+             [:gravity/mir-module 1 :hosted :jvm :c :passed true
+              {} {} {} [] true false])
+        (if (= (set (keys (get mir :functions))) #{(quote main)})
+          (if (b2-sha256-id? (get mir :source-core))
+            (if (= (get mir :module-id) nil) false true)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-function-valid?
+  [function]
+  (if (b2-exact-keys?
+       function
+       #{:artifact :fn-id :name :params :returns :latent-effects
+         :capabilities :blocks :entry :source :facts :provenance})
+    (if (= [(get function :artifact) (get function :name)
+            (get function :params) (get function :latent-effects)
+            (get function :capabilities)]
+           [:gravity/mir-function (quote main) [] #{} #{}])
+      (if (b2-scalar-type-supported? (get function :returns))
+        (if (map? (get function :blocks))
+          (if (contains? #{1 4} (count (get function :blocks)))
+            (if (string? (get function :entry))
+              (if (<= (count (get function :entry)) 256)
+                (if (contains? (get function :blocks)
+                               (get function :entry))
+                  (if (map? (get function :source))
+                    (if (map? (get function :facts))
+                      (map? (get function :provenance))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-block-order
+  [mir function]
+  (let [entry (get function :entry)
+        blocks (get function :blocks)
+        successors (get (get blocks entry) :successors)]
+    (if (= (count blocks) 1)
+      [entry]
+      [entry (first successors) (second successors)
+       (get (get (get mir :control-flow-graph) :join) :block-id)])))
+
+(defn b2-collect-operations
+  [blocks block-order result]
+  (if (= (count block-order) 0)
+    result
+    (b2-collect-operations
+     blocks (rest block-order)
+     (b2-append
+      result (get (get blocks (first block-order)) :instructions)))))
+
+(defn b2-index-operations
+  [operations index result]
+  (if (= (count operations) 0)
+    result
+    (b2-index-operations
+     (rest operations) (+ index 1)
+     (assoc result (get (first operations) :op-id) index))))
+
+(defn b2-find-operation
+  [operations operation-id]
+  (if (= (count operations) 0)
+    nil
+    (if (= operation-id (get (first operations) :op-id))
+      (first operations)
+      (b2-find-operation (rest operations) operation-id))))
+
+(defn b2-operation-facts-valid?
+  [facts]
+  (b2-exact-keys?
+   facts
+   #{:type-fact-id :effect-fact-id :capability-fact-id
+     :capability-proof-ids :ownership-fact-id :safety-outcome-id
+     :safety-proof-id :profile-target-fact-id :runtime-check-id
+     :proof-certificate-ids :failure-behavior :source-origin-id}))
+
+(defn b2-operation-fact-records-valid?
+  [mir operation]
+  (let [operation-id (get operation :op-id)
+        facts (get operation :facts)
+        type-id (get facts :type-fact-id)
+        effect-id (get facts :effect-fact-id)
+        capability-id (get facts :capability-fact-id)
+        ownership-id (get facts :ownership-fact-id)
+        safety-id (get facts :safety-outcome-id)
+        profile-id (get facts :profile-target-fact-id)
+        proof-id (get facts :safety-proof-id)
+        type-record (get (get mir :type-table) type-id)
+        effect-record (get (get mir :effect-table) effect-id)
+        capability-record
+        (get (get mir :capability-table) capability-id)
+        ownership-record (get (get mir :ownership-table) ownership-id)
+        safety-record (get (get mir :safety-table) safety-id)
+        profile-record
+        (get (get mir :profile-target-table) profile-id)
+        proof-record
+        (get (get (get mir :proof-certificate-table) :safety-proofs)
+             proof-id)]
+    (if (= [(get facts :failure-behavior)
+            (get facts :source-origin-id)
+            (get (get operation :source) :origin-id)
+            (get type-record :fact-id) (get type-record :core-node-id)
+            (get type-record :type) (get type-record :profile)
+            (get type-record :source-target)
+            (get type-record :source-origin-id)
+            (get effect-record :fact-id)
+            (get effect-record :core-node-id)
+            (get effect-record :type-fact-id)
+            (get effect-record :direct) (get effect-record :transitive)
+            (get effect-record :residual) (get effect-record :latent)
+            (get effect-record :ordering) (get effect-record :profile)
+            (get effect-record :source-target)
+            (get effect-record :source-origin-id)]
+           [:not-applicable
+            (get (get operation :source) :origin-id)
+            (get facts :source-origin-id)
+            type-id operation-id (get operation :type) :hosted :jvm
+            (get facts :source-origin-id)
+            effect-id operation-id type-id #{} #{} #{} #{}
+            :none :hosted :jvm (get facts :source-origin-id)])
+      (if (= [(get capability-record :fact-id)
+              (get capability-record :core-node-id)
+              (get capability-record :required)
+              (get capability-record :granted)
+              (get capability-record :grant-ids)
+              (get capability-record :provider-bindings)
+              (get capability-record :authority-source)
+              (get capability-record :authority-id)
+              (get capability-record :capability-proof)
+              (get capability-record :profile)
+              (get capability-record :source-target)
+              (get capability-record :source-origin-id)]
+             [capability-id operation-id #{} #{} [] {}
+              :none-required nil
+              {:basis :empty-capability-requirements
+               :proof-ids [] :status :not-required}
+              :hosted :jvm (get facts :source-origin-id)])
+        (if (= [(get ownership-record :fact-id)
+                (get ownership-record :core-node-id)
+                (get ownership-record :value-id)
+                (get ownership-record :profile)
+                (get ownership-record :source-target)
+                (get ownership-record :mutation)
+                (get ownership-record :allocator-requirement)
+                (get ownership-record :provider-requirement)
+                (get ownership-record :runtime-check)
+                (get ownership-record :unsafe-audit)
+                (get ownership-record :source-origin-id)]
+               [ownership-id operation-id operation-id :hosted :jvm
+                :forbidden :not-required :not-required
+                :not-applicable :not-applicable
+                (get facts :source-origin-id)])
+          (if (= [(get safety-record :artifact)
+                  (get safety-record :outcome-id)
+                  (get safety-record :operation)
+                  (get safety-record :outcome)
+                  (get safety-record :proof)
+                  (get safety-record :profile)
+                  (get safety-record :target)
+                  (get safety-record :runtime-check)
+                  (get safety-record :unsafe-audit)
+                  (get safety-record :failure-behavior)
+                  (get safety-record :facts)]
+                 [:gravity/safety-outcome safety-id operation-id
+                  :proven-safe proof-id :hosted :jvm
+                  :not-applicable :not-applicable
+                  (get facts :failure-behavior)
+                  {:effects effect-id :ownership ownership-id
+                   :type type-id}])
+            (if (= [(get profile-record :fact-id)
+                    (get profile-record :core-node-id)
+                    (get profile-record :profile)
+                    (get profile-record :source-target)
+                    (get profile-record :target-request)]
+                   [profile-id operation-id :hosted :jvm :c])
+              (if (= [(get proof-record :artifact)
+                      (get proof-record :proof-id)
+                      (get proof-record :core-node-id)
+                      (get proof-record :type)
+                      (get proof-record :effects)
+                      (get proof-record :effect-requirements)
+                      (get proof-record :capabilities)
+                      (get proof-record :capability-requirements)
+                      (get proof-record :profile)
+                      (get proof-record :source-target)
+                      (get proof-record :status)]
+                     [:gravity/c6-c10-pure-safety-proof proof-id
+                      operation-id (get operation :type) #{} #{} #{} #{}
+                      :hosted :jvm :proved-for-bounded-pure-slice])
+                (if (= (get facts :capability-proof-ids) [])
+                  (if (= (get facts :runtime-check-id) :not-applicable)
+                    (= (get facts :proof-certificate-ids) [proof-id])
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn b2-operation-fact-closure-valid?
+  [mir operations]
+  (if (= (count operations) 0)
+    true
+    (if (b2-operation-fact-records-valid? mir (first operations))
+      (b2-operation-fact-closure-valid? mir (rest operations))
+      false)))
+
+(defn b2-effect-order-nodes-valid?
+  [nodes operation-ids]
+  (if (= (count operation-ids) 0)
+    true
+    (let [node (get nodes (first operation-ids))]
+      (if (= [(get node :direct) (get node :latent)
+              (get node :transitive) (get node :ordering)]
+             [#{} #{} #{} :none])
+        (b2-effect-order-nodes-valid? nodes (rest operation-ids))
+        false))))
+
+(defn b2-fact-table-closure-valid?
+  [mir operations]
+  (let [operation-count (count operations)
+        operation-ids (b2-operation-ids operations [])
+        proof-table (get mir :proof-certificate-table)
+        safety-proofs (get proof-table :safety-proofs)
+        effect-order (get mir :effect-order-graph)
+        effect-nodes (get effect-order :nodes)
+        function-effects (get effect-order :functions)
+        function-effect
+        (if (= (count function-effects) 1)
+          (get function-effects (first (keys function-effects)))
+          nil)]
+    (if (= [(count (get mir :type-table))
+            (count (get mir :effect-table))
+            (count (get mir :ownership-table))
+            (count (get mir :capability-table))
+            (count (get mir :safety-table))
+            (count (get mir :profile-target-table))]
+           [operation-count operation-count operation-count
+            operation-count operation-count operation-count])
+      (if (= (get mir :capability-proof-table) {})
+        (if (b2-exact-keys?
+             proof-table
+             #{:capability-proof-table-reference :safety-proofs})
+          (if (= (get proof-table :capability-proof-table-reference)
+                 :capability-proof-table)
+            (if (if (map? safety-proofs)
+                  (= (count safety-proofs) operation-count)
+                  false)
+              (if (b2-operation-fact-closure-valid? mir operations)
+                (if (= [(get effect-order :artifact)
+                        (get effect-order :build-effects)
+                        (get effect-order :diagnostics)
+                        (get effect-order :module)
+                        (get effect-order :namespace)
+                        (get effect-order :replay-required)]
+                       [:gravity/effect-graph [] [] (get mir :module-id)
+                        {:declared #{} :inferred #{}} #{}])
+                  (if (= (set (keys effect-nodes)) (set operation-ids))
+                    (if (b2-effect-order-nodes-valid?
+                         effect-nodes operation-ids)
+                      (= function-effect
+                         {:declared #{} :inferred #{}
+                          :latent #{} :throws #{}})
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn b2-source-position-valid?
+  [position]
+  (if (b2-exact-keys?
+       position #{:line :column :column-unit :char :byte})
+    (if (= (get position :column-unit) :unicode-scalar)
+      (if (integer? (get position :line))
+        (if (>= (get position :line) 1)
+          (if (integer? (get position :column))
+            (if (>= (get position :column) 1)
+              (if (integer? (get position :char))
+                (if (>= (get position :char) 0)
+                  (if (integer? (get position :byte))
+                    (>= (get position :byte) 0)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-source-span-valid?
+  [span]
+  (if (b2-exact-keys?
+       span #{:start :end :byte-start :byte-end :file})
+    (if (b2-source-position-valid? (get span :start))
+      (if (b2-source-position-valid? (get span :end))
+        (if (integer? (get span :byte-start))
+          (if (integer? (get span :byte-end))
+            (if (>= (get span :byte-start) 0)
+              (if (>= (get span :byte-end) (get span :byte-start))
+                (if (= (get span :byte-start)
+                       (get (get span :start) :byte))
+                  (if (= (get span :byte-end)
+                         (get (get span :end) :byte))
+                    (b2-sha256-id? (get span :file))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-generated-origin-valid?
+  [origin]
+  (if (b2-exact-keys?
+       origin #{:input-origin-id :kind :producer :role})
+    (if (b2-sha256-id? (get origin :input-origin-id))
+      (if (= (get origin :kind) :compiler-generated)
+        (if (= (get origin :producer)
+               :gravity/c6-c10-checked-core-pipeline)
+          (keyword? (get origin :role))
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-generated-origins-valid?
+  [origins]
+  (if (= (count origins) 0)
+    true
+    (if (b2-generated-origin-valid? (first origins))
+      (b2-generated-origins-valid? (rest origins))
+      false)))
+
+(defn b2-operation-source-record-valid?
+  [source]
+  (if (b2-exact-keys?
+       source
+       #{:span :origin-id :generated? :generated-origin
+         :enclosing-syntax-origin-id})
+    (if (b2-source-span-valid? (get source :span))
+      (if (b2-sha256-id? (get source :origin-id))
+        (if (b2-sha256-id? (get source :enclosing-syntax-origin-id))
+          (if (vector? (get source :generated-origin))
+            (if (<= (count (get source :generated-origin)) 16)
+              (if (b2-generated-origins-valid?
+                   (get source :generated-origin))
+                (if (= (get source :generated?) true)
+                  (> (count (get source :generated-origin)) 0)
+                  (if (= (get source :generated?) false)
+                    (= (get source :generated-origin) [])
+                    false))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-operation-envelope-valid?
+  [operation]
+  (if (b2-exact-keys?
+       operation
+       #{:artifact :op-id :opcode :source-operation :operands :result
+         :result-kind :constant-payload :type :effects :capabilities
+         :ordering :source :profile :facts :domain-anchor :block-id
+         :verifier-status})
+    (if (= [(get operation :artifact) (get operation :result)
+            (get operation :effects) (get operation :capabilities)
+            (get operation :ordering) (get operation :profile)
+            (get operation :domain-anchor)
+            (get operation :verifier-status)]
+           [:gravity/mir-operation (get operation :op-id)
+            #{} #{} :none :hosted nil :passed])
+      (if (string? (get operation :op-id))
+        (if (<= (count (get operation :op-id)) 256)
+          (if (string? (get operation :block-id))
+            (if (vector? (get operation :operands))
+              (if (b2-operation-source-record-valid?
+                   (get operation :source))
+                (if (b2-operation-facts-valid? (get operation :facts))
+                  (= (get operation :result-kind)
+                     (if (= (get operation :type) :gravity/nil)
+                       :unit :value))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-operations-envelope-valid?
+  [operations]
+  (if (= (count operations) 0)
+    true
+    (if (b2-operation-envelope-valid? (first operations))
+      (b2-operations-envelope-valid? (rest operations))
+      false)))
+
+(defn b2-block-valid?
+  [block block-id]
+  (if (b2-exact-keys?
+       block
+       #{:artifact :block-id :arguments :instructions :terminator
+         :predecessors :successors :dominators :data-flow :source})
+    (if (= [(get block :artifact) (get block :block-id)
+            (get block :arguments) (get block :data-flow)]
+           [:gravity/mir-block block-id []
+            {:module-data-flow-graph-reference true}])
+      (if (string? block-id)
+        (if (<= (count block-id) 256)
+          (if (vector? (get block :instructions))
+            (if (vector? (get block :predecessors))
+              (if (vector? (get block :successors))
+                (if (vector? (get block :dominators))
+                  (if (map? (get block :source))
+                    (b2-operation-block-placement-valid?
+                     (get block :instructions) block-id)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-operation-block-placement-valid?
+  [operations block-id]
+  (if (= (count operations) 0)
+    true
+    (if (= (get (first operations) :block-id) block-id)
+      (b2-operation-block-placement-valid?
+       (rest operations) block-id)
+      false)))
+
+(defn b2-blocks-valid-loop?
+  [blocks block-order]
+  (if (= (count block-order) 0)
+    true
+    (if (b2-block-valid?
+         (get blocks (first block-order)) (first block-order))
+      (b2-blocks-valid-loop? blocks (rest block-order))
+      false)))
+
+(defn b2-blocks-valid?
+  [blocks block-order]
+  (if (= (set (keys blocks)) (set block-order))
+    (b2-blocks-valid-loop? blocks block-order)
+    false))
+
+(defn b2-terminator-valid?
+  [terminator]
+  (if (b2-exact-keys?
+       terminator
+       #{:artifact :terminator-id :kind :operands :successors :effects
+         :ordering :source :profile :facts :verifier-status})
+    (if (= [(get terminator :artifact) (get terminator :effects)
+            (get terminator :ordering) (get terminator :profile)
+            (get terminator :verifier-status)]
+           [:gravity/mir-terminator #{} :none :hosted :passed])
+      (if (string? (get terminator :terminator-id))
+        (if (vector? (get terminator :operands))
+          (if (vector? (get terminator :successors))
+            (if (map? (get terminator :source))
+              (map? (get terminator :facts))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b2-count-opcode
+  [operations opcode total]
+  (if (= (count operations) 0)
+    total
+    (b2-count-opcode
+     (rest operations) opcode
+     (if (= (get (first operations) :opcode) opcode)
+       (+ total 1) total))))
+
+(defn b2-find-opcode
+  [operations opcode]
+  (if (= (count operations) 0)
+    nil
+    (if (= (get (first operations) :opcode) opcode)
+      (first operations)
+      (b2-find-opcode (rest operations) opcode))))
+
+(defn b2-linear-cfg-valid?
+  [mir function block-order operations]
+  (let [block-id (first block-order)
+        block (get (get function :blocks) block-id)
+        terminator (get block :terminator)
+        cfg (get mir :control-flow-graph)]
+    (if (b2-terminator-valid? terminator)
+      (if (= [(get block :predecessors) (get block :successors)
+              (get block :dominators) (get terminator :kind)
+              (get terminator :successors)]
+             [[] [] [block-id] :return []])
+        (if (= (count (get terminator :operands)) 1)
+          (if (= (get terminator :terminator-id)
+                 (str block-id ":return"))
+            (if (= (get terminator :facts)
+                   {:returned-value (first (get terminator :operands))})
+              (if (= cfg
+                     {:entry block-id :edges []
+                      :dominance {block-id [block-id]} :join nil})
+                (= (b2-count-opcode
+                    operations :conditional-join 0) 0)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn b2-join-return-chain-valid?
+  [operation-id join-operation operations operation-index join-id remaining]
+  (if (> remaining 0)
+    (let [operation (b2-find-operation operations operation-id)]
+      (if (= operation nil)
+        false
+        (if (= (get operation :block-id) join-id)
+          (if (= operation-id (get join-operation :op-id))
+            true
+            (if (b2-forwarded-operation? (get operation :opcode))
+              (let [operands (get operation :operands)
+                    source-id (b2-last operands)
+                    source (b2-find-operation operations source-id)
+                    operation-position (get operation-index operation-id)
+                    source-position (get operation-index source-id)]
+                (if (> (count operands) 0)
+                  (if (= source nil)
+                    false
+                    (if (= (get source :block-id) join-id)
+                      (if (integer? operation-position)
+                        (if (integer? source-position)
+                          (if (< source-position operation-position)
+                            (b2-join-return-chain-valid?
+                             source-id join-operation operations
+                             operation-index join-id (- remaining 1))
+                            false)
+                          false)
+                        false)
+                      false))
+                  false))
+              false))
+          false)))
+    false))
+
+(defn b2-diamond-cfg-valid?
+  [mir function block-order operations]
+  (let [blocks (get function :blocks)
+        entry-id (first block-order)
+        then-id (second block-order)
+        else-id (first (rest (rest block-order)))
+        join-id (b2-last block-order)
+        entry (get blocks entry-id)
+        then-block (get blocks then-id)
+        else-block (get blocks else-id)
+        join-block (get blocks join-id)
+        entry-term (get entry :terminator)
+        then-term (get then-block :terminator)
+        else-term (get else-block :terminator)
+        join-term (get join-block :terminator)
+        join-operation (b2-find-opcode operations :conditional-join)
+        operands (get join-operation :operands)
+        return-id (first (get join-term :operands))
+        operation-index (b2-index-operations operations 0 {})
+        cfg (get mir :control-flow-graph)]
+    (if (if (b2-terminator-valid? entry-term)
+          (if (b2-terminator-valid? then-term)
+            (if (b2-terminator-valid? else-term)
+              (b2-terminator-valid? join-term)
+              false)
+            false)
+          false)
+      (if (= [(get entry :predecessors) (get entry :successors)
+              (get entry :dominators)
+              (get then-block :predecessors)
+              (get then-block :successors)
+              (get then-block :dominators)
+              (get else-block :predecessors)
+              (get else-block :successors)
+              (get else-block :dominators)
+              (get join-block :predecessors)
+              (get join-block :successors)
+              (get join-block :dominators)]
+             [[] [then-id else-id] [entry-id]
+              [entry-id] [join-id] [entry-id then-id]
+              [entry-id] [join-id] [entry-id else-id]
+              [then-id else-id] [] [entry-id join-id]])
+        (if (= [(get entry-term :kind) (get entry-term :operands)
+                (get entry-term :successors)
+                (get then-term :kind) (get then-term :operands)
+                (get then-term :successors)
+                (get else-term :kind) (get else-term :operands)
+                (get else-term :successors)
+                (get join-term :kind) (get join-term :operands)
+                (get join-term :successors)]
+               [:conditional-branch [(first operands)] [then-id else-id]
+                :branch [(second operands)] [join-id]
+                :branch [(b2-last operands)] [join-id]
+                :return [return-id] []])
+          (if (= [(get entry-term :terminator-id)
+                  (get then-term :terminator-id)
+                  (get else-term :terminator-id)
+                  (get join-term :terminator-id)]
+                 [(str entry-id ":conditional")
+                  (str then-id ":branch") (str else-id ":branch")
+                  (str join-id ":return")])
+            (if (= [(get entry-term :facts) (get then-term :facts)
+                    (get else-term :facts) (get join-term :facts)]
+                   [{:condition (first operands) :join join-id}
+                    {:incoming-value (second operands)}
+                    {:incoming-value (b2-last operands)}
+                    {:returned-value return-id}])
+              (if (b2-join-return-chain-valid?
+                   return-id join-operation operations operation-index
+                   join-id (count operations))
+                (if (= cfg
+                       {:entry entry-id
+                        :edges
+                        [{:from entry-id :to then-id :kind :true}
+                         {:from entry-id :to else-id :kind :false}
+                         {:from then-id :to join-id :kind :join}
+                         {:from else-id :to join-id :kind :join}]
+                        :dominance
+                        {entry-id [entry-id]
+                         then-id [entry-id then-id]
+                         else-id [entry-id else-id]
+                         join-id [entry-id join-id]}
+                        :join
+                        {:block-id join-id
+                         :value-id (get join-operation :op-id)
+                         :incoming
+                         [{:predecessor then-id :value (second operands)}
+                          {:predecessor else-id
+                           :value (b2-last operands)}]}})
+                  (= (b2-count-opcode
+                      operations :conditional-join 0) 1)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn b2-cfg-valid?
+  [mir function block-order operations]
+  (if (b2-blocks-valid? (get function :blocks) block-order)
+    (if (= (count block-order) 1)
+      (b2-linear-cfg-valid? mir function block-order operations)
+      (b2-diamond-cfg-valid? mir function block-order operations))
+    false))
+
+(defn b2-operation-ids
+  [operations result]
+  (if (= (count operations) 0)
+    result
+    (b2-operation-ids
+     (rest operations) (conj result (get (first operations) :op-id)))))
+
+(defn b2-operation-source-valid?
+  [operation]
+  (let [opcode (get operation :opcode)
+        source (get operation :source-operation)]
+    (if (= opcode :constant)
+      (if (= source :literal) true (= source :implicit-nil))
+      (if (= opcode :local)
+        (= source :local)
+        (if (= opcode :local-binding)
+          (= source :let-binding)
+          (if (= opcode :sequence)
+            (= source :do)
+            (if (= opcode :lexical-scope)
+              (= source :let)
+              (if (= opcode :function-boundary)
+                (= source :function)
+                (if (= opcode :truthiness)
+                  (= source :truthy)
+                  (if (contains?
+                       #{:integer-eq :integer-lt :integer-lte
+                         :integer-gt :integer-gte}
+                       opcode)
+                    (= source opcode)
+                    (if (= opcode :conditional-join)
+                    (= source :if)
+                    false)))))))))))
+
+(defn b2-block-role
+  [block-order block-id]
+  (if (= block-id (first block-order))
+    :entry
+    (if (= block-id (second block-order))
+      :then
+      (if (= block-id (first (rest (rest block-order))))
+        :else
+        (if (= block-id (b2-last block-order)) :join :unknown)))))
+
+(defn b2-operation-reference-valid?
+  [operation reference operations operation-index block-order]
+  (let [definition (b2-find-operation operations reference)
+        current-position (get operation-index (get operation :op-id))
+        definition-position (get operation-index reference)
+        current-role (b2-block-role block-order (get operation :block-id))
+        definition-role
+        (if (= definition nil)
+          :unknown
+          (b2-block-role block-order (get definition :block-id)))
+        opcode (get operation :opcode)]
+    (if (= definition nil)
+      false
+      (if (< definition-position current-position)
+        (if (= current-role :entry)
+          (= definition-role :entry)
+          (if (= current-role :then)
+            (if (= definition-role :entry) true (= definition-role :then))
+            (if (= current-role :else)
+              (if (= definition-role :entry) true (= definition-role :else))
+              (if (= current-role :join)
+                (if (= opcode :conditional-join)
+                  (contains? #{:entry :then :else} definition-role)
+                  (if (= definition-role :entry)
+                    true
+                    (= definition-role :join)))
+                false))))
+        false))))
+
+(defn b2-operation-references-valid?
+  [operation references operations operation-index block-order]
+  (if (= (count references) 0)
+    true
+    (if (b2-operation-reference-valid?
+         operation (first references) operations operation-index block-order)
+      (b2-operation-references-valid?
+       operation (rest references) operations operation-index block-order)
+      false)))
+
+(defn b2-conditional-references-valid?
+  [operation operations operation-index block-order]
+  (let [operands (get operation :operands)
+        condition (b2-find-operation operations (first operands))
+        then-value (b2-find-operation operations (second operands))
+        else-value (b2-find-operation operations (b2-last operands))]
+    (if (if (= (b2-block-role block-order (get operation :block-id)) :join)
+          (if (= (b2-block-role block-order (get condition :block-id)) :entry)
+            (if (contains?
+                 #{:entry :then}
+                 (b2-block-role block-order (get then-value :block-id)))
+              (contains?
+               #{:entry :else}
+               (b2-block-role block-order (get else-value :block-id)))
+              false)
+            false)
+          false)
+      (b2-operation-references-valid?
+       operation operands operations operation-index block-order)
+      false)))
+
+(defn b2-constant-valid?
+  [operation]
+  (let [type (get operation :type)
+        payload (get operation :constant-payload)
+        value (get payload :value)]
+    (if (= payload {:present? true :value value})
+      (if (= type :gravity/bool)
+        (boolean? value)
+        (if (= type :gravity/nil)
+          (= value nil)
+          (if (= type :gravity/integer)
+            (b2-signed-i64? value)
+            false)))
+      false)))
+
+(defn b2-forwarded-arity-valid?
+  [opcode operands]
+  (if (= opcode :local)
+    (= (count operands) 1)
+    (if (= opcode :local-binding)
+      (= (count operands) 1)
+      (if (> (count operands) 0) (<= (count operands) 128) false))))
+
+(defn b2-operation-reason
+  [operation operations operation-index block-order]
+  (let [opcode (get operation :opcode)
+        operands (get operation :operands)]
+    (if (b2-operation-envelope-valid? operation)
+      (if (b2-operation-source-valid? operation)
+        (if (= opcode :constant)
+          (if (= operands [])
+            (if (b2-constant-valid? operation)
+              nil :bounded-signed-i64-constant)
+            :constant-arity)
+          (if (= (get operation :constant-payload) :not-applicable)
+            (if (b2-forwarded-operation? opcode)
+              (if (b2-forwarded-arity-valid? opcode operands)
+                (if (b2-operation-references-valid?
+                     operation operands operations operation-index block-order)
+                  (let [source (b2-find-operation operations (b2-last operands))]
+                    (if (= opcode :function-boundary)
+                      (if (b2-function-boundary-type? (get operation :type))
+                        (if (= (get (get operation :type) :return)
+                               (get source :type))
+                          nil :function-return-type-parity)
+                        :function-boundary-type)
+                      (if (b2-scalar-type-supported? (get source :type))
+                        (if (= (get operation :type) (get source :type))
+                          nil :forwarded-result-type-parity)
+                        :forwarded-source-scalar-type)))
+                  :forwarded-prior-definition-or-dominance)
+                :forwarded-arity)
+              (if (= opcode :truthiness)
+                (if (= (count operands) 1)
+                  (if (b2-operation-reference-valid?
+                       operation (first operands) operations
+                       operation-index block-order)
+                    (let [source
+                          (b2-find-operation operations (first operands))]
+                      (if (b2-scalar-type-supported? (get source :type))
+                        (if (= (get operation :type) :gravity/bool)
+                          nil :truthiness-result-type)
+                        :truthiness-source-type))
+                    :truthiness-prior-definition-or-dominance)
+                  :truthiness-arity)
+                (if (contains?
+                     #{:integer-eq :integer-lt :integer-lte
+                       :integer-gt :integer-gte}
+                     opcode)
+                  (if (= (count operands) 2)
+                    (let [left
+                          (b2-find-operation operations (first operands))
+                          right
+                          (b2-find-operation
+                           operations (first (rest operands)))]
+                      (if (b2-operation-references-valid?
+                           operation operands operations operation-index
+                           block-order)
+                        (if (= (get left :type) :gravity/integer)
+                          (if (= (get right :type) :gravity/integer)
+                            (if (= (get operation :type) :gravity/bool)
+                              nil
+                              (if (= opcode :integer-eq)
+                                :integer-eq-result-type
+                                :integer-order-result-type))
+                            (if (= opcode :integer-eq)
+                              :integer-eq-right-operand-type
+                              :integer-order-right-operand-type))
+                          (if (= opcode :integer-eq)
+                            :integer-eq-left-operand-type
+                            :integer-order-left-operand-type))
+                        (if (= opcode :integer-eq)
+                          :integer-eq-prior-definition-or-dominance
+                          :integer-order-prior-definition-or-dominance)))
+                    (if (= opcode :integer-eq)
+                      :integer-eq-arity
+                      :integer-order-arity))
+                  (if (= opcode :conditional-join)
+                  (if (= (count operands) 3)
+                    (let [condition
+                          (b2-find-operation operations (first operands))
+                          then-value
+                          (b2-find-operation operations (second operands))
+                          else-value
+                          (b2-find-operation operations (b2-last operands))]
+                      (if (= (get condition :type) :gravity/bool)
+                        (if (b2-scalar-type-supported?
+                             (get then-value :type))
+                          (if (= (get then-value :type)
+                                 (get else-value :type)
+                                 (get operation :type))
+                            (if (b2-conditional-references-valid?
+                                 operation operations operation-index
+                                 block-order)
+                              nil :conditional-role-dominance)
+                            :conditional-type-parity)
+                          :conditional-result-type)
+                        :conditional-condition-type))
+                    :conditional-arity)
+                  :unsupported-opcode))))
+            :nonconstant-payload))
+        :source-operation-opcode-parity)
+      :operation-envelope)))
+
+(defn b2-first-operation-rejection
+  [remaining operations operation-index block-order]
+  (if (= (count remaining) 0)
+    nil
+    (let [operation (first remaining)
+          reason
+          (b2-operation-reason
+           operation operations operation-index block-order)]
+      (if (= reason nil)
+        (b2-first-operation-rejection
+         (rest remaining) operations operation-index block-order)
+        {:reason reason
+         :operation-id (get operation :op-id)
+         :opcode (get operation :opcode)
+         :type (get operation :type)}))))
+
+(defn b2-operation-operand-edges
+  [operation operands index result]
+  (if (= (count operands) 0)
+    result
+    (b2-operation-operand-edges
+     operation (rest operands) (+ index 1)
+     (conj result
+           {:from (first operands)
+            :consumer-kind :operation
+            :consumer-id (get operation :op-id)
+            :consumer-block (get operation :block-id)
+            :operand-index index
+            :edge-kind :operand}))))
+
+(defn b2-expected-operation-edges
+  [operations result]
+  (if (= (count operations) 0)
+    result
+    (b2-expected-operation-edges
+     (rest operations)
+     (b2-operation-operand-edges
+      (first operations) (get (first operations) :operands) 0 result))))
+
+(defn b2-operation-edge-use
+  [edge]
+  {:consumer-block (get edge :consumer-block)
+   :consumer-id (get edge :consumer-id)
+   :consumer-kind :operation
+   :edge-kind :operand
+   :operand-index (get edge :operand-index)
+   :use-kind :instruction})
+
+(defn b2-terminator-value-use
+  [use]
+  {:consumer-block (get use :consumer-block)
+   :consumer-id (get use :consumer-id)
+   :consumer-kind :terminator
+   :edge-kind (get use :edge-kind)
+   :operand-index (get use :operand-index)
+   :use-kind :terminator})
+
+(defn b2-value-operation-uses
+  [value-id edges result]
+  (if (= (count edges) 0)
+    result
+    (b2-value-operation-uses
+     value-id (rest edges)
+     (if (= (get (first edges) :from) value-id)
+       (conj result (b2-operation-edge-use (first edges)))
+       result))))
+
+(defn b2-value-terminator-uses
+  [value-id uses result]
+  (if (= (count uses) 0)
+    result
+    (b2-value-terminator-uses
+     value-id (rest uses)
+     (if (= (get (first uses) :value-id) value-id)
+       (conj result (b2-terminator-value-use (first uses)))
+       result))))
+
+(defn b2-expected-value-uses
+  [value-id edges terminator-uses]
+  (b2-value-terminator-uses
+   value-id terminator-uses
+   (b2-value-operation-uses value-id edges [])))
+
+(defn b2-value-record-valid?
+  [operation definition value edges terminator-uses]
+  (let [operation-id (get operation :op-id)]
+    (if (= definition
+           {:value-id operation-id :operation-id operation-id
+            :block-id (get operation :block-id)})
+      (if (b2-exact-keys?
+           value
+           #{:artifact :value-id :kind :type :constant-payload
+             :defined-by :uses :source :ownership :effects :safety})
+        (if (= [(get value :artifact) (get value :value-id)
+                (get value :kind) (get value :type)
+                (get value :constant-payload) (get value :defined-by)
+                (get value :effects)]
+               [:gravity/mir-value operation-id :instruction-result
+                (get operation :type) (get operation :constant-payload)
+                definition #{}])
+          (if (= (get value :uses)
+                 (b2-expected-value-uses
+                  operation-id edges terminator-uses))
+            (if (map? (get value :source))
+              (if (map? (get value :ownership))
+                (map? (get value :safety))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn b2-data-flow-values-valid?
+  [operations definitions values edges terminator-uses]
+  (if (= (count operations) 0)
+    true
+    (let [operation (first operations)
+          operation-id (get operation :op-id)]
+      (if (contains? definitions operation-id)
+        (if (contains? values operation-id)
+          (if (b2-value-record-valid?
+               operation (get definitions operation-id)
+               (get values operation-id) edges terminator-uses)
+            (b2-data-flow-values-valid?
+             (rest operations) definitions values edges terminator-uses)
+            false)
+          false)
+        false))))
+
+(defn b2-terminator-use
+  [block edge-kind]
+  (let [terminator (get block :terminator)]
+    {:value-id (first (get terminator :operands))
+     :consumer-kind :terminator
+     :consumer-id (get terminator :terminator-id)
+     :consumer-block (get block :block-id)
+     :operand-index 0 :edge-kind edge-kind}))
+
+(defn b2-expected-terminator-uses
+  [function block-order]
+  (let [blocks (get function :blocks)
+        entry (get blocks (first block-order))]
+    (if (= (count block-order) 1)
+      [(b2-terminator-use entry :return-value)]
+      [(b2-terminator-use entry :condition)
+       (b2-terminator-use
+        (get blocks (second block-order)) :branch-value)
+       (b2-terminator-use
+        (get blocks (first (rest (rest block-order)))) :branch-value)
+       (b2-terminator-use
+        (get blocks (b2-last block-order)) :return-value)])))
+
+(defn b2-data-flow-valid?
+  [mir function block-order operations]
+  (let [data-flow (get mir :data-flow-graph)]
+    (if (b2-exact-keys?
+         data-flow #{:edges :terminator-uses :definitions :values})
+      (let [edges (get data-flow :edges)
+            uses (get data-flow :terminator-uses)
+            definitions (get data-flow :definitions)
+            values (get data-flow :values)]
+        (if (= edges (b2-expected-operation-edges operations []))
+          (if (= uses (b2-expected-terminator-uses function block-order))
+            (if (map? definitions)
+              (if (map? values)
+                (if (= [(count definitions) (count values)]
+                       [(count operations) (count operations)])
+                  (b2-data-flow-values-valid?
+                   operations definitions values edges uses)
+                  false)
+                false)
+              false)
+            false)
+          false))
+      false)))
+
+(defn b2-return-valid?
+  [function block-order operations]
+  (let [return-block
+        (get (get function :blocks) (b2-last block-order))
+        return-id
+        (first (get (get return-block :terminator) :operands))
+        return-operation (b2-find-operation operations return-id)
+        return-role
+        (if (= return-operation nil)
+          :unknown
+          (b2-block-role block-order (get return-operation :block-id)))]
+    (if (= return-operation nil)
+      false
+      (if (if (= (count block-order) 1)
+            (= return-role :entry)
+            (contains? #{:entry :join} return-role))
+        (if (b2-scalar-type-supported? (get return-operation :type))
+          (= (get function :returns) (get return-operation :type))
+          false)
+        false))))
+
+(defn b2-mir-validation
+  [mir operation-order]
+  (if (b2-mir-module-valid? mir)
+    (let [function (get (get mir :functions) (quote main))]
+      (if (b2-function-valid? function)
+        (let [blocks (get function :blocks)
+              block-order (b2-block-order mir function)
+              operations
+              (b2-collect-operations blocks block-order [])
+              operation-index (b2-index-operations operations 0 {})]
+          (if (if (> (count operations) 0)
+                (if (<= (count operations) 128)
+                  (= (count operations) (count operation-index))
+                  false)
+                false)
+            (if (= operation-order (b2-operation-ids operations []))
+              (if (b2-operations-envelope-valid? operations)
+                (if (b2-fact-table-closure-valid? mir operations)
+                  (if (b2-cfg-valid? mir function block-order operations)
+                    (if (<= (count (get (get mir :data-flow-graph) :edges))
+                            256)
+                      (if (b2-data-flow-valid?
+                           mir function block-order operations)
+                        (if (b2-return-valid?
+                             function block-order operations)
+                          {:status :passed :function function
+                           :block-order block-order :operations operations
+                           :operation-index operation-index}
+                          {:status :rejected :kind :input
+                           :reason :return-type-or-dominance-closure})
+                        {:status :rejected :kind :input
+                         :reason :data-flow-value-closure})
+                      {:status :rejected :kind :unsupported
+                       :reason :bounded-data-flow-edge-count})
+                    {:status :rejected :kind :input
+                     :reason :control-flow-closure})
+                  {:status :rejected :kind :input
+                   :reason :fact-table-authority-and-proof-closure})
+                {:status :rejected :kind :input
+                 :reason :operation-envelope-closure})
+              {:status :rejected :kind :input
+               :reason :c14-operation-order-parity})
+            {:status :rejected :kind :unsupported
+             :reason :bounded-unique-operation-count}))
+        {:status :rejected :kind :input
+         :reason :exact-main-function-envelope}))
+    {:status :rejected :kind :input
+     :reason :exact-c-target-mir-envelope}))
+
+(defn b2-verifier-mir-cross-links-valid?
+  [packet mir validation]
+  (let [input (get packet :input)
+        report (get input :verifier-report)
+        verifier (get report :independent-verifier)
+        preflight (get report :b1-preflight)
+        mir-preflight (get mir :b1-preflight)
+        operations (get validation :operations)
+        operation-count (count operations)
+        conditional-count
+        (b2-count-opcode operations :conditional-join 0)
+        data-flow (get mir :data-flow-graph)
+        safety (get packet :safety)
+        fact-bindings
+        (get (get packet :bounded-lowering-payload) :fact-bindings)
+        certificates (get (get packet :proofs) :certificates)]
+    (if (= preflight mir-preflight)
+      (if (= [(get verifier :block-count)
+              (get verifier :operation-count)
+              (get verifier :conditional-count)
+              (get (get verifier :runtime-checks) :runtime-check-count)
+              (get (get verifier :data-flow) :edge-count)
+              (get (get verifier :data-flow) :terminator-use-count)
+              (get (get verifier :data-flow) :definition-count)
+              (get (get verifier :data-flow) :value-count)]
+             [(count (get (get (get mir :functions) (quote main)) :blocks))
+              operation-count conditional-count
+              (count (get mir :runtime-check-table))
+              (count (get data-flow :edges))
+              (count (get data-flow :terminator-uses))
+              (count (get data-flow :definitions))
+              (count (get data-flow :values))])
+        (if (= (get (get preflight :binding) :pass-execution-record-id)
+               (get (get mir :pass-execution-record) :record-id)
+               (get (get packet :dependencies) :c11-pass))
+          (if (= [(get safety :outcomes) (get safety :runtime-checks)]
+                 [(count (get mir :safety-table))
+                  (count (get mir :runtime-check-table))])
+            (if (= [(get (get fact-bindings :type) :entry-count)
+                    (get (get fact-bindings :effect) :entry-count)
+                    (get (get fact-bindings :ownership) :entry-count)
+                    (get (get fact-bindings :capability) :entry-count)
+                    (get (get fact-bindings :safety) :entry-count)
+                    (get (get fact-bindings :runtime-checks) :entry-count)
+                    (get (get fact-bindings :proofs) :entry-count)
+                    (get (get fact-bindings :source-map) :entry-count)]
+                   [(count (get mir :type-table))
+                    (count (get mir :effect-table))
+                    (count (get mir :ownership-table))
+                    (count (get mir :capability-table))
+                    (count (get mir :safety-table))
+                    (count (get mir :runtime-check-table))
+                    (count (get mir :proof-certificate-table))
+                    (count (get mir :source-map))])
+              (if (= [(get (get fact-bindings :proofs) :content-id)
+                      (get (get fact-bindings :proofs) :entry-count)]
+                     [(get certificates :content-id)
+                      (get certificates :entry-count)])
+                true
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn b2-c-value-name
+  [operation-index operation-id]
+  (str "gravity_v" (get operation-index operation-id)))
+
+(defn b2-c-constant-expression
+  [value]
+  (if (= value true)
+    "INT64_C(1)"
+    (if (= value false)
+      "INT64_C(0)"
+      (if (= value nil)
+        "INT64_C(0)"
+        (if (= value -9223372036854775808)
+          "INT64_MIN"
+          (if (< value 0)
+            (str "(-INT64_C(" (- value) "))")
+            (str "INT64_C(" value ")")))))))
+
+(defn b2-c-operation-expression
+  [operation operations operation-index]
+  (let [opcode (get operation :opcode)
+        operands (get operation :operands)]
+    (if (= opcode :constant)
+      (b2-c-constant-expression
+       (get (get operation :constant-payload) :value))
+      (if (b2-forwarded-operation? opcode)
+        (b2-c-value-name operation-index (b2-last operands))
+        (if (= opcode :truthiness)
+          (let [operand-id (first operands)
+                operand (b2-find-operation operations operand-id)
+                value-name (b2-c-value-name operation-index operand-id)]
+            (if (= (get operand :type) :gravity/nil)
+              "INT64_C(0)"
+              (if (= (get operand :type) :gravity/bool)
+                (str "(" value-name
+                     " == INT64_C(0) ? INT64_C(0) : INT64_C(1))")
+                "INT64_C(1)")))
+          (if (contains?
+               #{:integer-eq :integer-lt :integer-lte
+                 :integer-gt :integer-gte}
+               opcode)
+            (str "("
+                 (b2-c-value-name operation-index (first operands))
+                 " "
+                 (if (= opcode :integer-eq)
+                   "=="
+                   (if (= opcode :integer-lt)
+                     "<"
+                     (if (= opcode :integer-lte)
+                       "<="
+                       (if (= opcode :integer-gt) ">" ">="))))
+                 " "
+                 (b2-c-value-name
+                  operation-index (first (rest operands)))
+                 " ? INT64_C(1) : INT64_C(0))")
+            (if (= opcode :conditional-join)
+            (str "("
+                 (b2-c-value-name operation-index (first operands))
+                 " == INT64_C(0) ? "
+                 (b2-c-value-name operation-index (b2-last operands))
+                 " : "
+                 (b2-c-value-name operation-index (second operands))
+                 ")")
+            "INT64_C(0)")))))))
+
+(defn b2-c-operation-record
+  [operation operations operation-index]
+  (let [name
+        (b2-c-value-name operation-index (get operation :op-id))
+        expression
+        (b2-c-operation-expression operation operations operation-index)]
+    {:mir-operation-id (get operation :op-id)
+     :mir-block-id (get operation :block-id)
+     :source-operation (get operation :source-operation)
+     :mir-opcode (get operation :opcode)
+     :mir-type (get operation :type)
+     :c-type "int64_t"
+     :c-value name
+     :c-expression expression
+     :c-statement
+     (str "  int64_t " name " = " expression ";\n"
+          "  (void)" name ";\n")
+     :c-liveness-use (str "(void)" name ";")
+     :safety-outcome :proven-safe}))
+
+(defn b2-c-operation-records
+  [remaining operations operation-index result]
+  (if (= (count remaining) 0)
+    result
+    (b2-c-operation-records
+     (rest remaining) operations operation-index
+     (conj result
+           (b2-c-operation-record
+            (first remaining) operations operation-index)))))
+
+(defn b2-c-statements
+  [records result]
+  (if (= (count records) 0)
+    result
+    (b2-c-statements
+     (rest records) (str result (get (first records) :c-statement)))))
+
+(defn b2-evaluated-value
+  [operation operations values]
+  (let [opcode (get operation :opcode)
+        operands (get operation :operands)]
+    (if (= opcode :constant)
+      (get (get operation :constant-payload) :value)
+      (if (b2-forwarded-operation? opcode)
+        (get values (b2-last operands))
+        (if (= opcode :truthiness)
+          (let [operand-id (first operands)
+                operand (b2-find-operation operations operand-id)
+                value (get values operand-id)]
+            (if (= (get operand :type) :gravity/nil)
+              false
+              (if (= (get operand :type) :gravity/bool) value true)))
+          (if (= opcode :integer-eq)
+            (= (get values (first operands))
+               (get values (first (rest operands))))
+            (if (= opcode :integer-lt)
+              (< (get values (first operands))
+                 (get values (first (rest operands))))
+              (if (= opcode :integer-lte)
+                (<= (get values (first operands))
+                    (get values (first (rest operands))))
+                (if (= opcode :integer-gt)
+                  (> (get values (first operands))
+                     (get values (first (rest operands))))
+                  (if (= opcode :integer-gte)
+                    (>= (get values (first operands))
+                        (get values (first (rest operands))))
+                    (if (= opcode :conditional-join)
+            (if (get values (first operands))
+              (get values (second operands))
+              (get values (b2-last operands)))
+            nil)))))))))))
+
+(defn b2-evaluate-operations
+  [remaining operations values]
+  (if (= (count remaining) 0)
+    values
+    (let [operation (first remaining)]
+      (b2-evaluate-operations
+       (rest remaining) operations
+       (assoc values (get operation :op-id)
+              (b2-evaluated-value operation operations values))))))
+
+(defn b2-return-id
+  [function block-order]
+  (let [return-block
+        (get (get function :blocks) (b2-last block-order))
+        return-terminator (get return-block :terminator)
+        return-operands (get return-terminator :operands)]
+    (first return-operands)))
+
+(defn b2-exit-code
+  [value]
+  (if (= value true) 1 (if (= value false) 0 (if (= value nil) 0 value))))
+
+(defn b2-header-text
+  []
+  (str "#ifndef GRAVITY_B2_PROGRAM_H\n"
+       "#define GRAVITY_B2_PROGRAM_H\n\n"
+       "int main(void);\n\n"
+       "#endif\n"))
+
+(defn b2-source-text
+  [operation-records return-value-name]
+  (str "#include <stdint.h>\n"
+       "#include \"program.h\"\n\n"
+       "int main(void) {\n"
+       (b2-c-statements operation-records "")
+       "  return (int)" return-value-name ";\n"
+       "}\n"))
+
+(defn b2-c-dialect-selection-record
+  []
+  {:artifact :gravity/b2-c-dialect-selection-record
+   :dialect :hosted-c17
+   :c-standard :c17
+   :hosted? true
+   :freestanding? false
+   :compiler-family :apple-clang
+   :compiler-version-constraint "21.0.0"
+   :target-triple "arm64-apple-macosx14.0.0"
+   :flags
+   ["-std=c17" "-Wall" "-Wextra" "-Werror" "-Wconversion"
+    "-Wsign-conversion" "-pedantic"]
+   :runtime-helper-policy :none
+   :profile :hosted
+   :target :c
+   :proof-assumptions
+   [:signed-i64-carrier
+    :all-generated-scalar-expressions-defined
+   :final-exit-code-proven-in-0-to-255]
+   :gate-b-toolchain-execution-required? true})
+
+(defn b2-c-build-manifest-record
+  [dialect-selection]
+  {:artifact :gravity/b2-c-build-manifest
+   :status :pending-gate-b-toolchain-execution
+   :compiler-family :apple-clang
+   :compiler-version-constraint "21.0.0"
+   :target-triple (get dialect-selection :target-triple)
+   :dialect :c17
+   :flags (get dialect-selection :flags)
+   :source-files ["program.c"]
+   :header-files ["program.h"]
+   :object-files []
+   :executables []
+   :external-tool-execution :not-performed-in-gate-a})
+
+(defn b2-abi-layout-record
+  [packet]
+  {:artifact :gravity/b2-abi-layout-manifest
+   :status :pending-gate-b-toolchain-verification
+   :compiler-family :apple-clang
+   :compiler-version-constraint "21.0.0"
+   :target-triple (get (get packet :target) :triple)
+   :data-layout (get (get packet :target) :data-layout)
+   :data-model :lp64
+   :endianness :little
+   :integer-carrier :int64-t
+   :process-result :int
+   :process-result-range [0 255]
+   :alignment
+   {:int {:size-bits 32 :alignment-bits 32}
+    :int64-t {:size-bits 64 :alignment-bits 64}}
+   :entrypoint-calling-convention :darwin-pcs-ccc
+   :struct-field-order :not-applicable-bounded-scalar-slice
+   :padding :not-applicable-bounded-scalar-slice
+   :enum-and-tag-widths :not-applicable-bounded-scalar-slice
+   :closure-representation :not-applicable-bounded-scalar-slice
+   :slice-and-buffer-representation :not-applicable-bounded-scalar-slice
+   :region-and-arena-handle-representation
+   :not-applicable-bounded-scalar-slice
+   :linear-resource-handle-representation
+   :not-applicable-bounded-scalar-slice
+   :ffi-calling-convention :not-applicable-no-ffi
+   :abi (get packet :abi)
+   :implementation-defined-behavior-contract-pinned? true
+   :toolchain-verification :not-performed-in-gate-a})
+
+(defn b2-runtime-helper-record
+  [packet]
+  {:artifact :gravity/b2-runtime-helper-manifest
+   :profile :hosted
+   :helpers []
+   :gravity-runtime-providers
+   (get (get packet :runtime) :gravity-runtime-providers)
+   :platform-runtime-providers
+   (get (get packet :runtime) :platform-runtime-providers)
+   :provider-contract (get packet :providers)
+   :hidden-runtime-dependence? false
+   :gate-b-platform-startup-required? true})
+
+(defn b2-source-debug-entries
+  [operations operation-records index result]
+  (if (= (count operations) 0)
+    result
+    (let [operation (first operations)
+          record (first operation-records)
+          source (get operation :source)
+          facts (get operation :facts)]
+      (b2-source-debug-entries
+       (rest operations) (rest operation-records) (+ index 1)
+       (conj result
+             {:mir-operation-id (get operation :op-id)
+              :mir-block-id (get operation :block-id)
+              :source-origin-id (get facts :source-origin-id)
+              :source-span (get source :span)
+              :generated-origin-chain (get source :generated-origin)
+              :c-value (get record :c-value)
+              :generated-declaration-line (+ 5 (* index 2))
+              :generated-liveness-line (+ 6 (* index 2))})))))
+
+(defn b2-source-debug-map-record
+  [packet operations operation-records return-id return-value-name]
+  {:artifact :gravity/b2-c-source-debug-map
+   :status :source-map-preserved-debug-emission-pending-gate-b
+   :source-map-id (get (get packet :source-map) :id)
+   :generated-file "program.c"
+   :entries (b2-source-debug-entries
+             operations operation-records 0 [])
+   :final-return
+   {:mir-operation-id return-id
+    :c-value return-value-name
+    :generated-return-line (+ 5 (* (count operation-records) 2))}
+   :debug-info-emission :not-performed-in-gate-a})
+
+(defn b2-operation-proof-bindings
+  [operations operation-records result]
+  (if (= (count operations) 0)
+    result
+    (let [operation (first operations)
+          record (first operation-records)
+          facts (get operation :facts)]
+      (b2-operation-proof-bindings
+       (rest operations) (rest operation-records)
+       (conj result
+             {:mir-operation-id (get operation :op-id)
+              :source-origin-id (get facts :source-origin-id)
+              :safety-proof-id (get facts :safety-proof-id)
+              :proof-certificate-ids
+              (get facts :proof-certificate-ids)
+              :c-value (get record :c-value)})))))
+
+(defn b2-c-discard-cast-records
+  [operations operation-records result]
+  (if (= (count operations) 0)
+    result
+    (let [operation (first operations)
+          record (first operation-records)]
+      (b2-c-discard-cast-records
+       (rest operations) (rest operation-records)
+       (conj result
+             {:kind :discarded-value
+              :site (get record :c-liveness-use)
+              :from :int64-t :to :void
+              :proof :initialized-scalar-liveness-use
+              :safety-proof-id
+              (get (get operation :facts) :safety-proof-id)})))))
+
+(defn b2-proof-to-c-assumption-record
+  [packet mir operations operation-records return-id return-value-name
+   semantic-result]
+  (let [certificates (get (get packet :proofs) :certificates)
+        base-entries
+        [{:assumption :signed-i64-carrier
+          :evidence :authenticated-mir-scalar-type-and-constant-closure
+          :c-site :all-generated-int64-t-initializers
+          :outcome :proven-safe}
+         {:assumption :explicit-discarded-value-conversions
+          :evidence :initialized-generated-scalar-liveness
+          :c-site :one-void-conversion-per-generated-local
+          :outcome :proven-safe}
+         {:assumption :final-exit-code-narrowing
+          :evidence :independent-pure-mir-evaluation-in-0-to-255
+          :c-site (str "return (int)" return-value-name ";")
+          :outcome :proven-safe}]
+        equality-entries
+        (if (> (b2-count-opcode operations :integer-eq 0) 0)
+          (conj
+           base-entries
+           {:assumption :defined-signed-i64-equality
+            :evidence
+            :authenticated-two-integer-operands-and-boolean-result
+            :c-site :generated-integer-eq-expressions
+            :outcome :proven-safe})
+          base-entries)
+        entries
+        (if (> (+ (b2-count-opcode operations :integer-lt 0)
+                  (b2-count-opcode operations :integer-lte 0)
+                  (b2-count-opcode operations :integer-gt 0)
+                  (b2-count-opcode operations :integer-gte 0))
+               0)
+          (conj
+           equality-entries
+           {:assumption :defined-signed-i64-ordering
+            :evidence
+            :authenticated-ordered-two-integer-operands-and-boolean-result
+            :c-site :generated-integer-ordering-expressions
+            :outcome :proven-safe})
+          equality-entries)]
+   {:artifact :gravity/b2-proof-to-c-assumption-map
+   :proof-certificate-binding
+   {:content-id (get certificates :content-id)
+    :entry-count (get certificates :entry-count)}
+   :operation-bindings
+   (b2-operation-proof-bindings operations operation-records [])
+   :entries entries
+   :generated-c-casts
+   (conj
+    (b2-c-discard-cast-records operations operation-records [])
+    {:kind :integer-narrowing
+     :site (str "return (int)" return-value-name ";")
+     :from :int64-t :to :int
+     :proof :independent-pure-mir-evaluation-in-0-to-255
+     :proof-binding
+     {:kind :independent-bounded-mir-evaluation
+      :mir-module-id (get mir :module-id)
+      :return-operation-id return-id
+      :semantic-result semantic-result
+      :permitted-result-range [0 255]
+      :b1-artifact-id (get packet :artifact-id)
+      :proof-table-content-id (get certificates :content-id)}})
+   :all-casts-proof-authorized? true
+   :implicit-undefined-behavior-permitted? false}))
+
+(defn b2-rejected
+  [diagnostic reason subject]
+  {:artifact :gravity/b2-bounded-hosted-c17
+   :schema-version 1
+   :status :rejected
+   :diagnostic diagnostic
+   :missing-fact reason
+   :operation-id (get subject :operation-id)
+   :opcode (get subject :opcode)
+   :type (get subject :type)
+   :diagnostics [diagnostic]})
+
+(defn b2-build-accepted-hosted-c17
+  [packet mir validation semantic-result]
+  (let [function (get validation :function)
+        block-order (get validation :block-order)
+        operations (get validation :operations)
+        operation-index (get validation :operation-index)
+        return-id (b2-return-id function block-order)
+        return-value-name (b2-c-value-name operation-index return-id)
+        operation-records
+        (b2-c-operation-records
+         operations operations operation-index [])
+        header (b2-header-text)
+        source (b2-source-text operation-records return-value-name)
+        payload (get packet :bounded-lowering-payload)
+        dialect-selection (b2-c-dialect-selection-record)
+        source-debug-map
+        (b2-source-debug-map-record
+         packet operations operation-records return-id return-value-name)]
+    {:artifact :gravity/b2-bounded-hosted-c17
+     :schema-version 1
+     :status :constructed-unverified
+     :policy (b2-bounded-hosted-c17-policy-record)
+     :input-bindings
+     {:b1-semantic-id (get packet :semantic-id)
+      :b1-artifact-id (get packet :artifact-id)
+      :b1-actual-path-binding-id (get packet :actual-path-binding-id)
+      :c11-artifact-id (get payload :c11-artifact-id)
+      :c13-artifact-id (get payload :c13-artifact-id)
+      :c13-semantic-id (get payload :c13-semantic-id)
+      :mir-module-id (get mir :module-id)
+      :b1-source-rule (get packet :source-rule)}
+     :backend-manifest (get packet :backend-manifest)
+     :c-build-manifest
+     (b2-c-build-manifest-record dialect-selection)
+     :source-debug-map source-debug-map
+     :dialect-selection dialect-selection
+     :abi-layout-manifest (b2-abi-layout-record packet)
+     :runtime-helper-manifest (b2-runtime-helper-record packet)
+     :proof-to-c-assumption-map
+     (b2-proof-to-c-assumption-record
+      packet mir operations operation-records return-id
+      return-value-name semantic-result)
+     :block-order block-order
+     :operation-index operation-index
+     :operation-records operation-records
+     :header-file
+     {:artifact :gravity/b2-c-header-file
+      :path "program.h" :dialect :c17 :content header
+      :generated? true}
+     :source-file
+     {:artifact :gravity/b2-c-source-file
+      :path "program.c" :dialect :c17 :content source
+      :includes ["stdint.h" "program.h"]
+      :generated? true}
+     :semantic-result semantic-result
+     :expected-exit-code semantic-result
+     :verified-input-closure
+     {:status :structurally-closed-after-root-contextual-gate
+      :sealed-b1-record
+      :fresh-contextual-strict-equality-required-before-invocation
+      :raw-source-validator :not-a-standalone-seal-verifier
+      :invocation-authority :clojure-seed-root-capability-gate
+      :sealed-b1-semantic-id (get packet :semantic-id)
+      :sealed-b1-artifact-id (get packet :artifact-id)
+      :sealed-b1-actual-path-binding-id
+      (get packet :actual-path-binding-id)
+      :actual-path-provenance (get packet :actual-path-provenance)
+      :mir-source :bounded-lowering-payload-only
+      :source-core (get mir :source-core)
+      :mir-module-id (get mir :module-id)
+      :pass-execution-record-id
+      (get (get mir :pass-execution-record) :record-id)
+      :operation-count (count operations)
+      :conditional-count
+      (b2-count-opcode operations :conditional-join 0)
+      :full-dfg-definition-count
+      (count (get (get mir :data-flow-graph) :definitions))
+      :full-dfg-value-count
+      (count (get (get mir :data-flow-graph) :values))
+      :runtime-check-count (count (get mir :runtime-check-table))
+      :effect-count (count (get mir :effect-table))
+      :capability-count (count (get mir :capability-table))}
+     :diagnostics []
+     :clojure-seed-boundary? true
+     :whole-b2? false
+     :public? false
+     :release? false
+     :self-hosted? false}))
+
+(defn b2-build-bounded-hosted-c17
+  [packet]
+  (if (b2-b1-c-packet-structurally-valid? packet)
+    (let [payload (get packet :bounded-lowering-payload)
+          mir (get payload :mir)
+          validation
+          (b2-mir-validation mir (get payload :operation-order))]
+      (if (= (get validation :status) :passed)
+        (if (b2-verifier-mir-cross-links-valid?
+             packet mir validation)
+        (let [operations (get validation :operations)
+              operation-rejection
+              (b2-first-operation-rejection
+               operations operations (get validation :operation-index)
+               (get validation :block-order))]
+          (if (= operation-rejection nil)
+            (let [values (b2-evaluate-operations operations operations {})
+                  return-id
+                  (b2-return-id
+                   (get validation :function)
+                   (get validation :block-order))
+                  semantic-result
+                  (b2-exit-code (get values return-id))]
+              (if (integer? semantic-result)
+                (if (>= semantic-result 0)
+                  (if (<= semantic-result 255)
+                    (b2-build-accepted-hosted-c17
+                     packet mir validation semantic-result)
+                    (b2-rejected
+                     "B1-UNSUPPORTED"
+                     :process-result-outside-0-to-255 {}))
+                  (b2-rejected
+                   "B1-UNSUPPORTED"
+                   :process-result-outside-0-to-255 {}))
+                (b2-rejected
+                 "B1-UNSUPPORTED" :noninteger-process-result {})))
+            (b2-rejected
+             "B1-UNSUPPORTED"
+             (get operation-rejection :reason) operation-rejection)))
+        (b2-rejected
+         "B1-INPUT" :verifier-mir-and-manifest-cross-links {}))
+        (b2-rejected
+         (if (= (get validation :kind) :unsupported)
+           "B1-UNSUPPORTED" "B1-INPUT")
+         (get validation :reason) validation)))
+    (b2-rejected "B1-INPUT" :exact-sealed-b1-c-packet {})))

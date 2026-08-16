@@ -1,0 +1,29 @@
+; SH-08 C7 acceptance: one capture-free named callable value hop.
+(ns self-hosting.sh08.function-call-nonlocal
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh08-nonlocal-target
+             sh08-nonlocal-caller
+             sh08-nonlocal-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-08-C7-HO1
+    :fixture :function-call-nonlocal
+    :required-products [:function-records :call-edges]
+    :scope :capture-free-higher-order-fixed-arity-one-hop
+    :non-claims
+    [:captures
+     :multi-hop
+     :dynamic-callable-values
+     :protocol-dispatch]}))
+
+(defn sh08-nonlocal-target [value]
+  value)
+
+(defn sh08-nonlocal-caller [callee value]
+  (callee value))
+
+(def sh08-nonlocal-result
+  (sh08-nonlocal-caller sh08-nonlocal-target 7))

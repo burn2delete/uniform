@@ -1,0 +1,23 @@
+; SH-07-B9 gives same-spelled catch bindings distinct sibling scopes.
+(ns self-hosting.sh07-b9.sibling-binding-isolation
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [recover-isolated])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B9
+              :fixture :sibling-binding-isolation
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn recover-isolated [value]
+  (try
+    (throw value)
+    (catch RuntimeException error
+      (do
+        error
+        "runtime"))
+    (catch Exception error
+      (do
+        error
+        "general"))))

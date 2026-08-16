@@ -14,6 +14,106 @@ runtime_classpath() {
     sed 's/:$//'
 }
 
+packaged_cli_selected() {
+  [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && -f "${PACKAGED_JAR}" ]]
+}
+
+current_source_targeted_command_requested() {
+  case "${1:-}" in
+    compile|run) ;;
+    *) return 1 ;;
+  esac
+  shift
+  for argument in "$@"; do
+    # Explicit target or lowering requests must use the current source
+    # compiler path.  The packaged JVM CLI may be stale and must not silently
+    # consume an opt-in target/lowering flag.  This also sends malformed
+    # targeted run requests to the current fail-closed parser.
+    case "${argument}" in
+      --target|--lowering|--target=*|--lowering=*) return 0 ;;
+    esac
+  done
+  return 1
+}
+
+packaged_jar_class_major() {
+  local magic1 magic2 magic3 magic4 minor1 minor2 major1 major2
+
+  command -v unzip >/dev/null 2>&1 || return 1
+  read -r magic1 magic2 magic3 magic4 minor1 minor2 major1 major2 \
+    < <(unzip -p "${PACKAGED_JAR}" gravity/cli/Main.class | od -An -t u1 -N 8)
+  [[ "${magic1:-}" == "202" && "${magic2:-}" == "254" && \
+     "${magic3:-}" == "186" && "${magic4:-}" == "190" ]] || return 1
+  printf '%s\n' "$((major1 * 256 + major2))"
+}
+
+java_runtime_class_major() {
+  java -XshowSettings:properties -version 2>&1 |
+    awk -F= '/java.class.version/ {
+      gsub(/[[:space:]]/, "", $2)
+      split($2, version, ".")
+      print version[1]
+      exit
+    }'
+}
+
+missing_clojure_diagnostic() {
+  cat >&2 <<'EOF'
+{:id "P18T02007"
+ :message "packaged JVM CLI requires the Clojure CLI to resolve its bootstrap runtime classpath"
+ :bootstrap-stage :phase18-packaged-jvm-cli
+ :bootstrap-hosted? true
+ :packaged-jvm-cli? true
+ :seedless-release? false
+ :missing-command "clojure"
+ :required-command "clojure -Spath"
+ :remediation "Install the Clojure CLI and make clojure available on PATH, then retry the bootstrap-hosted command."}
+EOF
+}
+
+java_compatibility_diagnostic() {
+  local jar_major="${1}"
+  local runtime_major="${2}"
+  cat >&2 <<EOF
+{:id "P18T02008"
+ :message "packaged JVM CLI class version is newer than the active Java runtime"
+ :bootstrap-stage :phase18-packaged-jvm-cli
+ :bootstrap-hosted? true
+ :packaged-jvm-cli? true
+ :seedless-release? false
+ :jar-class-major ${jar_major}
+ :runtime-class-major ${runtime_major}
+ :remediation "Use a compatible Java runtime or rebuild the bootstrap-hosted launcher for a declared Java release floor."}
+EOF
+}
+
+packaged_toolchain_ready() {
+  local failed=0
+  local jar_major=""
+  local runtime_major=""
+
+  if ! command -v clojure >/dev/null 2>&1; then
+    missing_clojure_diagnostic
+    failed=1
+  fi
+
+  if ! command -v java >/dev/null 2>&1; then
+    java_compatibility_diagnostic "unknown" "missing"
+    failed=1
+  else
+    jar_major="$(packaged_jar_class_major || true)"
+    runtime_major="$(java_runtime_class_major || true)"
+    if [[ -z "${jar_major}" || -z "${runtime_major}" || \
+          "${jar_major}" -gt "${runtime_major}" ]]; then
+      java_compatibility_diagnostic "${jar_major:-unknown}" \
+        "${runtime_major:-unknown}"
+      failed=1
+    fi
+  fi
+
+  [[ "${failed}" -eq 0 ]]
+}
+
 final_seed_retired() {
   [[ -f "${FINAL_SEED_PROOF}" ]] || return 1
   grep -q ':status :complete' "${FINAL_SEED_PROOF}" || return 1
@@ -22,52 +122,82 @@ final_seed_retired() {
   grep -q ':clojure-seed-boundary? false' "${FINAL_SEED_PROOF}" || return 1
 }
 
-if [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && "${GRAVITY_PACKAGED_CLI_ONLY:-0}" != "1" && -x "${FINAL_RELEASE}" ]] && final_seed_retired; then
-  exec "${FINAL_RELEASE}" "$@"
-fi
-
-if [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && -f "${PACKAGED_JAR}" ]]; then
-  RUNTIME_CP="$(runtime_classpath)"
-  exec java -cp "${PACKAGED_JAR}:${RUNTIME_CP}" gravity.cli.Main "$@"
-fi
-
 usage() {
-  cat <<'EOF'
+  local packaged="false"
+  local delegate="clojure -M:gravity"
+  if packaged_cli_selected; then
+    packaged="true"
+    delegate="java -cp <packaged-jar>:<clojure-runtime-classpath> gravity.cli.Main"
+  fi
+  cat <<EOF
 gravity bootstrap-hosted command
 
 Usage:
   gravity --version
   gravity help
   gravity check <file.qst|file.gravity>
+  gravity sh07-core <file.qst|file.gravity>
   gravity run <file.qst|file.gravity>
+  gravity run <file.gravity|file.qst> --target c --lowering runtime-derived
   gravity compile <file.qst|file.gravity>
   gravity compile <file.qst|file.gravity> -o <executable>
+  gravity compile <file.qst|file.gravity> --target c -o <executable>
+  gravity compile <file.qst|file.gravity> --target c --lowering runtime-derived -o <executable>
   gravity test
   gravity self-host verify
   gravity <artifact-command> <file.qst|file.gravity>
 
 Metadata:
   :bootstrap-hosted? true
+  :packaged-jvm-cli? ${packaged}
   :seedless-release? false
-  :delegates-to "clojure -M:gravity"
+  bounded runtime-derived run route: bootstrap-hosted and non-seedless; argv is forwarded unchanged
+  :delegates-to "${delegate}"
+  :experimental-verified-mir-c-route "implementation present; public exposure disabled pending feature-specific GOV4, GOV9, and GOV7 records; exact requests reject before source-file I/O, output-filesystem I/O, native calls, tool execution, or publication"
 
 Use gravity-bootstrap for explicit Clojure seed audit and recovery.
 EOF
 }
 
 version() {
-  cat <<'EOF'
+  if packaged_cli_selected; then
+    cat <<'EOF'
+{:command "gravity"
+ :phase "P18-T02"
+ :bootstrap-hosted? true
+ :packaged-jvm-cli? true
+ :seedless-release? false
+ :experimental-verified-mir-c-route {:status :implementation-present-public-exposure-disabled :experiment-state :proposed :exposure :internal-only :public-command-route? false :excluded-from-executable-command-contract-credit? true :governance-conforming? false :t1-cli-conformance? false :p18-t04-proof-credited? false :public-target-support-claim? false}
+ :delegates-to "java -cp target/phase-18/jvm-cli/gravity-jvm-cli.jar:<clojure-runtime-classpath> gravity.cli.Main"
+ :replaced-by "Phase 18 self-hosted release artifact"}
+EOF
+  else
+    cat <<'EOF'
 {:command "gravity"
  :phase "P18-T01"
  :bootstrap-hosted? true
+ :packaged-jvm-cli? false
  :seedless-release? false
+ :experimental-verified-mir-c-route {:status :implementation-present-public-exposure-disabled :experiment-state :proposed :exposure :internal-only :public-command-route? false :excluded-from-executable-command-contract-credit? true :governance-conforming? false :t1-cli-conformance? false :p18-t04-proof-credited? false :public-target-support-claim? false}
  :delegates-to "clojure -M:gravity"
  :replaced-by "Phase 18 self-hosted release artifact"}
 EOF
+  fi
 }
 
 seedless_overclaim() {
-  cat >&2 <<'EOF'
+  if packaged_cli_selected; then
+    cat >&2 <<'EOF'
+{:id "P18T02001"
+ :message "packaged JVM CLI is bootstrap-hosted and cannot be claimed as the seedless release artifact"
+ :bootstrap-stage :phase18-packaged-jvm-cli
+ :bootstrap-hosted? true
+ :packaged-jvm-cli? true
+ :seedless-release? false
+ :remediation "Complete P18-T03 through P18-T05 before claiming the public gravity command is seedless."}
+EOF
+  else
+    cat >&2 <<'EOF'
 {:id "P18T01001"
  :message "thin CLI wrapper is bootstrap-hosted and cannot be claimed as the seedless release artifact"
  :bootstrap-stage :phase18-thin-wrapper
@@ -75,21 +205,60 @@ seedless_overclaim() {
  :seedless-release? false
  :remediation "Complete P18-T03 and P18-T05 before claiming the public gravity command is seedless."}
 EOF
+  fi
   exit 1
 }
+
+if [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && "${GRAVITY_PACKAGED_CLI_ONLY:-0}" != "1" && -x "${FINAL_RELEASE}" ]] && final_seed_retired; then
+  exec "${FINAL_RELEASE}" "$@"
+fi
 
 case "${1:-}" in
   ""|"help"|"-h"|"--help")
     usage
+    exit 0
     ;;
   "--version"|"version")
     version
+    exit 0
     ;;
   "--assert-seedless-release"|"assert-seedless-release")
     seedless_overclaim
     ;;
-  *)
-    cd "${ROOT_DIR}"
-    exec clojure -M:gravity "$@"
-    ;;
 esac
+
+if packaged_cli_selected && { [[ "${1:-}" == "sh07-core" ]] || current_source_targeted_command_requested "$@"; }; then
+  if ! command -v clojure >/dev/null 2>&1; then
+    missing_clojure_diagnostic
+    exit 1
+  fi
+  cd "${ROOT_DIR}"
+  exec clojure -M:gravity "$@"
+fi
+
+if packaged_cli_selected; then
+  packaged_toolchain_ready || exit 1
+  if ! RUNTIME_CP="$(runtime_classpath)"; then
+    missing_clojure_diagnostic
+    exit 1
+  fi
+  exec java -cp "${PACKAGED_JAR}:${RUNTIME_CP}" gravity.cli.Main "$@"
+fi
+
+if ! command -v clojure >/dev/null 2>&1; then
+  cat >&2 <<'EOF'
+{:id "P18T01002"
+ :message "thin CLI wrapper requires the Clojure CLI for bootstrap-hosted commands"
+ :bootstrap-stage :phase18-thin-wrapper
+ :bootstrap-hosted? true
+ :packaged-jvm-cli? false
+ :seedless-release? false
+ :missing-command "clojure"
+ :required-command "clojure -M:gravity"
+ :remediation "Install the Clojure CLI and make clojure available on PATH, then retry the bootstrap-hosted command."}
+EOF
+  exit 1
+fi
+
+cd "${ROOT_DIR}"
+exec clojure -M:gravity "$@"

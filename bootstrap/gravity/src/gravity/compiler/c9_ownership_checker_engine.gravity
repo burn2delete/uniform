@@ -11,7 +11,17 @@
              c9-ownership-diagnostic-catalog
              build-c9-borrow-record
              build-c9-linear-resource-record
-             verify-c9-ownership-checker])
+             verify-c9-ownership-checker
+             sh10-ownership-policy
+             sh10-check-ownership-request
+             sh10-verify-ownership-result
+             sh10-authenticated-sh09-adapter-policy
+             sh10-build-authenticated-ownership-core
+             sh10-verify-authenticated-ownership-core
+             sh10-authenticated-ownership-identity-requests
+             sh10-authenticated-ownership-core-identity-request
+             sh10-bind-authenticated-ownership-identities
+             sh10-verify-authenticated-ownership-identities])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -355,3 +365,1366 @@
                       :unsafe-audit-references
                       :profile-target-metadata
                       :artifact-provenance]}))
+
+; SH-10 starts with a bounded owned-mutable state machine. It consumes ordered,
+; normalized ownership events. The narrow authenticated SH-09 adapter below
+; additionally admits read-only persistent primitive values. Persistent
+; aggregates, owned-mutable adaptation, regions, arenas, linear resources,
+; concurrency, runtime checks, unsafe audits, and MIR preservation remain
+; explicit later work.
+
+(defn sh10-ownership-policy []
+  {:artifact :gravity/sh10-ownership-policy
+   :version 1
+   :request-artifact :gravity/sh10-normalized-ownership-request
+   :result-artifact :gravity/sh10-ownership-analysis-result
+   :ownership-kind :owned-mutable
+   :ownership-kinds #{:owned-mutable :persistent-immutable}
+   :initialization-states #{:uninitialized :initialized}
+   :availability-states #{:available :moved :consumed}
+   :events #{:initialize
+             :read
+             :borrow-immutable
+             :borrow-mutable
+             :end-borrow
+             :move
+             :consume
+             :escape-borrow}
+   :escape-destinations #{:function-return}
+   :diagnostics ["L10-UNINIT-READ"
+                 "C9-USE-AFTER-MOVE"
+                 "C9-USE-AFTER-CONSUME"
+                 "C9-BORROW-ESCAPE"
+                 "C9-MUT-ALIAS"
+                 "C9-MOVE-WHILE-BORROWED"
+                 "C9-UNSAFE"]
+   :pending [:field-and-range-splitting
+             :region-lifetimes
+             :arena-generations
+             :linear-resources
+             :task-actor-and-ffi-transfer
+             :runtime-borrow-checks
+             :unsafe-audit-records
+             :persistent-aggregate-copy-semantics
+             :authenticated-effectful-or-nonprimitive-sh09-adapter
+             :mir-preservation]})
+
+(defn sh10-not [value]
+  (if value false true))
+
+(defn sh10-and [left right]
+  (if left right false))
+
+(defn sh10-member? [values value]
+  (if (= nil value)
+    false
+    (= (get values value) value)))
+
+(defn sh10-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh10-event-allowed-for-ownership-kind? [ownership-kind event]
+  (if (= :persistent-immutable ownership-kind)
+    (= :read (get event :op))
+    true))
+
+(defn sh10-events-allowed-for-ownership-kind? [ownership-kind remaining]
+  (if (= (count remaining) 0)
+    true
+    (if (sh10-event-allowed-for-ownership-kind?
+         ownership-kind (first remaining))
+      (sh10-events-allowed-for-ownership-kind?
+       ownership-kind (rest remaining))
+      false)))
+
+(defn sh10-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                     \a \b \c \d \e \f}
+                   (first characters))
+      (sh10-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh10-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (sh10-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh10-unique-event-ids? [remaining seen]
+  (if (= (count remaining) 0)
+    true
+    (let [event-id (get (first remaining) :event-id)]
+      (if (= nil event-id)
+        false
+        (if (= true (get seen event-id))
+          false
+          (sh10-unique-event-ids?
+           (rest remaining)
+           (assoc seen event-id true)))))))
+
+(defn sh10-active-borrow? [state]
+  (if (> (get state :immutable-borrow-count) 0)
+    true
+    (sh10-not (= nil (get state :mutable-borrow-id)))))
+
+(defn sh10-active-borrow-id? [state borrow-id]
+  (if (= nil borrow-id)
+    false
+    (if (= borrow-id (get state :mutable-borrow-id))
+      true
+      (= true (get (get state :immutable-borrows) borrow-id)))))
+
+(defn sh10-valid-request-shape? [request]
+  (if (map? request)
+    (if (= :gravity/sh10-normalized-ownership-request
+           (get request :artifact))
+      (if (= nil (get request :request-id))
+        false
+        (if (= nil (get request :value-id))
+          false
+          (if (= nil (get request :owner-id))
+            false
+            (if (sh10-member?
+                 #{:owned-mutable :persistent-immutable}
+                 (get request :ownership-kind))
+              (if (sh10-member?
+                   #{:uninitialized :initialized}
+                   (get request :initialization))
+                (if (= :available (get request :availability))
+                  (if (vector? (get request :events))
+                    (if (<= (count (get request :events)) 1024)
+                      (if (sh10-unique-event-ids?
+                           (get request :events) {})
+                        (if
+                         (sh10-events-allowed-for-ownership-kind?
+                          (get request :ownership-kind)
+                          (get request :events))
+                        (if (number? (get request :owner-lifetime-end))
+                          (if (sh10-sha256-id?
+                               (get request :type-fact-id))
+                            (if (sh10-sha256-id?
+                                 (get request :effect-fact-id))
+                              (if (map? (get request :source-span))
+                                (if (vector? (get request :origin-chain))
+                                  (if (= nil (get request :profile))
+                                    false
+                                    (sh10-not
+                                     (= nil (get request :target))))
+                          false)
+                        false)
+                      false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false))))
+      false)
+    false))
+
+(defn sh10-valid-event-shape? [event]
+  (if (map? event)
+    (if (= nil (get event :event-id))
+      false
+      (if
+       (sh10-member?
+        #{:initialize
+          :read
+          :borrow-immutable
+          :borrow-mutable
+          :end-borrow
+          :move
+          :consume
+          :escape-borrow}
+        (get event :op))
+       (if (map? (get event :source-span))
+         (if (vector? (get event :origin-chain))
+           (if (= :escape-borrow (get event :op))
+             (if (= nil (get event :borrow-id))
+               false
+               (if
+                (number? (get event :destination-lifetime-end))
+                 (sh10-member?
+                  #{:function-return}
+                  (get event :escape-destination))
+                 false))
+             true)
+           false)
+         false)
+       false))
+    false))
+
+(defn sh10-diagnostic
+  [request event rule reason remediation]
+  {:diagnostic-id rule
+   :rule rule
+   :severity :error
+   :stage :ownership-checking
+   :reason reason
+   :request-id (get request :request-id)
+   :event-id (get event :event-id)
+   :operation (get event :op)
+   :value-id (get request :value-id)
+   :owner-id (get request :owner-id)
+   :borrow-id (get event :borrow-id)
+   :lifetime-interval
+   {:owner-end (get request :owner-lifetime-end)
+    :destination-end (get event :destination-lifetime-end)}
+   :move-path (get event :destination-owner)
+   :escape-path (get event :escape-destination)
+   :region-id nil
+   :arena-generation nil
+   :resource-id nil
+   :control-path (get event :control-path)
+   :source-span
+   (if (map? (get event :source-span))
+     (get event :source-span)
+     (if (map? (get request :source-span))
+       (get request :source-span)
+       {}))
+   :generated-origin-chain
+   (if (vector? (get event :origin-chain))
+     (get event :origin-chain)
+     (if (vector? (get request :origin-chain))
+       (get request :origin-chain)
+       (if (vector? (get request :generated-origin-chain))
+         (get request :generated-origin-chain)
+         [])))
+   :profile (get request :profile)
+   :target (get request :target)
+   :remediation remediation})
+
+(defn sh10-rejected
+  [request event rule reason remediation state facts]
+  {:artifact :gravity/sh10-ownership-analysis-result
+   :status :rejected
+   :request-id (get request :request-id)
+   :value-id (get request :value-id)
+   :owner-id (get request :owner-id)
+   :state state
+   :ownership-facts facts
+   :diagnostics
+   [(sh10-diagnostic request event rule reason remediation)]
+   :identity-input
+   {:request request
+    :policy-version 1}
+   :pending (get (sh10-ownership-policy) :pending)})
+
+(defn sh10-fact [request event state-before state-after]
+  {:artifact :gravity/c9-ownership-fact
+   :fact-id-request
+   {:domain :gravity/sh10-ownership-fact-v1
+    :request-id (get request :request-id)
+    :event-id (get event :event-id)
+    :value-id (get request :value-id)}
+   :event-id (get event :event-id)
+   :operation (get event :op)
+   :value-id (get request :value-id)
+   :owner-id (get request :owner-id)
+   :borrow-id (get event :borrow-id)
+   :destination-owner (get event :destination-owner)
+   :escape-destination (get event :escape-destination)
+   :state-before state-before
+   :state-after state-after
+   :source-span (get event :source-span)
+   :origin-chain (get event :origin-chain)
+   :profile (get request :profile)
+   :target (get request :target)})
+
+(defn sh10-transition-accepted [request event state state-after]
+  {:status :accepted
+   :state state-after
+   :fact (sh10-fact request event state state-after)})
+
+(defn sh10-transition-rejected [request event state rule reason remediation]
+  {:status :rejected
+   :state state
+   :diagnostic
+   (sh10-diagnostic request event rule reason remediation)})
+
+(defn sh10-transition-initialized
+  [request event state]
+  (let [operation (get event :op)
+        immutable-count (get state :immutable-borrow-count)
+        mutable-id (get state :mutable-borrow-id)]
+    (if (= operation :read)
+      (if (= nil mutable-id)
+        (sh10-transition-accepted request event state state)
+        (sh10-transition-rejected
+         request event state "C9-MUT-ALIAS"
+         :owner-read-during-active-mutable-borrow
+         :end-the-mutable-borrow-before-owner-access))
+      (if (= operation :borrow-immutable)
+        (if (= nil (get event :borrow-id))
+          (sh10-transition-rejected
+           request event state "C9-UNSAFE"
+           :immutable-borrow-without-identity
+           :supply-a-stable-borrow-identity)
+          (if (= true
+                 (get (get state :immutable-borrows)
+                      (get event :borrow-id)))
+            (sh10-transition-rejected
+             request event state "C9-UNSAFE"
+             :duplicate-active-borrow-identity
+             :use-a-distinct-borrow-identity)
+            (if (= nil mutable-id)
+              (sh10-transition-accepted
+               request event state
+               (assoc
+                (assoc state
+                       :immutable-borrow-count
+                       (+ immutable-count 1))
+                :immutable-borrows
+                (assoc
+                 (get state :immutable-borrows)
+                 (get event :borrow-id)
+                 true)))
+              (sh10-transition-rejected
+               request event state "C9-MUT-ALIAS"
+               :immutable-borrow-during-active-mutable-borrow
+               :end-the-mutable-borrow-before-sharing))))
+        (if (= operation :borrow-mutable)
+          (if (= nil (get event :borrow-id))
+            (sh10-transition-rejected
+             request event state "C9-UNSAFE"
+             :mutable-borrow-without-identity
+             :supply-a-stable-borrow-identity)
+            (if (= nil mutable-id)
+              (if (= immutable-count 0)
+                (sh10-transition-accepted
+                 request event state
+                 (assoc state
+                        :mutable-borrow-id
+                        (get event :borrow-id)))
+                (sh10-transition-rejected
+                 request event state "C9-MUT-ALIAS"
+                 :mutable-borrow-with-active-immutable-aliases
+                 :end-all-immutable-borrows-before-exclusive-access))
+              (sh10-transition-rejected
+               request event state "C9-MUT-ALIAS"
+               :multiple-active-mutable-borrows
+               :retain-only-one-mutable-borrow)))
+          (if (= operation :end-borrow)
+            (if (= (get event :borrow-id) mutable-id)
+              (sh10-transition-accepted
+               request event state
+               (assoc state :mutable-borrow-id nil))
+              (if (= true
+                     (get (get state :immutable-borrows)
+                          (get event :borrow-id)))
+                (sh10-transition-accepted
+                 request
+                 event
+                 state
+                 (assoc
+                  (assoc state
+                         :immutable-borrow-count
+                         (- immutable-count 1))
+                  :immutable-borrows
+                  (assoc
+                   (get state :immutable-borrows)
+                   (get event :borrow-id)
+                   false)))
+                (sh10-transition-rejected
+                 request event state "C9-UNSAFE"
+                 :end-of-inactive-borrow
+                 :end-only-an-active-borrow)))
+            (if (= operation :move)
+              (if (sh10-active-borrow? state)
+                (sh10-transition-rejected
+                 request event state "C9-MOVE-WHILE-BORROWED"
+                 :move-during-active-borrow
+                 :end-all-borrows-before-moving-the-owner)
+                (if (= nil (get event :destination-owner))
+                  (sh10-transition-rejected
+                   request event state "C9-UNSAFE"
+                   :move-without-destination-owner
+                   :record-the-explicit-destination-owner)
+                  (sh10-transition-accepted
+                   request event state
+                   (assoc state
+                          :availability :moved
+                          :current-owner
+                          (get event :destination-owner)))))
+              (if (= operation :consume)
+                (if (sh10-active-borrow? state)
+                  (sh10-transition-rejected
+                   request event state "C9-UNSAFE"
+                   :consume-during-active-borrow
+                   :end-all-borrows-before-consuming-the-owner)
+                  (sh10-transition-accepted
+                   request event state
+                   (assoc state :availability :consumed)))
+                (if (= operation :escape-borrow)
+                  (if
+                   (sh10-active-borrow-id?
+                    state (get event :borrow-id))
+                    (if
+                     (<= (get event :destination-lifetime-end)
+                         (get request :owner-lifetime-end))
+                     (sh10-transition-accepted
+                      request event state state)
+                     (sh10-transition-rejected
+                      request event state "C9-BORROW-ESCAPE"
+                      :borrow-outlives-owner
+                      :copy-move-or-bound-the-destination-lifetime))
+                    (sh10-transition-rejected
+                     request event state "C9-BORROW-ESCAPE"
+                     :escape-of-inactive-borrow
+                     :name-the-exact-active-borrow-before-escape-analysis))
+                  (if (= operation :initialize)
+                    (sh10-transition-rejected
+                     request event state "C9-UNSAFE"
+                     :double-initialization
+                     :initialize-owned-storage-exactly-once)
+                    (sh10-transition-rejected
+                     request event state "C9-UNSAFE"
+                     :unsupported-ownership-event
+                     :use-a-bounded-sh10-ownership-event)))))))))))
+
+(defn sh10-transition [request event state]
+  (if (sh10-valid-event-shape? event)
+    (if (= :moved (get state :availability))
+      (sh10-transition-rejected
+       request event state "C9-USE-AFTER-MOVE"
+       :operation-after-move
+       :use-the-destination-owner-after-an-explicit-move)
+      (if (= :consumed (get state :availability))
+        (sh10-transition-rejected
+         request event state "C9-USE-AFTER-CONSUME"
+         :operation-after-consume
+         :do-not-use-a-terminally-consumed-value)
+        (if (= :uninitialized (get state :initialization))
+          (if (= :initialize (get event :op))
+            (sh10-transition-accepted
+             request event state
+             (assoc state :initialization :initialized))
+            (sh10-transition-rejected
+             request event state "L10-UNINIT-READ"
+             :operation-before-initialization
+             :fully-initialize-the-value-before-use))
+          (sh10-transition-initialized
+           request event state))))
+    (sh10-transition-rejected
+     request event state "C9-UNSAFE"
+     :malformed-ownership-event
+     :provide-a-complete-normalized-ownership-event)))
+
+(defn sh10-result-scope [request]
+  (if (= :persistent-immutable (get request :ownership-kind))
+    :persistent-immutable-read-only
+    :owned-mutable-initialization-borrow-move-consume))
+
+(defn sh10-run-events [request remaining state facts]
+  (if (= (count remaining) 0)
+    {:status :accepted
+     :state state
+     :ownership-facts facts
+     :diagnostics []}
+    (let [event (first remaining)
+          transition (sh10-transition request event state)]
+      (if (= :accepted (get transition :status))
+        (sh10-run-events
+         request
+         (rest remaining)
+         (get transition :state)
+         (conj facts (get transition :fact)))
+        {:status :rejected
+         :state (get transition :state)
+         :ownership-facts facts
+         :diagnostics [(get transition :diagnostic)]}))))
+
+(defn sh10-check-ownership-request [request]
+  (if (sh10-valid-request-shape? request)
+    (let [initial-state
+          {:initialization (get request :initialization)
+           :availability (get request :availability)
+           :current-owner (get request :owner-id)
+           :immutable-borrow-count 0
+           :immutable-borrows {}
+           :mutable-borrow-id nil}
+          analysis
+          (sh10-run-events
+           request (get request :events) initial-state [])
+          accepted
+          {:artifact :gravity/sh10-ownership-analysis-result
+           :status :accepted
+           :request-id (get request :request-id)
+           :value-id (get request :value-id)
+           :owner-id (get request :owner-id)
+           :state (get analysis :state)
+           :ownership-facts (get analysis :ownership-facts)
+           :diagnostics []
+           :preserves
+           {:value-id (get request :value-id)
+            :owner-id (get request :owner-id)
+            :type-fact-id (get request :type-fact-id)
+            :effect-fact-id (get request :effect-fact-id)
+            :capability-proof-id (get request :capability-proof-id)
+            :source-span (get request :source-span)
+            :origin-chain (get request :origin-chain)
+            :profile (get request :profile)
+            :target (get request :target)}
+           :identity-input
+           {:request request
+            :policy-version 1}
+           :scope (sh10-result-scope request)
+           :pending (get (sh10-ownership-policy) :pending)}]
+      (if (= :accepted (get analysis :status))
+        accepted
+        {:artifact :gravity/sh10-ownership-analysis-result
+         :status :rejected
+         :request-id (get request :request-id)
+         :value-id (get request :value-id)
+         :owner-id (get request :owner-id)
+         :state (get analysis :state)
+         :ownership-facts (get analysis :ownership-facts)
+         :diagnostics (get analysis :diagnostics)
+         :identity-input
+         {:request request
+          :policy-version 1}
+         :pending (get (sh10-ownership-policy) :pending)}))
+    (sh10-rejected
+     request {} "C9-UNSAFE" :malformed-normalized-ownership-request
+     :provide-complete-owned-mutable-operation-facts
+     {} [])))
+
+(defn sh10-verify-ownership-result [request candidate]
+  (if (= candidate (sh10-check-ownership-request request))
+    {:artifact :gravity/sh10-ownership-result-verification
+     :status :passed
+     :request-id (get request :request-id)
+     :checks [:complete-recomputation
+              :event-order
+              :state-transition-identity
+              :ownership-fact-identity
+              :diagnostic-identity
+              :source-lineage-identity]}
+    {:artifact :gravity/sh10-ownership-result-verification
+     :status :rejected
+     :request-id (get request :request-id)
+     :diagnostics
+     [(sh10-diagnostic
+       request {} "C9-UNSAFE" :ownership-result-substitution
+       :recompute-from-the-normalized-ownership-request)]}))
+
+(defn sh10-authenticated-sh09-adapter-policy []
+  {:artifact :gravity/sh10-authenticated-sh09-adapter-policy
+   :schema-version 1
+   :accepted-upstream-artifact
+   :gravity/sh09-identity-bound-effected-core-template
+   :accepted-upstream-scopes
+   #{:pure-authenticated-sh08-primitive-typed-core
+     :declared-pure-call-effects-with-thrown-effects-pending}
+   :accepted-types
+   #{:gravity.type/integer :gravity.type/bool :gravity.type/string}
+   :ownership-kind :persistent-immutable
+   :accepted-events [:read]
+   :profile :meta
+   :target :jvm
+   :diagnostics ["C9-UNSAFE" "C9-MUT-ALIAS"]
+   :pending [:owned-mutable-sh09-adapter
+             :persistent-aggregate-copy-semantics
+             :regions-arenas-and-linear-resources
+             :task-actor-and-ffi-transfer
+             :runtime-borrow-checks
+             :unsafe-audit-records
+             :mir-preservation]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh10-authenticated-sh09-input-valid? [bound verification]
+  (if
+   (sh10-exact-keys?
+    bound
+    #{:artifact :schema-version :status :scope :effected-core
+      :fact-identities :identity-input :identity-resolution
+      :provenance :diagnostics :pending :self-hosted?
+      :clojure-seed-boundary?})
+    (if (= :gravity/sh09-identity-bound-effected-core-template
+           (get bound :artifact))
+      (if (= 1 (get bound :schema-version))
+        (if (= :accepted (get bound :status))
+          (if (sh10-member?
+               #{:pure-authenticated-sh08-primitive-typed-core
+                 :declared-pure-call-effects-with-thrown-effects-pending}
+               (get bound :scope))
+            (if (= :coordinator-digest-bound
+                   (get bound :identity-resolution))
+              (if (= [] (get bound :diagnostics))
+                (if
+                 (sh10-exact-keys?
+                  verification
+                  #{:artifact :status :checks :expected :candidate})
+                  (if (= :gravity/sh09-effect-identity-binding-verification
+                         (get verification :artifact))
+                    (if (= :passed (get verification :status))
+                      (if (= [:fresh-authenticated-effected-core
+                              :exact-digest-request-order
+                              :resolved-digest-shape
+                              :type-effect-capability-linkage
+                              :path-neutral-identity-input
+                              :separate-actual-path-provenance]
+                             (get verification :checks))
+                        (if (= bound (get verification :expected))
+                          (= bound (get verification :candidate))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-authenticated-primitive-type? [value]
+  (sh10-member?
+   #{:gravity.type/integer :gravity.type/bool :gravity.type/string}
+   value))
+
+(defn sh10-authenticated-pure-node? [node]
+  (if (= :gravity/c8-effect-node (get node :artifact))
+    (if (= #{} (get node :direct))
+      (if (= #{} (get node :latent))
+        (if (= #{} (get node :transitive))
+          (= :pure (get node :ordering))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-authenticated-ownership-request
+  [bound effect-request fact-identities]
+  (let [effected (get bound :effected-core)
+        module (get effected :module)
+        core-node-id (get effect-request :core-node-id)
+        identities (get fact-identities core-node-id)]
+    {:artifact :gravity/sh10-normalized-ownership-request
+     :request-id (get identities :effect-fact-id)
+     :value-id core-node-id
+     :owner-id (get module :namespace)
+     :ownership-kind :persistent-immutable
+     :initialization :initialized
+     :availability :available
+     :events
+     [{:event-id core-node-id
+       :op :read
+       :source-span (get effect-request :source-span)
+       :origin-chain (get effect-request :origin-chain)
+       :control-path [:authenticated-pure-effect-read]}]
+     :owner-lifetime-end 1
+     :type-fact-id (get identities :type-fact-id)
+     :effect-fact-id (get identities :effect-fact-id)
+     :capability-proof-id (get identities :capability-proof-id)
+     :source-span (get effect-request :source-span)
+     :origin-chain (get effect-request :origin-chain)
+     :profile (get module :profile)
+     :target (get module :target)}))
+
+(defn sh10-authenticated-ownership-products
+  [bound remaining requests results]
+  (if (= (count remaining) 0)
+    {:status :accepted :requests requests :results results}
+    (let [effected (get bound :effected-core)
+          effect-request (first remaining)
+          core-node-id (get effect-request :core-node-id)
+          node
+          (get (get (get effected :effect-graph) :nodes) core-node-id)
+          value-type (get (get effected :type-table) core-node-id)
+          identities (get (get bound :fact-identities) core-node-id)]
+      (if (sh10-authenticated-primitive-type? value-type)
+        (if (sh10-authenticated-pure-node? node)
+          (if (map? identities)
+            (if (sh10-sha256-id? (get identities :type-fact-id))
+              (if (sh10-sha256-id? (get identities :effect-fact-id))
+                (if (sh10-sha256-id?
+                     (get identities :capability-proof-id))
+                  (let [request
+                        (sh10-authenticated-ownership-request
+                         bound effect-request
+                         (get bound :fact-identities))
+                        result (sh10-check-ownership-request request)]
+                    (if (= :accepted (get result :status))
+                      (sh10-authenticated-ownership-products
+                       bound (rest remaining)
+                       (conj requests request) (conj results result))
+                      {:status :rejected
+                       :reason :ownership-kernel-rejected
+                       :requests (conj requests request)
+                       :results (conj results result)}))
+                  {:status :rejected
+                   :reason :missing-capability-proof-identity})
+                {:status :rejected :reason :missing-effect-fact-identity})
+              {:status :rejected :reason :missing-type-fact-identity})
+            {:status :rejected :reason :missing-fact-identities})
+          {:status :rejected :reason :effect-node-is-not-pure})
+        {:status :rejected :reason :unsupported-persistent-primitive-type}))))
+
+(defn sh10-authenticated-adapter-diagnostic [bound reason]
+  (let [effected (get bound :effected-core)
+        request (first (get effected :effect-requests))]
+    {:diagnostic-id "C9-UNSAFE"
+     :rule "C9-UNSAFE"
+     :severity :error
+     :stage :ownership-checking
+     :reason reason
+     :core-node-id (get request :core-node-id)
+     :source-span (get request :source-span)
+     :generated-origin-chain (get request :origin-chain)
+     :profile (get (get effected :module) :profile)
+     :target (get (get effected :module) :target)
+     :remediation :supply-an-identity-bound-pure-primitive-effected-core}))
+
+(defn sh10-build-authenticated-ownership-core [bound verification]
+  (if (sh10-authenticated-sh09-input-valid? bound verification)
+    (let [effected (get bound :effected-core)
+          products
+          (sh10-authenticated-ownership-products
+           bound (get effected :effect-requests) [] [])]
+      (if (= :accepted (get products :status))
+        (let [identity-input
+              {:domain :gravity/sh10-authenticated-ownership-core-v1
+               :sh09-identity-input (get bound :identity-input)
+               :ownership-requests (get products :requests)
+               :ownership-results (get products :results)
+               :pending
+               (get (sh10-authenticated-sh09-adapter-policy) :pending)}]
+          {:artifact :gravity/sh10-authenticated-ownership-core-template
+           :schema-version 1
+           :status :accepted
+           :scope :persistent-immutable-pure-primitive-reads
+           :authentication-status
+           :host-resolved-sh09-identity-binding-boundary
+           :effected-core bound
+           :ownership-requests (get products :requests)
+           :ownership-results (get products :results)
+           :identity-input identity-input
+           :identity-resolution :coordinator-digest-required
+           :provenance (get bound :provenance)
+           :diagnostics []
+           :pending (get identity-input :pending)
+           :self-hosted? false
+           :clojure-seed-boundary? true})
+        {:artifact :gravity/sh10-authenticated-ownership-core-template
+         :schema-version 1
+         :status :rejected
+         :scope :persistent-immutable-pure-primitive-reads
+         :diagnostics
+         [(sh10-authenticated-adapter-diagnostic
+           bound (get products :reason))]
+         :pending
+         (get (sh10-authenticated-sh09-adapter-policy) :pending)}))
+    {:artifact :gravity/sh10-authenticated-ownership-core-template
+     :schema-version 1
+     :status :rejected
+     :scope :persistent-immutable-pure-primitive-reads
+     :diagnostics
+     [(sh10-authenticated-adapter-diagnostic
+       bound :untrusted-or-malformed-sh09-effected-core)]
+     :pending (get (sh10-authenticated-sh09-adapter-policy) :pending)}))
+
+(defn sh10-verify-authenticated-ownership-core
+  [bound verification candidate]
+  (let [expected
+        (sh10-build-authenticated-ownership-core bound verification)]
+    {:artifact :gravity/sh10-authenticated-ownership-core-verification
+     :status (if (= expected candidate) :passed :rejected)
+     :checks [:fresh-sh09-identity-binding
+              :persistent-primitive-type-boundary
+              :pure-effect-node-boundary
+              :read-only-ownership-events
+              :ownership-kernel-recomputation
+              :path-neutral-identity-input
+              :separate-actual-path-provenance]
+     :expected expected
+     :candidate candidate}))
+
+; The legacy ownership template above deliberately remains coordinator-digest-
+; required. This additive seam introduces a sequential C9 identity boundary:
+; fact identities are resolved first, then the whole ownership-core request is
+; built from those resolved fact IDs. No digest is recomputed in Gravity.
+(defn sh10-authenticated-ownership-identity-pending []
+  [:owned-mutable-sh09-adapter
+   :persistent-aggregate-copy-semantics
+   :regions-arenas-and-linear-resources
+   :task-actor-and-ffi-transfer
+   :runtime-borrow-checks
+   :unsafe-audit-records
+   :mir-preservation
+   :trusted-digest-resolution
+   :independent-canonical-digest-verification])
+
+(defn sh10-identity-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (set? value))))
+
+(defn sh10-identity-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (if (vector? value)
+      value
+      (if (set? value) (vec value) []))))
+
+(defn sh10-identity-carrier-preflight [value]
+  (loop [frontier [[value 0]] cursor 0 nodes 0 enqueued 1]
+    (if (= cursor (count frontier))
+      {:status :accepted :nodes nodes}
+      (let [entry (get frontier cursor)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (> next-nodes 16384)
+          {:status :rejected :reason :identity-carrier-node-bound}
+          (if (> depth 16)
+            {:status :rejected :reason :identity-carrier-depth-bound}
+            (if (map? current)
+              (let [width (count current)]
+                (if (> width 512)
+                  {:status :rejected :reason :identity-carrier-width-bound}
+                  (let [next-enqueued (+ enqueued (* 2 width))]
+                    (if (> next-enqueued 16384)
+                      {:status :rejected
+                       :reason :identity-carrier-node-bound}
+                      (let [children
+                            (sh10-identity-components current)
+                            next-frontier
+                            (loop [remaining children result frontier]
+                              (if (= (count remaining) 0)
+                                result
+                                (recur
+                                 (rest remaining)
+                                 (conj result
+                                       [(first remaining) (+ depth 1)]))))]
+                        (recur next-frontier (+ cursor 1) next-nodes
+                               next-enqueued))))))
+              (if (vector? current)
+                (let [width (count current)]
+                  (if (> width 1024)
+                    {:status :rejected :reason :identity-carrier-width-bound}
+                    (let [next-enqueued (+ enqueued width)]
+                      (if (> next-enqueued 16384)
+                        {:status :rejected
+                         :reason :identity-carrier-node-bound}
+                        (let [children (sh10-identity-components current)
+                              next-frontier
+                              (loop [remaining children result frontier]
+                                (if (= (count remaining) 0)
+                                  result
+                                  (recur
+                                   (rest remaining)
+                                   (conj result
+                                         [(first remaining) (+ depth 1)]))))]
+                          (recur next-frontier (+ cursor 1) next-nodes
+                                 next-enqueued))))))
+                (if (set? current)
+                  (let [width (count current)]
+                    (if (> width 512)
+                      {:status :rejected
+                       :reason :identity-carrier-width-bound}
+                      (let [next-enqueued (+ enqueued width)]
+                        (if (> next-enqueued 16384)
+                          {:status :rejected
+                           :reason :identity-carrier-node-bound}
+                          (let [children (sh10-identity-components current)
+                                next-frontier
+                                (loop [remaining children result frontier]
+                                  (if (= (count remaining) 0)
+                                    result
+                                    (recur
+                                     (rest remaining)
+                                     (conj result
+                                           [(first remaining) (+ depth 1)]))))]
+                            (recur next-frontier (+ cursor 1) next-nodes
+                                   next-enqueued))))))
+                  (if (seq? current)
+                    {:status :rejected
+                     :reason :identity-carrier-seq-unsupported}
+                    (recur frontier (+ cursor 1) next-nodes enqueued)))))))))))
+
+(defn sh10-ownership-fact-records-in-result
+  [request ownership-result remaining-facts result]
+  (if (= (count remaining-facts) 0)
+    result
+    (let [fact (first remaining-facts)]
+      (sh10-ownership-fact-records-in-result
+       request ownership-result
+       (rest remaining-facts)
+       (conj
+        result
+        {:fact fact
+         :fact-id-request (get fact :fact-id-request)
+         :ownership-request request
+         :ownership-result ownership-result
+         :source-span (get fact :source-span)
+         :origin-chain (get fact :origin-chain)
+         :profile (get request :profile)
+         :target (get request :target)})))))
+
+(defn sh10-ownership-fact-records-loop
+  [remaining-requests remaining-results result]
+  (if (= (count remaining-requests) 0)
+    result
+    (let [request (first remaining-requests)
+          ownership-result (first remaining-results)]
+      (sh10-ownership-fact-records-loop
+       (rest remaining-requests)
+       (rest remaining-results)
+       (sh10-ownership-fact-records-in-result
+        request ownership-result
+        (get ownership-result :ownership-facts)
+        result)))))
+
+(defn sh10-ownership-fact-identity-request [record]
+  {:domain :gravity/sh10-ownership-fact-identity-v2
+   :kind :ownership-fact
+   :core-node-id (get (get record :fact) :value-id)
+   :identity-input
+   {:fact (get record :fact)
+    :fact-id-request (get record :fact-id-request)
+    :ownership-request (get record :ownership-request)
+    :ownership-result (get record :ownership-result)
+    :source-span (get record :source-span)
+    :origin-chain (get record :origin-chain)
+    :profile (get record :profile)
+    :target (get record :target)}})
+
+(defn sh10-ownership-fact-identity-requests-loop
+  [remaining result]
+  (if (= (count remaining) 0)
+    result
+    (sh10-ownership-fact-identity-requests-loop
+     (rest remaining)
+     (conj result
+           (sh10-ownership-fact-identity-request
+            (first remaining))))))
+
+(defn sh10-one-fact-per-ownership-result?
+  [remaining-requests remaining-results]
+  (if (= (count remaining-requests) 0)
+    true
+    (if (= (count remaining-results) 0)
+      false
+      (let [ownership-result (first remaining-results)
+            facts (get ownership-result :ownership-facts)]
+        (if (= :accepted (get ownership-result :status))
+          (if (vector? facts)
+            (if (= 1 (count facts))
+              (let [fact (first facts)]
+                (if (map? fact)
+                  (if (= :gravity/c9-ownership-fact
+                         (get fact :artifact))
+                    (if (map? (get fact :fact-id-request))
+                      (sh10-one-fact-per-ownership-result?
+                       (rest remaining-requests)
+                       (rest remaining-results))
+                      false)
+                    false)
+                  false))
+              false)
+            false)
+          false)))))
+
+(defn sh10-identity-public-input-preflight
+  [bound verification owned]
+  (let [bound-result (sh10-identity-carrier-preflight bound)]
+    (if (= :accepted (get bound-result :status))
+      (let [verification-result
+            (sh10-identity-carrier-preflight verification)]
+        (if (= :accepted (get verification-result :status))
+          (sh10-identity-carrier-preflight owned)
+          verification-result))
+      bound-result)))
+
+(defn sh10-identity-candidate-preflight [candidate]
+  (if (map? candidate)
+    (sh10-identity-carrier-preflight candidate)
+    {:status :rejected :reason :identity-candidate-not-map}))
+
+(defn sh10-authenticated-ownership-identity-requests
+  [bound verification owned]
+  (let [public-preflight
+        (sh10-identity-public-input-preflight
+         bound verification owned)
+        fresh
+        (if (= :accepted (get public-preflight :status))
+          (sh10-verify-authenticated-ownership-core
+           bound verification owned)
+          {:status :rejected
+           :diagnostics
+           [{:diagnostic-id "C9-UNSAFE"
+             :reason (get public-preflight :reason)}]})]
+    (if (= :passed (get fresh :status))
+      (if (sh10-and
+           (> (count (get owned :ownership-requests)) 0)
+           (sh10-and
+            (= (count (get owned :ownership-requests))
+               (count (get owned :ownership-results)))
+            (sh10-one-fact-per-ownership-result?
+             (get owned :ownership-requests)
+             (get owned :ownership-results))))
+        (let [records
+            (sh10-ownership-fact-records-loop
+             (get owned :ownership-requests)
+             (get owned :ownership-results)
+             [])
+            requests
+            (sh10-ownership-fact-identity-requests-loop records [])]
+        {:artifact :gravity/sh10-ownership-identity-request-template
+         :schema-version 2
+         :status :accepted
+         :scope (get owned :scope)
+         :fact-requests requests
+         :resolution :coordinator-digest-required
+         :next :resolve-fact-identities
+         :diagnostics []
+         :pending (sh10-authenticated-ownership-identity-pending)
+         :self-hosted? false
+         :clojure-seed-boundary? true})
+        {:artifact :gravity/sh10-ownership-identity-request-template
+         :schema-version 2
+         :status :rejected
+         :scope (get owned :scope)
+         :fact-requests []
+         :resolution :coordinator-digest-required
+         :next :resolve-fact-identities
+         :diagnostics
+         [(sh10-authenticated-adapter-diagnostic
+           bound :ownership-fact-cardinality-or-status)]
+         :pending (sh10-authenticated-ownership-identity-pending)
+         :self-hosted? false
+         :clojure-seed-boundary? true})
+      {:artifact :gravity/sh10-ownership-identity-request-template
+       :schema-version 2
+       :status :rejected
+       :scope (get owned :scope)
+       :fact-requests []
+       :resolution :coordinator-digest-required
+       :next :resolve-fact-identities
+       :diagnostics
+       [(sh10-authenticated-adapter-diagnostic
+         bound :unverified-authenticated-ownership-core)]
+       :pending (sh10-authenticated-ownership-identity-pending)
+       :self-hosted? false
+       :clojure-seed-boundary? true})))
+
+(defn sh10-identity-resolution-entry-valid?
+  [request entry]
+  (if (map? entry)
+    (if (= #{:request :digest} (set (keys entry)))
+      (if (= request (get entry :request))
+        (sh10-sha256-id? (get entry :digest))
+        false)
+      false)
+    false))
+
+(defn sh10-identity-digests-unique?
+  [remaining seen]
+  (if (= (count remaining) 0)
+    true
+    (let [digest (get (first remaining) :digest)]
+      (if (contains? seen digest)
+        false
+        (sh10-identity-digests-unique?
+         (rest remaining)
+         (conj seen digest))))))
+
+(defn sh10-resolved-ownership-facts-valid?
+  [requests resolved]
+  (if (= (count requests) (count resolved))
+    (if (sh10-identity-digests-unique? resolved #{})
+      (if (= (count requests) 0)
+        true
+        (if (sh10-identity-resolution-entry-valid?
+             (first requests) (first resolved))
+          (sh10-resolved-ownership-facts-valid?
+           (rest requests) (rest resolved))
+          false))
+      false)
+    false))
+
+(defn sh10-bound-ownership-fact-identities
+  [requests resolved result]
+  (if (= (count requests) 0)
+    result
+    (let [request (first requests)
+          entry (first resolved)
+          identity-input (get request :identity-input)]
+      (sh10-bound-ownership-fact-identities
+       (rest requests)
+       (rest resolved)
+       (conj result
+             {:fact-id-request (get identity-input :fact-id-request)
+              :ownership-fact-id (get entry :digest)})))))
+
+(defn sh10-ownership-core-identity-request
+  [owned ordered-fact-identities]
+  {:domain :gravity/sh10-ownership-core-identity-v2
+   :kind :ownership-core
+   :core-node-id :gravity/sh10-ownership-core
+   :identity-input
+   {:ownership-core-identity-input (get owned :identity-input)
+    :ordered-fact-identities ordered-fact-identities
+    :ownership-requests (get owned :ownership-requests)
+    :ownership-results (get owned :ownership-results)}})
+
+(defn sh10-authenticated-ownership-core-identity-request
+  [bound verification owned fact-resolutions]
+  (let [carrier-preflight
+        (sh10-identity-carrier-preflight fact-resolutions)
+        template
+        (if (= :accepted (get carrier-preflight :status))
+          (sh10-authenticated-ownership-identity-requests
+           bound verification owned)
+          {:status :rejected
+           :diagnostics
+           [{:diagnostic-id "C9-UNSAFE"
+             :reason :identity-carrier-bound
+             :preflight carrier-preflight}]})
+        fact-requests (get template :fact-requests)]
+    (if (= :accepted (get template :status))
+      (if (= :accepted (get carrier-preflight :status))
+        (if (vector? fact-resolutions)
+          (if (sh10-resolved-ownership-facts-valid?
+               fact-requests fact-resolutions)
+            (let [fact-identities
+                  (sh10-bound-ownership-fact-identities
+                   fact-requests fact-resolutions [])]
+              {:artifact
+               :gravity/sh10-ownership-core-identity-request
+               :schema-version 2
+               :status :accepted
+               :core-request
+               (sh10-ownership-core-identity-request
+                owned fact-identities)
+               :fact-identities fact-identities
+               :resolution :coordinator-digest-required
+               :diagnostics []
+               :pending (sh10-authenticated-ownership-identity-pending)
+               :self-hosted? false
+               :clojure-seed-boundary? true})
+            {:artifact
+             :gravity/sh10-ownership-core-identity-request
+             :schema-version 2
+             :status :rejected
+             :resolution :coordinator-digest-required
+             :diagnostics
+             [(sh10-authenticated-adapter-diagnostic
+               bound :ownership-fact-identity-resolution-substitution)]
+             :pending (sh10-authenticated-ownership-identity-pending)
+             :self-hosted? false
+             :clojure-seed-boundary? true})
+          {:artifact :gravity/sh10-ownership-core-identity-request
+           :schema-version 2
+           :status :rejected
+           :resolution :coordinator-digest-required
+           :diagnostics
+           [(sh10-authenticated-adapter-diagnostic
+             bound :malformed-ownership-fact-resolution)]
+           :pending (sh10-authenticated-ownership-identity-pending)
+           :self-hosted? false
+           :clojure-seed-boundary? true})
+        {:artifact :gravity/sh10-ownership-core-identity-request
+         :schema-version 2
+         :status :rejected
+         :resolution :coordinator-digest-required
+         :diagnostics
+         [(sh10-authenticated-adapter-diagnostic
+           bound :identity-carrier-bound)]
+         :pending (sh10-authenticated-ownership-identity-pending)
+         :self-hosted? false
+         :clojure-seed-boundary? true})
+      {:artifact :gravity/sh10-ownership-core-identity-request
+       :schema-version 2
+       :status :rejected
+       :resolution :coordinator-digest-required
+       :diagnostics (get template :diagnostics)
+       :pending (sh10-authenticated-ownership-identity-pending)
+       :self-hosted? false
+       :clojure-seed-boundary? true})))
+
+(defn sh10-identity-resolution-digests
+  [remaining result]
+  (if (= (count remaining) 0)
+    result
+    (sh10-identity-resolution-digests
+     (rest remaining)
+     (conj result (get (first remaining) :digest)))))
+
+(defn sh10-core-resolution-valid?
+  [request resolution fact-resolutions]
+  (if (map? resolution)
+    (if (= #{:request :digest} (set (keys resolution)))
+      (if (= request (get resolution :request))
+        (if (sh10-sha256-id? (get resolution :digest))
+          (if (contains? (set
+                         (sh10-identity-resolution-digests
+                          fact-resolutions []))
+                         (get resolution :digest))
+            false
+            true)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-bind-authenticated-ownership-identities
+  [bound verification owned resolved]
+  (let [resolved-preflight
+        (sh10-identity-carrier-preflight resolved)
+        template
+        (if (= :accepted (get resolved-preflight :status))
+          (sh10-authenticated-ownership-identity-requests
+           bound verification owned)
+          {:status :rejected
+           :diagnostics
+           [{:diagnostic-id "C9-UNSAFE"
+             :reason (get resolved-preflight :reason)}]})]
+    (if (= :accepted (get template :status))
+      (if (map? resolved)
+        (if (= #{:fact-resolutions :core-resolution}
+               (set (keys resolved)))
+          (let [fact-resolutions (get resolved :fact-resolutions)
+                core-resolution (get resolved :core-resolution)
+                core-template
+                (sh10-authenticated-ownership-core-identity-request
+                 bound verification owned fact-resolutions)]
+            (if (= :accepted (get core-template :status))
+              (if (sh10-core-resolution-valid?
+                   (get core-template :core-request)
+                   core-resolution fact-resolutions)
+                (let [core-id (get core-resolution :digest)
+                      identity-input
+                      {:domain :gravity/sh10-identity-bound-owned-core-v2
+                       :ownership-core-identity-input
+                       (get owned :identity-input)
+                       :ordered-fact-identities
+                       (get core-template :fact-identities)
+                       :ownership-core-identity-id core-id
+                       :pending
+                       (sh10-authenticated-ownership-identity-pending)}]
+                  {:artifact
+                   :gravity/sh10-identity-bound-owned-core-template
+                   :schema-version 2
+                   :status :accepted
+                   :scope (get owned :scope)
+                   :ownership-core owned
+                   :fact-identities (get core-template :fact-identities)
+                   :ownership-core-identity-id core-id
+                   :identity-input identity-input
+                   :identity-resolution :coordinator-digest-bound
+                   :identity-binding-status
+                   :coordinator-resolution-shape-checked
+                   :identity-resolutions resolved
+                   :provenance (get owned :provenance)
+                   :diagnostics []
+                   :pending (get identity-input :pending)
+                   :self-hosted? false
+                   :clojure-seed-boundary? true})
+                {:artifact
+                 :gravity/sh10-identity-bound-owned-core-template
+                 :schema-version 2
+                 :status :rejected
+                 :scope (get owned :scope)
+                 :diagnostics
+                 [(sh10-authenticated-adapter-diagnostic
+                   bound :ownership-core-identity-resolution-substitution)]
+                 :pending (sh10-authenticated-ownership-identity-pending)
+                 :self-hosted? false
+                 :clojure-seed-boundary? true})
+              {:artifact
+               :gravity/sh10-identity-bound-owned-core-template
+               :schema-version 2
+               :status :rejected
+               :scope (get owned :scope)
+               :diagnostics (get core-template :diagnostics)
+               :pending (sh10-authenticated-ownership-identity-pending)
+               :self-hosted? false
+               :clojure-seed-boundary? true}))
+          {:artifact
+           :gravity/sh10-identity-bound-owned-core-template
+           :schema-version 2
+           :status :rejected
+           :scope (get owned :scope)
+           :diagnostics
+           [(sh10-authenticated-adapter-diagnostic
+             bound :malformed-ownership-identity-carrier)]
+           :pending (sh10-authenticated-ownership-identity-pending)
+           :self-hosted? false
+           :clojure-seed-boundary? true})
+        {:artifact
+         :gravity/sh10-identity-bound-owned-core-template
+         :schema-version 2
+         :status :rejected
+         :scope (get owned :scope)
+         :diagnostics
+         [(sh10-authenticated-adapter-diagnostic
+           bound :malformed-ownership-identity-carrier)]
+         :pending (sh10-authenticated-ownership-identity-pending)
+         :self-hosted? false
+         :clojure-seed-boundary? true})
+      {:artifact :gravity/sh10-identity-bound-owned-core-template
+       :schema-version 2
+       :status :rejected
+       :scope (get owned :scope)
+       :diagnostics (get template :diagnostics)
+       :pending (sh10-authenticated-ownership-identity-pending)
+       :self-hosted? false
+       :clojure-seed-boundary? true})))
+
+(defn sh10-verify-authenticated-ownership-identities
+  [bound verification owned resolved candidate]
+  (let [candidate-preflight
+        (sh10-identity-candidate-preflight candidate)]
+    (if (= :accepted (get candidate-preflight :status))
+      (let [expected
+            (sh10-bind-authenticated-ownership-identities
+             bound verification owned resolved)]
+        {:artifact :gravity/sh10-ownership-identity-binding-verification
+         :status (if (= expected candidate) :passed :rejected)
+         :checks [:fresh-authenticated-ownership-core
+                  :exact-fact-request-order
+                  :sequential-core-request-from-resolved-facts
+                  :resolved-digest-shape
+                  :duplicate-digest-rejection
+                  :ownership-fact-linkage
+                  :path-neutral-identity-input
+                  :separate-actual-path-provenance
+                  :coordinator-binding-consistency-only]
+         :nonclaims [:trusted-digest-resolution
+                     :independent-canonical-digest-verification]
+         :expected expected
+         :candidate candidate})
+      {:artifact :gravity/sh10-ownership-identity-binding-verification
+       :status :rejected
+       :checks [:candidate-identity-carrier-bound]
+       :nonclaims [:trusted-digest-resolution
+                   :independent-canonical-digest-verification]
+       :diagnostics
+       [{:diagnostic-id "C9-UNSAFE"
+         :reason :candidate-identity-carrier-bound
+         :preflight candidate-preflight}]})))

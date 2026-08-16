@@ -1,0 +1,20 @@
+; SH-07-B15 lowers a one-operand keyword map lookup.
+(ns self-hosting.sh07-b15.basic-keyword-map-lookup
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [contract required-fields])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B15
+              :fixture :basic-keyword-map-lookup
+              :non-claims [:keyword-default-value
+                           :general-callable-keywords
+                           :whole-program-execution]}))
+
+(def contract
+  {:required-fields [:name :profile]
+   :optional-fields [:target]})
+
+(def required-fields
+  (:required-fields contract))

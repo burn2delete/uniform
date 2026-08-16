@@ -1,0 +1,97 @@
+{:form {:kind :symbol
+        :value fixture-value
+        :raw "fixture-value"}
+ :span {:source "/checkout-a/src/template-descriptor.gravity"
+        :file "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        :byte-start 0
+        :byte-end 13
+        :scalar-start 0
+        :scalar-end 13
+        :line-start 1
+        :column-start 1
+        :line-end 1
+        :column-end 14}
+ :source {:source-id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          :form-id :form-0
+          :token-range [:tok-0 :tok-0]}
+ :namespace {:current self-hosting.sh04.template-descriptor
+             :aliases {}
+             :imports []}
+ :phase :read
+ :profile :meta
+ :metadata {:slice :SH-04
+            :fixture :accepted}
+ :hygiene {:marks [:reader-mark]
+           :lexical-scopes [:module-scope]
+           :renames {}
+           :introduced-identifiers []
+           :captures [{:identifier captured-value
+                       :macro-api gravity.syntax/capture
+                       :call-site-namespace self-hosting.sh04.template-descriptor
+                       :intentional? true
+                       :authority-bearing? false
+                       :policy-result :not-required}]
+           :macro-definition-namespace gravity.bootstrap.syntax
+           :macro-call-site-namespace self-hosting.sh04.template-descriptor}
+ :origin [{:kind :source
+           :span {:source "/checkout-a/src/template-descriptor.gravity"
+                  :file "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  :byte-start 0
+                  :byte-end 13
+                  :scalar-start 0
+                  :scalar-end 13
+                  :line-start 1
+                  :column-start 1
+                  :line-end 1
+                  :column-end 14}
+           :producer {:kind :reader
+                      :name gravity.bootstrap.reader
+                      :identity "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                      :source-id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                      :generated-form-id nil}
+           :producer-version "SH-03"
+           :input-syntax-ids []
+           :generation-reason :source-read
+           :build-effects []}]
+ :facts [{:producer-stage :reader
+          :fact-kind :syntax-seed
+          :value :accepted
+          :version 1
+          :invalidated-by [:macro-expansion]}]
+ :reader-binding
+ {:artifact :gravity/sh04-reader-semantic-binding
+  :schema-version 1
+  :semantic-binding-id "sha256:80fd93c32a4736514b60be8dd0f9581319240280ff43d9c3f9dadfba9ea270ae"
+  :semantic-source-id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  :source-bytes-hash "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  :reader-options {:mode :canonical}
+  :token-stream-id "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  :form-tree-id "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+  :syntax-seed-stream-id "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+  :literal-records-id "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+  :deferment-records-id "sha256:5555555555555555555555555555555555555555555555555555555555555555"
+  :extension-records-id "sha256:6666666666666666666666666666666666666666666666666666666666666666"
+  :reader-result-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  :c2-artifact-id "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  :authenticated-envelope-id "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  :source-revision-id "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}
+ :reader-source-revision
+ {:artifact :gravity/sh03-reader-source-revision
+  :schema-version 1
+  :revision-id "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  :owner :sh03-reader
+  :source-language :gravity
+  :logical-source-path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+  :source-content-hash "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  :source-byte-count 13
+  :plan-semantic-hash "sha256:7777777777777777777777777777777777777777777777777777777777777777"
+  :functions-semantic-hash "sha256:8888888888888888888888888888888888888888888888888888888888888888"
+  :entry-function sh03-read-source-unit
+  :entry-semantic-hash "sha256:9999999999999999999999999999999999999999999999999999999999999999"
+  :verifier-function sh03-verify-reader-result
+  :verifier-semantic-hash "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  :reader-result-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  :c2-artifact-id "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  :authenticated-envelope-id "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  :semantic-binding-id "sha256:80fd93c32a4736514b60be8dd0f9581319240280ff43d9c3f9dadfba9ea270ae"}
+ :version 1}

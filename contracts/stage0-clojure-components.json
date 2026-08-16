@@ -1,0 +1,1904 @@
+{
+  "schema": "gravity/stage0-clojure-components-v1",
+  "kind": "stage0-clojure-component-inventory",
+  "authority": false,
+  "integration_owner": "master-coordinator",
+  "source_root": "bootstrap/clojure/src",
+  "test_root": "bootstrap/clojure/test",
+  "counts": {
+    "components": 50,
+    "sources": 50,
+    "tests": 50,
+    "bootstrap_free_tests": 44,
+    "compatibility_tests": 5,
+    "coordinator_tests": 1
+  },
+  "canonical_pipeline_order": [
+    "source-forms",
+    "reader",
+    "syntax-objects",
+    "macro-expansion",
+    "core-ast",
+    "name-resolution",
+    "type-checking",
+    "effect-checking",
+    "profile-validation",
+    "capability-validation",
+    "ownership-lifetime",
+    "safety-analysis",
+    "gravity-mir",
+    "domain-ir-lowering",
+    "optimization",
+    "target-lowering",
+    "artifact-emission",
+    "package-provenance"
+  ],
+  "stage0_extension_order": [
+    "read-source",
+    "build-syntax",
+    "macro-expand",
+    "resolve-names",
+    "lower-to-core",
+    "type-check",
+    "effect-check",
+    "profile-validate",
+    "capability-validate",
+    "ownership-check",
+    "safety-analyze",
+    "build-mir",
+    "verify-mir",
+    "optimize-mir",
+    "lower-domain-ir",
+    "verify-domain-ir",
+    "lower-target",
+    "emit-artifacts",
+    "record-package-provenance"
+  ],
+  "authority_ceiling": "non-authoritative",
+  "nonclaims": [
+    "canonical Gravity compiler authority",
+    "self-hosted compiler authority",
+    "release authority",
+    "seed-retirement authority",
+    "proof or conformance authority",
+    "target support beyond the Stage0 Clojure/JVM subset"
+  ],
+  "coordinator_integration_reservations": [
+    {
+      "id": "p15-native-plan-specialization",
+      "owner": "master-coordinator",
+      "authority_ceiling": "none",
+      "ordinary_component": false,
+      "focused_check_id": "stage0-p15-native-plan-specialization-prerequisite",
+      "paths": [
+        "bootstrap/clojure/src/gravity/p15_native_plan_specialization.clj",
+        "bootstrap/clojure/test/gravity/p15_native_plan_specialization_test.clj",
+        "bootstrap/gravity/p15_s23/native_plan_c_emitter.gravity",
+        "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-bool.gravity",
+        "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-control.gravity",
+        "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-nonascii.gravity",
+        "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.gravity",
+        "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.qst",
+        "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-str.gravity",
+        "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-trigraph.gravity",
+        "bootstrap/clojure/fixtures/p15-native-plan-specialization/unsupported-builtin.gravity"
+      ]
+    },
+    {
+      "id": "p15-native-packet-binding",
+      "owner": "master-coordinator",
+      "authority_ceiling": "none",
+      "ordinary_component": false,
+      "focused_check_id": "stage0-p15-native-runtime-provider-packet-binding-prerequisite",
+      "paths": ["bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"]
+    },
+    {
+      "id": "p15-public-native-admission",
+      "owner": "master-coordinator",
+      "authority_ceiling": "none",
+      "ordinary_component": false,
+      "focused_check_id": "stage0-coordinator-integration-reservations",
+      "paths": [
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj",
+        "contracts/p15-public-native-admission-v1.edn"
+      ]
+    },
+    {
+      "id": "p15-native-integration-tests",
+      "owner": "master-coordinator",
+      "authority_ceiling": "none",
+      "ordinary_component": false,
+      "focused_check_id": "stage0-coordinator-integration-reservations",
+      "paths": [
+        "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+        "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
+        "bootstrap/clojure/test/gravity/p15_public_native_run_test.clj",
+        "bootstrap/clojure/test/gravity/p15_public_native_run_wrapper_test.clj"
+      ]
+    },
+    {
+      "id": "project-structure-runner-integration",
+      "owner": "master-coordinator",
+      "authority_ceiling": "none",
+      "ordinary_component": false,
+      "focused_check_id": "stage0-coordinator-integration-reservations",
+      "paths": ["bootstrap/clojure/test/gravity/project_structure_test_runner_test.clj"]
+    }
+  ],
+  "components": [
+    {
+      "id": "bootstrap",
+      "owner": "master-coordinator",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "namespace": "gravity.bootstrap"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+        "namespace": "gravity.bootstrap-test",
+        "lane": "coordinator",
+        "execution_requires_bootstrap": true
+      },
+      "direct_source_dependencies": [
+        "c10-safety-analysis",
+        "c11-mir",
+        "c12-domain-ir",
+        "c13-optimization",
+        "c14-lowering",
+        "c15-diagnostics",
+        "c16-incremental",
+        "c17-plugin",
+        "c18-verification",
+        "c2-artifact-identity",
+        "c2-lexical-validation",
+        "c2-pass-cache",
+        "c2-reader-diagnostics",
+        "c2-reader-product-projection",
+        "c2-source-identity",
+        "c3-artifact-identity",
+        "c3-literal-projection",
+        "c3-reader-integrity",
+        "c3-syntax-construction",
+        "c3-syntax-diagnostics",
+        "c3-syntax-evidence",
+        "c3-syntax-verification",
+        "c4-macro-evidence",
+        "c5-name-resolution",
+        "c6-core-lowering",
+        "c7-type-checker",
+        "c8-effect-checker",
+        "c9-ownership-checker",
+        "capability-validation",
+        "cli",
+        "compiler-verification-shared",
+        "core-ast-lowering",
+        "darwin-publication",
+        "diagnostics",
+        "digest",
+        "macro-expansion",
+        "module-analysis",
+        "optimization-lowering",
+        "profile-validation",
+        "reader-cursor",
+        "reader-diagnostic-policy",
+        "reader-host-oracle",
+        "reader-namespace",
+        "reader-primitives",
+        "source-span",
+        "source-unit",
+        "syntax-object-stream",
+        "syntax-origin"
+      ],
+      "direct_test_dependencies": [
+        "bootstrap",
+        "c2-artifact-identity",
+        "c2-lexical-validation",
+        "c2-reader-diagnostics",
+        "c2-source-identity",
+        "cli",
+        "darwin-publication",
+        "diagnostics"
+      ],
+      "canonical_pass_refs": [
+        "source-forms",
+        "reader",
+        "syntax-objects",
+        "macro-expansion",
+        "core-ast",
+        "name-resolution",
+        "type-checking",
+        "effect-checking",
+        "profile-validation",
+        "capability-validation",
+        "ownership-lifetime",
+        "safety-analysis",
+        "gravity-mir",
+        "domain-ir-lowering",
+        "optimization",
+        "target-lowering",
+        "artifact-emission",
+        "package-provenance"
+      ],
+      "mapping_kind": "orchestrator",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": null,
+      "stage0_group": "coordinator",
+      "leaf_execution_group": null
+    },
+    {
+      "id": "c10-safety-analysis",
+      "owner": "sh-safety",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c10_safety_analysis.clj",
+        "namespace": "gravity.c10-safety-analysis"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c10_safety_analysis_test.clj",
+        "namespace": "gravity.c10-safety-analysis-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c10-safety-analysis"
+      ],
+      "canonical_pass_refs": [
+        "safety-analysis"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c11-mir",
+      "owner": "sh-mir",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c11_mir.clj",
+        "namespace": "gravity.c11-mir"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c11_mir_test.clj",
+        "namespace": "gravity.c11-mir-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c11-mir"
+      ],
+      "canonical_pass_refs": [
+        "gravity-mir"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c12-domain-ir",
+      "owner": "sh-domain-ir",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c12_domain_ir.clj",
+        "namespace": "gravity.c12-domain-ir"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c12_domain_ir_test.clj",
+        "namespace": "gravity.c12-domain-ir-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c12-domain-ir"
+      ],
+      "canonical_pass_refs": [
+        "domain-ir-lowering"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c13-optimization",
+      "owner": "sh-optimization",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c13_optimization.clj",
+        "namespace": "gravity.c13-optimization"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c13_optimization_test.clj",
+        "namespace": "gravity.c13-optimization-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest",
+        "optimization-lowering"
+      ],
+      "direct_test_dependencies": [
+        "c13-optimization",
+        "optimization-lowering"
+      ],
+      "canonical_pass_refs": [
+        "optimization"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c14-lowering",
+      "owner": "master-coordinator",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c14_lowering.clj",
+        "namespace": "gravity.c14-lowering"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c14_lowering_test.clj",
+        "namespace": "gravity.c14-lowering-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest",
+        "optimization-lowering"
+      ],
+      "direct_test_dependencies": [
+        "c14-lowering",
+        "optimization-lowering"
+      ],
+      "canonical_pass_refs": [
+        "target-lowering"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c15-diagnostics",
+      "owner": "master-coordinator",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c15_diagnostics.clj",
+        "namespace": "gravity.c15-diagnostics"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c15_diagnostics_test.clj",
+        "namespace": "gravity.c15-diagnostics-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "compiler-verification-shared",
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c15-diagnostics"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c16-incremental",
+      "owner": "sh-incremental",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c16_incremental.clj",
+        "namespace": "gravity.c16-incremental"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c16_incremental_test.clj",
+        "namespace": "gravity.c16-incremental-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "compiler-verification-shared",
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c16-incremental"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c17-plugin",
+      "owner": "sh-pass-api",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c17_plugin.clj",
+        "namespace": "gravity.c17-plugin"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c17_plugin_test.clj",
+        "namespace": "gravity.c17-plugin-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "compiler-verification-shared",
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c17-plugin"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c18-verification",
+      "owner": "sh-verification",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c18_verification.clj",
+        "namespace": "gravity.c18-verification"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c18_verification_test.clj",
+        "namespace": "gravity.c18-verification-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "compiler-verification-shared",
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c18-verification"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c2-artifact-identity",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c2_artifact_identity.clj",
+        "namespace": "gravity.c2-artifact-identity"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj",
+        "namespace": "gravity.c2-artifact-identity-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "c2-artifact-identity"
+      ],
+      "canonical_pass_refs": [
+        "reader"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c2-lexical-validation",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c2_lexical_validation.clj",
+        "namespace": "gravity.c2-lexical-validation"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c2_lexical_validation_test.clj",
+        "namespace": "gravity.c2-lexical-validation-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "c2-lexical-validation"
+      ],
+      "canonical_pass_refs": [
+        "reader"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c2-pass-cache",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c2_pass_cache.clj",
+        "namespace": "gravity.c2-pass-cache"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj",
+        "namespace": "gravity.c2-pass-cache-test",
+        "lane": "compatibility",
+        "execution_requires_bootstrap": true
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "bootstrap",
+        "c2-pass-cache"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "supporting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "cache-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": null
+    },
+    {
+      "id": "c2-reader-diagnostics",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c2_reader_diagnostics.clj",
+        "namespace": "gravity.c2-reader-diagnostics"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c2_reader_diagnostics_test.clj",
+        "namespace": "gravity.c2-reader-diagnostics-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "c2-reader-diagnostics"
+      ],
+      "canonical_pass_refs": [
+        "reader"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c2-reader-product-projection",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c2_reader_product_projection.clj",
+        "namespace": "gravity.c2-reader-product-projection"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c2_reader_product_projection_test.clj",
+        "namespace": "gravity.c2-reader-product-projection-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "c2-reader-product-projection"
+      ],
+      "canonical_pass_refs": [
+        "reader"
+      ],
+      "mapping_kind": "supporting",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c2-source-identity",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c2_source_identity.clj",
+        "namespace": "gravity.c2-source-identity"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c2_source_identity_test.clj",
+        "namespace": "gravity.c2-source-identity-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "c2-source-identity"
+      ],
+      "canonical_pass_refs": [
+        "source-forms"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c3-artifact-identity",
+      "owner": "sh-syntax",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c3_artifact_identity.clj",
+        "namespace": "gravity.c3-artifact-identity"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c3_artifact_identity_test.clj",
+        "namespace": "gravity.c3-artifact-identity-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "c3-artifact-identity"
+      ],
+      "canonical_pass_refs": [
+        "syntax-objects"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c3-literal-projection",
+      "owner": "sh-syntax",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c3_literal_projection.clj",
+        "namespace": "gravity.c3-literal-projection"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c3_literal_projection_test.clj",
+        "namespace": "gravity.c3-literal-projection-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "reader-primitives"
+      ],
+      "direct_test_dependencies": [
+        "c3-literal-projection"
+      ],
+      "canonical_pass_refs": [
+        "syntax-objects"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c3-reader-integrity",
+      "owner": "sh-syntax",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c3_reader_integrity.clj",
+        "namespace": "gravity.c3-reader-integrity"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c3_reader_integrity_test.clj",
+        "namespace": "gravity.c3-reader-integrity-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "c3-reader-integrity"
+      ],
+      "canonical_pass_refs": [
+        "syntax-objects"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c3-syntax-construction",
+      "owner": "sh-syntax",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c3_syntax_construction.clj",
+        "namespace": "gravity.c3-syntax-construction"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c3_syntax_construction_test.clj",
+        "namespace": "gravity.c3-syntax-construction-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest",
+        "syntax-origin"
+      ],
+      "direct_test_dependencies": [
+        "c3-syntax-construction"
+      ],
+      "canonical_pass_refs": [
+        "syntax-objects"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c3-syntax-diagnostics",
+      "owner": "sh-syntax",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c3_syntax_diagnostics.clj",
+        "namespace": "gravity.c3-syntax-diagnostics"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c3_syntax_diagnostics_test.clj",
+        "namespace": "gravity.c3-syntax-diagnostics-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "c3-syntax-diagnostics"
+      ],
+      "canonical_pass_refs": [
+        "syntax-objects"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c3-syntax-evidence",
+      "owner": "sh-syntax",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c3_syntax_evidence.clj",
+        "namespace": "gravity.c3-syntax-evidence"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c3_syntax_evidence_test.clj",
+        "namespace": "gravity.c3-syntax-evidence-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "c3-syntax-evidence"
+      ],
+      "canonical_pass_refs": [
+        "syntax-objects"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c3-syntax-verification",
+      "owner": "sh-syntax",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c3_syntax_verification.clj",
+        "namespace": "gravity.c3-syntax-verification"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c3_syntax_verification_test.clj",
+        "namespace": "gravity.c3-syntax-verification-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "c3-syntax-verification"
+      ],
+      "canonical_pass_refs": [
+        "syntax-objects"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "c2-c3",
+      "leaf_execution_group": "c2-c3"
+    },
+    {
+      "id": "c4-macro-evidence",
+      "owner": "sh-macro",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c4_macro_evidence.clj",
+        "namespace": "gravity.c4-macro-evidence"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c4_macro_evidence_test.clj",
+        "namespace": "gravity.c4-macro-evidence-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c4-macro-evidence"
+      ],
+      "canonical_pass_refs": [
+        "macro-expansion"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c5-name-resolution",
+      "owner": "sh-resolution",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c5_name_resolution.clj",
+        "namespace": "gravity.c5-name-resolution"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c5_name_resolution_test.clj",
+        "namespace": "gravity.c5-name-resolution-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c5-name-resolution"
+      ],
+      "canonical_pass_refs": [
+        "name-resolution"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c6-core-lowering",
+      "owner": "sh-core",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c6_core_lowering.clj",
+        "namespace": "gravity.c6-core-lowering"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c6_core_lowering_test.clj",
+        "namespace": "gravity.c6-core-lowering-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c6-core-lowering"
+      ],
+      "canonical_pass_refs": [
+        "core-ast"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c7-type-checker",
+      "owner": "sh-types",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c7_type_checker.clj",
+        "namespace": "gravity.c7-type-checker"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c7_type_checker_test.clj",
+        "namespace": "gravity.c7-type-checker-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c7-type-checker"
+      ],
+      "canonical_pass_refs": [
+        "type-checking"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c8-effect-checker",
+      "owner": "sh-effects",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c8_effect_checker.clj",
+        "namespace": "gravity.c8-effect-checker"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj",
+        "namespace": "gravity.c8-effect-checker-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c8-effect-checker"
+      ],
+      "canonical_pass_refs": [
+        "effect-checking"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "c9-ownership-checker",
+      "owner": "sh-ownership",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/c9_ownership_checker.clj",
+        "namespace": "gravity.c9-ownership-checker"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/c9_ownership_checker_test.clj",
+        "namespace": "gravity.c9-ownership-checker-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "c9-ownership-checker"
+      ],
+      "canonical_pass_refs": [
+        "ownership-lifetime"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "capability-validation",
+      "owner": "sh-capability",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/capability_validation.clj",
+        "namespace": "gravity.capability-validation"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/capability_validation_test.clj",
+        "namespace": "gravity.capability-validation-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "capability-validation"
+      ],
+      "canonical_pass_refs": [
+        "capability-validation"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "capability-validation-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "cli",
+      "owner": "master-coordinator",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/cli.clj",
+        "namespace": "gravity.cli"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/cli_test.clj",
+        "namespace": "gravity.cli-test",
+        "lane": "compatibility",
+        "execution_requires_bootstrap": true
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "bootstrap",
+        "cli"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": null
+    },
+    {
+      "id": "compiler-verification-shared",
+      "owner": "sh-verification",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/compiler_verification_shared.clj",
+        "namespace": "gravity.compiler-verification-shared"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/compiler_verification_shared_test.clj",
+        "namespace": "gravity.compiler-verification-shared-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "compiler-verification-shared"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "shared-contract",
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "core-ast-lowering",
+      "owner": "sh-core",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/core_ast_lowering.clj",
+        "namespace": "gravity.core-ast-lowering"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/core_ast_lowering_test.clj",
+        "namespace": "gravity.core-ast-lowering-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "core-ast-lowering"
+      ],
+      "canonical_pass_refs": [
+        "core-ast"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "darwin-publication",
+      "owner": "master-coordinator",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/darwin_publication.clj",
+        "namespace": "gravity.darwin-publication"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/darwin_publication_test.clj",
+        "namespace": "gravity.darwin-publication-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "darwin-publication"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "diagnostics",
+      "owner": "master-coordinator",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/diagnostics.clj",
+        "namespace": "gravity.diagnostics"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+        "namespace": "gravity.diagnostics-test",
+        "lane": "compatibility",
+        "execution_requires_bootstrap": true
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "bootstrap",
+        "diagnostics"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": null
+    },
+    {
+      "id": "digest",
+      "owner": "master-coordinator",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/digest.clj",
+        "namespace": "gravity.digest"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/digest_test.clj",
+        "namespace": "gravity.digest-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "digest"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": "foundation-reader"
+    },
+    {
+      "id": "macro-expansion",
+      "owner": "sh-macro",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/macro_expansion.clj",
+        "namespace": "gravity.macro-expansion"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/macro_expansion_test.clj",
+        "namespace": "gravity.macro-expansion-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "macro-expansion"
+      ],
+      "canonical_pass_refs": [
+        "macro-expansion"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "module-analysis",
+      "owner": "sh-resolution",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/module_analysis.clj",
+        "namespace": "gravity.module-analysis"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/module_analysis_test.clj",
+        "namespace": "gravity.module-analysis-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "module-analysis"
+      ],
+      "canonical_pass_refs": [
+        "name-resolution"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "foundation-reader"
+    },
+    {
+      "id": "optimization-lowering",
+      "owner": "sh-optimization",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/optimization_lowering.clj",
+        "namespace": "gravity.optimization-lowering"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/optimization_lowering_test.clj",
+        "namespace": "gravity.optimization-lowering-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "optimization-lowering"
+      ],
+      "canonical_pass_refs": [
+        "optimization",
+        "target-lowering"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "shared-engine-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "pass-execution",
+      "owner": "sh-verification",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/pass_execution.clj",
+        "namespace": "gravity.pass-execution"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/pass_execution_test.clj",
+        "namespace": "gravity.pass-execution-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "pass-execution"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "cross-cutting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "pass-execution-contract",
+      "stage0_group": "compatibility-support",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "profile-validation",
+      "owner": "sh-profile",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/profile_validation.clj",
+        "namespace": "gravity.profile-validation"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/profile_validation_test.clj",
+        "namespace": "gravity.profile-validation-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "profile-validation"
+      ],
+      "canonical_pass_refs": [
+        "profile-validation"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "profile-validation-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "reader-cursor",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/reader_cursor.clj",
+        "namespace": "gravity.reader-cursor"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/reader_cursor_test.clj",
+        "namespace": "gravity.reader-cursor-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "source-span"
+      ],
+      "direct_test_dependencies": [
+        "reader-cursor"
+      ],
+      "canonical_pass_refs": [
+        "reader"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": "foundation-reader"
+    },
+    {
+      "id": "reader-diagnostic-policy",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj",
+        "namespace": "gravity.reader-diagnostic-policy"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/reader_diagnostic_policy_test.clj",
+        "namespace": "gravity.reader-diagnostic-policy-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "reader-diagnostic-policy"
+      ],
+      "canonical_pass_refs": [
+        "reader"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": "foundation-reader"
+    },
+    {
+      "id": "reader-host-oracle",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/reader_host_oracle.clj",
+        "namespace": "gravity.reader-host-oracle"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/reader_host_oracle_test.clj",
+        "namespace": "gravity.reader-host-oracle-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "diagnostics",
+        "reader-cursor",
+        "reader-diagnostic-policy",
+        "reader-primitives",
+        "source-span"
+      ],
+      "direct_test_dependencies": [
+        "diagnostics",
+        "reader-cursor",
+        "reader-diagnostic-policy",
+        "reader-host-oracle",
+        "reader-primitives",
+        "source-span"
+      ],
+      "canonical_pass_refs": [
+        "reader"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": "foundation-reader"
+    },
+    {
+      "id": "reader-namespace",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/reader_namespace.clj",
+        "namespace": "gravity.reader-namespace"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/reader_namespace_test.clj",
+        "namespace": "gravity.reader-namespace-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "diagnostics",
+        "reader-primitives",
+        "source-span"
+      ],
+      "direct_test_dependencies": [
+        "reader-namespace"
+      ],
+      "canonical_pass_refs": [
+        "reader"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": "foundation-reader"
+    },
+    {
+      "id": "reader-primitives",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/reader_primitives.clj",
+        "namespace": "gravity.reader-primitives"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/reader_primitives_test.clj",
+        "namespace": "gravity.reader-primitives-test",
+        "lane": "compatibility",
+        "execution_requires_bootstrap": true
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "bootstrap",
+        "reader-primitives"
+      ],
+      "canonical_pass_refs": [
+        "reader"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": null
+    },
+    {
+      "id": "source-span",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/source_span.clj",
+        "namespace": "gravity.source-span"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/source_span_test.clj",
+        "namespace": "gravity.source-span-test",
+        "lane": "compatibility",
+        "execution_requires_bootstrap": true
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "bootstrap",
+        "source-span"
+      ],
+      "canonical_pass_refs": [],
+      "mapping_kind": "supporting",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": null
+    },
+    {
+      "id": "source-unit",
+      "owner": "sh-reader",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/source_unit.clj",
+        "namespace": "gravity.source-unit"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/source_unit_test.clj",
+        "namespace": "gravity.source-unit-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "source-unit"
+      ],
+      "canonical_pass_refs": [
+        "source-forms"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "foundation-reader",
+      "leaf_execution_group": "foundation-reader"
+    },
+    {
+      "id": "syntax-object-stream",
+      "owner": "sh-syntax",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/syntax_object_stream.clj",
+        "namespace": "gravity.syntax-object-stream"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/syntax_object_stream_test.clj",
+        "namespace": "gravity.syntax-object-stream-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "syntax-object-stream"
+      ],
+      "canonical_pass_refs": [
+        "syntax-objects"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "foundation-reader"
+    },
+    {
+      "id": "syntax-origin",
+      "owner": "sh-syntax",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/syntax_origin.clj",
+        "namespace": "gravity.syntax-origin"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/syntax_origin_test.clj",
+        "namespace": "gravity.syntax-origin-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": [
+        "syntax-origin"
+      ],
+      "canonical_pass_refs": [
+        "syntax-objects"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "foundation-reader"
+    }
+  ]
+}

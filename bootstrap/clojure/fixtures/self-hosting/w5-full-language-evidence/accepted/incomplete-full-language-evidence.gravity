@@ -1,0 +1,545 @@
+(ns gravity.self-hosting.w5-full-language-evidence.accepted.incomplete-full-language-evidence
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-full-language-evidence-request
+             w5-full-language-evidence-request-for-source
+             w5-full-language-evidence-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def w5-target
+  {:candidate-target :llvm-x86_64-linux
+   :os :linux :arch :x86_64 :backend :llvm :artifact-format :elf
+   :abi :sysv-amd64
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :cross-target-inference? false :fallback? false})
+
+(defn w5-path [root value] (str root "/" value))
+
+(defn w5-span [root source-id path sequence]
+  {:source-id source-id
+   :actual-source-path (w5-path root path)
+   :start {:byte 0 :line (+ sequence 1) :column 1}
+   :end {:byte 128 :line (+ sequence 1) :column 1}})
+
+(def w5-documents
+  [
+   {:sequence 1 :id "D0" :title "Gravity Vision & Design Thesis" :path "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md" :phase 0 :category :foundation :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000001"},
+   {:sequence 2 :id "D1" :title "System Architecture Overview" :path "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md" :phase 0 :category :foundation :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000002"},
+   {:sequence 3 :id "D2" :title "Implementation Roadmap & Milestones" :path "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md" :phase 0 :category :foundation :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000003"},
+   {:sequence 4 :id "D3" :title "Terminology & Concept Model" :path "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md" :phase 0 :category :foundation :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000004"},
+   {:sequence 5 :id "D4" :title "Universal Computing Coverage Charter" :path "docs/phase-00-foundation-and-thesis/005-d4-universal-computing-coverage-charter.md" :phase 0 :category :foundation :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000005"},
+   {:sequence 6 :id "D5" :title "Language Replacement Strategy" :path "docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md" :phase 0 :category :foundation :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000006"},
+   {:sequence 7 :id "D6" :title "Performance Philosophy & Charter" :path "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md" :phase 0 :category :foundation :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000007"},
+   {:sequence 8 :id "D7" :title "Extensibility Philosophy" :path "docs/phase-00-foundation-and-thesis/008-d7-extensibility-philosophy.md" :phase 0 :category :foundation :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000008"},
+   {:sequence 9 :id "D8" :title "Safety Philosophy & Charter" :path "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md" :phase 0 :category :foundation :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000009"},
+   {:sequence 10 :id "D9" :title "Verifiability & Mathematical Correctness Charter" :path "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md" :phase 0 :category :foundation :content-id "sha256:000000000000000000000000000000000000000000000000000000000000000a"},
+   {:sequence 11 :id "L1" :title "Surface Syntax Specification" :path "docs/phase-01-core-language/011-l1-surface-syntax-specification.md" :phase 1 :category :language :content-id "sha256:000000000000000000000000000000000000000000000000000000000000000b"},
+   {:sequence 12 :id "L2" :title "Core Language Semantics" :path "docs/phase-01-core-language/012-l2-core-language-semantics.md" :phase 1 :category :language :content-id "sha256:000000000000000000000000000000000000000000000000000000000000000c"},
+   {:sequence 13 :id "L3" :title "Namespace & Module System Specification" :path "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md" :phase 1 :category :language :content-id "sha256:000000000000000000000000000000000000000000000000000000000000000d"},
+   {:sequence 14 :id "L4" :title "Macro System Specification" :path "docs/phase-01-core-language/014-l4-macro-system-specification.md" :phase 1 :category :language :content-id "sha256:000000000000000000000000000000000000000000000000000000000000000e"},
+   {:sequence 15 :id "L5" :title "Type System Specification" :path "docs/phase-01-core-language/015-l5-type-system-specification.md" :phase 1 :category :language :content-id "sha256:000000000000000000000000000000000000000000000000000000000000000f"},
+   {:sequence 16 :id "L6" :title "Effect System Specification" :path "docs/phase-01-core-language/016-l6-effect-system-specification.md" :phase 1 :category :language :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000010"},
+   {:sequence 17 :id "L7" :title "Pattern Matching Specification" :path "docs/phase-01-core-language/017-l7-pattern-matching-specification.md" :phase 1 :category :language :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000011"},
+   {:sequence 18 :id "L8" :title "Protocols, Interfaces & Dispatch Specification" :path "docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md" :phase 1 :category :language :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000012"},
+   {:sequence 19 :id "L9" :title "Error Handling Specification" :path "docs/phase-01-core-language/019-l9-error-handling-specification.md" :phase 1 :category :language :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000013"},
+   {:sequence 20 :id "L10" :title "Memory Model Specification" :path "docs/phase-01-core-language/020-l10-memory-model-specification.md" :phase 1 :category :language :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000014"},
+   {:sequence 21 :id "L11" :title "Concurrency Model Specification" :path "docs/phase-01-core-language/021-l11-concurrency-model-specification.md" :phase 1 :category :language :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000015"},
+   {:sequence 22 :id "L12" :title "Compile-Time Evaluation Specification" :path "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md" :phase 1 :category :language :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000016"},
+   {:sequence 23 :id "L13" :title "Standard Library Design Principles" :path "docs/phase-01-core-language/023-l13-standard-library-design-principles.md" :phase 1 :category :language :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000017"},
+   {:sequence 24 :id "L14" :title "Language Facet System Specification" :path "docs/phase-01-core-language/024-l14-language-facet-system-specification.md" :phase 1 :category :language :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000018"},
+   {:sequence 25 :id "L15" :title "Capability Provider Specification" :path "docs/phase-01-core-language/025-l15-capability-provider-specification.md" :phase 1 :category :language :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000019"},
+   {:sequence 26 :id "L16" :title "Alternative Macro System Contract" :path "docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md" :phase 1 :category :language :content-id "sha256:000000000000000000000000000000000000000000000000000000000000001a"},
+   {:sequence 27 :id "L17" :title "Alternative Type System Contract" :path "docs/phase-01-core-language/027-l17-alternative-type-system-contract.md" :phase 1 :category :language :content-id "sha256:000000000000000000000000000000000000000000000000000000000000001b"},
+   {:sequence 28 :id "L18" :title "Alternative Memory Model Contract" :path "docs/phase-01-core-language/028-l18-alternative-memory-model-contract.md" :phase 1 :category :language :content-id "sha256:000000000000000000000000000000000000000000000000000000000000001c"},
+   {:sequence 29 :id "L19" :title "Language Interoperability & Migration Specification" :path "docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md" :phase 1 :category :language :content-id "sha256:000000000000000000000000000000000000000000000000000000000000001d"},
+   {:sequence 30 :id "SAFE1" :title "Safe Gravity Semantics" :path "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md" :phase 2 :category :safety :content-id "sha256:000000000000000000000000000000000000000000000000000000000000001e"},
+   {:sequence 31 :id "SAFE2" :title "Memory Safety Model" :path "docs/phase-02-safety/031-safe2-memory-safety-model.md" :phase 2 :category :safety :content-id "sha256:000000000000000000000000000000000000000000000000000000000000001f"},
+   {:sequence 32 :id "SAFE3" :title "Ownership, Borrowing & Lifetimes" :path "docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md" :phase 2 :category :safety :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000020"},
+   {:sequence 33 :id "SAFE4" :title "Region and Arena Safety" :path "docs/phase-02-safety/033-safe4-region-and-arena-safety.md" :phase 2 :category :safety :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000021"},
+   {:sequence 34 :id "SAFE5" :title "Linear Resource Safety" :path "docs/phase-02-safety/034-safe5-linear-resource-safety.md" :phase 2 :category :safety :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000022"},
+   {:sequence 35 :id "SAFE6" :title "Unsafe Code and Audit Model" :path "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md" :phase 2 :category :safety :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000023"},
+   {:sequence 36 :id "SAFE7" :title "FFI Safety" :path "docs/phase-02-safety/036-safe7-ffi-safety.md" :phase 2 :category :safety :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000024"},
+   {:sequence 37 :id "SAFE8" :title "Concurrency and Data-Race Safety" :path "docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md" :phase 2 :category :safety :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000025"},
+   {:sequence 38 :id "SAFE9" :title "Numeric Safety" :path "docs/phase-02-safety/038-safe9-numeric-safety.md" :phase 2 :category :safety :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000026"},
+   {:sequence 39 :id "SAFE10" :title "Capability Security Model" :path "docs/phase-02-safety/039-safe10-capability-security-model.md" :phase 2 :category :safety :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000027"},
+   {:sequence 40 :id "SAFE11" :title "Taint Tracking and Input Safety" :path "docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md" :phase 2 :category :safety :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000028"},
+   {:sequence 41 :id "SAFE12" :title "Macro Safety" :path "docs/phase-02-safety/041-safe12-macro-safety.md" :phase 2 :category :safety :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000029"},
+   {:sequence 42 :id "SAFE13" :title "AI Tool Safety" :path "docs/phase-02-safety/042-safe13-ai-tool-safety.md" :phase 2 :category :safety :content-id "sha256:000000000000000000000000000000000000000000000000000000000000002a"},
+   {:sequence 43 :id "SAFE14" :title "Supply-Chain Safety" :path "docs/phase-02-safety/043-safe14-supply-chain-safety.md" :phase 2 :category :safety :content-id "sha256:000000000000000000000000000000000000000000000000000000000000002b"},
+   {:sequence 44 :id "SAFE15" :title "Safety Proof and Certificate Model" :path "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md" :phase 2 :category :safety :content-id "sha256:000000000000000000000000000000000000000000000000000000000000002c"},
+   {:sequence 45 :id "SAFE16" :title "Safety Conformance Test Plan" :path "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md" :phase 2 :category :safety :content-id "sha256:000000000000000000000000000000000000000000000000000000000000002d"},
+   {:sequence 46 :id "P1" :title "Profile System Specification" :path "docs/phase-03-profile-system/046-p1-profile-system-specification.md" :phase 3 :category :profile :content-id "sha256:000000000000000000000000000000000000000000000000000000000000002e"},
+   {:sequence 47 :id "P2" :title ":core Profile Specification" :path "docs/phase-03-profile-system/047-p2-core-profile-specification.md" :phase 3 :category :profile :content-id "sha256:000000000000000000000000000000000000000000000000000000000000002f"},
+   {:sequence 48 :id "P3" :title ":meta Profile Specification" :path "docs/phase-03-profile-system/048-p3-meta-profile-specification.md" :phase 3 :category :profile :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000030"},
+   {:sequence 49 :id "P4" :title ":hosted Profile Specification" :path "docs/phase-03-profile-system/049-p4-hosted-profile-specification.md" :phase 3 :category :profile :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000031"},
+   {:sequence 50 :id "P5" :title ":native Profile Specification" :path "docs/phase-03-profile-system/050-p5-native-profile-specification.md" :phase 3 :category :profile :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000032"},
+   {:sequence 51 :id "P6" :title ":firmware Profile Specification" :path "docs/phase-03-profile-system/051-p6-firmware-profile-specification.md" :phase 3 :category :profile :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000033"},
+   {:sequence 52 :id "P7" :title ":kernel Profile Specification" :path "docs/phase-03-profile-system/052-p7-kernel-profile-specification.md" :phase 3 :category :profile :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000034"},
+   {:sequence 53 :id "P8" :title ":hardware Profile Specification" :path "docs/phase-03-profile-system/053-p8-hardware-profile-specification.md" :phase 3 :category :profile :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000035"},
+   {:sequence 54 :id "P9" :title ":distributed Profile Specification" :path "docs/phase-03-profile-system/054-p9-distributed-profile-specification.md" :phase 3 :category :profile :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000036"},
+   {:sequence 55 :id "P10" :title ":ai Profile Specification" :path "docs/phase-03-profile-system/055-p10-ai-profile-specification.md" :phase 3 :category :profile :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000037"},
+   {:sequence 56 :id "P11" :title ":gpu / Accelerator Profile Specification" :path "docs/phase-03-profile-system/056-p11-gpu-accelerator-profile-specification.md" :phase 3 :category :profile :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000038"},
+   {:sequence 57 :id "P12" :title ":formal Verification Profile Specification" :path "docs/phase-03-profile-system/057-p12-formal-verification-profile-specification.md" :phase 3 :category :profile :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000039"},
+   {:sequence 58 :id "P13" :title "Profile Compatibility Matrix" :path "docs/phase-03-profile-system/058-p13-profile-compatibility-matrix.md" :phase 3 :category :profile :content-id "sha256:000000000000000000000000000000000000000000000000000000000000003a"},
+   {:sequence 59 :id "PERF1" :title "Performance Model Specification" :path "docs/phase-04-performance-model/059-perf1-performance-model-specification.md" :phase 4 :category :performance :content-id "sha256:000000000000000000000000000000000000000000000000000000000000003b"},
+   {:sequence 60 :id "PERF2" :title "Zero-Cost Abstractions Specification" :path "docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md" :phase 4 :category :performance :content-id "sha256:000000000000000000000000000000000000000000000000000000000000003c"},
+   {:sequence 61 :id "PERF3" :title "Specialization & Partial Evaluation Design" :path "docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md" :phase 4 :category :performance :content-id "sha256:000000000000000000000000000000000000000000000000000000000000003d"},
+   {:sequence 62 :id "PERF4" :title "Memory Layout Optimization Design" :path "docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md" :phase 4 :category :performance :content-id "sha256:000000000000000000000000000000000000000000000000000000000000003e"},
+   {:sequence 63 :id "PERF5" :title "Benchmark Suite & Performance Governance" :path "docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md" :phase 4 :category :performance :content-id "sha256:000000000000000000000000000000000000000000000000000000000000003f"},
+   {:sequence 64 :id "PERF6" :title "Profile-Guided Optimization Design" :path "docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md" :phase 4 :category :performance :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000040"},
+   {:sequence 65 :id "PERF7" :title "Autotuning & Multiversioning Design" :path "docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md" :phase 4 :category :performance :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000041"},
+   {:sequence 66 :id "PERF8" :title "SIMD, Vectorization & Cache Optimization Strategy" :path "docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md" :phase 4 :category :performance :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000042"},
+   {:sequence 67 :id "PERF9" :title "Realtime and Deterministic-Latency Performance Model" :path "docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md" :phase 4 :category :performance :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000043"},
+   {:sequence 68 :id "PERF10" :title "Performance/Safety Check Elision Rules" :path "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md" :phase 4 :category :performance :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000044"},
+   {:sequence 69 :id "MATH1" :title "Numeric Tower Specification" :path "docs/phase-05-mathematical-and-elementary-function-system/069-math1-numeric-tower-specification.md" :phase 5 :category :math :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000045"},
+   {:sequence 70 :id "MATH2" :title "Elementary Function System Specification" :path "docs/phase-05-mathematical-and-elementary-function-system/070-math2-elementary-function-system-specification.md" :phase 5 :category :math :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000046"},
+   {:sequence 71 :id "MATH3" :title "Elementary Function IR - EFIR Specification" :path "docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md" :phase 5 :category :math :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000047"},
+   {:sequence 72 :id "MATH4" :title "EML Normalization & Search Design" :path "docs/phase-05-mathematical-and-elementary-function-system/072-math4-eml-normalization-and-search-design.md" :phase 5 :category :math :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000048"},
+   {:sequence 73 :id "MATH5" :title "Certified Approximation Specification" :path "docs/phase-05-mathematical-and-elementary-function-system/073-math5-certified-approximation-specification.md" :phase 5 :category :math :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000049"},
+   {:sequence 74 :id "MATH6" :title "Interval Arithmetic & Real Proof Engine" :path "docs/phase-05-mathematical-and-elementary-function-system/074-math6-interval-arithmetic-and-real-proof-engine.md" :phase 5 :category :math :content-id "sha256:000000000000000000000000000000000000000000000000000000000000004a"},
+   {:sequence 75 :id "MATH7" :title "Numeric Modes & Precision Contracts" :path "docs/phase-05-mathematical-and-elementary-function-system/075-math7-numeric-modes-and-precision-contracts.md" :phase 5 :category :math :content-id "sha256:000000000000000000000000000000000000000000000000000000000000004b"},
+   {:sequence 76 :id "MATH8" :title "Floating-Point Semantics Specification" :path "docs/phase-05-mathematical-and-elementary-function-system/076-math8-floating-point-semantics-specification.md" :phase 5 :category :math :content-id "sha256:000000000000000000000000000000000000000000000000000000000000004c"},
+   {:sequence 77 :id "MATH9" :title "Symbolic Math and Rewrite System Specification" :path "docs/phase-05-mathematical-and-elementary-function-system/077-math9-symbolic-math-and-rewrite-system-specification.md" :phase 5 :category :math :content-id "sha256:000000000000000000000000000000000000000000000000000000000000004d"},
+   {:sequence 78 :id "MATH10" :title "Elementary Function Optimization Strategy" :path "docs/phase-05-mathematical-and-elementary-function-system/078-math10-elementary-function-optimization-strategy.md" :phase 5 :category :math :content-id "sha256:000000000000000000000000000000000000000000000000000000000000004e"},
+   {:sequence 79 :id "MATH11" :title "Math Verification and Conformance Test Plan" :path "docs/phase-05-mathematical-and-elementary-function-system/079-math11-math-verification-and-conformance-test-plan.md" :phase 5 :category :math :content-id "sha256:000000000000000000000000000000000000000000000000000000000000004f"},
+   {:sequence 80 :id "C1" :title "Compiler Architecture Overview" :path "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md" :phase 6 :category :compiler :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000050"},
+   {:sequence 81 :id "C2" :title "Reader Implementation Design" :path "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md" :phase 6 :category :compiler :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000051"},
+   {:sequence 82 :id "C3" :title "Syntax Object Model" :path "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md" :phase 6 :category :compiler :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000052"},
+   {:sequence 83 :id "C4" :title "Macro Expansion Engine Design" :path "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md" :phase 6 :category :compiler :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000053"},
+   {:sequence 84 :id "C5" :title "Name Resolution & Namespace Analyzer Design" :path "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md" :phase 6 :category :compiler :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000054"},
+   {:sequence 85 :id "C6" :title "AST and Core Lowering Design" :path "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md" :phase 6 :category :compiler :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000055"},
+   {:sequence 86 :id "C7" :title "Type Checker Design" :path "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md" :phase 6 :category :compiler :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000056"},
+   {:sequence 87 :id "C8" :title "Effect Checker Design" :path "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md" :phase 6 :category :compiler :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000057"},
+   {:sequence 88 :id "C9" :title "Ownership, Lifetime and Region Checker Design" :path "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md" :phase 6 :category :compiler :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000058"},
+   {:sequence 89 :id "C10" :title "Safety Analysis Pipeline Design" :path "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md" :phase 6 :category :compiler :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000059"},
+   {:sequence 90 :id "C11" :title "Gravity MIR Specification" :path "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md" :phase 6 :category :compiler :content-id "sha256:000000000000000000000000000000000000000000000000000000000000005a"},
+   {:sequence 91 :id "C12" :title "Domain IR Architecture" :path "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md" :phase 6 :category :compiler :content-id "sha256:000000000000000000000000000000000000000000000000000000000000005b"},
+   {:sequence 92 :id "C13" :title "MIR Optimization Passes Design" :path "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md" :phase 6 :category :compiler :content-id "sha256:000000000000000000000000000000000000000000000000000000000000005c"},
+   {:sequence 93 :id "C14" :title "Target Lowering Architecture" :path "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md" :phase 6 :category :compiler :content-id "sha256:000000000000000000000000000000000000000000000000000000000000005d"},
+   {:sequence 94 :id "C15" :title "Compiler Diagnostics Specification" :path "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md" :phase 6 :category :compiler :content-id "sha256:000000000000000000000000000000000000000000000000000000000000005e"},
+   {:sequence 95 :id "C16" :title "Incremental Compilation Design" :path "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md" :phase 6 :category :compiler :content-id "sha256:000000000000000000000000000000000000000000000000000000000000005f"},
+   {:sequence 96 :id "C17" :title "Compiler Plugin and Pass API Specification" :path "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md" :phase 6 :category :compiler :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000060"},
+   {:sequence 97 :id "C18" :title "Compiler Verification and Pass-Correctness Strategy" :path "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md" :phase 6 :category :compiler :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000061"},
+   {:sequence 98 :id "B1" :title "Backend Interface Specification" :path "docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md" :phase 7 :category :backend :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000062"},
+   {:sequence 99 :id "B2" :title "C Backend Design" :path "docs/phase-07-backend-architecture/099-b2-c-backend-design.md" :phase 7 :category :backend :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000063"},
+   {:sequence 100 :id "B3" :title "LLVM Backend Design" :path "docs/phase-07-backend-architecture/100-b3-llvm-backend-design.md" :phase 7 :category :backend :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000064"},
+   {:sequence 101 :id "B4" :title "Wasm Backend Design" :path "docs/phase-07-backend-architecture/101-b4-wasm-backend-design.md" :phase 7 :category :backend :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000065"},
+   {:sequence 102 :id "B5" :title "JVM Backend Design" :path "docs/phase-07-backend-architecture/102-b5-jvm-backend-design.md" :phase 7 :category :backend :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000066"},
+   {:sequence 103 :id "B6" :title "JavaScript / TypeScript Backend Design" :path "docs/phase-07-backend-architecture/103-b6-javascript-typescript-backend-design.md" :phase 7 :category :backend :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000067"},
+   {:sequence 104 :id "B7" :title "MLIR Backend Design" :path "docs/phase-07-backend-architecture/104-b7-mlir-backend-design.md" :phase 7 :category :backend :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000068"},
+   {:sequence 105 :id "B8" :title "GPU Backend Design" :path "docs/phase-07-backend-architecture/105-b8-gpu-backend-design.md" :phase 7 :category :backend :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000069"},
+   {:sequence 106 :id "B9" :title "HDL Backend Design" :path "docs/phase-07-backend-architecture/106-b9-hdl-backend-design.md" :phase 7 :category :backend :content-id "sha256:000000000000000000000000000000000000000000000000000000000000006a"},
+   {:sequence 107 :id "B10" :title "Workflow Graph Backend Design" :path "docs/phase-07-backend-architecture/107-b10-workflow-graph-backend-design.md" :phase 7 :category :backend :content-id "sha256:000000000000000000000000000000000000000000000000000000000000006b"},
+   {:sequence 108 :id "B11" :title "Query / Relational Backend Design" :path "docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md" :phase 7 :category :backend :content-id "sha256:000000000000000000000000000000000000000000000000000000000000006c"},
+   {:sequence 109 :id "B12" :title "Mobile Backend Design" :path "docs/phase-07-backend-architecture/109-b12-mobile-backend-design.md" :phase 7 :category :backend :content-id "sha256:000000000000000000000000000000000000000000000000000000000000006d"},
+   {:sequence 110 :id "B13" :title "Artifact Emission Specification" :path "docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md" :phase 7 :category :backend :content-id "sha256:000000000000000000000000000000000000000000000000000000000000006e"},
+   {:sequence 111 :id "B14" :title "Backend Conformance Test Plan" :path "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md" :phase 7 :category :backend :content-id "sha256:000000000000000000000000000000000000000000000000000000000000006f"},
+   {:sequence 112 :id "R1" :title "Runtime Architecture Overview" :path "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md" :phase 8 :category :runtime :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000070"},
+   {:sequence 113 :id "R2" :title "No-Runtime Execution Model" :path "docs/phase-08-runtime-architecture/113-r2-no-runtime-execution-model.md" :phase 8 :category :runtime :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000071"},
+   {:sequence 114 :id "R3" :title "Minimal Native Runtime Design" :path "docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md" :phase 8 :category :runtime :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000072"},
+   {:sequence 115 :id "R4" :title "Managed Runtime Design" :path "docs/phase-08-runtime-architecture/115-r4-managed-runtime-design.md" :phase 8 :category :runtime :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000073"},
+   {:sequence 116 :id "R5" :title "Memory Runtime Design" :path "docs/phase-08-runtime-architecture/116-r5-memory-runtime-design.md" :phase 8 :category :runtime :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000074"},
+   {:sequence 117 :id "R6" :title "Concurrency Runtime Design" :path "docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md" :phase 8 :category :runtime :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000075"},
+   {:sequence 118 :id "R7" :title "Distributed Runtime Design" :path "docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md" :phase 8 :category :runtime :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000076"},
+   {:sequence 119 :id "R8" :title "AI Runtime Design" :path "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md" :phase 8 :category :runtime :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000077"},
+   {:sequence 120 :id "R9" :title "REPL and Interactive Runtime Design" :path "docs/phase-08-runtime-architecture/120-r9-repl-and-interactive-runtime-design.md" :phase 8 :category :runtime :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000078"},
+   {:sequence 121 :id "R10" :title "FFI Runtime Design" :path "docs/phase-08-runtime-architecture/121-r10-ffi-runtime-design.md" :phase 8 :category :runtime :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000079"},
+   {:sequence 122 :id "R11" :title "Runtime Capability Enforcement Design" :path "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md" :phase 8 :category :runtime :content-id "sha256:000000000000000000000000000000000000000000000000000000000000007a"},
+   {:sequence 123 :id "R12" :title "Runtime Observability and Diagnostics Design" :path "docs/phase-08-runtime-architecture/123-r12-runtime-observability-and-diagnostics-design.md" :phase 8 :category :runtime :content-id "sha256:000000000000000000000000000000000000000000000000000000000000007b"},
+   {:sequence 124 :id "DOM1" :title "Hardware Computing Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md" :phase 9 :category :domain :content-id "sha256:000000000000000000000000000000000000000000000000000000000000007c"},
+   {:sequence 125 :id "DOM2" :title "Firmware and Embedded Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md" :phase 9 :category :domain :content-id "sha256:000000000000000000000000000000000000000000000000000000000000007d"},
+   {:sequence 126 :id "DOM3" :title "Operating System and Kernel Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md" :phase 9 :category :domain :content-id "sha256:000000000000000000000000000000000000000000000000000000000000007e"},
+   {:sequence 127 :id "DOM4" :title "Drivers and Device Interaction Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md" :phase 9 :category :domain :content-id "sha256:000000000000000000000000000000000000000000000000000000000000007f"},
+   {:sequence 128 :id "DOM5" :title "High-Performance Native Computing Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/128-dom5-high-performance-native-computing-domain-specification.md" :phase 9 :category :domain :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000080"},
+   {:sequence 129 :id "DOM6" :title "Web Frontend and UI Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md" :phase 9 :category :domain :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000081"},
+   {:sequence 130 :id "DOM7" :title "Mobile Application Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/130-dom7-mobile-application-domain-specification.md" :phase 9 :category :domain :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000082"},
+   {:sequence 131 :id "DOM8" :title "Backend Services Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/131-dom8-backend-services-domain-specification.md" :phase 9 :category :domain :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000083"},
+   {:sequence 132 :id "DOM9" :title "Distributed Systems Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/132-dom9-distributed-systems-domain-specification.md" :phase 9 :category :domain :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000084"},
+   {:sequence 133 :id "DOM10" :title "Database and Storage Engine Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md" :phase 9 :category :domain :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000085"},
+   {:sequence 134 :id "DOM11" :title "Data, Query and Analytics Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md" :phase 9 :category :domain :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000086"},
+   {:sequence 135 :id "DOM12" :title "Scientific and Numeric Computing Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/135-dom12-scientific-and-numeric-computing-domain-specification.md" :phase 9 :category :domain :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000087"},
+   {:sequence 136 :id "DOM13" :title "GPU and Accelerator Computing Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md" :phase 9 :category :domain :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000088"},
+   {:sequence 137 :id "DOM14" :title "Game Engine and Simulation Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/137-dom14-game-engine-and-simulation-domain-specification.md" :phase 9 :category :domain :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000089"},
+   {:sequence 138 :id "DOM15" :title "Security and Cryptography Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md" :phase 9 :category :domain :content-id "sha256:000000000000000000000000000000000000000000000000000000000000008a"},
+   {:sequence 139 :id "DOM16" :title "Blockchain and Smart Contract Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/139-dom16-blockchain-and-smart-contract-domain-specification.md" :phase 9 :category :domain :content-id "sha256:000000000000000000000000000000000000000000000000000000000000008b"},
+   {:sequence 140 :id "DOM17" :title "Compiler and Language Tooling Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md" :phase 9 :category :domain :content-id "sha256:000000000000000000000000000000000000000000000000000000000000008c"},
+   {:sequence 141 :id "DOM18" :title "AI and Agentic Computing Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/141-dom18-ai-and-agentic-computing-domain-specification.md" :phase 9 :category :domain :content-id "sha256:000000000000000000000000000000000000000000000000000000000000008d"},
+   {:sequence 142 :id "DOM19" :title "Formal Verification Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/142-dom19-formal-verification-domain-specification.md" :phase 9 :category :domain :content-id "sha256:000000000000000000000000000000000000000000000000000000000000008e"},
+   {:sequence 143 :id "DOM20" :title "Scripting, Shell and Automation Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/143-dom20-scripting-shell-and-automation-domain-specification.md" :phase 9 :category :domain :content-id "sha256:000000000000000000000000000000000000000000000000000000000000008f"},
+   {:sequence 144 :id "DOM21" :title "Low-Code, Visual Programming and Workflow Domain Specification" :path "docs/phase-09-domain-specific-computing-coverage/144-dom21-low-code-visual-programming-and-workflow-domain-specification.md" :phase 9 :category :domain :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000090"},
+   {:sequence 145 :id "S1" :title "Schema System Specification" :path "docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md" :phase 10 :category :schema :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000091"},
+   {:sequence 146 :id "S2" :title "Serialization Specification" :path "docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md" :phase 10 :category :schema :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000092"},
+   {:sequence 147 :id "S3" :title "Canonical Data Format Specification" :path "docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md" :phase 10 :category :schema :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000093"},
+   {:sequence 148 :id "S4" :title "GraphQL Generation Design" :path "docs/phase-10-schema-data-and-interop/148-s4-graphql-generation-design.md" :phase 10 :category :schema :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000094"},
+   {:sequence 149 :id "S5" :title "OpenAPI Generation Design" :path "docs/phase-10-schema-data-and-interop/149-s5-openapi-generation-design.md" :phase 10 :category :schema :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000095"},
+   {:sequence 150 :id "S6" :title "Database Mapping and Migration Design" :path "docs/phase-10-schema-data-and-interop/150-s6-database-mapping-and-migration-design.md" :phase 10 :category :schema :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000096"},
+   {:sequence 151 :id "S7" :title "Binary Encoding and ABI Schema Specification" :path "docs/phase-10-schema-data-and-interop/151-s7-binary-encoding-and-abi-schema-specification.md" :phase 10 :category :schema :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000097"},
+   {:sequence 152 :id "S8" :title "Typed Configuration and Environment Specification" :path "docs/phase-10-schema-data-and-interop/152-s8-typed-configuration-and-environment-specification.md" :phase 10 :category :schema :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000098"},
+   {:sequence 153 :id "S9" :title "Artifact Schema Specification" :path "docs/phase-10-schema-data-and-interop/153-s9-artifact-schema-specification.md" :phase 10 :category :schema :content-id "sha256:0000000000000000000000000000000000000000000000000000000000000099"},
+   {:sequence 154 :id "A1" :title "AI Programming Model Specification" :path "docs/phase-11-ai-and-agentic-programming/154-a1-ai-programming-model-specification.md" :phase 11 :category :ai :content-id "sha256:000000000000000000000000000000000000000000000000000000000000009a"},
+   {:sequence 155 :id "A2" :title "Model Provider Specification" :path "docs/phase-11-ai-and-agentic-programming/155-a2-model-provider-specification.md" :phase 11 :category :ai :content-id "sha256:000000000000000000000000000000000000000000000000000000000000009b"},
+   {:sequence 156 :id "A3" :title "Prompt and Structured Output Specification" :path "docs/phase-11-ai-and-agentic-programming/156-a3-prompt-and-structured-output-specification.md" :phase 11 :category :ai :content-id "sha256:000000000000000000000000000000000000000000000000000000000000009c"},
+   {:sequence 157 :id "A4" :title "Tool Definition Specification" :path "docs/phase-11-ai-and-agentic-programming/157-a4-tool-definition-specification.md" :phase 11 :category :ai :content-id "sha256:000000000000000000000000000000000000000000000000000000000000009d"},
+   {:sequence 158 :id "A5" :title "Agent Definition Specification" :path "docs/phase-11-ai-and-agentic-programming/158-a5-agent-definition-specification.md" :phase 11 :category :ai :content-id "sha256:000000000000000000000000000000000000000000000000000000000000009e"},
+   {:sequence 159 :id "A6" :title "Agent Workflow Specification" :path "docs/phase-11-ai-and-agentic-programming/159-a6-agent-workflow-specification.md" :phase 11 :category :ai :content-id "sha256:000000000000000000000000000000000000000000000000000000000000009f"},
+   {:sequence 160 :id "A7" :title "Memory and Retrieval Specification" :path "docs/phase-11-ai-and-agentic-programming/160-a7-memory-and-retrieval-specification.md" :phase 11 :category :ai :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000a0"},
+   {:sequence 161 :id "A8" :title "AI Policy and Safety Model" :path "docs/phase-11-ai-and-agentic-programming/161-a8-ai-policy-and-safety-model.md" :phase 11 :category :ai :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000a1"},
+   {:sequence 162 :id "A9" :title "AI Evaluation Framework Design" :path "docs/phase-11-ai-and-agentic-programming/162-a9-ai-evaluation-framework-design.md" :phase 11 :category :ai :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000a2"},
+   {:sequence 163 :id "A10" :title "Human-in-the-Loop and Human-Review Workflow Specification" :path "docs/phase-11-ai-and-agentic-programming/163-a10-human-in-the-loop-and-human-review-workflow-specification.md" :phase 11 :category :ai :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000a3"},
+   {:sequence 164 :id "A11" :title "Prompt Injection and Tool Misuse Defense Specification" :path "docs/phase-11-ai-and-agentic-programming/164-a11-prompt-injection-and-tool-misuse-defense-specification.md" :phase 11 :category :ai :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000a4"},
+   {:sequence 165 :id "PKG1" :title "Project File Specification" :path "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md" :phase 12 :category :package :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000a5"},
+   {:sequence 166 :id "PKG2" :title "Build System Architecture" :path "docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md" :phase 12 :category :package :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000a6"},
+   {:sequence 167 :id "PKG3" :title "Artifact Model Specification" :path "docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md" :phase 12 :category :package :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000a7"},
+   {:sequence 168 :id "PKG4" :title "Package Manager Specification" :path "docs/phase-12-build-package-and-artifact-system/168-pkg4-package-manager-specification.md" :phase 12 :category :package :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000a8"},
+   {:sequence 169 :id "PKG5" :title "Dependency Resolution Specification" :path "docs/phase-12-build-package-and-artifact-system/169-pkg5-dependency-resolution-specification.md" :phase 12 :category :package :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000a9"},
+   {:sequence 170 :id "PKG6" :title "Capability and Permission Manifest Specification" :path "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md" :phase 12 :category :package :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000aa"},
+   {:sequence 171 :id "PKG7" :title "Reproducible Build Specification" :path "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md" :phase 12 :category :package :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000ab"},
+   {:sequence 172 :id "PKG8" :title "Package Safety and Audit Metadata Specification" :path "docs/phase-12-build-package-and-artifact-system/172-pkg8-package-safety-and-audit-metadata-specification.md" :phase 12 :category :package :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000ac"},
+   {:sequence 173 :id "PKG9" :title "Private Registry and Latent Package Space Design" :path "docs/phase-12-build-package-and-artifact-system/173-pkg9-private-registry-and-latent-package-space-design.md" :phase 12 :category :package :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000ad"},
+   {:sequence 174 :id "PKG10" :title "Supply-Chain Security and Provenance Specification" :path "docs/phase-12-build-package-and-artifact-system/174-pkg10-supply-chain-security-and-provenance-specification.md" :phase 12 :category :package :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000ae"},
+   {:sequence 175 :id "PKG11" :title "Cross-Compilation and Target Matrix Specification" :path "docs/phase-12-build-package-and-artifact-system/175-pkg11-cross-compilation-and-target-matrix-specification.md" :phase 12 :category :package :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000af"},
+   {:sequence 176 :id "PKG12" :title "Artifact Signing, Verification and SBOM Specification" :path "docs/phase-12-build-package-and-artifact-system/176-pkg12-artifact-signing-verification-and-sbom-specification.md" :phase 12 :category :package :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000b0"},
+   {:sequence 177 :id "T1" :title "CLI Specification" :path "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000b1"},
+   {:sequence 178 :id "T2" :title "REPL UX Specification" :path "docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000b2"},
+   {:sequence 179 :id "T3" :title "Formatter Specification" :path "docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000b3"},
+   {:sequence 180 :id "T4" :title "Linter Specification" :path "docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000b4"},
+   {:sequence 181 :id "T5" :title "Language Server Protocol Design" :path "docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000b5"},
+   {:sequence 182 :id "T6" :title "Debugger Design" :path "docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000b6"},
+   {:sequence 183 :id "T7" :title "Documentation Generator Design" :path "docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000b7"},
+   {:sequence 184 :id "T8" :title "Dev Server Design" :path "docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000b8"},
+   {:sequence 185 :id "T9" :title "Package Registry UX Specification" :path "docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000b9"},
+   {:sequence 186 :id "T10" :title "Compiler Explorer and IR Inspector Design" :path "docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000ba"},
+   {:sequence 187 :id "T11" :title "Profiler and Performance Inspector Design" :path "docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000bb"},
+   {:sequence 188 :id "T12" :title "Safety Audit Explorer Design" :path "docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000bc"},
+   {:sequence 189 :id "T13" :title "AI-Assisted Development Tooling Specification" :path "docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md" :phase 13 :category :tooling :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000bd"},
+   {:sequence 190 :id "TEST1" :title "Language Conformance Test Plan" :path "docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000be"},
+   {:sequence 191 :id "TEST2" :title "Compiler Test Strategy" :path "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000bf"},
+   {:sequence 192 :id "TEST3" :title "Runtime Test Strategy" :path "docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000c0"},
+   {:sequence 193 :id "TEST4" :title "Profile Compliance Test Plan" :path "docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000c1"},
+   {:sequence 194 :id "TEST5" :title "Safety Conformance Test Plan" :path "docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000c2"},
+   {:sequence 195 :id "TEST6" :title "Backend Conformance Test Plan" :path "docs/phase-14-testing-verification-and-conformance/195-test6-backend-conformance-test-plan.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000c3"},
+   {:sequence 196 :id "TEST7" :title "Standard Library Test Strategy" :path "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000c4"},
+   {:sequence 197 :id "TEST8" :title "AI and Workflow Evaluation Strategy" :path "docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000c5"},
+   {:sequence 198 :id "TEST9" :title "Fuzzing and Property Testing Plan" :path "docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000c6"},
+   {:sequence 199 :id "TEST10" :title "Differential Testing Strategy" :path "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000c7"},
+   {:sequence 200 :id "TEST11" :title "Formal Semantics and Verification Plan" :path "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000c8"},
+   {:sequence 201 :id "TEST12" :title "Performance Regression Test Plan" :path "docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000c9"},
+   {:sequence 202 :id "TEST13" :title "Self-Hosting Validation Plan" :path "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md" :phase 14 :category :testing :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000ca"},
+   {:sequence 203 :id "BOOT1" :title "Bootstrap Strategy" :path "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md" :phase 15 :category :bootstrap :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000cb"},
+   {:sequence 204 :id "BOOT2" :title "Seed Compiler Design" :path "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md" :phase 15 :category :bootstrap :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000cc"},
+   {:sequence 205 :id "BOOT3" :title "Self-Hosted Compiler Plan" :path "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md" :phase 15 :category :bootstrap :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000cd"},
+   {:sequence 206 :id "BOOT4" :title "Compiler-in-Gravity Coding Standard" :path "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md" :phase 15 :category :bootstrap :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000ce"},
+   {:sequence 207 :id "BOOT5" :title "Stage Compatibility Matrix" :path "docs/phase-15-bootstrap-and-self-hosting/207-boot5-stage-compatibility-matrix.md" :phase 15 :category :bootstrap :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000cf"},
+   {:sequence 208 :id "BOOT6" :title "Trusting Trust and Reproducible Bootstrap Plan" :path "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md" :phase 15 :category :bootstrap :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000d0"},
+   {:sequence 209 :id "BOOT7" :title "Self-Hosting Validation and Equivalence Plan" :path "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md" :phase 15 :category :bootstrap :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000d1"},
+   {:sequence 210 :id "BOOT8" :title "Bootstrap Artifact Provenance Specification" :path "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md" :phase 15 :category :bootstrap :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000d2"},
+   {:sequence 211 :id "STD1" :title "Standard Library Architecture" :path "docs/phase-16-standard-library/211-std1-standard-library-architecture.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000d3"},
+   {:sequence 212 :id "STD2" :title "Core Library Specification" :path "docs/phase-16-standard-library/212-std2-core-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000d4"},
+   {:sequence 213 :id "STD3" :title "Collections Library Specification" :path "docs/phase-16-standard-library/213-std3-collections-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000d5"},
+   {:sequence 214 :id "STD4" :title "String and Text Library Specification" :path "docs/phase-16-standard-library/214-std4-string-and-text-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000d6"},
+   {:sequence 215 :id "STD5" :title "Numeric and Math Library Specification" :path "docs/phase-16-standard-library/215-std5-numeric-and-math-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000d7"},
+   {:sequence 216 :id "STD6" :title "Memory and Resource Library Specification" :path "docs/phase-16-standard-library/216-std6-memory-and-resource-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000d8"},
+   {:sequence 217 :id "STD7" :title "Concurrency Library Specification" :path "docs/phase-16-standard-library/217-std7-concurrency-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000d9"},
+   {:sequence 218 :id "STD8" :title "IO and Filesystem Library Specification" :path "docs/phase-16-standard-library/218-std8-io-and-filesystem-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000da"},
+   {:sequence 219 :id "STD9" :title "Network and HTTP Library Specification" :path "docs/phase-16-standard-library/219-std9-network-and-http-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000db"},
+   {:sequence 220 :id "STD10" :title "Serialization and Schema Library Specification" :path "docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000dc"},
+   {:sequence 221 :id "STD11" :title "Database and Query Library Specification" :path "docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000dd"},
+   {:sequence 222 :id "STD12" :title "Workflow Library Specification" :path "docs/phase-16-standard-library/222-std12-workflow-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000de"},
+   {:sequence 223 :id "STD13" :title "AI and Agent Library Specification" :path "docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000df"},
+   {:sequence 224 :id "STD14" :title "Testing Library Specification" :path "docs/phase-16-standard-library/224-std14-testing-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000e0"},
+   {:sequence 225 :id "STD15" :title "Compiler Meta-Programming Library Specification" :path "docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000e1"},
+   {:sequence 226 :id "STD16" :title "Platform and OS Library Specification" :path "docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000e2"},
+   {:sequence 227 :id "STD17" :title "Hardware and Firmware Library Specification" :path "docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000e3"},
+   {:sequence 228 :id "STD18" :title "Cryptography Library Specification" :path "docs/phase-16-standard-library/228-std18-cryptography-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000e4"},
+   {:sequence 229 :id "STD19" :title "UI and Application Library Specification" :path "docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000e5"},
+   {:sequence 230 :id "STD20" :title "Standard Library Stability Policy" :path "docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md" :phase 16 :category :standard-library :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000e6"},
+   {:sequence 231 :id "GOV1" :title "Language Evolution Process" :path "docs/phase-17-governance-and-evolution/231-gov1-language-evolution-process.md" :phase 17 :category :governance :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000e7"},
+   {:sequence 232 :id "GOV2" :title "Compatibility Policy" :path "docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md" :phase 17 :category :governance :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000e8"},
+   {:sequence 233 :id "GOV3" :title "Standard Library Governance" :path "docs/phase-17-governance-and-evolution/233-gov3-standard-library-governance.md" :phase 17 :category :governance :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000e9"},
+   {:sequence 234 :id "GOV4" :title "Security Review Process" :path "docs/phase-17-governance-and-evolution/234-gov4-security-review-process.md" :phase 17 :category :governance :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000ea"},
+   {:sequence 235 :id "GOV5" :title "Target Support Policy" :path "docs/phase-17-governance-and-evolution/235-gov5-target-support-policy.md" :phase 17 :category :governance :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000eb"},
+   {:sequence 236 :id "GOV6" :title "RFC Process" :path "docs/phase-17-governance-and-evolution/236-gov6-rfc-process.md" :phase 17 :category :governance :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000ec"},
+   {:sequence 237 :id "GOV7" :title "Experimental Feature Policy" :path "docs/phase-17-governance-and-evolution/237-gov7-experimental-feature-policy.md" :phase 17 :category :governance :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000ed"},
+   {:sequence 238 :id "GOV8" :title "Deprecation and Stabilization Policy" :path "docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md" :phase 17 :category :governance :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000ee"},
+   {:sequence 239 :id "GOV9" :title "Unsafe Code Governance Policy" :path "docs/phase-17-governance-and-evolution/239-gov9-unsafe-code-governance-policy.md" :phase 17 :category :governance :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000ef"},
+   {:sequence 240 :id "GOV10" :title "Ecosystem Package Governance Policy" :path "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md" :phase 17 :category :governance :content-id "sha256:00000000000000000000000000000000000000000000000000000000000000f0"}
+   ])
+
+(def w5-phase-names
+  {0 "Foundation and Thesis" 1 "Core Language" 2 "Safety"
+   3 "Profile System" 4 "Performance Model"
+   5 "Mathematical and Elementary Function System"
+   6 "Compiler Architecture" 7 "Backend Architecture"
+   8 "Runtime Architecture" 9 "Domain-Specific Computing Coverage"
+   10 "Schema, Data and Interop" 11 "AI and Agentic Programming"
+   12 "Build, Package and Artifact System"
+   13 "Tooling and Developer Experience"
+   14 "Testing, Verification and Conformance"
+   15 "Bootstrap and Self-Hosting" 16 "Standard Library"
+   17 "Governance and Evolution"})
+
+(def w5-category-names
+  {:foundation "foundation" :language "language" :safety "safety"
+   :profile "profile" :performance "performance" :math "math"
+   :compiler "compiler" :backend "backend" :runtime "runtime"
+   :domain "domain" :schema "schema" :ai "ai" :package "package"
+   :tooling "tooling" :testing "testing" :bootstrap "bootstrap"
+   :standard-library "standard-library" :governance "governance"})
+
+(defn w5-normalize-document [doc]
+  (assoc doc
+         :phaseName (get w5-phase-names (get doc :phase))
+         :category (get w5-category-names (get doc :category))))
+
+(defn w5-normalize-documents [docs]
+  (loop [remaining docs result []]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining)
+             (conj result (w5-normalize-document (first remaining)))))))
+
+(def w5-reporting-v1-document-gaps
+  [:no-executable-positive :no-rejected-specific :no-stable-diagnostic
+   :no-gravity-authored-implementation :no-public-gravity-accepted-proof
+   :no-public-gravity-rejected-proof])
+
+(defn w5-pending-diagnostic-id [doc]
+  (str "FULL-" (get doc :id) "-PENDING"))
+
+(defn w5-matrix-row [doc root]
+  (let [sequence (get doc :sequence)
+        content-id (get doc :content-id)
+        path (get doc :path)
+        span (w5-span root :full-language-evidence path sequence)]
+    {:sequence sequence
+     :document-id (get doc :id)
+     :title (get doc :title) :path path :phase (get doc :phase)
+     :phaseName (get doc :phaseName) :category (get doc :category)
+     :content-id content-id
+     :positive {:evidence-id content-id :status :pending :executable? false
+                :content-id content-id :provenance-id content-id
+                :source-span span}
+     :rejected {:evidence-id content-id :status :pending :specific? false
+                :diagnostic-id (w5-pending-diagnostic-id doc)
+                :content-id content-id :provenance-id content-id
+                :source-span span}
+     :provenance {:provenance-id content-id :content-id content-id
+                   :actual-source-path (get span :actual-source-path)
+                   :stage :wave4-consumer :consumer-status :pending}
+     :source-span span
+     :diagnostic {:diagnostic-id (w5-pending-diagnostic-id doc)
+                   :reason :specific-diagnostic-pending :severity :error
+                   :source-span span}}))
+
+(defn w5-matrix [docs root]
+  (loop [remaining docs result []]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining) (conj result (w5-matrix-row (first remaining) root))))))
+
+(defn w5-gap-entry [doc root]
+  (let [sequence (get doc :sequence)
+        span (w5-span root :full-language-gap-report (get doc :path) sequence)]
+    {:sequence sequence :document-id (get doc :id)
+     :title (get doc :title) :path (get doc :path)
+     :phase (get doc :phase) :phaseName (get doc :phaseName)
+     :category (get doc :category)
+     :gaps w5-reporting-v1-document-gaps
+     :status :blocked :content-id (get doc :content-id)
+     :provenance-id (get doc :content-id) :source-span span}))
+
+(defn w5-gaps [docs root]
+  (loop [remaining docs result []]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining) (conj result (w5-gap-entry (first remaining) root))))))
+
+(def w5-gap-task-ids
+  ["FL-P00-T00" "FL-P00-T01" "FL-P00-T02" "FL-P01-T01" "FL-P01-T02" "FL-P01-T03"
+   "FL-P02-T01" "FL-P02-T02" "FL-P03-T01" "FL-P03-T02" "FL-P04-T01" "FL-P04-T02"
+   "FL-P05-T01" "FL-P05-T02" "FL-P06-T01" "FL-P06-T02" "FL-P06-T03" "FL-P07-T01"
+   "FL-P07-T02" "FL-P07-T03" "FL-P08-T01" "FL-P08-T02" "FL-P08-T03" "FL-P09-T01"
+   "FL-P10-T01" "FL-P11-T01" "FL-P12-T01" "FL-P13-T01" "FL-P13-T02" "FL-P14-T01"
+   "FL-P14-T02" "FL-P15-T01" "FL-P15-T02" "FL-P15-T03" "FL-P16-T01" "FL-P17-T01"
+   "FL-P18-T01" "FL-P18-T02"])
+
+(defn w5-task [task-id root index]
+  (let [span (w5-span root :full-language-roadmap
+                       "docs/full-language-implementation-gap-map.md" index)
+        task-content "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]
+    {:task-id task-id :status :open :title (str "Open " task-id)
+     :evidence-class :blocked :provenance-id task-content :source-span span}))
+
+(defn w5-tasks [root]
+  (loop [remaining w5-gap-task-ids result [] index 1]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining)
+             (conj result (w5-task (first remaining) root index))
+             (+ index 1)))))
+
+(def w5-reporting-observation
+  {:observation {:version "reporting-v1"
+                 :commit "5b8dd5b6d987c34b36dc71f3be1dfa54b2ce0d88"
+                 :tree "53561999651023ba439f94bea508d3fe9e663785"}
+   :contract {:path "contracts/full-language-coverage.json"
+              :kind "gravity/full-language-coverage-contract"
+              :schema-version 1
+              :raw-sha256 "sha256:912d42f0b789f2a290d81d01450230de834b5529c93df29dfe1c1f648a377142"
+              :authority "non-authoritative-observation"
+              :admission "disabled-pending-target-coherent-public-native-evidence-v2"}
+   :inventory {:path "docs/document-inventory.json" :count 240
+               :raw-sha256 "sha256:2c8d1fb60b7306c10f3e67ba2014ad7a8b6d876bdce8c47a79015f725f0638dc"}
+   :generator {:path "tools/generate_full_language_coverage_matrix.py"
+               :raw-sha256 "sha256:972feb2ace8c71b86093acd6f542985f31bce834dcf9104a21be4720172a4613"
+               :module "tools.generate_full_language_coverage_matrix"
+               :predicate-version 1
+               :predicates ["validate_contract_v1"
+                            "validate_completion_attestations_v1"
+                            "validate_matrix_v1"
+                            "validate_gap_report_v1"
+                            "validate_repository_outputs_v1"]
+               :commands
+               {:generate "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --write --audit-public"
+                :require-complete "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --validate --require-full-language"
+                :self-test "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --self-test"
+                :validate "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --validate"}}
+   :attestations {:path "docs/artifacts/full-language/coverage/full-language-completion-attestations.json"
+                  :kind "gravity/full-language-completion-attestations"
+                  :schema-version 1
+                  :top-keys ["attestations" "inventoryCount" "inputIdentities"
+                             "kind" "producer" "schemaVersion" "semanticId" "status"]
+                  :input-identity-keys ["contractSha256" "documentInventorySha256"]
+                  :status :incomplete :inventory-count 240 :attestations []
+                  :input-identities
+                  {:contract-sha256 "sha256:912d42f0b789f2a290d81d01450230de834b5529c93df29dfe1c1f648a377142"
+                   :document-inventory-sha256 "sha256:2c8d1fb60b7306c10f3e67ba2014ad7a8b6d876bdce8c47a79015f725f0638dc"}
+                  :producer "authority:none owner:master-coordinator role:reviewed-input"
+                  :semantic-id "sha256:183f87d395d88ef16095954268308561298266067e7dd044a8e3692796324853"
+                  :raw-sha256 "sha256:a417a2fcdfe82a3e787292d85a5437dee7f230955a261c471526413cc4baed4e"
+                  :admission-mode "disabled-pending-target-coherent-public-native-evidence-v2"}
+   :matrix {:path "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json"
+            :kind "gravity/full-language-coverage-matrix" :schema-version 1
+            :top-keys ["entries" "generatedOn" "inputIdentities" "kind"
+                       "producer" "publicAuditEnabled" "schemaVersion"
+                       "semanticId" "status" "summary"]
+            :entry-keys ["acceptedFixtures" "artifacts" "completionGaps"
+                         "coverageClass" "diagnostics" "fullLanguageComplete"
+                         "gaps" "id" "implementationModules" "path" "phase"
+                         "phaseName" "proofCommands" "publicAccepted"
+                         "publicRejectedSpecific" "rejectedFixtures"
+                         "scaffoldOnlyCoverage" "sequence" "title"]
+            :implementation-module-keys ["clojureSeed" "gravityAuthored"
+                                         "publicBinary" "pythonScaffold"]
+            :input-identity-keys ["completionAttestationsSemanticId"
+                                  "completionAttestationsSha256" "contractSha256"
+                                  "documentInventorySha256" "evidenceCorpusSemanticId"
+                                  "generatorSha256" "publicRouteSha256"]
+            :summary-keys ["coverageClasses" "documents"
+                           "documentsWithNoAcceptedFixture"
+                           "documentsWithNoExecutableOwner"
+                           "documentsWithNoGravityAuthoredImplementation"
+                           "documentsWithNoRejectedFixture"
+                           "documentsWithNoStableDiagnostic"
+                           "fullLanguageCompleteDocuments" "publicAudit"]
+            :public-audit-keys ["acceptedFail" "acceptedPass" "acceptedTotal"
+                                "enabled" "rejectedGenericUnsupported"
+                                "rejectedSpecificDiagnostic" "rejectedTotal"]
+            :status :incomplete :inventory-count 240 :public-audit-enabled true
+            :input-identities
+            {:completion-attestations-semantic-id "sha256:183f87d395d88ef16095954268308561298266067e7dd044a8e3692796324853"
+             :completion-attestations-sha256 "sha256:a417a2fcdfe82a3e787292d85a5437dee7f230955a261c471526413cc4baed4e"
+             :contract-sha256 "sha256:912d42f0b789f2a290d81d01450230de834b5529c93df29dfe1c1f648a377142"
+             :document-inventory-sha256 "sha256:2c8d1fb60b7306c10f3e67ba2014ad7a8b6d876bdce8c47a79015f725f0638dc"
+             :evidence-corpus-semantic-id "sha256:474a7a8fefe96b780d2caf49e5c01dfcfff07951e4fe23d26f6d8008c539a293"
+             :generator-sha256 "sha256:972feb2ace8c71b86093acd6f542985f31bce834dcf9104a21be4720172a4613"
+             :public-route-sha256 "sha256:83c9d8d877de08482736b47cc79bd8f49af6ef001bff5a6f8320147945ddeab0"}
+            :summary {:documents 240 :full-language-complete-documents 0
+                      :documents-with-no-accepted-fixture 162
+                      :documents-with-no-executable-owner 7
+                      :documents-with-no-gravity-authored-implementation 206
+                      :documents-with-no-rejected-fixture 48
+                      :documents-with-no-stable-diagnostic 49
+                      :coverage-classes {:clojure-seed-artifact-surface 184
+                                        :current-public-executable-surface 48
+                                        :gravity-authored-seed-slice 1
+                                        :no-executable-owner 7}
+                      :public-audit {:enabled true :accepted-total 198
+                                     :accepted-pass 74 :accepted-fail 124
+                                     :rejected-total 1720
+                                     :rejected-specific-diagnostic 664
+                                     :rejected-generic-unsupported 1056}}
+            :producer "non-authoritative-observation"
+            :semantic-id "sha256:9b02a5bfbcc2a3149a4d4f589da8b8b9e19e84cc646c1e38afd774f42d5c72eb"
+            :raw-sha256 "sha256:c2f4c2d527e79a31454dbb166f62ffe252f0757aec8cce4db9236bdaa0c336d7"}
+   :gap-report {:path "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json"
+                :kind "gravity/full-language-coverage-gap-report" :schema-version 1
+                :top-keys ["gapCount" "gaps" "generatedOn" "inventoryCount"
+                           "inputIdentities" "kind" "noExecutableOwnerCount"
+                           "producer" "schemaVersion" "semanticId" "status"]
+                :entry-keys ["completionGaps" "coverageClass" "gaps" "id"
+                             "path" "sequence"]
+                :input-identity-keys ["contractSha256" "generatorSha256"
+                                      "matrixSemanticId"]
+                :status :incomplete :inventory-count 240 :gap-count 240
+                :no-executable-owner-count 7
+                :input-identities
+                {:contract-sha256 "sha256:912d42f0b789f2a290d81d01450230de834b5529c93df29dfe1c1f648a377142"
+                 :generator-sha256 "sha256:972feb2ace8c71b86093acd6f542985f31bce834dcf9104a21be4720172a4613"
+                 :matrix-semantic-id "sha256:9b02a5bfbcc2a3149a4d4f589da8b8b9e19e84cc646c1e38afd774f42d5c72eb"}
+                :producer "non-authoritative-observation"
+                :semantic-id "sha256:392f904d1887a44183b501fd0cabfcffe7efb1c596365a898e58bd40437f7d4e"
+                :raw-sha256 "sha256:583dc31c24a90d00805c10615e04360cb05d45f0052e402af8d409dafca56f00"}
+   :report {:path "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md"
+            :kind "markdown-report-v1"
+            :raw-sha256 "sha256:e4764fddd7af1c254f1dbb505caa818595e469b6cda5f02970199b005917c0f9"}
+   :counter-contract
+   {:complete-when "fullLanguageCompleteDocuments == documents == inventoryCount and gapCount == 0"
+    :current-expected-status :incomplete :inventory-count 240
+    :supported-surface-is-not-completion true}})
+
+(defn w5-request [root source-extension]
+  (let [docs (w5-normalize-documents w5-documents)]
+    {:artifact :gravity/w5-full-language-evidence-request
+     :schema-version 1 :claimed-status :incomplete :profile :meta
+     :target-scope w5-target
+     :repository {:actual-root root
+                  :consumer-id "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+                  :actual-manifest-path (w5-path root "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json")}
+     :inventory docs
+     :coverage-matrix (w5-matrix docs root)
+     :gap-report {:inventory-count 240 :gap-count 240 :no-executable-owner-count 7
+                  :entries (w5-gaps docs root) :status :blocked}
+     :gap-tasks (w5-tasks root)
+     :reporting w5-reporting-observation
+     :attestations []
+     :coverage {:inventory-count 240 :full-language-complete-count 0
+                :attestation-count 0 :blocked? true
+                :satisfied-task-ids [] :status :blocked}
+     :claims {:producer-boolean? false :narrative? false
+              :source-ownership-only? false :check-only? false
+              :replay-only? false :global-advancement? false
+              :closure-authority? false}
+     :authority {:authority :non-authority :public-authority? false
+                 :self-hosted? false :release? false
+                 :clojure-seed-boundary? true
+                 :full-language-completion? false :replay-only? false
+                 :container-only? true}
+     :source-span (w5-span root :full-language-evidence-request
+                            (str "bootstrap/clojure/fixtures/self-hosting/"
+                                 "w5-full-language-evidence/accepted/"
+                                 "incomplete-full-language-evidence"
+                                 source-extension)
+                            0)}))
+
+(defn w5-full-language-evidence-request []
+  (w5-request "/checkout-a" ".gravity"))
+
+(defn w5-full-language-evidence-request-for-source [root source-extension]
+  (w5-request root source-extension))
+
+(defn w5-full-language-evidence-alternate-path-request []
+  (w5-request "/checkout-b" ".gravity"))

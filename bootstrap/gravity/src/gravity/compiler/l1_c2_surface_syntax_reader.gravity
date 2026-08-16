@@ -4,7 +4,9 @@
   (:target :jvm)
   (:exports [l1-c2-source-unit-contract
              l1-c2-reader-diagnostic-catalog
-             read-l1-c2-source-unit])
+             read-l1-c2-source-unit
+             l1-c2-reader-result-compatible?
+             l1-c2-package-reader-result])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -48,23 +50,51 @@
                   :gravity {:extension ".gravity"
                             :meaning :gravity-branded-source}}
    :canonical-source-extensions [".qst" ".gravity"]
-   :identity-fields [:path :extension :encoding :bytes-hash
-                     :reader-options :source-kind]
+   :identity-fields [:project-root-id :project-relative-path :encoding
+                     :bytes-hash :reader-options :enabled-features
+                     :extension-policy]
+   :provenance-fields [:path :extension :source-kind]
    :reader-output [:source-unit-record :token-stream :form-tree
+                   :semantic-value-table
+                   :top-level-form-ids :top-level-parsed-records
+                   :parsed-semantic-values :literal-decoding-records
+                   :semantic-error-deferment-record
+                   :reader-extension-invocation-records
                    :syntax-seed-stream :reader-source-map
-                   :reader-diagnostics]
+                   :incremental-reader-hashes :digest-requests
+                   :reader-diagnostics :execution-boundary]
    :preserves [:source-spans :syntax-identity :diagnostic-codes
                :artifact-provenance]
+   :facade-package-boundary
+   {:artifact :gravity/l1-c2-reader-compatibility-package
+    :compatibility-only? true
+    :authentication-credit? false
+    :authoritative-reader-result? false
+    :authoritative-route :sh03-fresh-verifier-and-digest-resolution}
    :forbidden [:macro-execution :host-reflection :ambient-io
                :ambient-network :ambient-shell]})
 
 (def l1-c2-reader-diagnostic-catalog
   {:l1 ["L1-DELIMITER" "L1-STRING" "L1-MAP-ARITY"
-        "L1-METADATA" "L1-NS-SHAPE" "L1-READER-EXTENSION"
-        "L1-SOURCE-ENCODING"]
+        "L1-SET" "L1-METADATA" "L1-ABBREV"
+        "L1-NUMERIC" "L1-IDENTIFIER" "L1-NS-SHAPE"
+        "L1-READER-EXTENSION" "L1-SOURCE-ENCODING"
+        "L1-SOURCE-EXTENSION"]
    :c2 ["C2-ENCODING" "C2-DELIMITER" "C2-STRING" "C2-MAP"
         "C2-SET" "C2-METADATA" "C2-ABBREV" "C2-EXTENSION"
-        "C2-HASH"]
+        "C2-NUMERIC" "C2-IDENTIFIER" "C2-NS-SHAPE" "C2-HASH"]
+   :l1-to-c2 {"L1-SOURCE-ENCODING" "C2-ENCODING"
+              "L1-SOURCE-EXTENSION" "C2-EXTENSION"
+              "L1-DELIMITER" "C2-DELIMITER"
+              "L1-STRING" "C2-STRING"
+              "L1-MAP-ARITY" "C2-MAP"
+              "L1-SET" "C2-SET"
+              "L1-METADATA" "C2-METADATA"
+              "L1-ABBREV" "C2-ABBREV"
+              "L1-READER-EXTENSION" "C2-EXTENSION"
+              "L1-NUMERIC" "C2-NUMERIC"
+              "L1-IDENTIFIER" "C2-IDENTIFIER"
+              "L1-NS-SHAPE" "C2-NS-SHAPE"}
    :stable-diagnostic-record-fields [:diagnostic-id :severity
                                      :source-span :reader-state
                                      :facts :remediation]})
@@ -80,3 +110,769 @@
                   :reader-diagnostics]
           :preserves [:source-spans :syntax-identity
                       :diagnostic-codes :artifact-provenance]}))
+
+(defn l1-c2-exact-keys? [value expected]
+  (if (map? value)
+    (if (= (count value) (count expected))
+      (= (set (keys value)) expected)
+      false)
+    false))
+
+(defn l1-c2-lowercase-hex? [characters]
+  (loop [remaining characters]
+    (if (= (count remaining) 0)
+      true
+      (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                       \a \b \c \d \e \f}
+                     (first remaining))
+        (recur (rest remaining))
+        false))))
+
+(defn l1-c2-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (l1-c2-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn l1-c2-bounded-nonempty-string? [value maximum]
+  (if (string? value)
+    (if (> (count value) 0)
+      (<= (count value) maximum)
+      false)
+    false))
+
+(defn l1-c2-digest-reference? [value ordinal]
+  (if (l1-c2-exact-keys? value #{:digest-ref})
+    (= (get value :digest-ref) ordinal)
+    false))
+
+(defn l1-c2-actual-path-provenance-valid? [provenance]
+  (if (l1-c2-exact-keys?
+       provenance #{:path :extension :source-kind})
+    (let [extension (get provenance :extension)
+          source-kind (get provenance :source-kind)]
+      (if (l1-c2-bounded-nonempty-string?
+           (get provenance :path) 1024)
+        (if (= extension ".gravity")
+          (= source-kind :gravity)
+          (if (= extension ".qst")
+            (= source-kind :qst)
+            false))
+        false))
+    false))
+
+(defn l1-c2-source-unit-valid? [source-unit]
+  (if (l1-c2-exact-keys?
+       source-unit
+       #{:artifact :schema-version :project-root-id :logical-source-id
+         :source-content-hash :source-byte-count :encoding
+         :actual-path-provenance})
+    (if (= (get source-unit :artifact) :gravity/sh03-source-unit)
+      (if (= (get source-unit :schema-version) 1)
+        (if (l1-c2-sha256-id? (get source-unit :project-root-id))
+          (if (l1-c2-bounded-nonempty-string?
+               (get source-unit :logical-source-id) 1024)
+            (if (l1-c2-sha256-id?
+                 (get source-unit :source-content-hash))
+              (let [source-byte-count
+                    (get source-unit :source-byte-count)]
+                (if (integer? source-byte-count)
+                  (if (>= source-byte-count 0)
+                    (if (<= source-byte-count 1048576)
+                      (if (= (get source-unit :encoding) :utf-8)
+                        (l1-c2-actual-path-provenance-valid?
+                         (get source-unit :actual-path-provenance))
+                        false)
+                      false)
+                    false)
+                  false))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn l1-c2-reader-tag-valid? [tag]
+  (if (vector? tag)
+    (if (> (count tag) 0)
+      (if (<= (count tag) 4)
+        (if (= tag [105 110 115 116])
+          true
+          (= tag [117 117 105 100]))
+        false)
+      false)
+    false))
+
+(defn l1-c2-reader-tags-valid? [tags observed]
+  (if (= (count tags) 0)
+    true
+    (let [tag (first tags)]
+      (if (l1-c2-reader-tag-valid? tag)
+        (if (contains? observed tag)
+          false
+          (l1-c2-reader-tags-valid?
+           (rest tags) (conj observed tag)))
+        false))))
+
+(defn l1-c2-reader-policy-valid? [reader-policy]
+  (if (l1-c2-exact-keys?
+       reader-policy
+       #{:artifact :schema-version :retain-trivia :enabled-reader-tags})
+    (if (= (get reader-policy :artifact) :gravity/sh03-reader-policy)
+      (if (= (get reader-policy :schema-version) 1)
+        (if (boolean? (get reader-policy :retain-trivia))
+          (let [tags (get reader-policy :enabled-reader-tags)]
+            (if (vector? tags)
+              (if (<= (count tags) 32)
+                (l1-c2-reader-tags-valid? tags #{})
+                false)
+              false))
+          false)
+        false)
+      false)
+    false))
+
+(defn l1-c2-reader-bounds-record []
+  {:maximum-source-bytes 1048576
+   :maximum-characters 1048576
+   :maximum-tokens 131072
+   :maximum-forms 65536
+   :maximum-delimiter-depth 512
+   :maximum-semantic-work-units 8437834
+   :maximum-container-width 65536
+   :maximum-token-scalars 262144
+   :maximum-numeric-semantic-scalars 256
+   :maximum-numeric-semantic-work-units 65536
+   :maximum-canonical-scalar-bytes 1048576
+   :maximum-canonical-total-scalar-bytes 67108864
+   :maximum-source-identity-utf8-bytes 4096
+   :maximum-logical-source-id-code-units 1024
+   :maximum-actual-path-code-units 1024
+   :maximum-reader-tags 32
+   :maximum-reader-tag-codepoints 4
+   :maximum-result-carrier-nodes 167772160
+   :maximum-result-carrier-depth 2048
+   :maximum-result-carrier-width 1048576
+   :result-carrier-node-budget
+   {:fixed-nodes 1048576
+    :nodes-per-source-byte 24
+    :nodes-per-token 320
+    :nodes-per-form 1024
+    :nodes-per-reader-tag 2048
+    :derived-maximum-nodes 135331840}})
+
+(defn l1-c2-reader-execution-boundary-record []
+  {:artifact :gravity/sh03-reader-execution-boundary
+   :schema-version 1
+   :owner :gravity-source
+   :gravity-owned [:token-classification
+                   :strict-utf8-decoding
+                   :unicode-scalar-indexing
+                   :delimiter-linked-form-building
+                   :literal-shape-and-decoding-policy
+                   :reader-abbreviation-expansion
+                   :metadata-shape-policy
+                   :registered-reader-tag-policy
+                   :structured-reader-diagnostics
+                   :fresh-result-replay]
+   :clojure-seed-boundary [:single-snapshot-source-byte-read
+                           :canonical-encoding
+                           :sha256-resolution
+                           :contextual-envelope-reconstruction
+                           :bounded-result-carrier-validation
+                           :stage2-instruction-runner]
+   :clojure-boundary-responsibility
+   {:responsibility :result-carrier-validation
+    :maximum-nodes 167772160
+    :maximum-depth 2048
+    :maximum-width 1048576
+    :maximum-canonical-scalar-bytes 1048576
+    :maximum-canonical-total-scalar-bytes 67108864
+    :failure-rule "C2-HASH"
+    :result-committed? false}
+   :gravity-input-responsibility
+   {:maximum-source-identity-utf8-bytes 4096
+    :maximum-logical-source-id-code-units 1024
+    :maximum-actual-path-code-units 1024
+    :maximum-source-bytes 1048576
+    :maximum-reader-tags 32
+    :maximum-reader-tag-codepoints 4
+    :invalid-input-carrier-policy :bounded-summary}
+   :forbidden-reader-delegation
+   [:read-source-form-records
+    :read-source-form-records-host-oracle
+    :read-forms
+    :read-source-artifact
+    :stage1-reader-token-stream
+    :stage1-reader-products-from-token-stream
+    :c2-reader-products
+    :stage1-reader-decode-atom
+    :stage1-reader-decode-string
+    :stage1-reader-decode-character
+    :c2-syntax-seed-stream]
+   :legacy-source-reread? false
+   :self-hosted? false
+   :whole-language? false
+   :clojure-seed-boundary? true})
+
+(defn l1-c2-prior-dependencies-valid?
+  [dependencies ordinal previous]
+  (if (= (count dependencies) 0)
+    true
+    (let [dependency (first dependencies)]
+      (if (integer? dependency)
+        (if (> dependency previous)
+          (if (>= dependency 0)
+            (if (< dependency ordinal)
+              (l1-c2-prior-dependencies-valid?
+               (rest dependencies) ordinal dependency)
+              false)
+            false)
+          false)
+        false))))
+
+(defn l1-c2-reader-request-key [ordinal]
+  (if (= ordinal 0)
+    :source-content
+    (if (= ordinal 1)
+      :source-unit
+      (if (= ordinal 2)
+        :token-stream
+        (if (= ordinal 3)
+          :form-tree
+          (if (= ordinal 4)
+            :extension-invocation-set
+            :reader-result))))))
+
+(defn l1-c2-reader-digest-request-valid?
+  [request ordinal source-unit]
+  (let [expected-keys
+        (if (= ordinal 0)
+          #{:key :ordinal :algorithm :encoding :depends-on
+            :preimage :observed-id}
+          #{:key :ordinal :algorithm :encoding :depends-on :preimage})]
+    (if (l1-c2-exact-keys? request expected-keys)
+      (if (= (get request :key)
+             (l1-c2-reader-request-key ordinal))
+        (if (= (get request :ordinal) ordinal)
+          (if (= (get request :algorithm) :sha256)
+            (if (= (get request :encoding)
+                   (if (= ordinal 0)
+                     :raw-byte-vector-v1
+                     :gravity-canonical-edn-v1))
+              (let [dependencies (get request :depends-on)]
+                (if (vector? dependencies)
+                  (if (<= (count dependencies) ordinal)
+                    (if (l1-c2-prior-dependencies-valid?
+                         dependencies ordinal -1)
+                      (if (= ordinal 0)
+                        (if (vector? (get request :preimage))
+                          (if (= (count (get request :preimage))
+                                 (get source-unit :source-byte-count))
+                            (= (get request :observed-id)
+                               (get source-unit :source-content-hash))
+                            false)
+                          false)
+                        (map? (get request :preimage)))
+                      false)
+                    false)
+                  false))
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn l1-c2-reader-digest-requests-valid?
+  [requests source-unit ordinal]
+  (if (= ordinal (count requests))
+    true
+    (if (l1-c2-reader-digest-request-valid?
+         (get requests ordinal) ordinal source-unit)
+      (l1-c2-reader-digest-requests-valid?
+       requests source-unit (+ ordinal 1))
+      false)))
+
+(defn l1-c2-reader-digest-request-summaries [requests]
+  (loop [remaining requests result []]
+    (if (= (count remaining) 0)
+      result
+      (let [request (first remaining)]
+        (recur
+         (rest remaining)
+         (conj result
+               {:key (get request :key)
+                :ordinal (get request :ordinal)
+                :algorithm (get request :algorithm)
+                :encoding (get request :encoding)
+                :depends-on (get request :depends-on)}))))))
+
+(defn l1-c2-semantic-source-unit-compatible?
+  [source-unit reader-policy semantic-source-unit]
+  (if (l1-c2-exact-keys?
+       semantic-source-unit
+       #{:artifact :schema-version :source-id :project-root-id
+         :logical-source-id :encoding :bytes-hash :source-byte-count
+         :reader-options :source-kinds})
+    (if (= (get semantic-source-unit :artifact) :gravity/source-unit)
+      (if (= (get semantic-source-unit :schema-version) 1)
+        (if (l1-c2-digest-reference?
+             (get semantic-source-unit :source-id) 1)
+          (if (= (get semantic-source-unit :project-root-id)
+                 (get source-unit :project-root-id))
+            (if (= (get semantic-source-unit :logical-source-id)
+                   (get source-unit :logical-source-id))
+              (if (= (get semantic-source-unit :encoding)
+                     (get source-unit :encoding))
+                (if (= (get semantic-source-unit :bytes-hash)
+                       (get source-unit :source-content-hash))
+                  (if (= (get semantic-source-unit :source-byte-count)
+                         (get source-unit :source-byte-count))
+                    (if (= (get semantic-source-unit :reader-options)
+                           reader-policy)
+                      (= (get semantic-source-unit :source-kinds)
+                         [:gravity :qst])
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn l1-c2-semantic-deferment-record-valid? [record form-count]
+  (if (l1-c2-exact-keys?
+       record #{:artifact :deferred? :deferred-literal-records})
+    (if (= (get record :artifact)
+           :gravity/semantic-error-deferment-record)
+      (if (boolean? (get record :deferred?))
+        (let [records (get record :deferred-literal-records)]
+          (if (vector? records)
+            (<= (count records) form-count)
+            false))
+        false)
+      false)
+    false))
+
+(defn l1-c2-reader-source-map-valid?
+  [source-map token-count form-count]
+  (if (l1-c2-exact-keys?
+       source-map #{:artifact :token-spans :form-spans})
+    (if (= (get source-map :artifact) :gravity/reader-source-map)
+      (if (vector? (get source-map :token-spans))
+        (if (= (count (get source-map :token-spans)) token-count)
+          (if (vector? (get source-map :form-spans))
+            (= (count (get source-map :form-spans)) form-count)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn l1-c2-incremental-hashes-valid? [hashes status]
+  (if (l1-c2-exact-keys?
+       hashes
+       #{:source-unit :token-stream :form-tree
+         :extension-invocation-set :reader-result :status})
+    (if (l1-c2-digest-reference? (get hashes :source-unit) 1)
+      (if (= status :accepted)
+        (if (l1-c2-digest-reference? (get hashes :token-stream) 2)
+          (if (l1-c2-digest-reference? (get hashes :form-tree) 3)
+            (if (l1-c2-digest-reference?
+                 (get hashes :extension-invocation-set) 4)
+              (if (l1-c2-digest-reference?
+                   (get hashes :reader-result) 5)
+                (= (get hashes :status) :pending-resolution)
+                false)
+              false)
+            false)
+          false)
+        (if (= (get hashes :token-stream) nil)
+          (if (= (get hashes :form-tree) nil)
+            (if (= (get hashes :extension-invocation-set) nil)
+              (if (= (get hashes :reader-result) nil)
+                (= (get hashes :status) :rejected)
+                false)
+              false)
+            false)
+          false))
+      false)
+    false))
+
+(defn l1-c2-accepted-semantic-template-valid?
+  [template reader-result token-count form-count semantic-value-count]
+  (if (l1-c2-exact-keys?
+       template
+       #{:status :source-unit-id :token-stream-id :form-tree-id
+         :extension-invocation-set-id :token-count :form-count
+         :semantic-value-count :semantic-work-units :top-level-form-ids
+         :literal-form-ids :deferred-form-ids
+         :reader-extension-record-count})
+    (if (= (get template :status) :accepted)
+      (if (l1-c2-digest-reference? (get template :source-unit-id) 1)
+        (if (l1-c2-digest-reference? (get template :token-stream-id) 2)
+          (if (l1-c2-digest-reference? (get template :form-tree-id) 3)
+            (if (l1-c2-digest-reference?
+                 (get template :extension-invocation-set-id) 4)
+              (if (= (get template :token-count) token-count)
+                (if (= (get template :form-count) form-count)
+                  (if (= (get template :semantic-value-count)
+                         semantic-value-count)
+                    (let [work (get template :semantic-work-units)]
+                      (if (integer? work)
+                        (if (>= work 0)
+                          (if (<= work 8437834)
+                            (if (= (get template :top-level-form-ids)
+                                   (get reader-result
+                                        :top-level-form-ids))
+                              (if (vector?
+                                   (get template :literal-form-ids))
+                                (if (<= (count
+                                         (get template
+                                              :literal-form-ids))
+                                        form-count)
+                                  (if (vector?
+                                       (get template
+                                            :deferred-form-ids))
+                                    (if (<= (count
+                                             (get template
+                                                  :deferred-form-ids))
+                                            form-count)
+                                      (= (get template
+                                              :reader-extension-record-count)
+                                         (count
+                                          (get reader-result
+                                               :reader-extension-invocation-records)))
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn l1-c2-rejected-semantic-template-valid? [template]
+  (if (l1-c2-exact-keys?
+       template #{:status :source-unit-id :rule :reason :span :raw :facts})
+    (if (= (get template :status) :rejected)
+      (if (l1-c2-digest-reference? (get template :source-unit-id) 1)
+        (if (string? (get template :rule))
+          (if (keyword? (get template :reason))
+            (if (map? (get template :span))
+              (map? (get template :facts))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn l1-c2-reader-product-counts-within-bounds?
+  [token-count form-count]
+  (if (integer? token-count)
+    (if (integer? form-count)
+      (if (<= 0 token-count)
+        (if (<= 0 form-count)
+          (if (<= token-count
+                  (get (l1-c2-reader-bounds-record) :maximum-tokens))
+            (<= form-count
+                (get (l1-c2-reader-bounds-record) :maximum-forms))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn l1-c2-reader-result-products-valid? [reader-result]
+  (let [status (get reader-result :status)
+        tokens (get reader-result :token-stream)
+        forms (get reader-result :form-tree)
+        semantic-values (get reader-result :semantic-value-table)
+        top-level-form-ids (get reader-result :top-level-form-ids)
+        top-level-records (get reader-result :top-level-parsed-records)
+        parsed-values (get reader-result :parsed-semantic-values)
+        literals (get reader-result :literal-decoding-records)
+        extensions
+        (get reader-result :reader-extension-invocation-records)
+        diagnostics (get reader-result :diagnostics)
+        requests (get reader-result :digest-requests)]
+    (if (vector? tokens)
+      (if (l1-c2-reader-product-counts-within-bounds?
+           (count tokens) (if (vector? forms) (count forms) -1))
+        (if (vector? forms)
+          (if (vector? semantic-values)
+            (if (<= (count semantic-values) (count forms))
+              (if (vector? top-level-form-ids)
+                (if (<= (count top-level-form-ids) (count forms))
+                  (if (vector? top-level-records)
+                    (if (= (count top-level-records)
+                           (count top-level-form-ids))
+                      (if (vector? parsed-values)
+                        (if (= (count parsed-values)
+                               (count top-level-form-ids))
+                          (if (vector? literals)
+                            (if (<= (count literals) (count forms))
+                              (if (l1-c2-semantic-deferment-record-valid?
+                                   (get reader-result
+                                        :semantic-error-deferment-record)
+                                   (count forms))
+                                (if (vector? extensions)
+                                  (if (<= (count extensions) 32)
+                                    (if (l1-c2-reader-source-map-valid?
+                                         (get reader-result
+                                              :reader-source-map)
+                                         (count tokens) (count forms))
+                                      (if (l1-c2-incremental-hashes-valid?
+                                           (get reader-result
+                                                :incremental-reader-hashes)
+                                           status)
+                                        (if (vector? diagnostics)
+                                          (if (vector? requests)
+                                            (if (= status :accepted)
+                                              (if (= (count diagnostics) 0)
+                                                (if (= (count requests) 6)
+                                                  (l1-c2-accepted-semantic-template-valid?
+                                                   (get reader-result
+                                                        :semantic-reader-template)
+                                                   reader-result
+                                                   (count tokens)
+                                                   (count forms)
+                                                   (count semantic-values))
+                                                  false)
+                                                false)
+                                              (if (= status :rejected)
+                                                (if (= (count tokens) 0)
+                                                  (if (= (count forms) 0)
+                                                    (if (= (count semantic-values) 0)
+                                                      (if (= (count top-level-form-ids) 0)
+                                                        (if (= (count top-level-records) 0)
+                                                          (if (= (count parsed-values) 0)
+                                                            (if (= (count literals) 0)
+                                                              (if (= (count extensions) 0)
+                                                                (if (= (count diagnostics) 1)
+                                                                  (if (= (count requests) 2)
+                                                                    (l1-c2-rejected-semantic-template-valid?
+                                                                     (get reader-result
+                                                                          :semantic-reader-template))
+                                                                    false)
+                                                                  false)
+                                                                false)
+                                                              false)
+                                                            false)
+                                                          false)
+                                                        false)
+                                                      false)
+                                                    false)
+                                                  false)
+                                                false))
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn l1-c2-reader-result-shape-compatible?
+  [source-unit reader-policy reader-result]
+  (if (l1-c2-exact-keys?
+       reader-result
+       #{:artifact :schema-version :status :source-unit
+         :actual-path-provenance :token-stream :form-tree
+         :semantic-value-table :top-level-form-ids
+         :top-level-parsed-records :parsed-semantic-values
+         :literal-decoding-records :semantic-error-deferment-record
+         :reader-extension-invocation-records :reader-source-map
+         :incremental-reader-hashes :semantic-reader-template
+         :digest-requests :diagnostics :bounds :execution-boundary})
+    (if (= (get reader-result :artifact) :gravity/sh03-reader-result)
+      (if (= (get reader-result :schema-version) 1)
+        (if (contains? #{:accepted :rejected}
+                       (get reader-result :status))
+          (if (l1-c2-semantic-source-unit-compatible?
+               source-unit reader-policy (get reader-result :source-unit))
+            (if (= (get reader-result :actual-path-provenance)
+                   (get source-unit :actual-path-provenance))
+              (if (= (get reader-result :bounds)
+                     (l1-c2-reader-bounds-record))
+                (if (= (get reader-result :execution-boundary)
+                       (l1-c2-reader-execution-boundary-record))
+                  (if (l1-c2-reader-result-products-valid? reader-result)
+                    (l1-c2-reader-digest-requests-valid?
+                     (get reader-result :digest-requests)
+                     source-unit 0)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn l1-c2-verification-report-compatible?
+  [reader-result verification-report]
+  (if (l1-c2-exact-keys?
+       verification-report
+       #{:artifact :schema-version :status :verified?
+         :reader-result-status :semantic-reader-template
+         :digest-requests :diagnostics :bounds :execution-boundary})
+    (if (= (get verification-report :artifact)
+           :gravity/sh03-reader-verification-report)
+      (if (= (get verification-report :schema-version) 1)
+        (if (= (get verification-report :status) :accepted)
+          (if (= (get verification-report :verified?) true)
+            (if (= (get verification-report :reader-result-status)
+                   (get reader-result :status))
+              (if (= (get verification-report :semantic-reader-template)
+                     (get reader-result :semantic-reader-template))
+                (if (= (get verification-report :digest-requests)
+                       (l1-c2-reader-digest-request-summaries
+                        (get reader-result :digest-requests)))
+                  (if (= (get verification-report :diagnostics) [])
+                    (if (= (get verification-report :bounds)
+                           (l1-c2-reader-bounds-record))
+                      (= (get verification-report :execution-boundary)
+                         (l1-c2-reader-execution-boundary-record))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn l1-c2-reader-result-compatible?
+  [source-unit reader-policy reader-result verification-report]
+  (if (l1-c2-source-unit-valid? source-unit)
+    (if (l1-c2-reader-policy-valid? reader-policy)
+      (if (l1-c2-reader-result-shape-compatible?
+           source-unit reader-policy reader-result)
+        (l1-c2-verification-report-compatible?
+         reader-result verification-report)
+        false)
+      false)
+    false))
+
+(defn l1-c2-package-reader-result
+  [source-unit reader-policy reader-result verification-report]
+  (if (l1-c2-reader-result-compatible?
+       source-unit reader-policy reader-result verification-report)
+    {:artifact :gravity/l1-c2-reader-compatibility-package
+     :schema-version 1
+     :compatibility-status :compatible
+     :reader-result-status (get reader-result :status)
+     :compatibility-only? true
+     :authentication-credit? false
+     :authoritative-reader-result? false
+     :authoritative-route :sh03-fresh-verifier-and-digest-resolution
+     :fresh-verifier-executed-here? false
+     :digest-resolution-executed-here? false
+     :source-unit-record (get reader-result :source-unit)
+     :actual-path-provenance
+     (get reader-result :actual-path-provenance)
+     :token-stream (get reader-result :token-stream)
+     :form-tree (get reader-result :form-tree)
+     :semantic-value-table (get reader-result :semantic-value-table)
+     :top-level-form-ids (get reader-result :top-level-form-ids)
+     :top-level-parsed-records
+     (get reader-result :top-level-parsed-records)
+     :parsed-semantic-values
+     (get reader-result :parsed-semantic-values)
+     :literal-decoding-records
+     (get reader-result :literal-decoding-records)
+     :semantic-error-deferment-record
+     (get reader-result :semantic-error-deferment-record)
+     :reader-extension-invocation-records
+     (get reader-result :reader-extension-invocation-records)
+     :reader-source-map (get reader-result :reader-source-map)
+     :incremental-reader-hashes
+     (get reader-result :incremental-reader-hashes)
+     :semantic-reader-template
+     (get reader-result :semantic-reader-template)
+     :digest-requests (get reader-result :digest-requests)
+     :reader-diagnostics (get reader-result :diagnostics)
+     :reader-verification-report verification-report
+     :execution-boundary (get reader-result :execution-boundary)
+     :preserves [:source-spans :syntax-identity :raw-spellings
+                 :literal-descriptors :diagnostic-codes
+                 :artifact-provenance]}
+    {:artifact :gravity/l1-c2-reader-compatibility-package
+     :schema-version 1
+     :compatibility-status :rejected
+     :reader-result-status nil
+     :compatibility-only? true
+     :authentication-credit? false
+     :authoritative-reader-result? false
+     :authoritative-route :sh03-fresh-verifier-and-digest-resolution
+     :fresh-verifier-executed-here? false
+     :digest-resolution-executed-here? false
+     :source-unit-record nil
+     :actual-path-provenance
+     (if (l1-c2-source-unit-valid? source-unit)
+       (get source-unit :actual-path-provenance)
+       nil)
+     :token-stream []
+     :form-tree []
+     :semantic-value-table []
+     :top-level-form-ids []
+     :top-level-parsed-records []
+     :parsed-semantic-values []
+     :literal-decoding-records []
+     :semantic-error-deferment-record
+     {:artifact :gravity/semantic-error-deferment-record
+      :deferred? false :deferred-literal-records []}
+     :reader-extension-invocation-records []
+     :reader-source-map
+     {:artifact :gravity/reader-source-map
+      :token-spans [] :form-spans []}
+     :incremental-reader-hashes
+     {:source-unit nil :token-stream nil :form-tree nil
+      :reader-result nil :status :rejected}
+     :semantic-reader-template nil
+     :digest-requests []
+     :reader-diagnostics
+     [{:artifact :gravity/diagnostic
+       :id "C2-HASH"
+       :severity :error
+       :stage :read-source
+       :reason :reader-verification-boundary
+       :facts {:reader-result-compatible? false}}]
+     :reader-verification-report nil
+     :execution-boundary (l1-c2-reader-execution-boundary-record)
+     :preserves []}))

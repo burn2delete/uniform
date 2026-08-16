@@ -1,6 +1,15 @@
 # Full Language Coverage Matrix Report
 
-Generated on: 2026-07-08
+Generated on: 2026-08-08
+
+## Contract
+
+- Matrix kind/schema: `gravity/full-language-coverage-matrix` / `1`
+- Matrix status: `incomplete`
+- Matrix semantic identity: `sha256:9b02a5bfbcc2a3149a4d4f589da8b8b9e19e84cc646c1e38afd774f42d5c72eb`
+- Gap-report semantic identity: `sha256:392f904d1887a44183b501fd0cabfcffe7efb1c596365a898e58bd40437f7d4e`
+- Authority: non-authoritative observation
+- Completion, public authority, release readiness, self-hosting, and seed retirement are not claimed.
 
 ## Summary
 
@@ -10,31 +19,32 @@ Generated on: 2026-07-08
 - Documents with no accepted fixture: 162
 - Documents with no rejected fixture: 48
 - Documents with no stable diagnostic: 49
-- Documents with no Gravity-authored implementation: 207
+- Documents with no Gravity-authored implementation: 206
 
-## Public Binary Audit
+## Static Public Reachability Audit
 
 - Enabled: True
-- Accepted sources audited: 181
+- Accepted sources audited: 198
 - Accepted sources passing public `gravity check`: 74
-- Accepted sources failing public `gravity check`: 107
-- Rejected sources audited: 1718
+- Accepted sources failing public `gravity check`: 124
+- Rejected sources audited: 1720
 - Rejected sources with feature-specific public diagnostics: 664
-- Rejected sources with generic unsupported-source diagnostics: 1054
+- Rejected sources with generic unsupported-source diagnostics: 1056
 
 ## Coverage Classes
 
-- `clojure-seed-artifact-surface`: 185
+- `clojure-seed-artifact-surface`: 184
 - `current-public-executable-surface`: 48
+- `gravity-authored-seed-slice`: 1
 - `no-executable-owner`: 7
 
 ## Fail-Closed Gaps
 
-The gap report is intentionally fail-closed: any document without an
-executable owner remains incomplete even if it has generated artifacts,
-proof metadata, or scaffold modules.
+The gap report is intentionally fail-closed. v1 completion admission is disabled.
+Every document remains incomplete
+even if it has executable artifacts, proof metadata, or narrative review records.
 
-- Documents with any gap: 215
+- Documents with any gap: 240
 - Documents without executable owners: 7
 
 ## Report Artifacts

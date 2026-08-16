@@ -1,0 +1,14 @@
+; SH-07-B7 records inner-before-outer construction without claiming both run.
+(ns self-hosting.sh07-b7.nested-throw-value
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [nested-transfer])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B7
+              :fixture :nested-throw-value
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(def nested-transfer
+  (throw (throw "inner")))

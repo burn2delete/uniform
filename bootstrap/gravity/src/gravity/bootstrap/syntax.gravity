@@ -1,8 +1,19 @@
-; Stage1 Gravity-owned syntax object skeleton.
+; Gravity-owned SH-04 C3 syntax object construction and verification leaf.
 (ns gravity.bootstrap.syntax
   (:profile :meta)
   (:target :jvm)
-  (:exports [syntax-object])
+  (:exports [c3-syntax-object-contract
+             c3-syntax-bounds
+             c3-syntax-diagnostic-catalog
+             c3-syntax-build-template
+             c3-generated-syntax-template
+             c3-syntax-verify-template
+             c3-syntax-verify-resolved
+             c3-syntax-stream-build-template
+             c3-syntax-stream-verify-resolved
+             c3-syntax-serialize-template
+             c3-syntax-deserialize-template
+             c3-syntax-graph-verify-template])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -12,31 +23,1972 @@
                :owner :gravity-source
                :source-language :gravity
                :seed :clojure-stage0
-               :retirement-objective :replace-clojure-seed
+               :retirement-objective :replace-clojure-c3-construction-subset
                :ambient-authority-denied true
-               :documents ["BOOT1" "BOOT2" "BOOT3" "BOOT4"
-                           "BOOT5" "BOOT6" "BOOT7" "BOOT8"
-                           "C2" "C3" "C15"]
-               :implements [:syntax-object :origin-chain :fact-ledger
-                             :serialization]
-               :preserves #{:source-spans :syntax-identity
-                            :diagnostic-codes :artifact-provenance}
+               :documents ["D1" "D3" "D8" "D9" "L1" "C2" "C3"
+                           "C4" "C5" "C15" "BOOT1" "BOOT7" "BOOT8"]
+               :implements [:stable-syntax-identity-template
+                             :source-and-generated-origin-chain
+                             :hygiene-scope-mark-and-capture-model
+                             :metadata-and-fact-ledgers
+                             :bounded-reference-graph-validation
+                             :deterministic-tagged-vector-serialization
+                             :gravity-owned-deserialization
+                             :authenticated-reader-source-binding
+                             :resolved-syntax-id-verification
+                             :complete-syntax-stream-products
+                             :structured-c3-diagnostics]
+               :preserves #{:source-spans :syntax-identity :origin-chains
+                            :hygiene-context :metadata-ledger
+                            :fact-invalidation :diagnostic-codes
+                            :artifact-provenance}
                :lineage {:verified-by :clojure-stage0
                          :compiled-by :clojure-stage0
                          :next-stage :stage1
-                         :replaces [:clojure-syntax-object-subset]}
-               :conformance {:accepted-fixture "bootstrap/gravity/src"
-                             :rejected-fixtures
-                             ["stage1-bootstrap-missing-owner.gravity"
-                              "stage1-bootstrap-wrong-profile.gravity"
-                              "stage1-bootstrap-ambient-authority.gravity"
-                              "stage1-bootstrap-missing-lineage.gravity"
-                              "stage1-bootstrap-missing-preserved-fact.gravity"
-                              "stage1-bootstrap-incomplete-source-set.gravity"]}}}))
+                         :replaces [:clojure-c3-syntax-construction-subset]}
+               :claim-boundary [:sh04-bounded-syntax-object-slice
+                                :not-macro-expansion
+                                :not-name-resolution
+                                :not-seed-retirement]}}))
 
-(defn syntax-object [form span origin]
-  (quote {:status :stage1-source-owned
-          :form form
-          :span span
-          :origin origin
-          :preserves [:source-spans :syntax-identity]}))
+(def c3-syntax-object-contract
+  {:artifact :gravity/sh04-syntax-object-contract
+   :schema-version 1
+   :owner :gravity-source
+   :input :gravity/sh03-authenticated-reader-product
+   :output :gravity/sh04-syntax-template-result
+   :coordinator-adapter :gravity/sh04-to-c3-syntax-products-v1
+   :sealed-product-kind :gravity/sh04-syntax-products
+   :resolved-authoritative-result :gravity/sh04-syntax-object-artifact
+   :identity-domain :gravity/sh04-syntax-object-v1
+   :identity-fields [:form :span :source :namespace :phase :profile
+                     :metadata :hygiene :origin :facts
+                     :reader-binding :reader-source-revision
+                     :ownership :version]
+   :physical-provenance-excluded-from-identity [:actual-source-path]
+   :reference-order :prior-only
+   :serialization :gravity-tagged-vector-v1
+   :host-authority [:validate-sh03-boundary
+                    :resolve-digest-requests
+                    :bind-c3-artifact]
+   :self-hosted? false
+   :whole-language? false
+   :clojure-seed-boundary? true})
+
+(def c3-syntax-bounds
+  {:maximum-syntax-objects 2048
+   :maximum-reference-depth 64
+   :maximum-origin-entries 32
+   :maximum-references-per-object 32
+   :maximum-marks 64
+   :maximum-lexical-scopes 64
+   :maximum-renames 64
+   :maximum-captures 32
+   :maximum-introduced-identifiers 64
+   :maximum-metadata-entries 64
+   :maximum-fact-records 64
+   :maximum-container-width 256})
+
+(def c3-syntax-diagnostic-catalog
+  {:diagnostics ["C3-SHAPE" "C3-ID" "C3-SPAN" "C3-ORIGIN"
+                 "C3-HYGIENE" "C3-CAPTURE" "C3-METADATA"
+                 "C3-FACT-STALE" "C3-SERIALIZE"]
+   :stable-fields [:rule :severity :stage :primary :related
+                   :origin-chain :profile :target :facts :remediation]
+   :stops [:macro-expansion :name-resolution :analysis]})
+
+(defn c3-bounds-record []
+  {:maximum-syntax-objects 2048
+   :maximum-reference-depth 64
+   :maximum-origin-entries 32
+   :maximum-references-per-object 32
+   :maximum-marks 64
+   :maximum-lexical-scopes 64
+   :maximum-renames 64
+   :maximum-captures 32
+   :maximum-introduced-identifiers 64
+   :maximum-metadata-entries 64
+   :maximum-fact-records 64
+   :maximum-container-width 256})
+
+(defn c3-exact-keys? [value expected]
+  (if (map? value)
+    (if (= (count value) (count expected))
+      (= (set (keys value)) expected)
+      false)
+    false))
+
+(defn c3-vector-contains? [values value]
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      false
+      (if (= (first remaining) value)
+        true
+        (recur (rest remaining))))))
+
+(defn c3-all-unique? [values observed]
+  (loop [remaining values seen observed]
+    (if (= (count remaining) 0)
+      true
+      (if (c3-vector-contains? seen (first remaining))
+        false
+        (recur (rest remaining) (conj seen (first remaining)))))))
+
+(defn c3-bounded-vector? [value maximum]
+  (if (vector? value) (<= (count value) maximum) false))
+
+(defn c3-nonnegative-integer? [value]
+  (if (integer? value) (>= value 0) false))
+
+(defn c3-positive-integer? [value]
+  (if (integer? value) (> value 0) false))
+
+(defn c3-nonempty-string? [value]
+  (if (string? value) (> (count value) 0) false))
+
+(defn c3-maximum [left right]
+  (if (> left right) left right))
+
+(defn c3-both? [left right]
+  (if left (if right true false) false))
+
+(defn c3-either? [left right]
+  (if left true (if right true false)))
+
+(defn c3-lowercase-hex? [characters]
+  (loop [remaining characters]
+    (if (= (count remaining) 0)
+      true
+      (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                       \a \b \c \d \e \f}
+                     (first remaining))
+        (recur (rest remaining))
+        false))))
+
+(defn c3-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (c3-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn c3-digest-reference? [value ordinal]
+  (if (c3-exact-keys? value #{:digest-ref})
+    (= (get value :digest-ref) ordinal)
+    false))
+
+(defn c3-reader-source-revision? [revision]
+  (if (c3-exact-keys?
+       revision
+       #{:artifact :schema-version :revision-id :owner :source-language
+         :logical-source-path :source-content-hash :source-byte-count
+         :plan-semantic-hash :functions-semantic-hash
+         :entry-function :entry-semantic-hash
+         :verifier-function :verifier-semantic-hash
+         :reader-result-id :c2-artifact-id :authenticated-envelope-id
+         :semantic-binding-id})
+    (if (= (get revision :artifact)
+           :gravity/sh03-reader-source-revision)
+      (if (= (get revision :schema-version) 1)
+        (if (= (get revision :owner) :sh03-reader)
+          (if (= (get revision :source-language) :gravity)
+            (if (string? (get revision :logical-source-path))
+              (if (> (count (get revision :logical-source-path)) 0)
+                (if (c3-nonnegative-integer?
+                     (get revision :source-byte-count))
+                  (if (<= (get revision :source-byte-count) 1048576)
+                    (if (= (get revision :entry-function)
+                           'sh03-read-source-unit)
+                      (if (= (get revision :verifier-function)
+                             'sh03-verify-reader-result)
+                        (if (c3-sha256-id? (get revision :revision-id))
+                          (if (c3-sha256-id?
+                               (get revision :source-content-hash))
+                            (if (c3-sha256-id?
+                                 (get revision :plan-semantic-hash))
+                              (if (c3-sha256-id?
+                                   (get revision :functions-semantic-hash))
+                                (if (c3-sha256-id?
+                                     (get revision :entry-semantic-hash))
+                                  (if (c3-sha256-id?
+                                       (get revision
+                                            :verifier-semantic-hash))
+                                    (if (c3-sha256-id?
+                                         (get revision :reader-result-id))
+                                      (if (c3-sha256-id?
+                                           (get revision :c2-artifact-id))
+                                        (if (c3-sha256-id?
+                                             (get revision
+                                                  :authenticated-envelope-id))
+                                          (c3-sha256-id?
+                                           (get revision
+                                                :semantic-binding-id))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c3-reader-binding? [binding]
+  (if (c3-exact-keys?
+       binding
+       #{:artifact :schema-version :semantic-source-id
+         :semantic-binding-id
+         :source-bytes-hash :reader-options :token-stream-id
+         :form-tree-id :syntax-seed-stream-id :literal-records-id
+         :deferment-records-id :extension-records-id :reader-result-id
+         :c2-artifact-id :authenticated-envelope-id :source-revision-id})
+    (if (= (get binding :artifact)
+           :gravity/sh04-reader-semantic-binding)
+      (if (= (get binding :schema-version) 1)
+        (if (c3-sha256-id? (get binding :semantic-binding-id))
+          (if (map? (get binding :reader-options))
+          (if (c3-sha256-id? (get binding :semantic-source-id))
+            (if (c3-sha256-id? (get binding :source-bytes-hash))
+              (if (c3-sha256-id? (get binding :token-stream-id))
+                (if (c3-sha256-id? (get binding :form-tree-id))
+                  (if (c3-sha256-id?
+                       (get binding :syntax-seed-stream-id))
+                    (if (c3-sha256-id?
+                         (get binding :literal-records-id))
+                      (if (c3-sha256-id?
+                           (get binding :deferment-records-id))
+                        (if (c3-sha256-id?
+                             (get binding :extension-records-id))
+                          (if (c3-sha256-id?
+                               (get binding :reader-result-id))
+                            (if (c3-sha256-id?
+                                 (get binding :c2-artifact-id))
+                              (if (c3-sha256-id?
+                                   (get binding :authenticated-envelope-id))
+                                (c3-sha256-id?
+                                 (get binding :source-revision-id))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c3-reader-binding-identity-preimage [binding]
+  {:domain :gravity/sh04-reader-semantic-binding-v1
+   :artifact (get binding :artifact)
+   :schema-version (get binding :schema-version)
+   :semantic-source-id (get binding :semantic-source-id)
+   :source-bytes-hash (get binding :source-bytes-hash)
+   :reader-options (get binding :reader-options)
+   :token-stream-id (get binding :token-stream-id)
+   :form-tree-id (get binding :form-tree-id)
+   :syntax-seed-stream-id (get binding :syntax-seed-stream-id)
+   :literal-records-id (get binding :literal-records-id)
+   :deferment-records-id (get binding :deferment-records-id)
+   :extension-records-id (get binding :extension-records-id)
+   :reader-result-id (get binding :reader-result-id)
+   :c2-artifact-id (get binding :c2-artifact-id)
+   :authenticated-envelope-id (get binding :authenticated-envelope-id)})
+
+(defn c3-reader-binding-revision-match? [binding revision]
+  (if (c3-reader-binding? binding)
+    (if (c3-reader-source-revision? revision)
+      (if (= (get binding :source-revision-id)
+             (get revision :revision-id))
+        (if (= (get binding :reader-result-id)
+               (get revision :reader-result-id))
+          (if (= (get binding :c2-artifact-id)
+                 (get revision :c2-artifact-id))
+            (if (= (get binding :authenticated-envelope-id)
+                   (get revision :authenticated-envelope-id))
+              (= (get binding :semantic-binding-id)
+                 (get revision :semantic-binding-id))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c3-source-span? [span]
+  (if (c3-exact-keys?
+       span
+       #{:source :file :byte-start :byte-end :scalar-start :scalar-end
+         :line-start :column-start :line-end :column-end})
+    (let [byte-start (get span :byte-start)
+          byte-end (get span :byte-end)
+          scalar-start (get span :scalar-start)
+          scalar-end (get span :scalar-end)
+          line-start (get span :line-start)
+          line-end (get span :line-end)
+          column-start (get span :column-start)
+          column-end (get span :column-end)]
+      (if (c3-nonempty-string? (get span :source))
+        (if (c3-sha256-id? (get span :file))
+        (if (c3-nonnegative-integer? byte-start)
+          (if (c3-both? (c3-nonnegative-integer? byte-end)
+                        (>= byte-end byte-start))
+            (if (c3-nonnegative-integer? scalar-start)
+              (if (c3-both? (c3-nonnegative-integer? scalar-end)
+                            (>= scalar-end scalar-start))
+                (if (c3-both?
+                     (c3-both? (c3-positive-integer? line-start)
+                               (c3-positive-integer? line-end))
+                     (>= line-end line-start))
+                  (if (c3-both? (c3-positive-integer? column-start)
+                                (c3-positive-integer? column-end))
+                    (if (= line-start line-end)
+                      (>= column-end column-start)
+                      true)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+          false)
+        false))
+    false))
+
+(defn c3-generated-span? [span]
+  (if (c3-exact-keys? span #{:kind :producer-id :ordinal})
+    (if (= (get span :kind) :generated)
+      (if (c3-sha256-id? (get span :producer-id))
+        (c3-nonnegative-integer? (get span :ordinal))
+        false)
+      false)
+    false))
+
+(defn c3-semantic-span [span]
+  (if (map? span)
+    (if (c3-generated-span? span)
+      {:kind :generated
+       :producer-id (get span :producer-id)
+       :ordinal (get span :ordinal)}
+      {:file (get span :file)
+       :byte-start (get span :byte-start)
+       :byte-end (get span :byte-end)
+       :scalar-start (get span :scalar-start)
+       :scalar-end (get span :scalar-end)
+       :line-start (get span :line-start)
+       :column-start (get span :column-start)
+       :line-end (get span :line-end)
+       :column-end (get span :column-end)})
+    span))
+
+(defn c3-source-record? [source]
+  (if (c3-exact-keys? source #{:source-id :form-id :token-range})
+    (if (c3-sha256-id? (get source :source-id))
+      (if (= (get source :form-id) nil)
+        false
+        (c3-bounded-vector? (get source :token-range) 2))
+      false)
+    false))
+
+(defn c3-namespace-context? [context]
+  (if (c3-exact-keys? context #{:current :aliases :imports})
+    (if (= (symbol? (get context :current)) false)
+      false
+      (if (c3-both? (map? (get context :aliases))
+                    (<= (count (get context :aliases)) 64))
+        (if (c3-bounded-vector? (get context :imports) 64)
+          (c3-all-unique? (get context :imports) [])
+          false)
+        false))
+    false))
+
+(defn c3-hygiene-id? [value]
+  (if (keyword? value)
+    true
+    (if (symbol? value)
+      true
+      (if (string? value) (> (count value) 0) false))))
+
+(defn c3-hygiene-ids-valid? [values]
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      true
+      (if (c3-hygiene-id? (first remaining))
+        (recur (rest remaining))
+        false))))
+
+(defn c3-symbols-valid? [values]
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      true
+      (if (symbol? (first remaining))
+        (recur (rest remaining))
+        false))))
+
+(defn c3-renames-valid? [renames introduced]
+  (loop [remaining (keys renames)]
+    (if (= (count remaining) 0)
+      true
+      (let [source-name (first remaining)
+            target-name (get renames source-name)]
+        (if (symbol? source-name)
+          (if (symbol? target-name)
+            (if (c3-vector-contains? introduced target-name)
+              (recur (rest remaining))
+              false)
+            false)
+          false)))))
+
+(defn c3-capture-record? [capture]
+  (if (c3-exact-keys?
+       capture
+       #{:identifier :macro-api :call-site-namespace
+         :intentional? :authority-bearing? :policy-result})
+    (if (symbol? (get capture :identifier))
+      (if (symbol? (get capture :macro-api))
+        (if (symbol? (get capture :call-site-namespace))
+          (if (contains? #{true false} (get capture :intentional?))
+            (if (contains? #{true false} (get capture :authority-bearing?))
+              (if (= (get capture :intentional?) true)
+                (if (= (get capture :authority-bearing?) true)
+                  (= (get capture :policy-result) :allowed)
+                  (contains? #{:allowed :not-required}
+                             (get capture :policy-result)))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c3-captures-valid? [captures]
+  (loop [remaining captures identifiers []]
+    (if (= (count remaining) 0)
+      true
+      (let [capture (first remaining)
+            identifier (get capture :identifier)]
+        (if (c3-capture-record? capture)
+          (if (c3-vector-contains? identifiers identifier)
+            false
+            (recur (rest remaining) (conj identifiers identifier)))
+          false)))))
+
+(defn c3-capture-surface-invalid? [hygiene]
+  (if (map? hygiene)
+    (if (contains? hygiene :captures)
+      (let [captures (get hygiene :captures)]
+        (if (vector? captures)
+          (if (> (count captures)
+                 (get (c3-bounds-record) :maximum-captures))
+            true
+            (= (c3-captures-valid? captures) false))
+          true))
+      false)
+    false))
+
+(defn c3-hygiene-context? [hygiene]
+  (if (c3-exact-keys?
+       hygiene
+       #{:marks :lexical-scopes :renames :introduced-identifiers
+         :captures :macro-definition-namespace
+         :macro-call-site-namespace})
+    (let [bounds (c3-bounds-record)
+          marks (get hygiene :marks)
+          scopes (get hygiene :lexical-scopes)
+          renames (get hygiene :renames)
+          introduced (get hygiene :introduced-identifiers)
+          captures (get hygiene :captures)]
+      (if (c3-bounded-vector? marks (get bounds :maximum-marks))
+        (if (c3-all-unique? marks [])
+          (if (c3-hygiene-ids-valid? marks)
+            (if (c3-bounded-vector?
+               scopes (get bounds :maximum-lexical-scopes))
+            (if (c3-all-unique? scopes [])
+              (if (c3-hygiene-ids-valid? scopes)
+                (if (c3-both?
+                   (map? renames)
+                   (<= (count renames) (get bounds :maximum-renames)))
+                (if (c3-bounded-vector?
+                     introduced
+                     (get bounds :maximum-introduced-identifiers))
+                  (if (c3-all-unique? introduced [])
+                    (if (c3-symbols-valid? introduced)
+                      (if (c3-renames-valid? renames introduced)
+                        (if (c3-bounded-vector?
+                         captures (get bounds :maximum-captures))
+                          (if (c3-captures-valid? captures)
+                            (if (= (get hygiene
+                                        :macro-definition-namespace) nil)
+                              (if (= (get hygiene
+                                          :macro-call-site-namespace) nil)
+                                true
+                                (symbol?
+                                 (get hygiene
+                                      :macro-call-site-namespace)))
+                              (if (symbol?
+                                   (get hygiene
+                                        :macro-definition-namespace))
+                                (symbol?
+                                 (get hygiene
+                                      :macro-call-site-namespace))
+                                false))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+                false)
+              false)
+            false)
+            false)
+          false)
+        false))
+    false))
+
+(defn c3-origin-producer? [producer]
+  (if (c3-exact-keys?
+       producer #{:kind :name :identity :source-id :generated-form-id})
+    (if (contains? #{:reader :macro :compiler-pass :provider :tool}
+                   (get producer :kind))
+      (if (symbol? (get producer :name))
+        (if (c3-sha256-id? (get producer :identity))
+          (if (c3-sha256-id? (get producer :source-id))
+            (if (= (get producer :generated-form-id) nil)
+              true
+              (keyword? (get producer :generated-form-id)))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c3-origin-entry? [origin]
+  (if (c3-exact-keys?
+       origin
+       #{:kind :span :producer :producer-version :input-syntax-ids
+         :generation-reason :build-effects})
+    (let [kind (get origin :kind)
+          inputs (get origin :input-syntax-ids)]
+      (if (contains? #{:source :generated} kind)
+        (if (c3-origin-producer? (get origin :producer))
+          (if (= (get (get origin :producer) :kind) nil)
+            false
+            (if (= (c3-sha256-id?
+                    (get (get origin :producer) :identity)) false)
+              false
+              (if (= (get origin :producer-version) nil)
+                false
+                (if (c3-bounded-vector? (get origin :build-effects) 32)
+                  (if (c3-bounded-vector?
+                       inputs
+                       (get (c3-bounds-record)
+                            :maximum-references-per-object))
+                    (if (c3-all-unique? inputs [])
+                      (if (= kind :source)
+                        (if (= (count inputs) 0)
+                          (if (c3-source-span? (get origin :span))
+                            (= (get (get origin :producer) :source-id)
+                               (get (get origin :span) :file))
+                            false)
+                          false)
+                        (if (> (count inputs) 0)
+                          (if (c3-generated-span? (get origin :span))
+                            (if (= (get origin :generation-reason) nil)
+                              false
+                              (= (get (get origin :span) :producer-id)
+                                 (get (get origin :producer) :identity)))
+                            false)
+                          false))
+                      false)
+                    false)
+                  false))))
+          false)
+        false))
+    false))
+
+(defn c3-origins-valid? [origins]
+  (if (c3-bounded-vector?
+       origins (get (c3-bounds-record) :maximum-origin-entries))
+    (if (> (count origins) 0)
+      (loop [remaining origins]
+        (if (= (count remaining) 0)
+          true
+          (if (c3-origin-entry? (first remaining))
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn c3-fact-record? [fact]
+  (if (c3-exact-keys?
+       fact #{:producer-stage :fact-kind :value :version :invalidated-by})
+    (if (= (get fact :producer-stage) nil)
+      false
+      (if (= (get fact :fact-kind) nil)
+        false
+        (if (= (get fact :version) 1)
+          (c3-bounded-vector? (get fact :invalidated-by) 32)
+          false)))
+    false))
+
+(defn c3-facts-valid? [facts]
+  (if (c3-bounded-vector?
+       facts (get (c3-bounds-record) :maximum-fact-records))
+    (loop [remaining facts]
+      (if (= (count remaining) 0)
+        true
+        (if (c3-fact-record? (first remaining))
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn c3-form-kind? [kind]
+  (contains? #{:list :vector :map :set :symbol :keyword :string
+               :character :integer :ratio :decimal :boolean :nil
+               :tagged-literal :metadata-wrapper
+               :abbreviation-expansion :generated-form}
+             kind))
+
+(defn c3-form-record? [form]
+  (if (c3-exact-keys? form #{:kind :value :raw})
+    (if (c3-form-kind? (get form :kind))
+      (string? (get form :raw))
+      false)
+    false))
+
+(defn c3-metadata-keys-valid? [metadata-keys]
+  (loop [remaining metadata-keys]
+    (if (= (count remaining) 0)
+      true
+      (let [key (first remaining)]
+        (if (c3-either? (keyword? key) (symbol? key))
+          (recur (rest remaining))
+          false)))))
+
+(defn c3-metadata-valid? [metadata]
+  (if (map? metadata)
+    (if (<= (count metadata)
+            (get (c3-bounds-record) :maximum-metadata-entries))
+      (c3-metadata-keys-valid? (keys metadata))
+      false)
+    false))
+
+(defn c3-descriptor-reader-binding? [descriptor]
+  (let [binding (get descriptor :reader-binding)
+        revision (get descriptor :reader-source-revision)
+        source (get descriptor :source)
+        span (get descriptor :span)
+        first-origin (first (get descriptor :origin))]
+    (if (c3-reader-binding-revision-match? binding revision)
+      (if (= (get source :source-id)
+             (get binding :semantic-source-id))
+        (if (= (get first-origin :kind) :source)
+          (if (= (get span :file)
+                 (get binding :semantic-source-id))
+            (if (= (get (get first-origin :producer) :identity)
+                   (get binding :reader-result-id))
+              (if (= (get (get first-origin :producer) :source-id)
+                     (get binding :semantic-source-id))
+                true false)
+              false)
+            false)
+          (if (= (get first-origin :kind) :generated)
+            (= (get (get first-origin :producer) :source-id)
+               (get binding :semantic-source-id))
+            false))
+          false)
+      false)))
+
+(defn c3-ownership-product [descriptor]
+  {:artifact :gravity/sh04-syntax-ownership-product
+   :schema-version 1
+   :owner :gravity-source
+   :module 'gravity.bootstrap.syntax
+   :reader-owner :gravity.bootstrap.reader
+   :semantic-source-id
+   (get (get descriptor :reader-binding) :semantic-source-id)
+   :source-revision-id
+   (get (get descriptor :reader-source-revision) :revision-id)
+   :reader-result-id
+   (get (get descriptor :reader-binding) :reader-result-id)
+   :c2-artifact-id
+   (get (get descriptor :reader-binding) :c2-artifact-id)
+   :form-id (get (get descriptor :source) :form-id)})
+
+(defn c3-build-descriptor? [descriptor]
+  (if (c3-exact-keys?
+       descriptor
+       #{:form :span :source :namespace :phase :profile
+         :metadata :hygiene :origin :facts :version
+         :reader-binding :reader-source-revision})
+    (if (c3-form-record? (get descriptor :form))
+      (if (c3-either? (c3-source-span? (get descriptor :span))
+                      (c3-generated-span? (get descriptor :span)))
+        (if (c3-source-record? (get descriptor :source))
+          (if (c3-namespace-context? (get descriptor :namespace))
+            (if (contains? #{:read :macro-expanded}
+                           (get descriptor :phase))
+              (if (= (get descriptor :profile) nil)
+                false
+                (if (c3-metadata-valid? (get descriptor :metadata))
+                  (if (c3-hygiene-context? (get descriptor :hygiene))
+                    (if (c3-origins-valid? (get descriptor :origin))
+                      (if (c3-facts-valid? (get descriptor :facts))
+                        (if (= (get descriptor :version) 1)
+                          (c3-descriptor-reader-binding? descriptor)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c3-semantic-producer [producer]
+  {:kind (get producer :kind)
+   :name (get producer :name)
+   :identity (get producer :identity)
+   :source-id (get producer :source-id)
+   :generated-form-id (get producer :generated-form-id)})
+
+(defn c3-generated-producer-input? [producer]
+  (if (c3-exact-keys?
+       producer
+       #{:kind :name :identity :source-id :generated-form-id :version})
+    (if (= (get producer :version) nil)
+      false
+      (c3-origin-producer? (c3-semantic-producer producer)))
+    false))
+
+(defn c3-path-neutral-origin [origin]
+  {:kind (get origin :kind)
+   :span (c3-semantic-span (get origin :span))
+   :producer (c3-semantic-producer (get origin :producer))
+   :producer-version (get origin :producer-version)
+   :input-syntax-ids (get origin :input-syntax-ids)
+   :generation-reason (get origin :generation-reason)
+   :build-effects (get origin :build-effects)})
+
+(defn c3-path-neutral-origins [origins]
+  (loop [remaining origins result []]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining)
+             (conj result (c3-path-neutral-origin (first remaining)))))))
+
+(defn c3-identity-preimage [descriptor]
+  {:domain :gravity/sh04-syntax-object-v1
+   :form (get descriptor :form)
+   :span (c3-semantic-span (get descriptor :span))
+   :source (get descriptor :source)
+   :namespace (get descriptor :namespace)
+   :phase (get descriptor :phase)
+   :profile (get descriptor :profile)
+   :metadata (get descriptor :metadata)
+   :hygiene (get descriptor :hygiene)
+   :origin (c3-path-neutral-origins (get descriptor :origin))
+   :facts (get descriptor :facts)
+   :reader-binding (get descriptor :reader-binding)
+   :reader-source-revision (get descriptor :reader-source-revision)
+   :ownership (c3-ownership-product descriptor)
+   :version (get descriptor :version)})
+
+(defn c3-syntax-identity-request-preimage [descriptor]
+  (c3-identity-preimage
+   (assoc descriptor
+          :reader-binding
+          (assoc (get descriptor :reader-binding)
+                 :semantic-binding-id {:digest-ref 0}))))
+
+(defn c3-diagnostic [rule descriptor reason missing-fields]
+  (let [origins (if (vector? (get descriptor :origin))
+                  (get descriptor :origin) [])
+        first-origin (first origins)
+        producer (get first-origin :producer)
+        form-kind (get (get descriptor :form) :kind)
+        phase (get descriptor :phase)
+        hygiene (get descriptor :hygiene)]
+    {:artifact :gravity/diagnostic-template
+     :rule rule
+     :severity :error
+     :lifecycle :active
+     :stage :syntax-object-model
+     :primary {:span (get descriptor :span)
+               :syntax-id (get descriptor :syntax-id)
+               :artifact :gravity/sh04-syntax-object
+               :form-kind form-kind
+               :phase phase
+               :producer producer
+               :hygiene-summary hygiene}
+     :related []
+     :origin-chain origins
+     :profile (get descriptor :profile)
+     :target :jvm
+     :facts {:reason reason
+             :missing-fields missing-fields
+             :form-kind form-kind
+             :phase phase
+             :producer producer
+             :hygiene-summary hygiene}
+     :remediation [{:kind :rebuild-syntax-object}]
+     :diagnostic-id-request
+     {:domain :gravity/sh04-c3-diagnostic-v1
+      :semantic-input {:rule rule
+                       :reason reason
+                       :span (c3-semantic-span (get descriptor :span))
+                       :form-kind form-kind
+                       :phase phase
+                       :producer producer
+                       :hygiene-summary hygiene}}}))
+
+(defn c3-rejection [rule descriptor reason missing-fields]
+  {:artifact :gravity/sh04-syntax-template-result
+   :schema-version 1
+   :status :rejected
+   :syntax-template nil
+   :reader-binding (get descriptor :reader-binding)
+   :reader-source-revision (get descriptor :reader-source-revision)
+   :ownership-product nil
+   :digest-requests []
+   :diagnostics [(c3-diagnostic rule descriptor reason missing-fields)]
+   :bounds (c3-bounds-record)
+   :containment {:downstream-artifacts-forbidden true}
+   :execution-boundary {:owner :gravity-source
+                        :ambient-authority-denied true
+                        :host-role :digest-resolution-only}})
+
+(defn c3-canonical-prior-syntax-ids [descriptor]
+  (let [first-origin (first (get descriptor :origin))]
+    (if (= (get first-origin :kind) :generated)
+      (get first-origin :input-syntax-ids)
+      [])))
+
+(defn c3-syntax-object-template [descriptor]
+  {:artifact :gravity/syntax-object
+   :schema-version 1
+   :syntax-id {:digest-ref 1}
+   :form (get descriptor :form)
+   :span {:primary (get descriptor :span)
+          :all [(get descriptor :span)]}
+   :source (get descriptor :source)
+   :namespace (get descriptor :namespace)
+   :phase (get descriptor :phase)
+   :profile (get descriptor :profile)
+   :metadata (get descriptor :metadata)
+   :hygiene (get descriptor :hygiene)
+   :origin (get descriptor :origin)
+   :facts (get descriptor :facts)
+   :reader-binding (get descriptor :reader-binding)
+   :reader-source-revision (get descriptor :reader-source-revision)
+   :ownership (c3-ownership-product descriptor)
+   :version (get descriptor :version)
+   :prior-syntax-ids (c3-canonical-prior-syntax-ids descriptor)
+   :immutable? true})
+
+(defn c3-syntax-build-template [descriptor]
+  (if (c3-build-descriptor? descriptor)
+    (let [preimage (c3-syntax-identity-request-preimage descriptor)]
+      {:artifact :gravity/sh04-syntax-template-result
+       :schema-version 1
+       :status :accepted
+       :syntax-template (c3-syntax-object-template descriptor)
+       :reader-binding (get descriptor :reader-binding)
+       :reader-source-revision (get descriptor :reader-source-revision)
+       :ownership-product (c3-ownership-product descriptor)
+       :digest-requests
+       [{:key :reader-semantic-binding-id
+         :ordinal 0
+         :algorithm :sha256
+         :encoding :gravity-canonical-edn-v1
+         :depends-on []
+         :preimage
+         (c3-reader-binding-identity-preimage
+          (get descriptor :reader-binding))}
+        {:key :syntax-id
+         :ordinal 1
+         :algorithm :sha256
+         :encoding :gravity-canonical-edn-v1
+         :depends-on [0]
+         :preimage preimage}]
+       :diagnostics []
+       :bounds (c3-bounds-record)
+       :containment {:downstream-artifacts-forbidden false}
+       :execution-boundary {:owner :gravity-source
+                            :ambient-authority-denied true
+                            :host-role :digest-resolution-only}})
+    (if (= (c3-form-record? (get descriptor :form)) false)
+      (c3-rejection "C3-SHAPE" descriptor :invalid-form [:form])
+      (if (= (c3-either? (c3-source-span? (get descriptor :span))
+                         (c3-generated-span? (get descriptor :span))) false)
+        (c3-rejection "C3-SPAN" descriptor :invalid-span [:span])
+        (if (c3-capture-surface-invalid? (get descriptor :hygiene))
+          (c3-rejection "C3-CAPTURE" descriptor :invalid-capture
+                        [:hygiene :captures])
+          (if (= (c3-hygiene-context? (get descriptor :hygiene)) false)
+            (c3-rejection "C3-HYGIENE" descriptor
+                          :invalid-hygiene [:hygiene])
+          (if (= (c3-origins-valid? (get descriptor :origin)) false)
+            (c3-rejection "C3-ORIGIN" descriptor :invalid-origin [:origin])
+            (if (= (c3-metadata-valid? (get descriptor :metadata)) false)
+              (c3-rejection "C3-METADATA" descriptor
+                            :invalid-metadata [:metadata])
+              (if (= (c3-facts-valid? (get descriptor :facts)) false)
+                (c3-rejection "C3-FACT-STALE" descriptor
+                              :invalid-or-stale-facts [:facts])
+                (if (= (c3-descriptor-reader-binding? descriptor) false)
+                  (c3-rejection "C3-ID" descriptor
+                                :reader-binding-substitution-or-replay
+                                [:reader-binding :reader-source-revision])
+                  (c3-rejection "C3-SHAPE" descriptor
+                                :invalid-descriptor [:descriptor])))))))))))
+
+(defn c3-generated-syntax-template
+  [base-syntax-id form generated-span producer generation-reason
+   namespace-context profile metadata hygiene facts
+   reader-binding reader-source-revision]
+  (let [descriptor
+        {:form form
+         :span generated-span
+         :source {:source-id (get producer :source-id)
+                  :form-id (get producer :generated-form-id)
+                  :token-range []}
+         :namespace namespace-context
+         :phase :macro-expanded
+         :profile profile
+         :metadata metadata
+         :hygiene hygiene
+         :origin [{:kind :generated
+                   :span generated-span
+                   :producer (c3-semantic-producer producer)
+                   :producer-version (get producer :version)
+                   :input-syntax-ids [base-syntax-id]
+                   :generation-reason generation-reason
+                   :build-effects []}]
+         :facts facts
+         :reader-binding reader-binding
+         :reader-source-revision reader-source-revision
+         :version 1}]
+    (if (c3-generated-producer-input? producer)
+      (if (c3-sha256-id? base-syntax-id)
+        (let [result (c3-syntax-build-template descriptor)]
+          result)
+        (c3-rejection "C3-ORIGIN" descriptor
+                      :invalid-input-syntax-id [:base-syntax-id]))
+      (c3-rejection "C3-ORIGIN" descriptor
+                    :invalid-generated-producer [:producer]))))
+
+(defn c3-resolved-syntax-exact? [syntax descriptor]
+  (= syntax
+     (assoc (c3-syntax-object-template descriptor)
+            :syntax-id (get syntax :syntax-id))))
+
+(defn c3-syntax-template-shape? [syntax]
+  (if (c3-exact-keys?
+       syntax
+       #{:artifact :schema-version :syntax-id :form :span :source
+         :namespace :phase :profile :metadata :hygiene :origin :facts
+         :reader-binding :reader-source-revision :ownership
+         :version :prior-syntax-ids :immutable?})
+    (if (= (get syntax :artifact) :gravity/syntax-object)
+      (if (= (get syntax :schema-version) 1)
+        (if (c3-either? (c3-sha256-id? (get syntax :syntax-id))
+                        (c3-digest-reference? (get syntax :syntax-id) 1))
+          (if (c3-both?
+               (c3-exact-keys? (get syntax :span) #{:primary :all})
+               (= (get (get syntax :span) :all)
+                  [(get (get syntax :span) :primary)]))
+            (if (c3-form-record? (get syntax :form))
+              (if (c3-source-record? (get syntax :source))
+                (if (c3-namespace-context? (get syntax :namespace))
+                  (if (c3-hygiene-context? (get syntax :hygiene))
+                    (if (c3-origins-valid? (get syntax :origin))
+                      (if (c3-facts-valid? (get syntax :facts))
+                        (if (c3-bounded-vector?
+                             (get syntax :prior-syntax-ids)
+                             (get (c3-bounds-record)
+                                  :maximum-references-per-object))
+                          (if (c3-build-descriptor?
+                               (c3-template-descriptor syntax))
+                            (if (= (get syntax :ownership)
+                                   (c3-ownership-product
+                                    (c3-template-descriptor syntax)))
+                              (= (get syntax :immutable?) true)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c3-template-descriptor [syntax]
+  {:form (get syntax :form)
+   :span (get (get syntax :span) :primary)
+   :source (get syntax :source)
+   :namespace (get syntax :namespace)
+   :phase (get syntax :phase)
+   :profile (get syntax :profile)
+   :metadata (get syntax :metadata)
+   :hygiene (get syntax :hygiene)
+   :origin (get syntax :origin)
+   :facts (get syntax :facts)
+   :reader-binding (get syntax :reader-binding)
+   :reader-source-revision (get syntax :reader-source-revision)
+   :version (get syntax :version)})
+
+(defn c3-path-neutral-span-list [spans]
+  (loop [remaining spans result []]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining)
+             (conj result (c3-semantic-span (first remaining)))))))
+
+(defn c3-path-neutral-syntax [syntax]
+  {:artifact (get syntax :artifact)
+   :schema-version (get syntax :schema-version)
+   :syntax-id (get syntax :syntax-id)
+   :form (get syntax :form)
+   :span {:primary (c3-semantic-span
+                    (get (get syntax :span) :primary))
+          :all (c3-path-neutral-span-list
+                (get (get syntax :span) :all))}
+   :source (get syntax :source)
+   :namespace (get syntax :namespace)
+   :phase (get syntax :phase)
+   :profile (get syntax :profile)
+   :metadata (get syntax :metadata)
+   :hygiene (get syntax :hygiene)
+   :origin (c3-path-neutral-origins (get syntax :origin))
+   :facts (get syntax :facts)
+   :reader-binding (get syntax :reader-binding)
+   :reader-source-revision (get syntax :reader-source-revision)
+   :ownership (get syntax :ownership)
+   :version (get syntax :version)
+   :prior-syntax-ids (get syntax :prior-syntax-ids)
+   :immutable? (get syntax :immutable?)})
+
+(defn c3-syntax-verify-template [syntax digest-requests]
+  (if (c3-syntax-template-shape? syntax)
+    (if (c3-digest-reference? (get syntax :syntax-id) 1)
+      (let [expected-preimage
+            (c3-syntax-identity-request-preimage
+             (c3-template-descriptor syntax))
+            expected-requests
+            [{:key :reader-semantic-binding-id
+              :ordinal 0
+              :algorithm :sha256
+              :encoding :gravity-canonical-edn-v1
+              :depends-on []
+              :preimage
+              (c3-reader-binding-identity-preimage
+               (get syntax :reader-binding))}
+             {:key :syntax-id
+              :ordinal 1
+              :algorithm :sha256
+              :encoding :gravity-canonical-edn-v1
+              :depends-on [0]
+              :preimage expected-preimage}]]
+        (if (= digest-requests expected-requests)
+          {:artifact :gravity/sh04-syntax-verification-report
+           :schema-version 1
+           :status :passed
+           :checks [:required-fields-present
+                    :unresolved-identity-reference
+                    :stable-identity-preimage
+                    :source-or-generated-span
+                    :origin-chain-valid
+                    :hygiene-visible-and-bounded
+                    :metadata-bounded
+                    :facts-versioned
+                    :immutable-value
+                    :digest-request-exact-replay]
+           :containment {:downstream-artifacts-forbidden false}
+           :diagnostics []}
+          {:artifact :gravity/sh04-syntax-verification-report
+           :schema-version 1
+           :status :failed
+           :checks []
+           :containment {:downstream-artifacts-forbidden true}
+           :diagnostics
+           [(c3-diagnostic "C3-ID" (c3-template-descriptor syntax)
+                           :digest-request-mismatch [:digest-requests])]}))
+      {:artifact :gravity/sh04-syntax-verification-report
+       :schema-version 1
+       :status :failed
+       :checks []
+       :containment {:downstream-artifacts-forbidden true}
+       :diagnostics
+       [(c3-diagnostic "C3-ID" (c3-template-descriptor syntax)
+                       :identity-reference-substituted [:syntax-id])]})
+    {:artifact :gravity/sh04-syntax-verification-report
+     :schema-version 1
+     :status :failed
+     :checks []
+     :containment {:downstream-artifacts-forbidden true}
+     :diagnostics
+     [(c3-diagnostic "C3-SHAPE" (if (map? syntax) syntax {})
+                     :invalid-syntax-template [:syntax-template])]}))
+
+(defn c3-syntax-verify-resolved
+  [syntax digest-requests resolved-digests reader-binding
+   reader-source-revision]
+  (if (c3-syntax-template-shape? syntax)
+    (let [descriptor (c3-template-descriptor syntax)
+          expected-requests
+          [{:key :reader-semantic-binding-id
+            :ordinal 0
+            :algorithm :sha256
+            :encoding :gravity-canonical-edn-v1
+            :depends-on []
+            :preimage
+            (c3-reader-binding-identity-preimage reader-binding)}
+           {:key :syntax-id
+            :ordinal 1
+            :algorithm :sha256
+            :encoding :gravity-canonical-edn-v1
+            :depends-on [0]
+            :preimage (c3-syntax-identity-request-preimage descriptor)}]]
+      (if (c3-sha256-id? (get syntax :syntax-id))
+        (if (= digest-requests expected-requests)
+          (if (c3-bounded-vector? resolved-digests 2)
+            (if (= (count resolved-digests) 2)
+              (if (= (get resolved-digests 0)
+                     (get reader-binding :semantic-binding-id))
+                (if (= (get resolved-digests 1) (get syntax :syntax-id))
+                (if (= reader-binding (get syntax :reader-binding))
+                  (if (= reader-source-revision
+                         (get syntax :reader-source-revision))
+                    (if (c3-reader-binding-revision-match?
+                         reader-binding reader-source-revision)
+                      (if (c3-resolved-syntax-exact? syntax descriptor)
+                        {:artifact :gravity/sh04-resolved-syntax-verification-report
+                         :schema-version 1
+                         :status :passed
+                         :checks [:resolved-syntax-id-retained
+                                  :semantic-preimage-recomputed
+                                  :digest-request-exact-replay
+                                  :reader-binding-exact
+                                  :reader-source-revision-exact
+                                  :ownership-product-exact
+                                  :whole-syntax-object-exact]
+                         :containment
+                         {:downstream-artifacts-forbidden false}
+                         :diagnostics []}
+                        (c3-resolved-verification-failure
+                         descriptor :resolved-syntax-derived-field-mutation))
+                      (c3-resolved-verification-failure
+                       descriptor :reader-binding-substitution-or-replay))
+                    (c3-resolved-verification-failure
+                     descriptor :reader-source-revision-substituted))
+                  (c3-resolved-verification-failure
+                   descriptor :reader-binding-substituted))
+                (c3-resolved-verification-failure
+                 descriptor :resolved-syntax-id-mismatch))
+                (c3-resolved-verification-failure
+                 descriptor :reader-semantic-binding-id-mismatch))
+              (c3-resolved-verification-failure
+               descriptor :resolved-digest-count))
+            (c3-resolved-verification-failure
+             descriptor :resolved-digests-shape))
+          (c3-resolved-verification-failure
+           descriptor :semantic-field-or-request-mutation))
+        (c3-resolved-verification-failure
+         descriptor :unresolved-or-invalid-syntax-id)))
+    (c3-resolved-verification-failure
+     (if (map? syntax) (c3-template-descriptor syntax) {})
+     :resolved-syntax-shape)))
+
+(defn c3-resolved-verification-failure [descriptor reason]
+  {:artifact :gravity/sh04-resolved-syntax-verification-report
+   :schema-version 1
+   :status :failed
+   :checks []
+   :containment {:downstream-artifacts-forbidden true}
+   :diagnostics
+   [(c3-diagnostic "C3-ID" descriptor reason
+                   [:resolved-syntax-id :reader-binding
+                    :reader-source-revision])]})
+
+(defn c3-serialization-rejection [syntax reason]
+  {:artifact :gravity/sh04-syntax-serialization-template
+   :schema-version 1
+   :status :rejected
+   :encoding :gravity-tagged-vector-v1
+   :carrier nil
+   :semantic-payload nil
+   :payload-id-request nil
+   :round-trip-contract nil
+   :containment {:downstream-artifacts-forbidden true}
+   :diagnostics
+   [(c3-diagnostic "C3-SERIALIZE"
+                   (if (map? syntax)
+                     (c3-template-descriptor syntax) {})
+                   reason [:syntax-carrier])]})
+
+(defn c3-object-serialize-template [syntax digest-requests]
+  (let [verification
+        (c3-syntax-verify-template syntax digest-requests)]
+    (if (= (get verification :status) :passed)
+      (let [carrier
+            [:gravity/sh04-syntax-carrier-v1 syntax digest-requests]]
+        {:artifact :gravity/sh04-syntax-serialization-template
+         :schema-version 1
+         :status :accepted
+         :encoding :gravity-tagged-vector-v1
+         :carrier carrier
+         :semantic-payload {:syntax-object syntax
+                            :digest-requests digest-requests}
+         :payload-id-request
+         {:domain :gravity/sh04-syntax-serialization-v1
+          :semantic-input
+          [:gravity/sh04-syntax-carrier-v1
+           (c3-path-neutral-syntax syntax)
+           digest-requests]}
+         :round-trip-contract
+         {:decode-with :c3-object-deserialize-template
+          :exact-semantic-payload-required true}
+         :containment {:downstream-artifacts-forbidden false}
+         :diagnostics []})
+      (c3-serialization-rejection syntax
+                                  :syntax-verification-failed))))
+
+(defn c3-object-deserialize-template [serialized-carrier]
+  (if (vector? serialized-carrier)
+    (if (= (count serialized-carrier) 3)
+      (if (= (get serialized-carrier 0)
+             :gravity/sh04-syntax-carrier-v1)
+        (let [syntax (get serialized-carrier 1)
+              digest-requests (get serialized-carrier 2)
+              verification
+              (c3-syntax-verify-template syntax digest-requests)]
+          (if (= (get verification :status) :passed)
+            {:artifact :gravity/sh04-syntax-deserialization-result
+             :schema-version 1
+             :status :accepted
+             :encoding :gravity-tagged-vector-v1
+             :semantic-payload {:syntax-object syntax
+                                :digest-requests digest-requests}
+             :containment {:downstream-artifacts-forbidden false}
+             :diagnostics []}
+            {:artifact :gravity/sh04-syntax-deserialization-result
+             :schema-version 1
+             :status :rejected
+             :encoding :gravity-tagged-vector-v1
+             :semantic-payload nil
+             :containment {:downstream-artifacts-forbidden true}
+             :diagnostics
+             [(c3-diagnostic "C3-SERIALIZE"
+                             (if (map? syntax)
+                               (c3-template-descriptor syntax) {})
+                             :decoded-syntax-verification-failed
+                             [:syntax-carrier])]}))
+        {:artifact :gravity/sh04-syntax-deserialization-result
+         :schema-version 1
+         :status :rejected
+         :encoding :gravity-tagged-vector-v1
+         :semantic-payload nil
+         :containment {:downstream-artifacts-forbidden true}
+         :diagnostics
+         [(c3-diagnostic "C3-SERIALIZE" {}
+                         :invalid-carrier-tag [:syntax-carrier])]})
+      {:artifact :gravity/sh04-syntax-deserialization-result
+       :schema-version 1
+       :status :rejected
+       :encoding :gravity-tagged-vector-v1
+       :semantic-payload nil
+       :containment {:downstream-artifacts-forbidden true}
+       :diagnostics
+       [(c3-diagnostic "C3-SERIALIZE" {}
+                       :invalid-carrier-width [:syntax-carrier])]})
+    {:artifact :gravity/sh04-syntax-deserialization-result
+     :schema-version 1
+     :status :rejected
+     :encoding :gravity-tagged-vector-v1
+     :semantic-payload nil
+     :containment {:downstream-artifacts-forbidden true}
+     :diagnostics
+     [(c3-diagnostic "C3-SERIALIZE" {}
+                     :invalid-carrier-shape [:syntax-carrier])]}))
+
+(defn c3-append-unique [values result]
+  (loop [remaining values collected result]
+    (if (= (count remaining) 0)
+      collected
+      (let [value (first remaining)]
+        (if (c3-vector-contains? collected value)
+          (recur (rest remaining) collected)
+          (recur (rest remaining) (conj collected value)))))))
+
+(defn c3-origin-inputs [origins result]
+  (loop [remaining origins collected result]
+    (if (= (count remaining) 0)
+      collected
+      (recur (rest remaining)
+             (c3-append-unique
+              (get (first remaining) :input-syntax-ids)
+              collected)))))
+
+(defn c3-object-references [syntax]
+  (c3-origin-inputs (get syntax :origin)
+                    (get syntax :prior-syntax-ids)))
+
+(defn c3-references-prior? [references observed]
+  (loop [remaining references]
+    (if (= (count remaining) 0)
+      true
+      (if (c3-vector-contains? observed (first remaining))
+        (recur (rest remaining))
+        false))))
+
+(defn c3-reference-depth [references depths maximum]
+  (loop [remaining references greatest 0]
+    (if (= (count remaining) 0)
+      (+ greatest 1)
+      (let [reference (first remaining)
+            depth (get depths reference)]
+        (if (= depth nil)
+          (+ maximum 1)
+          (recur (rest remaining) (c3-maximum greatest depth)))))))
+
+(defn c3-graph-accepted [object-count maximum-depth]
+  {:artifact :gravity/sh04-syntax-graph-verification-report
+   :schema-version 1
+   :status :passed
+   :checks [:bounded-node-count :stable-unique-identities
+            :prior-only-reference-closure :acyclic-reference-graph
+            :bounded-reference-depth :valid-syntax-templates]
+   :object-count object-count
+   :maximum-reference-depth maximum-depth
+   :containment {:downstream-artifacts-forbidden false}
+   :diagnostics []})
+
+(defn c3-graph-rejected [syntax rule reason index]
+  {:artifact :gravity/sh04-syntax-graph-verification-report
+   :schema-version 1
+   :status :failed
+   :checks []
+   :object-count 0
+   :maximum-reference-depth 0
+   :containment {:downstream-artifacts-forbidden true}
+   :diagnostics
+   [(c3-diagnostic rule
+                   (if (map? syntax)
+                     (c3-template-descriptor syntax) {})
+                   reason [:syntax-graph index])]})
+
+(defn c3-syntax-graph-verify-template [syntax-objects]
+  (let [bounds (c3-bounds-record)]
+    (if (c3-bounded-vector?
+         syntax-objects (get bounds :maximum-syntax-objects))
+      (if (> (count syntax-objects) 0)
+        (loop [remaining syntax-objects
+               index 0
+               observed []
+               depths {}
+               greatest-depth 0]
+          (if (= (count remaining) 0)
+            (c3-graph-accepted (count syntax-objects) greatest-depth)
+            (let [syntax (first remaining)
+                  syntax-id (get syntax :syntax-id)
+                  references (c3-object-references syntax)]
+              (if (= (c3-syntax-template-shape? syntax) false)
+                (c3-graph-rejected syntax "C3-SHAPE"
+                                   :invalid-syntax-object index)
+                (if (= (c3-sha256-id? syntax-id) false)
+                  (c3-graph-rejected syntax "C3-ID"
+                                     :unresolved-syntax-id index)
+                  (if (c3-vector-contains? observed syntax-id)
+                    (c3-graph-rejected syntax "C3-ID"
+                                       :duplicate-syntax-id index)
+                    (if (= (c3-all-unique? references []) false)
+                      (c3-graph-rejected syntax "C3-ORIGIN"
+                                         :duplicate-reference index)
+                      (if (= (c3-references-prior? references observed) false)
+                        (c3-graph-rejected syntax "C3-ORIGIN"
+                                           :reference-not-prior index)
+                        (let [depth
+                              (if (= (count references) 0)
+                                1
+                                (c3-reference-depth
+                                 references depths
+                                 (get bounds :maximum-reference-depth)))]
+                          (if (> depth
+                                 (get bounds :maximum-reference-depth))
+                            (c3-graph-rejected syntax "C3-ORIGIN"
+                                               :reference-depth-limit index)
+                            (recur (rest remaining)
+                                   (+ index 1)
+                                   (conj observed syntax-id)
+                                   (assoc depths syntax-id depth)
+                                   (c3-maximum greatest-depth depth))))))))))))
+        (c3-graph-rejected {} "C3-SHAPE" :empty-syntax-graph 0))
+      (c3-graph-rejected {} "C3-SHAPE" :syntax-node-limit 0))))
+
+(defn c3-resolved-product-report [product reader-binding revision]
+  (if (c3-exact-keys?
+       product #{:syntax-object :digest-requests :resolved-digests})
+    (c3-syntax-verify-resolved
+     (get product :syntax-object)
+     (get product :digest-requests)
+     (get product :resolved-digests)
+     reader-binding revision)
+    (c3-resolved-verification-failure
+     {} :resolved-product-extra-or-missing-fields)))
+
+(defn c3-resolved-product-reports [products binding revision]
+  (loop [remaining products result []]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining)
+             (conj result
+                   (c3-resolved-product-report
+                    (first remaining) binding revision))))))
+
+(defn c3-reports-passed? [reports]
+  (loop [remaining reports]
+    (if (= (count remaining) 0)
+      true
+      (if (= (get (first remaining) :status) :passed)
+        (recur (rest remaining))
+        false))))
+
+(defn c3-stream-syntax-objects [products]
+  (loop [remaining products result []]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining)
+             (conj result (get (first remaining) :syntax-object))))))
+
+(defn c3-stream-proof-products [products]
+  (loop [remaining products result []]
+    (if (= (count remaining) 0)
+      result
+      (let [product (first remaining)]
+        (recur (rest remaining)
+               (conj result
+                     {:syntax-object (get product :syntax-object)
+                      :resolved-digests
+                      (get product :resolved-digests)}))))))
+
+(defn c3-object-expected-digest-requests [syntax]
+  (let [descriptor (c3-template-descriptor syntax)
+        binding (get syntax :reader-binding)]
+    [{:key :reader-semantic-binding-id
+      :ordinal 0 :algorithm :sha256
+      :encoding :gravity-canonical-edn-v1
+      :depends-on []
+      :preimage (c3-reader-binding-identity-preimage binding)}
+     {:key :syntax-id
+      :ordinal 1 :algorithm :sha256
+      :encoding :gravity-canonical-edn-v1
+      :depends-on [0]
+      :preimage (c3-syntax-identity-request-preimage descriptor)}]))
+
+(defn c3-stream-rehydrate-products [proof-products]
+  (loop [remaining proof-products result []]
+    (if (= (count remaining) 0)
+      result
+      (let [product (first remaining)
+            syntax (get product :syntax-object)]
+        (recur (rest remaining)
+               (conj result
+                     {:syntax-object syntax
+                      :digest-requests
+                      (c3-object-expected-digest-requests syntax)
+                      :resolved-digests
+                      (get product :resolved-digests)}))))))
+
+(defn c3-stream-hygiene-context-map [syntaxes]
+  {:artifact :gravity/sh04-hygiene-context-map
+   :schema-version 1
+   :contexts
+   (loop [remaining syntaxes result []]
+     (if (= (count remaining) 0)
+       result
+       (let [syntax (first remaining)]
+         (recur (rest remaining)
+                (conj result
+                      {:syntax-id (get syntax :syntax-id)
+                       :marks (get (get syntax :hygiene) :marks)
+                       :lexical-scopes
+                       (get (get syntax :hygiene) :lexical-scopes)
+                       :renames (get (get syntax :hygiene) :renames)
+                       :introduced-identifiers
+                       (get (get syntax :hygiene)
+                            :introduced-identifiers)
+                       :captures (get (get syntax :hygiene) :captures)
+                       :macro-definition-namespace
+                       (get (get syntax :hygiene)
+                            :macro-definition-namespace)
+                       :macro-call-site-namespace
+                       (get (get syntax :hygiene)
+                            :macro-call-site-namespace)})))))} )
+
+(defn c3-stream-metadata-ledger [syntaxes]
+  {:artifact :gravity/sh04-metadata-ledger
+   :schema-version 1
+   :entries
+   (loop [remaining syntaxes result []]
+     (if (= (count remaining) 0)
+       result
+       (let [syntax (first remaining)]
+         (recur (rest remaining)
+                (conj result
+                      {:syntax-id (get syntax :syntax-id)
+                       :action :preserved
+                       :metadata (get syntax :metadata)
+                       :owner (get syntax :ownership)})))))} )
+
+(defn c3-stream-fact-entries [syntaxes result]
+  (loop [remaining syntaxes entries result]
+    (if (= (count remaining) 0)
+      entries
+      (let [syntax (first remaining)
+            syntax-id (get syntax :syntax-id)
+            facts (get syntax :facts)
+            with-facts
+            (loop [pending facts current entries]
+              (if (= (count pending) 0)
+                current
+                (recur (rest pending)
+                       (conj current
+                             {:syntax-id syntax-id
+                              :fact (first pending)
+                              :status :current
+                              :invalidated-by
+                              (get (first pending) :invalidated-by)}))))]
+        (recur (rest remaining) with-facts)))))
+
+(defn c3-stream-fact-invalidation-ledger [syntaxes]
+  {:artifact :gravity/sh04-fact-invalidation-ledger
+   :schema-version 1
+   :entries (c3-stream-fact-entries syntaxes [])
+   :policy :invalidate-on-declared-transformation})
+
+(defn c3-stream-origin-chain-graph [syntaxes]
+  {:artifact :gravity/sh04-origin-chain-graph
+   :schema-version 1
+   :reference-order :prior-only
+   :nodes
+   (loop [remaining syntaxes result []]
+     (if (= (count remaining) 0)
+       result
+       (let [syntax (first remaining)]
+         (recur (rest remaining)
+                (conj result
+                      {:syntax-id (get syntax :syntax-id)
+                       :origin (get syntax :origin)
+                       :prior-syntax-ids
+                       (get syntax :prior-syntax-ids)})))))} )
+
+(defn c3-stream-ownership-product [syntaxes binding revision]
+  {:artifact :gravity/sh04-syntax-stream-ownership-product
+   :schema-version 1
+   :owner :gravity-source
+   :module 'gravity.bootstrap.syntax
+   :reader-owner :gravity.bootstrap.reader
+   :semantic-source-id (get binding :semantic-source-id)
+   :source-revision-id (get revision :revision-id)
+   :reader-result-id (get binding :reader-result-id)
+   :c2-artifact-id (get binding :c2-artifact-id)
+   :syntax-ownership
+   (loop [remaining syntaxes result []]
+     (if (= (count remaining) 0)
+       result
+       (recur (rest remaining)
+              (conj result (get (first remaining) :ownership)))))} )
+
+(defn c3-stream-source-root-ids [syntaxes]
+  (loop [remaining syntaxes result []]
+    (if (= (count remaining) 0)
+      result
+      (let [syntax (first remaining)
+            first-origin (first (get syntax :origin))]
+        (if (= (get first-origin :kind) :source)
+          (recur (rest remaining)
+                 (conj result (get syntax :syntax-id)))
+          (recur (rest remaining) result))))))
+
+(defn c3-stream-root-ids-valid? [root-ids syntaxes]
+  (if (vector? root-ids)
+    (if (c3-all-unique? root-ids [])
+      (= root-ids (c3-stream-source-root-ids syntaxes))
+      false)
+    false))
+
+(defn c3-path-neutral-origin-graph [origin-graph]
+  {:artifact (get origin-graph :artifact)
+   :schema-version (get origin-graph :schema-version)
+   :reference-order (get origin-graph :reference-order)
+   :nodes
+   (loop [remaining (get origin-graph :nodes) result []]
+     (if (= (count remaining) 0)
+       result
+       (let [node (first remaining)]
+         (recur (rest remaining)
+                (conj result
+                      {:syntax-id (get node :syntax-id)
+                       :origin
+                       (c3-path-neutral-origins (get node :origin))
+                       :prior-syntax-ids
+                       (get node :prior-syntax-ids)})))))} )
+
+(defn c3-path-neutral-resolved-products [products]
+  (loop [remaining products ordinal 0 chunk-index 0
+         current-chunk [] result []]
+    (if (= (count remaining) 0)
+      (if (= (count current-chunk) 0)
+        result
+        (conj result
+              {:chunk-index chunk-index
+               :start-ordinal (- ordinal (count current-chunk))
+               :item-count (count current-chunk)
+               :items current-chunk}))
+      (let [product (first remaining)
+            item
+            {:ordinal ordinal
+             :syntax-id
+             (get (get product :syntax-object) :syntax-id)
+             :semantic-binding-id
+             (first (get product :resolved-digests))
+             :resolved-digests (get product :resolved-digests)}
+            next-chunk (conj current-chunk item)]
+        (if (= (count next-chunk) 16)
+          (recur
+           (rest remaining) (+ ordinal 1) (+ chunk-index 1) []
+           (conj result
+                 {:chunk-index chunk-index
+                  :start-ordinal (- (+ ordinal 1) (count next-chunk))
+                  :item-count (count next-chunk)
+                  :items next-chunk}))
+          (recur (rest remaining) (+ ordinal 1) chunk-index
+                 next-chunk result))))))
+
+(defn c3-stream-ordered-id-chunks [identifiers]
+  (loop [remaining identifiers ordinal 0 chunk-index 0
+         current-chunk [] result []]
+    (if (= (count remaining) 0)
+      (if (= (count current-chunk) 0)
+        result
+        (conj result
+              {:chunk-index chunk-index
+               :start-ordinal (- ordinal (count current-chunk))
+               :item-count (count current-chunk)
+               :items current-chunk}))
+      (let [item {:ordinal ordinal :id (first remaining)}
+            next-chunk (conj current-chunk item)]
+        (if (= (count next-chunk) 16)
+          (recur
+           (rest remaining) (+ ordinal 1) (+ chunk-index 1) []
+           (conj result
+                 {:chunk-index chunk-index
+                  :start-ordinal (- (+ ordinal 1) (count next-chunk))
+                  :item-count (count next-chunk)
+                  :items next-chunk}))
+          (recur (rest remaining) (+ ordinal 1) chunk-index
+                 next-chunk result))))))
+
+(defn c3-stream-identity-preimage
+  [products binding revision root-ids graph hygiene metadata facts origins
+   ownership]
+  {:domain :gravity/sh04-resolved-syntax-stream-v2
+   :resolved-product-count (count products)
+   :resolved-product-identity-chunks
+   (c3-path-neutral-resolved-products products)
+   :reader-binding-identity
+   {:semantic-binding-id (get binding :semantic-binding-id)
+    :reader-result-id (get binding :reader-result-id)
+    :c2-artifact-id (get binding :c2-artifact-id)
+    :authenticated-envelope-id (get binding :authenticated-envelope-id)
+    :source-revision-id (get binding :source-revision-id)}
+   :reader-source-revision-identity
+   {:revision-id (get revision :revision-id)
+    :source-content-hash (get revision :source-content-hash)
+    :plan-semantic-hash (get revision :plan-semantic-hash)
+    :functions-semantic-hash (get revision :functions-semantic-hash)
+    :reader-result-id (get revision :reader-result-id)
+    :c2-artifact-id (get revision :c2-artifact-id)
+    :authenticated-envelope-id (get revision :authenticated-envelope-id)
+    :semantic-binding-id (get revision :semantic-binding-id)}
+   :root-syntax-id-count (count root-ids)
+   :root-syntax-id-chunks (c3-stream-ordered-id-chunks root-ids)
+   :graph-verification
+   {:object-count (get graph :object-count)
+    :maximum-reference-depth (get graph :maximum-reference-depth)}
+   :derived-product-counts
+   {:hygiene-context-count (count (get hygiene :contexts))
+    :metadata-entry-count (count (get metadata :entries))
+    :fact-entry-count (count (get facts :entries))
+    :origin-node-count (count (get origins :nodes))
+    :syntax-ownership-count
+    (count (get ownership :syntax-ownership))}})
+
+(defn c3-stream-rejection [rule reason subject]
+  {:artifact :gravity/sh04-syntax-stream-template-result
+   :schema-version 1
+   :status :rejected
+   :stream-template nil
+   :digest-requests []
+   :verification-reports []
+   :containment {:downstream-artifacts-forbidden true}
+   :diagnostics
+   [(c3-diagnostic rule
+                   (if (map? subject) subject {})
+                   reason [:resolved-syntax-stream])]})
+
+(defn c3-syntax-stream-build-template
+  [resolved-products reader-binding reader-source-revision root-syntax-ids]
+  (if (c3-reader-binding-revision-match?
+       reader-binding reader-source-revision)
+    (if (c3-bounded-vector?
+         resolved-products
+         (get (c3-bounds-record) :maximum-syntax-objects))
+      (if (> (count resolved-products) 0)
+        (let [reports
+              (c3-resolved-product-reports
+               resolved-products reader-binding reader-source-revision)
+              syntaxes (c3-stream-syntax-objects resolved-products)]
+          (if (c3-reports-passed? reports)
+            (if (c3-stream-root-ids-valid? root-syntax-ids syntaxes)
+              (let [graph (c3-syntax-graph-verify-template syntaxes)]
+                (if (= (get graph :status) :passed)
+                  (let [hygiene (c3-stream-hygiene-context-map syntaxes)
+                        metadata (c3-stream-metadata-ledger syntaxes)
+                        facts (c3-stream-fact-invalidation-ledger syntaxes)
+                        origins (c3-stream-origin-chain-graph syntaxes)
+                        ownership
+                        (c3-stream-ownership-product
+                         syntaxes reader-binding reader-source-revision)
+                        preimage
+                        (c3-stream-identity-preimage
+                         resolved-products reader-binding
+                         reader-source-revision root-syntax-ids graph
+                         hygiene metadata facts origins ownership)]
+                    {:artifact :gravity/sh04-syntax-stream-template-result
+                     :schema-version 1
+                     :status :accepted
+                     :stream-template
+                     {:artifact :gravity/sh04-syntax-object-artifact
+                      :schema-version 1
+                      :status :accepted
+                      :artifact-id {:digest-ref 0}
+                      :reader-binding reader-binding
+                      :reader-source-revision reader-source-revision
+                      :resolved-object-products
+                      (c3-stream-proof-products resolved-products)
+                      :syntax-object-stream syntaxes
+                      :root-syntax-ids root-syntax-ids
+                      :graph-verification-report graph
+                      :hygiene-context-map hygiene
+                      :metadata-ledger metadata
+                      :fact-invalidation-ledger facts
+                      :origin-chain-graph origins
+                      :ownership-product ownership}
+                     :digest-requests
+                     [{:key :syntax-stream-id :ordinal 0
+                       :algorithm :sha256
+                       :encoding :gravity-canonical-edn-v1
+                       :depends-on [] :preimage preimage}]
+                     :verification-reports reports
+                     :containment
+                     {:downstream-artifacts-forbidden false}
+                     :diagnostics []})
+                  (c3-stream-rejection
+                   "C3-ORIGIN" :stream-reference-graph graph)))
+              (c3-stream-rejection
+               "C3-SHAPE" :root-syntax-id-closure {}))
+            (c3-stream-rejection
+             "C3-ID" :resolved-object-verification reports)))
+        (c3-stream-rejection "C3-SHAPE" :empty-syntax-stream {}))
+      (c3-stream-rejection "C3-SHAPE" :syntax-node-limit {}))
+    (c3-stream-rejection
+     "C3-ID" :reader-binding-substitution-or-replay {})))
+
+(defn c3-stream-template-with-id [stream-template artifact-id]
+  (assoc stream-template :artifact-id artifact-id))
+
+(defn c3-syntax-stream-verify-resolved
+  [resolved-stream digest-requests resolved-digests]
+  (if (map? resolved-stream)
+    (let [products
+          (c3-stream-rehydrate-products
+           (get resolved-stream :resolved-object-products))
+          binding (get resolved-stream :reader-binding)
+          revision (get resolved-stream :reader-source-revision)
+          roots (get resolved-stream :root-syntax-ids)
+          rebuilt
+          (c3-syntax-stream-build-template products binding revision roots)]
+      (if (= (get rebuilt :status) :accepted)
+        (let [expected-template (get rebuilt :stream-template)
+              expected-requests (get rebuilt :digest-requests)
+              artifact-id (get resolved-stream :artifact-id)]
+          (if (c3-sha256-id? artifact-id)
+            (if (= digest-requests expected-requests)
+              (if (= resolved-digests [artifact-id])
+                (if (= resolved-stream
+                       (c3-stream-template-with-id
+                        expected-template artifact-id))
+                  {:artifact
+                   :gravity/sh04-resolved-syntax-stream-verification-report
+                   :schema-version 1 :status :passed
+                   :checks [:resolved-stream-id-retained
+                            :all-object-identities-reverified
+                            :reader-binding-exact
+                            :derived-products-exact
+                            :graph-exact]
+                   :containment {:downstream-artifacts-forbidden false}
+                   :diagnostics []}
+                  (c3-stream-verification-failure
+                   :resolved-stream-semantic-mutation resolved-stream))
+                (c3-stream-verification-failure
+                 :resolved-stream-id-mismatch resolved-stream))
+              (c3-stream-verification-failure
+               :stream-digest-request-mismatch resolved-stream))
+            (c3-stream-verification-failure
+             :invalid-resolved-stream-id resolved-stream)))
+        (c3-stream-verification-failure
+         :stream-rebuild-rejected resolved-stream)))
+    (c3-stream-verification-failure
+     :resolved-stream-shape resolved-stream)))
+
+(defn c3-stream-verification-failure [reason subject]
+  {:artifact :gravity/sh04-resolved-syntax-stream-verification-report
+   :schema-version 1 :status :failed :checks []
+   :containment {:downstream-artifacts-forbidden true}
+   :diagnostics
+   [(c3-diagnostic "C3-ID"
+                   (if (map? subject) subject {})
+                   reason [:resolved-syntax-stream])]})
+
+(defn c3-syntax-serialize-template
+  [resolved-stream digest-requests resolved-digests]
+  (let [verification
+        (c3-syntax-stream-verify-resolved
+         resolved-stream digest-requests resolved-digests)]
+    (if (= (get verification :status) :passed)
+      {:artifact :gravity/sh04-syntax-stream-serialization
+       :schema-version 1 :status :accepted
+       :encoding :gravity-tagged-vector-v1
+       :carrier
+       [:gravity/sh04-syntax-stream-carrier-v1
+        resolved-stream digest-requests resolved-digests]
+       :semantic-payload
+       {:resolved-syntax-stream resolved-stream
+        :digest-requests digest-requests
+        :resolved-digests resolved-digests}
+       :payload-id-request
+       {:domain :gravity/sh04-syntax-stream-serialization-v1
+        :semantic-input
+        [:gravity/sh04-syntax-stream-carrier-v1
+         (c3-path-neutral-stream resolved-stream)
+         digest-requests resolved-digests]}
+       :containment {:downstream-artifacts-forbidden false}
+       :diagnostics []}
+      {:artifact :gravity/sh04-syntax-stream-serialization
+       :schema-version 1 :status :rejected
+       :encoding :gravity-tagged-vector-v1
+       :carrier nil :semantic-payload nil :payload-id-request nil
+       :containment {:downstream-artifacts-forbidden true}
+       :diagnostics
+       [(c3-diagnostic
+         "C3-SERIALIZE"
+         (if (map? resolved-stream)
+           (let [syntaxes (get resolved-stream :syntax-object-stream)]
+             (if (c3-bounded-vector?
+                  syntaxes
+                  (get (c3-bounds-record) :maximum-syntax-objects))
+               (if (> (count syntaxes) 0)
+                 (c3-template-descriptor (first syntaxes))
+                 {})
+               {}))
+           {})
+                       :resolved-stream-verification-failed
+                       [:resolved-syntax-stream])]})))
+
+(defn c3-path-neutral-stream [stream]
+  {:domain :gravity/sh04-path-neutral-syntax-stream-v2
+   :artifact (get stream :artifact)
+   :schema-version (get stream :schema-version)
+   :status (get stream :status)
+   :artifact-id (get stream :artifact-id)
+   :identity-preimage
+   (c3-stream-identity-preimage
+    (get stream :resolved-object-products)
+    (get stream :reader-binding)
+    (get stream :reader-source-revision)
+    (get stream :root-syntax-ids)
+    (get stream :graph-verification-report)
+    (get stream :hygiene-context-map)
+    (get stream :metadata-ledger)
+    (get stream :fact-invalidation-ledger)
+    (get stream :origin-chain-graph)
+    (get stream :ownership-product))})
+
+(defn c3-syntax-deserialize-template [carrier]
+  (if (vector? carrier)
+    (if (= (count carrier) 4)
+      (if (= (get carrier 0)
+             :gravity/sh04-syntax-stream-carrier-v1)
+        (let [stream (get carrier 1)
+              requests (get carrier 2)
+              digests (get carrier 3)
+              verification
+              (c3-syntax-stream-verify-resolved stream requests digests)]
+          (if (= (get verification :status) :passed)
+            {:artifact :gravity/sh04-syntax-stream-deserialization
+             :schema-version 1 :status :accepted
+             :encoding :gravity-tagged-vector-v1
+             :semantic-payload
+             {:resolved-syntax-stream stream
+              :digest-requests requests
+              :resolved-digests digests}
+             :containment {:downstream-artifacts-forbidden false}
+             :diagnostics []}
+            (c3-stream-deserialization-failure
+             :resolved-stream-verification-failed)))
+        (c3-stream-deserialization-failure :invalid-carrier-tag))
+      (c3-stream-deserialization-failure :invalid-carrier-width))
+    (c3-stream-deserialization-failure :invalid-carrier-shape)))
+
+(defn c3-stream-deserialization-failure [reason]
+  {:artifact :gravity/sh04-syntax-stream-deserialization
+   :schema-version 1 :status :rejected
+   :encoding :gravity-tagged-vector-v1
+   :semantic-payload nil
+   :containment {:downstream-artifacts-forbidden true}
+   :diagnostics
+   [(c3-diagnostic "C3-SERIALIZE" {} reason [:syntax-stream-carrier])]})

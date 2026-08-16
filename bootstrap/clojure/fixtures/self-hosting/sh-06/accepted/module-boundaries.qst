@@ -1,0 +1,21 @@
+(ns self-hosting.sh06.module-boundaries
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [gravity.io :as io :profile :hosted
+              :refer [write]
+              :effects #{:io/write} :capabilities #{:io/stdout}
+              :visibility :public]
+             [shared.core :as shared :profile :core
+              :boundary :pure-core :refer [checksum]
+              :effects #{} :capabilities #{} :visibility :public])
+  (:exports [main portable-checksum])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:slice :SH-06 :fixture :module-boundaries}))
+
+(defn portable-checksum [value]
+  (shared/checksum value))
+
+(defn main []
+  (io/write "resolved"))

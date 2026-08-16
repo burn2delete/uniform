@@ -1,0 +1,16 @@
+; SH-07-B10 preserves a fixed-arity function recur target through match.
+(ns self-hosting.sh07-b10.function-tail-recur
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [function-through-match])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10
+              :fixture :function-tail-recur
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn function-through-match [value]
+  (match value
+    1 (recur 0)
+    _ value))

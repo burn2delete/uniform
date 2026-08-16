@@ -1,0 +1,24 @@
+(ns self-hosting.sh07-b9.reject.expression-after-catches
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B9
+    :sh07-b9
+    {:expected-rule "C6-CORE-SHAPE"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :try-handler-chain-contiguity-required
+     :expected-remediation
+     "Place exactly one protected expression before a contiguous source-ordered sequence of typed catch clauses."}}))
+
+(def invalid-handler
+  (try
+    (throw "trailing expression")
+    (catch Exception error
+      error)
+    (catch Throwable fallback
+      fallback)
+    "after"))

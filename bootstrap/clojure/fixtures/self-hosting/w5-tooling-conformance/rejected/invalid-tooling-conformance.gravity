@@ -1,0 +1,374 @@
+; W5 Wave6 Slice C rejected tooling/conformance mutators.
+; Each transformer changes one source, check, replay, narrative, or boundary
+; fact while retaining the same static seed-only request shape.
+(ns gravity.self-hosting.w5-tooling-conformance.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-tooling-conformance-request
+             w5-tooling-conformance-request-at
+             w5-tooling-conformance-alternate-path-request
+             w5-tc-request
+             w5-tooling-conformance-invalid-source-request
+             w5-tooling-conformance-invalid-check-request
+             w5-tooling-conformance-invalid-replay-request
+             w5-tooling-conformance-invalid-narrative-request
+             w5-tooling-conformance-invalid-suite-request
+             w5-tooling-conformance-invalid-provenance-request
+             w5-tooling-conformance-invalid-authority-request
+             w5-tooling-conformance-source-substitution-request
+             w5-tooling-conformance-check-substitution-request
+             w5-tooling-conformance-replay-substitution-request
+             w5-tooling-conformance-narrative-substitution-request
+             w5-tooling-conformance-invalid-gravity-path-suffix-request
+             w5-tooling-conformance-invalid-qst-path-suffix-request
+             w5-tooling-conformance-invalid-source-path-gravity-request
+             w5-tooling-conformance-invalid-source-path-qst-request
+             w5-tooling-conformance-invalid-top-provenance-cross-kind-request
+             w5-tooling-conformance-invalid-nested-source-provenance-cross-kind-request
+             w5-tooling-conformance-invalid-source-span-missing-request
+             w5-tooling-conformance-invalid-source-span-extra-request
+             w5-tooling-conformance-invalid-source-span-wrong-type-request
+             w5-tooling-conformance-invalid-source-span-negative-request
+             w5-tooling-conformance-invalid-source-span-order-request
+             w5-tc-invalid-source-request
+             w5-tc-invalid-check-request
+             w5-tc-invalid-replay-request
+             w5-tc-invalid-narrative-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-tooling-conformance-fixture
+     :owner :workstream-5
+     :scope :wave6-slice-c-static-only
+     :static-only? true
+     :authority :non-authority
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :public-authority? false
+     :release? false
+     :full-language-credit? false
+     :matrix-240-credit? false
+     :public-binary? false
+     :plugin-authority? false
+     :package-authority? false
+     :backend-conformance? false}}))
+
+(defn w5-tc-span [source start end]
+  {:source-id source :start-byte start :end-byte end
+   :line 1 :column 1})
+
+(defn w5-tc-provenance [path extension source-kind]
+  {:source-id :gravity.self-hosting/w5-tooling-conformance
+   :logical-source-id "fixtures/w5-tooling-conformance/tooling-conformance"
+   :actual-source-path path
+   :actual-source-extension extension
+   :source-kind source-kind
+   :project-relative-path
+   (str "bootstrap/clojure/fixtures/self-hosting/"
+        "w5-tooling-conformance/accepted/tooling-conformance" extension)
+   :check-artifact-path (str path ".tooling-check.pending")
+   :replay-artifact-path (str path ".tooling-replay.pending")
+   :status :pending})
+
+(defn w5-tc-source [path extension source-kind]
+  {:artifact :gravity/tooling-source-record
+   :schema-version 1
+   :source-id :tooling-source-v1
+   :profile :meta
+   :target :jvm
+   :extension-policy [".qst" ".gravity"]
+   :source-kind source-kind
+   :source-content-status :pending
+   :hash-final? false
+   :source-span (w5-tc-span :tooling-source 0 320)
+   :provenance (w5-tc-provenance path extension source-kind)})
+
+(defn w5-tc-check []
+  {:artifact :gravity/tooling-check-record
+   :schema-version 1
+   :checker-id :gravity-tooling-checker-v1
+   :tool-family :cli
+   :source-id :tooling-source-v1
+   :profile :meta
+   :target :jvm
+   :diagnostics []
+   :facts-consumed [:source-spans :profile :target :capabilities]
+   :facts-preserved [:diagnostic-codes :source-spans :provenance]
+   :result :accepted
+   :status :pending
+   :authority-claims? false
+   :backend-conformance? false
+   :plugin-authority? false
+   :package-authority? false
+   :source-span (w5-tc-span :tooling-check 32 96)})
+
+(defn w5-tc-replay []
+  {:artifact :gravity/tooling-replay-record
+   :schema-version 1
+   :replay-id :tooling-replay-v1
+   :source-id :tooling-source-v1
+   :check-id :tooling-check-v1
+   :events [:source-loaded :check-requested :diagnostics-recorded]
+   :deterministic? true
+   :environment {:network :disabled :filesystem :declared
+                 :secrets :redacted}
+   :status :pending
+   :source-span (w5-tc-span :tooling-replay 97 160)})
+
+(defn w5-tc-narrative []
+  {:artifact :gravity/tooling-narrative-record
+   :schema-version 1
+   :narrative-id :tooling-narrative-v1
+   :source-id :tooling-source-v1
+   :claims [:diagnostics-traceable :artifacts-traceable]
+   :authority-claims []
+   :source-span (w5-tc-span :tooling-narrative 161 224)
+   :status :pending
+   :structured-evidence-only? true
+   :text-status :pending})
+
+(defn w5-tc-suite []
+  {:artifact :gravity/tooling-conformance-suite
+   :schema-version 1
+   :suite-id :tooling-conformance-suite-v1
+   :tool-order [:source :check :replay :narrative :suite]
+   :positive-fixtures [:source :check :replay :narrative]
+   :negative-fixtures [:source :check :replay :narrative]
+   :diagnostic-codes ["T1001" "T1002" "T1003" "T1004"]
+   :profile :meta
+   :target :jvm
+   :status :pending
+   :backend-conformance? false
+   :plugin-authority? false
+   :package-authority? false
+   :matrix-240-credit? false})
+
+(defn w5-tc-target []
+  {:target :llvm-x86_64-linux :os :linux :arch :x86_64
+   :backend :llvm :artifact-format :elf :abi :sysv-amd64
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :cross-target-inference? false :fallback? false
+   :candidate-invokes-clojure? false :candidate-links-jvm? false
+   :no-fallback? true})
+
+(defn w5-tc-separation []
+  {:structured-evidence-source [:source :check :replay :suite]
+   :narrative-role :explanation-only
+   :replay-role :deterministic-replay-only
+   :checker-role :structured-facts-only
+   :public-binary-claim? false
+   :plugin-package-claim? false
+   :backend-conformance-claim? false
+   :matrix-240-claim? false})
+
+(defn w5-tc-evidence []
+  {:evidence-class :executable-record
+   :execution-status :pending
+   :source-span-status :preserved
+   :artifact-status :pending
+   :status :incomplete
+   :full-language-credit? false
+   :matrix-240-credit? false})
+
+(defn w5-tc-authority []
+  {:authority :non-authority
+   :clojure-seed-boundary? true :self-hosted? false
+   :public-authority? false :release? false
+   :full-language-credit? false :matrix-240-credit? false
+   :public-binary? false :plugin-authority? false
+   :package-authority? false :backend-conformance? false
+   :cross-target-inference? false :fallback? false
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]})
+
+(defn w5-tc-request-with-path [path extension source-kind]
+  {:artifact :gravity/w5-tooling-conformance-request
+   :schema-version 1
+   :verifier-id :gravity/w5-tooling-conformance-verifier
+   :profile :meta :target :jvm
+   :claimed-status :incomplete :completion-status :incomplete
+   :target-contract (w5-tc-target)
+   :source (w5-tc-source path extension source-kind)
+   :check (w5-tc-check)
+   :replay (w5-tc-replay)
+   :narrative (w5-tc-narrative)
+   :suite (w5-tc-suite)
+   :separation (w5-tc-separation)
+   :evidence (w5-tc-evidence)
+   :authority (w5-tc-authority)
+   :residual-seed-harness
+   {:compiler-plan :clojure-stage0-stage2-compiler-plan
+    :runtime :jvm-stage2-runtime :authority :seed-only
+    :execution-status :harness-only}
+   :provenance (w5-tc-provenance path extension source-kind)
+   :source-span (w5-tc-span :tooling-request 0 512)})
+
+(defn w5-tooling-conformance-request-at [path extension source-kind]
+  (w5-tc-request-with-path path extension source-kind))
+
+(defn w5-tooling-conformance-request [path extension source-kind]
+  (w5-tooling-conformance-request-at path extension source-kind))
+
+(defn w5-tooling-conformance-alternate-path-request
+  [path extension source-kind]
+  (w5-tooling-conformance-request-at path extension source-kind))
+
+(defn w5-tc-request [path extension source-kind]
+  (w5-tooling-conformance-request-at path extension source-kind))
+
+(defn w5-tooling-conformance-invalid-source-request [request]
+  (assoc request :source
+         (assoc (get request :source)
+                :source-content-status :substituted)))
+
+(defn w5-tooling-conformance-invalid-check-request [request]
+  (assoc request :check
+         (assoc (get request :check) :result :rejected)))
+
+(defn w5-tooling-conformance-invalid-replay-request [request]
+  (assoc request :replay
+         (assoc (get request :replay) :deterministic? false)))
+
+(defn w5-tooling-conformance-invalid-narrative-request [request]
+  (assoc request :narrative
+         (assoc (get request :narrative)
+                :structured-evidence-only? false)))
+
+(defn w5-tooling-conformance-invalid-suite-request [request]
+  (assoc request :suite
+         (assoc (get request :suite)
+                :matrix-240-credit? true)))
+
+(defn w5-tooling-conformance-invalid-provenance-request [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :actual-source-extension ".clj")))
+
+(defn w5-tooling-conformance-invalid-authority-request [request]
+  (assoc request :authority
+         (assoc (get request :authority) :public-binary? true)))
+
+(defn w5-tooling-conformance-source-substitution-request [request]
+  (assoc request :source
+         (assoc (get request :source) :source-id :substituted-source)))
+
+(defn w5-tooling-conformance-check-substitution-request [request]
+  (assoc request :check
+         (assoc (get request :check) :checker-id :substituted-checker)))
+
+(defn w5-tooling-conformance-replay-substitution-request [request]
+  (assoc request :replay
+         (assoc (get request :replay) :replay-id :substituted-replay)))
+
+(defn w5-tooling-conformance-narrative-substitution-request [request]
+  (assoc request :narrative
+         (assoc (get request :narrative)
+                :claims [:public-bin-gravity])))
+
+(defn tc-invalid-source-path [request path]
+  (let [provenance (assoc (get request :provenance)
+                          :actual-source-path path)
+        source (assoc (get request :source) :provenance provenance)]
+    (assoc (assoc request :provenance provenance)
+           :source source)))
+
+(defn w5-tooling-conformance-invalid-gravity-path-suffix-request
+  [request]
+  (tc-invalid-source-path
+   request
+   "/substituted/tooling-conformance.qst"))
+
+(defn w5-tooling-conformance-invalid-qst-path-suffix-request
+  [request]
+  (tc-invalid-source-path
+   request
+   "/substituted/tooling-conformance.gravity"))
+
+(defn w5-tooling-conformance-invalid-source-path-gravity-request
+  [request]
+  (w5-tooling-conformance-invalid-gravity-path-suffix-request request))
+
+(defn w5-tooling-conformance-invalid-source-path-qst-request
+  [request]
+  (w5-tooling-conformance-invalid-qst-path-suffix-request request))
+
+(defn tc-cross-kind-provenance [provenance extension source-kind path]
+  (assoc provenance
+         :actual-source-path path
+         :actual-source-extension extension
+         :source-kind source-kind
+         :project-relative-path
+         (str "bootstrap/clojure/fixtures/self-hosting/"
+              "w5-tooling-conformance/accepted/tooling-conformance"
+              extension)
+         :check-artifact-path (str path ".tooling-check.pending")
+         :replay-artifact-path (str path ".tooling-replay.pending")))
+
+(defn tc-opposite-provenance [provenance]
+  (if (= ".gravity" (get provenance :actual-source-extension))
+    (tc-cross-kind-provenance
+     provenance ".qst" :qst "/cross-kind/tooling-conformance.qst")
+    (tc-cross-kind-provenance
+     provenance ".gravity" :gravity "/cross-kind/tooling-conformance.gravity")))
+
+(defn w5-tooling-conformance-invalid-top-provenance-cross-kind-request
+  [request]
+  (assoc request :provenance
+         (tc-opposite-provenance (get request :provenance))))
+
+(defn w5-tooling-conformance-invalid-nested-source-provenance-cross-kind-request
+  [request]
+  (let [source (get request :source)
+        changed-source (assoc source :provenance
+                              (tc-opposite-provenance
+                               (get source :provenance)))]
+    (assoc request :source changed-source)))
+
+(defn w5-tooling-conformance-invalid-source-span-missing-request
+  [request]
+  (assoc request :source-span
+         (dissoc (get request :source-span) :line)))
+
+(defn w5-tooling-conformance-invalid-source-span-extra-request
+  [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :unexpected 1)))
+
+(defn w5-tooling-conformance-invalid-source-span-wrong-type-request
+  [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :line "1")))
+
+(defn w5-tooling-conformance-invalid-source-span-negative-request
+  [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :start-byte -1)))
+
+(defn w5-tooling-conformance-invalid-source-span-order-request
+  [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :start-byte 2
+                :end-byte 1)))
+
+(defn w5-tc-invalid-source-request [request]
+  (w5-tooling-conformance-invalid-source-request request))
+
+(defn w5-tc-invalid-check-request [request]
+  (w5-tooling-conformance-invalid-check-request request))
+
+(defn w5-tc-invalid-replay-request [request]
+  (w5-tooling-conformance-invalid-replay-request request))
+
+(defn w5-tc-invalid-narrative-request [request]
+  (w5-tooling-conformance-invalid-narrative-request request))

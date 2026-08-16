@@ -1,0 +1,19 @@
+(ns self-hosting.sh07-b7.reject.try-remains-deferred
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B7
+    :sh07-b7
+    {:expected-rule "C6-CORE-SHAPE"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :try-catch-required
+     :expected-remediation
+     "Provide exactly one protected expression followed by exactly one typed catch clause."}}))
+
+(def invalid-handler
+  (try
+    (throw "still-deferred")))

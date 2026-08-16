@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "contract_id": "gravity-authoritative-evidence-composition-v1",
+  "description": "Fail-closed non-authoritative composition of exact SH07 module evidence and its nonclaim dependency context.",
+  "normative_sources": [
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"
+  ],
+  "identity": {
+    "algorithm": "sha256",
+    "prefix": "sha256:",
+    "canonical_json": "UTF-8 JSON with ASCII escaping, sorted object keys, compact separators, finite numbers, and no duplicate keys",
+    "candidate_domain": "gravity.authoritative-evidence/candidate/v1",
+    "promotion_domain": "gravity.authoritative-evidence/promotion/v1",
+    "semantic_file_domain": "gravity.authoritative-evidence/semantic-file/v1",
+    "child_edn_projection_domain": "gravity.authoritative-evidence/sh07-child-edn-projection/v1",
+    "digest_is_signature": false,
+    "signature": null
+  },
+  "candidate": {
+    "kind": "gravity/authoritative-evidence-candidate",
+    "output_prefix": "target/validation/",
+    "authoritative": false,
+    "aggregate_authoritative": false,
+    "release_authoritative": false,
+    "self_hosting_authoritative": false,
+    "seed_retirement_authoritative": false,
+    "development_composition_authority": false,
+    "c2_cache_witness_authority": false,
+    "signature": null,
+    "required_subject_fields": ["module_ids"],
+    "context_is_authoritative": false,
+    "required_bindings": [
+      "python_tooling_non_authority_ceiling",
+      "project_structure_raw_and_semantic",
+      "verification_manifest_raw_and_semantic",
+      "changed_path_impact",
+      "pass_dependency_closure",
+      "slice_dependency_closure",
+      "verification_dependency_closure",
+      "development_composition_references",
+      "c2_cache_witness_references",
+      "fresh_sh07_checkpoint",
+      "current_module_source",
+      "proof_contract",
+      "checkpoint_runner",
+      "child_runner",
+      "compiler_sources",
+      "runtime",
+      "stdout",
+      "stderr",
+      "child_edn_identity_projection"
+    ]
+  },
+  "promotion": {
+    "kind": "gravity/reviewed-authoritative-evidence-candidate",
+    "policy_kind": "gravity/authoritative-evidence-promotion-policy",
+    "attestation_kind": "gravity/authoritative-evidence-reviewed-attestation",
+    "output_prefix": "target/validation/",
+    "may_set_authoritative": false,
+    "exact_subject_only": true,
+    "aggregate_authoritative": false,
+    "release_authoritative": false,
+    "self_hosting_authoritative": false,
+    "seed_retirement_authoritative": false,
+    "signature": null,
+    "release_blocked_without_signature": true,
+    "required_revalidation": [
+      "candidate_digest",
+      "current_file_bytes",
+      "project_and_verification_semantics",
+      "impact_and_dependency_closures",
+      "fresh_process",
+      "no_resumed_modules",
+      "no_iteration_or_proof_receipt_cache",
+      "output_contract",
+      "cryptographic_child_ids",
+      "trusted_child_identity_projection",
+      "trusted_exact_subject_mapping",
+      "trusted_policy_admission"
+    ],
+    "unconditional_blockers": [
+      "python_authority_ceiling_non_authoritative",
+      "trusted_admission_root_missing",
+      "evidence_subject_mapping_missing"
+    ]
+  },
+  "sh07": {
+    "checkpoint_schema": "gravity/sh07-authoritative-module-checkpoints-v2",
+    "completed_state": "completed",
+    "required_authority_scope": "individual-existing-runner-outputs-only",
+    "proof_contract_path": "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+    "child_runner_path": "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj",
+    "checkpoint_runner_path": "tools/run_sh07_authoritative_modules.py",
+    "compiler_paths": [
+      "bootstrap/gravity/p15_s23/compiler.gravity",
+      "bootstrap/gravity/p15_s23/emitter.gravity",
+      "bootstrap/gravity/src/gravity/macro.gravity",
+      "bootstrap/gravity/src/gravity/resolution.gravity",
+      "bootstrap/gravity/src/gravity/checked_core.gravity"
+    ],
+    "required_child_flags": {
+      "fresh-process-required?": true,
+      "persistent-iteration-cache-used?": false
+    },
+    "child_top_level_fields": [
+      "artifact", "elapsed-ms", "fresh-process-required?", "modules",
+      "persistent-iteration-cache-used?", "proof-receipt-reuse-count",
+      "proof-receipt-reuse-used?", "schema-version", "status"
+    ],
+    "child_module_fields": [
+      "artifact-id", "call-edge-count", "capability-proof-status", "contract-checks",
+      "coverage-census", "elapsed-ms", "failed-checks", "form-count", "fragment-count",
+      "function-record-count", "keyword-lookup-count", "module", "proof-transaction",
+      "recursion-component-count", "resolution-count", "schema-version", "source-byte-count",
+      "source-bytes-sha256", "source-path", "source-revision-id", "status",
+      "verification-status"
+    ],
+    "coverage_census_fields": [
+      "aggregate-authoritative?", "artifact", "authority-scope", "census-hash",
+      "core-counts", "integrity", "module", "module-namespace", "request-counts",
+      "request-schema-version", "schema-version", "scope", "sh06-status",
+      "sh07-artifact-id", "source-binding", "source-revision-id", "task"
+    ],
+    "proof_transaction_fields": [
+      "artifact", "artifact-id", "check-catalog-bindings", "checked-core-revision",
+      "cleanup-complete?", "construction-receipts-cleared?", "cross-epoch-reuse-count",
+      "cross-epoch-reuse?", "failed-report-executions", "failed-report-reuse-count",
+      "failed-report-reuse?", "final-snapshot-rechecked?", "maximum-receipts",
+      "owner-thread-id", "phase-order", "phases", "retained-receipt-count",
+      "schema-version", "source-snapshot", "status", "thread-confined?",
+      "verification-report-id"
+    ],
+    "contract_check_fields": [
+      "adapter-current?", "authoritative-coverage-census-current?",
+      "capability-proof-complete?", "counts-precommitted-policy-current?",
+      "coverage-census-policy-current?", "coverage-milestone-current?",
+      "fresh-process-required?", "independent-count-oracle-policy-current?",
+      "independent-verification-passed?", "iteration-cache-non-authoritative?",
+      "proof-transaction-current?", "request-schema-current?",
+      "required-core-product-counts-exact?", "required-core-products-present?",
+      "required-request-products-present?", "required-verification-checks-present-and-passed?",
+      "scope-current?", "source-revision-bound-to-bytes?", "source-snapshot-stable?",
+      "target-source-reread-disabled?", "task-current?", "unsupported-claims-explicit?"
+    ],
+    "cryptographic_identity_keys": [
+      "artifact-id", "census-hash", "function-names-hash", "function-shapes-hash",
+      "functions-semantic-hash", "plan-semantic-hash", "sha256", "sh07-artifact-id",
+      "source-bytes-sha256", "source-content-hash", "source-revision-id",
+      "verification-report-id"
+    ],
+    "cryptographic_identity_map_keys": [
+      "check-catalog-bindings", "public-function-hashes"
+    ],
+    "output_contract_checked_alone_is_sufficient": false
+  },
+  "reference_schemas": {
+    "development_composition_kind": "development-verification-composition",
+    "c2_cache_witness_kind": "gravity/c2-cache-witness",
+    "references_are_authoritative": false
+  },
+  "bounds": {
+    "maximum_json_bytes": 16777216,
+    "maximum_edn_bytes": 67108864,
+    "maximum_total_reference_bytes": 67108864,
+    "maximum_json_nodes": 100000,
+    "maximum_edn_nodes": 250000,
+    "maximum_depth": 96,
+    "maximum_references_per_class": 64,
+    "maximum_scope_ids_per_class": 512,
+    "maximum_identity_records": 32768
+  },
+  "file_policy": {
+    "repository_relative": true,
+    "regular_file": true,
+    "symlinks_allowed": false,
+    "hardlinks_allowed": false,
+    "current_owner_required": true,
+    "coherent_pre_and_post_read_snapshot": true
+  },
+  "diagnostics": {
+    "AE001": "strict data decoding failed",
+    "AE002": "a configured bound was exceeded",
+    "AE003": "a path escaped or violated its required class",
+    "AE004": "a file was unsafe, missing, or changed during inspection",
+    "AE005": "an evidence schema was malformed or unsupported",
+    "AE006": "a content identity was malformed or did not recompute",
+    "AE007": "an exact scope or dependency closure did not match",
+    "AE008": "current bytes or semantics differ from the candidate",
+    "AE009": "SH07 freshness, runtime, source, output, or child evidence was incomplete",
+    "AE010": "a non-authoritative reference was malformed or attempted authority",
+    "AE011": "reviewed promotion admission was absent or inconsistent",
+    "AE012": "an output path was outside isolated validation output",
+    "AE013": "the child EDN output or identity projection was malformed",
+    "AE014": "the normative evidence contract was malformed or inconsistent"
+  },
+  "nonclaims": [
+    "A candidate is not authoritative evidence.",
+    "A development composition or C2 cache witness never contributes authority.",
+    "Pass, slice, artifact, policy, and verification-check context is not an evidence subject.",
+    "A reviewed-promotion candidate remains non-authoritative because no trusted admission root exists.",
+    "A digest is not a signature.",
+    "Promotion does not establish release authority, full self-hosting, or seed retirement."
+  ]
+}

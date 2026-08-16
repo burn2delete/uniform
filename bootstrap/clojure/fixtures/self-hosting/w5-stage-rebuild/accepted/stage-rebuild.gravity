@@ -1,0 +1,345 @@
+; W5 Wave3 accepted stage A -> B -> C rebuild record.
+; This is a real executable record with pending execution and independent
+; evidence.  It is structurally accepted by the Gravity orchestrator only;
+; it is never self-host completion or release authority.
+(ns gravity.self-hosting.w5-stage-rebuild.accepted
+  (:profile :meta)
+  ; :jvm is only the stage2 compiler-plan harness.
+  (:target :jvm)
+  (:exports [w5-stage-rebuild-request
+             w5-stage-rebuild-alternate-path-request
+             w5-stage-rebuild-orchestration-request
+             w5-stage-rebuild-rebuild-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2 :component :w5-stage-rebuild-fixture :owner :w5
+     :scope :stage-owned-nonauthority :static-only? true
+     :clojure-seed-boundary? true :self-hosted? false :release? false
+     :public-authority? false :authority :non-authority}}))
+
+(def w5-sr-inventory-id
+  "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd")
+(def w5-sr-catalog-id
+  "sha256:1111111111111111111111111111111111111111111111111111111111111111")
+(def w5-sr-source-a
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+(def w5-sr-source-b
+  "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+(def w5-sr-source-c
+  "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
+(def w5-sr-compiler-source-id
+  "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+(def w5-sr-compiler-executable-id
+  "sha256:1111111111111111111111111111111111111111111111111111111111111111")
+(def w5-sr-verifier-executable-id
+  "sha256:2222222222222222222222222222222222222222222222222222222222222222")
+(def w5-sr-artifact-executable-id
+  "sha256:3333333333333333333333333333333333333333333333333333333333333333")
+(def w5-sr-recipe-id
+  "sha256:4444444444444444444444444444444444444444444444444444444444444444")
+(def w5-sr-environment-id
+  "sha256:5555555555555555555555555555555555555555555555555555555555555555")
+(def w5-sr-lock-id
+  "sha256:6666666666666666666666666666666666666666666666666666666666666666")
+(def w5-sr-toolchain-id
+  "sha256:7777777777777777777777777777777777777777777777777777777777777777")
+(def w5-sr-conformance-id
+  "sha256:8888888888888888888888888888888888888888888888888888888888888888")
+(def w5-sr-a-executable-id
+  "sha256:9999999999999999999999999999999999999999999999999999999999999999")
+(def w5-sr-b-executable-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab")
+(def w5-sr-c-executable-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaac")
+(def w5-sr-a-set-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaad")
+(def w5-sr-b-set-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaae")
+(def w5-sr-c-set-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaf")
+
+(defn w5-sr-span [start end]
+  {:source-id :gravity.self-hosting/w5-stage-rebuild
+   :start-byte start :end-byte end})
+
+(defn w5-sr-source-inventory []
+  {:inventory-id w5-sr-inventory-id
+   :catalog-id w5-sr-catalog-id
+   :schema-version 1 :source-language :gravity :source-count 3
+   :entries
+   [{:ordinal 0 :source-unit-id :compiler-source-a
+     :logical-source-id "gravity/compiler/stage1"
+     :content-id w5-sr-source-a :byte-count 1200 :dependencies []
+     :source-span (w5-sr-span 0 32)}
+    {:ordinal 1 :source-unit-id :compiler-source-b
+     :logical-source-id "gravity/compiler/stage2"
+     :content-id w5-sr-source-b :byte-count 1500
+     :dependencies [:compiler-source-a]
+     :source-span (w5-sr-span 33 65)}
+    {:ordinal 2 :source-unit-id :compiler-source-c
+     :logical-source-id "gravity/compiler/stage3"
+     :content-id w5-sr-source-c :byte-count 1800
+     :dependencies [:compiler-source-a :compiler-source-b]
+     :source-span (w5-sr-span 66 98)}]})
+
+(defn w5-sr-compiler []
+  {:compiler-source-inventory-id w5-sr-inventory-id
+   :source-inventory-id w5-sr-inventory-id
+   :compiler-source-id w5-sr-compiler-source-id
+   :compiler-executable-id w5-sr-compiler-executable-id
+   :compiler-executable-ids [w5-sr-compiler-executable-id
+                             w5-sr-a-executable-id
+                             w5-sr-b-executable-id
+                             w5-sr-c-executable-id]
+   :verifier-executable-id w5-sr-verifier-executable-id
+   :artifact-executable-id w5-sr-artifact-executable-id
+   :evidence-class :executable-record
+   :actual-execution-status :pending
+   :independent-status :pending})
+
+(defn w5-sr-stage
+  [stage ordinal source-id artifact-executable artifact-set parent-executable
+   parent-set actual-path]
+  {:stage-id stage :stage-ordinal ordinal
+   :source-inventory-id w5-sr-inventory-id
+   :compiler-source-inventory-id w5-sr-inventory-id
+   :compiler-source-id source-id
+   :compiler-executable-id w5-sr-compiler-executable-id
+   :verifier-executable-id w5-sr-verifier-executable-id
+   :artifact-executable-id artifact-executable
+   :artifact-set-id artifact-set
+   :compiled-by-parent-executable-id parent-executable
+   :compiled-by-executable-id parent-executable
+   :parent-artifact-set-id parent-set
+   :build-recipe-id w5-sr-recipe-id
+   :environment-id w5-sr-environment-id
+   :lock-id w5-sr-lock-id
+   :toolchain-id w5-sr-toolchain-id
+   :conformance-id w5-sr-conformance-id
+   :target :llvm-x86_64-linux
+   :evidence-class :executable-record
+   :actual-execution-status :pending
+   :independent-evidence-status :pending
+   :source-span (w5-sr-span (+ 100 (* 20 ordinal))
+                            (+ 119 (* 20 ordinal)))
+   :provenance {:logical-source-id
+                (str "gravity/compiler/" (str stage))
+                :actual-source-path actual-path}})
+
+(defn w5-sr-artifact-set
+  [stage set-id artifact-executable artifact-id actual-path]
+  {:artifact-set-id set-id :stage-id stage :target :llvm-x86_64-linux
+   :compiled-by-executable-id artifact-executable
+   :artifact-ids [artifact-id]
+   :artifacts [{:artifact-id artifact-id :target :llvm-x86_64-linux
+                :kind :stage-compiler
+                :compiled-by-executable-id artifact-executable
+                :status :pending :independent-status :pending}]
+   :status :pending
+   :actual-execution-status :pending
+   :independent-status :pending
+   :provenance {:actual-artifact-path actual-path}})
+
+(defn w5-sr-build-recipe []
+  {:recipe-id w5-sr-recipe-id :version "gravity-stage-rebuild-v1"
+   :steps [:read-source :verify-source :emit-stage-artifacts]
+   :mode :deterministic})
+
+(defn w5-sr-environment []
+  {:environment-id w5-sr-environment-id :locale "C" :timezone "UTC"
+   :filesystem-order :sorted :timestamp-policy :fixed :random-seed 17
+   :network :disabled :allowed-environment []})
+
+(defn w5-sr-lock []
+  {:lock-id w5-sr-lock-id :format-version 1
+   :dependencies [:gravity/core :gravity/compiler] :frozen? true})
+
+(defn w5-sr-toolchain []
+  {:toolchain-id w5-sr-toolchain-id :compiler :llvm :version "20.1.8"
+   :linker :lld :object-format :elf :abi :sysv-amd64
+   :execution-status :pending})
+
+(defn w5-sr-target []
+  {:target :llvm-x86_64-linux :os :linux :arch :x86_64 :backend :llvm
+   :object-format :elf :abi :sysv-amd64 :cross-target-inference? false
+   :darwin-fallback? false :fallback? false
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false
+     :fallback? false}]
+   :candidate-invokes-clojure? false :candidate-links-jvm? false
+   :no-fallback? true})
+
+(defn w5-sr-conformance []
+  {:conformance-id w5-sr-conformance-id
+   :target :llvm-x86_64-linux :suite-id "w5-stage-rebuild-conformance-v1"
+   :positive-fixtures [:stage1 :stage2 :stage3]
+   :negative-fixtures [:catalog :stage-order :executable :artifact-set
+                       :recipe :environment :lock :toolchain :target
+                       :conformance :evidence :authority]
+   :diagnostic-parity :pending :independent-status :pending})
+
+(defn w5-sr-boot5-matrix []
+  [{:stage-id :stage1 :compiler-owner :clojure-stage0-seed
+    :implemented-documents [:BOOT1 :BOOT2 :BOOT3 :BOOT4 :BOOT5]
+    :language-subset :reader-bootstrap :supported-profiles [:core :meta]
+    :supported-backends [:llvm] :runtime-services [:jvm-stage2-runtime]
+    :package-build-features [:descriptor-only]
+    :standard-library-subset [:core]
+    :conformance-suites [:w5-stage1-conformance]
+    :known-gaps [:actual-execution :independent-equivalence]
+    :release-eligible? false :status :pending}
+   {:stage-id :stage2 :compiler-owner :gravity-stage1
+    :implemented-documents [:BOOT1 :BOOT2 :BOOT3 :BOOT4 :BOOT5 :BOOT7]
+    :language-subset :compiler-bootstrap :supported-profiles [:core :meta]
+    :supported-backends [:llvm] :runtime-services [:jvm-stage2-runtime]
+    :package-build-features [:descriptor-only]
+    :standard-library-subset [:core]
+    :conformance-suites [:w5-stage2-conformance]
+    :known-gaps [:actual-execution :independent-equivalence]
+    :release-eligible? false :status :pending}
+   {:stage-id :stage3 :compiler-owner :gravity-stage2
+    :implemented-documents [:BOOT1 :BOOT2 :BOOT3 :BOOT4 :BOOT5 :BOOT7 :BOOT8]
+    :language-subset :self-hosting-subset
+    :supported-profiles [:core :meta :hosted] :supported-backends [:llvm]
+    :runtime-services [:jvm-stage2-runtime]
+    :package-build-features [:descriptor-only]
+    :standard-library-subset [:core]
+    :conformance-suites [:w5-stage3-conformance]
+    :known-gaps [:actual-execution :independent-equivalence :seed-retirement]
+    :release-eligible? false :status :pending}])
+
+(defn w5-sr-boot7-equivalence-input []
+  {:input-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   :compiler-a-id w5-sr-b-executable-id
+   :compiler-b-id w5-sr-c-executable-id
+   :artifact-a-id w5-sr-b-set-id
+   :artifact-b-id w5-sr-c-set-id
+   :source-inventory-id w5-sr-inventory-id
+   :conformance-id w5-sr-conformance-id
+   :modes [:artifact-hash :manifest :diagnostic :conformance :runtime-output
+           :ir-modulo-id :performance-bound :accepted-delta]
+   :status :pending})
+
+(defn w5-sr-boot7-equivalence-report [root]
+  (let [input (w5-sr-boot7-equivalence-input)]
+    {:report-id "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+     :input-id (get input :input-id)
+     :compiler-a-id (get input :compiler-a-id)
+     :compiler-b-id (get input :compiler-b-id)
+     :artifact-a-id (get input :artifact-a-id)
+     :artifact-b-id (get input :artifact-b-id)
+     :modes (get input :modes)
+     :artifact-hash-status :pending :manifest-status :pending
+     :diagnostic-status :pending :conformance-status :pending
+     :runtime-output-status :pending :ir-status :pending
+     :performance-status :pending :accepted-delta-status :pending
+     :status :pending
+     :actual-report-path (str root "/equivalence/boot7-stage-equivalence.edn")}))
+
+(defn w5-sr-evidence []
+  {:evidence-class :executable-record
+   :actual-execution-status :pending
+   :independent-status :pending
+   :source-span-status :preserved
+   :artifact-status :pending
+   :status :incomplete})
+
+(defn w5-sr-authority []
+  {:authority :non-authority :clojure-seed-boundary? true
+   :self-hosted? false :release? false :public-authority? false
+   :candidate-invokes-clojure? false :candidate-links-jvm? false
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false
+     :fallback? false}]
+   :unsupported-target-invokes-clojure? false
+   :unsupported-target-links-jvm? false
+   :cross-target-inference? false :darwin-fallback? false
+   :no-fallback? true})
+
+(defn w5-sr-request-with-root [root]
+  {:artifact :gravity/w5-stage-rebuild-request :schema-version 1
+   :orchestrator-id :gravity/w5-stage-rebuild-orchestrator
+   :stage2-harness {:target :jvm :authority :clojure-stage0
+                    :execution-status :harness-only}
+   :stage-order [:stage1 :stage2 :stage3]
+   :source-inventory (w5-sr-source-inventory)
+   :compiler (w5-sr-compiler)
+   :stages
+   {:stage1
+    (w5-sr-stage :stage1 0 w5-sr-source-a w5-sr-a-executable-id
+                 w5-sr-a-set-id nil nil
+                 (str root "/stage1/compiler.elf"))
+    :stage2
+    (w5-sr-stage :stage2 1 w5-sr-source-b w5-sr-b-executable-id
+                 w5-sr-b-set-id w5-sr-a-executable-id w5-sr-a-set-id
+                 (str root "/stage2/compiler.elf"))
+    :stage3
+    (w5-sr-stage :stage3 2 w5-sr-source-c w5-sr-c-executable-id
+                 w5-sr-c-set-id w5-sr-b-executable-id w5-sr-b-set-id
+                 (str root "/stage3/compiler.elf"))}
+   :artifact-sets
+   {:stage1
+    (w5-sr-artifact-set
+     :stage1 w5-sr-a-set-id w5-sr-compiler-executable-id
+     "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaba"
+     (str root "/stage1/artifacts.edn"))
+    :stage2
+    (w5-sr-artifact-set
+     :stage2 w5-sr-b-set-id w5-sr-a-executable-id
+     "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabb"
+     (str root "/stage2/artifacts.edn"))
+    :stage3
+    (w5-sr-artifact-set
+     :stage3 w5-sr-c-set-id w5-sr-b-executable-id
+     "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabc"
+     (str root "/stage3/artifacts.edn"))}
+   :build-recipe (w5-sr-build-recipe)
+   :environment (w5-sr-environment)
+   :lock (w5-sr-lock)
+   :toolchain (w5-sr-toolchain)
+   :candidate-target (w5-sr-target)
+   :conformance (w5-sr-conformance)
+   :boot5-matrix (w5-sr-boot5-matrix)
+   :boot7-equivalence-input (w5-sr-boot7-equivalence-input)
+   :boot7-equivalence-report (w5-sr-boot7-equivalence-report root)
+   :evidence (w5-sr-evidence)
+   :authority (w5-sr-authority)
+   :provenance
+   {:source-id :gravity.self-hosting/w5-stage-rebuild
+    :logical-source-id "fixtures/w5-stage-rebuild/stage-rebuild"
+    :actual-source-path
+    (str root "/bootstrap/clojure/fixtures/self-hosting/"
+         "w5-stage-rebuild/accepted/stage-rebuild.gravity")
+    :orchestrator-source-path
+    (str root "/bootstrap/gravity/src/gravity/self_hosting/"
+         "w5_stage_rebuild_orchestrator.gravity")}
+   :profile :meta
+   :source-span (w5-sr-span 0 256)})
+
+(defn w5-stage-rebuild-request []
+  (w5-sr-request-with-root "/checkout-a/gravity"))
+
+(defn w5-stage-rebuild-alternate-path-request []
+  (w5-sr-request-with-root "/checkout-b/gravity"))
+
+(defn w5-stage-rebuild-orchestration-request []
+  (w5-stage-rebuild-request))
+
+(defn w5-stage-rebuild-rebuild-request []
+  (w5-stage-rebuild-request))

@@ -60,7 +60,9 @@ profile validate, or call host services beyond declared source input.
 ```clojure
 {:artifact :gravity/source-unit
  :source-id source-hash
- :path "src/app.gravity"
+ :path actual-supplied-path
+ :extension ".gravity"
+ :project-relative-path "src/app.gravity"
  :encoding :utf-8
  :bytes-hash bytes-hash
  :project-root project-hash
@@ -70,9 +72,11 @@ profile validate, or call host services beyond declared source input.
  :source-kind :gravity}
 ```
 
-Source identity is based on source bytes, declared encoding, source path under
-the project root, reader options, and feature decisions. It excludes downstream
-semantic facts.
+Source identity is based on source bytes, declared encoding, the explicit
+project-root id, source path relative to that root, reader options, and feature
+decisions. The actual supplied path and extension remain provenance fields
+outside the normalized identity tuple. Source identity excludes downstream
+semantic facts and ambient process state such as the current working directory.
 
 ## Token Stream
 
@@ -115,6 +119,16 @@ The reader builds delimiter and literal structure:
 Malformed delimiter, map, set, metadata, string, or extension forms produce
 reader diagnostics and no checked syntax seed for that form.
 
+The executable bootstrap representation is a flat, authenticated graph. Token
+and form raw spellings may be encoded as source-slice references containing the
+source-content identity and exact byte and scalar bounds. Atomic decoded values
+are stored once in a semantic-value table and referenced by exact value ids;
+collection and wrapper values are reconstructed from child and parent form ids.
+Every slice, token, form, semantic value, parent, child, payload, and metadata
+reference must resolve exactly once at the authenticated boundary. Recursive
+values, repeated descendant raw bytes, and repeated full-product digest
+preimages are not required reader products.
+
 ## Reader Abbreviations
 
 Reader abbreviations are represented as explicit forms plus origin links:
@@ -146,6 +160,24 @@ Literal records preserve raw and decoded views:
 
 The reader validates lexical shape. Numeric family availability, overflow,
 rounding, allocation, and profile legality are checked later.
+
+Numeric-candidate recognition is fail closed. A token whose leading spelling
+selects numeric syntax but which fails every enabled numeric grammar produces a
+reader diagnostic rather than becoming a symbol or leaking a host numeric
+parser failure. Lexically valid values that require later semantic judgment,
+including a zero-denominator ratio, retain their raw spelling and decoded
+components and continue as deferred literal records.
+
+Reader implementations may declare deterministic source, token, form,
+delimiter, container, result-carrier, and construction-work bounds. The bounds
+are part of the reader artifact and its replay contract. Structural work that
+would exceed a declared bound must be detected before an unbounded host
+operation and must fail with structured resource facts. A lexically valid
+numeric spelling that exceeds the reader's bounded normalization work is not a
+reader error: it retains its exact components and continues as a deferred
+numeric record owned by later numeric and safety analysis. Duplicate-set
+equality is required at read time only when equality is decidable within the
+declared reader bounds.
 
 ## Reader Extensions
 
@@ -187,12 +219,21 @@ Reader diagnostics use `C2` identifiers:
 - `C2-ENCODING` for source decoding failure.
 - `C2-DELIMITER` for unmatched or mismatched delimiters.
 - `C2-STRING` for malformed string or character literals.
+- `C2-NUMERIC` for a numeric candidate that fails every enabled numeric literal
+  grammar.
+- `C2-IDENTIFIER` for a malformed symbol or keyword surface spelling.
+- `C2-NS-SHAPE` for a namespace clause whose reader-level list, keyword, or
+  clause-value shape is invalid. This is the C2 containment mapping of the L1
+  owner rule `L1-NS-SHAPE`; diagnostics retain that owner rule as provenance.
 - `C2-MAP` for odd map literal arity.
 - `C2-SET` for duplicate literal set entries decidable at read time.
 - `C2-METADATA` for metadata without a following form or invalid metadata shape.
 - `C2-ABBREV` for invalid reader abbreviation placement.
-- `C2-EXTENSION` for unknown, disallowed, or effect-violating reader extension.
-- `C2-HASH` for unstable reader artifact identity.
+- `C2-EXTENSION` for a source path outside the declared source-extension
+  policy, or for an unknown, disallowed, or effect-violating reader tag
+  extension.
+- `C2-HASH` for unstable reader artifact identity, malformed authenticated
+  product graphs, or a declared structural reader-resource bound.
 
 Diagnostics must include source id, exact span, token or form id when available,
 raw spelling, reader option set, extension tag when relevant, and remediation.
@@ -206,7 +247,8 @@ Gravity rejects source forms without stable source spans.
 Gravity rejects reader extensions with ambient authority.
 
 Gravity rejects literal decoding that loses raw spelling needed for diagnostics
-or numeric modes.
+or numeric modes, silently reclassifies a malformed numeric candidate as a
+symbol, or exposes a host numeric parser exception.
 
 Gravity rejects treating syntax-valid semantic errors as reader errors.
 
@@ -222,5 +264,7 @@ A conforming reader must demonstrate:
 - comment/trivia retention for tooling mode,
 - deterministic incremental hashing,
 - reader extension acceptance and rejection cases,
-- diagnostics for malformed delimiters, strings, maps, sets, metadata, and
-  extensions.
+- diagnostics for malformed delimiters, strings, numeric candidates,
+  identifiers, maps, sets, metadata, and extensions,
+- lexical acceptance and semantic deferral for valid numeric spellings whose
+  value requires later numeric or safety analysis.

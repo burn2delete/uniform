@@ -1,0 +1,13 @@
+(ns self-hosting.sh07-b2.keyword-headed-call
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B15
+              :fixture :keyword-headed-call
+              :non-claims [:keyword-default-value
+                           :whole-program-execution]}))
+
+(def keyword-call
+  (:answer {:answer 42}))

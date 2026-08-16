@@ -1,0 +1,24 @@
+(ns self-hosting.sh07-b9.reject.later-catch-handler-sequencing-deferred
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B9
+    :sh07-b9
+    {:expected-rule "C6-LOWERING-GAP"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :catch-handler-sequencing-deferred
+     :expected-remediation
+     "Wrap handler sequencing in an explicit do form; SH-07-B11 accepts one handler expression per catch clause."}}))
+
+(def invalid-handler
+  (try
+    (throw "later handler sequence")
+    (catch Exception error
+      error)
+    (catch Throwable fallback
+      fallback
+      "second")))

@@ -1,0 +1,214 @@
+{
+  "artifact_contracts": {
+    "attestations": {
+      "admission_mode": "disabled-pending-target-coherent-public-native-evidence-v2",
+      "input_identity_keys": [
+        "contractSha256",
+        "documentInventorySha256"
+      ],
+      "kind": "gravity/full-language-completion-attestations",
+      "path": "docs/artifacts/full-language/coverage/full-language-completion-attestations.json",
+      "schema_version": 1,
+      "status_literals": [
+        "complete",
+        "incomplete"
+      ],
+      "top_keys": [
+        "attestations",
+        "inventoryCount",
+        "inputIdentities",
+        "kind",
+        "producer",
+        "schemaVersion",
+        "semanticId",
+        "status"
+      ],
+      "v2_requirements": [
+        "exact-ordered-w5-accepted-and-rejected-specific-matrix",
+        "exact-source-hash-argv-and-expected-result-cells",
+        "w1-carrier-w2-provider-w3-containment-w4-public-route-crosslinks",
+        "contained-native-execution-and-raw-transcript-receipt-output-bytes",
+        "verifier-present-and-reviewed-in-a-and-byte-identical-in-b",
+        "non-circular-a-b-c-registry-lineage",
+        "captured-byte-or-descriptor-verification-without-path-reopen",
+        "exact-verifier-abi-and-containment-policy",
+        "independently-recomputed-no-jvm-no-fallback-tcb-and-sbom",
+        "stable-tamper-diagnostics"
+      ]
+    },
+    "gap_report": {
+      "entry_keys": [
+        "completionGaps",
+        "coverageClass",
+        "gaps",
+        "id",
+        "path",
+        "sequence"
+      ],
+      "kind": "gravity/full-language-coverage-gap-report",
+      "input_identity_keys": [
+        "contractSha256",
+        "generatorSha256",
+        "matrixSemanticId"
+      ],
+      "path": "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
+      "schema_version": 1,
+      "status_literals": [
+        "complete",
+        "incomplete"
+      ],
+      "top_keys": [
+        "gapCount",
+        "gaps",
+        "generatedOn",
+        "inventoryCount",
+        "inputIdentities",
+        "kind",
+        "noExecutableOwnerCount",
+        "producer",
+        "schemaVersion",
+        "semanticId",
+        "status"
+      ]
+    },
+    "matrix": {
+      "entry_keys": [
+        "acceptedFixtures",
+        "artifacts",
+        "completionGaps",
+        "coverageClass",
+        "diagnostics",
+        "fullLanguageComplete",
+        "gaps",
+        "id",
+        "implementationModules",
+        "path",
+        "phase",
+        "phaseName",
+        "proofCommands",
+        "publicAccepted",
+        "publicRejectedSpecific",
+        "rejectedFixtures",
+        "scaffoldOnlyCoverage",
+        "sequence",
+        "title"
+      ],
+      "implementation_module_keys": [
+        "clojureSeed",
+        "gravityAuthored",
+        "publicBinary",
+        "pythonScaffold"
+      ],
+      "kind": "gravity/full-language-coverage-matrix",
+      "input_identity_keys": [
+        "completionAttestationsSemanticId",
+        "completionAttestationsSha256",
+        "contractSha256",
+        "documentInventorySha256",
+        "evidenceCorpusSemanticId",
+        "generatorSha256",
+        "publicRouteSha256"
+      ],
+      "path": "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
+      "public_audit_keys": [
+        "acceptedFail",
+        "acceptedPass",
+        "acceptedTotal",
+        "enabled",
+        "rejectedGenericUnsupported",
+        "rejectedSpecificDiagnostic",
+        "rejectedTotal"
+      ],
+      "schema_version": 1,
+      "status_literals": [
+        "complete",
+        "incomplete"
+      ],
+      "summary_keys": [
+        "coverageClasses",
+        "documents",
+        "documentsWithNoAcceptedFixture",
+        "documentsWithNoExecutableOwner",
+        "documentsWithNoGravityAuthoredImplementation",
+        "documentsWithNoRejectedFixture",
+        "documentsWithNoStableDiagnostic",
+        "fullLanguageCompleteDocuments",
+        "publicAudit"
+      ],
+      "top_keys": [
+        "entries",
+        "generatedOn",
+        "inventoryCount",
+        "inputIdentities",
+        "kind",
+        "producer",
+        "publicAuditEnabled",
+        "schemaVersion",
+        "semanticId",
+        "status",
+        "summary"
+      ]
+    },
+    "report": {
+      "kind": "markdown-report-v1",
+      "path": "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md"
+    }
+  },
+  "authority": "non-authoritative-observation",
+  "canonical_identity": {
+    "algorithm": "canonical-json-v1",
+    "excluded_top_level_keys": [
+      "generatedOn",
+      "semanticId"
+    ],
+    "json": {
+      "allow_nan": false,
+      "ensure_ascii": true,
+      "separators": [
+        ",",
+        ":"
+      ],
+      "sort_keys": true
+    },
+    "semantic_id": "sha256:<lowercase-hex-of-canonical-json-utf8>",
+    "version": 1
+  },
+  "commands": {
+    "generate": "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --write --audit-public",
+    "require_complete": "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --validate --require-full-language",
+    "self_test": "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --self-test",
+    "validate": "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --validate"
+  },
+  "consumer": {
+    "module": "tools.generate_full_language_coverage_matrix",
+    "predicate_version": 1,
+    "predicates": [
+      "validate_contract_v1",
+      "validate_completion_attestations_v1",
+      "validate_matrix_v1",
+      "validate_gap_report_v1",
+      "validate_repository_outputs_v1"
+    ]
+  },
+  "counter_contract": {
+    "complete_when": "fullLanguageCompleteDocuments == documents == inventoryCount and gapCount == 0",
+    "current_expected_status": "incomplete",
+    "inventory_count": 240,
+    "supported_surface_is_not_completion": true
+  },
+  "kind": "gravity/full-language-coverage-contract",
+  "nonclaims": [
+    "full-language-completion",
+    "public-authority",
+    "release-readiness",
+    "self-hosting",
+    "seed-retirement"
+  ],
+  "raw_identity": {
+    "algorithm": "sha256-exact-file-bytes-v1",
+    "embedded_in_hashed_file": false,
+    "format": "sha256:<lowercase-hex>",
+    "version": 1
+  },
+  "schema_version": 1
+}

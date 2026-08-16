@@ -1,0 +1,17 @@
+(ns self-hosting.sh06.reject.private
+  (:profile :hosted) (:target :jvm)
+  (:requires [private.library :as private-lib :profile :hosted :visibility :private])
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:slice :SH-06
+              :compiler {:sh06-request {:request-version 1
+                                         :references [{:symbol private-lib/hidden
+                                                       :position :expression}]
+                                         :candidate-bindings
+                                         [{:name hidden :namespace private.library
+                                           :visibility :private}]
+                                         :module-graph
+                                         {:nodes [self-hosting.sh06.reject.private private.library]
+                                          :edges [[self-hosting.sh06.reject.private private.library]]}}}
+              :sh06 {:expected-rule "C5-PRIVATE" :expected-stage :name-resolution
+                     :expected-severity :error :expected-remediation :use-public-export}}))
+(defn candidate [] private-lib/hidden)

@@ -1,0 +1,19 @@
+; SH-07-B9 preserves duplicate handler types while coverage legality remains pending.
+(ns self-hosting.sh07-b9.duplicate-types-remain-pending
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [recover-duplicate-types])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B9
+              :fixture :duplicate-types-remain-pending
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn recover-duplicate-types [value]
+  (try
+    (throw value)
+    (catch Exception first-error
+      first-error)
+    (catch Exception second-error
+      second-error)))

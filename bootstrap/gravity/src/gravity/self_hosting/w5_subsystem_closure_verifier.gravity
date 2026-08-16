@@ -1,0 +1,1648 @@
+; W5 Wave4 runtime, standard-library, and package-build subsystem closure.
+;
+; This is a bounded, static-only :meta consumer.  It validates supplied
+; records and recomputes a fail-closed decision; it never reads a host, runs a
+; compiler or toolchain, invokes a JVM/Clojure process, links a native image,
+; or promotes an authority claim.  The :jvm target is only the explicit
+; stage2 seed-plan harness target.  Candidate evidence is the exact
+; LLVM/Linux/x86_64/ELF/SysV tuple declared below.
+(ns gravity.self-hosting.w5-subsystem-closure-verifier
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-subsystem-closure-policy
+             w5-subsystem-closure-diagnostic-catalog
+             w5-subsystem-closure-target-valid?
+             w5-sc-path-ends-with?
+             w5-sc-source-fixture-path?
+             w5-subsystem-closure-source-valid?
+             w5-subsystem-closure-executable-valid?
+             w5-subsystem-closure-conformance-valid?
+             w5-subsystem-closure-provenance-valid?
+             w5-subsystem-closure-subsystem-valid?
+             w5-subsystem-closure-subsystems-valid?
+             w5-subsystem-closure-linkage-valid?
+             w5-subsystem-closure-compiler-valid?
+             w5-subsystem-closure-transcripts-valid?
+             w5-subsystem-closure-replay-valid?
+             w5-subsystem-closure-build-recipes-valid?
+             w5-subsystem-closure-environments-valid?
+             w5-subsystem-closure-locks-valid?
+             w5-subsystem-closure-toolchains-valid?
+             w5-subsystem-closure-evidence-valid?
+             w5-subsystem-closure-provenance-records-valid?
+             w5-subsystem-closure-tcb-valid?
+             w5-subsystem-closure-authority-valid?
+             w5-subsystem-closure-request-valid?
+             w5-subsystem-closure-identity-input
+             w5-subsystem-closure-provenance
+             w5-subsystem-closure
+             w5-subsystem-closure-verify
+             w5-subsystem-closure-execute
+             w5-subsystem-closure-run
+             w5-subsystem-closure-recompute
+             w5-subsystem-closure-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-subsystem-closure-verifier
+     :owner :workstream-5
+     :source-language :gravity
+     :seed :clojure-stage0
+     :status :executable-leaf
+     :scope :wave4-static-subsystem-closure
+     :static-only? true
+     :authority :non-authority
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :release? false
+     :public-authority? false
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux
+                          :arch :x86_64
+                          :backend :llvm
+                          :artifact-format :elf
+                          :abi :sysv-amd64}
+     :candidate-invokes-clojure? false
+     :candidate-links-jvm? false
+     :no-fallback? true
+     :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :windows :invokes-clojure? false :links-jvm? false
+       :fallback? false}]
+     :cross-target-inference? false
+     :darwin-fallback? false
+     :residual-trusted-components
+     [:clojure-stage0-seed
+      :jvm-stage2-runtime
+      :runtime-subsystem-execution
+      :standard-library-subsystem-execution
+      :package-build-subsystem-execution
+      :independent-conformance-review]
+     :governing-documents
+     [:D0 :D1 :D2 :D3 :D6 :D8 :D9
+      :R1 :R2 :R11 :R12
+      :PKG1 :PKG2 :PKG3 :PKG5 :PKG6 :PKG7 :PKG8 :PKG10 :PKG11 :PKG12
+      :BOOT1 :BOOT2 :BOOT3 :BOOT4 :BOOT5 :BOOT6 :BOOT7 :BOOT8
+      :STD1 :STD2 :STD14 :STD15 :STD20 :TEST13]
+     :does-not-claim
+     [:runtime-execution
+      :standard-library-execution
+      :package-build-execution
+      :final-subsystem-hashes
+      :w1-w4-inference
+      :target-matrix-inference
+      :self-hosting-completion
+      :release-readiness
+      :public-authority
+      :seed-retirement]}}))
+
+(def w5-sc-candidate-target :llvm-x86_64-linux)
+(def w5-sc-top-source-id :gravity/w5-subsystem-closure-fixture)
+(def w5-sc-candidate-platform
+  {:os :linux
+   :arch :x86_64
+   :backend :llvm
+   :artifact-format :elf
+   :abi :sysv-amd64})
+(def w5-sc-unsupported-targets
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+(def w5-sc-unsupported-target-policies
+  [{:target :darwin :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+    :fallback? false}
+   {:target :windows :invokes-clojure? false :links-jvm? false
+    :fallback? false}])
+(def w5-sc-subsystems [:runtime :standard-library :package-build])
+(def w5-sc-compiler-id :compiler-stage2-seed)
+(def w5-sc-source-ids
+  [:runtime-source :standard-library-source :package-build-source])
+(def w5-sc-executable-ids
+  [:runtime-executable :standard-library-executable :package-build-executable])
+(def w5-sc-conformance-ids
+  [:runtime-conformance :standard-library-conformance
+   :package-build-conformance])
+(def w5-sc-provenance-ids
+  [:runtime-provenance :standard-library-provenance :package-build-provenance])
+(def w5-sc-recipe-ids
+  [:runtime-recipe :standard-library-recipe :package-build-recipe])
+(def w5-sc-accepted-transcript-ids
+  [:runtime-accepted-transcript :standard-library-accepted-transcript
+   :package-build-accepted-transcript])
+(def w5-sc-rejected-transcript-ids
+  [:runtime-rejected-transcript :standard-library-rejected-transcript
+   :package-build-rejected-transcript])
+(def w5-sc-diagnostic-parity-ids
+  [:runtime-diagnostic-parity :standard-library-diagnostic-parity
+   :package-build-diagnostic-parity])
+(def w5-sc-source-span-parity-ids
+  [:runtime-source-span-parity :standard-library-source-span-parity
+   :package-build-source-span-parity])
+(def w5-sc-residual-trusted-components
+  [:clojure-stage0-seed :jvm-stage2-runtime
+   :runtime-subsystem-execution :standard-library-subsystem-execution
+   :package-build-subsystem-execution :independent-conformance-review])
+(def w5-sc-diagnostic-rules
+  ["W5-SC-SCHEMA"
+   "W5-SC-TARGET"
+   "W5-SC-RUNTIME"
+   "W5-SC-STDLIB"
+   "W5-SC-PACKAGE"
+   "W5-SC-LINKAGE"
+   "W5-SC-COMPILER"
+   "W5-SC-TRANSCRIPT"
+   "W5-SC-REPLAY"
+   "W5-SC-RECIPE"
+   "W5-SC-ENVIRONMENT"
+   "W5-SC-LOCK"
+   "W5-SC-TOOLCHAIN"
+   "W5-SC-CONFORMANCE"
+   "W5-SC-PROVENANCE"
+   "W5-SC-TCB"
+   "W5-SC-AUTHORITY"
+   "W5-SC-UPSTREAM"
+   "W5-SC-SUBSTITUTION"])
+
+(defn w5-subsystem-closure-policy []
+  {:artifact :gravity/w5-subsystem-closure-policy
+   :schema-version 1
+   :scope :wave4-static-subsystem-closure
+   :profile :meta
+   :target :jvm
+   :harness-target :jvm
+   :candidate-target w5-sc-candidate-target
+   :candidate-platform w5-sc-candidate-platform
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :no-fallback? true
+   :unsupported-platforms w5-sc-unsupported-targets
+   :unsupported-targets w5-sc-unsupported-targets
+   :unsupported-target-policies w5-sc-unsupported-target-policies
+   :cross-target-inference? false
+   :darwin-fallback? false
+   :required-subsystems w5-sc-subsystems
+   :required-identity-kinds [:source :executable :conformance :provenance]
+   :required-evidence
+   [:cross-subsystem-linkage
+    :compiler-identity-input
+    :accepted-rejected-transcripts
+    :replay-record
+    :build-recipe
+    :hermetic-environment
+    :offline-lock
+    :target-toolchain
+    :residual-tcb
+    :source-spans
+    :provenance]
+   :pending
+   [:runtime-execution
+    :standard-library-execution
+    :package-build-execution
+    :conformance-transcripts
+    :replay
+    :independent-provenance-review
+    :independent-conformance-review]
+   :static-only? true
+   :closure-status :incomplete
+   :completion-status :blocked
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :residual-trusted-components
+   [:clojure-stage0-seed :jvm-stage2-runtime
+    :runtime-subsystem-execution :standard-library-subsystem-execution
+    :package-build-subsystem-execution :independent-conformance-review]
+   :does-not-claim
+   [:runtime-execution :standard-library-execution :package-build-execution
+    :final-subsystem-hashes :w1-w4-inference :target-matrix-inference
+    :self-hosting-completion :release-readiness :seed-retirement]})
+
+(defn w5-subsystem-closure-diagnostic-catalog []
+  {:artifact :gravity/w5-subsystem-closure-diagnostic-catalog
+   :schema-version 1
+   :stage :w5-subsystem-closure
+   :diagnostics w5-sc-diagnostic-rules
+   :remediation
+   {"W5-SC-SCHEMA" :provide-exact-request-schema
+    "W5-SC-TARGET" :use-exact-llvm-linux-target
+    "W5-SC-RUNTIME" :bind-runtime-source-executable-conformance-provenance
+    "W5-SC-STDLIB"
+    :bind-standard-library-source-executable-conformance-provenance
+    "W5-SC-PACKAGE"
+    :bind-package-build-source-executable-conformance-provenance
+    "W5-SC-LINKAGE" :bind-cross-subsystem-identities
+    "W5-SC-COMPILER" :bind-compiler-identity-input
+    "W5-SC-TRANSCRIPT" :record-accepted-rejected-transcripts
+    "W5-SC-REPLAY" :record-replay-evidence
+    "W5-SC-RECIPE" :pin-build-recipes
+    "W5-SC-ENVIRONMENT" :pin-hermetic-environments
+    "W5-SC-LOCK" :pin-complete-offline-lock
+    "W5-SC-TOOLCHAIN" :bind-target-toolchain
+    "W5-SC-CONFORMANCE" :bind-conformance-identity
+    "W5-SC-PROVENANCE" :bind-provenance-identities
+    "W5-SC-TCB" :declare-residual-trusted-components
+    "W5-SC-AUTHORITY" :deny-clojure-jvm-fallback
+    "W5-SC-UPSTREAM" :do-not-infer-upstream-values
+    "W5-SC-SUBSTITUTION" :recompute-verification-result}
+   :authority :non-authority
+   :static-only? true
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false})
+
+(defn w5-sc-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn w5-sc-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (w5-sc-member-from? values value (+ index 1)))))
+
+(defn w5-sc-member? [values value]
+  (if (vector? values)
+    (w5-sc-member-from? values value 0)
+    false))
+
+(defn w5-sc-nonempty-string? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (<= (count value) 4096)
+      false)
+    false))
+
+(defn w5-sc-id? [value]
+  (if (keyword? value)
+    true
+    (w5-sc-nonempty-string? value)))
+
+(defn w5-sc-nonnegative-integer? [value]
+  (if (integer? value)
+    (>= value 0)
+    false))
+
+(defn w5-sc-path? [value]
+  (w5-sc-nonempty-string? value))
+
+(defn w5-sc-suffix-match? [value suffix index]
+  (if (= index (count suffix)) true
+    (if (> (count suffix) (count value)) false
+      (if (= (get value (- (count value) (+ index 1)))
+             (get suffix (- (count suffix) (+ index 1))))
+        (w5-sc-suffix-match? value suffix (+ index 1)) false))))
+
+(defn w5-sc-path-ends-with? [value suffix]
+  (if (and (string? value) (string? suffix))
+    (w5-sc-suffix-match? value suffix 0) false))
+
+(defn w5-sc-source-fixture-path? [value]
+  (if (w5-sc-path-ends-with? value ".gravity") true
+    (w5-sc-path-ends-with? value ".qst")))
+
+(defn w5-sc-source-extension-valid? [value]
+  (if (= ".gravity" value)
+    true
+    (= ".qst" value)))
+
+(defn w5-sc-source-extension-matches-path? [path extension]
+  (if (= ".gravity" extension)
+    (w5-sc-path-ends-with? path ".gravity")
+    (w5-sc-path-ends-with? path ".qst")))
+
+(defn w5-sc-source-span-valid? [span]
+  (if (w5-sc-exact-keys?
+       span #{:source-id :start-byte :end-byte :line :column
+              :actual-source-path})
+    (if (= w5-sc-top-source-id (get span :source-id))
+      (if (w5-sc-nonnegative-integer? (get span :start-byte))
+        (if (w5-sc-nonnegative-integer? (get span :end-byte))
+          (if (<= (get span :start-byte) (get span :end-byte))
+            (if (and (integer? (get span :line))
+                     (>= (get span :line) 1))
+              (if (and (integer? (get span :column))
+                       (>= (get span :column) 1))
+                (w5-sc-path? (get span :actual-source-path))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-sc-source-span-or-default [request]
+  (if (w5-sc-source-span-valid? (get request :source-span))
+    (get request :source-span)
+    {:source-id w5-sc-top-source-id
+     :start-byte 0
+     :end-byte 0
+     :line 1
+     :column 1
+     :actual-source-path "<unavailable>"}))
+
+(defn w5-sc-target-valid? [target]
+  (if (w5-sc-exact-keys?
+       target #{:candidate-target :os :arch :backend :artifact-format :abi
+                :unsupported-targets :unsupported-target-policies
+                :candidate-invokes-clojure? :candidate-links-jvm?
+                :no-fallback? :cross-target-inference? :darwin-fallback?})
+    (if (= w5-sc-candidate-target (get target :candidate-target))
+      (if (= :linux (get target :os))
+        (if (= :x86_64 (get target :arch))
+          (if (= :llvm (get target :backend))
+            (if (= :elf (get target :artifact-format))
+              (if (= :sysv-amd64 (get target :abi))
+                (if (= w5-sc-unsupported-targets
+                       (get target :unsupported-targets))
+                  (if (= w5-sc-unsupported-target-policies
+                         (get target :unsupported-target-policies))
+                    (if (= false (get target :candidate-invokes-clojure?))
+                      (if (= false (get target :candidate-links-jvm?))
+                        (if (= true (get target :no-fallback?))
+                          (if (= false (get target :cross-target-inference?))
+                            (= false (get target :darwin-fallback?))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-subsystem-closure-target-valid? [target]
+  (w5-sc-target-valid? target))
+
+(defn w5-sc-source-status? [value]
+  (= :descriptor-only value))
+
+(defn w5-sc-executable-status? [value]
+  (= :descriptor-only value))
+
+(defn w5-sc-conformance-status? [value]
+  (= :pending value))
+
+(defn w5-sc-provenance-status? [value]
+  (= :descriptor-only value))
+
+(defn w5-sc-subsystem-name? [value]
+  (w5-sc-member? w5-sc-subsystems value))
+
+(defn w5-sc-subsystem-index [value]
+  (if (= value :runtime) 0
+    (if (= value :standard-library) 1
+      (if (= value :package-build) 2 nil))))
+
+(defn w5-sc-subsystem-record-shape? [record]
+  (w5-sc-exact-keys?
+   record
+   #{:subsystem :source-id :executable-id :conformance-id :provenance-id
+     :compiler-id :profile :target :source-status :executable-status
+     :conformance-status :provenance-status :execution-status
+     :source-span :actual-source-path :actual-executable-path
+     :actual-conformance-path :actual-provenance-path}))
+
+(defn w5-sc-subsystem-record-valid-for? [record expected]
+  (let [index (w5-sc-subsystem-index expected)]
+  (if (w5-sc-subsystem-record-shape? record)
+    (if (= expected (get record :subsystem))
+      (if (= (get w5-sc-source-ids index) (get record :source-id))
+        (if (= (get w5-sc-executable-ids index) (get record :executable-id))
+          (if (= (get w5-sc-conformance-ids index) (get record :conformance-id))
+            (if (= (get w5-sc-provenance-ids index) (get record :provenance-id))
+              (if (= w5-sc-compiler-id (get record :compiler-id))
+                (if (= :meta (get record :profile))
+                  (if (= w5-sc-candidate-target (get record :target))
+                    (if (w5-sc-source-status? (get record :source-status))
+                      (if (w5-sc-executable-status?
+                           (get record :executable-status))
+                        (if (w5-sc-conformance-status?
+                             (get record :conformance-status))
+                          (if (w5-sc-provenance-status?
+                               (get record :provenance-status))
+                            (if (= :pending (get record :execution-status))
+                              (if (w5-sc-source-span-valid?
+                                   (get record :source-span))
+                                (if (and
+                                     (= (get (get record :source-span)
+                                             :actual-source-path)
+                                        (get record :actual-source-path))
+                                     (w5-sc-path-ends-with?
+                                      (get record :actual-source-path)
+                                      ".gravity"))
+                                  (if (w5-sc-path?
+                                       (get record :actual-executable-path))
+                                    (if (w5-sc-path-ends-with?
+                                         (get record :actual-conformance-path)
+                                         ".edn")
+                                      (w5-sc-path-ends-with?
+                                       (get record :actual-provenance-path)
+                                       ".edn")
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn w5-subsystem-closure-subsystem-valid? [record]
+  (if (map? record)
+    (w5-sc-subsystem-record-valid-for? record (get record :subsystem))
+    false))
+
+(defn w5-subsystem-closure-source-valid? [record]
+  (w5-subsystem-closure-subsystem-valid? record))
+
+(defn w5-subsystem-closure-executable-valid? [record]
+  (w5-subsystem-closure-subsystem-valid? record))
+
+(defn w5-subsystem-closure-conformance-valid? [record]
+  (w5-subsystem-closure-subsystem-valid? record))
+
+(defn w5-subsystem-closure-provenance-valid? [record]
+  (w5-subsystem-closure-subsystem-valid? record))
+
+(defn w5-sc-conformance-status-invalid? [record]
+  (if (w5-sc-subsystem-record-shape? record)
+    (if (= :pending (get record :conformance-status))
+      false
+      true)
+    false))
+
+(defn w5-sc-subsystem-records-valid-from? [subsystems index]
+  (if (= index (count w5-sc-subsystems))
+    true
+    (let [name (get w5-sc-subsystems index)]
+      (if (w5-sc-subsystem-record-valid-for?
+           (get subsystems name) name)
+        (w5-sc-subsystem-records-valid-from? subsystems (+ index 1))
+        false))))
+
+(defn w5-subsystem-closure-subsystems-valid? [subsystems]
+  (if (w5-sc-exact-keys? subsystems #{:runtime :standard-library :package-build})
+    (w5-sc-subsystem-records-valid-from? subsystems 0)
+    false))
+
+(defn w5-sc-compiler-shape? [compiler]
+  (w5-sc-exact-keys?
+   compiler
+   #{:compiler-id :source-id :executable-id :conformance-id :provenance-id
+     :profile :target :status :actual-source-path
+     :actual-executable-path :actual-conformance-path
+     :actual-provenance-path}))
+
+(defn w5-subsystem-closure-compiler-valid? [compiler]
+  (if (w5-sc-compiler-shape? compiler)
+    (if (= w5-sc-compiler-id (get compiler :compiler-id))
+      (if (= :compiler-stage2-source (get compiler :source-id))
+        (if (= :compiler-stage2-executable (get compiler :executable-id))
+          (if (= :compiler-stage2-conformance (get compiler :conformance-id))
+            (if (= :compiler-stage2-provenance (get compiler :provenance-id))
+              (if (= :meta (get compiler :profile))
+                (if (= w5-sc-candidate-target (get compiler :target))
+                  (if (= :descriptor-only (get compiler :status))
+                    (if (w5-sc-path-ends-with?
+                         (get compiler :actual-source-path) ".gravity")
+                      (if (w5-sc-path?
+                           (get compiler :actual-executable-path))
+                        (if (w5-sc-path-ends-with?
+                             (get compiler :actual-conformance-path) ".edn")
+                          (w5-sc-path-ends-with?
+                           (get compiler :actual-provenance-path) ".edn")
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-sc-linkage-shape? [linkage]
+  (w5-sc-exact-keys?
+   linkage
+   #{:runtime-source-id :runtime-executable-id :runtime-conformance-id
+     :runtime-provenance-id :standard-library-source-id
+     :standard-library-executable-id :standard-library-conformance-id
+     :standard-library-provenance-id :package-build-source-id
+     :package-build-executable-id :package-build-conformance-id
+     :package-build-provenance-id :compiler-id :target :status
+     :verification-id :actual-linkage-path}))
+
+(defn w5-subsystem-closure-linkage-valid? [linkage subsystems]
+  (if (w5-sc-linkage-shape? linkage)
+    (if (= w5-sc-candidate-target (get linkage :target))
+      (if (= w5-sc-compiler-id (get linkage :compiler-id))
+        (if (= (get (get subsystems :runtime) :source-id)
+               (get linkage :runtime-source-id))
+          (if (= (get (get subsystems :runtime) :executable-id)
+                 (get linkage :runtime-executable-id))
+            (if (= (get (get subsystems :runtime) :conformance-id)
+                   (get linkage :runtime-conformance-id))
+              (if (= (get (get subsystems :runtime) :provenance-id)
+                     (get linkage :runtime-provenance-id))
+                (if (= (get (get subsystems :standard-library) :source-id)
+                       (get linkage :standard-library-source-id))
+                  (if (= (get (get subsystems :standard-library)
+                              :executable-id)
+                         (get linkage :standard-library-executable-id))
+                    (if (= (get (get subsystems :standard-library)
+                                :conformance-id)
+                           (get linkage :standard-library-conformance-id))
+                      (if (= (get (get subsystems :standard-library)
+                                  :provenance-id)
+                             (get linkage :standard-library-provenance-id))
+                        (if (= (get (get subsystems :package-build) :source-id)
+                               (get linkage :package-build-source-id))
+                          (if (= (get (get subsystems :package-build)
+                                      :executable-id)
+                                 (get linkage :package-build-executable-id))
+                            (if (= (get (get subsystems :package-build)
+                                        :conformance-id)
+                                   (get linkage :package-build-conformance-id))
+                              (if (= (get (get subsystems :package-build)
+                                          :provenance-id)
+                                     (get linkage :package-build-provenance-id))
+                                (if (= :pending (get linkage :status))
+                                  (if (= :subsystem-linkage-verification
+                                         (get linkage :verification-id))
+                                    (w5-sc-path-ends-with?
+                                     (get linkage :actual-linkage-path) ".edn")
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-sc-transcript-shape? [record]
+  (w5-sc-exact-keys?
+   record
+   #{:subsystem :accepted-transcript-id :rejected-transcript-id
+     :diagnostic-parity-id :source-span-parity-id :target :status
+     :actual-transcript-path}))
+
+(defn w5-sc-transcript-valid-for? [record expected]
+  (let [index (w5-sc-subsystem-index expected)]
+  (if (w5-sc-transcript-shape? record)
+    (if (= expected (get record :subsystem))
+      (if (= w5-sc-candidate-target (get record :target))
+        (if (= (get w5-sc-accepted-transcript-ids index)
+               (get record :accepted-transcript-id))
+          (if (= (get w5-sc-rejected-transcript-ids index)
+                 (get record :rejected-transcript-id))
+            (if (= (get w5-sc-diagnostic-parity-ids index)
+                   (get record :diagnostic-parity-id))
+              (if (= (get w5-sc-source-span-parity-ids index)
+                     (get record :source-span-parity-id))
+                (if (= :pending (get record :status))
+                  (w5-sc-path-ends-with?
+                   (get record :actual-transcript-path) ".edn")
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn w5-sc-records-three-valid-from? [records index]
+  (if (= index (count w5-sc-subsystems))
+    true
+    (let [name (get w5-sc-subsystems index)]
+      (if (w5-sc-transcript-valid-for? (get records index) name)
+        (w5-sc-records-three-valid-from? records (+ index 1))
+        false))))
+
+(defn w5-subsystem-closure-transcripts-valid? [transcripts]
+  (if (vector? transcripts)
+    (if (= 3 (count transcripts))
+      (w5-sc-records-three-valid-from? transcripts 0)
+      false)
+    false))
+
+(defn w5-sc-replay-shape? [record]
+  (w5-sc-exact-keys?
+   record
+   #{:replay-id :subsystem :transcript-id :target :native-host?
+     :emulator-authority? :execution-status :status :actual-replay-path}))
+
+(defn w5-subsystem-closure-replay-valid? [replay]
+  (if (vector? replay)
+    (if (= 1 (count replay))
+      (let [record (get replay 0)]
+        (if (w5-sc-replay-shape? record)
+          (if (= :runtime (get record :subsystem))
+            (if (= w5-sc-candidate-target (get record :target))
+              (if (= :runtime-replay (get record :replay-id))
+                (if (= (get w5-sc-accepted-transcript-ids 0)
+                       (get record :transcript-id))
+                  (if (= false (get record :native-host?))
+                    (if (= false (get record :emulator-authority?))
+                      (if (= :pending (get record :execution-status))
+                        (if (= :pending (get record :status))
+                          (w5-sc-path-ends-with?
+                           (get record :actual-replay-path) ".edn")
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false))
+      false)
+    false))
+
+(defn w5-sc-recipe-shape? [record]
+  (w5-sc-exact-keys?
+   record
+   #{:subsystem :recipe-id :source-id :compiler-id :lock-id
+     :environment-id :toolchain-id :target :status :actual-recipe-path}))
+
+(defn w5-sc-recipe-valid-for? [record expected]
+  (let [index (w5-sc-subsystem-index expected)]
+  (if (w5-sc-recipe-shape? record)
+    (if (= expected (get record :subsystem))
+      (if (= w5-sc-candidate-target (get record :target))
+        (if (= (get w5-sc-recipe-ids index) (get record :recipe-id))
+          (if (= (get w5-sc-source-ids index) (get record :source-id))
+            (if (= w5-sc-compiler-id (get record :compiler-id))
+              (if (= :dependency-lock (get record :lock-id))
+                (if (= :hermetic-environment (get record :environment-id))
+                  (if (= :llvm-toolchain (get record :toolchain-id))
+                    (if (= :pending (get record :status))
+                      (w5-sc-path-ends-with?
+                       (get record :actual-recipe-path) ".edn")
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn w5-subsystem-closure-build-recipes-valid? [recipes]
+  (if (vector? recipes)
+    (if (= 3 (count recipes))
+      (if (w5-sc-recipe-valid-for? (get recipes 0) :runtime)
+        (if (w5-sc-recipe-valid-for? (get recipes 1) :standard-library)
+          (w5-sc-recipe-valid-for? (get recipes 2) :package-build)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-sc-environment-shape? [record]
+  (w5-sc-exact-keys?
+   record
+   #{:environment-id :locale :timezone :filesystem-order
+     :timestamp-policy :random-seed :network-policy :status
+     :actual-environment-path}))
+
+(defn w5-sc-environment-valid? [record]
+  (if (w5-sc-environment-shape? record)
+    (if (= :hermetic-environment (get record :environment-id))
+      (if (= "C" (get record :locale))
+        (if (= "UTC" (get record :timezone))
+          (if (= :sorted (get record :filesystem-order))
+            (if (= :fixed (get record :timestamp-policy))
+              (if (= 17 (get record :random-seed))
+                (if (= :disabled (get record :network-policy))
+                  (if (= :descriptor-only (get record :status))
+                    (w5-sc-path-ends-with?
+                     (get record :actual-environment-path) ".edn")
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-subsystem-closure-environments-valid? [environments]
+  (if (vector? environments)
+    (if (= 1 (count environments))
+      (w5-sc-environment-valid? (get environments 0))
+      false)
+    false))
+
+(defn w5-sc-lock-shape? [record]
+  (w5-sc-exact-keys?
+   record
+   #{:lock-id :dependency-graph-id :source-id :complete? :offline?
+     :status :actual-lock-path}))
+
+(defn w5-sc-lock-valid? [record]
+  (if (w5-sc-lock-shape? record)
+    (if (= :dependency-lock (get record :lock-id))
+      (if (= :dependency-graph (get record :dependency-graph-id))
+        (if (= :package-build-source (get record :source-id))
+          (if (= true (get record :complete?))
+            (if (= true (get record :offline?))
+              (if (= :descriptor-only (get record :status))
+                (w5-sc-path-ends-with?
+                 (get record :actual-lock-path) ".lock")
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-subsystem-closure-locks-valid? [locks]
+  (if (vector? locks)
+    (if (= 1 (count locks))
+      (w5-sc-lock-valid? (get locks 0))
+      false)
+    false))
+
+(defn w5-sc-toolchain-shape? [record]
+  (w5-sc-exact-keys?
+   record
+   #{:toolchain-id :family :version :target :files-id :status
+     :identity-status :actual-toolchain-path}))
+
+(defn w5-sc-toolchain-valid? [record]
+  (if (w5-sc-toolchain-shape? record)
+    (if (= :llvm-toolchain (get record :toolchain-id))
+      (if (= :llvm (get record :family))
+        (if (= "descriptor" (get record :version))
+          (if (= w5-sc-candidate-target (get record :target))
+            (if (= :llvm-toolchain-files (get record :files-id))
+              (if (= :descriptor-only (get record :status))
+                (if (= :pending (get record :identity-status))
+                  (w5-sc-path? (get record :actual-toolchain-path))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-subsystem-closure-toolchains-valid? [toolchains]
+  (if (vector? toolchains)
+    (if (= 1 (count toolchains))
+      (w5-sc-toolchain-valid? (get toolchains 0))
+      false)
+    false))
+
+(defn w5-sc-provenance-record-shape? [record]
+  (w5-sc-exact-keys?
+   record
+   #{:subsystem :provenance-id :source-id :compiler-id :recipe-id
+     :environment-id :lock-id :toolchain-id :conformance-id :target
+     :status :actual-provenance-path}))
+
+(defn w5-sc-provenance-record-valid-for? [record expected]
+  (let [index (w5-sc-subsystem-index expected)]
+  (if (w5-sc-provenance-record-shape? record)
+    (if (= expected (get record :subsystem))
+      (if (= (get w5-sc-provenance-ids index) (get record :provenance-id))
+        (if (= (get w5-sc-source-ids index) (get record :source-id))
+          (if (= w5-sc-compiler-id (get record :compiler-id))
+            (if (= (get w5-sc-recipe-ids index) (get record :recipe-id))
+              (if (= :hermetic-environment (get record :environment-id))
+                (if (= :dependency-lock (get record :lock-id))
+                  (if (= :llvm-toolchain (get record :toolchain-id))
+                    (if (= (get w5-sc-conformance-ids index)
+                           (get record :conformance-id))
+                      (if (= w5-sc-candidate-target (get record :target))
+                        (if (= :descriptor-only (get record :status))
+                          (w5-sc-path-ends-with?
+                           (get record :actual-provenance-path) ".edn")
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn w5-subsystem-closure-provenance-records-valid? [records]
+  (if (vector? records)
+    (if (= 3 (count records))
+      (if (w5-sc-provenance-record-valid-for?
+           (get records 0) :runtime)
+        (if (w5-sc-provenance-record-valid-for?
+             (get records 1) :standard-library)
+          (w5-sc-provenance-record-valid-for?
+           (get records 2) :package-build)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-sc-build-input-crosslinks-valid? [request]
+  (let [recipes (get request :build-recipes)
+        provenance (get request :provenance)
+        environments (get request :environments)
+        locks (get request :locks)
+        toolchains (get request :toolchains)
+        environment (get environments 0)
+        lock (get locks 0)
+        toolchain (get toolchains 0)
+        environment-id (get environment :environment-id)
+        lock-id (get lock :lock-id)
+        toolchain-id (get toolchain :toolchain-id)]
+    (if (and (vector? recipes)
+             (= 3 (count recipes))
+             (vector? provenance)
+             (= 3 (count provenance))
+             (vector? environments)
+             (= 1 (count environments))
+             (vector? locks)
+             (= 1 (count locks))
+             (vector? toolchains)
+             (= 1 (count toolchains))
+             (= :hermetic-environment environment-id)
+             (= :dependency-lock lock-id)
+             (= :llvm-toolchain toolchain-id))
+      (loop [index 0]
+        (if (= 3 index)
+          true
+          (let [recipe (get recipes index)
+                record (get provenance index)]
+            (if (and (map? recipe) (map? record))
+              (if (= environment-id (get recipe :environment-id))
+                (if (= lock-id (get recipe :lock-id))
+                  (if (= toolchain-id (get recipe :toolchain-id))
+                    (if (= environment-id (get record :environment-id))
+                      (if (= lock-id (get record :lock-id))
+                        (if (= toolchain-id (get record :toolchain-id))
+                          (recur (+ index 1))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false))))
+      false)))
+
+(defn w5-sc-provenance-links-subsystems? [records subsystems]
+  (and (= (get (get records 0) :provenance-id)
+          (get (get subsystems :runtime) :provenance-id))
+       (= (get (get records 0) :source-id)
+          (get (get subsystems :runtime) :source-id))
+       (= (get (get records 0) :conformance-id)
+          (get (get subsystems :runtime) :conformance-id))
+       (= (get (get records 1) :provenance-id)
+          (get (get subsystems :standard-library) :provenance-id))
+       (= (get (get records 1) :source-id)
+          (get (get subsystems :standard-library) :source-id))
+       (= (get (get records 1) :conformance-id)
+          (get (get subsystems :standard-library) :conformance-id))
+       (= (get (get records 2) :provenance-id)
+          (get (get subsystems :package-build) :provenance-id))
+       (= (get (get records 2) :source-id)
+          (get (get subsystems :package-build) :source-id))
+       (= (get (get records 2) :conformance-id)
+          (get (get subsystems :package-build) :conformance-id))
+       (= (get (get records 0) :actual-provenance-path)
+          (get (get subsystems :runtime) :actual-provenance-path))
+       (= (get (get records 1) :actual-provenance-path)
+          (get (get subsystems :standard-library) :actual-provenance-path))
+       (= (get (get records 2) :actual-provenance-path)
+          (get (get subsystems :package-build) :actual-provenance-path))))
+
+(defn w5-subsystem-closure-evidence-valid? [request]
+  (if (w5-subsystem-closure-transcripts-valid?
+       (get request :transcripts))
+    (if (w5-subsystem-closure-replay-valid? (get request :replay))
+      (if (w5-subsystem-closure-build-recipes-valid?
+           (get request :build-recipes))
+        (if (w5-subsystem-closure-environments-valid?
+             (get request :environments))
+          (if (w5-subsystem-closure-locks-valid? (get request :locks))
+            (w5-subsystem-closure-toolchains-valid?
+             (get request :toolchains))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-subsystem-closure-tcb-valid? [tcb]
+  (if (w5-sc-exact-keys?
+       tcb #{:residual-trusted-components :status :actual-tcb-path})
+    (if (= w5-sc-residual-trusted-components
+           (get tcb :residual-trusted-components))
+      (if (= :open (get tcb :status))
+        (w5-sc-path-ends-with? (get tcb :actual-tcb-path) ".edn")
+        false)
+      false)
+    false))
+
+(defn w5-sc-authority-shape? [authority]
+  (w5-sc-exact-keys?
+   authority
+   #{:authority :candidate-invokes-clojure? :candidate-links-jvm?
+     :no-fallback? :cross-target-inference? :darwin-fallback?
+     :clojure-seed-boundary? :self-hosted? :release? :public-authority?}))
+
+(defn w5-subsystem-closure-authority-valid? [authority]
+  (if (w5-sc-authority-shape? authority)
+    (if (= :non-authority (get authority :authority))
+      (if (= false (get authority :candidate-invokes-clojure?))
+        (if (= false (get authority :candidate-links-jvm?))
+          (if (= true (get authority :no-fallback?))
+            (if (= false (get authority :cross-target-inference?))
+              (if (= false (get authority :darwin-fallback?))
+                (if (= true (get authority :clojure-seed-boundary?))
+                  (if (= false (get authority :self-hosted?))
+                    (if (= false (get authority :release?))
+                      (= false (get authority :public-authority?))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-sc-request-shape? [request]
+  (w5-sc-exact-keys?
+   request
+   #{:artifact :schema-version :claimed-status :repository :target-scope
+     :compiler :subsystems :cross-subsystem-linkage :transcripts :replay
+     :build-recipes :environments :locks :toolchains :provenance
+     :residual-tcb :authority :upstream-workstreams :source-extension
+     :source-span}))
+
+(defn w5-sc-repository-valid? [repository]
+  (if (w5-sc-exact-keys? repository #{:source-root-id :actual-repository-root})
+    (if (w5-sc-id? (get repository :source-root-id))
+      (w5-sc-path? (get repository :actual-repository-root))
+      false)
+    false))
+
+(defn w5-subsystem-closure-request-valid? [request]
+  (if (w5-sc-request-shape? request)
+    (if (= :gravity/w5-subsystem-closure-request (get request :artifact))
+      (if (= 1 (get request :schema-version))
+        (if (= :incomplete (get request :claimed-status))
+          (if (w5-sc-repository-valid? (get request :repository))
+            (if (w5-sc-target-valid? (get request :target-scope))
+              (if (w5-subsystem-closure-compiler-valid?
+                   (get request :compiler))
+                (if (w5-subsystem-closure-subsystems-valid?
+                     (get request :subsystems))
+                  (if (w5-subsystem-closure-linkage-valid?
+                       (get request :cross-subsystem-linkage)
+                       (get request :subsystems))
+                    (if (w5-subsystem-closure-evidence-valid? request)
+                      (if (w5-sc-build-input-crosslinks-valid? request)
+                        (if (w5-subsystem-closure-provenance-records-valid?
+                           (get request :provenance))
+                          (if (w5-sc-provenance-links-subsystems?
+                               (get request :provenance)
+                               (get request :subsystems))
+                            (if (w5-subsystem-closure-tcb-valid?
+                                 (get request :residual-tcb))
+                              (if (w5-subsystem-closure-authority-valid?
+                                   (get request :authority))
+                                (if (= :not-provided
+                                       (get request :upstream-workstreams))
+                                  (if (w5-sc-source-span-valid?
+                                       (get request :source-span))
+                                    (if (w5-sc-source-extension-valid?
+                                         (get request :source-extension))
+                                      (w5-sc-source-extension-matches-path?
+                                       (get (get request :source-span)
+                                            :actual-source-path)
+                                       (get request :source-extension))
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-sc-identity-subsystem [record]
+  {:subsystem (get record :subsystem)
+   :source-id (get record :source-id)
+   :executable-id (get record :executable-id)
+   :conformance-id (get record :conformance-id)
+   :provenance-id (get record :provenance-id)
+   :compiler-id (get record :compiler-id)
+   :profile (get record :profile)
+   :target (get record :target)
+   :source-status (get record :source-status)
+   :executable-status (get record :executable-status)
+   :conformance-status (get record :conformance-status)
+   :provenance-status (get record :provenance-status)
+   :execution-status (get record :execution-status)})
+
+(defn w5-sc-identity-compiler [compiler]
+  {:compiler-id (get compiler :compiler-id)
+   :source-id (get compiler :source-id)
+   :executable-id (get compiler :executable-id)
+   :conformance-id (get compiler :conformance-id)
+   :provenance-id (get compiler :provenance-id)
+   :profile (get compiler :profile)
+   :target (get compiler :target)
+   :status (get compiler :status)})
+
+(defn w5-sc-identity-linkage [linkage]
+  {:runtime-source-id (get linkage :runtime-source-id)
+   :runtime-executable-id (get linkage :runtime-executable-id)
+   :runtime-conformance-id (get linkage :runtime-conformance-id)
+   :runtime-provenance-id (get linkage :runtime-provenance-id)
+   :standard-library-source-id (get linkage :standard-library-source-id)
+   :standard-library-executable-id
+   (get linkage :standard-library-executable-id)
+   :standard-library-conformance-id
+   (get linkage :standard-library-conformance-id)
+   :standard-library-provenance-id
+   (get linkage :standard-library-provenance-id)
+   :package-build-source-id (get linkage :package-build-source-id)
+   :package-build-executable-id (get linkage :package-build-executable-id)
+   :package-build-conformance-id
+   (get linkage :package-build-conformance-id)
+   :package-build-provenance-id
+   (get linkage :package-build-provenance-id)
+   :compiler-id (get linkage :compiler-id)
+   :target (get linkage :target)
+   :status (get linkage :status)
+   :verification-id (get linkage :verification-id)})
+
+(defn w5-sc-identity-transcript [record]
+  {:subsystem (get record :subsystem)
+   :accepted-transcript-id (get record :accepted-transcript-id)
+   :rejected-transcript-id (get record :rejected-transcript-id)
+   :diagnostic-parity-id (get record :diagnostic-parity-id)
+   :source-span-parity-id (get record :source-span-parity-id)
+   :target (get record :target)
+   :status (get record :status)})
+
+(defn w5-sc-identity-replay [record]
+  {:replay-id (get record :replay-id)
+   :subsystem (get record :subsystem)
+   :transcript-id (get record :transcript-id)
+   :target (get record :target)
+   :native-host? (get record :native-host?)
+   :emulator-authority? (get record :emulator-authority?)
+   :execution-status (get record :execution-status)
+   :status (get record :status)})
+
+(defn w5-sc-identity-recipe [record]
+  {:subsystem (get record :subsystem)
+   :recipe-id (get record :recipe-id)
+   :source-id (get record :source-id)
+   :compiler-id (get record :compiler-id)
+   :lock-id (get record :lock-id)
+   :environment-id (get record :environment-id)
+   :toolchain-id (get record :toolchain-id)
+   :target (get record :target)
+   :status (get record :status)})
+
+(defn w5-sc-identity-provenance [record]
+  {:subsystem (get record :subsystem)
+   :provenance-id (get record :provenance-id)
+   :source-id (get record :source-id)
+   :compiler-id (get record :compiler-id)
+   :recipe-id (get record :recipe-id)
+   :environment-id (get record :environment-id)
+   :lock-id (get record :lock-id)
+   :toolchain-id (get record :toolchain-id)
+   :conformance-id (get record :conformance-id)
+   :target (get record :target)
+   :status (get record :status)})
+
+(defn w5-sc-identity-transcripts [records]
+  [(w5-sc-identity-transcript (get records 0))
+   (w5-sc-identity-transcript (get records 1))
+   (w5-sc-identity-transcript (get records 2))])
+
+(defn w5-sc-identity-recipes [records]
+  [(w5-sc-identity-recipe (get records 0))
+   (w5-sc-identity-recipe (get records 1))
+   (w5-sc-identity-recipe (get records 2))])
+
+(defn w5-sc-identity-provenance-records [records]
+  [(w5-sc-identity-provenance (get records 0))
+   (w5-sc-identity-provenance (get records 1))
+   (w5-sc-identity-provenance (get records 2))])
+
+(defn w5-subsystem-closure-identity-input [request]
+  (let [compiler (get request :compiler)
+        subsystems (get request :subsystems)
+        linkage (get request :cross-subsystem-linkage)
+        transcripts (get request :transcripts)
+        replay (get request :replay)
+        recipes (get request :build-recipes)
+        environments (get request :environments)
+        locks (get request :locks)
+        toolchains (get request :toolchains)
+        provenance (get request :provenance)]
+    {:artifact (get request :artifact)
+     :schema-version (get request :schema-version)
+     :claimed-status (get request :claimed-status)
+     :source-root-id (get (get request :repository) :source-root-id)
+     :target-scope (get request :target-scope)
+     :compiler (w5-sc-identity-compiler compiler)
+     :subsystems
+     {:runtime (w5-sc-identity-subsystem (get subsystems :runtime))
+      :standard-library
+      (w5-sc-identity-subsystem (get subsystems :standard-library))
+      :package-build
+      (w5-sc-identity-subsystem (get subsystems :package-build))}
+     :cross-subsystem-linkage (w5-sc-identity-linkage linkage)
+     :transcripts (w5-sc-identity-transcripts transcripts)
+     :replay (w5-sc-identity-replay (get replay 0))
+     :build-recipes (w5-sc-identity-recipes recipes)
+     :environments
+     {:environment-id (get (get environments 0) :environment-id)
+      :locale (get (get environments 0) :locale)
+      :timezone (get (get environments 0) :timezone)
+      :filesystem-order (get (get environments 0) :filesystem-order)
+      :timestamp-policy (get (get environments 0) :timestamp-policy)
+      :random-seed (get (get environments 0) :random-seed)
+      :network-policy (get (get environments 0) :network-policy)
+      :status (get (get environments 0) :status)}
+     :locks
+     {:lock-id (get (get locks 0) :lock-id)
+      :dependency-graph-id (get (get locks 0) :dependency-graph-id)
+      :source-id (get (get locks 0) :source-id)
+      :complete? (get (get locks 0) :complete?)
+      :offline? (get (get locks 0) :offline?)
+      :status (get (get locks 0) :status)}
+     :toolchains
+     {:toolchain-id (get (get toolchains 0) :toolchain-id)
+      :family (get (get toolchains 0) :family)
+      :version (get (get toolchains 0) :version)
+      :target (get (get toolchains 0) :target)
+      :files-id (get (get toolchains 0) :files-id)
+      :status (get (get toolchains 0) :status)
+      :identity-status (get (get toolchains 0) :identity-status)}
+     :provenance
+     (w5-sc-identity-provenance-records provenance)
+     :residual-tcb
+     {:residual-trusted-components
+      (get (get request :residual-tcb) :residual-trusted-components)
+      :status (get (get request :residual-tcb) :status)}
+     :authority (get request :authority)
+     :upstream-workstreams (get request :upstream-workstreams)}))
+
+(defn w5-sc-provenance-subsystems [subsystems]
+  {:runtime
+   {:actual-source-path (get (get subsystems :runtime) :actual-source-path)
+    :actual-executable-path
+    (get (get subsystems :runtime) :actual-executable-path)
+    :actual-conformance-path
+    (get (get subsystems :runtime) :actual-conformance-path)
+    :actual-provenance-path
+    (get (get subsystems :runtime) :actual-provenance-path)}
+   :standard-library
+   {:actual-source-path
+    (get (get subsystems :standard-library) :actual-source-path)
+    :actual-executable-path
+    (get (get subsystems :standard-library) :actual-executable-path)
+    :actual-conformance-path
+    (get (get subsystems :standard-library) :actual-conformance-path)
+    :actual-provenance-path
+    (get (get subsystems :standard-library) :actual-provenance-path)}
+   :package-build
+   {:actual-source-path
+    (get (get subsystems :package-build) :actual-source-path)
+    :actual-executable-path
+    (get (get subsystems :package-build) :actual-executable-path)
+    :actual-conformance-path
+    (get (get subsystems :package-build) :actual-conformance-path)
+    :actual-provenance-path
+    (get (get subsystems :package-build) :actual-provenance-path)}})
+
+(defn w5-subsystem-closure-provenance [request]
+  {:repository-root (get (get request :repository) :actual-repository-root)
+   :source-span-path (get (get request :source-span) :actual-source-path)
+   :source-extension (get request :source-extension)
+   :compiler
+   {:actual-source-path (get (get request :compiler) :actual-source-path)
+    :actual-executable-path
+    (get (get request :compiler) :actual-executable-path)
+    :actual-conformance-path
+    (get (get request :compiler) :actual-conformance-path)
+    :actual-provenance-path
+    (get (get request :compiler) :actual-provenance-path)}
+   :subsystems (w5-sc-provenance-subsystems (get request :subsystems))
+   :linkage
+   {:actual-linkage-path
+    (get (get request :cross-subsystem-linkage) :actual-linkage-path)}
+   :transcripts
+   {:runtime (get (get (get request :transcripts) 0) :actual-transcript-path)
+    :standard-library
+    (get (get (get request :transcripts) 1) :actual-transcript-path)
+    :package-build
+    (get (get (get request :transcripts) 2) :actual-transcript-path)}
+   :replay (get (get (get request :replay) 0) :actual-replay-path)
+   :build-recipes
+   {:runtime (get (get (get request :build-recipes) 0) :actual-recipe-path)
+    :standard-library
+    (get (get (get request :build-recipes) 1) :actual-recipe-path)
+    :package-build
+    (get (get (get request :build-recipes) 2) :actual-recipe-path)}
+   :environment (get (get (get request :environments) 0)
+                     :actual-environment-path)
+   :lock (get (get (get request :locks) 0) :actual-lock-path)
+   :toolchain (get (get (get request :toolchains) 0) :actual-toolchain-path)
+   :provenance
+   {:runtime (get (get (get request :provenance) 0) :actual-provenance-path)
+    :standard-library
+    (get (get (get request :provenance) 1) :actual-provenance-path)
+    :package-build
+    (get (get (get request :provenance) 2) :actual-provenance-path)}
+   :tcb (get (get request :residual-tcb) :actual-tcb-path)})
+
+(defn w5-sc-result-authority []
+  {:authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false})
+
+(defn w5-sc-gaps []
+  [:runtime-execution-pending
+   :standard-library-execution-pending
+   :package-build-execution-pending
+   :cross-subsystem-linkage-pending
+   :compiler-identity-pending
+   :transcript-pending
+   :replay-pending
+   :build-recipe-pending
+   :environment-pending
+   :lock-pending
+   :toolchain-pending
+   :conformance-pending
+   :provenance-pending
+   :residual-tcb-present
+   :independent-review-pending])
+
+(defn w5-sc-accepted-result [request]
+  {:artifact :gravity/w5-subsystem-closure-result
+   :schema-version 1
+   :status :accepted
+   :closure-status :incomplete
+   :completion-status :blocked
+   :verification-status :blocked
+   :candidate-target w5-sc-candidate-target
+   :candidate-platform w5-sc-candidate-platform
+   :target (get request :target-scope)
+   :subsystems (get request :subsystems)
+   :cross-subsystem-linkage (get request :cross-subsystem-linkage)
+   :compiler (get request :compiler)
+   :execution
+   {:runtime :pending
+    :standard-library :pending
+    :package-build :pending
+    :native-replay :pending}
+   :gaps (w5-sc-gaps)
+   :residual-tcb (get request :residual-tcb)
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :identity-input (w5-subsystem-closure-identity-input request)
+   :provenance (w5-subsystem-closure-provenance request)
+   :diagnostics []})
+
+(defn w5-sc-remediation [field]
+  (if (= :target-scope field)
+    :use-exact-llvm-linux-target
+    (if (= :runtime field)
+      :bind-runtime-source-executable-conformance-provenance
+      (if (= :standard-library field)
+        :bind-standard-library-source-executable-conformance-provenance
+        (if (= :package-build field)
+          :bind-package-build-source-executable-conformance-provenance
+          (if (= :cross-subsystem-linkage field)
+            :bind-cross-subsystem-identities
+            (if (= :compiler field)
+              :bind-compiler-identity-input
+              (if (= :transcripts field)
+                :record-accepted-rejected-transcripts
+                (if (= :replay field)
+                  :record-replay-evidence
+                  (if (= :build-recipes field)
+                    :pin-build-recipes
+                    (if (= :environments field)
+                      :pin-hermetic-environments
+                      (if (= :locks field)
+                        :pin-complete-offline-lock
+                        (if (= :toolchains field)
+                          :bind-target-toolchain
+                          (if (= :provenance field)
+                            :bind-provenance-identities
+                            (if (= :residual-tcb field)
+                              :declare-residual-trusted-components
+                              (if (= :authority field)
+                                :deny-clojure-jvm-fallback
+                                (if (= :upstream-workstreams field)
+                                  :do-not-infer-upstream-values
+                                  (if (= :source-span field)
+                                    :attach-source-span
+                                    :provide-exact-request-schema))))))))))))))))))
+
+(defn w5-sc-diagnostic [request rule field]
+  {:rule rule
+   :diagnostic-id rule
+   :stage :w5-subsystem-closure
+   :field field
+   :severity :error
+   :profile :meta
+   :target w5-sc-candidate-target
+   :facts
+   {:reason field
+    :candidate-invokes-clojure? false
+    :candidate-links-jvm? false
+    :no-fallback? true
+    :cross-target-inference? false
+    :darwin-fallback? false}
+   :source-span (w5-sc-source-span-or-default request)
+   :provenance (w5-subsystem-closure-provenance request)
+   :remediation (w5-sc-remediation field)
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false})
+
+(defn w5-sc-invalid-diagnostic [request]
+  (if (w5-sc-request-shape? request)
+    (if (= :gravity/w5-subsystem-closure-request (get request :artifact))
+      (if (= 1 (get request :schema-version))
+        (if (= :incomplete (get request :claimed-status))
+          (if (w5-sc-repository-valid? (get request :repository))
+            (if (w5-sc-target-valid? (get request :target-scope))
+              (if (w5-subsystem-closure-compiler-valid?
+                   (get request :compiler))
+                (if (w5-sc-conformance-status-invalid?
+                     (get (get request :subsystems) :runtime))
+                  (w5-sc-diagnostic
+                   request "W5-SC-CONFORMANCE" :runtime)
+                  (if (w5-subsystem-closure-subsystem-valid?
+                       (get (get request :subsystems) :runtime))
+                  (if (w5-subsystem-closure-subsystem-valid?
+                       (get (get request :subsystems) :standard-library))
+                    (if (w5-subsystem-closure-subsystem-valid?
+                         (get (get request :subsystems) :package-build))
+                      (if (w5-subsystem-closure-linkage-valid?
+                           (get request :cross-subsystem-linkage)
+                           (get request :subsystems))
+                        (if (w5-subsystem-closure-transcripts-valid?
+                             (get request :transcripts))
+                          (if (w5-subsystem-closure-replay-valid?
+                               (get request :replay))
+                            (if (w5-subsystem-closure-build-recipes-valid?
+                                 (get request :build-recipes))
+                              (if (w5-subsystem-closure-environments-valid?
+                                   (get request :environments))
+                                (if (w5-subsystem-closure-locks-valid?
+                                     (get request :locks))
+                                  (if (w5-subsystem-closure-toolchains-valid?
+                                       (get request :toolchains))
+                                    (if (w5-sc-build-input-crosslinks-valid? request)
+                                      (if (w5-subsystem-closure-provenance-records-valid?
+                                           (get request :provenance))
+                                        (if (w5-sc-provenance-links-subsystems?
+                                             (get request :provenance)
+                                             (get request :subsystems))
+                                          (if (w5-subsystem-closure-tcb-valid?
+                                               (get request :residual-tcb))
+                                            (if (w5-subsystem-closure-authority-valid?
+                                                 (get request :authority))
+                                              (if (= :not-provided
+                                                     (get request
+                                                          :upstream-workstreams))
+                                                (if (w5-sc-source-span-valid?
+                                                     (get request :source-span))
+                                                  (if (w5-sc-source-extension-valid?
+                                                       (get request :source-extension))
+                                                    (if (w5-sc-source-extension-matches-path?
+                                                         (get (get request
+                                                                   :source-span)
+                                                              :actual-source-path)
+                                                         (get request
+                                                              :source-extension))
+                                                      nil
+                                                      (w5-sc-diagnostic
+                                                       request
+                                                       "W5-SC-PROVENANCE"
+                                                       :source-span))
+                                                    (w5-sc-diagnostic
+                                                     request "W5-SC-SCHEMA"
+                                                     :source-extension))
+                                                  (w5-sc-diagnostic
+                                                   request "W5-SC-SCHEMA"
+                                                   :source-span))
+                                                (w5-sc-diagnostic
+                                                 request "W5-SC-UPSTREAM"
+                                                 :upstream-workstreams))
+                                              (w5-sc-diagnostic
+                                               request "W5-SC-AUTHORITY" :authority))
+                                            (w5-sc-diagnostic
+                                             request "W5-SC-TCB" :residual-tcb))
+                                          (w5-sc-diagnostic
+                                           request "W5-SC-PROVENANCE" :provenance))
+                                        (w5-sc-diagnostic
+                                         request "W5-SC-PROVENANCE" :provenance))
+                                      (w5-sc-diagnostic
+                                       request "W5-SC-RECIPE" :build-recipes))
+                                    (w5-sc-diagnostic
+                                     request "W5-SC-TOOLCHAIN" :toolchains))
+                                  (w5-sc-diagnostic
+                                   request "W5-SC-LOCK" :locks))
+                                (w5-sc-diagnostic
+                                 request "W5-SC-ENVIRONMENT" :environments))
+                              (w5-sc-diagnostic
+                               request "W5-SC-RECIPE" :build-recipes))
+                            (w5-sc-diagnostic
+                             request "W5-SC-REPLAY" :replay))
+                          (w5-sc-diagnostic
+                           request "W5-SC-TRANSCRIPT" :transcripts))
+                        (w5-sc-diagnostic
+                         request "W5-SC-LINKAGE" :cross-subsystem-linkage))
+                      (w5-sc-diagnostic
+                       request "W5-SC-PACKAGE" :package-build))
+                    (w5-sc-diagnostic
+                     request "W5-SC-STDLIB" :standard-library))
+                    (w5-sc-diagnostic request "W5-SC-RUNTIME" :runtime)))
+                (w5-sc-diagnostic request "W5-SC-COMPILER" :compiler))
+              (w5-sc-diagnostic request "W5-SC-TARGET" :target-scope))
+            (w5-sc-diagnostic request "W5-SC-SCHEMA" :repository))
+          (w5-sc-diagnostic request "W5-SC-SCHEMA" :claimed-status))
+        (w5-sc-diagnostic request "W5-SC-SCHEMA" :schema-version))
+      (w5-sc-diagnostic request "W5-SC-SCHEMA" :artifact))
+    (w5-sc-diagnostic request "W5-SC-SCHEMA" :request-shape)))
+
+(defn w5-subsystem-closure [request]
+  (let [diagnostic (w5-sc-invalid-diagnostic request)]
+    (if (nil? diagnostic)
+      (w5-sc-accepted-result request)
+      {:artifact :gravity/w5-subsystem-closure-result
+       :schema-version 1
+       :status :rejected
+       :closure-status :incomplete
+       :completion-status :blocked
+       :verification-status :rejected
+       :candidate-target w5-sc-candidate-target
+       :candidate-platform w5-sc-candidate-platform
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :diagnostics [diagnostic]
+       :identity-input
+       (if (map? request)
+         (w5-subsystem-closure-identity-input request)
+         {})
+       :provenance
+       (if (map? request)
+         (w5-subsystem-closure-provenance request)
+         {})})))
+
+(defn w5-subsystem-closure-verify [request]
+  (w5-subsystem-closure request))
+
+(defn w5-subsystem-closure-execute [request]
+  (w5-subsystem-closure request))
+
+(defn w5-subsystem-closure-run [request]
+  (w5-subsystem-closure request))
+
+(defn w5-subsystem-closure-recompute [request]
+  (w5-subsystem-closure request))
+
+(defn w5-subsystem-closure-verify-result [request candidate]
+  (let [expected (w5-subsystem-closure request)]
+    (if (= expected candidate)
+      {:artifact :gravity/w5-subsystem-closure-verification
+       :schema-version 1
+       :status :passed
+       :recomputed true
+       :closure-status (get expected :closure-status)
+       :completion-status (get expected :completion-status)
+       :verification-status :passed
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :diagnostics []}
+      {:artifact :gravity/w5-subsystem-closure-verification
+       :schema-version 1
+       :status :rejected
+       :recomputed true
+       :closure-status :incomplete
+       :completion-status :blocked
+       :verification-status :rejected
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :diagnostics
+       [{:rule "W5-SC-SUBSTITUTION"
+         :diagnostic-id "W5-SC-SUBSTITUTION"
+         :stage :w5-subsystem-closure
+         :field :result
+         :severity :error
+         :profile :meta
+         :target w5-sc-candidate-target
+         :facts {:reason :recomputed-result-mismatch
+                 :candidate-invokes-clojure? false
+                 :candidate-links-jvm? false
+                 :no-fallback? true
+                 :cross-target-inference? false
+                 :darwin-fallback? false}
+         :source-span (w5-sc-source-span-or-default request)
+         :provenance (if (map? request)
+                       (w5-subsystem-closure-provenance request)
+                       {})
+         :remediation :recompute-verification-result
+         :authority :non-authority
+         :clojure-seed-boundary? true
+         :self-hosted? false
+         :release? false
+         :public-authority? false}]})))

@@ -1,0 +1,15 @@
+; SH-07-B3 multiple body expressions preserve source order.
+(ns self-hosting.sh07-b3.ordered-multi-form-body
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [ordered-body])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B3 :fixture :ordered-multi-form-body}))
+
+(def ordered-body
+  (let [value 1]
+    value
+    2
+    value))

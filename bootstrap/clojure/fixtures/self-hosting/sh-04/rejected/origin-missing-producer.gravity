@@ -1,0 +1,5 @@
+{:phase :build
+ :operation :assoc-in
+ :path [:origin 0 :producer]
+ :value nil
+ :expected-rule "C3-ORIGIN"}

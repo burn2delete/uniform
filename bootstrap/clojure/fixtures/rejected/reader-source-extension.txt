@@ -1,0 +1,6 @@
+(ns reader.source-extension
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))

@@ -1,0 +1,1489 @@
+; Gravity-owned reusable semantic and provenance envelope construction.
+(ns gravity.compiler.authenticated-envelope
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [authenticated-envelope-contract
+             authenticated-envelope-bounds
+             authenticated-envelope-build-template
+             authenticated-envelope-verify-template])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :authenticated-envelope
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["D1" "D3" "D8" "D9"
+                           "L6" "L15" "C1" "C11" "C13" "C14"
+                           "C17" "C18" "B1" "B13" "S9" "PKG3"
+                           "BOOT1" "BOOT7" "BOOT8" "TEST13"]
+               :implements [:semantic-envelope-template
+                             :content-projection-bindings
+                             :fact-transition-bindings
+                             :effect-capability-relation-binding
+                             :proof-composite-binding
+                             :preservation-ledger-binding
+                             :identity-subject-checks
+                             :reference-closure-binding
+                             :lineage-binding
+                             :path-neutral-semantic-root
+                             :separate-physical-provenance-root
+                             :digest-request-dag
+                             :fresh-template-replay]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :type-facts :effect-facts :ownership-facts
+                            :capability-facts :safety-outcomes
+                            :runtime-check-records :capability-proofs
+                            :proof-certificates :source-map
+                            :effect-order :artifact-lineage
+                            :physical-provenance}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:stage-specific-partial-bindings]}}}))
+
+(def authenticated-envelope-contract
+  {:artifact :gravity/authenticated-envelope-contract
+   :schema-version 1
+   :owner :gravity-source
+   :input :gravity/private-authenticated-envelope-descriptor
+   :output :gravity/authenticated-envelope-template
+   :semantic-root-domain
+   :gravity/authenticated-envelope-semantic-root-v1
+   :provenance-root-domain
+   :gravity/authenticated-envelope-provenance-binding-v1
+   :identity [:source-revision
+              :semantic-projections
+              :fact-transitions
+              :effect-capability-relation
+              :proof-composite
+              :preservation-ledger
+              :identity-subjects
+              :artifact-lineage
+              :reference-closure]
+   :reference-depth-metric :ordered-shortest-discovery-depth
+   :semantic-identity-excludes [:actual-path-provenance]
+   :host-authority [:bound-carrier-validation
+                    :compile-and-pin-gravity-module
+                    :canonical-encode
+                    :sha256
+                    :validate-prior-only-reachable-digest-dag
+                    :resolve-digest-references
+                    :enforce-identity-subjects
+                    :instantiate-template
+                    :fresh-replay]
+   :claim-boundary [:content-and-context-consistency
+                    :not-a-release-signature
+                    :not-proof-of-verifier-correctness]
+   :self-hosted? false
+   :whole-language? false
+   :clojure-seed-boundary? true})
+
+(def authenticated-envelope-bounds
+  {:maximum-semantic-projections 64
+   :maximum-fact-transitions 64
+   :maximum-identity-subjects 64
+   :maximum-lineage-records 32
+   :maximum-reference-nodes 128
+   :maximum-reference-edges 128
+   :maximum-reference-depth 64
+   :maximum-logical-source-path-code-units 128
+   :maximum-reference-id-code-units 128
+   :maximum-digest-requests 2048
+   :maximum-carrier-nodes 65536
+   :maximum-carrier-depth 64
+   :maximum-container-width 128
+   :maximum-scalar-bytes 65536
+   :maximum-integer-bits 256})
+
+; Stage2 compiles function bodies independently, so executable code uses this
+; literal-returning helper instead of resolving a top-level def through host
+; namespace state.
+(defn ae-bounds-record []
+  {:maximum-semantic-projections 64
+   :maximum-fact-transitions 64
+   :maximum-identity-subjects 64
+   :maximum-lineage-records 32
+   :maximum-reference-nodes 128
+   :maximum-reference-edges 128
+   :maximum-reference-depth 64
+   :maximum-logical-source-path-code-units 128
+   :maximum-reference-id-code-units 128
+   :maximum-digest-requests 2048
+   :maximum-carrier-nodes 65536
+   :maximum-carrier-depth 64
+   :maximum-container-width 128
+   :maximum-scalar-bytes 65536
+   :maximum-integer-bits 256})
+
+(defn ae-vector-contains? [values value]
+  (if (= (count values) 0)
+    false
+    (if (= (first values) value)
+      true
+      (ae-vector-contains? (rest values) value))))
+
+(defn ae-conj-unique [values value]
+  (if (ae-vector-contains? values value)
+    values
+    (conj values value)))
+
+(defn ae-all-unique? [values observed]
+  (if (= (count values) 0)
+    true
+    (if (ae-vector-contains? observed (first values))
+      false
+      (ae-all-unique? (rest values) (conj observed (first values))))))
+
+(defn ae-copy-vector [values result]
+  (if (= (count values) 0)
+    result
+    (ae-copy-vector (rest values) (conj result (first values)))))
+
+(defn ae-append [left right]
+  (ae-copy-vector right left))
+
+(defn ae-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn ae-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                     \a \b \c \d \e \f}
+                   (first characters))
+      (ae-lowercase-hex? (rest characters))
+      false)))
+
+(defn ae-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (ae-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn ae-logical-path-characters-valid? [characters index]
+  (if (= (count characters) 0)
+    true
+    (let [character (first characters)]
+      (if (= character \\)
+        false
+        (if (= character \:)
+          false
+          (if (= index 0)
+            (if (= character \/)
+              false
+              (ae-logical-path-characters-valid?
+               (rest characters) (+ index 1)))
+            (ae-logical-path-characters-valid?
+             (rest characters) (+ index 1))))))))
+
+(defn ae-logical-path-segment-valid? [segment]
+  (if (= (count segment) 0)
+    false
+    (if (= segment [\.])
+      false
+      (if (= segment [\. \.]) false true))))
+
+(defn ae-logical-path-segments-valid? [characters segment]
+  (if (= (count characters) 0)
+    (ae-logical-path-segment-valid? segment)
+    (let [character (first characters)]
+      (if (= character \/)
+        (if (ae-logical-path-segment-valid? segment)
+          (ae-logical-path-segments-valid? (rest characters) [])
+          false)
+        (ae-logical-path-segments-valid?
+         (rest characters) (conj segment character))))))
+
+(defn ae-logical-source-path? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (if (<= (count value)
+              (get (ae-bounds-record)
+                   :maximum-logical-source-path-code-units))
+        (if (ae-logical-path-characters-valid? (vec value) 0)
+          (ae-logical-path-segments-valid? (vec value) [])
+          false)
+        false)
+      false)
+    false))
+
+(defn ae-reference-id-characters-valid? [characters index]
+  (if (= (count characters) 0)
+    true
+    (let [character (first characters)]
+      (if (= character \\)
+        false
+        (if (= index 0)
+          (if (= character \/)
+            false
+            (ae-reference-id-characters-valid?
+             (rest characters) (+ index 1)))
+          (ae-reference-id-characters-valid?
+           (rest characters) (+ index 1)))))))
+
+(defn ae-drive-absolute-reference-id? [characters]
+  (if (>= (count characters) 3)
+    (if (= (second characters) \:)
+      (= (first (rest (rest characters))) \/)
+      false)
+    false))
+
+(defn ae-logical-reference-id? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (if (<= (count value)
+              (get (ae-bounds-record) :maximum-reference-id-code-units))
+        (let [characters (vec value)]
+          (if (ae-drive-absolute-reference-id? characters)
+            false
+            (if (ae-reference-id-characters-valid? characters 0)
+              (ae-logical-path-segments-valid? characters [])
+              false)))
+        false)
+      false)
+    false))
+
+(defn ae-nonnegative-integer? [value]
+  (if (integer? value)
+    (>= value 0)
+    false))
+
+(defn ae-positive-integer? [value]
+  (if (integer? value)
+    (> value 0)
+    false))
+
+(defn ae-keyword-vector? [values]
+  (if (vector? values)
+    (if (<= (count values)
+            (get (ae-bounds-record) :maximum-container-width))
+      (if (= (count values) 0)
+        true
+        (if (keyword? (first values))
+          (ae-keyword-vector? (vec (rest values)))
+          false))
+      false)
+    false))
+
+(defn ae-sha256-vector? [values]
+  (if (vector? values)
+    (if (<= (count values)
+            (get (ae-bounds-record) :maximum-container-width))
+      (if (= (count values) 0)
+        true
+        (if (ae-sha256-id? (first values))
+          (ae-sha256-vector? (vec (rest values)))
+          false))
+      false)
+    false))
+
+(defn ae-scalar-identity? [value]
+  (if (string? value)
+    (if (ae-sha256-id? value)
+      true
+      (ae-logical-reference-id? value))
+    (if (keyword? value)
+      true
+      (if (symbol? value)
+        true
+        (integer? value)))))
+
+(defn ae-exact-digest-ref? [value]
+  (if (map? value)
+    (if (= (count (keys value)) 1)
+      (if (= (first (keys value)) :digest-ref)
+        (ae-nonnegative-integer? (get value :digest-ref))
+        false)
+      false)
+    false))
+
+(defn ae-insert-ordinal [values value result inserted?]
+  (if (= (count values) 0)
+    (if inserted?
+      result
+      (conj result value))
+    (if inserted?
+      (ae-insert-ordinal
+       (rest values) value (conj result (first values)) true)
+      (if (< value (first values))
+        (ae-insert-ordinal values value (conj result value) true)
+        (ae-insert-ordinal
+         (rest values) value (conj result (first values)) false)))))
+
+(defn ae-sort-ordinals [values result]
+  (if (= (count values) 0)
+    result
+    (ae-sort-ordinals
+     (rest values)
+     (ae-insert-ordinal result (first values) [] false))))
+
+(defn ae-collect-ref-sequence [values result]
+  (if (= (count values) 0)
+    result
+    (ae-collect-ref-sequence
+     (rest values)
+     (ae-collect-digest-refs (first values) result))))
+
+(defn ae-collect-ref-map [map-keys value result]
+  (if (= (count map-keys) 0)
+    result
+    (let [map-key (first map-keys)
+          with-key (ae-collect-digest-refs map-key result)
+          with-value (ae-collect-digest-refs (get value map-key) with-key)]
+      (ae-collect-ref-map (rest map-keys) value with-value))))
+
+(defn ae-collect-digest-refs [value result]
+  (if (ae-exact-digest-ref? value)
+    (ae-conj-unique result (get value :digest-ref))
+    (if (map? value)
+      (ae-collect-ref-map (keys value) value result)
+      (if (vector? value)
+        (ae-collect-ref-sequence value result)
+        (if (set? value)
+          (ae-collect-ref-sequence value result)
+          (if (seq? value)
+            (ae-collect-ref-sequence value result)
+            result))))))
+
+(defn ae-digest-ref [ordinal]
+  {:digest-ref ordinal})
+
+(defn ae-digest-intern-sequence [values result]
+  (if (= (count values) 0)
+    result
+    (ae-digest-intern-sequence
+     (rest values)
+     (conj result (ae-digest-intern-key (first values))))))
+
+(defn ae-digest-intern-map-entries [map-keys value result]
+  (if (= (count map-keys) 0)
+    result
+    (let [map-key (first map-keys)]
+      (ae-digest-intern-map-entries
+       (rest map-keys) value
+       (conj result
+             [:entry
+              (ae-digest-intern-key map-key)
+              (ae-digest-intern-key (get value map-key))])))))
+
+(defn ae-digest-intern-key [value]
+  (if (= value nil)
+    [:nil]
+    (if (boolean? value)
+      [:boolean value]
+      (if (integer? value)
+        [:integer value]
+        (if (string? value)
+          [:string value]
+          (if (symbol? value)
+            [:symbol value]
+            (if (ae-exact-digest-ref? value)
+              [:digest-ref (get value :digest-ref)]
+              (if (map? value)
+                [:map
+                 (set
+                  (ae-digest-intern-map-entries
+                   (keys value) value []))]
+                (if (vector? value)
+                  [:vector (ae-digest-intern-sequence value [])]
+                  (if (set? value)
+                    [:set (set (ae-digest-intern-sequence value []))]
+                    (if (seq? value)
+                      [:list (ae-digest-intern-sequence value [])]
+                      (if (keyword? value)
+                        [:keyword value]
+                        (if (char? value)
+                          [:character value]
+                          [:unsupported-scalar value])))))))))))))
+
+(defn ae-request-key-for-preimage [requests preimage]
+  (let [intern-key (ae-digest-intern-key preimage)]
+    (if (= (count requests) 0)
+      nil
+      (if (= (ae-digest-intern-key (get (first requests) :preimage))
+             intern-key)
+        (get (first requests) :key)
+        (ae-request-key-for-preimage (rest requests) preimage)))))
+
+(defn ae-add-digest-request [state preimage]
+  (let [existing
+        (ae-request-key-for-preimage (get state :requests) preimage)]
+    (if (= existing nil)
+      (let [ordinal (get state :next-ordinal)
+            dependencies
+            (ae-sort-ordinals
+             (ae-collect-digest-refs preimage [])
+             [])
+            request {:key ordinal
+                     :ordinal ordinal
+                     :algorithm :sha256
+                     :encoding :gravity/canonical-edn-v1
+                     :depends-on dependencies
+                     :preimage preimage}]
+        {:state (assoc
+                 (assoc state :next-ordinal (+ ordinal 1))
+                 :requests (conj (get state :requests) request))
+         :ref (ae-digest-ref ordinal)})
+      {:state state
+       :ref (ae-digest-ref existing)})))
+
+(defn ae-value-entry-count [value]
+  (if (= value nil)
+    0
+    (if (map? value)
+      (count value)
+      (if (vector? value)
+        (count value)
+        (if (set? value)
+          (count value)
+          (if (seq? value)
+            (count value)
+            1))))))
+
+(defn ae-physical-semantic-key? [map-key value]
+  (if (ae-vector-contains?
+       [:actual-path-provenance :actual-source-path :actual-path
+        :source-path :workspace-root :invocation-root :request-source
+        :source-root :root-path :directory :path]
+       map-key)
+    true
+    (if (= map-key :logical-source-path)
+      (if (ae-logical-source-path? value) false true)
+      (if (= map-key :file)
+        (if (string? value)
+          (if (ae-sha256-id? value) false true)
+          false)
+        (if (= map-key :source)
+          (if (string? value)
+            (if (ae-sha256-id? value) false true)
+            false)
+          false)))))
+
+(defn ae-path-neutral-map? [map-keys value]
+  (if (= (count map-keys) 0)
+    true
+    (let [map-key (first map-keys)
+          map-value (get value map-key)]
+      (if (ae-physical-semantic-key? map-key map-value)
+        false
+        (if (ae-path-neutral-semantic-value? map-key)
+          (if (ae-path-neutral-semantic-value? map-value)
+            (ae-path-neutral-map? (rest map-keys) value)
+            false)
+          false)))))
+
+(defn ae-path-neutral-sequence? [values]
+  (if (= (count values) 0)
+    true
+    (if (ae-path-neutral-semantic-value? (first values))
+      (ae-path-neutral-sequence? (rest values))
+      false)))
+
+(defn ae-path-neutral-semantic-value? [value]
+  (if (ae-exact-digest-ref? value)
+    false
+    (if (map? value)
+      (ae-path-neutral-map? (keys value) value)
+      (if (vector? value)
+        (ae-path-neutral-sequence? value)
+        (if (set? value)
+          (ae-path-neutral-sequence? value)
+          (if (seq? value)
+            (ae-path-neutral-sequence? value)
+            true))))))
+
+(defn ae-source-revision-valid? [revision]
+  (if (ae-exact-keys?
+       revision
+       #{:owner :source-language :logical-source-path
+         :source-content-hash :source-byte-count
+         :plan-semantic-hash :functions-semantic-hash
+         :builder-function :builder-semantic-hash
+         :function-shapes})
+    (if (keyword? (get revision :owner))
+      (if (= (get revision :source-language) :gravity)
+        (if (ae-logical-source-path?
+             (get revision :logical-source-path))
+            (if (ae-sha256-id? (get revision :source-content-hash))
+              (if (ae-positive-integer? (get revision :source-byte-count))
+                (if (ae-sha256-id? (get revision :plan-semantic-hash))
+                  (if (ae-sha256-id?
+                       (get revision :functions-semantic-hash))
+                    (if (symbol? (get revision :builder-function))
+                      (if (ae-sha256-id?
+                           (get revision :builder-semantic-hash))
+                        (if (map? (get revision :function-shapes))
+                          (if (> (count
+                                  (get revision :function-shapes)) 0)
+                            (if (<= (count
+                                     (get revision :function-shapes))
+                                    (get (ae-bounds-record)
+                                         :maximum-container-width))
+                              (ae-path-neutral-semantic-value? revision)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+          false)
+        false)
+      false)
+    false))
+
+(defn ae-projection-contract-valid? [contract]
+  (if (ae-exact-keys?
+       contract
+       #{:contract-kind :contract-version :profile :target
+         :required-semantic-projections :required-fact-families
+         :required-identity-subjects})
+    (if (keyword? (get contract :contract-kind))
+      (if (= (get contract :contract-version) 1)
+        (if (keyword? (get contract :profile))
+          (if (keyword? (get contract :target))
+            (if (ae-keyword-vector?
+                 (get contract :required-semantic-projections))
+              (if (ae-keyword-vector?
+                   (get contract :required-fact-families))
+                (if (ae-keyword-vector?
+                     (get contract :required-identity-subjects))
+                  (if (ae-all-unique?
+                       (get contract :required-semantic-projections) [])
+                    (if (ae-all-unique?
+                         (get contract :required-fact-families) [])
+                      (ae-all-unique?
+                       (get contract :required-identity-subjects) [])
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn ae-projection-valid? [projection]
+  (if (ae-exact-keys?
+       projection #{:name :role :entry-count :value})
+    (if (keyword? (get projection :name))
+      (if (keyword? (get projection :role))
+        (if (ae-nonnegative-integer? (get projection :entry-count))
+          (if (= (get projection :entry-count)
+                 (ae-value-entry-count (get projection :value)))
+            (ae-path-neutral-semantic-value? (get projection :value))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn ae-projections-valid? [projections names]
+  (if (= (count projections) 0)
+    {:valid? true :names names}
+    (let [projection (first projections)
+          name (get projection :name)]
+      (if (ae-projection-valid? projection)
+        (if (ae-vector-contains? names name)
+          {:valid? false :names names}
+          (ae-projections-valid?
+           (rest projections) (conj names name)))
+        {:valid? false :names names}))))
+
+(defn ae-fact-disposition-valid? [fact]
+  (let [disposition (get fact :disposition)
+        input (get fact :input)
+        output (get fact :output)
+        input-count (get fact :input-count)
+        output-count (get fact :output-count)]
+    (if (= disposition :preserved)
+      (if (= input output)
+        (= input-count output-count)
+        false)
+      (if (= disposition :invalidated)
+        (if (= output nil)
+          (= output-count 0)
+          false)
+        (if (= disposition :regenerated)
+          (if (= output nil)
+            false
+            (= output-count (ae-value-entry-count output)))
+          false)))))
+
+(defn ae-fact-transition-valid? [fact]
+  (if (ae-exact-keys?
+       fact
+       #{:name :disposition :input :output
+         :input-count :output-count :evidence-ids})
+    (if (keyword? (get fact :name))
+      (if (ae-nonnegative-integer? (get fact :input-count))
+        (if (ae-nonnegative-integer? (get fact :output-count))
+          (if (= (get fact :input-count)
+                 (ae-value-entry-count (get fact :input)))
+            (if (ae-sha256-vector? (get fact :evidence-ids))
+              (if (> (count (get fact :evidence-ids)) 0)
+                (if (ae-path-neutral-semantic-value? (get fact :input))
+                  (if (ae-path-neutral-semantic-value?
+                       (get fact :output))
+                    (ae-fact-disposition-valid? fact)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn ae-fact-transitions-valid? [facts names]
+  (if (= (count facts) 0)
+    {:valid? true :names names}
+    (let [fact (first facts)
+          name (get fact :name)]
+      (if (ae-fact-transition-valid? fact)
+        (if (ae-vector-contains? names name)
+          {:valid? false :names names}
+          (ae-fact-transitions-valid?
+           (rest facts) (conj names name)))
+        {:valid? false :names names}))))
+
+(defn ae-effect-capability-relation-valid? [relation]
+  (if (ae-exact-keys?
+       relation
+       #{:effect-facts :capability-facts :capability-proof-facts
+         :effect-order :provider-selections :grant-scopes})
+    (ae-path-neutral-semantic-value? relation)
+    false))
+
+(defn ae-proof-composite-valid? [proof]
+  (if (ae-exact-keys?
+       proof
+       #{:proof-records :proof-certificate-table
+         :proof-summary :proof-usage})
+    (ae-path-neutral-semantic-value? proof)
+    false))
+
+(defn ae-names-for-disposition [facts disposition result]
+  (if (= (count facts) 0)
+    result
+    (let [fact (first facts)]
+      (ae-names-for-disposition
+       (rest facts) disposition
+       (if (= (get fact :disposition) disposition)
+         (conj result (get fact :name))
+         result)))))
+
+(defn ae-preservation-valid? [preservation facts fact-names]
+  (if (ae-exact-keys?
+       preservation
+       #{:requires :preserves :invalidates :regenerates
+         :residual-checks})
+    (if (ae-keyword-vector? (get preservation :requires))
+      (if (ae-keyword-vector? (get preservation :preserves))
+        (if (ae-keyword-vector? (get preservation :invalidates))
+          (if (ae-keyword-vector? (get preservation :regenerates))
+            (if (ae-keyword-vector? (get preservation :residual-checks))
+              (if (= (get preservation :requires) fact-names)
+                (if (= (get preservation :preserves)
+                       (ae-names-for-disposition facts :preserved []))
+                  (if (= (get preservation :invalidates)
+                         (ae-names-for-disposition facts :invalidated []))
+                    (= (get preservation :regenerates)
+                       (ae-names-for-disposition facts :regenerated []))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn ae-identity-subject-valid? [subject]
+  (if (ae-exact-keys?
+       subject #{:name :domain :preimage :observed-id})
+    (if (keyword? (get subject :name))
+      (if (keyword? (get subject :domain))
+        (if (ae-path-neutral-semantic-value? (get subject :preimage))
+          (ae-sha256-id? (get subject :observed-id))
+          false)
+        false)
+      false)
+    false))
+
+(defn ae-identity-subjects-valid? [subjects names]
+  (if (= (count subjects) 0)
+    {:valid? true :names names}
+    (let [subject (first subjects)
+          name (get subject :name)]
+      (if (ae-identity-subject-valid? subject)
+        (if (ae-vector-contains? names name)
+          {:valid? false :names names}
+          (ae-identity-subjects-valid?
+           (rest subjects) (conj names name)))
+        {:valid? false :names names}))))
+
+(defn ae-lineage-record-valid? [record]
+  (if (ae-exact-keys?
+       record
+       #{:stage :artifact-kind :semantic-id :artifact-id
+         :verification-id :relation})
+    (if (keyword? (get record :stage))
+      (if (keyword? (get record :artifact-kind))
+        (if (ae-sha256-id? (get record :semantic-id))
+          (if (ae-sha256-id? (get record :artifact-id))
+            (if (ae-sha256-id? (get record :verification-id))
+              (keyword? (get record :relation))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn ae-lineage-valid? [lineage artifact-ids]
+  (if (= (count lineage) 0)
+    true
+    (let [record (first lineage)
+          artifact-id (get record :artifact-id)]
+      (if (ae-lineage-record-valid? record)
+        (if (ae-vector-contains? artifact-ids artifact-id)
+          false
+          (ae-lineage-valid?
+           (rest lineage) (conj artifact-ids artifact-id)))
+        false))))
+
+(defn ae-reference-edge-valid? [edge node-ids]
+  (if (ae-exact-keys? edge #{:from :role :to})
+    (if (ae-scalar-identity? (get edge :from))
+      (if (ae-scalar-identity? (get edge :to))
+        (if (keyword? (get edge :role))
+          (if (ae-vector-contains? node-ids (get edge :from))
+            (ae-vector-contains? node-ids (get edge :to))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn ae-reference-edges-valid? [edges node-ids]
+  (if (= (count edges) 0)
+    true
+    (if (ae-reference-edge-valid? (first edges) node-ids)
+      (ae-reference-edges-valid? (rest edges) node-ids)
+      false)))
+
+(defn ae-scalar-identity-vector? [values]
+  (if (vector? values)
+    (if (<= (count values)
+            (get (ae-bounds-record) :maximum-container-width))
+      (if (= (count values) 0)
+        true
+        (if (ae-scalar-identity? (first values))
+          (ae-scalar-identity-vector? (vec (rest values)))
+          false))
+      false)
+    false))
+
+(defn ae-reference-neighbors [edges node-id result]
+  (if (= (count edges) 0)
+    result
+    (let [edge (first edges)]
+      (ae-reference-neighbors
+       (rest edges) node-id
+       (if (= (get edge :from) node-id)
+         (conj result (get edge :to))
+         result)))))
+
+(defn ae-reference-add-pending
+  [neighbors depth pending]
+  (if (= (count neighbors) 0)
+    pending
+    (ae-reference-add-pending
+     (rest neighbors) depth
+     (conj pending
+           {:node-id (first neighbors)
+            :depth depth}))))
+
+(defn ae-reference-graph-walk
+  [pending edges reachable maximum-depth]
+  (if (= (count pending) 0)
+    {:valid? true
+     :reachable reachable
+     :maximum-depth maximum-depth}
+    (let [entry (first pending)
+          node-id (get entry :node-id)
+          depth (get entry :depth)
+          remaining (vec (rest pending))]
+      (if (ae-vector-contains? reachable node-id)
+        (ae-reference-graph-walk
+         remaining edges reachable maximum-depth)
+        (let [neighbors (ae-reference-neighbors edges node-id [])
+              next-pending
+              (ae-reference-add-pending
+               neighbors (+ depth 1) remaining)
+              next-maximum-depth
+              (if (> depth maximum-depth) depth maximum-depth)]
+          (ae-reference-graph-walk
+           next-pending edges
+           (conj reachable node-id)
+           next-maximum-depth))))))
+
+(defn ae-reference-graph-validation [root-id edges]
+  (ae-reference-graph-walk
+   [{:node-id root-id :depth 0}]
+   edges [] 0))
+
+(defn ae-bounded-vector? [values maximum]
+  (if (vector? values)
+    (<= (count values) maximum)
+    false))
+
+(defn ae-reference-closure-valid? [closure]
+  (if (ae-exact-keys?
+       closure
+       #{:root-id :node-ids :edges
+         :fact-reference-ids :origin-reference-ids
+         :proof-reference-ids :runtime-check-reference-ids
+         :observed-node-count :observed-edge-count
+         :observed-maximum-depth})
+    (let [node-ids (get closure :node-ids)
+          edges (get closure :edges)
+          node-count (get closure :observed-node-count)
+          edge-count (get closure :observed-edge-count)
+          depth (get closure :observed-maximum-depth)
+          maximum-width
+          (get (ae-bounds-record) :maximum-container-width)]
+      (if (ae-bounded-vector?
+           node-ids
+           (get (ae-bounds-record) :maximum-reference-nodes))
+        (if (> (count node-ids) 0)
+          (if (ae-bounded-vector?
+               edges
+               (get (ae-bounds-record) :maximum-reference-edges))
+            (if (ae-bounded-vector?
+                 (get closure :fact-reference-ids) maximum-width)
+              (if (ae-bounded-vector?
+                   (get closure :origin-reference-ids) maximum-width)
+                (if (ae-bounded-vector?
+                     (get closure :proof-reference-ids) maximum-width)
+                  (if (ae-bounded-vector?
+                       (get closure :runtime-check-reference-ids)
+                       maximum-width)
+                    (if (ae-nonnegative-integer? node-count)
+                      (if (= node-count (count node-ids))
+                        (if (ae-nonnegative-integer? edge-count)
+                          (if (= edge-count (count edges))
+                            (if (ae-nonnegative-integer? depth)
+                              (if (<= depth
+                                      (get (ae-bounds-record)
+                                           :maximum-reference-depth))
+                                (if (ae-scalar-identity?
+                                     (get closure :root-id))
+                                  (if (ae-scalar-identity-vector? node-ids)
+                                    (if (ae-all-unique? node-ids [])
+                                      (if (ae-vector-contains?
+                                           node-ids
+                                           (get closure :root-id))
+                                        (if (ae-reference-edges-valid?
+                                             edges node-ids)
+                                          (if (ae-scalar-identity-vector?
+                                               (get closure
+                                                    :fact-reference-ids))
+                                            (if (ae-scalar-identity-vector?
+                                                 (get closure
+                                                      :origin-reference-ids))
+                                              (if (ae-scalar-identity-vector?
+                                                   (get closure
+                                                        :proof-reference-ids))
+                                                (if (ae-scalar-identity-vector?
+                                                     (get closure
+                                                          :runtime-check-reference-ids))
+                                                  (let [graph-validation
+                                                        (ae-reference-graph-validation
+                                                         (get closure :root-id)
+                                                         edges)]
+                                                    (if (get graph-validation
+                                                             :valid?)
+                                                      (if (= (count
+                                                              (get
+                                                               graph-validation
+                                                               :reachable))
+                                                             node-count)
+                                                        (= (get
+                                                            graph-validation
+                                                            :maximum-depth)
+                                                           depth)
+                                                        false)
+                                                      false))
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn ae-actual-path-provenance-valid? [provenance]
+  (if (ae-exact-keys?
+       provenance #{:source-path :workspace-root :invocation-root})
+    (if (string? (get provenance :source-path))
+      (if (> (count (get provenance :source-path)) 0)
+        (if (string? (get provenance :workspace-root))
+          (if (> (count (get provenance :workspace-root)) 0)
+            (if (string? (get provenance :invocation-root))
+              (> (count (get provenance :invocation-root)) 0)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn ae-descriptor-shape-valid? [descriptor]
+  (ae-exact-keys?
+   descriptor
+   #{:artifact :schema-version :stage :artifact-kind
+     :source-revision :projection-contract :semantic-projections
+     :fact-transitions :effect-capability-relation :proof-composite
+     :preservation :identity-subjects :lineage :reference-closure
+     :actual-path-provenance :bounds}))
+
+(defn ae-descriptor-validation [descriptor]
+  (if (ae-descriptor-shape-valid? descriptor)
+    (let [contract (get descriptor :projection-contract)
+          projections (get descriptor :semantic-projections)
+          facts (get descriptor :fact-transitions)
+          identities (get descriptor :identity-subjects)
+          lineage (get descriptor :lineage)
+          projection-validation
+          (if (ae-bounded-vector?
+               projections
+               (get (ae-bounds-record)
+                    :maximum-semantic-projections))
+            (ae-projections-valid? projections [])
+            {:valid? false :names []})
+          fact-validation
+          (if (ae-bounded-vector?
+               facts
+               (get (ae-bounds-record)
+                    :maximum-fact-transitions))
+            (ae-fact-transitions-valid? facts [])
+            {:valid? false :names []})
+          identity-validation
+          (if (ae-bounded-vector?
+               identities
+               (get (ae-bounds-record)
+                    :maximum-identity-subjects))
+            (ae-identity-subjects-valid? identities [])
+            {:valid? false :names []})]
+      (if (= (get descriptor :artifact)
+             :gravity/private-authenticated-envelope-descriptor)
+        (if (= (get descriptor :schema-version) 1)
+          (if (keyword? (get descriptor :stage))
+            (if (keyword? (get descriptor :artifact-kind))
+              (if (ae-source-revision-valid?
+                   (get descriptor :source-revision))
+                (if (ae-projection-contract-valid? contract)
+                  (if (get projection-validation :valid?)
+                    (if (> (count projections) 0)
+                      (if (<= (count projections)
+                              (get (ae-bounds-record)
+                                   :maximum-semantic-projections))
+                        (if (= (get projection-validation :names)
+                               (get contract
+                                    :required-semantic-projections))
+                          (if (get fact-validation :valid?)
+                            (if (> (count facts) 0)
+                              (if (<= (count facts)
+                                      (get (ae-bounds-record)
+                                           :maximum-fact-transitions))
+                                (if (= (get fact-validation :names)
+                                       (get contract
+                                            :required-fact-families))
+                                  (if (ae-effect-capability-relation-valid?
+                                       (get descriptor
+                                            :effect-capability-relation))
+                                    (if (ae-proof-composite-valid?
+                                         (get descriptor :proof-composite))
+                                      (if (ae-preservation-valid?
+                                           (get descriptor :preservation)
+                                           facts
+                                           (get fact-validation :names))
+                                        (if (get identity-validation :valid?)
+                                          (if (> (count identities) 0)
+                                            (if (<=
+                                                 (count identities)
+                                                 (get
+                                                  (ae-bounds-record)
+                                                  :maximum-identity-subjects))
+                                              (if (=
+                                                   (get identity-validation
+                                                        :names)
+                                                   (get contract
+                                                        :required-identity-subjects))
+                                                (if (vector? lineage)
+                                                  (if (> (count lineage) 0)
+                                                    (if (<=
+                                                         (count lineage)
+                                                         (get
+                                                          (ae-bounds-record)
+                                                          :maximum-lineage-records))
+                                                      (if (ae-lineage-valid?
+                                                           lineage [])
+                                                        (if (ae-reference-closure-valid?
+                                                             (get descriptor
+                                                                  :reference-closure))
+                                                          (if (ae-actual-path-provenance-valid?
+                                                               (get descriptor
+                                                                    :actual-path-provenance))
+                                                            (if (=
+                                                                 (get descriptor
+                                                                      :bounds)
+                                                                 (ae-bounds-record))
+                                                              {:valid? true
+                                                               :reason :accepted}
+                                                              {:valid? false
+                                                               :reason :bounds})
+                                                            {:valid? false
+                                                             :reason
+                                                             :actual-path-provenance})
+                                                          {:valid? false
+                                                           :reason
+                                                           :reference-closure})
+                                                        {:valid? false
+                                                         :reason :lineage})
+                                                      {:valid? false
+                                                       :reason :lineage-bound})
+                                                    {:valid? false
+                                                     :reason :empty-lineage})
+                                                  {:valid? false
+                                                   :reason :lineage-shape})
+                                                {:valid? false
+                                                 :reason
+                                                 :identity-contract})
+                                              {:valid? false
+                                               :reason :identity-bound})
+                                            {:valid? false
+                                             :reason :empty-identities})
+                                          {:valid? false
+                                           :reason :identity-subjects})
+                                        {:valid? false
+                                         :reason :preservation})
+                                      {:valid? false
+                                       :reason :proof-composite})
+                                    {:valid? false
+                                     :reason :effect-capability-relation})
+                                  {:valid? false :reason :fact-contract})
+                                {:valid? false :reason :fact-bound})
+                              {:valid? false :reason :empty-facts})
+                            {:valid? false :reason :fact-transitions})
+                          {:valid? false :reason :projection-contract})
+                        {:valid? false :reason :projection-bound})
+                      {:valid? false :reason :empty-projections})
+                    {:valid? false :reason :semantic-projections})
+                  {:valid? false :reason :contract})
+                {:valid? false :reason :source-revision})
+              {:valid? false :reason :artifact-kind})
+            {:valid? false :reason :stage})
+          {:valid? false :reason :schema-version})
+        {:valid? false :reason :artifact}))
+    {:valid? false :reason :descriptor-shape}))
+
+(defn ae-rejection [descriptor reason phase]
+  {:status :rejected
+   :fatal? true
+   :artifact-template nil
+   :digest-requests []
+   :digest-graph-roots []
+   :diagnostics
+   [{:artifact :gravity/authenticated-envelope-rejection
+     :schema-version 1
+     :diagnostic-family :coordinator-mapped
+     :reason reason
+     :phase phase
+     :stage
+     (if (map? descriptor)
+       (get descriptor :stage)
+       :unknown)
+     :artifact-kind
+     (if (map? descriptor)
+       (get descriptor :artifact-kind)
+       :unknown)
+     :remediation :reconstruct-envelope-from-fresh-stage-products}]
+   :containment {:fatal? true
+                 :stop-after :authenticated-envelope
+                 :downstream-artifacts-forbidden true}
+   :claim-boundary [:content-and-context-consistency
+                    :coordinator-assigns-normative-diagnostic-id]})
+
+(defn ae-build-projection-bindings
+  [projections contract-id state result]
+  (if (= (count projections) 0)
+    {:state state :bindings result}
+    (let [projection (first projections)
+          content-request
+          (ae-add-digest-request
+           state
+           {:domain :gravity/authenticated-envelope-projection-content-v1
+            :projection-name (get projection :name)
+            :projection-role (get projection :role)
+            :semantic-value (get projection :value)})
+          content-id (get content-request :ref)
+          binding-request
+          (ae-add-digest-request
+           (get content-request :state)
+           {:domain :gravity/authenticated-envelope-projection-binding-v1
+            :contract-id contract-id
+            :projection-name (get projection :name)
+            :projection-role (get projection :role)
+            :entry-count (get projection :entry-count)
+            :content-id content-id})
+          binding-id (get binding-request :ref)
+          binding
+          {:name (get projection :name)
+           :role (get projection :role)
+           :entry-count (get projection :entry-count)
+           :content-id content-id
+           :binding-id binding-id}]
+      (ae-build-projection-bindings
+       (rest projections) contract-id
+       (get binding-request :state)
+       (conj result binding)))))
+
+(defn ae-build-fact-transition-bindings
+  [facts contract-id state result]
+  (if (= (count facts) 0)
+    {:state state :bindings result}
+    (let [fact (first facts)
+          input-request
+          (ae-add-digest-request
+           state
+           {:domain :gravity/authenticated-envelope-fact-input-v1
+            :fact-name (get fact :name)
+            :semantic-value (get fact :input)})
+          input-id (get input-request :ref)
+          output-request
+          (ae-add-digest-request
+           (get input-request :state)
+           {:domain :gravity/authenticated-envelope-fact-output-v1
+            :fact-name (get fact :name)
+            :semantic-value (get fact :output)})
+          output-id (get output-request :ref)
+          binding-request
+          (ae-add-digest-request
+           (get output-request :state)
+           {:domain :gravity/authenticated-envelope-fact-transition-v1
+            :contract-id contract-id
+            :fact-name (get fact :name)
+            :disposition (get fact :disposition)
+            :input-content-id input-id
+            :output-content-id output-id
+            :input-count (get fact :input-count)
+            :output-count (get fact :output-count)
+            :evidence-ids (get fact :evidence-ids)})
+          binding-id (get binding-request :ref)
+          binding
+          {:name (get fact :name)
+           :disposition (get fact :disposition)
+           :input-content-id input-id
+           :output-content-id output-id
+           :input-count (get fact :input-count)
+           :output-count (get fact :output-count)
+           :evidence-ids (get fact :evidence-ids)
+           :binding-id binding-id}]
+      (ae-build-fact-transition-bindings
+       (rest facts) contract-id
+       (get binding-request :state)
+       (conj result binding)))))
+
+(defn ae-build-identity-bindings [subjects state result checks]
+  (if (= (count subjects) 0)
+    {:state state :bindings result :checks checks}
+    (let [subject (first subjects)
+          identity-request
+          (ae-add-digest-request
+           state
+           {:domain (get subject :domain)
+            :semantic-input (get subject :preimage)})
+          computed-id (get identity-request :ref)
+          binding-request
+          (ae-add-digest-request
+           (get identity-request :state)
+           {:domain :gravity/authenticated-envelope-identity-binding-v1
+            :identity-name (get subject :name)
+            :identity-domain (get subject :domain)
+            :computed-id computed-id
+            :observed-id (get subject :observed-id)})
+          binding-id (get binding-request :ref)
+          binding {:name (get subject :name)
+                   :domain (get subject :domain)
+                   :computed-id computed-id
+                   :observed-id (get subject :observed-id)
+                   :binding-id binding-id}
+          check {:name (get subject :name)
+                 :domain (get subject :domain)
+                 :computed-id computed-id
+                 :observed-id (get subject :observed-id)}]
+      (ae-build-identity-bindings
+       (rest subjects)
+       (get binding-request :state)
+       (conj result binding)
+       (conj checks check)))))
+
+(defn ae-build-accepted-template [descriptor]
+  (let [initial-state {:next-ordinal 0 :requests []}
+        contract-request
+        (ae-add-digest-request
+         initial-state
+         {:domain :gravity/authenticated-envelope-contract-v1
+          :projection-contract (get descriptor :projection-contract)})
+        contract-id (get contract-request :ref)
+        source-request
+        (ae-add-digest-request
+         (get contract-request :state)
+         {:domain :gravity/authenticated-envelope-source-revision-v1
+          :source-revision (get descriptor :source-revision)})
+        source-revision-id (get source-request :ref)
+        projection-product
+        (ae-build-projection-bindings
+         (get descriptor :semantic-projections)
+         contract-id (get source-request :state) [])
+        projection-bindings (get projection-product :bindings)
+        projection-set-request
+        (ae-add-digest-request
+         (get projection-product :state)
+         {:domain :gravity/authenticated-envelope-projection-set-v1
+          :contract-id contract-id
+          :bindings projection-bindings})
+        projection-set-id (get projection-set-request :ref)
+        fact-product
+        (ae-build-fact-transition-bindings
+         (get descriptor :fact-transitions)
+         contract-id (get projection-set-request :state) [])
+        fact-bindings (get fact-product :bindings)
+        fact-set-request
+        (ae-add-digest-request
+         (get fact-product :state)
+         {:domain :gravity/authenticated-envelope-fact-transition-set-v1
+          :contract-id contract-id
+          :bindings fact-bindings})
+        fact-set-id (get fact-set-request :ref)
+        relation-request
+        (ae-add-digest-request
+         (get fact-set-request :state)
+         {:domain
+          :gravity/authenticated-envelope-effect-capability-relation-v1
+          :relation (get descriptor :effect-capability-relation)
+          :fact-transition-set-id fact-set-id})
+        relation-id (get relation-request :ref)
+        proof-request
+        (ae-add-digest-request
+         (get relation-request :state)
+         {:domain :gravity/authenticated-envelope-proof-composite-v1
+          :proof-composite (get descriptor :proof-composite)
+          :effect-capability-relation-id relation-id})
+        proof-composite-id (get proof-request :ref)
+        preservation-request
+        (ae-add-digest-request
+         (get proof-request :state)
+         {:domain :gravity/authenticated-envelope-preservation-v1
+          :preservation (get descriptor :preservation)
+          :fact-transition-set-id fact-set-id
+          :proof-composite-id proof-composite-id})
+        preservation-id (get preservation-request :ref)
+        identity-product
+        (ae-build-identity-bindings
+         (get descriptor :identity-subjects)
+         (get preservation-request :state) [] [])
+        identity-bindings (get identity-product :bindings)
+        identity-checks (get identity-product :checks)
+        identity-set-request
+        (ae-add-digest-request
+         (get identity-product :state)
+         {:domain :gravity/authenticated-envelope-identity-set-v1
+          :contract-id contract-id
+          :bindings identity-bindings})
+        identity-set-id (get identity-set-request :ref)
+        lineage-request
+        (ae-add-digest-request
+         (get identity-set-request :state)
+         {:domain :gravity/authenticated-envelope-lineage-v1
+          :lineage (get descriptor :lineage)})
+        lineage-id (get lineage-request :ref)
+        reference-request
+        (ae-add-digest-request
+         (get lineage-request :state)
+         {:domain :gravity/authenticated-envelope-reference-closure-v1
+          :reference-closure (get descriptor :reference-closure)})
+        reference-closure-id (get reference-request :ref)
+        semantic-request
+        (ae-add-digest-request
+         (get reference-request :state)
+         {:domain :gravity/authenticated-envelope-semantic-identity-v1
+          :schema-version 1
+          :stage (get descriptor :stage)
+          :artifact-kind (get descriptor :artifact-kind)
+          :source-revision-id source-revision-id
+          :contract-id contract-id
+          :semantic-projection-set-id projection-set-id
+          :fact-transition-set-id fact-set-id
+          :effect-capability-relation-id relation-id
+          :proof-composite-id proof-composite-id
+          :preservation-id preservation-id
+          :identity-set-id identity-set-id
+          :lineage-id lineage-id
+          :reference-closure-id reference-closure-id})
+        semantic-id (get semantic-request :ref)
+        artifact-request
+        (ae-add-digest-request
+         (get semantic-request :state)
+         {:domain :gravity/authenticated-envelope-artifact-v1
+          :schema-version 1
+          :stage (get descriptor :stage)
+          :artifact-kind (get descriptor :artifact-kind)
+          :semantic-id semantic-id})
+        artifact-id (get artifact-request :ref)
+        semantic-template-base
+        {:artifact :gravity/authenticated-envelope
+         :schema-version 1
+         :stage (get descriptor :stage)
+         :artifact-kind (get descriptor :artifact-kind)
+         :contract-id contract-id
+         :source-revision-id source-revision-id
+         :semantic-projection-bindings projection-bindings
+         :semantic-projection-set-id projection-set-id
+         :fact-transition-bindings fact-bindings
+         :fact-transition-set-id fact-set-id
+         :effect-capability-relation-id relation-id
+         :proof-composite-id proof-composite-id
+         :preservation-id preservation-id
+         :identity-bindings identity-bindings
+         :identity-set-id identity-set-id
+         :lineage-id lineage-id
+         :reference-closure-id reference-closure-id
+         :reference-depth-metric :ordered-shortest-discovery-depth
+         :semantic-id semantic-id
+         :artifact-id artifact-id
+         :bounds (ae-bounds-record)
+         :semantic-authority :gravity-source
+         :host-role :bounded-validation-hashing-and-instantiation
+         :claim-boundary [:content-and-context-consistency
+                          :not-a-release-signature
+                          :not-proof-of-verifier-correctness]
+         :self-hosted? false
+         :clojure-seed-boundary? true}
+        semantic-root-request
+        (ae-add-digest-request
+         (get artifact-request :state)
+         {:domain :gravity/authenticated-envelope-semantic-root-v1
+          :semantic-envelope semantic-template-base})
+        semantic-root (get semantic-root-request :ref)
+        provenance-request
+        (ae-add-digest-request
+         (get semantic-root-request :state)
+         {:domain :gravity/authenticated-envelope-provenance-binding-v1
+          :semantic-envelope-id semantic-root
+          :actual-path-provenance
+          (get descriptor :actual-path-provenance)})
+        provenance-root (get provenance-request :ref)
+        artifact-template
+        (assoc
+         (assoc
+          (assoc semantic-template-base
+                 :semantic-envelope-id semantic-root)
+          :actual-path-provenance
+          (get descriptor :actual-path-provenance))
+         :provenance-binding-id provenance-root)
+        final-state (get provenance-request :state)
+        requests (get final-state :requests)]
+    (if (<= (count requests)
+            (get (ae-bounds-record)
+                 :maximum-digest-requests))
+      {:status :accepted
+       :artifact-template artifact-template
+       :digest-requests requests
+       :digest-graph-root semantic-root
+       :digest-graph-roots [semantic-root provenance-root]
+       :semantic-envelope-root semantic-root
+       :provenance-binding-root provenance-root
+       :identity-checks identity-checks
+       :diagnostics []
+       :authority
+       {:semantic-owner :gravity-source
+        :host-role :bounded-validation-hashing-and-instantiation
+        :scope :reusable-authenticated-envelope
+        :semantic-root-path-neutral? true
+        :physical-provenance-separate? true
+        :self-hosted? false}}
+      (ae-rejection descriptor :digest-request-bound :construction))))
+
+(defn authenticated-envelope-build-template [descriptor]
+  (let [validation (ae-descriptor-validation descriptor)]
+    (if (get validation :valid?)
+      (ae-build-accepted-template descriptor)
+      (ae-rejection descriptor (get validation :reason) :validation))))
+
+(defn authenticated-envelope-verify-template
+  [descriptor artifact-template digest-requests]
+  (let [expected
+        (authenticated-envelope-build-template descriptor)]
+    (if (= (get expected :status) :rejected)
+      expected
+      (if (= artifact-template (get expected :artifact-template))
+        (if (= digest-requests (get expected :digest-requests))
+          {:status :template-replay-passed
+           :artifact-template artifact-template
+           :digest-graph-root (get expected :digest-graph-root)
+           :digest-graph-roots (get expected :digest-graph-roots)
+           :semantic-envelope-root
+           (get expected :semantic-envelope-root)
+           :provenance-binding-root
+           (get expected :provenance-binding-root)
+           :identity-checks (get expected :identity-checks)
+           :identity-enforcement :pending-host-resolution
+           :eligible-for-contextual-acceptance? false
+           :request-count (count digest-requests)
+           :semantic-authority :gravity-source
+           :checks [:fresh-descriptor-replay
+                    :exact-artifact-template-replay
+                    :exact-digest-request-replay
+                    :path-neutral-semantic-root
+                    :separate-physical-provenance-root]
+           :diagnostics []}
+          (ae-rejection descriptor :digest-request-replay :verification))
+        (ae-rejection descriptor :artifact-template-replay :verification)))))

@@ -5,4 +5,32 @@
 
   :test
   {:extra-paths ["bootstrap/clojure/test"]
-   :main-opts ["-m" "gravity.bootstrap-test"]}}}
+   :main-opts ["-m" "gravity.self-hosting-test-runner"]}
+
+  :stage0-test
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.bootstrap-test"]}
+
+  :sh01-test
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.self-hosting.sh01-development-test-runner"]}
+
+  :stage3-verification
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.self-hosting.stage3-verification-runner"]}
+
+  :leaf-test
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.bootstrap-free-leaf-test-runner"]}
+
+  :dev-test
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.development-test-runner"]}
+
+  :project-structure-test
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.project-structure-test-runner"]}
+
+  :project-structure-runner-unit
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.project-structure-test-runner-unit"]}}}

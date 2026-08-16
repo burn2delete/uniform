@@ -1,0 +1,13 @@
+(ns self-hosting.sh06.reject.foreign
+  (:profile :hosted) (:target :jvm)
+  (:imports [native.clock :as clock :profile :hosted])
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:slice :SH-06
+              :compiler {:sh06-request {:request-version 1
+                                         :foreign-imports
+                                         [{:module native.clock :alias clock
+                                           :boundary nil :effects []
+                                           :capabilities []}]}}
+              :sh06 {:expected-rule "C5-FOREIGN" :expected-stage :name-resolution
+                     :expected-severity :error :expected-remediation :complete-foreign-record}}))
+(defn candidate [] clock/read)

@@ -1,0 +1,20 @@
+(ns self-hosting.sh07-b10.reject.outside-branch-binding-use
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B10
+    :sh07-b10
+    {:expected-rule "C5-UNRESOLVED"
+     :expected-stage :name-resolution
+     :expected-severity :error
+     :expected-remediation :declare-or-import-binding}}))
+
+(def invalid-match
+  (do
+    (match 1
+      branch branch
+      _ nil)
+    branch))

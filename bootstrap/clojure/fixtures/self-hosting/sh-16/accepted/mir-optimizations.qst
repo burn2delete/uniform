@@ -1,0 +1,135 @@
+(ns gravity.self-hosting.sh16.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh16-mixed-optimization-request
+             sh16-proof-elision-request
+             sh16-no-change-request
+             sh16-mixed-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh16-span [actual-source-path start end]
+  {:source-id :gravity.compiler/sh16-fixture
+   :actual-source-path actual-source-path
+   :start start
+   :end end})
+
+(defn sh16-operation
+  [operation-id opcode operands safety-outcome actual-source-path start end]
+  {:op-id operation-id
+   :opcode opcode
+   :operands operands
+   :result operation-id
+   :type :i64
+   :effects #{}
+   :ordering nil
+   :source-span (sh16-span actual-source-path start end)
+   :origin-chain
+   [{:kind :source :source-id :gravity.compiler/sh16-fixture}]
+   :safety-outcome safety-outcome})
+
+(defn sh16-bounds-proof [operation-id]
+  {:proof-id :proof/bounds-dominates
+   :certificate-id :certificate/bounds-dominates
+   :claim :bounds-safe
+   :operation-id operation-id
+   :check-id :check/bounds-proven
+   :proof-dominates-use true
+   :certificate-status :verified
+   :result :proven-safe
+   :method :range-analysis
+   :provider :gravity.compiler/range
+   :assumptions #{:index-in-range :length-stable}
+   :profile :native
+   :target :portable-mir
+   :invalidated-by #{}})
+
+(defn sh16-base-request
+  [request-id operations actual-source-path]
+  {:artifact :gravity/sh16-optimization-request
+   :request-id request-id
+   :input-mir-id :mir/sh16-input
+   :mir-verified true
+   :profile :native
+   :target :portable-mir
+   :source-span (sh16-span actual-source-path 0 64)
+   :origin-chain
+   [{:kind :source :source-id :gravity.compiler/sh16-fixture}]
+   :nondeterministic-choice false
+   :operations operations})
+
+(defn sh16-mixed-operations [actual-source-path]
+  [(assoc
+    (sh16-operation
+     :op/add :add [2 3] :proven-safe
+     actual-source-path 0 8)
+    :constant-operands true
+    :numeric-mode :integer-exact)
+   (assoc
+    (sh16-operation
+     :op/branch :branch-if [] :proven-safe
+     actual-source-path 9 18)
+    :condition true
+    :then-block :block/then
+    :else-block :block/else)
+   (assoc
+    (sh16-operation
+     :op/dead :compute [] :proven-safe
+     actual-source-path 19 28)
+    :dead true
+    :dead-proof
+    {:proof-id :proof/dead-no-uses
+     :operation-id :op/dead
+     :no-uses true
+     :effect-free true
+     :verified true})
+   (assoc
+    (sh16-operation
+     :op/bounds-check :runtime-check [:index :length]
+     :runtime-checked actual-source-path 29 44)
+    :runtime-check-id :check/bounds-retained
+    :check-class :bounds
+    :elide-requested false)
+   (sh16-operation
+    :op/return :return [:op/add] :proven-safe
+    actual-source-path 45 56)])
+
+(defn sh16-mixed-optimization-request []
+  (sh16-base-request
+   :mixed
+   (sh16-mixed-operations "/checkout-a/compiler.gravity")
+   "/checkout-a/compiler.gravity"))
+
+(defn sh16-mixed-alternate-path-request []
+  (sh16-base-request
+   :mixed
+   (sh16-mixed-operations "/checkout-b/compiler.gravity")
+   "/checkout-b/compiler.gravity"))
+
+(defn sh16-proof-elision-request []
+  (sh16-base-request
+   :proof-elision
+   [(assoc
+     (sh16-operation
+      :op/proven-bounds :runtime-check [2 5]
+      :runtime-checked "/checkout-a/compiler.gravity" 0 16)
+     :runtime-check-id :check/bounds-proven
+     :check-class :bounds
+     :elide-requested true
+     :proof (sh16-bounds-proof :op/proven-bounds))
+    (sh16-operation
+     :op/return :return [:value] :proven-safe
+     "/checkout-a/compiler.gravity" 17 24)]
+   "/checkout-a/compiler.gravity"))
+
+(defn sh16-no-change-request []
+  (sh16-base-request
+   :no-change
+   [(sh16-operation
+     :op/constant :const [42] :proven-safe
+     "/checkout-a/compiler.gravity" 0 4)
+    (sh16-operation
+     :op/return :return [:op/constant] :proven-safe
+     "/checkout-a/compiler.gravity" 5 12)]
+   "/checkout-a/compiler.gravity"))

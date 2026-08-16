@@ -1,0 +1,19 @@
+; SH-07-B10 keeps a nested same-spelled binding separate from its parent.
+(ns self-hosting.sh07-b10.nested-match-scope-isolation
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [resolve-nested])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10
+              :fixture :nested-match-scope-isolation
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn resolve-nested [outer inner]
+  (match outer
+    item
+    (do
+      (match inner
+        item item)
+      item)))

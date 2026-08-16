@@ -1,0 +1,154 @@
+(ns gravity.self-hosting.sh21.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh21-meta-program
+             sh21-meta-program-alternate-path])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh21-span [start end]
+  {:source-id :gravity.compiler/sh21-fixture
+   :start start
+   :end end})
+
+(defn sh21-origin [module-id]
+  [{:kind :source
+    :source-id :gravity.compiler/sh21-fixture
+    :module-id module-id}])
+
+(defn sh21-build-input
+  [kind effect capability input-token content-id]
+  {:artifact :gravity/meta-build-input
+   :kind kind
+   :effect effect
+   :capability capability
+   :input-token input-token
+   :content-id content-id
+   :replayable true})
+
+(defn sh21-pass-contract
+  [pass-id input output requires preserves invalidates regenerates artifacts]
+  {:pass-id pass-id
+   :profile :meta
+   :input input
+   :output output
+   :requires requires
+   :preserves preserves
+   :invalidates invalidates
+   :regenerates regenerates
+   :artifacts artifacts})
+
+(defn sh21-generated-code [generated-id target-profile module-id]
+  {:generated-id generated-id
+   :target-profile target-profile
+   :recheck-boundary :ordinary-compiler-pipeline
+   :recheck-required true
+   :safety-provenance
+   {:generator-id module-id
+    :safety-outcome :runtime-checked}
+   :source-span (sh21-span 40 48)
+   :origin-chain
+   [{:kind :generated
+     :source-id :gravity.compiler/sh21-fixture
+     :generator-id module-id}]})
+
+(defn sh21-module
+  [module-id effects capabilities dependencies pass-contract
+   build-inputs generated-code actual-source-path start end]
+  {:artifact :gravity/meta-compiler-module
+   :module-id module-id
+   :profile :meta
+   :source-content-id "sha256:semantic-source"
+   :compiler-artifact-id "sha256:compiler-stage"
+   :compiler-lineage
+   ["sha256:compiler-stage" "sha256:seed-stage"]
+   :effects effects
+   :capabilities capabilities
+   :dependencies dependencies
+   :pass-contract pass-contract
+   :build-inputs build-inputs
+   :generated-code generated-code
+   :runtime-assumptions
+   #{:bounded-allocation
+     :runtime-provider-descriptors-only
+     :no-ambient-authority}
+   :compile-time-captures []
+   :source-span (sh21-span start end)
+   :origin-chain (sh21-origin module-id)
+   :actual-source-path actual-source-path})
+
+(defn sh21-reader-module [checkout]
+  (sh21-module
+   :compiler/reader
+   #{:memory/allocate :build/read-file}
+   #{:build/read-file}
+   []
+   (sh21-pass-contract
+    :reader :source-unit :syntax-tree
+    #{:source-bytes}
+    #{:source-spans :origin-chains}
+    #{}
+    #{:syntax-structure}
+    [:syntax-tree :reader-diagnostics])
+   [(sh21-build-input
+     :source-file :build/read-file :build/read-file
+     :compiler/source-unit "sha256:source-unit")]
+   []
+   (str checkout "/reader.gravity")
+   0 32))
+
+(defn sh21-analyzer-module [checkout]
+  (sh21-module
+   :compiler/analyzer
+   #{:memory/allocate :compiler/read-ir :compiler/write-ir}
+   #{:compiler/ir-read :compiler/ir-transform}
+   [:compiler/reader]
+   (sh21-pass-contract
+    :analyzer :syntax-tree :checked-core
+    #{:resolved-bindings}
+    #{:source-spans :origin-chains :hygiene}
+    #{:syntax-index}
+    #{:types :effects :profile-valid :safety-outcomes}
+    [:checked-core :analysis-diagnostics])
+   []
+   [(sh21-generated-code
+     :generated/helper :meta :compiler/analyzer)]
+   (str checkout "/analyzer.gravity")
+   33 64))
+
+(defn sh21-emitter-module [checkout]
+  (sh21-module
+   :compiler/emitter
+   #{:memory/allocate :compiler/read-ir :build/write-artifact}
+   #{:compiler/ir-read :build/write-artifact}
+   [:compiler/analyzer]
+   (sh21-pass-contract
+    :emitter :verified-mir :compiler-artifact
+    #{:types :effects :safety}
+    #{:source-spans :origin-chains :safety}
+    #{}
+    #{:target-artifact}
+    [:object :manifest :provenance])
+   []
+   [(sh21-generated-code
+     :generated/native-entry :native :compiler/emitter)]
+   (str checkout "/emitter.gravity")
+   65 96))
+
+(defn sh21-program [checkout]
+  {:artifact :gravity/sh21-meta-program
+   :program-id "sha256:sh21-meta-program"
+   :hermetic true
+   :module-order
+   [:compiler/reader :compiler/analyzer :compiler/emitter]
+   :modules
+   [(sh21-reader-module checkout)
+    (sh21-analyzer-module checkout)
+    (sh21-emitter-module checkout)]})
+
+(defn sh21-meta-program []
+  (sh21-program "/checkout-a/compiler"))
+
+(defn sh21-meta-program-alternate-path []
+  (sh21-program "/checkout-b/compiler"))

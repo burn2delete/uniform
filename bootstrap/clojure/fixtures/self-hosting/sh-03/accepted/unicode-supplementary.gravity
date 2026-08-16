@@ -1,0 +1,2 @@
+(ns self-hosting.sh03.unicode-supplementary)
+(def supplementary-character \😀)

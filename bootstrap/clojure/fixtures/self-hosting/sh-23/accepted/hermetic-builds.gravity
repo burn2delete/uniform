@@ -1,0 +1,148 @@
+(ns gravity.self-hosting.sh23.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh23-hermetic-build-request
+             sh23-hermetic-build-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh23-locked-package
+  [package-id version content-id provenance-id targets]
+  {:artifact :gravity/locked-package
+   :package-id package-id
+   :version version
+   :content-id content-id
+   :provenance-id provenance-id
+   :provenance-status :verified
+   :revoked false
+   :effects #{}
+   :capabilities #{}
+   :targets targets})
+
+(defn sh23-project []
+  {:artifact :gravity/project-manifest
+   :package-id :gravity/bootstrap-compiler
+   :version "0.1.0"
+   :edition "2026.1"
+   :source-roots ["bootstrap/gravity/src"]
+   :profile :meta
+   :target :portable-mir
+   :entrypoints [:gravity.compiler/main]
+   :dependency-roots [:gravity/core :gravity/stdlib-core]
+   :effects #{:build/read-file :build/write-artifact}
+   :capabilities #{:build/read-file :build/write-artifact}
+   :unsafe-policy :deny
+   :artifact-kinds [:compiler-module]
+   :release-lock-required true})
+
+(defn sh23-lockfile []
+  {:artifact :gravity/bootstrap-lockfile
+   :lock-id "sha256:sh23-lock"
+   :complete true
+   :offline true
+   :packages
+   [(sh23-locked-package
+     :gravity/core "0.1.0"
+     "sha256:gravity-core"
+     "sha256:gravity-core-provenance"
+     [:portable-mir])
+    (sh23-locked-package
+     :gravity/stdlib-core "0.1.0"
+     "sha256:gravity-stdlib-core"
+     "sha256:gravity-stdlib-provenance"
+     [:portable-mir])]})
+
+(defn sh23-compiler []
+  {:artifact-id "sha256:gravityc-stage2"
+   :source-id "sha256:gravityc-source"
+   :plan-id "sha256:gravityc-plan"
+   :profile :meta
+   :legal-result-id "sha256:sh21-legality"})
+
+(defn sh23-legality []
+  {:artifact :gravity/sh21-meta-legality-result
+   :status :accepted
+   :program-id "sha256:sh21-meta-program"
+   :profile :meta
+   :hermetic true})
+
+(defn sh23-library []
+  {:artifact :gravity/standard-library-module-manifest
+   :module 'gravity.stdlib.self-hosting-core
+   :stability :experimental
+   :conformance-id "sha256:sh22-conformance"})
+
+(defn sh23-environment []
+  {:locale "C"
+   :timezone "UTC"
+   :filesystem-order :sorted
+   :timestamp-policy :fixed
+   :random-seed 23
+   :network :disabled
+   :allowed-environment []})
+
+(defn sh23-target []
+  {:profile :meta
+   :backend :gravity.backend/portable-mir
+   :target :portable-mir
+   :runtime :minimal-native
+   :support :internal
+   :artifact-kind :compiler-module})
+
+(defn sh23-component
+  [component-id source-content-id compiler-module-id
+   dependencies stdlib-dependencies output-id output-content-hash
+   ordinal checkout]
+  {:artifact :gravity/bootstrap-build-component
+   :component-id component-id
+   :source-content-id source-content-id
+   :compiler-module-id compiler-module-id
+   :dependencies dependencies
+   :stdlib-dependencies stdlib-dependencies
+   :output-id output-id
+   :output-content-hash output-content-hash
+   :topological-ordinal ordinal
+   :actual-source-path
+   (str checkout "/bootstrap/gravity/src/compiler.gravity")})
+
+(defn sh23-components [checkout]
+  [(sh23-component
+    :component/reader "sha256:reader-source" :compiler/reader
+    [] [:gravity/core] :artifact/reader
+    "1000000000000000000000000000000000000000000000000000000000000001"
+    1 checkout)
+   (sh23-component
+    :component/analyzer "sha256:analyzer-source" :compiler/analyzer
+    [:component/reader] [:gravity/core :gravity/stdlib-core]
+    :artifact/analyzer
+    "2000000000000000000000000000000000000000000000000000000000000002"
+    2 checkout)
+   (sh23-component
+    :component/emitter "sha256:emitter-source" :compiler/emitter
+    [:component/analyzer] [:gravity/core :gravity/stdlib-core]
+    :artifact/emitter
+    "3000000000000000000000000000000000000000000000000000000000000003"
+    3 checkout)])
+
+(defn sh23-request [checkout]
+  {:artifact :gravity/sh23-hermetic-build-request
+   :build-id "sha256:sh23-build"
+   :project (sh23-project)
+   :lockfile (sh23-lockfile)
+   :compiler (sh23-compiler)
+   :legality (sh23-legality)
+   :library (sh23-library)
+   :environment (sh23-environment)
+   :target (sh23-target)
+   :effects #{:build/read-file :build/write-artifact}
+   :capabilities #{:build/read-file :build/write-artifact}
+   :component-order
+   [:component/reader :component/analyzer :component/emitter]
+   :components (sh23-components checkout)})
+
+(defn sh23-hermetic-build-request []
+  (sh23-request "/checkout-a"))
+
+(defn sh23-hermetic-build-alternate-path-request []
+  (sh23-request "/checkout-b"))

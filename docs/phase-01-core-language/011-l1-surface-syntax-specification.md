@@ -15,6 +15,12 @@ L1 owns surface syntax only. It does not define core semantics for every form; `
 
 A Gravity source file contains zero or more top-level forms. A normal compilation unit begins with an `ns` form.
 
+The co-canonical source extensions are `.qst` and `.gravity`. Both are
+first-class source kinds. Source-unit provenance preserves the actual supplied
+path and extension, while stable source identity uses the declared project-root
+id and the source path relative to that root. Other source extensions are
+rejected before reading forms.
+
 ```clojure
 (ns example.http
   (:profile :hosted)
@@ -55,6 +61,13 @@ Keywords are self-evaluating identifiers used for maps, options, effects, capabi
 
 Qualified keywords use the same namespace rules as symbols.
 
+An unqualified symbol or keyword name is nonempty. A qualified spelling has
+one `/` separator with nonempty namespace and name segments; the unqualified
+symbol `/` remains valid as the division operator. A keyword begins with
+exactly one `:` followed by a valid symbol spelling. Empty names, empty
+qualified segments, multiple namespace separators, and undeclared
+auto-resolving keyword prefixes are malformed identifiers.
+
 ## Literals
 
 The reader accepts these literal families:
@@ -77,6 +90,17 @@ The reader accepts these literal families:
 - tagged literals registered by safe reader extension policy.
 
 Strings are Unicode scalar sequences. Escape processing must preserve source spans for diagnostics. Invalid escape sequences are reader errors.
+
+A token is a numeric candidate when its leading spelling selects one of the
+enabled numeric literal grammars. A numeric candidate that fails every enabled
+numeric grammar is malformed source; the reader must not silently reclassify it
+as a symbol. Lexically valid numeric spellings remain reader-valid even when a
+later semantic rule rejects their value. In particular, a zero-denominator
+ratio such as `1/0` preserves its numerator and denominator spelling and is
+deferred to numeric and safety analysis. The same rule applies when a valid
+numeric spelling exceeds a reader implementation's declared normalization-work
+bound: the reader preserves exact components and records semantic deferment
+rather than rejecting valid source.
 
 Collection literals are immutable values at the surface level. Mutability, transient behavior, region allocation, and target layout are later semantic decisions.
 
@@ -239,8 +263,11 @@ The reader rejects:
 
 - unbalanced delimiters,
 - malformed strings or invalid escapes,
+- numeric candidates that fail every enabled numeric literal grammar,
+- malformed symbol or keyword identifier spellings,
 - malformed map literals,
 - duplicate set literals when decidable at read time,
+- reader abbreviations without a valid following form,
 - metadata not followed by a form,
 - namespace clauses with invalid list/vector/map/set shape,
 - reader extension tags not registered in the active build policy,
@@ -252,20 +279,30 @@ Syntax-valid but semantically illegal forms are not reader errors. They continue
 
 - `L1-DELIMITER`: unbalanced or mismatched delimiter.
 - `L1-STRING`: invalid string or character literal.
+- `L1-NUMERIC`: numeric candidate fails every enabled numeric literal grammar.
+- `L1-IDENTIFIER`: symbol or keyword has an invalid surface spelling.
 - `L1-MAP-ARITY`: map literal contains an odd number of forms.
+- `L1-SET`: set literal contains duplicate entries decidable at read time.
+- `L1-ABBREV`: reader abbreviation is unattached or has invalid placement.
 - `L1-METADATA`: metadata form is malformed or unattached.
 - `L1-NS-SHAPE`: namespace clause has invalid syntax shape.
 - `L1-READER-EXTENSION`: reader extension is unknown, disallowed, or requires ungranted build effect.
 - `L1-SOURCE-ENCODING`: source bytes cannot be decoded according to project policy.
+- `L1-SOURCE-EXTENSION`: source path does not use the co-canonical `.qst` or `.gravity` extension policy.
 
 Each diagnostic includes source span, raw text excerpt when safe, reader state, and remediation.
+When the compiler C2 reader contains `L1-NS-SHAPE`, it reports the public
+`C2-NS-SHAPE` rule and preserves `L1-NS-SHAPE` as the owning-rule provenance.
 
 ## Conformance Criteria
 
 - Reader fixtures cover every literal family and collection form.
 - Reader abbreviation fixtures preserve both original and expanded spans.
 - Namespace fixtures preserve profile, target, effect, capability, safety, provider, and import clauses.
-- Malformed source fixtures produce stable diagnostics.
+- Malformed source fixtures, including malformed numeric candidates, produce
+  stable diagnostics without exposing a host numeric parser exception.
+- Lexically valid but semantically invalid numeric spellings remain available
+  to later numeric and safety phases with their raw spelling intact.
 - Macro expansion fixtures can trace generated forms back to L1 syntax objects.
 - Profile rejection fixtures confirm the reader accepts syntax that later phases reject for semantic reasons.
 

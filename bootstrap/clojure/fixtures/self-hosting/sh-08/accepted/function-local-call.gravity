@@ -1,0 +1,39 @@
+; SH-08-B48 bounded first-order function/local/call typing.
+(ns self-hosting.sh08.function-local-call
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh08-chain-leaf
+             sh08-chain-middle
+             sh08-chain-root
+             sh08-typed-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-08-B48
+    :fixture :function-local-call
+    :required-products
+    [:function-records :call-edges :lexical-bindings]
+    :scope :first-order-fixed-arity-functions-locals-calls
+    :non-claims
+    [:recursive-inference
+     :higher-order-functions
+     :records
+     :unions
+     :protocols
+     :generics
+     :casts
+     :dynamic-boundaries]}))
+
+(defn sh08-chain-leaf [value]
+  (let [local-value value]
+    local-value))
+
+(defn sh08-chain-middle [value]
+  (sh08-chain-leaf value))
+
+(defn sh08-chain-root [value]
+  (sh08-chain-middle value))
+
+(def sh08-typed-result
+  (sh08-chain-root 7))

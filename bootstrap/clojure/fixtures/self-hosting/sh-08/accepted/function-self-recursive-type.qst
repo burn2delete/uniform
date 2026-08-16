@@ -1,0 +1,30 @@
+; SH-08-B48 bounded named self-recursive positive fixed-arity typing.
+(ns self-hosting.sh08.function-self-recursive-type
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [self-recursive-type
+             recursive-type-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-08-B48
+    :fixture :function-self-recursive-type
+    :required-products
+    [:function-records :call-edges :recursion-components]
+    :scope :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base
+    :non-claims
+    [:mutual-recursion
+     :capture-recursion
+     :higher-order-recursion
+     :unbounded-recursion
+     :recursive-polymorphism
+     :tail-call-optimization]}))
+
+(defn self-recursive-type [value]
+  (if false
+    (self-recursive-type value)
+    0))
+
+(def recursive-type-result
+  (self-recursive-type 7))

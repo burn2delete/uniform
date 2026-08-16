@@ -1,0 +1,15 @@
+; SH-07-B4 an inner loop overrides its enclosing function target.
+(ns self-hosting.sh07-b4.loop-overrides-function-target
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [loop-overrides-function])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B4 :fixture :loop-overrides-function-target}))
+
+(defn loop-overrides-function [value]
+  (loop [inner value]
+    (if false
+      (recur inner)
+      inner)))

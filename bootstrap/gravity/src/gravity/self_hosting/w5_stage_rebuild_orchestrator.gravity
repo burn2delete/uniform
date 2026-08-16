@@ -1,0 +1,1640 @@
+; W5 Wave3 executable stage-rebuild orchestrator.
+; This leaf validates supplied stage A -> B -> C records as data.  It never
+; invokes a compiler, verifier, linker, toolchain, process, or host service.
+; The :jvm declaration is only the current stage2 compiler-plan harness.
+(ns gravity.self-hosting.w5-stage-rebuild-orchestrator
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-stage-rebuild-policy
+             w5-stage-rebuild-stage-order
+             w5-stage-rebuild-target-contract
+             w5-stage-rebuild-diagnostic-catalog
+             w5-stage-rebuild-diagnostic
+             w5-stage-rebuild-span-valid?
+             w5-stage-rebuild-diagnostic-source-span
+             w5-stage-rebuild-source-inventory
+             w5-stage-rebuild-boot5-matrix
+             w5-stage-rebuild-boot5-matrix-valid?
+             w5-stage-rebuild-boot7-equivalence-valid?
+             w5-stage-rebuild-identity-input
+             w5-stage-rebuild-orchestrate
+             w5-stage-rebuild-rebuild
+             w5-stage-rebuild-run
+             w5-stage-rebuild-execute
+             w5-stage-rebuild-verify
+             w5-stage-rebuild-recompute
+             w5-stage-rebuild-structural-recompute
+             w5-stage-rebuild-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-stage-rebuild-orchestrator
+     :owner :w5
+     :source-language :gravity
+     :seed :clojure-stage0
+     :status :executable-leaf
+     :scope :stage-owned-nonauthority
+     :static-only? true
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :release? false
+     :public-authority? false
+     :authority :non-authority
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                          :object-format :elf :abi :sysv-amd64}
+     :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+       :fallback? false}
+      {:target :windows :invokes-clojure? false :links-jvm? false
+       :fallback? false}]
+     :cross-target-inference? false
+     :darwin-fallback? false
+     :no-fallback? true
+     :residual-boundaries {:stage2-compiler-plan :clojure-bootstrap
+                           :stage2-runtime :jvm
+                           :candidate-execution :pending
+                           :independent-evidence :pending
+                           :full-language-coverage :incomplete}
+     :governing-document-ids ["D0" "D1" "D2" "D3" "D8" "D9"
+                              "BOOT3" "BOOT4" "BOOT5" "BOOT7"]
+     :does-not-claim [:stage-execution
+                      :independent-rebuild
+                      :self-hosting-completion
+                      :release-readiness
+                      :public-authority
+                      :seed-retirement]}}))
+
+(def w5-stage-rebuild-stage-order-value
+  [:stage1 :stage2 :stage3])
+
+(def w5-stage-rebuild-target-contract-value
+  {:target :llvm-x86_64-linux
+   :os :linux
+   :arch :x86_64
+   :backend :llvm
+   :object-format :elf
+   :abi :sysv-amd64
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :object-format :elf :abi :sysv-amd64}
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false
+     :fallback? false}]
+   :cross-target-inference? false
+   :darwin-fallback? false
+   :no-fallback? true
+   :jvm-harness-target :jvm})
+
+(def w5-stage-rebuild-diagnostic-rules
+  ["W5-SR-SOURCE-CATALOG" "W5-SR-SOURCE-IDENTITY"
+   "W5-SR-STAGE-ORDER" "W5-SR-STAGE-LINEAGE"
+   "W5-SR-EXECUTABLE" "W5-SR-ARTIFACT-SET"
+   "W5-SR-RECIPE" "W5-SR-ENVIRONMENT" "W5-SR-LOCK"
+   "W5-SR-TOOLCHAIN" "W5-SR-TARGET" "W5-SR-CONFORMANCE"
+   "W5-SR-MATRIX" "W5-SR-EQUIVALENCE" "W5-SR-EVIDENCE"
+   "W5-SR-AUTHORITY" "W5-SR-SUBSTITUTION"])
+
+(def w5-stage-rebuild-remediations
+  {:catalog :restore-source-catalog
+   :source-identity :bind-source-content-and-ordinal
+   :stage-order :restore-stage1-stage2-stage3-order
+   :lineage :bind-parent-output-to-child-compiler
+   :executable :bind-compiler-verifier-and-artifact-executables
+   :artifact-set :bind-complete-stage-artifact-set
+   :recipe :pin-build-recipe
+   :environment :pin-hermetic-build-environment
+   :lock :pin-dependency-lock
+   :toolchain :pin-target-toolchain
+   :target :use-exact-llvm-linux-target
+   :conformance :attach-conformance-record
+   :matrix :attach-boot5-compatibility-matrix
+   :equivalence :attach-pending-boot7-equivalence-report
+   :evidence :use-executable-record-with-pending-proof
+   :authority :deny-fallback-and-authority
+   :substitution :recompute-result-from-request})
+
+(def w5-stage-rebuild-catalog-id
+  "sha256:1111111111111111111111111111111111111111111111111111111111111111")
+(def w5-stage-rebuild-source-a
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+(def w5-stage-rebuild-source-b
+  "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+(def w5-stage-rebuild-source-c
+  "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
+(def w5-stage-rebuild-inventory-id
+  "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd")
+(def w5-stage-rebuild-compiler-source-id
+  "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+(def w5-stage-rebuild-compiler-executable-id
+  "sha256:1111111111111111111111111111111111111111111111111111111111111111")
+(def w5-stage-rebuild-verifier-executable-id
+  "sha256:2222222222222222222222222222222222222222222222222222222222222222")
+(def w5-stage-rebuild-artifact-executable-id
+  "sha256:3333333333333333333333333333333333333333333333333333333333333333")
+(def w5-stage-rebuild-recipe-id
+  "sha256:4444444444444444444444444444444444444444444444444444444444444444")
+(def w5-stage-rebuild-environment-id
+  "sha256:5555555555555555555555555555555555555555555555555555555555555555")
+(def w5-stage-rebuild-lock-id
+  "sha256:6666666666666666666666666666666666666666666666666666666666666666")
+(def w5-stage-rebuild-toolchain-id
+  "sha256:7777777777777777777777777777777777777777777777777777777777777777")
+(def w5-stage-rebuild-conformance-id
+  "sha256:8888888888888888888888888888888888888888888888888888888888888888")
+(def w5-stage-rebuild-stage1-executable-id
+  "sha256:9999999999999999999999999999999999999999999999999999999999999999")
+(def w5-stage-rebuild-stage2-executable-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab")
+(def w5-stage-rebuild-stage3-executable-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaac")
+(def w5-stage-rebuild-stage1-artifact-set-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaad")
+(def w5-stage-rebuild-stage2-artifact-set-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaae")
+(def w5-stage-rebuild-stage3-artifact-set-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaf")
+(def w5-stage-rebuild-stage1-artifact-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaba")
+(def w5-stage-rebuild-stage2-artifact-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabb")
+(def w5-stage-rebuild-stage3-artifact-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabc")
+
+(def w5-stage-rebuild-boot5-matrix-value
+  [{:stage-id :stage1
+    :compiler-owner :clojure-stage0-seed
+    :implemented-documents [:BOOT1 :BOOT2 :BOOT3 :BOOT4 :BOOT5]
+    :language-subset :reader-bootstrap
+    :supported-profiles [:core :meta]
+    :supported-backends [:llvm]
+    :runtime-services [:jvm-stage2-runtime]
+    :package-build-features [:descriptor-only]
+    :standard-library-subset [:core]
+    :conformance-suites [:w5-stage1-conformance]
+    :known-gaps [:actual-execution :independent-equivalence]
+    :release-eligible? false
+    :status :pending}
+   {:stage-id :stage2
+    :compiler-owner :gravity-stage1
+    :implemented-documents [:BOOT1 :BOOT2 :BOOT3 :BOOT4 :BOOT5 :BOOT7]
+    :language-subset :compiler-bootstrap
+    :supported-profiles [:core :meta]
+    :supported-backends [:llvm]
+    :runtime-services [:jvm-stage2-runtime]
+    :package-build-features [:descriptor-only]
+    :standard-library-subset [:core]
+    :conformance-suites [:w5-stage2-conformance]
+    :known-gaps [:actual-execution :independent-equivalence]
+    :release-eligible? false
+    :status :pending}
+   {:stage-id :stage3
+    :compiler-owner :gravity-stage2
+    :implemented-documents [:BOOT1 :BOOT2 :BOOT3 :BOOT4 :BOOT5 :BOOT7
+                            :BOOT8]
+    :language-subset :self-hosting-subset
+    :supported-profiles [:core :meta :hosted]
+    :supported-backends [:llvm]
+    :runtime-services [:jvm-stage2-runtime]
+    :package-build-features [:descriptor-only]
+    :standard-library-subset [:core]
+    :conformance-suites [:w5-stage3-conformance]
+    :known-gaps [:actual-execution :independent-equivalence :seed-retirement]
+    :release-eligible? false
+    :status :pending}])
+
+(def w5-stage-rebuild-boot7-modes
+  [:artifact-hash :manifest :diagnostic :conformance :runtime-output
+   :ir-modulo-id :performance-bound :accepted-delta])
+(def w5-stage-rebuild-boot7-input-id
+  "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+(def w5-stage-rebuild-boot7-report-id
+  "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
+
+(defn w5-stage-rebuild-artifact-parent-executable-id [stage]
+  (if (= :stage1 stage)
+    w5-stage-rebuild-compiler-executable-id
+    (if (= :stage2 stage)
+      w5-stage-rebuild-stage1-executable-id
+      w5-stage-rebuild-stage2-executable-id)))
+
+(defn w5-stage-rebuild-policy []
+  {:artifact :gravity/w5-stage-rebuild-orchestrator-policy
+   :schema-version 1
+   :scope :stage-owned-nonauthority
+   :stage :stage2
+   :profile :meta
+   :harness-target :jvm
+   :candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                        :object-format :elf :abi :sysv-amd64}
+   :stage-order w5-stage-rebuild-stage-order-value
+   :required-stage-count 3
+   :required-identities [:compiler-source-inventory-id
+                         :compiler-executable-id
+                         :verifier-executable-id
+                         :artifact-executable-id
+                         :artifact-set-id
+                         :compiled-by-parent-executable-id
+                         :build-recipe-id :environment-id :lock-id
+                         :toolchain-id :conformance-id]
+   :required-evidence-class :executable-record
+   :diagnostics w5-stage-rebuild-diagnostic-rules
+   :pending [:stage1-actual-execution :stage2-actual-execution
+             :stage3-actual-execution :independent-rebuild-evidence
+             :independent-conformance-evidence :self-hosting-comparison
+             :seed-retirement]
+   :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+     :fallback? false}
+    {:target :windows :invokes-clojure? false :links-jvm? false
+     :fallback? false}]
+   :cross-target-inference? false
+   :darwin-fallback? false
+   :no-fallback? true
+   :static-only? true
+   :release-eligible? false
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :authority :non-authority
+   :residual-boundaries
+   {:stage2-compiler-plan :clojure-bootstrap
+    :stage2-runtime :jvm
+    :candidate-execution :pending
+    :independent-evidence :pending
+    :full-language-coverage :incomplete}})
+
+(defn w5-stage-rebuild-target-contract []
+  w5-stage-rebuild-target-contract-value)
+
+(defn w5-stage-rebuild-stage-order []
+  w5-stage-rebuild-stage-order-value)
+
+(defn w5-stage-rebuild-diagnostic-catalog []
+  {:artifact :gravity/w5-stage-rebuild-diagnostic-catalog
+   :schema-version 1
+   :stage :stage-rebuild
+   :rules w5-stage-rebuild-diagnostic-rules
+   :remediations w5-stage-rebuild-remediations
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false})
+
+(defn w5-stage-rebuild-boot5-matrix []
+  w5-stage-rebuild-boot5-matrix-value)
+
+(defn w5-stage-rebuild-source-inventory []
+  {:inventory-id w5-stage-rebuild-inventory-id
+   :catalog-id w5-stage-rebuild-catalog-id
+   :schema-version 1
+   :source-language :gravity
+   :source-count 3
+   :entries
+   [{:ordinal 0 :source-unit-id :compiler-source-a
+     :logical-source-id "gravity/compiler/stage1"
+     :content-id w5-stage-rebuild-source-a :byte-count 1200
+     :dependencies []
+     :source-span {:source-id :gravity.self-hosting/w5-stage-rebuild
+                   :start-byte 0 :end-byte 32}}
+    {:ordinal 1 :source-unit-id :compiler-source-b
+     :logical-source-id "gravity/compiler/stage2"
+     :content-id w5-stage-rebuild-source-b :byte-count 1500
+     :dependencies [:compiler-source-a]
+     :source-span {:source-id :gravity.self-hosting/w5-stage-rebuild
+                   :start-byte 33 :end-byte 65}}
+    {:ordinal 2 :source-unit-id :compiler-source-c
+     :logical-source-id "gravity/compiler/stage3"
+     :content-id w5-stage-rebuild-source-c :byte-count 1800
+     :dependencies [:compiler-source-a :compiler-source-b]
+     :source-span {:source-id :gravity.self-hosting/w5-stage-rebuild
+                   :start-byte 66 :end-byte 98}}]})
+
+(defn w5-stage-rebuild-present? [value]
+  (if (= nil value) false true))
+
+(defn w5-stage-rebuild-id? [value]
+  (if (string? value) (> (count value) 0) false))
+
+(defn w5-stage-rebuild-nonempty-string? [value]
+  (if (string? value) (> (count value) 0) false))
+
+(defn w5-stage-rebuild-exact-keys? [value expected]
+  (if (map? value) (= (set (keys value)) expected) false))
+
+(defn w5-stage-rebuild-member? [values value]
+  (if (vector? values)
+    (loop [index 0]
+      (if (= index (count values))
+        false
+        (if (= value (get values index))
+          true
+          (recur (+ index 1)))))
+    false))
+
+(defn w5-stage-rebuild-span-valid? [span]
+  (if (w5-stage-rebuild-exact-keys?
+       span #{:source-id :start-byte :end-byte})
+    (if (= :gravity.self-hosting/w5-stage-rebuild
+           (get span :source-id))
+      (if (integer? (get span :start-byte))
+        (if (integer? (get span :end-byte))
+          (if (>= (get span :start-byte) 0)
+            (<= (get span :start-byte) (get span :end-byte))
+              false)
+          false)
+        false)
+      false)
+    false))
+
+(def w5-stage-rebuild-diagnostic-source-span-value
+  {:source-id :gravity.self-hosting/w5-stage-rebuild
+   :start-byte 0
+   :end-byte 0})
+
+(defn w5-stage-rebuild-diagnostic-source-span [request]
+  (let [span (get request :source-span)]
+    (if (w5-stage-rebuild-span-valid? span)
+      span
+      w5-stage-rebuild-diagnostic-source-span-value)))
+
+(defn w5-stage-rebuild-platform-valid? [platform]
+  (if (w5-stage-rebuild-exact-keys?
+       platform #{:os :arch :backend :object-format :abi})
+    (= platform (get w5-stage-rebuild-target-contract-value
+                     :candidate-platform))
+    false))
+
+(defn w5-stage-rebuild-target-policy-valid? [target]
+  (if (= false (get target :fallback?))
+    (if (= true (get target :no-fallback?))
+      (if (= false (get target :candidate-invokes-clojure?))
+        (if (= false (get target :candidate-links-jvm?))
+          (if (= [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+                 (get target :unsupported-targets))
+            (= [{:target :darwin :invokes-clojure? false
+                 :links-jvm? false :fallback? false}
+                {:target :darwin-arm64 :invokes-clojure? false
+                 :links-jvm? false :fallback? false}
+                {:target :darwin-x86_64 :invokes-clojure? false
+                 :links-jvm? false :fallback? false}
+                {:target :windows :invokes-clojure? false
+                 :links-jvm? false :fallback? false}]
+               (get target :unsupported-target-policies))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-target-valid? [target]
+  (if (w5-stage-rebuild-exact-keys?
+       target #{:target :os :arch :backend :object-format :abi
+                :cross-target-inference? :darwin-fallback? :fallback?
+                :unsupported-targets :unsupported-target-policies
+                :candidate-invokes-clojure? :candidate-links-jvm?
+                :no-fallback?})
+    (if (= :llvm-x86_64-linux (get target :target))
+      (if (= :linux (get target :os))
+        (if (= :x86_64 (get target :arch))
+          (if (= :llvm (get target :backend))
+            (if (= :elf (get target :object-format))
+              (if (= :sysv-amd64 (get target :abi))
+                (if (= false (get target :cross-target-inference?))
+                  (if (= false (get target :darwin-fallback?))
+                    (w5-stage-rebuild-target-policy-valid? target)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-provenance-valid? [provenance]
+  (if (w5-stage-rebuild-exact-keys?
+       provenance #{:source-id :logical-source-id :actual-source-path
+                    :orchestrator-source-path})
+    (if (= :gravity.self-hosting/w5-stage-rebuild
+           (get provenance :source-id))
+      (if (= "fixtures/w5-stage-rebuild/stage-rebuild"
+             (get provenance :logical-source-id))
+        (if (w5-stage-rebuild-nonempty-string?
+             (get provenance :actual-source-path))
+          (w5-stage-rebuild-nonempty-string?
+           (get provenance :orchestrator-source-path))
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-stage-provenance-valid? [provenance stage]
+  (if (w5-stage-rebuild-exact-keys?
+       provenance #{:logical-source-id :actual-source-path})
+    (if (= (str "gravity/compiler/" (str stage))
+           (get provenance :logical-source-id))
+      (w5-stage-rebuild-nonempty-string?
+       (get provenance :actual-source-path))
+      false)
+    false))
+
+(defn w5-stage-rebuild-artifact-provenance-valid? [provenance]
+  (if (w5-stage-rebuild-exact-keys?
+       provenance #{:actual-artifact-path})
+    (w5-stage-rebuild-nonempty-string?
+     (get provenance :actual-artifact-path))
+    false))
+
+(defn w5-stage-rebuild-source-entry-valid? [entry ordinal]
+  (if (w5-stage-rebuild-exact-keys?
+       entry #{:ordinal :source-unit-id :logical-source-id :content-id
+               :byte-count :dependencies :source-span})
+    (if (= ordinal (get entry :ordinal))
+      (if (keyword? (get entry :source-unit-id))
+        (if (w5-stage-rebuild-id? (get entry :logical-source-id))
+          (if (w5-stage-rebuild-id? (get entry :content-id))
+            (if (integer? (get entry :byte-count))
+            (if (> (get entry :byte-count) 0)
+              (if (vector? (get entry :dependencies))
+                (w5-stage-rebuild-span-valid? (get entry :source-span))
+                false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-source-inventory-valid? [inventory]
+  (if (w5-stage-rebuild-exact-keys?
+       inventory #{:inventory-id :catalog-id :schema-version
+                   :source-language :source-count :entries})
+    (if (= 1 (get inventory :schema-version))
+      (if (= w5-stage-rebuild-inventory-id (get inventory :inventory-id))
+        (if (= w5-stage-rebuild-catalog-id (get inventory :catalog-id))
+          (if (= 3 (get inventory :source-count))
+      (if (= :gravity (get inventory :source-language))
+        (if (vector? (get inventory :entries))
+          (if (= 3 (count (get inventory :entries)))
+            (if (w5-stage-rebuild-id?
+                 (get inventory :inventory-id))
+              (if (w5-stage-rebuild-id?
+                   (get inventory :catalog-id))
+                (if (w5-stage-rebuild-source-entry-valid?
+                     (get (get inventory :entries) 0) 0)
+                  (if (w5-stage-rebuild-source-entry-valid?
+                       (get (get inventory :entries) 1) 1)
+                    (w5-stage-rebuild-source-entry-valid?
+                     (get (get inventory :entries) 2) 2)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-catalog-valid? [inventory]
+  (= w5-stage-rebuild-catalog-id (get inventory :catalog-id)))
+
+(defn w5-stage-rebuild-source-identity-valid? [request]
+  (let [inventory (get request :source-inventory)
+        entries (get inventory :entries)
+        a (get entries 0) b (get entries 1) c (get entries 2)
+        compiler (get request :compiler)
+        stages (get request :stages)
+        stage1 (get stages :stage1)
+        stage2 (get stages :stage2)
+        stage3 (get stages :stage3)]
+    (if (= [:compiler-source-a :compiler-source-b :compiler-source-c]
+           [(get a :source-unit-id)
+            (get b :source-unit-id)
+            (get c :source-unit-id)])
+      (if (= [[] [:compiler-source-a]
+              [:compiler-source-a :compiler-source-b]]
+             [(get a :dependencies)
+              (get b :dependencies)
+              (get c :dependencies)])
+        (if (= ["gravity/compiler/stage1"
+                "gravity/compiler/stage2"
+                "gravity/compiler/stage3"]
+               [(get a :logical-source-id)
+                (get b :logical-source-id)
+                (get c :logical-source-id)])
+          (if (= [w5-stage-rebuild-source-a
+                  w5-stage-rebuild-source-b
+                  w5-stage-rebuild-source-c]
+                 [(get a :content-id)
+                  (get b :content-id)
+                  (get c :content-id)])
+            (if (= [(get inventory :inventory-id)
+                    (get inventory :inventory-id)]
+                   [(get compiler :source-inventory-id)
+                    (get compiler :compiler-source-inventory-id)])
+              (if (= [(get inventory :inventory-id)
+                      (get inventory :inventory-id)
+                      (get inventory :inventory-id)]
+                     [(get stage1 :source-inventory-id)
+                      (get stage2 :source-inventory-id)
+                      (get stage3 :source-inventory-id)])
+                (if (= [(get inventory :inventory-id)
+                        (get inventory :inventory-id)
+                        (get inventory :inventory-id)]
+                       [(get stage1 :compiler-source-inventory-id)
+                        (get stage2 :compiler-source-inventory-id)
+                        (get stage3 :compiler-source-inventory-id)])
+                  (= [(get a :content-id)
+                      (get b :content-id)
+                      (get c :content-id)]
+                     [(get stage1 :compiler-source-id)
+                      (get stage2 :compiler-source-id)
+                      (get stage3 :compiler-source-id)])
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-stage-rebuild-boot5-matrix-valid? [matrix]
+  (= w5-stage-rebuild-boot5-matrix-value matrix))
+
+(defn w5-stage-rebuild-boot7-equivalence-input-valid?
+  [input request]
+  (if (w5-stage-rebuild-exact-keys?
+       input #{:input-id :compiler-a-id :compiler-b-id
+               :artifact-a-id :artifact-b-id :source-inventory-id
+               :conformance-id :modes :status})
+    (if (= w5-stage-rebuild-boot7-input-id (get input :input-id))
+      (if (= (get (get (get request :stages) :stage2)
+                    :artifact-executable-id)
+             (get input :compiler-a-id))
+        (if (= (get (get (get request :stages) :stage3)
+                    :artifact-executable-id)
+               (get input :compiler-b-id))
+          (if (= (get (get (get request :artifact-sets) :stage2)
+                      :artifact-set-id)
+                 (get input :artifact-a-id))
+            (if (= (get (get (get request :artifact-sets) :stage3)
+                        :artifact-set-id)
+                   (get input :artifact-b-id))
+              (if (= (get (get request :source-inventory) :inventory-id)
+                     (get input :source-inventory-id))
+                (if (= (get (get request :conformance) :conformance-id)
+                       (get input :conformance-id))
+                  (if (= w5-stage-rebuild-boot7-modes (get input :modes))
+                    (= :pending (get input :status))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-boot7-equivalence-report-valid?
+  [report input]
+  (if (w5-stage-rebuild-exact-keys?
+       report #{:report-id :input-id :compiler-a-id :compiler-b-id
+                :artifact-a-id :artifact-b-id :modes
+                :artifact-hash-status :manifest-status
+                :diagnostic-status :conformance-status
+                :runtime-output-status :ir-status
+                :performance-status :accepted-delta-status
+                :status :actual-report-path})
+    (if (= w5-stage-rebuild-boot7-report-id (get report :report-id))
+      (if (= (get input :input-id) (get report :input-id))
+        (if (= (get input :compiler-a-id) (get report :compiler-a-id))
+          (if (= (get input :compiler-b-id) (get report :compiler-b-id))
+            (if (= (get input :artifact-a-id) (get report :artifact-a-id))
+              (if (= (get input :artifact-b-id) (get report :artifact-b-id))
+                (if (= (get input :modes) (get report :modes))
+                  (if (= :pending (get report :artifact-hash-status))
+                    (if (= :pending (get report :manifest-status))
+                      (if (= :pending (get report :diagnostic-status))
+                        (if (= :pending (get report :conformance-status))
+                          (if (= :pending
+                                 (get report :runtime-output-status))
+                            (if (= :pending (get report :ir-status))
+                              (if (= :pending
+                                     (get report :performance-status))
+                                (if (= :pending
+                                       (get report :accepted-delta-status))
+                                  (if (= :pending (get report :status))
+                                    (w5-stage-rebuild-nonempty-string?
+                                     (get report :actual-report-path))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-boot7-equivalence-valid? [request]
+  (let [input (get request :boot7-equivalence-input)
+        report (get request :boot7-equivalence-report)]
+    (if (w5-stage-rebuild-boot7-equivalence-input-valid? input request)
+      (w5-stage-rebuild-boot7-equivalence-report-valid? report input)
+      false)))
+
+(defn w5-stage-rebuild-stage-valid? [stage expected ordinal]
+  (if (w5-stage-rebuild-exact-keys?
+       stage #{:stage-id :stage-ordinal :source-inventory-id
+               :compiler-source-inventory-id :compiler-source-id
+               :compiler-executable-id :verifier-executable-id
+               :artifact-executable-id :artifact-set-id
+               :compiled-by-parent-executable-id
+               :compiled-by-executable-id :parent-artifact-set-id
+               :build-recipe-id :environment-id :lock-id :toolchain-id
+               :conformance-id :target :evidence-class
+               :actual-execution-status :independent-evidence-status
+               :source-span :provenance})
+    (if (= expected (get stage :stage-id))
+      (if (= ordinal (get stage :stage-ordinal))
+        (if (= (get stage :compiled-by-parent-executable-id)
+               (get stage :compiled-by-executable-id))
+        (if (= w5-stage-rebuild-inventory-id
+               (get stage :source-inventory-id))
+          (if (= w5-stage-rebuild-inventory-id
+               (get stage :compiler-source-inventory-id))
+          (if (= w5-stage-rebuild-compiler-executable-id
+                 (get stage :compiler-executable-id))
+            (if (= w5-stage-rebuild-verifier-executable-id
+                   (get stage :verifier-executable-id))
+              (if (= (if (= ordinal 0) w5-stage-rebuild-source-a
+                         (if (= ordinal 1) w5-stage-rebuild-source-b
+                           w5-stage-rebuild-source-c))
+                     (get stage :compiler-source-id))
+                (if (= (if (= ordinal 0)
+                         w5-stage-rebuild-stage1-artifact-set-id
+                         (if (= ordinal 1)
+                           w5-stage-rebuild-stage2-artifact-set-id
+                           w5-stage-rebuild-stage3-artifact-set-id))
+                       (get stage :artifact-set-id))
+                  (if (= w5-stage-rebuild-recipe-id
+                         (get stage :build-recipe-id))
+                    (if (= w5-stage-rebuild-environment-id
+                           (get stage :environment-id))
+                      (if (= w5-stage-rebuild-lock-id
+                             (get stage :lock-id))
+                        (if (= w5-stage-rebuild-toolchain-id
+                               (get stage :toolchain-id))
+                          (if (= w5-stage-rebuild-conformance-id
+                                 (get stage :conformance-id))
+                            (if (= :llvm-x86_64-linux
+                                   (get stage :target))
+                              (if (= :executable-record
+                                     (get stage :evidence-class))
+                                (if (= :pending
+                                       (get stage
+                                            :actual-execution-status))
+                                  (if (= :pending
+                                         (get stage
+                                              :independent-evidence-status))
+                                    (if (w5-stage-rebuild-span-valid?
+                                         (get stage :source-span))
+                                      (if (w5-stage-rebuild-stage-provenance-valid?
+                                           (get stage :provenance) expected)
+                                        (if (= (if (= ordinal 0) nil
+                                                   (if (= ordinal 1)
+                                                     w5-stage-rebuild-stage1-executable-id
+                                                     w5-stage-rebuild-stage2-executable-id))
+                                               (get stage
+                                                    :compiled-by-parent-executable-id))
+                                          (if (= (if (= ordinal 0) nil
+                                                     (if (= ordinal 1)
+                                                       w5-stage-rebuild-stage1-artifact-set-id
+                                                       w5-stage-rebuild-stage2-artifact-set-id))
+                                                 (get stage :parent-artifact-set-id))
+                                            true
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+            false)
+        false)
+      false)
+      false)
+    false)))
+
+(defn w5-stage-rebuild-stage-order-valid? [request]
+  (= w5-stage-rebuild-stage-order-value (get request :stage-order)))
+
+(defn w5-stage-rebuild-lineage-valid? [request]
+  (let [stages (get request :stages)
+        a (get stages :stage1)
+        b (get stages :stage2)
+        c (get stages :stage3)]
+    (if (w5-stage-rebuild-exact-keys?
+         stages #{:stage1 :stage2 :stage3})
+      (if (w5-stage-rebuild-stage-valid? a :stage1 0)
+        (if (w5-stage-rebuild-stage-valid? b :stage2 1)
+          (if (w5-stage-rebuild-stage-valid? c :stage3 2)
+      (if (if (= (get a :compiled-by-parent-executable-id) nil)
+            (= (get a :compiled-by-executable-id) nil)
+            (= (get a :compiled-by-parent-executable-id)
+               (get a :compiled-by-executable-id)))
+        (if (if (= (get b :compiled-by-parent-executable-id)
+                   (get a :artifact-executable-id))
+              (= (get b :compiled-by-executable-id)
+                 (get a :artifact-executable-id))
+              false)
+          (if (= (get b :compiled-by-parent-executable-id)
+               (get a :artifact-executable-id))
+            (if (if (= (get c :compiled-by-parent-executable-id)
+                       (get b :artifact-executable-id))
+                  (= (get c :compiled-by-executable-id)
+                     (get b :artifact-executable-id))
+                  false)
+              (if (= (get c :compiled-by-parent-executable-id)
+                 (get b :artifact-executable-id))
+                (if (= (get b :parent-artifact-set-id)
+                   (get a :artifact-set-id))
+                  (= (get c :parent-artifact-set-id)
+                 (get b :artifact-set-id))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+          false)
+        false)
+      false))))
+
+(defn w5-stage-rebuild-executable-valid? [request]
+  (let [compiler (get request :compiler)
+        stages (get request :stages)]
+    (if (w5-stage-rebuild-exact-keys?
+         compiler #{:compiler-source-inventory-id :source-inventory-id
+                    :compiler-source-id :compiler-executable-id
+                    :compiler-executable-ids :verifier-executable-id
+                    :artifact-executable-id :evidence-class
+                    :actual-execution-status :independent-status})
+      (if (= w5-stage-rebuild-inventory-id
+             (get compiler :source-inventory-id))
+        (if (= w5-stage-rebuild-inventory-id
+               (get compiler :compiler-source-inventory-id))
+          (if (= w5-stage-rebuild-compiler-source-id
+             (get compiler :compiler-source-id))
+            (if (= [w5-stage-rebuild-compiler-executable-id
+                   w5-stage-rebuild-stage1-executable-id
+                   w5-stage-rebuild-stage2-executable-id
+                   w5-stage-rebuild-stage3-executable-id]
+                   (get compiler :compiler-executable-ids))
+              (if (= w5-stage-rebuild-compiler-executable-id
+               (get compiler :compiler-executable-id))
+          (if (= w5-stage-rebuild-verifier-executable-id
+                 (get compiler :verifier-executable-id))
+            (if (= w5-stage-rebuild-artifact-executable-id
+                   (get compiler :artifact-executable-id))
+              (if (= :executable-record (get compiler :evidence-class))
+                (if (= :pending (get compiler :actual-execution-status))
+                  (if (= :pending (get compiler :independent-status))
+              (if (w5-stage-rebuild-exact-keys?
+                   stages #{:stage1 :stage2 :stage3})
+                (if (= (get (get stages :stage1) :compiler-executable-id)
+                     (get compiler :compiler-executable-id))
+                (if (= w5-stage-rebuild-stage1-executable-id
+                       (get (get stages :stage1)
+                            :artifact-executable-id))
+                  (if (= w5-stage-rebuild-stage2-executable-id
+                         (get (get stages :stage2)
+                              :artifact-executable-id))
+                    (= w5-stage-rebuild-stage3-executable-id
+                       (get (get stages :stage3)
+                            :artifact-executable-id))
+                    false)
+                  false)
+                false)
+              false)
+                  false)
+                false)
+            false)
+            false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false))))
+
+(defn w5-stage-rebuild-artifact-entry-valid?
+  [entry artifact-id executable-id]
+  (if (w5-stage-rebuild-exact-keys?
+       entry #{:artifact-id :target :kind :compiled-by-executable-id
+               :status :independent-status})
+    (if (= artifact-id (get entry :artifact-id))
+      (if (= :llvm-x86_64-linux (get entry :target))
+        (if (= :stage-compiler (get entry :kind))
+          (if (= executable-id
+                 (get entry :compiled-by-executable-id))
+            (if (= :pending (get entry :status))
+              (= :pending (get entry :independent-status))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-artifact-set-status-valid? [artifact-set]
+  (if (= :pending (get artifact-set :status))
+    (if (= :pending (get artifact-set :actual-execution-status))
+      (= :pending (get artifact-set :independent-status))
+      false)
+    false))
+
+(defn w5-stage-rebuild-artifact-set-valid? [request]
+  (let [sets (get request :artifact-sets)
+        a (get sets :stage1)
+        b (get sets :stage2)
+        c (get sets :stage3)]
+    (if (w5-stage-rebuild-exact-keys?
+         sets #{:stage1 :stage2 :stage3})
+      (if (w5-stage-rebuild-exact-keys?
+           a #{:artifact-set-id :stage-id :target
+               :compiled-by-executable-id :artifact-ids :artifacts
+               :status :actual-execution-status :independent-status
+               :provenance})
+        (if (w5-stage-rebuild-exact-keys?
+             b #{:artifact-set-id :stage-id :target
+                 :compiled-by-executable-id :artifact-ids :artifacts
+                 :status :actual-execution-status :independent-status
+                 :provenance})
+          (if (w5-stage-rebuild-exact-keys?
+               c #{:artifact-set-id :stage-id :target
+                   :compiled-by-executable-id :artifact-ids :artifacts
+                   :status :actual-execution-status :independent-status
+                   :provenance})
+      (if (= w5-stage-rebuild-stage1-artifact-set-id
+             (get a :artifact-set-id))
+        (if (= w5-stage-rebuild-stage2-artifact-set-id
+               (get b :artifact-set-id))
+            (if (= w5-stage-rebuild-stage3-artifact-set-id
+                 (get c :artifact-set-id))
+            (if (= [w5-stage-rebuild-stage1-artifact-id]
+                   (get a :artifact-ids))
+              (if (= [w5-stage-rebuild-stage2-artifact-id]
+                     (get b :artifact-ids))
+                (if (= [w5-stage-rebuild-stage3-artifact-id]
+                       (get c :artifact-ids))
+                  (if (= 1 (count (get a :artifacts)))
+                    (if (= 1 (count (get b :artifacts)))
+                      (if (= 1 (count (get c :artifacts)))
+                            (if (w5-stage-rebuild-artifact-entry-valid?
+                                 (get (get a :artifacts) 0)
+                                 w5-stage-rebuild-stage1-artifact-id
+                             (w5-stage-rebuild-artifact-parent-executable-id
+                              :stage1))
+                          (if (w5-stage-rebuild-artifact-entry-valid?
+                               (get (get b :artifacts) 0)
+                               w5-stage-rebuild-stage2-artifact-id
+                               (w5-stage-rebuild-artifact-parent-executable-id
+                                :stage2))
+                            (if (w5-stage-rebuild-artifact-entry-valid?
+                                 (get (get c :artifacts) 0)
+                                 w5-stage-rebuild-stage3-artifact-id
+                             (w5-stage-rebuild-artifact-parent-executable-id
+                              :stage3))
+                                  (if (w5-stage-rebuild-artifact-provenance-valid?
+                                       (get a :provenance))
+                                    (if (w5-stage-rebuild-artifact-provenance-valid?
+                                         (get b :provenance))
+                                      (if (w5-stage-rebuild-artifact-provenance-valid?
+                                           (get c :provenance))
+                                  (if (= :stage1 (get a :stage-id))
+                                (if (= :stage2 (get b :stage-id))
+                                  (if (= :stage3 (get c :stage-id))
+                                    (if (= (w5-stage-rebuild-artifact-parent-executable-id
+                                           :stage1)
+                                           (get a :compiled-by-executable-id))
+                                      (if (= (w5-stage-rebuild-artifact-parent-executable-id
+                                             :stage2)
+                                             (get b :compiled-by-executable-id))
+                                        (if (= (w5-stage-rebuild-artifact-parent-executable-id
+                                               :stage3)
+                                               (get c :compiled-by-executable-id))
+                                          (if (w5-stage-rebuild-artifact-set-status-valid? a)
+                                            (if (w5-stage-rebuild-artifact-set-status-valid? b)
+                                              (w5-stage-rebuild-artifact-set-status-valid? c)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                                      false)
+                                    false)
+                              false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+          false)
+        false)
+      false)))
+
+(defn w5-stage-rebuild-recipe-valid? [recipe]
+  (if (w5-stage-rebuild-exact-keys?
+       recipe #{:recipe-id :version :steps :mode})
+    (if (= w5-stage-rebuild-recipe-id (get recipe :recipe-id))
+      (if (= "gravity-stage-rebuild-v1" (get recipe :version))
+        (if (= [:read-source :verify-source :emit-stage-artifacts]
+               (get recipe :steps))
+          (= :deterministic (get recipe :mode))
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-environment-valid? [environment]
+  (if (w5-stage-rebuild-exact-keys?
+       environment #{:environment-id :locale :timezone
+                     :filesystem-order :timestamp-policy :random-seed
+                     :network :allowed-environment})
+    (if (= w5-stage-rebuild-environment-id
+           (get environment :environment-id))
+      (if (= "C" (get environment :locale))
+        (if (= "UTC" (get environment :timezone))
+          (if (= :sorted (get environment :filesystem-order))
+            (if (= :fixed (get environment :timestamp-policy))
+              (if (= 17 (get environment :random-seed))
+                (if (= :disabled (get environment :network))
+                  (= [] (get environment :allowed-environment))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-lock-valid? [lock]
+  (if (w5-stage-rebuild-exact-keys?
+       lock #{:lock-id :format-version :dependencies :frozen?})
+    (if (= w5-stage-rebuild-lock-id (get lock :lock-id))
+      (if (= 1 (get lock :format-version))
+        (if (= [:gravity/core :gravity/compiler]
+               (get lock :dependencies))
+          (= true (get lock :frozen?))
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-toolchain-valid? [toolchain]
+  (if (w5-stage-rebuild-exact-keys?
+       toolchain #{:toolchain-id :compiler :version :linker
+                   :object-format :abi :execution-status})
+    (if (= w5-stage-rebuild-toolchain-id (get toolchain :toolchain-id))
+      (if (= :llvm (get toolchain :compiler))
+        (if (= "20.1.8" (get toolchain :version))
+          (if (= :lld (get toolchain :linker))
+            (if (= :elf (get toolchain :object-format))
+              (if (= :sysv-amd64 (get toolchain :abi))
+                (= :pending (get toolchain :execution-status))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-conformance-valid? [conformance]
+  (if (w5-stage-rebuild-exact-keys?
+       conformance #{:conformance-id :target :suite-id
+                     :positive-fixtures :negative-fixtures
+                     :diagnostic-parity :independent-status})
+    (if (= w5-stage-rebuild-conformance-id
+           (get conformance :conformance-id))
+      (if (= :llvm-x86_64-linux (get conformance :target))
+        (if (= "w5-stage-rebuild-conformance-v1"
+               (get conformance :suite-id))
+          (if (= [:stage1 :stage2 :stage3]
+                 (get conformance :positive-fixtures))
+            (if (= [:catalog :stage-order :executable :artifact-set
+                    :recipe :environment :lock :toolchain :target
+                    :conformance :evidence :authority]
+                   (get conformance :negative-fixtures))
+              (if (= :pending (get conformance :diagnostic-parity))
+                (= :pending (get conformance :independent-status))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-stage-evidence-valid? [stages]
+  (let [a (get stages :stage1)
+        b (get stages :stage2)
+        c (get stages :stage3)]
+    (if (= :executable-record (get a :evidence-class))
+      (if (= :executable-record (get b :evidence-class))
+        (if (= :executable-record (get c :evidence-class))
+          (if (= :pending (get a :actual-execution-status))
+            (if (= :pending (get b :actual-execution-status))
+              (if (= :pending (get c :actual-execution-status))
+                (if (= :pending (get a :independent-evidence-status))
+                  (if (= :pending
+                         (get b :independent-evidence-status))
+                    (= :pending
+                       (get c :independent-evidence-status))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-stage-rebuild-evidence-valid? [request]
+  (let [evidence (get request :evidence)
+        compiler (get request :compiler)
+        sets (get request :artifact-sets)]
+    (if (w5-stage-rebuild-exact-keys?
+         evidence #{:evidence-class :actual-execution-status
+                    :independent-status :source-span-status
+                    :artifact-status :status})
+      (if (= :executable-record (get evidence :evidence-class))
+        (if (= :pending (get evidence :actual-execution-status))
+          (if (= :pending (get evidence :independent-status))
+            (if (= :preserved (get evidence :source-span-status))
+              (if (= :pending (get evidence :artifact-status))
+                (if (= :incomplete (get evidence :status))
+                  (if (= :executable-record (get compiler :evidence-class))
+                    (if (= :pending
+                           (get compiler :actual-execution-status))
+                      (if (= :pending (get compiler :independent-status))
+                        (if (w5-stage-rebuild-stage-evidence-valid?
+                             (get request :stages))
+                          (if (w5-stage-rebuild-artifact-set-status-valid?
+                               (get sets :stage1))
+                          (if (w5-stage-rebuild-artifact-set-status-valid?
+                                 (get sets :stage2))
+                            (w5-stage-rebuild-artifact-set-status-valid?
+                             (get sets :stage3))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false))))
+
+(defn w5-stage-rebuild-authority-valid? [request]
+  (let [authority (get request :authority)]
+    (if (w5-stage-rebuild-exact-keys?
+         authority #{:authority :clojure-seed-boundary?
+                     :self-hosted? :release? :public-authority?
+                     :candidate-invokes-clojure?
+                     :candidate-links-jvm?
+                     :unsupported-target-policies
+                     :unsupported-target-invokes-clojure?
+                     :unsupported-target-links-jvm?
+                     :cross-target-inference? :darwin-fallback?
+                     :no-fallback?})
+      (if (= :non-authority (get authority :authority))
+        (if (= true (get authority :clojure-seed-boundary?))
+          (if (= false (get authority :self-hosted?))
+            (if (= false (get authority :release?))
+              (if (= false (get authority :public-authority?))
+                (if (= false (get authority :candidate-invokes-clojure?))
+                  (if (= false (get authority :candidate-links-jvm?))
+                    (if (= (get w5-stage-rebuild-target-contract-value
+                                :unsupported-target-policies)
+                           (get authority :unsupported-target-policies))
+                      (if (= false
+                             (get authority
+                                  :unsupported-target-invokes-clojure?))
+                        (if (= false
+                               (get authority
+                                    :unsupported-target-links-jvm?))
+                          (if (= false
+                                 (get authority :cross-target-inference?))
+                            (if (= false (get authority :darwin-fallback?))
+                              (= true (get authority :no-fallback?))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-stage-rebuild-target-coherent? [request]
+  (let [candidate (get request :candidate-target)
+        stages (get request :stages)
+        sets (get request :artifact-sets)
+        conformance (get request :conformance)]
+    (if (w5-stage-rebuild-target-valid? candidate)
+      (if (= :llvm-x86_64-linux (get (get stages :stage1) :target))
+        (if (= :llvm-x86_64-linux (get (get stages :stage2) :target))
+          (if (= :llvm-x86_64-linux (get (get stages :stage3) :target))
+            (if (= :llvm-x86_64-linux (get (get sets :stage1) :target))
+              (if (= :llvm-x86_64-linux (get (get sets :stage2) :target))
+                (if (= :llvm-x86_64-linux (get (get sets :stage3) :target))
+                  (= :llvm-x86_64-linux (get conformance :target))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-stage-rebuild-top-level-valid? [request]
+  (if (w5-stage-rebuild-exact-keys?
+       request #{:artifact :schema-version :orchestrator-id
+                 :stage2-harness :stage-order :source-inventory
+                 :compiler :stages :artifact-sets :build-recipe
+                 :environment :lock :toolchain :candidate-target
+                 :conformance :boot5-matrix :boot7-equivalence-input
+                 :boot7-equivalence-report :evidence :authority :provenance
+                 :profile :source-span})
+    (if (= :gravity/w5-stage-rebuild-request (get request :artifact))
+      (if (= 1 (get request :schema-version))
+      (if (= :gravity/w5-stage-rebuild-orchestrator
+               (get request :orchestrator-id))
+          (if (= :meta (get request :profile))
+            (if (w5-stage-rebuild-exact-keys?
+                 (get request :stage2-harness)
+                 #{:target :authority :execution-status})
+              (if (= :jvm (get (get request :stage2-harness) :target))
+                (if (= :clojure-stage0
+                       (get (get request :stage2-harness) :authority))
+                  (if (= :harness-only
+                         (get (get request :stage2-harness)
+                              :execution-status))
+                    (if (w5-stage-rebuild-span-valid? (get request :source-span))
+                      (w5-stage-rebuild-provenance-valid?
+                       (get request :provenance))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-stage-rebuild-diagnostic
+  [rule request reason]
+  {:artifact :gravity/diagnostic
+   :schema-version 1
+   :diagnostic-id rule
+   :rule rule
+   :severity :error
+   :stage :stage-rebuild
+   :profile :meta
+   :target :llvm-x86_64-linux
+   :reason reason
+   :source-span (w5-stage-rebuild-diagnostic-source-span request)
+   :provenance (get request :provenance)
+   :facts {:source-span-preserved? true
+           :actual-path-in-provenance-only true
+           :candidate-target :llvm-x86_64-linux
+           :candidate-abi :sysv-amd64
+           :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+           :unsupported-target-policies
+           [{:target :darwin :invokes-clojure? false :links-jvm? false
+             :fallback? false}
+            {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false
+             :fallback? false}
+            {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false
+             :fallback? false}
+            {:target :windows :invokes-clojure? false :links-jvm? false
+             :fallback? false}]
+           :cross-target-inference? false
+           :darwin-fallback? false
+           :no-fallback? true
+           :clojure-seed-boundary? true
+           :self-hosted? false
+           :release? false
+           :public-authority? false
+           :authority :non-authority}
+   :remediation (get w5-stage-rebuild-remediations reason)
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :authority :non-authority})
+
+(defn w5-stage-rebuild-rejected [request rule reason]
+  {:artifact :gravity/w5-stage-rebuild-result
+   :schema-version 1
+   :status :rejected
+   :completion :incomplete
+   :diagnostics [(w5-stage-rebuild-diagnostic rule request reason)]
+   :identity-input nil
+   :provenance (get request :provenance)
+   :stage-order (get request :stage-order)
+   :candidate-target :llvm-x86_64-linux
+   :verifier-gate {:decision :blocked :release-eligible? false}
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :authority :non-authority})
+
+(defn w5-stage-rebuild-normalized-stage [stage]
+  {:stage-id (get stage :stage-id)
+   :stage-ordinal (get stage :stage-ordinal)
+   :compiler-source-inventory-id
+   (get stage :compiler-source-inventory-id)
+   :compiler-source-id (get stage :compiler-source-id)
+   :compiler-executable-id (get stage :compiler-executable-id)
+   :verifier-executable-id (get stage :verifier-executable-id)
+   :artifact-executable-id (get stage :artifact-executable-id)
+   :artifact-set-id (get stage :artifact-set-id)
+   :compiled-by-parent-executable-id
+   (get stage :compiled-by-parent-executable-id)
+   :compiled-by-executable-id
+   (get stage :compiled-by-executable-id)
+   :parent-artifact-set-id (get stage :parent-artifact-set-id)
+   :build-recipe-id (get stage :build-recipe-id)
+   :environment-id (get stage :environment-id)
+   :lock-id (get stage :lock-id)
+   :toolchain-id (get stage :toolchain-id)
+   :conformance-id (get stage :conformance-id)
+   :target (get stage :target)
+   :evidence-class (get stage :evidence-class)
+   :actual-execution-status (get stage :actual-execution-status)
+   :independent-evidence-status
+   (get stage :independent-evidence-status)})
+
+(defn w5-stage-rebuild-normalized-stages [stages]
+  [(w5-stage-rebuild-normalized-stage (get stages :stage1))
+   (w5-stage-rebuild-normalized-stage (get stages :stage2))
+   (w5-stage-rebuild-normalized-stage (get stages :stage3))])
+
+(defn w5-stage-rebuild-normalized-artifact-set [artifact-set]
+  {:artifact-set-id (get artifact-set :artifact-set-id)
+   :stage-id (get artifact-set :stage-id)
+   :target (get artifact-set :target)
+   :status (get artifact-set :status)
+   :artifact-ids (get artifact-set :artifact-ids)
+   :compiled-by-executable-id
+   (get artifact-set :compiled-by-executable-id)})
+
+(defn w5-stage-rebuild-identity-input [request]
+  {:artifact :gravity/w5-stage-rebuild-identity-input
+   :schema-version 1
+   :orchestrator-id (get request :orchestrator-id)
+   :stage-order (get request :stage-order)
+   :source-inventory (get request :source-inventory)
+   :compiler
+   {:compiler-source-inventory-id
+    (get (get request :compiler) :compiler-source-inventory-id)
+    :source-inventory-id
+    (get (get request :compiler) :source-inventory-id)
+    :compiler-source-id
+    (get (get request :compiler) :compiler-source-id)
+    :compiler-executable-id
+    (get (get request :compiler) :compiler-executable-id)
+    :verifier-executable-id
+    (get (get request :compiler) :verifier-executable-id)
+    :artifact-executable-id
+    (get (get request :compiler) :artifact-executable-id)}
+   :stages (w5-stage-rebuild-normalized-stages (get request :stages))
+   :artifact-sets
+   [(w5-stage-rebuild-normalized-artifact-set
+     (get (get request :artifact-sets) :stage1))
+    (w5-stage-rebuild-normalized-artifact-set
+     (get (get request :artifact-sets) :stage2))
+    (w5-stage-rebuild-normalized-artifact-set
+   (get (get request :artifact-sets) :stage3))]
+   :boot5-matrix (get request :boot5-matrix)
+   :boot7-equivalence-input (get request :boot7-equivalence-input)
+   :boot7-equivalence-report
+   {:report-id (get (get request :boot7-equivalence-report) :report-id)
+    :input-id (get (get request :boot7-equivalence-report) :input-id)
+    :compiler-a-id (get (get request :boot7-equivalence-report)
+                        :compiler-a-id)
+    :compiler-b-id (get (get request :boot7-equivalence-report)
+                        :compiler-b-id)
+    :artifact-a-id (get (get request :boot7-equivalence-report)
+                        :artifact-a-id)
+    :artifact-b-id (get (get request :boot7-equivalence-report)
+                        :artifact-b-id)
+    :modes (get (get request :boot7-equivalence-report) :modes)
+    :artifact-hash-status
+    (get (get request :boot7-equivalence-report) :artifact-hash-status)
+    :manifest-status (get (get request :boot7-equivalence-report)
+                          :manifest-status)
+    :diagnostic-status (get (get request :boot7-equivalence-report)
+                            :diagnostic-status)
+    :conformance-status (get (get request :boot7-equivalence-report)
+                             :conformance-status)
+    :runtime-output-status (get (get request :boot7-equivalence-report)
+                               :runtime-output-status)
+    :ir-status (get (get request :boot7-equivalence-report) :ir-status)
+    :performance-status (get (get request :boot7-equivalence-report)
+                             :performance-status)
+    :accepted-delta-status (get (get request :boot7-equivalence-report)
+                                :accepted-delta-status)
+    :status (get (get request :boot7-equivalence-report) :status)}
+   :build-recipe-id (get (get request :build-recipe) :recipe-id)
+   :environment-id (get (get request :environment) :environment-id)
+   :lock-id (get (get request :lock) :lock-id)
+   :toolchain-id (get (get request :toolchain) :toolchain-id)
+   :conformance-id (get (get request :conformance) :conformance-id)
+   :boot5-matrix (get request :boot5-matrix)
+   :boot7-equivalence-input (get request :boot7-equivalence-input)
+   :boot7-equivalence-report-id
+   (get (get request :boot7-equivalence-report) :report-id)
+   :candidate-target (get request :candidate-target)
+   :evidence-class (get (get request :evidence) :evidence-class)
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false})
+
+(defn w5-stage-rebuild-pending-record [request]
+  {:stage-order w5-stage-rebuild-stage-order-value
+   :stages (get request :stages)
+   :artifact-sets (get request :artifact-sets)
+   :compiler (get request :compiler)
+   :build-recipe-id (get (get request :build-recipe) :recipe-id)
+   :environment-id (get (get request :environment) :environment-id)
+   :lock-id (get (get request :lock) :lock-id)
+   :toolchain-id (get (get request :toolchain) :toolchain-id)
+   :conformance-id (get (get request :conformance) :conformance-id)
+   :candidate-target (get request :candidate-target)
+   :boot5-matrix (get request :boot5-matrix)
+   :boot7-equivalence-report-id
+   (get (get request :boot7-equivalence-report) :report-id)
+   :recomputation-mode :structural-only
+   :raw-byte-hashes :pending
+   :canonical-byte-hashes :pending
+   :pending [:actual-stage1-execution :actual-stage2-execution
+             :actual-stage3-execution :independent-artifact-evidence
+             :independent-conformance-evidence]
+   :status :incomplete})
+
+(defn w5-stage-rebuild-result [request]
+  {:artifact :gravity/w5-stage-rebuild-result
+   :schema-version 1
+   :status :accepted
+   :completion :incomplete
+   :stage-order (get request :stage-order)
+   :harness-target :jvm
+   :target :llvm-x86_64-linux
+   :candidate-target (get request :candidate-target)
+   :candidate-platform (get w5-stage-rebuild-target-contract-value
+                            :candidate-platform)
+   :unsupported-targets (get w5-stage-rebuild-target-contract-value
+                             :unsupported-targets)
+   :unsupported-target-policies
+   (get w5-stage-rebuild-target-contract-value
+        :unsupported-target-policies)
+   :compiler (get request :compiler)
+   :stages (get request :stages)
+   :artifact-sets (get request :artifact-sets)
+   :boot5-matrix (get request :boot5-matrix)
+   :boot7-equivalence-input (get request :boot7-equivalence-input)
+   :boot7-equivalence-report (get request :boot7-equivalence-report)
+   :recomputation-mode :structural-only
+   :hash-validation
+   {:status :pending :raw-byte-hashes :pending
+    :canonical-byte-hashes :pending}
+   :pending-record (w5-stage-rebuild-pending-record request)
+   :identity-input (w5-stage-rebuild-identity-input request)
+   :provenance (get request :provenance)
+   :verifier-gate
+   {:decision :blocked
+    :completion :incomplete
+    :candidate-execution :pending
+    :independent-evidence :pending
+    :self-hosting-comparison :pending
+    :boot5-matrix :pending
+    :boot7-equivalence :pending
+    :recomputation-mode :structural-only
+    :hash-validation :pending
+    :no-fallback? true
+    :release-eligible? false
+    :self-hosted? false
+    :authority :non-authority}
+   :residual-boundaries
+   [:clojure-stage2-compiler-plan :jvm-stage2-runtime
+    :candidate-execution :independent-rebuild-evidence
+    :independent-conformance-evidence :full-language-coverage
+    :seed-retirement]
+   :diagnostics []
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :authority :non-authority})
+
+(defn w5-stage-rebuild-validate [request]
+  (if (not (w5-stage-rebuild-top-level-valid? request))
+    [:W5-SR-SOURCE-CATALOG :catalog]
+    (if (not (w5-stage-rebuild-source-inventory-valid?
+              (get request :source-inventory)))
+      [:W5-SR-SOURCE-CATALOG :catalog]
+      (if (not (w5-stage-rebuild-catalog-valid?
+                (get request :source-inventory)))
+        [:W5-SR-SOURCE-CATALOG :catalog]
+        (if (not (w5-stage-rebuild-source-identity-valid? request))
+          [:W5-SR-SOURCE-IDENTITY :source-identity]
+          (if (not (= :gravity/w5-stage-rebuild-orchestrator
+                      (get request :orchestrator-id)))
+            [:W5-SR-SOURCE-IDENTITY :source-identity]
+            (if (not (w5-stage-rebuild-stage-order-valid? request))
+          [:W5-SR-STAGE-ORDER :stage-order]
+          (if (not (w5-stage-rebuild-lineage-valid? request))
+            [:W5-SR-STAGE-LINEAGE :lineage]
+            (if (not (w5-stage-rebuild-executable-valid? request))
+              [:W5-SR-EXECUTABLE :executable]
+              (if (not (w5-stage-rebuild-artifact-set-valid? request))
+                [:W5-SR-ARTIFACT-SET :artifact-set]
+                (if (not (w5-stage-rebuild-recipe-valid?
+                          (get request :build-recipe)))
+                  [:W5-SR-RECIPE :recipe]
+                  (if (not (w5-stage-rebuild-environment-valid?
+                            (get request :environment)))
+                    [:W5-SR-ENVIRONMENT :environment]
+                    (if (not (w5-stage-rebuild-lock-valid?
+                              (get request :lock)))
+                      [:W5-SR-LOCK :lock]
+                      (if (not (w5-stage-rebuild-toolchain-valid?
+                                (get request :toolchain)))
+                        [:W5-SR-TOOLCHAIN :toolchain]
+                        (if (not (w5-stage-rebuild-target-coherent?
+                                  request))
+                          [:W5-SR-TARGET :target]
+                          (if (not (w5-stage-rebuild-conformance-valid?
+                                    (get request :conformance)))
+                            [:W5-SR-CONFORMANCE :conformance]
+                            (if (not (w5-stage-rebuild-boot5-matrix-valid?
+                                      (get request :boot5-matrix)))
+                              [:W5-SR-MATRIX :boot5-matrix]
+                              (if (not (w5-stage-rebuild-boot7-equivalence-valid?
+                                        request))
+                                [:W5-SR-EQUIVALENCE :boot7-equivalence-report]
+                                (if (not (w5-stage-rebuild-evidence-valid?
+                                          request))
+                                  [:W5-SR-EVIDENCE :evidence]
+                                  (if (not (w5-stage-rebuild-authority-valid?
+                                            request))
+                                    [:W5-SR-AUTHORITY :authority]
+                                    (if (not (w5-stage-rebuild-stage-valid?
+                                              (get (get request :stages) :stage1)
+                                              :stage1 0))
+                                      [:W5-SR-STAGE-LINEAGE :lineage]
+                                      (if (not (w5-stage-rebuild-stage-valid?
+                                                (get (get request :stages) :stage2)
+                                                :stage2 1))
+                                        [:W5-SR-STAGE-LINEAGE :lineage]
+                                        (if (not (w5-stage-rebuild-stage-valid?
+                                                  (get (get request :stages) :stage3)
+                                                  :stage3 2))
+                                          [:W5-SR-STAGE-LINEAGE :lineage]
+                                          nil)))))))))))))))))))))))
+
+(defn w5-stage-rebuild-orchestrate [request]
+  (let [failure (w5-stage-rebuild-validate request)]
+    (if (= nil failure)
+      (w5-stage-rebuild-result request)
+      (w5-stage-rebuild-rejected
+       request (first failure) (second failure)))))
+
+(defn w5-stage-rebuild-rebuild [request]
+  (w5-stage-rebuild-orchestrate request))
+
+(defn w5-stage-rebuild-run [request]
+  (w5-stage-rebuild-orchestrate request))
+
+(defn w5-stage-rebuild-execute [request]
+  (w5-stage-rebuild-orchestrate request))
+
+(defn w5-stage-rebuild-verify [request]
+  (w5-stage-rebuild-orchestrate request))
+
+(defn w5-stage-rebuild-recompute [request]
+  (w5-stage-rebuild-orchestrate request))
+
+(defn w5-stage-rebuild-structural-recompute [request]
+  (w5-stage-rebuild-orchestrate request))
+
+(defn w5-stage-rebuild-verify-result [request result]
+  (let [recomputed (w5-stage-rebuild-orchestrate request)]
+    (if (= recomputed result)
+      {:artifact :gravity/w5-stage-rebuild-verification
+       :schema-version 1
+       :status :passed
+       :recomputed true
+       :verification-mode :structural-only
+       :completion :blocked
+       :hash-validation :pending
+       :request-status (:status recomputed)
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :authority :non-authority}
+      {:artifact :gravity/w5-stage-rebuild-verification
+       :schema-version 1
+       :status :rejected
+       :recomputed true
+       :verification-mode :structural-only
+       :completion :blocked
+       :hash-validation :pending
+       :diagnostics
+       [(w5-stage-rebuild-diagnostic
+         "W5-SR-SUBSTITUTION" request :substitution)]
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :authority :non-authority})))

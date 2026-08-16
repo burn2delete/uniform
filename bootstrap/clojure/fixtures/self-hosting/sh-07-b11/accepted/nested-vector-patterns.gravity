@@ -1,0 +1,17 @@
+; SH-07-B11 lowers recursive fixed-width vector patterns.
+(ns self-hosting.sh07-b11.nested-vector-patterns
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [read-nested])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B11
+              :fixture :nested-vector-patterns
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn read-nested [value]
+  (match value
+    [[0 payload] [_ fallback]] (do payload fallback)
+    [[tag _] [left right]] (do tag left right)
+    _ :other))

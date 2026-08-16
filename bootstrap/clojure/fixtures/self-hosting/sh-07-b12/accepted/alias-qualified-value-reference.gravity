@@ -1,0 +1,18 @@
+; SH-07-B12 required-module alias reference in ordinary value position.
+(ns self-hosting.sh07-b12.alias-qualified-value-reference
+  (:profile :meta)
+  (:target :jvm)
+  (:requires [shared.core :as shared :profile :core
+              :boundary :pure-core :refer [checksum]])
+  (:exports [aliased-value])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B12
+              :fixture :alias-qualified-value-reference
+              :non-claims [:foreign-import-lowering
+                           :runtime-linking
+                           :whole-program-execution]}))
+
+(def aliased-value
+  shared/checksum)

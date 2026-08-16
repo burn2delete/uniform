@@ -1,0 +1,917 @@
+(ns gravity.self-hosting.sh19.minimal-runtime
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh19-runtime-policy
+             sh19-handle-request
+             sh19-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh19-member? [values value]
+  (= (get values value) value))
+
+(defn sh19-between? [value minimum maximum]
+  (if (integer? value)
+    (if (>= value minimum)
+      (<= value maximum)
+      false)
+    false))
+
+(defn sh19-runtime-policy []
+  {:artifact :gravity/sh19-minimal-runtime-policy
+   :version 2
+   :family :minimal-self-hosting
+   :operations #{:startup
+                 :allocate
+                 :no-allocation
+                 :string-from-utf8
+                 :file-read
+                 :stream-write
+                 :panic
+                 :process-exit}
+   :maximum-allocation-bytes 1048576
+   :maximum-file-read-bytes 16777216
+   :maximum-inline-utf8-bytes 256
+   :maximum-request-nodes 4096
+   :maximum-result-nodes 16384
+   :maximum-request-depth 16
+   :maximum-result-depth 24
+   :maximum-container-width 512
+   :maximum-map-width 64
+   :maximum-scalars 3072
+   :maximum-string-code-units 1024
+   :maximum-startup-services 32
+   :allocation-policies #{:bounded :none}
+   :allocation-failure-behaviors
+   #{:abort-with-report :trap :result-boundary}
+   :streams #{:stdout :stderr}
+   :failure-modes #{:abort-with-report :trap :result-boundary}
+   :service-classification
+   {:startup :linked
+    :allocate :delegated
+    :no-allocation :generated
+    :string-from-utf8 :generated
+    :file-read :external
+    :stream-write :external
+    :panic :linked
+    :process-exit :external}
+   :diagnostics #{"R1-MANIFEST"
+                  "R1-STARTUP"
+                  "R3-SERVICE"
+                  "R3-ALLOCATOR"
+                  "R3-PANIC"
+                  "R11-GRANT"}
+   :pending [:authenticated-sh17-runtime-interface
+             :native-provider-execution
+             :resource-cleanup-execution
+             :atomics-and-scheduler-hooks
+             :ffi-boundary
+             :debug-stack-metadata
+             :release-runtime-linking]})
+
+(defn sh19-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                     \a \b \c \d \e \f}
+                   (first characters))
+      (sh19-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh19-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (sh19-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh19-bounded-string? [value]
+  (if (string? value)
+    (<= (count value) 1024)
+    false))
+
+(defn sh19-scalar? [value]
+  (if (= nil value)
+    true
+    (if (boolean? value)
+      true
+      (if (integer? value)
+        true
+        (if (number? value)
+          true
+          (if (keyword? value)
+            true
+            (if (symbol? value)
+              true
+              (if (char? value)
+                true
+                (string? value)))))))))
+
+(defn sh19-keyword-sequence? [values]
+  (if (= (count values) 0)
+    true
+    (if (keyword? (first values))
+      (sh19-keyword-sequence? (rest values))
+      false)))
+
+(defn sh19-enqueue-values [values depth pending]
+  (loop [remaining values
+         result pending]
+    (if (= (count remaining) 0)
+      result
+      (recur
+       (rest remaining)
+       (conj result {:value (first remaining) :depth depth})))))
+
+(defn sh19-enqueue-map-values [value map-keys depth pending]
+  (loop [remaining map-keys
+         result pending]
+    (if (= (count remaining) 0)
+      result
+      (recur
+       (rest remaining)
+       (conj
+        result
+        {:value (get value (first remaining)) :depth depth})))))
+
+(defn sh19-bounded-worklist?
+  [pending nodes-left scalars-left maximum-depth]
+  (loop [work pending
+         available-nodes nodes-left
+         available-scalars scalars-left]
+    (if (= (count work) 0)
+      true
+      (if (<= available-nodes 0)
+        false
+        (let [item (first work)
+              remaining (vec (rest work))
+              value (get item :value)
+              depth (get item :depth)]
+          (if (> depth maximum-depth)
+            false
+            (if (sh19-scalar? value)
+              (if (<= available-scalars 0)
+                false
+                (if (string? value)
+                  (if (sh19-bounded-string? value)
+                    (recur
+                     remaining (- available-nodes 1)
+                     (- available-scalars 1))
+                    false)
+                  (recur
+                   remaining (- available-nodes 1)
+                   (- available-scalars 1))))
+              (if (vector? value)
+                (if (<= (count value) 512)
+                  (recur
+                   (sh19-enqueue-values
+                    value (+ depth 1) remaining)
+                   (- available-nodes 1) available-scalars)
+                  false)
+                (if (set? value)
+                  (if (<= (count value) 512)
+                    (recur
+                     (sh19-enqueue-values
+                      (vec value) (+ depth 1) remaining)
+                     (- available-nodes 1) available-scalars)
+                    false)
+                  (if (map? value)
+                    (let [map-keys (vec (keys value))
+                          key-count (count map-keys)]
+                      (if (<= key-count 64)
+                        (if (sh19-keyword-sequence? map-keys)
+                          (if (<= key-count available-scalars)
+                            (if (< key-count available-nodes)
+                              (recur
+                               (sh19-enqueue-map-values
+                                value map-keys (+ depth 1) remaining)
+                               (- (- available-nodes 1) key-count)
+                               (- available-scalars key-count))
+                              false)
+                            false)
+                          false)
+                        false))
+                    false))))))))))
+
+(defn sh19-bounded-value?
+  [value maximum-nodes maximum-scalars maximum-depth]
+  (sh19-bounded-worklist?
+   [{:value value :depth 0}]
+   maximum-nodes maximum-scalars maximum-depth))
+
+(defn sh19-request-bounded? [request]
+  (sh19-bounded-value? request 4096 3072 16))
+
+(defn sh19-result-bounded? [result]
+  (sh19-bounded-value? result 16384 12288 24))
+
+(defn sh19-required-effect [operation]
+  (if (= operation :allocate)
+    :memory/allocate
+    (if (= operation :file-read)
+      :filesystem/read
+      (if (= operation :stream-write)
+        :io/write
+        (if (= operation :panic)
+          :error/raise
+          (if (= operation :process-exit)
+            :process/exit
+            nil))))))
+
+(defn sh19-required-capability [request]
+  (let [operation (get request :operation)]
+    (if (= operation :allocate)
+      :memory/allocate
+      (if (= operation :file-read)
+        :fs/read
+        (if (= operation :stream-write)
+          (if (= (get request :stream) :stdout)
+            :io/stdout
+            :io/stderr)
+          (if (= operation :process-exit)
+            :process/exit
+            nil))))))
+
+(defn sh19-expected-provider [request]
+  (let [operation (get request :operation)]
+    (if (= operation :startup)
+      :startup
+      (if (= operation :allocate)
+        :memory
+        (if (= operation :file-read)
+          :filesystem
+          (if (= operation :stream-write)
+            (get request :stream)
+            (if (= operation :panic)
+              :panic
+              (if (= operation :process-exit)
+                :process
+                nil))))))))
+
+(defn sh19-source-span-valid? [source-span]
+  (if (map? source-span)
+    (if (sh19-bounded-string? (get source-span :source))
+      (if (> (count (get source-span :source)) 0)
+        (if (integer? (get source-span :start-byte))
+          (if (integer? (get source-span :end-byte))
+            (if (>= (get source-span :start-byte) 0)
+              (>= (get source-span :end-byte)
+                  (get source-span :start-byte))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh19-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh19-common-request-valid? [request]
+  (if (sh19-request-bounded? request)
+    (if (map? request)
+      (if (= :gravity/sh19-runtime-request (get request :artifact))
+        (if
+         (sh19-member?
+          #{:startup :allocate :string-from-utf8 :file-read
+            :no-allocation :stream-write :panic :process-exit}
+          (get request :operation))
+          (if (sh19-sha256-id? (get request :request-id))
+            (if (sh19-sha256-id? (get request :action-id))
+              (if (= (get request :request-id)
+                     (get request :action-id))
+                false
+                (if
+                 (sh19-sha256-id?
+                  (get request :caller-artifact-id))
+                  (if (keyword? (get request :principal))
+                    (if (set? (get request :declared-effects))
+                      (if (set? (get request :capability-grants))
+                        (if (sh19-source-span-valid?
+                             (get request :source-span))
+                          (if (vector? (get request :origin-chain))
+                            (if
+                             (<=
+                              (count (get request :origin-chain)) 32)
+                              (if (= :meta (get request :profile))
+                                (= :native (get request :target))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh19-scope-common-valid?
+  [request provider expected-kind expected-grant expected-resource]
+  (if
+   (sh19-exact-keys?
+    provider #{:provider-id :kind :scope})
+    (if (sh19-sha256-id? (get provider :provider-id))
+      (if (= expected-kind (get provider :kind))
+        (let [scope (get provider :scope)]
+          (if (map? scope)
+            (if (sh19-sha256-id? (get scope :scope-id))
+              (if (= (get provider :provider-id)
+                     (get scope :provider-id))
+                (if (= (get request :principal)
+                       (get scope :principal))
+                  (if (= expected-grant (get scope :grant))
+                    (= expected-resource (get scope :resource))
+                    false)
+                  false)
+                false)
+              false)
+            false))
+        false)
+      false)
+    false))
+
+(defn sh19-allocation-provider-valid? [request provider]
+  (if
+   (sh19-scope-common-valid?
+    request provider :memory :memory/allocate :bounded-region)
+    (let [scope (get provider :scope)]
+      (if
+       (sh19-exact-keys?
+        scope
+        #{:scope-id :provider-id :principal :grant :resource
+          :maximum-bytes :maximum-alignment})
+        (if (= (get request :allocation-limit-bytes)
+               (get scope :maximum-bytes))
+          (= (get request :alignment)
+             (get scope :maximum-alignment))
+          false)
+        false))
+    false))
+
+(defn sh19-file-provider-valid? [request provider]
+  (if
+   (sh19-scope-common-valid?
+    request provider :filesystem :fs/read :compiler-source-root)
+    (let [scope (get provider :scope)]
+      (if
+       (sh19-exact-keys?
+        scope
+        #{:scope-id :provider-id :principal :grant :resource
+          :path-token :maximum-bytes})
+        (if (= (get request :path-token)
+               (get scope :path-token))
+          (= (get request :maximum-bytes)
+             (get scope :maximum-bytes))
+          false)
+        false))
+    false))
+
+(defn sh19-stream-provider-valid? [request provider]
+  (let [stream (get request :stream)
+        capability
+        (if (= stream :stdout) :io/stdout :io/stderr)]
+    (if
+     (sh19-scope-common-valid?
+      request provider stream capability stream)
+      (sh19-exact-keys?
+       (get provider :scope)
+       #{:scope-id :provider-id :principal :grant :resource})
+      false)))
+
+(defn sh19-exit-provider-valid? [request provider]
+  (if
+   (sh19-scope-common-valid?
+    request provider :process :process/exit :current-process)
+    (let [scope (get provider :scope)]
+      (if
+       (sh19-exact-keys?
+        scope
+        #{:scope-id :provider-id :principal :grant :resource
+          :minimum-exit-code :maximum-exit-code})
+        (if (= 0 (get scope :minimum-exit-code))
+          (= 255 (get scope :maximum-exit-code))
+          false)
+        false))
+    false))
+
+(defn sh19-simple-provider-valid? [request provider]
+  (if
+   (sh19-exact-keys? provider #{:provider-id :kind})
+    (if (sh19-sha256-id? (get provider :provider-id))
+      (= (sh19-expected-provider request)
+         (get provider :kind))
+      false)
+    false))
+
+(defn sh19-no-authority-fields? [request]
+  (if (= #{} (get request :declared-effects))
+    (if (= #{} (get request :capability-grants))
+      (if (= nil (get request :provider))
+        (if (= nil (get request :resource))
+          (= nil (get request :provider-scope))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh19-provider-valid? [request]
+  (let [operation (get request :operation)
+        provider (get request :provider)]
+    (if (= operation :string-from-utf8)
+      (sh19-no-authority-fields? request)
+      (if (= operation :no-allocation)
+        (sh19-no-authority-fields? request)
+        (if (= operation :allocate)
+          (sh19-allocation-provider-valid? request provider)
+          (if (= operation :file-read)
+            (sh19-file-provider-valid? request provider)
+            (if (= operation :stream-write)
+              (sh19-stream-provider-valid? request provider)
+              (if (= operation :process-exit)
+                (sh19-exit-provider-valid? request provider)
+                (sh19-simple-provider-valid?
+                 request provider)))))))))
+
+(defn sh19-authority-valid? [request]
+  (let [effect (sh19-required-effect (get request :operation))
+        capability (sh19-required-capability request)]
+    (if (= nil effect)
+      (if (= nil capability)
+        true
+        (contains? (get request :capability-grants) capability))
+      (if (contains? (get request :declared-effects) effect)
+        (if (= nil capability)
+          true
+          (contains? (get request :capability-grants) capability))
+        false))))
+
+(defn sh19-continuation-byte? [value]
+  (sh19-between? value 128 191))
+
+(defn sh19-utf8-valid-from? [bytes index]
+  (let [length (count bytes)]
+    (if (= index length)
+      true
+      (if (> index length)
+        false
+        (let [first-byte (get bytes index)]
+          (if (sh19-between? first-byte 0 127)
+            (sh19-utf8-valid-from? bytes (+ index 1))
+            (if (sh19-between? first-byte 194 223)
+              (if (< (+ index 1) length)
+                (if (sh19-continuation-byte?
+                     (get bytes (+ index 1)))
+                  (sh19-utf8-valid-from? bytes (+ index 2))
+                  false)
+                false)
+              (if (sh19-between? first-byte 224 239)
+                (if (< (+ index 2) length)
+                  (let [second-byte (get bytes (+ index 1))
+                        third-byte (get bytes (+ index 2))
+                        second-valid
+                        (if (= first-byte 224)
+                          (sh19-between? second-byte 160 191)
+                          (if (= first-byte 237)
+                            (sh19-between? second-byte 128 159)
+                            (sh19-continuation-byte? second-byte)))]
+                    (if second-valid
+                      (if (sh19-continuation-byte? third-byte)
+                        (sh19-utf8-valid-from? bytes (+ index 3))
+                        false)
+                      false))
+                  false)
+                (if (sh19-between? first-byte 240 244)
+                  (if (< (+ index 3) length)
+                    (let [second-byte (get bytes (+ index 1))
+                          third-byte (get bytes (+ index 2))
+                          fourth-byte (get bytes (+ index 3))
+                          second-valid
+                          (if (= first-byte 240)
+                            (sh19-between? second-byte 144 191)
+                            (if (= first-byte 244)
+                              (sh19-between? second-byte 128 143)
+                              (sh19-continuation-byte? second-byte)))]
+                      (if second-valid
+                        (if (sh19-continuation-byte? third-byte)
+                          (if (sh19-continuation-byte? fourth-byte)
+                            (sh19-utf8-valid-from?
+                             bytes (+ index 4))
+                            false)
+                          false)
+                        false))
+                    false)
+                  false)))))))))
+
+(defn sh19-utf8-valid? [bytes]
+  (if (vector? bytes)
+    (if (<= (count bytes) 256)
+      (sh19-utf8-valid-from? bytes 0)
+      false)
+    false))
+
+(defn sh19-unique-values? [remaining seen]
+  (if (= (count remaining) 0)
+    true
+    (let [value (first remaining)]
+      (if (= true (get seen value))
+        false
+        (sh19-unique-values?
+         (rest remaining) (assoc seen value true))))))
+
+(defn sh19-reverse-from [values index result]
+  (if (< index 0)
+    result
+    (sh19-reverse-from
+     values (- index 1) (conj result (get values index)))))
+
+(defn sh19-reverse-vector [values]
+  (sh19-reverse-from values (- (count values) 1) []))
+
+(defn sh19-startup-valid? [request]
+  (let [entrypoint (get request :entrypoint)
+        initialization (get request :initialization-order)
+        cleanup (get request :cleanup-order)]
+    (if (keyword? entrypoint)
+      (if (vector? initialization)
+        (if (> (count initialization) 0)
+          (if (<= (count initialization) 32)
+            (if (sh19-keyword-sequence? initialization)
+              (if (sh19-unique-values? initialization {})
+                (if (= nil (get (set initialization) entrypoint))
+                  (if (vector? cleanup)
+                    (if (= cleanup
+                           (sh19-reverse-vector initialization))
+                      (= nil (get (set cleanup) entrypoint))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh19-allocation-valid? [request]
+  (let [policy (get request :allocation-policy)
+        size (get request :size-bytes)
+        limit (get request :allocation-limit-bytes)
+        alignment (get request :alignment)]
+    (if
+     (sh19-member?
+      #{:bounded :none} policy)
+     (if (integer? size)
+       (if (>= size 0)
+         (if (= policy :none)
+           (= size 0)
+           (if (integer? limit)
+             (if (>= limit 0)
+               (if (<= limit 1048576)
+                 (if (<= size limit)
+                   (if
+                    (sh19-member?
+                     #{1 2 4 8 16 32 64 128} alignment)
+                     (sh19-member?
+                      #{:abort-with-report :trap :result-boundary}
+                      (get request :failure-behavior))
+                     false)
+                   false)
+                 false)
+               false)
+             false))
+         false)
+       false)
+     false)))
+
+(defn sh19-operation-error [request]
+  (let [operation (get request :operation)]
+    (if (= operation :startup)
+      (if (sh19-startup-valid? request)
+        nil
+        :invalid-startup)
+      (if (= operation :allocate)
+        (if (sh19-allocation-valid? request)
+          nil
+          :invalid-allocation)
+        (if (= operation :no-allocation)
+          (if (= 0 (get request :size-bytes))
+            nil
+            :invalid-allocation)
+          (if (= operation :string-from-utf8)
+            (if (sh19-utf8-valid? (get request :bytes))
+              nil
+              :invalid-utf8)
+            (if (= operation :file-read)
+              (if (keyword? (get request :path-token))
+                (if (= nil (get request :path-token))
+                  :invalid-file-read
+                  (if (integer? (get request :maximum-bytes))
+                    (if (> (get request :maximum-bytes) 0)
+                      (if (<= (get request :maximum-bytes) 16777216)
+                        nil
+                        :invalid-file-read)
+                      :invalid-file-read)
+                    :invalid-file-read))
+                :invalid-file-read)
+              (if (= operation :stream-write)
+                (if
+                 (sh19-member?
+                  #{:stdout :stderr} (get request :stream))
+                 (if (sh19-utf8-valid? (get request :bytes))
+                   nil
+                   :invalid-utf8)
+                 :invalid-stream)
+                (if (= operation :panic)
+                  (if
+                   (sh19-member?
+                    #{:abort-with-report :trap :result-boundary}
+                    (get request :failure-mode))
+                   (if (sh19-utf8-valid?
+                        (get request :message-bytes))
+                     nil
+                     :invalid-utf8)
+                   :invalid-panic)
+                  (if (= operation :process-exit)
+                    (if (sh19-between?
+                         (get request :exit-code) 0 255)
+                      nil
+                      :invalid-exit)
+                    :unsupported-operation))))))))))
+
+(defn sh19-diagnostic [request rule reason remediation]
+  {:artifact :gravity/runtime-diagnostic
+   :diagnostic-id rule
+   :rule rule
+   :severity :error
+   :runtime-family :minimal-self-hosting
+   :request-id (get request :request-id)
+   :operation (get request :operation)
+   :reason reason
+   :caller-artifact-id (get request :caller-artifact-id)
+   :principal (get request :principal)
+   :effect (sh19-required-effect (get request :operation))
+   :capability (sh19-required-capability request)
+   :provider (get request :provider)
+   :profile (get request :profile)
+   :target (get request :target)
+   :source-span (get request :source-span)
+   :generated-origin-chain (get request :origin-chain)
+   :redaction-status :not-applicable
+   :remediation remediation})
+
+(defn sh19-operation-rule [reason]
+  (if (= reason :invalid-startup)
+    "R1-STARTUP"
+    (if (= reason :invalid-allocation)
+      "R3-ALLOCATOR"
+      (if (= reason :invalid-panic)
+        "R3-PANIC"
+        "R3-SERVICE"))))
+
+(defn sh19-operation-remediation [reason]
+  (if (= reason :invalid-startup)
+    :declare-entrypoint-initialization-and-cleanup
+    (if (= reason :invalid-allocation)
+      :use-a-bounded-or-no-allocation-policy
+      (if (= reason :invalid-panic)
+        :declare-explicit-panic-behavior
+        (if (= reason :invalid-utf8)
+          :supply-well-formed-utf8-bytes
+          :supply-a-supported-bounded-runtime-operation)))))
+
+(defn sh19-action-identity [request]
+  {:action-id (get request :action-id)
+   :request-id (get request :request-id)
+   :semantic-request request
+   :operation (get request :operation)
+   :provider (get request :provider)
+   :caller-artifact-id (get request :caller-artifact-id)
+   :principal (get request :principal)
+   :source-span (get request :source-span)
+   :origin-chain (get request :origin-chain)
+   :profile (get request :profile)
+   :target (get request :target)
+   :policy-artifact :gravity/sh19-minimal-runtime-policy
+   :policy-version 2})
+
+(defn sh19-action [request]
+  (let [operation (get request :operation)]
+    {:artifact :gravity/sh19-runtime-provider-action
+     :action-id (get request :action-id)
+     :action-identity (sh19-action-identity request)
+     :operation operation
+     :service-class
+     (get
+      (get (sh19-runtime-policy) :service-classification)
+      operation)
+     :provider (get request :provider)
+     :payload
+     (if (= operation :startup)
+       {:entrypoint (get request :entrypoint)
+        :initialization-order (get request :initialization-order)
+        :then-entrypoint (get request :entrypoint)
+        :cleanup-order (get request :cleanup-order)
+        :ordering-policy :initialize-then-entrypoint-then-reverse-cleanup}
+       (if (= operation :allocate)
+         {:allocation-policy (get request :allocation-policy)
+          :size-bytes (get request :size-bytes)
+          :allocation-limit-bytes
+          (get request :allocation-limit-bytes)
+          :alignment (get request :alignment)
+          :failure-behavior (get request :failure-behavior)}
+         (if (= operation :no-allocation)
+           {:allocation-policy :none
+            :size-bytes (get request :size-bytes)}
+           (if (= operation :string-from-utf8)
+             {:encoding :utf-8
+              :bytes (get request :bytes)
+              :byte-count (count (get request :bytes))}
+             (if (= operation :file-read)
+               {:path-token (get request :path-token)
+                :maximum-bytes (get request :maximum-bytes)}
+               (if (= operation :stream-write)
+                 {:stream (get request :stream)
+                  :encoding :utf-8
+                  :bytes (get request :bytes)}
+                 (if (= operation :panic)
+                   {:failure-mode (get request :failure-mode)
+                    :encoding :utf-8
+                    :message-bytes (get request :message-bytes)}
+                   {:exit-code (get request :exit-code)})))))))
+     :declared-effect (sh19-required-effect operation)
+     :capability (sh19-required-capability request)
+     :principal (get request :principal)
+     :caller-artifact-id (get request :caller-artifact-id)
+     :profile (get request :profile)
+     :target (get request :target)
+     :source-span (get request :source-span)
+     :origin-chain (get request :origin-chain)}))
+
+(defn sh19-result [request status action diagnostic]
+  {:artifact :gravity/sh19-runtime-result
+   :status status
+   :request-id (get request :request-id)
+   :runtime-family :minimal-self-hosting
+   :action action
+   :diagnostics (if (= nil diagnostic) [] [diagnostic])
+   :decision-log
+   {:artifact :gravity/runtime-decision-log
+    :action-id (get request :action-id)
+    :request-id (get request :request-id)
+    :operation (get request :operation)
+    :principal (get request :principal)
+    :effect (sh19-required-effect (get request :operation))
+    :capability (sh19-required-capability request)
+    :provider (get request :provider)
+    :caller-artifact-id (get request :caller-artifact-id)
+    :source-span (get request :source-span)
+    :origin-chain (get request :origin-chain)
+    :profile (get request :profile)
+    :target (get request :target)
+    :policy-lineage
+    {:policy-artifact :gravity/sh19-minimal-runtime-policy
+     :policy-version 2}
+    :decision (if (= status :accepted) :grant :deny)
+    :redaction-status :not-applicable}
+   :identity-input
+   {:policy-artifact :gravity/sh19-minimal-runtime-policy
+    :policy-version 2
+    :action-identity (sh19-action-identity request)
+    :request request}
+   :preserves
+   {:caller-artifact-id (get request :caller-artifact-id)
+    :principal (get request :principal)
+    :profile (get request :profile)
+    :target (get request :target)
+    :source-span (get request :source-span)
+    :origin-chain (get request :origin-chain)}
+   :pending (get (sh19-runtime-policy) :pending)})
+
+(defn sh19-bounds-rejection []
+  {:artifact :gravity/sh19-runtime-result
+   :status :rejected
+   :request-id nil
+   :runtime-family :minimal-self-hosting
+   :action nil
+   :diagnostics
+   [{:artifact :gravity/runtime-diagnostic
+     :diagnostic-id "R1-MANIFEST"
+     :rule "R1-MANIFEST"
+     :severity :error
+     :runtime-family :minimal-self-hosting
+     :request-id nil
+     :operation nil
+     :reason :runtime-request-structural-bound-exceeded
+     :caller-artifact-id nil
+     :principal nil
+     :effect nil
+     :capability nil
+     :provider nil
+     :profile nil
+     :target nil
+     :source-span nil
+     :generated-origin-chain []
+     :redaction-status :not-applicable
+     :remediation :reduce-request-depth-width-nodes-scalars-or-strings}]
+   :decision-log
+   {:artifact :gravity/runtime-decision-log
+    :action-id nil
+    :request-id nil
+    :operation nil
+    :principal nil
+    :effect nil
+    :capability nil
+    :provider nil
+    :caller-artifact-id nil
+    :source-span nil
+    :origin-chain []
+    :profile nil
+    :target nil
+    :policy-lineage
+    {:policy-artifact :gravity/sh19-minimal-runtime-policy
+     :policy-version 2}
+    :decision :deny
+    :redaction-status :not-applicable}
+   :identity-input
+   {:policy-artifact :gravity/sh19-minimal-runtime-policy
+    :policy-version 2
+    :request-omitted :structural-bound-exceeded}
+   :preserves {}
+   :pending (get (sh19-runtime-policy) :pending)})
+
+(defn sh19-handle-request [request]
+  (if (sh19-request-bounded? request)
+    (if (sh19-common-request-valid? request)
+      (if (sh19-authority-valid? request)
+        (if (sh19-provider-valid? request)
+          (let [operation-error (sh19-operation-error request)]
+            (if (= nil operation-error)
+              (sh19-result request :accepted
+                           (sh19-action request) nil)
+              (sh19-result
+               request :rejected nil
+               (sh19-diagnostic
+                request
+                (sh19-operation-rule operation-error)
+                operation-error
+                (sh19-operation-remediation operation-error)))))
+          (sh19-result
+           request :rejected nil
+           (sh19-diagnostic
+            request "R3-SERVICE" :missing-or-mismatched-provider
+            :select-the-declared-runtime-provider)))
+        (sh19-result
+         request :rejected nil
+         (sh19-diagnostic
+          request "R11-GRANT" :effect-or-capability-not-granted
+          :declare-the-effect-and-supply-a-scoped-capability)))
+      (sh19-result
+       request :rejected nil
+       (sh19-diagnostic
+        request "R1-MANIFEST" :malformed-runtime-request
+        :supply-complete-runtime-identity-and-policy-fields)))
+    (sh19-bounds-rejection)))
+
+(defn sh19-verify-result [request candidate]
+  (if (sh19-request-bounded? request)
+    (if (sh19-result-bounded? candidate)
+      (let [expected (sh19-handle-request request)]
+        (if (= expected candidate)
+          {:artifact :gravity/sh19-runtime-result-verification
+           :status :passed
+           :request-id (get request :request-id)
+           :checks [:complete-recomputation
+                    :authority-decision
+                    :provider-selection
+                    :bounded-operation
+                    :source-and-artifact-lineage]}
+          {:artifact :gravity/sh19-runtime-result-verification
+           :status :rejected
+           :request-id (get request :request-id)
+           :diagnostics
+           [(sh19-diagnostic
+             request "R1-MANIFEST" :runtime-result-substitution
+             :recompute-the-result-from-the-original-request)]}))
+      {:artifact :gravity/sh19-runtime-result-verification
+       :status :rejected
+       :request-id (get request :request-id)
+       :diagnostics
+       [(sh19-diagnostic
+         request "R1-MANIFEST" :runtime-result-bound-exceeded
+         :reduce-result-depth-width-nodes-scalars-or-strings)]})
+    {:artifact :gravity/sh19-runtime-result-verification
+     :status :rejected
+     :request-id nil
+     :diagnostics
+     [(first (get (sh19-bounds-rejection) :diagnostics))]}))

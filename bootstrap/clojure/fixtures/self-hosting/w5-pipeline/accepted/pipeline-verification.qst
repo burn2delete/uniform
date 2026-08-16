@@ -1,0 +1,355 @@
+; Accepted C1/C2/C7/C8/C9/C10 pipeline-verification fixture.
+; The record is complete for this bounded :meta leaf and deliberately remains
+; non-authoritative.  The alternate request changes only provenance.
+(ns gravity.self-hosting.w5-pipeline.accepted
+  (:profile :meta)
+  ; The source declaration is the stage2 JVM harness boundary; the request's
+  ; candidate target is checked independently and is never JVM fallback.
+  (:target :jvm)
+  (:exports [w5-pipeline-verification-request
+             w5-pipeline-verification-request-at
+             w5-pipeline-verification-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def w5-pipeline-stage-order
+  [:read-source :build-syntax :macro-expand :resolve-names :lower-to-core
+   :type-check :effect-check :profile-validate :safety-analyze :build-mir
+   :verify-mir :optimize-mir :lower-domain-ir :verify-domain-ir
+   :lower-target :emit-artifacts])
+
+(def w5-pipeline-pass-identities
+  [:pass/read-source :pass/build-syntax :pass/macro-expand
+   :pass/resolve-names :pass/lower-to-core :pass/type-check
+   :pass/effect-check :pass/profile-validate :pass/safety-analyze
+   :pass/build-mir :pass/verify-mir :pass/optimize-mir
+   :pass/lower-domain-ir :pass/verify-domain-ir :pass/lower-target
+   :pass/emit-artifacts])
+
+(def w5-pipeline-artifact-identities
+  [:artifact/source :artifact/syntax :artifact/expanded-syntax
+   :artifact/resolved-names :artifact/core :artifact/typed-core
+   :artifact/effect-checked-core :artifact/profile-validated-core
+   :artifact/safety-checked-core :artifact/mir :artifact/verified-mir
+   :artifact/optimized-mir :artifact/domain-ir :artifact/verified-domain-ir
+   :artifact/target-ir :artifact/emission])
+
+(defn w5-pipeline-span [start end]
+  {:source-id :gravity.self-hosting/w5-pipeline
+   :start start
+   :end end})
+
+(defn w5-pipeline-origin [origin-id]
+  {:kind :source
+   :source-id :gravity.self-hosting/w5-pipeline
+   :origin-id origin-id})
+
+(defn w5-pipeline-provenance [path]
+  {:source-id :gravity.self-hosting/w5-pipeline
+   :actual-source-path path
+   :compiler-id "gravity-stage2-w5-pipeline"
+   :compiler-version "stage2-w5-pipeline-v1"
+   :generated-origin-chain
+   [(w5-pipeline-origin "fixture/pipeline-verification")
+    {:kind :generator
+     :source-id :gravity.compiler/w5-compiler-pipeline-verifier
+     :origin-id "w5-pipeline-verifier-v1"}]})
+
+(defn w5-pipeline-stage-output-id [stage index]
+  (str "artifact:stage-output:" stage ":" index))
+
+(defn w5-pipeline-stage-input-id [index]
+  (if (= index 0)
+    "artifact:pipeline-source:0"
+    (w5-pipeline-stage-output-id
+     (get w5-pipeline-stage-order (- index 1)) (- index 1))))
+
+(defn w5-pipeline-stage [stage index]
+  {:stage stage
+   :artifact-identity (get w5-pipeline-artifact-identities index)
+   :input-id (w5-pipeline-stage-input-id index)
+   :output-id (w5-pipeline-stage-output-id stage index)
+   :requires #{:source-span :generated-origin :profile :target}
+   :preserves #{:source-spans :generated-origins :type-facts
+                :effect-facts :capability-facts :ownership-facts
+                :safety-facts :diagnostic-codes}
+   :invalidates #{}
+   :regenerates #{}
+   :effects #{}
+   :capabilities #{}
+   :profile :meta
+   :target :llvm-x86_64-linux
+   :diagnostics []
+   :artifact-edges
+   [{:from (w5-pipeline-stage-input-id index)
+     :to (w5-pipeline-stage-output-id stage index)}]
+   :source-span (w5-pipeline-span (+ 10 index) (+ 12 index))
+   :generated-origin [(w5-pipeline-origin (str "stage/" stage))]})
+
+(defn w5-pipeline-stages [index result]
+  (if (= index (count w5-pipeline-stage-order))
+    result
+    (w5-pipeline-stages
+     (+ index 1)
+     (conj result
+           (w5-pipeline-stage (get w5-pipeline-stage-order index) index)))))
+
+(defn w5-pipeline-pass [stage index]
+  {:pass-id (get w5-pipeline-pass-identities index)
+   :version "1.0.0"
+   :stage stage
+   :risk (if (= stage :safety-analysis) :critical
+           (if (= stage :optimization) :high :medium))
+   :affected-profiles #{:meta}
+   :affected-targets #{:llvm-x86_64-linux}
+   :input-ir (w5-pipeline-stage-input-id index)
+   :output-ir (w5-pipeline-stage-output-id stage index)
+   :requires #{:source-spans :generated-origins :profile :target}
+   :preserves #{:source-spans :generated-origins :type-facts
+                :effect-facts :capability-facts :ownership-facts
+                :safety-facts :diagnostic-codes}
+   :invalidates #{}
+   :regenerates #{}
+   :effects #{}
+   :capabilities #{}
+   :profile :meta
+   :target :llvm-x86_64-linux
+   :diagnostics []
+   :source-span (w5-pipeline-span (+ 30 index) (+ 33 index))
+   :generated-origin [(w5-pipeline-origin (str "pass/" stage))]})
+
+(defn w5-pipeline-passes [index result]
+  (if (= index (count w5-pipeline-stage-order))
+    result
+    (w5-pipeline-passes
+     (+ index 1)
+     (conj result
+           (w5-pipeline-pass (get w5-pipeline-stage-order index) index)))))
+
+(defn w5-pipeline-operation
+  [operation-id kind outcome span-start span-end]
+  {:operation-id operation-id
+   :kind kind
+   :core-node-id operation-id
+   :source-span (w5-pipeline-span span-start span-end)
+   :generated-origin-chain [(w5-pipeline-origin (str "operation/" operation-id))]
+   :profile :meta
+   :target :llvm-x86_64-linux
+   :type-fact-id :type/operation
+   :effect-fact-id :effect/operation
+   :capability-proof-id :capability/operation
+   :ownership-fact-id :ownership/operation
+   :safety-mode :safe
+   :outcome outcome
+   :proven-safe (= outcome :proven-safe)
+   :runtime-checked (= outcome :runtime-checked)
+   :rejected (= outcome :rejected)
+   :unsafe-island (= outcome :unsafe-island)})
+
+(defn w5-pipeline-verification-record [path]
+  {:artifact :gravity/w5-compiler-pipeline-request
+   :compiler-id "gravity-stage2-w5-pipeline"
+   :compiler-version "stage2-w5-pipeline-v1"
+   :pipeline-id :gravity/canonical-pipeline
+   :pipeline-version "C1-C10-v1"
+   :source-root-id :fixture/w5-pipeline
+   :source-span (w5-pipeline-span 1 210)
+   :provenance (w5-pipeline-provenance path)
+   :profile :meta
+   :target :llvm-x86_64-linux
+   :stage-order w5-pipeline-stage-order
+   :stage-identities
+   w5-pipeline-stage-order
+   :pass-identities w5-pipeline-pass-identities
+   :artifact-identities w5-pipeline-artifact-identities
+   :manifest-target-exact? true
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :authority :non-authority
+   :verifier-gates-complete? true
+   :domain-anchor-preserved? true
+   :reader
+   {:source-id :fixture/w5-pipeline
+    :encoding :utf-8
+    :delimiter-balanced? true
+    :string-terminated? true
+    :numeric-forms-valid? true
+    :identifiers-valid? true
+    :namespace-shape-valid? true
+    :map-forms-valid? true
+    :set-forms-valid? true
+    :metadata-valid? true
+    :abbreviations-valid? true
+    :extensions-declared? true
+    :source-hash "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+   :stage-artifacts (w5-pipeline-stages 0 [])
+   :passes (w5-pipeline-passes 0 [])
+   :typed-core
+   {:core-nodes [:core/root :core/verified-loop]
+    :type-facts {:core/root :type/module :core/verified-loop :type/function}
+    :constraints [:constraint/module :constraint/function]
+    :dynamic-boundaries []
+    :casts []
+    :layout-facts {:module-layout :known}
+    :schema-links [:schema/pipeline-request]
+    :every-core-node-typed? true
+    :constraints-solved? true
+    :dynamic-boundaries-explicit? true
+    :casts-checked? true
+    :nullability-wrapped? true
+    :generics-resolved? true
+    :protocols-resolved? true
+    :layout-facts-present? true
+    :schema-identity-preserved? true
+    :verifier-status :passed}
+   :effects
+   {:nodes {:core/root {:direct #{} :latent #{} :transitive #{}
+                        :ordering :sequence :source-span (w5-pipeline-span 50 51)}
+           :core/verified-loop {:direct #{} :latent #{} :transitive #{}
+                                :ordering :sequence :source-span (w5-pipeline-span 52 54)}}
+    :functions {:fn/verified-loop {:declared #{} :inferred #{} :latent #{}
+                                   :throws #{} :capabilities #{}}}
+    :declared #{}
+    :inferred #{}
+    :build-effects #{}
+    :runtime-effects #{}
+    :replay-obligations []
+    :ordering-constraints [:ordering/sequence]
+    :capability-proofs [:capability/pure]
+    :runtime-providers [:provider/pure]
+    :effects-within-declarations? true
+    :profile-allows-effects? true
+    :capability-grants-cover-effects? true
+    :build-runtime-separated? true
+    :replay-obligations-complete? true
+    :ordering-constraints-complete? true
+    :runtime-providers-resolved? true
+    :effect-names-known? true
+    :verifier-status :passed}
+   :capabilities
+   {:declared-capabilities? true
+    :grants-are-scoped? true
+    :ambient-authority-denied? true
+    :effect-capability-links-complete? true
+    :declared #{:compiler/pipeline-read}
+    :grants {:compiler/pipeline-read #{:read-source :read-ir}}
+    :verifier-status :passed}
+   :profile-validation
+   {:profile :meta
+    :target :llvm-x86_64-linux
+    :effects-checked? true
+    :capabilities-checked? true
+    :ownership-checked? true
+    :safety-checked? true}
+   :ownership
+   {:owners {:core/root :owner/module :core/verified-loop :owner/function}
+    :moves []
+    :borrows [{:borrow-id :borrow/immutable
+               :owner-id :owner/function
+               :value-id :core/verified-loop
+               :kind :immutable
+               :range :whole
+               :lifetime :lifetime/function
+               :source-span (w5-pipeline-span 60 61)}]
+    :lifetimes {:lifetime/function {:start :fn-entry :end :fn-exit}}
+    :regions {}
+    :arenas {}
+    :linear {}
+    :transfers []
+    :runtime-checks []
+    :unsafe-audit-references []
+    :no-use-after-move? true
+    :no-use-after-consume? true
+    :borrows-within-lifetimes? true
+    :mutable-aliases-exclusive? true
+    :no-move-while-borrowed? true
+    :regions-do-not-escape? true
+    :arena-generations-valid? true
+    :linear-resources-terminal? true
+    :no-linear-double-terminal? true
+    :transfers-explicit? true
+    :runtime-checks-profile-legal? true
+    :unsafe-audits-present? true
+    :verifier-status :passed}
+   :safety
+   {:operations [:op/index :op/divide :op/capability]
+    :outcomes {:op/index :runtime-checked
+               :op/divide :proven-safe
+               :op/capability :proven-safe}
+    :runtime-checks [{:check-id :check/index
+                      :operation-id :op/index
+                      :condition :bounds
+                      :failure-behavior :panic/bounds}]
+    :proof-obligations [:proof/divisor-nonzero]
+    :certificate-references [:certificate/numeric-v1]
+    :unsafe-islands []
+    :taint-report {:sources [] :sinks [] :validators []}
+    :capability-report {:uses [] :proofs [:capability/pure]}
+    :generated-code-provenance [(w5-pipeline-origin "safety/generated")]
+    :ffi-boundaries []
+    :numeric-safety [:numeric/division-checked]
+    :optimization-invalidation []
+    :proofs-fresh? true
+    :runtime-checks-defined? true
+    :unsafe-islands-audited? true
+    :generated-origins-preserved? true
+    :taint-facts-preserved? true
+    :capability-proofs-preserved? true
+    :ffi-boundaries-checked? true
+    :numeric-operations-checked? true
+    :optimization-evidence-current? true
+    :verifier-status :passed}
+   :sensitive-operations
+   [(w5-pipeline-operation :op/index :index :runtime-checked 90 94)
+    (w5-pipeline-operation :op/divide :division :proven-safe 95 98)
+    (w5-pipeline-operation :op/capability :capability-use :proven-safe 99 103)]
+   :mir
+   {:safety-facts-preserved? true
+    :type-facts-preserved? true
+    :effect-facts-preserved? true
+    :ownership-facts-preserved? true
+    :source-origins-preserved? true
+    :verifier-status :passed}
+   :target-lowering
+   {:backend :llvm
+    :target :llvm-x86_64-linux
+    :os :linux
+    :arch :x86_64
+    :object-format :elf
+    :abi :sysv-amd64
+    :invokes-clojure? false
+    :links-jvm? false
+    :fallback? false
+    :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+    :unsupported-target-policies
+    [{:target :darwin :support :unsupported
+      :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :darwin-arm64 :support :unsupported
+      :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :darwin-x86_64 :support :unsupported
+      :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :windows :support :unsupported
+      :invokes-clojure? false :links-jvm? false :fallback? false}]
+    :source-intent-preserved? true
+    :cross-target-inference-rejected? true
+    :jvm-fallback-rejected? true}
+   :artifacts
+   {:content-addressed? true
+    :provenance-complete? true
+    :source-and-generated-origins? true
+    :manifest-bound? true
+    :verifier-status :passed}})
+
+(defn w5-pipeline-verification-request-at [path]
+  (w5-pipeline-verification-record path))
+
+(defn w5-pipeline-verification-request []
+  (w5-pipeline-verification-request-at
+   "/checkout-a/bootstrap/clojure/fixtures/self-hosting/w5-pipeline/accepted/pipeline-verification.gravity"))
+
+(defn w5-pipeline-verification-alternate-path-request []
+  (w5-pipeline-verification-request-at
+   "/checkout-b/bootstrap/clojure/fixtures/self-hosting/w5-pipeline/accepted/pipeline-verification.gravity"))

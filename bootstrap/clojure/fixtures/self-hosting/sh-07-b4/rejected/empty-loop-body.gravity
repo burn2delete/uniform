@@ -1,0 +1,20 @@
+; SH-07-B4 rejects loop without a body expression.
+(ns self-hosting.sh07-b4.empty-loop-body
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B4
+    :fixture :empty-loop-body
+    :sh07-b4
+    {:expected-rule "C6-CORE-SHAPE"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :loop-body-required
+     :expected-remediation
+     "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}}))
+
+(def invalid-loop
+  (loop [value 1]))

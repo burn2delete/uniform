@@ -1,0 +1,16 @@
+; SH-07-B10 gives same-spelled binding patterns distinct sibling scopes.
+(ns self-hosting.sh07-b10.sibling-binding-isolation
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [select-sibling])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10
+              :fixture :sibling-binding-isolation
+              :coverage :pending-sh08-sh09-sh10-sh11}))
+
+(defn select-sibling [value]
+  (match value
+    item (do item :first)
+    item (do item :second)))

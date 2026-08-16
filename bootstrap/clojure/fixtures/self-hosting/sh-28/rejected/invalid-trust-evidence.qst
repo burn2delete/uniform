@@ -1,0 +1,14 @@
+(ns gravity.self-hosting.sh28.rejected.invalid-trust-evidence
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh28-invalid-schema-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh28-invalid-schema-request []
+  {:artifact :gravity/sh28-trust-evidence-request
+   :schema-version 99
+   :release-id "invalid"
+   :root-artifact-id "missing"
+   :actual-release-root "/invalid"})

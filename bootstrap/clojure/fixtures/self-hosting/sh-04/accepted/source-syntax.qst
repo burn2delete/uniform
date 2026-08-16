@@ -1,0 +1,19 @@
+; SH-04 public syntax input with Unicode, metadata, and generated origins.
+(ns self-hosting.sh04.source-syntax
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-04}))
+
+'(reader-origin lambda)
+
+^{:doc "Metadata survives C3 construction."
+  :sh04/fixture true}
+(def unicode-value "lambda λ and supplementary 😀")
+
+(def nested-value
+  {:vector [1 2 {:inner :value}]
+   :quoted 'self-hosting.sh04/source
+   :deref @state})

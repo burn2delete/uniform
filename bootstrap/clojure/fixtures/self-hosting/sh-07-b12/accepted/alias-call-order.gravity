@@ -1,0 +1,21 @@
+; SH-07-B12 alias call preserves operator-then-argument source order.
+(ns self-hosting.sh07-b12.alias-call-order
+  (:profile :meta)
+  (:target :jvm)
+  (:requires [shared.core :as shared :profile :core
+              :boundary :pure-core :refer [combine]])
+  (:exports [ordered-alias-call])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B12
+              :fixture :alias-call-order
+              :non-claims [:effect-scheduling
+                           :runtime-linking
+                           :whole-program-execution]}))
+
+(def ordered-alias-call
+  (shared/combine
+    (do 1 2)
+    (if false 3 4)
+    (do 5 6)))

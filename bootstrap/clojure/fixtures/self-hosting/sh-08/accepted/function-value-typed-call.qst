@@ -1,0 +1,27 @@
+; SH-08-HO2 accepted: authenticated HO1 identity/apply-one exposes Fn[I64] -> I64.
+(ns self-hosting.sh08.function-value-typed-call
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh08-ho2-identity
+             sh08-ho2-apply-one
+             sh08-ho2-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-08-HO2
+    :fixture :function-value-typed-call
+    :scope :monomorphic-named-function-value-one-hop-signature-inference
+    :inference :identity-parameter-to-result
+    :non-claims [:captures :lifetimes :aliases :multi-hop :polymorphism
+                 :generics :overloads :multi-arity :variadic-dispatch
+                 :protocol-dispatch :dynamic-dispatch :reflection]}))
+
+(defn sh08-ho2-identity [value]
+  value)
+
+(defn sh08-ho2-apply-one [callable value]
+  (callable value))
+
+(def sh08-ho2-result
+  (sh08-ho2-apply-one sh08-ho2-identity 7))

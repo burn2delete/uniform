@@ -1,0 +1,24 @@
+(ns self-hosting.sh08.primitive-if-join
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [nil-value boolean-value integer-value decimal-value
+             ratio-value character-value string-value keyword-value
+             vector-value map-value set-value keyword-join integer-join])
+  (:effects #{:compiler/read})
+  (:capabilities #{:compiler/source-read})
+  (:safety :safe)
+  (:metadata {:slice :SH-08 :fixture :primitive-if-join}))
+
+(def nil-value nil)
+(def boolean-value true)
+(def integer-value 42)
+(def decimal-value 1.25)
+(def ratio-value 3/4)
+(def character-value \G)
+(def string-value "gravity")
+(def keyword-value :gravity)
+(def vector-value [1 2])
+(def map-value {:left 1 :right 2})
+(def set-value #{1 2})
+(def keyword-join (if true :left :right))
+(def integer-join (if 0 1 2))

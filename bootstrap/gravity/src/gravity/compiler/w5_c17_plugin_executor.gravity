@@ -1,0 +1,1312 @@
+; W5-owned executable C17 plugin/pass leaf.
+; This is a bounded, deterministic :meta component.  It validates a complete
+; plugin request and emits a path-neutral execution record; it is not a global
+; plugin loader and it does not claim self-hosting or release completion.
+(ns gravity.compiler.w5-c17-plugin-executor
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-c17-policy
+             w5-c17-plugin-manifest
+             w5-c17-pass-contract
+             w5-c17-sandbox-grant
+             w5-c17-domain-registration
+             w5-c17-facet-registration
+             w5-c17-cache-key-inputs
+             w5-c17-identity-input
+             w5-c17-diagnostic
+             w5-c17-diagnostic-catalog
+             w5-c17-plugin-execute
+             w5-c17-execute
+             w5-c17-run
+             w5-c17-verify
+             w5-c17-verify-result
+             w5-c17-recompute
+             w5-c17-target-policy
+             w5-c17-target-valid?
+             w5-c17-request-target-valid?])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage2
+               :component :w5-c17-plugin-executor
+               :owner :w5
+               :source-language :gravity
+               :seed :clojure-stage0
+               :status :executable-leaf
+               :scope :stage-owned-nonauthority
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :clojure-seed-boundary? true
+               :stage2-target :jvm
+               :candidate-target :llvm-x86_64-linux
+               :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                                    :artifact-format :elf :abi :sysv-amd64}
+               :unsupported-targets
+               [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+               :unsupported-target-policies
+               [{:target :darwin :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :darwin-arm64 :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :darwin-x86_64 :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :windows :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}]
+               :cross-target-inference? false
+               :fallback? false
+               :self-hosted? false
+               :release? false
+               :full-language-credit? false
+               :matrix-240-credit? false
+               :public-authority? false
+               :jvm-execution? false
+               :authority :non-authority
+               :non-authoritative? true
+               :residual-boundaries #{:clojure-stage2-compiler-plan
+                                      :jvm-stage2-runtime}
+               :governing-document-ids ["C17" "C1" "C12" "C13"
+                                        "C15" "C16" "C18" "L12"
+                                        "L14" "L15" "D0" "D1"
+                                        "D3" "D8" "D9"]
+               :implements [:manifest-before-code
+                             :api-compatibility
+                             :package-trust-and-signature
+                             :scoped-compiler-capabilities
+                             :hermetic-build-effects
+                             :sandbox-restrictions
+                             :pass-contract-validation
+                             :domain-registration
+                             :facet-registration
+                             :output-verifier-report
+                             :plugin-execution-trace
+                             :c16-compatible-cache-key
+                             :stable-c17-diagnostics]
+               :does-not-claim [:global-plugin-system
+                                :global-pass-registry
+                                :production-plugin-loading
+                                :self-host-completion
+                                :release-readiness
+                                :authority-from-interface]
+              :conformance {:accepted-fixtures
+                             ["self-hosting/w5-c17/accepted/plugin-execution.gravity"
+                              "self-hosting/w5-c17/accepted/plugin-execution.qst"]
+                             :rejected-fixtures
+                             ["self-hosting/w5-c17/rejected/invalid-plugin-execution.gravity"
+                              "self-hosting/w5-c17/rejected/invalid-plugin-execution.qst"]}}}))
+
+(def w5-c17-stage2-target :jvm)
+(def w5-c17-candidate-target :llvm-x86_64-linux)
+(def w5-c17-candidate-platform
+  {:os :linux :arch :x86_64 :backend :llvm
+   :artifact-format :elf :abi :sysv-amd64})
+(def w5-c17-unsupported-targets
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+(def w5-c17-unsupported-target-policies
+  [{:target :darwin :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-arm64 :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-x86_64 :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :windows :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}])
+(def w5-c17-target-scope
+  {:candidate-target w5-c17-candidate-target
+   :candidate-platform w5-c17-candidate-platform
+   :unsupported-targets w5-c17-unsupported-targets
+   :unsupported-target-policies w5-c17-unsupported-target-policies
+   :cross-target-inference? false
+   :fallback? false})
+
+(defn w5-c17-target-policy []
+  w5-c17-target-scope)
+
+(defn w5-c17-target-valid? [target]
+  (= target w5-c17-target-scope))
+
+(def w5-c17-policy
+  {:artifact :gravity/w5-c17-plugin-execution-policy
+   :schema-version 1
+   :scope :w5-c17-executable-leaf
+   :plugin-profile :meta
+   :stage2-target w5-c17-stage2-target
+   :target w5-c17-candidate-target
+   :candidate-target w5-c17-candidate-target
+   :candidate-platform w5-c17-candidate-platform
+   :target-scope w5-c17-target-scope
+   :unsupported-targets w5-c17-unsupported-targets
+   :unsupported-target-policies w5-c17-unsupported-target-policies
+   :cross-target-inference? false
+   :fallback? false
+   :compiler-api-version "1"
+   :compiler-version "0.1.0"
+   :allowed-trust-levels #{:sandboxed :trusted-package}
+   :allowed-capabilities #{:compiler/ir-transform}
+   :required-scopes #{:read-mir :write-mir :register-pass
+                      :emit-diagnostics :emit-artifacts}
+   :allowed-scopes #{:read-mir :write-mir :register-pass
+                     :emit-diagnostics :emit-artifacts}
+   :denied-authority #{:filesystem :network :process :environment
+                       :clock :random :model-call :tool-call
+                       :registry-access :compiler-private-state}
+   :hermetic-build-effects #{:filesystem-read}
+   :forbidden-build-effects #{:filesystem-write :environment-read
+                              :network-fetch :process-spawn
+                              :registry-query :model-call :tool-call
+                              :clock-read :random-read}
+   :required-pass-facts #{:source-spans :origin-chain :type-facts
+                          :effect-facts :capability-facts}
+   :required-trace-fields #{:plugin :pass :input :output :grants
+                            :grant-hash :build-effects :decisions
+                            :diagnostics :verifier-result :replay-record
+                            :cache-key :provenance}
+   :cache-key-inputs [:plugin-package :plugin-version :manifest-hash
+                     :grants :dependencies :compiler-api-version
+                     :build-effects :replay-records :input-artifacts]
+   :diagnostics ["C17-MANIFEST" "C17-API" "C17-CAPABILITY"
+                 "C17-BUILD-EFFECT" "C17-SANDBOX" "C17-PASS-CONTRACT"
+                 "C17-OUTPUT" "C17-DOMAIN" "C17-FACET" "C17-TRUST"]
+   :flags {:clojure-seed-boundary? true
+           :self-hosted? false
+           :release? false
+           :production-execution? false
+           :public-authority? false
+           :full-language-credit? false
+           :matrix-240-credit? false
+           :authority :non-authority
+           :non-authoritative? true}})
+
+(def w5-c17-plugin-manifest
+  {:artifact :gravity/compiler-plugin
+   :plugin :gravity.plugins/w5-c17-deterministic
+   :package {:name :gravity/w5-c17-plugin
+             :version "0.1.0"
+             :source-hash "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+             :signatures [{:algorithm :sha256
+                           :subject :gravity/w5-c17-plugin
+                           :status :verified
+                           :signature-id :sig/w5-c17-v1}]
+             :dependency-graph [:gravity/compiler-api-v1]}
+   :api-version "1"
+   :compiler-compatibility {:min "1" :max-exclusive "2"
+                            :declared-features #{:mir-identity-pass}
+                            :required-contracts #{:C17 :C16}
+                            :deprecated-contracts #{}}
+   :trust :sandboxed
+   :profile :meta
+   :stage2-target w5-c17-stage2-target
+   :target w5-c17-candidate-target
+   :candidate-target w5-c17-candidate-target
+   :candidate-platform w5-c17-candidate-platform
+   :target-scope w5-c17-target-scope
+   :build-effects #{}
+   :capabilities #{:compiler/ir-transform}
+   :capability-scopes {:compiler/ir-transform
+                       #{:read-mir :write-mir :register-pass
+                         :emit-diagnostics :emit-artifacts}}
+   :passes [:w5/plugin-execution]
+   :domains [:w5/plugin-domain]
+   :facets [:w5/plugin-facet]
+   :emits #{:plugin-execution-trace :verifier-report}
+   :conformance [:w5-c17-accepted :w5-c17-rejected
+                 :w5-c17-domain-fixture :w5-c17-facet-fixture]
+   :provenance {:logical-source-id :gravity.compiler/w5-c17-plugin
+                :actual-source-path
+                "bootstrap/gravity/src/gravity/compiler/w5_c17_plugin_executor.gravity"
+                :source-hash "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+                :compiled-by :clojure-stage0
+                :verified-by :clojure-stage0
+                :stage :stage2
+                :target w5-c17-candidate-target
+                :candidate-platform w5-c17-candidate-platform
+                :target-scope w5-c17-target-scope
+                :fixture-kind :engine}
+   :manifest-hash "sha256:2222222222222222222222222222222222222222222222222222222222222222"})
+
+(def w5-c17-pass-contract
+  {:artifact :gravity/c17-pass-registration
+   :pass-id :w5/plugin-execution
+   :plugin :gravity.plugins/w5-c17-deterministic
+   :version "1"
+   :input :gravity/mir
+   :output :gravity/mir
+   :requires #{:mir-verifier-passed :manifest-accepted
+               :api-compatible :trust-accepted}
+   :preserves #{:source-spans :origin-chain :type-facts
+                :effect-facts :capability-facts :profile :target}
+   :invalidates #{}
+   :regenerates #{}
+   :proof-obligations #{:output-verifier-report
+                        :semantic-identity-replay}
+   :emits #{:plugin-execution-trace :verifier-report}
+   :capabilities #{:compiler/ir-transform}
+   :profile-constraints {:profile :meta
+                         :target w5-c17-candidate-target
+                         :stage2-target w5-c17-stage2-target
+                         :target-scope w5-c17-target-scope}
+   :sandbox-policy :deterministic-only
+   :diagnostics ["C17-PASS-CONTRACT" "C17-OUTPUT"]
+   :contract-version "C17-1"})
+
+(def w5-c17-sandbox-grant
+  {:artifact :gravity/c17-sandbox-grant
+   :plugin :gravity.plugins/w5-c17-deterministic
+   :package :gravity/w5-c17-plugin
+   :trust :sandboxed
+   :stage2-target w5-c17-stage2-target
+   :target w5-c17-candidate-target
+   :candidate-target w5-c17-candidate-target
+   :candidate-platform w5-c17-candidate-platform
+   :target-scope w5-c17-target-scope
+   :grants {:compiler/ir-transform
+            #{:read-mir :write-mir :register-pass
+              :emit-diagnostics :emit-artifacts}}
+   :build-effects #{}
+   :capability-scopes {:compiler/ir-transform
+                       #{:read-mir :write-mir :register-pass
+                         :emit-diagnostics :emit-artifacts}}
+   :artifact-access #{:read-input-mir :write-output-mir}
+   :restricted-authority #{:filesystem :network :process :environment
+                           :clock :random :model-call :tool-call
+                           :registry-access :compiler-private-state}
+   :denied-authority #{:filesystem :network :process :environment
+                       :clock :random :model-call :tool-call
+                       :registry-access :compiler-private-state}
+   :replay-record {:mode :deterministic :events []}
+   :policy-decision :accepted
+   :grant-hash "sha256:3333333333333333333333333333333333333333333333333333333333333333"})
+
+(def w5-c17-domain-registration
+  {:artifact :gravity/c17-domain-registration
+   :plugin :gravity.plugins/w5-c17-deterministic
+   :domain :w5/plugin-domain
+   :owner-doc "C12"
+   :schema {:name :w5/plugin-domain-schema
+            :version 1
+            :fields [:input-id :output-id :semantic-anchor]}
+   :verifier {:id :w5/plugin-domain-verifier
+              :version "1"
+              :result :passed}
+   :supported-profiles #{:meta}
+   :target w5-c17-candidate-target
+   :target-scope w5-c17-target-scope
+   :effects #{}
+   :capabilities #{:compiler/ir-transform}
+   :lowering-paths [:gravity/mir]
+   :semantic-anchor :gravity/mir
+   :diagnostics ["C17-DOMAIN"]
+   :conformance [:w5-c17-domain-fixture]
+   :payload {:kind :identity-domain :opaque? false
+             :fields [:input-id :output-id]}
+   :registration-result :accepted})
+
+(def w5-c17-facet-registration
+  {:artifact :gravity/c17-facet-registration
+   :plugin :gravity.plugins/w5-c17-deterministic
+   :facet :w5/plugin-facet
+   :owner-doc "L14"
+   :schema {:name :w5/plugin-facet-schema
+            :version 1
+            :fields [:profile :deterministic?]}
+   :verifier {:id :w5/plugin-facet-verifier
+              :version "1"
+              :result :passed}
+   :supported-profiles #{:meta}
+   :target w5-c17-candidate-target
+   :target-scope w5-c17-target-scope
+   :effects #{}
+   :capabilities #{:compiler/ir-transform}
+   :lowering-paths [:gravity/mir]
+   :diagnostics ["C17-FACET"]
+   :conformance [:w5-c17-facet-fixture]
+   :payload {:kind :deterministic-plugin-facet :opaque? false
+             :fields [:profile :deterministic?]}
+   :registration-result :accepted})
+
+(defn w5-c17-empty? [value]
+  (= (count value) 0))
+
+; Keep negation local to this leaf rather than depending on a host builtin.
+(defn not [value]
+  (if value false true))
+
+(defn w5-c17-all-present? [required value]
+  (if (w5-c17-empty? required)
+    true
+    (if (contains? value (first required))
+      (w5-c17-all-present? (rest required) value)
+      false)))
+
+(defn w5-c17-subset? [values allowed]
+  (if (w5-c17-empty? values)
+    true
+    (if (contains? allowed (first values))
+      (w5-c17-subset? (rest values) allowed)
+      false)))
+
+(defn w5-c17-exact-keys? [value expected]
+  (if (map? value)
+    (if (= (set (keys value)) expected)
+      true
+      false)
+    false))
+
+(defn w5-c17-hex-character? [character]
+  (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+               \a \b \c \d \e \f}
+             character))
+
+(defn w5-c17-hex-tail? [characters]
+  (if (= (count characters) 0)
+    true
+    (if (w5-c17-hex-character? (first characters))
+      (w5-c17-hex-tail? (rest characters))
+      false)))
+
+(defn w5-c17-sha-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7)
+               [\s \h \a \2 \5 \6 \:])
+          (w5-c17-hex-tail? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn w5-c17-source-span? [span]
+  (if (w5-c17-exact-keys? span #{:source-id :start :end})
+    (if (keyword? (get span :source-id))
+      (if (integer? (get span :start))
+        (if (>= (get span :start) 0)
+          (if (integer? (get span :end))
+            (>= (get span :end) (get span :start))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c17-diagnostic-span [request]
+  (let [candidate (get request :source-span)]
+    (if (w5-c17-source-span? candidate)
+      candidate
+      {:source-id :gravity.compiler/w5-c17-diagnostic
+       :start 0
+       :end 0})))
+
+(defn w5-c17-provenance? [provenance]
+  (if (map? provenance)
+    (if (= (set (keys provenance))
+           #{:logical-source-id :actual-source-path :source-hash
+             :compiled-by :verified-by :stage :target :candidate-platform
+             :target-scope :fixture-kind})
+      (if (string? (get provenance :actual-source-path))
+        (if (> (count (get provenance :actual-source-path)) 0)
+          (if (keyword? (get provenance :logical-source-id))
+            (if (w5-c17-sha-id? (get provenance :source-hash))
+              (if (keyword? (get provenance :compiled-by))
+                (if (keyword? (get provenance :verified-by))
+                  (if (= :stage2 (get provenance :stage))
+                    (if (= w5-c17-candidate-target (get provenance :target))
+                      (if (= w5-c17-candidate-platform
+                             (get provenance :candidate-platform))
+                        (if (w5-c17-target-valid?
+                             (get provenance :target-scope))
+                          (keyword? (get provenance :fixture-kind))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c17-diagnostic
+  [request diagnostic-id pass-id reason remediation requested-capability requested-build-effect]
+  {:diagnostic-id diagnostic-id
+   :rule diagnostic-id
+   :severity :error
+   :plugin-id (get (get request :manifest) :plugin)
+   :package-id (get (get (get request :manifest) :package) :name)
+   :version (get (get (get request :manifest) :package) :version)
+   :pass-id :w5/plugin-execution
+   :manifest-span (w5-c17-diagnostic-span request)
+   :source-span (w5-c17-diagnostic-span request)
+   :manifest-entry :plugin
+   :requested-capability requested-capability
+   :requested-build-effect requested-build-effect
+   :trust-level (get (get request :manifest) :trust)
+   :compiler-api-version (get request :compiler-api-version)
+   :source-or-artifact-id (get (get request :input-artifact) :artifact-id)
+   :profile (get request :profile)
+   :target (get request :target)
+   :stage2-target (get request :stage2-target)
+   :candidate-target w5-c17-candidate-target
+   :candidate-platform w5-c17-candidate-platform
+   :target-scope (get request :target-scope)
+   :reason reason
+   :remediation remediation
+   :facts {:manifest-loaded-before-code true
+           :source-span-preserved true
+           :actual-path-in-provenance-only true}})
+
+(defn w5-c17-valid-package? [package]
+  (if (w5-c17-exact-keys?
+       package
+       #{:name :version :source-hash :signatures :dependency-graph})
+    (if (keyword? (get package :name))
+      (if (string? (get package :version))
+        (if (= (get package :version) "0.1.0")
+          (if (w5-c17-sha-id? (get package :source-hash))
+            (if (vector? (get package :signatures))
+              (if (> (count (get package :signatures)) 0)
+                (if (vector? (get package :dependency-graph))
+                  true
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c17-valid-signature? [package]
+  (let [signatures (get package :signatures)]
+    (if (vector? signatures)
+      (if (> (count signatures) 0)
+        (let [signature (first signatures)]
+          (if (map? signature)
+            (if (= (get signature :algorithm) :sha256)
+              (if (= (get signature :status) :verified)
+                (if (= (get signature :subject) (get package :name))
+                  true
+                  false)
+                false)
+              false)
+            false))
+        false)
+      false)))
+
+(defn w5-c17-validate-manifest [request]
+  (let [manifest (get request :manifest)
+        package (get manifest :package)]
+    (if (not (map? manifest))
+      (w5-c17-diagnostic request "C17-MANIFEST" nil
+                         :manifest-missing :declare-complete-manifest nil nil)
+      (if (not (= (set (keys manifest))
+                  #{:artifact :plugin :package :api-version
+                    :compiler-compatibility :trust :profile :stage2-target
+                    :target :candidate-target :candidate-platform
+                    :target-scope :build-effects :capabilities
+                    :capability-scopes :passes :domains :facets :emits
+                    :conformance :provenance :manifest-hash}))
+        (w5-c17-diagnostic request "C17-MANIFEST" nil
+                           :manifest-fields :declare-exact-manifest-fields
+                           nil nil)
+        (if (not (w5-c17-all-present?
+                [:artifact :plugin :package :api-version
+                 :compiler-compatibility :trust :profile :build-effects
+                 :capabilities :capability-scopes :passes :domains :facets
+                 :emits :conformance :provenance :manifest-hash
+                 :stage2-target :target :candidate-target
+                 :candidate-platform :target-scope]
+                manifest))
+        (w5-c17-diagnostic request "C17-MANIFEST" nil
+                           :manifest-field-missing :declare-all-c17-fields
+                           nil nil)
+        (if (not (= (get manifest :artifact) :gravity/compiler-plugin))
+          (w5-c17-diagnostic request "C17-MANIFEST" nil
+                             :manifest-artifact-kind
+                             :use-gravity-compiler-plugin-artifact nil nil)
+          (if (not (= (get manifest :profile) :meta))
+            (w5-c17-diagnostic request "C17-MANIFEST" nil
+                               :manifest-profile
+                               :declare-meta-profile nil nil)
+            (if (not (= w5-c17-stage2-target
+                        (get manifest :stage2-target)))
+              (w5-c17-diagnostic request "C17-MANIFEST" nil
+                                 :manifest-stage2-target
+                                 :declare-jvm-seed-plan-target nil nil)
+              (if (not (= w5-c17-candidate-target
+                          (get manifest :target)))
+              (w5-c17-diagnostic request "C17-MANIFEST" nil
+                                 :manifest-target
+                                 :use-exact-llvm-linux-target nil nil)
+                (if (not (= w5-c17-candidate-target
+                            (get manifest :candidate-target)))
+                  (w5-c17-diagnostic request "C17-MANIFEST" nil
+                                     :manifest-candidate-target
+                                     :use-exact-llvm-linux-target nil nil)
+                  (if (not (= w5-c17-candidate-platform
+                              (get manifest :candidate-platform)))
+                    (w5-c17-diagnostic request "C17-MANIFEST" nil
+                                       :manifest-candidate-platform
+                                       :declare-linux-x86_64-llvm-elf-sysv-amd64
+                                       nil nil)
+                    (if (not (w5-c17-target-valid?
+                              (get manifest :target-scope)))
+                      (w5-c17-diagnostic request "C17-MANIFEST" nil
+                                         :manifest-target-scope
+                                         :declare-ordered-unsupported-target-policy
+                                         nil nil)
+                      (if (not (keyword? (get manifest :plugin)))
+                  (w5-c17-diagnostic request "C17-MANIFEST" nil
+                                     :plugin-identity
+                                     :declare-stable-plugin-id nil nil)
+                  (if (not (w5-c17-valid-package? package))
+                    (w5-c17-diagnostic request "C17-MANIFEST" nil
+                                       :package-identity
+                                       :declare-versioned-signed-package nil nil)
+                    (if (not (w5-c17-valid-signature? package))
+                      (w5-c17-diagnostic request "C17-TRUST" nil
+                                         :signature-missing-or-unverified
+                                         :provide-verified-package-signature nil nil)
+                        (if (not (w5-c17-provenance? (get manifest :provenance)))
+                        (w5-c17-diagnostic request "C17-MANIFEST" nil
+                                           :manifest-provenance
+                                           :record-source-and-compiler-provenance
+                                           nil nil)
+                        (if (not (= (get (get manifest :package) :source-hash)
+                                    (get (get manifest :provenance) :source-hash)))
+                          (w5-c17-diagnostic request "C17-MANIFEST" nil
+                                             :manifest-provenance-mismatch
+                                             :bind-manifest-source-to-provenance
+                                             nil nil)
+                          nil)))))))))))))))))
+
+(defn w5-c17-validate-api [request]
+  (let [manifest (get request :manifest)
+        compatibility (get manifest :compiler-compatibility)
+        compiler-api (get request :compiler-api-version)]
+    (if (not (= (get manifest :api-version) "1"))
+      (w5-c17-diagnostic request "C17-API" nil
+                         :unversioned-or-unsupported-plugin-api
+                         :declare-api-version-1 nil nil)
+      (if (not (map? compatibility))
+        (w5-c17-diagnostic request "C17-API" nil
+                           :compiler-compatibility-missing
+                           :declare-min-and-max-exclusive-api-range nil nil)
+        (if (not (= (get compatibility :min) "1"))
+          (w5-c17-diagnostic request "C17-API" nil
+                             :compiler-api-minimum-mismatch
+                             :support-compiler-api-1 nil nil)
+          (if (not (= (get compatibility :max-exclusive) "2"))
+            (w5-c17-diagnostic request "C17-API" nil
+                               :compiler-api-maximum-mismatch
+                               :set-api-max-exclusive-to-2 nil nil)
+            (if (not (= compiler-api "1"))
+              (w5-c17-diagnostic request "C17-API" nil
+                                 :compiler-api-incompatible
+                                 :use-compiler-api-1 nil nil)
+              nil)))))))
+
+(defn w5-c17-validate-trust [request]
+  (let [manifest (get request :manifest)
+        trust (get manifest :trust)
+        trust-record (get request :trust-record)
+        package (get manifest :package)]
+    (if (not (contains? (get w5-c17-policy :allowed-trust-levels) trust))
+      (w5-c17-diagnostic request "C17-TRUST" nil
+                         :trust-level-rejected
+                         :use-sandboxed-or-policy-approved-trusted-package nil nil)
+      (if (not (map? trust-record))
+        (w5-c17-diagnostic request "C17-TRUST" nil
+                           :trust-record-missing
+                           :provide-policy-signature-and-revocation-facts nil nil)
+        (if (not (= (get trust-record :policy-decision) :accepted))
+          (w5-c17-diagnostic request "C17-TRUST" nil
+                             :trust-policy-rejected
+                             :obtain-governance-policy-approval nil nil)
+          (if (not (= (get trust-record :signature-status) :verified))
+            (w5-c17-diagnostic request "C17-TRUST" nil
+                               :package-signature-unverified
+                               :verify-package-signature-before-loading nil nil)
+            (if (not (= (get trust-record :revocation-status) :clear))
+              (w5-c17-diagnostic request "C17-TRUST" nil
+                                 :package-signature-revoked
+                                 :refresh-signature-and-revocation-record nil nil)
+              (if (not (= (get trust-record :package) (get package :name)))
+                (w5-c17-diagnostic request "C17-TRUST" nil
+                                   :trust-package-identity-mismatch
+                                   :bind-trust-record-to-package-name nil nil)
+                nil))))))))
+
+(defn w5-c17-validate-capabilities [request]
+  (let [manifest (get request :manifest)
+        declared (get manifest :capabilities)
+        scopes (get manifest :capability-scopes)
+        requested (get request :requested-scopes)
+        grant (get request :capability-grant)
+        granted (get grant :scopes)
+        allowed (get w5-c17-policy :allowed-scopes)
+        required (get w5-c17-policy :required-scopes)]
+    (if (not (= declared #{:compiler/ir-transform}))
+      (w5-c17-diagnostic request "C17-CAPABILITY" :w5/plugin-execution
+                         :capability-set-mismatch
+                         :declare-only-scoped-ir-transform nil nil)
+      (if (not (map? scopes))
+        (w5-c17-diagnostic request "C17-CAPABILITY" :w5/plugin-execution
+                           :capability-scope-map-missing
+                           :declare-scopes-for-each-capability nil nil)
+        (if (not (= (get scopes :compiler/ir-transform) requested))
+          (w5-c17-diagnostic request "C17-CAPABILITY" :w5/plugin-execution
+                             :requested-scope-mismatch
+                             :make-requested-and-manifest-scopes-equal nil nil)
+          (if (not (w5-c17-subset? requested allowed))
+            (w5-c17-diagnostic request "C17-CAPABILITY" :w5/plugin-execution
+                               :excess-capability-scope
+                               :remove-unneeded-compiler-scope
+                               :query-compiler-configuration nil)
+            (if (not (w5-c17-all-present? required requested))
+              (w5-c17-diagnostic request "C17-CAPABILITY" :w5/plugin-execution
+                                 :missing-capability-scope
+                                 :request-all-required-pass-scopes
+                                 :write-mir nil)
+              (if (not (= granted requested))
+                (w5-c17-diagnostic request "C17-CAPABILITY" :w5/plugin-execution
+                                   :grant-does-not-match-request
+                                   :bind-grant-to-requested-scopes nil nil)
+                (if (not (= (get grant :capability)
+                            :compiler/ir-transform))
+                  (w5-c17-diagnostic request "C17-CAPABILITY"
+                                     :w5/plugin-execution
+                                     :wrong-compiler-capability
+                                     :grant-compiler-ir-transform nil nil)
+                  nil)))))))))
+
+(defn w5-c17-validate-build-effects [request]
+  (let [manifest (get request :manifest)
+        effects (get manifest :build-effects)
+        grants (get request :build-effect-grants)
+        sandbox (get request :sandbox)]
+    (if (not (= effects grants))
+      (w5-c17-diagnostic request "C17-BUILD-EFFECT" :w5/plugin-execution
+                         :ungranted-build-effect
+                         :declare-and-grant-only-hermetic-effects nil
+                         nil)
+      (if (not (w5-c17-subset? effects
+                               (get w5-c17-policy :hermetic-build-effects)))
+        (w5-c17-diagnostic request "C17-BUILD-EFFECT" :w5/plugin-execution
+                           :hermetic-effect-denied
+                           :remove-network-process-environment-and-clock-effects
+                           nil nil)
+        (if (not (= (get sandbox :build-effects) effects))
+          (w5-c17-diagnostic request "C17-BUILD-EFFECT" :w5/plugin-execution
+                             :sandbox-build-effect-mismatch
+                             :bind-sandbox-build-effects-to-manifest nil
+                             nil)
+          (if (not (= (get request :replay-record)
+                      {:mode :deterministic :events []}))
+            (w5-c17-diagnostic request "C17-BUILD-EFFECT" :w5/plugin-execution
+                               :unreplayable-build-effect
+                               :record-replay-events-or-reject-effect nil
+                               nil)
+            nil))))))
+
+(defn w5-c17-validate-sandbox [request]
+  (let [sandbox (get request :sandbox)
+        code (get request :plugin-code)
+        denied (get sandbox :denied-authority)
+        forbidden (get w5-c17-policy :denied-authority)]
+    (if (not (map? sandbox))
+      (w5-c17-diagnostic request "C17-SANDBOX" :w5/plugin-execution
+                         :sandbox-grant-missing
+                         :declare-restricted-authority-and-denials nil nil)
+      (if (not (= (get sandbox :restricted-authority) forbidden))
+        (w5-c17-diagnostic request "C17-SANDBOX" :w5/plugin-execution
+                           :sandbox-restriction-set-mismatch
+                           :deny-all-ambient-authority nil nil)
+        (if (not (= denied forbidden))
+          (w5-c17-diagnostic request "C17-SANDBOX" :w5/plugin-execution
+                             :sandbox-authority-not-denied
+                             :deny-filesystem-network-process-and-environment
+                             nil nil)
+          (if (not (= (get code :hidden-state?) false))
+            (w5-c17-diagnostic request "C17-SANDBOX" :w5/plugin-execution
+                               :hidden-compiler-state
+                               :use-declared-artifact-inputs-only nil nil)
+            (if (not (= (get code :authority) #{}))
+              (w5-c17-diagnostic request "C17-SANDBOX" :w5/plugin-execution
+                                 :hidden-authority
+                                 :declare-capability-and-sandbox-grant nil nil)
+              (if (not (= (get code :deterministic?) true))
+                (w5-c17-diagnostic request "C17-SANDBOX" :w5/plugin-execution
+                                   :nondeterministic-plugin-code
+                                   :record-replay-or-reject-execution nil nil)
+                nil))))))))
+
+(defn w5-c17-validate-pass [request]
+  (let [contract (get request :pass-contract)
+        manifest (get request :manifest)
+        input (get request :input-artifact)
+        output (get request :output-artifact)]
+    (if (not (= contract w5-c17-pass-contract))
+      (w5-c17-diagnostic request "C17-PASS-CONTRACT" :w5/plugin-execution
+                         :pass-contract-identity-mismatch
+                         :bind-exact-versioned-pass-contract nil nil)
+      (if (not (= (get manifest :passes) [(get contract :pass-id)]))
+        (w5-c17-diagnostic request "C17-PASS-CONTRACT" :w5/plugin-execution
+                           :pass-registration-mismatch
+                           :register-exact-pass-once-in-manifest nil nil)
+        (if (not (= (get manifest :plugin) (get contract :plugin)))
+          (w5-c17-diagnostic request "C17-PASS-CONTRACT" :w5/plugin-execution
+                             :pass-plugin-membership-mismatch
+                             :bind-pass-to-owning-manifest-plugin nil nil)
+          (if (not (= (get manifest :emits) (get contract :emits)))
+            (w5-c17-diagnostic request "C17-PASS-CONTRACT" :w5/plugin-execution
+                               :pass-emitted-artifact-mismatch
+                               :bind-emitted-artifacts-to-manifest nil nil)
+            (if (not (= (get contract :input) (get input :kind)))
+              (w5-c17-diagnostic request "C17-PASS-CONTRACT" :w5/plugin-execution
+                                 :pass-input-kind-mismatch
+                                 :match-pass-input-to-input-artifact nil nil)
+              (if (not (= (get contract :output) (get output :kind)))
+                (w5-c17-diagnostic request "C17-PASS-CONTRACT" :w5/plugin-execution
+                                   :pass-output-kind-mismatch
+                                   :match-pass-output-to-output-artifact nil nil)
+                nil))))))))
+
+(defn w5-c17-facts-preserved? [request]
+  (let [input-facts (get (get request :input-artifact) :facts)
+        output-facts (get (get request :output-artifact) :facts)
+        preserves (get (get request :pass-contract) :preserves)]
+    (if (w5-c17-all-present? (get w5-c17-policy :required-pass-facts)
+                             preserves)
+      (if (map? input-facts)
+        (if (= input-facts output-facts)
+          true
+          false)
+        false)
+      false)))
+
+(defn w5-c17-domain-registration-bound? [request domain]
+  (let [manifest (get request :manifest)
+        contract (get request :pass-contract)]
+    (if (= domain w5-c17-domain-registration)
+      (if (= (get domain :plugin) (get manifest :plugin))
+        (if (= (get domain :plugin) (get contract :plugin))
+          (if (= [(get domain :domain)] (get manifest :domains))
+            (if (= (get domain :supported-profiles)
+                   #{(get request :profile)})
+              (if (= (get domain :target) (get request :target))
+                (if (= (get domain :target-scope)
+                       (get request :target-scope))
+                  (if (= (get domain :effects)
+                         (get manifest :build-effects))
+                    (if (= (get domain :capabilities)
+                           (get manifest :capabilities))
+                      (if (= (get domain :lowering-paths)
+                             [(get contract :input)])
+                        (if (= (get domain :diagnostics) ["C17-DOMAIN"])
+                          (if (= (get domain :conformance)
+                                 [:w5-c17-domain-fixture])
+                            (if (contains? (set (get manifest :conformance))
+                                           :w5-c17-domain-fixture)
+                            (= (get domain :registration-result) :accepted)
+                            false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-c17-facet-registration-bound? [request facet]
+  (let [manifest (get request :manifest)
+        contract (get request :pass-contract)]
+    (if (= facet w5-c17-facet-registration)
+      (if (= (get facet :plugin) (get manifest :plugin))
+        (if (= (get facet :plugin) (get contract :plugin))
+          (if (= [(get facet :facet)] (get manifest :facets))
+            (if (= (get facet :supported-profiles)
+                   #{(get request :profile)})
+              (if (= (get facet :target) (get request :target))
+                (if (= (get facet :target-scope)
+                       (get request :target-scope))
+                  (if (= (get facet :effects)
+                         (get manifest :build-effects))
+                    (if (= (get facet :capabilities)
+                           (get manifest :capabilities))
+                      (if (= (get facet :lowering-paths)
+                             [(get contract :input)])
+                        (if (= (get facet :diagnostics) ["C17-FACET"])
+                          (if (= (get facet :conformance)
+                                 [:w5-c17-facet-fixture])
+                            (if (contains? (set (get manifest :conformance))
+                                           :w5-c17-facet-fixture)
+                            (= (get facet :registration-result) :accepted)
+                            false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-c17-validate-registrations [request]
+  (let [domain (get request :domain-registration)
+        facet (get request :facet-registration)]
+    (if (not (map? domain))
+      (w5-c17-diagnostic request "C17-DOMAIN" :w5/plugin-execution
+                         :domain-registration-missing
+                         :declare-c12-domain-schema-verifier-and-anchor nil nil)
+      (if (not (w5-c17-domain-registration-bound? request domain))
+        (w5-c17-diagnostic request "C17-DOMAIN" :w5/plugin-execution
+                           :domain-registration-binding-mismatch
+                           :bind-domain-registration-to-manifest-pass-and-request
+                           nil nil)
+      (if (not (= (get domain :owner-doc) "C12"))
+        (w5-c17-diagnostic request "C17-DOMAIN" :w5/plugin-execution
+                           :domain-owner-boundary
+                           :route-domain-registration-through-c12 nil nil)
+        (if (not (map? (get domain :schema)))
+          (w5-c17-diagnostic request "C17-DOMAIN" :w5/plugin-execution
+                             :opaque-domain-schema
+                             :provide-structured-domain-schema nil nil)
+          (if (not (= (get (get domain :schema) :version) 1))
+            (w5-c17-diagnostic request "C17-DOMAIN" :w5/plugin-execution
+                               :domain-schema-version
+                               :declare-versioned-domain-schema nil nil)
+            (if (not (= (get (get domain :verifier) :result) :passed))
+              (w5-c17-diagnostic request "C17-DOMAIN" :w5/plugin-execution
+                                 :domain-verifier-failed
+                                 :attach-passing-domain-verifier nil nil)
+              (if (not (= (get domain :semantic-anchor) :gravity/mir))
+                (w5-c17-diagnostic request "C17-DOMAIN" :w5/plugin-execution
+                                   :domain-anchor-missing
+                                   :anchor-domain-ir-to-typed-core-or-mir nil nil)
+                (if (not (= (get (get domain :payload) :opaque?) false))
+                  (w5-c17-diagnostic request "C17-DOMAIN" :w5/plugin-execution
+                                     :opaque-domain-payload
+                                     :provide-verifiable-structured-domain-payload nil nil)
+                  (if (not (map? facet))
+                    (w5-c17-diagnostic request "C17-FACET" :w5/plugin-execution
+                                       :facet-registration-missing
+                                       :declare-l14-facet-schema-and-verifier nil nil)
+                    (if (not (w5-c17-facet-registration-bound? request facet))
+                      (w5-c17-diagnostic request "C17-FACET"
+                                         :w5/plugin-execution
+                                         :facet-registration-binding-mismatch
+                                         :bind-facet-registration-to-manifest-pass-and-request
+                                         nil nil)
+                    (if (not (= (get facet :owner-doc) "L14"))
+                      (w5-c17-diagnostic request "C17-FACET" :w5/plugin-execution
+                                         :facet-owner-boundary
+                                         :route-facet-registration-through-l14 nil nil)
+                      (if (not (map? (get facet :schema)))
+                        (w5-c17-diagnostic request "C17-FACET" :w5/plugin-execution
+                                           :opaque-facet-schema
+                                           :provide-structured-facet-schema nil nil)
+                        (if (not (= (get (get facet :schema) :version) 1))
+                          (w5-c17-diagnostic request "C17-FACET" :w5/plugin-execution
+                                             :facet-schema-version
+                                             :declare-versioned-facet-schema nil nil)
+                          (if (not (= (get (get facet :verifier) :result)
+                                      :passed))
+                            (w5-c17-diagnostic request "C17-FACET" :w5/plugin-execution
+                                               :facet-verifier-failed
+                                               :attach-passing-facet-verifier nil nil)
+                            (if (not (= (get (get facet :payload) :opaque?) false))
+                              (w5-c17-diagnostic request "C17-FACET"
+                                                 :w5/plugin-execution
+                                                 :opaque-facet-payload
+                                                 :provide-verifiable-structured-facet-payload nil nil)
+                              nil)))))))))))))))))
+
+(defn w5-c17-validate-output [request]
+  (let [output (get request :output-artifact)
+        verifier (get output :verifier)
+        expected-kind (get (get request :pass-contract) :output)]
+    (if (not (map? output))
+      (w5-c17-diagnostic request "C17-OUTPUT" :w5/plugin-execution
+                         :output-artifact-missing
+                         :emit-declared-verifiable-output-artifact nil nil)
+      (if (not (= (get output :kind) expected-kind))
+        (w5-c17-diagnostic request "C17-OUTPUT" :w5/plugin-execution
+                           :output-kind-mismatch
+                           :match-output-kind-to-pass-contract nil nil)
+        (if (not (map? verifier))
+          (w5-c17-diagnostic request "C17-OUTPUT" :w5/plugin-execution
+                             :output-verifier-missing
+                             :attach-normal-compiler-output-verifier nil nil)
+          (if (not (= (get verifier :result) :passed))
+            (w5-c17-diagnostic request "C17-OUTPUT" :w5/plugin-execution
+                               :output-verifier-failed
+                               :fix-output-or-provide-verifier-evidence nil nil)
+              (if (not (= (get output :verifier-result) :passed))
+                (w5-c17-diagnostic request "C17-OUTPUT" :w5/plugin-execution
+                                   :output-result-not-passed
+                                   :record-passing-output-verifier-result nil nil)
+              (if (not (= (get output :semantic-value)
+                          (get (get request :input-artifact) :semantic-value)))
+                (w5-c17-diagnostic request "C17-OUTPUT" :w5/plugin-execution
+                                   :output-substitution
+                                   :recompute-output-from-declared-input nil nil)
+                (if (not (w5-c17-facts-preserved? request))
+                  (w5-c17-diagnostic request "C17-PASS-CONTRACT"
+                                     :w5/plugin-execution
+                                     :preserved-facts-dropped
+                                     :retain-or-invalidate-every-preserved-fact nil nil)
+                  nil)))))))))
+
+(defn w5-c17-request-target-valid? [request]
+  (if (= w5-c17-candidate-target (get request :target))
+    (if (= w5-c17-stage2-target (get request :stage2-target))
+      (if (= w5-c17-candidate-target (get request :candidate-target))
+        (if (= w5-c17-candidate-platform
+               (get request :candidate-platform))
+          (if (= w5-c17-unsupported-targets
+                 (get request :unsupported-targets))
+            (if (= w5-c17-unsupported-target-policies
+                   (get request :unsupported-target-policies))
+              (if (= false (get request :cross-target-inference?))
+                (if (= false (get request :fallback?))
+                  (w5-c17-target-valid? (get request :target-scope))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c17-validate-request [request]
+  (if (not (map? request))
+    (w5-c17-diagnostic {} "C17-MANIFEST" :w5/plugin-execution
+                       :request-not-map :provide-plugin-request nil nil)
+    (if (not (= (set (keys request))
+                #{:artifact :request-id :compiler-api-version :profile
+                  :target :stage2-target :candidate-target
+                  :candidate-platform :target-scope :unsupported-targets
+                  :unsupported-target-policies :cross-target-inference?
+                  :fallback? :source-span :provenance :manifest
+                  :trust-record :plugin-code :requested-scopes
+                  :capability-grant :build-effect-grants :replay-record
+                  :sandbox :pass-contract :input-artifact :output-artifact
+                  :domain-registration :facet-registration
+                  :plugin-load-order :authority-summary
+                  :clojure-seed-boundary? :self-hosted? :release?
+                  :non-authoritative?}))
+      (w5-c17-diagnostic request "C17-MANIFEST" nil
+                         :request-fields :declare-exact-plugin-request-fields
+                         nil nil)
+      (if (not (= true (get request :clojure-seed-boundary?)))
+        (w5-c17-diagnostic request "C17-MANIFEST" nil
+                           :request-flags :preserve-seed-nonauthority-boundary
+                           nil nil)
+      (if (not (= false (get request :self-hosted?)))
+        (w5-c17-diagnostic request "C17-MANIFEST" nil
+                           :request-flags :preserve-seed-nonauthority-boundary
+                           nil nil)
+      (if (not (= false (get request :release?)))
+        (w5-c17-diagnostic request "C17-MANIFEST" nil
+                           :request-flags :preserve-seed-nonauthority-boundary
+                           nil nil)
+      (if (not (= true (get request :non-authoritative?)))
+        (w5-c17-diagnostic request "C17-MANIFEST" nil
+                           :request-flags :preserve-seed-nonauthority-boundary
+                           nil nil)
+      (if (not (w5-c17-request-target-valid? request))
+      (w5-c17-diagnostic request "C17-MANIFEST" nil
+                         :request-target-scope
+                         :use-exact-llvm-linux-target nil nil)
+      (if (not (w5-c17-source-span? (get request :source-span)))
+      (w5-c17-diagnostic request "C17-MANIFEST" nil
+                         :manifest-span-invalid :preserve-logical-source-span nil nil)
+      (if (not (w5-c17-provenance? (get request :provenance)))
+        (w5-c17-diagnostic request "C17-MANIFEST" nil
+                           :provenance-invalid
+                           :place-actual-path-only-in-provenance nil nil)
+        (if (not (= (get request :plugin-load-order)
+                    [:manifest :api-compatibility :trust :sandbox :code]))
+          (w5-c17-diagnostic request "C17-MANIFEST" nil
+                             :manifest-not-loaded-before-plugin-code
+                             :load-and-validate-manifest-before-code nil nil)
+          (let [manifest-diagnostic (w5-c17-validate-manifest request)]
+            (if manifest-diagnostic
+              manifest-diagnostic
+              (let [api-diagnostic (w5-c17-validate-api request)]
+              (if api-diagnostic
+                api-diagnostic
+                (let [trust-diagnostic (w5-c17-validate-trust request)]
+                  (if trust-diagnostic
+                    trust-diagnostic
+                    (let [capability-diagnostic
+                          (w5-c17-validate-capabilities request)]
+                      (if capability-diagnostic
+                        capability-diagnostic
+                        (let [build-effect-diagnostic
+                              (w5-c17-validate-build-effects request)]
+                          (if build-effect-diagnostic
+                            build-effect-diagnostic
+                            (let [sandbox-diagnostic
+                                  (w5-c17-validate-sandbox request)]
+                              (if sandbox-diagnostic
+                                sandbox-diagnostic
+                                (let [pass-diagnostic
+                                      (w5-c17-validate-pass request)]
+                                  (if pass-diagnostic
+                                    pass-diagnostic
+                                    (let [registration-diagnostic
+                                          (w5-c17-validate-registrations request)]
+                                      (if registration-diagnostic
+                                        registration-diagnostic
+                                        (w5-c17-validate-output request))))))))))))))))))))))))))))
+
+(defn w5-c17-identity-input [request]
+  {:plugin (get (get request :manifest) :plugin)
+   :package {:name (get (get (get request :manifest) :package) :name)
+             :version (get (get (get request :manifest) :package) :version)
+             :source-hash
+             (get (get (get request :manifest) :package) :source-hash)
+             :dependency-graph
+             (get (get (get request :manifest) :package) :dependency-graph)}
+   :api-version (get (get request :manifest) :api-version)
+   :compiler-api-version (get request :compiler-api-version)
+   :manifest-hash (get (get request :manifest) :manifest-hash)
+   :pass-contract
+   {:pass-id (get (get request :pass-contract) :pass-id)
+    :version (get (get request :pass-contract) :version)
+    :input (get (get request :pass-contract) :input)
+    :output (get (get request :pass-contract) :output)
+    :requires (get (get request :pass-contract) :requires)
+    :preserves (get (get request :pass-contract) :preserves)
+    :invalidates (get (get request :pass-contract) :invalidates)
+    :regenerates (get (get request :pass-contract) :regenerates)
+    :proof-obligations (get (get request :pass-contract) :proof-obligations)
+    :emits (get (get request :pass-contract) :emits)}
+   :capabilities (get request :requested-scopes)
+   :build-effects (get request :build-effect-grants)
+   :dependencies (get (get (get request :manifest) :package)
+                      :dependency-graph)
+   :input-artifact {:artifact-id
+                    (get (get request :input-artifact) :artifact-id)
+                    :kind (get (get request :input-artifact) :kind)
+                    :facts (get (get request :input-artifact) :facts)
+                    :semantic-value
+                    (get (get request :input-artifact) :semantic-value)}
+   :domain {:domain (get (get request :domain-registration) :domain)
+            :schema (get (get request :domain-registration) :schema)
+            :semantic-anchor
+            (get (get request :domain-registration) :semantic-anchor)}
+   :facet {:facet (get (get request :facet-registration) :facet)
+           :schema (get (get request :facet-registration) :schema)
+           :supported-profiles
+           (get (get request :facet-registration) :supported-profiles)}
+   :replay-record (get request :replay-record)
+   :profile (get request :profile)
+   :target (get request :target)
+   :stage2-target (get request :stage2-target)
+   :candidate-target w5-c17-candidate-target
+   :candidate-platform w5-c17-candidate-platform
+   :target-scope (get request :target-scope)})
+
+(defn w5-c17-cache-key-inputs [request]
+  {:plugin-package {:name (get (get (get request :manifest) :package) :name)
+                    :version
+                    (get (get (get request :manifest) :package) :version)}
+   :plugin-version (get (get (get request :manifest) :package) :version)
+   :manifest-hash (get (get request :manifest) :manifest-hash)
+   :grants (get request :capability-grant)
+   :dependencies (get (get (get request :manifest) :package)
+                      :dependency-graph)
+   :compiler-api-version (get request :compiler-api-version)
+   :build-effects (get request :build-effect-grants)
+   :replay-records [(get request :replay-record)]
+   :input-artifacts [(get (get request :input-artifact) :artifact-id)]
+   :pass-contract (get (get request :pass-contract) :contract-version)
+   :target w5-c17-candidate-target
+   :target-scope (get request :target-scope)})
+
+(defn w5-c17-execution-trace [request output]
+  {:artifact :gravity/plugin-execution
+   :plugin (get (get request :manifest) :plugin)
+   :pass (get (get request :pass-contract) :pass-id)
+   :input (get (get request :input-artifact) :artifact-id)
+   :output (get (get output :output-artifact) :artifact-id)
+   :grants (get request :capability-grant)
+   :grant-hash (get (get request :capability-grant) :grant-hash)
+   :build-effects (get request :build-effect-grants)
+   :decisions [:decision/w5-c17-identity]
+   :diagnostics []
+   :verifier-result :passed
+   :replay-record (get request :replay-record)
+   :cache-key (w5-c17-cache-key-inputs request)
+   :provenance (get request :provenance)
+   :target w5-c17-candidate-target
+   :target-scope (get request :target-scope)
+   :trace-version "C17-1"})
+
+(defn w5-c17-output-verifier-report [request]
+  {:artifact :gravity/plugin-verifier-report
+   :plugin (get (get request :manifest) :plugin)
+   :pass (get (get request :pass-contract) :pass-id)
+   :input (get (get request :input-artifact) :artifact-id)
+   :output (get (get request :output-artifact) :artifact-id)
+   :declared-output-kind (get (get request :pass-contract) :output)
+   :verifier (get (get request :output-artifact) :verifier)
+   :verifier-result :passed
+   :diagnostics []
+   :proofs [:proof/w5-c17-semantic-identity]
+   :preserved-facts (get (get request :pass-contract) :preserves)
+   :invalidated-facts (get (get request :pass-contract) :invalidates)
+   :target w5-c17-candidate-target
+   :target-scope (get request :target-scope)
+   :provenance (get request :provenance)})
+
+(defn w5-c17-recompute [request]
+  (let [diagnostic (w5-c17-validate-request request)]
+    (if diagnostic
+      {:artifact :gravity/w5-c17-plugin-result
+       :status :rejected
+       :diagnostics [diagnostic]
+       :clojure-seed-boundary? true
+       :stage2-target w5-c17-stage2-target
+       :candidate-target w5-c17-candidate-target
+       :candidate-platform w5-c17-candidate-platform
+       :target-scope (get request :target-scope)
+       :self-hosted? false
+       :release? false
+       :full-language-credit? false
+       :matrix-240-credit? false
+       :public-authority? false
+       :authority :non-authority
+       :non-authoritative? true
+       :residual-boundaries #{:clojure-stage2-compiler-plan
+                              :jvm-stage2-runtime}
+       :scope :w5-c17-executable-leaf}
+      (let [identity-input (w5-c17-identity-input request)
+            output-artifact (get request :output-artifact)
+            trace (w5-c17-execution-trace request
+                                          {:output-artifact output-artifact})]
+        {:artifact :gravity/w5-c17-plugin-result
+         :schema-version 1
+         :status :accepted
+         :scope :w5-c17-executable-leaf
+         :identity-input identity-input
+         :input-artifact (get request :input-artifact)
+         :output-artifact output-artifact
+         :pass-contract (get request :pass-contract)
+         :sandbox-grant (get request :sandbox)
+         :domain-registration (get request :domain-registration)
+         :facet-registration (get request :facet-registration)
+         :verifier-report (w5-c17-output-verifier-report request)
+         :execution-trace trace
+         :cache-key (:cache-key trace)
+         :diagnostics []
+         :provenance (get request :provenance)
+         :clojure-seed-boundary? true
+         :stage2-target w5-c17-stage2-target
+         :candidate-target w5-c17-candidate-target
+         :candidate-platform w5-c17-candidate-platform
+         :target-scope (get request :target-scope)
+         :self-hosted? false
+         :release? false
+         :full-language-credit? false
+         :matrix-240-credit? false
+         :production-execution? false
+         :public-authority? false
+         :authority :non-authority
+         :non-authoritative? true
+         :residual-boundaries #{:clojure-stage2-compiler-plan
+                                :jvm-stage2-runtime}
+         :completion :incomplete}))))
+
+(defn w5-c17-execute [request]
+  (w5-c17-recompute request))
+
+(defn w5-c17-plugin-execute [request]
+  (w5-c17-execute request))
+
+(defn w5-c17-run [request]
+  (w5-c17-execute request))
+
+(defn w5-c17-verify [request result]
+  (let [expected (w5-c17-recompute request)]
+    (if (= result expected)
+      {:artifact :gravity/w5-c17-verification
+       :status :passed
+       :scope :w5-c17-executable-leaf
+       :result-id (get result :artifact)
+       :checks [:manifest-before-code :api-compatibility
+                :trust-and-signature :capability-scopes
+                :hermetic-build-effects :sandbox-restrictions
+                :pass-contract :domain-registration
+                :facet-registration :output-verifier
+                :execution-trace :c16-cache-key
+                :path-neutral-identity]
+       :diagnostics []
+       :clojure-seed-boundary? true
+       :stage2-target w5-c17-stage2-target
+       :candidate-target w5-c17-candidate-target
+       :candidate-platform w5-c17-candidate-platform
+       :target-scope (get request :target-scope)
+       :self-hosted? false
+       :release? false
+       :full-language-credit? false
+       :matrix-240-credit? false
+       :public-authority? false
+       :authority :non-authority
+       :non-authoritative? true}
+      {:artifact :gravity/w5-c17-verification
+       :status :rejected
+       :scope :w5-c17-executable-leaf
+       :diagnostics
+       [(w5-c17-diagnostic request "C17-OUTPUT"
+                           :w5/plugin-execution
+                           :execution-result-substitution
+                           :recompute-plugin-output-and-verifier-report nil nil)]
+       :clojure-seed-boundary? true
+       :stage2-target w5-c17-stage2-target
+       :candidate-target w5-c17-candidate-target
+       :candidate-platform w5-c17-candidate-platform
+       :target-scope (get request :target-scope)
+       :self-hosted? false
+       :release? false
+       :full-language-credit? false
+       :matrix-240-credit? false
+       :public-authority? false
+       :authority :non-authority
+       :non-authoritative? true})))
+
+(defn w5-c17-verify-result [request result]
+  (w5-c17-verify request result))
+
+(defn w5-c17-diagnostic-catalog []
+  {:artifact :gravity/w5-c17-diagnostic-catalog
+   :schema-version 1
+   :diagnostics (get w5-c17-policy :diagnostics)
+   :non-authority {:clojure-seed-boundary? true
+                   :self-hosted? false
+                   :release? false
+                   :public-authority? false
+                   :full-language-credit? false
+                   :matrix-240-credit? false
+                   :candidate-target w5-c17-candidate-target
+                   :candidate-platform w5-c17-candidate-platform
+                   :unsupported-targets w5-c17-unsupported-targets
+                   :unsupported-target-policies
+                   w5-c17-unsupported-target-policies
+                   :cross-target-inference? false
+                   :fallback? false}})

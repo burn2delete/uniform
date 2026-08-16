@@ -1,0 +1,17 @@
+; SH-07-B10 preserves a loop recur target through a tail match branch.
+(ns self-hosting.sh07-b10.loop-tail-recur
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [loop-through-match])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10
+              :fixture :loop-tail-recur
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn loop-through-match [initial]
+  (loop [value initial]
+    (match value
+      1 (recur 0)
+      _ value)))

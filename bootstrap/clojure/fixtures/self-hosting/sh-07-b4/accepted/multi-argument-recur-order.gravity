@@ -1,0 +1,16 @@
+; SH-07-B4 recur arguments retain left-to-right source order.
+(ns self-hosting.sh07-b4.multi-argument-recur-order
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [ordered-recur-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B4 :fixture :multi-argument-recur-order}))
+
+(def ordered-recur-result
+  (loop [left 1
+         right 2]
+    (if false
+      (recur right left)
+      [left right])))

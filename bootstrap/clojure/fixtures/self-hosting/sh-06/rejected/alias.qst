@@ -1,0 +1,12 @@
+(ns self-hosting.sh06.reject.alias
+  (:profile :hosted) (:target :jvm)
+  (:requires [left.library :as duplicate] [right.library :as duplicate])
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:slice :SH-06
+              :compiler {:sh06-request {:request-version 1
+                                         :references [{:symbol absent/value
+                                                       :position :expression}]
+                                         :alias-table []}}
+              :sh06 {:expected-rule "C5-ALIAS" :expected-stage :name-resolution
+                     :expected-severity :error :expected-remediation :declare-unique-alias}}))
+(defn candidate [] duplicate/value)

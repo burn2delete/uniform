@@ -1,0 +1,78 @@
+{:schema :gravity/p15-s23-darwin-launcher-primitive-v1
+ :artifact-kind :bootstrap-host-launcher-prerequisite
+ :status :partial
+ :baseline-commit "6084c50"
+ :component
+ {:source "bootstrap/native/p15_public_native_launcher.c"
+  :source-sha256 "8db1b618f7a3803229f464235cf2594ee95dfbdd7586b34574fe6a381c91f1d6"
+  :implementation-language :c
+  :gravity-authored? false
+  :public-command-component? false
+  :release-component? false}
+ :contract
+ {:identity-bound-pathname-admission? true
+  :suspended-main-vnode-identity-verified? true
+  :same-process-group-live-member-cleanup? true
+  :descriptor-relative-native-execution? false
+  :same-euid-concurrent-mutation-resistant? false
+  :external-sigcont-resistant? false
+  :os-process-containment? false
+  :setsid-escape-contained? false
+  :whole-process-tree-reaping-proved? false
+  :code-signature-verified? false
+  :dyld-import-closure-verified? false}
+ :diagnostics
+ ["P15NL001" "P15NL002" "P15NL003" "P15NL004" "P15NL005"
+  "P15NL006" "P15NL007" "P15NL008" "P15NL009" "P15NL010"
+  "P15NL011" "P15NL012" "P15NL013" "P15NL014" "P15NL015"]
+ :evidence
+ {:test-source "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj"
+  :test-source-sha256 "9916d84c43b344fb301532d6b562b8f6d2aa4d0b14e933d7dfdd27a183dac56f"
+  :accepted ["argv_stdout.c" "exit_23.c"]
+  :rejected
+  [:relative-path :final-symlink :non-regular :mapped-vnode-replacement
+   :timeout-with-descendant :leader-exit-with-descendant :launcher-sigterm]
+  :command
+  ["clojure" "-J-Xmx1g" "-M:test" "--namespace"
+   "gravity.p15-native-launcher-test"]
+  :tests 8
+  :assertions 60
+  :failures 0
+  :errors 0
+  :supervised? true
+  :shared-capacity-lock "/private/tmp/gravity-sh07-heavy.lock"
+  :elapsed-seconds 5.983
+  :peak-rss-bytes 213712896
+  :independent-review :approved}
+ :public-gate
+ {:command
+  ["bin/gravity" "run" "examples/hello.gravity" "--target" "c"
+   "--lowering" "runtime-derived"]
+  :exit 1
+  :diagnostic "P18T04002"
+  :missing-fact :contained-public-native-run
+  :clojure-seed-boundary? true
+  :native-executable-run? false}
+ :trusted-boundaries
+ [:darwin-kernel
+  :darwin-private-libproc-region-and-process-group-apis
+  :apple-clang-c-toolchain
+  :host-authored-c-launcher
+  :host-filesystem-and-process-interfaces]
+ :seed-boundary
+ {:public-boundary-reduced? false
+  :compiler-clojure-seed-boundary? true
+  :evaluator-runtime-clojure-seed-boundary? true
+  :verifier-clojure-seed-boundary? true
+  :artifact-construction-clojure-seed-boundary? true
+  :process-file-io-clojure-seed-boundary? true
+  :release-wrapper-clojure-seed-boundary? true
+  :clojure-seed-boundary? true
+  :self-hosted? false
+  :seedless-release? false}
+ :formal-language
+ {:complete-documents 0
+  :total-documents 240
+  :moved? false}
+ :next-required-capability
+ :descriptor-relative-os-contained-gravity-authored-public-driver-runtime}

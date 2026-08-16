@@ -1,0 +1,259 @@
+(ns gravity.self-hosting.sh13.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh13-unverified-module
+             sh13-duplicate-function-module
+             sh13-missing-terminator-module
+             sh13-unknown-callee-module
+             sh13-call-arity-module
+             sh13-call-type-module
+             sh13-invalid-lt-module
+             sh13-unmarked-recursion-module
+             sh13-indirect-allowlist-module
+             sh13-missing-effect-order-module
+             sh13-throw-effect-module
+             sh13-missing-branch-target-module
+             sh13-branch-type-module
+             sh13-use-before-definition-module
+             sh13-missing-origin-module
+             sh13-missing-lineage-module
+             sh13-mismatched-verifier-module
+             sh13-duplicate-operation-module
+             sh13-unreachable-block-module
+             sh13-operation-profile-module
+             sh13-operation-fact-module
+             sh13-pure-ordering-module
+             sh13-mutual-recursion-module
+             sh13-low-fuel-module])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh13-function-at [module function-index]
+  (get (get module :functions) function-index))
+
+(defn sh13-block-at [module function-index block-index]
+  (get (get (sh13-function-at module function-index) :blocks) block-index))
+
+(defn sh13-operation-at
+  [module function-index block-index operation-index]
+  (get
+   (get
+    (sh13-block-at module function-index block-index)
+    :operations)
+   operation-index))
+
+(defn sh13-replace-function [module function-index function]
+  (assoc
+   module :functions
+   (assoc (get module :functions) function-index function)))
+
+(defn sh13-replace-block [module function-index block-index block]
+  (let [function (sh13-function-at module function-index)]
+    (sh13-replace-function
+     module function-index
+     (assoc
+      function :blocks
+      (assoc (get function :blocks) block-index block)))))
+
+(defn sh13-replace-operation
+  [module function-index block-index operation-index operation]
+  (let [block (sh13-block-at module function-index block-index)]
+    (sh13-replace-block
+     module function-index block-index
+     (assoc
+      block :operations
+      (assoc
+       (get block :operations) operation-index operation)))))
+
+(defn sh13-unverified-module [module]
+  (assoc module :mir-verified false))
+
+(defn sh13-duplicate-function-module [module]
+  (assoc
+   module :functions
+   (conj (get module :functions) (sh13-function-at module 0))))
+
+(defn sh13-missing-terminator-module [module]
+  (sh13-replace-block
+   module 0 0
+   (assoc (sh13-block-at module 0 0) :terminator nil)))
+
+(defn sh13-unknown-callee-module [module]
+  (sh13-replace-operation
+   module 1 2 2
+   (assoc
+    (sh13-operation-at module 1 2 2)
+    :callee :missing)))
+
+(defn sh13-call-arity-module [module]
+  (sh13-replace-operation
+   module 1 2 2
+   (assoc
+    (sh13-operation-at module 1 2 2)
+    :operands [])))
+
+(defn sh13-call-type-module [module]
+  (let [block (sh13-block-at module 1 2)
+        operations (get block :operations)
+        bool-operation
+        (assoc
+         (assoc
+          (assoc (get operations 0) :op-id :factorial/bool)
+          :result :factorial/bool)
+         :literal true)
+        typed-bool-operation (assoc bool-operation :type :bool)
+        invalid-call
+        (assoc (get operations 2) :operands [:factorial/bool])]
+    (sh13-replace-block
+     module 1 2
+     (assoc
+      block :operations
+      [(get operations 0)
+       (get operations 1)
+       typed-bool-operation
+       invalid-call
+       (get operations 3)]))))
+
+(defn sh13-invalid-lt-module [module]
+  (let [block (sh13-block-at module 0 0)
+        template (sh13-operation-at module 1 0 1)
+        invalid
+        (assoc
+         (assoc
+          (assoc
+           (assoc template :op-id :choose/invalid-lt)
+           :result :choose/invalid-lt)
+          :opcode :lt)
+         :operands [:condition :condition])]
+    (sh13-replace-block
+     module 0 0
+     (assoc block :operations [invalid]))))
+
+(defn sh13-unmarked-recursion-module [module]
+  (sh13-replace-function
+   module 1
+   (assoc (sh13-function-at module 1) :recursive false)))
+
+(defn sh13-indirect-allowlist-module [module]
+  (sh13-replace-operation
+   module 4 0 0
+   (assoc
+    (sh13-operation-at module 4 0 0)
+    :allowed-callees #{:factorial})))
+
+(defn sh13-missing-effect-order-module [module]
+  (sh13-replace-operation
+   module 4 0 0
+   (assoc
+    (assoc
+     (sh13-operation-at module 4 0 0)
+     :effects #{:error/throw})
+    :ordering nil)))
+
+(defn sh13-throw-effect-module [module]
+  (sh13-replace-function
+   module 6
+   (assoc (sh13-function-at module 6) :latent-effects #{})))
+
+(defn sh13-missing-branch-target-module [module]
+  (let [block (sh13-block-at module 0 1)]
+    (sh13-replace-block
+     module 0 1
+     (assoc
+      block :terminator
+      (assoc (get block :terminator) :target :missing)))))
+
+(defn sh13-branch-type-module [module]
+  (let [block (sh13-block-at module 0 1)]
+    (sh13-replace-block
+     module 0 1
+     (assoc
+      block :terminator
+      (assoc
+       (get block :terminator)
+       :arguments [])))))
+
+(defn sh13-use-before-definition-module [module]
+  (sh13-replace-operation
+   module 1 0 1
+   (assoc
+    (sh13-operation-at module 1 0 1)
+    :operands [:factorial/later :factorial/zero])))
+
+(defn sh13-missing-origin-module [module]
+  (sh13-replace-operation
+   module 1 0 0
+   (assoc
+    (sh13-operation-at module 1 0 0)
+    :origin-chain [])))
+
+(defn sh13-missing-lineage-module [module]
+  (assoc module :safety-table-id nil))
+
+(defn sh13-mismatched-verifier-module [module]
+  (assoc
+   module :mir-verifier-report
+   (assoc (get module :mir-verifier-report)
+          :module-id :sh13/other-module)))
+
+(defn sh13-duplicate-operation-module [module]
+  (sh13-replace-operation
+   module 1 2 0
+   (assoc
+    (assoc
+     (sh13-operation-at module 1 2 0)
+     :op-id :factorial/zero)
+    :result :factorial/zero)))
+
+(defn sh13-unreachable-block-module [module]
+  (let [entry (sh13-block-at module 0 0)
+        terminator (get entry :terminator)]
+    (sh13-replace-block
+     module 0 0
+     (assoc
+      entry :terminator
+      (assoc
+       (assoc terminator :then-target :choose/else)
+       :else-target :choose/else)))))
+
+(defn sh13-operation-profile-module [module]
+  (sh13-replace-operation
+   module 1 0 0
+   (assoc
+    (sh13-operation-at module 1 0 0)
+    :profile :hosted)))
+
+(defn sh13-operation-fact-module [module]
+  (let [operation (sh13-operation-at module 1 0 0)]
+    (sh13-replace-operation
+     module 1 0 0
+     (assoc
+      operation :facts
+      (assoc (get operation :facts)
+             :safety :sh13/other-safety-table)))))
+
+(defn sh13-pure-ordering-module [module]
+  (sh13-replace-operation
+   module 1 0 0
+   (assoc
+    (sh13-operation-at module 1 0 0)
+    :ordering :sequence)))
+
+(defn sh13-mutual-recursion-module [module]
+  (sh13-replace-operation
+   module 3 0 1
+   (assoc
+    (assoc
+     (assoc
+      (assoc
+       (assoc
+        (sh13-operation-at module 3 0 1)
+        :opcode :call)
+       :callee :indirect-main)
+      :operands [:x])
+     :dispatch :direct)
+    :allowed-callees #{})))
+
+(defn sh13-low-fuel-module [module]
+  (assoc module :maximum-execution-steps 2))

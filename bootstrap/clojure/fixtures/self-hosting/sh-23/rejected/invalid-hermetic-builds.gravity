@@ -1,0 +1,248 @@
+(ns gravity.self-hosting.sh23.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh23-missing-lock-request
+             sh23-online-request
+             sh23-capability-expansion-request
+             sh23-forbidden-effect-request
+             sh23-uncontrolled-environment-request
+             sh23-implicit-target-request
+             sh23-illegal-meta-request
+             sh23-library-gap-request
+             sh23-missing-dependency-request
+             sh23-cycle-request
+             sh23-order-mismatch-request
+             sh23-path-identity-input-request
+             sh23-inexact-project-authority-request
+             sh23-inexact-build-authority-request
+             sh23-extra-locked-package-request
+             sh23-unlocked-component-package-request
+             sh23-malformed-forward-ordinal-request
+             sh23-unsupported-backend-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh23-package [package-id]
+  {:artifact :gravity/locked-package
+   :package-id package-id
+   :version "0.1.0"
+   :content-id "sha256:package"
+   :provenance-id "sha256:provenance"
+   :provenance-status :verified
+   :revoked false
+   :effects #{}
+   :capabilities #{}
+   :targets [:portable-mir]})
+
+(defn sh23-base-request []
+  {:artifact :gravity/sh23-hermetic-build-request
+   :build-id "sha256:sh23-invalid-build"
+   :project
+   {:artifact :gravity/project-manifest
+    :package-id :gravity/bootstrap-compiler
+    :version "0.1.0"
+    :edition "2026.1"
+    :source-roots ["bootstrap/gravity/src"]
+    :profile :meta
+    :target :portable-mir
+    :entrypoints [:gravity.compiler/main]
+    :dependency-roots [:gravity/core]
+    :effects #{:build/read-file :build/write-artifact}
+    :capabilities #{:build/read-file :build/write-artifact}
+    :unsafe-policy :deny
+    :artifact-kinds [:compiler-module]
+    :release-lock-required true}
+   :lockfile
+   {:artifact :gravity/bootstrap-lockfile
+    :lock-id "sha256:lock"
+    :complete true
+    :offline true
+    :packages [(sh23-package :gravity/core)]}
+   :compiler
+   {:artifact-id "sha256:compiler"
+    :source-id "sha256:source"
+    :plan-id "sha256:plan"
+    :profile :meta
+    :legal-result-id "sha256:legality"}
+   :legality
+   {:artifact :gravity/sh21-meta-legality-result
+    :status :accepted
+    :program-id "sha256:program"
+    :profile :meta
+    :hermetic true}
+   :library
+   {:artifact :gravity/standard-library-module-manifest
+    :module 'gravity.stdlib.self-hosting-core
+    :stability :experimental
+    :conformance-id "sha256:stdlib"}
+   :environment
+   {:locale "C"
+    :timezone "UTC"
+    :filesystem-order :sorted
+    :timestamp-policy :fixed
+    :random-seed 23
+    :network :disabled
+    :allowed-environment []}
+   :target
+   {:profile :meta
+    :backend :gravity.backend/portable-mir
+    :target :portable-mir
+    :runtime :minimal-native
+    :support :internal
+    :artifact-kind :compiler-module}
+   :effects #{:build/read-file :build/write-artifact}
+   :capabilities #{:build/read-file :build/write-artifact}
+   :component-order [:component/reader :component/analyzer]
+   :components
+   [{:artifact :gravity/bootstrap-build-component
+     :component-id :component/reader
+     :source-content-id "sha256:reader"
+     :compiler-module-id :compiler/reader
+     :dependencies []
+     :stdlib-dependencies [:gravity/core]
+     :output-id :artifact/reader
+     :output-content-hash
+     "1000000000000000000000000000000000000000000000000000000000000001"
+     :topological-ordinal 1
+     :actual-source-path "/checkout-a/reader.gravity"}
+    {:artifact :gravity/bootstrap-build-component
+     :component-id :component/analyzer
+     :source-content-id "sha256:analyzer"
+     :compiler-module-id :compiler/analyzer
+     :dependencies [:component/reader]
+     :stdlib-dependencies [:gravity/core]
+     :output-id :artifact/analyzer
+     :output-content-hash
+     "2000000000000000000000000000000000000000000000000000000000000002"
+     :topological-ordinal 2
+     :actual-source-path "/checkout-a/analyzer.gravity"}]})
+
+(defn sh23-missing-lock-request []
+  (assoc (sh23-base-request) :lockfile nil))
+
+(defn sh23-online-request []
+  (assoc
+   (sh23-base-request) :lockfile
+   (assoc (get (sh23-base-request) :lockfile) :offline false)))
+
+(defn sh23-capability-expansion-request []
+  (let [request (sh23-base-request)
+        package (first (get (get request :lockfile) :packages))]
+    (assoc
+     request :lockfile
+     (assoc
+      (get request :lockfile) :packages
+      [(assoc package :capabilities #{:network/http})]))))
+
+(defn sh23-forbidden-effect-request []
+  (assoc
+   (sh23-base-request)
+   :effects #{:build/read-file :build/write-artifact :build/network}))
+
+(defn sh23-uncontrolled-environment-request []
+  (assoc
+   (sh23-base-request) :environment
+   (assoc (get (sh23-base-request) :environment)
+          :filesystem-order :host)))
+
+(defn sh23-implicit-target-request []
+  (assoc (sh23-base-request) :target nil))
+
+(defn sh23-illegal-meta-request []
+  (assoc
+   (sh23-base-request) :legality
+   (assoc (get (sh23-base-request) :legality) :status :rejected)))
+
+(defn sh23-library-gap-request []
+  (assoc
+   (sh23-base-request) :library
+   (assoc (get (sh23-base-request) :library) :conformance-id nil)))
+
+(defn sh23-missing-dependency-request []
+  (let [request (sh23-base-request)
+        components (get request :components)
+        analyzer (get components 1)]
+    (assoc
+     request :components
+     [(get components 0)
+      (assoc analyzer :dependencies [:component/missing])])))
+
+(defn sh23-cycle-request []
+  (let [request (sh23-base-request)
+        components (get request :components)
+        reader (get components 0)]
+    (assoc
+     request :components
+     [(assoc reader :dependencies [:component/analyzer])
+      (get components 1)])))
+
+(defn sh23-order-mismatch-request []
+  (assoc
+   (sh23-base-request)
+   :component-order [:component/analyzer :component/reader]))
+
+(defn sh23-path-identity-input-request []
+  (let [request (sh23-base-request)
+        components (get request :components)
+        reader (get components 0)]
+    (assoc
+     request :components
+     [(assoc
+       reader :source-content-id "/checkout-a/reader.gravity")
+      (get components 1)])))
+
+(defn sh23-inexact-project-authority-request []
+  (let [request (sh23-base-request)]
+    (assoc
+     request :project
+     (assoc
+      (get request :project)
+      :effects #{}
+      :capabilities #{}))))
+
+(defn sh23-inexact-build-authority-request []
+  (assoc
+   (sh23-base-request)
+   :effects #{}
+   :capabilities #{}))
+
+(defn sh23-extra-locked-package-request []
+  (let [request (sh23-base-request)]
+    (assoc
+     request :lockfile
+     (assoc
+      (get request :lockfile)
+      :packages
+      [(sh23-package :gravity/core)
+       (sh23-package :gravity/unrequested)]))))
+
+(defn sh23-unlocked-component-package-request []
+  (let [request (sh23-base-request)
+        components (get request :components)
+        reader (get components 0)]
+    (assoc
+     request :components
+     [(assoc
+       reader
+       :stdlib-dependencies
+       [:gravity/core :gravity/unlocked])
+      (get components 1)])))
+
+(defn sh23-malformed-forward-ordinal-request []
+  (let [request (sh23-base-request)
+        components (get request :components)
+        reader (get components 0)
+        analyzer (get components 1)]
+    (assoc
+     request :components
+     [(assoc reader :dependencies [:component/analyzer])
+      (assoc analyzer :topological-ordinal :second)])))
+
+(defn sh23-unsupported-backend-request []
+  (let [request (sh23-base-request)]
+    (assoc
+     request :target
+     (assoc
+      (get request :target)
+      :backend :gravity.backend/native))))

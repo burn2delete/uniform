@@ -1,7 +1,16 @@
 {
-  "gapCount": 215,
+  "gapCount": 240,
   "gaps": [
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -16,6 +25,15 @@
       "sequence": 1
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -30,6 +48,17 @@
       "sequence": 2
     },
     {
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "gaps": [
         "no-executable-owner",
@@ -46,6 +75,15 @@
       "sequence": 3
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -60,6 +98,17 @@
       "sequence": 4
     },
     {
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "gaps": [
         "no-executable-owner",
@@ -76,6 +125,17 @@
       "sequence": 5
     },
     {
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "gaps": [
         "no-executable-owner",
@@ -92,6 +152,17 @@
       "sequence": 6
     },
     {
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "gaps": [
         "no-executable-owner",
@@ -108,6 +179,17 @@
       "sequence": 7
     },
     {
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "gaps": [
         "no-executable-owner",
@@ -124,6 +206,17 @@
       "sequence": 8
     },
     {
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "gaps": [
         "no-executable-owner",
@@ -140,6 +233,17 @@
       "sequence": 9
     },
     {
+      "completionGaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "no-executable-owner",
       "gaps": [
         "no-executable-owner",
@@ -156,6 +260,33 @@
       "sequence": 10
     },
     {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "L1",
+      "path": "docs/phase-01-core-language/011-l1-surface-syntax-specification.md",
+      "sequence": 11
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "L2",
+      "path": "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+      "sequence": 12
+    },
+    {
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-rejected-fixture",
@@ -168,6 +299,15 @@
       "sequence": 13
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -182,6 +322,15 @@
       "sequence": 14
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -196,6 +345,15 @@
       "sequence": 15
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -210,6 +368,15 @@
       "sequence": 16
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -224,6 +391,15 @@
       "sequence": 17
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -238,6 +414,14 @@
       "sequence": 18
     },
     {
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-rejected-fixture",
@@ -251,6 +435,15 @@
       "sequence": 19
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -265,6 +458,13 @@
       "sequence": 20
     },
     {
+      "completionGaps": [
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-stable-diagnostic",
@@ -277,6 +477,14 @@
       "sequence": 21
     },
     {
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-rejected-fixture",
@@ -290,6 +498,12 @@
       "sequence": 22
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -301,6 +515,15 @@
       "sequence": 23
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -315,6 +538,12 @@
       "sequence": 24
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -326,6 +555,14 @@
       "sequence": 25
     },
     {
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-rejected-fixture",
@@ -339,6 +576,15 @@
       "sequence": 26
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -353,6 +599,14 @@
       "sequence": 27
     },
     {
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-rejected-fixture",
@@ -366,6 +620,15 @@
       "sequence": 28
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -380,6 +643,13 @@
       "sequence": 29
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -392,6 +662,12 @@
       "sequence": 30
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -403,6 +679,13 @@
       "sequence": 31
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -415,6 +698,13 @@
       "sequence": 32
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -427,6 +717,13 @@
       "sequence": 33
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -439,6 +736,12 @@
       "sequence": 34
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -450,6 +753,13 @@
       "sequence": 35
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -462,6 +772,13 @@
       "sequence": 36
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -474,6 +791,13 @@
       "sequence": 37
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -486,6 +810,13 @@
       "sequence": 38
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -498,6 +829,13 @@
       "sequence": 39
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -510,6 +848,13 @@
       "sequence": 40
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -522,6 +867,13 @@
       "sequence": 41
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -534,6 +886,12 @@
       "sequence": 42
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -545,6 +903,13 @@
       "sequence": 43
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -557,6 +922,12 @@
       "sequence": 44
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -568,6 +939,15 @@
       "sequence": 45
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -582,6 +962,15 @@
       "sequence": 46
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -596,6 +985,15 @@
       "sequence": 47
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -610,6 +1008,12 @@
       "sequence": 48
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -621,6 +1025,12 @@
       "sequence": 49
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -632,6 +1042,12 @@
       "sequence": 50
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -643,6 +1059,12 @@
       "sequence": 51
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -654,6 +1076,12 @@
       "sequence": 52
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -665,6 +1093,12 @@
       "sequence": 53
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -676,6 +1110,15 @@
       "sequence": 54
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -690,6 +1133,15 @@
       "sequence": 55
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -704,6 +1156,12 @@
       "sequence": 56
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -715,6 +1173,12 @@
       "sequence": 57
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -726,6 +1190,15 @@
       "sequence": 58
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -740,6 +1213,15 @@
       "sequence": 59
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -754,6 +1236,14 @@
       "sequence": 60
     },
     {
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-rejected-fixture",
@@ -767,6 +1257,14 @@
       "sequence": 61
     },
     {
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-rejected-fixture",
@@ -780,6 +1278,12 @@
       "sequence": 62
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -791,6 +1295,13 @@
       "sequence": 63
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -803,6 +1314,15 @@
       "sequence": 64
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -817,6 +1337,15 @@
       "sequence": 65
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -831,6 +1360,13 @@
       "sequence": 66
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -843,6 +1379,12 @@
       "sequence": 67
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -854,6 +1396,15 @@
       "sequence": 68
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -868,6 +1419,15 @@
       "sequence": 69
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -882,6 +1442,15 @@
       "sequence": 70
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -896,6 +1465,15 @@
       "sequence": 71
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -910,6 +1488,15 @@
       "sequence": 72
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -924,6 +1511,15 @@
       "sequence": 73
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -938,6 +1534,12 @@
       "sequence": 74
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -949,6 +1551,15 @@
       "sequence": 75
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -963,6 +1574,15 @@
       "sequence": 76
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -977,6 +1597,15 @@
       "sequence": 77
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -991,6 +1620,15 @@
       "sequence": 78
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1005,6 +1643,112 @@
       "sequence": 79
     },
     {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C1",
+      "path": "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md",
+      "sequence": 80
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C2",
+      "path": "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md",
+      "sequence": 81
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C3",
+      "path": "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md",
+      "sequence": 82
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C4",
+      "path": "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md",
+      "sequence": 83
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C5",
+      "path": "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md",
+      "sequence": 84
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C6",
+      "path": "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+      "sequence": 85
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C7",
+      "path": "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+      "sequence": 86
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C8",
+      "path": "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+      "sequence": 87
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C9",
+      "path": "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md",
+      "sequence": 88
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C10",
+      "path": "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+      "sequence": 89
+    },
+    {
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-rejected-fixture",
@@ -1016,6 +1760,12 @@
       "sequence": 90
     },
     {
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-rejected-fixture",
@@ -1027,6 +1777,12 @@
       "sequence": 91
     },
     {
+      "completionGaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-rejected-fixture",
@@ -1038,6 +1794,70 @@
       "sequence": 92
     },
     {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C14",
+      "path": "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+      "sequence": 93
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C15",
+      "path": "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md",
+      "sequence": 94
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C16",
+      "path": "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+      "sequence": 95
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C17",
+      "path": "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+      "sequence": 96
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "C18",
+      "path": "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+      "sequence": 97
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "B1",
+      "path": "docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md",
+      "sequence": 98
+    },
+    {
+      "completionGaps": [
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-public-gravity-accepted-proof"
@@ -1047,6 +1867,10 @@
       "sequence": 99
     },
     {
+      "completionGaps": [
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-public-gravity-accepted-proof"
@@ -1056,6 +1880,10 @@
       "sequence": 100
     },
     {
+      "completionGaps": [
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-public-gravity-accepted-proof"
@@ -1065,6 +1893,10 @@
       "sequence": 101
     },
     {
+      "completionGaps": [
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-public-gravity-accepted-proof"
@@ -1074,6 +1906,10 @@
       "sequence": 102
     },
     {
+      "completionGaps": [
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-public-gravity-accepted-proof"
@@ -1083,6 +1919,70 @@
       "sequence": 103
     },
     {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "B7",
+      "path": "docs/phase-07-backend-architecture/104-b7-mlir-backend-design.md",
+      "sequence": 104
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "B8",
+      "path": "docs/phase-07-backend-architecture/105-b8-gpu-backend-design.md",
+      "sequence": 105
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "B9",
+      "path": "docs/phase-07-backend-architecture/106-b9-hdl-backend-design.md",
+      "sequence": 106
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "B10",
+      "path": "docs/phase-07-backend-architecture/107-b10-workflow-graph-backend-design.md",
+      "sequence": 107
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "B11",
+      "path": "docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md",
+      "sequence": 108
+    },
+    {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "B12",
+      "path": "docs/phase-07-backend-architecture/109-b12-mobile-backend-design.md",
+      "sequence": 109
+    },
+    {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-gravity-authored-implementation"
@@ -1092,6 +1992,10 @@
       "sequence": 110
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-gravity-authored-implementation"
@@ -1101,6 +2005,12 @@
       "sequence": 111
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1112,6 +2022,12 @@
       "sequence": 112
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1123,9 +2039,13 @@
       "sequence": 113
     },
     {
-      "coverageClass": "clojure-seed-artifact-surface",
+      "completionGaps": [
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "gravity-authored-seed-slice",
       "gaps": [
-        "no-gravity-authored-implementation",
         "no-public-gravity-accepted-proof",
         "no-public-gravity-rejected-proof"
       ],
@@ -1134,6 +2054,10 @@
       "sequence": 114
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-gravity-authored-implementation"
@@ -1143,6 +2067,11 @@
       "sequence": 115
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -1153,6 +2082,12 @@
       "sequence": 116
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -1164,6 +2099,12 @@
       "sequence": 117
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -1175,6 +2116,13 @@
       "sequence": 118
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1187,6 +2135,13 @@
       "sequence": 119
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1199,6 +2154,13 @@
       "sequence": 120
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1211,6 +2173,11 @@
       "sequence": 121
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -1221,6 +2188,12 @@
       "sequence": 122
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -1232,6 +2205,13 @@
       "sequence": 123
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1244,6 +2224,13 @@
       "sequence": 124
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1256,6 +2243,13 @@
       "sequence": 125
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1268,6 +2262,13 @@
       "sequence": 126
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1280,6 +2281,13 @@
       "sequence": 127
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1292,6 +2300,13 @@
       "sequence": 128
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1304,6 +2319,13 @@
       "sequence": 129
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1316,6 +2338,13 @@
       "sequence": 130
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1328,6 +2357,13 @@
       "sequence": 131
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1340,6 +2376,13 @@
       "sequence": 132
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1352,6 +2395,13 @@
       "sequence": 133
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1364,6 +2414,13 @@
       "sequence": 134
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1376,6 +2433,13 @@
       "sequence": 135
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1388,6 +2452,13 @@
       "sequence": 136
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1400,6 +2471,13 @@
       "sequence": 137
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1412,6 +2490,13 @@
       "sequence": 138
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1424,6 +2509,23 @@
       "sequence": 139
     },
     {
+      "completionGaps": [
+        "completion-admission-disabled"
+      ],
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [],
+      "id": "DOM17",
+      "path": "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+      "sequence": 140
+    },
+    {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1436,6 +2538,13 @@
       "sequence": 141
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1448,6 +2557,13 @@
       "sequence": 142
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1460,6 +2576,13 @@
       "sequence": 143
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1472,6 +2595,13 @@
       "sequence": 144
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1484,6 +2614,13 @@
       "sequence": 145
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1496,6 +2633,13 @@
       "sequence": 146
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1508,6 +2652,13 @@
       "sequence": 147
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1520,6 +2671,13 @@
       "sequence": 148
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1532,6 +2690,13 @@
       "sequence": 149
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1544,6 +2709,13 @@
       "sequence": 150
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1556,6 +2728,13 @@
       "sequence": 151
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1568,6 +2747,13 @@
       "sequence": 152
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1580,6 +2766,13 @@
       "sequence": 153
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1592,6 +2785,11 @@
       "sequence": 154
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -1602,6 +2800,13 @@
       "sequence": 155
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1614,6 +2819,13 @@
       "sequence": 156
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1626,6 +2838,13 @@
       "sequence": 157
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1638,6 +2857,13 @@
       "sequence": 158
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1650,6 +2876,13 @@
       "sequence": 159
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1662,6 +2895,13 @@
       "sequence": 160
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1674,6 +2914,13 @@
       "sequence": 161
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1686,6 +2933,13 @@
       "sequence": 162
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1698,6 +2952,13 @@
       "sequence": 163
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1710,6 +2971,13 @@
       "sequence": 164
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1722,6 +2990,13 @@
       "sequence": 165
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1734,6 +3009,10 @@
       "sequence": 166
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-gravity-authored-implementation"
@@ -1743,6 +3022,13 @@
       "sequence": 167
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1755,6 +3041,13 @@
       "sequence": 168
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1767,6 +3060,13 @@
       "sequence": 169
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1779,6 +3079,13 @@
       "sequence": 170
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1791,6 +3098,13 @@
       "sequence": 171
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1803,6 +3117,13 @@
       "sequence": 172
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1815,6 +3136,12 @@
       "sequence": 173
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -1826,6 +3153,12 @@
       "sequence": 174
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1837,6 +3170,13 @@
       "sequence": 175
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1849,6 +3189,13 @@
       "sequence": 176
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1861,6 +3208,13 @@
       "sequence": 177
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1873,6 +3227,13 @@
       "sequence": 178
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1885,6 +3246,13 @@
       "sequence": 179
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1897,6 +3265,13 @@
       "sequence": 180
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1909,6 +3284,13 @@
       "sequence": 181
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1921,6 +3303,13 @@
       "sequence": 182
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1933,6 +3322,13 @@
       "sequence": 183
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1945,6 +3341,13 @@
       "sequence": 184
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1957,6 +3360,13 @@
       "sequence": 185
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1969,6 +3379,13 @@
       "sequence": 186
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1981,6 +3398,13 @@
       "sequence": 187
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -1993,6 +3417,13 @@
       "sequence": 188
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2005,6 +3436,13 @@
       "sequence": 189
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2017,6 +3455,13 @@
       "sequence": 190
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2029,6 +3474,13 @@
       "sequence": 191
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2041,6 +3493,12 @@
       "sequence": 192
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -2052,6 +3510,12 @@
       "sequence": 193
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -2063,6 +3527,10 @@
       "sequence": 194
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-gravity-authored-implementation"
@@ -2072,6 +3540,12 @@
       "sequence": 195
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -2083,6 +3557,13 @@
       "sequence": 196
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2095,6 +3576,13 @@
       "sequence": 197
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2107,6 +3595,13 @@
       "sequence": 198
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2119,6 +3614,13 @@
       "sequence": 199
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2131,6 +3633,13 @@
       "sequence": 200
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2143,6 +3652,13 @@
       "sequence": 201
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2155,6 +3671,13 @@
       "sequence": 202
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2167,6 +3690,13 @@
       "sequence": 203
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2179,6 +3709,13 @@
       "sequence": 204
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2191,6 +3728,13 @@
       "sequence": 205
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2203,6 +3747,12 @@
       "sequence": 206
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -2214,6 +3764,12 @@
       "sequence": 207
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2225,6 +3781,13 @@
       "sequence": 208
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2237,6 +3800,10 @@
       "sequence": 209
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "current-public-executable-surface",
       "gaps": [
         "no-gravity-authored-implementation"
@@ -2246,6 +3813,12 @@
       "sequence": 210
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -2257,6 +3830,13 @@
       "sequence": 211
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2269,6 +3849,13 @@
       "sequence": 212
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2281,6 +3868,13 @@
       "sequence": 213
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2293,6 +3887,13 @@
       "sequence": 214
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2305,6 +3906,13 @@
       "sequence": 215
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2317,6 +3925,13 @@
       "sequence": 216
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2329,6 +3944,13 @@
       "sequence": 217
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2341,6 +3963,13 @@
       "sequence": 218
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2353,6 +3982,13 @@
       "sequence": 219
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2365,6 +4001,13 @@
       "sequence": 220
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2377,6 +4020,13 @@
       "sequence": 221
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2389,6 +4039,13 @@
       "sequence": 222
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2401,6 +4058,13 @@
       "sequence": 223
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2413,6 +4077,13 @@
       "sequence": 224
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2425,6 +4096,13 @@
       "sequence": 225
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2437,6 +4115,13 @@
       "sequence": 226
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2449,6 +4134,13 @@
       "sequence": 227
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2461,6 +4153,13 @@
       "sequence": 228
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2473,6 +4172,12 @@
       "sequence": 229
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -2484,6 +4189,13 @@
       "sequence": 230
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2496,6 +4208,13 @@
       "sequence": 231
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2508,6 +4227,12 @@
       "sequence": 232
     },
     {
+      "completionGaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-gravity-authored-implementation",
@@ -2519,6 +4244,13 @@
       "sequence": 233
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2531,6 +4263,13 @@
       "sequence": 234
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2543,6 +4282,13 @@
       "sequence": 235
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2555,6 +4301,13 @@
       "sequence": 236
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2567,6 +4320,13 @@
       "sequence": 237
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2579,6 +4339,13 @@
       "sequence": 238
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2591,6 +4358,13 @@
       "sequence": 239
     },
     {
+      "completionGaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof",
+        "completion-admission-disabled"
+      ],
       "coverageClass": "clojure-seed-artifact-surface",
       "gaps": [
         "no-accepted-fixture",
@@ -2603,8 +4377,21 @@
       "sequence": 240
     }
   ],
-  "generatedOn": "2026-07-08",
+  "generatedOn": "2026-08-08",
+  "inputIdentities": {
+    "contractSha256": "sha256:912d42f0b789f2a290d81d01450230de834b5529c93df29dfe1c1f648a377142",
+    "generatorSha256": "sha256:972feb2ace8c71b86093acd6f542985f31bce834dcf9104a21be4720172a4613",
+    "matrixSemanticId": "sha256:9b02a5bfbcc2a3149a4d4f589da8b8b9e19e84cc646c1e38afd774f42d5c72eb"
+  },
   "inventoryCount": 240,
   "kind": "gravity/full-language-coverage-gap-report",
-  "noExecutableOwnerCount": 7
+  "noExecutableOwnerCount": 7,
+  "producer": {
+    "authority": "non-authoritative-observation",
+    "module": "tools.generate_full_language_coverage_matrix",
+    "predicateVersion": 1
+  },
+  "schemaVersion": 1,
+  "semanticId": "sha256:392f904d1887a44183b501fd0cabfcffe7efb1c596365a898e58bd40437f7d4e",
+  "status": "incomplete"
 }

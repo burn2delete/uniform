@@ -1,0 +1,227 @@
+(ns gravity.self-hosting.sh11.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh11-out-of-bounds-request
+             sh11-overflow-request
+             sh11-zero-divisor-request
+             sh11-narrowing-request
+             sh11-invalid-shift-request
+             sh11-invalid-check-request
+             sh11-unsafe-safe-mode-request
+             sh11-incomplete-audit-request
+             sh11-ambiguous-evidence-request
+             sh11-malformed-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh11-request
+  [operation-id kind facts safety-mode support check audit]
+  {:artifact :gravity/sh11-normalized-safety-operation
+   :operation-id operation-id
+   :kind kind
+   :core-node-id
+   "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :source-span
+   {:source-id
+    "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+    :start-byte 0
+    :end-byte 1}
+   :origin-chain
+   ["sha256:3333333333333333333333333333333333333333333333333333333333333333"]
+   :profile :meta
+   :target :jvm
+   :safety-mode safety-mode
+   :facts facts
+   :runtime-check-support support
+   :runtime-check check
+   :unsafe-audit audit
+   :type-fact-id
+   "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+   :effect-fact-id
+   "sha256:5555555555555555555555555555555555555555555555555555555555555555"
+   :capability-proof-id
+   "sha256:6666666666666666666666666666666666666666666666666666666666666666"
+   :ownership-fact-id
+   "sha256:7777777777777777777777777777777777777777777777777777777777777777"})
+
+(defn sh11-proof-id []
+  "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+
+(defn sh11-overflow-facts [mode left right]
+  {:numeric-mode mode
+   :proof-id (sh11-proof-id)
+   :operator :add :left left :right right
+   :bit-width 8 :signedness :signed
+   :result-min -128 :result-max 127
+   :arbitrary-precision-supported false})
+
+(defn sh11-division-facts [mode dividend divisor]
+  {:numeric-mode mode
+   :proof-id (sh11-proof-id)
+   :operator :divide :dividend dividend :divisor divisor
+   :bit-width 8 :signedness :signed
+   :result-min -128 :result-max 127})
+
+(defn sh11-support []
+  {:artifact :gravity/sh11-runtime-check-target-support
+   :support-id
+   "sha256:8888888888888888888888888888888888888888888888888888888888888888"
+   :provider-id
+   "sha256:9999999999999999999999999999999999999999999999999999999999999999"
+   :profile :meta
+   :target :jvm
+   :conditions #{:valid-divisor-and-quotient}
+   :failure-behaviors #{:error/numeric}
+   :effects #{:error/raise}
+   :performance-classes #{:constant-time-branch}
+   :evidence #{:target-conformance}})
+
+(defn sh11-check [operation-id facts condition expression]
+  {:artifact :gravity/sh11-runtime-safety-check
+   :check-id
+   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+   :condition condition
+   :predicate
+   {:expression expression
+    :operation-id operation-id
+    :kind :division
+    :operands
+    {:operator (get facts :operator)
+     :dividend (get facts :dividend)
+     :divisor (get facts :divisor)
+     :minimum (get facts :result-min)
+     :maximum (get facts :result-max)}}
+   :emitted-location :before-operation
+   :profile :meta
+   :target :jvm
+   :failure-behavior :error/numeric
+   :effects-introduced #{:error/raise}
+   :performance-class :constant-time-branch
+   :invalidation-conditions [:operand-range-change]
+   :target-support-id
+   "sha256:8888888888888888888888888888888888888888888888888888888888888888"
+   :provider-id
+   "sha256:9999999999999999999999999999999999999999999999999999999999999999"})
+
+(defn sh11-audit [operation-id safety-mode]
+  {:artifact :gravity/sh11-unsafe-island-audit
+   :audit-id
+   "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   :operation-id operation-id
+   :operation :numeric-overflow
+   :owner "runtime-team"
+   :reason :target-intrinsic
+   :source-span
+   {:source-id
+    "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+    :start-byte 0
+    :end-byte 1}
+   :generated-origin-chain
+   ["sha256:3333333333333333333333333333333333333333333333333333333333333333"]
+   :profile :meta
+   :target :jvm
+   :safety-mode safety-mode
+   :effects #{}
+   :capabilities #{}
+   :preconditions #{:caller-proves-range}
+   :postconditions #{:machine-width-result}
+   :invariants #{:explicit-unsafe-mode}
+   :evidence #{:wrapper-test}
+   :safe-wrapper "gravity.numeric/unchecked"
+   :review
+   {:state :approved
+    :review-id
+    "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    :source-id
+    "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    :policy :required}
+   :policy
+   {:safety-mode safety-mode
+    :package-unsafe-approved true
+    :empty-effects-approved true
+    :empty-capabilities-approved true}
+   :re-review :on-source-or-target-change})
+
+(defn sh11-out-of-bounds-request []
+  (sh11-request
+   :out-of-bounds :index
+   {:numeric-mode :proof-required
+    :proof-id (sh11-proof-id)
+    :index 4 :length 4 :index-width 8 :signedness :unsigned}
+   :safe nil nil nil))
+
+(defn sh11-overflow-request []
+  (sh11-request
+   :overflow :numeric-overflow
+   (sh11-overflow-facts :proof-required 127 1)
+   :safe nil nil nil))
+
+(defn sh11-zero-divisor-request []
+  (sh11-request
+   :zero-divisor :division
+   (sh11-division-facts :proof-required 1 0)
+   :safe nil nil nil))
+
+(defn sh11-narrowing-request []
+  (sh11-request
+   :narrowing :numeric-cast
+   {:numeric-mode :proof-required
+    :proof-id (sh11-proof-id)
+    :conversion :narrowing :value 128
+    :source-min -2147483648 :source-max 2147483647
+    :target-min -128 :target-max 127
+    :source-width 32 :target-width 8
+    :source-signedness :signed :target-signedness :signed}
+   :safe nil nil nil))
+
+(defn sh11-invalid-shift-request []
+  (sh11-request
+   :invalid-shift :shift
+   {:numeric-mode :proof-required
+    :proof-id (sh11-proof-id)
+    :operator :shift-left :value 1 :shift-count 8
+    :bit-width 8 :signedness :unsigned
+    :shift-semantics :bounded}
+   :safe nil nil nil))
+
+(defn sh11-invalid-check-request []
+  (let [facts (sh11-division-facts :checked 1 0)]
+    (sh11-request
+     :invalid-check :division facts :safe
+     (sh11-support)
+     (sh11-check
+      :invalid-check facts
+      :wrong-condition
+      :divisor-nonzero-and-quotient-representable)
+     nil)))
+
+(defn sh11-unsafe-safe-mode-request []
+  (sh11-request
+   :unsafe-safe-mode :numeric-overflow
+   (sh11-overflow-facts :unsafe-unchecked 127 1)
+   :safe nil nil
+   (sh11-audit :unsafe-safe-mode :safe)))
+
+(defn sh11-incomplete-audit-request []
+  (sh11-request
+   :incomplete-audit :numeric-overflow
+   (sh11-overflow-facts :unsafe-unchecked 127 1)
+   :systems nil nil
+   (assoc (sh11-audit :incomplete-audit :systems) :owner nil)))
+
+(defn sh11-ambiguous-evidence-request []
+  (let [facts (sh11-division-facts :checked 4 2)]
+    (sh11-request
+     :ambiguous-evidence :division facts :safe
+     (sh11-support)
+     (sh11-check
+      :ambiguous-evidence facts
+      :valid-divisor-and-quotient
+      :divisor-nonzero-and-quotient-representable)
+     nil)))
+
+(defn sh11-malformed-request []
+  (assoc
+   (sh11-out-of-bounds-request)
+   :artifact :gravity/not-a-safety-operation))

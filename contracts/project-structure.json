@@ -1,0 +1,1912 @@
+{
+  "schema_version": 1,
+  "manifest_id": "gravity-project-structure-v1",
+  "description": "Machine-readable project structure for the Gravity compiler and self-hosting slices.",
+  "alignment": {
+    "architecture": "D1",
+    "roadmap": "D2",
+    "ownership": "SH-OWNERSHIP",
+    "coordination": "SH-BACKLOG",
+    "policy": "Profiles, effects, capabilities, safety, and provenance are decided before lowering."
+  },
+  "source_contracts": [
+    {
+      "id": "D1",
+      "path": "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+      "role": "canonical compiler architecture"
+    },
+    {
+      "id": "D2",
+      "path": "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+      "role": "milestone ordering and evidence"
+    },
+    {
+      "id": "SH-OWNERSHIP",
+      "path": "docs/self-hosting-slice-ownership.edn",
+      "role": "single-owner and reserved-path policy"
+    },
+    {
+      "id": "SH-BACKLOG",
+      "path": "docs/self-hosting-slice-backlog.md",
+      "role": "slice dependencies and status"
+    },
+    {
+      "id": "STAGE0-CLOJURE-COMPONENTS",
+      "path": "contracts/stage0-clojure-components.json",
+      "role": "reviewed Stage0 Clojure component inventory and ownership"
+    }
+  ],
+  "canonical_passes": [
+    {
+      "id": "source-forms",
+      "name": "Source Forms",
+      "order": 1,
+      "depends_on": [],
+      "input_artifacts": [],
+      "output_artifacts": ["source-forms"],
+      "requires": ["source-files", "profile-declaration"],
+      "preserves": ["source-path", "source-spans", "source-identity"],
+      "invalidates": [],
+      "emits": ["source-form-stream", "diagnostics"],
+      "rejects": ["malformed-source", "unknown-extension"],
+      "owner": "master-coordinator",
+      "cost": {
+        "class": "cheap",
+        "lane": "preflight",
+        "resource": "cpu"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "source boundary",
+        "evidence": ["D1", "D2"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "reader",
+      "name": "Reader",
+      "order": 2,
+      "depends_on": ["source-forms"],
+      "input_artifacts": ["source-forms"],
+      "output_artifacts": ["reader-products"],
+      "requires": ["source-form-stream", "source-spans"],
+      "preserves": ["source-path", "source-spans", "source-identity"],
+      "invalidates": [],
+      "emits": ["syntax-object-stream", "reader-diagnostics"],
+      "rejects": ["malformed-collection", "malformed-literal", "unclosed-delimiter"],
+      "owner": "sh-reader",
+      "cost": {
+        "class": "bounded",
+        "lane": "focused",
+        "resource": "cpu"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "reader subset",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-03"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "syntax-objects",
+      "name": "Syntax Objects",
+      "order": 3,
+      "depends_on": ["reader"],
+      "input_artifacts": ["reader-products"],
+      "output_artifacts": ["syntax-objects"],
+      "requires": ["syntax-object-stream", "source-spans"],
+      "preserves": ["source-spans", "hygiene", "metadata", "profile-context"],
+      "invalidates": [],
+      "emits": ["syntax-identity", "generated-origin-chain"],
+      "rejects": ["invalid-syntax-object", "origin-cycle", "hygiene-loss"],
+      "owner": "sh-syntax",
+      "cost": {
+        "class": "bounded",
+        "lane": "focused",
+        "resource": "cpu"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "syntax contract",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-04"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "macro-expansion",
+      "name": "Macro Expansion",
+      "order": 4,
+      "depends_on": ["syntax-objects"],
+      "input_artifacts": ["syntax-objects"],
+      "output_artifacts": ["expanded-syntax"],
+      "requires": ["syntax-identity", "hygiene", "generated-origin-chain"],
+      "preserves": ["source-spans", "hygiene", "metadata", "generated-origin-chain"],
+      "invalidates": ["macro-local-resolution"],
+      "emits": ["expanded-form-stream", "macro-expansion-trace"],
+      "rejects": ["macro-phase-violation", "macro-profile-violation", "macro-capability-missing"],
+      "owner": "sh-macro",
+      "cost": {
+        "class": "bounded",
+        "lane": "focused",
+        "resource": "cpu"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "macro subset",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-05"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "core-ast",
+      "name": "Core Gravity AST",
+      "order": 5,
+      "depends_on": ["macro-expansion"],
+      "input_artifacts": ["expanded-syntax"],
+      "output_artifacts": ["core-ast"],
+      "requires": ["expanded-form-stream", "generated-origin-chain"],
+      "preserves": ["source-spans", "hygiene", "profile-context", "generated-origin-chain"],
+      "invalidates": [],
+      "emits": ["core-ast-nodes", "core-lowering-diagnostics"],
+      "rejects": ["unknown-core-form", "invalid-arity", "invalid-core-shape"],
+      "owner": "sh-core",
+      "cost": {
+        "class": "bounded",
+        "lane": "focused",
+        "resource": "cpu"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "core semantics",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-07"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "name-resolution",
+      "name": "Name Resolution",
+      "order": 6,
+      "depends_on": ["core-ast"],
+      "input_artifacts": ["core-ast"],
+      "output_artifacts": ["resolved-core"],
+      "requires": ["core-ast-nodes", "namespace-declarations"],
+      "preserves": ["source-spans", "generated-origin-chain", "profile-context"],
+      "invalidates": ["unresolved-symbols"],
+      "emits": ["binding-facts", "namespace-facts", "resolution-diagnostics"],
+      "rejects": ["unresolved-reference", "namespace-cycle", "visibility-violation"],
+      "owner": "sh-resolution",
+      "cost": {
+        "class": "bounded",
+        "lane": "focused",
+        "resource": "cpu"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "namespace and binding resolution",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-06"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "type-checking",
+      "name": "Type Checking",
+      "order": 7,
+      "depends_on": ["name-resolution"],
+      "input_artifacts": ["resolved-core"],
+      "output_artifacts": ["typed-core"],
+      "requires": ["binding-facts", "core-ast-nodes"],
+      "preserves": ["source-spans", "generated-origin-chain", "profile-context", "binding-facts"],
+      "invalidates": ["unknown-types"],
+      "emits": ["type-facts", "type-diagnostics"],
+      "rejects": ["type-mismatch", "invalid-call", "inference-failure"],
+      "owner": "sh-types",
+      "cost": {
+        "class": "heavy",
+        "lane": "focused",
+        "resource": "cpu-memory"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "typed core",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-08"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "effect-checking",
+      "name": "Effect Checking",
+      "order": 8,
+      "depends_on": ["type-checking"],
+      "input_artifacts": ["typed-core"],
+      "output_artifacts": ["effected-core"],
+      "requires": ["type-facts", "effect-declarations"],
+      "preserves": ["source-spans", "types", "profile-context", "binding-facts"],
+      "invalidates": ["inferred-effects"],
+      "emits": ["effect-facts", "effect-diagnostics"],
+      "rejects": ["undeclared-effect", "effect-handler-mismatch", "effect-escalation"],
+      "owner": "sh-effects",
+      "cost": {
+        "class": "bounded",
+        "lane": "focused",
+        "resource": "cpu"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "effect contract",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-09"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "profile-validation",
+      "name": "Profile Validation",
+      "order": 9,
+      "depends_on": ["effect-checking"],
+      "input_artifacts": ["effected-core"],
+      "output_artifacts": ["profile-validated-core"],
+      "requires": ["type-facts", "effect-facts", "profile-declaration"],
+      "preserves": ["source-spans", "types", "effects", "profile-context"],
+      "invalidates": ["profile-unknown"],
+      "emits": ["profile-facts", "profile-diagnostics"],
+      "rejects": ["undeclared-profile", "profile-forbids-form", "profile-runtime-mismatch"],
+      "owner": "sh-profile",
+      "cost": {
+        "class": "cheap",
+        "lane": "preflight",
+        "resource": "cpu"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "compile-time profile legality",
+        "evidence": ["D1", "D2"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "capability-validation",
+      "name": "Capability Validation",
+      "order": 10,
+      "depends_on": ["profile-validation"],
+      "input_artifacts": ["profile-validated-core"],
+      "output_artifacts": ["capability-validated-core"],
+      "requires": ["effect-facts", "profile-facts", "capability-declarations"],
+      "preserves": ["source-spans", "types", "effects", "profile-context"],
+      "invalidates": ["capability-unknown"],
+      "emits": ["capability-facts", "capability-diagnostics"],
+      "rejects": ["capability-missing", "capability-escalation", "ambient-authority"],
+      "owner": "sh-capability",
+      "cost": {
+        "class": "cheap",
+        "lane": "preflight",
+        "resource": "cpu"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "compile-time capability legality",
+        "evidence": ["D1", "D2"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "ownership-lifetime",
+      "name": "Ownership and Lifetime Analysis",
+      "order": 11,
+      "depends_on": ["capability-validation"],
+      "input_artifacts": ["capability-validated-core"],
+      "output_artifacts": ["ownership-validated-core"],
+      "requires": ["type-facts", "profile-facts", "capability-facts"],
+      "preserves": ["source-spans", "types", "effects", "capabilities", "profile-context"],
+      "invalidates": ["ownership-unknown", "lifetime-unknown"],
+      "emits": ["ownership-facts", "lifetime-facts", "ownership-diagnostics"],
+      "rejects": ["use-after-move", "invalid-borrow", "uninitialized-read", "invalid-escape"],
+      "owner": "sh-ownership",
+      "cost": {
+        "class": "heavy",
+        "lane": "focused",
+        "resource": "cpu-memory"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "ownership and lifetime legality",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-10"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "safety-analysis",
+      "name": "Safety Analysis",
+      "order": 12,
+      "depends_on": ["ownership-lifetime"],
+      "input_artifacts": ["ownership-validated-core"],
+      "output_artifacts": ["safe-core"],
+      "requires": ["type-facts", "effect-facts", "capability-facts", "ownership-facts", "lifetime-facts"],
+      "preserves": ["source-spans", "types", "effects", "capabilities", "ownership-facts", "profile-context"],
+      "invalidates": ["safety-unknown", "proof-obligations"],
+      "emits": ["safety-facts", "proof-obligations", "safety-diagnostics"],
+      "rejects": ["unsafe-operation-without-outcome", "bounds-violation", "overflow-violation", "unsafe-island-unreviewed"],
+      "owner": "sh-safety",
+      "cost": {
+        "class": "heavy",
+        "lane": "focused",
+        "resource": "cpu-memory"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "safe-code classification",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-11"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "gravity-mir",
+      "name": "Gravity MIR",
+      "order": 13,
+      "depends_on": ["safety-analysis"],
+      "input_artifacts": ["safe-core"],
+      "output_artifacts": ["gravity-mir"],
+      "requires": ["type-facts", "effect-facts", "profile-facts", "capability-facts", "ownership-facts", "safety-facts"],
+      "preserves": ["source-spans", "types", "effects", "capabilities", "ownership-facts", "safety-facts", "profile-context"],
+      "invalidates": [],
+      "emits": ["mir-blocks", "mir-values", "mir-verifier-report"],
+      "rejects": ["mir-missing-fact", "mir-invalid-cfg", "mir-invalid-value"],
+      "owner": "sh-mir",
+      "cost": {
+        "class": "heavy",
+        "lane": "focused",
+        "resource": "cpu-memory"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "target-independent MIR",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-12"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "domain-ir-lowering",
+      "name": "Domain IR Lowering",
+      "order": 14,
+      "depends_on": ["gravity-mir"],
+      "input_artifacts": ["gravity-mir"],
+      "output_artifacts": ["domain-ir"],
+      "requires": ["mir-blocks", "mir-values", "profile-facts", "safety-facts"],
+      "preserves": ["source-spans", "types", "effects", "capabilities", "ownership-facts", "safety-facts", "profile-context"],
+      "invalidates": ["domain-anchor-unknown"],
+      "emits": ["domain-ir-module", "domain-anchor", "domain-diagnostics"],
+      "rejects": ["domain-anchor-missing", "unsupported-domain-operation", "domain-layout-mismatch"],
+      "owner": "sh-domain-ir",
+      "cost": {
+        "class": "heavy",
+        "lane": "focused",
+        "resource": "cpu-memory"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "domain IR semantic anchor",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-14"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "optimization",
+      "name": "Optimization",
+      "order": 15,
+      "depends_on": ["domain-ir-lowering"],
+      "input_artifacts": ["domain-ir"],
+      "output_artifacts": ["optimized-mir"],
+      "requires": ["mir-blocks", "domain-anchor", "proof-obligations", "safety-facts"],
+      "preserves": ["source-spans", "types", "effects", "capabilities", "ownership-facts", "safety-facts", "domain-anchor", "profile-context"],
+      "invalidates": ["analysis-cache", "stale-proof-obligations"],
+      "emits": ["optimization-manifest", "invalidated-facts", "optimization-diagnostics"],
+      "rejects": ["proofless-check-elision", "metadata-loss", "effect-order-change", "invalid-pass-contract"],
+      "owner": "sh-optimization",
+      "cost": {
+        "class": "heavy",
+        "lane": "heavy-candidate",
+        "resource": "cpu-memory"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "proof-preserving optimization",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-16"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "target-lowering",
+      "name": "Target Lowering",
+      "order": 16,
+      "depends_on": ["optimization"],
+      "input_artifacts": ["optimized-mir"],
+      "output_artifacts": ["lowered-target"],
+      "requires": ["mir-blocks", "optimization-manifest", "profile-facts", "capability-facts", "domain-anchor"],
+      "preserves": ["source-spans", "types", "effects", "capabilities", "safety-facts", "profile-context", "optimization-manifest"],
+      "invalidates": ["target-unknown"],
+      "emits": ["target-lowering-manifest", "runtime-selection", "abi-layout", "lowering-diagnostics"],
+      "rejects": ["unchecked-input", "target-profile-mismatch", "unsupported-target-operation", "runtime-authority-missing"],
+      "owner": "master-coordinator",
+      "cost": {
+        "class": "heavy",
+        "lane": "heavy-candidate",
+        "resource": "toolchain"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "target and backend boundary",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-17"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "artifact-emission",
+      "name": "Artifact Emission",
+      "order": 17,
+      "depends_on": ["target-lowering"],
+      "input_artifacts": ["lowered-target"],
+      "output_artifacts": ["emitted-artifact"],
+      "requires": ["target-lowering-manifest", "runtime-selection", "abi-layout", "source-identity"],
+      "preserves": ["source-spans", "types", "effects", "capabilities", "safety-facts", "profile-context", "target-identity"],
+      "invalidates": [],
+      "emits": ["binary-or-domain-artifact", "source-map", "artifact-manifest", "emission-diagnostics"],
+      "rejects": ["artifact-metadata-missing", "source-hash-missing", "provenance-gap"],
+      "owner": "sh-artifact-emission",
+      "cost": {
+        "class": "heavy",
+        "lane": "heavy-candidate",
+        "resource": "toolchain"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "artifact boundary",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-20"],
+        "human_review_required": true
+      }
+    },
+    {
+      "id": "package-provenance",
+      "name": "Package and Provenance Recording",
+      "order": 18,
+      "depends_on": ["artifact-emission"],
+      "input_artifacts": ["emitted-artifact"],
+      "output_artifacts": ["package-provenance"],
+      "requires": ["artifact-manifest", "source-identity", "target-identity", "dependency-graph"],
+      "preserves": ["source-identity", "target-identity", "profile-context", "effects", "capabilities", "safety-facts", "pass-history"],
+      "invalidates": [],
+      "emits": ["provenance-graph", "lock-record", "sbom-record", "package-diagnostics"],
+      "rejects": ["dependency-graph-cycle", "provenance-gap", "hermetic-build-violation", "authority-escalation"],
+      "owner": "sh-package-build",
+      "cost": {
+        "class": "bounded",
+        "lane": "heavy-candidate",
+        "resource": "cpu-io"
+      },
+      "authority": {
+        "required_level": "reviewed",
+        "maximum_claim": "contract-boundary-only",
+        "scope": "build, package, and provenance graph",
+        "evidence": ["D1", "D2", "SH-BACKLOG:SH-23"],
+        "human_review_required": true
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "source-forms",
+      "name": "Source form stream",
+      "kind": "source",
+      "produced_by": ["source-forms"],
+      "consumed_by": ["reader"],
+      "provenance_required": true
+    },
+    {
+      "id": "syntax-objects",
+      "name": "Syntax object stream",
+      "kind": "syntax",
+      "produced_by": ["syntax-objects"],
+      "consumed_by": ["macro-expansion"],
+      "provenance_required": true
+    },
+    {
+      "id": "reader-products",
+      "name": "Reader token and literal product stream",
+      "kind": "reader-product",
+      "produced_by": ["reader"],
+      "consumed_by": ["syntax-objects"],
+      "provenance_required": true
+    },
+    {
+      "id": "expanded-syntax",
+      "name": "Macro expansion trace and forms",
+      "kind": "syntax",
+      "produced_by": ["macro-expansion"],
+      "consumed_by": ["core-ast"],
+      "provenance_required": true
+    },
+    {
+      "id": "core-ast",
+      "name": "Core Gravity AST",
+      "kind": "semantic-ir",
+      "produced_by": ["core-ast"],
+      "consumed_by": ["name-resolution"],
+      "provenance_required": true
+    },
+    {
+      "id": "resolved-core",
+      "name": "Resolved core module",
+      "kind": "semantic-ir",
+      "produced_by": ["name-resolution"],
+      "consumed_by": ["type-checking"],
+      "provenance_required": true
+    },
+    {
+      "id": "typed-core",
+      "name": "Typed core module",
+      "kind": "semantic-ir",
+      "produced_by": ["type-checking"],
+      "consumed_by": ["effect-checking"],
+      "provenance_required": true
+    },
+    {
+      "id": "effected-core",
+      "name": "Effect-annotated core module",
+      "kind": "semantic-ir",
+      "produced_by": ["effect-checking"],
+      "consumed_by": ["profile-validation"],
+      "provenance_required": true
+    },
+    {
+      "id": "profile-validated-core",
+      "name": "Profile-validated core module",
+      "kind": "semantic-ir",
+      "produced_by": ["profile-validation"],
+      "consumed_by": ["capability-validation"],
+      "provenance_required": true
+    },
+    {
+      "id": "capability-validated-core",
+      "name": "Capability-validated core module",
+      "kind": "semantic-ir",
+      "produced_by": ["capability-validation"],
+      "consumed_by": ["ownership-lifetime"],
+      "provenance_required": true
+    },
+    {
+      "id": "ownership-validated-core",
+      "name": "Ownership-validated core module",
+      "kind": "semantic-ir",
+      "produced_by": ["ownership-lifetime"],
+      "consumed_by": ["safety-analysis"],
+      "provenance_required": true
+    },
+    {
+      "id": "safe-core",
+      "name": "Safety-classified core module",
+      "kind": "semantic-ir",
+      "produced_by": ["safety-analysis"],
+      "consumed_by": ["gravity-mir"],
+      "provenance_required": true
+    },
+    {
+      "id": "gravity-mir",
+      "name": "Gravity MIR module",
+      "kind": "mir",
+      "produced_by": ["gravity-mir"],
+      "consumed_by": ["domain-ir-lowering"],
+      "provenance_required": true
+    },
+    {
+      "id": "domain-ir",
+      "name": "Domain IR module",
+      "kind": "domain-ir",
+      "produced_by": ["domain-ir-lowering"],
+      "consumed_by": ["optimization"],
+      "provenance_required": true
+    },
+    {
+      "id": "optimized-mir",
+      "name": "Optimized MIR and pass manifest",
+      "kind": "mir",
+      "produced_by": ["optimization"],
+      "consumed_by": ["target-lowering"],
+      "provenance_required": true
+    },
+    {
+      "id": "lowered-target",
+      "name": "Target-lowered module",
+      "kind": "target-ir",
+      "produced_by": ["target-lowering"],
+      "consumed_by": ["artifact-emission"],
+      "provenance_required": true
+    },
+    {
+      "id": "emitted-artifact",
+      "name": "Emitted target artifact",
+      "kind": "artifact",
+      "produced_by": ["artifact-emission"],
+      "consumed_by": ["package-provenance"],
+      "provenance_required": true
+    },
+    {
+      "id": "package-provenance",
+      "name": "Package and provenance record",
+      "kind": "provenance",
+      "produced_by": ["package-provenance"],
+      "consumed_by": [],
+      "provenance_required": true
+    }
+  ],
+  "slices": [
+    {
+      "id": "SH-00",
+      "title": "Stabilize the current authenticated Wasm comparison work and restore a clean baseline",
+      "depends_on": [],
+      "status": "complete",
+      "owner": "sh-target-wasm",
+      "artifact_inputs": ["gravity-mir", "lowered-target"],
+      "artifact_outputs": ["emitted-artifact", "package-provenance"],
+      "cost": {"class": "heavy", "lane": "heavy-candidate", "resource": "toolchain"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-00"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-central-routing", "reviewed-backlog", "generated-evidence"]
+    },
+    {
+      "id": "SH-01",
+      "title": "Establish parallel-safe module and test ownership boundaries",
+      "depends_on": ["SH-00"],
+      "status": "complete",
+      "owner": "sh-01-leaf",
+      "artifact_inputs": ["source-forms"],
+      "artifact_outputs": ["package-provenance"],
+      "cost": {"class": "bounded", "lane": "preflight", "resource": "cpu"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-OWNERSHIP", "SH-BACKLOG:SH-01"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-backlog", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-02",
+      "title": "Generalize authenticated pass and artifact envelopes",
+      "depends_on": ["SH-00"],
+      "status": "complete",
+      "owner": "sh-envelope",
+      "artifact_inputs": ["gravity-mir", "emitted-artifact"],
+      "artifact_outputs": ["package-provenance"],
+      "cost": {"class": "heavy", "lane": "heavy-candidate", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-02"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-envelope-module"]
+    },
+    {
+      "id": "SH-03",
+      "title": "Complete the bootstrap reader and literal policy",
+      "depends_on": ["SH-01", "SH-02"],
+      "status": "complete",
+      "owner": "sh-reader",
+      "artifact_inputs": ["source-forms"],
+      "artifact_outputs": ["syntax-objects"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-03"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-reader-module", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-04",
+      "title": "Complete syntax objects, hygiene, and origin chains",
+      "depends_on": ["SH-03"],
+      "status": "complete",
+      "owner": "sh-syntax",
+      "artifact_inputs": ["syntax-objects"],
+      "artifact_outputs": ["syntax-objects"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-04"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-syntax-module", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-05",
+      "title": "Implement the bootstrap macroexpander in Gravity",
+      "depends_on": ["SH-04"],
+      "status": "complete",
+      "owner": "sh-macro",
+      "artifact_inputs": ["syntax-objects"],
+      "artifact_outputs": ["expanded-syntax"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-05"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-macro-module", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-06",
+      "title": "Implement namespace and binding resolution in Gravity",
+      "depends_on": ["SH-05"],
+      "status": "complete",
+      "owner": "sh-resolution",
+      "artifact_inputs": ["expanded-syntax", "core-ast"],
+      "artifact_outputs": ["resolved-core"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-06"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-resolution-module", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-07",
+      "title": "Implement core-form semantics and lowering in Gravity",
+      "depends_on": ["SH-06"],
+      "status": "partial",
+      "owner": "sh-core",
+      "artifact_inputs": ["resolved-core"],
+      "artifact_outputs": ["core-ast"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-07"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-core-module", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-08",
+      "title": "Implement the bootstrap type checker in Gravity",
+      "depends_on": ["SH-07"],
+      "status": "partial",
+      "owner": "sh-types",
+      "artifact_inputs": ["resolved-core", "core-ast"],
+      "artifact_outputs": ["typed-core"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-08"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-types-module", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-09",
+      "title": "Implement effect, capability, and profile checking in Gravity",
+      "depends_on": ["SH-08"],
+      "status": "partial",
+      "owner": "sh-effects",
+      "artifact_inputs": ["typed-core", "profile-validated-core"],
+      "artifact_outputs": ["effected-core", "capability-validated-core"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-09"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-effects-module", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-10",
+      "title": "Implement ownership, lifetime, initialization, and memory checks in Gravity",
+      "depends_on": ["SH-08"],
+      "status": "partial",
+      "owner": "sh-ownership",
+      "artifact_inputs": ["capability-validated-core"],
+      "artifact_outputs": ["ownership-validated-core"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-10"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-ownership-module", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-11",
+      "title": "Implement the safety and numeric-safety classifier in Gravity",
+      "depends_on": ["SH-09", "SH-10"],
+      "status": "partial",
+      "owner": "sh-safety",
+      "artifact_inputs": ["ownership-validated-core"],
+      "artifact_outputs": ["safe-core"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-11"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-safety-module", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-12",
+      "title": "Implement MIR construction and verification in Gravity",
+      "depends_on": ["SH-11"],
+      "status": "partial",
+      "owner": "sh-mir",
+      "artifact_inputs": ["safe-core"],
+      "artifact_outputs": ["gravity-mir"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-12"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-mir-module", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-13",
+      "title": "Close functions, calls, recursion, and control flow through MIR",
+      "depends_on": ["SH-12"],
+      "status": "partial",
+      "owner": "sh-mir",
+      "artifact_inputs": ["gravity-mir"],
+      "artifact_outputs": ["gravity-mir"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-13"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-mir-module", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-14",
+      "title": "Close compiler-required data, layout, and allocation through MIR",
+      "depends_on": ["SH-12"],
+      "status": "queued",
+      "owner": "sh-domain-ir",
+      "artifact_inputs": ["gravity-mir"],
+      "artifact_outputs": ["domain-ir"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "none", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-14"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-domain-ir-module", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-15",
+      "title": "Complete compiler diagnostics as Gravity data",
+      "depends_on": ["SH-13", "SH-14"],
+      "status": "partial",
+      "owner": "master-coordinator",
+      "artifact_inputs": ["safe-core", "gravity-mir"],
+      "artifact_outputs": ["package-provenance"],
+      "cost": {"class": "heavy", "lane": "focused", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-15"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-central-routing", "reviewed-host-boundary", "reserved-fixtures", "reserved-tests"]
+    },
+    {
+      "id": "SH-16",
+      "title": "Implement required MIR optimization passes in Gravity",
+      "depends_on": ["SH-15"],
+      "status": "partial",
+      "owner": "sh-optimization",
+      "artifact_inputs": ["domain-ir"],
+      "artifact_outputs": ["optimized-mir"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "cpu-memory"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-16"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-optimization-module", "reserved-fixtures", "reserved-tests", "generated-evidence"]
+    },
+    {
+      "id": "SH-17",
+      "title": "Complete the target-lowering and backend interface boundary",
+      "depends_on": ["SH-16"],
+      "status": "partial",
+      "owner": "master-coordinator",
+      "artifact_inputs": ["optimized-mir"],
+      "artifact_outputs": ["lowered-target"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "toolchain"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-17"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-central-routing", "reviewed-backend-interface", "generated-evidence"]
+    },
+    {
+      "id": "SH-18",
+      "title": "Emit and run one complete native compiler target",
+      "depends_on": ["SH-17"],
+      "status": "queued",
+      "owner": "sh-target-native",
+      "artifact_inputs": ["lowered-target"],
+      "artifact_outputs": ["emitted-artifact"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "toolchain"},
+      "authority": {"required_level": "none", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-18"], "human_review_required": true},
+      "path_policy_ids": ["reserved-native-fixtures", "reviewed-backend-interface", "generated-evidence"]
+    },
+    {
+      "id": "SH-19",
+      "title": "Implement the minimal self-hosting runtime subset",
+      "depends_on": ["SH-11", "SH-17"],
+      "status": "queued",
+      "owner": "sh-runtime",
+      "artifact_inputs": ["safe-core", "lowered-target"],
+      "artifact_outputs": ["emitted-artifact"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "toolchain"},
+      "authority": {"required_level": "none", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-19"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-runtime-module", "reserved-fixtures", "reserved-tests", "generated-evidence"]
+    },
+    {
+      "id": "SH-20",
+      "title": "Implement release-grade artifact emission and provenance",
+      "depends_on": ["SH-17"],
+      "status": "partial",
+      "owner": "sh-artifact-emission",
+      "artifact_inputs": ["lowered-target"],
+      "artifact_outputs": ["emitted-artifact", "package-provenance"],
+      "cost": {"class": "heavy", "lane": "heavy-candidate", "resource": "toolchain"},
+      "authority": {"required_level": "non-authoritative", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-20"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-artifact-module", "generated-evidence", "generated-coverage"]
+    },
+    {
+      "id": "SH-21",
+      "title": "Make the compiler source legal and executable under :meta",
+      "depends_on": ["SH-15", "SH-17", "SH-19"],
+      "status": "queued",
+      "owner": "sh-meta-compiler",
+      "artifact_inputs": ["safe-core", "emitted-artifact"],
+      "artifact_outputs": ["typed-core", "package-provenance"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "cpu-memory"},
+      "authority": {"required_level": "none", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-21"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-meta-compiler-module", "reserved-fixtures", "reserved-tests", "generated-evidence"]
+    },
+    {
+      "id": "SH-22",
+      "title": "Implement the bootstrap standard-library core",
+      "depends_on": ["SH-13", "SH-14", "SH-19"],
+      "status": "queued",
+      "owner": "sh-standard-library",
+      "artifact_inputs": ["gravity-mir", "domain-ir", "emitted-artifact"],
+      "artifact_outputs": ["package-provenance"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "cpu-memory"},
+      "authority": {"required_level": "none", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-22"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-stdlib-module", "reserved-fixtures", "reserved-tests", "generated-evidence"]
+    },
+    {
+      "id": "SH-23",
+      "title": "Implement the bootstrap package and hermetic build subset",
+      "depends_on": ["SH-20", "SH-21", "SH-22"],
+      "status": "queued",
+      "owner": "sh-package-build",
+      "artifact_inputs": ["emitted-artifact", "package-provenance"],
+      "artifact_outputs": ["package-provenance"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "cpu-io"},
+      "authority": {"required_level": "none", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-23"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-package-build-module", "generated-evidence", "generated-coverage"]
+    },
+    {
+      "id": "SH-24",
+      "title": "Implement the self-hosted compiler driver and CLI subset",
+      "depends_on": ["SH-18", "SH-19", "SH-20", "SH-23"],
+      "status": "queued",
+      "owner": "master-coordinator",
+      "artifact_inputs": ["emitted-artifact", "package-provenance"],
+      "artifact_outputs": ["emitted-artifact", "package-provenance"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "toolchain"},
+      "authority": {"required_level": "none", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-24"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-central-routing", "reviewed-host-boundary", "generated-evidence"]
+    },
+    {
+      "id": "SH-25",
+      "title": "Compile every authoritative compiler component with Gravity",
+      "depends_on": ["SH-21", "SH-22", "SH-24"],
+      "status": "queued",
+      "owner": "sh-component-build",
+      "artifact_inputs": ["package-provenance"],
+      "artifact_outputs": ["emitted-artifact", "package-provenance"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "toolchain"},
+      "authority": {"required_level": "none", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-25"], "human_review_required": true},
+      "path_policy_ids": ["reserved-component-build", "generated-evidence", "generated-coverage"]
+    },
+    {
+      "id": "SH-26",
+      "title": "Rebuild the complete bootstrap compiler with the prior Gravity stage",
+      "depends_on": ["SH-25"],
+      "status": "blocked",
+      "owner": "sh-stage-rebuild",
+      "artifact_inputs": ["emitted-artifact", "package-provenance"],
+      "artifact_outputs": ["emitted-artifact", "package-provenance"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "toolchain"},
+      "authority": {"required_level": "none", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-26"], "human_review_required": true},
+      "path_policy_ids": ["reserved-stage-rebuild", "generated-evidence", "generated-coverage"]
+    },
+    {
+      "id": "SH-27",
+      "title": "Prove stage equivalence and deterministic fixed-point behavior",
+      "depends_on": ["SH-26"],
+      "status": "blocked",
+      "owner": "sh-stage-equivalence",
+      "artifact_inputs": ["emitted-artifact", "package-provenance"],
+      "artifact_outputs": ["package-provenance"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "toolchain"},
+      "authority": {"required_level": "none", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-27"], "human_review_required": true},
+      "path_policy_ids": ["reserved-stage-equivalence", "generated-evidence", "generated-coverage"]
+    },
+    {
+      "id": "SH-28",
+      "title": "Close trusting-trust, provenance, and TCB evidence",
+      "depends_on": ["SH-27"],
+      "status": "blocked",
+      "owner": "sh-provenance",
+      "artifact_inputs": ["package-provenance"],
+      "artifact_outputs": ["package-provenance"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "toolchain"},
+      "authority": {"required_level": "none", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-28"], "human_review_required": true},
+      "path_policy_ids": ["reserved-provenance", "generated-evidence", "generated-coverage"]
+    },
+    {
+      "id": "SH-29",
+      "title": "Emit and verify the public seedless Gravity release",
+      "depends_on": ["SH-28"],
+      "status": "blocked",
+      "owner": "master-coordinator",
+      "artifact_inputs": ["emitted-artifact", "package-provenance"],
+      "artifact_outputs": ["emitted-artifact", "package-provenance"],
+      "cost": {"class": "serialized-heavy", "lane": "heavy-candidate", "resource": "toolchain"},
+      "authority": {"required_level": "none", "maximum_claim": "coordination-only", "scope": "coordination slice", "evidence": ["SH-BACKLOG:SH-29"], "human_review_required": true},
+      "path_policy_ids": ["reviewed-central-routing", "generated-evidence", "generated-coverage"]
+    }
+  ],
+  "ownership": {
+    "overlap_rule": "Different owners may not claim overlapping paths. Same-owner nested generated policies require allow_overlap on both policies.",
+    "categories": [
+      {"id": "coordinator", "description": "Shared routing, integration, host boundaries, and final status authority."},
+      {"id": "leaf-module", "description": "A single compiler or runtime module with a stable contract boundary."},
+      {"id": "leaf-target", "description": "A target or backend-specific leaf module and its dedicated fixtures."},
+      {"id": "leaf-evidence", "description": "A leaf responsible for a reproducible evidence or bootstrap stage."},
+      {"id": "leaf-build", "description": "Package, standard-library, or component build leaf ownership."},
+      {"id": "reserved", "description": "A future path reservation; workers may add leaves but may not edit shared paths."}
+    ],
+    "owners": [
+      {"id": "master-coordinator", "category": "coordinator", "exclusive": true, "path_policy_ids": ["reviewed-central-routing", "reviewed-host-boundary", "reviewed-backlog", "reviewed-coordinator-integration", "reviewed-artifact-module", "generated-evidence", "generated-coverage", "reserved-fixtures", "reserved-tests", "reviewed-stage0-clojure-master-coordinator", "reviewed-p15-coordinator-integration-reservations"]},
+      {"id": "sh-01-leaf", "category": "leaf-module", "exclusive": true, "path_policy_ids": []},
+      {"id": "sh-envelope", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-envelope-module"]},
+      {"id": "sh-reader", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-reader-module", "reviewed-stage0-clojure-sh-reader"]},
+      {"id": "sh-syntax", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-syntax-module", "reviewed-stage0-clojure-sh-syntax"]},
+      {"id": "sh-macro", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-macro-module", "reviewed-stage0-clojure-sh-macro"]},
+      {"id": "sh-resolution", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-resolution-module", "reviewed-stage0-clojure-sh-resolution"]},
+      {"id": "sh-core", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-core-module", "reviewed-stage0-clojure-sh-core"]},
+      {"id": "sh-types", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-types-module", "reviewed-stage0-clojure-sh-types"]},
+      {"id": "sh-effects", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-effects-module", "reviewed-stage0-clojure-sh-effects"]},
+      {"id": "sh-profile", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-stage0-clojure-sh-profile"]},
+      {"id": "sh-capability", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-stage0-clojure-sh-capability"]},
+      {"id": "sh-ownership", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-ownership-module", "reviewed-stage0-clojure-sh-ownership"]},
+      {"id": "sh-safety", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-safety-module", "reviewed-stage0-clojure-sh-safety"]},
+      {"id": "sh-mir", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-mir-module", "reviewed-stage0-clojure-sh-mir"]},
+      {"id": "sh-domain-ir", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-domain-ir-module", "reviewed-stage0-clojure-sh-domain-ir"]},
+      {"id": "sh-optimization", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-optimization-module", "reviewed-stage0-clojure-sh-optimization"]},
+      {"id": "sh-target-wasm", "category": "leaf-target", "exclusive": true, "path_policy_ids": ["reviewed-target-wasm-module"]},
+      {"id": "sh-target-native", "category": "leaf-target", "exclusive": true, "path_policy_ids": ["reserved-native-fixtures"]},
+      {"id": "sh-target-workflow", "category": "leaf-target", "exclusive": true, "path_policy_ids": []},
+      {"id": "sh-target-query", "category": "leaf-target", "exclusive": true, "path_policy_ids": []},
+      {"id": "sh-target-mobile", "category": "leaf-target", "exclusive": true, "path_policy_ids": []},
+      {"id": "sh-target-c", "category": "leaf-target", "exclusive": true, "path_policy_ids": []},
+      {"id": "sh-target-llvm", "category": "leaf-target", "exclusive": true, "path_policy_ids": []},
+      {"id": "sh-target-jvm", "category": "leaf-target", "exclusive": true, "path_policy_ids": []},
+      {"id": "sh-target-js", "category": "leaf-target", "exclusive": true, "path_policy_ids": []},
+      {"id": "sh-target-mlir", "category": "leaf-target", "exclusive": true, "path_policy_ids": []},
+      {"id": "sh-target-gpu", "category": "leaf-target", "exclusive": true, "path_policy_ids": []},
+      {"id": "sh-target-hdl", "category": "leaf-target", "exclusive": true, "path_policy_ids": []},
+      {"id": "sh-incremental", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-stage0-clojure-sh-incremental"]},
+      {"id": "sh-pass-api", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-stage0-clojure-sh-pass-api"]},
+      {"id": "sh-verification", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-stage0-clojure-sh-verification"]},
+      {"id": "sh-runtime", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-runtime-module"]},
+      {"id": "sh-artifact-emission", "category": "leaf-evidence", "exclusive": true, "path_policy_ids": []},
+      {"id": "sh-meta-compiler", "category": "leaf-module", "exclusive": true, "path_policy_ids": ["reviewed-meta-compiler-module"]},
+      {"id": "sh-standard-library", "category": "leaf-build", "exclusive": true, "path_policy_ids": ["reviewed-stdlib-module"]},
+      {"id": "sh-package-build", "category": "leaf-build", "exclusive": true, "path_policy_ids": ["reviewed-package-build-module"]},
+      {"id": "sh-component-build", "category": "leaf-evidence", "exclusive": true, "path_policy_ids": ["reserved-component-build"]},
+      {"id": "sh-stage-rebuild", "category": "leaf-evidence", "exclusive": true, "path_policy_ids": ["reserved-stage-rebuild"]},
+      {"id": "sh-stage-equivalence", "category": "leaf-evidence", "exclusive": true, "path_policy_ids": ["reserved-stage-equivalence"]},
+      {"id": "sh-provenance", "category": "leaf-evidence", "exclusive": true, "path_policy_ids": ["reserved-provenance"]}
+    ],
+    "module_paths": {
+      "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity": "sh-target-workflow",
+      "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity": "sh-target-query",
+      "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity": "sh-target-mobile",
+      "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity": "master-coordinator",
+      "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity": "sh-target-c",
+      "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity": "sh-target-llvm",
+      "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity": "sh-target-wasm",
+      "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity": "sh-target-jvm",
+      "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity": "sh-target-js",
+      "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity": "sh-target-mlir",
+      "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity": "sh-target-gpu",
+      "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity": "sh-target-hdl",
+      "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity": "master-coordinator",
+      "bootstrap/gravity/src/gravity/bootstrap/reader.gravity": "sh-reader",
+      "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity": "sh-syntax",
+      "bootstrap/gravity/src/gravity/checked_core.gravity": "sh-core",
+      "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity": "sh-safety",
+      "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity": "sh-mir",
+      "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity": "sh-domain-ir",
+      "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity": "sh-optimization",
+      "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity": "master-coordinator",
+      "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity": "master-coordinator",
+      "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity": "sh-incremental",
+      "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity": "sh-pass-api",
+      "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity": "sh-verification",
+      "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity": "sh-envelope",
+      "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity": "sh-syntax",
+      "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity": "sh-macro",
+      "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity": "sh-resolution",
+      "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity": "master-coordinator",
+      "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity": "sh-core",
+      "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity": "sh-core",
+      "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity": "sh-types",
+      "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity": "sh-effects",
+      "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity": "sh-ownership",
+      "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity": "sh-reader",
+      "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity": "sh-core",
+      "bootstrap/gravity/src/gravity/macro.gravity": "sh-macro",
+      "bootstrap/gravity/src/gravity/resolution.gravity": "sh-resolution",
+      "bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity": "sh-package-build",
+      "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity": "sh-meta-compiler",
+      "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity": "sh-standard-library",
+      "bootstrap/clojure/src/gravity/bootstrap.clj": "master-coordinator",
+      "bootstrap/clojure/src/gravity/c10_safety_analysis.clj": "sh-safety",
+      "bootstrap/clojure/src/gravity/c11_mir.clj": "sh-mir",
+      "bootstrap/clojure/src/gravity/c12_domain_ir.clj": "sh-domain-ir",
+      "bootstrap/clojure/src/gravity/c13_optimization.clj": "sh-optimization",
+      "bootstrap/clojure/src/gravity/c14_lowering.clj": "master-coordinator",
+      "bootstrap/clojure/src/gravity/c15_diagnostics.clj": "master-coordinator",
+      "bootstrap/clojure/src/gravity/c16_incremental.clj": "sh-incremental",
+      "bootstrap/clojure/src/gravity/c17_plugin.clj": "sh-pass-api",
+      "bootstrap/clojure/src/gravity/c18_verification.clj": "sh-verification",
+      "bootstrap/clojure/src/gravity/c2_artifact_identity.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/c2_lexical_validation.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/c2_pass_cache.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/c2_reader_diagnostics.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/c2_reader_product_projection.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/c2_source_identity.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/c3_artifact_identity.clj": "sh-syntax",
+      "bootstrap/clojure/src/gravity/c3_literal_projection.clj": "sh-syntax",
+      "bootstrap/clojure/src/gravity/c3_reader_integrity.clj": "sh-syntax",
+      "bootstrap/clojure/src/gravity/c3_syntax_construction.clj": "sh-syntax",
+      "bootstrap/clojure/src/gravity/c3_syntax_diagnostics.clj": "sh-syntax",
+      "bootstrap/clojure/src/gravity/c3_syntax_evidence.clj": "sh-syntax",
+      "bootstrap/clojure/src/gravity/c3_syntax_verification.clj": "sh-syntax",
+      "bootstrap/clojure/src/gravity/c4_macro_evidence.clj": "sh-macro",
+      "bootstrap/clojure/src/gravity/c5_name_resolution.clj": "sh-resolution",
+      "bootstrap/clojure/src/gravity/c6_core_lowering.clj": "sh-core",
+      "bootstrap/clojure/src/gravity/c7_type_checker.clj": "sh-types",
+      "bootstrap/clojure/src/gravity/c8_effect_checker.clj": "sh-effects",
+      "bootstrap/clojure/src/gravity/c9_ownership_checker.clj": "sh-ownership",
+      "bootstrap/clojure/src/gravity/capability_validation.clj": "sh-capability",
+      "bootstrap/clojure/src/gravity/cli.clj": "master-coordinator",
+      "bootstrap/clojure/src/gravity/compiler_verification_shared.clj": "sh-verification",
+      "bootstrap/clojure/src/gravity/core_ast_lowering.clj": "sh-core",
+      "bootstrap/clojure/src/gravity/darwin_publication.clj": "master-coordinator",
+      "bootstrap/clojure/src/gravity/diagnostics.clj": "master-coordinator",
+      "bootstrap/clojure/src/gravity/digest.clj": "master-coordinator",
+      "bootstrap/clojure/src/gravity/macro_expansion.clj": "sh-macro",
+      "bootstrap/clojure/src/gravity/module_analysis.clj": "sh-resolution",
+      "bootstrap/clojure/src/gravity/optimization_lowering.clj": "sh-optimization",
+      "bootstrap/clojure/src/gravity/pass_execution.clj": "sh-verification",
+      "bootstrap/clojure/src/gravity/profile_validation.clj": "sh-profile",
+      "bootstrap/clojure/src/gravity/reader_cursor.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/reader_host_oracle.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/reader_namespace.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/reader_primitives.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/source_span.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/source_unit.clj": "sh-reader",
+      "bootstrap/clojure/src/gravity/syntax_object_stream.clj": "sh-syntax",
+      "bootstrap/clojure/src/gravity/syntax_origin.clj": "sh-syntax",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c5_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c6_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c7_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c8_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c9_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c10_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c12_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c13_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c14_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c15_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c16_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c17_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/bootstrap_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/development_test_runner.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/c10_safety_analysis_test.clj": "sh-safety",
+      "bootstrap/clojure/test/gravity/c11_mir_test.clj": "sh-mir",
+      "bootstrap/clojure/test/gravity/c12_domain_ir_test.clj": "sh-domain-ir",
+      "bootstrap/clojure/test/gravity/c13_optimization_test.clj": "sh-optimization",
+      "bootstrap/clojure/test/gravity/c14_lowering_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/c15_diagnostics_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/c16_incremental_test.clj": "sh-incremental",
+      "bootstrap/clojure/test/gravity/c17_plugin_test.clj": "sh-pass-api",
+      "bootstrap/clojure/test/gravity/c18_verification_test.clj": "sh-verification",
+      "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/c2_lexical_validation_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/c2_reader_diagnostics_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/c2_reader_product_projection_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/c2_source_identity_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/c3_artifact_identity_test.clj": "sh-syntax",
+      "bootstrap/clojure/test/gravity/c3_literal_projection_test.clj": "sh-syntax",
+      "bootstrap/clojure/test/gravity/c3_reader_integrity_test.clj": "sh-syntax",
+      "bootstrap/clojure/test/gravity/c3_syntax_construction_test.clj": "sh-syntax",
+      "bootstrap/clojure/test/gravity/c3_syntax_diagnostics_test.clj": "sh-syntax",
+      "bootstrap/clojure/test/gravity/c3_syntax_evidence_test.clj": "sh-syntax",
+      "bootstrap/clojure/test/gravity/c3_syntax_verification_test.clj": "sh-syntax",
+      "bootstrap/clojure/test/gravity/c4_macro_evidence_test.clj": "sh-macro",
+      "bootstrap/clojure/test/gravity/c5_name_resolution_test.clj": "sh-resolution",
+      "bootstrap/clojure/test/gravity/c6_core_lowering_test.clj": "sh-core",
+      "bootstrap/clojure/test/gravity/c7_type_checker_test.clj": "sh-types",
+      "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj": "sh-effects",
+      "bootstrap/clojure/test/gravity/c9_ownership_checker_test.clj": "sh-ownership",
+      "bootstrap/clojure/test/gravity/capability_validation_test.clj": "sh-capability",
+      "bootstrap/clojure/test/gravity/cli_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/compiler_verification_shared_test.clj": "sh-verification",
+      "bootstrap/clojure/test/gravity/core_ast_lowering_test.clj": "sh-core",
+      "bootstrap/clojure/test/gravity/darwin_publication_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/diagnostics_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/digest_test.clj": "master-coordinator",
+      "bootstrap/clojure/test/gravity/macro_expansion_test.clj": "sh-macro",
+      "bootstrap/clojure/test/gravity/module_analysis_test.clj": "sh-resolution",
+      "bootstrap/clojure/test/gravity/optimization_lowering_test.clj": "sh-optimization",
+      "bootstrap/clojure/test/gravity/pass_execution_test.clj": "sh-verification",
+      "bootstrap/clojure/test/gravity/profile_validation_test.clj": "sh-profile",
+      "bootstrap/clojure/test/gravity/reader_cursor_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/reader_diagnostic_policy_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/reader_host_oracle_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/reader_namespace_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/reader_primitives_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/source_span_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/source_unit_test.clj": "sh-reader",
+      "bootstrap/clojure/test/gravity/syntax_object_stream_test.clj": "sh-syntax",
+      "bootstrap/clojure/test/gravity/syntax_origin_test.clj": "sh-syntax"
+    }
+  },
+  "path_policy": {
+    "reviewed_definition": "A reviewed path is human-owned source, contract, routing, or test code. It may be edited only by its owner and requires review before integration.",
+    "generated_definition": "A generated path is reproducible evidence or build output. It is not hand-edited; its generator and owning policy are recorded.",
+    "reserved_definition": "A reserved path is a future leaf namespace. A worker may create a new leaf below it but may not edit another owner or a shared integration surface.",
+    "policies": [
+      {
+        "id": "reviewed-central-routing",
+        "kind": "reviewed",
+        "owner": "master-coordinator",
+        "patterns": ["deps.edn", "bin/gravity", "bin/gravity-bootstrap", "contracts/project-structure.json", "bootstrap/clojure/java/gravity/cli/Main.java", "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c5_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c6_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c7_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c8_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c9_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c10_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c12_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c13_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c14_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c15_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c16_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c17_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/core_ast_lowering_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/module_analysis_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/profile_validation_test.clj", "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj", "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj", "bootstrap/clojure/test/gravity/bootstrap_test.clj", "bootstrap/clojure/test/gravity/development_test_runner.clj", "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj", "tools/"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-host-boundary",
+        "kind": "reviewed",
+        "owner": "master-coordinator",
+        "patterns": ["bootstrap/clojure/src/gravity/cli.clj", "bootstrap/clojure/src/gravity/darwin_publication.clj", "bootstrap/clojure/src/gravity/diagnostics.clj", "bootstrap/clojure/test/gravity/cli_test.clj", "bootstrap/clojure/test/gravity/darwin_publication_test.clj", "bootstrap/clojure/test/gravity/diagnostics_test.clj"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-backlog",
+        "kind": "reviewed",
+        "owner": "master-coordinator",
+        "patterns": ["docs/self-hosting-slice-backlog.md", "docs/self-hosting-slice-ownership.edn"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-envelope-module",
+        "kind": "reviewed",
+        "owner": "sh-envelope",
+        "patterns": ["bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-reader-module",
+        "kind": "reviewed",
+        "owner": "sh-reader",
+        "patterns": ["bootstrap/gravity/src/gravity/bootstrap/reader.gravity", "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-syntax-module",
+        "kind": "reviewed",
+        "owner": "sh-syntax",
+        "patterns": ["bootstrap/gravity/src/gravity/bootstrap/syntax.gravity", "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-macro-module",
+        "kind": "reviewed",
+        "owner": "sh-macro",
+        "patterns": ["bootstrap/gravity/src/gravity/macro.gravity", "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-resolution-module",
+        "kind": "reviewed",
+        "owner": "sh-resolution",
+        "patterns": ["bootstrap/gravity/src/gravity/resolution.gravity", "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-core-module",
+        "kind": "reviewed",
+        "owner": "sh-core",
+        "patterns": ["bootstrap/gravity/src/gravity/checked_core.gravity", "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity", "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-types-module",
+        "kind": "reviewed",
+        "owner": "sh-types",
+        "patterns": ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-effects-module",
+        "kind": "reviewed",
+        "owner": "sh-effects",
+        "patterns": ["bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-ownership-module",
+        "kind": "reviewed",
+        "owner": "sh-ownership",
+        "patterns": ["bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-safety-module",
+        "kind": "reviewed",
+        "owner": "sh-safety",
+        "patterns": ["bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-mir-module",
+        "kind": "reviewed",
+        "owner": "sh-mir",
+        "patterns": ["bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-domain-ir-module",
+        "kind": "reviewed",
+        "owner": "sh-domain-ir",
+        "patterns": ["bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-optimization-module",
+        "kind": "reviewed",
+        "owner": "sh-optimization",
+        "patterns": ["bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-backend-interface",
+        "kind": "reviewed",
+        "owner": "master-coordinator",
+        "patterns": ["bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity", "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-target-wasm-module",
+        "kind": "reviewed",
+        "owner": "sh-target-wasm",
+        "patterns": ["bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-coordinator-integration",
+        "kind": "reviewed",
+        "owner": "master-coordinator",
+        "patterns": ["bootstrap/gravity/p15_s23/compiler.gravity", "bootstrap/gravity/p15_s23/runtime.gravity", "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity", "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity", "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-runtime-module",
+        "kind": "reviewed",
+        "owner": "sh-runtime",
+        "patterns": ["bootstrap/gravity/src/gravity/runtime.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-artifact-module",
+        "kind": "reviewed",
+        "owner": "master-coordinator",
+        "patterns": ["bootstrap/gravity/p15_s23/emitter.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-meta-compiler-module",
+        "kind": "reviewed",
+        "owner": "sh-meta-compiler",
+        "patterns": ["bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stdlib-module",
+        "kind": "reviewed",
+        "owner": "sh-standard-library",
+        "patterns": ["bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-package-build-module",
+        "kind": "reviewed",
+        "owner": "sh-package-build",
+        "patterns": ["bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity"],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "generated-evidence",
+        "kind": "generated",
+        "owner": "master-coordinator",
+        "patterns": ["docs/artifacts/", "target/"],
+        "editable": false,
+        "review_required": true,
+        "generator": "coordinator-owned evidence and validation tools",
+        "allow_overlap": true
+      },
+      {
+        "id": "generated-coverage",
+        "kind": "generated",
+        "owner": "master-coordinator",
+        "patterns": [
+          "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
+          "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
+          "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md"
+        ],
+        "editable": false,
+        "review_required": true,
+        "generator": "tools/generate_full_language_coverage_matrix.py",
+        "allow_overlap": true
+      },
+      {
+        "id": "reserved-fixtures",
+        "kind": "reserved",
+        "owner": "master-coordinator",
+        "patterns": ["bootstrap/clojure/fixtures/self-hosting/sh-*/"],
+        "editable": true,
+        "review_required": true,
+        "reservation": "future-path-conventions.fixture-root-template",
+        "allow_overlap": false
+      },
+      {
+        "id": "reserved-tests",
+        "kind": "reserved",
+        "owner": "master-coordinator",
+        "patterns": ["bootstrap/clojure/test/gravity/self_hosting/sh*_*.clj"],
+        "editable": true,
+        "review_required": true,
+        "reservation": "future-path-conventions.test-file-template",
+        "allow_overlap": false
+      },
+      {
+        "id": "reserved-native-fixtures",
+        "kind": "reserved",
+        "owner": "sh-target-native",
+        "patterns": ["bootstrap/gravity/fixtures/native/"],
+        "editable": true,
+        "review_required": true,
+        "reservation": "SH-18 dedicated native fixtures",
+        "allow_overlap": false
+      },
+      {
+        "id": "reserved-component-build",
+        "kind": "reserved",
+        "owner": "sh-component-build",
+        "patterns": ["bootstrap/gravity/build/components/"],
+        "editable": true,
+        "review_required": true,
+        "reservation": "SH-25 component build outputs",
+        "allow_overlap": false
+      },
+      {
+        "id": "reserved-stage-rebuild",
+        "kind": "reserved",
+        "owner": "sh-stage-rebuild",
+        "patterns": ["bootstrap/gravity/build/stages/"],
+        "editable": true,
+        "review_required": true,
+        "reservation": "SH-26 stage rebuild inputs",
+        "allow_overlap": false
+      },
+      {
+        "id": "reserved-stage-equivalence",
+        "kind": "reserved",
+        "owner": "sh-stage-equivalence",
+        "patterns": ["bootstrap/gravity/build/equivalence/"],
+        "editable": true,
+        "review_required": true,
+        "reservation": "SH-27 equivalence evidence inputs",
+        "allow_overlap": false
+      },
+      {
+        "id": "reserved-provenance",
+        "kind": "reserved",
+        "owner": "sh-provenance",
+        "patterns": ["bootstrap/gravity/build/provenance/"],
+        "editable": true,
+        "review_required": true,
+        "reservation": "SH-28 provenance review inputs",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-master-coordinator",
+        "kind": "reviewed",
+        "owner": "master-coordinator",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c14_lowering.clj",
+          "bootstrap/clojure/src/gravity/c15_diagnostics.clj",
+          "bootstrap/clojure/src/gravity/digest.clj",
+          "bootstrap/clojure/test/gravity/c14_lowering_test.clj",
+          "bootstrap/clojure/test/gravity/c15_diagnostics_test.clj",
+          "bootstrap/clojure/test/gravity/digest_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-p15-coordinator-integration-reservations",
+        "kind": "reviewed",
+        "owner": "master-coordinator",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+          "bootstrap/clojure/src/gravity/p15_native_plan_specialization.clj",
+          "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+          "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
+          "bootstrap/clojure/test/gravity/p15_native_plan_specialization_test.clj",
+          "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
+          "bootstrap/clojure/test/gravity/p15_public_native_run_test.clj",
+          "bootstrap/clojure/test/gravity/p15_public_native_run_wrapper_test.clj",
+          "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj",
+          "contracts/p15-public-native-admission-v1.edn",
+          "bootstrap/gravity/p15_s23/native_plan_c_emitter.gravity",
+          "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-bool.gravity",
+          "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-control.gravity",
+          "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-nonascii.gravity",
+          "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.gravity",
+          "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.qst",
+          "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-str.gravity",
+          "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-trigraph.gravity",
+          "bootstrap/clojure/fixtures/p15-native-plan-specialization/unsupported-builtin.gravity"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-project-structure-runner-integration",
+        "kind": "reviewed",
+        "owner": "master-coordinator",
+        "patterns": [
+          "bootstrap/clojure/test/gravity/project_structure_test_runner_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-core",
+        "kind": "reviewed",
+        "owner": "sh-core",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/core_ast_lowering.clj",
+          "bootstrap/clojure/src/gravity/c6_core_lowering.clj",
+          "bootstrap/clojure/test/gravity/core_ast_lowering_test.clj",
+          "bootstrap/clojure/test/gravity/c6_core_lowering_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-domain-ir",
+        "kind": "reviewed",
+        "owner": "sh-domain-ir",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c12_domain_ir.clj",
+          "bootstrap/clojure/test/gravity/c12_domain_ir_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-effects",
+        "kind": "reviewed",
+        "owner": "sh-effects",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c8_effect_checker.clj",
+          "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-incremental",
+        "kind": "reviewed",
+        "owner": "sh-incremental",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c16_incremental.clj",
+          "bootstrap/clojure/test/gravity/c16_incremental_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-macro",
+        "kind": "reviewed",
+        "owner": "sh-macro",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c4_macro_evidence.clj",
+          "bootstrap/clojure/src/gravity/macro_expansion.clj",
+          "bootstrap/clojure/test/gravity/c4_macro_evidence_test.clj",
+          "bootstrap/clojure/test/gravity/macro_expansion_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-mir",
+        "kind": "reviewed",
+        "owner": "sh-mir",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c11_mir.clj",
+          "bootstrap/clojure/test/gravity/c11_mir_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-optimization",
+        "kind": "reviewed",
+        "owner": "sh-optimization",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c13_optimization.clj",
+          "bootstrap/clojure/src/gravity/optimization_lowering.clj",
+          "bootstrap/clojure/test/gravity/c13_optimization_test.clj",
+          "bootstrap/clojure/test/gravity/optimization_lowering_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-ownership",
+        "kind": "reviewed",
+        "owner": "sh-ownership",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c9_ownership_checker.clj",
+          "bootstrap/clojure/test/gravity/c9_ownership_checker_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-pass-api",
+        "kind": "reviewed",
+        "owner": "sh-pass-api",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c17_plugin.clj",
+          "bootstrap/clojure/test/gravity/c17_plugin_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-reader",
+        "kind": "reviewed",
+        "owner": "sh-reader",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c2_artifact_identity.clj",
+          "bootstrap/clojure/src/gravity/c2_lexical_validation.clj",
+          "bootstrap/clojure/src/gravity/c2_pass_cache.clj",
+          "bootstrap/clojure/src/gravity/c2_reader_diagnostics.clj",
+          "bootstrap/clojure/src/gravity/c2_reader_product_projection.clj",
+          "bootstrap/clojure/src/gravity/c2_source_identity.clj",
+          "bootstrap/clojure/src/gravity/reader_cursor.clj",
+          "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj",
+          "bootstrap/clojure/src/gravity/reader_host_oracle.clj",
+          "bootstrap/clojure/src/gravity/reader_namespace.clj",
+          "bootstrap/clojure/src/gravity/reader_primitives.clj",
+          "bootstrap/clojure/src/gravity/source_span.clj",
+          "bootstrap/clojure/src/gravity/source_unit.clj",
+          "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj",
+          "bootstrap/clojure/test/gravity/c2_lexical_validation_test.clj",
+          "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj",
+          "bootstrap/clojure/test/gravity/c2_reader_diagnostics_test.clj",
+          "bootstrap/clojure/test/gravity/c2_reader_product_projection_test.clj",
+          "bootstrap/clojure/test/gravity/c2_source_identity_test.clj",
+          "bootstrap/clojure/test/gravity/reader_cursor_test.clj",
+          "bootstrap/clojure/test/gravity/reader_diagnostic_policy_test.clj",
+          "bootstrap/clojure/test/gravity/reader_host_oracle_test.clj",
+          "bootstrap/clojure/test/gravity/reader_namespace_test.clj",
+          "bootstrap/clojure/test/gravity/reader_primitives_test.clj",
+          "bootstrap/clojure/test/gravity/source_span_test.clj",
+          "bootstrap/clojure/test/gravity/source_unit_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-resolution",
+        "kind": "reviewed",
+        "owner": "sh-resolution",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c5_name_resolution.clj",
+          "bootstrap/clojure/src/gravity/module_analysis.clj",
+          "bootstrap/clojure/test/gravity/c5_name_resolution_test.clj",
+          "bootstrap/clojure/test/gravity/module_analysis_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-safety",
+        "kind": "reviewed",
+        "owner": "sh-safety",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c10_safety_analysis.clj",
+          "bootstrap/clojure/test/gravity/c10_safety_analysis_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-syntax",
+        "kind": "reviewed",
+        "owner": "sh-syntax",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c3_artifact_identity.clj",
+          "bootstrap/clojure/src/gravity/c3_literal_projection.clj",
+          "bootstrap/clojure/src/gravity/c3_reader_integrity.clj",
+          "bootstrap/clojure/src/gravity/c3_syntax_construction.clj",
+          "bootstrap/clojure/src/gravity/c3_syntax_diagnostics.clj",
+          "bootstrap/clojure/src/gravity/c3_syntax_evidence.clj",
+          "bootstrap/clojure/src/gravity/c3_syntax_verification.clj",
+          "bootstrap/clojure/src/gravity/syntax_object_stream.clj",
+          "bootstrap/clojure/src/gravity/syntax_origin.clj",
+          "bootstrap/clojure/test/gravity/c3_artifact_identity_test.clj",
+          "bootstrap/clojure/test/gravity/c3_literal_projection_test.clj",
+          "bootstrap/clojure/test/gravity/c3_reader_integrity_test.clj",
+          "bootstrap/clojure/test/gravity/c3_syntax_construction_test.clj",
+          "bootstrap/clojure/test/gravity/c3_syntax_diagnostics_test.clj",
+          "bootstrap/clojure/test/gravity/c3_syntax_evidence_test.clj",
+          "bootstrap/clojure/test/gravity/c3_syntax_verification_test.clj",
+          "bootstrap/clojure/test/gravity/syntax_object_stream_test.clj",
+          "bootstrap/clojure/test/gravity/syntax_origin_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-types",
+        "kind": "reviewed",
+        "owner": "sh-types",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c7_type_checker.clj",
+          "bootstrap/clojure/test/gravity/c7_type_checker_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-capability",
+        "kind": "reviewed",
+        "owner": "sh-capability",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/capability_validation.clj",
+          "bootstrap/clojure/test/gravity/capability_validation_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-profile",
+        "kind": "reviewed",
+        "owner": "sh-profile",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/profile_validation.clj",
+          "bootstrap/clojure/test/gravity/profile_validation_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      },
+      {
+        "id": "reviewed-stage0-clojure-sh-verification",
+        "kind": "reviewed",
+        "owner": "sh-verification",
+        "patterns": [
+          "bootstrap/clojure/src/gravity/c18_verification.clj",
+          "bootstrap/clojure/src/gravity/compiler_verification_shared.clj",
+          "bootstrap/clojure/src/gravity/pass_execution.clj",
+          "bootstrap/clojure/test/gravity/c18_verification_test.clj",
+          "bootstrap/clojure/test/gravity/compiler_verification_shared_test.clj",
+          "bootstrap/clojure/test/gravity/pass_execution_test.clj"
+        ],
+        "editable": true,
+        "review_required": true,
+        "reviewer": "master-coordinator",
+        "allow_overlap": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+{:phase :verify
+ :operation :assoc-in
+ :path [:digest-requests 0 :encoding]
+ :value :substituted
+ :expected-rule "C3-ID"}

@@ -1,0 +1,485 @@
+; W5 Wave5 Slice A rejected reader-module mutators.
+; Each transformer is total and changes one C2-C6 or boundary fact.
+(ns gravity.self-hosting.w5-reader-module.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-reader-module-execution-request
+             w5-reader-module-execution-request-at
+             w5-reader-module-alternate-path-request
+             w5-reader-module-invalid-schema-request
+             w5-reader-module-invalid-artifact-request
+             w5-reader-module-invalid-verifier-request
+             w5-reader-module-invalid-profile-request
+             w5-reader-module-invalid-status-request
+             w5-reader-module-invalid-residual-request
+             w5-reader-module-invalid-span-request
+             w5-reader-module-invalid-target-request
+             w5-reader-module-invalid-source-unit-request
+             w5-reader-module-invalid-syntax-origin-request
+             w5-reader-module-invalid-macro-hygiene-request
+             w5-reader-module-invalid-namespace-module-request
+             w5-reader-module-invalid-core-lowering-request
+             w5-reader-module-invalid-lineage-request
+             w5-reader-module-invalid-provenance-request
+             w5-reader-module-invalid-evidence-request
+             w5-reader-module-invalid-authority-request
+             w5-reader-module-invalid-c2-request
+             w5-reader-module-invalid-c3-request
+             w5-reader-module-invalid-c4-request
+             w5-reader-module-invalid-c5-request
+             w5-reader-module-invalid-c6-request
+             w5-reader-module-substituted-result
+             w5-rm-invalid-source-request
+             w5-rm-invalid-syntax-request
+             w5-rm-invalid-macro-request
+             w5-rm-invalid-namespace-request
+             w5-rm-invalid-core-request
+             w5-reader-module-invalid-schema-request-at
+             w5-reader-module-invalid-artifact-request-at
+             w5-reader-module-invalid-verifier-request-at
+             w5-reader-module-invalid-profile-request-at
+             w5-reader-module-invalid-status-request-at
+             w5-reader-module-invalid-residual-request-at
+             w5-reader-module-invalid-span-request-at
+             w5-reader-module-invalid-span-missing-request-at
+             w5-reader-module-invalid-span-extra-request-at
+             w5-reader-module-invalid-span-type-request-at
+             w5-reader-module-invalid-span-negative-request-at
+             w5-reader-module-invalid-span-order-request-at
+             w5-reader-module-invalid-target-request-at
+             w5-reader-module-invalid-source-unit-request-at
+             w5-reader-module-invalid-syntax-origin-request-at
+             w5-reader-module-invalid-macro-hygiene-request-at
+             w5-reader-module-invalid-namespace-module-request-at
+             w5-reader-module-invalid-core-lowering-request-at
+             w5-reader-module-invalid-lineage-request-at
+             w5-reader-module-invalid-provenance-request-at
+             w5-reader-module-invalid-gravity-path-suffix-request-at
+             w5-reader-module-invalid-qst-path-suffix-request-at
+             w5-reader-module-invalid-provenance-cross-binding-gravity-request-at
+             w5-reader-module-invalid-provenance-cross-binding-qst-request-at
+             w5-reader-module-invalid-provenance-cross-kind-gravity-request-at
+             w5-reader-module-invalid-provenance-cross-kind-qst-request-at
+             w5-reader-module-invalid-evidence-request-at
+             w5-reader-module-invalid-authority-request-at
+             w5-reader-module-invalid-c2-request-at
+             w5-reader-module-invalid-c3-request-at
+             w5-reader-module-invalid-c4-request-at
+             w5-reader-module-invalid-c5-request-at
+             w5-reader-module-invalid-c6-request-at])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-rm-span [source start end]
+  {:source-id source :start-byte start :end-byte end
+   :line 1 :column 1})
+
+(defn w5-rm-provenance [root extension source-kind]
+  {:source-id :gravity.self-hosting/w5-reader-module
+   :logical-source-id "fixtures/w5-reader-module/reader-module-execution"
+   :actual-source-path
+   (str root "/bootstrap/clojure/fixtures/self-hosting/"
+        "w5-reader-module/accepted/reader-module-execution" extension)
+   :actual-source-extension extension
+   :source-kind source-kind
+   :project-relative-path
+   (str "bootstrap/clojure/fixtures/self-hosting/w5-reader-module/accepted/"
+        "reader-module-execution" extension)
+   :status :pending})
+
+(defn w5-rm-request-with-root [root extension source-kind]
+  {:artifact :gravity/w5-reader-module-request
+   :schema-version 1
+   :verifier-id :gravity/w5-reader-module-executor
+   :profile :meta :target :jvm
+   :claimed-status :incomplete :completion-status :incomplete
+   :target-contract
+   {:target :llvm-x86_64-linux :os :linux :arch :x86_64 :backend :llvm
+    :artifact-format :elf :abi :sysv-amd64
+    :cross-target-inference? false :fallback? false :darwin-fallback? false
+    :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+    :unsupported-target-policies
+    [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]
+    :candidate-invokes-clojure? false :candidate-links-jvm? false
+    :no-fallback? true}
+   :source-unit
+   {:artifact :gravity/c2-source-unit :schema-version 1
+    :source-unit-id :reader-module-source-unit
+    :logical-source-id "reader-module/source-unit-v1"
+    :project-root-id :gravity-project :encoding :utf-8
+    :extension-policy [".qst" ".gravity"] :source-kind source-kind
+    :source-byte-count :pending :source-content-status :pending
+    :hash-final? false
+    :provenance (w5-rm-provenance root extension source-kind)
+    :source-span (w5-rm-span :reader-module-source 0 512)}
+   :syntax-origin
+   {:artifact :gravity/c3-syntax-origin-stream :schema-version 1
+    :syntax-stream-id :reader-syntax-stream
+    :source-unit-id :reader-module-source-unit :form-count 3
+    :syntax-ids [:reader-form-0 :reader-form-1 :reader-form-2]
+    :origins
+    [{:syntax-id :reader-form-0 :origin-kind :source
+      :source-span (w5-rm-span :reader-form-0 0 8)
+      :parent-syntax-id nil :generated? false :metadata-preserved? true}
+     {:syntax-id :reader-form-1 :origin-kind :reader-abbreviation
+      :source-span (w5-rm-span :reader-form-1 9 32)
+      :parent-syntax-id :reader-form-0 :generated? false :metadata-preserved? true}
+     {:syntax-id :reader-form-2 :origin-kind :macro-generated
+      :source-span (w5-rm-span :reader-form-2 33 64)
+      :parent-syntax-id :reader-form-1 :generated? true :metadata-preserved? true}]
+    :metadata-preserved? true
+    :source-span (w5-rm-span :reader-syntax-stream 0 64) :status :pending}
+   :macro-hygiene
+   {:artifact :gravity/c4-macro-hygiene-trace :schema-version 1
+    :macro-id :reader-module/identity-macro :input-syntax-id :reader-form-1
+    :output-syntax-id :expanded-form-1
+    :generated-origin-chain [:reader-form-1 :macro-identity]
+    :hygiene-mark :fresh-mark-1 :capture-policy :hygienic
+    :capture-records [] :build-effects [] :profile :meta
+    :metadata-preserved? true :status :pending}
+   :namespace-module
+   {:artifact :gravity/c5-module-artifact :schema-version 1
+    :module-id :reader-module/module-v1
+    :namespace :gravity.self-hosting.w5-reader-module.accepted
+    :profile :meta :target :jvm :requires [] :aliases [] :imports []
+    :exports [:reader-module-execution] :effects [] :capabilities []
+    :bindings
+    [{:binding-id :reader-module/namespace :name :reader-module
+      :kind :namespace :visibility :private
+      :source-span (w5-rm-span :reader-module-namespace 0 16)}
+     {:binding-id :reader-module/execution :name :reader-module-execution
+      :kind :var :visibility :public
+      :source-span (w5-rm-span :reader-module-definition 17 40)}]
+    :dependency-graph {:nodes [:reader-module] :edges [] :acyclic? true}
+    :source-span (w5-rm-span :reader-module-module 0 64) :status :pending}
+   :core-lowering
+   {:artifact :gravity/c6-core-lowering :schema-version 1
+    :surface-root :expanded-form-1 :core-root :core-root-1
+    :core-forms [:do :let :if]
+    :desugaring-trace
+    [{:rule-id :reader-module-lowering :source-kind :module-form
+      :generated-origin [:expanded-form-1]
+      :invalidates [:typed-core :diagnostics]}]
+    :evaluation-order [:left-to-right]
+    :preserved-facts [:source-span :origin-chain :metadata
+                      :effects :capabilities :profile :target]
+    :domain-boundaries [] :unsafe-metadata-preserved? true
+    :profile :meta :target :jvm
+    :source-span (w5-rm-span :reader-module-core 0 96) :status :pending}
+   :lineage
+   {:phase-order [:c2-reader :c3-syntax-origin :c4-macro-hygiene
+                  :c5-namespace-module :c6-core-lowering]
+    :edges
+    [{:from :c2-reader :to :c3-syntax-origin
+      :preserves [:source-span :syntax-id :extension-provenance]}
+     {:from :c3-syntax-origin :to :c4-macro-hygiene
+      :preserves [:origin-chain :metadata :hygiene-mark]}
+     {:from :c4-macro-hygiene :to :c5-namespace-module
+      :preserves [:generated-origin :build-effects :profile]}
+     {:from :c5-namespace-module :to :c6-core-lowering
+      :preserves [:binding-identity :effects :capabilities :target]}]}
+   :evidence
+   {:evidence-class :executable-record :execution-status :pending
+    :proof-status :pending :source-span-status :preserved
+    :artifact-status :pending :status :incomplete
+    :full-language-credit? false :fl-240-credit? false}
+   :authority
+   {:authority :non-authority :clojure-seed-boundary? true
+    :self-hosted? false :public-authority? false :release? false
+    :full-language-credit? false :fl-240-credit? false
+    :candidate-invokes-clojure? false :candidate-links-jvm? false
+    :cross-target-inference? false :fallback? false :darwin-fallback? false
+    :no-fallback? true
+    :unsupported-target-policies
+    [{:target :darwin :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :darwin-arm64 :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :darwin-x86_64 :invokes-clojure? false :links-jvm? false :fallback? false}
+     {:target :windows :invokes-clojure? false :links-jvm? false :fallback? false}]}
+   :residual-seed-harness
+   {:compiler-plan :clojure-stage0-stage2-compiler-plan
+    :runtime :jvm-stage2-runtime :authority :seed-only
+    :execution-status :harness-only}
+   :provenance (w5-rm-provenance root extension source-kind)
+   :source-span (w5-rm-span :reader-module-request 0 512)})
+
+(defn w5-reader-module-execution-request-at [root extension source-kind]
+  (w5-rm-request-with-root root extension source-kind))
+
+(defn w5-reader-module-execution-request [root extension source-kind]
+  (w5-reader-module-execution-request-at root extension source-kind))
+
+(defn w5-reader-module-alternate-path-request [root extension source-kind]
+  (w5-reader-module-execution-request-at root extension source-kind))
+
+(defn w5-reader-module-invalid-schema-request [request]
+  (assoc request :schema-version 99))
+
+(defn w5-reader-module-invalid-artifact-request [request]
+  (assoc request :artifact :gravity/foreign-request))
+
+(defn w5-reader-module-invalid-verifier-request [request]
+  (assoc request :verifier-id :gravity/foreign-verifier))
+
+(defn w5-reader-module-invalid-profile-request [request]
+  (assoc request :profile :native))
+
+(defn w5-reader-module-invalid-status-request [request]
+  (assoc request :completion-status :complete))
+
+(defn w5-reader-module-invalid-residual-request [request]
+  (assoc request
+         :residual-seed-harness {:compiler-plan :foreign
+                                 :runtime :foreign
+                                 :authority :seed-only
+                                 :execution-status :harness-only}))
+
+(defn w5-reader-module-invalid-span-request [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :line 0)))
+
+(defn w5-reader-module-invalid-target-request [request]
+  (assoc request :target-contract
+         (assoc (get request :target-contract) :target :native)))
+
+(defn w5-reader-module-invalid-source-unit-request [request]
+  (assoc request :source-unit
+         (assoc (get request :source-unit)
+                :source-content-status :corrupt)))
+
+(defn w5-reader-module-invalid-syntax-origin-request [request]
+  (assoc request :syntax-origin
+         (assoc (get request :syntax-origin)
+                :metadata-preserved? false)))
+
+(defn w5-reader-module-invalid-macro-hygiene-request [request]
+  (assoc request :macro-hygiene
+         (assoc (get request :macro-hygiene)
+                :capture-policy :implicit)))
+
+(defn w5-reader-module-invalid-namespace-module-request [request]
+  (assoc request :namespace-module
+         (assoc (get request :namespace-module)
+                :exports [:private-entry])))
+
+(defn w5-reader-module-invalid-core-lowering-request [request]
+  (assoc request :core-lowering
+         (assoc (get request :core-lowering)
+                :evaluation-order [:right-to-left])))
+
+(defn w5-reader-module-invalid-lineage-request [request]
+  (assoc request :lineage
+         (assoc (get request :lineage)
+                :phase-order [:c2-reader :c4-macro-hygiene])))
+
+(defn w5-reader-module-invalid-provenance-request [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :actual-source-extension ".clj")))
+
+(defn w5-reader-module-invalid-evidence-request [request]
+  (assoc request :evidence
+         (assoc (get request :evidence) :execution-status :complete)))
+
+(defn w5-reader-module-invalid-authority-request [request]
+  (assoc request :authority
+         (assoc (get request :authority) :release? true)))
+
+(defn w5-reader-module-invalid-schema-request-at [request]
+  (assoc request :schema-version 99))
+
+(defn w5-reader-module-invalid-artifact-request-at [request]
+  (assoc request :artifact :gravity/foreign-request))
+
+(defn w5-reader-module-invalid-verifier-request-at [request]
+  (assoc request :verifier-id :gravity/foreign-verifier))
+
+(defn w5-reader-module-invalid-profile-request-at [request]
+  (assoc request :profile :native))
+
+(defn w5-reader-module-invalid-status-request-at [request]
+  (assoc request :completion-status :complete))
+
+(defn w5-reader-module-invalid-residual-request-at [request]
+  (assoc request :residual-seed-harness
+         {:compiler-plan :foreign :runtime :foreign
+          :authority :seed-only :execution-status :harness-only}))
+
+(defn w5-reader-module-invalid-span-request-at [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :line 0)))
+
+(defn w5-reader-module-invalid-span-missing-request-at [request]
+  (dissoc request :source-span))
+
+(defn w5-reader-module-invalid-span-extra-request-at [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :extra true)))
+
+(defn w5-reader-module-invalid-span-type-request-at [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :start-byte "zero")))
+
+(defn w5-reader-module-invalid-span-negative-request-at [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :start-byte -1)))
+
+(defn w5-reader-module-invalid-span-order-request-at [request]
+  (assoc request :source-span
+         (assoc (get request :source-span)
+                :start-byte 513 :end-byte 512)))
+
+(defn w5-reader-module-invalid-target-request-at [request]
+  (assoc request :target :native))
+
+(defn w5-reader-module-invalid-source-unit-request-at [request]
+  (assoc request :source-unit
+         (assoc (get request :source-unit)
+                :source-content-status :corrupt)))
+
+(defn w5-reader-module-invalid-syntax-origin-request-at [request]
+  (assoc request :syntax-origin
+         (assoc (get request :syntax-origin)
+                :metadata-preserved? false)))
+
+(defn w5-reader-module-invalid-macro-hygiene-request-at [request]
+  (assoc request :macro-hygiene
+         (assoc (get request :macro-hygiene)
+                :capture-policy :implicit)))
+
+(defn w5-reader-module-invalid-namespace-module-request-at [request]
+  (assoc request :namespace-module
+         (assoc (get request :namespace-module)
+                :exports [:private-entry])))
+
+(defn w5-reader-module-invalid-core-lowering-request-at [request]
+  (assoc request :core-lowering
+         (assoc (get request :core-lowering)
+                :evaluation-order [:right-to-left])))
+
+(defn w5-reader-module-invalid-lineage-request-at [request]
+  (assoc request :lineage
+         (assoc (get request :lineage)
+                :phase-order [:c2-reader :c4-macro-hygiene])))
+
+(defn w5-reader-module-invalid-provenance-request-at [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :actual-source-extension ".clj")))
+
+(defn w5-reader-module-invalid-gravity-path-suffix-request-at [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :actual-source-path
+                (str "/checkout-a/bootstrap/clojure/fixtures/self-hosting/"
+                     "w5-reader-module/accepted/reader-module-execution.qst"))))
+
+(defn w5-reader-module-invalid-qst-path-suffix-request-at [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :actual-source-path
+                (str "/checkout-a/bootstrap/clojure/fixtures/self-hosting/"
+                     "w5-reader-module/accepted/reader-module-execution.gravity"))))
+
+(defn w5-reader-module-invalid-provenance-cross-binding-gravity-request-at
+  [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :actual-source-path
+                (str "/checkout-b/bootstrap/clojure/fixtures/self-hosting/"
+                     "w5-reader-module/accepted/reader-module-execution.gravity")
+                :project-relative-path
+                "bootstrap/clojure/fixtures/self-hosting/w5-reader-module/accepted/reader-module-execution.gravity")))
+
+(defn w5-reader-module-invalid-provenance-cross-binding-qst-request-at
+  [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :actual-source-path
+                (str "/checkout-b/bootstrap/clojure/fixtures/self-hosting/"
+                     "w5-reader-module/accepted/reader-module-execution.qst")
+                :project-relative-path
+                "bootstrap/clojure/fixtures/self-hosting/w5-reader-module/accepted/reader-module-execution.qst")))
+
+(defn w5-reader-module-invalid-provenance-cross-kind-gravity-request-at
+  [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :actual-source-path
+                (str "/checkout-a/bootstrap/clojure/fixtures/self-hosting/"
+                     "w5-reader-module/accepted/reader-module-execution.qst")
+                :actual-source-extension ".qst"
+                :source-kind :qst
+                :project-relative-path
+                "bootstrap/clojure/fixtures/self-hosting/w5-reader-module/accepted/reader-module-execution.qst")))
+
+(defn w5-reader-module-invalid-provenance-cross-kind-qst-request-at
+  [request]
+  (assoc request :provenance
+         (assoc (get request :provenance)
+                :actual-source-path
+                (str "/checkout-a/bootstrap/clojure/fixtures/self-hosting/"
+                     "w5-reader-module/accepted/reader-module-execution.gravity")
+                :actual-source-extension ".gravity"
+                :source-kind :gravity
+                :project-relative-path
+                "bootstrap/clojure/fixtures/self-hosting/w5-reader-module/accepted/reader-module-execution.gravity")))
+
+(defn w5-reader-module-invalid-evidence-request-at [request]
+  (assoc request :evidence
+         (assoc (get request :evidence) :execution-status :complete)))
+
+(defn w5-reader-module-invalid-authority-request-at [request]
+  (assoc request :authority
+         (assoc (get request :authority) :release? true)))
+
+(defn w5-reader-module-invalid-c2-request [request]
+  (w5-reader-module-invalid-source-unit-request request))
+
+(defn w5-reader-module-invalid-c3-request [request]
+  (w5-reader-module-invalid-syntax-origin-request request))
+
+(defn w5-reader-module-invalid-c4-request [request]
+  (w5-reader-module-invalid-macro-hygiene-request request))
+
+(defn w5-reader-module-invalid-c5-request [request]
+  (w5-reader-module-invalid-namespace-module-request request))
+
+(defn w5-reader-module-invalid-c6-request [request]
+  (w5-reader-module-invalid-core-lowering-request request))
+
+(defn w5-reader-module-invalid-c2-request-at [request]
+  (w5-reader-module-invalid-source-unit-request-at request))
+
+(defn w5-reader-module-invalid-c3-request-at [request]
+  (w5-reader-module-invalid-syntax-origin-request-at request))
+
+(defn w5-reader-module-invalid-c4-request-at [request]
+  (w5-reader-module-invalid-macro-hygiene-request-at request))
+
+(defn w5-reader-module-invalid-c5-request-at [request]
+  (w5-reader-module-invalid-namespace-module-request-at request))
+
+(defn w5-reader-module-invalid-c6-request-at [request]
+  (w5-reader-module-invalid-core-lowering-request-at request))
+
+(defn w5-reader-module-substituted-result [result]
+  (assoc result :completion-status :complete))
+
+(defn w5-rm-invalid-source-request [request]
+  (w5-reader-module-invalid-source-unit-request request))
+
+(defn w5-rm-invalid-syntax-request [request]
+  (w5-reader-module-invalid-syntax-origin-request request))
+
+(defn w5-rm-invalid-macro-request [request]
+  (w5-reader-module-invalid-macro-hygiene-request request))
+
+(defn w5-rm-invalid-namespace-request [request]
+  (w5-reader-module-invalid-namespace-module-request request))
+
+(defn w5-rm-invalid-core-request [request]
+  (w5-reader-module-invalid-core-lowering-request request))

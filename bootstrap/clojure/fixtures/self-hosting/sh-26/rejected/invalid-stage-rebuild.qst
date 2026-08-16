@@ -1,0 +1,100 @@
+(ns gravity.self-hosting.sh26.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh26-uncontrolled-environment-request
+             sh26-unlocked-dependency-request
+             sh26-missing-lineage-request
+             sh26-host-language-request
+             sh26-altered-sh25-projection-request
+             sh26-incomplete-component-request
+             sh26-lineage-cycle-request
+             sh26-missing-provenance-request
+             sh26-invalid-manifest-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh26-uncontrolled-environment-request [request]
+  (assoc
+   request :environment
+   (assoc (get request :environment) :network :enabled)))
+
+(defn sh26-unlocked-dependency-request [request]
+  (assoc
+   request :environment
+   (assoc (get request :environment) :locked-dependencies false)))
+
+(defn sh26-missing-lineage-request [request]
+  (let [lineage (get request :stage-lineage)
+        terminal (get lineage 1)]
+    (assoc
+     request :stage-lineage
+     (assoc lineage 1
+            (assoc terminal :parent-compiler-id nil)))))
+
+(defn sh26-host-language-request [request]
+  (assoc request :candidate-language :clojure))
+
+(defn sh26-without-last [values]
+  (loop [index 0 result []]
+    (if (= index (- (count values) 1))
+      result
+      (recur (+ index 1) (conj result (get values index))))))
+
+(defn sh26-altered-sh25-projection-request [request]
+  (let [ingress (get request :sh25-ingress)
+        projection (get ingress :projection)
+        components (get projection :components)
+        first-component (get components 0)]
+    (assoc
+     request :sh25-ingress
+     (assoc
+      ingress :projection
+      (assoc
+       projection :components
+       (assoc components 0
+              (assoc first-component :output-id
+                     "sha256:altered-output")))))))
+
+(defn sh26-incomplete-component-request [request]
+  (let [ingress (get request :sh25-ingress)
+        projection (get ingress :projection)]
+    (assoc
+     request :sh25-ingress
+     (assoc
+      ingress :projection
+      (assoc projection :components
+             (sh26-without-last
+              (get projection :components)))))))
+
+(defn sh26-lineage-cycle-request [request]
+  (let [lineage (get request :stage-lineage)
+        terminal (get lineage 1)]
+    (assoc
+     request :stage-lineage
+     (assoc
+      lineage 1
+      (assoc terminal :parent-compiler-id
+             (get terminal :compiler-id))))))
+
+(defn sh26-missing-provenance-request [request]
+  (let [ingress (get request :sh25-ingress)
+        projection (get ingress :projection)
+        components (get projection :components)
+        first-component (get components 0)]
+    (assoc
+     request :sh25-ingress
+     (assoc
+      ingress :projection
+      (assoc
+       projection :components
+       (assoc components 0
+              (assoc first-component :actual-source-path "")))))))
+
+(defn sh26-invalid-manifest-request [request]
+  (let [evidence (get request :rebuild-evidence)
+        logs (get evidence :build-logs)]
+    (assoc
+     request :rebuild-evidence
+     (assoc evidence :build-logs
+            (assoc logs :action-count 41)))))

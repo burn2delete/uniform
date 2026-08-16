@@ -1,0 +1,3605 @@
+; Gravity-owned bounded C6-C10 checked-core construction pipeline.
+(ns gravity.compiler.c6-c10-checked-core-pipeline
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c6-c10-checked-core-pass-contract
+             c6-c10-checked-core-scope-contract
+             c6-c10-build-checked-core-template
+             c6-c10-verify-checked-core-template])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :c6-c10-checked-core
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["D1" "D3" "D8" "D9"
+                           "C1" "C2" "C3" "C6" "C7" "C8" "C9"
+                           "C10" "C11" "C15" "C18" "P3"
+                           "P15-S23" "BOOT1" "BOOT2" "BOOT3"
+                           "BOOT4" "BOOT5" "BOOT6" "BOOT7" "BOOT8"]
+               :implements [:bounded-core-lowering
+                             :bounded-type-facts
+                             :bounded-effect-facts
+                             :bounded-capability-facts
+                             :bounded-ownership-facts
+                             :bounded-safety-outcomes
+                             :per-form-origin-binding
+                             :digest-request-dag
+                             :checked-core-template]
+               :preserves #{:source-unit-identity
+                            :source-spans
+                            :form-identity
+                            :syntax-identity
+                            :profile-context
+                            :source-target
+                            :evaluation-order
+                            :diagnostic-codes
+                            :artifact-provenance}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-pure-c6-c10-constructor-subset]}}}))
+
+(def c6-c10-checked-core-pass-contract
+  {:artifact :gravity/c6-c10-checked-core-pass-contract
+   :owner :gravity-source
+   :input :gravity/private-fresh-c2-c3-stage2-plan-envelope
+   :output :gravity/c6-c10-gravity-checked-core-template
+   :authority [:semantic-core-nodes
+               :type-facts
+               :effect-facts
+               :capability-facts
+               :ownership-facts
+               :profile-facts
+               :safety-outcomes
+               :node-embedded-safety-proofs
+               :digest-request-dag]
+   :host-authority [:load-compile-and-pin-gravity-module
+                    :bound-inputs-and-outputs
+                    :validate-request-graph
+                    :canonical-encode
+                    :sha256
+                    :mechanically-resolve-digest-references
+                    :instantiate-template
+                    :attach-physical-provenance
+                    :fresh-replay]
+   :semantic-identity-excludes [:actual-source-path
+                                :requested-target
+                                :host-execution-details]
+   :self-hosted? false
+   :whole-language? false
+   :clojure-seed-boundary? true})
+
+(def c6-c10-checked-core-scope-contract
+  {:artifact :gravity/c6-c10-checked-core-scope-contract
+   :profiles [:hosted]
+   :safety-modes [:safe]
+   :source-targets [:jvm]
+   :source-operations [:literal :quote :local :let :let-binding
+                       :do :if :truthy :integer-eq
+                       :integer-lt :integer-lte :integer-gt :integer-gte
+                       :implicit-nil :function]
+   :scalar-literals [:nil :string :boolean :integer
+                     :character :keyword :symbol]
+   :intrinsic-effects #{}
+   :intrinsic-capabilities #{}
+   :ownership :persistent-immutable
+   :safety :proven-safe
+   :forbidden [:call :collection-literal :quoted-collection
+               :unsupported-quoted-value
+               :decimal :ratio :metadata
+               :mutation :resource :runtime-check :unsafe-island
+               :effect :capability :dependency :import :provider
+               :domain-ir :backend-specific-lowering]
+   :limits {:maximum-functions 1
+            :maximum-forms 128
+            :maximum-plan-nodes 128
+            :maximum-digest-requests 2048
+            :maximum-graph-depth 48
+            :maximum-container-width 128
+            :maximum-scalar-bytes 65536
+            :maximum-integer-bits 256}})
+
+(def c6c10-core-node-lowering-rule-version
+  "c6-c10-core-lowering-v1")
+
+(def c6-c10-emitted-diagnostic-subset
+  {:L2 ["L2-BUILTIN-ARITY"]
+   :C6 ["C6-LOWERING-GAP" "C6-CORE-SHAPE" "C6-ORIGIN" "C6-VERIFY"]
+   :C7 ["C7-TYPE-MISMATCH" "C7-VERIFY"]
+   :C8 ["C8-VERIFY"]
+   :C9 []
+   :C10 ["C10-PROOF"]})
+
+(def c6-c10-normative-diagnostic-catalogs
+  {:C6 ["C6-LOWERING-GAP" "C6-CORE-SHAPE" "C6-EVAL-ORDER"
+        "C6-ORIGIN" "C6-EFFECT-DROP" "C6-UNSAFE-DROP"
+        "C6-DOMAIN-BOUNDARY" "C6-VERIFY"]
+   :C7 ["C7-TYPE-MISMATCH" "C7-ANNOTATION" "C7-DYNAMIC"
+        "C7-CAST" "C7-NULLABILITY" "C7-GENERIC" "C7-PROTOCOL"
+        "C7-LAYOUT" "C7-SCHEMA" "C7-VERIFY"]
+   :C8 ["C8-UNDECLARED" "C8-PROFILE" "C8-CAPABILITY" "C8-BUILD"
+        "C8-REPLAY" "C8-ORDER" "C8-RUNTIME" "C8-UNKNOWN"
+        "C8-VERIFY"]
+   :C9 ["C9-USE-AFTER-MOVE" "C9-USE-AFTER-CONSUME"
+        "C9-BORROW-ESCAPE" "C9-MUT-ALIAS" "C9-MOVE-WHILE-BORROWED"
+        "C9-REGION-ESCAPE" "C9-ARENA-GENERATION" "C9-LINEAR-LEAK"
+        "C9-LINEAR-DOUBLE" "C9-TRANSFER" "C9-RUNTIME-CHECK"
+        "C9-UNSAFE"]
+   :C10 ["C10-NO-OUTCOME" "C10-PROOF" "C10-CHECK" "C10-UNSAFE"
+         "C10-GENERATED" "C10-TAINT" "C10-CAPABILITY" "C10-FFI"
+         "C10-NUMERIC" "C10-OPTIMIZATION"]})
+
+(defn c6c10-vector-contains? [values value]
+  (if (= (count values) 0)
+    false
+    (if (= (first values) value)
+      true
+      (c6c10-vector-contains? (rest values) value))))
+
+(defn c6c10-conj-unique [values value]
+  (if (c6c10-vector-contains? values value)
+    values
+    (conj values value)))
+
+(defn c6c10-conj-all-unique [values additions]
+  (if (= (count additions) 0)
+    values
+    (c6c10-conj-all-unique
+     (c6c10-conj-unique values (first additions))
+     (rest additions))))
+
+(defn c6c10-copy-vector [values result]
+  (if (= (count values) 0)
+    result
+    (c6c10-copy-vector (rest values) (conj result (first values)))))
+
+(defn c6c10-append [left right]
+  (c6c10-copy-vector right left))
+
+(defn c6c10-reverse-into [values result]
+  (if (= (count values) 0)
+    result
+    (c6c10-reverse-into (rest values) (conj result (first values)))))
+
+(defn c6c10-reverse [values]
+  (c6c10-reverse-into values []))
+
+(defn c6c10-exact-digest-ref? [value]
+  (if (map? value)
+    (if (= (count (keys value)) 1)
+      (contains? value :digest-ref)
+      false)
+    false))
+
+(defn c6c10-insert-ordinal [values value result inserted?]
+  (if (= (count values) 0)
+    (if inserted?
+      result
+      (conj result value))
+    (if inserted?
+      (c6c10-insert-ordinal
+       (rest values) value (conj result (first values)) true)
+      (if (< value (first values))
+        (c6c10-insert-ordinal
+         values value (conj result value) true)
+        (c6c10-insert-ordinal
+         (rest values) value (conj result (first values)) false)))))
+
+(defn c6c10-sort-ordinals [values result]
+  (if (= (count values) 0)
+    result
+    (c6c10-sort-ordinals
+     (rest values)
+     (c6c10-insert-ordinal result (first values) [] false))))
+
+(defn c6c10-collect-ref-sequence [values result]
+  (if (= (count values) 0)
+    result
+    (c6c10-collect-ref-sequence
+     (rest values)
+     (c6c10-collect-digest-refs (first values) result))))
+
+(defn c6c10-collect-ref-map [map-keys value result]
+  (if (= (count map-keys) 0)
+    result
+    (let [map-key (first map-keys)
+          with-key (c6c10-collect-digest-refs map-key result)
+          with-value (c6c10-collect-digest-refs (get value map-key) with-key)]
+      (c6c10-collect-ref-map (rest map-keys) value with-value))))
+
+(defn c6c10-collect-digest-refs [value result]
+  (if (c6c10-exact-digest-ref? value)
+    (c6c10-conj-unique result (get value :digest-ref))
+    (if (map? value)
+      (c6c10-collect-ref-map (keys value) value result)
+      (if (vector? value)
+        (c6c10-collect-ref-sequence value result)
+        (if (set? value)
+          (c6c10-collect-ref-sequence value result)
+          (if (seq? value)
+            (c6c10-collect-ref-sequence value result)
+            result))))))
+
+(defn c6c10-digest-ref [ordinal]
+  {:digest-ref ordinal})
+
+(defn c6c10-digest-intern-sequence [values result]
+  (if (= (count values) 0)
+    result
+    (c6c10-digest-intern-sequence
+     (rest values)
+     (conj result (c6c10-digest-intern-key (first values))))))
+
+(defn c6c10-digest-intern-map-entries [map-keys value result]
+  (if (= (count map-keys) 0)
+    result
+    (let [map-key (first map-keys)]
+      (c6c10-digest-intern-map-entries
+       (rest map-keys) value
+       (conj result
+             [:entry
+              (c6c10-digest-intern-key map-key)
+              (c6c10-digest-intern-key (get value map-key))])))))
+
+(defn c6c10-digest-intern-key [value]
+  (if (= value nil)
+    [:nil]
+    (if (boolean? value)
+      [:boolean value]
+      (if (integer? value)
+        [:integer value]
+        (if (string? value)
+          [:string value]
+          (if (symbol? value)
+            [:symbol value]
+            (if (c6c10-exact-digest-ref? value)
+              [:digest-ref (get value :digest-ref)]
+              (if (map? value)
+                [:map
+                 (set
+                  (c6c10-digest-intern-map-entries
+                   (keys value) value []))]
+                (if (vector? value)
+                  [:vector (c6c10-digest-intern-sequence value [])]
+                  (if (set? value)
+                    [:set
+                     (set (c6c10-digest-intern-sequence value []))]
+                    (if (seq? value)
+                      [:list (c6c10-digest-intern-sequence value [])]
+                      (if (keyword? value)
+                        [:keyword value]
+                        (if (char? value)
+                          [:character value]
+                          [:unsupported-scalar value])))))))))))))
+
+(defn c6c10-request-key-for-preimage [requests preimage]
+  (let [intern-key (c6c10-digest-intern-key preimage)]
+    (if (= (count requests) 0)
+      nil
+      (if (= (c6c10-digest-intern-key
+              (get (first requests) :preimage))
+             intern-key)
+        (get (first requests) :key)
+        (c6c10-request-key-for-preimage (rest requests) preimage)))))
+
+(defn c6c10-add-digest-request [state preimage]
+  (let [existing
+        (c6c10-request-key-for-preimage (get state :requests) preimage)]
+    (if (= existing nil)
+      (let [ordinal (get state :next-ordinal)
+            dependencies
+            (c6c10-sort-ordinals
+             (c6c10-collect-digest-refs preimage [])
+             [])
+            request {:key ordinal
+                     :ordinal ordinal
+                     :algorithm :sha256
+                     :encoding :gravity/canonical-edn-v1
+                     :depends-on dependencies
+                     :preimage preimage}]
+        {:state (assoc
+                 (assoc state :next-ordinal (+ ordinal 1))
+                 :requests (conj (get state :requests) request))
+         :ref (c6c10-digest-ref ordinal)})
+      {:state state
+       :ref (c6c10-digest-ref existing)})))
+
+(defn c6c10-diagnostic-zero-span [source]
+  (let [source-content-hash
+        (if (if (map? source)
+              (= (get source :source-content-hash) nil)
+              true)
+          "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+          (get source :source-content-hash))
+        position {:line 1
+                  :column 1
+                  :column-unit :unicode-scalar
+                  :char 0
+                  :byte 0}]
+    {:source source-content-hash
+     :start position
+     :end position
+     :byte-start 0
+     :byte-end 0
+     :file source-content-hash}))
+
+(defn c6c10-diagnostic-primary [source]
+  (if (map? source)
+    {:span
+     (if (map? (get source :span))
+       (get source :span)
+       (c6c10-diagnostic-zero-span source))
+     :syntax-id
+     (if (= (get source :syntax-id) nil)
+       :not-applicable
+       (get source :syntax-id))
+     :core-node-id
+     (if (= (get source :core-node-id) nil)
+       :not-applicable
+       (get source :core-node-id))
+     :artifact
+     (if (= (get source :diagnostic-subject-id) nil)
+       (if (= (get source :form-id) nil)
+         (if (= (get source :source-content-hash) nil)
+           :not-applicable
+           (get source :source-content-hash))
+         (get source :form-id))
+       (get source :diagnostic-subject-id))}
+    {:span (c6c10-diagnostic-zero-span source)
+     :syntax-id :not-applicable
+     :core-node-id :not-applicable
+     :artifact :not-applicable}))
+
+(defn c6c10-canonical-diagnostic-rule [rule]
+  (if (string? rule)
+    rule
+    (if (= rule :L2-BUILTIN-ARITY)
+      "L2-BUILTIN-ARITY"
+      (if (= rule :C6-LOWERING-GAP)
+      "C6-LOWERING-GAP"
+      (if (= rule :C6-CORE-SHAPE)
+        "C6-CORE-SHAPE"
+        (if (= rule :C6-ORIGIN)
+          "C6-ORIGIN"
+          (if (= rule :C6-VERIFY)
+            "C6-VERIFY"
+            (if (= rule :C7-TYPE-MISMATCH)
+              "C7-TYPE-MISMATCH"
+              (if (= rule :C7-VERIFY)
+                "C7-VERIFY"
+                (if (= rule :C8-VERIFY)
+                  "C8-VERIFY"
+                  (if (= rule :C10-PROOF)
+                    "C10-PROOF"
+                    :unassigned-diagnostic-rule)))))))))))
+
+(defn c6c10-canonical-diagnostic-stage [stage]
+  (if (= stage :core-semantics)
+    :core-language-semantics
+    (if (= stage :lower-to-core)
+    :core-lowering
+    (if (= stage :type-check)
+      :type-check
+      (if (= stage :effect-check)
+        :effect-check
+        (if (= stage :ownership-check)
+          :ownership-lifetime-region-check
+          (if (= stage :safety-analysis)
+            :safety-analysis
+            :unassigned-diagnostic-stage)))))))
+
+(defn c6c10-diagnostic-involved-artifacts
+  [primary source facts]
+  (let [primary-artifact (get primary :artifact)
+        core-node-id (get primary :core-node-id)
+        expected-artifact-id (get facts :expected-artifact-id)
+        source-artifacts
+        (if (vector? (get source :involved-artifacts))
+          (get source :involved-artifacts)
+          [])
+        with-primary
+        (if (= primary-artifact :not-applicable)
+          []
+          [primary-artifact])
+        with-core
+        (if (if (= core-node-id nil)
+              true
+              (= core-node-id :not-applicable))
+          with-primary
+          (c6c10-conj-unique with-primary core-node-id))
+        with-expected
+        (if (if (= expected-artifact-id nil)
+              true
+              (= expected-artifact-id :not-applicable))
+          with-core
+          (c6c10-conj-unique with-core expected-artifact-id))]
+    (c6c10-conj-all-unique with-expected source-artifacts)))
+
+(defn c6c10-diagnostic-related [primary facts]
+  (let [core-node-id (get primary :core-node-id)]
+    (if (if (= core-node-id nil)
+          true
+          (= core-node-id :not-applicable))
+      []
+      [{:role
+        (if (= (get facts :prospective-core-node?) true)
+          :prospective-core-node
+          :core-node)
+        :span (get primary :span)
+        :syntax-id (get primary :syntax-id)
+        :core-node-id core-node-id
+        :artifact core-node-id}])))
+
+(defn c6c10-diagnostic-subject-request [state source facts]
+  (let [explicit-subject (get source :diagnostic-subject-id)
+        expected-artifact-id (get facts :expected-artifact-id)
+        core-node-id (get source :core-node-id)]
+    (if (= explicit-subject nil)
+      (if (= expected-artifact-id nil)
+        (if (= core-node-id nil)
+          (c6c10-add-digest-request
+           state
+           {:domain :gravity/c6-c10-diagnostic-subject-v1
+            :source-content-hash (get source :source-content-hash)
+            :syntax-id (get source :syntax-id)
+            :form-id (get source :form-id)
+            :form-kind (get source :kind)
+            :span (get source :span)})
+          (if (= core-node-id :not-applicable)
+            (c6c10-add-digest-request
+             state
+             {:domain :gravity/c6-c10-diagnostic-subject-v1
+              :source-content-hash (get source :source-content-hash)
+              :syntax-id (get source :syntax-id)
+              :form-id (get source :form-id)
+              :form-kind (get source :kind)
+              :span (get source :span)})
+            {:state state :ref core-node-id}))
+        {:state state :ref expected-artifact-id})
+      {:state state :ref explicit-subject})))
+
+(defn c6c10-rule-in-family? [rule rules]
+  (c6c10-vector-contains? rules rule))
+
+(defn c6c10-observed-form-type [kind]
+  (let [scalar (c6c10-literal-type-from-form-kind kind)]
+    (if (= scalar nil)
+      (if (= kind :ratio)
+        :gravity/ratio
+        (if (= kind :decimal)
+          :gravity/decimal
+          (if (= kind :vector)
+            :gravity/vector
+            (if (= kind :map)
+              :gravity/map
+              (if (= kind :set)
+                :gravity/set
+                (if (= kind :list)
+                  :gravity/list
+                  :not-applicable))))))
+      scalar)))
+
+(defn c6c10-diagnostic-family-facts [rule source facts]
+  (if (= rule :L2-BUILTIN-ARITY)
+    (c6c10-merge-maps
+     {:function '=
+      :expected-arity :at-least-one
+      :actual-arity 0
+      :active-profile :hosted
+      :target :jvm
+      :normative-l2-mapping :catalog-gap}
+     facts)
+    (if (c6c10-rule-in-family?
+       rule [:C6-LOWERING-GAP :C6-CORE-SHAPE :C6-EVAL-ORDER
+             :C6-ORIGIN :C6-EFFECT-DROP :C6-VERIFY])
+    (c6c10-merge-maps
+     {:syntax-id
+      (if (= (get source :syntax-id) nil)
+        :not-applicable
+        (get source :syntax-id))
+      :core-node-id :not-applicable
+      :lowering-rule :gravity-bounded-c6-c10
+      :active-profile :hosted
+      :target :jvm}
+     facts)
+    (if (c6c10-rule-in-family?
+         rule [:C7-TYPE-MISMATCH :C7-VERIFY])
+    (c6c10-merge-maps
+     {:core-node-id
+      (if (= (get source :core-node-id) nil)
+        :not-applicable
+        (get source :core-node-id))
+      :syntax-id
+      (if (= (get source :syntax-id) nil)
+        :not-applicable
+        (get source :syntax-id))
+      :expected-type :not-applicable
+      :actual-type
+      (c6c10-observed-form-type (get facts :observed-form-kind))
+      :active-profile :hosted
+      :target :jvm
+      :relevant-binding-id :not-applicable}
+     facts)
+    (if (c6c10-rule-in-family?
+         rule [:C8-UNDECLARED :C8-CAPABILITY :C8-VERIFY])
+      (c6c10-merge-maps
+       {:namespace :not-applicable
+        :function 'main
+        :effect :not-applicable
+        :capability :not-applicable
+        :provider :not-applicable
+        :grant :not-applicable
+        :core-node-id
+        (if (= (get source :core-node-id) nil)
+          :not-applicable
+          (get source :core-node-id))
+        :active-profile :hosted
+        :target :jvm}
+       facts)
+      (if (c6c10-rule-in-family?
+           rule [:C10-NO-OUTCOME :C10-PROOF :C10-CHECK :C10-UNSAFE])
+        (c6c10-merge-maps
+         {:operation-id :not-applicable
+          :specialized-safe-rule :not-applicable
+          :safety-mode :safe
+          :proof-id :not-applicable
+          :check-id :not-applicable
+          :active-profile :hosted
+          :target :jvm}
+         facts)
+        facts))))))
+
+(defn c6c10-diagnostic-rejection
+  [state rule stage message-key source facts remediation-kind]
+  (let [subject-request
+        (c6c10-diagnostic-subject-request state source facts)
+        subject-id (get subject-request :ref)
+        source (assoc source :diagnostic-subject-id subject-id)
+        facts (c6c10-diagnostic-family-facts rule source facts)
+        primary (c6c10-diagnostic-primary source)
+        rule-id (c6c10-canonical-diagnostic-rule rule)
+        canonical-stage (c6c10-canonical-diagnostic-stage stage)
+        involved-artifacts
+        (c6c10-diagnostic-involved-artifacts primary source facts)
+        identity {:domain :gravity/c6-c10-diagnostic-v1
+                  :rule rule-id
+                  :stage canonical-stage
+                  :primary primary
+                  :involved-artifacts involved-artifacts
+                  :facts facts}
+        request-result
+        (c6c10-add-digest-request (get subject-request :state) identity)
+        next-state (get request-result :state)
+        diagnostic-id (get request-result :ref)
+        origin-id
+        (if (map? source)
+          (if (= (get source :origin-id) nil)
+            :not-applicable
+            (get source :origin-id))
+          :not-applicable)
+        generated-origin
+        (if (map? source)
+          (if (= (get source :generated-origin) nil)
+            []
+            (get source :generated-origin))
+          [])
+        diagnostic
+        {:artifact :gravity/diagnostic
+         :diagnostic-id diagnostic-id
+         :rule rule-id
+         :severity :error
+         :lifecycle :active
+         :stage canonical-stage
+         :message-key message-key
+         :primary primary
+         :related (c6c10-diagnostic-related primary facts)
+         :origin-chain
+         (if (= origin-id :not-applicable)
+           generated-origin
+           (c6c10-append generated-origin [origin-id]))
+         :profile :hosted
+         :target :jvm
+         :involved-artifacts involved-artifacts
+         :facts facts
+         :remediation
+         [{:kind remediation-kind
+           :from-stage canonical-stage
+           :required-evidence
+           [:fresh-c2 :fresh-c3 :pinned-stage2-plan
+            :source-origin-closure]}]
+         :redactions []
+         :ordering-key
+         [rule-id canonical-stage (get primary :artifact) diagnostic-id]}]
+    {:status :rejected
+     :fatal? true
+     :diagnostics [diagnostic]
+     :artifact-template nil
+     :digest-requests (get next-state :requests)
+     :digest-graph-roots [diagnostic-id]
+     :containment {:fatal? true
+                   :stop-after canonical-stage
+                   :downstream-artifacts-forbidden true}}))
+
+(defn c6c10-merge-map-keys [map-keys left right]
+  (if (= (count map-keys) 0)
+    left
+    (let [map-key (first map-keys)]
+      (c6c10-merge-map-keys
+       (rest map-keys)
+       (assoc left map-key (get right map-key))
+       right))))
+
+(defn c6c10-merge-maps [left right]
+  (c6c10-merge-map-keys (keys right) left right))
+
+(defn c6c10-form-by-id [forms form-id]
+  (if (= (count forms) 0)
+    nil
+    (if (= (get (first forms) :form-id) form-id)
+      (first forms)
+      (c6c10-form-by-id (rest forms) form-id))))
+
+(defn c6c10-top-level-syntax-by-form-id [syntaxes form-id]
+  (if (= (count syntaxes) 0)
+    nil
+    (let [syntax (first syntaxes)
+          source (get syntax :source)]
+      (if (= (get source :form-id) form-id)
+        syntax
+        (c6c10-top-level-syntax-by-form-id (rest syntaxes) form-id)))))
+
+(defn c6c10-function-form? [form entrypoint]
+  (let [value (get form :value)]
+    (if (seq? value)
+      (if (= (first value) 'defn)
+        (= (second value) entrypoint)
+        false)
+      false)))
+
+(defn c6c10-namespace-form? [form module-name]
+  (let [value (get form :value)]
+    (if (c6c10-plain-form? form :list)
+      (if (= (get form :parent-form-id) nil)
+        (if (seq? value)
+          (if (= (first value) 'ns)
+            (= (second value) module-name)
+            false)
+          false)
+        false)
+      false)))
+
+(defn c6c10-top-level-syntax-lockstep?
+  [syntaxes namespace-form-id function-form-id]
+  (if (= (count syntaxes) 2)
+    (let [namespace-syntax (first syntaxes)
+          function-syntax (second syntaxes)]
+      (if (= (get (get namespace-syntax :source) :form-id)
+             namespace-form-id)
+        (= (get (get function-syntax :source) :form-id)
+           function-form-id)
+        false))
+    false))
+
+(defn c6c10-exhaustive-top-level-program?
+  [forms roots syntaxes module-name]
+  (if (= (count roots) 2)
+    (let [namespace-form-id (first roots)
+          function-form-id (second roots)
+          namespace-form (c6c10-form-by-id forms namespace-form-id)
+          function-form (c6c10-form-by-id forms function-form-id)]
+      (if (c6c10-namespace-form? namespace-form module-name)
+        (if (c6c10-plain-form? function-form :list)
+          (if (= (get function-form :parent-form-id) nil)
+            (if (c6c10-function-form? function-form 'main)
+              (c6c10-top-level-syntax-lockstep?
+               syntaxes namespace-form-id function-form-id)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn c6c10-find-function-form [forms top-level-form-ids entrypoint]
+  (if (= (count top-level-form-ids) 0)
+    nil
+    (let [form (c6c10-form-by-id forms (first top-level-form-ids))]
+      (if (c6c10-function-form? form entrypoint)
+        form
+        (c6c10-find-function-form
+         forms (rest top-level-form-ids) entrypoint)))))
+
+(defn c6c10-literal-type-from-form-kind [kind]
+  (if (= kind :nil)
+    :gravity/nil
+    (if (= kind :string)
+      :gravity/string
+      (if (= kind :boolean)
+        :gravity/bool
+        (if (= kind :integer)
+          :gravity/integer
+          (if (= kind :character)
+            :gravity/char
+            (if (= kind :char)
+              :gravity/char
+              (if (= kind :keyword)
+                :gravity/keyword
+                (if (= kind :symbol)
+                  :gravity/symbol
+                  nil)))))))))
+
+(defn c6c10-type-rank [type]
+  (if (= type :gravity/bool)
+    0
+    (if (= type :gravity/char)
+      1
+      (if (= type :gravity/integer)
+        2
+        (if (= type :gravity/keyword)
+          3
+          (if (= type :gravity/nil)
+            4
+            (if (= type :gravity/string)
+              5
+              (if (= type :gravity/symbol) 6 99))))))))
+
+(defn c6c10-flatten-type-members [pending result]
+  (if (= (count pending) 0)
+    result
+    (let [type (first pending)]
+      (if (map? type)
+        (if (= (get type :kind) :gravity/union)
+          (c6c10-flatten-type-members
+           (c6c10-append (get type :members) (rest pending)) result)
+          (c6c10-flatten-type-members
+           (rest pending) (conj result type)))
+        (c6c10-flatten-type-members
+         (rest pending) (conj result type))))))
+
+(defn c6c10-type-members [type]
+  (c6c10-flatten-type-members [type] []))
+
+(defn c6c10-insert-type [types type result inserted?]
+  (if (= (count types) 0)
+    (if inserted? result (conj result type))
+    (if (= (first types) type)
+      (c6c10-append result types)
+      (if inserted?
+        (c6c10-insert-type
+         (rest types) type (conj result (first types)) true)
+        (if (< (c6c10-type-rank type)
+               (c6c10-type-rank (first types)))
+          (c6c10-insert-type types type (conj result type) true)
+          (c6c10-insert-type
+           (rest types) type (conj result (first types)) false))))))
+
+(defn c6c10-canonical-type-members [pending result]
+  (if (= (count pending) 0)
+    result
+    (c6c10-canonical-type-members
+     (rest pending)
+     (c6c10-insert-type result (first pending) [] false))))
+
+(defn c6c10-type-join [left right]
+  (let [members
+        (c6c10-canonical-type-members
+         (c6c10-append
+          (c6c10-type-members left) (c6c10-type-members right))
+         [])]
+    (if (= (count members) 1)
+      (first members)
+      {:kind :gravity/union :members members})))
+
+(defn c6c10-safety-basis [source-operation]
+  (if (= source-operation :literal)
+    :closed-scalar-literal
+    (if (= source-operation :quote)
+      :closed-scalar-quote
+      (if (= source-operation :local)
+        :resolved-lexical-local
+        (if (= source-operation :let-binding)
+          :sequential-let-binding
+          (if (= source-operation :truthy)
+            :gravity-truthiness
+            (if (= source-operation :integer-eq)
+              :exact-signed-integer-equality
+              (if (contains?
+                   #{:integer-lt :integer-lte :integer-gt :integer-gte}
+                   source-operation)
+                :exact-integer-ordering
+                (if (= source-operation :if)
+              :closed-conditional
+              (if (= source-operation :do)
+                :ordered-sequence
+                (if (= source-operation :let)
+                  :sequential-lexical-scope
+                  (if (= source-operation :function)
+                    :authenticated-closed-function
+                    :compiler-generated-nil))))))))))))
+
+(defn c6c10-persistent-ownership [role extra]
+  (c6c10-merge-maps
+   {:model :persistent-immutable-value
+    :role role
+    :shareability :shared
+    :alias-policy :immutable-sharing
+    :mutation :forbidden
+    :managed-reachability :value-and-program-reachability
+    :cleanup-policy :no-explicit-cleanup
+    :provider-requirement :not-required
+    :allocator-requirement :not-required
+    :escape-policy :safe-persistent-value
+    :derived? true}
+   extra))
+
+(defn c6c10-empty-product [state]
+  {:status :accepted
+   :state state
+   :nodes []
+   :origin-table {}
+   :origin-closure {}
+   :binding-records []
+   :result-node-id nil
+   :type :gravity/nil
+   :maximum-depth 0
+   :plan-node-count 0})
+
+(defn c6c10-product-depth [left right]
+  (if (< (get left :maximum-depth) (get right :maximum-depth))
+    (get right :maximum-depth)
+    (get left :maximum-depth)))
+
+(defn c6c10-merge-products [left right]
+  (if (= (get left :status) :rejected)
+    left
+    (if (= (get right :status) :rejected)
+      right
+      {:status :accepted
+       :state (get right :state)
+       :nodes (c6c10-append (get left :nodes) (get right :nodes))
+       :origin-table
+       (c6c10-merge-maps
+        (get left :origin-table) (get right :origin-table))
+       :origin-closure
+       (c6c10-merge-maps
+        (get left :origin-closure) (get right :origin-closure))
+       :binding-records
+       (c6c10-append
+        (get left :binding-records) (get right :binding-records))
+       :result-node-id (get right :result-node-id)
+       :type (get right :type)
+       :maximum-depth (c6c10-product-depth left right)
+       :plan-node-count
+       (+ (get left :plan-node-count) (get right :plan-node-count))})))
+
+(defn c6c10-origin-products
+  [state envelope form path generated-role input-origin-id]
+  (let [source-content-hash (get envelope :source-content-hash)
+        syntax-id (get envelope :entrypoint-syntax-id)
+        semantic-base
+        {:domain :gravity/c6-c10-source-origin-v1
+         :source-content-hash source-content-hash
+         :plan-path path
+         :c2-form-id (get form :form-id)
+         :c2-form-kind (get form :kind)
+         :c2-span (get form :span)
+         :c2-surface-span (get form :surface-span)
+         :c2-abbrev (get form :abbrev)
+         :c2-tag (get form :tag)
+         :c2-metadata (get form :metadata)
+         :c2-generated-origin (get form :generated-origin)
+         :c3-syntax-id syntax-id
+         :generated-role generated-role
+         :input-origin-id input-origin-id}
+        request-result (c6c10-add-digest-request state semantic-base)
+        next-state (get request-result :state)
+        origin-id (get request-result :ref)
+        semantic (assoc semantic-base :origin-id origin-id)
+        reader-generated-origin
+        (if (= (get form :generated-origin) nil)
+          []
+          (get form :generated-origin))
+        raw {:origin-id origin-id
+             :c2-form-id (get form :form-id)
+             :c2-form-kind (get form :kind)
+             :c2-span (get form :span)
+             :c2-surface-span (get form :surface-span)
+             :c2-abbrev (get form :abbrev)
+             :c2-tag (get form :tag)
+             :c2-metadata (get form :metadata)
+             :c2-generated-origin (get form :generated-origin)
+             :c3-syntax-id syntax-id
+             :generated-role generated-role
+             :input-origin-id input-origin-id}
+        source {:origin-id origin-id
+                :span (get form :span)
+                :enclosing-syntax-origin-id syntax-id
+                :generated?
+                (if (= generated-role nil)
+                  (if (= (count reader-generated-origin) 0) false true)
+                  true)
+                :generated-origin
+                (if (= generated-role nil)
+                  reader-generated-origin
+                  (c6c10-append
+                   reader-generated-origin
+                   [{:kind :compiler-generated
+                     :producer :gravity/c6-c10-checked-core-pipeline
+                     :role generated-role
+                     :input-origin-id input-origin-id}]))}]
+    {:state next-state
+     :origin-id origin-id
+     :semantic semantic
+     :raw raw
+     :source source}))
+
+(defn c6c10-register-origin [product origin-products]
+  (let [origin-id (get origin-products :origin-id)]
+    (assoc
+     (assoc
+      (assoc product :state (get origin-products :state))
+      :origin-table
+      (assoc (get product :origin-table)
+             origin-id (get origin-products :semantic)))
+     :origin-closure
+     (assoc (get product :origin-closure)
+            origin-id (get origin-products :raw)))))
+
+(defn c6c10-add-node-with-origin
+  [product envelope form path kind source-operation plan-node? depth
+   operands attributes type ownership-role ownership-extra generated-role
+   input-origin-id origin-products]
+  (let [origin-id (get origin-products :origin-id)
+        node-id-input
+        {:domain :gravity/c6-c10-core-node-v1
+         :lowering-rule-version "c6-c10-core-lowering-v1"
+         :source-content-hash (get envelope :source-content-hash)
+         :path path
+         :kind kind
+         :source-operation source-operation
+         :plan-node? plan-node?
+         :plan-depth depth
+         :operands operands
+         :attributes attributes
+         :origin-id origin-id}
+        node-request
+        (c6c10-add-digest-request
+         (get product :state) node-id-input)
+        node-id (get node-request :ref)
+        ownership
+        (c6c10-persistent-ownership ownership-role ownership-extra)
+        ownership-input
+        {:domain :gravity/c9-persistent-ownership-v1
+         :core-node-id node-id
+         :source-origin-id origin-id
+         :ownership ownership}
+        ownership-request
+        (c6c10-add-digest-request
+         (get node-request :state) ownership-input)
+        ownership-digest (get ownership-request :ref)
+        proof-input-base
+        {:domain :gravity/c10-pure-safety-proof-v1
+         :artifact :gravity/c6-c10-pure-safety-proof
+         :rule-version "c6-c10-pure-safety-v1"
+         :source-content-hash (get envelope :source-content-hash)
+         :plan-path path
+         :core-node-id node-id
+         :source-operation source-operation
+         :operand-node-ids operands
+         :basis (c6c10-safety-basis source-operation)
+         :source-origin {:origin-id origin-id
+                         :span (get form :span)
+                         :plan-path path}
+         :profile :hosted
+         :source-target :jvm
+         :type type
+         :effects #{}
+         :capabilities #{}
+         :ownership-model (get ownership :model)
+         :ownership-digest ownership-digest
+         :specialized-safe-rule
+         :persistent-immutable-pure-bounded-operation
+         :effect-requirements #{}
+         :capability-requirements #{}
+         :invalidation-conditions
+         [:source-origin-change :operand-change :source-operation-change
+          :type-change :effect-change :capability-change
+          :ownership-change :profile-change :source-target-change
+          :rule-version-change]
+         :status :proved-for-bounded-pure-slice}
+        proof-input
+        (c6c10-merge-maps
+         proof-input-base
+         (if (contains? attributes :numeric-mode)
+           {:numeric-mode (get attributes :numeric-mode)
+            :mathematical-mode (get attributes :mathematical-mode)
+            :numeric-semantics (get attributes :numeric-semantics)}
+           {}))
+        proof-request
+        (c6c10-add-digest-request
+         (get ownership-request :state) proof-input)
+        proof-id (get proof-request :ref)
+        node
+        {:node-id node-id
+         :path path
+         :kind kind
+         :source-operation source-operation
+         :plan-node? plan-node?
+         :plan-depth depth
+         :operands operands
+         :attributes
+         (c6c10-merge-maps
+          attributes
+          {:intrinsic-effects #{}
+           :intrinsic-capabilities #{}
+           :aggregate-effects #{}
+           :aggregate-capabilities #{}})
+         :type type
+         :effects #{}
+         :capabilities #{}
+         :ownership ownership
+         :safety
+         {:outcome :proven-safe
+          :basis (c6c10-safety-basis source-operation)
+          :proof (assoc proof-input :proof-id proof-id)}
+         :profile :hosted
+         :source (get origin-products :source)}]
+    {:status :accepted
+     :state (get proof-request :state)
+     :nodes (conj (get product :nodes) node)
+     :origin-table
+     (assoc (get product :origin-table)
+            origin-id (get origin-products :semantic))
+     :origin-closure
+     (assoc (get product :origin-closure)
+            origin-id (get origin-products :raw))
+     :binding-records (get product :binding-records)
+     :result-node-id node-id
+     :type type
+     :maximum-depth
+     (if (< (get product :maximum-depth) depth)
+       depth
+       (get product :maximum-depth))
+     :plan-node-count
+     (+ (get product :plan-node-count)
+        (if plan-node? 1 0))}))
+
+(defn c6c10-add-node
+  [product envelope form path kind source-operation plan-node? depth
+   operands attributes type ownership-role ownership-extra generated-role
+   input-origin-id]
+  (let [origin-products
+        (c6c10-origin-products
+         (get product :state) envelope form path generated-role
+         input-origin-id)
+        with-origin (c6c10-register-origin product origin-products)]
+    (c6c10-add-node-with-origin
+     with-origin envelope form path kind source-operation plan-node? depth
+     operands attributes type ownership-role ownership-extra generated-role
+     input-origin-id origin-products)))
+
+(defn c6c10-node-by-id [nodes node-id]
+  (if (= (count nodes) 0)
+    nil
+    (if (= (get (first nodes) :node-id) node-id)
+      (first nodes)
+      (c6c10-node-by-id (rest nodes) node-id))))
+
+(defn c6c10-form-subject [envelope form]
+  (c6c10-merge-maps
+   form
+   {:syntax-id (get envelope :entrypoint-syntax-id)
+    :source-content-hash (get envelope :source-content-hash)}))
+
+(defn c6c10-c7-prospective-core-node-request
+  [envelope form facts]
+  (let [origin-products
+        (c6c10-origin-products
+         {:next-ordinal 0 :requests []}
+         envelope form (get facts :plan-path) nil nil)
+        origin-id (get origin-products :origin-id)
+        node-request
+        (c6c10-add-digest-request
+         (get origin-products :state)
+         {:domain :gravity/c6-c10-core-node-v1
+          :lowering-rule-version "c6-c10-core-lowering-v1"
+          :source-content-hash (get envelope :source-content-hash)
+          :path (get facts :plan-path)
+          :kind (get facts :prospective-kind)
+          :source-operation (get facts :prospective-source-operation)
+          :plan-node? true
+          :plan-depth (get facts :plan-depth)
+          :operands []
+          :attributes
+          {:prospective? true
+           :observed-form-kind (get facts :observed-form-kind)}
+          :origin-id origin-id})]
+    {:state (get node-request :state)
+     :ref (get node-request :ref)
+     :origin-id origin-id
+     :origin-source (get origin-products :source)}))
+
+(defn c6c10-form-rejection
+  [state envelope form rule stage message-key facts remediation]
+  (if (c6c10-rule-in-family?
+       rule [:C7-TYPE-MISMATCH :C7-VERIFY])
+    (let [prospective
+          (c6c10-c7-prospective-core-node-request envelope form facts)
+          prospective-id (get prospective :ref)
+          source
+          (c6c10-merge-maps
+           (c6c10-merge-maps
+            (c6c10-form-subject envelope form)
+            (get prospective :origin-source))
+           {:core-node-id prospective-id
+            :origin-id (get prospective :origin-id)
+            :involved-artifacts [prospective-id]})]
+      (c6c10-diagnostic-rejection
+       (get prospective :state) rule stage message-key source
+       (assoc facts
+              :core-node-id prospective-id
+              :prospective-core-node? true
+              :lowering-rule-version
+              "c6-c10-core-lowering-v1")
+       remediation))
+    (c6c10-diagnostic-rejection
+     {:next-ordinal 0 :requests []} rule stage message-key
+     (c6c10-form-subject envelope form) facts remediation)))
+
+(defn c6c10-form-operator [form]
+  (let [value (get form :value)]
+    (if (seq? value) (first value) nil)))
+
+(defn c6c10-plain-form? [form expected-kind]
+  (if (= (get form :kind) expected-kind)
+    (if (= (count (get form :metadata)) 0)
+      (if (= (get form :tag) nil)
+        (= (get form :abbrev) nil)
+        false)
+      false)
+    false))
+
+(defn c6c10-instruction-form-matches? [instruction form]
+  (let [operation (get instruction :op)
+        value (get form :value)
+        operator (c6c10-form-operator form)]
+    (if (= operation :literal)
+      (if (= (get instruction :value) value)
+        (c6c10-plain-form? form (get form :kind))
+        false)
+      (if (= operation :quote)
+        (if (= operator 'quote)
+          (if (= (second value) (get instruction :value))
+            (if (= (get form :kind) :list)
+              (if (c6c10-plain-form? form :list)
+                (= (count (get form :children)) 2)
+                false)
+              (if (= (get form :kind) :abbreviation)
+                (if (= (get form :abbrev) :quote)
+                  (if (= (count (get form :children)) 1)
+                    (if (> (count (get form :generated-origin)) 0)
+                      (if (= (count (get form :metadata)) 0)
+                        (= (get form :tag) nil)
+                        false)
+                      false)
+                    false)
+                  false)
+                false))
+            false)
+          false)
+        (if (= operation :local)
+          (if (= (get instruction :name) value)
+            (c6c10-plain-form? form :symbol)
+            false)
+          (if (= operation :do)
+            (if (= operator 'do) (c6c10-plain-form? form :list) false)
+            (if (= operation :if)
+              (if (= operator 'if)
+                (c6c10-plain-form? form :list)
+                false)
+              (if (= operation :let)
+                (if (= operator 'let)
+                  (c6c10-plain-form? form :list)
+                  false)
+                (if (= operation :builtin-call)
+                  (if (= operator (get instruction :function))
+                    (if (c6c10-plain-form? form :list)
+                      (= (count (get instruction :args))
+                         (+ (count (get form :children)) -1))
+                      false)
+                    false)
+                  (if (= operation :function-call)
+                    (if (= operator (get instruction :function))
+                      (if (c6c10-plain-form? form :list)
+                        (= (count (get instruction :args))
+                           (+ (count (get form :children)) -1))
+                        false)
+                      false)
+                    (if (= operation :println)
+                      (if (= operator 'println)
+                        (c6c10-plain-form? form :list)
+                        false)
+                      (if (= operation :vector-literal)
+                        (if (c6c10-plain-form? form :vector)
+                          (= (count (get instruction :items))
+                             (count (get form :children)))
+                          false)
+                        (if (= operation :set-literal)
+                          (if (c6c10-plain-form? form :set)
+                            (= (count (get instruction :items))
+                               (count (get form :children)))
+                            false)
+                          (if (= operation :map-literal)
+                            (if (c6c10-plain-form? form :map)
+                              (= (* 2 (count (get instruction :entries)))
+                                 (count (get form :children)))
+                              false)
+                            false))))))))))))))
+
+(defn c6c10-numeric-form-kind? [kind]
+  (if (= kind :ratio) true (= kind :decimal)))
+
+(defn c6c10-deferred-ratio-descriptor? [value]
+  (if (map? value)
+    (if (= (set (keys value))
+           #{:artifact :kind :raw :numerator-spelling
+             :denominator-spelling :numerator :denominator
+             :semantic-validation :reason})
+      (if (= (get value :artifact) :gravity/deferred-ratio-literal)
+        (if (= (get value :kind) :ratio)
+          (if (= (get value :semantic-validation) :deferred)
+            (if (= (get value :reason) :zero-denominator)
+              (= (get value :denominator) 0)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c6c10-child-path [path field index]
+  (conj (conj path field) index))
+
+(defn c6c10-implicit-nil-product
+  [state envelope form path depth generated-role]
+  (if (> depth 48)
+    (c6c10-form-rejection
+     state envelope form :C6-VERIFY :lower-to-core
+     :diagnostic/c6-verify
+     {:missing-fact :bounded-generated-node-depth
+      :observed-depth depth
+      :maximum-depth 48
+      :plan-path path}
+     :reduce-expression-nesting)
+    (let [base-origin
+        (c6c10-origin-products
+         state envelope form (conj path :generated-input) nil nil)
+        product
+        (c6c10-register-origin
+         (c6c10-empty-product state) base-origin)
+        result
+        (c6c10-add-node
+         product envelope form path :literal :implicit-nil false depth
+         [] {:value nil :generated-role generated-role}
+         :gravity/nil :compiler-generated-value
+         {:storage :static-value}
+         generated-role (get base-origin :origin-id))]
+      (assoc result :direct-root-node-ids [(get result :result-node-id)]))))
+
+(defn c6c10-map-sequence-loop
+  [state envelope instructions form-ids path field env depth index
+   accumulated roots]
+  (if (= (count instructions) 0)
+    (assoc accumulated :direct-root-node-ids roots)
+    (let [child
+          (c6c10-map-instruction
+           state envelope (first instructions) (first form-ids)
+           (c6c10-child-path path field index) env (+ depth 1))]
+      (if (= (get child :status) :rejected)
+        child
+        (let [next-product (c6c10-merge-products accumulated child)]
+          (c6c10-map-sequence-loop
+           (get next-product :state) envelope
+           (rest instructions) (rest form-ids) path field env depth
+           (+ index 1) next-product
+           (conj roots (get child :result-node-id))))))))
+
+(defn c6c10-map-sequence
+  [state envelope instructions form-ids path field env depth
+   base-form empty-role]
+  (if (= (count instructions) (count form-ids))
+    (if (= (count instructions) 0)
+      (c6c10-implicit-nil-product
+       state envelope base-form (conj path empty-role) (+ depth 1)
+       empty-role)
+      (c6c10-map-sequence-loop
+       state envelope instructions form-ids path field env depth 0
+       (c6c10-empty-product state) []))
+    (c6c10-form-rejection
+     state envelope base-form :C6-ORIGIN :lower-to-core
+     :diagnostic/c6-origin
+     {:missing-fact :lockstep-sequence-source-arity
+      :instruction-count (count instructions)
+      :form-count (count form-ids)
+      :plan-path path}
+     :regenerate-fresh-c2-c3-and-stage2-plan)))
+
+(defn c6c10-map-literal
+  [state envelope instruction form path depth]
+  (let [type (c6c10-literal-type-from-form-kind (get form :kind))]
+    (if (= type nil)
+      (if (c6c10-numeric-form-kind? (get form :kind))
+        (let [value (get form :value)
+              base-facts
+              {:missing-fact :bounded-scalar-literal-type
+               :observed-form-kind (get form :kind)
+               :expected-type :closed-scalar-literal
+               :plan-path path
+               :plan-depth depth
+               :prospective-kind :literal
+               :prospective-source-operation :literal}
+              facts
+              (if (c6c10-deferred-ratio-descriptor? value)
+                (c6c10-merge-maps
+                 base-facts
+                 {:actual-type :gravity/deferred-ratio
+                  :reader-literal-descriptor value
+                  :deferred-literal-kind (get value :kind)
+                  :deferred-literal-raw (get value :raw)
+                  :deferment-reason (get value :reason)
+                  :semantic-validation
+                  (get value :semantic-validation)})
+                (c6c10-merge-maps
+                 base-facts
+                 {:actual-type
+                  (c6c10-observed-form-type (get form :kind))}))]
+          (c6c10-form-rejection
+           state envelope form :C7-TYPE-MISMATCH :type-check
+           :diagnostic/c7-type-mismatch facts
+           :replace-with-supported-scalar-literal))
+        (c6c10-form-rejection
+         state envelope form :C6-LOWERING-GAP :lower-to-core
+         :diagnostic/c6-lowering-gap
+         {:missing-fact :bounded-scalar-source-expression
+          :observed-form-kind (get form :kind)}
+         :replace-with-supported-scalar-literal))
+      (c6c10-add-node
+       (c6c10-empty-product state) envelope form path
+       :literal :literal true depth []
+       {:value (get instruction :value)}
+       type :literal-value {:storage :static-value} nil nil))))
+
+(defn c6c10-map-quote
+  [state envelope instruction form path depth]
+  (let [children (get form :children)
+        quoted-form-id
+        (if (= (get form :kind) :abbreviation)
+          (if (= (count children) 1) (first children) nil)
+          (if (= (count children) 2) (second children) nil))
+        quoted-form
+        (c6c10-form-by-id (get envelope :form-tree) quoted-form-id)
+        type
+        (if (= quoted-form nil)
+          nil
+          (c6c10-literal-type-from-form-kind (get quoted-form :kind)))]
+    (if (= type nil)
+      (c6c10-form-rejection
+       state envelope form :C7-TYPE-MISMATCH :type-check
+       :diagnostic/c7-type-mismatch
+       {:missing-fact :bounded-quoted-scalar-type
+        :observed-form-kind
+        (if (= quoted-form nil) :missing (get quoted-form :kind))
+        :expected-type :closed-quoted-scalar
+        :plan-path path
+        :plan-depth depth
+        :prospective-kind :quote
+        :prospective-source-operation :quote}
+       :replace-with-supported-quoted-scalar)
+      (c6c10-add-node
+       (c6c10-empty-product state) envelope form path
+       :quote :quote true depth []
+       {:value (get instruction :value)
+        :quoted-form-id quoted-form-id}
+       type :quoted-value {:storage :static-value} nil nil))))
+
+(defn c6c10-map-local
+  [state envelope instruction form path env depth]
+  (let [binding (get env (get instruction :name))]
+    (if (= binding nil)
+      (c6c10-form-rejection
+       state envelope form :C6-VERIFY :lower-to-core
+       :diagnostic/c6-verify
+       {:missing-fact :resolved-lexical-binding
+        :local (get instruction :name)
+        :plan-path path}
+       :restore-lexical-binding-before-use)
+      (c6c10-add-node
+       (c6c10-empty-product state) envelope form path
+       :local :local true depth [(get binding :node-id)]
+       {:name (get instruction :name)
+        :resolved-binding (get binding :node-id)}
+       (get binding :type) :local-reference
+       {:storage :shared-persistent-reference
+        :binding-node-id (get binding :node-id)}
+       nil nil))))
+
+(defn c6c10-map-do
+  [state envelope instruction form path env depth]
+  (let [body-form-ids (rest (get form :children))
+        body
+        (c6c10-map-sequence
+         state envelope (get instruction :body) body-form-ids
+         path :body env depth form :implicit-do-nil)]
+    (if (= (get body :status) :rejected)
+      body
+      (c6c10-add-node
+       body envelope form path :sequence :do true depth
+       (get body :direct-root-node-ids)
+       {:body-count (count (get instruction :body))}
+       (get body :type) :sequence-result
+       {:storage :forwarded-persistent-value
+        :result-node-id (get body :result-node-id)}
+       nil nil))))
+
+(defn c6c10-generated-nil-from-origin
+  [state envelope form path depth generated-role base-origin-id]
+  (if (> depth 48)
+    (c6c10-form-rejection
+     state envelope form :C6-VERIFY :lower-to-core
+     :diagnostic/c6-verify
+     {:missing-fact :bounded-generated-node-depth
+      :observed-depth depth
+      :maximum-depth 48
+      :plan-path path}
+     :reduce-expression-nesting)
+    (c6c10-add-node
+     (c6c10-empty-product state) envelope form path
+     :literal :implicit-nil false depth []
+     {:value nil :generated-role generated-role}
+     :gravity/nil :compiler-generated-value {:storage :static-value}
+     generated-role base-origin-id)))
+
+(defn c6c10-map-if-valid
+  [state envelope instruction form path env depth]
+  (let [children (get form :children)
+        test-form-id (if (> (count children) 1) (second children) nil)
+        then-form-id
+        (if (> (count children) 2) (first (rest (rest children))) nil)
+        else-form-id
+        (if (> (count children) 3)
+          (first (rest (rest (rest children))))
+          nil)
+        if-origin
+        (c6c10-origin-products state envelope form path nil nil)
+        base-product
+        (c6c10-register-origin
+         (c6c10-empty-product state) if-origin)
+        test-product
+        (c6c10-map-instruction
+         (get base-product :state) envelope (get instruction :test)
+         test-form-id (conj path :test) env (+ depth 1))]
+    (if (= (get test-product :status) :rejected)
+      test-product
+      (let [with-test (c6c10-merge-products base-product test-product)
+            truthy-product
+            (c6c10-add-node
+             (c6c10-empty-product (get with-test :state))
+             envelope form (conj path :truthy)
+             :truthiness :truthy false (+ depth 1)
+             [(get test-product :result-node-id)]
+             {:false-values [nil false]
+              :result-type :gravity/bool}
+             :gravity/bool :truthiness-value {:storage :static-value}
+             :truthiness-normalization (get if-origin :origin-id))
+            with-truthy
+            (c6c10-merge-products with-test truthy-product)
+            then-product
+            (c6c10-map-instruction
+             (get with-truthy :state) envelope (get instruction :then)
+             then-form-id (conj path :then) env (+ depth 1))]
+        (if (= (get then-product :status) :rejected)
+          then-product
+          (let [with-then
+                (c6c10-merge-products with-truthy then-product)
+                else-product
+                (if (= else-form-id nil)
+                  (c6c10-generated-nil-from-origin
+                   (get with-then :state) envelope form
+                   (conj path :else) (+ depth 1) :implicit-if-else
+                   (get if-origin :origin-id))
+                  (c6c10-map-instruction
+                   (get with-then :state) envelope (get instruction :else)
+                   else-form-id (conj path :else) env (+ depth 1)))]
+            (if (= (get else-product :status) :rejected)
+              else-product
+              (let [children-product
+                    (c6c10-merge-products with-then else-product)
+                    operands
+                    [(get truthy-product :result-node-id)
+                     (get then-product :result-node-id)
+                     (get else-product :result-node-id)]]
+                (c6c10-add-node-with-origin
+                 children-product envelope form path
+                 :conditional :if true depth operands
+                 {:truthiness :nil-and-false-only}
+                 (c6c10-type-join
+                  (get then-product :type) (get else-product :type))
+                 :conditional-result
+                 {:storage :forwarded-persistent-value
+                  :incoming-node-ids
+                  [(get then-product :result-node-id)
+                   (get else-product :result-node-id)]}
+                 nil nil if-origin)))))))))
+
+(defn c6c10-map-let-bindings-loop
+  [state envelope bindings binding-form-ids path env local-names depth
+   index accumulated binding-node-ids]
+  (if (= (count bindings) 0)
+    (assoc
+     (assoc accumulated :environment env)
+     :binding-node-ids binding-node-ids)
+    (let [binding (first bindings)
+          name (get binding :name)
+          name-form-id (first binding-form-ids)
+          expr-form-id (second binding-form-ids)
+          name-form
+          (c6c10-form-by-id (get envelope :form-tree) name-form-id)]
+      (if (if (= name-form nil)
+            true
+            (if (= name (get name-form :value))
+              (c6c10-vector-contains? local-names name)
+              true))
+        (c6c10-form-rejection
+         state envelope name-form :C6-VERIFY :lower-to-core
+         :diagnostic/c6-verify
+         {:missing-fact :sequential-unique-let-binding
+          :binding name
+          :plan-path path}
+         :repair-let-binding-source-shape)
+        (let [expr-path
+              (conj (c6c10-child-path path :bindings index) :expr)
+              value-product
+              (c6c10-map-instruction
+               state envelope (get binding :expr) expr-form-id
+               expr-path env (+ depth 1))]
+          (if (= (get value-product :status) :rejected)
+            value-product
+            (let [shadowed (get env name)
+                  binder-path
+                  (conj (c6c10-child-path path :bindings index) :binder)
+                  binder-product
+                  (c6c10-add-node
+                   value-product envelope name-form binder-path
+                   :binding :let-binding false (+ depth 1)
+                   [(get value-product :result-node-id)]
+                   {:name name
+                    :shadowed-binding
+                    (if (= shadowed nil) nil (get shadowed :node-id))
+                    :source-form-id name-form-id}
+                   (get value-product :type) :lexical-binding
+                   {:storage :forwarded-persistent-value
+                    :value-node-id (get value-product :result-node-id)}
+                   nil nil)
+                  binder-id (get binder-product :result-node-id)
+                  binding-record
+                  {:binding-node-id binder-id
+                   :name name
+                   :path binder-path
+                   :value-node-id (get value-product :result-node-id)
+                   :shadowed-binding
+                   (if (= shadowed nil) nil (get shadowed :node-id))
+                   :source-form-id name-form-id}
+                  binder-product
+                  (assoc
+                   binder-product :binding-records
+                   (conj (get binder-product :binding-records)
+                         binding-record))
+                  next-product
+                  (c6c10-merge-products accumulated binder-product)
+                  next-env
+                  (assoc env name
+                         {:node-id binder-id
+                          :type (get value-product :type)})]
+              (c6c10-map-let-bindings-loop
+               (get next-product :state) envelope (rest bindings)
+               (rest (rest binding-form-ids)) path next-env
+               (conj local-names name) depth (+ index 1)
+               next-product (conj binding-node-ids binder-id)))))))))
+
+(defn c6c10-map-let
+  [state envelope instruction form path env depth]
+  (let [children (get form :children)
+        binding-vector-id
+        (if (> (count children) 1) (second children) nil)
+        binding-vector
+        (c6c10-form-by-id (get envelope :form-tree) binding-vector-id)
+        binding-form-ids
+        (if (= binding-vector nil) [] (get binding-vector :children))
+        bindings (get instruction :bindings)
+        body-form-ids (rest (rest children))]
+    (if (if (= binding-vector nil)
+          true
+          (if (= (get binding-vector :kind) :vector)
+            (if (= (count binding-form-ids) (* 2 (count bindings)))
+              false
+              true)
+            true))
+      (c6c10-form-rejection
+       state envelope form :C6-ORIGIN :lower-to-core
+       :diagnostic/c6-origin
+       {:missing-fact :let-binding-source-shape
+        :plan-path path
+        :binding-count (count bindings)
+        :form-count (count binding-form-ids)}
+       :repair-let-binding-vector)
+      (let [binding-products
+            (c6c10-map-let-bindings-loop
+             state envelope bindings binding-form-ids path env [] depth 0
+             (c6c10-empty-product state) [])]
+        (if (= (get binding-products :status) :rejected)
+          binding-products
+          (let [body-product
+                (c6c10-map-sequence
+                 (get binding-products :state) envelope
+                 (get instruction :body) body-form-ids path :body
+                 (get binding-products :environment) depth form
+                 :implicit-let-nil)]
+            (if (= (get body-product :status) :rejected)
+              body-product
+              (let [children-product
+                    (c6c10-merge-products
+                     binding-products body-product)
+                    operands
+                    (c6c10-append
+                     (get binding-products :binding-node-ids)
+                     (get body-product :direct-root-node-ids))]
+                (c6c10-add-node
+                 children-product envelope form path :let :let true depth
+                 operands {:binding-count (count bindings)}
+                 (get body-product :type) :lexical-scope-result
+                 {:storage :forwarded-persistent-value
+                  :result-node-id (get body-product :result-node-id)}
+                 nil nil)))))))))
+
+(defn c6c10-map-if
+  [state envelope instruction form path env depth]
+  (let [child-count (count (get form :children))
+        implicit? (= child-count 3)
+        exact-child-count?
+        (if implicit? true (= child-count 4))
+        else-instruction (get instruction :else)
+        exact-implicit-plan?
+        (if implicit?
+          (if (= (get else-instruction :op) :literal)
+            (= (get else-instruction :value) nil)
+            false)
+          true)]
+    (if (if exact-child-count? exact-implicit-plan? false)
+      (c6c10-map-if-valid
+       state envelope instruction form path env depth)
+      (c6c10-form-rejection
+       state envelope form :C6-ORIGIN :lower-to-core
+       :diagnostic/c6-origin
+       {:missing-fact :exact-if-source-plan-arity
+        :source-child-count child-count
+        :implicit-else? implicit?
+        :plan-else-operation (get else-instruction :op)
+        :plan-else-value (get else-instruction :value)
+        :plan-path path}
+       :regenerate-fresh-c2-c3-and-stage2-plan))))
+
+(defn c6c10-map-integer-comparison
+  [state envelope instruction form path env depth]
+  (let [arguments (get instruction :args)
+        child-form-ids (rest (get form :children))
+        argument-count (count arguments)
+        function (get instruction :function)
+        source-operation
+        (if (= function '=)
+          :integer-eq
+          (if (= function '<)
+            :integer-lt
+            (if (= function '<=)
+              :integer-lte
+              (if (= function '>)
+                :integer-gt
+                (if (= function '>=) :integer-gte nil)))))
+        equality? (= source-operation :integer-eq)
+        minimum-arity (if equality? 1 2)]
+    (if (= source-operation nil)
+      (c6c10-form-rejection
+       state envelope form :C6-LOWERING-GAP :lower-to-core
+       :diagnostic/c6-lowering-gap
+       {:missing-fact :bounded-source-operation
+        :observed-operation :builtin-call
+        :observed-function function
+        :plan-path path}
+       :remove-out-of-scope-operation)
+      (if (< argument-count minimum-arity)
+        (c6c10-form-rejection
+         state envelope form :L2-BUILTIN-ARITY :core-semantics
+         :diagnostic/l2-builtin-arity
+         {:missing-fact
+          (if equality?
+            :at-least-one-equality-argument
+            :at-least-two-comparison-arguments)
+          :function function
+          :expected-arity (if equality? :at-least-one :at-least-two)
+          :actual-arity argument-count
+          :bounded-binary-slice? true
+          :plan-path path}
+         (if equality?
+           :supply-at-least-one-equality-argument
+           :supply-at-least-two-comparison-arguments))
+        (if (= argument-count 2)
+          (let [arguments-product
+                (c6c10-map-sequence
+                 state envelope arguments child-form-ids path :args env depth
+                 form
+                 (if equality?
+                   :unreachable-empty-equality-arguments
+                   :unreachable-short-order-comparison-arguments))]
+            (if (= (get arguments-product :status) :rejected)
+              arguments-product
+              (let [operand-ids
+                    (get arguments-product :direct-root-node-ids)
+                    left
+                    (c6c10-node-by-id
+                     (get arguments-product :nodes) (first operand-ids))
+                    right
+                    (c6c10-node-by-id
+                     (get arguments-product :nodes) (second operand-ids))
+                    left-type (get left :type)
+                    right-type (get right :type)]
+                (if (if (= left-type :gravity/integer)
+                      (= right-type :gravity/integer)
+                      false)
+                  (c6c10-add-node
+                   arguments-product envelope form path
+                   :comparison source-operation true depth operand-ids
+                   (c6c10-merge-maps
+                    {:primitive function
+                     :arity 2
+                     :evaluation-order :left-to-right
+                     :operand-types
+                     [:gravity/integer :gravity/integer]
+                     :result-type :gravity/bool
+                     :numeric-semantics
+                     (if equality?
+                       :exact-signed-integer-equality
+                       :exact-integer-ordering)
+                     :overflow :not-applicable}
+                    (if equality?
+                      {}
+                      {:numeric-mode :proof-required
+                       :mathematical-mode :integer-exact}))
+                   :gravity/bool :comparison-result
+                   {:storage :static-value
+                    :derived-from operand-ids}
+                   nil nil)
+                  (c6c10-form-rejection
+                   (get arguments-product :state) envelope form
+                   :C7-TYPE-MISMATCH :type-check
+                   :diagnostic/c7-type-mismatch
+                   {:missing-fact
+                    (if equality?
+                      :binary-integer-equality-operands
+                      :binary-integer-order-comparison-operands)
+                    :expected-type :gravity/integer
+                    :actual-type
+                    (if (= left-type :gravity/integer)
+                      right-type
+                      left-type)
+                    :operand-types [left-type right-type]
+                    :plan-path path
+                    :plan-depth depth
+                    :prospective-kind :comparison
+                    :prospective-source-operation source-operation
+                    :observed-form-kind :list}
+                   (if equality?
+                     :use-two-integer-equality-operands
+                     :use-two-integer-order-comparison-operands))))))
+          (c6c10-form-rejection
+           state envelope form :C6-LOWERING-GAP :lower-to-core
+           :diagnostic/c6-lowering-gap
+           {:missing-fact
+            (if equality?
+              :bounded-binary-integer-equality
+              :bounded-binary-integer-order-comparison)
+            :function function
+            :language-arity
+            (if equality? :variadic-at-least-one :undecided-at-least-two)
+            :observed-arity argument-count
+            :plan-path path}
+           :use-two-integer-operands-for-this-bounded-slice))))))
+
+(defn c6c10-map-instruction
+  [state envelope instruction form-id path env depth]
+  (let [form (c6c10-form-by-id (get envelope :form-tree) form-id)
+        operation (get instruction :op)]
+    (if (> depth 48)
+      (c6c10-form-rejection
+       state envelope form :C6-VERIFY :lower-to-core
+       :diagnostic/c6-verify
+       {:missing-fact :bounded-plan-depth
+        :observed-depth depth
+        :maximum-depth 48
+        :plan-path path}
+       :reduce-expression-nesting)
+      (if (= form nil)
+        (c6c10-form-rejection
+         state envelope {} :C6-ORIGIN :lower-to-core
+         :diagnostic/c6-origin
+         {:missing-fact :genuine-c2-form-for-plan-node
+          :form-id form-id
+          :plan-path path}
+         :regenerate-fresh-c2-c3-and-stage2-plan)
+        (if (c6c10-instruction-form-matches? instruction form)
+          (if (= operation :literal)
+            (c6c10-map-literal state envelope instruction form path depth)
+            (if (= operation :quote)
+              (c6c10-map-quote state envelope instruction form path depth)
+              (if (= operation :local)
+                (c6c10-map-local
+                 state envelope instruction form path env depth)
+                (if (= operation :do)
+                  (c6c10-map-do
+                   state envelope instruction form path env depth)
+                  (if (= operation :if)
+                    (c6c10-map-if
+                     state envelope instruction form path env depth)
+                    (if (= operation :let)
+                      (c6c10-map-let
+                       state envelope instruction form path env depth)
+                      (if (= operation :builtin-call)
+                        (c6c10-map-integer-comparison
+                         state envelope instruction form path env depth)
+                        (c6c10-form-rejection
+                         state envelope form :C6-LOWERING-GAP :lower-to-core
+                         :diagnostic/c6-lowering-gap
+                         {:missing-fact :bounded-source-operation
+                          :observed-operation operation
+                          :plan-path path}
+                         :remove-out-of-scope-operation))))))))
+          (c6c10-form-rejection
+           state envelope form :C6-ORIGIN :lower-to-core
+           :diagnostic/c6-origin
+           {:missing-fact :lockstep-plan-c2-form-mapping
+            :plan-operation operation
+            :source-form-kind (get form :kind)
+            :source-form-operator (c6c10-form-operator form)
+            :plan-path path}
+           :regenerate-fresh-c2-c3-and-stage2-plan))))))
+
+(defn c6c10-build-function-product
+  [state envelope function-plan function-form]
+  (let [children (get function-form :children)
+        operator-form
+        (c6c10-form-by-id
+         (get envelope :form-tree) (first children))
+        name-form
+        (c6c10-form-by-id
+         (get envelope :form-tree) (second children))
+        params-form-id
+        (if (> (count children) 2)
+          (first (rest (rest children)))
+          nil)
+        params-form
+        (c6c10-form-by-id (get envelope :form-tree) params-form-id)
+        body-form-ids (rest (rest (rest children)))
+        instructions (get function-plan :instructions)
+        binding (get function-plan :binding)
+        body-count (count body-form-ids)
+        exact-plan-binding?
+        (if (= (get binding :name) 'main)
+          (if (= (get binding :kind) :function)
+            (if (= (get binding :namespace) (get envelope :module))
+              (if (= (get binding :profile) :hosted)
+                (if (= (get binding :target) :jvm)
+                  (if (= (get binding :visibility) :public)
+                    (if (= (count (get binding :effects)) 0)
+                      (= (count (get binding :capabilities)) 0)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        source-shape-valid?
+        (if (c6c10-plain-form? function-form :list)
+          (if (c6c10-function-form? function-form 'main)
+            (if (c6c10-plain-form? operator-form :symbol)
+              (if (c6c10-plain-form? name-form :symbol)
+                (if (= (get operator-form :value) 'defn)
+                  (= (get name-form :value) 'main)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        plan-shape-valid?
+        (if source-shape-valid?
+          (if (= (get function-plan :name) 'main)
+            (if (= (get function-plan :definition-form) :defn)
+              (if (= (get function-plan :arity) 0)
+                (if (= (count (get function-plan :params)) 0)
+                  (if (c6c10-plain-form? params-form :vector)
+                    (if (= (count (get params-form :children)) 0)
+                      (if (= (get function-plan :body-form-count)
+                             body-count)
+                        (if (= (count (get function-plan :body)) body-count)
+                          (if (= (count instructions) body-count)
+                            exact-plan-binding?
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)]
+    (if plan-shape-valid?
+      (let [body
+            (c6c10-map-sequence
+             state envelope instructions body-form-ids
+             [:functions 'main] :body {} 0 function-form
+             :implicit-function-nil)]
+        (if (= (get body :status) :rejected)
+          body
+          (let [function-type
+                {:params []
+                 :return (get body :type)
+                 :latent-effects #{}
+                 :capabilities #{}
+                 :throws #{}
+                 :ownership-constraints
+                 #{:persistent-immutable-shareable}
+                 :profile-constraints #{:hosted}}
+                result
+                (c6c10-add-node
+                 body envelope function-form [:functions 'main]
+                 :function :function false 0
+                 (get body :direct-root-node-ids)
+                 {:name 'main
+                  :params []
+                  :arity 0
+                  :body-count (count instructions)
+                  :visibility :public
+                  :entrypoint? true}
+                 function-type :function-result
+                 {:storage :forwarded-persistent-value
+                  :result-node-id (get body :result-node-id)
+                  :result-disposition :shared-persistent-value-return}
+                 nil nil)]
+            (assoc
+             (assoc result :root-node-id (get result :result-node-id))
+             :entrypoint 'main))))
+      (c6c10-form-rejection
+       state envelope function-form :C6-CORE-SHAPE :lower-to-core
+       :diagnostic/c6-core-shape
+       {:missing-fact :bounded-entrypoint-function-source-shape
+        :expected-entrypoint 'main
+        :expected-arity 0
+        :observed-arity (get function-plan :arity)}
+       :use-one-zero-arity-main-function))))
+
+(defn c6c10-collect-operation-set [nodes result]
+  (if (= (count nodes) 0)
+    (set result)
+    (c6c10-collect-operation-set
+     (rest nodes)
+     (c6c10-conj-unique result (get (first nodes) :source-operation)))))
+
+(defn c6c10-node-id-vector [nodes result]
+  (if (= (count nodes) 0)
+    result
+    (c6c10-node-id-vector
+     (rest nodes) (conj result (get (first nodes) :node-id)))))
+
+(defn c6c10-node-index [nodes node-id index]
+  (if (= (count nodes) 0)
+    nil
+    (if (= (get (first nodes) :node-id) node-id)
+      index
+      (c6c10-node-index (rest nodes) node-id (+ index 1)))))
+
+(defn c6c10-dependency-edge-kind
+  [node operand-index operand-count]
+  (let [operation (get node :source-operation)]
+    (if (= operation :local)
+      :binding-use
+      (if (= operation :let-binding)
+        :initializer
+        (if (= operation :truthy)
+          :control
+          (if (= operation :if)
+            (if (= operand-index 0) :control :conditional-incoming)
+            (if (= operation :do)
+              (if (= operand-index (+ operand-count -1))
+                :result
+                :sequence)
+              (if (= operation :function)
+                (if (= operand-index (+ operand-count -1))
+                  :result
+                  :sequence)
+                (if (= operation :let)
+                  (let [binding-count
+                        (get (get node :attributes) :binding-count)]
+                    (if (< operand-index binding-count)
+                      :initializer
+                      (if (= operand-index (+ operand-count -1))
+                        :result
+                        :sequence)))
+                  :argument-value)))))))))
+
+(defn c6c10-build-edge-list
+  [all-nodes operands node consumer-index operand-index result]
+  (if (= (count operands) 0)
+    result
+    (let [dependency (first operands)
+          dependency-index
+          (c6c10-node-index all-nodes dependency 0)
+          operand-count (count (get node :operands))]
+      (c6c10-build-edge-list
+       all-nodes (rest operands) node consumer-index (+ operand-index 1)
+       (conj result
+             {:dependency dependency
+              :consumer (get node :node-id)
+              :dependency-index dependency-index
+              :consumer-index consumer-index
+              :operand-index operand-index
+              :edge-kind
+              (c6c10-dependency-edge-kind
+               node operand-index operand-count)
+              :dependency-precedes-consumer?
+              (if (= dependency-index nil)
+                false
+                (< dependency-index consumer-index))})))))
+
+(defn c6c10-build-dependency-edges-loop
+  [all-nodes nodes consumer-index result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)]
+      (c6c10-build-dependency-edges-loop
+       all-nodes (rest nodes) (+ consumer-index 1)
+       (c6c10-build-edge-list
+        all-nodes (get node :operands) node consumer-index 0 result)))))
+
+(defn c6c10-build-dependency-edges [nodes]
+  (c6c10-build-dependency-edges-loop nodes nodes 0 []))
+
+(defn c6c10-type-producer-rule [source-operation]
+  (if (= source-operation :implicit-nil)
+    :compiler-generated-nil
+    (if (= source-operation :literal)
+      :literal-type
+      (if (= source-operation :quote)
+        :quoted-scalar-type
+        (if (= source-operation :local)
+          :resolved-binding-type
+          (if (= source-operation :let-binding)
+            :initializer-type
+            (if (= source-operation :truthy)
+              :truthiness-bool
+              (if (= source-operation :integer-eq)
+                :binary-integer-equality-bool
+                (if (contains?
+                     #{:integer-lt :integer-lte :integer-gt :integer-gte}
+                     source-operation)
+                  :binary-integer-order-comparison-bool
+                  (if (= source-operation :if)
+                :branch-type-join
+                (if (= source-operation :do)
+                  :sequence-result-type
+                  (if (= source-operation :let)
+                    :lexical-scope-result-type
+                    :closed-function-type))))))))))))
+
+(defn c6c10-source-value-ids [node]
+  (let [operation (get node :source-operation)
+        operands (get node :operands)]
+    (if (= operation :local)
+      [(first operands)]
+      (if (= operation :let-binding)
+        [(first operands)]
+        (if (= operation :truthy)
+          [(first operands)]
+          (if (contains?
+               #{:integer-eq :integer-lt :integer-lte
+                 :integer-gt :integer-gte}
+               operation)
+            (c6c10-copy-vector operands [])
+            (if (= operation :if)
+            (c6c10-copy-vector (rest operands) [])
+            (if (= operation :do)
+              [(first (c6c10-reverse operands))]
+              (if (= operation :let)
+                [(first (c6c10-reverse operands))]
+                (if (= operation :function)
+                  [(first (c6c10-reverse operands))]
+                  []))))))))))
+
+(defn c6c10-forwarding-kind [source-operation]
+  (if (= source-operation :local)
+    :from-lexical-binding
+    (if (= source-operation :let-binding)
+      :from-initializer
+      (if (= source-operation :truthy)
+        :derived-from-test
+        (if (contains?
+             #{:integer-eq :integer-lt :integer-lte
+               :integer-gt :integer-gte}
+             source-operation)
+          :derived-from-binary-integer-operands
+          (if (= source-operation :if)
+          :from-conditional-incoming-values
+          (if (= source-operation :do)
+            :from-sequence-result
+            (if (= source-operation :let)
+              :from-lexical-scope-result
+              (if (= source-operation :function)
+                :from-entrypoint-result
+                :not-applicable)))))))))
+
+(defn c6c10-empty-fact-product [state owner-domain-id]
+  {:state state
+   :owner-domain-id owner-domain-id
+   :type-ids {}
+   :type-facts {}
+   :effect-facts {}
+   :capability-facts {}
+   :ownership-facts {}
+   :safety-facts {}
+   :profile-facts {}})
+
+(defn c6c10-build-node-facts [fact-product node]
+  (let [state (get fact-product :state)
+        node-id (get node :node-id)
+        source-origin-id (get (get node :source) :origin-id)
+        type-descriptor
+        {:kind :gravity/type-descriptor
+         :type (get node :type)}
+        type-id-request
+        (c6c10-add-digest-request
+         state {:domain :gravity/c7-type-descriptor-v1
+                :descriptor type-descriptor})
+        type-id (get type-id-request :ref)
+        type-fact-base-plain
+        {:core-node-id node-id
+         :type-id type-id
+         :type (get node :type)
+         :producer-rule
+         (c6c10-type-producer-rule (get node :source-operation))
+         :dependencies (get node :operands)
+         :source-origin-id source-origin-id
+         :profile :hosted
+         :source-target :jvm
+         :constraints []
+         :derived? true}
+        type-fact-base
+        (if (= (get node :source-operation) :function)
+          (c6c10-merge-maps
+           type-fact-base-plain
+           {:params []
+            :return (get (get node :type) :return)
+            :latent-effects #{}
+            :capabilities #{}
+            :throws #{}
+            :ownership-constraints
+            #{:persistent-immutable-shareable}
+            :profile-constraints #{:hosted}})
+          type-fact-base-plain)
+        type-fact-request
+        (c6c10-add-digest-request
+         (get type-id-request :state)
+         {:domain :gravity/c7-type-fact-v1
+          :fact type-fact-base})
+        type-fact-id (get type-fact-request :ref)
+        type-fact (assoc type-fact-base :fact-id type-fact-id)
+        effect-fact-base-plain
+        {:core-node-id node-id
+         :type-fact-id type-fact-id
+         :direct #{}
+         :latent #{}
+         :transitive #{}
+         :residual #{}
+         :ordering :none
+         :source-origin-id source-origin-id
+         :profile :hosted
+         :source-target :jvm
+         :derived? true}
+        effect-fact-base
+        (if (= (get node :source-operation) :function)
+          (c6c10-merge-maps
+           effect-fact-base-plain
+           {:function-summary
+            {:declared #{}
+             :inferred #{}
+             :latent #{}
+             :throws #{}}})
+          effect-fact-base-plain)
+        effect-fact-request
+        (c6c10-add-digest-request
+         (get type-fact-request :state)
+         {:domain :gravity/c8-effect-fact-v1
+          :fact effect-fact-base})
+        effect-fact-id (get effect-fact-request :ref)
+        effect-fact (assoc effect-fact-base :fact-id effect-fact-id)
+        ownership (get node :ownership)
+        ownership-fact-base
+        {:core-node-id node-id
+         :value-id node-id
+         :owner-id (get fact-product :owner-domain-id)
+         :source-value-ids (c6c10-source-value-ids node)
+         :forwarding
+         (c6c10-forwarding-kind (get node :source-operation))
+         :model (get ownership :model)
+         :role (get ownership :role)
+         :storage (get ownership :storage)
+         :shareability (get ownership :shareability)
+         :alias-policy (get ownership :alias-policy)
+         :mutation (get ownership :mutation)
+         :managed-reachability (get ownership :managed-reachability)
+         :cleanup-policy (get ownership :cleanup-policy)
+         :provider-requirement (get ownership :provider-requirement)
+         :allocator-requirement (get ownership :allocator-requirement)
+         :escape-policy (get ownership :escape-policy)
+         :result-disposition
+         (if (= (get ownership :result-disposition) nil)
+           :not-applicable
+           (get ownership :result-disposition))
+         :source-origin-id source-origin-id
+         :profile :hosted
+         :source-target :jvm
+         :borrow :not-applicable
+         :move :not-applicable
+         :consume :not-applicable
+         :region :not-applicable
+         :arena :not-applicable
+         :linear-resource :not-applicable
+         :transfer :not-applicable
+         :runtime-check :not-applicable
+         :unsafe-audit :not-applicable
+         :derived? true}
+        ownership-fact-request
+        (c6c10-add-digest-request
+         (get effect-fact-request :state)
+         {:domain :gravity/c9-ownership-fact-v1
+          :fact ownership-fact-base})
+        ownership-fact-id (get ownership-fact-request :ref)
+        ownership-fact
+        (assoc ownership-fact-base :fact-id ownership-fact-id)
+        capability-fact
+        {:core-node-id node-id
+         :required #{}
+         :granted #{}
+         :provider-bindings {}
+         :grant-ids []
+         :authority-id nil
+         :authority-source :none-required
+         :capability-proof
+         {:status :not-required
+          :basis :empty-capability-requirements
+          :proof-ids []}
+         :source-origin-id source-origin-id
+         :profile :hosted
+         :source-target :jvm
+         :derived? true}
+        safety-fact
+        {:artifact :gravity/safety-outcome
+         :operation node-id
+         :kind (get node :source-operation)
+         :source {:core-node node-id
+                  :span (get (get node :source) :span)
+                  :origin-chain [source-origin-id]}
+         :profile :hosted
+         :target :jvm
+         :facts {:type type-fact-id
+                 :effects effect-fact-id
+                 :ownership ownership-fact-id}
+         :outcome :proven-safe
+         :condition :always
+         :proof (get (get (get node :safety) :proof) :proof-id)
+         :runtime-check :not-applicable
+         :unsafe-audit :not-applicable
+         :failure-behavior :not-applicable}
+        profile-fact
+        {:profile :hosted
+         :operation (get node :source-operation)
+         :legal? true
+         :scope :gravity-owned-bounded-pure-hosted-jvm-slice}]
+    {:state (get ownership-fact-request :state)
+     :owner-domain-id (get fact-product :owner-domain-id)
+     :type-ids (assoc (get fact-product :type-ids) node-id type-id)
+     :type-facts
+     (assoc (get fact-product :type-facts) node-id type-fact)
+     :effect-facts
+     (assoc (get fact-product :effect-facts) node-id effect-fact)
+     :capability-facts
+     (assoc (get fact-product :capability-facts) node-id capability-fact)
+     :ownership-facts
+     (assoc (get fact-product :ownership-facts) node-id ownership-fact)
+     :safety-facts
+     (assoc (get fact-product :safety-facts) node-id safety-fact)
+     :profile-facts
+     (assoc (get fact-product :profile-facts) node-id profile-fact)}))
+
+(defn c6c10-build-fact-tables [nodes fact-product]
+  (if (= (count nodes) 0)
+    fact-product
+    (c6c10-build-fact-tables
+     (rest nodes)
+     (c6c10-build-node-facts fact-product (first nodes)))))
+
+(defn c6c10-binding-locals-with-types [bindings type-ids result]
+  (if (= (count bindings) 0)
+    result
+    (let [binding (first bindings)
+          binding-id (get binding :binding-node-id)]
+      (c6c10-binding-locals-with-types
+       (rest bindings) type-ids
+       (assoc result binding-id
+              {:type (get type-ids binding-id)
+               :mutability :immutable
+               :ownership :persistent-shared})))))
+
+(defn c6c10-effect-graph-nodes [nodes result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)]
+      (c6c10-effect-graph-nodes
+       (rest nodes)
+       (assoc result (get node :node-id)
+              {:direct #{}
+               :latent #{}
+               :transitive #{}
+               :ordering :none
+               :source (get (get node :source) :span)})))))
+
+(defn c6c10-owner-table [nodes owner-domain-id result]
+  (if (= (count nodes) 0)
+    result
+    (c6c10-owner-table
+     (rest nodes) owner-domain-id
+     (assoc result (get (first nodes) :node-id) owner-domain-id))))
+
+(defn c6c10-build-pass-artifacts
+  [state envelope nodes bindings root-node-id type-ids owner-domain-id]
+  (let [function-node (c6c10-node-by-id nodes root-node-id)
+        return-node-id
+        (first (c6c10-reverse (get function-node :operands)))
+        module (get envelope :module)
+        core-input-request
+        (c6c10-add-digest-request
+         state
+         {:domain :gravity/c6-core-module-input-v1
+          :plan-id (get envelope :plan-id)
+          :core-node-ids (c6c10-node-id-vector nodes [])})
+        core-input-id (get core-input-request :ref)
+        typed-core
+        {:artifact :gravity/typed-core
+         :module module
+         :core-input core-input-id
+         :types type-ids
+         :locals
+         (c6c10-binding-locals-with-types bindings type-ids {})
+         :functions
+         {root-node-id
+          {:params []
+           :return (get type-ids return-node-id)
+           :latent-effects #{}
+           :capabilities #{}
+           :throws #{}}}
+         :constraints []
+         :dynamic-boundaries []
+         :casts []
+         :layout-facts :not-applicable
+         :diagnostics []}
+        typed-request
+        (c6c10-add-digest-request
+         (get core-input-request :state)
+         {:domain :gravity/c7-typed-core-v1
+          :artifact typed-core})
+        effect-graph
+        {:artifact :gravity/effect-graph
+         :module module
+         :nodes (c6c10-effect-graph-nodes nodes {})
+         :functions
+         {root-node-id
+          {:declared #{}
+           :inferred #{}
+           :latent #{}
+           :throws #{}}}
+         :namespace {:declared #{} :inferred #{}}
+         :build-effects []
+         :replay-required #{}
+         :diagnostics []}
+        effect-request
+        (c6c10-add-digest-request
+         (get typed-request :state)
+         {:domain :gravity/c8-effect-graph-v1
+          :artifact effect-graph})
+        ownership-analysis
+        {:artifact :gravity/ownership-analysis
+         :module module
+         :owners (c6c10-owner-table nodes owner-domain-id {})
+         :moves []
+         :borrows []
+         :regions {}
+         :arenas {}
+         :linear {}
+         :transfers []
+         :diagnostics []}
+        ownership-request
+        (c6c10-add-digest-request
+         (get effect-request :state)
+         {:domain :gravity/c9-ownership-analysis-v1
+          :artifact ownership-analysis})
+        capability-closure
+        {:artifact :gravity/c6-c10-pure-capability-closure
+         :module module
+         :required #{}
+         :granted #{}
+         :provider-bindings {}
+         :status :not-required}
+        capability-request
+        (c6c10-add-digest-request
+         (get ownership-request :state)
+         {:domain :gravity/c8-capability-closure-v1
+          :artifact capability-closure})]
+    {:state (get capability-request :state)
+     :core-input-id core-input-id
+     :typed-core typed-core
+     :typed-core-key (get typed-request :ref)
+     :effect-graph effect-graph
+     :effect-graph-key (get effect-request :ref)
+     :ownership-analysis ownership-analysis
+     :ownership-analysis-key (get ownership-request :ref)
+     :pure-capability-closure capability-closure
+     :pure-capability-closure-key (get capability-request :ref)}))
+
+(defn c6c10-first-metadata-form [forms]
+  (if (= (count forms) 0)
+    nil
+    (let [form (first forms)]
+      (if (= (get form :kind) :metadata-wrapper)
+        form
+        (if (> (count (get form :metadata)) 0)
+          form
+          (if (= (get form :tag) nil)
+            (c6c10-first-metadata-form (rest forms))
+            form))))))
+
+(defn c6c10-all-edges-precede? [edges]
+  (if (= (count edges) 0)
+    true
+    (if (get (first edges) :dependency-precedes-consumer?)
+      (c6c10-all-edges-precede? (rest edges))
+      false)))
+
+(defn c6c10-all-lexical-bindings-resolve-loop? [all-nodes nodes index]
+  (if (= (count nodes) 0)
+    true
+    (let [node (first nodes)]
+      (if (= (get node :source-operation) :local)
+        (let [binding-id (get (get node :attributes) :resolved-binding)
+              binding-node (c6c10-node-by-id all-nodes binding-id)
+              binding-index (c6c10-node-index all-nodes binding-id 0)]
+          (if (= (count (get node :operands)) 1)
+            (if (= (first (get node :operands)) binding-id)
+              (if (= (get binding-node :kind) :binding)
+                (if (< binding-index index)
+                  (c6c10-all-lexical-bindings-resolve-loop?
+                   all-nodes (rest nodes) (+ index 1))
+                  false)
+                false)
+              false)
+            false))
+        (c6c10-all-lexical-bindings-resolve-loop?
+         all-nodes (rest nodes) (+ index 1))))))
+
+(defn c6c10-all-lexical-bindings-resolve? [nodes]
+  (c6c10-all-lexical-bindings-resolve-loop? nodes nodes 0))
+
+(defn c6c10-node-origin-map [nodes result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)]
+      (c6c10-node-origin-map
+       (rest nodes)
+       (assoc result (get node :node-id)
+              (get (get node :source) :origin-id))))))
+
+(defn c6c10-node-safety-proof-records [nodes result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)]
+      (c6c10-node-safety-proof-records
+       (rest nodes)
+       (assoc result (get node :node-id)
+              (get (get node :safety) :proof))))))
+
+(defn c6c10-pass-history []
+  [{:pass :c6-gravity-core-lowering
+    :version "c6-bounded-pure-v1"
+    :owner-document "C6"
+    :input :private-fresh-c2-c3-stage2-plan-envelope
+    :output :gravity-owned-core-nodes
+    :requires [:fresh-c2 :fresh-c3 :genuine-stage2-plan
+               :authoritative-module-projection]
+    :preserves [:source-origin :evaluation-order :profile :source-target]
+    :emits [:core-nodes :dependency-order-graph :origin-closure]
+    :invalidates [:all-downstream-facts-on-core-change]
+    :not-applicable [:domain-ir :optimization :runtime-check-lowering]
+    :risk :critical
+    :verifier 'c6-c10-verify-checked-core-template
+    :evidence-class :fresh-executable-gravity-replay
+    :minimum-evidence
+    #{:fresh-executable-gravity-replay :positive-negative-conformance
+      :legacy-differential-parity :digest-dag-adversarial-validation}
+    :release-evidence-status :required-outside-semantic-artifact
+    :status :complete-for-bounded-pure-slice}
+   {:pass :c7-gravity-type-derivation
+    :version "c7-bounded-pure-v1"
+    :owner-document "C7"
+    :input :gravity-owned-core-nodes
+    :output :gravity-owned-type-facts
+    :requires [:core-node-graph :closed-scalar-type-domain]
+    :preserves [:source-origin :evaluation-order :profile :source-target]
+    :emits [:typed-core :type-facts]
+    :invalidates [:effect-facts :capability-facts
+                  :ownership-facts :safety-facts]
+    :not-applicable [:generics :protocols :layout :schema :casts]
+    :risk :critical
+    :verifier 'c6-c10-verify-checked-core-template
+    :evidence-class :fresh-executable-gravity-replay
+    :minimum-evidence
+    #{:fresh-executable-gravity-replay :positive-negative-conformance
+      :legacy-differential-parity :digest-dag-adversarial-validation}
+    :release-evidence-status :required-outside-semantic-artifact
+    :status :complete-for-bounded-pure-slice}
+   {:pass :c8-gravity-pure-effect-capability-closure
+    :version "c8-bounded-pure-v1"
+    :owner-document "C8"
+    :input :gravity-owned-typed-core
+    :output :gravity-owned-effect-capability-facts
+    :requires [:typed-core :empty-declared-effects
+               :empty-declared-capabilities]
+    :preserves [:source-origin :evaluation-order :types :profile]
+    :emits [:effect-graph :effect-facts :capability-facts
+            :pure-capability-closure]
+    :invalidates [:ownership-facts :safety-facts]
+    :not-applicable [:build-effects :replay-effects :provider-selection]
+    :risk :critical
+    :verifier 'c6-c10-verify-checked-core-template
+    :evidence-class :fresh-executable-gravity-replay
+    :minimum-evidence
+    #{:fresh-executable-gravity-replay :positive-negative-conformance
+      :legacy-differential-parity :digest-dag-adversarial-validation}
+    :release-evidence-status :required-outside-semantic-artifact
+    :status :complete-for-bounded-pure-slice}
+   {:pass :c9-gravity-persistent-ownership-derivation
+    :version "c9-bounded-pure-v1"
+    :owner-document "C9"
+    :input :gravity-owned-effected-core
+    :output :gravity-owned-ownership-facts
+    :requires [:typed-core :pure-effect-closure]
+    :preserves [:source-origin :evaluation-order :types :effects]
+    :emits [:ownership-analysis :ownership-facts]
+    :invalidates [:safety-facts]
+    :not-applicable [:borrow :move :consume :region :arena
+                     :linear-resource :transfer]
+    :risk :critical
+    :verifier 'c6-c10-verify-checked-core-template
+    :evidence-class :fresh-executable-gravity-replay
+    :minimum-evidence
+    #{:fresh-executable-gravity-replay :positive-negative-conformance
+      :legacy-differential-parity :digest-dag-adversarial-validation}
+    :release-evidence-status :required-outside-semantic-artifact
+    :status :complete-for-bounded-pure-slice}
+   {:pass :c10-gravity-pure-safety-proof-derivation
+    :version "c10-bounded-pure-v1"
+    :owner-document "C10"
+    :input :gravity-owned-ownership-checked-core
+    :output :gravity-owned-safety-facts
+    :requires [:typed-core :type-facts :effect-facts :capability-facts
+               :ownership-facts :profile-facts :source-origin-table
+               :origin-closure :pure-effect-closure :ownership-analysis]
+    :preserves [:source-origin :evaluation-order :types :effects
+                :ownership]
+    :emits [:safety-facts :proof-records]
+    :invalidates [:proofs-on-source-change :proofs-on-operand-change
+                  :proofs-on-type-change :proofs-on-effect-change
+                  :proofs-on-capability-change :proofs-on-ownership-change
+                  :proofs-on-profile-change :proofs-on-target-change
+                  :proofs-on-rule-version-change]
+    :not-applicable [:runtime-checks :unsafe-islands :taint :ffi]
+    :risk :critical
+    :verifier 'c6-c10-verify-checked-core-template
+    :evidence-class :fresh-executable-gravity-replay
+    :minimum-evidence
+    #{:fresh-executable-gravity-replay :positive-negative-conformance
+      :legacy-differential-parity :digest-dag-adversarial-validation}
+    :release-evidence-status :required-outside-semantic-artifact
+    :status :complete-for-bounded-pure-slice}])
+
+(defn c6c10-runtime-scope-contract []
+  {:artifact :gravity/c6-c10-checked-core-scope-contract
+   :profiles [:hosted]
+   :safety-modes [:safe]
+   :source-targets [:jvm]
+   :source-operations [:literal :quote :local :let :let-binding
+                       :do :if :truthy :integer-eq
+                       :integer-lt :integer-lte :integer-gt :integer-gte
+                       :implicit-nil :function]
+   :scalar-literals [:nil :string :boolean :integer
+                     :character :keyword :symbol]
+   :intrinsic-effects #{}
+   :intrinsic-capabilities #{}
+   :ownership :persistent-immutable
+   :safety :proven-safe
+   :whole-language? false})
+
+(defn c6c10-envelope-diagnostic-source [input]
+  (let [front-end (get input :front-end-products)
+        source-unit (get front-end :source-unit-record)
+        forms (get front-end :form-tree)
+        roots (get front-end :top-level-form-ids)
+        namespace-form
+        (if (> (count roots) 0)
+          (c6c10-form-by-id forms (first roots))
+          nil)
+        syntaxes (get front-end :c3-syntax-object-stream)
+        namespace-syntax-id
+        (if (> (count syntaxes) 0)
+          (get (first syntaxes) :syntax/id)
+          nil)
+        source-base
+        (if (map? namespace-form) namespace-form source-unit)
+        source
+        (c6c10-merge-maps
+         source-base
+         {:source-content-hash (get input :source-content-hash)
+          :syntax-id namespace-syntax-id})]
+    source))
+
+(defn c6c10-envelope-rejection
+  [rule stage message-key input facts remediation]
+  (let [source (c6c10-envelope-diagnostic-source input)]
+    (c6c10-diagnostic-rejection
+     {:next-ordinal 0 :requests []}
+     rule stage message-key source facts remediation)))
+
+(defn c6c10-input-form-rejection
+  [rule stage message-key input form facts remediation]
+  (let [front-end (get input :front-end-products)
+        syntaxes (get front-end :c3-syntax-object-stream)
+        exact-syntax
+        (c6c10-top-level-syntax-by-form-id
+         syntaxes (get form :form-id))
+        syntax
+        (if (= exact-syntax nil)
+          (if (= (count syntaxes) 0)
+            nil
+            (first (c6c10-reverse syntaxes)))
+          exact-syntax)
+        envelope
+        {:source-content-hash (get input :source-content-hash)
+         :form-tree (get front-end :form-tree)
+         :entrypoint-syntax-id
+         (if (= syntax nil) :not-applicable (get syntax :syntax/id))
+         :module
+         (get (get (get input :stage2-plan) :module) :module)
+         :plan-id (get (get input :stage2-plan) :plan-id)}]
+    (c6c10-form-rejection
+     {:next-ordinal 0 :requests []}
+     envelope form rule stage message-key facts remediation)))
+
+(defn c6c10-envelope-shape-valid? [input]
+  (if (map? input)
+    (if (= (set (keys input))
+           #{:kind :source-content-hash :front-end-products
+             :stage2-plan :authoritative-module :binding-pins
+             :carrier-validation :scope})
+      (if (= (get input :kind)
+             :gravity/private-fresh-c2-c3-stage2-plan-envelope)
+        (= (get input :scope)
+           :bounded-pure-hosted-safe-jvm-source)
+        false)
+      false)
+    false))
+
+(defn c6c10-exact-map-keys? [value expected]
+  (if (map? value) (= (set (keys value)) expected) false))
+
+(defn c6c10-private-front-end-shape? [front-end]
+  (if (c6c10-exact-map-keys?
+       front-end
+       #{:artifact :status :source-unit-record :source-unit-id
+         :token-stream :form-tree :top-level-form-ids
+         :syntax-seed-stream :reader-source-map
+         :literal-decoding-records :semantic-error-deferment-record
+         :reader-extension-invocation-records :reader-diagnostics
+         :incremental-reader-hashes :reader-product-integrity
+         :c3-artifact-id :c3-syntax-object-stream
+         :c3-capability-proof :records :forms})
+    (c6c10-exact-map-keys?
+     (get front-end :source-unit-record)
+     #{:artifact :encoding :reader-options :bytes-hash
+       :extension-policy :enabled-features})
+    false))
+
+(defn c6c10-private-plan-shape? [plan]
+  (if (c6c10-exact-map-keys?
+       plan
+       #{:kind :compatibility-kind :diagnostics :plan-id :functions
+         :effect-summary :source :binding-table :instruction-summary
+         :module :compiler :entrypoint})
+    (if (c6c10-exact-map-keys? (get plan :source) #{:sha256})
+      (if (c6c10-exact-map-keys?
+           (get plan :module)
+           #{:capabilities :module :exports :effects
+             :safety :target :profile})
+        (let [function-plan (get (get plan :functions) 'main)
+              binding (get function-plan :binding)]
+          (if (c6c10-exact-map-keys?
+               function-plan
+               #{:name :instructions :params :definition-form :binding
+                 :body-form-count :arity :body})
+            (c6c10-exact-map-keys?
+             binding
+             #{:capabilities :name :effects :kind :target
+               :namespace :visibility :profile})
+            false))
+        false)
+      false)
+    false))
+
+(defn c6c10-private-binding-pins-shape? [pins]
+  (c6c10-exact-map-keys?
+   pins
+   #{:c2-semantic-hash :c3-semantic-hash :plan-semantic-hash
+     :reader-integrity-hash :builder-source-hash
+     :builder-plan-hash :builder-function-hash}))
+
+(defn c6c10-nonnegative-at-most? [value maximum]
+  (if (integer? value)
+    (if (< value 0) false (<= value maximum))
+    false))
+
+(defn c6c10-carrier-validation-shape? [validation]
+  (if (c6c10-exact-map-keys?
+       validation
+       #{:status :maximum-carrier-nodes :maximum-carrier-depth
+         :maximum-container-width :maximum-scalar-bytes
+         :maximum-integer-bits :observed-carrier-nodes
+         :observed-carrier-depth :observed-container-width
+         :observed-scalar-bytes :observed-integer-bits})
+    (if (= (get validation :status) :passed)
+      (if (= (get validation :maximum-carrier-nodes) 65536)
+        (if (= (get validation :maximum-carrier-depth) 64)
+          (if (= (get validation :maximum-container-width) 128)
+            (if (= (get validation :maximum-scalar-bytes) 65536)
+              (if (= (get validation :maximum-integer-bits) 256)
+                (if (c6c10-nonnegative-at-most?
+                     (get validation :observed-carrier-nodes) 65536)
+                  (if (c6c10-nonnegative-at-most?
+                       (get validation :observed-carrier-depth) 64)
+                    (if (c6c10-nonnegative-at-most?
+                         (get validation :observed-container-width) 128)
+                      (if (c6c10-nonnegative-at-most?
+                           (get validation :observed-scalar-bytes) 65536)
+                        (c6c10-nonnegative-at-most?
+                         (get validation :observed-integer-bits) 256)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c6c10-authoritative-module-shape? [module]
+  (c6c10-exact-map-keys?
+   module
+   #{:module :profile :target :effects :capabilities :exports
+     :safety :requires :imports :providers :metadata :doc :forms}))
+
+(defn c6c10-authoritative-module-matches-plan?
+  [authoritative plan-module front-end]
+  (if (c6c10-authoritative-module-shape? authoritative)
+    (if (= (get authoritative :module) (get plan-module :module))
+      (if (= (get authoritative :profile) (get plan-module :profile))
+        (if (= (get authoritative :target) (get plan-module :target))
+          (if (= (get authoritative :effects) (get plan-module :effects))
+            (if (= (get authoritative :capabilities)
+                   (get plan-module :capabilities))
+              (if (= (get authoritative :exports)
+                     (get plan-module :exports))
+                (if (= (get authoritative :safety)
+                       (get plan-module :safety))
+                  (= (get authoritative :forms)
+                     (vec (rest (get front-end :forms))))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c6c10-build-accepted-template [input]
+  (let [front-end (get input :front-end-products)
+        plan (get input :stage2-plan)
+        module (get plan :module)
+        functions (get plan :functions)
+        function-plan (get functions 'main)
+        forms (get front-end :form-tree)
+        top-level-form-ids (get front-end :top-level-form-ids)
+        syntaxes (get front-end :c3-syntax-object-stream)
+        function-form
+        (if (= (count top-level-form-ids) 2)
+          (c6c10-form-by-id forms (second top-level-form-ids))
+          nil)
+        function-syntax
+        (if (= function-form nil)
+          nil
+          (c6c10-top-level-syntax-by-form-id
+           syntaxes (get function-form :form-id)))
+        working-envelope
+        {:source-content-hash (get input :source-content-hash)
+         :form-tree forms
+         :entrypoint-syntax-id (get function-syntax :syntax/id)
+         :module (get module :module)
+         :plan-id (get plan :plan-id)}
+        initial-state {:next-ordinal 0 :requests []}
+        function-product
+        (c6c10-build-function-product
+         initial-state working-envelope function-plan function-form)]
+    (if (= (get function-product :status) :rejected)
+      function-product
+      (let [nodes (get function-product :nodes)
+            root-node-id (get function-product :root-node-id)
+            edges (c6c10-build-dependency-edges nodes)
+            dependencies-precede? (c6c10-all-edges-precede? edges)
+            lexical-bindings-resolve?
+            (c6c10-all-lexical-bindings-resolve? nodes)]
+        (if (if dependencies-precede? lexical-bindings-resolve? false)
+          (let [
+            owner-request
+            (c6c10-add-digest-request
+             (get function-product :state)
+             {:domain :gravity/c9-persistent-shared-owner-domain-v1
+              :function-node-id root-node-id})
+            owner-domain-id (get owner-request :ref)
+            fact-product
+            (c6c10-build-fact-tables
+             nodes
+             (c6c10-empty-fact-product
+              (get owner-request :state) owner-domain-id))
+            pass-artifacts
+            (c6c10-build-pass-artifacts
+             (get fact-product :state) working-envelope nodes
+             (get function-product :binding-records)
+             root-node-id (get fact-product :type-ids) owner-domain-id)
+            operation-set (c6c10-collect-operation-set nodes [])
+            source-core-input
+            {:module (get module :module)
+             :plan-id (get plan :plan-id)
+             :entrypoint 'main
+             :operation-set operation-set
+             :declared-effects #{}
+             :declared-capabilities #{}}
+            dependency-order-graph
+            {:artifact :gravity/c6-c10-dependency-order-graph
+             :node-order (c6c10-node-id-vector nodes [])
+             :edges edges
+             :all-dependencies-precede-consumers?
+             dependencies-precede?
+             :all-lexical-bindings-resolve? lexical-bindings-resolve?
+             :status
+             (if (if dependencies-precede? lexical-bindings-resolve? false)
+               :passed
+               :failed)}
+            mapping-input
+            {:domain :gravity/c6-c10-origin-mapping-v1
+             :source-content-hash (get input :source-content-hash)
+             :core-node-origin-map (c6c10-node-origin-map nodes {})
+             :origin-table (get function-product :origin-table)
+             :lexical-binding-records
+             (get function-product :binding-records)}
+            mapping-request
+            (c6c10-add-digest-request
+             (get pass-artifacts :state) mapping-input)
+            mapping-id (get mapping-request :ref)
+            provenance-input
+            {:domain :gravity/c6-c10-path-neutral-provenance-v1
+             :source-content-hash (get input :source-content-hash)
+             :binding-pins (get input :binding-pins)
+             :mapping-id mapping-id
+             :origin-closure (get function-product :origin-closure)}
+            provenance-request
+            (c6c10-add-digest-request
+             (get mapping-request :state) provenance-input)
+            provenance-binding-id (get provenance-request :ref)
+            artifact-base
+            {:kind :gravity/p15-s23-stage2-gravity-checked-core-artifact
+             :schema-version 1
+             :status :complete-for-bounded-pure-hosted-safe-jvm-slice
+             :scope (c6c10-runtime-scope-contract)
+             :source-content-hash (get input :source-content-hash)
+             :source-core-input source-core-input
+             :entrypoint 'main
+             :profile :hosted
+             :source-target :jvm
+             :core-nodes nodes
+             :root-node-ids [root-node-id]
+             :mapping-id mapping-id
+             :provenance-binding-id provenance-binding-id
+             :instruction-origin-sidecar
+             {:mapping-id mapping-id
+              :provenance-binding-id provenance-binding-id
+              :node-origin-map (c6c10-node-origin-map nodes {})}
+             :dependency-order-graph dependency-order-graph
+             :lexical-binding-records
+             (get function-product :binding-records)
+             :source-origin-table (get function-product :origin-table)
+             :origin-closure (get function-product :origin-closure)
+             :type-facts (get fact-product :type-facts)
+             :effect-facts (get fact-product :effect-facts)
+             :capability-facts (get fact-product :capability-facts)
+             :ownership-facts (get fact-product :ownership-facts)
+             :safety-facts (get fact-product :safety-facts)
+             :profile-facts (get fact-product :profile-facts)
+             :proof-records
+             (c6c10-node-safety-proof-records nodes {})
+             :typed-core (get pass-artifacts :typed-core)
+             :typed-core-key (get pass-artifacts :typed-core-key)
+             :effect-graph (get pass-artifacts :effect-graph)
+             :effect-graph-key (get pass-artifacts :effect-graph-key)
+             :capability-proof-records []
+             :pure-capability-closure
+             (get pass-artifacts :pure-capability-closure)
+             :pure-capability-closure-key
+             (get pass-artifacts :pure-capability-closure-key)
+             :ownership-analysis
+             (get pass-artifacts :ownership-analysis)
+             :ownership-analysis-key
+             (get pass-artifacts :ownership-analysis-key)
+             :pass-history (c6c10-pass-history)
+             :authenticated-input
+             {:kind :gravity/c6-c10-authenticated-input
+              :source-content-hash (get input :source-content-hash)
+              :plan-id (get plan :plan-id)
+              :binding-pins (get input :binding-pins)}
+             :bounds
+             {:maximum-functions 1
+              :maximum-forms 128
+              :maximum-plan-nodes 128
+              :maximum-digest-requests 2048
+              :reserved-verifier-diagnostic-requests 1
+              :maximum-graph-depth 48
+              :maximum-carrier-nodes 65536
+              :maximum-carrier-depth 64
+              :maximum-container-width 128
+              :maximum-scalar-bytes 65536
+              :maximum-integer-bits 256
+              :observed-forms (count forms)
+              :observed-plan-nodes
+              (get function-product :plan-node-count)
+              :observed-derived-nodes (count nodes)
+              :observed-graph-depth
+              (get function-product :maximum-depth)
+              :input-carrier-validation
+              (get input :carrier-validation)}
+             :semantic-provenance
+             {:source-content-hash (get input :source-content-hash)
+              :binding-pins (get input :binding-pins)}
+             :diagnostics []
+             :mir-derived? false
+             :whole-language? false
+             :clojure-seed-boundary? true
+             :self-hosted? false}
+            artifact-request
+            (c6c10-add-digest-request
+             (get provenance-request :state)
+             {:domain :gravity/c6-c10-checked-core-artifact-v1
+              :semantic-artifact artifact-base})
+            artifact-id (get artifact-request :ref)
+            artifact (assoc artifact-base :artifact-id artifact-id)
+            final-state (get artifact-request :state)]
+        (if (if (> (count nodes) 128)
+              true
+              (if (> (get function-product :plan-node-count) 128)
+                true
+                (if (> (get function-product :maximum-depth) 48)
+                  true
+                  (> (+ (count (get final-state :requests)) 1)
+                     2048))))
+          (c6c10-envelope-rejection
+           :C6-VERIFY :lower-to-core :diagnostic/c6-verify input
+           {:missing-fact :bounded-gravity-checked-core-construction
+            :observed-derived-nodes (count nodes)
+            :observed-plan-nodes
+            (get function-product :plan-node-count)
+            :observed-graph-depth
+            (get function-product :maximum-depth)
+            :observed-digest-requests
+            (count (get final-state :requests))
+            :reserved-verifier-diagnostic-requests 1}
+           :reduce-source-program-size)
+          {:status :accepted
+           :artifact-template artifact
+           :digest-requests (get final-state :requests)
+           :digest-graph-root artifact-id
+           :digest-graph-roots [artifact-id]
+           :diagnostics []
+           :authority
+           {:semantic-owner :gravity-source
+            :host-role :generic-validation-hashing-and-instantiation
+            :scope :bounded-pure-c6-c10
+            :self-hosted? false}}))
+          (c6c10-envelope-rejection
+           :C6-VERIFY :lower-to-core :diagnostic/c6-verify input
+           {:missing-fact :validated-dependency-and-lexical-order
+            :all-dependencies-precede-consumers? dependencies-precede?
+            :all-lexical-bindings-resolve? lexical-bindings-resolve?}
+           :regenerate-validated-core-node-order))))))
+
+(defn c6c10-upstream-diagnostic-rejection [diagnostics]
+  {:status :rejected
+   :fatal? true
+   :diagnostics diagnostics
+   :artifact-template nil
+   :digest-requests []
+   :digest-graph-roots []
+   :propagated-upstream? true
+   :containment {:fatal? true
+                 :stop-after :read-and-syntax
+                 :downstream-artifacts-forbidden true}})
+
+(defn c6c10-map-fields-equal? [left right fields]
+  (if (= (count fields) 0)
+    true
+    (let [field (first fields)]
+      (if (= (get left field) (get right field))
+        (c6c10-map-fields-equal? left right (rest fields))
+        false))))
+
+(defn c6c10-node-keysets-equal? [expected actual]
+  (if (= (count expected) (count actual))
+    (if (= (count expected) 0)
+      true
+      (if (map? (first actual))
+        (if (= (set (keys (first expected)))
+               (set (keys (first actual))))
+          (c6c10-node-keysets-equal? (rest expected) (rest actual))
+          false)
+        false))
+    false))
+
+(defn c6c10-node-fields-equal? [expected actual fields]
+  (if (= (count expected) (count actual))
+    (if (= (count expected) 0)
+      true
+      (if (c6c10-map-fields-equal? (first expected) (first actual) fields)
+        (c6c10-node-fields-equal?
+         (rest expected) (rest actual) fields)
+        false))
+    false))
+
+(defn c6c10-template-structure-equal? [expected actual]
+  (if (map? actual)
+    (if (= (set (keys expected)) (set (keys actual)))
+      (if (c6c10-map-fields-equal?
+           expected actual
+           [:kind :schema-version :status :scope :source-content-hash
+            :source-core-input :entrypoint :profile :source-target
+            :root-node-ids :dependency-order-graph
+            :lexical-binding-records :pass-history :authenticated-input
+            :bounds :diagnostics :mir-derived? :whole-language?
+            :clojure-seed-boundary? :self-hosted?])
+        (let [expected-nodes (get expected :core-nodes)
+              actual-nodes (get actual :core-nodes)]
+          (if (vector? actual-nodes)
+            (if (c6c10-node-keysets-equal? expected-nodes actual-nodes)
+              (c6c10-node-fields-equal?
+               expected-nodes actual-nodes
+               [:node-id :path :kind :source-operation :plan-node?
+                :plan-depth :operands :attributes])
+              false)
+            false))
+        false)
+      false)
+    false))
+
+(defn c6c10-template-origin-equal? [expected actual]
+  (if (c6c10-map-fields-equal?
+       expected actual
+       [:mapping-id :provenance-binding-id :instruction-origin-sidecar
+        :source-origin-table :origin-closure :semantic-provenance])
+    (c6c10-node-fields-equal?
+     (get expected :core-nodes) (get actual :core-nodes) [:source])
+    false))
+
+(defn c6c10-template-type-equal? [expected actual]
+  (if (c6c10-map-fields-equal?
+       expected actual [:type-facts :typed-core :typed-core-key])
+    (c6c10-node-fields-equal?
+     (get expected :core-nodes) (get actual :core-nodes) [:type])
+    false))
+
+(defn c6c10-template-effect-equal? [expected actual]
+  (if (c6c10-map-fields-equal?
+       expected actual
+       [:effect-facts :capability-facts :effect-graph :effect-graph-key
+        :capability-proof-records :pure-capability-closure
+        :pure-capability-closure-key])
+    (c6c10-node-fields-equal?
+     (get expected :core-nodes) (get actual :core-nodes)
+     [:effects :capabilities])
+    false))
+
+(defn c6c10-template-ownership-profile-equal? [expected actual]
+  (if (c6c10-map-fields-equal?
+       expected actual
+       [:ownership-facts :ownership-analysis :ownership-analysis-key
+        :profile-facts])
+    (c6c10-node-fields-equal?
+     (get expected :core-nodes) (get actual :core-nodes)
+     [:ownership :profile])
+    false))
+
+(defn c6c10-template-safety-equal? [expected actual]
+  (if (c6c10-map-fields-equal?
+       expected actual [:safety-facts :proof-records])
+    (c6c10-node-fields-equal?
+     (get expected :core-nodes) (get actual :core-nodes) [:safety])
+    false))
+
+(defn c6c10-template-verification-rejection
+  [input expected-result rule stage message-key missing-fact remediation]
+  (let [expected-requests (get expected-result :digest-requests)
+        expected-artifact-id (get expected-result :digest-graph-root)
+        source
+        (c6c10-merge-maps
+         (c6c10-envelope-diagnostic-source input)
+         {:diagnostic-subject-id expected-artifact-id
+          :involved-artifacts [expected-artifact-id]})]
+    (c6c10-diagnostic-rejection
+     {:next-ordinal (count expected-requests)
+      :requests expected-requests}
+     rule stage message-key source
+     {:missing-fact missing-fact
+      :expected-artifact-id expected-artifact-id}
+     remediation)))
+
+(defn c6c10-first-node-field-mismatch
+  [expected actual fields]
+  (if (vector? expected)
+    (if (vector? actual)
+      (if (= (count expected) 0)
+        nil
+        (if (= (count actual) 0)
+          {:expected (first expected) :actual nil}
+          (if (c6c10-map-fields-equal? (first expected) (first actual) fields)
+            (c6c10-first-node-field-mismatch
+             (rest expected) (rest actual) fields)
+            {:expected (first expected) :actual (first actual)})))
+      {:expected (first expected) :actual nil})
+    {:expected nil :actual nil}))
+
+(defn c6c10-first-map-value-mismatch-key [expected actual map-keys]
+  (if (= (count map-keys) 0)
+    nil
+    (let [map-key (first map-keys)]
+      (if (= (get expected map-key) (get actual map-key))
+        (c6c10-first-map-value-mismatch-key
+         expected actual (rest map-keys))
+        map-key))))
+
+(defn c6c10-first-extra-map-key [expected actual actual-keys]
+  (if (= (count actual-keys) 0)
+    nil
+    (if (contains? expected (first actual-keys))
+      (c6c10-first-extra-map-key expected actual (rest actual-keys))
+      (first actual-keys))))
+
+(defn c6c10-first-map-mismatch-key [expected actual]
+  (if (map? expected)
+    (if (map? actual)
+      (let [value-mismatch
+            (c6c10-first-map-value-mismatch-key
+             expected actual (keys expected))]
+        (if (= value-mismatch nil)
+          (c6c10-first-extra-map-key expected actual (keys actual))
+          value-mismatch))
+      (first (keys expected)))
+    nil))
+
+(defn c6c10-first-table-mismatch-key
+  [expected actual table-fields]
+  (if (= (count table-fields) 0)
+    nil
+    (let [field (first table-fields)
+          expected-table (get expected field)
+          actual-table (get actual field)]
+      (if (= expected-table actual-table)
+        (c6c10-first-table-mismatch-key
+         expected actual (rest table-fields))
+        (c6c10-first-map-mismatch-key expected-table actual-table)))))
+
+(defn c6c10-family-mismatch-record
+  [expected actual node-fields table-fields]
+  (let [node-mismatch
+        (c6c10-first-node-field-mismatch
+         (get expected :core-nodes) (get actual :core-nodes) node-fields)]
+    (if (= node-mismatch nil)
+      (let [table-node-id
+            (c6c10-first-table-mismatch-key
+             expected actual table-fields)
+            fallback-node (first (get expected :core-nodes))
+            expected-node
+            (if (= table-node-id nil)
+              fallback-node
+              (c6c10-node-by-id
+               (get expected :core-nodes) table-node-id))
+            actual-node
+            (if (= expected-node nil)
+              (first (get actual :core-nodes))
+              (c6c10-node-by-id
+               (get actual :core-nodes) (get expected-node :node-id)))]
+        {:expected expected-node :actual actual-node})
+      node-mismatch)))
+
+(defn c6c10-family-verification-facts
+  [family missing-fact expected-node actual-node]
+  (let [node-id
+        (if (= expected-node nil)
+          :not-applicable
+          (get expected-node :node-id))
+        base {:missing-fact missing-fact :core-node-id node-id}]
+    (if (= family :type)
+      (c6c10-merge-maps
+       base
+       {:expected-type
+        (if (= expected-node nil)
+          :not-applicable
+          (get expected-node :type))
+        :actual-type
+        (if (= actual-node nil)
+          :not-applicable
+          (get actual-node :type))
+        :relevant-binding-id
+        (if (= actual-node nil)
+          :not-applicable
+          (if (= (get (get actual-node :attributes) :resolved-binding) nil)
+            :not-applicable
+            (get (get actual-node :attributes) :resolved-binding)))})
+      (if (= family :effect)
+        (c6c10-merge-maps
+         base
+         {:expected-effects
+          (if (= expected-node nil) #{} (get expected-node :effects))
+          :actual-effects
+          (if (= actual-node nil) :not-applicable (get actual-node :effects))
+          :expected-capabilities
+          (if (= expected-node nil) #{} (get expected-node :capabilities))
+          :actual-capabilities
+          (if (= actual-node nil)
+            :not-applicable
+            (get actual-node :capabilities))})
+        (if (= family :safety)
+          (c6c10-merge-maps
+           base
+           {:operation-id node-id
+            :specialized-safe-rule
+            (if (= expected-node nil)
+              :not-applicable
+              (get (get (get expected-node :safety) :proof)
+                   :specialized-safe-rule))
+            :safety-mode :safe
+            :proof-id
+            (if (= expected-node nil)
+              :not-applicable
+              (get (get (get expected-node :safety) :proof) :proof-id))
+            :check-id :not-applicable})
+          base)))))
+
+(defn c6c10-template-family-verification-rejection
+  [input expected-result actual family node-fields table-fields
+   rule stage message-key missing-fact remediation]
+  (let [expected (get expected-result :artifact-template)
+        expected-requests (get expected-result :digest-requests)
+        expected-artifact-id (get expected-result :digest-graph-root)
+        mismatch
+        (c6c10-family-mismatch-record
+         expected actual node-fields table-fields)
+        expected-node (get mismatch :expected)
+        actual-node (get mismatch :actual)
+        source-base
+        (if (= expected-node nil)
+          (get (get input :front-end-products) :source-unit-record)
+          (get expected-node :source))
+        source
+        (c6c10-merge-maps
+         source-base
+         {:source-content-hash (get input :source-content-hash)
+          :diagnostic-subject-id expected-artifact-id
+          :involved-artifacts [expected-artifact-id]
+          :core-node-id
+          (if (= expected-node nil)
+            :not-applicable
+            (get expected-node :node-id))
+          :node-id
+          (if (= expected-node nil)
+            :not-applicable
+            (get expected-node :node-id))
+          :syntax-id
+          (if (= expected-node nil)
+            :not-applicable
+            (get (get expected-node :source)
+                 :enclosing-syntax-origin-id))})
+        facts
+        (c6c10-family-verification-facts
+         family missing-fact expected-node actual-node)
+        facts (assoc facts :expected-artifact-id expected-artifact-id)]
+    (c6c10-diagnostic-rejection
+     {:next-ordinal (count expected-requests)
+      :requests expected-requests}
+     rule stage message-key source facts remediation)))
+
+(defn c6-c10-build-checked-core-template [input]
+  (if (c6c10-envelope-shape-valid? input)
+    (let [front-end (get input :front-end-products)
+          plan (get input :stage2-plan)
+          module (get plan :module)
+          authoritative-module (get input :authoritative-module)
+          source-unit (get front-end :source-unit-record)
+          source-content-hash (get input :source-content-hash)
+          forms (get front-end :form-tree)
+          roots (get front-end :top-level-form-ids)
+          syntaxes (get front-end :c3-syntax-object-stream)
+          functions (get plan :functions)
+          metadata-form (c6c10-first-metadata-form forms)
+          reader-diagnostics (get front-end :reader-diagnostics)
+          source-binding-valid?
+          (if (= source-content-hash (get source-unit :bytes-hash))
+            (if (= source-content-hash
+                   (get (get plan :source) :sha256))
+              true
+              false)
+            false)
+          front-end-shape-valid?
+          (if (c6c10-private-front-end-shape? front-end)
+            (if (= (get front-end :artifact)
+                 :gravity/p15-s23-stage2-c2-c3-front-end-products)
+              (if (= (get front-end :status) :complete)
+                (if (vector? forms)
+                  (if (vector? roots)
+                    (if (vector? syntaxes)
+                      (if (> (count forms) 0)
+                        (if (<= (count forms) 128)
+                          (if (= (count roots) (count syntaxes))
+                            (c6c10-exhaustive-top-level-program?
+                             forms roots syntaxes
+                             (get authoritative-module :module))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          plan-shape-valid?
+          (if (c6c10-private-plan-shape? plan)
+            (if (= (get plan :kind)
+                 :gravity/stage2-hosted-core-compiled-plan)
+              (if (= (get module :exports) ['main])
+                (if (map? functions)
+                  (if (= (count functions) 1)
+                    (map? (get functions 'main))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          module-contract-valid?
+          (if (c6c10-authoritative-module-matches-plan?
+               authoritative-module module front-end)
+            (if (= (count (get authoritative-module :requires)) 0)
+              (if (= (count (get authoritative-module :imports)) 0)
+                (if (= (count (get authoritative-module :providers)) 0)
+                  (if (= (count (get authoritative-module :metadata)) 0)
+                    (= (get authoritative-module :doc) nil)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          pins-valid?
+          (c6c10-private-binding-pins-shape? (get input :binding-pins))
+          carrier-valid?
+          (c6c10-carrier-validation-shape?
+           (get input :carrier-validation))]
+      (if (> (count reader-diagnostics) 0)
+        (c6c10-upstream-diagnostic-rejection reader-diagnostics)
+        (if source-binding-valid?
+          (if front-end-shape-valid?
+            (if plan-shape-valid?
+              (if module-contract-valid?
+               (if pins-valid?
+                (if carrier-valid?
+                (if (= (get module :profile) :hosted)
+                (if (= (get module :target) :jvm)
+                  (if (= (get module :safety) :safe)
+                    (if (= (count (get module :effects)) 0)
+                      (if (= (count (get module :capabilities)) 0)
+                        (if (= metadata-form nil)
+                          (c6c10-build-accepted-template input)
+                          (c6c10-input-form-rejection
+                           :C6-LOWERING-GAP :lower-to-core
+                           :diagnostic/c6-lowering-gap input
+                           metadata-form
+                           {:missing-fact
+                            :metadata-preserving-pure-core-lowering
+                            :offending-form-id
+                            (get metadata-form :form-id)
+                            :offending-form-kind
+                            (get metadata-form :kind)}
+                           :remove-metadata-from-bounded-pure-slice))
+                        (c6c10-envelope-rejection
+                         :C6-LOWERING-GAP :lower-to-core
+                         :diagnostic/c6-lowering-gap input
+                         {:missing-fact :empty-declared-capabilities
+                          :observed-capabilities
+                          (get module :capabilities)}
+                         :remove-capability-requirements))
+                      (c6c10-envelope-rejection
+                       :C6-LOWERING-GAP :lower-to-core
+                       :diagnostic/c6-lowering-gap input
+                       {:missing-fact :empty-declared-effects
+                        :observed-effects (get module :effects)}
+                       :remove-effect-requirements))
+                    (c6c10-envelope-rejection
+                     :C6-LOWERING-GAP :lower-to-core
+                     :diagnostic/c6-lowering-gap input
+                     {:missing-fact :safe-source-mode
+                      :observed-safety (get module :safety)}
+                     :use-safe-source-mode))
+                  (c6c10-envelope-rejection
+                   :C6-LOWERING-GAP :lower-to-core
+                   :diagnostic/c6-lowering-gap input
+                   {:missing-fact :bounded-jvm-source-target
+                    :observed-source-target (get module :target)}
+                   :use-jvm-source-target))
+                (c6c10-envelope-rejection
+                 :C6-LOWERING-GAP :lower-to-core
+                 :diagnostic/c6-lowering-gap input
+                 {:missing-fact :bounded-hosted-profile
+                  :observed-profile (get module :profile)}
+                 :use-hosted-profile))
+                (c6c10-envelope-rejection
+                 :C6-VERIFY :lower-to-core :diagnostic/c6-verify input
+                 {:missing-fact :bounded-generic-input-carrier-validation}
+                 :regenerate-bounded-private-envelope))
+                (c6c10-envelope-rejection
+                 :C6-VERIFY :lower-to-core :diagnostic/c6-verify input
+                 {:missing-fact :exact-path-neutral-binding-pins}
+                 :regenerate-pinned-source-bindings))
+               (c6c10-envelope-rejection
+                :C6-LOWERING-GAP :lower-to-core
+                :diagnostic/c6-lowering-gap input
+                {:missing-fact :bounded-module-dependency-closure}
+                :remove-requires-imports-providers-metadata-and-doc))
+              (c6c10-envelope-rejection
+               :C6-CORE-SHAPE :lower-to-core
+               :diagnostic/c6-core-shape input
+               {:missing-fact :single-main-stage2-plan}
+               :regenerate-pinned-stage2-plan))
+            (c6c10-envelope-rejection
+             :C6-CORE-SHAPE :lower-to-core
+             :diagnostic/c6-core-shape input
+             {:missing-fact :bounded-complete-c2-c3-products
+              :observed-form-count (count forms)}
+             :regenerate-fresh-c2-c3-products))
+          (c6c10-envelope-rejection
+           :C6-ORIGIN :lower-to-core :diagnostic/c6-origin input
+           {:missing-fact :source-content-front-end-plan-binding}
+           :regenerate-fresh-bound-products))))
+    (c6c10-envelope-rejection
+     :C6-CORE-SHAPE :lower-to-core :diagnostic/c6-core-shape input
+     {:missing-fact :exact-private-c2-c3-stage2-plan-envelope}
+     :supply-exact-private-envelope)))
+
+(defn c6-c10-verify-checked-core-template [input template requests]
+  (let [expected (c6-c10-build-checked-core-template input)]
+    (if (= (get expected :status) :rejected)
+      expected
+      (let [expected-template (get expected :artifact-template)]
+        (if (c6c10-template-structure-equal? expected-template template)
+          (if (c6c10-template-origin-equal? expected-template template)
+            (if (c6c10-template-type-equal? expected-template template)
+              (if (c6c10-template-effect-equal? expected-template template)
+                (if (c6c10-template-ownership-profile-equal?
+                     expected-template template)
+                  (if (c6c10-template-safety-equal?
+                       expected-template template)
+                    (if (= template expected-template)
+                      (if (= requests (get expected :digest-requests))
+                        {:status :passed
+                         :artifact-template template
+                         :digest-graph-root (get expected :digest-graph-root)
+                         :digest-graph-roots
+                         (get expected :digest-graph-roots)
+                         :request-count (count requests)
+                         :semantic-authority :gravity-source
+                         :checks [:fresh-template-replay
+                                  :exact-digest-request-replay
+                                  :bounded-pure-c6-c10-scope]
+                         :diagnostics []}
+                        (c6c10-template-verification-rejection
+                         input expected :C6-VERIFY :lower-to-core
+                         :diagnostic/c6-verify
+                         :exact-digest-request-replay
+                         :discard-mutated-digest-request-graph))
+                      (c6c10-template-verification-rejection
+                       input expected :C6-VERIFY :lower-to-core
+                       :diagnostic/c6-verify
+                       :exact-gravity-artifact-template-replay
+                       :discard-mutated-artifact-template))
+                    (c6c10-template-family-verification-rejection
+                     input expected template :safety
+                     [:safety] [:safety-facts :proof-records]
+                     :C10-PROOF :safety-analysis
+                     :diagnostic/c10-proof
+                     :exact-gravity-safety-proof-replay
+                     :discard-mutated-safety-proof))
+                  (c6c10-template-family-verification-rejection
+                   input expected template :ownership-profile
+                   [:ownership :profile]
+                   [:ownership-facts :profile-facts]
+                   :C6-VERIFY :lower-to-core
+                   :diagnostic/c6-verify
+                   :exact-gravity-ownership-profile-replay
+                   :discard-mutated-ownership-or-profile-facts))
+                (c6c10-template-family-verification-rejection
+                 input expected template :effect
+                 [:effects :capabilities]
+                 [:effect-facts :capability-facts]
+                 :C8-VERIFY :effect-check :diagnostic/c8-verify
+                 :exact-gravity-effect-capability-replay
+                 :discard-mutated-effect-or-capability-facts))
+              (c6c10-template-family-verification-rejection
+               input expected template :type
+               [:type] [:type-facts]
+               :C7-VERIFY :type-check :diagnostic/c7-verify
+               :exact-gravity-type-replay
+               :discard-mutated-type-facts))
+            (c6c10-template-family-verification-rejection
+             input expected template :origin
+             [:source] []
+             :C6-ORIGIN :lower-to-core :diagnostic/c6-origin
+             :exact-gravity-origin-provenance-replay
+             :discard-mutated-origin-or-provenance))
+          (c6c10-template-verification-rejection
+           input expected :C6-CORE-SHAPE :lower-to-core
+           :diagnostic/c6-core-shape
+           :exact-gravity-core-structure-replay
+           :discard-mutated-core-structure))))))

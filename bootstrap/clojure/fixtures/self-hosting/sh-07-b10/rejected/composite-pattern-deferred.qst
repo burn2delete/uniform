@@ -1,0 +1,20 @@
+(ns self-hosting.sh07-b10.reject.composite-pattern-deferred
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B10
+    :sh07-b10
+    {:expected-rule "C6-LOWERING-GAP"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :composite-pattern-deferred
+     :expected-remediation
+     "Use wildcard, a supported scalar literal, or one symbol binding in SH-07-B10; defer composite patterns to their owning pattern slice."}}))
+
+(def invalid-match
+  (match [1]
+    [value] value
+    _ nil))

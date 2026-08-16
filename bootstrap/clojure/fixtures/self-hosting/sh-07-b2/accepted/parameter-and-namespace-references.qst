@@ -1,0 +1,18 @@
+; SH-07-B2 resolved parameter and current-namespace references.
+(ns self-hosting.sh07-b2.parameter-and-namespace-references
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [global-value read-global identity])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B2
+              :fixture :parameter-and-namespace-references}))
+
+(def global-value 41)
+
+(defn read-global []
+  global-value)
+
+(defn identity [value]
+  value)

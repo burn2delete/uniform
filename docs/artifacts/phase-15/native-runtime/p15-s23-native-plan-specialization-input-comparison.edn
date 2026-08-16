@@ -1,0 +1,44 @@
+{:artifact :gravity/p15-s23-native-plan-specialization-input-comparison
+ :schema-version 1
+ :run-id "0963c1a3-c0be-4f09-8c9a-09f528b64587"
+ :status :matched
+ :method :sha256-before-and-after-supervised-run
+ :inputs
+ [{:path "bootstrap/clojure/src/gravity/p15_native_plan_specialization.clj"
+   :before "sha256:9fa53a39f41e3f8e630791034dbf62a82210e2070993874741024b281da6f824"
+   :after "sha256:9fa53a39f41e3f8e630791034dbf62a82210e2070993874741024b281da6f824"}
+  {:path "bootstrap/clojure/test/gravity/p15_native_plan_specialization_test.clj"
+   :before "sha256:81b1d8de3f563652409c52a1a8c2a75925d07d2cec6710a0ee3ced34c90a8704"
+   :after "sha256:81b1d8de3f563652409c52a1a8c2a75925d07d2cec6710a0ee3ced34c90a8704"}
+  {:path "bootstrap/gravity/p15_s23/native_plan_c_emitter.gravity"
+   :before "sha256:04645a82e66d024c6505ea3ec80c9789a7d0545ef8e7222c5d78cad68fc92adc"
+   :after "sha256:04645a82e66d024c6505ea3ec80c9789a7d0545ef8e7222c5d78cad68fc92adc"}
+  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.gravity"
+   :before "sha256:e48614803810895a3ad238eb196699a9fc95218ddb8d2507e3a3b498ef7caad4"
+   :after "sha256:e48614803810895a3ad238eb196699a9fc95218ddb8d2507e3a3b498ef7caad4"}
+  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.qst"
+   :before "sha256:e48614803810895a3ad238eb196699a9fc95218ddb8d2507e3a3b498ef7caad4"
+   :after "sha256:e48614803810895a3ad238eb196699a9fc95218ddb8d2507e3a3b498ef7caad4"}
+  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-str.gravity"
+   :before "sha256:c48b39e6a89b85925e4f3f5efcc03e82384f51b2ac7617e325c595ecfa35b7d4"
+   :after "sha256:c48b39e6a89b85925e4f3f5efcc03e82384f51b2ac7617e325c595ecfa35b7d4"}
+  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/unsupported-builtin.gravity"
+   :before "sha256:9c6e72bbb8f64165c039de9782e8509abf5c1d523815e6ceffb0459bb2824496"
+   :after "sha256:9c6e72bbb8f64165c039de9782e8509abf5c1d523815e6ceffb0459bb2824496"}
+  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-bool.gravity"
+   :before "sha256:1d0aa672e9d19321426cca966fdf203b3e633cd15ad94562e6fe665f2e7e9ec3"
+   :after "sha256:1d0aa672e9d19321426cca966fdf203b3e633cd15ad94562e6fe665f2e7e9ec3"}
+  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-nonascii.gravity"
+   :before "sha256:c2313f43f407410016e7931270156c9482a68447ae49031804b226515fc9d3ec"
+   :after "sha256:c2313f43f407410016e7931270156c9482a68447ae49031804b226515fc9d3ec"}
+  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-control.gravity"
+   :before "sha256:1f717f5464f9d7fd8486013786e17caa60b96fcebbb4081f894ee8cee52f4e5b"
+   :after "sha256:1f717f5464f9d7fd8486013786e17caa60b96fcebbb4081f894ee8cee52f4e5b"}
+  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-trigraph.gravity"
+   :before "sha256:9ee2e67a81c4348bcac427da17a26eef6e3d1db6eb532d1fad8b20c9213fd1cd"
+   :after "sha256:9ee2e67a81c4348bcac427da17a26eef6e3d1db6eb532d1fad8b20c9213fd1cd"}
+  {:path "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj"
+   :before "sha256:6ba4190d6f73cf497ebad6f711c33ab0243bb0e6af0c60611e381aaf5266d31c"
+   :after "sha256:6ba4190d6f73cf497ebad6f711c33ab0243bb0e6af0c60611e381aaf5266d31c"}]
+ :scope :trigraph-corrected-fail-fast-focused-run
+ :note "The before snapshot was written before the supervised run and every listed path was rehashed after process cleanup."}

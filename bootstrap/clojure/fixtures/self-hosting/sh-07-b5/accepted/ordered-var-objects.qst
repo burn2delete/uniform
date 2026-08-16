@@ -1,0 +1,17 @@
+; SH-07-B5 var object evidence preserves source order.
+(ns self-hosting.sh07-b5.ordered-var-objects
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [first-target second-target ordered-objects])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B5
+              :fixture :ordered-var-objects}))
+
+(def first-target 1)
+(def second-target 2)
+
+(def ordered-objects
+  [(var second-target)
+   (var first-target)])

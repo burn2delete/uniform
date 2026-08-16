@@ -1,0 +1,2244 @@
+(ns gravity.self-hosting.sh12.authenticated-mir-bridge
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh12-authenticated-mir-bridge-policy
+             sh12-build-checked-core
+             sh12-bind-authenticated-mir
+             sh12-verify-authenticated-mir])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh12-authenticated-mir-bridge-policy []
+  {:artifact :gravity/sh12-authenticated-mir-bridge-policy
+   :schema-version 1
+   :profile :meta
+   :target :jvm
+   :accepted-outcomes
+   [:proven-safe :runtime-checked :unsafe-island]
+   :required-products
+   [:authenticated-sh11-safe-core
+    :fresh-sh11-verification
+    :gravity-c11-checked-core
+    :gravity-c11-target-independent-mir
+    :gravity-c11-mir-verification]
+   :host-authority
+   [:bounded-source-snapshot
+    :compile-and-invoke-gravity-modules
+    :canonical-encode
+    :sha256
+    :resolve-declared-digest-requests]
+   :preserves
+   [:type-facts :effect-facts :capability-facts
+    :ownership-facts :safe1-outcomes :proofs
+    :runtime-checks :source-spans :origin-chains
+    :profile :target]
+   :diagnostics
+   ["STD12-BRIDGE-SCHEMA"
+    "STD12-BRIDGE-LINEAGE"
+    "STD12-BRIDGE-MIR"
+    "STD12-BRIDGE-VERIFY"]
+   :pending
+   [:whole-bootstrap-subset
+    :multiple-functions
+    :calls
+    :loops
+    :errors
+    :complete-c11-operation-families
+    :complete-sh11-operation-lowering
+    :independent-c11-semantic-verifier
+    :authenticated-coordinator-routing
+    :public-routing
+    :seedless-execution
+    :sh12-completion]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh12-member? [values value]
+  (if (= (count values) 0)
+    false
+    (if (= (first values) value)
+      true
+      (sh12-member? (rest values) value))))
+
+(defn sh12-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh12-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if
+     (sh12-member?
+      [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f]
+      (first characters))
+      (sh12-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh12-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (let [characters (vec value)]
+        (if (= [\s \h \a \2 \5 \6 \:]
+               (subvec characters 0 7))
+          (sh12-lowercase-hex?
+           (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh12-all-sha256-ids? [values]
+  (if (= (count values) 0)
+    true
+    (if (sh12-sha256-id? (first values))
+      (sh12-all-sha256-ids? (rest values))
+      false)))
+
+(defn sh12-expected-c11-revision []
+  {:artifact :gravity/sh12-c11-source-revision
+   :schema-version 1
+   :owner :sh-mir
+   :logical-source-path
+   "compiler/c11-mir-specification"
+   :source-content-hash
+   "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"
+   :source-byte-count 253588
+   :plan-semantic-hash
+   "sha256:974d3949e224d136a2d95c0c348b11c8858becdddd47542ffd4ae24c0233fb39"
+   :functions-semantic-hash
+   "sha256:ece068d2c82e550798cb98e1b0ac9bd0c5e15b5c932c591b93b821411eed89a4"
+   :function-count 237
+   :builder-function
+   (quote c11-build-target-independent-mir)
+   :builder-semantic-hash
+   "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
+   :verifier-function (quote verify-c11-mir-module)
+   :verifier-semantic-hash
+   "sha256:13a4cbc1f63e62728aa821a75e85626a4fd14b4d14d6017ac3d5ca47531e4079"})
+
+(defn sh12-c11-revision-valid? [revision]
+  (if
+   (sh12-exact-keys?
+    revision
+    #{:artifact :schema-version :owner
+      :logical-source-path :source-content-hash
+      :source-byte-count :plan-semantic-hash
+      :functions-semantic-hash :function-count
+      :builder-function :builder-semantic-hash
+      :verifier-function :verifier-semantic-hash})
+    (if (= :gravity/sh12-c11-source-revision
+           (get revision :artifact))
+      (if (= 1 (get revision :schema-version))
+        (if (= :sh-mir (get revision :owner))
+          (if
+           (=
+            "compiler/c11-mir-specification"
+            (get revision :logical-source-path))
+            (if
+             (sh12-all-sha256-ids?
+              [(get revision :source-content-hash)
+               (get revision :plan-semantic-hash)
+               (get revision :functions-semantic-hash)
+               (get revision :verifier-semantic-hash)])
+              (if (integer? (get revision :source-byte-count))
+                (if (> (get revision :source-byte-count) 0)
+                  (if (integer? (get revision :function-count))
+                    (if (> (get revision :function-count) 0)
+                      (if
+                       (= (quote verify-c11-mir-module)
+                          (get revision :verifier-function))
+                        (= (sh12-expected-c11-revision)
+                           revision)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        (seq? value)))))
+
+(defn sh12-aggregate-width [value]
+  (if (map? value)
+    (* 2 (count value))
+    (count value)))
+
+(defn sh12-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (vec value)))
+
+(defn sh12-max [left right]
+  (if (> left right) left right))
+
+(defn sh12-carrier-preflight [value]
+  (loop [frontier [[value 0]]
+         nodes 0
+         scalar-units 0
+         observed-depth 0
+         observed-width 0]
+    (if (= (count frontier) 0)
+      {:status :accepted
+       :nodes nodes
+       :scalar-units scalar-units
+       :maximum-depth observed-depth
+       :maximum-width observed-width}
+      (let [entry (first frontier)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (> next-nodes 1048576)
+          {:status :rejected :reason :carrier-node-bound}
+          (if (> depth 128)
+            {:status :rejected :reason :carrier-depth-bound}
+            (if (sh12-aggregate? current)
+              (let [width (sh12-aggregate-width current)]
+                (if (> width 65536)
+                  {:status :rejected :reason :carrier-width-bound}
+                  (let [components
+                        (sh12-aggregate-components current)
+                        next-frontier
+                        (loop [remaining components
+                               result (rest frontier)]
+                          (if (= (count remaining) 0)
+                            result
+                            (recur
+                             (rest remaining)
+                             (conj result
+                                   [(first remaining)
+                                    (+ depth 1)]))))]
+                    (recur
+                     next-frontier next-nodes scalar-units
+                     (sh12-max observed-depth depth)
+                     (sh12-max observed-width width)))))
+              (let [next-scalar-units
+                    (+ scalar-units
+                       (count (vec (str current))))]
+                (if (> next-scalar-units 16777216)
+                  {:status :rejected
+                   :reason :carrier-scalar-bound}
+                  (recur
+                   (rest frontier) next-nodes
+                   next-scalar-units
+                   (sh12-max observed-depth depth)
+                   observed-width))))))))))
+
+(defn sh12-diagnostic [request family reason]
+  {:artifact :gravity/sh12-authenticated-mir-diagnostic
+   :rule
+   (if (= family :schema)
+     "STD12-BRIDGE-SCHEMA"
+     (if (= family :lineage)
+       "STD12-BRIDGE-LINEAGE"
+       (if (= family :mir)
+         "STD12-BRIDGE-MIR"
+         "STD12-BRIDGE-VERIFY")))
+   :severity :error
+   :stage :mir-construction
+   :source-span {:source (get request :actual-source-path)}
+   :profile :meta
+   :target :jvm
+   :facts {:reason reason :fail-closed true}
+   :remediation
+   "Provide a freshly verified SH-11 product and an exact Gravity C11 replay."})
+
+(defn sh12-rejected [request family reason]
+  {:artifact :gravity/sh12-authenticated-mir
+   :schema-version 1
+   :status :rejected
+   :diagnostics [(sh12-diagnostic request family reason)]
+   :pending
+   (get (sh12-authenticated-mir-bridge-policy) :pending)
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh12-sh11-verification-valid? [safe-core verification]
+  (if
+   (sh12-exact-keys?
+    verification
+    #{:artifact :status :checks :expected :candidate})
+    (if
+     (= :gravity/sh11-authenticated-safety-verification
+        (get verification :artifact))
+      (if (= :passed (get verification :status))
+        (if
+         (=
+          [:same-sh08-typed-lineage
+           :authenticated-effect-and-ownership-identities
+           :source-bound-normalized-c10-operation
+           :fresh-c10-result-replay
+           :exactly-one-safe1-outcome
+           :path-neutral-identity
+           :separate-actual-path-provenance]
+          (get verification :checks))
+          (if (= safe-core (get verification :expected))
+            (= safe-core (get verification :candidate))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-preserves-valid? [request preserves]
+  (if
+   (sh12-exact-keys?
+    preserves
+    #{:core-node-id :type-fact-id :effect-fact-id
+      :capability-proof-id :ownership-fact-id
+      :source-span :origin-chain :profile :target})
+    (=
+     preserves
+     {:core-node-id (get request :core-node-id)
+      :type-fact-id (get request :type-fact-id)
+      :effect-fact-id (get request :effect-fact-id)
+      :capability-proof-id
+      (get request :capability-proof-id)
+      :ownership-fact-id
+      (get request :ownership-fact-id)
+      :source-span (get request :source-span)
+      :origin-chain (get request :origin-chain)
+      :profile (get request :profile)
+      :target (get request :target)})
+    false))
+
+(defn sh12-runtime-condition [kind]
+  (if (= kind :index)
+    :bounds
+    (if (= kind :numeric-overflow)
+      :overflow
+      (if (= kind :division)
+        :valid-divisor-and-quotient
+        (if (= kind :numeric-cast)
+          :representable-cast
+          (if (= kind :shift)
+            :shift-range
+            nil))))))
+
+(defn sh12-specialized-rule [kind]
+  (if (= kind :index)
+    :bounds-safety
+    (if (= kind :numeric-overflow)
+      :SAFE9-OVERFLOW
+      (if (= kind :division)
+        :SAFE9-DIV-ZERO
+        (if (= kind :numeric-cast)
+          :SAFE9-NARROW
+          (if (= kind :shift)
+            :SAFE9-SHIFT
+            :SAFE1-NO-OUTCOME))))))
+
+(defn sh12-boolean? [value]
+  (if (= value true) true (= value false)))
+
+(defn sh12-all-keywords? [values]
+  (if (= 0 (count values))
+    true
+    (if (keyword? (first values))
+      (sh12-all-keywords? (rest values))
+      false)))
+
+(defn sh12-keyword-set? [value]
+  (if (set? value)
+    (if (<= (count value) 32)
+      (sh12-all-keywords? (vec value))
+      false)
+    false))
+
+(defn sh12-nonempty-keyword-set? [value]
+  (if (sh12-keyword-set? value)
+    (> (count value) 0)
+    false))
+
+(defn sh12-all-sha256-vector? [values]
+  (if (vector? values)
+    (if (> (count values) 0)
+      (if (<= (count values) 8)
+        (sh12-all-sha256-ids? values)
+        false)
+      false)
+    false))
+
+(defn sh12-c10-source-span-valid? [span]
+  (if
+   (sh12-exact-keys?
+    span #{:source-id :start-byte :end-byte})
+    (if (sh12-sha256-id? (get span :source-id))
+      (if (integer? (get span :start-byte))
+        (if (integer? (get span :end-byte))
+          (if (>= (get span :start-byte) 0)
+            (> (get span :end-byte)
+               (get span :start-byte))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-c10-facts-valid? [request]
+  (let [kind (get request :kind)
+        facts (get request :facts)]
+    (if (= kind :numeric-overflow)
+      (if
+       (sh12-exact-keys?
+        facts
+        #{:numeric-mode :proof-id :operator
+          :left :right :bit-width :signedness
+          :result-min :result-max
+          :arbitrary-precision-supported})
+        (if
+         (if (= :proof-required
+                (get facts :numeric-mode))
+           true
+           (= :unsafe-unchecked
+              (get facts :numeric-mode)))
+          (if (sh12-sha256-id?
+               (get facts :proof-id))
+            (if (= :add (get facts :operator))
+              (if (integer? (get facts :left))
+                (if (integer? (get facts :right))
+                  (if (= 32 (get facts :bit-width))
+                    (if (= :signed
+                           (get facts :signedness))
+                      (if (= -2147483648
+                             (get facts :result-min))
+                        (if (= 2147483647
+                               (get facts :result-max))
+                          (if
+                           (if
+                            (>= (get facts :left)
+                                (get facts :result-min))
+                            (<= (get facts :left)
+                                (get facts :result-max))
+                            false)
+                            (if
+                             (if
+                              (>= (get facts :right)
+                                  (get facts :result-min))
+                              (<= (get facts :right)
+                                  (get facts :result-max))
+                              false)
+                              (sh12-boolean?
+                               (get facts
+                                    :arbitrary-precision-supported))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      (if (= kind :division)
+        (if
+         (sh12-exact-keys?
+          facts
+          #{:numeric-mode :proof-id :operator
+            :dividend :divisor :bit-width :signedness
+            :result-min :result-max})
+          (if (= :checked (get facts :numeric-mode))
+            (if (sh12-sha256-id?
+                 (get facts :proof-id))
+              (if (= :divide (get facts :operator))
+                (if (integer? (get facts :dividend))
+                  (if (integer? (get facts :divisor))
+                    (if (= 32 (get facts :bit-width))
+                      (if (= :signed
+                             (get facts :signedness))
+                        (if (= -2147483648
+                               (get facts :result-min))
+                          (if (= 2147483647
+                                 (get facts :result-max))
+                            (if
+                             (if
+                              (>= (get facts :dividend)
+                                  (get facts :result-min))
+                              (<= (get facts :dividend)
+                                  (get facts :result-max))
+                              false)
+                              (if
+                               (>= (get facts :divisor)
+                                   (get facts :result-min))
+                               (<= (get facts :divisor)
+                                   (get facts :result-max))
+                               false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))))
+
+(defn sh12-c10-static-safe? [request]
+  (let [kind (get request :kind)
+        facts (get request :facts)]
+    (if (= :unsafe-unchecked
+           (get facts :numeric-mode))
+      false
+      (if (= kind :numeric-overflow)
+        (let [result
+              (+ (get facts :left)
+                 (get facts :right))]
+          (if (>= result (get facts :result-min))
+            (<= result (get facts :result-max))
+            false))
+        (if (= kind :division)
+          (if (= 0 (get facts :divisor))
+            false
+            (if (= :signed
+                   (get facts :signedness))
+              (if (= (get facts :dividend)
+                     (get facts :result-min))
+                (= false
+                   (= -1 (get facts :divisor)))
+                true)
+              true))
+          false)))))
+
+(defn sh12-c10-runtime-support-valid?
+  [request check]
+  (let [support (get request :runtime-check-support)]
+    (if
+     (sh12-exact-keys?
+      support
+      #{:artifact :support-id :provider-id
+        :profile :target :conditions
+        :failure-behaviors :effects
+        :performance-classes :evidence})
+      (if (= :gravity/sh11-runtime-check-target-support
+             (get support :artifact))
+        (if (sh12-sha256-id? (get support :support-id))
+          (if (sh12-sha256-id?
+               (get support :provider-id))
+            (if (= (get support :support-id)
+                   (get check :target-support-id))
+              (if (= (get support :provider-id)
+                     (get check :provider-id))
+                (if (= (get request :profile)
+                       (get support :profile))
+                  (if (= (get request :target)
+                         (get support :target))
+                    (if
+                     (sh12-nonempty-keyword-set?
+                      (get support :conditions))
+                      (if
+                       (contains?
+                        (get support :conditions)
+                        (get check :condition))
+                        (if
+                         (sh12-nonempty-keyword-set?
+                          (get support
+                               :failure-behaviors))
+                          (if
+                           (contains?
+                            (get support
+                                 :failure-behaviors)
+                            (get check
+                                 :failure-behavior))
+                            (if
+                             (sh12-nonempty-keyword-set?
+                              (get support :effects))
+                              (if
+                               (contains?
+                                (get support :effects)
+                                :error/raise)
+                                (if
+                                 (sh12-nonempty-keyword-set?
+                                  (get support
+                                       :performance-classes))
+                                  (if
+                                   (contains?
+                                    (get support
+                                         :performance-classes)
+                                    (get check
+                                         :performance-class))
+                                    (sh12-nonempty-keyword-set?
+                                     (get support :evidence))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-c10-runtime-request-valid? [request]
+  (let [check (get request :runtime-check)
+        facts (get request :facts)
+        expected-predicate
+        {:expression
+         :divisor-nonzero-and-quotient-representable
+         :operation-id (get request :operation-id)
+         :kind :division
+         :operands
+         {:operator (get facts :operator)
+          :dividend (get facts :dividend)
+          :divisor (get facts :divisor)
+          :minimum (get facts :result-min)
+          :maximum (get facts :result-max)}}]
+    (if
+     (sh12-exact-keys?
+      check
+      #{:artifact :check-id :condition :predicate
+        :emitted-location :profile :target
+        :failure-behavior :effects-introduced
+        :performance-class :invalidation-conditions
+        :target-support-id :provider-id})
+      (if (= :gravity/sh11-runtime-safety-check
+             (get check :artifact))
+        (if (sh12-sha256-id? (get check :check-id))
+          (if (= :valid-divisor-and-quotient
+                 (get check :condition))
+            (if (= expected-predicate
+                   (get check :predicate))
+              (if (= :before-operation
+                     (get check :emitted-location))
+                (if (= (get request :profile)
+                       (get check :profile))
+                  (if (= (get request :target)
+                         (get check :target))
+                    (if (= :error/numeric
+                           (get check
+                                :failure-behavior))
+                      (if (= #{:error/raise}
+                             (get check
+                                  :effects-introduced))
+                        (if (keyword?
+                             (get check
+                                  :performance-class))
+                          (if
+                           (if
+                            (vector?
+                             (get check
+                                  :invalidation-conditions))
+                            (if
+                             (>
+                              (count
+                               (get check
+                                    :invalidation-conditions))
+                              0)
+                             (if
+                              (<=
+                               (count
+                                (get check
+                                     :invalidation-conditions))
+                               32)
+                               (sh12-all-keywords?
+                                (get check
+                                     :invalidation-conditions))
+                               false)
+                             false)
+                            false)
+                           (sh12-c10-runtime-support-valid?
+                            request check)
+                           false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-expected-proof [request]
+  (let [facts (get request :facts)]
+    {:artifact :gravity/sh11-static-safety-proof
+     :proof-id (get facts :proof-id)
+     :proof-id-request
+     {:domain :gravity/sh11-static-safety-proof-v1
+      :operation-id (get request :operation-id)
+      :core-node-id (get request :core-node-id)
+      :facts facts
+      :profile (get request :profile)
+      :target (get request :target)}
+     :operation-id (get request :operation-id)
+     :core-node-id (get request :core-node-id)
+     :source-span (get request :source-span)
+     :generated-origin-chain
+     (get request :origin-chain)
+     :claim
+     (sh12-runtime-condition (get request :kind))
+     :assumptions
+     #{:normalized-operation-schema
+       :typed-facts-linked
+       :numeric-mode-legal
+       :bounded-fact-evaluation}
+     :method :bounded-fact-evaluation
+     :provider
+     "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     :inputs
+     [(get request :type-fact-id)
+      (get request :effect-fact-id)
+      (get request :capability-proof-id)
+      (get request :ownership-fact-id)]
+     :facts facts
+     :profile (get request :profile)
+     :target (get request :target)
+     :invalidation-conditions
+     [:source-change :fact-link-change :profile-change
+      :target-change :numeric-mode-change
+      :operand-change :compiler-change]
+     :result :proven-safe}))
+
+(defn sh12-proof-valid? [request proof]
+  (if (sh12-sha256-id? (get proof :proof-id))
+    (= (sh12-expected-proof request) proof)
+    false))
+
+(defn sh12-expected-runtime-check [request]
+  (let [check (get request :runtime-check)]
+    {:artifact :gravity/runtime-safety-check
+     :check-id (get check :check-id)
+     :condition (get check :condition)
+     :operation-id (get request :operation-id)
+     :emitted-location (get check :emitted-location)
+     :profile (get request :profile)
+     :target (get request :target)
+     :failure-behavior
+     (get check :failure-behavior)
+     :effects-introduced
+     (get check :effects-introduced)
+     :performance-class
+     (get check :performance-class)
+     :guard-proof
+     {:predicate (get check :predicate)
+      :operation-id (get request :operation-id)
+      :condition (get check :condition)
+      :guards-exact-operation true}
+     :invalidation-conditions
+     (get check :invalidation-conditions)
+     :target-support-id
+     (get check :target-support-id)
+     :provider-id (get check :provider-id)}))
+
+(defn sh12-runtime-check-valid? [request check]
+  (if (sh12-sha256-id? (get check :check-id))
+    (= (sh12-expected-runtime-check request) check)
+    false))
+
+(defn sh12-unsafe-review-valid? [review]
+  (if
+   (sh12-exact-keys?
+    review #{:state :review-id :source-id :policy})
+    (if (= :approved (get review :state))
+      (if (sh12-sha256-id? (get review :review-id))
+        (if (sh12-sha256-id? (get review :source-id))
+          (keyword? (get review :policy))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-unsafe-policy-valid?
+  [request audit]
+  (let [policy (get audit :policy)
+        effects (get audit :effects)
+        capabilities (get audit :capabilities)]
+    (if
+     (sh12-exact-keys?
+      policy
+      #{:safety-mode :package-unsafe-approved
+        :empty-effects-approved
+        :empty-capabilities-approved})
+      (if (= (get request :safety-mode)
+             (get policy :safety-mode))
+        (if (= true
+               (get policy :package-unsafe-approved))
+          (if
+           (sh12-boolean?
+            (get policy :empty-effects-approved))
+            (if
+             (sh12-boolean?
+              (get policy
+                   :empty-capabilities-approved))
+              (if
+               (if (= 0 (count effects))
+                 (= true
+                    (get policy
+                         :empty-effects-approved))
+                 true)
+                (if (= 0 (count capabilities))
+                  (= true
+                     (get policy
+                          :empty-capabilities-approved))
+                  true)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-unsafe-set-fields-valid? [audit]
+  (if
+   (if (string? (get audit :owner))
+     (if (> (count (get audit :owner)) 0)
+       (<= (count (get audit :owner)) 256)
+       false)
+     false)
+    (if
+     (if (string? (get audit :safe-wrapper))
+       (if (> (count (get audit :safe-wrapper)) 0)
+         (<= (count (get audit :safe-wrapper)) 256)
+         false)
+       false)
+      (if (sh12-keyword-set? (get audit :effects))
+        (if
+         (sh12-keyword-set? (get audit :capabilities))
+          (if
+           (sh12-nonempty-keyword-set?
+            (get audit :preconditions))
+            (if
+             (sh12-nonempty-keyword-set?
+              (get audit :postconditions))
+              (if
+               (sh12-nonempty-keyword-set?
+                (get audit :invariants))
+                (sh12-nonempty-keyword-set?
+                 (get audit :evidence))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-unsafe-audit-valid? [request audit]
+  (if
+   (sh12-exact-keys?
+    audit
+    #{:artifact :audit-id :operation-id :operation
+      :owner :reason :source-span
+      :generated-origin-chain :profile :target
+      :safety-mode :effects :capabilities
+      :preconditions :postconditions :invariants
+      :evidence :safe-wrapper :review :policy
+      :re-review})
+    (if (= :gravity/sh11-unsafe-island-audit
+           (get audit :artifact))
+      (if (sh12-sha256-id? (get audit :audit-id))
+        (if (= (get request :operation-id)
+               (get audit :operation-id))
+          (if (= (get request :kind)
+                 (get audit :operation))
+            (if (= (get request :source-span)
+                   (get audit :source-span))
+              (if (= (get request :origin-chain)
+                     (get audit
+                          :generated-origin-chain))
+                (if (= (get request :profile)
+                       (get audit :profile))
+                  (if (= (get request :target)
+                         (get audit :target))
+                    (if (= (get request :safety-mode)
+                           (get audit :safety-mode))
+                      (if (= (get request :unsafe-audit)
+                             audit)
+                        (if
+                         (sh12-unsafe-set-fields-valid?
+                          audit)
+                        (if (string? (get audit :owner))
+                          (if (> (count
+                                  (get audit :owner)) 0)
+                            (if (keyword?
+                                 (get audit :reason))
+                              (if (set?
+                                   (get audit :effects))
+                                (if
+                                 (set?
+                                  (get audit
+                                       :capabilities))
+                                  (if
+                                   (if
+                                    (set?
+                                     (get audit
+                                          :preconditions))
+                                    (>
+                                     (count
+                                      (get audit
+                                           :preconditions))
+                                     0)
+                                    false)
+                                   (if
+                                    (if
+                                     (set?
+                                      (get audit
+                                           :postconditions))
+                                     (>
+                                      (count
+                                       (get audit
+                                            :postconditions))
+                                      0)
+                                     false)
+                                    (if
+                                     (if
+                                      (set?
+                                       (get audit
+                                            :invariants))
+                                      (>
+                                       (count
+                                        (get audit
+                                             :invariants))
+                                       0)
+                                      false)
+                                     (if
+                                      (if
+                                       (set?
+                                        (get audit
+                                             :evidence))
+                                       (>
+                                        (count
+                                         (get audit
+                                              :evidence))
+                                        0)
+                                       false)
+                                      (if
+                                       (if
+                                        (string?
+                                         (get audit
+                                              :safe-wrapper))
+                                        (>
+                                         (count
+                                          (get audit
+                                               :safe-wrapper))
+                                         0)
+                                        false)
+                                       (if
+                                        (sh12-unsafe-review-valid?
+                                         (get audit :review))
+                                        (if
+                                         (=
+                                          :approved
+                                          (get
+                                           (get audit
+                                                :review)
+                                           :state))
+                                         (if
+                                          (sh12-sha256-id?
+                                           (get
+                                            (get audit
+                                                 :review)
+                                            :review-id))
+                                          (if
+                                           (=
+                                            #{:safety-mode
+                                              :package-unsafe-approved
+                                              :empty-effects-approved
+                                              :empty-capabilities-approved}
+                                            (set
+                                             (keys
+                                              (get audit
+                                                   :policy))))
+                                           (if
+                                            (sh12-unsafe-policy-valid?
+                                             request audit)
+                                            (keyword?
+                                             (get audit
+                                                  :re-review))
+                                            false)
+                                           false)
+                                          false)
+                                         false)
+                                        false)
+                                       false)
+                                      false)
+                                     false)
+                                    false)
+                                   false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-c10-request-valid? [request]
+  (if
+   (sh12-exact-keys?
+    request
+    #{:artifact :operation-id :kind :core-node-id
+      :source-span :origin-chain :profile :target
+      :safety-mode :facts :runtime-check-support
+      :runtime-check :unsafe-audit :type-fact-id
+      :effect-fact-id :capability-proof-id
+      :ownership-fact-id})
+    (if (= :gravity/sh11-normalized-safety-operation
+           (get request :artifact))
+      (if (keyword? (get request :operation-id))
+        (if
+         (if (= :numeric-overflow
+                (get request :kind))
+           true
+           (= :division (get request :kind)))
+          (if (sh12-sha256-id?
+               (get request :core-node-id))
+            (if
+             (sh12-c10-source-span-valid?
+              (get request :source-span))
+              (if
+               (sh12-all-sha256-vector?
+                (get request :origin-chain))
+                (if (= :meta (get request :profile))
+                  (if (= :jvm (get request :target))
+                    (if
+                     (sh12-all-sha256-ids?
+                      [(get request :type-fact-id)
+                       (get request :effect-fact-id)
+                       (get request
+                            :capability-proof-id)
+                       (get request
+                            :ownership-fact-id)])
+                      (if (sh12-c10-facts-valid?
+                           request)
+                        (if (= nil
+                               (get request
+                                    :runtime-check))
+                          (if (= nil
+                                 (get request
+                                      :runtime-check-support))
+                            (if (= nil
+                                   (get request
+                                        :unsafe-audit))
+                              (if (= :numeric-overflow
+                                     (get request :kind))
+                                (if (= :proof-required
+                                       (get
+                                        (get request :facts)
+                                        :numeric-mode))
+                                  (if (= :safe
+                                         (get request
+                                              :safety-mode))
+                                    (sh12-c10-static-safe?
+                                     request)
+                                    false)
+                                  false)
+                                false)
+                              (if (= :numeric-overflow
+                                     (get request :kind))
+                                (if (= :unsafe-unchecked
+                                       (get
+                                        (get request :facts)
+                                        :numeric-mode))
+                                  (if (= :systems
+                                         (get request
+                                              :safety-mode))
+                                    (sh12-unsafe-audit-valid?
+                                     request
+                                     (get request
+                                          :unsafe-audit))
+                                    false)
+                                  false)
+                                false))
+                            false)
+                          (if (= nil
+                                 (get request
+                                      :unsafe-audit))
+                            (if (= :division
+                                   (get request :kind))
+                              (if (= :checked
+                                     (get
+                                      (get request :facts)
+                                      :numeric-mode))
+                                (if (= :safe
+                                       (get request
+                                            :safety-mode))
+                                  (if
+                                   (= false
+                                      (sh12-c10-static-safe?
+                                       request))
+                                    (sh12-c10-runtime-request-valid?
+                                     request)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-outcome-record-valid?
+  [request selected proof check audit outcome]
+  (if
+   (sh12-exact-keys?
+    outcome
+    #{:artifact :operation-id :kind :source
+      :profile :target :safety-mode
+      :specialized-safe-rule :facts :outcome
+      :proof :runtime-check :unsafe-audit
+      :diagnostic})
+    (if (= :gravity/safety-outcome
+           (get outcome :artifact))
+      (if (= (get request :operation-id)
+             (get outcome :operation-id))
+        (if (= (get request :kind)
+               (get outcome :kind))
+          (if
+           (=
+            {:core-node-id (get request :core-node-id)
+             :source-span (get request :source-span)
+             :origin-chain (get request :origin-chain)}
+            (get outcome :source))
+            (if (= (get request :profile)
+                   (get outcome :profile))
+              (if (= (get request :target)
+                     (get outcome :target))
+                (if (= (get request :safety-mode)
+                       (get outcome :safety-mode))
+                  (if (= (get request :facts)
+                         (get outcome :facts))
+                    (if
+                     (= (sh12-specialized-rule
+                         (get request :kind))
+                        (get outcome
+                             :specialized-safe-rule))
+                      (if (= selected
+                             (get outcome :outcome))
+                        (if (= proof
+                               (get outcome :proof))
+                          (if (= check
+                                 (get outcome
+                                      :runtime-check))
+                            (if (= audit
+                                   (get outcome
+                                        :unsafe-audit))
+                              (= nil
+                                 (get outcome
+                                      :diagnostic))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-outcome-products-valid?
+  [selected safety-result]
+  (let [request
+        (get (get safety-result :identity-input)
+             :request)
+        proofs (get safety-result :proofs)
+        checks (get safety-result :runtime-checks)
+        audits (get safety-result :unsafe-islands)
+        proof-count (count proofs)
+        check-count
+        (count checks)
+        unsafe-count (count audits)
+        proof (if (= proof-count 1)
+                (first proofs) nil)
+        check (if (= check-count 1)
+                (first checks) nil)
+        audit (if (= unsafe-count 1)
+                (first audits) nil)
+        outcome (first (get safety-result :outcomes))]
+    (if
+     (if (vector? proofs)
+       (if (vector? checks)
+         (if (vector? audits)
+           (vector? (get safety-result :outcomes))
+           false)
+         false)
+       false)
+      (if (map? request)
+       (if (sh12-c10-request-valid? request)
+      (if
+       (sh12-preserves-valid?
+        request (get safety-result :preserves))
+        (if
+         (sh12-outcome-record-valid?
+          request selected proof check audit outcome)
+          (if (= selected :proven-safe)
+            (if (= proof-count 1)
+              (if (= check-count 0)
+                (if (= unsafe-count 0)
+                  (sh12-proof-valid? request proof)
+                  false)
+                false)
+              false)
+            (if (= selected :runtime-checked)
+              (if (= proof-count 0)
+                (if (= check-count 1)
+                  (if (= unsafe-count 0)
+                    (sh12-runtime-check-valid?
+                     request check)
+                    false)
+                  false)
+                false)
+              (if (= selected :unsafe-island)
+                (if (= proof-count 0)
+                  (if (= check-count 0)
+                    (if (= unsafe-count 1)
+                      (sh12-unsafe-audit-valid?
+                       request audit)
+                      false)
+                    false)
+      false)
+       false)
+      false)))
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-safe-core-lineage-valid? [safe-core]
+  (let [identity (get safe-core :identity-input)
+        safety-result (get safe-core :safety-result)
+        outcomes (get safety-result :outcomes)
+        outcome (first outcomes)
+        selected (get safe-core :outcome)]
+    (if
+     (sh12-exact-keys?
+      identity
+      #{:artifact :typed-artifact-id :effect-artifact-id
+        :ownership-artifact-id :safety-operation-id
+        :safety-artifact-id :operation :outcome :outcomes
+        :proofs :runtime-checks :unsafe-islands :preserves
+        :semantic-envelope-id})
+      (if (= :gravity/sh11-authenticated-safe-core
+             (get identity :artifact))
+        (if (= (get safe-core :typed-artifact-id)
+               (get identity :typed-artifact-id))
+          (if (= (get safe-core :effect-artifact-id)
+                 (get identity :effect-artifact-id))
+            (if (= (get safe-core :ownership-artifact-id)
+                   (get identity :ownership-artifact-id))
+              (if (= (get safe-core :artifact-id)
+                     (get identity :safety-artifact-id))
+                (if (= selected (get identity :outcome))
+                  (if (= (get safe-core :operation)
+                         (get identity :operation))
+                    (if
+                     (=
+                      {:outcomes (get safety-result :outcomes)
+                       :proofs (get safety-result :proofs)
+                       :runtime-checks
+                       (get safety-result :runtime-checks)
+                       :unsafe-islands
+                       (get safety-result :unsafe-islands)
+                       :preserves (get safety-result :preserves)}
+                      {:outcomes (get identity :outcomes)
+                       :proofs (get identity :proofs)
+                       :runtime-checks
+                       (get identity :runtime-checks)
+                       :unsafe-islands
+                       (get identity :unsafe-islands)
+                       :preserves (get identity :preserves)})
+                    (if (= :accepted (get safety-result :status))
+                      (if (= selected (get safety-result :outcome))
+                        (if (vector? outcomes)
+                          (if (= 1 (count outcomes))
+                            (if (= selected (get outcome :outcome))
+                              (if
+                               (= (get safe-core :operation)
+                                  (get outcome :operation-id))
+                                (sh12-outcome-products-valid?
+                                 selected safety-result)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-safe-core-valid? [safe-core verification]
+  (if
+   (sh12-exact-keys?
+    safe-core
+    #{:artifact :schema-version :status :artifact-id
+      :typed-artifact-id :effect-artifact-id
+      :ownership-artifact-id :operation :outcome
+      :safety-result :identity-input :provenance
+      :diagnostics :pending :self-hosted?
+      :clojure-seed-boundary?})
+    (if (= :gravity/sh11-authenticated-safe-core
+           (get safe-core :artifact))
+      (if (= 1 (get safe-core :schema-version))
+        (if (= :accepted (get safe-core :status))
+          (if
+           (sh12-all-sha256-ids?
+            [(get safe-core :artifact-id)
+             (get safe-core :typed-artifact-id)
+             (get safe-core :effect-artifact-id)
+             (get safe-core :ownership-artifact-id)
+             (get
+              (get safe-core :identity-input)
+              :semantic-envelope-id)
+             (get
+              (get safe-core :provenance)
+              :provenance-binding-id)])
+            (if
+             (sh12-member?
+              [:proven-safe :runtime-checked
+               :unsafe-island]
+              (get safe-core :outcome))
+              (if (= [] (get safe-core :diagnostics))
+                (if (sh12-safe-core-lineage-valid? safe-core)
+                  (sh12-sh11-verification-valid?
+                   safe-core verification)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-first-outcome [safe-core]
+  (first
+   (get
+    (get safe-core :safety-result)
+    :outcomes)))
+
+(defn sh12-first-runtime-check [safe-core]
+  (first
+   (get
+    (get safe-core :safety-result)
+    :runtime-checks)))
+
+(defn sh12-runtime-effects [safe-core]
+  (if (= (get safe-core :outcome) :runtime-checked)
+    (get
+     (sh12-first-runtime-check safe-core)
+     :effects-introduced)
+    #{}))
+
+(defn sh12-c11-runtime-check [safe-core]
+  (if (= (get safe-core :outcome) :runtime-checked)
+    (let [check (sh12-first-runtime-check safe-core)
+          preserves
+          (get
+           (get safe-core :safety-result)
+           :preserves)]
+      (assoc
+       (assoc
+        check
+        :failure
+        (get check :failure-behavior))
+       :capability-proof-id
+       (get preserves :capability-proof-id)))
+    nil))
+
+(defn sh12-source [safe-core]
+  (let [preserves
+        (get
+         (get safe-core :safety-result)
+         :preserves)]
+    {:origin-id (get preserves :core-node-id)
+     :span (get preserves :source-span)
+     :enclosing-syntax-origin-id
+     (get preserves :core-node-id)
+     :generated? false
+     :generated-origin []}))
+
+(defn sh12-safety [safe-core node-id]
+  (let [outcome (sh12-first-outcome safe-core)]
+    {:artifact :gravity/safety-outcome
+     :outcome-id (str node-id ":safety-outcome")
+     :operation node-id
+     :source-safety-operation-id
+     (get outcome :operation-id)
+     :source-safety-outcome outcome
+     :kind (get outcome :kind)
+     :outcome (get outcome :outcome)
+     :proof
+     (if (= (get safe-core :outcome) :proven-safe)
+       (first
+        (get
+         (get safe-core :safety-result)
+         :proofs))
+       nil)
+     :check (sh12-c11-runtime-check safe-core)
+     :unsafe-audit
+     (if (= (get safe-core :outcome) :unsafe-island)
+       (first
+        (get
+         (get safe-core :safety-result)
+         :unsafe-islands))
+       nil)}))
+
+(defn sh12-build-checked-core
+  [request]
+  (let [request-preflight (sh12-carrier-preflight request)
+        safe-core (get request :safe-core)
+        verification (get request :safe-verification)
+        error
+        (if (= :accepted (get request-preflight :status))
+        (if
+         (sh12-exact-keys?
+          request
+          #{:artifact :schema-version :safe-core
+            :safe-verification :checked-core-artifact-id
+            :checked-core-mapping-id :entrypoint
+            :module-id :expected-mir-id
+            :c11-revision :actual-source-path})
+          (if (= :gravity/sh12-authenticated-mir-request
+                 (get request :artifact))
+            (if (= 1 (get request :schema-version))
+              (if
+               (sh12-safe-core-valid?
+                safe-core verification)
+                (if
+                 (sh12-sha256-id?
+                  (get request :checked-core-artifact-id))
+                  (if
+                   (sh12-sha256-id?
+                    (get request :checked-core-mapping-id))
+                    (if
+                     (sh12-sha256-id?
+                      (get request :expected-mir-id))
+                      (if
+                       (sh12-c11-revision-valid?
+                        (get request :c11-revision))
+                        (if (symbol? (get request :entrypoint))
+                        (if (symbol? (get request :module-id))
+                          (if
+                           (string?
+                            (get request :actual-source-path))
+                            (if
+                             (> (count
+                                 (get request
+                                      :actual-source-path))
+                                0)
+                              (if
+                               (<=
+                                (count
+                                 (get request
+                                      :actual-source-path))
+                                4096)
+                                nil
+                                [:schema :actual-source-path])
+                              [:schema :actual-source-path])
+                            [:schema :actual-source-path])
+                          [:schema :module-id])
+                        [:schema :entrypoint])
+                        [:lineage :invalid-c11-revision])
+                      [:schema :expected-mir-id])
+                    [:schema :checked-core-mapping-id])
+                  [:schema :checked-core-artifact-id])
+                [:lineage :invalid-sh11-product])
+              [:schema :schema-version])
+            [:schema :artifact])
+          [:schema :request-keys])
+        [:schema :request-carrier-bound])]
+    (if (= error nil)
+      (let [safe-id (get safe-core :artifact-id)
+            literal-id (str safe-id ":mir-input")
+            root-id (str safe-id ":entry")
+            preserves
+            (get
+             (get safe-core :safety-result)
+             :preserves)
+            type-id
+            (get preserves :type-fact-id)
+            effect-id
+            (get preserves :effect-fact-id)
+            ownership-id
+            (get preserves :ownership-fact-id)
+            capability-id
+            (get preserves :capability-proof-id)
+            source (sh12-source safe-core)
+            safety (sh12-safety safe-core literal-id)
+            effects (sh12-runtime-effects safe-core)
+            literal
+            {:node-id literal-id
+             :path [:entry :value]
+             :source-operation :literal
+             :operands []
+             :type :gravity/integer
+             :attributes
+             {:value 42
+              :intrinsic-effects effects
+              :intrinsic-capabilities #{}}
+             :source source
+             :profile :meta
+             :safety safety}
+            root
+            {:node-id root-id
+             :path [:entry]
+             :source-operation :function
+             :operands [literal-id]
+             :type :gravity/integer
+             :attributes
+             {:intrinsic-effects #{}
+              :intrinsic-capabilities #{}}
+             :source source
+             :profile :meta
+             :safety
+             {:artifact :gravity/safety-outcome
+              :outcome-id (str root-id ":safety-outcome")
+              :operation root-id
+              :kind :function
+              :outcome :proven-safe
+              :proof nil
+              :check nil
+              :unsafe-audit nil}}
+            type-facts
+            {literal-id
+             {:fact-id type-id
+              :core-node-id literal-id
+              :type :gravity/integer}
+             root-id
+             {:fact-id (str root-id ":type-fact")
+              :core-node-id root-id
+              :type :gravity/integer}}
+            effect-facts
+            {literal-id
+             {:fact-id effect-id
+              :core-node-id literal-id
+              :direct effects
+              :residual effects}
+             root-id
+             {:fact-id (str root-id ":effect-fact")
+              :core-node-id root-id
+              :direct #{}
+              :residual effects}}
+            ownership-facts
+            {literal-id
+             {:fact-id ownership-id
+              :core-node-id literal-id
+              :value-id literal-id}
+             root-id
+             {:fact-id (str root-id ":ownership-fact")
+              :core-node-id root-id
+              :value-id root-id}}
+            capability-facts
+            {literal-id
+             {:fact-id (str literal-id ":capability-fact")
+              :core-node-id literal-id
+              :required #{}
+              :granted #{}
+              :capability-proof
+              {:proof-ids [capability-id]}}
+             root-id
+             {:fact-id (str root-id ":capability-fact")
+              :core-node-id root-id
+              :required #{}
+              :granted #{}
+              :capability-proof
+              {:proof-ids [capability-id]}}}]
+        {:artifact :gravity/sh12-c11-checked-core
+         :schema-version 1
+         :status :accepted
+         :artifact-id
+         (get request :checked-core-artifact-id)
+         :mapping-id
+         (get request :checked-core-mapping-id)
+         :provenance-binding-id
+         (get
+          (get safe-core :provenance)
+          :provenance-binding-id)
+         :source-core-input
+         {:module (get request :module-id)
+          :declared-effects effects
+          :declared-capabilities #{}}
+         :profile :meta
+         :source-target :jvm
+         :target-request-metadata
+         {:requested-target :jvm}
+         :entrypoint (get request :entrypoint)
+         :core-nodes [literal root]
+         :root-node-ids [root-id]
+         :type-facts type-facts
+         :effect-facts effect-facts
+         :effect-graph []
+         :ownership-facts ownership-facts
+         :capability-facts capability-facts
+         :capability-proof-records
+         [{:proof-id capability-id
+           :status :authenticated
+           :source-artifact-id safe-id}]
+         :safety-facts
+         {literal-id safety
+          root-id (get root :safety)}
+         :profile-facts
+         {literal-id {:profile :meta :target :jvm}
+          root-id {:profile :meta :target :jvm}}
+         :identity-input
+         {:safe-artifact-id safe-id
+          :safe-outcome (get safe-core :outcome)
+          :c11-revision (get request :c11-revision)
+          :typed-artifact-id
+          (get safe-core :typed-artifact-id)
+          :effect-artifact-id
+          (get safe-core :effect-artifact-id)
+          :ownership-artifact-id
+          (get safe-core :ownership-artifact-id)
+          :safety-artifact-id
+          (get safe-core :artifact-id)}
+         :provenance
+         {:actual-source-path
+          (get request :actual-source-path)
+          :sh11-provenance
+          (get safe-core :provenance)}
+         :diagnostics []})
+      (sh12-rejected
+       request (first error) (second error)))))
+
+(defn sh12-find-operation [operations operation-id]
+  (if (= (count operations) 0)
+    nil
+    (if (= operation-id
+           (get (first operations) :op-id))
+      (first operations)
+      (sh12-find-operation
+       (rest operations) operation-id))))
+
+(defn sh12-operation-precedes?
+  [operations earlier-id later-id seen-earlier?]
+  (if (= (count operations) 0)
+    false
+    (let [operation-id (get (first operations) :op-id)]
+      (if (= operation-id later-id)
+        seen-earlier?
+        (sh12-operation-precedes?
+         (rest operations)
+         earlier-id later-id
+         (if (= operation-id earlier-id)
+           true
+           seen-earlier?))))))
+
+(defn sh12-runtime-check-mir-valid?
+  [checked-core mir]
+  (let [node
+        (first (get checked-core :core-nodes))
+        node-id (get node :node-id)
+        safety
+        (get (get checked-core :safety-facts) node-id)
+        outcome (get safety :outcome)
+        check (get safety :check)
+        runtime-table (get mir :runtime-check-table)]
+    (if (= outcome :runtime-checked)
+      (let [check-id (get check :check-id)
+            check-operation-id
+            (str check-id ":mir:runtime-check")
+            token-id (str check-id ":mir:token")
+            function
+            (get
+             (get mir :functions)
+             (get checked-core :entrypoint))
+            entry-id (get function :entry)
+            block
+            (get (get function :blocks) entry-id)
+            operations (get block :instructions)
+            check-operation
+            (sh12-find-operation
+             operations check-operation-id)
+            guarded-operation
+            (sh12-find-operation operations node-id)
+            table-check (get runtime-table check-id)
+            data-flow
+            (get (get mir :data-flow-graph) :edges)
+            definitions
+            (get
+             (get mir :data-flow-graph)
+             :definitions)
+            values
+            (get (get mir :data-flow-graph) :values)
+            check-source
+            (get (get mir :source-map)
+                 check-operation-id)
+            generated-origin
+            (first (get check-source :generated-origin))
+            effect-fact
+            (get
+             (get mir :effect-table)
+             (get
+              (get
+               (get checked-core :effect-facts)
+               node-id)
+              :fact-id))]
+        (if (= 1 (count runtime-table))
+          (if (= node-id
+                 (get table-check
+                      :guarded-operation-id))
+            (if (= check-operation-id
+                   (get table-check
+                        :check-operation-id))
+              (if (= token-id
+                     (get table-check
+                          :token-value-id))
+                (if (= :runtime-check
+                       (get check-operation :opcode))
+                  (if (= token-id
+                         (get check-operation :result))
+                    (if (= node-id
+                           (get
+                            (get check-operation :facts)
+                            :guarded-operation-id))
+                      (if (= token-id
+                             (first
+                              (get guarded-operation
+                                   :operands)))
+                        (if
+                         (sh12-operation-precedes?
+                          operations
+                          check-operation-id
+                          node-id false)
+                          (if
+                           (sh12-member?
+                            data-flow
+                            {:from token-id
+                             :consumer-kind :operation
+                             :consumer-id node-id
+                             :consumer-block entry-id
+                             :operand-index 0
+                             :edge-kind
+                             :runtime-check-guard})
+                            (if
+                             (=
+                              {:value-id token-id
+                               :operation-id
+                               check-operation-id
+                               :block-id entry-id}
+                              (get definitions token-id))
+                              (if
+                               (=
+                                :runtime-check-token
+                                (get
+                                 (get values token-id)
+                                 :kind))
+                                (if
+                                 (=
+                                  :runtime-check-generated
+                                  (get generated-origin
+                                       :role))
+                                  (if
+                                   (= node-id
+                                      (get
+                                       generated-origin
+                                       :producer-operation-id))
+                                    (if
+                                     (= check-id
+                                        (get
+                                         generated-origin
+                                         :runtime-check-id))
+                                      (if
+                                       (=
+                                        #{:error/raise}
+                                        (get effect-fact
+                                             :direct))
+                                        (=
+                                         #{:error/raise}
+                                         (get function
+                                              :latent-effects))
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false))
+      (= 0 (count runtime-table)))))
+
+(defn sh12-c11-diagnostic-catalog []
+  {:diagnostics ["C11-MODULE"
+                 "C11-BLOCK"
+                 "C11-DOMINANCE"
+                 "C11-TYPE"
+                 "C11-EFFECT"
+                 "C11-SAFETY"
+                 "C11-ORIGIN"
+                 "C11-DOMAIN"
+                 "C11-TARGET-LEAK"
+                 "C11-VERIFY"]
+   :stable-diagnostic-fields
+   [:diagnostic-id :severity
+    :stage :mir-module
+    :function :block
+    :operation-id :value-id
+    :source-span
+    :origin-chain
+    :profile :target-request
+    :missing-fact
+    :provenance
+    :remediation]
+   :stops
+   [:domain-ir-lowering
+    :mir-optimization
+    :target-lowering
+    :artifact-emission
+    :bootstrap-source-inventory]
+   :must-not-depend-on
+   [:localized-rendering-text
+    :backend-legality
+    :target-lowering-state
+    :runtime-only-safety-state
+    :opaque-domain-ir]})
+
+(defn sh12-c11-diagnostics-valid? [diagnostics]
+  (= (sh12-c11-diagnostic-catalog) diagnostics))
+
+(defn sh12-mir-legacy-valid?
+  [checked-core mir mir-verification]
+  (let [entrypoint (get checked-core :entrypoint)
+        function
+        (get (get mir :functions) entrypoint)
+        literal-id
+        (get
+         (first
+          (get checked-core :core-nodes))
+         :node-id)
+        outcome
+        (get
+         (get
+          (get checked-core :safety-facts)
+          literal-id)
+         :outcome)
+        runtime-checks (get mir :runtime-check-table)]
+    (if (= :gravity/mir-module (get mir :artifact))
+      (if (= 1 (get mir :schema-version))
+        (if (= (get checked-core :artifact-id)
+               (get mir :source-core))
+          (if (= :meta (get mir :profile))
+            (if (= :jvm (get mir :source-target))
+              (if (= :jvm (get mir :target-request))
+                (if (= true
+                       (get mir
+                            :target-independent?))
+                (if (map? function)
+                  (if (> (count
+                          (get mir :type-table))
+                         0)
+                    (if
+                     (> (count
+                         (get mir :effect-table))
+                        0)
+                      (if
+                       (> (count
+                           (get mir
+                                :ownership-table))
+                          0)
+                        (if
+                         (> (count
+                             (get mir
+                                  :safety-table))
+                            0)
+                          (if
+                           (sh12-runtime-check-mir-valid?
+                            checked-core mir)
+                            (if
+                             (sh12-exact-keys?
+                              mir-verification
+                              #{:status :mir-module :checks
+                                :diagnostics :preserves})
+                              (if
+                               (= :stage1-source-owned
+                                  (get mir-verification
+                                       :status))
+                                (if (= mir
+                                       (get mir-verification
+                                            :mir-module))
+                                  (if
+                                   (=
+                               [:module-identity-complete
+                                :checked-core-reference-present
+                                :profile-and-target-request-attached
+                                :every-function-has-entry-block
+                                :every-block-terminates
+                                :control-flow-edges-valid
+                                :definitions-dominate-uses
+                                :data-flow-edges-exposed
+                                :types-match-operation-schemas
+                                :effect-ordering-constraints-present
+                                :safety-sensitive-operations-have-outcomes
+                                :runtime-checks-dominate-guarded-operations
+                                :source-and-generated-origins-valid
+                                :ownership-resource-operations-match-c9-facts
+                                :domain-anchors-valid
+                                :target-specific-opcodes-rejected
+                                :diagnostics-follow-c15-shape]
+                               (get mir-verification
+                                    :checks))
+                                    (if
+                                     (sh12-c11-diagnostics-valid?
+                                      (get mir-verification
+                                           :diagnostics))
+                                      (=
+                                       [:source-spans :syntax-identity
+                                        :checked-core-identity
+                                        :core-node-identity
+                                        :type-facts :effect-facts
+                                        :capability-facts :ownership-facts
+                                        :safe1-outcomes
+                                        :runtime-check-records
+                                        :proof-obligations
+                                        :profile-target-metadata
+                                        :source-origin-map
+                                        :generated-origin-chains
+                                        :control-flow-edges
+                                        :data-flow-edges
+                                        :dominance-facts
+                                        :domain-anchor-links
+                                        :target-independence
+                                        :artifact-provenance]
+                                       (get mir-verification
+                                            :preserves))
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-mir-envelope-valid? [checked-core mir]
+  (let [entrypoint (get checked-core :entrypoint)
+        function
+        (get (get mir :functions) entrypoint)]
+    (if (= :gravity/mir-module (get mir :artifact))
+      (if (= 1 (get mir :schema-version))
+        (if (= (get checked-core :artifact-id)
+               (get mir :source-core))
+          (if (= :meta (get mir :profile))
+            (if (= :jvm (get mir :source-target))
+              (if (= :jvm (get mir :target-request))
+                (if (= true
+                       (get mir :target-independent?))
+                  (if (map? function)
+                    (if (> (count
+                            (get mir :type-table))
+                           0)
+                      (if (> (count
+                              (get mir :effect-table))
+                             0)
+                        (if (> (count
+                                (get mir
+                                     :ownership-table))
+                               0)
+                          (> (count
+                              (get mir :safety-table))
+                             0)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-mir-field-values-equal?
+  [expected candidate fields]
+  (if (= (count fields) 0)
+    true
+    (if (= (get expected (first fields))
+           (get candidate (first fields)))
+      (sh12-mir-field-values-equal?
+       expected candidate (rest fields))
+      false)))
+
+(defn sh12-exact-mir-module-equal?
+  [expected candidate]
+  (let [fields
+        [:artifact :schema-version :source-core
+         :module-id :profile :source-target
+         :target-request :target-request-metadata
+         :functions :globals :control-flow-graph
+         :data-flow-graph :type-table :effect-table
+         :effect-order-graph :ownership-table
+         :capability-table :capability-proof-table
+         :safety-table :profile-target-table
+         :runtime-check-table :proof-certificate-table
+         :source-map :domain-anchors :diagnostics
+         :provenance :construction :pass-contract
+         :pass-execution-record :verification-status
+         :target-independent? :b1-preflight :scope
+         :clojure-seed-boundary? :self-hosted?]
+        field-set (set fields)]
+    (if (sh12-exact-keys? expected field-set)
+      (if (sh12-exact-keys? candidate field-set)
+        (sh12-mir-field-values-equal?
+         expected candidate fields)
+        false)
+      false)))
+
+(defn sh12-mir-verification-valid?
+  [mir mir-verification]
+  (if
+   (sh12-exact-keys?
+    mir-verification
+    #{:status :mir-module :checks
+      :diagnostics :preserves})
+    (if (= :stage1-source-owned
+           (get mir-verification :status))
+      (if
+       (sh12-exact-mir-module-equal?
+        mir (get mir-verification :mir-module))
+        (if
+         (=
+          [:module-identity-complete
+           :checked-core-reference-present
+           :profile-and-target-request-attached
+           :every-function-has-entry-block
+           :every-block-terminates
+           :control-flow-edges-valid
+           :definitions-dominate-uses
+           :data-flow-edges-exposed
+           :types-match-operation-schemas
+           :effect-ordering-constraints-present
+           :safety-sensitive-operations-have-outcomes
+           :runtime-checks-dominate-guarded-operations
+           :source-and-generated-origins-valid
+           :ownership-resource-operations-match-c9-facts
+           :domain-anchors-valid
+           :target-specific-opcodes-rejected
+           :diagnostics-follow-c15-shape]
+          (get mir-verification :checks))
+          (if
+           (sh12-c11-diagnostics-valid?
+            (get mir-verification :diagnostics))
+            (=
+             [:source-spans :syntax-identity
+              :checked-core-identity
+              :core-node-identity
+              :type-facts :effect-facts
+              :capability-facts :ownership-facts
+              :safe1-outcomes
+              :runtime-check-records
+              :proof-obligations
+              :profile-target-metadata
+              :source-origin-map
+              :generated-origin-chains
+              :control-flow-edges
+              :data-flow-edges
+              :dominance-facts
+              :domain-anchor-links
+              :target-independence
+              :artifact-provenance]
+             (get mir-verification :preserves))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-mir-valid?
+  [checked-core mir mir-verification]
+  (if (sh12-mir-envelope-valid? checked-core mir)
+    (if
+     (if
+      (= :runtime-checked
+         (get
+          (get
+           (get checked-core :safety-facts)
+           (get
+            (first (get checked-core :core-nodes))
+            :node-id))
+          :outcome))
+       (sh12-runtime-check-mir-valid?
+        checked-core mir)
+       (sh12-mir-legacy-valid?
+        checked-core mir mir-verification))
+      (sh12-mir-verification-valid?
+       mir mir-verification)
+      false)
+    false))
+
+(defn sh12-bind-authenticated-mir
+  [request checked-core mir mir-verification mir-id]
+  (let [request-preflight (sh12-carrier-preflight request)
+        checked-core-preflight
+        (sh12-carrier-preflight checked-core)
+        mir-preflight (sh12-carrier-preflight mir)
+        verifier-preflight
+        (sh12-carrier-preflight mir-verification)
+        expected
+        (if (= :accepted (get request-preflight :status))
+          (sh12-build-checked-core request)
+          (sh12-rejected request :schema
+                         :request-carrier-bound))]
+    (if
+     (= false
+        (= :accepted
+           (get request-preflight :status)
+           (get checked-core-preflight :status)
+           (get mir-preflight :status)
+           (get verifier-preflight :status)))
+      (sh12-rejected request :verify
+                     :c11-carrier-bound)
+      (if (= :accepted (get expected :status))
+        (if (= expected checked-core)
+          (if (sh12-sha256-id? mir-id)
+            (if (= mir-id (get request :expected-mir-id))
+              (if
+               (sh12-mir-valid?
+                checked-core mir mir-verification)
+                {:artifact :gravity/sh12-authenticated-mir
+                 :schema-version 1
+                 :status :accepted
+                 :artifact-id mir-id
+                 :source-safe-core
+                 (get (get request :safe-core)
+                      :artifact-id)
+                 :checked-core checked-core
+                 :mir-module mir
+                 :mir-verification mir-verification
+                 :identity-input
+                 {:source-safe-core
+                  (get (get request :safe-core)
+                       :artifact-id)
+                  :checked-core
+                  (get checked-core :identity-input)
+                  :c11-revision
+                  (get request :c11-revision)
+                  :mir-id mir-id}
+                 :provenance
+                 {:actual-source-path
+                  (get request :actual-source-path)
+                  :checked-core-provenance
+                  (get checked-core :provenance)}
+                 :diagnostics []
+                 :pending
+                 (get
+                  (sh12-authenticated-mir-bridge-policy)
+                  :pending)
+                 :self-hosted? false
+                 :clojure-seed-boundary? true}
+                (sh12-rejected
+                 request :mir :invalid-c11-result))
+              (sh12-rejected
+               request :verify :mir-identity-substitution))
+            (sh12-rejected
+             request :schema :mir-id))
+          (sh12-rejected
+           request :verify :checked-core-substitution))
+        expected))))
+
+(defn sh12-verify-authenticated-mir
+  [request checked-core mir mir-verification mir-id candidate]
+  (let [candidate-preflight
+        (sh12-carrier-preflight candidate)]
+    (if (= :accepted (get candidate-preflight :status))
+      (let [expected
+            (sh12-bind-authenticated-mir
+             request checked-core mir
+             mir-verification mir-id)]
+        {:artifact
+         :gravity/sh12-authenticated-mir-verification
+         :status
+         (if (= expected candidate) :passed :rejected)
+         :checks
+         [:fresh-sh11-verification
+          :exact-checked-core-adaptation
+          :gravity-c11-builder-result
+          :gravity-c11-verifier-result
+          :type-effect-capability-ownership-safety-preservation
+          :runtime-check-preservation
+          :path-neutral-identity
+          :separate-actual-path-provenance]
+         :expected expected
+         :candidate candidate})
+      {:artifact
+       :gravity/sh12-authenticated-mir-verification
+       :status :rejected
+       :reason :candidate-result-carrier-bound
+       :checks [:bounded-candidate-carrier]
+       :candidate-preflight candidate-preflight
+       :candidate-echo :omitted
+       :diagnostics
+       [(sh12-diagnostic
+         request :verify
+         :candidate-result-carrier-bound)]})))

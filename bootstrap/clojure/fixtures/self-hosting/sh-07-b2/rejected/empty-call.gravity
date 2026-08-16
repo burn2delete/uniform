@@ -1,0 +1,15 @@
+(ns self-hosting.sh07-b2.reject.empty-call
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B2
+              :sh07-b2 {:expected-rule "C6-CORE-SHAPE"
+                        :expected-stage :core-lowering
+                        :expected-severity :error
+                        :expected-reason :call-operator-required
+                        :expected-remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}}))
+
+(def empty-call
+  ())

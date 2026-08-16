@@ -1,0 +1,237 @@
+(ns gravity.self-hosting.w5-domain-schema-ai.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-domain-schema-ai-request
+             w5-domain-schema-ai-alternate-path-request
+             w5-domain-schema-ai-request-for-source])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def dsai-id
+  "sha256:1111111111111111111111111111111111111111111111111111111111111111")
+(def dsai-id-2
+  "sha256:2222222222222222222222222222222222222222222222222222222222222222")
+(def dsai-id-3
+  "sha256:3333333333333333333333333333333333333333333333333333333333333333")
+(def dsai-id-4
+  "sha256:4444444444444444444444444444444444444444444444444444444444444444")
+
+(defn dsai-span [start end]
+  {:source-id :gravity.self-hosting/w5-domain-schema-ai
+   :start-byte start :end-byte end :line 1 :column 1})
+
+(defn dsai-domain []
+  {:domain :ai-agentic :profiles #{:ai :distributed :hosted}
+   :backends #{:workflow-graph :javascript-typescript :jvm}
+   :artifacts #{:agent-manifest :tool-policy :prompt-hashes :eval-report
+                :replay-log}
+   :examples #{:support-agent :data-extractor :code-reviewer
+               :human-review-workflow}
+   :rejects #{:tool-without-human-review :schema-less-output
+              :prompt-policy-escalation :unvalidated-generated-code}
+   :source-span (dsai-span 0 1)
+   :provenance [{:kind :source :source-id :DOM18}]})
+
+(defn dsai-schema []
+  {:schema-id :TicketClassification :version 2 :compatibility :additive
+   :fields {:priority #{:low :medium :high} :category :String
+            :confidence :F64}
+   :derives #{:validator :json-schema :graphql :openapi :ai-output}
+   :boundaries #{:api-input :database-row :model-output :workflow-state}
+   :schema-hash dsai-id :source-span (dsai-span 2 3)
+   :provenance [{:kind :source :source-id :S1}]})
+
+(defn dsai-serializer []
+  {:artifact :gravity/serializer :schema-id :TicketClassification
+   :schema-version 2 :format :json :unknown-fields :reject
+   :numeric-policy :exact-or-diagnostic :decoded-trust :untrusted
+   :canonical false :roundtrip-fixtures [:accepted-json-roundtrip]
+   :source-span (dsai-span 4 5)
+   :provenance [{:kind :source :source-id :S2}]})
+
+(defn dsai-migration []
+  {:artifact :gravity/database-migration :migration-id dsai-id-2
+   :from-schema :TicketClassification :to-schema :TicketClassification
+   :policy :additive :dialect :postgresql :effects #{:database/write}
+   :capabilities #{:db/migrate} :data-loss :none :rollback :rollback
+   :deployment-order :after-application :review :not-required
+   :fixtures [:additive-migration-plan]
+   :source-span (dsai-span 6 7)
+   :provenance [{:kind :source :source-id :S6}]})
+
+(defn dsai-provider []
+  {:provider-id :primary-ai :adapter :declared-provider
+   :model-id "gpt-support" :version-policy :pinned
+   :modes #{:text :structured-output :tool-calls :embeddings}
+   :credential-source :declared-secret-source :redaction :redact-secrets
+   :replay :recorded :identity
+   {:provider-id :primary-ai :model-id "gpt-support" :version "1"
+    :adapter-version "1" :schema-mode :provider-and-runtime}
+   :fallback-eval-required? true :source-span (dsai-span 8 9)
+   :provenance [{:kind :source :source-id :A2}]})
+
+(defn dsai-model []
+  {:model-id "gpt-support" :provider-id :primary-ai :version :pinned
+   :modes #{:text :structured-output} :input-schema :TicketClassification
+   :output-schema :TicketClassification
+   :budget {:max-output-tokens 4096 :max-retries 2
+            :max-wall-time-ms 30000 :max-cost-usd 0.25}
+   :replay :recorded :source-span (dsai-span 10 11)
+   :provenance [{:kind :source :source-id :A1}]})
+
+(defn dsai-prompt []
+  {:prompt-id :classify-ticket :input-schema :TicketClassification
+   :output-schema :TicketClassification
+   :authority {:system :system-trusted :developer :developer-trusted
+               :user-data :user-data :retrieved-data :retrieved-data
+               :tool-result-data :tool-result-data}
+   :taint {:ticket-body :untrusted :retrieved-context :untrusted}
+   :visible-tools [:ticket/read] :validation :schema-validated :repair 1
+   :refusal :explicit :compatibility :additive :prompt-hash dsai-id-3
+   :source-span (dsai-span 12 13)
+   :provenance [{:kind :source :source-id :A3}]})
+
+(defn dsai-tool []
+  {:tool-id :ticket/read :version 1 :input-schema :TicketClassification
+   :output-schema :TicketClassification :effects #{:database/read}
+   :capabilities #{:ticket/read} :idempotency :idempotent :retry :safe
+   :timeout 30 :human-review :not-required :replay :recorded-result
+   :taint :untrusted-input :redaction :redact-secrets
+   :source-span (dsai-span 14 15)
+   :provenance [{:kind :source :source-id :A4}]})
+
+(defn dsai-agent []
+  {:agent-id :support-triage :version 1 :model "gpt-support"
+   :prompts [:classify-ticket] :tools [:ticket/read]
+   :memory {:memory-id :support-memory :mode :read}
+   :policy :support-policy
+   :budget {:max-model-calls 3 :max-tool-calls 8 :max-retries 2
+            :max-wall-time-ms 120000 :max-output-tokens 12288
+            :max-cost-usd 1.0 :max-human-reviews 1}
+   :evals [:support-triage-release]
+   :input-schema :TicketClassification :output-schema :TicketClassification
+   :effects #{:ai/model-call :ai/output-validate}
+   :capabilities #{:provider/model :tool/read :memory/read}
+   :deployment :staging :source-span (dsai-span 16 17)
+   :provenance [{:kind :source :source-id :A5}]})
+
+(defn dsai-workflow []
+  {:workflow-id :triage-ticket :state-schema :TicketClassification
+   :event-schema :TicketClassification :replay :recorded-effects
+   :nodes [{:node-id :classify :kind :model-call
+            :source-span (dsai-span 18 19)
+            :effects #{:ai/model-call} :capabilities #{:provider/model}
+            :replay :recorded}]
+   :migration :preserve :budget-accounting :preserve
+   :model-id "gpt-support" :prompt-id :classify-ticket
+   :tool-id :ticket/read :agent-id :support-triage :memory-id :support-memory
+   :source-span (dsai-span 20 21)
+   :provenance [{:kind :source :source-id :A6}]})
+
+(defn dsai-memory []
+  {:memory-id :support-memory :item-schema :TicketClassification
+   :metadata-schema :TicketClassification
+   :embedding {:model :support-embedding :dimension 1536}
+   :effects #{:ai/memory-read :ai/memory-write :ai/embedding}
+   :capabilities #{:memory/read :memory/write}
+   :partition [:tenant-id :project-id] :retention {:days 90}
+   :redaction [:secrets :customer-pii]
+   :prompt-policy :quote-as-untrusted-data :replay :record-result-ids
+   :source-span (dsai-span 22 23)
+   :provenance [{:kind :source :source-id :A7}]})
+
+(defn dsai-policy []
+  {:policy-id :support-policy
+   :allow #{:repo/read :ai/model-call :ai/memory-read}
+   :deny #{:secrets/read :shell/exec :package/publish}
+   :human-review {:required-for #{:database/write}
+                  :role :repo-maintainer :expiry 900}
+   :taint {:ai-output :untrusted-until-schema-validated
+           :retrieved-memory :data-only}
+   :fallback :requires-eval
+   :generated-code {:must-compile true :must-pass-tests true}
+   :eval-required true :source-span (dsai-span 24 25)
+   :provenance [{:kind :source :source-id :A8}]})
+
+(defn dsai-evaluation []
+  {:eval-id :support-triage-release :subject-id dsai-id-4
+   :dataset {:schema-id :TicketClassification :version 2
+             :provenance dsai-id}
+   :metrics {:schema-validity :equals-one :unsafe-tool-denial :equals-one}
+   :thresholds {:schema-validity 1.0 :unsafe-tool-denial 1.0}
+   :probes [:prompt-injection :tool-escalation :secret-exfiltration]
+   :provider-policy :pinned-or-eval-gated :budget {:max-cost 25}
+   :status :pending :report-id dsai-id-4 :source-span (dsai-span 26 27)
+   :provenance [{:kind :source :source-id :A9}]})
+
+(defn dsai-human-review []
+  {:review-id :submit-review :action-schema :TicketClassification
+   :requires-role :repo-maintainer :evidence dsai-id
+   :payload-hash-rule :canonical-payload-hash :expiry 900
+   :on-deny :finish-without-write
+   :replay :reuse-recorded-decision-if-payload-matches :status :requested
+   :source-span (dsai-span 28 29)
+   :provenance [{:kind :source :source-id :A10}]})
+
+(defn dsai-defense []
+  {:authority-levels #{:system-trusted :developer-trusted :tool-schema-trusted}
+   :untrusted-levels #{:retrieved-data :user-data :ai-output-data
+                       :generated-source-data}
+   :taint-rules {:retrieved-data :data-only :ai-output-data :untrusted}
+   :denied-escalations [:model-text-to-tool-grant :memory-to-policy-override]
+   :secret-policy :never :generated-source-policy :parse-check-before-execute
+   :required-probes [:prompt-injection :tool-escalation :secret-exfiltration]
+   :source-span (dsai-span 30 31)
+   :provenance [{:kind :source :source-id :A11}]})
+
+(defn dsai-authority []
+  {:authority :non-authority :seed true :self-hosted? false :public? false
+   :release? false :closure-status :blocked :execution-status :incomplete
+   :executable? false :full-language-credit? false})
+
+(defn dsai-request [source-path source-extension source-kind]
+  {:artifact :gravity/w5-domain-schema-ai-request :schema-version 1
+   :profile :meta :stage2-target :jvm
+   :candidate-target {:backend :llvm :os :linux :arch :x86_64
+                      :artifact-format :elf :abi :sysv-amd64
+                      :triple "x86_64-unknown-linux-gnu"}
+   :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+   :unsupported-target-policies
+   [{:target :darwin :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-arm64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :darwin-x86_64 :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}
+    {:target :windows :support :unsupported :invokes-clojure? false :links-jvm? false :fallback? false}]
+   :domain-manifest (dsai-domain) :schema-manifest (dsai-schema)
+   :serializer (dsai-serializer) :migration (dsai-migration)
+   :provider (dsai-provider) :model (dsai-model) :prompt (dsai-prompt)
+   :tool (dsai-tool) :agent (dsai-agent) :workflow (dsai-workflow)
+   :memory (dsai-memory) :policy (dsai-policy)
+   :evaluation (dsai-evaluation) :human-review (dsai-human-review)
+   :defense (dsai-defense)
+   :effects #{:ai/model-call :ai/output-validate :ai/tool-call
+              :ai/memory-read :ai/memory-write :ai/embedding
+              :ai/human-review :ai/eval-run}
+   :capabilities #{:provider/model :tool/read :ticket/read :memory/read
+                   :memory/write :db/migrate :human-review}
+   :diagnostics []
+   :provenance {:actual-source-path source-path
+                :actual-manifest-path (str source-path ".manifest.edn")
+                :source-id :gravity.self-hosting/w5-domain-schema-ai
+                :compiler-id "gravity-stage2-w5-domain-schema-ai"
+                :compiler-version "stage2-w5-domain-schema-ai-v1"
+                :source-extension source-extension :source-kind source-kind
+                :origin-chain [{:kind :source
+                                :source-id :gravity.self-hosting/w5-domain-schema-ai}]}
+   :claims {:producer-boolean? false :narrative? false
+            :source-ownership-only? false :check-only? false
+            :replay-only? false :global-advancement? false
+            :authority-claim? false}
+   :authority (dsai-authority) :source-span (dsai-span 32 33)})
+
+(defn w5-domain-schema-ai-request [source-path source-extension source-kind]
+  (dsai-request source-path source-extension source-kind))
+(defn w5-domain-schema-ai-alternate-path-request [source-path source-extension source-kind]
+  (dsai-request source-path source-extension source-kind))
+(defn w5-domain-schema-ai-request-for-source [source-path source-extension source-kind]
+  (dsai-request source-path source-extension source-kind))

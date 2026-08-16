@@ -1,0 +1,32 @@
+; SH-07-B12 rejects an alias dependency whose capability is unavailable.
+(ns self-hosting.sh07-b12.reject.missing-alias-capability
+  (:profile :meta)
+  (:target :jvm)
+  (:requires [shared.net :as net :profile :meta
+              :capabilities #{:network/client}])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B12
+    :case :missing-alias-capability
+    :compiler
+    {:sh06-request
+     {:request-version 1
+      :references [{:symbol net/get :position :expression}]
+      :candidate-bindings
+      [{:name get :namespace shared.net :visibility :public
+        :capabilities [:network/client]}]}}
+    :non-claims [:capability-grant-synthesis
+                 :runtime-linking
+                 :whole-program-execution]
+    :sh07-b12
+    {:expected-rule "C5-CAPABILITY"
+     :expected-stage :name-resolution
+     :expected-severity :error
+     :expected-reason :missing-import-capability
+     :expected-remediation
+     "Grant every imported capability through package and namespace policy."}}))
+
+(def invalid-reference
+  net/get)

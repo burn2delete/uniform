@@ -1,0 +1,5 @@
+{:phase :build
+ :operation :assoc-in
+ :path [:unexpected]
+ :value true
+ :expected-rule "C3-SHAPE"}

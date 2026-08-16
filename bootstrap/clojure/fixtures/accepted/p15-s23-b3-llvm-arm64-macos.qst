@@ -1,0 +1,2 @@
+(ns checked.small (:profile :hosted) (:target :jvm) (:safety :safe) (:effects #{}) (:capabilities #{}) (:exports [main]))
+(defn main [] (let [x 7] (if true (do x) 9)))

@@ -1,0 +1,18 @@
+(ns self-hosting.sh07-b5.reject.lexical-var-target
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B5
+    :sh07-b5
+    {:expected-rule "C6-VERIFY"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :var-top-level-namespace-binding-required
+     :expected-remediation
+     "Use var only with a same-namespace top-level var or function binding; lexical bindings are not var objects."}}))
+
+(defn invalid-var [value]
+  (var value))

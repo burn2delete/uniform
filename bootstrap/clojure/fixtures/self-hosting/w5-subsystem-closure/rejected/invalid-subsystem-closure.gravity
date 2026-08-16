@@ -1,0 +1,353 @@
+(ns gravity.self-hosting.w5-subsystem-closure.rejected.invalid-subsystem-closure
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-subsystem-closure-invalid-schema-request
+             w5-subsystem-closure-invalid-target-request
+             w5-subsystem-closure-invalid-runtime-request
+             w5-subsystem-closure-invalid-standard-library-request
+             w5-subsystem-closure-invalid-package-build-request
+             w5-subsystem-closure-invalid-linkage-request
+             w5-subsystem-closure-invalid-linkage-verification-request
+             w5-subsystem-closure-invalid-compiler-request
+             w5-subsystem-closure-invalid-transcript-request
+             w5-subsystem-closure-invalid-replay-request
+             w5-subsystem-closure-invalid-recipe-request
+             w5-subsystem-closure-invalid-environment-request
+             w5-subsystem-closure-invalid-lock-request
+             w5-subsystem-closure-invalid-toolchain-request
+             w5-subsystem-closure-invalid-source-status-request
+             w5-subsystem-closure-invalid-executable-status-request
+             w5-subsystem-closure-invalid-conformance-request
+             w5-subsystem-closure-invalid-provenance-status-request
+             w5-subsystem-closure-invalid-missing-status-request
+             w5-subsystem-closure-invalid-extra-status-request
+             w5-subsystem-closure-invalid-status-drift-request
+             w5-subsystem-closure-invalid-compiler-status-request
+             w5-subsystem-closure-invalid-linkage-status-request
+             w5-subsystem-closure-invalid-provenance-request
+             w5-subsystem-closure-invalid-tcb-request
+             w5-subsystem-closure-invalid-emulator-authority-request
+             w5-subsystem-closure-invalid-emulator-tcb-request
+             w5-subsystem-closure-invalid-authority-request
+             w5-subsystem-closure-invalid-upstream-request
+             w5-subsystem-closure-invalid-source-span-request
+             w5-subsystem-closure-invalid-replay-transcript-request
+             w5-subsystem-closure-invalid-recipe-source-request
+             w5-subsystem-closure-invalid-environment-seed-request
+             w5-subsystem-closure-invalid-lock-id-request
+             w5-subsystem-closure-invalid-toolchain-family-request
+             w5-subsystem-closure-invalid-provenance-recipe-request
+             w5-subsystem-closure-invalid-source-fixture-suffix-request
+             w5-subsystem-closure-invalid-source-extension-request
+             w5-subsystem-closure-invalid-source-extension-mismatch-request
+             w5-subsystem-closure-invalid-source-span-source-id-request
+             w5-subsystem-closure-invalid-runtime-span-crosslink-request
+             w5-subsystem-closure-invalid-compiler-source-suffix-request
+             w5-subsystem-closure-invalid-transcript-parity-id-request
+             w5-subsystem-closure-invalid-replay-path-request
+             w5-subsystem-closure-invalid-tcb-substitution-request
+             w5-subsystem-closure-invalid-provenance-path-request
+             w5-subsystem-closure-invalid-coherent-environment-request
+             w5-subsystem-closure-substituted-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-subsystem-closure-invalid-schema-request [request]
+  (assoc request :unexpected-field :not-allowed))
+
+(defn w5-subsystem-closure-invalid-target-request [request]
+  (assoc request :target-scope
+         (assoc (get request :target-scope)
+                :candidate-target :jvm)))
+
+(defn w5-subsystem-closure-invalid-runtime-request [request]
+  (assoc request :subsystems
+         (assoc (get request :subsystems) :runtime
+                (assoc (get (get request :subsystems) :runtime)
+                       :source-id :forged-runtime-source))))
+
+(defn w5-subsystem-closure-invalid-standard-library-request [request]
+  (assoc request :subsystems
+         (assoc (get request :subsystems) :standard-library
+                (assoc (get (get request :subsystems) :standard-library)
+                       :executable-id :forged-standard-library-executable))))
+
+(defn w5-subsystem-closure-invalid-package-build-request [request]
+  (assoc request :subsystems
+         (assoc (get request :subsystems) :package-build
+                (assoc (get (get request :subsystems) :package-build)
+                       :provenance-id :forged-package-build-provenance))))
+
+(defn w5-subsystem-closure-invalid-linkage-request [request]
+  (assoc request :cross-subsystem-linkage
+         (assoc (get request :cross-subsystem-linkage)
+                :runtime-executable-id :forged-runtime-executable)))
+
+(defn w5-subsystem-closure-invalid-linkage-verification-request [request]
+  (assoc request :cross-subsystem-linkage
+         (assoc (get request :cross-subsystem-linkage)
+                :verification-id :forged-linkage-verification)))
+
+(defn w5-subsystem-closure-invalid-compiler-request [request]
+  (assoc request :compiler
+         (assoc (get request :compiler)
+                :executable-id :forged-compiler-executable)))
+
+(defn w5-subsystem-closure-invalid-transcript-request [request]
+  (assoc request :transcripts
+         (assoc (get request :transcripts) 1
+                (assoc (get (get request :transcripts) 1)
+                       :status :passed))))
+
+(defn w5-subsystem-closure-invalid-replay-request [request]
+  (assoc request :replay
+         (assoc (get request :replay) 0
+                (assoc (get (get request :replay) 0)
+                       :native-host? true))))
+
+(defn w5-subsystem-closure-invalid-recipe-request [request]
+  (assoc request :build-recipes
+         (assoc (get request :build-recipes) 2
+                (assoc (get (get request :build-recipes) 2)
+                       :compiler-id :forged-compiler))))
+
+(defn w5-subsystem-closure-invalid-environment-request [request]
+  (assoc request :environments
+         (assoc (get request :environments) 0
+                (assoc (get (get request :environments) 0)
+                       :network-policy :enabled))))
+
+(defn w5-subsystem-closure-invalid-lock-request [request]
+  (assoc request :locks
+         (assoc (get request :locks) 0
+                (assoc (get (get request :locks) 0)
+                       :complete? false))))
+
+(defn w5-subsystem-closure-invalid-toolchain-request [request]
+  (assoc request :toolchains
+         (assoc (get request :toolchains) 0
+                (assoc (get (get request :toolchains) 0)
+                       :target :jvm))))
+
+(defn w5-subsystem-closure-invalid-source-status-request [request]
+  (assoc request :subsystems
+         (assoc (get request :subsystems) :runtime
+                (assoc (get (get request :subsystems) :runtime)
+                       :source-status :pending))))
+
+(defn w5-subsystem-closure-invalid-executable-status-request [request]
+  (assoc request :subsystems
+         (assoc (get request :subsystems) :runtime
+                (assoc (get (get request :subsystems) :runtime)
+                       :executable-status :pending))))
+
+(defn w5-subsystem-closure-invalid-conformance-request [request]
+  (assoc request :subsystems
+         (assoc (get request :subsystems) :runtime
+                (assoc (get (get request :subsystems) :runtime)
+                       :conformance-status :descriptor-only))))
+
+(defn w5-subsystem-closure-invalid-provenance-status-request [request]
+  (assoc request :subsystems
+         (assoc (get request :subsystems) :runtime
+                (assoc (get (get request :subsystems) :runtime)
+                       :provenance-status :pending))))
+
+(defn w5-subsystem-closure-invalid-missing-status-request [request]
+  (assoc request :subsystems
+         (assoc (get request :subsystems) :runtime
+                (dissoc (get (get request :subsystems) :runtime)
+                        :source-status))))
+
+(defn w5-subsystem-closure-invalid-extra-status-request [request]
+  (assoc request :subsystems
+         (assoc (get request :subsystems) :runtime
+                (assoc (get (get request :subsystems) :runtime)
+                       :status-detail :forged))))
+
+(defn w5-subsystem-closure-invalid-status-drift-request [request]
+  (assoc request :subsystems
+         (assoc (get request :subsystems) :runtime
+                (assoc (get (get request :subsystems) :runtime)
+                       :conformance-status :verified))))
+
+(defn w5-subsystem-closure-invalid-compiler-status-request [request]
+  (assoc request :compiler
+         (assoc (get request :compiler) :status :pending)))
+
+(defn w5-subsystem-closure-invalid-linkage-status-request [request]
+  (assoc request :cross-subsystem-linkage
+         (assoc (get request :cross-subsystem-linkage)
+                :status :descriptor-only)))
+
+(defn w5-subsystem-closure-invalid-provenance-request [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) 1
+                (assoc (get (get request :provenance) 1)
+                       :source-id :forged-standard-library-source))))
+
+(defn w5-subsystem-closure-invalid-tcb-request [request]
+  (assoc request :residual-tcb
+         (assoc (get request :residual-tcb)
+                :residual-trusted-components [])))
+
+(defn w5-subsystem-closure-invalid-emulator-authority-request [request]
+  (assoc request :replay
+         (assoc (get request :replay) 0
+                (assoc (get (get request :replay) 0)
+                       :emulator-authority? true))))
+
+(defn w5-subsystem-closure-invalid-emulator-tcb-request [request]
+  (let [tcb (get request :residual-tcb)
+        components (get tcb :residual-trusted-components)]
+    (assoc request :residual-tcb
+           (assoc tcb :residual-trusted-components
+                  (conj components :development-emulator)))))
+
+(defn w5-subsystem-closure-invalid-authority-request [request]
+  (assoc request :authority
+         (assoc (get request :authority)
+                :candidate-invokes-clojure? true)))
+
+(defn w5-subsystem-closure-invalid-upstream-request [request]
+  (assoc request :upstream-workstreams :inferred))
+
+(defn w5-subsystem-closure-invalid-source-span-request [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :line -1)))
+
+(defn w5-subsystem-closure-invalid-replay-transcript-request [request]
+  (assoc request :replay
+         (assoc (get request :replay) 0
+                (assoc (get (get request :replay) 0)
+                       :transcript-id :forged-transcript))))
+
+(defn w5-subsystem-closure-invalid-recipe-source-request [request]
+  (assoc request :build-recipes
+         (assoc (get request :build-recipes) 0
+                (assoc (get (get request :build-recipes) 0)
+                       :source-id :standard-library-source))))
+
+(defn w5-subsystem-closure-invalid-environment-seed-request [request]
+  (assoc request :environments
+         (assoc (get request :environments) 0
+                (assoc (get (get request :environments) 0)
+                       :random-seed 18))))
+
+(defn w5-subsystem-closure-invalid-lock-id-request [request]
+  (assoc request :locks
+         (assoc (get request :locks) 0
+                (assoc (get (get request :locks) 0)
+                       :lock-id :forged-lock))))
+
+(defn w5-subsystem-closure-invalid-toolchain-family-request [request]
+  (assoc request :toolchains
+         (assoc (get request :toolchains) 0
+                (assoc (get (get request :toolchains) 0)
+                       :family :gcc))))
+
+(defn w5-subsystem-closure-invalid-provenance-recipe-request [request]
+  (assoc request :provenance
+         (assoc (get request :provenance) 0
+                (assoc (get (get request :provenance) 0)
+                       :recipe-id :standard-library-recipe))))
+
+(defn w5-subsystem-closure-invalid-source-fixture-suffix-request [request]
+  (assoc request :source-span
+         (assoc (get request :source-span)
+                :actual-source-path "/checkout-a/fixture.edn")))
+
+(defn w5-subsystem-closure-invalid-source-extension-request [request]
+  (assoc request :source-extension ".edn"))
+
+(defn w5-subsystem-closure-invalid-source-extension-mismatch-request [request]
+  (assoc request :source-extension
+         (if (= ".gravity" (get request :source-extension))
+           ".qst"
+           ".gravity")))
+
+(defn w5-subsystem-closure-invalid-source-span-source-id-request [request]
+  (assoc request :source-span
+         (assoc (get request :source-span) :source-id :forged-source)))
+
+(defn w5-subsystem-closure-invalid-runtime-span-crosslink-request [request]
+  (let [subsystems (get request :subsystems)
+        runtime (get subsystems :runtime)
+        span (get runtime :source-span)]
+    (assoc request :subsystems
+           (assoc subsystems :runtime
+                  (assoc runtime :source-span
+                         (assoc span :actual-source-path
+                                "/checkout-a/sources/other.gravity"))))))
+
+(defn w5-subsystem-closure-invalid-compiler-source-suffix-request [request]
+  (assoc request :compiler
+         (assoc (get request :compiler)
+                :actual-source-path "/checkout-a/compiler/source.qst")))
+
+(defn w5-subsystem-closure-invalid-transcript-parity-id-request [request]
+  (let [transcripts (get request :transcripts)
+        runtime (get transcripts 0)]
+    (assoc request :transcripts
+           (assoc transcripts 0
+                  (assoc runtime :diagnostic-parity-id
+                         :standard-library-diagnostic-parity)))))
+
+(defn w5-subsystem-closure-invalid-replay-path-request [request]
+  (let [replay (get request :replay)
+        runtime (get replay 0)]
+    (assoc request :replay
+           (assoc replay 0
+                  (assoc runtime :actual-replay-path
+                         "/checkout-a/replay/runtime.log")))))
+
+(defn w5-subsystem-closure-invalid-tcb-substitution-request [request]
+  (let [tcb (get request :residual-tcb)
+        components (get tcb :residual-trusted-components)]
+    (assoc request :residual-tcb
+           (assoc tcb :residual-trusted-components
+                  (assoc components 0 :forged-seed)))))
+
+(defn w5-subsystem-closure-invalid-provenance-path-request [request]
+  (let [provenance (get request :provenance)
+        runtime (get provenance 0)
+        standard (get provenance 1)]
+    (assoc request :provenance
+           (assoc provenance 0
+                  (assoc runtime :actual-provenance-path
+                         (get standard :actual-provenance-path))))))
+
+(defn w5-subsystem-closure-invalid-coherent-environment-request [request]
+  (let [environments (get request :environments)
+        environment (get environments 0)
+        recipes (get request :build-recipes)
+        provenance (get request :provenance)
+        forged-id :forged-environment]
+    (assoc request
+           :environments
+           (assoc environments 0
+                  (assoc environment :environment-id forged-id))
+           :build-recipes
+           (assoc (assoc (assoc recipes 0
+                                (assoc (get recipes 0)
+                                       :environment-id forged-id))
+                         1
+                         (assoc (get recipes 1)
+                                :environment-id forged-id))
+                  2
+                  (assoc (get recipes 2)
+                         :environment-id forged-id))
+           :provenance
+           (assoc (assoc (assoc provenance 0
+                                (assoc (get provenance 0)
+                                       :environment-id forged-id))
+                         1
+                         (assoc (get provenance 1)
+                                :environment-id forged-id))
+                  2
+                  (assoc (get provenance 2)
+                         :environment-id forged-id)))))
+
+(defn w5-subsystem-closure-substituted-result [result]
+  (assoc result :closure-status :complete))

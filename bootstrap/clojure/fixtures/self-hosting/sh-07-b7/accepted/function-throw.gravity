@@ -1,0 +1,14 @@
+; SH-07-B7 preserves the owning function for a latent throw transfer.
+(ns self-hosting.sh07-b7.function-throw
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [raise])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B7
+              :fixture :function-throw
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn raise [value]
+  (throw value))

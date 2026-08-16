@@ -1,0 +1,25 @@
+; SH-07-B12 rejects two required modules that declare the same alias.
+(ns self-hosting.sh07-b12.reject.duplicate-alias
+  (:profile :meta)
+  (:target :jvm)
+  (:requires [left.core :as shared :profile :core :boundary :pure-core]
+             [right.core :as shared :profile :core :boundary :pure-core])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B12
+    :case :duplicate-alias
+    :non-claims [:alias-table-carrier-validation
+                 :runtime-linking
+                 :whole-program-execution]
+    :sh07-b12
+    {:expected-rule "C5-ALIAS"
+     :expected-stage :name-resolution
+     :expected-severity :error
+     :expected-reason :duplicate-namespace-alias
+     :expected-remediation
+     "Declare one unique alias and use only declared qualifiers."}}))
+
+(def invalid-reference
+  shared/value)

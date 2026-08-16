@@ -1,0 +1,1794 @@
+; Gravity-authored stage2 runtime function set for the accepted hosted-core
+; subset.  The Clojure bootstrap supplies only the generic plan runner and
+; declared host primitive boundary; runtime value formatting is sourced from
+; this module and compiled through the stage2 plan emitter.
+(ns gravity.bootstrap.p15-s23.runtime
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:memory/allocate :io/write})
+  (:capabilities #{:memory/allocator :io/stdout})
+  (:providers [{:capability :memory/allocator
+                :provider-id :gravity.reference/jvm-managed-allocator
+                :version 1
+                :profile :hosted
+                :target :jvm
+                :phase :runtime
+                :mode :pinned-reference}]))
+
+; These records are the exact, source-owned contract for the pinned reference
+; runtime slice.  They do not claim a deployable stdout provider, a portable
+; allocator provider identity, or normalization of fatal JVM OOM conditions.
+; The Clojure seed validates every key, cross-link, source hash, function hash,
+; and operation fact before it delegates to the typed reference adapter.
+(def p15-s23-reference-runtime-contract
+  {:artifact :gravity/p15-s23-reference-runtime-contract
+   :schema-version 1
+   :status :complete-for-pinned-reference-runtime-contract-slice
+   :runtime-family :managed
+   :profile :hosted
+   :target :jvm
+   :source-module gravity.bootstrap.p15-s23.runtime
+   :declared-effects #{:memory/allocate :io/write}
+   :declared-capabilities #{:memory/allocator :io/stdout}
+   :source-provider-selection-ids
+   [:gravity.reference/jvm-managed-allocator]
+   :handler-provider-selection-ids
+   [:gravity.reference/transcript-capture]
+   :provider-selection-record-set-id
+   :gravity.reference/runtime-provider-selections
+   :capability-proof-record-set-id
+   :gravity.reference/runtime-capability-proofs
+   :effect-graph-id :gravity.reference/runtime-effect-graph
+   :function-graph-id :gravity.reference/runtime-function-graph
+   :function-effect-table-id :gravity.reference/runtime-function-effects
+   :service-manifest-id :gravity.reference/managed-runtime-services
+   :managed-adapter-id :gravity.reference/jvm-managed-adapter
+   :memory-provider-id :gravity.reference/jvm-managed-allocator
+   :capability-manifest-id :gravity.reference/runtime-capabilities
+   :observability-manifest-id :gravity.reference/runtime-observability
+   :failure-policy-id :gravity.reference/runtime-failure-policy
+   :audit-policy-id :gravity.reference/runtime-audit-policy
+   :grant-record-set-id :gravity.reference/runtime-grants
+   :io-projections
+   {:closed-plan-interpreter
+    {:direct-handler-function
+     p15-s23-runtime-evaluate-closed-instruction
+     :transitive-function-scope
+     #{p15-s23-runtime-evaluate-arguments
+       p15-s23-runtime-evaluate-bindings
+       p15-s23-runtime-evaluate-sequence
+       p15-s23-runtime-evaluate-closed-instruction
+       p15-s23-runtime-execute-closed-plan}
+     :handled #{:io/write}
+     :escaping #{:memory/allocate}
+     :handler-id :gravity.reference/transcript-string-handler
+     :live-stdout? false}
+    :legacy-println-helpers
+    {:function-scope
+     #{p15-s23-runtime-println-value
+       p15-s23-runtime-println-two}
+     :handled #{}
+     :escaping #{:memory/allocate :io/write}
+     :deployment-provider :unresolved
+     :deployment-grant :unresolved
+     :reference-handler-authority? false}}
+   :generic-emitter-effect-summary
+   :superseded-for-pinned-runtime-contract
+   :generic-emitter-effect-summary-credited? false
+   :program-deployment-stdout :unresolved
+   :checked-core-str-println-admission? true
+   :checked-core-str-println-admission-status
+   :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+   :checked-core-binary-integer-comparison-admission? true
+   :checked-core-binary-integer-comparison-operations
+   #{= < <= > >=}
+   :checked-core-program-authority-policy-id
+   :gravity.reference/checked-core-program-authority-policy
+   :checked-core-verification-replay-policy-id
+   :gravity.reference/checked-core-verification-replay-policy
+   :checked-core-verification-replay-audit-policy-id
+   :gravity.reference/checked-core-verification-replay-audit-policy
+   :checked-core-authority-record-schema-version 1
+   :checked-core-verification-replay-authority-schema-version 1
+   :checked-core-reference-only? true
+   :typed-fourth-authority
+   :gravity/p15-s23-checked-core-authority-binding-v1
+   :typed-fourth-authority-consumed? true
+   :target-lowering-credit? false
+   :release-credit? false
+   :c11-credit? false
+   :fatal-host-oom :unproven-fatal-host-boundary
+   :global-conformance-residuals
+   [:deployment-stdout-provider-and-grant
+    :legacy-helper-deployment-stdout-provider-and-grant
+    :fatal-jvm-oom-normalization
+    :generic-emitter-effect-precision
+    :non-jvm-runtime-adapters
+    :clojure-seed-bridge-retirement
+    :whole-runtime-conformance]
+   :mir-derived? false
+   :whole-language? false
+   :clojure-seed-boundary? true
+   :self-hosted? false})
+
+; This policy is the direct issuer and trust anchor for checked-program C8
+; authority.  Its program grants are distinct from the runtime and handler
+; grants consumed by the B1 adapter.  Source declarations describe effects and
+; capabilities but are never themselves grants.  The bootstrap helper binds an
+; exact program principal, source hash, plan id, provider selection, and grant
+; record to this pinned policy before any reference-runtime invocation.
+(def p15-s23-checked-core-program-authority-policy
+  {:artifact :gravity/p15-s23-checked-core-program-authority-policy
+   :schema-version 1
+   :policy-id :gravity.reference/checked-core-program-authority-policy
+   :audit-policy-id :gravity.reference/runtime-audit-policy
+   :status :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+   :profile :hosted
+   :target :jvm
+   :program-principal-source :compiled-module
+   :source-declaration-is-grant? false
+   :operation-contracts
+   {str {:source-operation :str
+         :effect :memory/allocate
+         :capability :memory/allocator
+         :provider-id :gravity.reference/jvm-managed-allocator
+         :program-grant-template-id
+         :gravity.reference/program-grant-managed-allocation
+         :scope :pinned-runtime-plan
+         :safety-outcome :runtime-checked
+         :result-type :gravity/string}
+    println {:source-operation :println
+             :effect :io/write
+             :capability :io/stdout
+             :provider-id :gravity.reference/transcript-capture
+             :program-grant-template-id
+             :gravity.reference/program-grant-reference-stdout
+             :scope :checked-core-program-transcript
+             :safety-outcome :runtime-checked
+             :result-type :gravity/nil
+             :delivery :in-memory-reference-transcript}}
+   :runtime-principal gravity.bootstrap.p15-s23.runtime
+   :handler-principal :gravity.bootstrap/reference-harness
+   :allowed-runtime-provider-ids
+   #{:gravity.reference/jvm-managed-allocator
+     :gravity.reference/transcript-capture}
+   :allowed-runtime-grant-ids
+   #{:gravity.reference/grant-managed-allocation
+     :gravity.reference/grant-reference-stdout}
+   :allowed-handler-provider-ids #{:gravity.reference/transcript-capture}
+   :allowed-handler-grant-ids #{:gravity.reference/grant-test-fixture}
+   :phase :runtime
+   :lifetime :single-reference-execution
+   :reference-invocation :single-reference-execution
+   :package :gravity/bootstrap
+   :deployment :reference-harness-only
+   :single-invocation? true
+   :reference-interpreter? true
+   :transcript-only? true
+   :deployment-runtime? false
+   :live-external-io? false
+   :delegation :none
+   :authority-widening? false
+   :program-grants-in-adapter-authority? false})
+
+; Verification is a second runtime evaluation, not part of authoritative
+; artifact construction.  It therefore has its own code-owned principal,
+; grants, lifetime, and audit boundary.  It never consumes the checked
+; program's fourth-argument authority and never reaches deployment stdout.
+(def p15-s23-checked-core-verification-replay-policy
+  {:artifact :gravity/p15-s23-checked-core-verification-replay-policy
+   :schema-version 1
+   :policy-id :gravity.reference/checked-core-verification-replay-policy
+   :audit-policy-id
+   :gravity.reference/checked-core-verification-replay-audit-policy
+   :status :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+   :profile :hosted
+   :target :jvm
+   :verifier-principal :gravity.bootstrap/checked-core-verifier
+   :runtime-principal gravity.bootstrap.p15-s23.runtime
+   :handler-principal :gravity.bootstrap/verification-transcript-harness
+   :invocation-contract
+   {:caller-principal :gravity.bootstrap/checked-core-verifier
+    :callee-principal gravity.bootstrap.p15-s23.runtime
+    :invocation-handle-id
+    :gravity.reference/checked-core-verification-runtime-handle
+    :authorization-source :exact-verifier-provider-grants
+    :scope :pinned-checked-core-artifact-replay
+    :authority-transfer? false}
+   :provider-contracts
+   {:verifier-managed-allocation
+    {:provider-id :gravity.reference/jvm-managed-allocator
+     :effect :memory/allocate
+     :capability :memory/allocator
+     :required-when :every-verification-replay}
+    :verifier-transcript-fixture
+    {:provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :test/fixture
+     :required-when :structural-println-present}
+    :managed-allocation
+    {:provider-id :gravity.reference/jvm-managed-allocator
+     :effect :memory/allocate
+     :capability :memory/allocator
+     :required-when :every-verification-replay}
+    :transcript-capture
+    {:provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :io/stdout
+     :handler-capability :test/fixture
+     :required-when :structural-println-present}}
+   :grant-contracts
+   {:verifier-managed-allocation
+    {:grant-id
+     :gravity.reference/verification-grant-verifier-managed-allocation
+     :principal :gravity.bootstrap/checked-core-verifier
+     :provider-id :gravity.reference/jvm-managed-allocator
+     :effect :memory/allocate
+     :capability :memory/allocator
+     :scope :pinned-checked-core-artifact-replay}
+    :verifier-transcript-fixture
+    {:grant-id
+     :gravity.reference/verification-grant-verifier-test-fixture
+     :principal :gravity.bootstrap/checked-core-verifier
+     :provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :test/fixture
+     :scope :verification-transcript}
+    :managed-allocation
+    {:grant-id
+     :gravity.reference/verification-grant-managed-allocation
+     :principal gravity.bootstrap.p15-s23.runtime
+     :provider-id :gravity.reference/jvm-managed-allocator
+     :effect :memory/allocate
+     :capability :memory/allocator
+     :scope :pinned-verification-runtime-plan}
+    :transcript-capture
+    {:grant-id
+     :gravity.reference/verification-grant-transcript-capture
+     :principal gravity.bootstrap.p15-s23.runtime
+     :provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :io/stdout
+     :scope :verification-transcript}
+    :fixture
+    {:grant-id :gravity.reference/verification-grant-test-fixture
+     :principal :gravity.bootstrap/verification-transcript-harness
+     :provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :test/fixture
+     :scope :verification-transcript}}
+   :binding-inputs
+   #{:checked-core-artifact-id :mapping-id :provenance-binding-id
+     :source-content-hash :plan-id :module
+     :runtime-source-content-hash :runtime-artifact-hash
+     :runtime-contract-definition-hash :runtime-derived-facts-hash
+     :runtime-function :runtime-function-hash :verification-policy-id
+     :verification-policy-hash :verification-audit-policy-hash
+     :structural-operation-set :concrete-core-operation-set
+     :reissued-program-authority-record-id
+     :reissued-program-authority-evidence-id}
+   :plan-requirement-source :authenticated-structural-operation-set
+   :host-service-boundary :typed-r1-delegated-adapters
+   :deny-by-default? true
+   :redaction-policy :hash-host-class-and-message
+   :audit-record-contract
+   {:invocation-decision :required-before-runtime-call
+    :provider-decisions :exactly-required-structural-services
+    :pre-call-actions :none-before-runtime-invocation
+    :action-records :exactly-invoked-or-structurally-not-invoked
+    :failure-diagnostics
+    {:gate-owned #{"R1-FAILURE" "R4-EXCEPTION" "R11-GRANT"}
+     :preserved-runtime-projection
+     :bounded-authenticated-runtime-diagnostic-projection}
+    :raw-host-message? false}
+   :phase :verification
+   :lifetime :single-verification-replay
+   :reference-invocation :single-verification-replay
+   :package :gravity/bootstrap
+   :deployment :verification-harness-only
+   :single-replay? true
+   :authoritative-invocation? false
+   :excluded-from-authoritative-invocation-count? true
+   :result-producing? true
+   :external-io-delivery :in-memory-reference-transcript
+   :live-external-io? false
+   :program-authority-consumed? false
+   :program-grants-consumed? false
+   :delegation :none
+   :authority-widening? false})
+
+(def p15-s23-checked-core-verification-replay-audit-policy
+  {:artifact
+   :gravity/p15-s23-checked-core-verification-replay-audit-policy
+   :schema-version 1
+   :policy-id
+   :gravity.reference/checked-core-verification-replay-audit-policy
+   :status :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+   :principals
+   {:verifier :gravity.bootstrap/checked-core-verifier
+    :runtime gravity.bootstrap.p15-s23.runtime
+    :handler :gravity.bootstrap/verification-transcript-harness}
+   :decision-record-fields
+   #{:decision-id :kind :action-id :principal-id :effect :capability
+     :provider-id :provider-selection-record-id :grant-id :grant-record-id
+     :replay-authority-record-id :phase :lifetime :policy-id
+     :verification-policy-hash :audit-policy-id
+     :verification-audit-policy-hash :runtime-contract-definition-hash
+     :runtime-derived-facts-hash :runtime-function :runtime-function-hash
+     :scope :plan-id :source-content-hash :checked-core-artifact-id
+     :runtime-artifact-hash :profile :target :runtime-family :service-id
+     :module :package :deployment :source-span :generated-origin-edge
+     :delegated-handle-id :decision :result :reason :redaction
+     :redaction-policy :redaction-status :audit-status
+     :diagnostic :missing-fact}
+   :action-record-fields
+   #{:record-id :kind :action-id :principal-id :effect :capability
+     :provider-id :provider-selection-record-id :grant-id :grant-record-id
+     :replay-authority-record-id :phase :lifetime :policy-id
+     :verification-policy-hash :audit-policy-id
+     :verification-audit-policy-hash :runtime-contract-definition-hash
+     :runtime-derived-facts-hash :runtime-function :runtime-function-hash
+     :scope :plan-id :source-content-hash :checked-core-artifact-id
+     :runtime-artifact-hash :action-started? :action-status
+     :result-committed? :output-committed? :diagnostic :redaction
+     :profile :target :runtime-family :service-id :module :package
+     :deployment :source-span :generated-origin-edge :delegated-handle-id
+     :redaction-policy :redaction-status :audit-status
+     :missing-fact :reason}
+   :failure-record-fields
+   #{:failure-record-id :diagnostic :missing-fact :decision-record :action-record
+     :result-committed? :output-committed? :redaction :redaction-policy
+     :redaction-status :audit-status :remediation :profile :target
+     :runtime-family :service-id :effect :capability :provider-id
+     :runtime-function :module :package :delegated-handle-id
+     :host-runtime :host-symbol :host-package :gravity-type :adapter-id
+     :missing-policy :runtime-diagnostic-projection}
+   :failure-diagnostics
+   {:gate-owned #{"R1-FAILURE" "R4-EXCEPTION" "R11-GRANT"}
+    :preserved-runtime-projection
+    :bounded-authenticated-runtime-diagnostic-projection}
+   :redaction-policy :hash-host-class-and-message
+   :raw-host-message? false
+   :deny-by-default? true
+   :phase :verification
+   :lifetime :single-verification-replay
+   :package :gravity/bootstrap
+   :deployment :verification-harness-only
+   :live-external-io? false
+   :delegation :none
+   :authority-widening? false})
+
+(def p15-s23-reference-runtime-function-graph
+  {:artifact :gravity/p15-s23-runtime-function-graph
+   :schema-version 1
+   :graph-id :gravity.reference/runtime-function-graph
+   :functions
+   #{main
+     p15-s23-runtime-format-value
+     p15-s23-runtime-concat
+     p15-s23-runtime-println-value
+     p15-s23-runtime-println-two
+     p15-s23-runtime-evaluate-arguments
+     p15-s23-runtime-println-output
+     p15-s23-runtime-evaluate-bindings
+     p15-s23-runtime-evaluate-sequence
+     p15-s23-runtime-evaluate-closed-instruction
+     p15-s23-runtime-execute-closed-plan}
+   :edges
+   {main #{p15-s23-runtime-format-value}
+    p15-s23-runtime-format-value #{}
+    p15-s23-runtime-concat #{}
+    p15-s23-runtime-println-value #{}
+    p15-s23-runtime-println-two #{}
+    p15-s23-runtime-evaluate-arguments
+    #{p15-s23-runtime-evaluate-arguments
+      p15-s23-runtime-evaluate-closed-instruction}
+    p15-s23-runtime-println-output
+    #{p15-s23-runtime-println-output}
+    p15-s23-runtime-evaluate-bindings
+    #{p15-s23-runtime-evaluate-bindings
+      p15-s23-runtime-evaluate-closed-instruction}
+    p15-s23-runtime-evaluate-sequence
+    #{p15-s23-runtime-evaluate-sequence
+      p15-s23-runtime-evaluate-closed-instruction}
+    p15-s23-runtime-evaluate-closed-instruction
+    #{p15-s23-runtime-evaluate-arguments
+      p15-s23-runtime-println-output
+      p15-s23-runtime-evaluate-bindings
+      p15-s23-runtime-evaluate-sequence
+      p15-s23-runtime-evaluate-closed-instruction}
+    p15-s23-runtime-execute-closed-plan
+    #{p15-s23-runtime-evaluate-sequence}}
+   :function-to-scc
+   {main :scc-main
+    p15-s23-runtime-format-value :scc-format
+    p15-s23-runtime-concat :scc-concat
+    p15-s23-runtime-println-value :scc-println-value
+    p15-s23-runtime-println-two :scc-println-two
+    p15-s23-runtime-evaluate-arguments :scc-evaluator
+    p15-s23-runtime-evaluate-bindings :scc-evaluator
+    p15-s23-runtime-evaluate-sequence :scc-evaluator
+    p15-s23-runtime-evaluate-closed-instruction :scc-evaluator
+    p15-s23-runtime-println-output :scc-println-output
+    p15-s23-runtime-execute-closed-plan :scc-execute}
+   :sccs
+   [{:scc-id :scc-main :functions #{main} :recursive? false}
+    {:scc-id :scc-format
+     :functions #{p15-s23-runtime-format-value}
+     :recursive? false}
+    {:scc-id :scc-concat
+     :functions #{p15-s23-runtime-concat}
+     :recursive? false}
+    {:scc-id :scc-println-value
+     :functions #{p15-s23-runtime-println-value}
+     :recursive? false}
+    {:scc-id :scc-println-two
+     :functions #{p15-s23-runtime-println-two}
+     :recursive? false}
+    {:scc-id :scc-evaluator
+     :functions
+     #{p15-s23-runtime-evaluate-arguments
+       p15-s23-runtime-evaluate-bindings
+       p15-s23-runtime-evaluate-sequence
+       p15-s23-runtime-evaluate-closed-instruction}
+     :recursive? true}
+    {:scc-id :scc-println-output
+     :functions #{p15-s23-runtime-println-output}
+     :recursive? true}
+    {:scc-id :scc-execute
+     :functions #{p15-s23-runtime-execute-closed-plan}
+     :recursive? false}]
+   :condensation-edges
+   #{[:scc-main :scc-format]
+     [:scc-evaluator :scc-println-output]
+     [:scc-execute :scc-evaluator]}
+   :recursive-scc-ids #{:scc-evaluator :scc-println-output}
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-runtime-function-effects
+  {:artifact :gravity/p15-s23-runtime-function-effect-table
+   :schema-version 1
+   :table-id :gravity.reference/runtime-function-effects
+   :allocation-provider-id :gravity.reference/jvm-managed-allocator
+   :handler-id :gravity.reference/transcript-string-handler
+   :allocation-path-model :function-local-preorder-operation-ordinal
+   :allocation-classifier
+   {:builtin/str :str
+    :vector-literal :vector
+    :map-literal :map
+    :builtin/conj :conj
+    :builtin/assoc :assoc
+    :builtin/rest :rest}
+   :proven-allocation-operation-counts
+   {:str 11 :vector 10 :map 2 :conj 1 :assoc 1}
+   :proven-allocation-count 25
+   :allocation-unproven-operation-counts {:rest 4}
+   :allocation-unproven-count 4
+   :functions
+   {main
+    {:direct-effects #{}
+     :transitive-effects #{:memory/allocate}
+     :handled-effects #{}
+     :escaping-effects #{:memory/allocate}
+     :residual-effects #{:memory/allocate}
+     :source-required-capabilities #{:memory/allocator}
+     :handler-required-capabilities #{}
+     :direct-allocation-sites #{}
+     :proven-allocation-operation-counts {}
+     :proven-allocation-sites []
+     :allocation-unproven-operation-counts {}
+     :allocation-unproven-sites []
+     :transitive-allocation? true
+     :ordering :sequence}
+    p15-s23-runtime-format-value
+    {:direct-effects #{:memory/allocate}
+     :transitive-effects #{:memory/allocate}
+     :handled-effects #{}
+     :escaping-effects #{:memory/allocate}
+     :residual-effects #{:memory/allocate}
+     :source-required-capabilities #{:memory/allocator}
+     :handler-required-capabilities #{}
+     :direct-allocation-sites #{:builtin/str}
+     :proven-allocation-operation-counts {:str 1}
+     :proven-allocation-sites [{:operation :str :ordinal 0}]
+     :allocation-unproven-operation-counts {}
+     :allocation-unproven-sites []
+     :transitive-allocation? true
+     :ordering :sequence}
+    p15-s23-runtime-concat
+    {:direct-effects #{:memory/allocate}
+     :transitive-effects #{:memory/allocate}
+     :handled-effects #{}
+     :escaping-effects #{:memory/allocate}
+     :residual-effects #{:memory/allocate}
+     :source-required-capabilities #{:memory/allocator}
+     :handler-required-capabilities #{}
+     :direct-allocation-sites #{:builtin/str}
+     :proven-allocation-operation-counts {:str 1}
+     :proven-allocation-sites [{:operation :str :ordinal 0}]
+     :allocation-unproven-operation-counts {}
+     :allocation-unproven-sites []
+     :transitive-allocation? true
+     :ordering :sequence}
+    p15-s23-runtime-println-value
+    {:direct-effects #{:memory/allocate :io/write}
+     :transitive-effects #{:memory/allocate :io/write}
+     :handled-effects #{}
+     :escaping-effects #{:memory/allocate :io/write}
+     :residual-effects #{:memory/allocate :io/write}
+     :source-required-capabilities #{:memory/allocator :io/stdout}
+     :handler-required-capabilities #{}
+     :direct-allocation-sites #{:builtin/str}
+     :proven-allocation-operation-counts {:str 1}
+     :proven-allocation-sites [{:operation :str :ordinal 0}]
+     :allocation-unproven-operation-counts {}
+     :allocation-unproven-sites []
+     :transitive-allocation? true
+     :ordering :sequence}
+    p15-s23-runtime-println-two
+    {:direct-effects #{:memory/allocate :io/write}
+     :transitive-effects #{:memory/allocate :io/write}
+     :handled-effects #{}
+     :escaping-effects #{:memory/allocate :io/write}
+     :residual-effects #{:memory/allocate :io/write}
+     :source-required-capabilities #{:memory/allocator :io/stdout}
+     :handler-required-capabilities #{}
+     :direct-allocation-sites #{:builtin/str}
+     :proven-allocation-operation-counts {:str 1}
+     :proven-allocation-sites [{:operation :str :ordinal 0}]
+     :allocation-unproven-operation-counts {}
+     :allocation-unproven-sites []
+     :transitive-allocation? true
+     :ordering :sequence}
+    p15-s23-runtime-evaluate-arguments
+    {:direct-effects #{:memory/allocate}
+     :transitive-effects #{:memory/allocate :io/write}
+     :handled-effects #{:io/write}
+     :escaping-effects #{:memory/allocate}
+     :residual-effects #{:memory/allocate}
+     :source-required-capabilities #{:memory/allocator :io/stdout}
+     :handler-required-capabilities #{:test/fixture}
+     :direct-allocation-sites
+     #{:literal/vector :builtin/conj}
+     :proven-allocation-operation-counts {:vector 1 :conj 1}
+     :proven-allocation-sites
+     [{:operation :vector :ordinal 0}
+      {:operation :conj :ordinal 0}]
+     :allocation-unproven-operation-counts {:rest 1}
+     :allocation-unproven-sites [{:operation :rest :ordinal 0}]
+     :transitive-allocation? true
+     :ordering :sequence}
+    p15-s23-runtime-println-output
+    {:direct-effects #{:memory/allocate}
+     :transitive-effects #{:memory/allocate}
+     :handled-effects #{}
+     :escaping-effects #{:memory/allocate}
+     :residual-effects #{:memory/allocate}
+     :source-required-capabilities #{:memory/allocator}
+     :handler-required-capabilities #{}
+     :direct-allocation-sites #{:builtin/str}
+     :proven-allocation-operation-counts {:str 5}
+     :proven-allocation-sites
+     [{:operation :str :ordinal 0}
+      {:operation :str :ordinal 1}
+      {:operation :str :ordinal 2}
+      {:operation :str :ordinal 3}
+      {:operation :str :ordinal 4}]
+     :allocation-unproven-operation-counts {:rest 1}
+     :allocation-unproven-sites [{:operation :rest :ordinal 0}]
+     :transitive-allocation? true
+     :ordering :sequence}
+    p15-s23-runtime-evaluate-bindings
+    {:direct-effects #{:memory/allocate}
+     :transitive-effects #{:memory/allocate :io/write}
+     :handled-effects #{:io/write}
+     :escaping-effects #{:memory/allocate}
+     :residual-effects #{:memory/allocate}
+     :source-required-capabilities #{:memory/allocator :io/stdout}
+     :handler-required-capabilities #{:test/fixture}
+     :direct-allocation-sites
+     #{:literal/vector :builtin/assoc}
+     :proven-allocation-operation-counts {:vector 1 :assoc 1}
+     :proven-allocation-sites
+     [{:operation :vector :ordinal 0}
+      {:operation :assoc :ordinal 0}]
+     :allocation-unproven-operation-counts {:rest 1}
+     :allocation-unproven-sites [{:operation :rest :ordinal 0}]
+     :transitive-allocation? true
+     :ordering :sequence}
+    p15-s23-runtime-evaluate-sequence
+    {:direct-effects #{:memory/allocate}
+     :transitive-effects #{:memory/allocate :io/write}
+     :handled-effects #{:io/write}
+     :escaping-effects #{:memory/allocate}
+     :residual-effects #{:memory/allocate}
+     :source-required-capabilities #{:memory/allocator :io/stdout}
+     :handler-required-capabilities #{:test/fixture}
+     :direct-allocation-sites #{:literal/vector}
+     :proven-allocation-operation-counts {:vector 1}
+     :proven-allocation-sites [{:operation :vector :ordinal 0}]
+     :allocation-unproven-operation-counts {:rest 1}
+     :allocation-unproven-sites [{:operation :rest :ordinal 0}]
+     :transitive-allocation? true
+     :ordering :sequence}
+    p15-s23-runtime-evaluate-closed-instruction
+    {:direct-effects #{:memory/allocate :io/write}
+     :transitive-effects #{:memory/allocate :io/write}
+     :handled-effects #{:io/write}
+     :escaping-effects #{:memory/allocate}
+     :residual-effects #{:memory/allocate}
+     :source-required-capabilities #{:memory/allocator :io/stdout}
+     :handler-required-capabilities #{:test/fixture}
+     :direct-allocation-sites #{:literal/vector :builtin/str}
+     :proven-allocation-operation-counts {:str 2 :vector 7}
+     :proven-allocation-sites
+     [{:operation :str :ordinal 0}
+      {:operation :str :ordinal 1}
+      {:operation :vector :ordinal 0}
+      {:operation :vector :ordinal 1}
+      {:operation :vector :ordinal 2}
+      {:operation :vector :ordinal 3}
+      {:operation :vector :ordinal 4}
+      {:operation :vector :ordinal 5}
+      {:operation :vector :ordinal 6}]
+     :allocation-unproven-operation-counts {}
+     :allocation-unproven-sites []
+     :transitive-allocation? true
+     :ordering :sequence}
+    p15-s23-runtime-execute-closed-plan
+    {:direct-effects #{:memory/allocate}
+     :transitive-effects #{:memory/allocate :io/write}
+     :handled-effects #{:io/write}
+     :escaping-effects #{:memory/allocate}
+     :residual-effects #{:memory/allocate}
+     :source-required-capabilities #{:memory/allocator :io/stdout}
+     :handler-required-capabilities #{:test/fixture}
+     :direct-allocation-sites #{:literal/map}
+     :proven-allocation-operation-counts {:map 2}
+     :proven-allocation-sites
+     [{:operation :map :ordinal 0}
+      {:operation :map :ordinal 1}]
+     :allocation-unproven-operation-counts {}
+     :allocation-unproven-sites []
+     :transitive-allocation? true
+     :ordering :sequence}}
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-runtime-effect-graph
+  {:artifact :gravity/effect-graph
+   :schema-version 1
+   :graph-id :gravity.reference/runtime-effect-graph
+   :module gravity.bootstrap.p15-s23.runtime
+   :nodes
+   {main
+    {:direct #{} :latent #{} :transitive #{:memory/allocate}
+     :residual #{:memory/allocate} :handled #{}
+     :escaping #{:memory/allocate} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime :function main}}
+    p15-s23-runtime-format-value
+    {:direct #{:memory/allocate} :latent #{}
+     :transitive #{:memory/allocate} :residual #{:memory/allocate}
+     :handled #{} :escaping #{:memory/allocate} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-format-value}}
+    p15-s23-runtime-concat
+    {:direct #{:memory/allocate} :latent #{}
+     :transitive #{:memory/allocate} :residual #{:memory/allocate}
+     :handled #{} :escaping #{:memory/allocate} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-concat}}
+    p15-s23-runtime-println-value
+    {:direct #{:memory/allocate :io/write} :latent #{}
+     :transitive #{:memory/allocate :io/write}
+     :residual #{:memory/allocate :io/write} :handled #{}
+     :escaping #{:memory/allocate :io/write} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-println-value}}
+    p15-s23-runtime-println-two
+    {:direct #{:memory/allocate :io/write} :latent #{}
+     :transitive #{:memory/allocate :io/write}
+     :residual #{:memory/allocate :io/write} :handled #{}
+     :escaping #{:memory/allocate :io/write} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-println-two}}
+    p15-s23-runtime-evaluate-arguments
+    {:direct #{:memory/allocate} :latent #{}
+     :transitive #{:memory/allocate :io/write}
+     :residual #{:memory/allocate} :handled #{:io/write}
+     :escaping #{:memory/allocate} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-evaluate-arguments}}
+    p15-s23-runtime-println-output
+    {:direct #{:memory/allocate} :latent #{}
+     :transitive #{:memory/allocate} :residual #{:memory/allocate}
+     :handled #{} :escaping #{:memory/allocate} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-println-output}}
+    p15-s23-runtime-evaluate-bindings
+    {:direct #{:memory/allocate} :latent #{}
+     :transitive #{:memory/allocate :io/write}
+     :residual #{:memory/allocate} :handled #{:io/write}
+     :escaping #{:memory/allocate} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-evaluate-bindings}}
+    p15-s23-runtime-evaluate-sequence
+    {:direct #{:memory/allocate} :latent #{}
+     :transitive #{:memory/allocate :io/write}
+     :residual #{:memory/allocate} :handled #{:io/write}
+     :escaping #{:memory/allocate} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-evaluate-sequence}}
+    p15-s23-runtime-evaluate-closed-instruction
+    {:direct #{:memory/allocate :io/write} :latent #{}
+     :transitive #{:memory/allocate :io/write}
+     :residual #{:memory/allocate} :handled #{:io/write}
+     :escaping #{:memory/allocate} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-evaluate-closed-instruction}}
+    p15-s23-runtime-execute-closed-plan
+    {:direct #{:memory/allocate} :latent #{}
+     :transitive #{:memory/allocate :io/write}
+     :residual #{:memory/allocate} :handled #{:io/write}
+     :escaping #{:memory/allocate} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-execute-closed-plan}}}
+   :functions
+   {main
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{:memory/allocate}
+     :latent #{:memory/allocate} :throws #{}
+     :handled #{} :escaping #{:memory/allocate}}
+    p15-s23-runtime-format-value
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{:memory/allocate}
+     :latent #{:memory/allocate} :throws #{}
+     :handled #{} :escaping #{:memory/allocate}}
+    p15-s23-runtime-concat
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{:memory/allocate}
+     :latent #{:memory/allocate} :throws #{}
+     :handled #{} :escaping #{:memory/allocate}}
+    p15-s23-runtime-println-value
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{:memory/allocate :io/write}
+     :latent #{:memory/allocate :io/write} :throws #{}
+     :handled #{} :escaping #{:memory/allocate :io/write}}
+    p15-s23-runtime-println-two
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{:memory/allocate :io/write}
+     :latent #{:memory/allocate :io/write} :throws #{}
+     :handled #{} :escaping #{:memory/allocate :io/write}}
+    p15-s23-runtime-evaluate-arguments
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{:memory/allocate :io/write}
+     :latent #{:memory/allocate :io/write} :throws #{}
+     :handled #{:io/write} :escaping #{:memory/allocate}}
+    p15-s23-runtime-println-output
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{:memory/allocate}
+     :latent #{:memory/allocate} :throws #{}
+     :handled #{} :escaping #{:memory/allocate}}
+    p15-s23-runtime-evaluate-bindings
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{:memory/allocate :io/write}
+     :latent #{:memory/allocate :io/write} :throws #{}
+     :handled #{:io/write} :escaping #{:memory/allocate}}
+    p15-s23-runtime-evaluate-sequence
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{:memory/allocate :io/write}
+     :latent #{:memory/allocate :io/write} :throws #{}
+     :handled #{:io/write} :escaping #{:memory/allocate}}
+    p15-s23-runtime-evaluate-closed-instruction
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{:memory/allocate :io/write}
+     :latent #{:memory/allocate :io/write} :throws #{}
+     :handled #{:io/write} :escaping #{:memory/allocate}}
+    p15-s23-runtime-execute-closed-plan
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{:memory/allocate :io/write}
+     :latent #{:memory/allocate :io/write} :throws #{}
+     :handled #{:io/write} :escaping #{:memory/allocate}}}
+   :namespace
+   {:declared #{:memory/allocate :io/write}
+    :inferred #{:memory/allocate :io/write}
+    :handled-effects
+    [{:effect :io/write
+      :handler-id :gravity.reference/transcript-string-handler
+      :provider-id :gravity.reference/transcript-capture
+      :fixture-id :gravity.reference/pinned-runtime-transcript
+      :direct-handler-function
+      p15-s23-runtime-evaluate-closed-instruction
+      :transitive-function-scope
+      #{p15-s23-runtime-evaluate-arguments
+        p15-s23-runtime-evaluate-bindings
+        p15-s23-runtime-evaluate-sequence
+        p15-s23-runtime-evaluate-closed-instruction
+        p15-s23-runtime-execute-closed-plan}
+      :excluded-functions
+      #{p15-s23-runtime-println-value
+        p15-s23-runtime-println-two}}]
+    :escaping-effects #{:memory/allocate :io/write}
+    :residual-effects #{:memory/allocate :io/write}
+    :escaping-io-functions
+    #{p15-s23-runtime-println-value p15-s23-runtime-println-two}}
+   :build-effects #{}
+   :replay-required #{}
+   :ordering-constraints
+   [{:effect :io/write
+     :ordering :source-left-to-right
+     :must-not-duplicate true
+     :must-not-eliminate true
+     :handler-id :gravity.reference/transcript-string-handler
+     :function-scope
+     #{p15-s23-runtime-evaluate-arguments
+       p15-s23-runtime-evaluate-bindings
+       p15-s23-runtime-evaluate-sequence
+       p15-s23-runtime-evaluate-closed-instruction
+       p15-s23-runtime-execute-closed-plan}}]
+   :diagnostics []
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-managed-allocator-provider
+  {:artifact :gravity/provider-declaration
+   :schema-version 1
+   :kind :managed-memory-provider
+   :provider-id :gravity.reference/jvm-managed-allocator
+   :version 1
+   :implements #{:memory/allocator}
+   :runtime-effects #{:memory/allocate}
+   :build-effects #{}
+   :required-lower-level-capabilities #{}
+   :profiles #{:hosted}
+   :targets #{:jvm}
+   :phase :runtime
+   :scope :pinned-reference-runtime
+   :adapter-id :gravity.reference/jvm-managed-adapter
+   :failure-policy-id :gravity.reference/runtime-failure-policy
+   :contracts
+   #{:gravity/string :gravity/vector :gravity/map
+     :gravity/persistent-collection-builder}
+   :failure-types #{:catchable-allocation-failure :fatal-host-oom}
+   :blocking :host-managed
+   :concurrency :jvm-thread-safe-managed-provider
+   :resource-behavior :gc-managed-no-linear-resource
+   :memory-behavior :jvm-managed-gc
+   :determinism :value-deterministic-allocation-identity-opaque
+   :replay :allocation-decision-recorded
+   :artifact-schema :gravity/p15-s23-reference-provider-v1
+   :conformance-suite :gravity.reference/jvm-managed-allocation-conformance
+   :trust-level :pinned-bootstrap-reference
+   :signature-policy :source-and-function-hash-pinned
+   :source-link {:module gravity.bootstrap.p15-s23.runtime
+                 :binding :runtime-source-content-hash}
+   :artifact-link {:binding :runtime-artifact-hash}
+   :allocation-regime :managed-gc
+   :layout :jvm-object-layout-opaque
+   :alignment :host-managed
+   :lifetime :gc-reachable
+   :deallocation :jvm-gc
+   :debug :reference-allocation-action-record
+   :unsafe-boundaries #{:fatal-host-oom}
+   :selection :exact
+   :conformance :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-transcript-capture-provider
+  {:artifact :gravity/provider-declaration
+   :schema-version 1
+   :kind :effect-handler-provider
+   :provider-id :gravity.reference/transcript-capture
+   :version 1
+   :implements #{:io/stdout :test/fixture}
+   :handles #{:io/write}
+   :runtime-effects #{:memory/allocate}
+   :build-effects #{}
+   :required-lower-level-capabilities #{:memory/allocator}
+   :profiles #{:hosted}
+   :targets #{:jvm}
+   :phase :runtime
+   :mode :reference-test-interpreter
+   :scope :closed-plan-interpreter
+   :direct-handler-function
+   p15-s23-runtime-evaluate-closed-instruction
+   :transitive-function-scope
+   #{p15-s23-runtime-evaluate-arguments
+     p15-s23-runtime-evaluate-bindings
+     p15-s23-runtime-evaluate-sequence
+     p15-s23-runtime-evaluate-closed-instruction
+     p15-s23-runtime-execute-closed-plan}
+   :excluded-functions
+   #{p15-s23-runtime-println-value p15-s23-runtime-println-two}
+   :adapter-id :gravity.reference/jvm-managed-adapter
+   :handler-id :gravity.reference/transcript-string-handler
+   :failure-policy-id :gravity.reference/runtime-failure-policy
+   :contracts #{:gravity/ordered-reference-transcript}
+   :failure-types #{:catchable-capture-failure}
+   :blocking :nonblocking-in-memory
+   :concurrency :single-reference-execution-thread
+   :resource-behavior :in-memory-transcript-no-linear-resource
+   :memory-behavior :allocates-managed-transcript-strings
+   :determinism :deterministic-source-order
+   :replay :rebuild-from-ordered-capture-actions
+   :artifact-schema :gravity/p15-s23-reference-provider-v1
+   :conformance-suite :gravity.reference/transcript-capture-conformance
+   :trust-level :pinned-bootstrap-reference
+   :signature-policy :source-and-function-hash-pinned
+   :source-link {:module gravity.bootstrap.p15-s23.runtime
+                 :binding :runtime-source-content-hash}
+   :artifact-link {:binding :runtime-artifact-hash}
+   :selection :exact
+   :conformance :complete-for-pinned-reference-runtime-contract-slice
+   :deployment-authority? false})
+
+(def p15-s23-reference-transcript-capture-handler
+  {:artifact :gravity/typed-effect-handler
+   :schema-version 1
+   :handler-id :gravity.reference/transcript-string-handler
+   :handled-label :io/write
+   :request-type :gravity/stdout-write-request
+   :response-type :gravity/unit
+   :result-type :gravity/transcript
+   :resume-mode :resume-once
+   :replay-mode :deterministic-reference-record
+   :residual-effects #{:memory/allocate}
+   :required-effect-capabilities #{:io/stdout}
+   :required-handler-capabilities #{:test/fixture}
+   :escaping-effects #{:memory/allocate}
+   :phase :runtime
+   :mode :reference-test-interpreter
+   :profiles #{:hosted}
+   :targets #{:jvm}
+   :scope :closed-plan-interpreter
+   :direct-handler-function
+   p15-s23-runtime-evaluate-closed-instruction
+   :transitive-function-scope
+   #{p15-s23-runtime-evaluate-arguments
+     p15-s23-runtime-evaluate-bindings
+     p15-s23-runtime-evaluate-sequence
+     p15-s23-runtime-evaluate-closed-instruction
+     p15-s23-runtime-execute-closed-plan}
+   :excluded-functions
+   #{p15-s23-runtime-println-value p15-s23-runtime-println-two}
+   :operation :ordered-string-append
+   :ordering :source-left-to-right
+   :continuation-safety :affine-resume-once
+   :fixture-id :gravity.reference/pinned-runtime-transcript
+   :source-principal gravity.bootstrap.p15-s23.runtime
+   :handler-principal :gravity.bootstrap/reference-harness
+   :provider-id :gravity.reference/transcript-capture
+   :source-grant-ids
+   #{:gravity.reference/grant-reference-stdout
+     :gravity.reference/grant-managed-allocation}
+   :handler-grant-ids #{:gravity.reference/grant-test-fixture}
+   :delegation :none
+   :authority-widening? false
+   :source-declaration-is-grant? false
+   :allocation-provider-id :gravity.reference/jvm-managed-allocator
+   :failure-policy-id :gravity.reference/runtime-failure-policy
+   :live-external-io? false
+   :deployment-authority? false
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-runtime-provider-selections
+  {:artifact :gravity/provider-selection-record-set
+   :schema-version 1
+   :selection-record-set-id
+   :gravity.reference/runtime-provider-selections
+   :source-selection-order
+   [:source-annotation :package-manifest :workspace-policy
+    :profile-default :compiler-default]
+   :source-selections
+   [{:capability :memory/allocator
+     :provider :gravity.reference/jvm-managed-allocator
+     :source :source-annotation
+     :principal gravity.bootstrap.p15-s23.runtime
+     :policy-id :gravity.reference/runtime-audit-policy
+     :profile :hosted
+     :target :jvm
+     :phase :runtime
+     :scope :pinned-runtime-plan
+     :lifetime :single-reference-execution
+     :reference-invocation :single-reference-execution
+     :package :gravity/bootstrap
+     :deployment :reference-harness-only
+     :source-declaration-is-grant? false
+     :status :selected}
+    ]
+   :handler-selection-policy :explicit-reference-harness-policy
+   :handler-selections
+   [
+    {:capability :io/stdout
+     :provider :gravity.reference/transcript-capture
+     :source :reference-harness-policy
+     :principal gravity.bootstrap.p15-s23.runtime
+     :handler-principal :gravity.bootstrap/reference-harness
+     :policy-id :gravity.reference/runtime-audit-policy
+     :profile :hosted
+     :target :jvm
+     :phase :runtime
+     :mode :reference-test-interpreter
+     :scope :closed-plan-interpreter
+     :direct-handler-function
+     p15-s23-runtime-evaluate-closed-instruction
+     :transitive-function-scope
+     #{p15-s23-runtime-evaluate-arguments
+       p15-s23-runtime-evaluate-bindings
+       p15-s23-runtime-evaluate-sequence
+       p15-s23-runtime-evaluate-closed-instruction
+       p15-s23-runtime-execute-closed-plan}
+     :excluded-functions
+     #{p15-s23-runtime-println-value p15-s23-runtime-println-two}
+     :lifetime :single-reference-execution
+     :reference-invocation :single-reference-execution
+     :package :gravity/bootstrap
+     :deployment :reference-harness-only
+     :source-declaration-is-grant? false
+     :deployment-authority? false
+     :status :selected}
+    {:capability :test/fixture
+     :provider :gravity.reference/transcript-capture
+     :source :reference-harness-policy
+     :principal :gravity.bootstrap/reference-harness
+     :source-principal gravity.bootstrap.p15-s23.runtime
+     :policy-id :gravity.reference/runtime-audit-policy
+     :profile :hosted
+     :target :jvm
+     :phase :runtime
+     :mode :reference-test-interpreter
+     :scope :closed-plan-interpreter
+     :direct-handler-function
+     p15-s23-runtime-evaluate-closed-instruction
+     :transitive-function-scope
+     #{p15-s23-runtime-evaluate-arguments
+       p15-s23-runtime-evaluate-bindings
+       p15-s23-runtime-evaluate-sequence
+       p15-s23-runtime-evaluate-closed-instruction
+       p15-s23-runtime-execute-closed-plan}
+     :excluded-functions
+     #{p15-s23-runtime-println-value p15-s23-runtime-println-two}
+     :lifetime :single-reference-execution
+     :reference-invocation :single-reference-execution
+     :package :gravity/bootstrap
+     :deployment :reference-harness-only
+     :source-declaration-is-grant? false
+     :deployment-authority? false
+     :status :selected}]
+   :ambiguous-selections []
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-runtime-capability-proofs
+  {:artifact :gravity/capability-proof-record-set
+   :schema-version 1
+   :record-set-id :gravity.reference/runtime-capability-proofs
+   :records
+   [{:artifact :gravity/capability-proof
+     :effect :memory/allocate
+     :source :gravity.reference/runtime-function-effects
+     :principal gravity.bootstrap.p15-s23.runtime
+     :capability :memory/allocator
+     :provider :gravity.reference/jvm-managed-allocator
+     :grant-id :gravity.reference/grant-managed-allocation
+     :policy-id :gravity.reference/runtime-audit-policy
+     :scope :pinned-runtime-plan
+     :phase :runtime
+     :lifetime :single-reference-execution
+     :reference-invocation :single-reference-execution
+     :package :gravity/bootstrap
+     :deployment :reference-harness-only
+     :grant {:grant-id :gravity.reference/grant-managed-allocation
+             :scope :pinned-runtime-plan
+             :principal gravity.bootstrap.p15-s23.runtime
+             :phase :runtime
+             :lifetime :single-reference-execution
+             :policy-id :gravity.reference/runtime-audit-policy
+             :reference-invocation :single-reference-execution
+             :package :gravity/bootstrap
+             :deployment :reference-harness-only}
+     :status :accepted}
+    {:artifact :gravity/capability-proof
+     :effect :io/write
+     :source :gravity.reference/closed-plan-interpreter-effect
+     :principal gravity.bootstrap.p15-s23.runtime
+     :capability :io/stdout
+     :provider :gravity.reference/transcript-capture
+     :grant-id :gravity.reference/grant-reference-stdout
+     :policy-id :gravity.reference/runtime-audit-policy
+     :scope :closed-plan-interpreter
+     :direct-handler-function
+     p15-s23-runtime-evaluate-closed-instruction
+     :transitive-function-scope
+     #{p15-s23-runtime-evaluate-arguments
+       p15-s23-runtime-evaluate-bindings
+       p15-s23-runtime-evaluate-sequence
+       p15-s23-runtime-evaluate-closed-instruction
+       p15-s23-runtime-execute-closed-plan}
+     :excluded-functions
+     #{p15-s23-runtime-println-value p15-s23-runtime-println-two}
+     :phase :runtime
+     :lifetime :single-reference-execution
+     :reference-invocation :single-reference-execution
+     :package :gravity/bootstrap
+     :deployment :reference-harness-only
+     :grant {:grant-id :gravity.reference/grant-reference-stdout
+             :scope :closed-plan-interpreter
+             :direct-handler-function
+             p15-s23-runtime-evaluate-closed-instruction
+             :transitive-function-scope
+             #{p15-s23-runtime-evaluate-arguments
+               p15-s23-runtime-evaluate-bindings
+               p15-s23-runtime-evaluate-sequence
+               p15-s23-runtime-evaluate-closed-instruction
+               p15-s23-runtime-execute-closed-plan}
+             :excluded-functions
+             #{p15-s23-runtime-println-value
+               p15-s23-runtime-println-two}
+             :principal gravity.bootstrap.p15-s23.runtime
+             :phase :runtime
+             :lifetime :single-reference-execution
+             :policy-id :gravity.reference/runtime-audit-policy
+             :reference-invocation :single-reference-execution
+             :package :gravity/bootstrap
+             :deployment :reference-harness-only}
+     :handler :gravity.reference/transcript-string-handler
+     :live-external-io? false
+     :status :accepted}
+    {:artifact :gravity/capability-proof
+     :effect :io/write
+     :source :gravity.reference/transcript-string-handler
+     :principal :gravity.bootstrap/reference-harness
+     :source-principal gravity.bootstrap.p15-s23.runtime
+     :capability :test/fixture
+     :provider :gravity.reference/transcript-capture
+     :grant-id :gravity.reference/grant-test-fixture
+     :policy-id :gravity.reference/runtime-audit-policy
+     :scope :closed-plan-interpreter
+     :direct-handler-function
+     p15-s23-runtime-evaluate-closed-instruction
+     :transitive-function-scope
+     #{p15-s23-runtime-evaluate-arguments
+       p15-s23-runtime-evaluate-bindings
+       p15-s23-runtime-evaluate-sequence
+       p15-s23-runtime-evaluate-closed-instruction
+       p15-s23-runtime-execute-closed-plan}
+     :excluded-functions
+     #{p15-s23-runtime-println-value p15-s23-runtime-println-two}
+     :phase :runtime
+     :lifetime :single-reference-execution
+     :reference-invocation :single-reference-execution
+     :package :gravity/bootstrap
+     :deployment :reference-harness-only
+     :grant {:grant-id :gravity.reference/grant-test-fixture
+             :scope :closed-plan-interpreter
+             :direct-handler-function
+             p15-s23-runtime-evaluate-closed-instruction
+             :transitive-function-scope
+             #{p15-s23-runtime-evaluate-arguments
+               p15-s23-runtime-evaluate-bindings
+               p15-s23-runtime-evaluate-sequence
+               p15-s23-runtime-evaluate-closed-instruction
+               p15-s23-runtime-execute-closed-plan}
+             :excluded-functions
+             #{p15-s23-runtime-println-value
+               p15-s23-runtime-println-two}
+             :principal :gravity.bootstrap/reference-harness
+             :phase :runtime
+             :lifetime :single-reference-execution
+             :policy-id :gravity.reference/runtime-audit-policy
+             :reference-invocation :single-reference-execution
+             :package :gravity/bootstrap
+             :deployment :reference-harness-only}
+     :fixture-id :gravity.reference/pinned-runtime-transcript
+     :delegation :none
+     :authority-widening? false
+     :status :accepted}]
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-stdout-deployment-requirement
+  {:artifact :gravity/p15-s23-stdout-deployment-requirement
+   :schema-version 1
+   :effect :io/write
+   :capability :io/stdout
+   :phase :runtime
+   :boundary :program-deployment
+   :function-scope
+   #{p15-s23-runtime-println-value p15-s23-runtime-println-two}
+   :closed-plan-interpreter-excluded? true
+   :provider-selection :unresolved
+   :grant :unresolved
+   :status :unresolved
+   :reason :reference-capture-is-not-deployment-authority})
+
+(def p15-s23-reference-runtime-service-manifest
+  {:artifact :gravity/runtime-manifest
+   :schema-version 1
+   :manifest-id :gravity.reference/managed-runtime-services
+   :profile :hosted
+   :target {:backend :jvm :platform :bootstrap-reference}
+   :family :managed
+   :services
+   {:linked
+    #{:gravity-adapters :capability-checks
+      :reference-transcript-handler :runtime-failure-adapter}
+    :generated
+    #{:source-map-records :allocation-action-records
+      :capability-decision-log}
+    :delegated
+    #{:jvm-managed-gc :jvm-managed-strings
+      :jvm-persistent-collections :catchable-host-exceptions}
+    :external #{:deployment-stdout/provider}
+    :forbidden
+    #{:ambient-allocator :ambient-stdout :raw-host-exception
+      :reflection :dynamic-loading :dynamic-eval}}
+   :capability-checks true
+   :capability-enforcement-table
+   :gravity.reference/runtime-capability-table
+   :startup
+   {:entry :gravity.reference/jvm-managed-adapter
+    :initialization-order
+    [:gravity.reference/jvm-managed-adapter
+     :gravity.reference/jvm-managed-allocator
+     :gravity.reference/transcript-capture]
+    :cleanup-order [:gravity.reference/transcript-capture]
+    :user-code-starts-after-provider-validation? true}
+   :failure-model
+   {:policy-id :gravity.reference/runtime-failure-policy
+    :panic-strategy :profile-defined-residual
+    :catchable-host-errors :typed-runtime-diagnostic
+    :fatal-host-oom :unproven-fatal-host-boundary
+    :source-map-required? true}
+   :diagnostics :gravity.reference/runtime-observability
+   :ambient-authority :denied
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-managed-runtime-adapter
+  {:artifact :gravity/managed-runtime
+   :schema-version 1
+   :adapter-id :gravity.reference/jvm-managed-adapter
+   :family :managed
+   :profile :hosted
+   :target :jvm
+   :host {:kind :jvm
+          :version-range ">=17"
+          :module-system :classpath
+          :package-system :maven-coordinate}
+   :services
+   {:delegated #{:gc :host-exceptions :persistent-collections}
+    :linked #{:gravity-adapters :capability-checks
+              :source-map-runtime :runtime-failure-adapter}
+    :generated #{:allocation-action-records :exception-wrapper}
+    :forbidden #{:ambient-reflection :unchecked-null
+                 :unchecked-exception :gc-only-linear-cleanup}}
+   :typed-boundaries
+   [{:service-id :gravity.reference/jvm-managed-string
+     :input :gravity/value
+     :output :gravity/string}
+    {:service-id :gravity.reference/jvm-managed-collection
+     :input :gravity/collection-operation
+     :output :gravity/managed-collection}
+    {:service-id :gravity.reference/transcript-capture-gate
+     :input :gravity/string
+     :output :gravity/transcript}]
+   :null-policy :reject-untranslated-null
+   :exception-policy
+   {:catchable :normalize-to-typed-runtime-diagnostic
+    :exception-domain "java.lang.Exception"
+    :fatal-error-domain "java.lang.Error"
+    :fatal-host-oom :unproven-fatal-host-boundary}
+   :reflection :forbidden
+   :dynamic-loading :forbidden
+   :dynamic-eval :forbidden
+   :collection-semantics
+   {:vectors :gravity-persistent-value-semantics
+    :maps :gravity-persistent-value-semantics
+    :equality :gravity-value-equality
+    :hashing :gravity-stable-hash
+    :identity :not-observable}
+   :resource-cleanup
+   {:linear-resources :not-present-in-pinned-slice
+    :gc-finalization-as-cleanup? false}
+   :source-map-policy :preserve-runtime-function-and-operation
+   :managed-allocation :delegated-through-provider
+   :fatal-host-oom :unproven-fatal-host-boundary
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-memory-provider-manifest
+  {:artifact :gravity/memory-provider
+   :schema-version 1
+   :provider :gravity.reference/jvm-managed-allocator
+   :profiles #{:hosted}
+   :targets #{:jvm}
+   :effects #{:memory/allocate}
+   :capabilities #{:memory/allocator}
+   :allocation-regime :alloc/managed-gc
+   :layout {:representation :jvm-object :alignment :host-managed}
+   :failure
+   {:catchable :typed-runtime-diagnostic
+    :fatal-host-oom :unproven-fatal-host-boundary}
+   :lifetime :managed-reachability
+   :deallocation :jvm-gc
+   :debug
+   {:allocation-trace true
+    :source-function true
+    :operation-site true
+    :provider-id true}
+   :runtime-checks
+   #{:provider-identity :grant-presence :source-function-link}
+   :proof-elisions #{}
+   :unsafe-boundaries #{:fatal-host-oom}
+   :rejects
+   #{:ambient-allocation :provider-mismatch :unrecorded-allocation
+     :unproved-check-elision}
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-runtime-failure-policy
+  {:artifact :gravity/runtime-failure-policy
+   :schema-version 1
+   :policy-id :gravity.reference/runtime-failure-policy
+   :diagnostic-owner-table
+   {:missing-allocation-provider "R5-PROVIDER"
+    :allocation-grant-denied "R11-GRANT"
+    :stdout-grant-denied "R11-GRANT"
+    :test-fixture-grant-denied "R11-GRANT"
+    :catchable-allocation-exception "R1-FAILURE"
+    :catchable-transcript-exception "R1-FAILURE"
+    :deployment-stdout-provider-missing "L15-PROVIDER-MISSING"
+    :host-exception-not-normalized "R4-EXCEPTION"}
+   :catchable-mappings
+   [{:service-id :gravity.reference/jvm-managed-string
+     :action-id :gravity.reference/action-managed-string-allocation
+     :injected-failure :allocation
+     :diagnostic "R1-FAILURE"
+     :classification :allocation-provider-failure
+     :related-contracts ["R4-EXCEPTION" "R5-PROVIDER"]
+     :execution :started
+     :action-started? true
+     :action-status :failed-before-commit
+     :result-committed? false
+     :output-committed? false
+     :output :empty}
+    {:service-id :gravity.reference/transcript-capture-gate
+     :action-id :gravity.reference/action-transcript-capture
+     :injected-failure :capture
+     :diagnostic "R1-FAILURE"
+     :classification :reference-transcript-handler-failure
+     :related-contracts ["R4-EXCEPTION" "R11-AUDIT"]
+     :execution :started
+     :action-started? true
+     :action-status :failed-before-commit
+     :result-committed? false
+     :output-committed? false
+     :output :empty}
+    {:service-id :gravity.deployment/stdout
+     :action-id :gravity.reference/action-deployment-stdout
+     :injected-failure :output
+     :diagnostic "L15-PROVIDER-MISSING"
+     :classification :deployment-provider-unresolved
+     :related-contracts ["L15-PROVIDER-MISSING" "R11-GRANT"]
+     :execution :not-started
+     :action-started? false
+     :action-status :rejected-before-start
+     :result-committed? false
+     :output-committed? false
+     :output :empty}]
+   :failure-record-fields
+   [:action-id :action-started? :diagnostic :source-span
+    :generated-origin-chain :artifact-id
+    :runtime-function :operation :provider-id :effect :capability
+    :profile :target :action-status :result-committed?
+    :output-committed? :redaction :remediation]
+   :catch-domain "java.lang.Exception"
+   :preserve-structured-gravity-diagnostics? true
+   :stack-overflow-policy :bounded-preflight-diagnostic
+   :fatal-host-oom :unproven-fatal-host-boundary
+   :fatal-error-domain "java.lang.Error"
+   :raw-host-exceptions :forbidden
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-runtime-audit-policy
+  {:artifact :gravity/runtime-audit-policy
+   :schema-version 1
+   :policy-id :gravity.reference/runtime-audit-policy
+   :principals
+   {:source-execution gravity.bootstrap.p15-s23.runtime
+    :handler :gravity.bootstrap/reference-harness}
+   :decision-log-fields
+   [:decision-id :action-id :principal-id :effect :capability :phase
+    :provider-id :grant-id :policy-id :scope :lifetime
+    :reference-invocation :package :deployment :result :redaction]
+   :redaction {:source-values :hash-only
+               :transcript :length-and-hash
+               :host-exception :class-and-message-hash}
+   :delegation :none
+   :authority-widening? false
+   :source-declaration-is-grant? false
+   :ambient-authority :denied
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-runtime-capability-manifest
+  {:artifact :gravity/runtime-capabilities
+   :schema-version 1
+   :manifest-id :gravity.reference/runtime-capabilities
+   :inputs
+   #{:compiled-effects :runtime-module-contract :principal
+     :provider-declarations :grant-records :artifact-manifest}
+   :handles #{:managed-allocation :reference-transcript}
+   :legacy-helper-deployment-stdout :unresolved
+   :decisions #{:grant :deny}
+   :records
+   #{:capability-table :decision-log :denial-diagnostic
+     :redaction-record}
+   :rejects
+   #{:ambient-authority :effect-outside-grant
+     :provider-contract-violation :live-stdout-from-reference-handler}
+   :deny-by-default? true
+   :source-principal gravity.bootstrap.p15-s23.runtime
+   :handler-principal :gravity.bootstrap/reference-harness
+   :delegation :none
+   :authority-widening? false
+   :source-declaration-is-grant? false
+   :capability-table-id :gravity.reference/runtime-capability-table
+   :decision-log-schema :gravity.reference/runtime-audit-policy
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-runtime-capability-table
+  {:artifact :gravity/runtime-capability-table
+   :schema-version 1
+   :table-id :gravity.reference/runtime-capability-table
+   :rows
+   [{:effect :memory/allocate
+     :principal gravity.bootstrap.p15-s23.runtime
+     :capability :memory/allocator
+     :provider :gravity.reference/jvm-managed-allocator
+     :grant :gravity.reference/grant-managed-allocation
+     :policy-id :gravity.reference/runtime-audit-policy
+     :scope :pinned-runtime-plan
+     :phase :runtime
+     :lifetime :single-reference-execution
+     :reference-invocation :single-reference-execution
+     :package :gravity/bootstrap
+     :deployment :reference-harness-only
+     :decision :grant}
+    {:effect :io/write
+     :principal gravity.bootstrap.p15-s23.runtime
+     :handler-principal :gravity.bootstrap/reference-harness
+     :capability :io/stdout
+     :provider :gravity.reference/transcript-capture
+     :grant :gravity.reference/grant-reference-stdout
+     :policy-id :gravity.reference/runtime-audit-policy
+     :scope :closed-plan-interpreter
+     :direct-handler-function
+     p15-s23-runtime-evaluate-closed-instruction
+     :transitive-function-scope
+     #{p15-s23-runtime-evaluate-arguments
+       p15-s23-runtime-evaluate-bindings
+       p15-s23-runtime-evaluate-sequence
+       p15-s23-runtime-evaluate-closed-instruction
+       p15-s23-runtime-execute-closed-plan}
+     :excluded-functions
+     #{p15-s23-runtime-println-value p15-s23-runtime-println-two}
+     :phase :runtime
+     :lifetime :single-reference-execution
+     :reference-invocation :single-reference-execution
+     :package :gravity/bootstrap
+     :deployment :reference-harness-only
+     :mode :reference-test-interpreter
+     :decision :grant}
+    {:effect :io/write
+     :principal :gravity.bootstrap/reference-harness
+     :source-principal gravity.bootstrap.p15-s23.runtime
+     :capability :test/fixture
+     :provider :gravity.reference/transcript-capture
+     :grant :gravity.reference/grant-test-fixture
+     :policy-id :gravity.reference/runtime-audit-policy
+     :scope :closed-plan-interpreter
+     :direct-handler-function
+     p15-s23-runtime-evaluate-closed-instruction
+     :transitive-function-scope
+     #{p15-s23-runtime-evaluate-arguments
+       p15-s23-runtime-evaluate-bindings
+       p15-s23-runtime-evaluate-sequence
+       p15-s23-runtime-evaluate-closed-instruction
+       p15-s23-runtime-execute-closed-plan}
+     :excluded-functions
+     #{p15-s23-runtime-println-value p15-s23-runtime-println-two}
+     :phase :runtime
+     :lifetime :single-reference-execution
+     :reference-invocation :single-reference-execution
+     :package :gravity/bootstrap
+     :deployment :reference-harness-only
+     :mode :reference-test-interpreter
+     :decision :grant}]
+   :denied-ambient-authority
+   #{:ambient-allocator :ambient-stdout :ambient-test-fixture}
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-runtime-observability-manifest
+  {:artifact :gravity/runtime-observability
+   :schema-version 1
+   :manifest-id :gravity.reference/runtime-observability
+   :events #{:allocation :capability :failure :handled-effect}
+   :requires
+   #{:source-map :artifact-manifest :redaction-policy
+     :event-schema-registry}
+   :emits
+   #{:allocation-action-record :capability-decision-log
+     :failure-diagnostic :diagnostic-bundle}
+   :rejects
+   #{:secret-leak :diagnostic-without-source-or-artifact
+     :semantics-changing-observability :ungranted-live-sink}
+   :event-schema
+   {:event-id :stable-hash
+    :runtime-family :managed
+    :artifact-id :required
+    :source-or-provenance-link :required
+    :profile :hosted
+    :target :jvm
+    :severity :required
+    :redaction-policy :gravity.reference/runtime-audit-policy}
+   :sink :in-memory-reference-records
+   :sink-capability :test/fixture
+   :scope :closed-plan-interpreter
+   :direct-handler-function
+   p15-s23-runtime-evaluate-closed-instruction
+   :transitive-function-scope
+   #{p15-s23-runtime-evaluate-arguments
+     p15-s23-runtime-evaluate-bindings
+     p15-s23-runtime-evaluate-sequence
+     p15-s23-runtime-evaluate-closed-instruction
+     p15-s23-runtime-execute-closed-plan}
+   :excluded-functions
+   #{p15-s23-runtime-println-value p15-s23-runtime-println-two}
+   :live-network-sink? false
+   :development-only? true
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(def p15-s23-reference-runtime-grant-records
+  {:artifact :gravity/grant-record-set
+   :schema-version 1
+   :grant-record-set-id :gravity.reference/runtime-grants
+   :source-principal gravity.bootstrap.p15-s23.runtime
+   :handler-principal :gravity.bootstrap/reference-harness
+   :source-grant-ids
+   #{:gravity.reference/grant-managed-allocation
+     :gravity.reference/grant-reference-stdout}
+   :handler-grant-ids #{:gravity.reference/grant-test-fixture}
+   :delegation :none
+   :authority-widening? false
+   :source-declaration-is-grant? false
+   :grants
+   [{:grant-id :gravity.reference/grant-managed-allocation
+     :principal-id gravity.bootstrap.p15-s23.runtime
+     :capability :memory/allocator
+     :provider-id :gravity.reference/jvm-managed-allocator
+     :scope :pinned-runtime-plan
+     :phase :runtime
+     :lifetime :single-reference-execution
+     :audit-policy-id :gravity.reference/runtime-audit-policy
+     :policy-id :gravity.reference/runtime-audit-policy
+     :reference-invocation :single-reference-execution
+     :package :gravity/bootstrap
+     :deployment :reference-harness-only
+     :authority-source :explicit-grant
+     :source-declaration-is-grant? false
+     :status :granted}
+    {:grant-id :gravity.reference/grant-reference-stdout
+     :principal-id gravity.bootstrap.p15-s23.runtime
+     :capability :io/stdout
+     :provider-id :gravity.reference/transcript-capture
+     :scope :closed-plan-interpreter
+     :direct-handler-function
+     p15-s23-runtime-evaluate-closed-instruction
+     :transitive-function-scope
+     #{p15-s23-runtime-evaluate-arguments
+       p15-s23-runtime-evaluate-bindings
+       p15-s23-runtime-evaluate-sequence
+       p15-s23-runtime-evaluate-closed-instruction
+       p15-s23-runtime-execute-closed-plan}
+     :excluded-functions
+     #{p15-s23-runtime-println-value p15-s23-runtime-println-two}
+     :phase :runtime
+     :lifetime :single-reference-execution
+     :audit-policy-id :gravity.reference/runtime-audit-policy
+     :policy-id :gravity.reference/runtime-audit-policy
+     :reference-invocation :single-reference-execution
+     :package :gravity/bootstrap
+     :deployment :reference-harness-only
+     :authority-source :explicit-grant
+     :source-declaration-is-grant? false
+     :live-external-authority? false
+     :status :granted}
+    {:grant-id :gravity.reference/grant-test-fixture
+     :principal-id :gravity.bootstrap/reference-harness
+     :capability :test/fixture
+     :provider-id :gravity.reference/transcript-capture
+     :scope :closed-plan-interpreter
+     :direct-handler-function
+     p15-s23-runtime-evaluate-closed-instruction
+     :transitive-function-scope
+     #{p15-s23-runtime-evaluate-arguments
+       p15-s23-runtime-evaluate-bindings
+       p15-s23-runtime-evaluate-sequence
+       p15-s23-runtime-evaluate-closed-instruction
+       p15-s23-runtime-execute-closed-plan}
+     :excluded-functions
+     #{p15-s23-runtime-println-value p15-s23-runtime-println-two}
+     :phase :runtime
+     :lifetime :single-reference-execution
+     :audit-policy-id :gravity.reference/runtime-audit-policy
+     :policy-id :gravity.reference/runtime-audit-policy
+     :reference-invocation :single-reference-execution
+     :package :gravity/bootstrap
+     :deployment :reference-harness-only
+     :authority-source :explicit-grant
+     :source-declaration-is-grant? false
+     :live-external-authority? false
+     :status :granted}]
+   :deployment-stdout-grant :unresolved
+   :status :complete-for-pinned-reference-runtime-contract-slice})
+
+(defn p15-s23-runtime-format-value
+  [value]
+  (str value))
+
+; Two-argument concatenation is intentionally a separate runtime entrypoint.
+; The stage2 runtime routes supported `str` calls through this Gravity-authored
+; function; the host bridge remains only the explicitly recorded invocation
+; boundary for loading/executing this source-defined function plan.
+(defn p15-s23-runtime-concat
+  [left right]
+  (str left right))
+
+; Single-argument println is an effectful runtime operation.  Keep the
+; newline-producing primitive in the Gravity-authored runtime plan so the
+; generic bridge invokes a declared function rather than formatting in the
+; bootstrap executor.  The legacy named-helper path still treats larger arities
+; as host compatibility; the authenticated closed-plan entrypoint below now
+; owns bounded variadic println through its recursive output accumulator.
+(defn p15-s23-runtime-println-value
+  [value]
+  (println (str value)))
+
+; Exactly two println arguments are owned by this dedicated Gravity runtime
+; entrypoint.  Preserve the language's single-space separator and trailing
+; newline while keeping the legacy named-helper compatibility path explicit.
+(defn p15-s23-runtime-println-two
+  [left right]
+  (println (str left " " right)))
+
+; The closed-plan executor keeps its state as [value output].  Output is a
+; Gravity string accumulator rather than a host writer, which preserves empty
+; strings, embedded NULs, and Unicode bytes until a target adapter performs the
+; declared :io/write operation.
+(defn p15-s23-runtime-evaluate-arguments
+  [arguments environment output values]
+  (if (= (count arguments) 0)
+    [values output]
+    (let [head-result
+          (p15-s23-runtime-evaluate-closed-instruction
+           (first arguments) environment output)]
+      (p15-s23-runtime-evaluate-arguments
+       (rest arguments)
+       environment
+       (second head-result)
+       (conj values (first head-result))))))
+
+(defn p15-s23-runtime-println-output
+  [values output]
+  (if (= (count values) 0)
+    (str output "\n")
+    (if (= (count values) 1)
+      (str output (str (first values)) "\n")
+      (p15-s23-runtime-println-output
+       (rest values)
+       (str output (str (first values)) " ")))))
+
+(defn p15-s23-runtime-evaluate-bindings
+  [bindings environment output]
+  (if (= (count bindings) 0)
+    [environment output]
+    (let [binding (first bindings)
+          value-result
+          (p15-s23-runtime-evaluate-closed-instruction
+           (get binding :expr) environment output)]
+      (p15-s23-runtime-evaluate-bindings
+       (rest bindings)
+       (assoc environment (get binding :name) (first value-result))
+       (second value-result)))))
+
+(defn p15-s23-runtime-evaluate-sequence
+  [instructions environment output]
+  (if (= (count instructions) 0)
+    [nil output]
+    (let [head-result
+          (p15-s23-runtime-evaluate-closed-instruction
+           (first instructions) environment output)]
+      (if (= (count instructions) 1)
+        head-result
+        (p15-s23-runtime-evaluate-sequence
+         (rest instructions) environment (second head-result))))))
+
+(defn p15-s23-runtime-evaluate-closed-instruction
+  [instruction environment output]
+  (let [operation (get instruction :op)]
+    (if (= operation :literal)
+      [(get instruction :value) output]
+      (if (= operation :quote)
+        [(get instruction :value) output]
+        (if (= operation :local)
+          [(get environment (get instruction :name)) output]
+          (if (= operation :builtin-call)
+            (let [function (get instruction :function)
+                  arguments-result
+                  (p15-s23-runtime-evaluate-arguments
+                   (get instruction :args) environment output [])
+                  values (first arguments-result)
+                  left (first values)
+                  right (second values)]
+              [(if (= function 'str)
+                 (if (= (count values) 1)
+                   (str left)
+                   (str left right))
+                 (if (= function '=)
+                   (= left right)
+                   (if (= function '<)
+                     (< left right)
+                     (if (= function '<=)
+                       (<= left right)
+                       (if (= function '>)
+                         (> left right)
+                         (>= left right))))))
+               (second arguments-result)])
+            (if (= operation :println)
+              (let [arguments-result
+                    (p15-s23-runtime-evaluate-arguments
+                     (get instruction :args) environment output [])]
+                [nil
+                 (p15-s23-runtime-println-output
+                  (first arguments-result) (second arguments-result))])
+              (if (= operation :do)
+                (p15-s23-runtime-evaluate-sequence
+                 (get instruction :body) environment output)
+                (if (= operation :if)
+                  (let [test-result
+                        (p15-s23-runtime-evaluate-closed-instruction
+                         (get instruction :test) environment output)]
+                    (if (first test-result)
+                      (p15-s23-runtime-evaluate-closed-instruction
+                       (get instruction :then)
+                       environment
+                       (second test-result))
+                      (p15-s23-runtime-evaluate-closed-instruction
+                       (get instruction :else)
+                       environment
+                       (second test-result))))
+                  (let [binding-result
+                        (p15-s23-runtime-evaluate-bindings
+                         (get instruction :bindings) environment output)]
+                    (p15-s23-runtime-evaluate-sequence
+                     (get instruction :body)
+                     (first binding-result)
+                     (second binding-result))))))))))))
+
+; Pinned public entrypoint for the authenticated closed hosted-core plan.  The
+; Clojure seed invokes this Gravity function once for the authoritative packet
+; execution.  Each target consumer separately replays the pinned function to
+; authenticate the packet; that verification replay is recorded outside the
+; authoritative invocation count.  The result is also compared with the
+; preceding stage2 executor and stage0 oracle while the seed boundary remains.
+(defn p15-s23-runtime-execute-closed-plan
+  [plan]
+  (let [entrypoint (get plan :entrypoint)
+        function (get (get plan :functions) entrypoint)
+        result
+        (p15-s23-runtime-evaluate-sequence
+         (get function :instructions) {} "")]
+    {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record
+     :entrypoint entrypoint
+     :entrypoint-result (first result)
+     :stdout (second result)
+     :status :complete
+     :clojure-seed-boundary? true
+     :self-hosted? false}))
+
+(defn main
+  []
+  (p15-s23-runtime-format-value "gravity-stage2-runtime"))

@@ -1,0 +1,499 @@
+{:artifact :gravity/sh07-proof-process-contract
+ :schema-version 2
+ :status :active
+ :scope :sh07-proof-orchestration
+ :coverage-milestone "SH-07-B47"
+ :governing-documents
+  ["docs/self-hosting-slice-backlog.md"
+  "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md"
+  "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+  "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+  "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"
+  "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+  "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
+  "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"
+  "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
+  "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
+  "docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md"
+  "docs/phase-12-build-package-and-artifact-system/169-pkg5-dependency-resolution-specification.md"
+  "docs/phase-12-build-package-and-artifact-system/175-pkg11-cross-compilation-and-target-matrix-specification.md"
+  "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md"
+  "docs/phase-16-standard-library/211-std1-standard-library-architecture.md"
+  "docs/phase-16-standard-library/212-std2-core-library-specification.md"
+  "docs/phase-16-standard-library/213-std3-collections-library-specification.md"
+  "docs/phase-16-standard-library/214-std4-string-and-text-library-specification.md"
+  "docs/phase-16-standard-library/215-std5-numeric-and-math-library-specification.md"
+  "docs/phase-16-standard-library/218-std8-io-and-filesystem-library-specification.md"
+  "docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md"
+  "docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md"
+  "docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md"
+  "docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md"
+  "docs/phase-10-schema-data-and-interop/153-s9-artifact-schema-specification.md"
+  "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md"
+  "docs/phase-01-core-language/014-l4-macro-system-specification.md"
+  "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md"
+  "docs/phase-01-core-language/024-l14-language-facet-system-specification.md"
+  "docs/phase-01-core-language/025-l15-capability-provider-specification.md"
+  "docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md"
+  "docs/phase-01-core-language/015-l5-type-system-specification.md"
+  "docs/phase-01-core-language/016-l6-effect-system-specification.md"
+  "docs/phase-01-core-language/017-l7-pattern-matching-specification.md"
+  "docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md"
+  "docs/phase-01-core-language/019-l9-error-handling-specification.md"
+  "docs/phase-01-core-language/020-l10-memory-model-specification.md"
+  "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md"
+  "docs/phase-02-safety/031-safe2-memory-safety-model.md"
+  "docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md"
+  "docs/phase-02-safety/033-safe4-region-and-arena-safety.md"
+  "docs/phase-02-safety/034-safe5-linear-resource-safety.md"
+  "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md"
+  "docs/phase-02-safety/036-safe7-ffi-safety.md"
+  "docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md"
+  "docs/phase-02-safety/038-safe9-numeric-safety.md"
+  "docs/phase-02-safety/039-safe10-capability-security-model.md"
+  "docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md"
+  "docs/phase-02-safety/041-safe12-macro-safety.md"
+  "docs/phase-02-safety/042-safe13-ai-tool-safety.md"
+  "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
+  "docs/phase-03-profile-system/046-p1-profile-system-specification.md"
+  "docs/phase-03-profile-system/048-p3-meta-profile-specification.md"
+  "docs/phase-03-profile-system/051-p6-firmware-profile-specification.md"
+  "docs/phase-03-profile-system/052-p7-kernel-profile-specification.md"
+  "docs/phase-03-profile-system/053-p8-hardware-profile-specification.md"
+  "docs/phase-03-profile-system/056-p11-gpu-accelerator-profile-specification.md"
+  "docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md"
+  "docs/phase-05-mathematical-and-elementary-function-system/072-math4-eml-normalization-and-search-design.md"
+  "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
+  "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
+  "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
+  "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md"
+  "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
+  "docs/phase-01-core-language/012-l2-core-language-semantics.md"
+  "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
+  "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md"
+  "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md"
+  "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md"
+  "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md"
+  "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md"
+  "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"
+  "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md"
+  "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md"
+  "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md"
+  "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"
+  "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
+  "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"
+  "docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md"
+  "docs/phase-07-backend-architecture/099-b2-c-backend-design.md"
+  "docs/phase-07-backend-architecture/101-b4-wasm-backend-design.md"
+  "docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md"
+  "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md"
+  "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md"
+  "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md"
+  "docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md"
+  "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md"
+  "docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md"
+  "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md"
+  "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md"
+  "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md"
+  "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md"
+  "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md"
+  "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md"
+  "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md"
+  "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md"
+  "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md"
+  "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md"
+  "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md"
+  "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md"
+  "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md"
+  "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md"
+  "docs/phase-15-bootstrap-and-self-hosting/207-boot5-stage-compatibility-matrix.md"
+  "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md"
+  "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md"
+  "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md"]
+ :ownership
+ {:leaf-only
+  ["bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_census.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_cached_shard_runner.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj"]
+  :forbidden
+  ["bootstrap/clojure/src/gravity/bootstrap.clj"
+   "bootstrap/gravity/src/gravity/checked_core.gravity"
+   "bootstrap/clojure/fixtures"
+   "docs/artifacts"
+   "tools"]}
+ :boundary
+ {:request-schema-version 15
+  :task "SH-07-B47"
+  :input-task "SH-07-B15"
+  :scope :sh07-b15-keyword-map-lookup
+  :adapter :gravity/sh07-to-c6-core-products-v16
+  :fresh-authoritative-process-required true
+  :iteration-cache-authoritative false}
+ :coverage-census-policy :source-bound-derived
+ :authority-claims
+ {:counts-precommitted? false
+  :independent-count-oracle? false
+  :aggregate-authoritative? false
+  :release-authoritative? false
+  :unsupported-claims [:exact-authentic-coverage :aggregate :release]
+  :attestation-required true
+  :attestation-schema :gravity/sh07-source-bound-attestation-v1}
+ :proof-transaction
+ {:schema-version 1
+  :phase-order [:construction :independent-audit]
+  :thread-confined true
+  :nested-transactions-allowed false
+  :cross-epoch-reuse false
+  :failed-report-reuse false
+  :source-snapshot-recheck-required true
+  :checked-core-revision-recheck-required true
+  :upstream-gravity-source-rechecks [:sh05-macro :sh06-resolution]
+  :exact-verifier-root-identity-required true
+  :verification-check-catalog-binding-required true
+  :immutable-receipt-carriers-required true
+  :finally-cleanup-required true
+  :maximum-receipts-per-phase 64
+  :maximum-sh05-full-verifications 4
+  :minimum-independent-audit-executions
+  {:sh05 1 :sh06 1 :sh07 1}
+  :iteration-receipts-authoritative false}
+ :bounds
+ {:maximum-module-forms 65536
+  :maximum-module-core-nodes 65536
+  :maximum-fragments 1024
+  :maximum-top-level-forms 1024
+  :maximum-fragment-forms 1024
+  :maximum-form-children 1024
+  :maximum-form-depth 256
+  :maximum-module-bindings 2440
+  :maximum-bindings 2048
+  :maximum-alias-records 256
+  :maximum-fragment-resolutions 2048
+  :maximum-module-resolutions 65536
+  :maximum-origin-entries 256
+  :maximum-metadata-entries 256
+  :maximum-effects 128
+  :maximum-capabilities 128
+  :maximum-exports 1024
+  :maximum-module-carrier-nodes 8388608
+  :maximum-module-carrier-depth 256
+  :maximum-module-carrier-width 65536
+  :maximum-module-scalar-bytes 268435456
+  :maximum-template-carrier-nodes 33554432
+  :maximum-template-carrier-depth 256
+  :maximum-template-carrier-width 65536
+  :maximum-template-scalar-bytes 1073741824
+  :maximum-resolved-core-carrier-nodes 16777216
+  :maximum-resolved-core-carrier-depth 256
+  :maximum-resolved-core-carrier-width 65536
+  :maximum-resolved-core-scalar-bytes 1073741824
+  :maximum-generated-digest-carrier-nodes 16777216
+  :maximum-generated-digest-carrier-depth 256
+  :maximum-generated-digest-carrier-width 65536
+  :maximum-generated-digest-scalar-bytes 1073741824
+  :maximum-module-digest-requests 65540}
+ :cache-key
+ [:source-path
+  :source-bytes-sha256
+  :request-schema-version
+  :adapter
+  :checked-core-source-content-hash
+  :checked-core-plan-semantic-hash
+  :java-runtime-version
+  :clojure-version]
+ :authoritative-modules
+ {:diagnostics
+  "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
+  :b1-backend-interface
+  "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
+  :b2-c
+  "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"
+  :b3-llvm
+  "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
+  :b4-wasm
+  "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"
+  :b5-jvm
+  "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
+  :b6-javascript-typescript
+  "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+  :b7-mlir
+  "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
+  :b8-gpu
+  "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"
+  :b9-hdl
+  "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+  :b10-workflow
+  "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+  :b11-query
+  "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"
+  :b12-mobile
+  "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
+  :c11-mir
+  "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+  :c12-domain-ir
+  "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+  :c13-mir-optimization
+  "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+  :c14-target-lowering
+  "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+  :c15-diagnostics
+  "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"
+  :c16-incremental
+  "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+  :c17-plugin
+  "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+  :sh21-meta
+  "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity"
+  :c18-verification
+  "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+  :c7-types
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  :c8-effects
+  "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+  :c9-ownership
+  "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+  :c10-safety
+  "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+  :l1-c2-surface-reader
+  "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
+  :sh23-package-build
+  "bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity"
+  :sh22-standard-library
+  "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity"
+  :authenticated-envelope
+  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
+  :resolution
+  "bootstrap/gravity/src/gravity/resolution.gravity"
+  :c6-c10-pipeline
+  "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+  :c6-call-arity
+  "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+  :checked-core
+  "bootstrap/gravity/src/gravity/checked_core.gravity"
+  :c3-compat
+  "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+  :c6-core
+  "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+  :c4-compat
+  "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+  :c5-compat
+  "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+  :l2-core
+  "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+  :macro
+  "bootstrap/gravity/src/gravity/macro.gravity"
+  :reader
+  "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+  :syntax
+  "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
+ :authoritative-coverage-census
+ {:schema-version 2
+  :policy :source-bound-derived
+  :counts-precommitted? false
+  :independent-count-oracle? false
+  :unsupported-claims [:exact-authentic-coverage :aggregate :release]
+  :module-expectations
+  {:c7-types
+   {:module-namespace gravity.compiler.c7-type-checker-engine
+    :source-binding
+    {:source-byte-count 210220
+     :source-bytes-sha256
+     "sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4"}}
+   :c8-effects
+   {:module-namespace gravity.compiler.c8-effect-checker-engine
+    :source-binding
+    {:source-byte-count 82797
+     :source-bytes-sha256
+     "sha256:de3fb80e14336cadacf710a0b2fef33b19efab0728d5ca08e7a25c72df7afe16"}}
+   :c9-ownership
+   {:module-namespace gravity.compiler.c9-ownership-checker-engine
+    :source-binding
+    {:source-byte-count 71132
+     :source-bytes-sha256
+     "sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd"}}
+   :c10-safety
+   {:module-namespace gravity.compiler.c10-safety-analysis-pipeline
+    :source-binding
+    {:source-byte-count 112712
+     :source-bytes-sha256
+     "sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968"}}
+   :c11-mir
+   {:module-namespace gravity.compiler.c11-mir-specification
+    :source-binding
+    {:source-byte-count 253588
+     :source-bytes-sha256
+     "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"}}}}
+ :required-request-products
+ [:fragment-manifest :fragment-coverage :module-assembly-manifest]
+ :required-core-products
+ [:fragment-manifest :fragment-coverage :module-assembly-manifest
+  :keyword-lookups :function-records :call-edges :recursion-components]
+ :required-core-product-counts
+ {:b1-backend-interface {:keyword-lookups 0}
+  :b2-c {:keyword-lookups 0}
+  :b3-llvm {:keyword-lookups 0}
+  :b4-wasm {:keyword-lookups 0}
+  :b5-jvm {:keyword-lookups 9}
+  :b6-javascript-typescript {:keyword-lookups 8}
+  :b7-mlir {:keyword-lookups 5}
+  :b8-gpu {:keyword-lookups 8}
+  :b9-hdl {:keyword-lookups 10}
+  :b10-workflow {:keyword-lookups 7}
+  :b11-query {:keyword-lookups 8}
+  :b12-mobile {:keyword-lookups 8}
+  :c11-mir {:keyword-lookups 0}
+  :c12-domain-ir {:keyword-lookups 0}
+  :c13-mir-optimization {:keyword-lookups 0}
+  :c14-target-lowering {:keyword-lookups 0}
+  :c15-diagnostics {:keyword-lookups 0}
+  :c16-incremental {:keyword-lookups 0}
+  :c17-plugin {:keyword-lookups 0}
+  :sh21-meta {:keyword-lookups 0}
+  :c18-verification {:keyword-lookups 0}
+  :c7-types {:keyword-lookups 0}
+  :c8-effects {:keyword-lookups 0}
+  :c9-ownership {:keyword-lookups 0}
+  :c10-safety {:keyword-lookups 0}
+  :l1-c2-surface-reader {:keyword-lookups 0}
+  :sh23-package-build {:keyword-lookups 0}
+  :sh22-standard-library {:keyword-lookups 0}
+  :authenticated-envelope {:keyword-lookups 0}
+  :resolution {:keyword-lookups 0}
+  :c6-c10-pipeline {:keyword-lookups 0}
+  :c6-call-arity {:keyword-lookups 0}
+  :checked-core {:keyword-lookups 0
+                 :function-records 305
+                 :call-edges 6547
+                 :recursion-components 6}
+  :c3-compat {:keyword-lookups 0}
+  :c4-compat {:keyword-lookups 0}
+  :c5-compat {:keyword-lookups 0}
+  :c6-core {:keyword-lookups 0}
+  :l2-core {:keyword-lookups 0}}
+ :required-verification-checks
+ [:fragment-manifest-replay?
+  :fragment-coverage-replay?
+  :module-assembly-manifest-replay?
+  :keyword-lookups-replay?
+  :function-records-replay?
+  :call-edges-replay?
+  :recursion-components-replay?
+  :module-replay?]
+ :nonclaims
+ [:persistent-production-cache
+  :cross-process-cache-trust
+  :parallel-digest-resolution
+  :incremental-fragment-compilation
+  :macro-expander-runtime-authority
+  :c3-adapter-retirement
+  :c4-adapter-retirement
+  :c5-adapter-retirement
+  :c15-diagnostic-runtime-authority
+  :c16-incremental-runtime-authority
+  :c17-plugin-runtime-authority
+  :sh21-whole-compiler-meta-execution
+  :c18-production-verifier-execution
+  :c18-contract-and-artifact-schema-enforcement
+  :c18-proof-certificate-and-evidence-checker-execution
+  :c18-translation-validation-and-replay-execution
+  :c18-release-gate-decision-authority
+  :c18-plugin-and-backend-conformance-execution
+  :c7-production-type-checker-execution
+  :c7-contract-and-diagnostic-schema-enforcement
+  :sh08-authenticated-coordinator-adapter
+  :sh08-resolved-typed-artifact-digest
+  :sh08-inference-constraints-generics-and-profile-legality
+  :sh08-dynamic-layout-schema-ownership-and-diagnostic-execution
+  :sh08-complete
+  :c8-production-effect-checker-execution
+  :c8-contract-and-diagnostic-schema-enforcement
+  :sh09-authenticated-sh08-function-and-effectful-adapters
+  :sh09-effect-inference-and-transitive-call-effects
+  :sh09-handled-effects-and-module-summaries
+  :sh09-runtime-profile-policy
+  :sh09-mir-preservation
+  :sh09-complete
+  :c9-production-ownership-checker-execution
+  :c9-contract-and-diagnostic-schema-enforcement
+  :sh10-authenticated-owned-mutable-sh09-adapter
+  :sh10-authenticated-effectful-or-nonprimitive-sh09-adapter
+  :sh10-persistent-copy-and-field-range-splitting
+  :sh10-regions-arenas-and-linear-resources
+  :sh10-transfer-runtime-check-and-unsafe-audit
+  :sh10-mir-preservation
+  :sh10-complete
+  :c10-production-safety-analysis-execution
+  :c10-contract-and-diagnostic-schema-enforcement
+  :sh11-memory-lifetime-region-and-linear-safety
+  :sh11-ffi-concurrency-taint-and-generated-code-safety
+  :sh11-floating-point-and-elementary-function-safety
+  :sh11-optimization-invalidation-and-mir-preservation
+  :sh11-authenticated-sh09-sh10-convergence
+  :sh11-complete
+  :c12-production-domain-ir-execution
+  :c12-contract-and-diagnostic-schema-enforcement
+  :sh14-authenticated-sh12-mir-input
+  :sh14-target-specific-layout
+  :sh14-actual-allocation
+  :sh14-field-offset-calculation
+  :sh14-pointer-and-lifetime-layouts
+  :sh14-complete
+  :c13-production-mir-optimization-execution
+  :c13-complete-mir-pass-pipeline
+  :sh16-authenticated-sh15-input
+  :sh16-complete-c11-mir-adapter
+  :sh16-whole-function-translation-validation
+  :sh16-target-lowering-proof-preservation
+  :sh16-self-hosted-certificate-checker
+  :sh16-complete
+  :c14-production-target-lowering-authority
+  :complete-b1-mir-and-domain-ir-surface
+  :b1-production-backend-execution
+  :b1-object-or-executable-emission
+  :b1-external-target-execution
+  :b1-backend-conformance-complete
+  :b2-complete-mir-and-domain-ir-surface
+  :b2-complete-operation-and-profile-surface
+  :b2-complete-c-dialect-target-and-abi-surface
+  :b2-production-backend-authority
+  :b2-complete-runtime-helper-and-ffi-surface
+  :b2-complete-pointer-memory-and-mmio-surface
+  :b2-complete-artifact-emission-surface
+  :b2-complete-external-target-matrix
+  :b2-backend-conformance-complete
+  :b2-public-gravity-routing
+  :b2-release
+  :b2-complete
+  :b3-complete-mir-and-domain-ir-surface
+  :b3-production-backend-execution
+  :b3-object-or-executable-emission
+  :b3-external-target-execution
+  :b3-backend-conformance-complete
+  :b3-public-gravity-routing
+  :b3-complete
+  :b3-release
+  :b4-complete-mir-and-domain-ir-surface
+  :b4-production-backend-execution
+  :b4-complete-component-model
+  :b4-complete-canonical-abi
+  :b4-complete-import-export-capability-surface
+  :b4-complete-linear-memory-and-table-surface
+  :b4-complete-wasi-async-surface
+  :b4-complete-simd-atomic-feature-surface
+  :b4-complete-runtime-binding-surface
+  :b4-complete-artifact-emission-surface
+  :b4-complete-external-target-matrix
+  :b4-backend-conformance-complete
+  :b4-public-gravity-routing
+  :b4-complete
+  :b4-release
+  :c14-complete-target-matrix
+  :sh17-authenticated-sh16-input
+  :sh17-complete-mir-lowering
+  :sh17-proof-preserving-all-targets
+  :sh17-complete
+  :downstream-c6-compilation
+  :sh07-complete
+  :seed-retirement
+  :self-hosting-complete]}

@@ -1,0 +1,18 @@
+; SH-07-B12 required-module alias reference in call-operator position.
+(ns self-hosting.sh07-b12.alias-qualified-operator-call
+  (:profile :meta)
+  (:target :jvm)
+  (:requires [shared.core :as shared :profile :core
+              :boundary :pure-core :refer [checksum]])
+  (:exports [call-alias])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B12
+              :fixture :alias-qualified-operator-call
+              :non-claims [:foreign-import-lowering
+                           :runtime-linking
+                           :whole-program-execution]}))
+
+(defn call-alias [value]
+  (shared/checksum value))

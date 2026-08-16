@@ -1,0 +1,1452 @@
+; W5 Wave2 B13 artifact-emission leaf.
+; The leaf validates a supplied, static artifact record and emits a
+; path-neutral identity with path-bearing provenance.  It is a bounded
+; stage2-executable component, not a release emitter or a target fallback.
+; The namespace target is :jvm only for the existing stage2 compiler-plan
+; harness.  Policy, request, and result target records remain exact LLVM.
+(ns gravity.backend.w5-b13-artifact-emitter
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-b13-policy
+             w5-b13-diagnostic-catalog
+             w5-b13-request-shape-valid?
+             w5-b13-target-coherent?
+             w5-b13-target-records-valid?
+             w5-b13-target-record-links-valid?
+             w5-b13-manifest-valid?
+             w5-b13-hash-valid?
+             w5-b13-provenance-valid?
+             w5-b13-source-map-valid?
+             w5-b13-evidence-valid?
+             w5-b13-conformance-valid?
+             w5-b13-reproducibility-valid?
+             w5-b13-release-gate-valid?
+             w5-b13-graph-valid?
+             w5-b13-identity-input
+             w5-b13-emit
+             w5-b13-artifact-emission
+             w5-b13-execute
+             w5-b13-run
+             w5-b13-recompute
+             w5-b13-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-b13-artifact-emitter
+     :owner :w5
+     :source-language :gravity
+     :seed :clojure-stage0
+     :status :executable-leaf
+     :scope :stage-owned-nonauthority
+     :authority :non-authority
+     :static-only? true
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :release? false
+     :public-authority? false
+     :residual-boundaries #{:clojure-stage2-compiler-plan
+                            :jvm-stage2-runtime}
+     :target-scope {:target :llvm-x86_64-linux
+                    :os :linux
+                    :arch :x86_64
+                    :backend :llvm
+                    :object-format :elf
+                    :abi :sysv-amd64
+                    :runtime :none
+                    :providers #{}
+                    :runtime-providers #{}
+                    :unsupported-targets [:darwin :darwin-arm64
+                                          :darwin-x86_64 :windows]
+                    :unsupported-target-policies
+                    [{:target :darwin :support :unsupported
+                      :invokes-clojure? false :links-jvm? false :fallback? false}
+                     {:target :darwin-arm64 :support :unsupported
+                      :invokes-clojure? false :links-jvm? false :fallback? false}
+                     {:target :darwin-x86_64 :support :unsupported
+                      :invokes-clojure? false :links-jvm? false :fallback? false}
+                     {:target :windows :support :unsupported
+                      :invokes-clojure? false :links-jvm? false :fallback? false}]
+                    :candidate-invokes-clojure? false
+                    :candidate-links-jvm? false
+                    :candidate-fallback? false
+                    :no-fallback? true
+                    :darwin-supported? false
+                    :cross-target-inference? false
+                    :darwin-fallback? false}
+     :governing-documents ["B13" "B14" "C14" "C1" "D1" "D2"
+                           "D3" "D8" "D9"]
+     :non-goals [:release-emission
+                 :signing
+                 :packaging
+                 :deployment
+                 :llvm-toolchain-execution
+                 :darwin-support
+                 :cross-target-inference
+                 :jvm-fallback]}}))
+
+(def w5-b13-unsupported-targets
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+
+(def w5-b13-unsupported-target-policies
+  [{:target :darwin :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-arm64 :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-x86_64 :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :windows :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}])
+
+(def w5-b13-diagnostic-ids
+  ["B13-SCHEMA"
+   "B13-HASH"
+   "B13-PROVENANCE"
+   "B13-SOURCEMAP"
+   "B13-EVIDENCE"
+   "B13-TARGET"
+   "B13-CONFORMANCE"
+   "B13-REPRODUCIBILITY"
+   "B13-RELEASE"
+   "B13-GRAPH"])
+
+(def w5-b13-provenance-phases
+  [:source-forms :reader :syntax-objects :macro-expansion
+   :core-gravity-ast :name-resolution :type-checking :effect-checking
+   :profile-validation :capability-validation
+   :ownership-lifetime-analysis :safety-analysis :gravity-mir
+   :verify-mir :domain-ir-lowering :verify-domain-ir
+   :optimization :target-lowering
+   :artifact-emission :package-provenance-recording])
+
+(def w5-b13-provenance-passes
+  [:read-source-forms :emit-syntax-objects :macro-expand
+   :lower-core-gravity-ast :resolve-names :check-types :check-effects
+   :validate-profile :validate-capabilities :analyze-ownership-lifetimes
+   :analyze-safety :build-gravity-mir :verify-mir :lower-domain-ir
+   :verify-domain-ir :optimize :lower-target :emit-artifact
+   :record-package-provenance])
+
+(def w5-b13-dependency-inventory
+  ["gravity/compiler-core-v1"
+   "gravity/llvm-lowering-contract-v1"])
+
+(def w5-b13-target-features
+  #{:x86_64 :sse2})
+
+(def w5-b13-abi-layout
+  {:architecture :x86_64
+   :binary-format :elf
+   :calling-convention :sysv-amd64
+   :pointer-width 64
+   :endianness :little})
+
+(def w5-b13-non-authority
+  {:clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :full-language? false
+   :authority :non-authority})
+
+(def w5-b13-request-keys
+  #{:artifact :schema-version :artifact-id :profile :target :target-scope
+    :manifest :hash-record :emitted-artifact :source-debug-map
+    :compiler-provenance :dependency-provenance
+    :safety-proof-certificate-bundle :effect-capability-summary
+    :runtime-provider-summary :target-runtime-abi-layout-summary
+    :reproducibility-record :conformance-evidence-reference
+    :release-gate-record :artifact-graph :diagnostic-stream
+    :release-attempt? :provenance :clojure-seed-boundary? :self-hosted?
+    :release? :public-authority? :authority :non-authority})
+
+(def w5-b13-diagnostic-catalog
+  {:artifact :gravity/w5-b13-diagnostic-catalog
+   :schema-version 1
+   :diagnostics w5-b13-diagnostic-ids
+   :remediation
+   {"B13-SCHEMA" :emit-supported-common-manifest-schema
+    "B13-HASH" :recompute-content-hash-and-manifest-digest
+    "B13-PROVENANCE" :attach-source-compiler-generator-pass-and-dependency-provenance
+    "B13-SOURCEMAP" :preserve-source-spans-and-generated-origin-chain
+    "B13-EVIDENCE" :attach-safety-proof-certificate-effect-capability-and-unsafe-audit-records
+    "B13-TARGET" :declare-coherent-target-runtime-provider-abi-and-layout
+    "B13-CONFORMANCE" :attach-policy-required-conformance-evidence
+    "B13-REPRODUCIBILITY" :record-environment-inputs-nondeterminism-and-timestamp-policy
+    "B13-RELEASE" :block-release-grade-output-until-release-evidence-is-present
+    "B13-GRAPH" :repair-artifact-graph-nodes-and-edges}
+   :non-authority w5-b13-non-authority})
+
+(defn w5-b13-policy []
+  {:artifact :gravity/w5-b13-artifact-emission-policy
+   :schema-version 1
+   :scope :stage2-static-only
+   :profile :meta
+   :target :llvm-x86_64-linux
+   :candidate-target :llvm-x86_64-linux
+   :candidate-platform {:os :linux
+                        :arch :x86_64
+                        :backend :llvm
+                        :object-format :elf
+                        :abi :sysv-amd64}
+   :unsupported-platforms w5-b13-unsupported-targets
+   :unsupported-targets w5-b13-unsupported-targets
+   :unsupported-target-policies w5-b13-unsupported-target-policies
+   :cross-target-inference? false
+   :darwin-fallback? false
+   :no-fallback? true
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :candidate-fallback? false
+   :release-eligible? false
+   :target-scope {:target :llvm-x86_64-linux
+                  :os :linux
+                  :arch :x86_64
+                  :backend :llvm
+                  :object-format :elf
+                  :abi :sysv-amd64
+                  :runtime :none
+                  :providers #{}
+                  :runtime-providers #{}
+                  :darwin-supported? false
+                  :unsupported-targets w5-b13-unsupported-targets
+                  :unsupported-target-policies w5-b13-unsupported-target-policies
+                  :cross-target-inference? false
+                  :darwin-fallback? false
+                  :candidate-invokes-clojure? false
+                  :candidate-links-jvm? false
+                  :candidate-fallback? false
+                  :no-fallback? true}
+   :static-only? true
+   :allowed-artifact-kinds #{:llvm-ir :llvm-object :llvm-executable}
+   :required-manifest-fields #{:artifact :schema-version :kind :backend
+                               :profile :target :content-hash :inputs
+                               :evidence :provenance :build-identity
+                               :effects :capabilities :safety
+                               :target-features :abi-layout
+                               :runtime-providers :diagnostics}
+   :required-output-artifacts [:artifact-manifests
+                               :content-hash-records
+                               :artifact-graph
+                               :source-debug-map
+                               :compiler-provenance
+                               :dependency-provenance
+                               :safety-proof-certificate-bundle
+                               :effect-capability-summary
+                               :runtime-provider-summary
+                               :target-runtime-abi-layout-summary
+                               :reproducibility-record
+                               :conformance-evidence-reference
+                               :release-gate-record]
+   :diagnostics w5-b13-diagnostic-ids
+   :residual-boundaries {:stage2-compiler-plan :clojure-bootstrap
+                         :stage2-runtime :jvm
+                         :target-toolchain :not-executed
+                         :byte-hash-verification :not-executed
+                         :independent-rebuild :not-executed
+                         :filesystem-authority false
+                         :network-authority false
+                         :process-authority false}
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :authority :non-authority
+   :non-authority w5-b13-non-authority
+   :pending [:cryptographic-byte-hash-verification
+             :independent-rebuild
+             :llvm-toolchain-conformance
+             :signing
+             :packaging
+             :deployment
+             :seed-retirement]})
+
+(defn w5-b13-present? [value]
+  (if (= nil value) false true))
+
+(defn w5-b13-nonempty-string? [value]
+  (if (string? value)
+    (> (count value) 0)
+    false))
+
+(defn w5-b13-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn w5-b13-at [value path index]
+  (if (= index (count path))
+    value
+    (w5-b13-at (get value (get path index)) path (+ index 1))))
+
+(defn w5-b13-hex-member? [value index character]
+  (if (= index (count value))
+    false
+    (if (= character (get value index))
+      true
+      (w5-b13-hex-member? value (+ index 1) character))))
+
+(defn w5-b13-lowercase-hex-char? [character]
+  (w5-b13-hex-member? "0123456789abcdef" 0 character))
+
+(defn w5-b13-sha256-prefix? [value index]
+  (if (= index 7)
+    true
+    (if (= (get value index) (get "sha256:" index))
+      (w5-b13-sha256-prefix? value (+ index 1))
+      false)))
+
+(defn w5-b13-sha256-tail? [value index]
+  (if (= index 71)
+    true
+    (if (w5-b13-lowercase-hex-char? (get value index))
+      (w5-b13-sha256-tail? value (+ index 1))
+      false)))
+
+(defn w5-b13-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (if (w5-b13-sha256-prefix? value 0)
+        (w5-b13-sha256-tail? value 7)
+        false)
+      false)
+    false))
+
+(defn w5-b13-all-sha256-from? [values index]
+  (if (= index (count values))
+    true
+    (if (w5-b13-sha256-id? (get values index))
+      (w5-b13-all-sha256-from? values (+ index 1))
+      false)))
+
+(defn w5-b13-all-sha256? [values]
+  (if (vector? values)
+    (w5-b13-all-sha256-from? values 0)
+    false))
+
+(defn w5-b13-request-shape-valid? [request]
+  (if (w5-b13-exact-keys? request w5-b13-request-keys)
+    (if (= :gravity/w5-b13-artifact-emission-request
+           (get request :artifact))
+      (if (= 1 (get request :schema-version))
+        (if (w5-b13-sha256-id? (get request :artifact-id))
+          (if (= :meta (get request :profile))
+            (if (= :llvm-x86_64-linux (get request :target))
+              (if (= true (get request :clojure-seed-boundary?))
+                (if (= false (get request :self-hosted?))
+                  (if (= false (get request :release?))
+                    (if (= false (get request :public-authority?))
+                      (if (= :non-authority (get request :authority))
+                        (if (= w5-b13-non-authority
+                               (get request :non-authority))
+                          (if (= (get request :non-authority)
+                                 (get (w5-b13-policy) :non-authority))
+                            (= (get request :non-authority)
+                               (get (get request :release-gate-record)
+                                    :non-authority))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b13-source-span-valid? [span]
+  (if (map? span)
+    (if (w5-b13-exact-keys? span #{:source-id :start-byte :end-byte})
+      (if (w5-b13-sha256-id? (get span :source-id))
+        (if (integer? (get span :start-byte))
+          (if (integer? (get span :end-byte))
+            (if (>= (get span :start-byte) 0)
+              (<= (get span :start-byte) (get span :end-byte))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b13-target-coherent? [target]
+  (if (map? target)
+    (if (w5-b13-exact-keys?
+         target #{:target :os :arch :backend :object-format :abi :runtime
+                  :providers :runtime-providers :darwin-supported?
+                  :unsupported-targets :unsupported-target-policies
+                  :cross-target-inference? :darwin-fallback?
+                  :candidate-invokes-clojure? :candidate-links-jvm?
+                  :candidate-fallback? :no-fallback?})
+      (if (= w5-b13-unsupported-targets (get target :unsupported-targets))
+      (if (= w5-b13-unsupported-target-policies
+             (get target :unsupported-target-policies))
+        (if (= false (get target :candidate-invokes-clojure?))
+          (if (= false (get target :candidate-links-jvm?))
+            (if (= false (get target :candidate-fallback?))
+              (if (= true (get target :no-fallback?))
+                (if (= :llvm-x86_64-linux (get target :target))
+                  (if (= :linux (get target :os))
+                    (if (= :x86_64 (get target :arch))
+                      (if (= :llvm (get target :backend))
+                        (if (= :elf (get target :object-format))
+                          (if (= :sysv-amd64 (get target :abi))
+                            (if (= :none (get target :runtime))
+                              (if (= #{} (get target :providers))
+                                (if (= #{} (get target :runtime-providers))
+                                  (if (= false (get target :darwin-supported?))
+                                    (if (= false (get target :cross-target-inference?))
+                                      (= false (get target :darwin-fallback?))
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+      false)
+    false))
+
+(defn w5-b13-target-records-valid? [request]
+  (let [manifest (get request :manifest)
+        runtime (get request :runtime-provider-summary)
+        target (get request :target-runtime-abi-layout-summary)
+        emitted (get request :emitted-artifact)]
+    (if (= :llvm-x86_64-linux (get manifest :target))
+      (if (= :gravity.backend/llvm (get manifest :backend))
+        (if (= :none (get runtime :runtime))
+          (if (= #{} (get runtime :providers))
+            (if (= true (get runtime :static-only?))
+              (if (= false (get runtime :jvm-fallback?))
+                (if (= :complete (get runtime :status))
+                  (if (= :llvm-x86_64-linux (get target :target))
+                    (if (= :linux (get target :os))
+                      (if (= :x86_64 (get target :arch))
+                        (if (= :llvm (get target :backend))
+                          (if (= :elf (get target :object-format))
+                            (if (= :sysv-amd64 (get target :abi))
+                              (if (= :none (get target :runtime))
+                                (if (= #{} (get target :providers))
+                                  (if (= :complete (get target :status))
+                                    (if (= :llvm-x86_64-linux
+                                           (get emitted :target))
+                                      (if (= :elf
+                                             (get emitted :object-format))
+                                        (= :sysv-amd64 (get emitted :abi))
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-b13-target-record-links-valid? [request]
+  (let [manifest (get request :manifest)
+        runtime (get request :runtime-provider-summary)
+        target (get request :target-runtime-abi-layout-summary)
+        emitted (get request :emitted-artifact)]
+    (if (= (get manifest :target) (get request :target))
+      (if (= :native (get manifest :profile))
+        (if (= runtime
+               {:artifact :gravity/runtime-provider-summary
+                :runtime :none :providers #{} :runtime-providers #{}
+                :static-only? true :jvm-fallback? false :status :complete})
+          (if (= target
+                 {:artifact :gravity/target-runtime-abi-layout-summary
+                  :target :llvm-x86_64-linux
+                  :os :linux
+                  :arch :x86_64
+                  :backend :llvm
+                  :object-format :elf
+                  :abi :sysv-amd64
+                  :runtime :none
+                  :providers #{}
+                  :target-features w5-b13-target-features
+                  :abi-layout w5-b13-abi-layout
+                  :status :complete})
+            (if (= (get manifest :target-features)
+                   (get target :target-features))
+              (if (= (get manifest :abi-layout) (get target :abi-layout))
+                (if (w5-b13-exact-keys?
+                     emitted #{:artifact :artifact-id :content-hash
+                               :kind :target :object-format :abi
+                               :runtime-providers :bytes-id})
+                  (if (= (get emitted :artifact-id)
+                         (get request :artifact-id))
+                    (if (= (get emitted :content-hash)
+                           (get manifest :content-hash))
+                      (if (= (get emitted :kind) (get manifest :kind))
+                        (if (= (get emitted :target) (get target :target))
+                          (if (= (get emitted :object-format)
+                                 (get target :object-format))
+                            (if (= (get emitted :abi) (get target :abi))
+                              (= (get emitted :runtime-providers)
+                                 (get runtime :runtime-providers))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-b13-manifest-provenance-valid? [provenance]
+  (if (w5-b13-exact-keys?
+       provenance
+       #{:compiler :generator :passes :dependencies :dependency-inventory})
+    (if (= "gravity-w5-b13-stage2" (get provenance :compiler))
+      (if (= "gravity.backend.w5-b13-artifact-emitter"
+             (get provenance :generator))
+        (if (= w5-b13-provenance-passes (get provenance :passes))
+          (if (w5-b13-sha256-id? (get provenance :dependencies))
+            (= w5-b13-dependency-inventory
+               (get provenance :dependency-inventory))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b13-manifest-valid? [manifest]
+  (if (map? manifest)
+    (if (w5-b13-exact-keys?
+         manifest
+         #{:artifact :schema-version :kind :backend :profile :target
+           :content-hash :inputs :evidence :provenance :build-identity
+           :effects :capabilities :safety :target-features :abi-layout
+           :runtime-providers :diagnostics})
+      (if (= :gravity/artifact-manifest (get manifest :artifact))
+        (if (= 1 (get manifest :schema-version))
+          (if (contains? #{:llvm-ir :llvm-object :llvm-executable}
+                         (get manifest :kind))
+            (if (= :gravity.backend/llvm (get manifest :backend))
+              (if (= :native (get manifest :profile))
+                (if (= :llvm-x86_64-linux (get manifest :target))
+                  (if (w5-b13-sha256-id? (get manifest :content-hash))
+                    (if (w5-b13-exact-keys? (get manifest :inputs)
+                                             #{:source :mir :lowering})
+                      (if (w5-b13-all-sha256?
+                           [(w5-b13-at manifest [:inputs :source] 0)
+                            (w5-b13-at manifest [:inputs :mir] 0)
+                            (w5-b13-at manifest [:inputs :lowering] 0)])
+                    (if (w5-b13-exact-keys?
+                         (get manifest :evidence)
+                         #{:safety :proofs :certificates :effects
+                           :capabilities :conformance})
+                          (if (w5-b13-manifest-provenance-valid?
+                               (get manifest :provenance))
+                            (if (w5-b13-nonempty-string?
+                                 (get manifest :build-identity))
+                              (if (set? (get manifest :effects))
+                                (if (set? (get manifest :capabilities))
+                                  (if (= :safe (get manifest :safety))
+                                    (if (set? (get manifest :target-features))
+                                      (if (map? (get manifest :abi-layout))
+                                        (if (= #{} (get manifest :runtime-providers))
+                                          (vector? (get manifest :diagnostics))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b13-provenance-links-valid? [request]
+  (let [manifest (get request :manifest)
+        provenance (get request :provenance)
+        compiler (get request :compiler-provenance)
+        dependencies (get request :dependency-provenance)
+        source-map (get request :source-debug-map)
+        manifest-provenance (get manifest :provenance)
+        graph (get request :artifact-graph)]
+    (if (= (get provenance :source-id) (get compiler :source-id))
+      (if (= (get provenance :source-id) (get source-map :source-id))
+        (if (= (get (get manifest :inputs) :source)
+               (get provenance :source-id))
+          (if (= (get provenance :compiler-id)
+                 (get compiler :compiler-id))
+            (if (= (get provenance :generator-id)
+                   (get compiler :generator-id))
+              (if (= (get provenance :dependency-graph-id)
+                     (get dependencies :dependency-graph-id))
+                (if (= (get manifest-provenance :compiler)
+                       (get compiler :compiler-id))
+                  (if (= (get manifest-provenance :generator)
+                         (get compiler :generator-id))
+                (if (= (get manifest-provenance :dependencies)
+                           (get dependencies :dependency-graph-id))
+                      (if (= (get graph :dependency-graph-id)
+                             (get dependencies :dependency-graph-id))
+                        (if (= (get provenance :dependencies)
+                               (get dependencies :dependencies))
+                          (if (= (get manifest-provenance
+                                      :dependency-inventory)
+                                 (get dependencies :dependencies))
+                            (if (= (get graph :dependencies)
+                                   (get dependencies :dependencies))
+                              (if (= (get manifest-provenance :passes)
+                                 (get compiler :pass-pipeline))
+                            (if (= w5-b13-provenance-passes
+                                   (get compiler :pass-pipeline))
+                              (= (get provenance :pass-pipeline)
+                                 (get compiler :pass-pipeline))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))))
+
+(defn w5-b13-hash-valid? [request]
+  (let [manifest (get request :manifest)
+        record (get request :hash-record)
+        emitted (get request :emitted-artifact)
+        hashes (get (get request :reproducibility-record) :hashes)]
+    (if (map? record)
+      (if (w5-b13-exact-keys?
+           record #{:artifact :artifact-kind :content-hash :manifest-digest
+                    :artifact-id :verification :cryptographically-verified?
+                    :status})
+        (if (= :gravity/content-hash-record (get record :artifact))
+          (if (= :llvm-object (get record :artifact-kind))
+            (if (= :structural-crosslink-only (get record :verification))
+              (if (= false (get record :cryptographically-verified?))
+                (if (= :pending-unverified (get record :status))
+                  (if (map? emitted)
+                    (if (w5-b13-sha256-id? (get record :content-hash))
+                      (if (= (get manifest :content-hash)
+                             (get record :content-hash))
+                        (if (= (get manifest :content-hash)
+                               (get emitted :content-hash))
+                          (if (= (get record :content-hash) (get hashes 3))
+                            (if (w5-b13-sha256-id?
+                                 (get record :manifest-digest))
+                              (if (= (get record :manifest-digest)
+                                     (get hashes 4))
+                                (if (= (get request :artifact-id)
+                                       (get record :artifact-id))
+                                  (if (= (get request :artifact-id)
+                                         (get emitted :artifact-id))
+                                    (= (get record :artifact-id)
+                                       (get hashes 5))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-b13-provenance-valid? [request]
+  (let [provenance (get request :provenance)
+        compiler (get request :compiler-provenance)
+        dependencies (get request :dependency-provenance)]
+    (if (w5-b13-exact-keys?
+         provenance
+         #{:artifact :source-id :actual-source-path :compiler-id
+           :generator-id :pass-pipeline :dependency-graph-id :dependencies
+           :status})
+      (if (= :gravity/artifact-provenance-record (get provenance :artifact))
+        (if (= :structural-complete (get provenance :status))
+          (if (w5-b13-nonempty-string? (get provenance :actual-source-path))
+            (if (w5-b13-sha256-id? (get provenance :source-id))
+              (if (w5-b13-exact-keys?
+                   compiler
+                   #{:artifact :compiler-id :compiler-version :generator-id
+                     :pass-pipeline :pass-contract :source-id :status})
+                (if (= :gravity/compiler-provenance-record
+                       (get compiler :artifact))
+                  (if (= "gravity-w5-b13-stage2" (get compiler :compiler-id))
+                    (if (= "0.1.0" (get compiler :compiler-version))
+                      (if (= "gravity.backend.w5-b13-artifact-emitter"
+                             (get compiler :generator-id))
+                        (if (= "B13-artifact-emission-v1"
+                               (get compiler :pass-contract))
+                          (if (= :complete (get compiler :status))
+                            (if (w5-b13-exact-keys?
+                                 dependencies
+                                 #{:artifact :dependency-graph-id
+                                   :dependencies :generator :target-toolchain
+                                   :runtime-providers :status})
+                              (if (= :gravity/dependency-provenance-record
+                                     (get dependencies :artifact))
+                                (if (= w5-b13-dependency-inventory
+                                       (get dependencies :dependencies))
+                                  (if (= "gravity.backend.w5-b13-artifact-emitter"
+                                         (get dependencies :generator))
+                                    (if (= "llvm-x86_64-linux-static-record"
+                                           (get dependencies :target-toolchain))
+                                      (if (= [] (get dependencies
+                                                    :runtime-providers))
+                                        (if (= :complete
+                                               (get dependencies :status))
+                                          (if (= (get provenance
+                                                      :actual-source-path)
+                                                 (get (get request
+                                                           :source-debug-map)
+                                                      :actual-source-path))
+                                            (w5-b13-provenance-links-valid?
+                                             request)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-b13-source-map-locations-valid? [locations source-id index]
+  (if (= index (count w5-b13-provenance-phases))
+    (= index (count locations))
+    (let [location (get locations index)
+          phase (get w5-b13-provenance-phases index)]
+      (if (w5-b13-exact-keys?
+           location #{:phase :source-span :origin})
+        (if (= phase (get location :phase))
+          (if (= phase (get location :origin))
+            (if (w5-b13-source-span-valid? (get location :source-span))
+              (if (= source-id
+                     (get (get location :source-span) :source-id))
+                (w5-b13-source-map-locations-valid?
+                 locations source-id (+ index 1))
+                false)
+              false)
+            false)
+          false)
+        false))))
+
+(defn w5-b13-source-map-valid? [request]
+  (let [source-map (get request :source-debug-map)
+        provenance (get request :provenance)]
+    (if (w5-b13-exact-keys?
+         source-map #{:artifact :source-id :actual-source-path :source-span
+                      :locations :generated-origin-chain :phases :status})
+      (if (= :gravity/source-debug-map (get source-map :artifact))
+        (if (= :preserved (get source-map :status))
+          (if (w5-b13-sha256-id? (get source-map :source-id))
+            (if (= (get source-map :source-id)
+                   (get provenance :source-id))
+              (if (w5-b13-source-span-valid? (get source-map :source-span))
+                (if (= (get (get source-map :source-span) :source-id)
+                       (get source-map :source-id))
+                  (if (w5-b13-nonempty-string?
+                       (get source-map :actual-source-path))
+                    (if (= (get source-map :actual-source-path)
+                           (get provenance :actual-source-path))
+                      (if (vector? (get source-map :locations))
+                        (if (w5-b13-source-map-locations-valid?
+                             (get source-map :locations)
+                             (get source-map :source-id) 0)
+                          (if (= w5-b13-provenance-phases
+                                 (get source-map :generated-origin-chain))
+                            (= w5-b13-provenance-phases
+                               (get source-map :phases))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-b13-evidence-valid? [request]
+  (let [bundle (get request :safety-proof-certificate-bundle)
+        summary (get request :effect-capability-summary)
+        manifest (get request :manifest)
+        evidence (get manifest :evidence)]
+    (if (w5-b13-exact-keys?
+         bundle #{:artifact :bundle-id :safety-mode :safety-outcomes
+                  :proofs :certificates :unsafe-audit-records :status})
+      (if (= :gravity/safety-proof-certificate-bundle
+             (get bundle :artifact))
+        (if (= :structural-complete (get bundle :status))
+          (if (w5-b13-sha256-id? (get bundle :bundle-id))
+            (if (= :safe (get bundle :safety-mode))
+              (if (= [:proven-safe] (get bundle :safety-outcomes))
+                (if (= ["proof:manifest-schema" "proof:target-coherence"
+                        "proof:source-map-preservation"]
+                       (get bundle :proofs))
+                  (if (= ["certificate:content-hash"
+                          "certificate:graph-closure"]
+                         (get bundle :certificates))
+                    (if (= [] (get bundle :unsafe-audit-records))
+                  (if (w5-b13-exact-keys?
+                       summary #{:artifact :effects :capabilities
+                                 :unsafe-islands :status})
+                    (if (= :gravity/effect-capability-summary
+                           (get summary :artifact))
+                      (if (= :complete (get summary :status))
+                        (if (= #{} (get summary :effects))
+                          (if (= #{} (get summary :capabilities))
+                            (if (= #{} (get summary :unsafe-islands))
+                              (if (w5-b13-exact-keys?
+                                   evidence #{:safety :proofs :certificates
+                                              :effects :capabilities
+                                              :conformance})
+                                (if (= (get summary :effects)
+                                       (get manifest :effects))
+                                  (if (= (get summary :capabilities)
+                                         (get manifest :capabilities))
+                                    (if (= (get bundle :bundle-id)
+                                           (get evidence :safety))
+                                      (if (= (get bundle :bundle-id)
+                                             (get evidence :proofs))
+                                        (if (= (get bundle :bundle-id)
+                                               (get evidence :certificates))
+                                          (if (= (get summary :effects)
+                                                 (get evidence :effects))
+                                            (if (= (get summary :capabilities)
+                                                   (get evidence :capabilities))
+                                              (w5-b13-sha256-id?
+                                               (get evidence :conformance))
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))))
+
+(defn w5-b13-conformance-valid? [request]
+  (let [conformance (get request :conformance-evidence-reference)
+        manifest (get request :manifest)
+        stream (get request :diagnostic-stream)]
+    (if (w5-b13-exact-keys?
+         conformance #{:artifact :evidence-id :packs :diagnostics
+                       :metadata-preservation :verification
+                       :independently-verified? :status})
+      (if (= :gravity/conformance-evidence-reference
+             (get conformance :artifact))
+        (if (= :pending-unverified (get conformance :status))
+          (if (w5-b13-sha256-id? (get conformance :evidence-id))
+            (if (= (get conformance :evidence-id)
+                   (get (get manifest :evidence) :conformance))
+              (if (= ["B13-common-manifest" "B13-static-target"
+                      "B14-metadata"]
+                     (get conformance :packs))
+                (if (= 10 (count (get conformance :diagnostics)))
+                  (if (= (set (get conformance :diagnostics))
+                         (set w5-b13-diagnostic-ids))
+                    (if (= :pending-unverified
+                           (get conformance :metadata-preservation))
+                      (if (= :structural-crosslink-only
+                             (get conformance :verification))
+                        (if (= false
+                               (get conformance :independently-verified?))
+                          (if (w5-b13-exact-keys?
+                               stream #{:artifact :diagnostics :status})
+                            (if (= :gravity/w5-b13-diagnostic-stream
+                                   (get stream :artifact))
+                              (if (= :complete (get stream :status))
+                                (if (vector? (get stream :diagnostics))
+                                  (if (= 10
+                                         (count (get stream :diagnostics)))
+                                    (= (set (get stream :diagnostics))
+                                       (set w5-b13-diagnostic-ids))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-b13-reproducibility-valid? [request]
+  (let [record (get request :reproducibility-record)
+        manifest (get request :manifest)
+        hash-record (get request :hash-record)
+        hashes (get record :hashes)]
+    (if (map? record)
+      (if (w5-b13-exact-keys?
+           record #{:artifact :hashes :timestamp-policy :environment-inputs
+                    :nondeterminism :path-dependent-identity?
+                    :cryptographically-verified? :reproducible? :status})
+        (if (= :gravity/reproducibility-record (get record :artifact))
+          (if (= :pending-unverified (get record :status))
+            (if (= false (get record :cryptographically-verified?))
+              (if (= false (get record :reproducible?))
+                (if (= :none (get record :timestamp-policy))
+                  (if (vector? (get record :environment-inputs))
+                    (if (vector? (get record :nondeterminism))
+                      (if (= false (get record :path-dependent-identity?))
+                        (if (w5-b13-all-sha256? hashes)
+                          (if (= 9 (count hashes))
+                            (if (= (get hashes 0)
+                                   (get (get manifest :inputs) :source))
+                              (if (= (get hashes 1)
+                                     (get (get manifest :inputs) :mir))
+                                (if (= (get hashes 2)
+                                       (get (get manifest :inputs) :lowering))
+                                  (if (= (get hashes 3)
+                                         (get manifest :content-hash))
+                                    (if (= (get hashes 4)
+                                           (get hash-record :manifest-digest))
+                                      (if (= (get hashes 5)
+                                             (get request :artifact-id))
+                                        (if (= (get hashes 6)
+                                               (get (get request
+                                                         :dependency-provenance)
+                                                    :dependency-graph-id))
+                                          (if (= (get hashes 7)
+                                                 (get (get request
+                                                           :safety-proof-certificate-bundle)
+                                                      :bundle-id))
+                                            (= (get hashes 8)
+                                               (get (get request
+                                                         :conformance-evidence-reference)
+                                                    :evidence-id))
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-b13-release-gate-valid? [request]
+  (let [gate (get request :release-gate-record)]
+    (if (w5-b13-exact-keys?
+         gate
+         #{:artifact :release-grade-artifact-status :reason
+           :blocked-downstream :diagnostic-on-release-attempt :authority
+           :clojure-seed-boundary? :self-hosted? :release?
+           :public-authority? :full-language? :non-authority :status})
+      (if (= :gravity/artifact-release-gate (get gate :artifact))
+        (if (= :complete (get gate :status))
+          (if (= :blocked-development-only
+                 (get gate :release-grade-artifact-status))
+            (if (= :stage2-static-development-evidence (get gate :reason))
+              (if (= [:signing :packaging :deployment :release-governance]
+                     (get gate :blocked-downstream))
+                (if (= "B13-RELEASE"
+                       (get gate :diagnostic-on-release-attempt))
+                  (if (= :not-release-authority (get gate :authority))
+                    (if (= true (get gate :clojure-seed-boundary?))
+                      (if (= false (get gate :self-hosted?))
+                        (if (= false (get gate :release?))
+                          (if (= false (get gate :public-authority?))
+                            (if (= false (get gate :full-language?))
+                              (if (= w5-b13-non-authority
+                                     (get gate :non-authority))
+                                (= false (get request :release-attempt?))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-b13-graph-nodes-valid?
+  [nodes expected-digests index]
+  (if (= index (count w5-b13-provenance-phases))
+    (= index (count nodes))
+    (let [node (get nodes index)]
+      (if (w5-b13-exact-keys? node #{:node-id :kind :digest})
+        (if (= (get w5-b13-provenance-phases index)
+               (get node :node-id))
+          (if (= (get w5-b13-provenance-phases index)
+                 (get node :kind))
+            (if (= (get expected-digests index) (get node :digest))
+              (if (w5-b13-sha256-id? (get node :digest))
+                (w5-b13-graph-nodes-valid?
+                 nodes expected-digests (+ index 1))
+                false)
+              false)
+            false)
+          false)
+        false))))
+
+(defn w5-b13-graph-edges-valid? [edges source-id index]
+  (if (= index (count w5-b13-provenance-passes))
+    (= index (count edges))
+    (let [edge (get edges index)
+          from (get w5-b13-provenance-phases index)
+          to (get w5-b13-provenance-phases (+ index 1))]
+      (if (w5-b13-exact-keys?
+           edge #{:from :to :pass :source-span :origin})
+        (if (= from (get edge :from))
+          (if (= to (get edge :to))
+            (if (= (get w5-b13-provenance-passes index)
+                   (get edge :pass))
+              (if (= to (get edge :origin))
+                (if (w5-b13-source-span-valid? (get edge :source-span))
+                  (if (= source-id
+                         (get (get edge :source-span) :source-id))
+                    (w5-b13-graph-edges-valid?
+                     edges source-id (+ index 1))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))))
+
+(defn w5-b13-graph-valid? [request]
+  (let [graph (get request :artifact-graph)
+        manifest (get request :manifest)
+        expected-digests
+        [(get (get manifest :inputs) :source)
+         (get (get manifest :inputs) :source)
+         (get (get manifest :inputs) :source)
+         (get (get manifest :inputs) :source)
+         (get (get manifest :inputs) :mir)
+         (get (get manifest :inputs) :mir)
+         (get (get manifest :inputs) :mir)
+         (get (get manifest :inputs) :mir)
+         (get (get manifest :inputs) :mir)
+         (get (get manifest :inputs) :mir)
+         (get (get manifest :inputs) :mir)
+         (get (get manifest :inputs) :mir)
+         (get (get manifest :inputs) :mir)
+         (get (get manifest :inputs) :mir)
+         (get (get manifest :inputs) :lowering)
+         (get (get manifest :inputs) :lowering)
+         (get (get manifest :inputs) :lowering)
+         (get (get manifest :inputs) :lowering)
+         (get request :artifact-id)
+         (get (get request :conformance-evidence-reference) :evidence-id)]]
+    (if (w5-b13-exact-keys?
+         graph #{:artifact :artifact-id :root :nodes :edges
+                 :dependency-graph-id :dependencies
+                 :invalidation-rules :status})
+      (if (= :gravity/artifact-graph (get graph :artifact))
+        (if (= :complete (get graph :status))
+          (if (= (get graph :artifact-id) (get request :artifact-id))
+            (if (= w5-b13-dependency-inventory (get graph :dependencies))
+              (if (= (get graph :dependency-graph-id)
+                     (get (get request :dependency-provenance)
+                          :dependency-graph-id))
+            (if (= :source-forms (get graph :root))
+            (if (vector? (get graph :nodes))
+              (if (w5-b13-graph-nodes-valid?
+                   (get graph :nodes) expected-digests 0)
+                (if (vector? (get graph :edges))
+                  (if (w5-b13-graph-edges-valid?
+                       (get graph :edges)
+                       (get (get manifest :inputs) :source) 0)
+                    (= [:source-change :compiler-change :pass-change
+                        :target-change :dependency-change :evidence-change]
+                       (get graph :invalidation-rules))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+            false)
+            false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-b13-identity-input [request]
+  {:artifact :gravity/w5-b13-identity-input
+   :schema-version (get request :schema-version)
+   :source-id (w5-b13-at request [:provenance :source-id] 0)
+   :manifest-digest (w5-b13-at request [:hash-record :manifest-digest] 0)
+   :content-hash (w5-b13-at request [:manifest :content-hash] 0)
+   :target-scope (get request :target-scope)
+   :profile (get request :profile)
+   :backend :llvm
+   :kind (w5-b13-at request [:manifest :kind] 0)
+   :compiler-id (w5-b13-at request [:compiler-provenance :compiler-id] 0)
+   :pass-pipeline (w5-b13-at request [:compiler-provenance :pass-pipeline] 0)
+   :dependency-graph-id (w5-b13-at request
+                                    [:dependency-provenance :dependency-graph-id]
+                                    0)
+   :evidence-id (w5-b13-at request
+                            [:conformance-evidence-reference :evidence-id]
+                            0)
+   :reproducibility-hashes (w5-b13-at request
+                                       [:reproducibility-record :hashes]
+                                       0)})
+
+(defn w5-b13-diagnostic [rule request field remediation]
+  {:artifact :gravity/diagnostic
+   :diagnostic-id rule
+   :rule rule
+   :severity :error
+   :stage :artifact-emission
+   :artifact-id (get request :artifact-id)
+   :artifact-kind (w5-b13-at request [:manifest :kind] 0)
+   :backend :gravity.backend/llvm
+   :profile (get request :profile)
+   :target (get request :target)
+   :missing-or-stale-field field
+   :source-span (w5-b13-at request [:source-debug-map :source-span] 0)
+   :generated-origin-edge (w5-b13-at request
+                                      [:source-debug-map :generated-origin-chain]
+                                      0)
+   :remediation remediation
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :authority :non-authority
+   :facts {:static-only? true
+           :path-bearing-provenance? true
+           :path-neutral-identity? true
+           :darwin-fallback? false
+           :cross-target-inference? false}})
+
+(defn w5-b13-rejected [request diagnostic]
+  {:artifact :gravity/w5-b13-artifact-emission
+   :status :rejected
+   :diagnostics [diagnostic]
+   :artifact-id nil
+   :identity-input nil
+   :provenance (get request :provenance)
+   :artifact-manifests []
+   :content-hash-records []
+   :artifact-graph nil
+   :emitted-artifacts []
+   :release-gate-record (get request :release-gate-record)
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :authority :non-authority
+   :non-authority w5-b13-non-authority
+   :static-only? true
+   :target :llvm-x86_64-linux
+   :residual-boundaries (:residual-boundaries (w5-b13-policy))})
+
+(defn w5-b13-emit [request]
+  (if (w5-b13-request-shape-valid? request)
+    (if (w5-b13-manifest-valid? (get request :manifest))
+      (if (w5-b13-hash-valid? request)
+        (if (w5-b13-provenance-valid? request)
+          (if (w5-b13-source-map-valid? request)
+            (if (w5-b13-evidence-valid? request)
+              (if (w5-b13-target-coherent? (get request :target-scope))
+                (if (w5-b13-target-records-valid? request)
+                  (if (w5-b13-target-record-links-valid? request)
+                    (if (w5-b13-conformance-valid? request)
+                      (if (w5-b13-reproducibility-valid? request)
+                    (if (w5-b13-release-gate-valid? request)
+                      (if (w5-b13-graph-valid? request)
+                        {:artifact :gravity/w5-b13-artifact-emission
+                         :status :accepted
+                         :schema-version 1
+                         :artifact-id (get request :artifact-id)
+                         :kind (w5-b13-at request [:manifest :kind] 0)
+                         :backend :gravity.backend/llvm
+                         :profile (get request :profile)
+                         :target :llvm-x86_64-linux
+                         :candidate-target :llvm-x86_64-linux
+                         :candidate-platform {:os :linux
+                                              :arch :x86_64
+                                              :backend :llvm
+                                              :object-format :elf
+                                              :abi :sysv-amd64}
+                         :unsupported-platforms w5-b13-unsupported-targets
+                         :unsupported-targets w5-b13-unsupported-targets
+                         :unsupported-target-policies
+                         w5-b13-unsupported-target-policies
+                         :cross-target-inference? false
+                         :darwin-fallback? false
+                         :candidate-invokes-clojure? false
+                         :candidate-links-jvm? false
+                         :candidate-fallback? false
+                         :no-fallback? true
+                         :release-eligible? false
+                         :static-only? true
+                         :manifest (get request :manifest)
+                         :artifact-manifests [(get request :manifest)]
+                         :content-hash-records [(get request :hash-record)]
+                         :artifact-graph (get request :artifact-graph)
+                         :source-debug-map (get request :source-debug-map)
+                         :compiler-provenance (get request :compiler-provenance)
+                         :dependency-provenance
+                         (get request :dependency-provenance)
+                         :safety-proof-certificate-bundle
+                         (get request :safety-proof-certificate-bundle)
+                         :effect-capability-summary
+                         (get request :effect-capability-summary)
+                         :runtime-provider-summary
+                         (get request :runtime-provider-summary)
+                         :target-runtime-abi-layout-summary
+                         (get request :target-runtime-abi-layout-summary)
+                         :reproducibility-record
+                         (get request :reproducibility-record)
+                         :conformance-evidence-reference
+                         (get request :conformance-evidence-reference)
+                         :release-gate-record
+                         (get request :release-gate-record)
+                         :emitted-artifacts [(get request :emitted-artifact)]
+                         :diagnostic-stream (get request :diagnostic-stream)
+                         :diagnostics []
+                         :artifact-emission-results
+                         {:required-diagnostic-ids w5-b13-diagnostic-ids
+                          :manifest-schema-status :complete
+                          :content-hash-status :pending-unverified
+                          :provenance-status :structural-complete
+                          :source-map-status :complete
+                          :evidence-status :structural-complete
+                          :target-runtime-abi-status :complete
+                          :reproducibility-status :pending-unverified
+                          :release-gate-status :complete
+                          :artifact-graph-status :complete
+                          :conformance-status :pending-unverified
+                          :status :incomplete}
+                         :capability-based-proof
+                         {:common-manifest-schema-complete? true
+                          :content-hashes-complete? false
+                          :content-hashes-cryptographically-verified? false
+                          :provenance-complete? false
+                          :provenance-structurally-complete? true
+                          :source-debug-map-preserved? true
+                          :evidence-bundle-complete? false
+                          :evidence-bundle-structurally-complete? true
+                          :target-runtime-abi-metadata-complete? true
+                          :reproducibility-recorded? false
+                          :reproducible? false
+                          :development-release-gate-blocked? true
+                          :artifact-graph-complete? true
+                          :conformance-evidence-complete? false
+                          :conformance-evidence-structurally-linked? true
+                          :diagnostics-covered? true
+                          :status :incomplete}
+                         :identity-input (w5-b13-identity-input request)
+                         :provenance (get request :provenance)
+                         :clojure-seed-boundary? true
+                         :self-hosted? false
+                         :release? false
+                         :public-authority? false
+                         :authority :non-authority
+                         :completion :incomplete
+                         :blocked? true
+                         :non-authority w5-b13-non-authority
+                         :residual-boundaries
+                         (:residual-boundaries (w5-b13-policy))}
+                        (w5-b13-rejected
+                         request
+                         (w5-b13-diagnostic
+                          "B13-GRAPH" request :artifact-graph
+                          :repair-artifact-graph-nodes-and-edges)))
+                      (w5-b13-rejected
+                       request
+                       (w5-b13-diagnostic
+                        "B13-RELEASE" request :release-gate-record
+                        :block-release-grade-output-until-release-evidence-is-present)))
+                    (w5-b13-rejected
+                     request
+                     (w5-b13-diagnostic
+                      "B13-REPRODUCIBILITY" request :reproducibility-record
+                      :record-environment-inputs-nondeterminism-and-timestamp-policy)))
+                      (w5-b13-rejected
+                       request
+                       (w5-b13-diagnostic
+                        "B13-CONFORMANCE" request :conformance-evidence-reference
+                        :attach-policy-required-conformance-evidence)))
+                    (w5-b13-rejected
+                     request
+                     (w5-b13-diagnostic
+                      "B13-TARGET" request :target-runtime-abi-layout-summary
+                      :declare-coherent-target-runtime-provider-abi-and-layout)))
+                (w5-b13-rejected
+                 request
+                 (w5-b13-diagnostic
+                  "B13-TARGET" request :target-runtime-abi-layout-summary
+                  :declare-coherent-target-runtime-provider-abi-and-layout)))
+                (w5-b13-rejected
+                 request
+                 (w5-b13-diagnostic
+                  "B13-TARGET" request :target-scope
+                  :declare-coherent-target-runtime-provider-abi-and-layout)))
+              (w5-b13-rejected
+               request
+               (w5-b13-diagnostic
+                "B13-EVIDENCE" request :safety-proof-certificate-bundle
+                :attach-safety-proof-certificate-effect-capability-and-unsafe-audit-records)))
+            (w5-b13-rejected
+             request
+             (w5-b13-diagnostic
+              "B13-SOURCEMAP" request :source-debug-map
+              :preserve-source-spans-and-generated-origin-chain)))
+          (w5-b13-rejected
+           request
+           (w5-b13-diagnostic
+            "B13-PROVENANCE" request :provenance
+            :attach-source-compiler-generator-pass-and-dependency-provenance)))
+        (w5-b13-rejected
+         request
+         (w5-b13-diagnostic
+          "B13-HASH" request :content-hash
+          :recompute-content-hash-and-manifest-digest)))
+      (w5-b13-rejected
+       request
+       (w5-b13-diagnostic
+        "B13-SCHEMA" request :manifest
+        :emit-supported-common-manifest-schema)))
+    (w5-b13-rejected
+     request
+      (w5-b13-diagnostic
+      "B13-SCHEMA" request :request
+      :emit-supported-common-manifest-schema))))
+
+(defn w5-b13-artifact-emission [request]
+  (w5-b13-emit request))
+
+(defn w5-b13-execute [request]
+  (w5-b13-emit request))
+
+(defn w5-b13-run [request]
+  (w5-b13-emit request))
+
+(defn w5-b13-recompute [request]
+  (w5-b13-emit request))
+
+(defn w5-b13-verify-result [request result]
+  (let [expected (w5-b13-emit request)]
+    (if (= expected result)
+      {:artifact :gravity/w5-b13-verification
+       :status :passed
+       :recomputed true
+       :diagnostics []
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :authority :non-authority
+       :non-authority w5-b13-non-authority}
+      {:artifact :gravity/w5-b13-verification
+       :status :rejected
+       :recomputed true
+       :diagnostics
+       [(w5-b13-diagnostic
+         "B13-HASH" request :result
+         :recompute-content-hash-and-manifest-digest)]
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :authority :non-authority
+       :non-authority w5-b13-non-authority})))

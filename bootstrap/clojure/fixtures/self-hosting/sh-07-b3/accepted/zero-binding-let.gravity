@@ -1,0 +1,12 @@
+; SH-07-B3 zero-binding lexical scope.
+(ns self-hosting.sh07-b3.zero-binding-let
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [zero-binding])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B3 :fixture :zero-binding-let}))
+
+(def zero-binding
+  (let [] 7))

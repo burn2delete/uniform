@@ -1,0 +1,18 @@
+; SH-07-B2 call through a resolved lexical parameter.
+(ns self-hosting.sh07-b2.higher-order-lexical-call
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [apply-one identity higher-order-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B2 :fixture :higher-order-lexical-call}))
+
+(defn apply-one [callable value]
+  (callable value))
+
+(defn identity [value]
+  value)
+
+(def higher-order-result
+  (apply-one identity 9))

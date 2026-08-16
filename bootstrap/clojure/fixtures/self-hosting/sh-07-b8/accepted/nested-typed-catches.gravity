@@ -1,0 +1,20 @@
+; SH-07-B8 records inner-before-outer handler construction without reachability claims.
+(ns self-hosting.sh07-b8.nested-typed-catches
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [recover-nested])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B8
+              :fixture :nested-typed-catches
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn recover-nested [value]
+  (try
+    (try
+      (throw value)
+      (catch Exception inner
+        (throw inner)))
+    (catch Exception outer
+      outer)))

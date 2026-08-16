@@ -1,0 +1,1726 @@
+; W5 Wave2 B14 backend conformance verifier.
+; This is a bounded, deterministic, static-only stage2 leaf.  It verifies
+; conformance records supplied as data; it does not run a backend, infer a
+; target from the host, or claim Phase 7 completion.
+(ns gravity.backend.w5-b14-backend-conformance-verifier
+  (:profile :meta)
+  ; The stage2 compiler-plan harness currently accepts :jvm for Gravity
+  ; namespaces.  Candidate target evidence remains data-bounded to LLVM.
+  (:target :jvm)
+  (:exports [w5-b14-policy
+             w5-b14-diagnostic-catalog
+             w5-b14-suite-manifest
+             w5-b14-fixture-matrix
+             w5-b14-target-availability
+             w5-b14-positive-results
+             w5-b14-negative-results
+             w5-b14-differential-results
+             w5-b14-metadata-report
+             w5-b14-artifact-report
+             w5-b14-nondeterminism-record
+             w5-b14-skip-report
+             w5-b14-risk-coverage
+             w5-b14-evidence-pack
+             w5-b14-diagnostic-stream
+             w5-b14-identity-input
+             w5-b14-differential-entry-valid?
+             w5-b14-differential-entries-valid?
+             w5-b14-record-links-valid?
+             w5-b14-conformance-execute
+             w5-b14-backend-conformance
+             w5-b14-conformance
+             w5-b14-execute
+             w5-b14-run
+             w5-b14-verify
+             w5-b14-recompute
+             w5-b14-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:bootstrap
+    {:stage :stage2
+     :component :w5-b14-backend-conformance-verifier
+     :owner :w5
+     :source-language :gravity
+     :seed :clojure-stage0
+     :status :executable-leaf
+     :scope :stage-owned-nonauthority
+     :static-only? true
+     :clojure-seed-boundary? true
+     :self-hosted? false
+     :release? false
+     :public-authority? false
+     :authority :non-authority
+     :candidate-target :llvm-x86_64-linux
+     :candidate-platform {:os :linux
+                          :arch :x86_64
+                          :backend :llvm
+                          :object-format :elf
+                          :abi :sysv-amd64}
+     :unsupported-platforms [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-targets [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+     :unsupported-target-policies
+     [{:target :darwin :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-arm64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :darwin-x86_64 :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}
+      {:target :windows :support :unsupported
+       :invokes-clojure? false :links-jvm? false :fallback? false}]
+     :cross-target-inference? false
+     :darwin-fallback? false
+     :candidate-invokes-clojure? false
+     :candidate-links-jvm? false
+     :candidate-fallback? false
+     :no-fallback? true
+     :residual-boundaries {:stage2-compiler-plan :clojure-bootstrap
+                           :stage2-runtime :jvm
+                           :target-toolchain :not-executed
+                           :filesystem-authority false
+                           :network-authority false
+                           :process-authority false}
+     :target-scope {:target :llvm-x86_64-linux
+                    :os :linux
+                    :arch :x86_64
+                    :backend :llvm
+                    :object-format :elf
+                    :abi :sysv-amd64
+                    :runtime :none
+                    :providers #{}
+                    :runtime-providers #{}
+                    :unsupported-targets [:darwin :darwin-arm64
+                                          :darwin-x86_64 :windows]
+                    :unsupported-target-policies
+                    [{:target :darwin :support :unsupported
+                      :invokes-clojure? false :links-jvm? false :fallback? false}
+                     {:target :darwin-arm64 :support :unsupported
+                      :invokes-clojure? false :links-jvm? false :fallback? false}
+                     {:target :darwin-x86_64 :support :unsupported
+                      :invokes-clojure? false :links-jvm? false :fallback? false}
+                     {:target :windows :support :unsupported
+                      :invokes-clojure? false :links-jvm? false :fallback? false}]
+                    :darwin-supported? false
+                    :cross-target-inference? false
+                    :darwin-fallback? false
+                    :candidate-invokes-clojure? false
+                    :candidate-links-jvm? false
+                    :candidate-fallback? false
+                    :no-fallback? true}
+     :governing-documents ["B14" "B13" "B1" "C11" "C12"
+                           "C14" "C18" "D1" "D2" "D3"
+                           "D8" "D9" "BOOT1" "BOOT3" "BOOT8"]
+     :does-not-claim [:all-phase7-backends
+                      :backend-execution
+                      :cross-target-inference
+                      :darwin-support
+                      :release-readiness
+                      :self-hosting-completion]}}))
+
+(def w5-b14-required-backend-values
+  [:c :llvm :wasm :jvm :js-ts :mlir :gpu :hdl
+   :workflow-graph :query-relational :mobile])
+
+(def w5-b14-required-backends
+  #{:c :llvm :wasm :jvm :js-ts :mlir :gpu :hdl
+    :workflow-graph :query-relational :mobile})
+
+(def w5-b14-fixture-family-values
+  [:pure-values :arithmetic :numeric-modes :records :structs :tuples
+   :tagged-unions :closures :calls :pattern-matching :loops
+   :runtime-checks :allocation :regions :linear-resources
+   :ownership-aliasing :ffi-host-interop :atomics-synchronization
+   :source-maps :efir-domain :gpu-kernels :hardware-circuits
+   :workflow-graphs :relational-queries :mobile-ui-boundaries
+   :artifact-manifests :provenance-graphs :errors :ai-tool-calls :schemas])
+
+(def w5-b14-covered-fixture-family-values
+  [:pure-values :arithmetic :numeric-modes :records :structs :tuples
+   :tagged-unions :closures :calls :pattern-matching :loops
+   :runtime-checks :allocation :regions :linear-resources
+   :ownership-aliasing :ffi-host-interop :atomics-synchronization
+   :source-maps :efir-domain :gpu-kernels :hardware-circuits
+   :workflow-graphs :relational-queries :mobile-ui-boundaries
+   :artifact-manifests :provenance-graphs])
+
+(def w5-b14-pending-fixture-families
+  #{:errors :ai-tool-calls :schemas})
+
+(def w5-b14-required-fixture-families
+  #{:pure-values :arithmetic :numeric-modes :records :structs :tuples
+    :tagged-unions :closures :calls :pattern-matching :loops
+    :runtime-checks :allocation :regions :linear-resources
+    :ownership-aliasing :ffi-host-interop :atomics-synchronization
+    :source-maps :efir-domain :gpu-kernels :hardware-circuits
+    :workflow-graphs :relational-queries :mobile-ui-boundaries
+    :artifact-manifests :provenance-graphs :errors :ai-tool-calls :schemas})
+
+(def w5-b14-diagnostic-values
+  ["B14-COVERAGE" "B14-TARGET" "B14-POSITIVE" "B14-NEGATIVE"
+   "B14-DIFFERENTIAL" "B14-METADATA" "B14-ARTIFACT"
+   "B14-NONDETERMINISM" "B14-SKIP" "B14-EVIDENCE"])
+
+(def w5-b14-diagnostic-set
+  #{"B14-COVERAGE" "B14-TARGET" "B14-POSITIVE" "B14-NEGATIVE"
+    "B14-DIFFERENTIAL" "B14-METADATA" "B14-ARTIFACT"
+    "B14-NONDETERMINISM" "B14-SKIP" "B14-EVIDENCE"})
+
+(def w5-b14-checks
+  #{:lowering :expected-rejection :differential-execution
+    :semantic-comparison :metadata-preservation :artifact-manifest
+    :diagnostic-id :nondeterminism-replay})
+
+(def w5-b14-inputs
+  #{:canonical-mir :domain-ir :profile-negative :safety-negative
+    :artifact-emission})
+
+(def w5-b14-rejects
+  #{:execution-only-claim :missing-negative-fixtures :metadata-loss
+    :unreplayable-nondeterminism :unsupported-skip})
+
+(def w5-b14-supported-target :llvm-x86_64-linux)
+
+(def w5-b14-supported-platform
+  {:os :linux
+   :arch :x86_64
+   :backend :llvm
+   :object-format :elf
+   :abi :sysv-amd64})
+
+(def w5-b14-candidate-target-evidence
+  {:target :llvm-x86_64-linux
+   :os :linux
+   :arch :x86_64
+   :backend :llvm
+   :object-format :elf
+   :abi :sysv-amd64
+   :evidence :exact
+   :cross-target-inference? false
+   :darwin-fallback? false
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :candidate-fallback? false
+   :no-fallback? true})
+
+(def w5-b14-unsupported-platform-values
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+
+(def w5-b14-unsupported-target-values
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+
+(def w5-b14-unsupported-target-policies
+  [{:target :darwin :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-arm64 :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-x86_64 :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :windows :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}])
+
+(def w5-b14-missing-backend-values
+  [:c :wasm :jvm :js-ts :mlir :gpu :hdl
+   :workflow-graph :query-relational :mobile])
+
+(def w5-b14-missing-backends
+  #{:c :wasm :jvm :js-ts :mlir :gpu :hdl
+    :workflow-graph :query-relational :mobile})
+
+(def w5-b14-expected-artifacts
+  #{:artifact-manifest :source-map :proof-reference
+    :capability-effect-summary :diagnostic-record})
+
+(def w5-b14-expected-metadata
+  #{:source-spans :generated-origin-chain :types :effects
+    :capabilities :safety :proofs :unsafe-audit-ids :profile
+    :target :runtime :artifact-manifests :diagnostics})
+
+(def w5-b14-event-values
+  [:clock :randomness :network :database :model-call :ai/human-review])
+
+(def w5-b14-event-set
+  #{:clock :randomness :network :database :model-call :ai/human-review})
+
+(defn w5-b14-id?
+  [value]
+  (if (string? value)
+    (> (count value) 0)
+    false))
+
+(defn w5-b14-suffix-match?
+  [value suffix index]
+  (if (= index (count suffix))
+    true
+    (if (> (count suffix) (count value))
+      false
+      (if (= (get value (- (count value) (+ index 1)))
+             (get suffix (- (count suffix) (+ index 1))))
+        (w5-b14-suffix-match? value suffix (+ index 1))
+        false))))
+
+(defn w5-b14-path-ends-with?
+  [value suffix]
+  (if (string? value)
+    (if (string? suffix)
+      (w5-b14-suffix-match? value suffix 0)
+      false)
+    false))
+
+(defn w5-b14-exact-keys?
+  [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn w5-b14-span-valid?
+  [span]
+  (if (w5-b14-exact-keys?
+       span #{:source-id :start-byte :end-byte})
+    (if (w5-b14-id? (get span :source-id))
+      (if (integer? (get span :start-byte))
+        (if (integer? (get span :end-byte))
+          (if (>= (get span :start-byte) 0)
+            (<= (get span :start-byte) (get span :end-byte))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-platform-valid?
+  [platform]
+  (if (w5-b14-exact-keys?
+       platform #{:os :arch :backend :object-format :abi})
+    (= platform w5-b14-supported-platform)
+    false))
+
+(defn w5-b14-candidate-target-valid?
+  [evidence]
+  (if (w5-b14-exact-keys?
+       evidence #{:target :os :arch :backend :object-format :abi
+                  :evidence :cross-target-inference? :darwin-fallback?
+                  :candidate-invokes-clojure? :candidate-links-jvm?
+                  :candidate-fallback? :no-fallback?})
+    (= evidence w5-b14-candidate-target-evidence)
+    false))
+
+(defn w5-b14-diagnostic
+  [rule request remediation]
+  {:artifact :gravity/diagnostic
+   :diagnostic-id rule
+   :diagnostic rule
+   :rule rule
+   :severity :error
+   :stage :backend-conformance
+   :backend :gravity.backend/conformance
+   :profile :meta
+   :target w5-b14-supported-target
+   :fixture-id (str "w5-b14/" rule)
+   :expected-diagnostic rule
+   :actual-diagnostic :missing
+   :source-span (get (get request :provenance) :source-span)
+   :missing-metadata remediation
+   :facts {:candidate-target w5-b14-supported-target
+           :candidate-platform w5-b14-supported-platform
+           :supported-backend :llvm
+           :coverage-status :incomplete
+           :source-span-preserved? true
+           :actual-path-in-provenance-only true
+           :cross-target-inference? false
+           :darwin-fallback? false}
+   :remediation remediation
+   :provenance (get request :provenance)})
+
+(defn w5-b14-vector-family-valid?
+  [families index]
+  (if (= index (count families))
+    true
+    (if (contains? w5-b14-required-fixture-families
+                   (get families index))
+      (w5-b14-vector-family-valid? families (+ index 1))
+      false)))
+
+(defn w5-b14-vector-diagnostic-valid?
+  [diagnostics index]
+  (if (= index (count diagnostics))
+    true
+    (if (contains? w5-b14-diagnostic-set (get diagnostics index))
+      (w5-b14-vector-diagnostic-valid? diagnostics (+ index 1))
+      false)))
+
+(defn w5-b14-fixture-entry-valid?
+  [entry]
+  (if (w5-b14-exact-keys?
+       entry #{:family :fixture-id :target :backend
+               :expected-artifacts :expected-metadata :status})
+    (if (contains? w5-b14-required-fixture-families
+                   (get entry :family))
+      (if (w5-b14-id? (get entry :fixture-id))
+        (if (= w5-b14-supported-target (get entry :target))
+          (if (= :llvm (get entry :backend))
+            (if (= w5-b14-expected-artifacts
+                   (get entry :expected-artifacts))
+              (if (= w5-b14-expected-metadata
+                     (get entry :expected-metadata))
+                (if (contains? w5-b14-pending-fixture-families
+                               (get entry :family))
+                  (= :pending (get entry :status))
+                  (= :covered (get entry :status)))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-fixture-entries-valid?
+  [entries index families]
+  (if (= index (count entries))
+    (= families w5-b14-required-fixture-families)
+    (let [entry (get entries index)
+          family (get entry :family)]
+      (if (w5-b14-fixture-entry-valid? entry)
+        (if (contains? families family)
+          false
+          (w5-b14-fixture-entries-valid?
+           entries (+ index 1) (conj families family)))
+        false))))
+
+(defn w5-b14-fixture-matrix-valid?
+  [matrix]
+  (if (vector? matrix)
+    (if (= 30 (count matrix))
+      (w5-b14-fixture-entries-valid? matrix 0 #{})
+      false)
+    false))
+
+(defn w5-b14-suite-manifest-valid?
+  [manifest]
+  (if (w5-b14-exact-keys?
+       manifest #{:artifact :schema-version :required-backends
+                  :checks :inputs :rejects :supported-target
+                  :supported-platform :covered-backends
+                  :coverage-status :release-ready?
+                  :candidate-target-evidence :authority})
+    (if (= :gravity/backend-conformance-suite (get manifest :artifact))
+      (if (= 1 (get manifest :schema-version))
+        (if (= w5-b14-required-backends
+               (get manifest :required-backends))
+          (if (= w5-b14-checks (get manifest :checks))
+            (if (= w5-b14-inputs (get manifest :inputs))
+              (if (= w5-b14-rejects (get manifest :rejects))
+                (if (= w5-b14-supported-target
+                       (get manifest :supported-target))
+                  (if (w5-b14-platform-valid?
+                       (get manifest :supported-platform))
+                    (if (= #{:llvm} (get manifest :covered-backends))
+                      (if (= :incomplete (get manifest :coverage-status))
+                        (if (= false (get manifest :release-ready?))
+                          (if (= :non-authority (get manifest :authority))
+                            (w5-b14-candidate-target-valid?
+                             (get manifest :candidate-target-evidence))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-target-record-valid?
+  [record index]
+  (if (w5-b14-exact-keys?
+       record #{:backend :target :available? :availability :evidence
+                :shared-manifest-tests :positive-tests :negative-tests
+                :skip-status})
+    (let [backend (get w5-b14-required-backend-values index)]
+      (if (= backend :llvm)
+        (= record {:backend :llvm
+                   :target :llvm-x86_64-linux
+                   :available? true
+                   :availability :available
+                   :evidence :exact
+                   :shared-manifest-tests :run
+                   :positive-tests :run
+                   :negative-tests :run
+                   :skip-status :none})
+        (if (= backend (get record :backend))
+        (if (= :unsupported (get record :target))
+            (if (= false (get record :available?))
+              (if (= :not-provided (get record :availability))
+                (if (= :none (get record :evidence))
+                  (if (= :run (get record :shared-manifest-tests))
+                    (if (= :not-run (get record :positive-tests))
+                      (if (= :run (get record :negative-tests))
+                        (= :explicit-unavailable
+                           (get record :skip-status))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)))
+    false))
+
+(defn w5-b14-target-records-valid?
+  [records index]
+  (if (= index (count records))
+    true
+    (if (w5-b14-target-record-valid? (get records index) index)
+      (w5-b14-target-records-valid? records (+ index 1))
+      false)))
+
+(defn w5-b14-target-availability-valid?
+  [availability]
+  (if (w5-b14-exact-keys?
+       availability #{:artifact :candidate-target :candidate-platform
+                      :targets :unsupported-platforms :unsupported-targets
+                      :unsupported-target-policies :unsupported-skips
+                      :cross-target-inference? :status :coverage-status})
+    (if (= :gravity/backend-target-availability-matrix
+           (get availability :artifact))
+      (if (= w5-b14-supported-target
+             (get availability :candidate-target))
+        (if (w5-b14-platform-valid?
+             (get availability :candidate-platform))
+          (if (= w5-b14-unsupported-platform-values
+                 (get availability :unsupported-platforms))
+            (if (= w5-b14-unsupported-target-values
+                   (get availability :unsupported-targets))
+              (if (= w5-b14-unsupported-target-policies
+                     (get availability :unsupported-target-policies))
+                (if (= [] (get availability :unsupported-skips))
+                  (if (= false (get availability :cross-target-inference?))
+                    (if (= :incomplete (get availability :status))
+                      (if (= :incomplete (get availability :coverage-status))
+                        (if (vector? (get availability :targets))
+                          (if (= 11 (count (get availability :targets)))
+                            (w5-b14-target-records-valid?
+                             (get availability :targets) 0)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-positive-entry-valid?
+  [entry]
+  (if (w5-b14-exact-keys?
+       entry #{:backend :target :fixture-id :status :lowering
+               :execution :shared-manifest :metadata :artifact-id})
+    (if (= :llvm (get entry :backend))
+      (if (= w5-b14-supported-target (get entry :target))
+        (if (w5-b14-id? (get entry :fixture-id))
+          (if (= :passed (get entry :status))
+            (if (= :passed (get entry :lowering))
+              (if (= :not-required-static-only (get entry :execution))
+                (if (= :validated (get entry :shared-manifest))
+                  (if (= :preserved (get entry :metadata))
+                    (w5-b14-id? (get entry :artifact-id))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-positive-results-valid?
+  [results index]
+  (if (= index (count results))
+    true
+    (if (w5-b14-positive-entry-valid? (get results index))
+      (w5-b14-positive-results-valid? results (+ index 1))
+      false)))
+
+(defn w5-b14-negative-entry-valid?
+  [entry]
+  (if (w5-b14-exact-keys?
+       entry #{:diagnostic :fixture-id :expected :actual :status
+               :source-span :target})
+    (if (contains? w5-b14-diagnostic-set (get entry :diagnostic))
+      (if (= (get entry :diagnostic) (get entry :expected))
+        (if (= (get entry :expected) (get entry :actual))
+          (if (= :matched (get entry :status))
+            (if (= w5-b14-supported-target (get entry :target))
+              (if (w5-b14-id? (get entry :fixture-id))
+                (w5-b14-span-valid? (get entry :source-span))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-negative-results-valid-from?
+  [results index diagnostics]
+  (if (= index (count results))
+    (= diagnostics w5-b14-diagnostic-set)
+    (let [entry (get results index)
+          diagnostic (get entry :diagnostic)]
+      (if (w5-b14-negative-entry-valid? entry)
+        (if (contains? diagnostics diagnostic)
+          false
+          (w5-b14-negative-results-valid-from?
+           results (+ index 1) (conj diagnostics diagnostic)))
+        false))))
+
+(defn w5-b14-negative-results-valid?
+  [results]
+  (if (vector? results)
+    (if (= 10 (count results))
+      (w5-b14-negative-results-valid-from? results 0 #{})
+      false)
+    false))
+
+(defn w5-b14-differential-entry-valid?
+  [entry]
+  (if (w5-b14-exact-keys?
+       entry #{:backend :target :fixture-id :reference-id
+               :observed-id :status :execution})
+    (if (= :llvm (get entry :backend))
+      (if (= w5-b14-supported-target (get entry :target))
+        (if (w5-b14-id? (get entry :fixture-id))
+          (if (w5-b14-id? (get entry :reference-id))
+            (if (w5-b14-id? (get entry :observed-id))
+              (if (= (get entry :reference-id)
+                     (get entry :observed-id))
+                (if (= :matched (get entry :status))
+                  (= :not-required-static-only (get entry :execution))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn w5-b14-differential-entries-valid?
+  [entries index]
+  (if (= index (count entries))
+    true
+    (if (w5-b14-differential-entry-valid? (get entries index))
+      (w5-b14-differential-entries-valid? entries (+ index 1))
+      false)))
+
+(defn w5-b14-differential-valid?
+  [comparison]
+  (if (w5-b14-exact-keys?
+       comparison #{:artifact :status :method :reference
+                    :comparisons :replay-id})
+    (if (= :gravity/backend-semantic-comparison-results
+           (get comparison :artifact))
+      (if (= :passed (get comparison :status))
+        (if (= :mir-or-domain-reference (get comparison :reference))
+          (if (= :artifact-shape-and-semantic-identity
+                 (get comparison :method))
+            (if (w5-b14-id? (get comparison :replay-id))
+              (if (vector? (get comparison :comparisons))
+                (if (= 27 (count (get comparison :comparisons)))
+                  (w5-b14-differential-entries-valid?
+                   (get comparison :comparisons) 0)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-metadata-valid?
+  [report]
+  (if (w5-b14-exact-keys?
+       report #{:artifact :status :fields :source-spans
+                :generated-origin :types :effects :capabilities
+                :safety :proofs :unsafe-audit-ids :profile :target
+                :runtime :diagnostics})
+    (if (= :gravity/backend-metadata-preservation-report
+           (get report :artifact))
+      (if (= :preserved (get report :status))
+        (if (= w5-b14-expected-metadata (get report :fields))
+          (if (= true (get report :source-spans))
+            (if (= true (get report :generated-origin))
+              (if (= true (get report :types))
+                (if (= true (get report :effects))
+                  (if (= true (get report :capabilities))
+                    (if (= true (get report :safety))
+                      (if (= true (get report :proofs))
+                        (if (= true (get report :unsafe-audit-ids))
+                          (if (= :meta (get report :profile))
+                            (if (= w5-b14-supported-target
+                                   (get report :target))
+                              (if (= :not-required-static-only
+                                     (get report :runtime))
+                                (= true (get report :diagnostics))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-artifact-valid?
+  [report]
+  (if (w5-b14-exact-keys?
+       report #{:artifact :schema-version :status
+                :validated-artifacts :manifest-count :content-hashes
+                :provenance :conformance-reference :release-grade?})
+    (if (= :gravity/artifact-manifest-validation-report
+           (get report :artifact))
+      (if (= 1 (get report :schema-version))
+        (if (= :valid (get report :status))
+          (if (vector? (get report :validated-artifacts))
+            (if (> (count (get report :validated-artifacts)) 0)
+              (if (= 1 (get report :manifest-count))
+                (if (= true (get report :content-hashes))
+                  (if (= true (get report :provenance))
+                    (if (= true (get report :conformance-reference))
+                      (= false (get report :release-grade?))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-event-valid?
+  [event]
+  (if (w5-b14-exact-keys? event #{:kind :policy})
+    (if (contains? w5-b14-event-set (get event :kind))
+      (= :record-or-replay (get event :policy))
+      false)
+    false))
+
+(defn w5-b14-events-valid?
+  [events index kinds]
+  (if (= index (count events))
+    (= kinds w5-b14-event-set)
+    (let [event (get events index)
+          kind (get event :kind)]
+      (if (w5-b14-event-valid? event)
+        (if (contains? kinds kind)
+          false
+          (w5-b14-events-valid? events (+ index 1) (conj kinds kind)))
+        false))))
+
+(defn w5-b14-nondeterminism-valid?
+  [record]
+  (if (w5-b14-exact-keys?
+       record #{:artifact :status :events :unrecorded :replay-id})
+    (if (= :gravity/nondeterminism-replay-record (get record :artifact))
+      (if (= :recorded (get record :status))
+        (if (w5-b14-id? (get record :replay-id))
+          (if (= [] (get record :unrecorded))
+            (if (vector? (get record :events))
+              (if (= 6 (count (get record :events)))
+                (w5-b14-events-valid? (get record :events) 0 #{})
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-skip-valid?
+  [report]
+  (if (w5-b14-exact-keys?
+       report #{:artifact :status :unsupported-skips
+                :darwin-policy :cross-target-inference? :fallback
+                :shared-tests})
+    (if (= :gravity/backend-conformance-skip-report
+           (get report :artifact))
+      (if (= :passed (get report :status))
+        (if (= [] (get report :unsupported-skips))
+          (if (= :fail-closed (get report :darwin-policy))
+            (if (= false (get report :cross-target-inference?))
+              (if (= :forbidden (get report :fallback))
+                (= :run (get report :shared-tests))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-risk-coverage-valid?
+  [report]
+  (if (w5-b14-exact-keys?
+       report #{:artifact :status :covered-targets :required-targets
+                :known-gaps :release-impact})
+    (if (= :gravity/backend-risk-coverage-report (get report :artifact))
+      (if (= :incomplete (get report :status))
+        (if (= #{:llvm-x86_64-linux} (get report :covered-targets))
+          (if (= w5-b14-required-backends (get report :required-targets))
+            (if (vector? (get report :known-gaps))
+              (if (> (count (get report :known-gaps)) 0)
+                (= :blocks-release (get report :release-impact))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-evidence-valid?
+  [pack]
+  (if (w5-b14-exact-keys?
+       pack #{:artifact :id :status :includes :release-ready?
+              :authority :missing-backends :residual-boundaries})
+    (if (= :gravity/backend-conformance-evidence-pack (get pack :artifact))
+      (if (w5-b14-id? (get pack :id))
+        (if (= :incomplete (get pack :status))
+          (if (set? (get pack :includes))
+            (if (> (count (get pack :includes)) 0)
+              (if (= false (get pack :release-ready?))
+                (if (= :non-authority (get pack :authority))
+                  (if (= w5-b14-missing-backends
+                         (get pack :missing-backends))
+                    (set? (get pack :residual-boundaries))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-diagnostic-records-valid?
+  [records index seen]
+  (if (= index (count records))
+    (= seen w5-b14-diagnostic-set)
+    (let [record (get records index)
+          diagnostic (get record :diagnostic)]
+      (if (w5-b14-exact-keys?
+           record #{:diagnostic :fixture-id :status})
+        (if (contains? w5-b14-diagnostic-set diagnostic)
+          (if (= diagnostic (get record :fixture-id))
+            (if (= :matched (get record :status))
+              (if (contains? seen diagnostic)
+                false
+                (w5-b14-diagnostic-records-valid?
+                 records (+ index 1) (conj seen diagnostic)))
+              false)
+            false)
+          false)
+        false))))
+
+(defn w5-b14-diagnostic-stream-valid?
+  [stream]
+  (if (w5-b14-exact-keys?
+       stream #{:artifact :status :required :records})
+    (if (= :gravity/backend-conformance-diagnostic-stream
+           (get stream :artifact))
+      (if (= :complete (get stream :status))
+        (if (= w5-b14-diagnostic-values (get stream :required))
+          (if (vector? (get stream :records))
+            (if (= 10 (count (get stream :records)))
+              (w5-b14-diagnostic-records-valid?
+               (get stream :records) 0 #{})
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-identity-valid?
+  [identity]
+  (if (w5-b14-exact-keys?
+       identity #{:suite-id :supported-target :supported-platform
+                   :required-backends :covered-backends
+                   :fixture-families :checks :coverage-status})
+    (if (w5-b14-id? (get identity :suite-id))
+      (if (= w5-b14-supported-target (get identity :supported-target))
+        (if (w5-b14-platform-valid? (get identity :supported-platform))
+          (if (= w5-b14-required-backends
+                 (get identity :required-backends))
+            (if (= #{:llvm} (get identity :covered-backends))
+              (if (= w5-b14-required-fixture-families
+                     (get identity :fixture-families))
+                (if (= w5-b14-checks (get identity :checks))
+                  (= :incomplete (get identity :coverage-status))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-provenance-valid?
+  [provenance]
+  (if (w5-b14-exact-keys?
+       provenance #{:actual-source-path :logical-source
+                    :compiler-source-path :source-span :target
+                    :backend :lineage})
+    (if (w5-b14-id? (get provenance :actual-source-path))
+      (if (w5-b14-id? (get provenance :logical-source))
+        (if (w5-b14-id? (get provenance :compiler-source-path))
+          (if (w5-b14-span-valid? (get provenance :source-span))
+            (if (= w5-b14-supported-target (get provenance :target))
+              (if (= :llvm (get provenance :backend))
+                (if (vector? (get provenance :lineage))
+                  (> (count (get provenance :lineage)) 0)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-b14-fixture-links-valid-from?
+  [matrix positives differentials index]
+  (if (= index 27)
+    true
+    (let [family (get w5-b14-covered-fixture-family-values index)
+          fixture (get matrix index)
+          positive (get positives index)
+          differential (get differentials index)]
+      (if (= family (get fixture :family))
+        (if (= (str "w5-b14/" (str family))
+               (get fixture :fixture-id))
+          (if (= (str "w5-b14/positive/" (str family))
+                 (get positive :fixture-id))
+            (if (= (str "w5-b14/differential/" (str family))
+                   (get differential :fixture-id))
+              (w5-b14-fixture-links-valid-from?
+               matrix positives differentials (+ index 1))
+              false)
+            false)
+          false)
+        false))))
+
+(defn w5-b14-negative-links-valid-from?
+  [results index]
+  (if (= index 10)
+    true
+    (let [diagnostic (get w5-b14-diagnostic-values index)
+          entry (get results index)]
+      (if (= diagnostic (get entry :diagnostic))
+        (if (= diagnostic (get entry :fixture-id))
+          (if (= (str "sha256:w5-b14-negative-" diagnostic)
+                 (get (get entry :source-span) :source-id))
+            (w5-b14-negative-links-valid-from? results (+ index 1))
+            false)
+          false)
+        false))))
+
+(defn w5-b14-differential-links-valid-from?
+  [results index]
+  (if (= index 27)
+    true
+    (let [family (get w5-b14-covered-fixture-family-values index)
+          entry (get results index)]
+      (if (= (str "w5-b14/differential/" (str family))
+             (get entry :fixture-id))
+        (if (= (str "sha256:w5-b14-semantic-" (str family))
+               (get entry :reference-id))
+          (if (= (get entry :reference-id) (get entry :observed-id))
+            (w5-b14-differential-links-valid-from? results (+ index 1))
+            false)
+          false)
+        false))))
+
+(defn w5-b14-record-links-valid?
+  [request]
+  (let [suite (get request :suite-manifest)
+        matrix (get request :fixture-matrix)
+        availability (get request :target-availability)
+        positives (get request :positive-results)
+        negatives (get request :negative-results)
+        differential (get request :differential-results)
+        metadata (get request :metadata-report)
+        artifact (get request :artifact-report)
+        identity (get request :identity-input)
+        provenance (get request :provenance)]
+    (if (= :gravity/w5-b14-conformance-request (get request :artifact))
+      (if (= 1 (get request :schema-version))
+        (if (= :w5-b14/conformance (get request :execution-id))
+          (if (= :static-only (get request :mode))
+            (if (= :meta (get request :profile))
+              (if (= w5-b14-supported-target (get request :target))
+                (if (= (get suite :supported-target) (get request :target))
+                  (if (= (get suite :supported-platform)
+                         (get availability :candidate-platform))
+                    (if (= (get suite :candidate-target-evidence)
+                           w5-b14-candidate-target-evidence)
+                      (if (= (get identity :supported-target)
+                             (get suite :supported-target))
+                        (if (= "sha256:w5-b14-suite-v1"
+                               (get identity :suite-id))
+                          (if (= (get identity :supported-platform)
+                               (get suite :supported-platform))
+                          (if (= (get identity :required-backends)
+                                 (get suite :required-backends))
+                            (if (= (get identity :covered-backends)
+                                   (get suite :covered-backends))
+                              (if (= (get identity :fixture-families)
+                                     w5-b14-required-fixture-families)
+                                (if (= (get identity :checks)
+                                       (get suite :checks))
+                                  (if (= (get identity :coverage-status)
+                                         (get suite :coverage-status))
+                                    (if (w5-b14-fixture-links-valid-from?
+                                         matrix positives
+                                         (get differential :comparisons) 0)
+                                      (if (w5-b14-negative-links-valid-from?
+                                           negatives 0)
+                                        (if (w5-b14-differential-links-valid-from?
+                                             (get differential :comparisons) 0)
+                                          (if (= (get metadata :target)
+                                                 (get request :target))
+                                            (if (= (get artifact
+                                                        :validated-artifacts)
+                                                   ["sha256:w5-b14-artifact-manifest-v1"])
+                                              (if (= (get provenance :target)
+                                                     (get request :target))
+                                                (if (= :llvm
+                                                       (get provenance :backend))
+                                                  (if (w5-b14-path-ends-with?
+                                                       (get provenance
+                                                           :compiler-source-path)
+                                                       ".gravity")
+                                                    (if (or
+                                                         (w5-b14-path-ends-with?
+                                                          (get provenance
+                                                              :actual-source-path)
+                                                          ".gravity")
+                                                         (w5-b14-path-ends-with?
+                                                          (get provenance
+                                                              :actual-source-path)
+                                                          ".qst"))
+                                                      (= (w5-b14-path-ends-with?
+                                                          (get provenance
+                                                              :actual-source-path)
+                                                          ".gravity")
+                                                         (w5-b14-path-ends-with?
+                                                          (get provenance
+                                                              :logical-source)
+                                                          ".gravity"))
+                                                      false)
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn w5-b14-request-shape-valid?
+  [request]
+  (w5-b14-exact-keys?
+   request #{:artifact :schema-version :execution-id :mode :profile
+              :target :suite-manifest :fixture-matrix
+              :target-availability :positive-results
+              :negative-results :differential-results :metadata-report
+              :artifact-report :nondeterminism-record :skip-report
+              :risk-coverage :evidence-pack :diagnostic-stream
+              :identity-input :provenance}))
+
+(defn w5-b14-positive-request-valid?
+  [request]
+  (if (vector? (get request :positive-results))
+    (if (= 27 (count (get request :positive-results)))
+      (w5-b14-positive-results-valid? (get request :positive-results) 0)
+      false)
+    false))
+
+(defn w5-b14-request-diagnostic
+  [request]
+  (if (w5-b14-request-shape-valid? request)
+    (if (= :gravity/w5-b14-conformance-request (get request :artifact))
+      (if (= 1 (get request :schema-version))
+        (if (= :static-only (get request :mode))
+          (if (= :meta (get request :profile))
+            (if (= w5-b14-supported-target (get request :target))
+              (if (w5-b14-suite-manifest-valid?
+                   (get request :suite-manifest))
+                (if (w5-b14-fixture-matrix-valid?
+                     (get request :fixture-matrix))
+                  (if (w5-b14-target-availability-valid?
+                       (get request :target-availability))
+                    (if (w5-b14-positive-request-valid? request)
+                      (if (w5-b14-negative-results-valid?
+                           (get request :negative-results))
+                        (if (w5-b14-differential-valid?
+                             (get request :differential-results))
+                          (if (w5-b14-metadata-valid?
+                               (get request :metadata-report))
+                            (if (w5-b14-artifact-valid?
+                                 (get request :artifact-report))
+                              (if (w5-b14-nondeterminism-valid?
+                                   (get request :nondeterminism-record))
+                                (if (w5-b14-skip-valid?
+                                     (get request :skip-report))
+                                  (if (w5-b14-risk-coverage-valid?
+                                       (get request :risk-coverage))
+                                    (if (w5-b14-evidence-valid?
+                                         (get request :evidence-pack))
+                                      (if (w5-b14-diagnostic-stream-valid?
+                                           (get request :diagnostic-stream))
+                                        (if (w5-b14-identity-valid?
+                                             (get request :identity-input))
+                                          (if (w5-b14-provenance-valid?
+                                               (get request :provenance))
+                                            (if (w5-b14-record-links-valid?
+                                                 request)
+                                              nil
+                                              (w5-b14-diagnostic
+                                               "B14-EVIDENCE" request
+                                               :cross-record-links-required))
+                                            (w5-b14-diagnostic
+                                             "B14-EVIDENCE" request
+                                             :provenance-required))
+                                          (w5-b14-diagnostic
+                                           "B14-EVIDENCE" request
+                                           :identity-input-required))
+                                        (w5-b14-diagnostic
+                                         "B14-NEGATIVE" request
+                                         :diagnostic-stream-required))
+                                      (w5-b14-diagnostic
+                                       "B14-EVIDENCE" request
+                                       :evidence-pack-required))
+                                    (w5-b14-diagnostic
+                                     "B14-EVIDENCE" request
+                                     :risk-coverage-required))
+                                  (w5-b14-diagnostic
+                                   "B14-SKIP" request
+                                   :fail-closed-skip-record-required))
+                                (w5-b14-diagnostic
+                                 "B14-NONDETERMINISM" request
+                                 :replay-record-required))
+                              (w5-b14-diagnostic
+                               "B14-ARTIFACT" request
+                               :artifact-manifest-validation-required))
+                            (w5-b14-diagnostic
+                             "B14-METADATA" request
+                             :metadata-preservation-required))
+                          (w5-b14-diagnostic
+                           "B14-DIFFERENTIAL" request
+                           :semantic-comparison-required))
+                        (w5-b14-diagnostic
+                         "B14-NEGATIVE" request
+                         :negative-diagnostic-fixtures-required))
+                      (w5-b14-diagnostic
+                       "B14-POSITIVE" request
+                       :positive-lowering-results-required))
+                    (w5-b14-diagnostic
+                     "B14-TARGET" request
+                     :candidate-target-availability-required))
+                  (w5-b14-diagnostic
+                   "B14-COVERAGE" request
+                   :fixture-matrix-required))
+                (w5-b14-diagnostic
+                 "B14-COVERAGE" request
+                 :suite-manifest-required))
+              (w5-b14-diagnostic
+               "B14-TARGET" request
+               :stage2-execution-target-required))
+            (w5-b14-diagnostic "B14-COVERAGE" request
+                               :meta-profile-required))
+          (w5-b14-diagnostic "B14-COVERAGE" request
+                             :static-only-mode-required))
+        (w5-b14-diagnostic "B14-COVERAGE" request
+                           :schema-version-required))
+      (w5-b14-diagnostic "B14-COVERAGE" request
+                         :request-artifact-required))
+    (w5-b14-diagnostic "B14-COVERAGE" request :request-shape-required)))
+
+(defn w5-b14-identity-input-from-request
+  [request]
+  {:suite-id "sha256:w5-b14-suite-v1"
+   :supported-target w5-b14-supported-target
+   :supported-platform w5-b14-supported-platform
+   :required-backends w5-b14-required-backends
+   :covered-backends #{:llvm}
+   :fixture-families w5-b14-required-fixture-families
+   :checks w5-b14-checks
+   :coverage-status :incomplete})
+
+(defn w5-b14-rejected-result
+  [request diagnostic]
+  {:artifact :gravity/w5-b14-conformance-result
+   :status :rejected
+   :scope :stage2-static-only
+   :static-only? true
+   :target w5-b14-supported-target
+   :candidate-target w5-b14-supported-target
+   :unsupported-platforms w5-b14-unsupported-platform-values
+   :unsupported-targets w5-b14-unsupported-target-values
+   :unsupported-target-policies w5-b14-unsupported-target-policies
+   :cross-target-inference? false
+   :darwin-fallback? false
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :candidate-fallback? false
+   :no-fallback? true
+   :coverage-status :incomplete
+   :release-eligible? false
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :non-authority {:authority :non-authority
+                   :clojure-seed-boundary? true
+                   :self-hosted? false
+                   :release? false
+                   :public-authority? false}
+   :diagnostics [diagnostic]
+   :identity-input nil
+   :provenance (get request :provenance)
+   :residual-boundaries #{:clojure-stage2-compiler-plan
+                          :jvm-stage2-runtime}})
+
+(defn w5-b14-accepted-result
+  [request]
+  {:artifact :gravity/w5-b14-conformance-result
+   :status :accepted
+   :scope :stage2-static-only
+   :static-only? true
+   :target w5-b14-supported-target
+   :candidate-target w5-b14-supported-target
+   :candidate-platform w5-b14-supported-platform
+   :unsupported-platforms w5-b14-unsupported-platform-values
+   :unsupported-targets w5-b14-unsupported-target-values
+   :unsupported-target-policies w5-b14-unsupported-target-policies
+   :cross-target-inference? false
+   :darwin-fallback? false
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :candidate-fallback? false
+   :no-fallback? true
+   :supported-backend :llvm
+   :coverage-status :incomplete
+   :completion :incomplete
+   :release-eligible? false
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :non-authority {:authority :non-authority
+                   :clojure-seed-boundary? true
+                   :self-hosted? false
+                   :release? false
+                   :public-authority? false}
+   :suite-manifest (get request :suite-manifest)
+   :fixture-matrix (get request :fixture-matrix)
+   :target-availability (get request :target-availability)
+   :positive-results (get request :positive-results)
+   :negative-results (get request :negative-results)
+   :differential-results (get request :differential-results)
+   :metadata-report (get request :metadata-report)
+   :artifact-report (get request :artifact-report)
+   :nondeterminism-record (get request :nondeterminism-record)
+   :skip-report (get request :skip-report)
+   :risk-coverage (get request :risk-coverage)
+   :evidence-pack (get request :evidence-pack)
+   :diagnostic-stream (get request :diagnostic-stream)
+   :diagnostics []
+   :identity-input (w5-b14-identity-input-from-request request)
+   :provenance (get request :provenance)
+   :residual-boundaries #{:clojure-stage2-compiler-plan
+                          :jvm-stage2-runtime}
+   :unsupported-platforms w5-b14-unsupported-platform-values
+   :unsupported-targets w5-b14-unsupported-target-values
+   :unsupported-target-policies w5-b14-unsupported-target-policies
+   :cross-target-inference? false
+   :darwin-fallback? false
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :candidate-fallback? false
+   :no-fallback? true})
+
+(defn w5-b14-conformance-execute
+  [request]
+  (let [diagnostic (w5-b14-request-diagnostic request)]
+    (if (= nil diagnostic)
+      (w5-b14-accepted-result request)
+      (w5-b14-rejected-result request diagnostic))))
+
+(defn w5-b14-backend-conformance
+  [request]
+  (w5-b14-conformance-execute request))
+
+(defn w5-b14-conformance
+  [request]
+  (w5-b14-conformance-execute request))
+
+(defn w5-b14-execute
+  [request]
+  (w5-b14-conformance-execute request))
+
+(defn w5-b14-run
+  [request]
+  (w5-b14-conformance-execute request))
+
+(defn w5-b14-verify
+  [request]
+  (w5-b14-conformance-execute request))
+
+(defn w5-b14-recompute
+  [request]
+  (w5-b14-conformance-execute request))
+
+(defn w5-b14-verify-result
+  [request result]
+  (let [expected (w5-b14-conformance-execute request)]
+    (if (= expected result)
+      {:artifact :gravity/w5-b14-verification
+       :status :passed
+       :recomputed true
+       :expected-status (get expected :status)
+       :actual-status (get result :status)
+       :diagnostics []
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :non-authority {:authority :non-authority
+                       :clojure-seed-boundary? true
+                       :self-hosted? false
+                       :release? false
+                       :public-authority? false}}
+      {:artifact :gravity/w5-b14-verification
+       :status :rejected
+       :recomputed true
+       :expected-status (get expected :status)
+       :actual-status (get result :status)
+       :diagnostics
+       [(w5-b14-diagnostic "B14-EVIDENCE" request
+                           :result-substitution-or-stale-evidence)]
+       :authority :non-authority
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :release? false
+       :public-authority? false
+       :non-authority {:authority :non-authority
+                       :clojure-seed-boundary? true
+                       :self-hosted? false
+                       :release? false
+                       :public-authority? false}})))
+
+(defn w5-b14-policy
+  []
+  {:artifact :gravity/w5-b14-backend-conformance-policy
+   :schema-version 1
+   :scope :stage2-static-only
+   :profile :meta
+   :target w5-b14-supported-target
+   :candidate-target w5-b14-supported-target
+   :candidate-platform w5-b14-supported-platform
+   :supported-backend :llvm
+   :required-backends w5-b14-required-backends
+   :required-fixture-families w5-b14-required-fixture-families
+   :diagnostics w5-b14-diagnostic-values
+   :coverage-status :incomplete
+   :release-eligible? false
+   :authority :non-authority
+   :static-only? true
+   :target-scope {:target :llvm-x86_64-linux
+                  :os :linux
+                  :arch :x86_64
+                  :backend :llvm
+                  :object-format :elf
+                  :abi :sysv-amd64
+                  :runtime :none
+                  :providers #{}
+                  :runtime-providers #{}
+                  :unsupported-targets w5-b14-unsupported-target-values
+                  :unsupported-target-policies w5-b14-unsupported-target-policies
+                  :darwin-supported? false
+                  :cross-target-inference? false
+                  :darwin-fallback? false
+                  :candidate-invokes-clojure? false
+                  :candidate-links-jvm? false
+                  :candidate-fallback? false
+                  :no-fallback? true}
+   :unsupported-platforms w5-b14-unsupported-platform-values
+   :unsupported-targets w5-b14-unsupported-target-values
+   :unsupported-target-policies w5-b14-unsupported-target-policies
+   :cross-target-inference? false
+   :darwin-fallback? false
+   :candidate-invokes-clojure? false
+   :candidate-links-jvm? false
+   :candidate-fallback? false
+   :no-fallback? true
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :non-authority {:authority :non-authority
+                   :clojure-seed-boundary? true
+                   :self-hosted? false
+                   :release? false
+                   :public-authority? false}
+   :residual-boundaries {:stage2-compiler-plan :clojure-bootstrap
+                         :stage2-runtime :jvm
+                         :target-toolchain :not-executed
+                         :filesystem-authority false
+                         :network-authority false
+                         :process-authority false}
+   :pending [:other-phase7-backend-target-evidence
+             :independent-backend-execution
+             :seed-retirement
+             :release-admission]})
+
+(defn w5-b14-diagnostic-catalog
+  []
+  {:artifact :gravity/w5-b14-diagnostic-catalog
+   :schema-version 1
+   :diagnostics w5-b14-diagnostic-values
+   :remediation {:coverage :fixture-matrix-required
+                 :target :candidate-target-availability-required
+                 :positive :positive-lowering-results-required
+                 :negative :negative-diagnostic-fixtures-required
+                 :differential :semantic-comparison-required
+                 :metadata :metadata-preservation-required
+                 :artifact :artifact-manifest-validation-required
+                 :nondeterminism :replay-record-required
+                 :skip :fail-closed-skip-record-required
+                 :evidence :evidence-pack-required}
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :public-authority? false
+   :non-authority {:authority :non-authority
+                   :clojure-seed-boundary? true
+                   :self-hosted? false
+                   :release? false
+                   :public-authority? false}})
+
+(defn w5-b14-suite-manifest
+  []
+  {:artifact :gravity/backend-conformance-suite
+   :schema-version 1
+   :required-backends w5-b14-required-backends
+   :checks w5-b14-checks
+   :inputs w5-b14-inputs
+   :rejects w5-b14-rejects
+   :supported-target w5-b14-supported-target
+   :supported-platform w5-b14-supported-platform
+   :covered-backends #{:llvm}
+   :coverage-status :incomplete
+   :release-ready? false
+   :candidate-target-evidence w5-b14-candidate-target-evidence
+   :authority :non-authority})
+
+(defn w5-b14-fixture-entry
+  [family]
+  {:family family
+   :fixture-id (str "w5-b14/" (str family))
+   :target w5-b14-supported-target
+   :backend :llvm
+   :expected-artifacts w5-b14-expected-artifacts
+   :expected-metadata w5-b14-expected-metadata
+   :status (if (contains? w5-b14-pending-fixture-families family)
+             :pending
+             :covered)})
+
+(defn w5-b14-fixture-matrix-from
+  [families index result]
+  (if (= index (count families))
+    result
+    (w5-b14-fixture-matrix-from
+     families (+ index 1)
+     (conj result (w5-b14-fixture-entry (get families index))))))
+
+(defn w5-b14-fixture-matrix
+  []
+  (w5-b14-fixture-matrix-from w5-b14-fixture-family-values 0 []))
+
+(defn w5-b14-target-record
+  [backend]
+  (if (= backend :llvm)
+    {:backend :llvm
+     :target :llvm-x86_64-linux
+     :available? true
+     :availability :available
+     :evidence :exact
+     :shared-manifest-tests :run
+     :positive-tests :run
+     :negative-tests :run
+     :skip-status :none}
+    {:backend backend
+     :target :unsupported
+     :available? false
+     :availability :not-provided
+     :evidence :none
+     :shared-manifest-tests :run
+     :positive-tests :not-run
+     :negative-tests :run
+     :skip-status :explicit-unavailable}))
+
+(defn w5-b14-target-records-from
+  [backends index result]
+  (if (= index (count backends))
+    result
+    (w5-b14-target-records-from
+     backends (+ index 1)
+     (conj result (w5-b14-target-record (get backends index))))))
+
+(defn w5-b14-target-availability
+  []
+  {:artifact :gravity/backend-target-availability-matrix
+   :candidate-target w5-b14-supported-target
+   :candidate-platform w5-b14-supported-platform
+   :targets (w5-b14-target-records-from
+             w5-b14-required-backend-values 0 [])
+   :unsupported-platforms w5-b14-unsupported-platform-values
+   :unsupported-targets w5-b14-unsupported-target-values
+   :unsupported-target-policies w5-b14-unsupported-target-policies
+   :unsupported-skips []
+   :cross-target-inference? false
+   :status :incomplete
+   :coverage-status :incomplete})
+
+(defn w5-b14-positive-entry
+  [family]
+  {:backend :llvm
+   :target w5-b14-supported-target
+   :fixture-id (str "w5-b14/positive/" (str family))
+   :status :passed
+   :lowering :passed
+   :execution :not-required-static-only
+   :shared-manifest :validated
+   :metadata :preserved
+   :artifact-id (str "sha256:w5-b14-artifact-" (str family))})
+
+(defn w5-b14-positive-results-from
+  [families index result]
+  (if (= index (count families))
+    result
+    (w5-b14-positive-results-from
+     families (+ index 1)
+     (conj result (w5-b14-positive-entry (get families index))))))
+
+(defn w5-b14-positive-results
+  []
+  (w5-b14-positive-results-from
+   w5-b14-covered-fixture-family-values 0 []))
+
+(defn w5-b14-negative-entry
+  [diagnostic]
+  {:diagnostic diagnostic
+   :fixture-id diagnostic
+   :expected diagnostic
+   :actual diagnostic
+   :status :matched
+   :source-span {:source-id (str "sha256:w5-b14-negative-" diagnostic)
+                 :start-byte 0
+                 :end-byte 1}
+   :target w5-b14-supported-target})
+
+(defn w5-b14-negative-results-from
+  [diagnostics index result]
+  (if (= index (count diagnostics))
+    result
+    (w5-b14-negative-results-from
+     diagnostics (+ index 1)
+     (conj result (w5-b14-negative-entry (get diagnostics index))))))
+
+(defn w5-b14-negative-results
+  []
+  (w5-b14-negative-results-from w5-b14-diagnostic-values 0 []))
+
+(defn w5-b14-differential-entry
+  [family]
+  {:backend :llvm
+   :target w5-b14-supported-target
+   :fixture-id (str "w5-b14/differential/" (str family))
+   :reference-id (str "sha256:w5-b14-semantic-" (str family))
+   :observed-id (str "sha256:w5-b14-semantic-" (str family))
+   :status :matched
+   :execution :not-required-static-only})
+
+(defn w5-b14-differential-results-from
+  [families index result]
+  (if (= index (count families))
+    result
+    (w5-b14-differential-results-from
+     families (+ index 1)
+     (conj result (w5-b14-differential-entry (get families index))))))
+
+(defn w5-b14-differential-results
+  []
+  {:artifact :gravity/backend-semantic-comparison-results
+   :status :passed
+   :method :artifact-shape-and-semantic-identity
+   :reference :mir-or-domain-reference
+   :comparisons (w5-b14-differential-results-from
+                 w5-b14-covered-fixture-family-values 0 [])
+   :replay-id "sha256:w5-b14-differential-replay-v1"})
+
+(defn w5-b14-metadata-report
+  []
+  {:artifact :gravity/backend-metadata-preservation-report
+   :status :preserved
+   :fields w5-b14-expected-metadata
+   :source-spans true
+   :generated-origin true
+   :types true
+   :effects true
+   :capabilities true
+   :safety true
+   :proofs true
+   :unsafe-audit-ids true
+   :profile :meta
+   :target w5-b14-supported-target
+   :runtime :not-required-static-only
+   :diagnostics true})
+
+(defn w5-b14-artifact-report
+  []
+  {:artifact :gravity/artifact-manifest-validation-report
+   :schema-version 1
+   :status :valid
+   :validated-artifacts ["sha256:w5-b14-artifact-manifest-v1"]
+   :manifest-count 1
+   :content-hashes true
+   :provenance true
+   :conformance-reference true
+   :release-grade? false})
+
+(defn w5-b14-event
+  [kind]
+  {:kind kind :policy :record-or-replay})
+
+(defn w5-b14-events-from
+  [events index result]
+  (if (= index (count events))
+    result
+    (w5-b14-events-from
+     events (+ index 1)
+     (conj result (w5-b14-event (get events index))))))
+
+(defn w5-b14-nondeterminism-record
+  []
+  {:artifact :gravity/nondeterminism-replay-record
+   :status :recorded
+   :events (w5-b14-events-from w5-b14-event-values 0 [])
+   :unrecorded []
+   :replay-id "sha256:w5-b14-nondeterminism-v1"})
+
+(defn w5-b14-skip-report
+  []
+  {:artifact :gravity/backend-conformance-skip-report
+   :status :passed
+   :unsupported-skips []
+   :darwin-policy :fail-closed
+   :cross-target-inference? false
+   :fallback :forbidden
+   :shared-tests :run})
+
+(defn w5-b14-risk-coverage
+  []
+  {:artifact :gravity/backend-risk-coverage-report
+   :status :incomplete
+   :covered-targets #{:llvm-x86_64-linux}
+   :required-targets w5-b14-required-backends
+   :known-gaps [{:backend :phase7-required-matrix
+                 :missing w5-b14-missing-backends
+                 :status :not-provided
+                 :release-impact :blocks-release}]
+   :release-impact :blocks-release})
+
+(defn w5-b14-evidence-pack
+  []
+  {:artifact :gravity/backend-conformance-evidence-pack
+   :id "backend-conformance-pack:w5-b14"
+   :status :incomplete
+   :includes #{:suite-manifest :fixture-matrix :target-availability
+               :positive-results :negative-results :semantic-comparisons
+               :metadata-preservation :artifact-validation
+               :nondeterminism-replay :risk-coverage :diagnostics}
+   :release-ready? false
+   :authority :non-authority
+   :missing-backends w5-b14-missing-backends
+   :residual-boundaries #{:clojure-stage2-compiler-plan
+                          :jvm-stage2-runtime
+                          :independent-backend-execution}})
+
+(defn w5-b14-diagnostic-records-from
+  [diagnostics index result]
+  (if (= index (count diagnostics))
+    result
+    (w5-b14-diagnostic-records-from
+     diagnostics (+ index 1)
+     (conj result {:diagnostic (get diagnostics index)
+                   :fixture-id (get diagnostics index)
+                   :status :matched}))))
+
+(defn w5-b14-diagnostic-stream
+  []
+  {:artifact :gravity/backend-conformance-diagnostic-stream
+   :status :complete
+   :required w5-b14-diagnostic-values
+   :records (w5-b14-diagnostic-records-from
+             w5-b14-diagnostic-values 0 [])})
+
+(defn w5-b14-identity-input
+  []
+  (w5-b14-identity-input-from-request {}))

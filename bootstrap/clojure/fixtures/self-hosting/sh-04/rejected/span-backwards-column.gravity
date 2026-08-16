@@ -1,0 +1,4 @@
+{:phase :build
+ :path [:span :column-start]
+ :value 15
+ :expected-rule "C3-SPAN"}

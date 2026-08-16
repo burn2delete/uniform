@@ -1,0 +1,5 @@
+{:phase :build
+ :operation :assoc-in
+ :path [:metadata]
+ :value [:not :metadata]
+ :expected-rule "C3-METADATA"}

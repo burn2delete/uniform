@@ -1,0 +1,2186 @@
+; W5-owned executable C18 pass-verification leaf.
+; This is a bounded :meta verifier interface. It is deliberately non-authority:
+; the stage2 compiler, Clojure seed, JVM execution, and independent review remain
+; explicit residual gaps and can never be inferred from producer booleans.
+(ns gravity.compiler.w5-c18-pass-verifier
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [w5-c18-policy
+             w5-c18-build-counterexample
+             w5-c18-build-trust-report
+             w5-c18-build-release-gate
+             w5-c18-target-policy
+             w5-c18-target-valid?
+             w5-c18-verify
+             w5-c18-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage2
+               :component :w5-c18-pass-verifier
+               :owner :w5
+               :source-language :gravity
+               :seed :clojure-stage0
+               :clojure-seed-boundary? true
+               :self-hosted? false
+               :release? false
+               :authority :non-authority
+               :stage2-target :jvm
+               :candidate-target :llvm-x86_64-linux
+               :candidate-platform {:os :linux :arch :x86_64 :backend :llvm
+                                    :artifact-format :elf :abi :sysv-amd64}
+               :unsupported-targets
+               [:darwin :darwin-arm64 :darwin-x86_64 :windows]
+               :unsupported-target-policies
+               [{:target :darwin :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :darwin-arm64 :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :darwin-x86_64 :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}
+                {:target :windows :support :unsupported
+                 :invokes-clojure? false :links-jvm? false :fallback? false}]
+               :cross-target-inference? false
+               :fallback? false
+               :full-language-credit? false
+               :matrix-240-credit? false
+               :independent-review? false
+               :jvm-execution? false
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["C18" "C1" "C13" "C14"
+                                        "C15" "C17" "D1" "D3" "D6"
+                                        "D8" "D9" "BOOT1" "BOOT3"
+                                        "BOOT6" "BOOT8" "TEST11" "TEST13"]
+               :interface-status :bounded-leaf
+               :non-goals [:global-completion
+                           :public-release-status
+                           :proof-authority
+                           :seed-retirement
+                           :independent-review]
+               :authority {:effects #{}
+                           :capabilities #{}
+                           :ambient #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call :registry
+                                    :ffi :raw-memory :process]}}}))
+
+(def w5-c18-stage2-target :jvm)
+(def w5-c18-candidate-target :llvm-x86_64-linux)
+(def w5-c18-candidate-platform
+  {:os :linux :arch :x86_64 :backend :llvm
+   :artifact-format :elf :abi :sysv-amd64})
+(def w5-c18-unsupported-targets
+  [:darwin :darwin-arm64 :darwin-x86_64 :windows])
+(def w5-c18-unsupported-target-policies
+  [{:target :darwin :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-arm64 :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :darwin-x86_64 :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}
+   {:target :windows :support :unsupported
+    :invokes-clojure? false :links-jvm? false :fallback? false}])
+(def w5-c18-target-scope
+  {:candidate-target w5-c18-candidate-target
+   :candidate-platform w5-c18-candidate-platform
+   :unsupported-targets w5-c18-unsupported-targets
+   :unsupported-target-policies w5-c18-unsupported-target-policies
+   :cross-target-inference? false
+   :fallback? false})
+
+(defn w5-c18-target-policy []
+  w5-c18-target-scope)
+
+(defn w5-c18-target-valid? [target]
+  (= target w5-c18-target-scope))
+
+(defn w5-c18-policy []
+  {:artifact :gravity/w5-c18-pass-verifier-policy
+   :schema-version 1
+   :profile :meta
+   :stage2-target w5-c18-stage2-target
+   :target w5-c18-candidate-target
+   :candidate-target w5-c18-candidate-target
+   :candidate-platform w5-c18-candidate-platform
+   :target-scope w5-c18-target-scope
+   :unsupported-targets w5-c18-unsupported-targets
+   :unsupported-target-policies w5-c18-unsupported-target-policies
+   :cross-target-inference? false
+   :fallback? false
+   :risk-levels #{:low :medium :high :critical}
+   :minimum-evidence
+   {:low #{:verifier-report}
+    :medium #{:verifier-report :golden-fixture}
+    :high #{:translation-validation :property-test}
+    :critical #{:checked-certificate
+                :translation-validation
+                :conformance-fixture}}
+   :translation-results #{:accepted :rejected :stale :inconclusive}
+   :proof-freshness #{:fresh :stale :revoked :unknown}
+   :diagnostics ["C18-RISK" "C18-EVIDENCE" "C18-VALIDATION"
+                 "C18-PROOF" "C18-TRUST-REPORT" "C18-RELEASE-GATE"
+                 "C18-COUNTEREXAMPLE" "C18-PLUGIN" "C18-BACKEND"]
+   :stable-id-inputs [:compiler-id :compiler-version
+                      :pipeline-manifest-id :source-root-id
+                      :pass-id :pass-version :stage :risk
+                      :profile :target :artifact-id]
+   :residual-gaps
+   {:clojure-seed-boundary {:status :present
+                            :required-action :retire-clojure-seed}
+    :jvm-execution {:status :present
+                    :required-action :replace-jvm-execution}
+    :independent-review {:status :pending
+                         :required-action :obtain-independent-review}}
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :full-language-credit? false
+   :matrix-240-credit? false
+   :authority :non-authority})
+
+(defn w5-c18-present? [value]
+  (if (= nil value) false true))
+
+(defn w5-c18-string? [value]
+  (if (string? value)
+    (> (count value) 0)
+    false))
+
+(defn w5-c18-fields-present? [value fields]
+  (if (= (count fields) 0)
+    true
+    (if (w5-c18-present? (get value (first fields)))
+      (w5-c18-fields-present? value (rest fields))
+      false)))
+
+(defn w5-c18-subset? [required available]
+  (if (= (count required) 0)
+    true
+    (if (contains? available (first required))
+      (w5-c18-subset? (rest required) available)
+      false)))
+
+(defn w5-c18-target-set-valid? [targets]
+  (= targets #{w5-c18-candidate-target}))
+
+(defn w5-c18-source-span-valid? [span]
+  (if (map? span)
+    (if (= (set (keys span)) #{:source-id :start :end})
+      (if (keyword? (get span :source-id))
+      (if (integer? (get span :start))
+        (if (integer? (get span :end))
+          (if (<= 0 (get span :start))
+            (<= (get span :start) (get span :end))
+            false)
+          false)
+        false)
+      false)
+      false)
+    false))
+
+(defn w5-c18-origin-entry-valid? [origin]
+  (if (map? origin)
+    (if (= (set (keys origin)) #{:kind :source-id :origin-id})
+      (if (keyword? (get origin :kind))
+        (if (keyword? (get origin :source-id))
+          (keyword? (get origin :origin-id))
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c18-origin-chain-valid? [origins index]
+  (if (= index (count origins))
+    true
+    (if (w5-c18-origin-entry-valid? (get origins index))
+      (w5-c18-origin-chain-valid? origins (+ index 1))
+      false)))
+
+(defn w5-c18-provenance-valid? [provenance]
+  (if (map? provenance)
+    (if (= (set (keys provenance))
+           #{:source-id :actual-source-path :compiler-id :compiler-version
+             :target :candidate-platform :target-scope
+             :generated-origin-chain})
+      (if (w5-c18-string? (get provenance :actual-source-path))
+        (if (w5-c18-string? (get provenance :compiler-id))
+          (if (w5-c18-string? (get provenance :compiler-version))
+            (if (keyword? (get provenance :source-id))
+              (if (= w5-c18-candidate-target (get provenance :target))
+                (if (= w5-c18-candidate-platform
+                       (get provenance :candidate-platform))
+                  (if (w5-c18-target-valid? (get provenance :target-scope))
+                    (if (vector? (get provenance :generated-origin-chain))
+                      (if (> (count (get provenance :generated-origin-chain)) 0)
+                        (w5-c18-origin-chain-valid?
+                         (get provenance :generated-origin-chain) 0)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c18-record-provenance-valid? [record]
+  (if (w5-c18-provenance-valid? (get record :provenance))
+    (if (w5-c18-source-span-valid? (get record :source-span))
+      (if (vector? (get record :origin-chain))
+        (if (> (count (get record :origin-chain)) 0)
+          (if (w5-c18-origin-chain-valid? (get record :origin-chain) 0)
+            (if (= (get (get record :source-span) :source-id)
+                   (get (get record :provenance) :source-id))
+              (= (get (get (get record :origin-chain) 0) :source-id)
+                 (get (get record :provenance) :source-id))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c18-diagnostic
+  [rule record pass remediation]
+  (let [pass-value (if (map? pass) pass {})
+        pass-id (if (w5-c18-present? (get pass-value :pass-id))
+                  (get pass-value :pass-id)
+                  :compiler/w5-c18-verifier)
+        pass-version (if (w5-c18-present? (get pass-value :pass-version))
+                       (get pass-value :pass-version)
+                       (get record :compiler-version))
+        stage (if (w5-c18-present? (get pass-value :stage))
+                (get pass-value :stage)
+                :stage2)
+        risk (if (w5-c18-present? (get pass-value :risk))
+               (get pass-value :risk)
+               :critical)
+        source-span (if (w5-c18-source-span-valid?
+                         (get pass-value :source-span))
+                      (get pass-value :source-span)
+                      (if (w5-c18-source-span-valid?
+                           (get record :source-span))
+                        (get record :source-span)
+                        {:source-id :gravity.compiler/w5-c18-diagnostic
+                         :start 0
+                         :end 0}))
+        profiles (if (set? (get pass-value :affected-profiles))
+                   (get pass-value :affected-profiles)
+                   (get record :profiles))
+        targets (if (set? (get pass-value :affected-targets))
+                  (get pass-value :affected-targets)
+                  (get record :targets))]
+    {:diagnostic-id rule
+     :rule rule
+     :pass-id pass-id
+     :pass-version pass-version
+     :stage stage
+     :risk risk
+     :required-evidence (get pass-value :minimum-evidence)
+     :available-evidence (get pass-value :available-evidence)
+     :affected-profiles profiles
+     :affected-targets targets
+     :profile (get record :profile)
+     :target (get record :target)
+     :stage2-target (get record :stage2-target)
+     :candidate-target w5-c18-candidate-target
+     :candidate-platform w5-c18-candidate-platform
+     :target-scope (get record :target-scope)
+     :source-or-artifact-id (get record :source-root-id)
+     :source-span source-span
+     :remediation remediation}))
+
+(defn w5-c18-rejected [record diagnostic]
+  {:artifact :gravity/w5-c18-verification-record
+   :status :rejected
+   :diagnostics [diagnostic]
+   :identity-input nil
+   :provenance (get record :provenance)
+   :stage2-target (get record :stage2-target)
+   :candidate-target w5-c18-candidate-target
+   :candidate-platform w5-c18-candidate-platform
+   :target-scope (get record :target-scope)
+   :trust-report nil
+   :release-gate
+   {:artifact :gravity/w5-c18-release-gate
+    :decision :blocked
+    :release-eligible? false
+    :identity-input nil
+    :provenance (get record :provenance)
+    :authority :non-authority}
+   :residual-gaps (:residual-gaps (w5-c18-policy))
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :full-language-credit? false
+   :matrix-240-credit? false
+   :independent-review? false
+   :authority :non-authority
+   :completion :incomplete})
+
+(defn w5-c18-risk-expected [risk]
+  (get (get (w5-c18-policy) :minimum-evidence) risk))
+
+(defn w5-c18-expected-artifact-content-hash [artifact-id]
+  (if (= artifact-id "artifact:source-forms") "sha256:source-forms"
+    (if (= artifact-id "artifact:syntax-tree") "sha256:syntax-tree"
+      (if (= artifact-id "artifact:mir-before") "sha256:mir-before"
+        (if (= artifact-id "artifact:mir-after") "sha256:mir-after"
+          (if (= artifact-id "artifact:llvm-x86_64-linux:w5-c18")
+            "sha256:llvm-x86_64-linux" nil))))))
+
+(defn w5-c18-expected-proof-content-hash [pass-id]
+  (if (= pass-id :pass/reader) "sha256:none-reader-proof"
+    (if (= pass-id :pass/analyzer) "sha256:none-analyzer-proof"
+      (if (= pass-id :pass/optimizer) "sha256:proof-source-optimizer"
+        (if (= pass-id :pass/target-lowering)
+          "sha256:proof-source-lowerer" nil)))))
+
+(defn w5-c18-expected-certificate-content-hash [pass-id]
+  (if (= pass-id :pass/reader) "sha256:none-reader-certificate"
+    (if (= pass-id :pass/analyzer) "sha256:none-analyzer-certificate"
+      (if (= pass-id :pass/optimizer) "sha256:certificate-optimizer"
+        (if (= pass-id :pass/target-lowering)
+          "sha256:certificate-lowerer" nil)))))
+
+(defn w5-c18-pass-risk-error [record pass]
+  (if (map? pass)
+    (if (w5-c18-fields-present?
+         pass [:pass-id :pass-version :stage :risk :reason
+               :input-ir :output-ir :affected-profiles
+               :affected-targets :changed-fact-families
+               :minimum-evidence :release-gate :source-span
+               :input-content-hash :output-content-hash
+               :proof-content-hash :certificate-content-hash
+               :hash-verification :cryptographic-hash-verified?])
+      (if (contains? (get (w5-c18-policy) :risk-levels) (get pass :risk))
+        (if (set? (get pass :affected-profiles))
+          (if (set? (get pass :affected-targets))
+            (if (w5-c18-target-set-valid? (get pass :affected-targets))
+              (if (w5-c18-subset? (get pass :affected-profiles)
+                                  (get record :profiles))
+                (if (w5-c18-subset? (get pass :affected-targets)
+                                    (get record :targets))
+                  (if (set? (get pass :changed-fact-families))
+                (if (set? (get pass :minimum-evidence))
+                (if (w5-c18-subset?
+                     (w5-c18-risk-expected (get pass :risk))
+                     (get pass :minimum-evidence))
+                  (if (= :required (get pass :release-gate))
+                    (if (w5-c18-source-span-valid? (get pass :source-span))
+                      (if (= (w5-c18-expected-artifact-content-hash
+                              (get pass :input-ir))
+                             (get pass :input-content-hash))
+                        (if (= (w5-c18-expected-artifact-content-hash
+                                (get pass :output-ir))
+                               (get pass :output-content-hash))
+                          (if (= (w5-c18-expected-proof-content-hash
+                                  (get pass :pass-id))
+                                 (get pass :proof-content-hash))
+                            (if (= (w5-c18-expected-certificate-content-hash
+                                    (get pass :pass-id))
+                                   (get pass :certificate-content-hash))
+                              (if (= :unverified
+                                     (get pass :hash-verification))
+                                (if (= false
+                                       (get pass
+                                            :cryptographic-hash-verified?))
+                                  nil
+                                  (w5-c18-diagnostic
+                                   "C18-RISK" record pass
+                                   :cryptographic-hash-claim-rejected))
+                                (w5-c18-diagnostic
+                                 "C18-RISK" record pass
+                                 :pass-hash-status-mismatch))
+                              (w5-c18-diagnostic
+                               "C18-RISK" record pass
+                               :certificate-content-hash-required))
+                            (w5-c18-diagnostic
+                             "C18-RISK" record pass
+                             :proof-content-hash-required))
+                          (w5-c18-diagnostic
+                           "C18-RISK" record pass
+                           :output-content-hash-required))
+                        (w5-c18-diagnostic
+                         "C18-RISK" record pass :input-content-hash-required))
+                      (w5-c18-diagnostic
+                       "C18-RISK" record pass :source-span-required))
+                    (w5-c18-diagnostic
+                     "C18-RISK" record pass :release-gate-required))
+                  (w5-c18-diagnostic
+                   "C18-RISK" record pass :minimum-evidence-below-risk))
+                  (w5-c18-diagnostic
+                   "C18-RISK" record pass :minimum-evidence-set-required))
+                (w5-c18-diagnostic
+                 "C18-RISK" record pass :changed-fact-family-set-required))
+                  (w5-c18-diagnostic
+                   "C18-RISK" record pass :affected-target-set-not-in-record))
+                (w5-c18-diagnostic
+                 "C18-RISK" record pass :affected-profile-set-not-in-record))
+              (w5-c18-diagnostic
+               "C18-RISK" record pass :candidate-target-required))
+            (w5-c18-diagnostic
+             "C18-RISK" record pass :affected-target-set-required))
+          (w5-c18-diagnostic
+           "C18-RISK" record pass :affected-profile-set-required))
+        (w5-c18-diagnostic "C18-RISK" record pass :risk-class-required))
+      (w5-c18-diagnostic "C18-RISK" record pass :pass-risk-fields-required))
+    (w5-c18-diagnostic "C18-RISK" record pass :pass-risk-map-required)))
+
+(defn w5-c18-risk-errors [record passes index]
+  (if (= index (count passes))
+    nil
+    (let [pass (get passes index)
+          error (w5-c18-pass-risk-error record pass)]
+      (if (w5-c18-present? error)
+        error
+        (w5-c18-risk-errors record passes (+ index 1))))))
+
+(defn w5-c18-entry-ids-unique? [entries field index seen]
+  (if (= index (count entries))
+    true
+    (let [entry-id (get (get entries index) field)]
+      (if (w5-c18-present? entry-id)
+        (if (contains? seen entry-id)
+          false
+          (w5-c18-entry-ids-unique?
+           entries field (+ index 1) (conj seen entry-id)))
+        false))))
+
+(defn w5-c18-pass-by-id [passes pass-id index]
+  (if (= index (count passes))
+    nil
+    (let [pass (get passes index)]
+      (if (= pass-id (get pass :pass-id))
+        pass
+        (w5-c18-pass-by-id passes pass-id (+ index 1))))))
+
+(defn w5-c18-proof-by-id [proofs proof-id index]
+  (if (= index (count proofs))
+    nil
+    (let [proof (get proofs index)]
+      (if (= proof-id (get proof :proof-id))
+        proof
+        (w5-c18-proof-by-id proofs proof-id (+ index 1))))))
+
+(defn w5-c18-proof-by-certificate [proofs certificate-id index]
+  (if (= index (count proofs))
+    nil
+    (let [proof (get proofs index)]
+      (if (= certificate-id (get proof :certificate-id))
+        proof
+        (w5-c18-proof-by-certificate
+         proofs certificate-id (+ index 1))))))
+
+(defn w5-c18-validation-by-pass [validations pass-id index]
+  (if (= index (count validations))
+    nil
+    (let [validation (get validations index)]
+      (if (= pass-id (get validation :pass-id))
+        validation
+        (w5-c18-validation-by-pass validations pass-id (+ index 1))))))
+
+(defn w5-c18-proof-by-pass [proofs pass-id index]
+  (if (= index (count proofs))
+    nil
+    (let [proof (get proofs index)]
+      (if (= pass-id (get proof :pass-id))
+        proof
+        (w5-c18-proof-by-pass proofs pass-id (+ index 1))))))
+
+(def w5-c18-evidence-semantic-owners
+  {"evidence:reader:verifier"
+   {:pass-id :pass/reader :kind :verifier-report
+    :checker :checker/reader
+    :inputs ["artifact:source-forms" "artifact:syntax-tree"]
+    :artifact-id "artifact:syntax-tree"}
+   "evidence:analyzer:verifier"
+   {:pass-id :pass/analyzer :kind :verifier-report
+    :checker :checker/analyzer
+    :inputs ["artifact:syntax-tree" "artifact:mir-before"]
+    :artifact-id "artifact:mir-before"}
+   "evidence:analyzer:golden"
+   {:pass-id :pass/analyzer :kind :golden-fixture
+    :checker :checker/golden
+    :inputs ["artifact:syntax-tree" "artifact:mir-before"]
+    :artifact-id "artifact:mir-before"}
+   "evidence:optimizer:translation"
+   {:pass-id :pass/optimizer :kind :translation-validation
+    :checker :checker/mir
+    :inputs ["artifact:mir-before" "artifact:mir-after"]
+    :artifact-id "validation:optimizer"}
+   "evidence:optimizer:property"
+   {:pass-id :pass/optimizer :kind :property-test
+    :checker :checker/property
+    :inputs ["artifact:mir-before" "artifact:mir-after"]
+    :artifact-id "proof:optimizer-property"}
+   "evidence:lowerer:certificate"
+   {:pass-id :pass/target-lowering :kind :checked-certificate
+    :checker :checker/certificate
+    :inputs ["artifact:mir-after"
+             "artifact:llvm-x86_64-linux:w5-c18"]
+    :artifact-id "certificate:lowerer"}
+   "evidence:lowerer:translation"
+   {:pass-id :pass/target-lowering :kind :translation-validation
+    :checker :checker/backend
+    :inputs ["artifact:mir-after"
+             "artifact:llvm-x86_64-linux:w5-c18"]
+    :artifact-id "validation:lowerer"}
+   "evidence:lowerer:conformance"
+   {:pass-id :pass/target-lowering :kind :conformance-fixture
+    :checker :checker/conformance
+    :inputs ["artifact:mir-after"
+             "artifact:llvm-x86_64-linux:w5-c18"]
+    :artifact-id "artifact:llvm-x86_64-linux:w5-c18"}})
+
+(def w5-c18-validation-semantic-owners
+  {"validation:optimizer"
+   {:pass-id :pass/optimizer :kind :translation-validation
+    :checker :checker/c18-translation
+    :input-artifact-id "artifact:mir-before"
+    :output-artifact-id "artifact:mir-after"
+    :proofs ["proof:optimizer-property"]
+    :certificates ["certificate:optimizer-property"]}
+   "validation:lowerer"
+   {:pass-id :pass/target-lowering :kind :translation-validation
+    :checker :checker/c18-translation
+    :input-artifact-id "artifact:mir-after"
+    :output-artifact-id "artifact:llvm-x86_64-linux:w5-c18"
+    :proofs ["proof:lowerer-certificate"]
+    :certificates ["certificate:lowerer"]}})
+
+(def w5-c18-proof-semantic-owners
+  {"proof:optimizer-property"
+   {:pass-id :pass/optimizer
+    :kind :property-proof
+    :checker :checker/c18-property
+    :certificate-id "certificate:optimizer-property"
+    :input-artifact-id "artifact:mir-before"
+    :output-artifact-id "artifact:mir-after"}
+   "proof:lowerer-certificate"
+   {:pass-id :pass/target-lowering
+    :kind :checked-certificate-proof
+    :checker :checker/c18-certificate
+    :certificate-id "certificate:lowerer"
+    :input-artifact-id "artifact:mir-after"
+    :output-artifact-id "artifact:llvm-x86_64-linux:w5-c18"}})
+
+(def w5-c18-certificate-semantic-owners
+  {"certificate:optimizer-property"
+   {:pass-id :pass/optimizer :kind :property-certificate
+    :checker :checker/c18-property
+    :proof-id "proof:optimizer-property"}
+   "certificate:lowerer"
+   {:pass-id :pass/target-lowering :kind :checked-certificate
+    :checker :checker/c18-certificate
+    :proof-id "proof:lowerer-certificate"}})
+
+(defn w5-c18-evidence-semantic-owner-error [record pass entry]
+  (let [owner (get w5-c18-evidence-semantic-owners
+                   (get entry :evidence-id))]
+    (if (= nil owner)
+      (w5-c18-diagnostic
+       "C18-EVIDENCE" record pass :evidence-id-owner-mismatch)
+      (if (= owner
+             {:pass-id (get entry :pass-id)
+              :kind (get entry :kind)
+              :checker (get entry :checker)
+              :inputs (get entry :inputs)
+              :artifact-id (get entry :artifact-id)})
+        nil
+        (w5-c18-diagnostic
+         "C18-EVIDENCE" record pass :evidence-id-owner-mismatch)))))
+
+(defn w5-c18-validation-semantic-owner-error [record entry]
+  (let [owner (get w5-c18-validation-semantic-owners
+                   (get entry :validation-id))]
+    (if (= nil owner)
+      (w5-c18-diagnostic
+       "C18-VALIDATION" record entry :validation-id-owner-mismatch)
+      (if (not (= [(get owner :pass-id)
+                   (get owner :kind)
+                   (get owner :checker)
+                   (get owner :input-artifact-id)
+                   (get owner :output-artifact-id)]
+                  [(get entry :pass-id)
+                   (get entry :kind)
+                   (get entry :checker)
+                   (get entry :input-artifact-id)
+                   (get entry :output-artifact-id)]))
+        (w5-c18-diagnostic
+         "C18-VALIDATION" record entry :validation-id-owner-mismatch)
+        (if (not (= (get owner :proofs) (get entry :proofs)))
+          (w5-c18-diagnostic
+           "C18-VALIDATION" record entry
+           :validation-proof-reference-mismatch)
+          (if (not (= (get owner :certificates)
+                      (get entry :certificates)))
+            (w5-c18-diagnostic
+             "C18-VALIDATION" record entry
+             :validation-certificate-reference-mismatch)
+            nil))))))
+
+(defn w5-c18-proof-semantic-owner-error [record entry]
+  (let [owner (get w5-c18-proof-semantic-owners (get entry :proof-id))
+        certificate-owner
+        (get w5-c18-certificate-semantic-owners
+             (get entry :certificate-id))]
+    (if (= nil owner)
+      (w5-c18-diagnostic
+       "C18-PROOF" record entry :proof-id-owner-mismatch)
+      (if (not (= owner
+                  {:pass-id (get entry :pass-id)
+                   :kind (get entry :kind)
+                   :checker (get entry :checker)
+                   :certificate-id (get entry :certificate-id)
+                   :input-artifact-id (get entry :input-artifact-id)
+                   :output-artifact-id (get entry :output-artifact-id)}))
+        (w5-c18-diagnostic
+         "C18-PROOF" record entry :proof-id-owner-mismatch)
+        (if (= certificate-owner
+               {:pass-id (get entry :pass-id)
+                :kind (get entry :certificate-kind)
+                :checker (get entry :certificate-checker)
+                :proof-id (get entry :proof-id)})
+          nil
+          (w5-c18-diagnostic
+           "C18-PROOF" record entry :certificate-id-owner-mismatch))))))
+
+(defn w5-c18-entry-id-vector [entries field index result]
+  (if (= index (count entries))
+    result
+    (w5-c18-entry-id-vector
+     entries field (+ index 1) (conj result (get (get entries index) field)))))
+
+(defn w5-c18-validation-proof-refs-valid?
+  [record entry references index]
+  (if (= index (count references))
+    true
+    (let [proof (w5-c18-proof-by-id
+                 (get record :proofs) (get references index) 0)]
+      (if (w5-c18-present? proof)
+        (if (= (get entry :pass-id) (get proof :pass-id))
+          (w5-c18-validation-proof-refs-valid?
+           record entry references (+ index 1))
+          false)
+        false))))
+
+(defn w5-c18-validation-certificate-refs-valid?
+  [record entry references index]
+  (if (= index (count references))
+    true
+    (let [proof (w5-c18-proof-by-certificate
+                 (get record :proofs) (get references index) 0)]
+      (if (w5-c18-present? proof)
+        (if (= (get entry :pass-id) (get proof :pass-id))
+          (w5-c18-validation-certificate-refs-valid?
+           record entry references (+ index 1))
+          false)
+        false))))
+
+(defn w5-c18-pass-chain-valid? [passes index]
+  (if (= 0 (count passes))
+    false
+  (if (= (+ index 1) (count passes))
+    true
+    (if (= (get (get passes index) :output-ir)
+           (get (get passes (+ index 1)) :input-ir))
+      (w5-c18-pass-chain-valid? passes (+ index 1))
+      false))))
+
+(defn w5-c18-evidence-owners-valid? [passes evidence index]
+  (if (= index (count evidence))
+    true
+    (if (w5-c18-present?
+         (w5-c18-pass-by-id
+          passes (get (get evidence index) :pass-id) 0))
+      (w5-c18-evidence-owners-valid? passes evidence (+ index 1))
+      false)))
+
+(defn w5-c18-collection-linkage-error [record]
+  (let [passes (get record :passes)
+        evidence (get record :evidence)
+        validations (get record :translation-validations)
+        proofs (get record :proofs)
+        evidence-ids
+        ["evidence:reader:verifier"
+         "evidence:analyzer:verifier"
+         "evidence:analyzer:golden"
+         "evidence:optimizer:translation"
+         "evidence:optimizer:property"
+         "evidence:lowerer:certificate"
+         "evidence:lowerer:translation"
+         "evidence:lowerer:conformance"]
+        validation-ids ["validation:optimizer" "validation:lowerer"]
+        proof-ids ["proof:optimizer-property" "proof:lowerer-certificate"]
+        certificate-ids
+        ["certificate:optimizer-property" "certificate:lowerer"]]
+    (if (not (w5-c18-entry-ids-unique? passes :pass-id 0 #{}))
+      (w5-c18-diagnostic
+       "C18-RISK" record nil :duplicate-or-missing-pass-id)
+      (if (not (w5-c18-pass-chain-valid? passes 0))
+        (w5-c18-diagnostic
+         "C18-RISK" record nil :pass-artifact-chain-mismatch)
+        (if (not (w5-c18-entry-ids-unique?
+                  evidence :evidence-id 0 #{}))
+          (w5-c18-diagnostic
+           "C18-EVIDENCE" record nil :duplicate-or-missing-evidence-id)
+          (if (not (= evidence-ids
+                      (w5-c18-entry-id-vector
+                       evidence :evidence-id 0 [])))
+            (w5-c18-diagnostic
+             "C18-EVIDENCE" record nil :evidence-inventory-mismatch)
+          (if (not (w5-c18-evidence-owners-valid? passes evidence 0))
+            (w5-c18-diagnostic
+             "C18-EVIDENCE" record nil :orphan-evidence-pass)
+            (if (not (w5-c18-entry-ids-unique?
+                      validations :validation-id 0 #{}))
+              (w5-c18-diagnostic
+               "C18-VALIDATION" record nil
+               :duplicate-or-missing-validation-id)
+              (if (not (= validation-ids
+                          (w5-c18-entry-id-vector
+                           validations :validation-id 0 [])))
+                (w5-c18-diagnostic
+                 "C18-VALIDATION" record nil :validation-inventory-mismatch)
+              (if (not (w5-c18-entry-ids-unique?
+                        proofs :proof-id 0 #{}))
+                (w5-c18-diagnostic
+                 "C18-PROOF" record nil :duplicate-or-missing-proof-id)
+                (if (not (= proof-ids
+                            (w5-c18-entry-id-vector proofs :proof-id 0 [])))
+                  (w5-c18-diagnostic
+                   "C18-PROOF" record nil :proof-inventory-mismatch)
+                (if (not (w5-c18-entry-ids-unique?
+                          proofs :certificate-id 0 #{}))
+                  (w5-c18-diagnostic
+                   "C18-PROOF" record nil
+                   :duplicate-or-missing-certificate-id)
+                  (if (not (= certificate-ids
+                              (w5-c18-entry-id-vector
+                               proofs :certificate-id 0 [])))
+                    (w5-c18-diagnostic
+                     "C18-PROOF" record nil :certificate-inventory-mismatch)
+                    nil)))))))))))))
+
+(defn w5-c18-evidence-expected-checker [evidence-id]
+  (if (= evidence-id "evidence:reader:verifier") :checker/reader
+    (if (= evidence-id "evidence:analyzer:verifier") :checker/analyzer
+      (if (= evidence-id "evidence:analyzer:golden") :checker/golden
+        (if (= evidence-id "evidence:optimizer:translation") :checker/mir
+          (if (= evidence-id "evidence:optimizer:property") :checker/property
+            (if (= evidence-id "evidence:lowerer:certificate")
+              :checker/certificate
+              (if (= evidence-id "evidence:lowerer:translation")
+                :checker/backend
+                (if (= evidence-id "evidence:lowerer:conformance")
+                  :checker/conformance nil)))))))))
+
+(defn w5-c18-evidence-expected-artifact [record pass entry]
+  (let [kind (get entry :kind)
+        validation
+        (w5-c18-validation-by-pass
+         (get record :translation-validations) (get pass :pass-id) 0)
+        proof
+        (w5-c18-proof-by-pass
+         (get record :proofs) (get pass :pass-id) 0)]
+    (if (= kind :translation-validation)
+      (get validation :validation-id)
+      (if (= kind :property-test)
+        (get proof :proof-id)
+        (if (= kind :checked-certificate)
+          (get proof :certificate-id)
+          (get pass :output-ir))))))
+
+(defn w5-c18-evidence-kinds [pass-id evidence index result]
+  (if (= index (count evidence))
+    result
+    (let [entry (get evidence index)]
+      (w5-c18-evidence-kinds
+       pass-id evidence (+ index 1)
+       (if (= pass-id (get entry :pass-id))
+         (conj result (get entry :kind))
+         result)))))
+
+(defn w5-c18-evidence-entry-error [record pass entry]
+  (if (map? entry)
+    (if (w5-c18-fields-present?
+         entry [:evidence-id :kind :claim :pass-id :stage
+                :pass-version :artifact-id :profile :target :inputs :assumptions
+                :checker :result :freshness :provenance :source-span
+                :hash-verification :cryptographic-hash-verified?])
+      (if (= (get pass :pass-id) (get entry :pass-id))
+        (if (= w5-c18-candidate-target (get entry :target))
+          (if (= (get pass :pass-version) (get entry :pass-version))
+            (if (= (get pass :stage) (get entry :stage))
+            (if (= :pass-correctness (get entry :claim))
+            (if (contains? (get pass :affected-profiles)
+                           (get entry :profile))
+            (if (contains? (get record :profiles) (get entry :profile))
+              (if (w5-c18-target-valid? (get entry :target-scope))
+              (if (= [:deterministic-inputs :path-neutral-identity]
+                     (get entry :assumptions))
+              (if (= (get (get record :provenance) :source-id)
+                     (get (get entry :provenance) :source-id))
+                (if (= (get (get record :provenance) :actual-source-path)
+                       (get (get entry :provenance) :actual-source-path))
+                  (if (contains? (get pass :minimum-evidence) (get entry :kind))
+          (if (not (= [(get pass :input-ir) (get pass :output-ir)]
+                      (get entry :inputs)))
+            (w5-c18-diagnostic
+             "C18-EVIDENCE" record pass :evidence-pass-input-output-mismatch)
+          (if (not (= (w5-c18-evidence-expected-artifact record pass entry)
+                      (get entry :artifact-id)))
+            (w5-c18-diagnostic
+             "C18-EVIDENCE" record pass :evidence-owner-artifact-mismatch)
+          (if (not (= (w5-c18-evidence-expected-checker
+                       (get entry :evidence-id))
+                      (get entry :checker)))
+            (w5-c18-diagnostic
+             "C18-EVIDENCE" record pass :evidence-checker-mismatch)
+          (if (not (= :unverified (get entry :hash-verification)))
+            (w5-c18-diagnostic
+             "C18-EVIDENCE" record pass :evidence-hash-status-mismatch)
+          (if (not (= false (get entry :cryptographic-hash-verified?)))
+            (w5-c18-diagnostic
+             "C18-EVIDENCE" record pass :evidence-cryptographic-claim-rejected)
+          (if (= :accepted (get entry :result))
+            (if (= :fresh (get entry :freshness))
+              (if (vector? (get entry :inputs))
+                (if (> (count (get entry :inputs)) 0)
+                  (if (w5-c18-string? (get entry :artifact-id))
+                    (if (keyword? (get entry :checker))
+                      (if (w5-c18-provenance-valid?
+                           (get entry :provenance))
+                        (if (w5-c18-source-span-valid?
+                             (get entry :source-span))
+                          (if (= (get (get entry :source-span) :source-id)
+                                 (get (get entry :provenance) :source-id))
+                            nil
+                            (w5-c18-diagnostic
+                             "C18-EVIDENCE" record pass
+                             :evidence-span-provenance-mismatch))
+                          (w5-c18-diagnostic
+                           "C18-EVIDENCE" record pass :source-span-required))
+                        (w5-c18-diagnostic
+                         "C18-EVIDENCE" record pass :provenance-required))
+                      (w5-c18-diagnostic
+                       "C18-EVIDENCE" record pass :checker-required))
+                    (w5-c18-diagnostic
+                     "C18-EVIDENCE" record pass :content-addressed-artifact-required))
+                  (w5-c18-diagnostic
+                   "C18-EVIDENCE" record pass :content-addressed-input-required))
+                (w5-c18-diagnostic
+                 "C18-EVIDENCE" record pass :input-vector-required))
+              (w5-c18-diagnostic
+               "C18-EVIDENCE" record pass :stale-evidence))
+            (w5-c18-diagnostic
+             "C18-EVIDENCE" record pass :evidence-not-accepted)))))))
+              (w5-c18-diagnostic
+               "C18-EVIDENCE" record pass :evidence-kind-not-required-by-risk))
+                  (w5-c18-diagnostic
+                   "C18-EVIDENCE" record pass :evidence-provenance-path-mismatch))
+                (w5-c18-diagnostic
+                 "C18-EVIDENCE" record pass :evidence-provenance-source-mismatch))
+              (w5-c18-diagnostic
+               "C18-EVIDENCE" record pass :evidence-assumptions-mismatch))
+              (w5-c18-diagnostic
+               "C18-EVIDENCE" record pass :evidence-target-scope-mismatch))
+              (w5-c18-diagnostic
+               "C18-EVIDENCE" record pass :evidence-profile-mismatch))
+              (w5-c18-diagnostic
+               "C18-EVIDENCE" record pass :evidence-pass-profile-mismatch))
+              (w5-c18-diagnostic
+               "C18-EVIDENCE" record pass :evidence-claim-mismatch))
+              (w5-c18-diagnostic
+               "C18-EVIDENCE" record pass :evidence-stage-mismatch))
+            (w5-c18-diagnostic
+             "C18-EVIDENCE" record pass :evidence-pass-version-mismatch))
+          (w5-c18-diagnostic
+           "C18-EVIDENCE" record pass :candidate-target-required))
+        (w5-c18-diagnostic
+         "C18-EVIDENCE" record pass :evidence-pass-mismatch))
+      (w5-c18-diagnostic "C18-EVIDENCE" record pass :evidence-fields-required))
+    (w5-c18-diagnostic "C18-EVIDENCE" record pass :evidence-map-required)))
+
+(defn w5-c18-evidence-entry-errors [record pass evidence index]
+  (if (= index (count evidence))
+    nil
+    (let [entry (get evidence index)
+          error
+          (if (= (get pass :pass-id) (get entry :pass-id))
+            (let [owner-error
+                  (w5-c18-evidence-semantic-owner-error record pass entry)]
+              (if (w5-c18-present? owner-error)
+                owner-error
+                (w5-c18-evidence-entry-error record pass entry)))
+            nil)]
+      (if (w5-c18-present? error)
+        error
+        (w5-c18-evidence-entry-errors
+         record pass evidence (+ index 1))))))
+
+(defn w5-c18-pass-evidence-error [record pass evidence]
+  (let [entry-error
+        (w5-c18-evidence-entry-errors record pass evidence 0)
+        available
+        (w5-c18-evidence-kinds (get pass :pass-id) evidence 0 #{})]
+    (if (w5-c18-present? entry-error)
+      entry-error
+      (if (w5-c18-subset? (get pass :minimum-evidence) available)
+        nil
+        (w5-c18-diagnostic
+         "C18-EVIDENCE" record
+         (assoc pass :available-evidence available)
+         :required-evidence-missing)))))
+
+(defn w5-c18-evidence-errors [record passes evidence index]
+  (if (= index (count passes))
+    nil
+    (let [error
+          (w5-c18-pass-evidence-error
+           record (get passes index) evidence)]
+      (if (w5-c18-present? error)
+        error
+        (w5-c18-evidence-errors
+         record passes evidence (+ index 1))))))
+
+(defn w5-c18-translation-entry-error [record entry]
+  (if (map? entry)
+    (if (w5-c18-fields-present?
+         entry [:validation-id :pass-id :pass-version
+                :kind :checker
+                :input-artifact-id :output-artifact-id
+                :changed-functions :properties :method :proofs
+                :certificates :fixtures :counterexamples :result
+                :diagnostics :source-map :source-span
+                :input-content-hash :output-content-hash
+                :hash-verification :cryptographic-hash-verified?])
+      (if (w5-c18-string? (get entry :input-artifact-id))
+        (if (w5-c18-string? (get entry :output-artifact-id))
+          (if (w5-c18-string? (get entry :input-content-hash))
+            (if (w5-c18-string? (get entry :output-content-hash))
+              (if (not (= :unverified (get entry :hash-verification)))
+                (w5-c18-diagnostic
+                 "C18-VALIDATION" record entry :validation-hash-status-mismatch)
+              (if (not (= false
+                          (get entry :cryptographic-hash-verified?)))
+                (w5-c18-diagnostic
+                 "C18-VALIDATION" record entry
+                 :validation-cryptographic-claim-rejected)
+              (if (= :accepted (get entry :result))
+                (if (vector? (get entry :changed-functions))
+                  (if (set? (get entry :properties))
+                    (if (keyword? (get entry :method))
+                      (if (vector? (get entry :fixtures))
+                        (if (map? (get entry :source-map))
+                          (if (w5-c18-source-span-valid?
+                               (get entry :source-span))
+                            nil
+                            (w5-c18-diagnostic
+                             "C18-VALIDATION" record entry
+                             :source-span-required))
+                          (w5-c18-diagnostic
+                           "C18-VALIDATION" record entry :source-map-required))
+                        (w5-c18-diagnostic
+                         "C18-VALIDATION" record entry :fixture-vector-required))
+                      (w5-c18-diagnostic
+                       "C18-VALIDATION" record entry :validation-method-required))
+                    (w5-c18-diagnostic
+                     "C18-VALIDATION" record entry :property-set-required))
+                  (w5-c18-diagnostic
+                   "C18-VALIDATION" record entry :changed-function-vector-required))
+                (w5-c18-diagnostic
+                 "C18-VALIDATION" record entry
+                 :translation-validation-rejected))))
+              (w5-c18-diagnostic
+               "C18-VALIDATION" record entry :output-content-hash-required))
+            (w5-c18-diagnostic
+             "C18-VALIDATION" record entry :input-content-hash-required))
+          (w5-c18-diagnostic
+           "C18-VALIDATION" record entry :output-artifact-required))
+        (w5-c18-diagnostic
+         "C18-VALIDATION" record entry :input-artifact-required))
+      (w5-c18-diagnostic "C18-VALIDATION" record entry :validation-fields-required))
+    (w5-c18-diagnostic "C18-VALIDATION" record entry :validation-map-required)))
+
+(defn w5-c18-translation-entry-errors [record entries index]
+  (if (= index (count entries))
+    nil
+    (let [entry (get entries index)
+          owner-error
+          (w5-c18-validation-semantic-owner-error record entry)
+          owner
+          (get w5-c18-validation-semantic-owners
+               (get entry :validation-id))
+          pass (w5-c18-pass-by-id
+                (get record :passes) (get owner :pass-id) 0)]
+      (if (w5-c18-present? owner-error)
+        owner-error
+      (if (= nil pass)
+        (w5-c18-diagnostic
+         "C18-VALIDATION" record entry :orphan-validation-pass)
+        (if (not (= (get pass :pass-version) (get entry :pass-version)))
+          (w5-c18-diagnostic
+           "C18-VALIDATION" record entry :validation-pass-version-mismatch)
+          (if (not (= (get pass :input-ir)
+                      (get entry :input-artifact-id)))
+            (w5-c18-diagnostic
+             "C18-VALIDATION" record entry :validation-input-mismatch)
+            (if (not (= (get pass :output-ir)
+                        (get entry :output-artifact-id)))
+              (w5-c18-diagnostic
+               "C18-VALIDATION" record entry :validation-output-mismatch)
+              (if (not (= (get pass :input-content-hash)
+                          (get entry :input-content-hash)))
+                (w5-c18-diagnostic
+                 "C18-VALIDATION" record entry
+                 :validation-input-content-hash-mismatch)
+              (if (not (= (get pass :output-content-hash)
+                          (get entry :output-content-hash)))
+                (w5-c18-diagnostic
+                 "C18-VALIDATION" record entry
+                 :validation-output-content-hash-mismatch)
+              (if (not (= w5-c18-candidate-target (get entry :target)))
+                (w5-c18-diagnostic
+                 "C18-VALIDATION" record entry :validation-target-mismatch)
+                (if (not (w5-c18-target-valid? (get entry :target-scope)))
+                  (w5-c18-diagnostic
+                   "C18-VALIDATION" record entry
+                   :validation-target-scope-mismatch)
+                (if (not (vector? (get entry :proofs)))
+                  (w5-c18-diagnostic
+                   "C18-VALIDATION" record entry :validation-proof-vector-required)
+                  (if (not (vector? (get entry :certificates)))
+                    (w5-c18-diagnostic
+                     "C18-VALIDATION" record entry
+                     :validation-certificate-vector-required)
+                    (if (not (w5-c18-validation-proof-refs-valid?
+                              record entry (get entry :proofs) 0))
+                      (w5-c18-diagnostic
+                       "C18-VALIDATION" record entry
+                       :validation-proof-reference-mismatch)
+                      (if (not (w5-c18-validation-certificate-refs-valid?
+                                record entry (get entry :certificates) 0))
+                        (w5-c18-diagnostic
+                         "C18-VALIDATION" record entry
+                         :validation-certificate-reference-mismatch)
+                        (let [error
+                              (w5-c18-translation-entry-error record entry)]
+                          (if (w5-c18-present? error)
+                            error
+                            (w5-c18-translation-entry-errors
+                             record entries (+ index 1))))))))))))))))))))
+
+(defn w5-c18-has-accepted-translation? [pass entries index]
+  (if (= index (count entries))
+    false
+    (let [entry (get entries index)]
+      (if (= (get pass :pass-id) (get entry :pass-id))
+        (if (= :accepted (get entry :result))
+          true
+          (w5-c18-has-accepted-translation? pass entries (+ index 1)))
+        (w5-c18-has-accepted-translation? pass entries (+ index 1))))))
+
+(defn w5-c18-translation-required? [pass]
+  (if (= :high (get pass :risk))
+    true
+    (if (= :critical (get pass :risk)) true false)))
+
+(defn w5-c18-translation-errors [record passes entries index]
+  (if (= index (count passes))
+    nil
+    (let [pass (get passes index)
+          entry-error (w5-c18-translation-entry-errors record entries 0)]
+      (if (w5-c18-present? entry-error)
+        entry-error
+        (if (w5-c18-translation-required? pass)
+          (if (w5-c18-has-accepted-translation? pass entries 0)
+            (w5-c18-translation-errors
+             record passes entries (+ index 1))
+            (w5-c18-diagnostic
+             "C18-VALIDATION" record pass
+             :required-translation-validation-missing))
+          (w5-c18-translation-errors
+           record passes entries (+ index 1)))))))
+
+(defn w5-c18-proof-entry-error [record entry]
+  (if (map? entry)
+    (if (w5-c18-fields-present?
+         entry [:proof-id :certificate-id :pass-id :pass-version
+                :kind :certificate-kind :certificate-checker
+                :input-artifact-id :output-artifact-id
+                :source-content-hash :certificate-content-hash
+                :checker :result :freshness :fresh? :source-span
+                :provenance :hash-verification
+                :cryptographic-hash-verified?])
+      (if (not (= :unverified (get entry :hash-verification)))
+        (w5-c18-diagnostic
+         "C18-PROOF" record entry :proof-hash-status-mismatch)
+      (if (not (= false (get entry :cryptographic-hash-verified?)))
+        (w5-c18-diagnostic
+         "C18-PROOF" record entry :proof-cryptographic-claim-rejected)
+      (if (= :accepted (get entry :result))
+        (if (= :fresh (get entry :freshness))
+          (if (= true (get entry :fresh?))
+            (if (w5-c18-string? (get entry :source-content-hash))
+              (if (w5-c18-string?
+                   (get entry :certificate-content-hash))
+                (if (keyword? (get entry :checker))
+                  (if (w5-c18-source-span-valid?
+                       (get entry :source-span))
+                    (if (w5-c18-provenance-valid?
+                         (get entry :provenance))
+                      nil
+                      (w5-c18-diagnostic
+                       "C18-PROOF" record entry :proof-provenance-required))
+                    (w5-c18-diagnostic
+                     "C18-PROOF" record entry :proof-source-span-required))
+                  (w5-c18-diagnostic
+                   "C18-PROOF" record entry :proof-checker-required))
+                (w5-c18-diagnostic
+                 "C18-PROOF" record entry :certificate-content-hash-required))
+              (w5-c18-diagnostic
+               "C18-PROOF" record entry :proof-source-content-hash-required))
+            (w5-c18-diagnostic "C18-PROOF" record entry :proof-freshness-flag-required))
+          (w5-c18-diagnostic "C18-PROOF" record entry :stale-proof-or-certificate))
+        (w5-c18-diagnostic "C18-PROOF" record entry :proof-not-accepted)))
+      (w5-c18-diagnostic "C18-PROOF" record entry :proof-fields-required))
+    (w5-c18-diagnostic "C18-PROOF" record entry :proof-map-required))))
+
+(defn w5-c18-proof-entry-errors [record entries index]
+  (if (= index (count entries))
+    nil
+    (let [entry (get entries index)
+          owner-error (w5-c18-proof-semantic-owner-error record entry)
+          owner (get w5-c18-proof-semantic-owners (get entry :proof-id))
+          pass (w5-c18-pass-by-id
+                (get record :passes) (get owner :pass-id) 0)]
+      (if (w5-c18-present? owner-error)
+        owner-error
+      (if (= nil pass)
+        (w5-c18-diagnostic "C18-PROOF" record entry :orphan-proof-pass)
+        (if (not (= (get pass :pass-version) (get entry :pass-version)))
+          (w5-c18-diagnostic
+           "C18-PROOF" record entry :proof-pass-version-mismatch)
+          (if (not (= (get pass :input-ir)
+                      (get entry :input-artifact-id)))
+            (w5-c18-diagnostic
+             "C18-PROOF" record entry :proof-input-mismatch)
+            (if (not (= (get pass :output-ir)
+                        (get entry :output-artifact-id)))
+              (w5-c18-diagnostic
+               "C18-PROOF" record entry :proof-output-mismatch)
+              (if (not (= (get pass :proof-content-hash)
+                          (get entry :source-content-hash)))
+                (w5-c18-diagnostic
+                 "C18-PROOF" record entry :proof-source-content-hash-mismatch)
+              (if (not (= (get pass :certificate-content-hash)
+                          (get entry :certificate-content-hash)))
+                (w5-c18-diagnostic
+                 "C18-PROOF" record entry
+                 :proof-certificate-content-hash-mismatch)
+              (if (not (= w5-c18-candidate-target (get entry :target)))
+                (w5-c18-diagnostic
+                 "C18-PROOF" record entry :proof-target-mismatch)
+                (if (not (w5-c18-target-valid? (get entry :target-scope)))
+                  (w5-c18-diagnostic
+                   "C18-PROOF" record entry :proof-target-scope-mismatch)
+                (let [error (w5-c18-proof-entry-error record entry)]
+                  (if (w5-c18-present? error)
+                    error
+                    (w5-c18-proof-entry-errors
+                     record entries (+ index 1))))))))))))))))
+
+(defn w5-c18-has-fresh-proof? [pass entries index]
+  (if (= index (count entries))
+    false
+    (let [entry (get entries index)]
+      (if (= (get pass :pass-id) (get entry :pass-id))
+        (if (= :fresh (get entry :freshness))
+          true
+          (w5-c18-has-fresh-proof? pass entries (+ index 1)))
+        (w5-c18-has-fresh-proof? pass entries (+ index 1))))))
+
+(defn w5-c18-proof-required? [pass]
+  (= :critical (get pass :risk)))
+
+(defn w5-c18-proof-errors [record passes entries index]
+  (if (= index (count passes))
+    nil
+    (let [pass (get passes index)
+          entry-error (w5-c18-proof-entry-errors record entries 0)]
+      (if (w5-c18-present? entry-error)
+        entry-error
+        (if (w5-c18-proof-required? pass)
+          (if (w5-c18-has-fresh-proof? pass entries 0)
+            (w5-c18-proof-errors record passes entries (+ index 1))
+            (w5-c18-diagnostic
+             "C18-PROOF" record pass :fresh-proof-required))
+          (w5-c18-proof-errors record passes entries (+ index 1)))))))
+
+(defn w5-c18-build-counterexample [counterexample]
+  (if (map? counterexample)
+    (if (w5-c18-fields-present?
+         counterexample [:counterexample-id :source-fixture
+                         :input-artifact-id :output-artifact-id
+                         :violated-property :pass-id :pass-version
+                         :diagnostic-stream :minimized-reproducer
+                         :affected-profiles :affected-targets
+                         :regression-fixture :provenance :source-span])
+      (if (keyword? (get counterexample :source-fixture))
+        (if (w5-c18-string? (get counterexample :input-artifact-id))
+          (if (w5-c18-string? (get counterexample :output-artifact-id))
+            (if (vector? (get counterexample :diagnostic-stream))
+              (if (> (count (get counterexample :diagnostic-stream)) 0)
+                (if (keyword? (get counterexample :minimized-reproducer))
+                  (if (keyword? (get counterexample :regression-fixture))
+                    (if (set? (get counterexample :affected-profiles))
+                      (if (set? (get counterexample :affected-targets))
+                        (if (w5-c18-provenance-valid?
+                             (get counterexample :provenance))
+                          (if (w5-c18-source-span-valid?
+                               (get counterexample :source-span))
+                            {:status :accepted
+                             :counterexample
+                             {:artifact :gravity/w5-c18-counterexample
+                              :counterexample-id
+                              (get counterexample :counterexample-id)
+                              :source-fixture
+                              (get counterexample :source-fixture)
+                              :input-artifact-id
+                              (get counterexample :input-artifact-id)
+                              :output-artifact-id
+                              (get counterexample :output-artifact-id)
+                              :violated-property
+                              (get counterexample :violated-property)
+                              :pass-id (get counterexample :pass-id)
+                              :pass-version (get counterexample :pass-version)
+                              :diagnostic-stream
+                              (get counterexample :diagnostic-stream)
+                              :minimized-reproducer
+                              (get counterexample :minimized-reproducer)
+                              :affected-profiles
+                              (get counterexample :affected-profiles)
+                              :affected-targets
+                              (get counterexample :affected-targets)
+                              :regression-fixture
+                              (get counterexample :regression-fixture)
+                              :provenance (get counterexample :provenance)
+                              :source-span (get counterexample :source-span)
+                              :identity-input
+                              {:counterexample-id
+                               (get counterexample :counterexample-id)
+                               :source-fixture
+                               (get counterexample :source-fixture)
+                               :input-artifact-id
+                               (get counterexample :input-artifact-id)
+                               :output-artifact-id
+                               (get counterexample :output-artifact-id)
+                               :violated-property
+                               (get counterexample :violated-property)
+                               :pass-id (get counterexample :pass-id)
+                               :pass-version (get counterexample :pass-version)}}
+                             :identity-input
+                             {:counterexample-id
+                              (get counterexample :counterexample-id)
+                              :source-fixture
+                              (get counterexample :source-fixture)
+                              :input-artifact-id
+                              (get counterexample :input-artifact-id)
+                              :output-artifact-id
+                              (get counterexample :output-artifact-id)
+                              :violated-property
+                              (get counterexample :violated-property)
+                              :pass-id (get counterexample :pass-id)
+                              :pass-version (get counterexample :pass-version)}
+                             :provenance (get counterexample :provenance)}
+                            {:status :rejected
+                             :diagnostic-id "C18-COUNTEREXAMPLE"
+                             :reason :source-span-required})
+                          {:status :rejected
+                           :diagnostic-id "C18-COUNTEREXAMPLE"
+                           :reason :provenance-required})
+                        {:status :rejected
+                         :diagnostic-id "C18-COUNTEREXAMPLE"
+                         :reason :affected-target-set-required})
+                      {:status :rejected
+                       :diagnostic-id "C18-COUNTEREXAMPLE"
+                       :reason :affected-profile-set-required})
+                    {:status :rejected
+                     :diagnostic-id "C18-COUNTEREXAMPLE"
+                     :reason :regression-fixture-required})
+                  {:status :rejected
+                   :diagnostic-id "C18-COUNTEREXAMPLE"
+                   :reason :minimized-reproducer-required})
+                {:status :rejected
+                 :diagnostic-id "C18-COUNTEREXAMPLE"
+                 :reason :diagnostic-stream-required})
+              {:status :rejected
+               :diagnostic-id "C18-COUNTEREXAMPLE"
+               :reason :diagnostic-vector-required})
+            {:status :rejected
+             :diagnostic-id "C18-COUNTEREXAMPLE"
+             :reason :output-artifact-required})
+          {:status :rejected
+           :diagnostic-id "C18-COUNTEREXAMPLE"
+           :reason :input-artifact-required})
+        {:status :rejected
+         :diagnostic-id "C18-COUNTEREXAMPLE"
+         :reason :source-fixture-required})
+      {:status :rejected
+       :diagnostic-id "C18-COUNTEREXAMPLE"
+       :reason :counterexample-fields-required})
+    {:status :rejected
+     :diagnostic-id "C18-COUNTEREXAMPLE"
+     :reason :counterexample-map-required}))
+
+(defn w5-c18-counterexample-error [record entries index]
+  (if (= index (count entries))
+    nil
+    (let [entry (get entries index)
+          result (w5-c18-build-counterexample entry)]
+      (if (= :accepted (get result :status))
+        (w5-c18-counterexample-error record entries (+ index 1))
+        (w5-c18-diagnostic
+         "C18-COUNTEREXAMPLE" record entry (get result :reason))))))
+
+(defn w5-c18-plugin-entry-error [record entry]
+  (if (map? entry)
+    (if (w5-c18-fields-present?
+         entry [:plugin-id :package :pass-id :pass-version
+                :contract :sandbox-policy :capabilities
+                :ambient-authority :risk :required-evidence
+                :available-evidence :signature :trust-report-entry
+                :diagnostics :source-span])
+      (if (keyword? (get entry :plugin-id))
+        (if (w5-c18-string? (get entry :package))
+          (if (map? (get entry :contract))
+            (if (map? (get entry :sandbox-policy))
+              (if (set? (get entry :capabilities))
+                (if (set? (get entry :ambient-authority))
+                  (if (= 0 (count (get entry :ambient-authority)))
+                    (if (contains? (get (w5-c18-policy) :risk-levels)
+                                   (get entry :risk))
+                      (if (w5-c18-subset?
+                           (get entry :required-evidence)
+                           (get entry :available-evidence))
+                        (if (= :verified
+                               (get (get entry :signature) :status))
+                          (if (w5-c18-present?
+                               (get entry :trust-report-entry))
+                            (if (w5-c18-source-span-valid?
+                                 (get entry :source-span))
+                              nil
+                              (w5-c18-diagnostic
+                               "C18-PLUGIN" record entry
+                               :source-span-required))
+                            (w5-c18-diagnostic
+                             "C18-PLUGIN" record entry
+                             :trust-report-entry-required))
+                          (w5-c18-diagnostic
+                           "C18-PLUGIN" record entry
+                           :signature-verification-required))
+                        (w5-c18-diagnostic
+                         "C18-PLUGIN" record entry
+                         :plugin-evidence-below-risk))
+                      (w5-c18-diagnostic
+                       "C18-PLUGIN" record entry :plugin-risk-required))
+                    (w5-c18-diagnostic
+                     "C18-PLUGIN" record entry :ambient-authority-rejected))
+                  (w5-c18-diagnostic
+                   "C18-PLUGIN" record entry :ambient-authority-set-required))
+                (w5-c18-diagnostic
+                 "C18-PLUGIN" record entry :capability-set-required))
+              (w5-c18-diagnostic
+               "C18-PLUGIN" record entry :sandbox-policy-required))
+            (w5-c18-diagnostic
+             "C18-PLUGIN" record entry :pass-contract-required))
+          (w5-c18-diagnostic "C18-PLUGIN" record entry :package-required))
+        (w5-c18-diagnostic "C18-PLUGIN" record entry :plugin-id-required))
+      (w5-c18-diagnostic "C18-PLUGIN" record entry :plugin-fields-required))
+    (w5-c18-diagnostic "C18-PLUGIN" record entry :plugin-map-required)))
+
+(defn w5-c18-plugin-errors [record entries index]
+  (if (= index (count entries))
+    nil
+    (let [error (w5-c18-plugin-entry-error record (get entries index))]
+      (if (w5-c18-present? error)
+        error
+        (w5-c18-plugin-errors record entries (+ index 1))))))
+
+(defn w5-c18-backend-artifact-error [record backend artifact]
+  (if (map? artifact)
+    (if (w5-c18-fields-present?
+         artifact [:artifact-id :behavior-id :type-facts
+                   :effect-facts :profile :safety :provenance])
+      (if (= (get (get backend :source-intent) :intent-id)
+             (get artifact :behavior-id))
+        (if (set? (get artifact :type-facts))
+          (if (set? (get artifact :effect-facts))
+            (if (map? (get artifact :safety))
+              (if (w5-c18-provenance-valid?
+                   (get artifact :provenance))
+                nil
+                (w5-c18-diagnostic
+                 "C18-BACKEND" record backend
+                 :artifact-provenance-required))
+              (w5-c18-diagnostic
+               "C18-BACKEND" record backend :artifact-safety-required))
+            (w5-c18-diagnostic
+             "C18-BACKEND" record backend :artifact-effect-facts-required))
+          (w5-c18-diagnostic
+           "C18-BACKEND" record backend :artifact-type-facts-required))
+        (w5-c18-diagnostic
+         "C18-BACKEND" record backend :artifact-behavior-mismatch))
+      (w5-c18-diagnostic
+       "C18-BACKEND" record backend :emitted-artifact-fields-required))
+    (w5-c18-diagnostic "C18-BACKEND" record backend :emitted-artifact-map-required)))
+
+(defn w5-c18-backend-artifact-errors [record backend entries index]
+  (if (= index (count entries))
+    nil
+    (let [error
+          (w5-c18-backend-artifact-error record backend (get entries index))]
+      (if (w5-c18-present? error)
+        error
+        (w5-c18-backend-artifact-errors
+         record backend entries (+ index 1))))))
+
+(defn w5-c18-backend-entry-error [record entry]
+  (if (map? entry)
+    (if (w5-c18-fields-present?
+         entry [:backend :target :profile :lowering-pass
+                :source-intent :core-intent :mir-intent
+                :emitted-artifacts :conformance-suite
+                :differential-results :unsupported-features
+                :diagnostics :result :source-span])
+      (if (map? (get entry :source-intent))
+        (if (= (get (get entry :source-intent) :intent-id)
+               (get (get entry :core-intent) :intent-id))
+          (if (= (get (get entry :source-intent) :intent-id)
+                 (get (get entry :mir-intent) :intent-id))
+            (if (vector? (get entry :emitted-artifacts))
+              (if (> (count (get entry :emitted-artifacts)) 0)
+                (let [artifact-error
+                      (w5-c18-backend-artifact-errors
+                       record entry (get entry :emitted-artifacts) 0)]
+                  (if (w5-c18-present? artifact-error)
+                    artifact-error
+                    (if (vector? (get entry :conformance-suite))
+                      (if (> (count (get entry :conformance-suite)) 0)
+                        (if (vector? (get entry :differential-results))
+                          (if (> (count (get entry :differential-results)) 0)
+                            (if (= 0 (count (get entry :unsupported-features)))
+                              (if (= :accepted (get entry :result))
+                                (if (w5-c18-source-span-valid?
+                                     (get entry :source-span))
+                                  nil
+                                  (w5-c18-diagnostic
+                                   "C18-BACKEND" record entry
+                                   :source-span-required))
+                                (w5-c18-diagnostic
+                                 "C18-BACKEND" record entry
+                                 :backend-conformance-rejected))
+                              (w5-c18-diagnostic
+                               "C18-BACKEND" record entry
+                               :unsupported-feature-requires-diagnostic))
+                            (w5-c18-diagnostic
+                             "C18-BACKEND" record entry
+                             :differential-result-required))
+                          (w5-c18-diagnostic
+                           "C18-BACKEND" record entry
+                           :differential-result-vector-required))
+                        (w5-c18-diagnostic
+                         "C18-BACKEND" record entry
+                         :conformance-suite-required))
+                      (w5-c18-diagnostic
+                       "C18-BACKEND" record entry
+                       :conformance-suite-vector-required))))
+                (w5-c18-diagnostic
+                 "C18-BACKEND" record entry
+                 :emitted-artifact-required))
+              (w5-c18-diagnostic
+               "C18-BACKEND" record entry
+               :emitted-artifact-vector-required))
+            (w5-c18-diagnostic
+             "C18-BACKEND" record entry :mir-intent-mismatch))
+          (w5-c18-diagnostic
+           "C18-BACKEND" record entry :core-intent-mismatch))
+        (w5-c18-diagnostic
+         "C18-BACKEND" record entry :source-intent-required))
+      (w5-c18-diagnostic "C18-BACKEND" record entry :backend-fields-required))
+    (w5-c18-diagnostic "C18-BACKEND" record entry :backend-map-required)))
+
+(defn w5-c18-backend-errors [record entries index]
+  (if (= index (count entries))
+    nil
+    (let [entry (get entries index)
+          pass (w5-c18-pass-by-id
+                (get record :passes) (get entry :lowering-pass) 0)]
+      (if (= nil pass)
+        (w5-c18-diagnostic "C18-BACKEND" record entry
+                           :unknown-lowering-pass)
+        (if (not (= :pass/target-lowering (get entry :lowering-pass)))
+          (w5-c18-diagnostic "C18-BACKEND" record entry
+                             :lowering-pass-mismatch)
+          (if (not (= w5-c18-candidate-target (get entry :target)))
+            (w5-c18-diagnostic "C18-BACKEND" record entry
+                               :backend-target-mismatch)
+            (if (not (= w5-c18-candidate-target
+                        (get entry :candidate-target)))
+              (w5-c18-diagnostic "C18-BACKEND" record entry
+                                 :backend-candidate-target-mismatch)
+              (if (not (= :native (get entry :profile)))
+                (w5-c18-diagnostic "C18-BACKEND" record entry
+                                   :backend-profile-mismatch)
+                (if (not (= w5-c18-candidate-platform
+                            (get entry :candidate-platform)))
+                  (w5-c18-diagnostic "C18-BACKEND" record entry
+                                     :backend-platform-mismatch)
+                  (if (not (w5-c18-target-valid? (get entry :target-scope)))
+                    (w5-c18-diagnostic "C18-BACKEND" record entry
+                                       :backend-target-scope-mismatch)
+                    (if (not (= 1 (count (get entry :emitted-artifacts))))
+                      (w5-c18-diagnostic "C18-BACKEND" record entry
+                                         :emitted-artifact-cardinality-mismatch)
+                    (if (not (= [(get pass :output-ir)]
+                                (w5-c18-entry-id-vector
+                                 (get entry :emitted-artifacts)
+                                 :artifact-id 0 [])))
+                      (w5-c18-diagnostic "C18-BACKEND" record entry
+                                         :emitted-artifact-identity-mismatch)
+                    (if (not (= (get entry :target)
+                                (get (get (get entry :emitted-artifacts) 0)
+                                     :target)))
+                      (w5-c18-diagnostic "C18-BACKEND" record entry
+                                         :artifact-target-mismatch)
+                    (if (not (= (get entry :profile)
+                                (get (get (get entry :emitted-artifacts) 0)
+                                     :profile)))
+                      (w5-c18-diagnostic "C18-BACKEND" record entry
+                                         :artifact-profile-mismatch)
+                    (if (not (= w5-c18-candidate-platform
+                                (get (get (get entry :emitted-artifacts) 0)
+                                     :candidate-platform)))
+                      (w5-c18-diagnostic "C18-BACKEND" record entry
+                                         :artifact-platform-mismatch)
+                    (if (not (w5-c18-target-valid?
+                              (get (get (get entry :emitted-artifacts) 0)
+                                   :target-scope)))
+                      (w5-c18-diagnostic "C18-BACKEND" record entry
+                                         :artifact-target-scope-mismatch)
+                    (if (not (= (get pass :output-ir)
+                                (get (get (get entry :emitted-artifacts) 0)
+                                     :artifact-id)))
+                      (w5-c18-diagnostic "C18-BACKEND" record entry
+                                         :lowering-artifact-mismatch)
+                      (if (not (= [:fixture/backend-native-basic]
+                                  (get entry :conformance-suite)))
+                        (w5-c18-diagnostic "C18-BACKEND" record entry
+                                           :conformance-suite-mismatch)
+                        (if (not (= [{:result :accepted
+                                     :fixture :fixture/backend-native-basic
+                                     :behavior-id "intent:w5-c18-main"}]
+                                    (get entry :differential-results)))
+                          (w5-c18-diagnostic "C18-BACKEND" record entry
+                                             :differential-result-mismatch)
+                          (let [error (w5-c18-backend-entry-error record entry)]
+                            (if (w5-c18-present? error)
+                              error
+                              (w5-c18-backend-errors
+                               record entries (+ index 1)))))))))))))))))))))))
+
+(defn w5-c18-pass-identity [pass]
+  {:pass-id (get pass :pass-id)
+   :pass-version (get pass :pass-version)
+   :stage (get pass :stage)
+   :risk (get pass :risk)
+   :reason (get pass :reason)
+   :input-ir (get pass :input-ir)
+   :output-ir (get pass :output-ir)
+   :affected-profiles (get pass :affected-profiles)
+   :affected-targets (get pass :affected-targets)
+   :changed-fact-families (get pass :changed-fact-families)
+   :minimum-evidence (get pass :minimum-evidence)
+   :input-content-hash (get pass :input-content-hash)
+   :output-content-hash (get pass :output-content-hash)
+   :proof-content-hash (get pass :proof-content-hash)
+   :certificate-content-hash (get pass :certificate-content-hash)
+   :hash-verification (get pass :hash-verification)
+   :cryptographic-hash-verified?
+   (get pass :cryptographic-hash-verified?)
+   :release-gate (get pass :release-gate)})
+
+(defn w5-c18-pass-identities [passes index result]
+  (if (= index (count passes))
+    result
+    (w5-c18-pass-identities
+     passes (+ index 1)
+     (conj result (w5-c18-pass-identity (get passes index))))))
+
+(defn w5-c18-validation-identities [entries index result]
+  (if (= index (count entries))
+    result
+    (let [entry (get entries index)]
+      (w5-c18-validation-identities
+       entries (+ index 1)
+       (conj result
+             {:validation-id (get entry :validation-id)
+              :pass-id (get entry :pass-id)
+              :pass-version (get entry :pass-version)
+              :input-artifact-id (get entry :input-artifact-id)
+              :output-artifact-id (get entry :output-artifact-id)
+              :input-content-hash (get entry :input-content-hash)
+              :output-content-hash (get entry :output-content-hash)
+              :changed-functions (get entry :changed-functions)
+              :properties (get entry :properties)
+              :method (get entry :method)
+              :result (get entry :result)})))))
+
+(defn w5-c18-proof-identities [entries index result]
+  (if (= index (count entries))
+    result
+    (let [entry (get entries index)]
+      (w5-c18-proof-identities
+       entries (+ index 1)
+       (conj result
+             {:proof-id (get entry :proof-id)
+              :certificate-id (get entry :certificate-id)
+              :pass-id (get entry :pass-id)
+              :pass-version (get entry :pass-version)
+              :input-artifact-id (get entry :input-artifact-id)
+              :output-artifact-id (get entry :output-artifact-id)
+              :source-content-hash (get entry :source-content-hash)
+              :certificate-content-hash (get entry :certificate-content-hash)
+              :freshness (get entry :freshness)
+              :result (get entry :result)})))))
+
+(defn w5-c18-evidence-identities [entries index result]
+  (if (= index (count entries))
+    result
+    (let [entry (get entries index)]
+      (w5-c18-evidence-identities
+       entries (+ index 1)
+       (conj result
+             {:evidence-id (get entry :evidence-id)
+              :kind (get entry :kind)
+              :pass-id (get entry :pass-id)
+              :stage (get entry :stage)
+              :artifact-id (get entry :artifact-id)
+              :profile (get entry :profile)
+              :target (get entry :target)
+              :inputs (get entry :inputs)
+              :checker (get entry :checker)
+              :result (get entry :result)
+              :freshness (get entry :freshness)})))))
+
+(defn w5-c18-identity-input [record]
+  {:schema-version (get record :schema-version)
+   :compiler-id (get record :compiler-id)
+   :compiler-version (get record :compiler-version)
+   :pipeline-manifest-id (get record :pipeline-manifest-id)
+   :source-root-id (get record :source-root-id)
+   :profile (get record :profile)
+   :target (get record :target)
+   :stage2-target (get record :stage2-target)
+   :candidate-target w5-c18-candidate-target
+   :candidate-platform w5-c18-candidate-platform
+   :target-scope (get record :target-scope)
+   :profiles (get record :profiles)
+   :targets (get record :targets)
+   :artifact-kinds (get record :artifact-kinds)
+   :passes (w5-c18-pass-identities (get record :passes) 0 [])
+   :evidence (w5-c18-evidence-identities (get record :evidence) 0 [])
+   :translation-validations
+   (w5-c18-validation-identities
+    (get record :translation-validations) 0 [])
+   :proofs (w5-c18-proof-identities (get record :proofs) 0 [])
+   :counterexample-ids
+   (w5-c18-counterexample-ids (get record :counterexamples) 0 [])
+   :plugin-ids (w5-c18-plugin-ids (get record :plugins) 0 [])
+   :backend-targets (w5-c18-backend-targets (get record :backends) 0 [])})
+
+(defn w5-c18-counterexample-ids [entries index result]
+  (if (= index (count entries))
+    result
+    (w5-c18-counterexample-ids
+     entries (+ index 1)
+     (conj result (get (get entries index) :counterexample-id)))))
+
+(defn w5-c18-plugin-ids [entries index result]
+  (if (= index (count entries))
+    result
+    (w5-c18-plugin-ids
+     entries (+ index 1)
+     (conj result (get (get entries index) :plugin-id)))))
+
+(defn w5-c18-backend-targets [entries index result]
+  (if (= index (count entries))
+    result
+    (w5-c18-backend-targets
+     entries (+ index 1)
+     (conj result
+           [(get (get entries index) :backend)
+            (get (get entries index) :target)
+            (get (get entries index) :profile)]))))
+
+(defn w5-c18-pass-entry [record pass]
+  {:pass-id (get pass :pass-id)
+   :pass-version (get pass :pass-version)
+   :stage (get pass :stage)
+   :risk (get pass :risk)
+   :evidence
+   (w5-c18-evidence-kinds
+    (get pass :pass-id) (get record :evidence) 0 #{})
+   :required-evidence (get pass :minimum-evidence)
+   :gaps []
+   :diagnostics []})
+
+(defn w5-c18-trust-pass-entries [record passes index result]
+  (if (= index (count passes))
+    result
+    (w5-c18-trust-pass-entries
+     record passes (+ index 1)
+     (conj result (w5-c18-pass-entry record (get passes index))))))
+
+(defn w5-c18-build-trust-report [record]
+  {:artifact :gravity/w5-c18-trust-report
+   :schema-version 1
+   :compiler-id (get record :compiler-id)
+   :compiler-version (get record :compiler-version)
+   :source-root-id (get record :source-root-id)
+   :pipeline-manifest-id (get record :pipeline-manifest-id)
+   :passes
+   (w5-c18-trust-pass-entries record (get record :passes) 0 [])
+   :profiles (get record :profiles)
+   :targets (get record :targets)
+   :artifact-kinds (get record :artifact-kinds)
+   :evidence-summary
+   {:evidence-count (count (get record :evidence))
+    :translation-validation-count
+    (count (get record :translation-validations))
+    :proof-count (count (get record :proofs))
+    :counterexample-count (count (get record :counterexamples))}
+   :known-gaps (get record :known-gaps)
+   :experimental-passes (get record :experimental-passes)
+   :bootstrap-lineage (get record :bootstrap-lineage)
+   :release-decision :blocked
+   :identity-input (w5-c18-identity-input record)
+   :provenance (get record :provenance)
+   :target w5-c18-candidate-target
+   :candidate-platform w5-c18-candidate-platform
+   :target-scope (get record :target-scope)
+   :stage2-target (get record :stage2-target)
+   :candidate-target w5-c18-candidate-target
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false})
+
+(defn w5-c18-trust-report-match? [expected candidate]
+  (if (map? candidate)
+    (if (= (get expected :artifact) (get candidate :artifact))
+      (if (= (get expected :compiler-id) (get candidate :compiler-id))
+        (if (= (get expected :compiler-version)
+               (get candidate :compiler-version))
+          (if (= (get expected :source-root-id)
+                 (get candidate :source-root-id))
+            (if (= (get expected :pipeline-manifest-id)
+                   (get candidate :pipeline-manifest-id))
+              (if (= (get expected :passes) (get candidate :passes))
+                (if (= (get expected :profiles) (get candidate :profiles))
+                  (if (= (get expected :targets) (get candidate :targets))
+                    (if (= (get expected :artifact-kinds)
+                           (get candidate :artifact-kinds))
+                      (if (= (get expected :known-gaps)
+                             (get candidate :known-gaps))
+                        (if (= (get expected :bootstrap-lineage)
+                               (get candidate :bootstrap-lineage))
+                          (if (= (get expected :experimental-passes)
+                                 (get candidate :experimental-passes))
+                            (if (= (get expected :evidence-summary)
+                                   (get candidate :evidence-summary))
+                              (if (= (get expected :identity-input)
+                                     (get candidate :identity-input))
+                                (if (= (get expected :provenance)
+                                       (get candidate :provenance))
+                                  (if (= :blocked (get candidate :release-decision))
+                                    true
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c18-required-evidence [passes index result]
+  (if (= index (count passes))
+    result
+    (w5-c18-required-evidence
+     passes (+ index 1)
+     (conj result (get (get passes index) :minimum-evidence)))))
+
+(defn w5-c18-available-evidence [evidence index result]
+  (if (= index (count evidence))
+    result
+    (w5-c18-available-evidence
+     evidence (+ index 1) (conj result (get (get evidence index) :kind)))))
+
+(defn w5-c18-build-release-gate [record trust-report]
+  {:artifact :gravity/w5-c18-release-gate
+   :schema-version 1
+   :gate-id "gate:w5-c18:stage2-leaf"
+   :compiler-id (get record :compiler-id)
+   :pipeline-manifest-id (get record :pipeline-manifest-id)
+   :profiles (get record :profiles)
+   :targets (get record :targets)
+   :target w5-c18-candidate-target
+   :candidate-platform w5-c18-candidate-platform
+   :target-scope (get record :target-scope)
+   :artifact-kinds (get record :artifact-kinds)
+   :required-evidence
+   (w5-c18-required-evidence (get record :passes) 0 #{})
+   :available-evidence
+   (w5-c18-available-evidence (get record :evidence) 0 #{})
+   :critical-failures []
+   :high-risk-gaps []
+   :stale-proofs []
+   :stale-certificates []
+   :backend-conformance :accepted
+   :plugin-policy :accepted
+   :diagnostic-goldens :accepted
+   :self-hosting-comparison :pending
+   :decision :blocked
+   :release-eligible? false
+   :identity-input
+   {:gate-id "gate:w5-c18:stage2-leaf"
+    :compiler-id (get record :compiler-id)
+    :pipeline-manifest-id (get record :pipeline-manifest-id)
+    :profiles (get record :profiles)
+    :targets (get record :targets)
+    :artifact-kinds (get record :artifact-kinds)
+    :required-evidence
+    (w5-c18-required-evidence (get record :passes) 0 #{})
+    :available-evidence
+    (w5-c18-available-evidence (get record :evidence) 0 #{})
+    :decision :blocked}
+   :provenance (get record :provenance)
+   :remediation [:stage2-equivalence
+                 :replace-clojure-seed
+                 :replace-jvm-execution
+                 :independent-review]
+   :trust-report-artifact (get trust-report :artifact)
+   :authority :non-authority
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false})
+
+(defn w5-c18-release-gate-match? [expected candidate]
+  (if (map? candidate)
+    (if (= (get expected :artifact) (get candidate :artifact))
+      (if (= (get expected :gate-id) (get candidate :gate-id))
+        (if (= (get expected :compiler-id) (get candidate :compiler-id))
+          (if (= (get expected :pipeline-manifest-id)
+                 (get candidate :pipeline-manifest-id))
+            (if (= (get expected :required-evidence)
+                   (get candidate :required-evidence))
+              (if (= (get expected :available-evidence)
+                     (get candidate :available-evidence))
+              (if (= :blocked (get candidate :decision))
+                  (if (= false (get candidate :release-eligible?))
+                    (if (= :pending
+                           (get candidate :self-hosting-comparison))
+                      (if (= (get expected :artifact-kinds)
+                             (get candidate :artifact-kinds))
+                        (if (= (get expected :target)
+                               (get candidate :target))
+                          (if (= (get expected :target-scope)
+                                 (get candidate :target-scope))
+                            (if (= (get expected :trust-report-artifact)
+                                   (get candidate :trust-report-artifact))
+                              (if (= (get expected :identity-input)
+                                     (get candidate :identity-input))
+                                (if (= (get expected :provenance)
+                                       (get candidate :provenance))
+                                  true
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c18-record-target-valid? [record]
+  (if (= w5-c18-candidate-target (get record :target))
+    (if (= w5-c18-stage2-target (get record :stage2-target))
+      (if (= w5-c18-candidate-target (get record :candidate-target))
+        (if (= w5-c18-candidate-platform
+               (get record :candidate-platform))
+          (if (= w5-c18-unsupported-targets
+                 (get record :unsupported-targets))
+            (if (= w5-c18-unsupported-target-policies
+                   (get record :unsupported-target-policies))
+              (if (= false (get record :cross-target-inference?))
+                (if (= false (get record :fallback?))
+                  (w5-c18-target-valid? (get record :target-scope))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn w5-c18-record-header-error [record]
+  (if (map? record)
+    (if (= :gravity/w5-c18-verification-request (get record :artifact))
+      (if (= 1 (get record :schema-version))
+        (if (w5-c18-fields-present?
+             record [:compiler-id :compiler-version
+                     :pipeline-manifest-id :source-root-id
+                     :profile :target :stage2-target :candidate-target
+                     :candidate-platform :target-scope :unsupported-targets
+                     :unsupported-target-policies :cross-target-inference?
+                     :fallback? :profiles :targets
+                     :artifact-kinds :source-span :provenance
+                     :passes :evidence :translation-validations
+                     :proofs :counterexamples :plugins :backends
+                     :known-gaps :bootstrap-lineage])
+          (if (w5-c18-record-target-valid? record)
+            (if (set? (get record :profiles))
+            (if (set? (get record :targets))
+              (if (vector? (get record :passes))
+                (if (vector? (get record :evidence))
+                  (if (vector? (get record :translation-validations))
+                    (if (vector? (get record :proofs))
+                      (if (vector? (get record :counterexamples))
+                        (if (vector? (get record :plugins))
+                          (if (vector? (get record :backends))
+                          (if (w5-c18-record-provenance-valid? record)
+                            nil
+                            (w5-c18-diagnostic
+                             "C18-RISK" record nil
+                             :record-provenance-or-origin-invalid))
+                            (w5-c18-diagnostic
+                             "C18-RISK" record nil :backend-vector-required))
+                          (w5-c18-diagnostic
+                           "C18-RISK" record nil :plugin-vector-required))
+                        (w5-c18-diagnostic
+                         "C18-RISK" record nil :counterexample-vector-required))
+                      (w5-c18-diagnostic
+                       "C18-RISK" record nil :proof-vector-required))
+                    (w5-c18-diagnostic
+                     "C18-RISK" record nil :translation-vector-required))
+                  (w5-c18-diagnostic
+                   "C18-RISK" record nil :evidence-vector-required))
+                (w5-c18-diagnostic
+                 "C18-RISK" record nil :pass-vector-required))
+              (w5-c18-diagnostic
+               "C18-RISK" record nil :target-set-required))
+            (w5-c18-diagnostic
+             "C18-RISK" record nil :profile-set-required))
+          (w5-c18-diagnostic
+           "C18-RISK" record nil :target-scope-required))
+          (w5-c18-diagnostic
+           "C18-RISK" record nil :record-fields-required))
+        (w5-c18-diagnostic "C18-RISK" record nil :schema-version-required))
+      (w5-c18-diagnostic "C18-RISK" record nil :record-artifact-required))
+    (w5-c18-diagnostic "C18-RISK" record nil :record-map-required)))
+
+(defn w5-c18-success [record trust-report release-gate]
+  {:artifact :gravity/w5-c18-verification-record
+   :status :accepted
+   :verification-id "verification:w5-c18:stage2-leaf"
+   :identity-input (w5-c18-identity-input record)
+   :provenance (get record :provenance)
+   :source-span (get record :source-span)
+   :origin-chain (get record :origin-chain)
+   :trust-report trust-report
+   :release-gate release-gate
+   :diagnostics []
+   :residual-gaps (:residual-gaps (w5-c18-policy))
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :release? false
+   :full-language-credit? false
+   :matrix-240-credit? false
+   :independent-review? false
+   :authority :non-authority
+   :completion :incomplete})
+
+(defn w5-c18-verify [record]
+  (let [header-error (w5-c18-record-header-error record)]
+    (if (w5-c18-present? header-error)
+      (w5-c18-rejected record header-error)
+      (let [passes (get record :passes)
+            pass-risk-error (w5-c18-risk-errors record passes 0)
+            risk-error
+            (if (w5-c18-present? pass-risk-error)
+              pass-risk-error
+              (w5-c18-collection-linkage-error record))]
+        (if (w5-c18-present? risk-error)
+          (w5-c18-rejected record risk-error)
+          (let [evidence-error
+                (w5-c18-evidence-errors
+                 record passes (get record :evidence) 0)]
+            (if (w5-c18-present? evidence-error)
+              (w5-c18-rejected record evidence-error)
+              (let [translation-error
+                    (w5-c18-translation-errors
+                     record passes (get record :translation-validations) 0)]
+                (if (w5-c18-present? translation-error)
+                  (w5-c18-rejected record translation-error)
+                  (let [proof-error
+                        (w5-c18-proof-errors
+                         record passes (get record :proofs) 0)]
+                    (if (w5-c18-present? proof-error)
+                      (w5-c18-rejected record proof-error)
+                      (let [counterexample-error
+                            (w5-c18-counterexample-error
+                             record (get record :counterexamples) 0)]
+                        (if (w5-c18-present? counterexample-error)
+                          (w5-c18-rejected record counterexample-error)
+                          (let [plugin-error
+                                (w5-c18-plugin-errors
+                                 record (get record :plugins) 0)]
+                            (if (w5-c18-present? plugin-error)
+                              (w5-c18-rejected record plugin-error)
+                              (let [backend-error
+                                    (w5-c18-backend-errors
+                                     record (get record :backends) 0)]
+                                (if (w5-c18-present? backend-error)
+                                  (w5-c18-rejected record backend-error)
+                                  (let [trust-report
+                                        (w5-c18-build-trust-report record)
+                                        supplied-trust
+                                        (get record :trust-report)]
+                                    (if (w5-c18-present? supplied-trust)
+                                      (if (w5-c18-trust-report-match?
+                                           trust-report supplied-trust)
+                                        (let [release-gate
+                                              (w5-c18-build-release-gate
+                                               record trust-report)
+                                              supplied-gate
+                                              (get record :release-gate)]
+                                          (if (w5-c18-present? supplied-gate)
+                                            (if (w5-c18-release-gate-match?
+                                                 release-gate supplied-gate)
+                                              (w5-c18-success
+                                               record trust-report release-gate)
+                                              (w5-c18-rejected
+                                               record
+                                               (w5-c18-diagnostic
+                                                "C18-RELEASE-GATE" record nil
+                                                :release-gate-recomputed-mismatch)))
+                                            (w5-c18-success
+                                             record trust-report release-gate)))
+                                        (w5-c18-rejected
+                                         record
+                                         (w5-c18-diagnostic
+                                          "C18-TRUST-REPORT" record nil
+                                          :trust-report-recomputed-mismatch)))
+                                      (let [release-gate
+                                            (w5-c18-build-release-gate
+                                             record trust-report)
+                                            supplied-gate
+                                            (get record :release-gate)]
+                                        (if (w5-c18-present? supplied-gate)
+                                          (if (w5-c18-release-gate-match?
+                                               release-gate supplied-gate)
+                                            (w5-c18-success
+                                             record trust-report release-gate)
+                                            (w5-c18-rejected
+                                             record
+                                             (w5-c18-diagnostic
+                                              "C18-RELEASE-GATE" record nil
+                                              :release-gate-recomputed-mismatch)))
+                                          (w5-c18-success
+                                           record trust-report release-gate))))))))))))))))))))))
+
+(def w5-c18-accepted-result-keys
+  #{:artifact :status :verification-id :identity-input :provenance
+    :source-span :origin-chain :trust-report :release-gate :diagnostics
+    :residual-gaps :clojure-seed-boundary? :self-hosted? :release?
+    :full-language-credit? :matrix-240-credit? :independent-review?
+    :authority :completion})
+
+(def w5-c18-rejected-result-keys
+  #{:artifact :status :diagnostics :identity-input :provenance
+    :stage2-target :candidate-target :candidate-platform :target-scope
+    :trust-report :release-gate :residual-gaps :clojure-seed-boundary?
+    :self-hosted? :release? :full-language-credit? :matrix-240-credit?
+    :independent-review? :authority :completion})
+
+(defn w5-c18-result-keyset-valid? [result]
+  (if (= :accepted (get result :status))
+    (= w5-c18-accepted-result-keys (set (keys result)))
+    (if (= :rejected (get result :status))
+      (= w5-c18-rejected-result-keys (set (keys result)))
+      false)))
+
+(defn w5-c18-verify-result [record result]
+  (let [fresh (w5-c18-verify record)]
+    (if (= :accepted (get fresh :status))
+      (if (map? result)
+        (if (w5-c18-result-keyset-valid? result)
+          (if (= fresh result)
+            {:artifact :gravity/w5-c18-verification-recheck
+             :status :passed
+             :checks [:fresh-recomputation
+                      :exact-result-keyset
+                      :full-result-equality
+                      :non-authority-flags]
+             :identity-input (get fresh :identity-input)
+             :provenance (get fresh :provenance)
+             :clojure-seed-boundary? true
+             :self-hosted? false
+             :release? false
+             :authority :non-authority}
+            (w5-c18-rejected
+             record
+             (w5-c18-diagnostic
+              "C18-RELEASE-GATE" record nil
+              :verification-result-substitution)))
+          (w5-c18-rejected
+           record
+           (w5-c18-diagnostic
+            "C18-RELEASE-GATE" record nil
+            :verification-result-keyset-mismatch)))
+        (w5-c18-rejected
+         record
+         (w5-c18-diagnostic
+          "C18-RELEASE-GATE" record nil
+          :verification-result-map-required)))
+      (w5-c18-rejected
+       record
+       (w5-c18-diagnostic
+        "C18-RELEASE-GATE" record nil :fresh-verification-blocked)))))

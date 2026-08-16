@@ -1,0 +1,34 @@
+; SH-08-B48 rejection: one fixed parameter receives incompatible types.
+(ns self-hosting.sh08.function-call-type-mismatch
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh08-type-one
+             sh08-type-integer
+             sh08-type-string])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-08-B48
+    :fixture :function-call-type-mismatch
+    :required-products
+    [:function-records :call-edges :lexical-bindings]
+    :scope :first-order-fixed-arity-functions-locals-calls
+    :non-claims
+    [:recursive-inference
+     :higher-order-functions
+     :records
+     :unions
+     :protocols
+     :generics
+     :casts
+     :dynamic-boundaries]}))
+
+(defn sh08-type-one [value]
+  value)
+
+(def sh08-type-integer
+  (sh08-type-one 7))
+
+(def sh08-type-string
+  (sh08-type-one "not-an-integer"))

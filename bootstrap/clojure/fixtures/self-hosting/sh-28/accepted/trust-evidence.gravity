@@ -1,0 +1,518 @@
+(ns gravity.self-hosting.sh28.accepted.trust-evidence
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh28-trust-evidence-request
+             sh28-trust-evidence-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh28-environments [left-root right-root]
+  [{:environment-id "env:clean-a"
+    :manifest-id "sha256:environment-a"
+    :locale "C"
+    :timezone "UTC"
+    :filesystem-order :sorted
+    :timestamp-policy :fixed
+    :random-seed 28
+    :network-policy :disabled
+    :allowed-environment []
+    :actual-build-root left-root}
+   {:environment-id "env:clean-b"
+    :manifest-id "sha256:environment-b"
+    :locale "C"
+    :timezone "UTC"
+    :filesystem-order :sorted
+    :timestamp-policy :fixed
+    :random-seed 28
+    :network-policy :disabled
+    :allowed-environment []
+    :actual-build-root right-root}])
+
+(defn sh28-toolchains [left-path right-path]
+  [{:toolchain-id "toolchain:gravity-native-a"
+    :family :gravity-native
+    :version "1.0"
+    :target "aarch64-unknown-linux"
+    :content-hash "sha256:toolchain-a"
+    :identity-status :verified
+    :actual-toolchain-path left-path}
+   {:toolchain-id "toolchain:diverse-c-a"
+    :family :diverse-c
+    :version "1.0"
+    :target "aarch64-unknown-linux"
+    :content-hash "sha256:toolchain-b"
+    :identity-status :verified
+    :actual-toolchain-path right-path}])
+
+(defn sh28-lineage [root-a root-b root-c root-d]
+  [{:artifact-id "artifact:seed-descriptor"
+    :stage :seed
+    :compiler-artifact-id "anchor:historical-seed"
+    :source-graph-id "sha256:source-stage0"
+    :environment-id "env:clean-a"
+    :lock-id "lock:bootstrap"
+    :dependency-graph-id "graph:bootstrap"
+    :toolchain-id "toolchain:gravity-native-a"
+    :rebuild-parent-ids []
+    :topological-ordinal 0
+    :content-hash "sha256:stage0"
+    :actual-artifact-path root-a}
+   {:artifact-id "artifact:stage-n"
+    :stage :stage-n
+    :compiler-artifact-id "artifact:seed-descriptor"
+    :source-graph-id "sha256:source-stage-n"
+    :environment-id "env:clean-a"
+    :lock-id "lock:bootstrap"
+    :dependency-graph-id "graph:bootstrap"
+    :toolchain-id "toolchain:gravity-native-a"
+    :rebuild-parent-ids ["artifact:seed-descriptor"]
+    :topological-ordinal 1
+    :content-hash "sha256:stage-n"
+    :actual-artifact-path root-b}
+   {:artifact-id "artifact:stage-n-plus-one"
+    :stage :stage-n-plus-one
+    :compiler-artifact-id "artifact:stage-n"
+    :source-graph-id "sha256:source-stage-n-plus-one"
+    :environment-id "env:clean-b"
+    :lock-id "lock:bootstrap"
+    :dependency-graph-id "graph:bootstrap"
+    :toolchain-id "toolchain:diverse-c-a"
+    :rebuild-parent-ids ["artifact:stage-n"]
+    :topological-ordinal 2
+    :content-hash "sha256:stage-n-plus-one"
+    :actual-artifact-path root-c}
+   {:artifact-id "artifact:release-candidate"
+    :stage :release-candidate
+    :compiler-artifact-id "artifact:stage-n-plus-one"
+    :source-graph-id "sha256:release-source"
+    :environment-id "env:clean-b"
+    :lock-id "lock:bootstrap"
+    :dependency-graph-id "graph:bootstrap"
+    :toolchain-id "toolchain:diverse-c-a"
+    :rebuild-parent-ids
+    ["artifact:stage-n-plus-one" "artifact:stage-n"]
+    :topological-ordinal 3
+    :content-hash "sha256:release-content"
+    :actual-artifact-path root-d}])
+
+(defn sh28-anchors [left-location right-location]
+  [{:anchor-id "anchor:operator-a"
+    :anchor-kind :offline-root
+    :operator-id "operator:a"
+    :root-metadata-id "sha256:root-a"
+    :public-identity-id "identity:a"
+    :verification-status :descriptor-only
+    :revocation-status :current
+    :policy-id "policy:anchor-a"
+    :actual-anchor-location left-location}
+   {:anchor-id "anchor:operator-b"
+    :anchor-kind :transparency-root
+    :operator-id "operator:b"
+    :root-metadata-id "sha256:root-b"
+    :public-identity-id "identity:b"
+    :verification-status :descriptor-only
+    :revocation-status :current
+    :policy-id "policy:anchor-b"
+    :actual-anchor-location right-location}])
+
+(defn sh28-revocation [kind subject-id source-id]
+  {:subject-kind kind
+   :subject-id subject-id
+   :status :current
+   :source-id source-id
+   :checked-at-policy-id "policy:release"
+   :failure-policy :release-blocking})
+
+(defn sh28-request-with-paths
+  [release-root environment-a environment-b
+   toolchain-a toolchain-b
+   stage-a stage-b stage-c stage-d
+   build-a build-b anchor-a anchor-b]
+  {:artifact :gravity/sh28-trust-evidence-request
+   :schema-version 1
+   :release-id "gravity:sh28-candidate"
+   :root-artifact-id "artifact:release-candidate"
+   :source-graphs
+   [{:source-graph-id "sha256:source-stage0"
+     :root-content-hash "sha256:source-root-stage0"
+     :component-ids ["gravity:seed-descriptor"]
+     :component-content-hashes ["sha256:seed-source"]
+     :generator-input-ids []
+     :canonical true
+     :verification-status :descriptor-only}
+    {:source-graph-id "sha256:source-stage-n"
+     :root-content-hash "sha256:source-root-stage-n"
+     :component-ids ["gravity:compiler-stage-n"]
+     :component-content-hashes ["sha256:stage-n-source"]
+     :generator-input-ids []
+     :canonical true
+     :verification-status :descriptor-only}
+    {:source-graph-id "sha256:source-stage-n-plus-one"
+     :root-content-hash "sha256:source-root-stage-n-plus-one"
+     :component-ids ["gravity:compiler-stage-n-plus-one"]
+     :component-content-hashes ["sha256:stage-n-plus-one-source"]
+     :generator-input-ids []
+     :canonical true
+     :verification-status :descriptor-only}
+    {:source-graph-id "sha256:release-source"
+     :root-content-hash "sha256:release-source-root"
+     :component-ids ["gravity:release-compiler"]
+     :component-content-hashes ["sha256:release-compiler-source"]
+     :generator-input-ids []
+     :canonical true
+     :verification-status :descriptor-only}]
+   :dependency-graphs
+   [{:dependency-graph-id "graph:bootstrap"
+     :dependency-ids ["gravity:bootstrap-core"]
+     :dependency-content-hashes ["sha256:dependency"]
+     :dependency-provenance-ids ["provenance:dependency"]
+     :graph-content-hash "sha256:dependency-graph"
+     :topological true
+     :complete true
+     :verification-status :descriptor-only}]
+   :environments (sh28-environments environment-a environment-b)
+   :locks
+   [{:lock-id "lock:bootstrap"
+     :complete true
+     :offline true
+     :dependency-graph-id "graph:bootstrap"
+     :dependency-ids ["gravity:bootstrap-core"]
+     :dependency-content-hashes ["sha256:dependency"]
+     :content-hash "sha256:lock"}]
+   :dependencies
+   [{:dependency-id "gravity:bootstrap-core"
+     :version "1.0"
+     :content-hash "sha256:dependency"
+     :provenance-id "provenance:dependency"
+     :license-id "license:gravity"
+     :advisory-status :clear
+     :revocation-status :current}]
+   :toolchains (sh28-toolchains toolchain-a toolchain-b)
+   :build-recipes
+   [{:build-recipe-id "recipe:diverse-a"
+     :source-graph-id "sha256:release-source"
+     :lock-id "lock:bootstrap"
+     :dependency-graph-id "graph:bootstrap"
+     :compiler-artifact-id "artifact:stage-n-plus-one"
+     :toolchain-id "toolchain:gravity-native-a"
+     :environment-id "env:clean-a"
+     :target-matrix-id "target:native-aarch64"
+     :capability-inventory-id "capabilities:compiler-build"
+     :content-hash "sha256:recipe-a"
+     :verification-status :descriptor-only}
+    {:build-recipe-id "recipe:diverse-b"
+     :source-graph-id "sha256:release-source"
+     :lock-id "lock:bootstrap"
+     :dependency-graph-id "graph:bootstrap"
+     :compiler-artifact-id "artifact:stage-n-plus-one"
+     :toolchain-id "toolchain:diverse-c-a"
+     :environment-id "env:clean-b"
+     :target-matrix-id "target:native-aarch64"
+     :capability-inventory-id "capabilities:compiler-build"
+     :content-hash "sha256:recipe-b"
+     :verification-status :descriptor-only}]
+   :builders
+   [{:builder-id "builder:diverse-a"
+     :identity-id "identity:builder-a"
+     :policy-id "policy:builder"
+     :platform :isolated-native
+     :verification-status :descriptor-only
+     :revocation-status :current}
+    {:builder-id "builder:diverse-b"
+     :identity-id "identity:builder-b"
+     :policy-id "policy:builder"
+     :platform :isolated-diverse
+     :verification-status :descriptor-only
+     :revocation-status :current}]
+   :bootstrap-inputs
+   [{:input-id "anchor:historical-seed"
+     :kind :seed-compiler-descriptor
+     :content-hash "sha256:stage0"
+     :provenance-id "provenance:historical-seed"
+     :anchor-descriptor-id "anchor:operator-a"
+     :verification-status :descriptor-only
+     :revocation-status :current}]
+   :lineage (sh28-lineage stage-a stage-b stage-c stage-d)
+   :diverse-builds
+   [{:build-id "build:diverse-a"
+     :artifact-id "artifact:release-candidate"
+     :content-hash "sha256:release-content"
+     :source-graph-id "sha256:release-source"
+     :compiler-artifact-id "artifact:stage-n-plus-one"
+     :lock-id "lock:bootstrap"
+     :dependency-graph-id "graph:bootstrap"
+     :build-recipe-id "recipe:diverse-a"
+     :builder-id "builder:diverse-a"
+     :capability-inventory-id "capabilities:compiler-build"
+     :toolchain-id "toolchain:gravity-native-a"
+     :environment-id "env:clean-a"
+     :trust-anchor-id "anchor:operator-a"
+     :comparison-status :structurally-consistent
+     :independence-status :descriptor-only
+     :rebuild-report-id "report:rebuild-a"
+     :actual-build-root build-a}
+    {:build-id "build:diverse-b"
+     :artifact-id "artifact:release-candidate"
+     :content-hash "sha256:release-content"
+     :source-graph-id "sha256:release-source"
+     :compiler-artifact-id "artifact:stage-n-plus-one"
+     :lock-id "lock:bootstrap"
+     :dependency-graph-id "graph:bootstrap"
+     :build-recipe-id "recipe:diverse-b"
+     :builder-id "builder:diverse-b"
+     :capability-inventory-id "capabilities:compiler-build"
+     :toolchain-id "toolchain:diverse-c-a"
+     :environment-id "env:clean-b"
+     :trust-anchor-id "anchor:operator-b"
+     :comparison-status :structurally-consistent
+     :independence-status :descriptor-only
+     :rebuild-report-id "report:rebuild-b"
+     :actual-build-root build-b}]
+   :trust-anchors (sh28-anchors anchor-a anchor-b)
+   :evidence
+   {:sh27-equivalence-id "report:sh27-equivalence"
+    :sh27-equivalence-status :supplied-unverified
+    :rebuild-report-id "report:rebuild-set"
+    :conformance-report-id "report:conformance"
+    :provenance-attestation-id "attestation:provenance"
+    :sbom-id "sbom:release"
+    :signature-id "signature:release"
+    :unsafe-audit-index-id "unsafe:index"
+    :signature-payload-status :canonical
+    :verification-status :external-verification-pending}
+   :release-inventory
+   {:inventory-id "inventory:release"
+    :subject-artifact-id "artifact:release-candidate"
+    :subject-content-hash "sha256:release-content"
+    :artifact-manifest-id "manifest:release"
+    :source-graph-id "sha256:release-source"
+    :capability-inventory-id "capabilities:compiler-build"
+    :capability-inventory
+    [{:effect :build/read
+      :capability :compiler/source-read
+      :provider-id "provider:hermetic-source"}]
+    :generated-sources
+    [{:generated-source-id "generated:compiler-table"
+      :content-hash "sha256:generated-compiler-table"
+      :source-graph-id "sha256:release-source"
+      :generator-id "generator:compiler-table"}]
+    :binary-blobs
+    [{:binary-blob-id "blob:release-compiler"
+      :content-hash "sha256:release-content"
+      :source-id "artifact:release-candidate"
+      :policy-id "policy:release"}]}
+   :sboms
+   [{:sbom-id "sbom:release"
+     :subject-artifact-id "artifact:release-candidate"
+     :subject-content-hash "sha256:release-content"
+     :artifact-manifest-id "manifest:release"
+     :source-graph-id "sha256:release-source"
+     :dependency-graph-id "graph:bootstrap"
+     :dependency-ids ["gravity:bootstrap-core"]
+     :dependency-content-hashes ["sha256:dependency"]
+     :capability-inventory-id "capabilities:compiler-build"
+     :capability-inventory
+     [{:effect :build/read
+       :capability :compiler/source-read
+       :provider-id "provider:hermetic-source"}]
+     :unsafe-audit-ids ["audit:compiler-unsafe"]
+     :generated-sources
+     [{:generated-source-id "generated:compiler-table"
+       :content-hash "sha256:generated-compiler-table"
+       :source-graph-id "sha256:release-source"
+       :generator-id "generator:compiler-table"}]
+     :binary-blobs
+     [{:binary-blob-id "blob:release-compiler"
+       :content-hash "sha256:release-content"
+       :source-id "artifact:release-candidate"
+       :policy-id "policy:release"}]
+     :provenance-attestation-id "attestation:provenance"
+     :safety-summary-id "safety:release"
+     :canonical true
+     :completeness-status :complete
+     :verification-status :descriptor-only}]
+   :signatures
+   [{:signature-id "signature:release"
+     :subject-artifact-id "artifact:release-candidate"
+     :subject-content-hash "sha256:release-content"
+     :artifact-manifest-id "manifest:release"
+     :sbom-id "sbom:release"
+     :safety-summary-id "safety:release"
+     :build-recipe-id "recipe:diverse-a"
+     :provenance-attestation-id "attestation:provenance"
+     :signed-payload-id
+     "payload:artifact:release-candidate:sha256:release-content:manifest:release:sbom:release:safety:release:recipe:diverse-a:attestation:provenance"
+     :signer-identity-id "identity:signer"
+     :key-id "key:release"
+     :policy-id "policy:signature"
+     :root-metadata-id "sha256:root-a"
+     :payload-status :canonical
+     :content-binding-status :complete
+     :verification-status :descriptor-only
+     :revocation-status :current}]
+   :signing-policies
+   [{:policy-id "policy:signature"
+     :subject-kind :release-artifact
+     :allowed-key-ids ["key:release"]
+     :allowed-identity-ids ["identity:signer"]
+     :allowed-root-metadata-ids ["sha256:root-a"]
+     :required-payload-status :canonical
+     :failure-policy :release-blocking
+     :verification-status :descriptor-only}]
+   :attestations
+   [{:attestation-id "attestation:provenance"
+     :subject-artifact-id "artifact:release-candidate"
+     :source-graph-id "sha256:release-source"
+     :dependency-graph-id "graph:bootstrap"
+     :builder-id "builder:diverse-a"
+     :environment-id "env:clean-a"
+     :lock-id "lock:bootstrap"
+     :build-recipe-id "recipe:diverse-a"
+     :toolchain-id "toolchain:gravity-native-a"
+     :attestation-level :hermetic
+     :verification-status :descriptor-only
+     :revocation-status :current}]
+   :unsafe-audit-index
+   {:unsafe-audit-index-id "unsafe:index"
+    :audit-ids ["audit:compiler-unsafe"]
+    :evidence-ids ["test:safe-wrapper" "proof:preconditions"]
+    :canonical true
+    :status :complete
+    :verification-status :descriptor-only}
+   :revocations
+   [(sh28-revocation :compiler "artifact:seed-descriptor" "revocation:compiler")
+    (sh28-revocation :compiler "artifact:stage-n" "revocation:compiler")
+    (sh28-revocation :compiler "artifact:stage-n-plus-one" "revocation:compiler")
+    (sh28-revocation :compiler "artifact:release-candidate" "revocation:compiler")
+    (sh28-revocation :build "build:diverse-a" "revocation:build")
+    (sh28-revocation :build "build:diverse-b" "revocation:build")
+    (sh28-revocation :builder "builder:diverse-a" "revocation:builder")
+    (sh28-revocation :builder "builder:diverse-b" "revocation:builder")
+    (sh28-revocation :builder-identity "identity:builder-a" "revocation:builder")
+    (sh28-revocation :builder-identity "identity:builder-b" "revocation:builder")
+    (sh28-revocation :dependency "gravity:bootstrap-core" "revocation:dependency")
+    (sh28-revocation :signature "signature:release" "revocation:signature")
+    (sh28-revocation :toolchain "toolchain:gravity-native-a" "revocation:toolchain")
+    (sh28-revocation :toolchain "toolchain:diverse-c-a" "revocation:toolchain")
+    (sh28-revocation :environment "env:clean-a" "revocation:environment")
+    (sh28-revocation :environment "env:clean-b" "revocation:environment")
+    (sh28-revocation :lock "lock:bootstrap" "revocation:lock")
+    (sh28-revocation :trust-anchor "anchor:operator-a" "revocation:anchor")
+    (sh28-revocation :trust-anchor "anchor:operator-b" "revocation:anchor")
+    (sh28-revocation :root-metadata "sha256:root-a" "revocation:root")
+    (sh28-revocation :root-metadata "sha256:root-b" "revocation:root")
+    (sh28-revocation :signing-identity "identity:signer" "revocation:identity")
+    (sh28-revocation :signing-key "key:release" "revocation:key")
+    (sh28-revocation :bootstrap-input "anchor:historical-seed" "revocation:seed")
+    (sh28-revocation :source-graph "sha256:source-stage0" "revocation:source")
+    (sh28-revocation :source-graph "sha256:source-stage-n" "revocation:source")
+    (sh28-revocation :source-graph "sha256:source-stage-n-plus-one" "revocation:source")
+    (sh28-revocation :source-graph "sha256:release-source" "revocation:source")
+    (sh28-revocation :dependency-graph "graph:bootstrap" "revocation:graph")
+    (sh28-revocation :build-recipe "recipe:diverse-a" "revocation:recipe")
+    (sh28-revocation :build-recipe "recipe:diverse-b" "revocation:recipe")
+    (sh28-revocation :evidence "report:rebuild-a" "revocation:evidence")
+    (sh28-revocation :evidence "report:rebuild-b" "revocation:evidence")
+    (sh28-revocation :unsafe-audit "audit:compiler-unsafe" "revocation:audit")
+    (sh28-revocation :runtime-artifact "artifact:minimal-runtime" "revocation:runtime")
+    (sh28-revocation :recovery-artifact "artifact:clojure-audit-recovery" "revocation:recovery")
+    (sh28-revocation :evidence "report:sh27-equivalence" "revocation:evidence")
+    (sh28-revocation :evidence "report:rebuild-set" "revocation:evidence")
+    (sh28-revocation :evidence "report:conformance" "revocation:evidence")
+    (sh28-revocation :evidence "attestation:provenance" "revocation:evidence")
+    (sh28-revocation :evidence "sbom:release" "revocation:evidence")
+    (sh28-revocation :evidence "signature:release" "revocation:evidence")
+    (sh28-revocation :evidence "unsafe:index" "revocation:evidence")]
+   :unsafe-audits
+   [{:audit-id "audit:compiler-unsafe"
+     :unsafe-island-id "unsafe:compiler-internal"
+     :owner-id "owner:compiler"
+     :review-id "review:compiler-unsafe"
+     :review-status :accepted
+     :safe-boundary-id "boundary:compiler-public"
+     :evidence-ids ["test:safe-wrapper" "proof:preconditions"]
+     :re-review-policy :on-source-or-toolchain-change}]
+   :runtime-artifacts
+   [{:artifact-id "artifact:minimal-runtime"
+     :content-hash "sha256:minimal-runtime"
+     :source-graph-id "sha256:release-source"
+     :profile :meta
+     :target :native
+     :verification-status :descriptor-only
+     :actual-artifact-path "/checkout-a/runtime/minimal"}]
+   :recovery-artifacts
+   [{:artifact-id "artifact:clojure-audit-recovery"
+     :content-hash "sha256:clojure-audit-recovery"
+     :role :audit-recovery
+     :included-in-release-boundary false
+     :verification-status :descriptor-only
+     :actual-artifact-path "/checkout-a/recovery/clojure"}]
+   :tcb-delta
+   {:delta-id "tcb:stage-n-to-release"
+    :prior-tcb-id "tcb:seed"
+    :candidate-tcb-id "tcb:gravity-candidate"
+    :prior-components
+    ["anchor:historical-seed"
+     "toolchain:gravity-native-a"
+     "toolchain:diverse-c-a"]
+    :candidate-components
+    ["artifact:seed-descriptor"
+     "artifact:stage-n"
+     "artifact:stage-n-plus-one"
+     "artifact:release-candidate"
+     "artifact:minimal-runtime"
+     "build:diverse-a"
+     "build:diverse-b"
+     "toolchain:gravity-native-a"
+     "toolchain:diverse-c-a"]
+    :removed-components ["anchor:historical-seed"]
+    :added-components
+    ["artifact:seed-descriptor"
+     "artifact:stage-n"
+     "artifact:stage-n-plus-one"
+     "artifact:release-candidate"
+     "artifact:minimal-runtime"
+     "build:diverse-a"
+     "build:diverse-b"]
+    :retained-components
+    ["toolchain:gravity-native-a" "toolchain:diverse-c-a"]
+    :release-boundary-exclusions
+    ["artifact:clojure-audit-recovery"]
+    :closure-status :pending-independent-validation
+    :seed-retirement-proven false
+    :clojure-seed-boundary true
+    :review-id "review:tcb-delta"}
+   :actual-release-root release-root})
+
+(defn sh28-trust-evidence-request []
+  (sh28-request-with-paths
+   "/checkout-a/release"
+   "/checkout-a/build-a"
+   "/checkout-b/build-b"
+   "/opt/toolchain-a"
+   "/opt/toolchain-b"
+   "/checkout-a/artifacts/seed"
+   "/checkout-a/artifacts/stage-n"
+   "/checkout-b/artifacts/stage-n-plus-one"
+   "/checkout-b/artifacts/release"
+   "/checkout-a/diverse"
+   "/checkout-b/diverse"
+   "/secure/operator-a"
+   "/secure/operator-b"))
+
+(defn sh28-trust-evidence-alternate-path-request []
+  (sh28-request-with-paths
+   "/different/release"
+   "/different/build-a"
+   "/other/build-b"
+   "/different/toolchain-a"
+   "/other/toolchain-b"
+   "/different/artifacts/seed"
+   "/different/artifacts/stage-n"
+   "/other/artifacts/stage-n-plus-one"
+   "/other/artifacts/release"
+   "/different/diverse"
+   "/other/diverse"
+   "/external/operator-a"
+   "/external/operator-b"))

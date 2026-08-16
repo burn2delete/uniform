@@ -14,7 +14,17 @@
              build-c12-domain-registration
              build-c12-semantic-anchor
              build-c12-domain-artifact
-             verify-c12-domain-ir-architecture])
+             verify-c12-domain-ir-architecture
+             sh13-c11-domain-evidence-policy
+             sh13-c11-domain-evidence-carrier-preflight
+             sh13-c11-domain-evidence-input-valid?
+             sh13-build-c11-domain-evidence-template
+             sh13-c11-domain-evidence-identity-request
+             sh13-bind-c11-domain-evidence
+             sh13-verify-c11-domain-evidence
+             sh14-layout-policy
+             sh14-build-layout
+             sh14-verify-layout])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -373,3 +383,3013 @@
                       :fallback-legality
                       :plugin-policy-records
                       :artifact-provenance]}))
+
+; C12 owns this additive evidence-domain adapter.  It consumes only the
+; identity-bound C11 proof-reference MIR artifact and its binding-consistency
+; verification.  The adapter is deliberately evidence-only: it does not
+; verify generic MIR, execute a load, lower to a target, or confer authority.
+(defn sh13-c11-de-checks []
+  [:bounded-c11-input-carriers
+   :exact-proof-reference-anchor-and-payload
+   :exact-c8-c9-c10-lineage
+   :path-neutral-semantic-identity
+   :separate-physical-provenance
+   :external-resolution-shape-checked
+   :fresh-c12-recomputation])
+
+(defn sh13-c11-de-nonclaims []
+  [:generic-mir-verifier
+   :executable-load
+   :target-backend-lowering
+   :c12-authority
+   :proof-authority
+   :self-hosting
+   :release
+   :trusted-digest-resolution
+   :independent-canonical-digest-verification])
+
+(defn sh13-c11-domain-evidence-policy []
+  {:artifact :gravity/sh13-c11-domain-evidence-policy
+   :schema-version 1
+   :domain :safety-proof-reference
+   :scope :proof-reference-shape-only
+   :lowering-status :rejected
+   :fallback :c11-mir-verifier-pending
+   :accepted-operation :proof-reference
+   :accepted-source-operation :load
+   :target-independent? true
+   :executable-load? false
+   :b1-preflight {:status :blocked
+                  :reason :proof-reference-shape-only
+                  :executable-load? false}
+   :pending [:c11-mir-verifier
+             :trusted-digest-resolution
+             :independent-canonical-digest-verification
+             :target-backend-lowering
+             :c12-authority
+             :proof-authority
+             :self-hosting
+             :release]
+   :nonclaims (sh13-c11-de-nonclaims)})
+
+(defn sh13-c11-de-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh13-c11-de-member? [values value]
+  (if (= (count values) 0)
+    false
+    (if (= (first values) value)
+      true
+      (sh13-c11-de-member? (rest values) value))))
+
+(defn sh13-c11-de-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if (sh13-c11-de-member?
+         [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f]
+         (first characters))
+      (sh13-c11-de-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh13-c11-de-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (let [characters (vec value)]
+        (if (= [\s \h \a \2 \5 \6 \:] (subvec characters 0 7))
+          (sh13-c11-de-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh13-c11-de-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        false))))
+
+(defn sh13-c11-de-children [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (if (vector? value)
+      value
+      (if (set? value) (vec value) []))))
+
+(defn sh13-c11-de-carrier-rejection [reason nodes enqueued]
+  {:status :rejected
+   :reason reason
+   :nodes nil
+   :observed-nodes nodes
+   :enqueued enqueued
+   :nodes-exact? false})
+
+(defn sh13-c11-de-push-children [frontier children depth]
+  (loop [remaining children result frontier]
+    (if (= (count remaining) 0)
+      result
+      (recur
+       (rest remaining)
+       (conj result [(first remaining) (+ depth 1)])))))
+
+; The walker admits only finite persistent maps/vectors/sets.  Width and the
+; enqueued frontier are checked before children are added, so a lazy or cyclic
+; host value cannot be realized without a bounded receipt.
+(defn sh13-c11-de-walk [value]
+  (if (seq? value)
+    (sh13-c11-de-carrier-rejection :arbitrary-seq 0 1)
+    (loop [frontier [[value 0]] nodes 0 enqueued 1]
+      (if (= (count frontier) 0)
+        {:status :accepted
+         :nodes nodes
+         :enqueued enqueued
+         :nodes-exact? true}
+        (let [entry (first frontier)
+              remaining (subvec frontier 1 (count frontier))
+              current (first entry)
+              depth (second entry)
+              next-nodes (+ nodes 1)]
+          (if (> next-nodes 32768)
+            (sh13-c11-de-carrier-rejection
+             :carrier-node-bound nodes enqueued)
+            (if (> depth 256)
+              (sh13-c11-de-carrier-rejection
+               :carrier-depth-bound next-nodes enqueued)
+              (if (seq? current)
+                (sh13-c11-de-carrier-rejection
+                 :arbitrary-seq next-nodes enqueued)
+                (if (map? current)
+                  (if (> (count current) 512)
+                    (sh13-c11-de-carrier-rejection
+                     :carrier-map-width next-nodes enqueued)
+                    (let [children (sh13-c11-de-children current)
+                          next-enqueued (+ enqueued (count children))]
+                      (if (> next-enqueued 32768)
+                        (sh13-c11-de-carrier-rejection
+                         :carrier-frontier-bound next-nodes enqueued)
+                        (recur
+                         (sh13-c11-de-push-children
+                          remaining children depth)
+                         next-nodes next-enqueued))))
+                  (if (vector? current)
+                    (if (> (count current) 1024)
+                      (sh13-c11-de-carrier-rejection
+                       :carrier-vector-width next-nodes enqueued)
+                      (let [children (sh13-c11-de-children current)
+                            next-enqueued (+ enqueued (count children))]
+                        (if (> next-enqueued 32768)
+                          (sh13-c11-de-carrier-rejection
+                           :carrier-frontier-bound next-nodes enqueued)
+                          (recur
+                           (sh13-c11-de-push-children
+                            remaining children depth)
+                           next-nodes next-enqueued))))
+                    (if (set? current)
+                      (if (> (count current) 512)
+                        (sh13-c11-de-carrier-rejection
+                         :carrier-set-width next-nodes enqueued)
+                        (let [children (sh13-c11-de-children current)
+                              next-enqueued (+ enqueued (count children))]
+                          (if (> next-enqueued 32768)
+                            (sh13-c11-de-carrier-rejection
+                             :carrier-frontier-bound next-nodes enqueued)
+                            (recur
+                             (sh13-c11-de-push-children
+                              remaining children depth)
+                             next-nodes next-enqueued))))
+                      (recur remaining next-nodes enqueued))))))))))))
+
+(defn sh13-c11-domain-evidence-carrier-preflight [value]
+  (sh13-c11-de-walk value))
+
+(defn sh13-c11-de-c11-checks []
+  [:bounded-all-input-carriers
+   :exact-c10-bound-and-result-lineage
+   :exact-proof-reference-operation
+   :explicit-proof-token-definition-and-use
+   :sequential-operation-and-module-resolution
+   :fresh-module-recomputation
+   :path-neutral-identity-input
+   :separate-actual-path-provenance])
+
+(defn sh13-c11-de-c11-verification-nonclaims []
+  [:trusted-digest-resolution
+   :independent-canonical-digest-verification
+   :generic-c11-verifier
+   :executable-load
+   :program-lowering])
+
+(defn sh13-c11-de-verification-rejection
+  [reason metadata-preflight expected-preflight candidate-preflight]
+  {:status :rejected
+   :reason reason
+   :metadata-preflight metadata-preflight
+   :expected-preflight expected-preflight
+   :candidate-preflight candidate-preflight})
+
+(defn sh13-c11-de-verification-metadata-valid? [metadata verification]
+  (if (vector? (get verification :checks))
+    (if (vector? (get verification :nonclaims))
+      (if (= :gravity/sh12-c10-proof-reference-mir-verification
+             (get metadata :artifact))
+        (if (= :passed (get metadata :status))
+          (if (= (sh13-c11-de-c11-checks)
+                 (get metadata :checks))
+            (if (= (sh13-c11-de-c11-verification-nonclaims)
+                   (get metadata :nonclaims))
+              true
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh13-c11-de-verification-members
+  [verification metadata-preflight]
+  (let [expected (get verification :expected)
+        candidate (get verification :candidate)
+        expected-preflight (sh13-c11-de-walk expected)
+        candidate-preflight (sh13-c11-de-walk candidate)]
+    (if (= :accepted (get expected-preflight :status))
+      (if (= :accepted (get candidate-preflight :status))
+        {:status :accepted
+         :nodes (+ (get metadata-preflight :nodes)
+                   (get expected-preflight :nodes)
+                   (get candidate-preflight :nodes))
+         :nodes-exact? true
+         :metadata-preflight metadata-preflight
+         :expected-preflight expected-preflight
+         :candidate-preflight candidate-preflight}
+        (sh13-c11-de-verification-rejection
+         :c11-candidate-carrier-bound
+         metadata-preflight expected-preflight candidate-preflight))
+      (sh13-c11-de-verification-rejection
+       :c11-expected-carrier-bound
+       metadata-preflight expected-preflight candidate-preflight))))
+
+(defn sh13-c11-de-verification-envelope-map [verification]
+  (if (map? verification)
+    (if (= 6 (count verification))
+      (if (= (set (keys verification))
+             #{:artifact :status :checks :nonclaims
+               :expected :candidate})
+        (let [metadata
+              {:artifact (get verification :artifact)
+               :status (get verification :status)
+               :checks (get verification :checks)
+               :nonclaims (get verification :nonclaims)}
+              metadata-preflight (sh13-c11-de-walk metadata)]
+          (if (= :accepted (get metadata-preflight :status))
+            (if (sh13-c11-de-verification-metadata-valid?
+                 metadata verification)
+              (sh13-c11-de-verification-members
+               verification metadata-preflight)
+              (sh13-c11-de-verification-rejection
+               :c11-verification-metadata-values
+               metadata-preflight nil nil))
+            (sh13-c11-de-verification-rejection
+             :c11-verification-metadata-bound
+             metadata-preflight nil nil)))
+        (sh13-c11-de-verification-rejection
+         :c11-verification-envelope-shape nil nil nil))
+      (sh13-c11-de-verification-rejection
+       :c11-verification-envelope-shape nil nil nil))
+    (sh13-c11-de-verification-rejection
+     :c11-verification-envelope-shape nil nil nil)))
+
+(defn sh13-c11-de-verification-envelope [verification]
+  (if (map? verification)
+    (sh13-c11-de-verification-envelope-map verification)
+    {:status :rejected
+     :reason :c11-verification-envelope-shape
+     :metadata-preflight {:status :rejected
+                          :reason :arbitrary-seq}
+     :expected-preflight {:status :rejected
+                          :reason :arbitrary-seq}
+     :candidate-preflight {:status :rejected
+                           :reason :arbitrary-seq}}))
+
+(defn sh13-c11-de-source-valid? [source]
+  (if (map? source)
+    (if (contains? source :source-span)
+      (if (contains? source :origin-chain)
+        true
+        false)
+      false)
+    false))
+
+(defn sh13-c11-de-upstream-ids [candidate operation]
+  (let [facts (get operation :facts)
+        upstream (get candidate :upstream)]
+    [(get candidate :module-id)
+     (get candidate :operation-identity-id)
+     (get upstream :c10-safety-core-id)
+     (get upstream :c10-safety-result-id)
+     (get upstream :c10-safety-proof-id)
+     (get upstream :c9-ownership-core-id)
+     (get upstream :c9-ownership-fact-id)
+     (get upstream :c9-ownership-fact-identity-id)
+     (get upstream :c8-type-fact-id)
+     (get upstream :c8-effect-fact-id)
+     (get upstream :c8-capability-proof-id)
+     (get facts :type-fact-id)
+     (get facts :effect-fact-id)
+     (get facts :capability-proof-id)
+     (get facts :ownership-fact-id)
+     (get facts :safety-outcome-id)
+     (get facts :safety-proof-id)]))
+
+(defn sh13-c11-de-pre-c11-upstream-ids [candidate operation]
+  (let [facts (get operation :facts)
+        upstream (get candidate :upstream)]
+    [(get upstream :c10-safety-core-id)
+     (get upstream :c10-safety-result-id)
+     (get upstream :c10-safety-proof-id)
+     (get upstream :c9-ownership-core-id)
+     (get upstream :c9-ownership-fact-id)
+     (get upstream :c9-ownership-fact-identity-id)
+     (get upstream :c8-type-fact-id)
+     (get upstream :c8-effect-fact-id)
+     (get upstream :c8-capability-proof-id)
+     (get facts :type-fact-id)
+     (get facts :effect-fact-id)
+     (get facts :capability-proof-id)
+     (get facts :ownership-fact-id)
+     (get facts :safety-outcome-id)
+     (get facts :safety-proof-id)]))
+
+(defn sh13-c11-de-all-sha? [values]
+  (if (= (count values) 0)
+    true
+    (if (sh13-c11-de-sha256-id? (first values))
+      (sh13-c11-de-all-sha? (rest values))
+      false)))
+
+(defn sh13-c11-de-candidate-keys []
+  #{:artifact :schema-version :status :scope :module-id
+    :operation-identity-id :source-core :profile :target-request
+    :target-independent? :executable-load? :source-operation
+    :mir-operation :identity-input :operation-identity-input
+    :operation-identity-request :module-identity-request :operation
+    :functions :globals :type-table :effect-table :ownership-table
+    :capability-proof-table :safety-table :proof-certificate-table
+    :capability-table :values :runtime-check-table
+    :profile-target-table :source-map :domain-anchors :diagnostics
+    :provenance :upstream :verification-status :identity-resolution
+    :identity-binding-status :identity-resolutions :b1-preflight
+    :pending :nonclaims :self-hosted? :clojure-seed-boundary?})
+
+(defn sh13-c11-de-operation-input-keys []
+  #{:domain :schema-version :scope :mir-operation :source-operation
+    :core-node-id :value-type :type-fact-id :effect-fact-id
+    :capability-proof-id :c9-ownership-core-id :c9-ownership-fact-id
+    :c10-proof-id :c10-result-id :c10-safety-core-id
+    :safety-outcome-id :safety-proof-id :source-span :origin-chain
+    :profile :target :syntax-id :operation-template
+    :proof-token-values :capability-table :source-map})
+
+(defn sh13-c11-de-module-input-keys []
+  #{:domain :schema-version :scope :operation-identity-id
+    :operation-identity-input :operation-template :functions :type-table
+    :effect-table :ownership-table :capability-proof-table :safety-table
+    :proof-certificate-table :source-map :function-shape :block-shape
+    :proof-token-shape :values :capability-table :target-independent?
+    :syntax-id})
+
+(defn sh13-c11-de-c11-pending []
+  [:trusted-digest-resolution
+   :independent-canonical-digest-verification
+   :safety-certificate-authority
+   :mir-verifier
+   :mir-optimization
+   :backend-lowering
+   :target-authority
+   :executable-load
+   :program-lowering
+   :generic-c11-operation-families
+   :self-hosted-execution])
+
+(defn sh13-c11-de-c11-candidate-nonclaims []
+  [:executable-load
+   :program-lowering
+   :generic-c11-verifier
+   :optimizer-credit
+   :backend-credit
+   :target-authority
+   :trusted-digest-resolution
+   :independent-canonical-digest-verification
+   :safety-certificate-authority
+   :self-hosted?])
+
+(defn sh13-c11-de-c10-verification-checks []
+  [:exact-c9-bound-proof-resolution
+   :persistent-read-classification-recomputation
+   :exactly-one-proven-safe-outcome
+   :source-and-fact-lineage])
+
+(defn sh13-c11-de-c10-verification-nonclaims []
+  (get {} :nonclaims))
+
+(defn sh13-c11-de-resolution-entry-valid?
+  [request resolution digest]
+  (if (map? resolution)
+    (if (= (set (keys resolution)) #{:request :digest})
+      (if (= request (get resolution :request))
+        (= digest (get resolution :digest))
+        false)
+      false)
+    false))
+
+(defn sh13-c11-de-profile-target-valid? [candidate operation]
+  (let [table (get candidate :profile-target-table)
+        core-id (get (get operation :source) :core-node)
+        record (get table core-id)
+        operation-input (get candidate :operation-identity-input)]
+    (if (map? table)
+      (if (= 1 (count table))
+        (if (= (set (keys record))
+               #{:core-node-id :profile :target})
+          (if (= core-id (get record :core-node-id))
+            (if (= (get operation :profile) (get record :profile))
+              (if (= (get operation :target) (get record :target))
+                (if (= (get candidate :profile) (get operation :profile))
+                  (if (= (get candidate :target-request)
+                         (get operation :target))
+                    (if (= (get operation-input :profile)
+                           (get operation :profile))
+                      (= (get operation-input :target)
+                         (get operation :target))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-identity-resolution-valid? [candidate operation]
+  (let [facts (get operation :facts)
+        upstream (get candidate :upstream)
+        operation-id (get candidate :operation-identity-id)
+        module-id (get candidate :module-id)
+        operation-input (get candidate :operation-identity-input)
+        operation-request (get candidate :operation-identity-request)
+        module-request (get candidate :module-identity-request)
+        resolutions (get candidate :identity-resolutions)
+        operation-resolution (get resolutions :operation-resolution)
+        module-resolution (get resolutions :module-resolution)
+        upstream-ids (sh13-c11-de-pre-c11-upstream-ids candidate operation)]
+    (if (= (set (keys operation-input))
+           (sh13-c11-de-operation-input-keys))
+      (if (= operation-input operation-request)
+        (if (= (get operation-input :mir-operation) :proof-reference)
+          (if (= (get operation-input :source-operation) :load)
+            (if (= (get operation-input :core-node-id)
+                   (get (get operation :source) :core-node))
+              (if (sh13-c11-de-resolution-entry-valid?
+                   operation-input operation-resolution operation-id)
+                (if (= (set (keys module-request))
+                       (sh13-c11-de-module-input-keys))
+                  (if (= operation-id
+                         (get module-request :operation-identity-id))
+                    (if (= operation-input
+                           (get module-request :operation-identity-input))
+                      (if (sh13-c11-de-resolution-entry-valid?
+                           module-request module-resolution module-id)
+                        (if (= (set (keys resolutions))
+                               #{:operation-resolution
+                                 :module-resolution})
+                          (if (= operation-id module-id)
+                            false
+                            (if (sh13-c11-de-member?
+                                 upstream-ids operation-id)
+                              false
+                              (if (sh13-c11-de-member?
+                                   upstream-ids module-id)
+                                false
+                                (sh13-c11-de-profile-target-valid?
+                                 candidate operation))))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-candidate-envelope-valid? [candidate]
+  (let [upstream (get candidate :upstream)
+        b1 (get candidate :b1-preflight)
+        verification-ref (get upstream :c10-safety-verification-ref)]
+    (if (map? candidate)
+      (if (= 44 (count candidate))
+        (if (= (set (keys candidate)) (sh13-c11-de-candidate-keys))
+          (if (= :gravity/sh12-authenticated-c10-proof-reference-mir
+                 (get candidate :artifact))
+            (if (= 2 (get candidate :schema-version))
+              (if (= :accepted (get candidate :status))
+                (if (= :authenticated-persistent-read-safety-evidence-only
+                       (get candidate :scope))
+                  (if (= :load (get candidate :source-operation))
+                    (if (= :proof-reference (get candidate :mir-operation))
+                      (if (= false (get candidate :executable-load?))
+                        (if (= true (get candidate :target-independent?))
+                          (if (= (set (keys b1))
+                                 #{:status :reason :executable-load?})
+                            (if (= :blocked (get b1 :status))
+                              (if (= :proof-reference-only-adapter
+                                     (get b1 :reason))
+                                (if (= false (get b1 :executable-load?))
+                                  (if (= :pending-proof-reference-verifier
+                                         (get candidate
+                                             :verification-status))
+                                    (if (= :coordinator-digest-bound
+                                           (get candidate
+                                               :identity-resolution))
+                                      (if (= :coordinator-resolution-shape-checked
+                                             (get candidate
+                                                 :identity-binding-status))
+                                        (if (= false (get candidate
+                                                           :self-hosted?))
+                                          (if (= true
+                                                 (get candidate
+                                                     :clojure-seed-boundary?))
+                                            (if (= {} (get candidate :globals))
+                                              (if (= {}
+                                                     (get candidate
+                                                         :runtime-check-table))
+                                                (if (= {}
+                                                       (get candidate
+                                                           :domain-anchors))
+                                                  (if (= []
+                                                         (get candidate
+                                                             :diagnostics))
+                                                    (if (= (sh13-c11-de-c11-pending)
+                                                           (get candidate :pending))
+                                                      (if (= (sh13-c11-de-c11-candidate-nonclaims)
+                                                             (get candidate :nonclaims))
+                                                        (if (map? upstream)
+                                                          (if (= (set (keys upstream))
+                                                                 #{:c10-safety-core-id
+                                                                   :c10-safety-result-id
+                                                                   :c10-safety-proof-id
+                                                                   :c10-safety-verification-ref
+                                                                   :c9-ownership-core-id
+                                                                   :c9-ownership-fact-id
+                                                                   :c9-ownership-fact-identity-id
+                                                                   :c8-type-fact-id
+                                                                   :c8-effect-fact-id
+                                                                   :c8-capability-proof-id})
+                                                            (if (sh13-c11-de-exact-keys?
+                                                                     verification-ref
+                                                                     #{:artifact :status
+                                                                       :checks :nonclaims})
+                                                                  (if (= :gravity/sh11-authenticated-load-result-verification
+                                                                         (get verification-ref
+                                                                             :artifact))
+                                                                    (if (= :passed
+                                                                           (get verification-ref
+                                                                               :status))
+                                                                      (if (= (sh13-c11-de-c10-verification-checks)
+                                                                             (get verification-ref
+                                                                                 :checks))
+                                                                        (if (= (sh13-c11-de-c10-verification-nonclaims)
+                                                                             (get verification-ref
+                                                                                 :nonclaims))
+                                                                          (= (get candidate
+                                                                                  :source-core)
+                                                                             (get upstream
+                                                                                 :c10-safety-core-id))
+                                                                          false)
+                                                                        false)
+                                                                      false)
+                                                                    false)
+                                                                  false)
+                                                                false)
+                                                            false)
+                                                        false)
+                                                      false)
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    ))
+
+(defn sh13-c11-de-canonical-source-span-valid? [source-span]
+  (if (= (set (keys source-span))
+         #{:source-id :start-byte :end-byte})
+    (if (sh13-c11-de-sha256-id? (get source-span :source-id))
+      (if (integer? (get source-span :start-byte))
+        (if (integer? (get source-span :end-byte))
+          (if (<= 0 (get source-span :start-byte))
+            (> (get source-span :end-byte)
+               (get source-span :start-byte))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh13-c11-de-hosted-source-span-valid? [source-span]
+  (if (= (set (keys source-span))
+         #{:source :start-byte :end-byte})
+    (if (string? (get source-span :source))
+      (if (> (count (get source-span :source)) 0)
+        (if (integer? (get source-span :start-byte))
+          (if (integer? (get source-span :end-byte))
+            (if (<= 0 (get source-span :start-byte))
+              (> (get source-span :end-byte)
+                 (get source-span :start-byte))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh13-c11-de-source-span-valid? [source-span]
+  (if (map? source-span)
+    (if (sh13-c11-de-canonical-source-span-valid? source-span)
+      true
+      (sh13-c11-de-hosted-source-span-valid? source-span))
+    false))
+
+(defn sh13-c11-de-mir-source-valid? [source]
+  (if (map? source)
+    (if (= (set (keys source))
+           #{:core-node :syntax-id :source-span :origin-chain
+             :generated-origin})
+      (if (sh13-c11-de-sha256-id? (get source :core-node))
+        (if (= :not-applicable (get source :syntax-id))
+          (if (sh13-c11-de-source-span-valid?
+               (get source :source-span))
+            (if (vector? (get source :origin-chain))
+              (if (vector? (get source :generated-origin))
+                true
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh13-c11-de-operation-upstream-values-valid?
+  [candidate facts]
+  (let [upstream (get candidate :upstream)]
+    (if (= (get upstream :c8-type-fact-id)
+           (get facts :type-fact-id))
+      (if (= (get upstream :c8-effect-fact-id)
+             (get facts :effect-fact-id))
+        (if (= (get upstream :c8-capability-proof-id)
+               (get facts :capability-proof-id))
+          (if (= (get upstream :c9-ownership-fact-id)
+                 (get facts :ownership-fact-id))
+            (if (= (get upstream :c9-ownership-core-id)
+                   (get facts :c9-ownership-core-id))
+              (if (= (get upstream :c10-safety-result-id)
+                     (get facts :safety-outcome-id))
+                (if (= (get upstream :c10-safety-proof-id)
+                       (get facts :safety-proof-id))
+                  (= (get upstream :c10-safety-core-id)
+                     (get facts :c10-safety-core-id))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-operation-source-values-valid?
+  [operation facts]
+  (let [source (get operation :source)
+        generated (get source :generated-origin)
+        generated-entry (first generated)]
+    (if (= (get source :core-node) (get facts :source-origin-id))
+      (if (= :not-applicable (get source :syntax-id))
+        (if (map? (get facts :c9-fact-id-request))
+          (if (vector? generated)
+            (if (= 1 (count generated))
+              (if (= (set (keys generated-entry))
+                     #{:role :producer :operation-id :proof-id})
+                (if (= :proof-generated (get generated-entry :role))
+                  (if (= :sh12-build-authenticated-c10-mir-template
+                         (get generated-entry :producer))
+                    (if (= (get operation :op-id)
+                           (get generated-entry :operation-id))
+                      (= (get facts :safety-proof-id)
+                         (get generated-entry :proof-id))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-operation-facts-valid? [candidate operation facts]
+  (if (map? facts)
+    (if (= (set (keys facts))
+           #{:type-fact-id :effect-fact-id :capability-proof-ids
+             :capability-proof-id :ownership-fact-id :safety-outcome-id
+             :safety-proof-id :proof-certificate-ids
+             :c10-safety-core-id :c9-ownership-core-id
+             :c9-fact-id-request :read-value-type :source-origin-id
+             :operation-id})
+      (if (= [(get facts :capability-proof-id)]
+             (get facts :capability-proof-ids))
+        (if (= [(get facts :safety-proof-id)]
+               (get facts :proof-certificate-ids))
+          (if (= (get operation :op-id) (get facts :operation-id))
+            (if (= :gravity.type/bool (get facts :read-value-type))
+              (if (sh13-c11-de-operation-upstream-values-valid?
+                   candidate facts)
+                (sh13-c11-de-operation-source-values-valid?
+                 operation facts)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh13-c11-de-operation-valid? [candidate]
+  (let [operation (get candidate :operation)
+        facts (get operation :facts)]
+    (if (map? operation)
+      (if (= (set (keys operation))
+             #{:artifact :op-id :opcode :source-operation :block-id
+               :operands :result :result-kind :constant-payload :type
+               :effects :capabilities :ordering :source :profile :target
+               :facts :domain-anchor :verifier-status})
+        (if (= (get operation :op-id)
+               (get candidate :operation-identity-id))
+          (if (= :gravity/mir-operation (get operation :artifact))
+          (if (= :proof-reference (get operation :opcode))
+            (if (= :load (get operation :source-operation))
+              (if (= [] (get operation :operands))
+                (if (= :proof-token (get operation :result-kind))
+                  (if (= :not-applicable (get operation :constant-payload))
+                    (if (= :gravity/proof-token (get operation :type))
+                      (if (= #{} (get operation :effects))
+                        (if (= #{} (get operation :capabilities))
+                          (if (= :none (get operation :ordering))
+                            (if (= :pending
+                                   (get operation :verifier-status))
+                              (if (= nil (get operation :domain-anchor))
+                                (if (sh13-c11-de-mir-source-valid?
+                                     (get operation :source))
+                                  (sh13-c11-de-operation-facts-valid?
+                                   candidate operation facts)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-function-facts-valid?
+  [candidate operation function]
+  (let [facts (get function :facts)
+        operation-facts (get operation :facts)
+        upstream (get candidate :upstream)
+        provenance (get function :provenance)]
+    (if (map? facts)
+      (if (= (set (keys facts))
+             #{:type-fact-id :effect-fact-id :ownership-fact-id
+               :safety-outcome-id :safety-proof-id})
+        (if (= (get facts :type-fact-id)
+               (get operation-facts :type-fact-id))
+          (if (= (get facts :effect-fact-id)
+                 (get operation-facts :effect-fact-id))
+            (if (= (get facts :ownership-fact-id)
+                   (get operation-facts :ownership-fact-id))
+              (if (= (get facts :safety-outcome-id)
+                     (get operation-facts :safety-outcome-id))
+                (if (= (get facts :safety-proof-id)
+                       (get operation-facts :safety-proof-id))
+                  (if (map? provenance)
+                    (if (= (set (keys provenance))
+                           #{:c10-safety-core-id :c9-ownership-core-id})
+                      (if (= (get provenance :c10-safety-core-id)
+                             (get upstream :c10-safety-core-id))
+                        (= (get provenance :c9-ownership-core-id)
+                           (get upstream :c9-ownership-core-id))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-token-valid?
+  [token token-id operation block-id terminator-id]
+  (let [uses (get token :uses)
+        use (first uses)]
+    (if (map? token)
+      (if (= (set (keys token))
+             #{:artifact :value-id :kind :type :constant-payload
+               :defined-by :uses :source :ownership :effects :safety})
+        (if (= :gravity/mir-value (get token :artifact))
+          (if (= token-id (get token :value-id))
+            (if (= :proof-token (get token :kind))
+              (if (= :gravity/proof-token (get token :type))
+                (if (= (get token :source) (get operation :source))
+                (if (= :not-applicable (get token :constant-payload))
+                  (if (= (get operation :op-id) (get token :defined-by))
+                    (if (= #{} (get token :effects))
+                      (if (= :not-applicable (get token :ownership))
+                        (if (= :proven-safe (get token :safety))
+                          (if (vector? uses)
+                            (if (= 1 (count uses))
+                              (if (map? use)
+                                (if (= (set (keys use))
+                                       #{:consumer-kind :consumer-id
+                                         :consumer-block :operand-index
+                                         :edge-kind})
+                                  (if (= :terminator
+                                         (get use :consumer-kind))
+                                    (if (= terminator-id
+                                           (get use :consumer-id))
+                                      (if (= block-id
+                                             (get use :consumer-block))
+                                        (if (= 0 (get use :operand-index))
+                                          (= :proof-token-return
+                                             (get use :edge-kind))
+                  false)
+                false)
+              false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-terminator-valid?
+  [terminator token-id operation block-id]
+  (let [facts (get terminator :facts)
+        terminator-id (get terminator :terminator-id)]
+    (if (map? terminator)
+      (if (= (set (keys terminator))
+             #{:artifact :terminator-id :kind :operands :successors
+               :effects :ordering :source :profile :target :facts
+               :verifier-status})
+        (if (= :gravity/mir-terminator (get terminator :artifact))
+          (if (= (str block-id ":return") terminator-id)
+            (if (= (get terminator :source) (get operation :source))
+            (if (= :return (get terminator :kind))
+              (if (= [token-id] (get terminator :operands))
+                (if (= [] (get terminator :successors))
+                  (if (= #{} (get terminator :effects))
+                    (if (= :none (get terminator :ordering))
+                      (if (= (get operation :profile)
+                             (get terminator :profile))
+                        (if (= (get operation :target)
+                               (get terminator :target))
+                          (if (= :pending
+                                 (get terminator :verifier-status))
+                            (if (map? facts)
+                              (if (= (set (keys facts))
+                                     #{:returned-proof-token
+                                       :safety-outcome-id
+                                       :safety-proof-id})
+                                (if (= token-id
+                                       (get facts :returned-proof-token))
+                                  (if (= (get facts :safety-outcome-id)
+                                         (get (get operation :facts)
+                                              :safety-outcome-id))
+                                    (= (get facts :safety-proof-id)
+                                       (get (get operation :facts)
+                                            :safety-proof-id))
+              false)
+            false)
+          false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-block-valid?
+  [block block-id operation token-id function]
+  (let [instructions (get block :instructions)
+        terminator (get block :terminator)
+        data-flow (get block :data-flow)
+        uses (get data-flow :uses)
+        use (first uses)
+        terminator-id (get terminator :terminator-id)]
+    (if (map? block)
+      (if (= (set (keys block))
+             #{:artifact :block-id :arguments :instructions :terminator
+               :predecessors :successors :dominators :data-flow :source})
+        (if (= :gravity/mir-block (get block :artifact))
+          (if (= block-id (get block :block-id))
+            (if (= [] (get block :arguments))
+              (if (= (get block :source) (get operation :source))
+              (if (= [operation] instructions)
+                (if (= [] (get block :predecessors))
+                  (if (= [] (get block :successors))
+                    (if (= [block-id] (get block :dominators))
+                      (if (sh13-c11-de-mir-source-valid?
+                           (get block :source))
+                        (if (sh13-c11-de-terminator-valid?
+                             terminator token-id operation block-id)
+                          (if (map? data-flow)
+                            (if (= (set (keys data-flow))
+                                   #{:definitions :uses})
+                              (if (= [token-id]
+                                     (get data-flow :definitions))
+                                (if (vector? uses)
+                                  (if (= 1 (count uses))
+                                    (if (map? use)
+                                      (if (= (set (keys use))
+                                             #{:value-id :consumer-kind
+                                               :consumer-id})
+                                        (if (= token-id (get use :value-id))
+                                          (if (= :terminator
+                                                 (get use :consumer-kind))
+                                            (= terminator-id
+                                               (get use :consumer-id))
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-first-map-key [value]
+  (if (map? value)
+    (first (keys value))
+    nil))
+
+(defn sh13-c11-de-function-valid? [candidate operation]
+  (let [functions (get candidate :functions)]
+    (if (map? functions)
+      (if (= 1 (count functions))
+        (let [function-id (sh13-c11-de-first-map-key functions)
+              function (get functions function-id)
+              blocks (get function :blocks)
+              block-id (get function :entry)
+              block (get blocks block-id)
+              operation-id (get operation :op-id)
+              module-id (get candidate :module-id)
+              token-id (str operation-id ":proof-token")
+              values (get candidate :values)
+              token (get values token-id)]
+          (if (= function-id (str module-id ":function"))
+            (if (= function-id (get function :fn-id))
+              (if (= (set (keys function))
+                     #{:artifact :fn-id :name :params :returns
+                       :latent-effects :capabilities :values :blocks :entry
+                       :source :facts :provenance :proof-token :contract})
+                (if (= :gravity/mir-function (get function :artifact))
+                  (if (= (str "c10-proof-reference/"
+                              (get (get operation :source) :core-node))
+                         (get function :name))
+                    (if (= (str module-id ":entry") block-id)
+                      (if (= token-id (get operation :result))
+                        (if (= (str module-id ":entry")
+                               (get operation :block-id))
+                          (if (= [] (get function :params))
+                            (if (= :gravity/proof-token
+                                   (get function :returns))
+                              (if (= #{} (get function :latent-effects))
+                                (if (= #{} (get function :capabilities))
+                                  (if (= :c11-c10-proof-reference-function
+                                         (get function :contract))
+                                    (if (= (get function :source)
+                                           (get operation :source))
+                                      (if (sh13-c11-de-mir-source-valid?
+                                           (get function :source))
+                                        (if (map? blocks)
+                                          (if (map? values)
+                                            (if (= 1 (count blocks))
+                                              (if (= (set (keys blocks))
+                                                     #{block-id})
+                                                (if (= (set (keys values))
+                                                       #{token-id})
+                                                  (if (= values
+                                                         (get function
+                                                              :values))
+                                                    (if (= token
+                                                           (get function
+                                                               :proof-token))
+                                                      (if (sh13-c11-de-function-facts-valid?
+                                                           candidate operation
+                                                           function)
+                                                        (if (sh13-c11-de-token-valid?
+                                                             token token-id
+                                                             operation block-id
+                                                             (get (get block
+                                                                       :terminator)
+                                                                  :terminator-id))
+                                                          (sh13-c11-de-block-valid?
+                                                           block block-id operation
+                                                           token-id function)
+                                                          false)
+                                                        false)
+                                                      false)
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false))
+        false)
+      false)))
+
+(defn sh13-c11-de-source-map-valid? [candidate operation]
+  (let [functions (get candidate :functions)
+        function-id (first (keys functions))
+        function (get functions function-id)
+        block-id (get function :entry)
+        block (get (get function :blocks) block-id)
+        token-id (get operation :result)
+        token (get (get candidate :values) token-id)
+        terminator (get block :terminator)
+        terminator-id (get terminator :terminator-id)
+        source-map (get candidate :source-map)]
+    (if (map? source-map)
+      (if (= (set (keys source-map))
+             #{function-id block-id (get operation :op-id)
+               token-id terminator-id})
+        (if (= (get source-map function-id) (get function :source))
+          (if (= (get source-map block-id) (get block :source))
+            (if (= (get source-map (get operation :op-id))
+                   (get operation :source))
+              (if (= (get source-map token-id) (get token :source))
+                (= (get source-map terminator-id)
+                   (get terminator :source))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-type-entry-valid?
+  [candidate operation type-id effect-id capability-id]
+  (let [entry (get (get candidate :type-table) type-id)
+        fact (get entry :call-type-fact)
+        identity (get entry :fact-identity)
+        core-id (get (get operation :source) :core-node)]
+    (if (sh13-c11-de-exact-keys?
+         entry #{:call-type-fact :fact-identity})
+      (if (map? fact)
+        (if (map? identity)
+          (if (= core-id (get fact :call-core-node-id))
+            (if (= :gravity.type/bool (get fact :result-type))
+              (if (= type-id (get identity :type-fact-id))
+                (if (= effect-id (get identity :effect-fact-id))
+                  (= capability-id (get identity :capability-proof-id))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-effect-entry-valid?
+  [candidate operation effect-id]
+  (let [entry (get (get candidate :effect-table) effect-id)
+        request (get entry :effect-request)
+        legality (get entry :legality-result)
+        node (get entry :effect-node)
+        core-id (get (get operation :source) :core-node)]
+    (if (sh13-c11-de-exact-keys?
+         entry #{:effect-request :legality-result :effect-node})
+      (if (map? request)
+        (if (map? legality)
+          (if (map? node)
+            (if (= core-id (get request :core-node-id))
+              (if (= (get request :request-id)
+                     (get legality :request-id))
+                (if (= :accepted (get legality :status))
+                  (if (= core-id (get node :core-node-id))
+                    (if (= #{} (get node :direct))
+                      (if (= #{} (get node :latent))
+                        (if (= #{} (get node :transitive))
+                          (= :pure (get node :ordering))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-ownership-entry-valid?
+  [candidate operation ownership-id]
+  (let [entry (get (get candidate :ownership-table) ownership-id)
+        facts (get operation :facts)]
+    (if (sh13-c11-de-exact-keys?
+         entry
+         #{:fact-id :fact :fact-identity :ownership-result
+           :ownership-fact-request :ownership-core-identity-id
+           :source-stage :source-kind})
+      (if (= ownership-id (get entry :fact-id))
+        (if (map? (get entry :fact))
+          (if (map? (get entry :fact-identity))
+            (if (map? (get entry :ownership-result))
+              (if (map? (get entry :ownership-fact-request))
+                (if (= (get facts :c9-ownership-core-id)
+                       (get entry :ownership-core-identity-id))
+                  (if (= :c9 (get entry :source-stage))
+                    (= :authenticated-record (get entry :source-kind))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-capability-proof-entry-valid?
+  [candidate operation capability-id]
+  (let [entry (get (get candidate :capability-proof-table) capability-id)
+        operation-facts (get operation :facts)
+        upstream-facts (get entry :operation-facts)
+        ownership-entry
+        (get (get candidate :ownership-table)
+             (get operation-facts :ownership-fact-id))
+        ownership-fact (get ownership-entry :fact)
+        ownership-state (get ownership-fact :state-after)
+        fact-request (get operation-facts :c9-fact-id-request)]
+    (if (sh13-c11-de-exact-keys?
+         entry #{:proof-id :source-stage :source-kind :operation-facts})
+      (if (= capability-id (get entry :proof-id))
+        (if (= :c8 (get entry :source-stage))
+          (if (= :authenticated-upstream-reference
+                 (get entry :source-kind))
+            (if (sh13-c11-de-exact-keys?
+                 upstream-facts
+                 #{:event-id :availability :ownership-core-identity-id
+                   :proof-id :fact-id-request :initialization :event
+                   :ownership-kind :value-type})
+              (if (= (get fact-request :event-id)
+                     (get upstream-facts :event-id))
+                (if (= (get ownership-fact :event-id)
+                       (get upstream-facts :event-id))
+                  (if (= (get ownership-state :availability)
+                         (get upstream-facts :availability))
+                    (if (= (get operation-facts :c9-ownership-core-id)
+                           (get upstream-facts
+                                :ownership-core-identity-id))
+                      (if (= (get operation-facts :safety-proof-id)
+                             (get upstream-facts :proof-id))
+                        (if (= fact-request
+                               (get upstream-facts :fact-id-request))
+                          (if (= (get ownership-state :initialization)
+                                 (get upstream-facts :initialization))
+                            (if (= :read (get upstream-facts :event))
+                              (if (= (get ownership-fact :operation)
+                                     (get upstream-facts :event))
+                                (if (= :persistent-immutable
+                                       (get upstream-facts :ownership-kind))
+                                  (= (get operation-facts :read-value-type)
+                                     (get upstream-facts :value-type))
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-capability-entry-valid?
+  [candidate capability-id effect-id]
+  (let [entry (get (get candidate :capability-table) capability-id)]
+    (if (sh13-c11-de-exact-keys?
+         entry
+         #{:identity-request :identity-input :effect-fact-id
+           :capability-proof})
+      (if (map? (get entry :identity-request))
+        (if (map? (get entry :identity-input))
+          (if (= effect-id (get entry :effect-fact-id))
+            (= nil (get entry :capability-proof))
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-safety-entry-valid?
+  [candidate outcome-id proof-id]
+  (let [entry (get (get candidate :safety-table) outcome-id)]
+    (if (sh13-c11-de-exact-keys?
+         entry
+         #{:outcome-id :result :outcome-record :proof-id :proof
+           :verification :source-stage :source-kind})
+      (if (= outcome-id (get entry :outcome-id))
+        (if (= proof-id (get entry :proof-id))
+          (if (map? (get entry :result))
+            (if (map? (get entry :outcome-record))
+              (if (map? (get entry :proof))
+                (if (map? (get entry :verification))
+                  (if (= :c10 (get entry :source-stage))
+                    (= :authenticated-record (get entry :source-kind))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-proof-entry-valid?
+  [candidate proof-id outcome-id]
+  (let [entry (get (get candidate :proof-certificate-table) proof-id)
+        upstream (get candidate :upstream)]
+    (if (sh13-c11-de-exact-keys?
+         entry
+         #{:proof-id :proof :proof-id-request :result-id
+           :safety-core-id :source-stage :source-kind})
+      (if (= proof-id (get entry :proof-id))
+        (if (map? (get entry :proof))
+          (if (map? (get entry :proof-id-request))
+            (if (= outcome-id (get entry :result-id))
+              (if (= (get upstream :c10-safety-core-id)
+                     (get entry :safety-core-id))
+                (if (= :c10 (get entry :source-stage))
+                  (= :authenticated-record (get entry :source-kind))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-tables-valid? [candidate operation]
+  (let [facts (get operation :facts)
+        type-id (get facts :type-fact-id)
+        effect-id (get facts :effect-fact-id)
+        capability-id (get facts :capability-proof-id)
+        ownership-id (get facts :ownership-fact-id)
+        outcome-id (get facts :safety-outcome-id)
+        proof-id (get facts :safety-proof-id)]
+    (if (= (set (keys (get candidate :type-table))) #{type-id})
+      (if (= (set (keys (get candidate :effect-table))) #{effect-id})
+        (if (= (set (keys (get candidate :ownership-table))) #{ownership-id})
+          (if (= (set (keys (get candidate :capability-proof-table)))
+                 #{capability-id})
+            (if (= (set (keys (get candidate :capability-table)))
+                   #{capability-id})
+              (if (= (set (keys (get candidate :safety-table))) #{outcome-id})
+                (if (= (set (keys (get candidate :proof-certificate-table)))
+                       #{proof-id})
+                  (if (sh13-c11-de-type-entry-valid?
+                       candidate operation type-id effect-id capability-id)
+                    (if (sh13-c11-de-effect-entry-valid?
+                         candidate operation effect-id)
+                      (if (sh13-c11-de-ownership-entry-valid?
+                           candidate operation ownership-id)
+                        (if (sh13-c11-de-capability-proof-entry-valid?
+                             candidate operation capability-id)
+                          (if (sh13-c11-de-capability-entry-valid?
+                               candidate capability-id effect-id)
+                            (if (sh13-c11-de-safety-entry-valid?
+                                 candidate outcome-id proof-id)
+                              (sh13-c11-de-proof-entry-valid?
+                               candidate proof-id outcome-id)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-candidate-valid? [candidate]
+  (let [operation (get candidate :operation)]
+    (if (sh13-c11-de-candidate-envelope-valid? candidate)
+      (if (sh13-c11-de-identity-resolution-valid? candidate operation)
+        (if (sh13-c11-de-operation-valid? candidate)
+          (if (sh13-c11-de-function-valid? candidate operation)
+            (if (sh13-c11-de-source-map-valid? candidate operation)
+              (if (sh13-c11-de-tables-valid? candidate operation)
+                (if (sh13-c11-de-all-sha?
+                     (sh13-c11-de-upstream-ids candidate operation))
+                  true
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-verification-valid? [candidate verification]
+  (if (= :gravity/sh12-c10-proof-reference-mir-verification
+         (get verification :artifact))
+    (if (= :passed (get verification :status))
+      (if (= (sh13-c11-de-c11-checks) (get verification :checks))
+        (if (= (sh13-c11-de-c11-verification-nonclaims)
+               (get verification :nonclaims))
+          (if (= candidate (get verification :expected))
+            (= candidate (get verification :candidate))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh13-c11-domain-evidence-input-valid? [candidate verification]
+  (let [candidate-preflight (sh13-c11-de-walk candidate)
+        verification-preflight (sh13-c11-de-verification-envelope
+                                verification)]
+    (if (= :accepted (get candidate-preflight :status))
+      (if (= :accepted (get verification-preflight :status))
+        (if (sh13-c11-de-candidate-valid? candidate)
+          (sh13-c11-de-verification-valid? candidate verification)
+          false)
+        false)
+      false)))
+
+(defn sh13-c11-de-semantic-input [candidate operation]
+  (let [facts (get operation :facts)
+        upstream (get candidate :upstream)
+        source (get operation :source)]
+    {:domain :gravity/sh13-c11-domain-evidence-v1
+     :schema-version 1
+     :c11-module-id (get candidate :module-id)
+     :c11-operation-id (get candidate :operation-identity-id)
+     :c11-operation-op-id (get operation :op-id)
+     :c11-token-id (get operation :result)
+     :c11-facts facts
+     :c8-c9-c10-upstream upstream
+     :source-span (get source :source-span)
+     :origin-chain (get source :origin-chain)
+     :profile (get operation :profile)
+     :target (get operation :target)
+     :scope :proof-reference-shape-only
+     :fallback :c11-mir-verifier-pending
+     :lowering-status :rejected
+     :b1-status :blocked}))
+
+; Identity binds the complete path-neutral evidence projection, not merely an
+; upstream digest.  Physical provenance, coordinator status, and resolutions
+; remain outside this preimage so copied .gravity/.qst paths compare equally.
+(defn sh13-c11-de-identity-projection [template]
+  {:identity-input (get template :identity-input)
+   :operation-identity-input (get template :operation-identity-input)
+   :semantic-anchor (get template :semantic-anchor)
+   :facts (get template :facts)
+   :payload (get template :payload)
+   :source (get template :source)
+   :scope (get template :scope)
+   :lowering-status (get template :lowering-status)
+   :fallback (get template :fallback)
+   :b1-preflight (get template :b1-preflight)
+   :pending (get template :pending)
+   :nonclaims (get template :nonclaims)})
+
+(defn sh13-c11-de-anchor [candidate operation]
+  (let [source (get operation :source)
+        operation-id (get operation :op-id)
+        token-id (get operation :result)]
+    {:artifact :gravity/sh13-semantic-anchor
+     :anchor-id (str operation-id ":c12-evidence")
+     :domain :safety-proof-reference
+     :typed-core (get (get operation :source) :core-node)
+     :mir-ops [operation-id]
+     :source-span (get source :source-span)
+     :origin-chain (get source :origin-chain)
+     :source-map (get candidate :source-map)
+     :equivalence-proof {:kind :c11-candidate-equality
+                         :operation-id operation-id
+                         :token-id token-id}
+     :fallback :c11-mir-verifier-pending}))
+
+(defn sh13-c11-de-template-valid? [candidate verification template]
+  (if (= template
+         (sh13-build-c11-domain-evidence-template candidate verification))
+    true
+    false))
+
+(defn sh13-build-c11-domain-evidence-template [candidate verification]
+  (if (sh13-c11-domain-evidence-input-valid? candidate verification)
+    (let [operation (get candidate :operation)
+          operation-id (get candidate :operation-identity-id)
+          token-id (get operation :result)
+          semantic (sh13-c11-de-semantic-input candidate operation)
+          anchor (sh13-c11-de-anchor candidate operation)
+          payload
+          {:artifact :gravity/sh13-safety-proof-reference-payload
+           :schema-version 1
+           :operation :proof-reference
+           :token token-id
+           :source-map (get candidate :source-map)
+           :lineage (get candidate :upstream)
+           :fallback :c11-mir-verifier-pending}
+          policy (sh13-c11-domain-evidence-policy)]
+      {:artifact :gravity/sh13-c11-domain-evidence-template
+       :schema-version 1
+       :status :accepted
+       :domain :safety-proof-reference
+       :scope :proof-reference-shape-only
+       :source (get operation :source)
+       :semantic-anchor anchor
+       :identity-input semantic
+       :operation-identity-input
+       {:domain :gravity/sh13-c11-domain-evidence-operation-v1
+        :schema-version 1
+        :c11-module-id (get semantic :c11-module-id)
+        :c11-operation-id (get semantic :c11-operation-id)
+        :c11-operation-op-id (get semantic :c11-operation-op-id)
+        :c11-token-id (get semantic :c11-token-id)
+        :c11-facts (get semantic :c11-facts)
+        :upstream (get semantic :c8-c9-c10-upstream)
+        :source-span (get semantic :source-span)
+        :origin-chain (get semantic :origin-chain)
+        :profile (get semantic :profile)
+        :target (get semantic :target)}
+       :c11-module-id (get semantic :c11-module-id)
+       :c11-operation-id (get semantic :c11-operation-id)
+       :c11-token-id token-id
+       :facts {:c11-operation-facts (get operation :facts)
+               :c11-type-table (get candidate :type-table)
+               :c11-effect-table (get candidate :effect-table)
+               :c11-ownership-table (get candidate :ownership-table)
+               :c11-capability-proof-table
+               (get candidate :capability-proof-table)
+               :c11-capability-table (get candidate :capability-table)
+               :c11-safety-table (get candidate :safety-table)
+               :c11-proof-table (get candidate :proof-certificate-table)}
+       :payload payload
+       :verifier {:scope :proof-reference-shape-only
+                  :status :pending
+                  :nonclaims (get policy :nonclaims)}
+       :lowering-status :rejected
+       :fallback {:status :pending
+                  :kind :c11-mir-verifier-pending}
+       :b1-preflight {:status :blocked
+                      :reason :proof-reference-shape-only
+                      :executable-load? false}
+       :pending (get policy :pending)
+       :nonclaims (get policy :nonclaims)
+       :provenance (get candidate :provenance)
+       :identity-resolution :coordinator-digest-required
+       :identity-binding-status :unbound
+       :diagnostics []
+       :self-hosted? false
+       :clojure-seed-boundary? true})
+    {:artifact :gravity/sh13-c11-domain-evidence-template
+     :schema-version 1
+     :status :rejected
+     :domain :safety-proof-reference
+     :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                    :reason :untrusted-or-malformed-c11-input}]}))
+
+(defn sh13-c11-de-resolution-valid? [request resolution upstream-ids]
+  (if (sh13-c11-de-exact-keys? resolution #{:request :digest})
+    (if (= request (get resolution :request))
+      (if (sh13-c11-de-sha256-id? (get resolution :digest))
+        (if (sh13-c11-de-member? upstream-ids (get resolution :digest))
+          false
+          true)
+        false)
+      false)
+    false))
+
+(defn sh13-c11-domain-evidence-identity-request
+  [candidate verification template]
+  (let [candidate-preflight (sh13-c11-de-walk candidate)
+        verification-preflight (sh13-c11-de-verification-envelope
+                                verification)
+        template-preflight (sh13-c11-de-walk template)]
+    (if (= :accepted (get candidate-preflight :status))
+      (if (= :accepted (get verification-preflight :status))
+        (if (= :accepted (get template-preflight :status))
+          (let [canonical
+                (sh13-build-c11-domain-evidence-template
+                 candidate verification)]
+            (if (= template canonical)
+              {:artifact :gravity/sh13-c11-domain-evidence-identity-request
+               :schema-version 1
+               :status :accepted
+               :request (sh13-c11-de-identity-projection template)
+               :resolution :coordinator-digest-required
+               :diagnostics []
+               :pending (get template :pending)}
+              {:artifact :gravity/sh13-c11-domain-evidence-identity-request
+               :schema-version 1
+               :status :rejected
+               :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                              :reason :template-recomputation-mismatch}]}))
+          {:artifact :gravity/sh13-c11-domain-evidence-identity-request
+           :schema-version 1
+           :status :rejected
+           :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                          :reason :template-carrier-bound}]})
+        {:artifact :gravity/sh13-c11-domain-evidence-identity-request
+         :schema-version 1
+         :status :rejected
+         :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                        :reason :c11-verification-rejected}]})
+      {:artifact :gravity/sh13-c11-domain-evidence-identity-request
+       :schema-version 1
+       :status :rejected
+       :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                      :reason :c11-carrier-bound}]})))
+
+(defn sh13-c11-de-bound-artifact
+  [candidate verification template resolution]
+  (let [operation-id (get resolution :digest)
+        semantic (get template :identity-input)
+        identity-input
+        (assoc semantic :c12-identity-id operation-id)
+        payload (get template :payload)]
+    (assoc
+     (assoc
+      (assoc
+       (assoc
+        (assoc
+         (assoc
+          (assoc template :artifact :gravity/sh13-c11-domain-evidence)
+          :artifact-id operation-id)
+         :identity-input identity-input)
+        :identity-resolution resolution)
+       :identity-binding-status :coordinator-resolution-shape-checked)
+      :verification-status :pending-proof-reference-verifier)
+     :payload (assoc payload :identity-id operation-id)
+    :provenance (get candidate :provenance))))
+
+(defn sh13-bind-c11-domain-evidence
+  [candidate verification template resolution]
+  (let [resolution-preflight (sh13-c11-de-walk resolution)
+        candidate-preflight (sh13-c11-de-walk candidate)
+        verification-preflight (sh13-c11-de-verification-envelope
+                                verification)
+        template-preflight (sh13-c11-de-walk template)
+        request (sh13-c11-de-identity-projection template)
+        upstream-ids (sh13-c11-de-upstream-ids
+                      candidate (get candidate :operation))]
+    (if (= :accepted (get resolution-preflight :status))
+      (if (= :accepted (get candidate-preflight :status))
+        (if (= :accepted (get verification-preflight :status))
+          (if (= :accepted (get template-preflight :status))
+            (if (= template
+                   (sh13-build-c11-domain-evidence-template
+                    candidate verification))
+              (if (sh13-c11-de-resolution-valid?
+                   request resolution upstream-ids)
+              (sh13-c11-de-bound-artifact
+               candidate verification template resolution)
+              {:artifact :gravity/sh13-c11-domain-evidence
+               :schema-version 1
+               :status :rejected
+               :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                              :reason :identity-resolution-substitution}]})
+              {:artifact :gravity/sh13-c11-domain-evidence
+               :schema-version 1
+               :status :rejected
+               :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                              :reason :template-recomputation-mismatch}]})
+            {:artifact :gravity/sh13-c11-domain-evidence
+             :schema-version 1
+             :status :rejected
+             :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                            :reason :template-carrier-bound}]})
+          {:artifact :gravity/sh13-c11-domain-evidence
+           :schema-version 1
+           :status :rejected
+           :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                          :reason :c11-verification-rejected}]})
+        {:artifact :gravity/sh13-c11-domain-evidence
+         :schema-version 1
+         :status :rejected
+         :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                        :reason :c11-carrier-bound}]})
+      {:artifact :gravity/sh13-c11-domain-evidence
+       :schema-version 1
+       :status :rejected
+       :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                      :reason :resolution-carrier-bound}]})))
+
+(defn sh13-verify-c11-domain-evidence
+  [candidate verification template resolution evidence]
+  (let [candidate-preflight (sh13-c11-de-walk candidate)
+        verification-preflight (sh13-c11-de-verification-envelope
+                                verification)
+        template-preflight (sh13-c11-de-walk template)
+        resolution-preflight (sh13-c11-de-walk resolution)
+        evidence-preflight (sh13-c11-de-walk evidence)]
+    (if (= :accepted (get candidate-preflight :status))
+      (if (= :accepted (get verification-preflight :status))
+        (if (= :accepted (get template-preflight :status))
+          (if (= :accepted (get resolution-preflight :status))
+            (if (= :accepted (get evidence-preflight :status))
+              (let [canonical
+                    (sh13-build-c11-domain-evidence-template
+                     candidate verification)]
+                (if (= template canonical)
+                  (let [expected
+                        (sh13-bind-c11-domain-evidence
+                         candidate verification canonical resolution)]
+                    (if (= expected evidence)
+                      {:artifact :gravity/sh13-c11-domain-evidence-verification
+                       :schema-version 1
+                       :status :passed
+                       :scope :proof-reference-shape-only
+                       :checks (sh13-c11-de-checks)
+                       :nonclaims (sh13-c11-de-nonclaims)
+                       :expected expected
+                       :candidate evidence}
+                      {:artifact :gravity/sh13-c11-domain-evidence-verification
+                       :schema-version 1
+                       :status :rejected
+                       :scope :proof-reference-shape-only
+                       :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                                      :reason :candidate-recomputation-mismatch}]}))
+                  {:artifact :gravity/sh13-c11-domain-evidence-verification
+                   :schema-version 1
+                   :status :rejected
+                   :scope :proof-reference-shape-only
+                   :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                                  :reason :template-recomputation-mismatch}]}))
+              {:artifact :gravity/sh13-c11-domain-evidence-verification
+               :schema-version 1
+               :status :rejected
+               :scope :proof-reference-shape-only
+               :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                              :reason :candidate-carrier-bound}]})
+            {:artifact :gravity/sh13-c11-domain-evidence-verification
+             :schema-version 1
+             :status :rejected
+             :scope :proof-reference-shape-only
+             :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                            :reason :resolution-carrier-bound}]})
+          {:artifact :gravity/sh13-c11-domain-evidence-verification
+           :schema-version 1
+           :status :rejected
+           :scope :proof-reference-shape-only
+           :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                          :reason :template-carrier-bound}]})
+        {:artifact :gravity/sh13-c11-domain-evidence-verification
+         :schema-version 1
+         :status :rejected
+         :scope :proof-reference-shape-only
+         :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                        :reason :c11-verification-rejected}]})
+      {:artifact :gravity/sh13-c11-domain-evidence-verification
+       :schema-version 1
+       :status :rejected
+       :scope :proof-reference-shape-only
+       :diagnostics [{:diagnostic-id "C12-EVIDENCE"
+                      :reason :c11-carrier-bound}]})))
+
+; SH-14 bounded compiler-data layout leaf. Authenticated MIR adaptation remains
+; pending; this engine consumes normalized data-operation descriptors.
+
+(defn sh14-layout-policy []
+  {:artifact :gravity/sh14-layout-policy
+   :version 1
+   :kinds #{:string :bytes :symbol :keyword :tuple :record
+            :variant :vector :map :set :mutable-buffer}
+   :allocation-regimes #{:persistent :static :stack :region :bounded}
+   :alignments #{1 2 4 8 16 32 64}
+   :maximum-capacity 4096
+   :maximum-element-size 64
+   :maximum-size-bytes 131072
+   :maximum-origin-count 64
+   :maximum-generated-origin-depth 64
+   :maximum-variant-tags 64
+   :maximum-identifier-units 256
+   :structural-bounds
+   {:maximum-nodes 32768
+    :maximum-depth 96
+    :maximum-width 8192
+    :maximum-collections 8192
+    :maximum-scalars 24576
+    :maximum-scalar-units 262144}
+   :supported-profile-target-pairs
+   #{[:safe :portable] [:meta :portable-mir]}
+   :integer-width-bits 64
+   :maximum-integer 9223372036854775807
+   :size-policy :capacity-times-element-size-rounded-up-to-alignment
+   :diagnostics #{"C12-SCHEMA" "C12-FACTS" "SAFE2-BOUNDS"
+                  "L10-HIDDEN-ALLOC" "S7-LAYOUT" "C12-VERIFY"}
+   :pending [:authenticated-sh12-mir-input
+             :target-specific-layout
+             :actual-allocation
+             :field-offset-calculation
+             :pointer-and-lifetime-layouts]})
+
+(defn sh14-member? [values value]
+  (= (get values value) value))
+
+(defn sh14-unique-from? [values index seen]
+  (loop [cursor index
+         observed seen]
+    (if (= cursor (count values))
+      true
+      (let [value (get values cursor)]
+        (if (contains? observed value)
+          false
+          (recur (+ cursor 1) (conj observed value)))))))
+
+(defn sh14-unique? [values]
+  (if (vector? values)
+    (sh14-unique-from? values 0 #{})
+    false))
+
+(defn sh14-common-valid? [request]
+  (if (map? request)
+    (if (= :gravity/sh14-data-layout-request (get request :artifact))
+      (if (= nil (get request :value-id))
+        false
+        (if
+         (sh14-member?
+          #{:string :bytes :symbol :keyword :tuple :record
+            :variant :vector :map :set :mutable-buffer}
+          (get request :kind))
+         (if (integer? (get request :capacity))
+           (if (integer? (get request :length))
+             (if (integer? (get request :size-bytes))
+               (if (map? (get request :source-span))
+                 (if (= nil (get (get request :source-span) :source-id))
+                   false
+                   (if (vector? (get request :origin-chain))
+                     (if (= nil (get request :profile))
+                      false
+                      (if (= nil (get request :target))
+                        false
+                        (if (= nil (get request :type-fact-id))
+                          false
+                          (if (= nil (get request :effect-fact-id))
+                            false
+                            (if (= nil (get request :ownership-fact-id))
+                              false
+                              (if (= nil (get request :safety-fact-id))
+                                false
+                                true))))))
+                     false))
+                 false)
+               false)
+             false)
+           false)
+         false))
+      false)
+    false))
+
+(defn sh14-shape-valid? [request]
+  (let [kind (get request :kind)
+        payload (get request :payload)]
+    (if (= kind :string)
+      (if (= :utf-8 (get request :encoding))
+        (vector? payload)
+        false)
+      (if (= kind :bytes)
+        (vector? payload)
+        (if (= kind :symbol)
+          (string? payload)
+          (if (= kind :keyword)
+            (string? payload)
+            (if (= kind :tuple)
+              (vector? payload)
+              (if (= kind :record)
+                (let [fields (get request :field-names)]
+                  (if (vector? payload)
+                    (if (vector? fields)
+                      (if (= (count fields) (count payload))
+                        (sh14-unique? fields)
+                        false)
+                      false)
+                    false))
+                (if (= kind :variant)
+                  (if (vector? payload)
+                    (if (set? (get request :allowed-tags))
+                      (contains? (get request :allowed-tags)
+                                 (get request :tag))
+                      false)
+                    false)
+                  (if (= kind :map)
+                    (let [keys (get request :keys)]
+                      (if (vector? payload)
+                        (if (vector? keys)
+                          (if (= (count keys) (count payload))
+                            (sh14-unique? keys)
+                            false)
+                          false)
+                        false))
+                    (if (= kind :set)
+                      (sh14-unique? payload)
+                      (vector? payload))))))))))))
+
+(defn sh14-bounds-valid? [request]
+  (let [capacity (get request :capacity)
+        length (get request :length)]
+    (if (>= capacity 0)
+      (if (<= capacity 4096)
+        (if (>= length 0)
+          (if (<= length capacity)
+            (= length (count (get request :payload)))
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh14-allocation-valid? [request]
+  (let [kind (get request :kind)
+        regime (get request :allocation-regime)]
+    (if (sh14-member?
+         #{:persistent :static :stack :region :bounded} regime)
+      (if (= kind :mutable-buffer)
+        (if (= true (get request :mutable))
+          (sh14-member? #{:stack :region :bounded} regime)
+          false)
+        (= false (get request :mutable)))
+      false)))
+
+(defn sh14-size-valid? [request]
+  (let [element-size (get request :element-size)
+        capacity (get request :capacity)]
+    (if (sh14-member? #{1 2 4 8 16 32 64} (get request :alignment))
+      (if (integer? element-size)
+        (if (> element-size 0)
+          (= (get request :size-bytes) (* capacity element-size))
+          false)
+        false)
+      false)))
+
+(defn sh14-v2-range? [value minimum maximum]
+  (if (integer? value)
+    (if (>= value minimum)
+      (<= value maximum)
+      false)
+    false))
+
+(defn sh14-v2-byte? [value]
+  (sh14-v2-range? value 0 255))
+
+(defn sh14-v2-byte-vector-from? [values index]
+  (if (= index (count values))
+    true
+    (if (sh14-v2-byte? (get values index))
+      (sh14-v2-byte-vector-from? values (+ index 1))
+      false)))
+
+(defn sh14-v2-byte-vector? [values]
+  (if (vector? values)
+    (sh14-v2-byte-vector-from? values 0)
+    false))
+
+(defn sh14-v2-continuation? [value]
+  (sh14-v2-range? value 128 191))
+
+(defn sh14-v2-utf8-from? [bytes index]
+  (if (= index (count bytes))
+    true
+    (let [b0 (get bytes index)
+          remaining (- (count bytes) index)]
+      (if (sh14-v2-range? b0 0 127)
+        (sh14-v2-utf8-from? bytes (+ index 1))
+        (if (sh14-v2-range? b0 194 223)
+          (if (>= remaining 2)
+            (if (sh14-v2-continuation? (get bytes (+ index 1)))
+              (sh14-v2-utf8-from? bytes (+ index 2))
+              false)
+            false)
+          (if (sh14-v2-range? b0 224 239)
+            (if (>= remaining 3)
+              (let [b1 (get bytes (+ index 1))
+                    b2 (get bytes (+ index 2))]
+                (if (sh14-v2-continuation? b2)
+                  (if (= b0 224)
+                    (if (sh14-v2-range? b1 160 191)
+                      (sh14-v2-utf8-from? bytes (+ index 3))
+                      false)
+                    (if (= b0 237)
+                      (if (sh14-v2-range? b1 128 159)
+                        (sh14-v2-utf8-from? bytes (+ index 3))
+                        false)
+                      (if (sh14-v2-continuation? b1)
+                        (sh14-v2-utf8-from? bytes (+ index 3))
+                        false)))
+                  false))
+              false)
+            (if (sh14-v2-range? b0 240 244)
+              (if (>= remaining 4)
+                (let [b1 (get bytes (+ index 1))
+                      b2 (get bytes (+ index 2))
+                      b3 (get bytes (+ index 3))]
+                  (if (sh14-v2-continuation? b2)
+                    (if (sh14-v2-continuation? b3)
+                      (if (= b0 240)
+                        (if (sh14-v2-range? b1 144 191)
+                          (sh14-v2-utf8-from? bytes (+ index 4))
+                          false)
+                        (if (= b0 244)
+                          (if (sh14-v2-range? b1 128 143)
+                            (sh14-v2-utf8-from? bytes (+ index 4))
+                            false)
+                          (if (sh14-v2-continuation? b1)
+                            (sh14-v2-utf8-from? bytes (+ index 4))
+                            false)))
+                      false)
+                    false))
+                false)
+              false)))))))
+
+(defn sh14-v2-utf8? [bytes]
+  (if (sh14-v2-byte-vector? bytes)
+    (sh14-v2-utf8-from? bytes 0)
+    false))
+
+(defn sh14-v2-character-member-from? [characters character index]
+  (if (= index (count characters))
+    false
+    (if (= character (get characters index))
+      true
+      (sh14-v2-character-member-from?
+       characters character (+ index 1)))))
+
+(defn sh14-v2-hex-from? [value index]
+  (if (= index 71)
+    true
+    (if
+     (sh14-v2-character-member-from?
+      "0123456789abcdef" (get value index) 0)
+      (sh14-v2-hex-from? value (+ index 1))
+      false)))
+
+(defn sh14-v2-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (if (= (get value 0) (get "sha256:" 0))
+        (if (= (get value 1) (get "sha256:" 1))
+          (if (= (get value 2) (get "sha256:" 2))
+            (if (= (get value 3) (get "sha256:" 3))
+              (if (= (get value 4) (get "sha256:" 4))
+                (if (= (get value 5) (get "sha256:" 5))
+                  (if (= (get value 6) (get "sha256:" 6))
+                    (sh14-v2-hex-from? value 7)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh14-v2-point-valid? [point]
+  (if (map? point)
+    (if (sh14-v2-range? (get point :byte) 0 9223372036854775807)
+      (if (sh14-v2-range? (get point :line) 1 9223372036854775807)
+        (sh14-v2-range? (get point :column) 1 9223372036854775807)
+        false)
+      false)
+    false))
+
+(defn sh14-v2-source-span-valid? [span]
+  (if (map? span)
+    (if (= nil (get span :source-id))
+      false
+      (if (string? (get span :actual-source-path))
+        (if (> (count (get span :actual-source-path)) 0)
+          (if (sh14-v2-point-valid? (get span :start))
+            (if (sh14-v2-point-valid? (get span :end))
+              (let [start (get span :start)
+                    end (get span :end)]
+                (if (>= (get end :byte) (get start :byte))
+                  (if (>= (get end :line) (get start :line))
+                    (if (= (get end :line) (get start :line))
+                      (>= (get end :column) (get start :column))
+                      true)
+                    false)
+                  false))
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh14-v2-generated-origin-valid? [origin]
+  (if (map? origin)
+    (if (sh14-v2-sha256-id? (get origin :generator-id))
+      (if (sh14-v2-sha256-id? (get origin :anchor-id))
+        (if (string? (get origin :actual-source-path))
+          (if (> (count (get origin :actual-source-path)) 0)
+            (let [parent (get origin :parent-generated-origin)]
+              (if (= nil parent)
+                true
+                (sh14-v2-generated-origin-valid? parent)))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh14-v2-origin-entry-valid? [origin]
+  (if (map? origin)
+    (if (= nil (get origin :source-id))
+      false
+      (if (string? (get origin :actual-source-path))
+        (if (> (count (get origin :actual-source-path)) 0)
+          (if (= :source (get origin :kind))
+            (= nil (get origin :generated-origin))
+            (if (= :generated (get origin :kind))
+              (sh14-v2-generated-origin-valid?
+               (get origin :generated-origin))
+              false))
+          false)
+        false))
+    false))
+
+(defn sh14-v2-origin-from-valid? [origins index]
+  (if (= index (count origins))
+    true
+    (if (sh14-v2-origin-entry-valid? (get origins index))
+      (sh14-v2-origin-from-valid? origins (+ index 1))
+      false)))
+
+(defn sh14-v2-origin-chain-valid? [origins]
+  (if (vector? origins)
+    (if (> (count origins) 0)
+      (sh14-v2-origin-from-valid? origins 0)
+      false)
+    false))
+
+(defn sh14-v3-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh14-v3-not [value]
+  (if value false true))
+
+(defn sh14-v3-request-keys [kind]
+  (if (= kind :string)
+    #{:artifact :value-id :kind :payload :encoding
+      :capacity :length :element-size :size-bytes :alignment
+      :allocation-regime :mutable :profile :target :source-span
+      :origin-chain :type-fact-id :effect-fact-id
+      :ownership-fact-id :safety-fact-id}
+    (if (= kind :record)
+      #{:artifact :value-id :kind :payload :field-names
+        :capacity :length :element-size :size-bytes :alignment
+        :allocation-regime :mutable :profile :target :source-span
+        :origin-chain :type-fact-id :effect-fact-id
+        :ownership-fact-id :safety-fact-id}
+      (if (= kind :variant)
+        #{:artifact :value-id :kind :payload :allowed-tags
+          :variant-arities :tag :capacity :length :element-size
+          :size-bytes :alignment :allocation-regime :mutable
+          :profile :target :source-span :origin-chain
+          :type-fact-id :effect-fact-id :ownership-fact-id
+          :safety-fact-id}
+        (if (= kind :map)
+          #{:artifact :value-id :kind :payload :keys
+            :capacity :length :element-size :size-bytes :alignment
+            :allocation-regime :mutable :profile :target :source-span
+            :origin-chain :type-fact-id :effect-fact-id
+            :ownership-fact-id :safety-fact-id}
+          #{:artifact :value-id :kind :payload
+            :capacity :length :element-size :size-bytes :alignment
+            :allocation-regime :mutable :profile :target :source-span
+            :origin-chain :type-fact-id :effect-fact-id
+            :ownership-fact-id :safety-fact-id})))))
+
+(defn sh14-v3-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (set? value))))
+
+(defn sh14-v3-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (vec (keys value))
+           result []]
+      (if (= (count remaining) 0)
+        result
+        (let [key (first remaining)]
+          (recur
+           (rest remaining)
+           (conj (conj result key) (get value key))))))
+    (vec value)))
+
+(defn sh14-v3-structural-preflight [value]
+  (let [bounds (get (sh14-layout-policy) :structural-bounds)
+        maximum-nodes (get bounds :maximum-nodes)
+        maximum-depth (get bounds :maximum-depth)
+        maximum-width (get bounds :maximum-width)
+        maximum-collections (get bounds :maximum-collections)
+        maximum-scalars (get bounds :maximum-scalars)
+        maximum-scalar-units (get bounds :maximum-scalar-units)]
+    (loop [frontier [[value 0]]
+           cursor 0
+           nodes 0
+           collections 0
+           scalars 0
+           scalar-units 0]
+      (if (= cursor (count frontier))
+        {:status :accepted
+         :nodes nodes
+         :collections collections
+         :scalars scalars
+         :scalar-units scalar-units}
+        (let [entry (get frontier cursor)
+              current (first entry)
+              depth (second entry)
+              next-nodes (+ nodes 1)]
+          (if (> next-nodes maximum-nodes)
+            {:status :rejected :reason :structure-node-bound}
+            (if (> depth maximum-depth)
+              {:status :rejected :reason :structure-depth-bound}
+              (if (sh14-v3-aggregate? current)
+                (let [components (sh14-v3-aggregate-components current)
+                      width (count components)
+                      next-collections (+ collections 1)]
+                  (if (> width maximum-width)
+                    {:status :rejected :reason :structure-width-bound}
+                    (if (> next-collections maximum-collections)
+                      {:status :rejected
+                       :reason :structure-collection-bound}
+                      (let [next-frontier
+                            (loop [remaining components
+                                   result frontier]
+                              (if (= (count remaining) 0)
+                                result
+                                (recur
+                                 (rest remaining)
+                                 (conj result
+                                       [(first remaining)
+                                        (+ depth 1)]))))]
+                        (recur next-frontier (+ cursor 1)
+                               next-nodes next-collections
+                               scalars scalar-units)))))
+                (if (seq? current)
+                  {:status :rejected
+                   :reason :structure-sequence-carrier}
+                  (let [next-scalars (+ scalars 1)
+                        units
+                        (if (string? current)
+                          (count current)
+                          (if (keyword? current)
+                            (count (str current))
+                            (if (symbol? current)
+                              (count (str current))
+                              1)))
+                        next-units (+ scalar-units units)]
+                    (if (> next-scalars maximum-scalars)
+                      {:status :rejected :reason :structure-scalar-bound}
+                      (if (> next-units maximum-scalar-units)
+                        {:status :rejected
+                         :reason :structure-scalar-unit-bound}
+                        (recur frontier (+ cursor 1) next-nodes
+                               collections next-scalars next-units)))))))))))))
+
+(defn sh14-v3-identifier-character? [character]
+  (sh14-v2-character-member-from?
+   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/!?*+<>=:"
+   character 0))
+
+(defn sh14-v3-ascii-identifier? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (if (<= (count value) 256)
+        (loop [index 0]
+          (if (= index (count value))
+            true
+            (if (sh14-v3-identifier-character? (get value index))
+              (recur (+ index 1))
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh14-v3-canonical-identifier? [value]
+  (if (keyword? value)
+    (sh14-v3-ascii-identifier? (str value))
+    (if (symbol? value)
+      (sh14-v3-ascii-identifier? (str value))
+      false)))
+
+(defn sh14-v3-canonical-scalar? [value]
+  (if (= nil value)
+    true
+    (if (boolean? value)
+      true
+      (if (integer? value)
+        (sh14-v2-range?
+         value -9223372036854775808 9223372036854775807)
+        (if (string? value)
+          (<= (count value) 4096)
+          (if (sh14-v3-canonical-identifier? value)
+            true
+            (char? value)))))))
+
+(defn sh14-v3-canonical-vector? [values]
+  (if (vector? values)
+    (loop [index 0]
+      (if (= index (count values))
+        true
+        (if (sh14-v3-canonical-scalar? (get values index))
+          (recur (+ index 1))
+          false)))
+    false))
+
+(defn sh14-v3-keyword-vector? [values]
+  (if (vector? values)
+    (loop [index 0]
+      (if (= index (count values))
+        true
+        (let [value (get values index)]
+          (if (keyword? value)
+            (if (sh14-v3-canonical-identifier? value)
+              (recur (+ index 1))
+              false)
+            false))))
+    false))
+
+(defn sh14-v3-canonical-key-vector? [values]
+  (if (sh14-v3-canonical-vector? values)
+    (sh14-unique? values)
+    false))
+
+(defn sh14-v3-byte-vector? [values]
+  (if (vector? values)
+    (loop [index 0]
+      (if (= index (count values))
+        true
+        (if (sh14-v2-byte? (get values index))
+          (recur (+ index 1))
+          false)))
+    false))
+
+(defn sh14-v3-utf8? [bytes]
+  (if (sh14-v3-byte-vector? bytes)
+    (loop [index 0]
+      (if (= index (count bytes))
+        true
+        (let [b0 (get bytes index)
+              remaining (- (count bytes) index)]
+          (if (sh14-v2-range? b0 0 127)
+            (recur (+ index 1))
+            (if (sh14-v2-range? b0 194 223)
+              (if (>= remaining 2)
+                (if (sh14-v2-continuation? (get bytes (+ index 1)))
+                  (recur (+ index 2))
+                  false)
+                false)
+              (if (sh14-v2-range? b0 224 239)
+                (if (>= remaining 3)
+                  (let [b1 (get bytes (+ index 1))
+                        b2 (get bytes (+ index 2))]
+                    (if (sh14-v2-continuation? b2)
+                      (if (= b0 224)
+                        (if (sh14-v2-range? b1 160 191)
+                          (recur (+ index 3))
+                          false)
+                        (if (= b0 237)
+                          (if (sh14-v2-range? b1 128 159)
+                            (recur (+ index 3))
+                            false)
+                          (if (sh14-v2-continuation? b1)
+                            (recur (+ index 3))
+                            false)))
+                      false))
+                  false)
+                (if (sh14-v2-range? b0 240 244)
+                  (if (>= remaining 4)
+                    (let [b1 (get bytes (+ index 1))
+                          b2 (get bytes (+ index 2))
+                          b3 (get bytes (+ index 3))]
+                      (if (sh14-v2-continuation? b2)
+                        (if (sh14-v2-continuation? b3)
+                          (if (= b0 240)
+                            (if (sh14-v2-range? b1 144 191)
+                              (recur (+ index 4))
+                              false)
+                            (if (= b0 244)
+                              (if (sh14-v2-range? b1 128 143)
+                                (recur (+ index 4))
+                                false)
+                              (if (sh14-v2-continuation? b1)
+                                (recur (+ index 4))
+                                false)))
+                          false)
+                        false))
+                    false)
+                  false)))))))
+    false))
+
+(defn sh14-v3-source-id? [value]
+  (if (keyword? value)
+    (sh14-v3-canonical-identifier? value)
+    false))
+
+(defn sh14-v3-point-valid? [point]
+  (if (sh14-v3-exact-keys? point #{:byte :line :column})
+    (sh14-v2-point-valid? point)
+    false))
+
+(defn sh14-v3-source-span-valid? [span]
+  (if
+   (sh14-v3-exact-keys?
+    span #{:source-id :actual-source-path :start :end})
+    (if (sh14-v3-source-id? (get span :source-id))
+      (if (string? (get span :actual-source-path))
+        (if (> (count (get span :actual-source-path)) 0)
+          (if (<= (count (get span :actual-source-path)) 4096)
+            (if (sh14-v3-point-valid? (get span :start))
+              (if (sh14-v3-point-valid? (get span :end))
+                (sh14-v2-source-span-valid? span)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh14-v3-generated-origin-valid-at? [origin depth]
+  (if (> depth 64)
+    false
+    (if (map? origin)
+      (let [parent (get origin :parent-generated-origin)
+            expected
+            (if (= nil parent)
+              #{:generator-id :anchor-id :actual-source-path}
+              #{:generator-id :anchor-id :actual-source-path
+                :parent-generated-origin})]
+        (if (sh14-v3-exact-keys? origin expected)
+          (if (sh14-v2-sha256-id? (get origin :generator-id))
+            (if (sh14-v2-sha256-id? (get origin :anchor-id))
+              (if (string? (get origin :actual-source-path))
+                (if (> (count (get origin :actual-source-path)) 0)
+                  (if (<= (count (get origin :actual-source-path)) 4096)
+                    (if (= nil parent)
+                      true
+                      (sh14-v3-generated-origin-valid-at?
+                       parent (+ depth 1)))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false))
+      false)))
+
+(defn sh14-v3-origin-entry-valid? [origin]
+  (if (map? origin)
+    (let [kind (get origin :kind)
+          expected
+          (if (= kind :source)
+            #{:kind :source-id :actual-source-path}
+            (if (= kind :generated)
+              #{:kind :source-id :actual-source-path :generated-origin}
+              #{}))]
+      (if (sh14-v3-exact-keys? origin expected)
+        (if (sh14-v3-source-id? (get origin :source-id))
+          (if (string? (get origin :actual-source-path))
+            (if (> (count (get origin :actual-source-path)) 0)
+              (if (<= (count (get origin :actual-source-path)) 4096)
+                (if (= kind :source)
+                  true
+                  (sh14-v3-generated-origin-valid-at?
+                   (get origin :generated-origin) 1))
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh14-v3-origin-chain-valid? [origins]
+  (if (vector? origins)
+    (if (> (count origins) 0)
+      (if (<= (count origins) 64)
+        (loop [index 0]
+          (if (= index (count origins))
+            true
+            (if (sh14-v3-origin-entry-valid? (get origins index))
+              (recur (+ index 1))
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh14-v3-profile-target-valid? [request]
+  (sh14-member?
+   (get (sh14-layout-policy) :supported-profile-target-pairs)
+   [(get request :profile) (get request :target)]))
+
+(defn sh14-v2-common-error [request]
+  (if (map? request)
+    (if (= :gravity/sh14-data-layout-request (get request :artifact))
+      (if
+       (sh14-member?
+        #{:string :bytes :symbol :keyword :tuple :record
+          :variant :vector :map :set :mutable-buffer}
+        (get request :kind))
+        (if
+         (sh14-v3-exact-keys?
+          request (sh14-v3-request-keys (get request :kind)))
+          (if
+           (sh14-v3-canonical-identifier? (get request :value-id))
+            (if (integer? (get request :capacity))
+              (if (integer? (get request :length))
+                (if (integer? (get request :size-bytes))
+                  (if (sh14-v3-source-span-valid?
+                       (get request :source-span))
+                    (if (sh14-v3-origin-chain-valid?
+                         (get request :origin-chain))
+                      (if (sh14-v3-profile-target-valid? request)
+                        (if (sh14-v2-sha256-id?
+                             (get request :type-fact-id))
+                          (if (sh14-v2-sha256-id?
+                               (get request :effect-fact-id))
+                            (if (sh14-v2-sha256-id?
+                                 (get request :ownership-fact-id))
+                              (if (sh14-v2-sha256-id?
+                                   (get request :safety-fact-id))
+                                nil
+                                :invalid-safety-fact)
+                              :invalid-ownership-fact)
+                            :invalid-effect-fact)
+                          :invalid-type-fact)
+                        :unsupported-profile-target)
+                      :invalid-origin-chain)
+                    :invalid-source-span)
+                  :invalid-size-bytes)
+                :invalid-length)
+              :invalid-capacity)
+            :invalid-value-id)
+          :unexpected-request-fields)
+        :unsupported-kind)
+      :invalid-request-artifact)
+    :request-not-map))
+
+(defn sh14-v2-variant-schema-from? [tags arities index]
+  (if (= index (count tags))
+    true
+    (let [tag (get tags index)
+          arity (get arities tag)]
+      (if (keyword? tag)
+        (if (= nil tag)
+          false
+          (if (sh14-v3-canonical-identifier? tag)
+            (if (sh14-v2-range? arity 0 4096)
+              (sh14-v2-variant-schema-from?
+               tags arities (+ index 1))
+              false)
+            false))
+        false))))
+
+(defn sh14-v2-variant-valid? [request payload]
+  (let [tags (get request :allowed-tags)
+        arities (get request :variant-arities)
+        tag (get request :tag)]
+    (if (vector? payload)
+      (if (vector? tags)
+        (if (> (count tags) 0)
+          (if (<= (count tags) 64)
+            (if (sh14-unique? tags)
+              (if (map? arities)
+                (if (= (count tags) (count arities))
+                  (if (sh14-v2-variant-schema-from? tags arities 0)
+                    (if (keyword? tag)
+                      (if (= nil tag)
+                        false
+                        (if (sh14-v3-canonical-identifier? tag)
+                          (if (contains? arities tag)
+                            (= (count payload) (get arities tag))
+                            false)
+                          false))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh14-v2-shape-error [request]
+  (let [kind (get request :kind)
+        payload (get request :payload)]
+    (if (= kind :string)
+      (if (= :utf-8 (get request :encoding))
+        (if (sh14-v3-utf8? payload) nil :invalid-utf8)
+        :invalid-string-encoding)
+      (if (= kind :bytes)
+        (if (sh14-v3-byte-vector? payload) nil :invalid-byte-vector)
+        (if (= kind :symbol)
+          (if (sh14-v3-ascii-identifier? payload)
+            nil
+            :invalid-symbol)
+          (if (= kind :keyword)
+            (if (sh14-v3-ascii-identifier? payload)
+              nil
+              :invalid-keyword)
+            (if (= kind :tuple)
+              (if (sh14-v3-canonical-vector? payload)
+                nil
+                :invalid-tuple)
+              (if (= kind :record)
+                (let [fields (get request :field-names)]
+                  (if (sh14-v3-canonical-vector? payload)
+                    (if (sh14-v3-keyword-vector? fields)
+                      (if (= (count fields) (count payload))
+                        (if (sh14-unique? fields)
+                          nil
+                          :duplicate-record-field)
+                        :record-field-count)
+                      :invalid-record-fields)
+                    :invalid-record-payload))
+                (if (= kind :variant)
+                  (if (sh14-v3-canonical-vector? payload)
+                    (if (sh14-v2-variant-valid? request payload)
+                      nil
+                      :invalid-variant-schema)
+                    :invalid-variant-payload)
+                  (if (= kind :map)
+                    (let [keys (get request :keys)]
+                      (if (sh14-v3-canonical-vector? payload)
+                        (if (sh14-v3-canonical-vector? keys)
+                          (if (= (count keys) (count payload))
+                            (if (sh14-unique? keys)
+                              nil
+                              :duplicate-map-key)
+                            :map-key-count)
+                          :invalid-map-keys)
+                        :invalid-map-payload))
+                    (if (= kind :set)
+                      (if (sh14-v3-canonical-vector? payload)
+                        (if (sh14-unique? payload)
+                          nil
+                          :duplicate-set-value)
+                        :invalid-set-payload)
+                      (if (sh14-v3-canonical-vector? payload)
+                        nil
+                        :invalid-vector))))))))))))
+
+(defn sh14-v2-bounds-error [request]
+  (let [capacity (get request :capacity)
+        length (get request :length)]
+    (if (>= capacity 0)
+      (if (<= capacity 4096)
+        (if (>= length 0)
+          (if (<= length capacity)
+            (if (= length (count (get request :payload)))
+              nil
+              :payload-length-mismatch)
+            :length-over-capacity)
+          :negative-length)
+        :capacity-over-limit)
+      :negative-capacity)))
+
+(defn sh14-v2-aligned-size [raw-size alignment]
+  (* alignment (quot (+ raw-size (- alignment 1)) alignment)))
+
+(defn sh14-v3-kind-element-size-valid? [request]
+  (if
+   (sh14-member?
+    #{:string :bytes :symbol :keyword} (get request :kind))
+    (= 1 (get request :element-size))
+    true))
+
+(defn sh14-v2-size-error [request]
+  (let [element-size (get request :element-size)
+        capacity (get request :capacity)
+        alignment (get request :alignment)]
+    (if (sh14-member? #{1 2 4 8 16 32 64} alignment)
+      (if (integer? element-size)
+        (if (> element-size 0)
+          (if (<= element-size 64)
+            (if (sh14-v3-kind-element-size-valid? request)
+              (if (<= capacity
+                      (quot 9223372036854775807 element-size))
+                (let [raw-size (* capacity element-size)
+                      aligned-size
+                      (sh14-v2-aligned-size raw-size alignment)]
+                  (if (<= aligned-size 131072)
+                    (if (= (get request :size-bytes) aligned-size)
+                      nil
+                      :unaligned-size-mismatch)
+                    :total-size-over-limit))
+                :integer-overflow)
+              :kind-element-size)
+            :element-size-over-limit)
+          :nonpositive-element-size)
+        :invalid-element-size)
+      :invalid-alignment)))
+
+(defn sh14-v2-error [request]
+  (let [common-error (sh14-v2-common-error request)]
+    (if (= nil common-error)
+      (let [shape-error (sh14-v2-shape-error request)]
+        (if (= nil shape-error)
+          (let [bounds-error (sh14-v2-bounds-error request)]
+            (if (= nil bounds-error)
+              (if (sh14-allocation-valid? request)
+                (sh14-v2-size-error request)
+                :allocation-regime)
+              bounds-error))
+          shape-error))
+      common-error)))
+
+(defn sh14-error [request]
+  (sh14-v2-error request))
+
+(defn sh14-rule [error]
+  (if
+   (contains?
+    #{:missing-value-id :invalid-value-id
+      :missing-profile :missing-target :unsupported-profile-target
+      :invalid-type-fact :invalid-effect-fact
+      :invalid-ownership-fact :invalid-safety-fact}
+    error)
+    "C12-FACTS"
+    (if
+     (contains?
+      #{:negative-capacity :capacity-over-limit :negative-length
+        :length-over-capacity :payload-length-mismatch
+        :structure-node-bound :structure-depth-bound
+        :structure-width-bound :structure-collection-bound
+        :structure-scalar-bound :structure-scalar-unit-bound
+        :structure-sequence-carrier}
+      error)
+      "SAFE2-BOUNDS"
+      (if (= error :allocation-regime)
+        "L10-HIDDEN-ALLOC"
+        (if
+         (contains?
+          #{:invalid-alignment :invalid-element-size
+            :nonpositive-element-size :element-size-over-limit
+            :kind-element-size
+            :integer-overflow :total-size-over-limit
+            :unaligned-size-mismatch}
+          error)
+          "S7-LAYOUT"
+          "C12-SCHEMA")))))
+
+(defn sh14-family [error]
+  (if (= (sh14-rule error) "C12-FACTS")
+    :fact-lineage
+    (if (= (sh14-rule error) "SAFE2-BOUNDS")
+      :structural-bounds
+      (if (= (sh14-rule error) "L10-HIDDEN-ALLOC")
+        :allocation
+        (if (= (sh14-rule error) "S7-LAYOUT")
+          :abi-layout
+          :data-schema)))))
+
+(defn sh14-missing-fact [error]
+  (if (= error :invalid-value-id)
+    :value-id
+    (if (= error :unsupported-profile-target)
+      :profile-target
+      (if (= error :invalid-type-fact)
+        :type-fact-id
+        (if (= error :invalid-effect-fact)
+          :effect-fact-id
+          (if (= error :invalid-ownership-fact)
+            :ownership-fact-id
+            (if (= error :invalid-safety-fact)
+              :safety-fact-id
+              nil)))))))
+
+(defn sh14-diagnostic [request error]
+  {:artifact :gravity/sh14-layout-diagnostic
+   :diagnostic-id (sh14-rule error)
+   :rule (sh14-rule error)
+   :family (sh14-family error)
+   :reason error
+   :missing-fact (sh14-missing-fact error)
+   :stage :domain-ir-layout
+   :domain :compiler-data-layout
+   :artifact-id
+   (if (sh14-v3-canonical-identifier? (get request :value-id))
+     (get request :value-id)
+     nil)
+   :semantic-anchor :normalized-data-operation-descriptor
+   :owner-document "C12"
+   :verifier
+   :gravity.compiler.c12-domain-ir-architecture/sh14-verify-layout
+   :value-id
+   (if (sh14-v3-canonical-identifier? (get request :value-id))
+     (get request :value-id)
+     nil)
+   :kind (get request :kind)
+   :profile (get request :profile)
+   :target (get request :target)
+   :source-span (get request :source-span)
+   :generated-origin-chain (get request :origin-chain)
+   :remediation :supply-bounded-explicit-and-consistent-layout-facts})
+
+(defn sh14-identity-point [point]
+  {:byte (get point :byte)
+   :line (get point :line)
+   :column (get point :column)})
+
+(defn sh14-identity-source-span [source-span]
+  {:source-id (get source-span :source-id)
+   :start (sh14-identity-point (get source-span :start))
+   :end (sh14-identity-point (get source-span :end))})
+
+(defn sh14-identity-generated-origin [origin]
+  (if (= nil origin)
+    nil
+    {:generator-id (get origin :generator-id)
+     :anchor-id (get origin :anchor-id)
+     :parent-generated-origin
+     (sh14-identity-generated-origin
+      (get origin :parent-generated-origin))}))
+
+(defn sh14-identity-origin-entry [origin]
+  {:kind (get origin :kind)
+   :source-id (get origin :source-id)
+   :generated-origin
+   (sh14-identity-generated-origin (get origin :generated-origin))})
+
+(defn sh14-identity-origins-from [origins index result]
+  (if (= index (count origins))
+    result
+    (sh14-identity-origins-from
+     origins
+     (+ index 1)
+     (conj result
+           (sh14-identity-origin-entry (get origins index))))))
+
+(defn sh14-identity-origins [origins]
+  (sh14-identity-origins-from origins 0 []))
+
+(defn sh14-identity-input [request]
+  {:artifact (get request :artifact)
+   :value-id (get request :value-id)
+   :kind (get request :kind)
+   :payload (get request :payload)
+   :encoding (get request :encoding)
+   :capacity (get request :capacity)
+   :length (get request :length)
+   :element-size (get request :element-size)
+   :size-bytes (get request :size-bytes)
+   :alignment (get request :alignment)
+   :allocation-regime (get request :allocation-regime)
+   :mutable (get request :mutable)
+   :field-names (get request :field-names)
+   :keys (get request :keys)
+   :allowed-tags (get request :allowed-tags)
+   :variant-arities (get request :variant-arities)
+   :tag (get request :tag)
+   :profile (get request :profile)
+   :target (get request :target)
+   :source-span (sh14-identity-source-span (get request :source-span))
+   :origin-chain (sh14-identity-origins (get request :origin-chain))
+   :type-fact-id (get request :type-fact-id)
+   :effect-fact-id (get request :effect-fact-id)
+   :ownership-fact-id (get request :ownership-fact-id)
+   :safety-fact-id (get request :safety-fact-id)})
+
+(defn sh14-layout [request]
+  {:artifact :gravity/sh14-data-layout
+   :status :accepted
+   :value-id (get request :value-id)
+   :kind (get request :kind)
+   :layout {:capacity (get request :capacity)
+            :length (get request :length)
+            :element-size (get request :element-size)
+            :size-bytes (get request :size-bytes)
+            :alignment (get request :alignment)
+            :allocation-regime (get request :allocation-regime)
+            :mutable (get request :mutable)
+            :field-names (get request :field-names)
+            :tag (get request :tag)}
+   :facts {:type-fact-id (get request :type-fact-id)
+           :effect-fact-id (get request :effect-fact-id)
+           :ownership-fact-id (get request :ownership-fact-id)
+           :safety-fact-id (get request :safety-fact-id)}
+   :identity-input (sh14-identity-input request)
+   :provenance {:actual-source-path
+                (get (get request :source-span) :actual-source-path)
+                :source-span (get request :source-span)
+                :origin-chain (get request :origin-chain)}
+   :diagnostics []
+   :pending (get (sh14-layout-policy) :pending)})
+
+(defn sh14-v3-structural-diagnostic [request preflight]
+  {:artifact :gravity/sh14-layout-diagnostic
+   :diagnostic-id "SAFE2-BOUNDS"
+   :rule "SAFE2-BOUNDS"
+   :family :structural-bounds
+   :reason (get preflight :reason)
+   :missing-fact nil
+   :stage :domain-ir-layout
+   :domain :compiler-data-layout
+   :artifact-id
+   (if (sh14-v3-canonical-identifier? (get request :value-id))
+     (get request :value-id)
+     nil)
+   :semantic-anchor :normalized-data-operation-descriptor
+   :owner-document "C12"
+   :verifier
+   :gravity.compiler.c12-domain-ir-architecture/sh14-verify-layout
+   :value-id
+   (if (sh14-v3-canonical-identifier? (get request :value-id))
+     (get request :value-id)
+     nil)
+   :kind
+   (if (sh14-v3-canonical-identifier? (get request :kind))
+     (get request :kind)
+     nil)
+   :profile nil
+   :target nil
+   :source-span nil
+   :generated-origin-chain []
+   :structural-preflight preflight
+   :remediation :supply-a-structurally-bounded-layout-request})
+
+(defn sh14-build-layout [request]
+  (let [preflight (sh14-v3-structural-preflight request)]
+    (if (= :accepted (get preflight :status))
+      (let [error (sh14-error request)]
+        (if (= nil error)
+          (sh14-layout request)
+          {:artifact :gravity/sh14-data-layout
+           :status :rejected
+           :value-id
+           (if (sh14-v3-canonical-identifier? (get request :value-id))
+             (get request :value-id)
+             nil)
+           :diagnostics [(sh14-diagnostic request error)]
+           :pending (get (sh14-layout-policy) :pending)}))
+      {:artifact :gravity/sh14-data-layout
+       :status :rejected
+       :value-id
+       (if (sh14-v3-canonical-identifier? (get request :value-id))
+         (get request :value-id)
+         nil)
+       :diagnostics [(sh14-v3-structural-diagnostic request preflight)]
+       :pending (get (sh14-layout-policy) :pending)})))
+
+(defn sh14-verify-layout [request candidate]
+  (let [request-preflight (sh14-v3-structural-preflight request)
+        candidate-preflight (sh14-v3-structural-preflight candidate)]
+    (if (sh14-v3-not (= :accepted (get request-preflight :status)))
+      {:artifact :gravity/sh14-layout-verification
+       :status :rejected
+       :value-id nil
+       :diagnostics
+       [{:artifact :gravity/sh14-layout-diagnostic
+         :diagnostic-id "C12-VERIFY"
+         :rule "C12-VERIFY"
+         :reason :request-structural-bound
+         :structural-preflight request-preflight}]}
+      (if (sh14-v3-not (= :accepted (get candidate-preflight :status)))
+        {:artifact :gravity/sh14-layout-verification
+         :status :rejected
+         :value-id
+         (if (sh14-v3-canonical-identifier? (get request :value-id))
+           (get request :value-id)
+           nil)
+         :diagnostics
+         [{:artifact :gravity/sh14-layout-diagnostic
+           :diagnostic-id "C12-VERIFY"
+           :rule "C12-VERIFY"
+           :reason :candidate-structural-bound
+           :structural-preflight candidate-preflight}]}
+        (if (= (sh14-build-layout request) candidate)
+          {:artifact :gravity/sh14-layout-verification
+           :status :passed
+           :value-id (get request :value-id)}
+          {:artifact :gravity/sh14-layout-verification
+           :status :rejected
+           :value-id (get request :value-id)
+           :diagnostics
+           [{:artifact :gravity/sh14-layout-diagnostic
+             :diagnostic-id "C12-VERIFY"
+             :rule "C12-VERIFY"
+             :reason :layout-result-substitution}]})))))

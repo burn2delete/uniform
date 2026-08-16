@@ -1,194 +1,101 @@
-; Stage1 Gravity-owned C5 name resolution and namespace analyzer contract.
+; Compatibility-only C5 source inventory facade for the SH-06 resolution authority.
 (ns gravity.compiler.c5-name-resolution-namespace-analyzer
   (:profile :meta)
   (:target :jvm)
-  (:exports [c5-binding-identity-contract
-             c5-resolution-context-contract
-             c5-namespace-analysis-contract
-             c5-resolution-diagnostic-catalog
-             build-c5-binding-record
-             verify-c5-resolution])
+  (:exports [c5-resolution-compatibility-contract
+             c5-compatible-resolution-result?
+             c5-package-resolution-result])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
   (:metadata {:bootstrap
               {:stage :stage1
-               :component :name-resolution
+               :component :name-resolution-compatibility-facade
                :owner :gravity-source
                :source-language :gravity
                :seed :clojure-stage0
-               :retirement-objective :replace-clojure-seed
+               :retirement-objective :replace-clojure-c5-facade-subset
                :ambient-authority-denied true
-               :documents ["C5" "L3" "C3" "C4" "L5" "L6" "L15"
-                           "P1" "P13" "PKG1" "PKG2" "PKG3"
-                           "C15" "BOOT1" "BOOT2" "BOOT3" "BOOT4"
-                           "BOOT5" "BOOT6" "BOOT7" "BOOT8"
-                           "TEST2"]
-               :implements [:binding-identity-contract
-                             :resolution-context-contract
-                             :namespace-analysis-artifact
-                             :binding-table
-                             :alias-table
-                             :import-export-table
-                             :lexical-scope-graph
-                             :dependency-graph
-                             :cross-profile-edge-report
-                             :incremental-invalidation-keys
-                             :resolution-diagnostic-catalog]
+               :documents ["C5" "L3" "C15" "BOOT1" "BOOT3"]
+               :implements [:resolution-result-compatibility-package]
                :preserves #{:source-spans :syntax-identity
-                            :diagnostic-codes :artifact-provenance
                             :binding-identity :namespace-context
-                            :macro-expansion-context
                             :profile-target-metadata
                             :effect-capability-metadata
                             :visibility-metadata :dependency-edges
-                            :incremental-invalidation-keys
-                            :lsp-index-identity}
+                            :diagnostic-codes :artifact-provenance}
                :lineage {:verified-by :clojure-stage0
                          :compiled-by :clojure-stage0
                          :next-stage :stage1
-                         :replaces [:clojure-c5-resolution-contract-subset
-                                    :clojure-c5-diagnostic-catalog]}
-               :conformance {:accepted-fixture
-                             "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
-                             :accepted-source-extensions [".gravity" ".qst"]
-                             :rejected-fixtures
-                             ["compiler-c5-unresolved.gravity"
-                              "compiler-c5-ambiguous.gravity"
-                              "compiler-c5-private.gravity"
-                              "compiler-c5-alias.gravity"
-                              "compiler-c5-shadow.gravity"
-                              "compiler-c5-cycle.gravity"
-                              "compiler-c5-cross-profile.gravity"
-                              "compiler-c5-capability.gravity"
-                              "compiler-c5-target.gravity"
-                              "compiler-c5-foreign.gravity"]}}}))
+                         :replaces [:clojure-c5-package-facade]}
+               :claim-boundary [:compatibility-only
+                                :authentication-credit-denied
+                                :authoritative-result-denied
+                                :authoritative-route :gravity.resolution]}}))
 
-(def c5-binding-identity-contract
-  {:artifact :gravity/c5-binding-identity-contract
-   :required-fields [:binding-id :name :kind :namespace :package
-                     :visibility :profile-set :target-set
-                     :type-ref :effects :capabilities :safety
-                     :source-span :artifact]
-   :semantic-identity-fields [:name :kind :namespace :package
-                              :visibility :profile-set :target-set
-                              :type-ref :effects :capabilities
-                              :safety :source-span :artifact]
-   :nonsemantic-fields [:documentation :formatting :commentary]
-   :binding-kinds [:local :recur :var :macro :type :protocol
-                   :constructor :capability :package-entry
-                   :foreign-import :target-intrinsic
-                   :special-form]
-   :visibility-values [:public :private :package :facade]
-   :preserves [:source-spans :syntax-identity :binding-identity
-               :profile-target-metadata :effect-capability-metadata
-               :artifact-provenance]})
+(def c5-resolution-compatibility-contract
+  {:artifact :gravity/sh06-c5-compatibility-contract
+   :schema-version 1
+   :compatibility-only? true
+   :authentication-credit? false
+   :authoritative-resolution-result? false
+   :authoritative-route :gravity.resolution
+   :accepted-statuses [:accepted :rejected]
+   :required-fields [:artifact :schema-version :status
+                     :namespace-analysis-template :digest-requests
+                     :diagnostics :bounds :containment
+                     :execution-boundary]})
 
-(def c5-resolution-context-contract
-  {:artifact :gravity/c5-resolution-context-contract
-   :context-fields [:current-namespace :lexical-scope-stack
-                    :macro-expansion-context :alias-table
-                    :required-namespace-table :imported-foreign-table
-                    :core-auto-import-table :active-profile
-                    :active-target :package-dependency-graph
-                    :language-facets]
-   :resolution-order [:local-lexical-binding
-                      :loop-or-function-recur-binding
-                      :current-namespace-binding
-                      :alias-qualified-required-binding
-                      :fully-qualified-namespace-binding
-                      :profile-allowed-core-binding
-                      :explicit-foreign-import-binding
-                      :explicit-target-intrinsic]
-   :separate-namespaces [:macro :type :protocol :var
-                         :local :special-form]
-   :forbidden [:ambient-host-namespace-lookup
-               :wildcard-import-in-stable-module
-               :runtime-only-profile-availability
-               :ambiguous-unqualified-symbol
-               :artifact-missing-effect-capability-profile-target]})
+(defn c5-exact-keys? [value expected]
+  (if (map? value)
+    (if (= (count value) (count expected))
+      (= (set (keys value)) expected)
+      false)
+    false))
 
-(def c5-namespace-analysis-contract
-  {:artifact :gravity/namespace-analysis-contract
-   :artifact-fields [:artifact :namespace :package :profile :target
-                     :aliases :exports :locals :bindings :requires
-                     :foreign-imports :rejected-edges
-                     :diagnostics :incremental-invalidation-keys]
-   :tables [:binding-table :alias-table :import-table
-            :export-table :lexical-scope-graph
-            :dependency-graph :cross-profile-edge-report]
-   :cross-profile-boundaries [:pure-core-api
-                              :profile-specific-facade
-                              :typed-schema-or-artifact-boundary
-                              :ffi-like-boundary
-                              :generated-target-artifact]
-   :invalidates-on [:namespace-source-change
-                    :import-export-list-change
-                    :alias-table-change
-                    :dependency-package-version-change
-                    :visibility-change
-                    :binding-kind-change
-                    :profile-target-set-change
-                    :language-facet-set-change
-                    :macro-expansion-symbol-position-change]
-   :feeds [:type-checking :effect-checking :profile-validation
-           :package-graph-construction :documentation
-           :lsp-indexing :incremental-compilation]})
+(defn c5-compatible-resolution-result? [result]
+  (if (c5-exact-keys?
+       result
+       #{:artifact :schema-version :status :namespace-analysis-template
+         :digest-requests :diagnostics :bounds :containment
+         :execution-boundary})
+    (if (= (get result :artifact)
+           :gravity/sh06-resolution-template-result)
+      (if (= (get result :schema-version) 1)
+        (if (contains? #{:accepted :rejected} (get result :status))
+          (if (vector? (get result :digest-requests))
+            (if (vector? (get result :diagnostics))
+              (if (map? (get result :bounds))
+                (if (map? (get result :containment))
+                  (if (map? (get result :execution-boundary))
+                    (if (= (get result :status) :accepted)
+                      (map? (get result :namespace-analysis-template))
+                      (= (get result :namespace-analysis-template) nil))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
 
-(def c5-resolution-diagnostic-catalog
-  {:diagnostics ["C5-UNRESOLVED" "C5-AMBIGUOUS" "C5-PRIVATE"
-                 "C5-ALIAS" "C5-SHADOW" "C5-CYCLE"
-                 "C5-CROSS-PROFILE" "C5-CAPABILITY"
-                 "C5-TARGET" "C5-FOREIGN"]
-   :stable-diagnostic-fields [:diagnostic-id :severity
-                              :symbol :syntax-id :source-span
-                              :namespace :profile :target
-                              :candidate-bindings
-                              :dependency-edge :remediation]
-   :stops [:type-checking :effect-checking :profile-validation
-           :core-lowering :target-lowering]
-   :must-not-depend-on [:ambient-host-globals
-                        :backend-only-legality
-                        :runtime-only-profile-availability
-                        :unrecorded-package-state]})
-
-(defn build-c5-binding-record
-  [binding-id name kind namespace package visibility profile-set target-set type-ref effects capabilities safety source-span artifact]
-  (quote {:artifact :gravity/c5-binding-record
-          :binding-id binding-id
-          :name name
-          :kind kind
-          :namespace namespace
-          :package package
-          :visibility visibility
-          :profile-set profile-set
-          :target-set target-set
-          :type-ref type-ref
-          :effects effects
-          :capabilities capabilities
-          :safety safety
-          :source-span source-span
-          :definition-artifact artifact
-          :contract c5-binding-identity-contract}))
-
-(defn verify-c5-resolution [namespace-analysis-artifact]
-  (quote {:status :stage1-source-owned
-          :namespace-analysis-artifact namespace-analysis-artifact
-          :checks [:every-symbol-resolved-or-diagnosed
-                   :binding-identity-fields-present
-                   :lexical-shadowing-legality
-                   :distinct-binding-namespaces
-                   :import-metadata-complete
-                   :cross-profile-boundary-accepted
-                   :illegal-cycles-rejected
-                   :incremental-invalidation-stable
-                   :lsp-index-identity-stable]
-          :diagnostics c5-resolution-diagnostic-catalog
-          :preserves [:source-spans :syntax-identity
-                      :binding-identity :namespace-context
-                      :macro-expansion-context
-                      :profile-target-metadata
-                      :effect-capability-metadata
-                      :visibility-metadata :dependency-edges
-                      :incremental-invalidation-keys
-                      :artifact-provenance]}))
+(defn c5-package-resolution-result [result]
+  (if (c5-compatible-resolution-result? result)
+    {:artifact :gravity/sh06-c5-compatibility-package
+     :schema-version 1
+     :status :compatible
+     :compatibility-only? true
+     :authentication-credit? false
+     :authoritative-resolution-result? false
+     :authoritative-route :gravity.resolution
+     :resolution-result result}
+    {:artifact :gravity/sh06-c5-compatibility-package
+     :schema-version 1
+     :status :rejected
+     :compatibility-only? true
+     :authentication-credit? false
+     :authoritative-resolution-result? false
+     :authoritative-route :gravity.resolution
+     :resolution-result nil}))

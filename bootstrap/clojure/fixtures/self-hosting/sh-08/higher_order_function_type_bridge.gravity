@@ -1,0 +1,1624 @@
+; SH-08-HO2: bounded monomorphic signature inference over the authenticated HO1 product.
+; This fixture-local adapter proves one named identity/apply-one hop only.
+(ns gravity.self-hosting.sh08.higher-order-function-type-bridge
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh08-higher-order-function-type-policy
+             sh08-build-higher-order-function-type-request
+             sh08-bind-higher-order-function-type-result
+             sh08-verify-higher-order-function-type-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh08-higher-order-function-type-policy []
+  {:artifact :gravity/sh08-higher-order-function-typed-core-policy
+   :schema-version 1
+   :profile :meta
+   :target :jvm
+   :scope :monomorphic-named-function-value-one-hop-signature-inference
+   :inference :one-hop-named-identity-apply-one
+   :accepted-signature {:parameters [:gravity.type/i64]
+                        :return :gravity.type/i64}
+   :required-products
+   [:verified-sh08-ho1-function-value
+    :verified-sh07-b47-canonical-core
+    :reusable-sh02-authenticated-envelope]
+   :bounds {:maximum-signatures 8
+            :maximum-observations 8
+            :maximum-arguments 16
+            :maximum-constraints 32
+            :maximum-derivation-steps 32}
+   :preserves
+   [:source :syntax :origin :generated-origin :binding :definition
+    :function-identity :parameter-identity :call-identity :profile :target
+    :effects :capabilities :ownership :throws :evaluation-order]
+   :request-level-absence-diagnostic
+   :available-authenticated-call-anchors-without-reconstruction
+   :diagnostics
+   ["STD08-HO2-SCHEMA" "STD08-HO2-HO1" "STD08-HO2-SH07"
+    "STD08-HO2-ENVELOPE" "STD08-HO2-CONSTRAINT" "STD08-HO2-TYPE"
+    "STD08-HO2-VERIFY"]
+   :pending
+   [:captures :lifetimes :aliases :multi-hop :polymorphism :generics
+    :overloads :multi-arity :variadic-dispatch :protocol-dispatch
+    :dynamic-dispatch :reflection :transitive-effects :ownership-legality
+    :mir :public-routing :native-hashing :seed-retirement]
+   :host-authority
+   [:bounded-source-snapshot :ho1-verification :sh07-verification
+    :sh02-envelope-resolution :canonical-hashing
+    :ho1-exact-verifier-recomputation :bridge-revision-resolution]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn ho2-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn ho2-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (let [characters (vec value)]
+        (= (subvec characters 0 7)
+           [\s \h \a \2 \5 \6 \:]))
+      false)
+    false))
+
+(defn ho2-bounded-vector? [value maximum]
+  (if (vector? value)
+    (<= (count value) maximum)
+    false))
+
+(defn ho2-identity-check-by-name [checks name]
+  (if (= 0 (count checks))
+    nil
+    (if (= name (get (first checks) :name))
+      (first checks)
+      (ho2-identity-check-by-name (rest checks) name))))
+
+(defn ho2-envelope-identities-valid? [descriptor verification]
+  (let [subjects (get descriptor :identity-subjects)
+        checks (get verification :identity-checks)]
+    (if (vector? subjects)
+      (if (vector? checks)
+        (if (= (count subjects) (count checks))
+          (loop [remaining subjects]
+            (if (= 0 (count remaining))
+              true
+              (let [subject (first remaining)
+                    check (ho2-identity-check-by-name
+                           checks (get subject :name))]
+                (if (map? check)
+                  (if (= (get subject :domain) (get check :domain))
+                    (if (= (get subject :observed-id)
+                           (get check :observed-id))
+                      (if (= (get check :computed-id)
+                             (get check :observed-id))
+                        (recur (rest remaining))
+                        false)
+                      false)
+                    false)
+                  false))))
+          false)
+        false)
+      false)))
+
+(defn ho2-source-revision-valid? [descriptor]
+  (let [revision (get descriptor :source-revision)
+        provenance (get descriptor :actual-path-provenance)]
+    (if (map? revision)
+      (if (string? (get revision :logical-source-path))
+        (if (> (count (get revision :logical-source-path)) 0)
+          (if (ho2-sha256-id? (get revision :source-content-hash))
+            (if (integer? (get revision :source-byte-count))
+              (if (> (get revision :source-byte-count) 0)
+                (if (string? (get provenance :source-path))
+                  (if (= (get revision :logical-source-path)
+                         (get provenance :source-path))
+                    false
+                    true)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn ho2-bridge-revision-valid? [revision]
+  (if (ho2-exact-keys?
+       revision #{:owner :source-language :logical-source-path
+                   :source-content-hash :source-byte-count
+                   :plan-semantic-hash :functions-semantic-hash
+                   :function-count :function-shapes
+                   :builder-function :builder-semantic-hash
+                   :verifier-function :verifier-semantic-hash})
+    (if (= :sh-types (get revision :owner))
+      (if (= :gravity (get revision :source-language))
+        (if (string? (get revision :logical-source-path))
+          (if (> (count (get revision :logical-source-path)) 0)
+            (if (ho2-sha256-id? (get revision :source-content-hash))
+              (if (integer? (get revision :source-byte-count))
+                (if (> (get revision :source-byte-count) 0)
+                  (if (ho2-sha256-id? (get revision :plan-semantic-hash))
+                    (if (ho2-sha256-id?
+                         (get revision :functions-semantic-hash))
+                      (if (integer? (get revision :function-count))
+                        (if (= (get revision :function-count)
+                               (count (get revision :function-shapes)))
+                          (if (symbol? (get revision :builder-function))
+                            (if (ho2-sha256-id?
+                                 (get revision :builder-semantic-hash))
+                              (if (symbol? (get revision :verifier-function))
+                                (ho2-sha256-id?
+                                 (get revision :verifier-semantic-hash))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn ho2-all-true? [checks]
+  (if (= 0 (count checks))
+    true
+    (if (= true (first checks))
+      (ho2-all-true? (rest checks))
+      false)))
+
+(defn ho2-all-map-values-true? [value]
+  (if (map? value)
+    (loop [remaining (keys value)]
+      (if (= 0 (count remaining))
+        true
+        (if (= true (get value (first remaining)))
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn ho2-find-node [nodes node-id]
+  (if (= 0 (count nodes))
+    nil
+    (if (= node-id (get (first nodes) :node-id))
+      (first nodes)
+      (ho2-find-node (rest nodes) node-id))))
+
+(defn ho2-find-function [functions function-id]
+  (if (= 0 (count functions))
+    nil
+    (if (= function-id (get (first functions) :function-syntax-id))
+      (first functions)
+      (ho2-find-function (rest functions) function-id))))
+
+(defn ho2-find-call [calls node-id]
+  (if (= 0 (count calls))
+    nil
+    (if (= node-id (get (first calls) :core-node-id))
+      (first calls)
+      (ho2-find-call (rest calls) node-id))))
+
+(defn ho2-node-source [node]
+  (if (map? node) (get node :source) {}))
+
+(defn ho2-node-diagnostic-fact [core node-id]
+  (let [node (ho2-find-node (get core :nodes) node-id)
+        call (ho2-find-call (get core :calls) node-id)
+        module (get core :module)]
+    {:node-id (get node :node-id)
+     :source (get node :source)
+     :binding-id (if (get (get node :attributes) :binding-id)
+                   (get (get node :attributes) :binding-id)
+                   (get call :operator-binding-id))
+     :profile (get module :profile)
+     :target (get module :target)}))
+
+(defn ho2-outer-value-diagnostic-fact [core call-fact]
+  (let [outer-call
+        (ho2-find-call (get core :calls)
+                       (get call-fact :outer-apply-call-core-node-id))
+        value-node-id (first (rest (get outer-call :argument-node-ids)))
+        apply-function
+        (ho2-find-function (get core :function-records)
+                           (get call-fact :caller-function-syntax-id))
+        value-binding-id
+        (first (rest (get apply-function :parameter-binding-ids)))]
+    (assoc (ho2-node-diagnostic-fact core value-node-id)
+           :binding-id value-binding-id)))
+
+; Request-level absence diagnostics retain only anchors already carried by the
+; authenticated call. Missing span, binding, and origin are not reconstructed.
+(defn ho2-diagnostic-source [expected actual]
+  (let [candidate (if (map? actual) actual
+                      (if (map? expected) expected {}))
+        nested (if (map? (get candidate :source))
+                 (get candidate :source) candidate)]
+    {:node-id (if (get nested :node-id) (get nested :node-id)
+                  (if (get candidate :source-node-id)
+                    (get candidate :source-node-id)
+                    (if (get candidate :observation-id)
+                      (get candidate :observation-id)
+                      (get candidate :argument-node-id))))
+     :syntax-id (get nested :syntax-id)
+     :span (get nested :span)
+     :binding-id (if (get nested :binding-id) (get nested :binding-id)
+                     (get candidate :subject))
+     :origin-chain (if (vector? (get nested :origin-chain))
+                     (get nested :origin-chain)
+                     [])
+     :generated-origin (get nested :generated-origin)
+     :profile (if (get candidate :profile) (get candidate :profile) :meta)
+     :target (if (get candidate :target) (get candidate :target) :jvm)}))
+
+(defn ho2-c7-reasons [rule reason]
+  (if (if (= reason :monomorphic-i64-annotation-required)
+        true
+        (= reason :unresolved-signature-observation))
+    [{:rule "C7-ANNOTATION" :reason reason}]
+    (if (= rule "STD08-HO2-CONSTRAINT")
+      [{:rule "C7-TYPE-MISMATCH" :reason reason}]
+    (if (= rule "STD08-HO2-TYPE")
+      [{:rule "C7-ANNOTATION" :reason reason}]
+      (if (= rule "STD08-HO2-VERIFY")
+        [{:rule "C7-VERIFY" :reason reason}]
+        [])))))
+
+(defn ho2-diagnostic [rule reason expected actual]
+  {:rule rule
+   :reason reason
+   :expected expected
+   :actual actual
+   :profile :meta
+   :target :jvm
+   :source (ho2-diagnostic-source expected actual)
+   :facts
+   {:c7-lineage [:type :effect :ownership :capability :safety]
+    :c7-reasons (ho2-c7-reasons rule reason)
+    :node-id (get (ho2-diagnostic-source expected actual) :node-id)
+    :syntax-id (get (ho2-diagnostic-source expected actual) :syntax-id)
+    :span (get (ho2-diagnostic-source expected actual) :span)
+    :binding-id (get (ho2-diagnostic-source expected actual) :binding-id)
+    :origin-chain (get (ho2-diagnostic-source expected actual) :origin-chain)
+    :ownership-status :pending
+    :type-status :bounded-monomorphic
+    :remediation :preserve-authenticated-upstream-facts
+    :upstream-diagnostics []}})
+
+(defn ho2-pending []
+  (get (sh08-higher-order-function-type-policy) :pending))
+
+(defn ho2-rejection [rule reason expected actual]
+  {:artifact :gravity/sh08-higher-order-function-typed-core-request
+   :schema-version 1
+   :status :rejected
+   :diagnostics [(ho2-diagnostic rule reason expected actual)]
+   :pending (ho2-pending)
+   :authority {:semantic-owner :gravity-source
+               :host-role :authenticated-ho1-and-sh07-ingress
+               :self-hosted? false
+               :clojure-seed-boundary? true}})
+
+(defn ho2-upstream-rejection
+  [rule reason expected actual upstream-rule upstream-reason]
+  (let [diagnostic (ho2-diagnostic rule reason expected actual)]
+    (assoc
+     (ho2-rejection rule reason expected actual)
+     :diagnostics
+     [(assoc diagnostic :facts
+             (assoc (get diagnostic :facts)
+                    :upstream-diagnostics
+                    [{:rule upstream-rule
+                      :reason upstream-reason
+                      :source (get diagnostic :source)
+                      :profile (get diagnostic :profile)
+                      :target (get diagnostic :target)}]))])))
+
+(defn ho2-request-fields-valid? [request]
+  (ho2-exact-keys?
+   request #{:artifact :schema-version :ho1-request :ho1-result
+             :ho1-verification :ho1-verification-id
+             :ho1-authentication :bridge-revision :bridge-authentication
+             :signature-observations
+             :actual-source-path}))
+
+(defn ho2-host-resolution-valid? [resolution domain preimage digest]
+  (if (ho2-exact-keys?
+       resolution #{:algorithm :authority :domain :preimage
+                    :observed-id :computed-id :status})
+    (ho2-all-true?
+     [(= :sha256 (get resolution :algorithm))
+      (= :clojure-host (get resolution :authority))
+      (= domain (get resolution :domain))
+      (= preimage (get resolution :preimage))
+      (= digest (get resolution :observed-id))
+      (= digest (get resolution :computed-id))
+      (ho2-sha256-id? digest)
+      (= :passed (get resolution :status))])
+    false))
+
+(defn ho2-ho1-authentication-valid? [request]
+  (let [ho1-request (get request :ho1-request)
+        ho1-result (get request :ho1-result)
+        ho1-verification (get request :ho1-verification)
+        core (get (get ho1-request :sh07-context) :canonical-core-artifact)
+        preimage {:request ho1-request
+                  :candidate ho1-result
+                  :verification ho1-verification
+                  :context (get ho1-request :sh07-context)
+                  :canonical-core-artifact-id (get core :artifact-id)}]
+    (ho2-host-resolution-valid?
+     (get request :ho1-authentication)
+     :gravity/sh08-ho2-ho1-exact-input-v1 preimage
+     (get request :ho1-verification-id))))
+
+(defn ho2-bridge-authentication-valid? [request]
+  (ho2-host-resolution-valid?
+   (get request :bridge-authentication)
+   :gravity/sh08-ho2-bridge-revision-v1
+   (get request :bridge-revision)
+   (get (get request :bridge-authentication) :observed-id)))
+
+(defn ho2-ho1-request-shape-valid? [request]
+  (if (ho2-exact-keys?
+       request #{:artifact :schema-version :sh07-artifact
+                 :sh07-verification :sh07-check-catalog :sh07-context
+                 :envelope-descriptor :envelope :envelope-replay
+                 :envelope-verification :function-value-name
+                 :apply-function-name :actual-source-path})
+    (if (= :gravity/sh08-higher-order-function-value-request
+           (get request :artifact))
+      (= 1 (get request :schema-version))
+      false)
+    false))
+
+(defn ho2-sh07-carrier-status-valid? [status]
+  (= :accepted status))
+
+(defn ho2-ho1-verification-artifact-valid? [artifact]
+  (= :gravity/sh08-higher-order-function-value-verification artifact))
+
+(defn ho2-sh07-lineage-valid? [request]
+  (let [artifact (get request :sh07-artifact)
+        verification (get request :sh07-verification)
+        context (get request :sh07-context)
+        canonical-core (get context :canonical-core-artifact)
+        context-verification (get context :verification)]
+    (ho2-all-true?
+     [(ho2-exact-keys?
+       verification #{:artifact :status :checks :failed-checks
+                       :source-path :template-verification
+                       :resolved-verification :upstream-verification
+                       :verified-artifact-id :verification-report-id
+                       :check-catalog})
+      (ho2-exact-keys?
+       context #{:artifact-id :artifact-status :input-domain
+                 :identity-input :canonical-core-artifact
+                 :authenticated-core-request
+                 :canonical-identity-preimage :provenance :lineage
+                 :verification :authenticated-wrapper})
+      (map? artifact)
+      (= :gravity/sh07-core-artifact-verification
+         (get verification :artifact))
+      (ho2-sh07-carrier-status-valid? (get artifact :status))
+      (= :passed (get verification :status))
+      (= [] (get verification :failed-checks))
+      (ho2-sha256-id? (get verification :verification-report-id))
+      (= (get artifact :artifact-id)
+         (get verification :verified-artifact-id))
+      (= (get verification :check-catalog)
+         (get request :sh07-check-catalog))
+      (= (set (keys (get verification :checks)))
+         (get verification :check-catalog))
+      (ho2-all-map-values-true? (get verification :checks))
+      (= (get verification :source-path)
+         (get (get artifact :provenance) :source-path))
+      (= :passed (get (get verification :template-verification) :status))
+      (= :passed (get (get verification :resolved-verification) :status))
+      (= :passed (get (get verification :upstream-verification) :status))
+      (map? canonical-core)
+      (= (get artifact :artifact-id) (get canonical-core :artifact-id))
+      (= (get context :artifact-id) (get artifact :artifact-id))
+      (ho2-sh07-carrier-status-valid? (get context :artifact-status))
+      (= :gravity/sh07-b47-canonical-core-v16 (get context :input-domain))
+      (= (get context :authenticated-wrapper) artifact)
+      (= (get context :identity-input)
+         (get canonical-core :identity-preimage))
+      (= (get context :canonical-identity-preimage)
+         (get canonical-core :identity-preimage))
+      (= (get context :authenticated-core-request)
+         (get (get artifact :gravity-core-boundary)
+              :authenticated-core-request))
+      (= context-verification
+         {:status (get verification :status)
+          :checks (get verification :checks)
+          :failed-checks (get verification :failed-checks)
+          :verified-artifact-id (get verification :verified-artifact-id)
+          :verification-report-id (get verification :verification-report-id)
+          :check-catalog (get verification :check-catalog)})])))
+
+(defn ho2-envelope-lineage-valid? [request]
+  (let [descriptor (get request :envelope-descriptor)
+        envelope (get request :envelope)
+        replay (get request :envelope-replay)
+        verification (get request :envelope-verification)]
+    (ho2-all-true?
+     [(ho2-exact-keys?
+       descriptor #{:artifact :schema-version :stage :artifact-kind
+                    :source-revision :projection-contract
+                    :semantic-projections :fact-transitions
+                    :effect-capability-relation :proof-composite
+                    :preservation :identity-subjects :lineage
+                    :reference-closure :actual-path-provenance :bounds})
+      (ho2-exact-keys?
+       envelope #{:artifact :schema-version :stage :artifact-kind
+                  :contract-id :source-revision-id
+                  :semantic-projection-bindings
+                  :semantic-projection-set-id :fact-transition-bindings
+                  :fact-transition-set-id
+                  :effect-capability-relation-id :proof-composite-id
+                  :preservation-id :identity-bindings :identity-set-id
+                  :lineage-id :reference-closure-id
+                  :reference-depth-metric :semantic-id :artifact-id
+                  :bounds :semantic-authority :host-role :claim-boundary
+                  :self-hosted? :clojure-seed-boundary?
+                  :semantic-envelope-id :actual-path-provenance
+                  :provenance-binding-id})
+      (ho2-exact-keys?
+       replay #{:status :artifact-template :digest-graph-root
+                :digest-graph-roots :semantic-envelope-root
+                :provenance-binding-root :identity-checks
+                :identity-enforcement
+                :eligible-for-contextual-acceptance? :request-count
+                :semantic-authority :checks :diagnostics})
+      (ho2-exact-keys?
+       verification #{:artifact :status :artifact-template
+                      :semantic-envelope-root :provenance-binding-root
+                      :identity-checks :identity-enforcement
+                      :eligible-for-contextual-acceptance?
+                      :host-digest-resolution :identity-subject-equality
+                      :fresh-envelope-reconstruction :sh07-verification
+                      :source-revision-id :replay-artifact-template
+                      :replay-semantic-envelope-root
+                      :replay-provenance-binding-root :replay-identity-checks
+                      :source-revision})
+      (= :gravity/private-authenticated-envelope-descriptor
+         (get descriptor :artifact))
+      (= 1 (get descriptor :schema-version))
+      (= :sh08-ho1-function-value-bridge (get descriptor :stage))
+      (= :gravity/sh08-ho1-function-value-boundary
+         (get descriptor :artifact-kind))
+      (ho2-source-revision-valid? descriptor)
+      (= :gravity/authenticated-envelope (get envelope :artifact))
+      (= :sh08-ho1-function-value-bridge (get envelope :stage))
+      (= :gravity/sh08-ho1-function-value-boundary
+         (get envelope :artifact-kind))
+      (ho2-sha256-id? (get envelope :semantic-envelope-id))
+      (ho2-sha256-id? (get envelope :provenance-binding-id))
+      (= (get envelope :actual-path-provenance)
+         (get descriptor :actual-path-provenance))
+      (= :template-replay-passed (get replay :status))
+      (= :pending-host-resolution (get replay :identity-enforcement))
+      (= false (get replay :eligible-for-contextual-acceptance?))
+      (= :gravity-source (get replay :semantic-authority))
+      (= [] (get replay :diagnostics))
+      (= [:fresh-descriptor-replay :exact-artifact-template-replay
+          :exact-digest-request-replay :path-neutral-semantic-root
+          :separate-physical-provenance-root]
+         (get replay :checks))
+      (= :gravity/sh08-ho1-envelope-contextual-verification
+         (get verification :artifact))
+      (= :contextual-verification-passed (get verification :status))
+      (= :passed (get verification :identity-enforcement))
+      (= :passed (get verification :host-digest-resolution))
+      (= :passed (get verification :identity-subject-equality))
+      (= :passed (get verification :fresh-envelope-reconstruction))
+      (= true (get verification :eligible-for-contextual-acceptance?))
+      (= (get verification :sh07-verification)
+         (get request :sh07-verification))
+      (= envelope (get verification :artifact-template))
+      (= (get envelope :semantic-envelope-id)
+         (get verification :semantic-envelope-root))
+      (= (get envelope :provenance-binding-id)
+         (get verification :provenance-binding-root))
+      (= (get envelope :source-revision-id)
+         (get verification :source-revision-id))
+      (= (get replay :artifact-template)
+         (get verification :replay-artifact-template))
+      (= (get replay :semantic-envelope-root)
+         (get verification :replay-semantic-envelope-root))
+      (= (get replay :provenance-binding-root)
+         (get verification :replay-provenance-binding-root))
+      (= (get replay :identity-checks)
+         (get verification :replay-identity-checks))
+      (= (get descriptor :source-revision)
+         (get verification :source-revision))
+      (ho2-envelope-identities-valid? descriptor verification)])))
+
+(defn ho2-ho1-result-shape-valid? [request]
+  (let [result (get request :ho1-result)
+        function-facts (get result :function-value-facts)
+        call-facts (get result :call-facts)
+        verification (get request :ho1-verification)
+        checks (get verification :checks)]
+    (if (ho2-exact-keys?
+         result #{:artifact :schema-version :status :upstream-artifact-id
+                  :canonical-core-artifact-id :dispatch :function-value-facts
+                  :call-facts :identity-input :provenance :envelope-replay
+                  :envelope-verification :source :preservation :pending
+                  :authority})
+      (if (= :gravity/sh08-higher-order-function-value
+             (get result :artifact))
+        (if (= :accepted (get result :status))
+          (if (= :direct-function-value (get result :dispatch))
+            (if (ho2-bounded-vector? function-facts 8)
+              (if (= 1 (count function-facts))
+                (if (ho2-bounded-vector? call-facts 8)
+                  (if (= 1 (count call-facts))
+                    (if (ho2-exact-keys?
+                         verification #{:artifact :schema-version :status
+                                        :checks :failed-checks :candidate})
+                      (if (ho2-ho1-verification-artifact-valid?
+                           (get verification :artifact))
+                        (if (= :passed (get verification :status))
+                          (if (= [] (get verification :failed-checks))
+                            (if (= result (get verification :candidate))
+                              (if (map? checks)
+                                (if (= (set (keys checks))
+                                       #{:request-replayed? :request-bound?
+                                         :function-value-facts-bound?
+                                         :call-facts-bound?
+                                         :evaluation-order-bound?
+                                         :path-neutral-identity-bound?
+                                         :provenance-separated?
+                                         :candidate-recomputed?})
+                                  (if (ho2-all-map-values-true? checks)
+                                    true
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false))))
+
+(defn ho2-ho1-input-valid? [request]
+  (let [ho1-request (get request :ho1-request)
+        ho1-result (get request :ho1-result)
+        ho1-verification (get request :ho1-verification)]
+    (if (ho2-ho1-request-shape-valid? ho1-request)
+      (if (ho2-sh07-lineage-valid? ho1-request)
+        (if (ho2-envelope-lineage-valid? ho1-request)
+          (if (ho2-ho1-result-shape-valid?
+               {:ho1-result ho1-result
+                :ho1-verification ho1-verification})
+            (if (= (get ho1-result :upstream-artifact-id)
+                   (get (get ho1-request :sh07-artifact) :artifact-id))
+              (if (= (get ho1-result :canonical-core-artifact-id)
+                     (get (get ho1-request :sh07-context
+                               :canonical-core-artifact) :artifact-id))
+                (if (= (get ho1-verification :candidate) ho1-result)
+                  true
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn ho2-ho1-semantic-identity
+  [ho1-request ho1-result ho1-verification verification-id]
+  (let [context (get ho1-request :sh07-context)
+        artifact (get ho1-request :sh07-artifact)
+        sh07-verification (get ho1-request :sh07-verification)
+        descriptor (get ho1-request :envelope-descriptor)
+        envelope (get ho1-request :envelope)
+        replay (get ho1-request :envelope-replay)]
+    {:request
+     {:artifact (get ho1-request :artifact)
+      :schema-version (get ho1-request :schema-version)
+      :sh07-artifact-id (get artifact :artifact-id)
+      :sh07-verification-report-id
+      (get sh07-verification :verification-report-id)
+      :sh07-check-catalog (get ho1-request :sh07-check-catalog)
+      :sh07-identity-input (get context :identity-input)
+      :sh07-canonical-identity-preimage
+      (get context :canonical-identity-preimage)
+      :envelope-semantic-id (get envelope :semantic-envelope-id)
+      :envelope-source-revision-id (get envelope :source-revision-id)
+      :envelope-replay-roots
+      {:semantic (get replay :semantic-envelope-root)}
+      :function-value-name (get ho1-request :function-value-name)
+      :apply-function-name (get ho1-request :apply-function-name)}
+     :result
+     {:artifact (get ho1-result :artifact)
+      :schema-version (get ho1-result :schema-version)
+      :status (get ho1-result :status)
+      :upstream-artifact-id (get ho1-result :upstream-artifact-id)
+      :canonical-core-artifact-id
+      (get ho1-result :canonical-core-artifact-id)
+      :dispatch (get ho1-result :dispatch)
+      :function-value-id
+      (get (first (get ho1-result :function-value-facts))
+           :function-value-id)
+      :call-core-node-id
+      (get (first (get ho1-result :call-facts)) :call-core-node-id)
+      :identity-input (get ho1-result :identity-input)
+      :preservation (get ho1-result :preservation)
+      :pending (get ho1-result :pending)
+      :authority (get ho1-result :authority)}
+     :verification
+     {:artifact (get ho1-verification :artifact)
+      :schema-version (get ho1-verification :schema-version)
+      :status (get ho1-verification :status)
+      :checks (get ho1-verification :checks)
+      :failed-checks (get ho1-verification :failed-checks)
+      :candidate-identity
+      {:artifact (get ho1-result :artifact)
+       :status (get ho1-result :status)
+       :canonical-core-artifact-id
+       (get ho1-result :canonical-core-artifact-id)
+       :function-value-id
+       (get (first (get ho1-result :function-value-facts))
+            :function-value-id)
+       :call-core-node-id
+       (get (first (get ho1-result :call-facts)) :call-core-node-id)}}
+     :verification-status (get ho1-verification :status)}))
+
+(defn ho2-function-fact [result]
+  (first (get result :function-value-facts)))
+
+(defn ho2-call-fact [result]
+  (first (get result :call-facts)))
+
+(defn ho2-function-identity-valid? [function-fact]
+  (if (map? function-fact)
+    (if (= :named-top-level (get function-fact :definition-kind))
+      (if (= :direct-function-value (get function-fact :dispatch))
+        (if (= :immutable (get function-fact :mutability))
+          (if (= 1 (get function-fact :fixed-arity))
+            (if (= [] (get function-fact :captured-binding-ids))
+              (if (= 1 (count (get function-fact :parameter-binding-ids)))
+                true
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn ho2-call-shape-valid? [call-fact]
+  (if (map? call-fact)
+    (if (= :direct-function-value (get call-fact :dispatch))
+      (if (= :operator-then-arguments (get call-fact :evaluation-order))
+        (if (= 1 (get call-fact :fixed-arity))
+          (if (= 1 (count (get call-fact :argument-types)))
+            (if (= (get call-fact :operator-binding-id)
+                   (get call-fact :callable-parameter-binding-id))
+              (if (= 0 (get call-fact
+                              :outer-function-value-argument-ordinal))
+                true
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn ho2-identity-body-valid?
+  [core function-fact call-fact]
+  (let [nodes (get core :nodes)
+        body (ho2-find-node nodes (get function-fact :body-core-node-id))
+        parameter (first (get function-fact :parameter-binding-ids))
+        body-binding (get (get body :attributes) :binding-id)
+        owner (get (get body :evaluation) :owner-function-syntax-id)]
+    (if (map? body)
+      (if (= :reference (get body :core-form))
+        (if (= parameter body-binding)
+          (if (= owner (get function-fact :function-syntax-id))
+            true
+            false)
+          false)
+        false)
+      false)))
+
+(defn ho2-inner-argument-valid? [core call-fact]
+  (let [nodes (get core :nodes)
+        inner-id (first (get call-fact :argument-core-node-ids))
+        inner (ho2-find-node nodes inner-id)
+        apply-function
+        (ho2-find-function (get core :function-records)
+                           (get call-fact :caller-function-syntax-id))
+        apply-parameters (get apply-function :parameter-binding-ids)
+        callable-binding (first apply-parameters)
+        value-binding (first (rest apply-parameters))]
+    (if (map? inner)
+      (if (= :reference (get inner :core-form))
+        (if (= value-binding (get (get inner :attributes) :binding-id))
+          (if (= (get call-fact :callable-parameter-binding-id)
+                 callable-binding)
+            (= (get (get inner :evaluation) :owner-function-syntax-id)
+               (get apply-function :function-syntax-id))
+            false)
+          false)
+        false)
+      false)))
+
+(defn ho2-outer-call-record-valid?
+  [outer-call outer-node function-fact call-fact]
+  (let [arguments (get outer-call :argument-node-ids)
+        function-value-id (first arguments)
+        value-id (first (rest arguments))
+        ordered (get outer-call :ordered-evaluation-node-ids)]
+    (ho2-all-true?
+     [(map? outer-call)
+      (map? outer-node)
+      (= :call (get outer-node :core-form))
+      (vector? arguments)
+      (= 2 (count arguments))
+      (= ordered (get outer-node :children))
+      (= ordered [(get outer-call :operator-node-id)
+                  function-value-id value-id])
+      (= (get outer-call :operator-binding-id)
+         (get call-fact :outer-apply-operator-binding-id))
+      (= (get outer-call :evaluation-order)
+         (get call-fact :outer-call-evaluation-order))
+      (= :operator-then-arguments
+         (get outer-call :evaluation-order))
+      (= function-value-id
+         (get call-fact :outer-function-value-argument-core-node-id))
+      (= 0 (get call-fact :outer-function-value-argument-ordinal))
+      (= (get call-fact :outer-function-value-binding-id)
+         (get function-fact :definition-binding-id))])))
+
+(defn ho2-outer-argument-valid? [core function-fact call-fact]
+  (let [nodes (get core :nodes)
+        outer-call-record
+        (ho2-find-call (get core :calls)
+                       (get call-fact :outer-apply-call-core-node-id))
+        outer-call-node
+        (ho2-find-node nodes (get call-fact :outer-apply-call-core-node-id))
+        arguments (get outer-call-record :argument-node-ids)
+        function-value-id (first arguments)
+        value-id (first (rest arguments))
+        function-value (ho2-find-node nodes function-value-id)
+        value (ho2-find-node nodes value-id)]
+    (if (ho2-outer-call-record-valid?
+         outer-call-record outer-call-node function-fact call-fact)
+      (if (= :reference (get function-value :core-form))
+        (if (= (get function-fact :definition-binding-id)
+               (get (get function-value :attributes) :binding-id))
+          (if (= (get call-fact :outer-function-value-binding-id)
+                 (get (get function-value :attributes) :binding-id))
+            (if (= :literal (get value :core-form))
+              (= :integer (get (get value :attributes) :literal-kind))
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn ho2-derived-observation [core function-fact call-fact]
+  (let [parameter (first (get function-fact :parameter-binding-ids))
+        apply-function
+        (ho2-find-function (get core :function-records)
+                           (get call-fact :caller-function-syntax-id))
+        apply-parameters (get apply-function :parameter-binding-ids)
+        apply-callable-binding (first apply-parameters)
+        apply-value-binding (first (rest apply-parameters))
+        body (ho2-find-node (get core :nodes)
+                            (get function-fact :body-core-node-id))
+        inner-argument-id (first (get call-fact :argument-core-node-ids))
+        outer-call (ho2-find-call
+                    (get core :calls)
+                    (get call-fact :outer-apply-call-core-node-id))
+        argument-id (first (rest (get outer-call :argument-node-ids)))
+        inner-argument (ho2-find-node (get core :nodes) inner-argument-id)]
+    {:observation-id (get call-fact :call-core-node-id)
+     :source-kind :ho1-authenticated-call
+     :function-value-id (get function-fact :function-value-id)
+     :parameter-binding-id parameter
+     :apply-callable-binding-id apply-callable-binding
+     :apply-value-binding-id apply-value-binding
+     :apply-function-syntax-id
+     (get call-fact :caller-function-syntax-id)
+     :parameter-type :gravity.type/i64
+     :return-type :gravity.type/i64
+     :argument-node-id argument-id
+     :inner-argument-node-id inner-argument-id
+     :inner-argument-binding-id
+     (get (get inner-argument :attributes) :binding-id)
+     :body-node-id (get function-fact :body-core-node-id)
+     :body-binding-id (get (get body :attributes) :binding-id)
+     :outer-apply-call-node-id
+     (get call-fact :outer-apply-call-core-node-id)
+     :outer-apply-operator-binding-id
+     (get call-fact :outer-apply-operator-binding-id)
+     :outer-function-value-argument-node-id
+     (get call-fact :outer-function-value-argument-core-node-id)
+     :outer-function-value-binding-id
+     (get call-fact :outer-function-value-binding-id)
+     :outer-function-value-argument-ordinal
+     (get call-fact :outer-function-value-argument-ordinal)
+     :outer-call-evaluation-order
+     (get call-fact :outer-call-evaluation-order)
+     :evaluation-order (get call-fact :evaluation-order)
+     :source (get call-fact :source)
+     :syntax-id (get call-fact :syntax-id)
+     :span (get call-fact :span)
+     :binding-id (get call-fact :operator-binding-id)
+     :origin-chain (get call-fact :origin-chain)
+     :generated-origin (get call-fact :generated-origin)
+     :profile (get call-fact :profile)
+     :target (get call-fact :target)}))
+
+(defn ho2-observation-signature [observation]
+  {:source-kind (get observation :source-kind)
+   :function-value-id (get observation :function-value-id)
+   :parameter-binding-id (get observation :parameter-binding-id)
+   :parameter-type (get observation :parameter-type)
+   :return-type (get observation :return-type)
+   :argument-node-id (get observation :argument-node-id)
+   :inner-argument-node-id (get observation :inner-argument-node-id)
+   :inner-argument-binding-id (get observation :inner-argument-binding-id)
+   :apply-callable-binding-id (get observation :apply-callable-binding-id)
+   :apply-value-binding-id (get observation :apply-value-binding-id)
+   :apply-function-syntax-id (get observation :apply-function-syntax-id)
+   :body-node-id (get observation :body-node-id)
+   :outer-apply-call-node-id (get observation :outer-apply-call-node-id)
+   :outer-function-value-argument-node-id
+   (get observation :outer-function-value-argument-node-id)
+   :outer-function-value-argument-ordinal
+   (get observation :outer-function-value-argument-ordinal)
+   :evaluation-order (get observation :evaluation-order)})
+
+(defn ho2-observations-valid? [observations derived]
+  (if (vector? observations)
+    (if (> (count observations) 0)
+      (if (<= (count observations) 8)
+        (if (= 1 (count observations))
+          (= (ho2-observation-signature (first observations))
+             (ho2-observation-signature derived))
+          false)
+        false)
+      false)
+    false))
+
+(defn ho2-signature-fact [function-fact derived module]
+  {:signature-id (get function-fact :function-value-id)
+   :function-value-id (get function-fact :function-value-id)
+   :name (get function-fact :name)
+   :kind :monomorphic-function
+   :parameters
+   [{:binding-id (get derived :parameter-binding-id)
+     :type :gravity.type/i64
+     :ownership (get function-fact :ownership)}]
+   :parameter-types [:gravity.type/i64]
+   :return-type :gravity.type/i64
+   :fixed-arity 1
+   :effects (get function-fact :effects)
+   :latent-effects (get function-fact :effects)
+   :capabilities (get function-fact :capabilities)
+   :ownership (get function-fact :ownership)
+   :throws (get function-fact :throws)
+   :evidence [(get derived :observation-id)]
+   :source (get function-fact :source)
+   :origin-chain (get function-fact :origin-chain)
+   :generated-origin (get function-fact :generated-origin)
+   :profile (get module :profile)
+   :target (get module :target)})
+
+(defn ho2-complete-function-type
+  [parameters return effects capabilities ownership throws profile target]
+  {:kind :function
+   :parameters parameters
+   :return return
+   :latent-effects effects
+   :capabilities capabilities
+   :ownership ownership
+   :throws throws
+   :profile profile
+   :target target})
+
+(defn ho2-parameter-fact [function-fact derived]
+  {:binding-id (get derived :parameter-binding-id)
+   :function-value-id (get function-fact :function-value-id)
+   :type :gravity.type/i64
+   :inferred-from [:ho1-call-argument :identity-body-reference]
+   :source-node-ids [(get derived :argument-node-id)
+                     (get derived :inner-argument-node-id)
+                     (get derived :body-node-id)]
+   :ownership (get function-fact :ownership)
+   :mutability :immutable
+   :parameter-role :selected-identity-parameter})
+
+(defn ho2-apply-parameter-facts [core derived]
+  (let [apply-function
+        (ho2-find-function (get core :function-records)
+                           (get derived :apply-function-syntax-id))
+        callable-binding (get derived :apply-callable-binding-id)
+        value-binding (get derived :apply-value-binding-id)]
+    [{:binding-id callable-binding
+      :function-value-id (get derived :apply-function-syntax-id)
+      :type (ho2-complete-function-type
+             [:gravity.type/i64] :gravity.type/i64
+             (get apply-function :effects)
+             (get apply-function :capabilities)
+             (get apply-function :ownership)
+             (get apply-function :throws) :meta :jvm)
+      :inferred-from [:ho1-callable-parameter]
+      :source-node-ids [(get derived :inner-argument-node-id)]
+      :ownership (get apply-function :ownership)
+      :mutability :immutable
+      :parameter-role :apply-callable-parameter
+      :effects (get apply-function :effects)
+      :capabilities (get apply-function :capabilities)
+      :throws (get apply-function :throws)}
+     {:binding-id value-binding
+      :function-value-id (get derived :apply-function-syntax-id)
+      :type :gravity.type/i64
+      :inferred-from [:ho1-outer-argument :inner-value-reference]
+      :source-node-ids [(get derived :argument-node-id)
+                        (get derived :inner-argument-node-id)]
+      :ownership (get apply-function :ownership)
+      :mutability :immutable
+      :parameter-role :apply-value-parameter
+      :effects (get apply-function :effects)
+      :capabilities (get apply-function :capabilities)
+      :throws (get apply-function :throws)}]))
+
+(defn ho2-indirect-call-fact [call-fact signature-fact derived]
+  {:call-core-node-id (get call-fact :call-core-node-id)
+   :dispatch :indirect-call-via-immutable-parameter
+   :callee-signature-id (get signature-fact :signature-id)
+   :operator-binding-id (get call-fact :operator-binding-id)
+   :callable-parameter-binding-id (get derived :apply-callable-binding-id)
+   :identity-parameter-binding-id (get derived :parameter-binding-id)
+   :value-parameter-binding-id (get derived :apply-value-binding-id)
+   :argument-node-ids (get call-fact :argument-core-node-ids)
+   :ordered-evaluation-node-ids (get call-fact :ordered-evaluation-node-ids)
+   :evaluation-order (get call-fact :evaluation-order)
+   :fixed-arity 1
+   :argument-types [:gravity.type/i64]
+   :result-type :gravity.type/i64
+   :effects (get call-fact :effects)
+   :capabilities (get call-fact :capabilities)
+   :ownership (get call-fact :ownership)
+   :throws (get call-fact :throws)
+   :outer-apply-call-node-id (get derived :outer-apply-call-node-id)
+   :outer-apply-operator-binding-id
+   (get derived :outer-apply-operator-binding-id)
+   :outer-function-value-argument-node-id
+   (get derived :outer-function-value-argument-node-id)
+   :outer-function-value-binding-id
+   (get derived :outer-function-value-binding-id)
+   :outer-function-value-argument-ordinal
+   (get derived :outer-function-value-argument-ordinal)
+   :outer-call-evaluation-order (get derived :outer-call-evaluation-order)
+   :source (get call-fact :source)
+   :origin-chain (get call-fact :origin-chain)
+   :generated-origin (get call-fact :generated-origin)
+   :profile (get call-fact :profile)
+   :target (get call-fact :target)})
+
+(defn ho2-node-type-facts [core function-fact call-fact]
+  (let [nodes (get core :nodes)
+        body (ho2-find-node nodes (get function-fact :body-core-node-id))
+        outer-call-node
+        (ho2-find-node nodes (get call-fact :outer-apply-call-core-node-id))
+        outer-call-record
+        (ho2-find-call (get core :calls)
+                       (get call-fact :outer-apply-call-core-node-id))
+        argument (ho2-find-node
+                  nodes
+                  (first (rest (get outer-call-record :argument-node-ids))))
+        inner-argument
+        (ho2-find-node nodes (first (get call-fact :argument-core-node-ids)))
+        call (ho2-find-node nodes (get call-fact :call-core-node-id))
+        outer-argument
+        (ho2-find-node
+         nodes (get call-fact :outer-function-value-argument-core-node-id))]
+    [{:node-id (get argument :node-id) :type :gravity.type/i64
+      :role :outer-value-argument :source (ho2-node-source argument)}
+     {:node-id (get inner-argument :node-id) :type :gravity.type/i64
+      :role :inner-value-reference :source (ho2-node-source inner-argument)}
+     {:node-id (get body :node-id) :type :gravity.type/i64
+      :role :identity-body :source (ho2-node-source body)}
+     {:node-id (get call :node-id) :type :gravity.type/i64
+      :role :indirect-call-result :source (ho2-node-source call)}
+     {:node-id (get outer-argument :node-id)
+      :type (ho2-complete-function-type
+             [:gravity.type/i64] :gravity.type/i64
+             (get function-fact :effects)
+             (get function-fact :capabilities)
+             (get function-fact :ownership)
+             (get function-fact :throws) :meta :jvm)
+      :role :outer-function-value-argument
+      :source (ho2-node-source outer-argument)}
+     {:node-id (get outer-call-node :node-id) :type :gravity.type/i64
+      :role :outer-apply-result :source (ho2-node-source outer-call-node)}]))
+
+(defn ho2-semantic-signature [fact]
+  {:signature-id (get fact :signature-id)
+   :function-value-id (get fact :function-value-id)
+   :name (get fact :name)
+   :kind (get fact :kind)
+   :parameters (get fact :parameters)
+   :parameter-types (get fact :parameter-types)
+   :return-type (get fact :return-type)
+   :fixed-arity (get fact :fixed-arity)
+   :effects (get fact :effects)
+   :latent-effects (get fact :latent-effects)
+   :capabilities (get fact :capabilities)
+   :ownership (get fact :ownership)
+   :throws (get fact :throws)
+   :evidence (get fact :evidence)
+   :profile (get fact :profile)
+   :target (get fact :target)})
+
+(defn ho2-semantic-parameter [fact]
+  {:binding-id (get fact :binding-id)
+   :function-value-id (get fact :function-value-id)
+   :type (get fact :type)
+   :inferred-from (get fact :inferred-from)
+   :source-node-ids (get fact :source-node-ids)
+   :ownership (get fact :ownership)
+   :mutability (get fact :mutability)})
+
+(defn ho2-semantic-parameters [facts]
+  (loop [remaining facts result []]
+    (if (= 0 (count remaining))
+      result
+      (recur (rest remaining)
+             (conj result
+                   (ho2-semantic-parameter (first remaining)))))))
+
+(defn ho2-semantic-call [fact]
+  {:call-core-node-id (get fact :call-core-node-id)
+   :dispatch (get fact :dispatch)
+   :callee-signature-id (get fact :callee-signature-id)
+   :operator-binding-id (get fact :operator-binding-id)
+   :callable-parameter-binding-id
+   (get fact :callable-parameter-binding-id)
+   :argument-node-ids (get fact :argument-node-ids)
+   :ordered-evaluation-node-ids (get fact :ordered-evaluation-node-ids)
+   :evaluation-order (get fact :evaluation-order)
+   :fixed-arity (get fact :fixed-arity)
+   :argument-types (get fact :argument-types)
+   :result-type (get fact :result-type)
+   :outer-apply-call-node-id (get fact :outer-apply-call-node-id)
+   :outer-apply-operator-binding-id
+   (get fact :outer-apply-operator-binding-id)
+   :outer-function-value-argument-node-id
+   (get fact :outer-function-value-argument-node-id)
+   :outer-function-value-binding-id
+   (get fact :outer-function-value-binding-id)
+   :identity-parameter-binding-id
+   (get fact :identity-parameter-binding-id)
+   :value-parameter-binding-id
+   (get fact :value-parameter-binding-id)
+   :outer-function-value-argument-ordinal
+   (get fact :outer-function-value-argument-ordinal)
+   :outer-call-evaluation-order (get fact :outer-call-evaluation-order)
+   :effects (get fact :effects)
+   :capabilities (get fact :capabilities)
+   :ownership (get fact :ownership)
+   :throws (get fact :throws)
+   :profile (get fact :profile)
+   :target (get fact :target)})
+
+(defn ho2-semantic-node [fact]
+  {:node-id (get fact :node-id)
+   :type (get fact :type)
+   :role (get fact :role)})
+
+(defn ho2-semantic-nodes [facts]
+  (loop [remaining facts result []]
+    (if (= 0 (count remaining))
+      result
+      (recur (rest remaining)
+             (conj result (ho2-semantic-node (first remaining)))))))
+
+(defn ho2-derivation-step [ordinal transition]
+  {:step ordinal
+   :slot (get transition :slot)
+   :subject (get transition :subject)
+   :derived-type (get transition :type)
+   :depends-on (get transition :depends-on)
+   :evidence (get transition :evidence)})
+
+(defn ho2-derivation-slot-seen? [slots slot]
+  (if (= 0 (count slots))
+    false
+    (if (= slot (first slots))
+      true
+      (ho2-derivation-slot-seen? (rest slots) slot))))
+
+(defn ho2-derivation-dependencies-seen? [slots dependencies]
+  (if (= 0 (count dependencies))
+    true
+    (if (ho2-derivation-slot-seen? slots (first dependencies))
+      (ho2-derivation-dependencies-seen? slots (rest dependencies))
+      false)))
+
+(defn ho2-derivation-transitions-valid? [transitions]
+  (loop [remaining transitions slots []]
+    (if (= 0 (count remaining))
+      true
+      (let [transition (first remaining)
+            slot (get transition :slot)
+            dependencies (get transition :depends-on)
+            after (get transition :type)]
+        (if (ho2-derivation-slot-seen? slots slot)
+          false
+          (if (vector? dependencies)
+            (if (ho2-derivation-dependencies-seen? slots dependencies)
+              (if (= :gravity.type/i64 after)
+                (recur (rest remaining) (conj slots slot))
+                false)
+              false)
+            false))))))
+
+(defn ho2-derivation-record [transitions]
+  (loop [remaining transitions ordinal 1 records [] slots []]
+    (if (= 0 (count remaining))
+      (let [valid? (ho2-derivation-transitions-valid? transitions)]
+        {:model :direct-acyclic-derivation
+         :status (if valid? :derived :invalid)
+         :step-count (count records)
+         :observation-count 1
+         :constraint-count (count transitions)
+         :acyclic? valid?
+         :steps records
+         :derived-signatures (if valid? 1 0)
+         :trace slots})
+      (let [transition (first remaining)]
+        (recur (rest remaining)
+               (+ ordinal 1)
+               (conj records (ho2-derivation-step ordinal transition))
+               (conj slots (get transition :slot)))))))
+
+(defn ho2-build-accepted
+  [request ho1-request ho1-result ho1-verification]
+  (let [core (get (get ho1-request :sh07-context) :canonical-core-artifact)
+        module (get core :module)
+        function-fact (ho2-function-fact ho1-result)
+        call-fact (ho2-call-fact ho1-result)
+        derived (ho2-derived-observation core function-fact call-fact)
+        signature (ho2-signature-fact function-fact derived module)
+        identity-parameter (ho2-parameter-fact function-fact derived)
+        apply-parameters (ho2-apply-parameter-facts core derived)
+        parameters
+        [identity-parameter
+         (first apply-parameters)
+         (first (rest apply-parameters))]
+        indirect-call (ho2-indirect-call-fact call-fact signature derived)
+        nodes (ho2-node-type-facts core function-fact call-fact)
+        constraints
+        [{:constraint-id :ho2-c1-outer-literal-to-value
+          :kind :equality
+          :source-node-id (get derived :argument-node-id)
+          :subject (get derived :inner-argument-binding-id)
+          :expected :gravity.type/i64
+          :solution :gravity.type/i64
+          :evidence [:ho1-outer-apply :outer-literal]
+          :profile :meta :target :jvm}
+         {:constraint-id :ho2-c2-value-to-identity-parameter
+          :kind :equality
+          :source-node-id (get derived :inner-argument-node-id)
+          :subject (get derived :parameter-binding-id)
+          :expected :gravity.type/i64
+          :solution :gravity.type/i64
+          :evidence [:ho1-inner-call :callable-binding]
+          :profile :meta :target :jvm}
+         {:constraint-id :ho2-c3-identity-return
+          :kind :equality
+          :source-node-id (get derived :body-node-id)
+          :subject (get signature :signature-id)
+          :expected :gravity.type/i64
+          :solution :gravity.type/i64
+          :evidence [:identity-body-reference]
+          :profile :meta :target :jvm}
+         {:constraint-id :ho2-c4-call-results
+          :kind :equality
+          :source-node-id (get derived :observation-id)
+          :subject (get indirect-call :call-core-node-id)
+          :expected :gravity.type/i64
+          :solution :gravity.type/i64
+          :evidence [:ho1-inner-call :ho1-outer-apply :ho2-signature]
+          :profile :meta :target :jvm}]
+        derivation
+        (ho2-derivation-record
+         [{:slot :outer-value-type
+           :subject (get derived :argument-node-id)
+           :type :gravity.type/i64
+           :depends-on []
+           :evidence [:ho1-outer-apply :outer-literal]}
+          {:slot :parameter-type
+           :subject (get derived :parameter-binding-id)
+           :type :gravity.type/i64
+           :depends-on [:outer-value-type]
+           :evidence [:ho1-inner-call :callable-binding]}
+          {:slot :return-type
+           :subject (get signature :signature-id)
+           :type :gravity.type/i64
+           :depends-on [:parameter-type]
+           :evidence [:identity-body-reference]}
+          {:slot :call-result-type
+           :subject (get indirect-call :call-core-node-id)
+           :type :gravity.type/i64
+           :depends-on [:parameter-type :return-type]
+           :evidence [:ho1-inner-call :ho1-outer-apply :ho2-signature]}])
+        function-type
+        (ho2-complete-function-type
+         [:gravity.type/i64] :gravity.type/i64
+         (get signature :effects) (get signature :capabilities)
+         (get signature :ownership) (get signature :throws)
+         (get signature :profile) (get signature :target))
+        type-environment
+        {:entries
+          [{:kind :binding
+           :id (get identity-parameter :binding-id)
+           :type :gravity.type/i64}
+          {:kind :binding
+           :id (get derived :apply-callable-binding-id)
+           :type function-type}
+          {:kind :binding
+           :id (get derived :apply-value-binding-id)
+           :type :gravity.type/i64}
+          {:kind :function
+           :id (get signature :signature-id)
+           :type function-type}
+          {:kind :node
+           :id (get derived :argument-node-id)
+           :type :gravity.type/i64}
+          {:kind :node
+           :id (get derived :inner-argument-node-id)
+           :type :gravity.type/i64}
+          {:kind :node
+           :id (get derived :body-node-id)
+           :type :gravity.type/i64}
+          {:kind :node
+           :id (get derived :observation-id)
+           :type :gravity.type/i64}
+          {:kind :node
+           :id (get derived :outer-function-value-argument-node-id)
+           :type function-type}
+          {:kind :node
+           :id (get derived :outer-apply-call-node-id)
+           :type :gravity.type/i64}]
+         :order [(get identity-parameter :binding-id)
+                 (get derived :apply-callable-binding-id)
+                 (get derived :apply-value-binding-id)
+                 (get signature :signature-id)
+                 (get derived :argument-node-id)
+                 (get derived :inner-argument-node-id)
+                 (get derived :body-node-id)
+                 (get derived :observation-id)
+                 (get derived :outer-function-value-argument-node-id)
+                 (get derived :outer-apply-call-node-id)]}
+        identity-input
+        {:domain :gravity/sh08-ho2-typed-core-v1
+         :scope :monomorphic-named-function-value-one-hop-signature-inference
+         :upstream-ho1-artifact-id (get ho1-result :upstream-artifact-id)
+         :upstream-ho1-result-artifact (get ho1-result :artifact)
+         :ho1-semantic-identity
+         (ho2-ho1-semantic-identity
+          ho1-request ho1-result ho1-verification
+          (get request :ho1-verification-id))
+         :canonical-core-artifact-id
+         (get ho1-result :canonical-core-artifact-id)
+         :bridge-revision (get request :bridge-revision)
+         :signature-facts [(ho2-semantic-signature signature)]
+         :parameter-facts
+         (ho2-semantic-parameters parameters)
+         :indirect-call-facts [(ho2-semantic-call indirect-call)]
+         :node-type-facts (ho2-semantic-nodes nodes)
+         :type-environment type-environment
+         :constraints constraints
+         :derivation derivation
+         :profile (get module :profile)
+         :target (get module :target)}]
+    {:artifact :gravity/sh08-higher-order-function-typed-core-request
+     :schema-version 1
+     :status :accepted
+     :scope :monomorphic-named-function-value-one-hop-signature-inference
+     :upstream-ho1-artifact-id (get ho1-result :upstream-artifact-id)
+     :upstream-ho1-result-artifact (get ho1-result :artifact)
+     :upstream-ho1-verification-id
+     (get request :ho1-verification-id)
+     :ho1-authentication (get request :ho1-authentication)
+     :canonical-core-artifact-id (get ho1-result :canonical-core-artifact-id)
+     :bridge-revision (get request :bridge-revision)
+     :bridge-authentication (get request :bridge-authentication)
+     :signature-facts [signature]
+     :parameter-facts parameters
+     :indirect-call-facts [indirect-call]
+     :node-type-facts nodes
+     :type-environment type-environment
+     :constraint-ledger constraints
+     :derivation derivation
+     :identity-input identity-input
+     :provenance
+     {:source-path (get request :actual-source-path)
+      :ho1-source-path (get ho1-request :actual-source-path)
+      :ho1-provenance (get ho1-result :provenance)
+      :sh07-provenance (get (get ho1-request :sh07-context) :provenance)
+      :envelope-provenance
+      (get (get ho1-request :envelope) :actual-path-provenance)}
+     :ho1-request ho1-request
+     :ho1-result ho1-result
+     :ho1-verification ho1-verification
+     :envelope-descriptor (get ho1-request :envelope-descriptor)
+     :envelope (get ho1-request :envelope)
+     :envelope-replay (get ho1-request :envelope-replay)
+     :envelope-verification (get ho1-request :envelope-verification)
+     :bounds (get (sh08-higher-order-function-type-policy) :bounds)
+     :pending (ho2-pending)
+     :authority
+     {:semantic-owner :gravity-source
+      :host-role :authenticated-ho1-and-sh07-ingress
+      :self-hosted? false
+      :clojure-seed-boundary? true}}))
+
+(defn ho2-accepted-result-valid? [result]
+  (let [signatures (get result :signature-facts)
+        parameters (get result :parameter-facts)
+        calls (get result :indirect-call-facts)
+        nodes (get result :node-type-facts)
+        constraints (get result :constraint-ledger)
+        derivation (get result :derivation)
+        identity-input (get result :identity-input)]
+    (ho2-all-true?
+     [(= :accepted (get result :status))
+      (ho2-bridge-revision-valid? (get result :bridge-revision))
+      (= 1 (count signatures))
+      (= 3 (count parameters))
+      (= 1 (count calls))
+      (= 6 (count nodes))
+      (= 4 (count constraints))
+      (= :direct-acyclic-derivation (get derivation :model))
+      (= :derived (get derivation :status))
+      (= 1 (get derivation :derived-signatures))
+      (= 1 (get derivation :observation-count))
+      (= 4 (get derivation :constraint-count))
+      (= 4 (get derivation :step-count))
+      (= true (get derivation :acyclic?))
+      (= (get identity-input :signature-facts)
+         [(ho2-semantic-signature (first signatures))])
+      (= (get identity-input :parameter-facts)
+         (ho2-semantic-parameters parameters))
+      (= (get identity-input :indirect-call-facts)
+         [(ho2-semantic-call (first calls))])
+      (= (get identity-input :node-type-facts)
+         (ho2-semantic-nodes nodes))
+      (= :gravity.type/i64 (get (first signatures) :return-type))
+      (= [:gravity.type/i64] (get (first signatures) :parameter-types))
+      (= :gravity.type/i64 (get (first calls) :result-type))
+      (= :selected-identity-parameter
+         (get (first parameters) :parameter-role))
+      (= :apply-callable-parameter
+         (get (second parameters) :parameter-role))
+      (= :apply-value-parameter
+         (get (get parameters 2) :parameter-role))])))
+
+(defn ho2-build-validation [request]
+  (if (map? request)
+    (if (ho2-request-fields-valid? request)
+      (if (= :gravity/sh08-higher-order-function-typed-core-request
+             (get request :artifact))
+        (if (= 1 (get request :schema-version))
+          (if (string? (get request :actual-source-path))
+            (if (ho2-ho1-request-shape-valid? (get request :ho1-request))
+              (if (ho2-bridge-revision-valid? (get request :bridge-revision))
+                :continue
+                (ho2-upstream-rejection
+                 "STD08-HO2-SCHEMA" :bridge-revision-required
+                 :authenticated-revision (get request :bridge-revision)
+                 "STD08-HO2-SCHEMA" :bridge-revision))
+              (ho2-upstream-rejection
+               "STD08-HO2-HO1" :ho1-request-required
+               :authenticated-ho1-request (get request :ho1-request)
+               "STD08-HO-SCHEMA" :request-fields))
+            (ho2-rejection "STD08-HO2-SCHEMA" :source-path-required
+                           :physical-source-path
+                           (get request :actual-source-path)))
+          (ho2-rejection "STD08-HO2-SCHEMA" :schema-version
+                         :one (get request :schema-version)))
+        (ho2-rejection "STD08-HO2-SCHEMA" :request-artifact
+                       :gravity/sh08-higher-order-function-typed-core-request
+                       (get request :artifact)))
+      (ho2-rejection "STD08-HO2-SCHEMA" :request-fields
+                     :complete-request request))
+    (ho2-rejection "STD08-HO2-SCHEMA" :request-map-required :map request)))
+
+(defn sh08-build-higher-order-function-type-request [request]
+  (let [validation (ho2-build-validation request)]
+    (if (= :continue validation)
+      (let [ho1-request (get request :ho1-request)
+            ho1-result (get request :ho1-result)
+            ho1-verification (get request :ho1-verification)
+            observations (get request :signature-observations)
+            core (get (get ho1-request :sh07-context) :canonical-core-artifact)
+            function-fact (ho2-function-fact ho1-result)
+            call-fact (ho2-call-fact ho1-result)]
+        (if (ho2-sh07-lineage-valid? ho1-request)
+          (if (ho2-envelope-lineage-valid? ho1-request)
+            (if (ho2-ho1-result-shape-valid?
+                 {:ho1-result ho1-result :ho1-verification ho1-verification})
+              (if (ho2-ho1-input-valid? request)
+                (if (ho2-ho1-authentication-valid? request)
+                  (if (ho2-bridge-authentication-valid? request)
+                    (if (= (get ho1-result :upstream-artifact-id)
+                           (get (get ho1-request :sh07-artifact) :artifact-id))
+                (if (ho2-function-identity-valid? function-fact)
+                  (if (ho2-call-shape-valid? call-fact)
+                    (if (ho2-identity-body-valid? core function-fact call-fact)
+                      (if (ho2-inner-argument-valid? core call-fact)
+                        (if (ho2-outer-argument-valid?
+                             core function-fact call-fact)
+                          (let [derived
+                              (ho2-derived-observation
+                               core function-fact call-fact)]
+                          (if (vector? observations)
+                            (if (= 0 (count observations))
+                              (ho2-rejection
+                               "STD08-HO2-CONSTRAINT"
+                               :unresolved-signature-observation
+                               :one-authenticated-observation derived)
+                              (if (> (count observations) 8)
+                                (ho2-rejection
+                                 "STD08-HO2-CONSTRAINT" :observation-bound
+                                 :at-most-eight observations)
+                                (if (= 1 (count observations))
+                                  (if (= (ho2-observation-signature
+                                          (first observations))
+                                         (ho2-observation-signature derived))
+                                    (let [result
+                                          (ho2-build-accepted
+                                           request ho1-request ho1-result
+                                           ho1-verification)]
+                                      (if (ho2-accepted-result-valid? result)
+                                        result
+                                        (ho2-rejection
+                                         "STD08-HO2-TYPE"
+                                         :typed-core-shape
+                                         :complete-typed-core
+                                         result)))
+                                    (ho2-rejection
+                                     "STD08-HO2-CONSTRAINT"
+                                     :conflicting-signature-observations
+                                     (ho2-observation-signature derived)
+                                     (first observations)))
+                                  (ho2-rejection
+                                   "STD08-HO2-CONSTRAINT"
+                                   :conflicting-signature-observations
+                                   :exactly-one observations))))
+                            (ho2-rejection "STD08-HO2-CONSTRAINT"
+                                           :signature-observations-required
+                                           :vector observations)))
+                          (ho2-rejection "STD08-HO2-CONSTRAINT"
+                                         :monomorphic-i64-annotation-required
+                                         :gravity.type/i64
+                                         (ho2-outer-value-diagnostic-fact
+                                          core call-fact)))
+                        (ho2-rejection "STD08-HO2-CONSTRAINT"
+                                       :inner-value-reference-required
+                                       :callable-value-binding
+                                       (ho2-node-diagnostic-fact
+                                        core
+                                        (first (get call-fact
+                                                    :argument-core-node-ids)))))
+                      (ho2-rejection "STD08-HO2-CONSTRAINT"
+                                     :identity-body-reference-required
+                                     :parameter-reference
+                                     (ho2-node-diagnostic-fact
+                                      core
+                                      (get function-fact :body-core-node-id))))
+                    (ho2-rejection "STD08-HO2-TYPE" :indirect-call-shape
+                                   :fixed-arity-one call-fact))
+                  (ho2-rejection "STD08-HO2-TYPE" :function-value-shape
+                                 :named-immutable-fixed-arity-one function-fact))
+                (ho2-upstream-rejection "STD08-HO2-HO1"
+                                        :ho1-core-lineage-mismatch
+                                        (get (get ho1-request :sh07-artifact)
+                                             :artifact-id)
+                                        (get ho1-result
+                                             :upstream-artifact-id)
+                                        "STD08-HO-SH07"
+                                        :artifact-lineage-mismatch))
+                    (ho2-upstream-rejection
+                     "STD08-HO2-SCHEMA" :bridge-revision-resolution-required
+                     :exact-host-resolved-revision
+                     (get request :bridge-authentication)
+                     "STD08-HO2-SCHEMA" :bridge-revision-resolution))
+                  (ho2-upstream-rejection
+                   "STD08-HO2-HO1" :ho1-exact-resolution-required
+                   :fresh-exact-ho1-verification
+                   (get request :ho1-authentication)
+                   "STD08-HO-VERIFY" :candidate-substitution))
+                (ho2-upstream-rejection
+                 "STD08-HO2-HO1" :ho1-exact-input-required
+                 :exact-request-result-verification
+                 (get request :ho1-verification)
+                 "STD08-HO-VERIFY" :candidate-substitution))
+              (ho2-upstream-rejection "STD08-HO2-HO1"
+                                      :ho1-result-required
+                                      :accepted
+                                      (get ho1-result :status)
+                                      "STD08-HO-VERIFY"
+                                      :candidate-substitution))
+            (ho2-rejection "STD08-HO2-ENVELOPE"
+                           :contextual-envelope-required
+                           :contextual-verification-passed
+                           (get ho1-request :envelope-verification)))
+          (ho2-rejection "STD08-HO2-SH07" :authenticated-b47-required
+                         :passed (get ho1-request :sh07-verification))))
+      validation)))
+
+(defn sh08-bind-higher-order-function-type-result [request bridge-request]
+  (if (= :accepted (get bridge-request :status))
+    (assoc bridge-request :artifact
+           :gravity/sh08-higher-order-function-typed-core)
+    bridge-request))
+
+(defn sh08-verify-higher-order-function-type-result
+  [request bridge-request candidate]
+  (let [rebuilt (sh08-build-higher-order-function-type-request request)]
+    (if (= rebuilt bridge-request)
+      (if (= :accepted (get bridge-request :status))
+        (let [expected
+              (sh08-bind-higher-order-function-type-result
+               request bridge-request)]
+          (if (= expected candidate)
+            {:artifact :gravity/sh08-higher-order-function-typed-core-verification
+             :schema-version 1
+             :status :passed
+             :checks {:request-replayed? true
+                      :ho1-result-bound? true
+                      :ho1-verification-bound? true
+                      :sh07-lineage-bound? true
+                      :envelope-lineage-bound? true
+                      :signature-facts-bound? true
+                      :parameter-facts-bound? true
+                      :indirect-call-facts-bound? true
+                      :constraint-ledger-bound? true
+                      :derivation-bound? true
+                      :path-neutral-identity-bound? true
+                      :provenance-separated? true
+                      :candidate-recomputed? true}
+             :failed-checks []
+             :candidate candidate}
+            (ho2-rejection "STD08-HO2-VERIFY" :candidate-substitution
+                           :exact-typed-core candidate)))
+        (if (= candidate bridge-request)
+          {:artifact :gravity/sh08-higher-order-function-typed-core-verification
+           :schema-version 1
+           :status :passed
+           :checks {:rejected-result-bound? true
+                    :candidate-recomputed? true}
+           :failed-checks []
+           :candidate candidate}
+          (ho2-rejection "STD08-HO2-VERIFY" :rejected-result-substitution
+                         :rejected candidate)))
+      (ho2-rejection "STD08-HO2-VERIFY" :request-substitution
+                     :original-request :bridge-request-mismatch))))

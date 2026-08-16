@@ -1,0 +1,152 @@
+(ns gravity.self-hosting.sh09.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh09-pure-request
+             sh09-compiler-read-request
+             sh09-build-read-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh09-request-base []
+  {:artifact :gravity/sh09-normalized-effect-request
+   :request-id :compiler-read
+   :core-node-id "core-node-compiler-read"
+   :syntax-id "syntax-compiler-read"
+   :source-span {:source "normalized-effect-requests.gravity"
+                 :start-byte 0
+                 :end-byte 1}
+   :origin-chain []
+   :function (quote gravity.self-hosting.sh09.accepted/check)
+   :namespace (quote gravity.self-hosting.sh09.accepted)
+   :profile :meta
+   :target :jvm
+   :phase :build
+   :effect :compiler/read-ir
+   :required-capability :compiler/ir-read
+   :declared-effects #{:compiler/read-ir}
+   :package-effects #{:compiler/read-ir}
+   :deployment-effects #{:compiler/read-ir}
+   :declared-capabilities #{:compiler/ir-read}
+   :package-capabilities #{:compiler/ir-read}
+   :deployment-capabilities #{:compiler/ir-read}
+   :provider
+   {:id :gravity.compiler/read-only-ir
+    :effects #{:compiler/read-ir}
+    :capabilities #{:compiler/ir-read}
+    :profiles #{:meta}
+    :targets #{:jvm}
+    :phases #{:build}}
+   :grant
+   {:id :compiler-read-grant
+    :principal (quote gravity.self-hosting.sh09.accepted)
+    :capability :compiler/ir-read
+    :provider :gravity.compiler/read-only-ir
+    :phase :build
+    :scope {:ir-level :typed-core}}
+   :resource-subject {:ir-level :typed-core}
+   :build-policy
+   {:hermetic true
+    :allowed-effects #{:compiler/read-ir}}
+   :safety-allowed true
+   :authority-mode :explicit
+   :replay-record nil
+   :ordering :sequence})
+
+(defn sh09-pure-request []
+  {:artifact :gravity/sh09-normalized-effect-request
+   :request-id :pure
+   :core-node-id "core-node-pure"
+   :syntax-id "syntax-pure"
+   :source-span {:source "normalized-effect-requests.gravity"
+                 :start-byte 2
+                 :end-byte 3}
+   :origin-chain []
+   :function (quote gravity.self-hosting.sh09.accepted/pure)
+   :namespace (quote gravity.self-hosting.sh09.accepted)
+   :profile :meta
+   :target :jvm
+   :phase :build
+   :effect nil
+   :required-capability nil
+   :declared-effects #{}
+   :package-effects #{}
+   :deployment-effects #{}
+   :declared-capabilities #{}
+   :package-capabilities #{}
+   :deployment-capabilities #{}
+   :provider nil
+   :grant nil
+   :resource-subject nil
+   :build-policy {:hermetic true :allowed-effects #{}}
+   :safety-allowed true
+   :authority-mode :none
+   :replay-record nil
+   :ordering nil})
+
+(defn sh09-compiler-read-request []
+  (sh09-request-base))
+
+(defn sh09-build-read-request []
+  {:artifact :gravity/sh09-normalized-effect-request
+   :request-id :build-read
+   :core-node-id "core-node-build-read"
+   :syntax-id "syntax-build-read"
+   :source-span {:source "normalized-effect-requests.gravity"
+                 :start-byte 4
+                 :end-byte 5}
+   :origin-chain [{:kind :generated
+                   :generator :sh09-fixture
+                   :source "normalized-effect-requests.gravity"}]
+   :function (quote gravity.self-hosting.sh09.accepted/load-input)
+   :namespace (quote gravity.self-hosting.sh09.accepted)
+   :profile :meta
+   :target :jvm
+   :phase :build
+   :effect :build/read-file
+   :required-capability :build/file-read
+   :declared-effects #{:build/read-file}
+   :package-effects #{:build/read-file}
+   :deployment-effects #{:build/read-file}
+   :declared-capabilities #{:build/file-read}
+   :package-capabilities #{:build/file-read}
+   :deployment-capabilities #{:build/file-read}
+   :provider
+   {:id :gravity.build/hermetic-input
+    :effects #{:build/read-file}
+    :capabilities #{:build/file-read}
+    :profiles #{:meta}
+    :targets #{:jvm}
+    :phases #{:build}}
+   :grant
+   {:id :declared-input-grant
+    :principal (quote gravity.self-hosting.sh09.accepted)
+    :capability :build/file-read
+    :provider :gravity.build/hermetic-input
+    :phase :build
+    :scope
+    {:content-id
+     "sha256:1111111111111111111111111111111111111111111111111111111111111111"}}
+   :resource-subject
+   {:content-id
+    "sha256:1111111111111111111111111111111111111111111111111111111111111111"}
+   :build-policy
+   {:hermetic true
+    :allowed-effects #{:build/read-file}}
+   :safety-allowed true
+   :authority-mode :explicit
+   :replay-record
+   {:artifact :gravity/sh09-replay-record
+    :record-id
+    "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+    :request-id :build-read
+    :core-node-id "core-node-build-read"
+    :effect :build/read-file
+    :provider :gravity.build/hermetic-input
+    :phase :build
+    :subject
+    {:content-id
+     "sha256:1111111111111111111111111111111111111111111111111111111111111111"}
+    :content-id
+    "sha256:1111111111111111111111111111111111111111111111111111111111111111"}
+   :ordering :sequence})

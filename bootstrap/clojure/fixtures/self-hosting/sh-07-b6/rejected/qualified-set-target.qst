@@ -1,0 +1,19 @@
+(ns self-hosting.sh07-b6.reject.qualified-set-target
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:state/write})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B6
+    :sh07-b6
+    {:expected-rule "C6-LOWERING-GAP"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :qualified-set-target-deferred
+     :expected-remediation
+     "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}}))
+
+(def target 0)
+(def invalid-write
+  (set! self-hosting.sh07-b6.reject.qualified-set-target/target 1))

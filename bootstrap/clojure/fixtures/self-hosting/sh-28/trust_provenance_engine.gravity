@@ -1,0 +1,2748 @@
+(ns gravity.self-hosting.sh28.trust-provenance-engine
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh28-trust-provenance-policy
+             sh28-build-trust-evidence
+             sh28-verify-trust-evidence])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh28-nonempty-string? [value]
+  (if (string? value)
+    (> (count value) 0)
+    false))
+
+(defn sh28-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (sh28-member-from? values value (+ index 1)))))
+
+(defn sh28-member? [values value]
+  (if (vector? values)
+    (sh28-member-from? values value 0)
+    false))
+
+(defn sh28-unique-from? [values index]
+  (if (= index (count values))
+    true
+    (if (sh28-member-from? values (get values index) (+ index 1))
+      false
+      (sh28-unique-from? values (+ index 1)))))
+
+(defn sh28-max [left right]
+  (if (> left right) left right))
+
+(defn sh28-distinct? [left right]
+  (if (= left right) false true))
+
+(defn sh28-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (set? value))))
+
+(defn sh28-scalar? [value]
+  (if (= value nil)
+    true
+    (if (string? value)
+      true
+      (if (keyword? value)
+        true
+        (if (symbol? value)
+          true
+          (if (integer? value)
+            true
+            (if (boolean? value)
+              true
+              false)))))))
+
+(defn sh28-aggregate-width [value]
+  (if (map? value)
+    (* 2 (count value))
+    (count value)))
+
+(defn sh28-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (let [key (first remaining)]
+          (recur
+           (rest remaining)
+           (conj (conj result key) (get value key))))))
+    (vec value)))
+
+(defn sh28-carrier-preflight [value]
+  (loop [frontier [[value 0]]
+         nodes 0
+         scalar-units 0
+         maximum-depth 0
+         maximum-width 0]
+    (if (= (count frontier) 0)
+      {:status :accepted
+       :nodes nodes
+       :scalar-units scalar-units
+       :maximum-depth maximum-depth
+       :maximum-width maximum-width}
+      (let [entry (first frontier)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (seq? current)
+          {:status :rejected :reason :carrier-sequence-not-canonical}
+          (if (> next-nodes 65536)
+          {:status :rejected :reason :carrier-node-bound}
+          (if (> depth 96)
+            {:status :rejected :reason :carrier-depth-bound}
+            (if (sh28-aggregate? current)
+              (let [width (sh28-aggregate-width current)]
+                (if (> width 2048)
+                  {:status :rejected :reason :carrier-width-bound}
+                  (let [components (sh28-aggregate-components current)
+                        next-frontier
+                        (loop [remaining components
+                               result (rest frontier)]
+                          (if (= (count remaining) 0)
+                            result
+                            (recur
+                             (rest remaining)
+                             (conj result
+                                   [(first remaining) (+ depth 1)]))))]
+                    (recur
+                     next-frontier
+                     next-nodes
+                     scalar-units
+                     (sh28-max maximum-depth depth)
+                     (sh28-max maximum-width width)))))
+              (if (sh28-scalar? current)
+                (let [next-scalar-units
+                      (+ scalar-units (count (vec (str current))))]
+                  (if (> next-scalar-units 2097152)
+                    {:status :rejected :reason :carrier-scalar-bound}
+                    (recur
+                     (rest frontier)
+                     next-nodes
+                     next-scalar-units
+                     (sh28-max maximum-depth depth)
+                     maximum-width)))
+                {:status :rejected
+                 :reason :carrier-value-not-canonical})))))))))
+
+(defn sh28-trust-provenance-policy []
+  {:artifact :gravity/sh28-trust-provenance-policy
+   :schema-version 1
+   :governing-documents [:D9 :PKG7 :PKG10 :PKG12 :BOOT6 :BOOT8]
+   :maximum-lineage-nodes 64
+   :maximum-parents-per-node 8
+   :maximum-carrier-nodes 65536
+   :maximum-carrier-depth 96
+   :maximum-container-width 2048
+   :maximum-scalar-units 2097152
+   :required-evidence
+   [:sh27-equivalence
+    :reproducible-rebuild
+    :conformance
+    :provenance-attestation
+    :sbom
+    :signature
+    :unsafe-audit]
+   :diagnostics
+   ["SH28-SCHEMA"
+    "BOOT8002"
+    "BOOT8003"
+    "BOOT8004"
+    "BOOT8006"
+    "BOOT8007"
+    "BOOT6005"
+    "PKG12004"
+    "PKG12006"
+    "SH28-TCB"
+    "SH28-VERIFY"]
+   :pending
+   [:authentic-sh27-equivalence-ingress
+    :independent-trust-anchor-verification
+    :external-signature-verification
+    :external-sbom-verification
+    :public-release-routing
+    :seedless-execution
+    :sh28-completion]
+   :release-trust-closed? false
+   :clojure-seed-retired? false
+   :clojure-seed-boundary? true})
+
+(defn sh28-environment-valid? [environment]
+  (if (map? environment)
+    (if (= 10 (count environment))
+      (if (sh28-nonempty-string? (get environment :environment-id))
+        (if (sh28-nonempty-string? (get environment :manifest-id))
+          (if (= "C" (get environment :locale))
+            (if (= "UTC" (get environment :timezone))
+              (if (= :sorted (get environment :filesystem-order))
+                (if (= :fixed (get environment :timestamp-policy))
+                  (if (integer? (get environment :random-seed))
+                    (if (= :disabled (get environment :network-policy))
+                      (if (= [] (get environment :allowed-environment))
+                        (sh28-nonempty-string?
+                         (get environment :actual-build-root))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-lock-valid? [lock]
+  (if (map? lock)
+    (if (= 7 (count lock))
+      (if (sh28-nonempty-string? (get lock :lock-id))
+        (if (= true (get lock :complete))
+          (if (= true (get lock :offline))
+            (if (sh28-nonempty-string? (get lock :dependency-graph-id))
+              (if (vector? (get lock :dependency-ids))
+                (if (vector? (get lock :dependency-content-hashes))
+                  (if (= (count (get lock :dependency-ids))
+                         (count (get lock :dependency-content-hashes)))
+                    (if (sh28-unique-from?
+                         (get lock :dependency-ids) 0)
+                      (sh28-nonempty-string? (get lock :content-hash))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-source-graph-valid? [graph]
+  (if (map? graph)
+    (if (= 7 (count graph))
+      (if (sh28-nonempty-string? (get graph :source-graph-id))
+        (if (sh28-nonempty-string? (get graph :root-content-hash))
+          (if (vector? (get graph :component-ids))
+            (if (> (count (get graph :component-ids)) 0)
+              (if (vector? (get graph :component-content-hashes))
+                (if (= (count (get graph :component-ids))
+                       (count (get graph :component-content-hashes)))
+                  (if (sh28-unique-from?
+                       (get graph :component-ids) 0)
+                    (if (vector? (get graph :generator-input-ids))
+                      (if (= true (get graph :canonical))
+                        (= :descriptor-only
+                           (get graph :verification-status))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-dependency-graph-valid? [graph]
+  (if (map? graph)
+    (if (= 8 (count graph))
+      (if (sh28-nonempty-string? (get graph :dependency-graph-id))
+        (if (vector? (get graph :dependency-ids))
+          (if (> (count (get graph :dependency-ids)) 0)
+            (if (vector? (get graph :dependency-content-hashes))
+              (if (vector? (get graph :dependency-provenance-ids))
+                (if (= (count (get graph :dependency-ids))
+                       (count (get graph :dependency-content-hashes)))
+                  (if (= (count (get graph :dependency-ids))
+                         (count (get graph :dependency-provenance-ids)))
+                    (if (sh28-unique-from?
+                         (get graph :dependency-ids) 0)
+                      (if (sh28-nonempty-string?
+                           (get graph :graph-content-hash))
+                        (if (= true (get graph :topological))
+                          (if (= true (get graph :complete))
+                            (= :descriptor-only
+                               (get graph :verification-status))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-build-recipe-valid? [recipe]
+  (if (map? recipe)
+    (if (= 11 (count recipe))
+      (if (sh28-nonempty-string? (get recipe :build-recipe-id))
+        (if (sh28-nonempty-string? (get recipe :source-graph-id))
+          (if (sh28-nonempty-string? (get recipe :lock-id))
+            (if (sh28-nonempty-string? (get recipe :dependency-graph-id))
+              (if (sh28-nonempty-string?
+                   (get recipe :compiler-artifact-id))
+                (if (sh28-nonempty-string? (get recipe :toolchain-id))
+                  (if (sh28-nonempty-string? (get recipe :environment-id))
+                    (if (sh28-nonempty-string?
+                         (get recipe :target-matrix-id))
+                      (if (sh28-nonempty-string?
+                           (get recipe :capability-inventory-id))
+                        (if (sh28-nonempty-string?
+                             (get recipe :content-hash))
+                          (= :descriptor-only
+                             (get recipe :verification-status))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-builder-valid? [builder]
+  (if (map? builder)
+    (if (= 6 (count builder))
+      (if (sh28-nonempty-string? (get builder :builder-id))
+        (if (sh28-nonempty-string? (get builder :identity-id))
+          (if (sh28-nonempty-string? (get builder :policy-id))
+            (if (keyword? (get builder :platform))
+              (if (= :descriptor-only (get builder :verification-status))
+                (= :current (get builder :revocation-status))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-bootstrap-input-valid? [input]
+  (if (map? input)
+    (if (= 7 (count input))
+      (if (sh28-nonempty-string? (get input :input-id))
+        (if (= :seed-compiler-descriptor (get input :kind))
+          (if (sh28-nonempty-string? (get input :content-hash))
+            (if (sh28-nonempty-string? (get input :provenance-id))
+              (if (sh28-nonempty-string?
+                   (get input :anchor-descriptor-id))
+                (if (= :descriptor-only (get input :verification-status))
+                  (= :current (get input :revocation-status))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-runtime-artifact-valid? [record]
+  (if (map? record)
+    (if (= 7 (count record))
+      (if (sh28-nonempty-string? (get record :artifact-id))
+        (if (sh28-nonempty-string? (get record :content-hash))
+          (if (sh28-nonempty-string? (get record :source-graph-id))
+            (if (keyword? (get record :profile))
+              (if (keyword? (get record :target))
+                (if (= :descriptor-only
+                       (get record :verification-status))
+                  (sh28-nonempty-string?
+                   (get record :actual-artifact-path))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-recovery-artifact-valid? [record]
+  (if (map? record)
+    (if (= 6 (count record))
+      (if (sh28-nonempty-string? (get record :artifact-id))
+        (if (sh28-nonempty-string? (get record :content-hash))
+          (if (= :audit-recovery (get record :role))
+            (if (= false (get record :included-in-release-boundary))
+              (if (= :descriptor-only
+                     (get record :verification-status))
+                (sh28-nonempty-string?
+                 (get record :actual-artifact-path))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-dependency-valid? [dependency]
+  (if (map? dependency)
+    (if (= 7 (count dependency))
+      (if (sh28-nonempty-string? (get dependency :dependency-id))
+        (if (sh28-nonempty-string? (get dependency :version))
+          (if (sh28-nonempty-string? (get dependency :content-hash))
+            (if (sh28-nonempty-string? (get dependency :provenance-id))
+              (if (sh28-nonempty-string? (get dependency :license-id))
+                (if (= :clear (get dependency :advisory-status))
+                  (= :current (get dependency :revocation-status))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-toolchain-valid? [toolchain]
+  (if (map? toolchain)
+    (if (= 7 (count toolchain))
+      (if (sh28-nonempty-string? (get toolchain :toolchain-id))
+        (if (keyword? (get toolchain :family))
+          (if (sh28-nonempty-string? (get toolchain :version))
+            (if (sh28-nonempty-string? (get toolchain :target))
+              (if (sh28-nonempty-string? (get toolchain :content-hash))
+                (if (= :verified (get toolchain :identity-status))
+                  (sh28-nonempty-string?
+                   (get toolchain :actual-toolchain-path))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-environments-valid-from? [records index]
+  (if (= index (count records))
+    true
+    (if (sh28-environment-valid? (get records index))
+      (sh28-environments-valid-from? records (+ index 1))
+      false)))
+
+(defn sh28-environments-valid? [records]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (<= (count records) 8)
+        (sh28-environments-valid-from? records 0)
+        false)
+      false)
+    false))
+
+(defn sh28-locks-valid-from? [records index]
+  (if (= index (count records))
+    true
+    (if (sh28-lock-valid? (get records index))
+      (sh28-locks-valid-from? records (+ index 1))
+      false)))
+
+(defn sh28-locks-valid? [records]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (<= (count records) 8)
+        (sh28-locks-valid-from? records 0)
+        false)
+      false)
+    false))
+
+(defn sh28-dependencies-valid-from? [records index]
+  (if (= index (count records))
+    true
+    (if (sh28-dependency-valid? (get records index))
+      (sh28-dependencies-valid-from? records (+ index 1))
+      false)))
+
+(defn sh28-dependencies-valid? [records]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (<= (count records) 128)
+        (sh28-dependencies-valid-from? records 0)
+        false)
+      false)
+    false))
+
+(defn sh28-toolchains-valid-from? [records index]
+  (if (= index (count records))
+    true
+    (if (sh28-toolchain-valid? (get records index))
+      (sh28-toolchains-valid-from? records (+ index 1))
+      false)))
+
+(defn sh28-toolchains-valid? [records]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (<= (count records) 8)
+        (sh28-toolchains-valid-from? records 0)
+        false)
+      false)
+    false))
+
+(defn sh28-record-kind-valid? [kind record]
+  (if (= kind :source-graph)
+    (sh28-source-graph-valid? record)
+    (if (= kind :dependency-graph)
+      (sh28-dependency-graph-valid? record)
+      (if (= kind :build-recipe)
+        (sh28-build-recipe-valid? record)
+        (if (= kind :builder)
+          (sh28-builder-valid? record)
+          (if (= kind :bootstrap-input)
+            (sh28-bootstrap-input-valid? record)
+            false))))))
+
+(defn sh28-kind-records-valid-from? [kind records index]
+  (if (= index (count records))
+    true
+    (if (sh28-record-kind-valid? kind (get records index))
+      (sh28-kind-records-valid-from? kind records (+ index 1))
+      false)))
+
+(defn sh28-kind-records-valid? [kind records maximum]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (<= (count records) maximum)
+        (sh28-kind-records-valid-from? kind records 0)
+        false)
+      false)
+    false))
+
+(defn sh28-record-by-field-from [records field value index]
+  (if (= index (count records))
+    nil
+    (if (= value (get (get records index) field))
+      (get records index)
+      (sh28-record-by-field-from records field value (+ index 1)))))
+
+(defn sh28-record-by-field [records field value]
+  (sh28-record-by-field-from records field value 0))
+
+(defn sh28-field-values-from [records field index result]
+  (if (= index (count records))
+    result
+    (sh28-field-values-from
+     records field (+ index 1)
+     (conj result (get (get records index) field)))))
+
+(defn sh28-field-values [records field]
+  (sh28-field-values-from records field 0 []))
+
+(defn sh28-lineage-node-valid? [node]
+  (if (map? node)
+    (if (= 12 (count node))
+      (if (sh28-nonempty-string? (get node :artifact-id))
+        (if (keyword? (get node :stage))
+          (if (sh28-nonempty-string? (get node :compiler-artifact-id))
+            (if (sh28-nonempty-string? (get node :source-graph-id))
+              (if (sh28-nonempty-string? (get node :environment-id))
+                (if (sh28-nonempty-string? (get node :lock-id))
+                  (if (sh28-nonempty-string?
+                       (get node :dependency-graph-id))
+                    (if (sh28-nonempty-string? (get node :toolchain-id))
+                      (if (vector? (get node :rebuild-parent-ids))
+                        (if (<= (count (get node :rebuild-parent-ids)) 8)
+                          (if (integer? (get node :topological-ordinal))
+                            (if (sh28-nonempty-string?
+                                 (get node :content-hash))
+                              (sh28-nonempty-string?
+                               (get node :actual-artifact-path))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-seen-node? [nodes limit artifact-id index]
+  (if (= index limit)
+    false
+    (if (= artifact-id (get (get nodes index) :artifact-id))
+      true
+      (sh28-seen-node? nodes limit artifact-id (+ index 1)))))
+
+(defn sh28-parents-seen-from? [nodes limit parents index]
+  (if (= index (count parents))
+    true
+    (if (sh28-seen-node? nodes limit (get parents index) 0)
+      (sh28-parents-seen-from? nodes limit parents (+ index 1))
+      false)))
+
+(defn sh28-lineage-ordered-from? [nodes index]
+  (if (= index (count nodes))
+    true
+    (let [node (get nodes index)
+          parents (get node :rebuild-parent-ids)]
+      (if (sh28-lineage-node-valid? node)
+        (if (= index (get node :topological-ordinal))
+          (if (sh28-seen-node? nodes index (get node :artifact-id) 0)
+            false
+            (if (sh28-unique-from? parents 0)
+              (if (if (= index 0)
+                    (= 0 (count parents))
+                    (sh28-member?
+                     parents (get node :compiler-artifact-id)))
+                (if (sh28-parents-seen-from? nodes index parents 0)
+                  (sh28-lineage-ordered-from? nodes (+ index 1))
+                  false)
+                false)
+              false))
+          false)
+        false))))
+
+(defn sh28-node-by-id-from [nodes artifact-id index]
+  (if (= index (count nodes))
+    nil
+    (if (= artifact-id (get (get nodes index) :artifact-id))
+      (get nodes index)
+      (sh28-node-by-id-from nodes artifact-id (+ index 1)))))
+
+(defn sh28-node-by-id [nodes artifact-id]
+  (sh28-node-by-id-from nodes artifact-id 0))
+
+(defn sh28-add-parent-ids-from [parents frontier index]
+  (if (= index (count parents))
+    frontier
+    (sh28-add-parent-ids-from
+     parents (conj frontier (get parents index)) (+ index 1))))
+
+(defn sh28-reachable-node-ids [nodes root-id]
+  (loop [frontier [root-id] visited [] steps 0]
+    (if (= (count frontier) 0)
+      visited
+      (if (> steps 1024)
+        []
+        (let [current-id (first frontier)
+              remaining (vec (rest frontier))]
+          (if (sh28-member? visited current-id)
+            (recur remaining visited (+ steps 1))
+            (let [node (sh28-node-by-id nodes current-id)]
+              (if (= node nil)
+                []
+                (recur
+                 (sh28-add-parent-ids-from
+                  (get node :rebuild-parent-ids) remaining 0)
+                 (conj visited current-id)
+                 (+ steps 1))))))))))
+
+(defn sh28-all-node-ids-reachable?
+  [nodes reachable index]
+  (if (= index (count nodes))
+    true
+    (if (sh28-member?
+         reachable (get (get nodes index) :artifact-id))
+      (sh28-all-node-ids-reachable? nodes reachable (+ index 1))
+      false)))
+
+(defn sh28-lineage-valid? [nodes root-id]
+  (if (vector? nodes)
+    (if (> (count nodes) 0)
+      (if (<= (count nodes) 64)
+        (if (sh28-lineage-ordered-from? nodes 0)
+          (if (= root-id
+                 (get (get nodes (- (count nodes) 1)) :artifact-id))
+            (sh28-all-node-ids-reachable?
+             nodes (sh28-reachable-node-ids nodes root-id) 0)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-lineage-references-valid-from?
+  [nodes environments locks dependencies toolchains index]
+  (if (= index (count nodes))
+    true
+    (let [node (get nodes index)]
+      (if (sh28-member? environments (get node :environment-id))
+        (if (sh28-member? locks (get node :lock-id))
+          (if (sh28-member?
+               dependencies (get node :dependency-graph-id))
+            (if (sh28-member? toolchains (get node :toolchain-id))
+              (sh28-lineage-references-valid-from?
+               nodes environments locks dependencies toolchains (+ index 1))
+              false)
+            false)
+          false)
+        false))))
+
+(defn sh28-lineage-source-graphs-valid-from?
+  [nodes source-graph-ids index]
+  (if (= index (count nodes))
+    true
+    (if (sh28-member?
+         source-graph-ids (get (get nodes index) :source-graph-id))
+      (sh28-lineage-source-graphs-valid-from?
+       nodes source-graph-ids (+ index 1))
+      false)))
+
+(defn sh28-lock-graphs-valid-from?
+  [locks dependency-graphs index]
+  (if (= index (count locks))
+    true
+    (let [lock (get locks index)
+          graph
+          (sh28-record-by-field
+           dependency-graphs
+           :dependency-graph-id
+           (get lock :dependency-graph-id))]
+      (if (map? graph)
+        (if (= (get lock :dependency-ids)
+               (get graph :dependency-ids))
+          (if (= (get lock :dependency-content-hashes)
+                 (get graph :dependency-content-hashes))
+            (sh28-lock-graphs-valid-from?
+             locks dependency-graphs (+ index 1))
+            false)
+          false)
+        false))))
+
+(defn sh28-dependency-graphs-bind?
+  [dependency-graphs dependencies]
+  (if (= 1 (count dependency-graphs))
+    (let [graph (get dependency-graphs 0)]
+      (if (= (get graph :dependency-ids)
+             (sh28-field-values dependencies :dependency-id))
+        (if (= (get graph :dependency-content-hashes)
+               (sh28-field-values dependencies :content-hash))
+          (= (get graph :dependency-provenance-ids)
+             (sh28-field-values dependencies :provenance-id))
+          false)
+        false))
+    false))
+
+(defn sh28-seed-terminus-valid? [lineage bootstrap-inputs anchors]
+  (if (> (count lineage) 0)
+    (let [seed (get lineage 0)
+          input
+          (sh28-record-by-field
+           bootstrap-inputs :input-id (get seed :compiler-artifact-id))]
+      (if (map? input)
+        (if (= (get seed :content-hash)
+               (get input :content-hash))
+          (sh28-member?
+           (sh28-field-values anchors :anchor-id)
+           (get input :anchor-descriptor-id))
+          false)
+        false))
+    false))
+
+(defn sh28-diverse-build-valid? [build]
+  (if (map? build)
+    (if (= 17 (count build))
+      (if (sh28-nonempty-string? (get build :build-id))
+        (if (sh28-nonempty-string? (get build :artifact-id))
+          (if (sh28-nonempty-string? (get build :content-hash))
+            (if (sh28-nonempty-string? (get build :source-graph-id))
+              (if (sh28-nonempty-string?
+                   (get build :compiler-artifact-id))
+                (if (sh28-nonempty-string? (get build :lock-id))
+                  (if (sh28-nonempty-string?
+                       (get build :dependency-graph-id))
+                    (if (sh28-nonempty-string?
+                         (get build :build-recipe-id))
+                      (if (sh28-nonempty-string? (get build :builder-id))
+                        (if (sh28-nonempty-string?
+                             (get build :capability-inventory-id))
+                          (if (sh28-nonempty-string?
+                               (get build :toolchain-id))
+                          (if (sh28-nonempty-string?
+                               (get build :environment-id))
+                            (if (sh28-nonempty-string?
+                                 (get build :trust-anchor-id))
+                              (if (= :structurally-consistent
+                                     (get build :comparison-status))
+                                (if (= :descriptor-only
+                                       (get build :independence-status))
+                                  (if (sh28-nonempty-string?
+                                       (get build :rebuild-report-id))
+                                    (sh28-nonempty-string?
+                                     (get build :actual-build-root))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-diverse-build-records-valid-from? [records index]
+  (if (= index (count records))
+    true
+    (if (sh28-diverse-build-valid? (get records index))
+      (sh28-diverse-build-records-valid-from? records (+ index 1))
+      false)))
+
+(defn sh28-diverse-build-records-valid? [records]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (<= (count records) 4)
+        (sh28-diverse-build-records-valid-from? records 0)
+        false)
+      false)
+    false))
+
+(defn sh28-diverse-builds-valid? [builds root-id toolchain-ids anchor-ids]
+  (if (sh28-diverse-build-records-valid? builds)
+    (if (= 2 (count builds))
+      (let [left (get builds 0)
+            right (get builds 1)]
+        (if (sh28-unique-from?
+             (sh28-field-values builds :build-id) 0)
+          (if (= root-id (get left :artifact-id))
+          (if (= root-id (get right :artifact-id))
+            (if (= (get left :content-hash)
+                   (get right :content-hash))
+              (if (sh28-distinct? (get left :toolchain-id)
+                                  (get right :toolchain-id))
+                (if (sh28-distinct? (get left :environment-id)
+                                    (get right :environment-id))
+                  (if (sh28-distinct? (get left :trust-anchor-id)
+                                      (get right :trust-anchor-id))
+                    (if (sh28-member?
+                         toolchain-ids (get left :toolchain-id))
+                      (if (sh28-member?
+                           toolchain-ids (get right :toolchain-id))
+                        (if (sh28-member?
+                             anchor-ids (get left :trust-anchor-id))
+                          (sh28-member?
+                           anchor-ids (get right :trust-anchor-id))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+          false))
+      false)
+    false))
+
+(defn sh28-build-inputs-valid-from?
+  [builds source-graphs dependency-graphs recipes builders
+   environments locks toolchains anchors lineage index]
+  (if (= index (count builds))
+    true
+    (let [build (get builds index)
+          recipe
+          (sh28-record-by-field
+           recipes :build-recipe-id (get build :build-recipe-id))
+          artifact-node
+          (sh28-node-by-id lineage (get build :artifact-id))]
+      (if (map? artifact-node)
+          (if (= (get build :content-hash)
+               (get artifact-node :content-hash))
+          (if (= (get build :source-graph-id)
+                 (get artifact-node :source-graph-id))
+            (if (= (get build :compiler-artifact-id)
+                   (get artifact-node :compiler-artifact-id))
+              (if (sh28-member?
+           (sh28-field-values source-graphs :source-graph-id)
+           (get build :source-graph-id))
+        (if (sh28-member?
+             (sh28-field-values dependency-graphs :dependency-graph-id)
+             (get build :dependency-graph-id))
+          (if (sh28-member?
+               (sh28-field-values builders :builder-id)
+               (get build :builder-id))
+            (if (sh28-member?
+                 (sh28-field-values environments :environment-id)
+                 (get build :environment-id))
+              (if (sh28-member?
+                   (sh28-field-values locks :lock-id)
+                   (get build :lock-id))
+                (if (sh28-member?
+                     (sh28-field-values toolchains :toolchain-id)
+                     (get build :toolchain-id))
+                  (if (sh28-member?
+                       (sh28-field-values anchors :anchor-id)
+                       (get build :trust-anchor-id))
+                    (if (sh28-seen-node?
+                         lineage
+                         (count lineage)
+                         (get build :compiler-artifact-id)
+                         0)
+                      (if (map? recipe)
+                        (if (= (get build :source-graph-id)
+                               (get recipe :source-graph-id))
+                          (if (= (get build :dependency-graph-id)
+                                 (get recipe :dependency-graph-id))
+                            (if (= (get build :lock-id)
+                                   (get recipe :lock-id))
+                              (if (= (get build :compiler-artifact-id)
+                                     (get recipe :compiler-artifact-id))
+                                (if (= (get build :toolchain-id)
+                                       (get recipe :toolchain-id))
+                                  (if (= (get build :environment-id)
+                                         (get recipe :environment-id))
+                                    (if (= (get build
+                                                :capability-inventory-id)
+                                           (get recipe
+                                                :capability-inventory-id))
+                                      (sh28-build-inputs-valid-from?
+                                       builds source-graphs dependency-graphs
+                                       recipes builders environments locks
+                                       toolchains anchors lineage (+ index 1))
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+                false)
+              false)
+            false)
+          false)
+              false)
+            false)
+          false)
+        false))))
+
+(defn sh28-anchor-valid? [anchor]
+  (if (map? anchor)
+    (if (= 9 (count anchor))
+      (if (sh28-nonempty-string? (get anchor :anchor-id))
+        (if (keyword? (get anchor :anchor-kind))
+          (if (sh28-nonempty-string? (get anchor :operator-id))
+            (if (sh28-nonempty-string? (get anchor :root-metadata-id))
+              (if (sh28-nonempty-string? (get anchor :public-identity-id))
+                (if (= :descriptor-only
+                       (get anchor :verification-status))
+                  (if (= :current (get anchor :revocation-status))
+                    (if (sh28-nonempty-string?
+                         (get anchor :policy-id))
+                      (sh28-nonempty-string?
+                       (get anchor :actual-anchor-location))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-anchor-records-valid-from? [records index]
+  (if (= index (count records))
+    true
+    (if (sh28-anchor-valid? (get records index))
+      (sh28-anchor-records-valid-from? records (+ index 1))
+      false)))
+
+(defn sh28-anchor-records-valid? [records]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (<= (count records) 4)
+        (sh28-anchor-records-valid-from? records 0)
+        false)
+      false)
+    false))
+
+(defn sh28-anchors-valid? [anchors]
+  (if (sh28-anchor-records-valid? anchors)
+    (if (= 2 (count anchors))
+      (if (sh28-distinct? (get (get anchors 0) :anchor-id)
+                          (get (get anchors 1) :anchor-id))
+        (sh28-distinct? (get (get anchors 0) :operator-id)
+                        (get (get anchors 1) :operator-id))
+        false)
+      false)
+    false))
+
+(defn sh28-capability-entry-valid? [record]
+  (if (map? record)
+    (if (= 3 (count record))
+      (if (keyword? (get record :effect))
+        (if (keyword? (get record :capability))
+          (sh28-nonempty-string? (get record :provider-id))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-generated-source-entry-valid? [record]
+  (if (map? record)
+    (if (= 4 (count record))
+      (if (sh28-nonempty-string? (get record :generated-source-id))
+        (if (sh28-nonempty-string? (get record :content-hash))
+          (if (sh28-nonempty-string? (get record :source-graph-id))
+            (sh28-nonempty-string? (get record :generator-id))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-binary-blob-entry-valid? [record]
+  (if (map? record)
+    (if (= 4 (count record))
+      (if (sh28-nonempty-string? (get record :binary-blob-id))
+        (if (sh28-nonempty-string? (get record :content-hash))
+          (if (sh28-nonempty-string? (get record :source-id))
+            (sh28-nonempty-string? (get record :policy-id))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-inventory-entry-valid? [kind record]
+  (if (= kind :capability)
+    (sh28-capability-entry-valid? record)
+    (if (= kind :generated-source)
+      (sh28-generated-source-entry-valid? record)
+      (if (= kind :binary-blob)
+        (sh28-binary-blob-entry-valid? record)
+        false))))
+
+(defn sh28-inventory-valid-from? [kind records index]
+  (if (= index (count records))
+    true
+    (if (sh28-inventory-entry-valid? kind (get records index))
+      (sh28-inventory-valid-from? kind records (+ index 1))
+      false)))
+
+(defn sh28-inventory-ids-from [kind records index result]
+  (if (= index (count records))
+    result
+    (let [record (get records index)
+          id
+          (if (= kind :capability)
+            (str
+             (get record :effect)
+             ":"
+             (get record :capability)
+             ":"
+             (get record :provider-id))
+            (if (= kind :generated-source)
+              (get record :generated-source-id)
+              (get record :binary-blob-id)))]
+      (sh28-inventory-ids-from
+       kind records (+ index 1) (conj result id)))))
+
+(defn sh28-inventory-valid? [kind records]
+  (if (vector? records)
+    (if (<= (count records) 64)
+      (if (sh28-inventory-valid-from? kind records 0)
+        (sh28-unique-from?
+         (sh28-inventory-ids-from kind records 0 []) 0)
+        false)
+      false)
+    false))
+
+(defn sh28-release-inventory-valid? [record]
+  (if (map? record)
+    (if (= 9 (count record))
+      (if (sh28-nonempty-string? (get record :inventory-id))
+        (if (sh28-nonempty-string?
+             (get record :subject-artifact-id))
+          (if (sh28-nonempty-string?
+               (get record :subject-content-hash))
+            (if (sh28-nonempty-string?
+                 (get record :artifact-manifest-id))
+              (if (sh28-nonempty-string?
+                   (get record :source-graph-id))
+                (if (sh28-nonempty-string?
+                     (get record :capability-inventory-id))
+                  (if (sh28-inventory-valid?
+                       :capability
+                       (get record :capability-inventory))
+                    (if (sh28-inventory-valid?
+                         :generated-source
+                         (get record :generated-sources))
+                      (sh28-inventory-valid?
+                       :binary-blob
+                       (get record :binary-blobs))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-all-field-equal-from?
+  [records field expected index]
+  (if (= index (count records))
+    true
+    (if (= expected (get (get records index) field))
+      (sh28-all-field-equal-from?
+       records field expected (+ index 1))
+      false)))
+
+(defn sh28-sbom-valid? [record]
+  (if (map? record)
+    (if (= 18 (count record))
+      (if (sh28-nonempty-string? (get record :sbom-id))
+        (if (sh28-nonempty-string? (get record :subject-artifact-id))
+          (if (sh28-nonempty-string? (get record :subject-content-hash))
+            (if (sh28-nonempty-string? (get record :artifact-manifest-id))
+              (if (sh28-nonempty-string? (get record :source-graph-id))
+                (if (sh28-nonempty-string?
+                     (get record :dependency-graph-id))
+                  (if (vector? (get record :dependency-ids))
+                    (if (vector?
+                         (get record :dependency-content-hashes))
+                      (if (sh28-nonempty-string?
+                           (get record :capability-inventory-id))
+                        (if (sh28-inventory-valid?
+                             :capability
+                             (get record :capability-inventory))
+                          (if (vector? (get record :unsafe-audit-ids))
+                            (if (sh28-inventory-valid?
+                                 :generated-source
+                                 (get record :generated-sources))
+                              (if (sh28-inventory-valid?
+                                   :binary-blob
+                                   (get record :binary-blobs))
+                                (if (sh28-nonempty-string?
+                                     (get record
+                                          :provenance-attestation-id))
+                                  (if (sh28-nonempty-string?
+                                       (get record :safety-summary-id))
+                                    (if (= true (get record :canonical))
+                                      (if (= :complete
+                                             (get record
+                                                  :completeness-status))
+                                        (= :descriptor-only
+                                           (get record
+                                                :verification-status))
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-signature-valid? [record]
+  (if (map? record)
+    (if (= 17 (count record))
+      (if (sh28-nonempty-string? (get record :signature-id))
+        (if (sh28-nonempty-string? (get record :subject-artifact-id))
+          (if (sh28-nonempty-string? (get record :subject-content-hash))
+            (if (sh28-nonempty-string?
+                 (get record :artifact-manifest-id))
+              (if (sh28-nonempty-string? (get record :sbom-id))
+                (if (sh28-nonempty-string?
+                     (get record :safety-summary-id))
+                  (if (sh28-nonempty-string?
+                       (get record :build-recipe-id))
+                    (if (sh28-nonempty-string?
+                         (get record :provenance-attestation-id))
+                      (if (sh28-nonempty-string?
+                           (get record :signed-payload-id))
+                        (if (sh28-nonempty-string?
+                             (get record :signer-identity-id))
+                          (if (sh28-nonempty-string? (get record :key-id))
+                            (if (sh28-nonempty-string?
+                                 (get record :policy-id))
+                              (if (sh28-nonempty-string?
+                                   (get record :root-metadata-id))
+                                (if (= :canonical
+                                       (get record :payload-status))
+                                  (if (= :complete
+                                         (get record
+                                              :content-binding-status))
+                                    (if (= :descriptor-only
+                                           (get record
+                                                :verification-status))
+                                      (= :current
+                                         (get record :revocation-status))
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-signing-policy-valid? [record]
+  (if (map? record)
+    (if (= 8 (count record))
+      (if (sh28-nonempty-string? (get record :policy-id))
+        (if (= :release-artifact (get record :subject-kind))
+          (if (vector? (get record :allowed-key-ids))
+            (if (> (count (get record :allowed-key-ids)) 0)
+              (if (vector? (get record :allowed-identity-ids))
+                (if (> (count (get record :allowed-identity-ids)) 0)
+                  (if (vector? (get record :allowed-root-metadata-ids))
+                    (if (> (count
+                            (get record :allowed-root-metadata-ids)) 0)
+                      (if (= :canonical
+                             (get record :required-payload-status))
+                        (if (= :release-blocking
+                               (get record :failure-policy))
+                          (= :descriptor-only
+                             (get record :verification-status))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-attestation-valid? [record]
+  (if (map? record)
+    (if (= 12 (count record))
+      (if (sh28-nonempty-string? (get record :attestation-id))
+        (if (sh28-nonempty-string? (get record :subject-artifact-id))
+          (if (sh28-nonempty-string? (get record :source-graph-id))
+            (if (sh28-nonempty-string? (get record :dependency-graph-id))
+              (if (sh28-nonempty-string? (get record :builder-id))
+                (if (sh28-nonempty-string? (get record :environment-id))
+                  (if (sh28-nonempty-string? (get record :lock-id))
+                    (if (sh28-nonempty-string?
+                         (get record :build-recipe-id))
+                      (if (sh28-nonempty-string?
+                           (get record :toolchain-id))
+                        (if (= :hermetic
+                               (get record :attestation-level))
+                          (if (= :descriptor-only
+                                 (get record :verification-status))
+                            (= :current
+                               (get record :revocation-status))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-unsafe-audit-index-valid? [record]
+  (if (map? record)
+    (if (= 6 (count record))
+      (if (sh28-nonempty-string? (get record :unsafe-audit-index-id))
+        (if (vector? (get record :audit-ids))
+          (if (> (count (get record :audit-ids)) 0)
+            (if (sh28-unique-from? (get record :audit-ids) 0)
+              (if (vector? (get record :evidence-ids))
+                (if (> (count (get record :evidence-ids)) 0)
+                  (if (sh28-unique-from?
+                       (get record :evidence-ids) 0)
+                    (if (= true (get record :canonical))
+                      (if (= :complete (get record :status))
+                        (= :descriptor-only
+                           (get record :verification-status))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-evidence-record-kind-valid? [kind record]
+  (if (= kind :sbom)
+    (sh28-sbom-valid? record)
+    (if (= kind :signature)
+      (sh28-signature-valid? record)
+      (if (= kind :attestation)
+        (sh28-attestation-valid? record)
+        (if (= kind :signing-policy)
+          (sh28-signing-policy-valid? record)
+          false)))))
+
+(defn sh28-evidence-records-valid-from? [kind records index]
+  (if (= index (count records))
+    true
+    (if (sh28-evidence-record-kind-valid? kind (get records index))
+      (sh28-evidence-records-valid-from? kind records (+ index 1))
+      false)))
+
+(defn sh28-evidence-records-valid? [kind records]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (<= (count records) 64)
+        (sh28-evidence-records-valid-from? kind records 0)
+        false)
+      false)
+    false))
+
+(defn sh28-evidence-record-set-valid? [kind records id-field]
+  (if (sh28-evidence-records-valid? kind records)
+    (if (= 1 (count records))
+      (sh28-unique-from? (sh28-field-values records id-field) 0)
+      false)
+    false))
+
+(defn sh28-evidence-valid? [evidence]
+  (if (map? evidence)
+    (if (= 10 (count evidence))
+      (if (sh28-nonempty-string? (get evidence :sh27-equivalence-id))
+        (if (= :supplied-unverified
+               (get evidence :sh27-equivalence-status))
+          (if (sh28-nonempty-string? (get evidence :rebuild-report-id))
+            (if (sh28-nonempty-string?
+                 (get evidence :conformance-report-id))
+              (if (sh28-nonempty-string?
+                   (get evidence :provenance-attestation-id))
+                (if (sh28-nonempty-string? (get evidence :sbom-id))
+                  (if (sh28-nonempty-string? (get evidence :signature-id))
+                    (if (sh28-nonempty-string?
+                         (get evidence :unsafe-audit-index-id))
+                      (if (= :canonical
+                             (get evidence :signature-payload-status))
+                        (= :external-verification-pending
+                           (get evidence :verification-status))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-sbom-links-valid?
+  [sbom release-inventory root-node first-build dependencies
+   audit-ids attestation-id]
+  (if (= (get root-node :artifact-id)
+         (get sbom :subject-artifact-id))
+    (if (= (get root-node :content-hash)
+           (get sbom :subject-content-hash))
+      (if (= (get root-node :source-graph-id)
+             (get sbom :source-graph-id))
+        (if (= (get release-inventory :artifact-manifest-id)
+               (get sbom :artifact-manifest-id))
+          (if (= (get first-build :dependency-graph-id)
+               (get sbom :dependency-graph-id))
+          (if (= (sh28-field-values dependencies :dependency-id)
+                 (get sbom :dependency-ids))
+            (if (= (sh28-field-values dependencies :content-hash)
+                   (get sbom :dependency-content-hashes))
+              (if (= (get first-build :capability-inventory-id)
+                     (get sbom :capability-inventory-id))
+                (if (= (get release-inventory :capability-inventory)
+                       (get sbom :capability-inventory))
+                  (if (= (get release-inventory :generated-sources)
+                         (get sbom :generated-sources))
+                    (if (= (get release-inventory :binary-blobs)
+                           (get sbom :binary-blobs))
+                      (if (= audit-ids (get sbom :unsafe-audit-ids))
+                  (if (sh28-all-field-equal-from?
+                       (get sbom :generated-sources)
+                       :source-graph-id
+                       (get root-node :source-graph-id)
+                       0)
+                    (if (sh28-all-field-equal-from?
+                         (get sbom :binary-blobs)
+                         :source-id
+                         (get root-node :artifact-id)
+                         0)
+                      (= attestation-id
+                         (get sbom :provenance-attestation-id))
+                      false)
+                    false)
+                  false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-release-inventory-links-valid?
+  [inventory root-node first-build]
+  (if (= (get root-node :artifact-id)
+         (get inventory :subject-artifact-id))
+    (if (= (get root-node :content-hash)
+           (get inventory :subject-content-hash))
+      (if (= (get root-node :source-graph-id)
+             (get inventory :source-graph-id))
+        (= (get first-build :capability-inventory-id)
+           (get inventory :capability-inventory-id))
+        false)
+      false)
+    false))
+
+(defn sh28-signature-links-valid?
+  [signature signing-policy sbom root-node first-build
+   attestation-id anchors]
+  (let [declared-anchor
+        (sh28-record-by-field
+         anchors :anchor-id (get first-build :trust-anchor-id))]
+  (if (= (get root-node :artifact-id)
+         (get signature :subject-artifact-id))
+    (if (= (get root-node :content-hash)
+           (get signature :subject-content-hash))
+      (if (= (get sbom :artifact-manifest-id)
+             (get signature :artifact-manifest-id))
+        (if (= (get sbom :sbom-id) (get signature :sbom-id))
+          (if (= (get sbom :safety-summary-id)
+                 (get signature :safety-summary-id))
+            (if (= (get first-build :build-recipe-id)
+                   (get signature :build-recipe-id))
+              (if (= attestation-id
+                     (get signature :provenance-attestation-id))
+                (if (= (str
+                        "payload:"
+                        (get root-node :artifact-id)
+                        ":"
+                        (get root-node :content-hash)
+                        ":"
+                        (get sbom :artifact-manifest-id)
+                        ":"
+                        (get sbom :sbom-id)
+                        ":"
+                        (get sbom :safety-summary-id)
+                        ":"
+                        (get first-build :build-recipe-id)
+                        ":"
+                        attestation-id)
+                       (get signature :signed-payload-id))
+                  (if (sh28-member?
+                     (get signing-policy :allowed-key-ids)
+                     (get signature :key-id))
+                  (if (sh28-member?
+                       (get signing-policy :allowed-identity-ids)
+                       (get signature :signer-identity-id))
+                    (if (sh28-member?
+                         (get signing-policy
+                              :allowed-root-metadata-ids)
+                         (get signature :root-metadata-id))
+                      (if (map? declared-anchor)
+                        (= (get declared-anchor :root-metadata-id)
+                           (get signature :root-metadata-id))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn sh28-attestation-links-valid?
+  [attestation root-id first-build]
+  (if (= root-id (get attestation :subject-artifact-id))
+    (if (= (get first-build :source-graph-id)
+           (get attestation :source-graph-id))
+      (if (= (get first-build :dependency-graph-id)
+             (get attestation :dependency-graph-id))
+        (if (= (get first-build :builder-id)
+               (get attestation :builder-id))
+          (if (= (get first-build :environment-id)
+                 (get attestation :environment-id))
+            (if (= (get first-build :lock-id)
+                   (get attestation :lock-id))
+              (if (= (get first-build :build-recipe-id)
+                     (get attestation :build-recipe-id))
+                (= (get first-build :toolchain-id)
+                   (get attestation :toolchain-id))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-evidence-links-valid? [request]
+  (let [evidence (get request :evidence)
+        sbom
+        (sh28-record-by-field
+         (get request :sboms) :sbom-id (get evidence :sbom-id))
+        signature
+        (sh28-record-by-field
+         (get request :signatures)
+         :signature-id
+         (get evidence :signature-id))
+        signing-policy
+        (sh28-record-by-field
+         (get request :signing-policies)
+         :policy-id
+         (if (map? signature) (get signature :policy-id) nil))
+        attestation
+        (sh28-record-by-field
+         (get request :attestations)
+         :attestation-id
+         (get evidence :provenance-attestation-id))
+        audit-index (get request :unsafe-audit-index)
+        release-inventory (get request :release-inventory)
+        root-id (get request :root-artifact-id)
+        dependency-ids
+        (sh28-field-values (get request :dependencies) :dependency-id)
+        audit-ids
+        (sh28-field-values (get request :unsafe-audits) :audit-id)
+        audit-evidence-ids
+        (sh28-flatten-field-vectors-from
+         (get request :unsafe-audits) :evidence-ids 0 [])
+        first-build (get (get request :diverse-builds) 0)
+        root-node
+        (sh28-node-by-id
+         (get request :lineage) root-id)
+        anchors (get request :trust-anchors)]
+    (if (map? sbom)
+      (if (map? signature)
+        (if (map? signing-policy)
+          (if (map? attestation)
+            (if (sh28-unsafe-audit-index-valid? audit-index)
+              (if (= (get audit-index :unsafe-audit-index-id)
+                     (get evidence :unsafe-audit-index-id))
+                (if (= audit-ids (get audit-index :audit-ids))
+                  (if (= audit-evidence-ids
+                         (get audit-index :evidence-ids))
+                  (if (sh28-release-inventory-links-valid?
+                       release-inventory root-node first-build)
+                    (if (sh28-sbom-links-valid?
+                         sbom
+                         release-inventory
+                         root-node
+                         first-build
+                         (get request :dependencies)
+                         audit-ids
+                         (get attestation :attestation-id))
+                    (if (sh28-signature-links-valid?
+                         signature
+                         signing-policy
+                         sbom
+                         root-node
+                         first-build
+                         (get attestation :attestation-id)
+                         anchors)
+                      (sh28-attestation-links-valid?
+                       attestation root-id first-build)
+                      false)
+                    false)
+                    false)
+                  false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh28-revocation-valid? [record]
+  (if (map? record)
+    (if (= 6 (count record))
+      (if (keyword? (get record :subject-kind))
+        (if (sh28-nonempty-string? (get record :subject-id))
+          (if (= :current (get record :status))
+            (if (sh28-nonempty-string? (get record :source-id))
+              (if (sh28-nonempty-string? (get record :checked-at-policy-id))
+                (= :release-blocking
+                   (get record :failure-policy))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-revocation-keys-from [records index result]
+  (if (= index (count records))
+    result
+    (let [record (get records index)]
+      (sh28-revocation-keys-from
+       records
+       (+ index 1)
+       (conj result
+             (str
+              (get record :subject-kind)
+              ":"
+              (get record :subject-id)))))))
+
+(defn sh28-revocations-valid-from? [records index]
+  (if (= index (count records))
+    true
+    (if (sh28-revocation-valid? (get records index))
+      (sh28-revocations-valid-from? records (+ index 1))
+      false)))
+
+(defn sh28-revocations-valid? [records]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (<= (count records) 256)
+        (if (sh28-revocations-valid-from? records 0)
+          (let [kinds (sh28-field-values records :subject-kind)
+                keys (sh28-revocation-keys-from records 0 [])]
+            (if (sh28-unique-from? keys 0)
+              (if (sh28-member? kinds :compiler)
+                (if (sh28-member? kinds :builder)
+                  (if (sh28-member? kinds :dependency)
+                    (sh28-member? kinds :signature)
+                    false)
+                  false)
+                false)
+              false))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-revocation-current-for-from?
+  [records subject-kind subject-id index]
+  (if (= index (count records))
+    false
+    (let [record (get records index)]
+      (if (= subject-kind (get record :subject-kind))
+        (if (= subject-id (get record :subject-id))
+          (= :current (get record :status))
+          (sh28-revocation-current-for-from?
+           records subject-kind subject-id (+ index 1)))
+        (sh28-revocation-current-for-from?
+         records subject-kind subject-id (+ index 1))))))
+
+(defn sh28-revocation-current-for?
+  [records subject-kind subject-id]
+  (sh28-revocation-current-for-from?
+   records subject-kind subject-id 0))
+
+(defn sh28-dependency-revocations-valid-from?
+  [dependencies revocations index]
+  (if (= index (count dependencies))
+    true
+    (if (sh28-revocation-current-for?
+         revocations
+         :dependency
+         (get (get dependencies index) :dependency-id))
+      (sh28-dependency-revocations-valid-from?
+       dependencies revocations (+ index 1))
+      false)))
+
+(defn sh28-builder-revocations-valid-from?
+  [builds revocations index]
+  (if (= index (count builds))
+    true
+    (if (sh28-revocation-current-for?
+         revocations
+         :builder
+         (get (get builds index) :build-id))
+      (sh28-builder-revocations-valid-from?
+       builds revocations (+ index 1))
+      false)))
+
+(defn sh28-field-revocations-valid-from?
+  [records field revocation-kind revocations index]
+  (if (= index (count records))
+    true
+    (if (sh28-revocation-current-for?
+         revocations
+         revocation-kind
+         (get (get records index) field))
+      (sh28-field-revocations-valid-from?
+       records field revocation-kind revocations (+ index 1))
+      false)))
+
+(defn sh28-evidence-revocations-valid?
+  [evidence revocations]
+  (let [ids
+        [(get evidence :sh27-equivalence-id)
+         (get evidence :rebuild-report-id)
+         (get evidence :conformance-report-id)
+         (get evidence :provenance-attestation-id)
+         (get evidence :sbom-id)
+         (get evidence :signature-id)
+         (get evidence :unsafe-audit-index-id)]]
+    (sh28-evidence-revocations-valid-from? ids revocations 0)))
+
+(defn sh28-evidence-revocations-valid-from?
+  [ids revocations index]
+  (if (= index (count ids))
+    true
+    (if (sh28-revocation-current-for?
+         revocations :evidence (get ids index))
+      (sh28-evidence-revocations-valid-from?
+       ids revocations (+ index 1))
+      false)))
+
+(defn sh28-revocation-links-valid?
+  [request dependencies builds revocations]
+  (if (sh28-field-revocations-valid-from?
+       (get request :lineage)
+       :artifact-id
+       :compiler
+       revocations
+       0)
+    (if (sh28-field-revocations-valid-from?
+         (get request :toolchains)
+         :toolchain-id
+         :toolchain
+         revocations
+         0)
+      (if (sh28-field-revocations-valid-from?
+           (get request :environments)
+           :environment-id
+           :environment
+           revocations
+           0)
+        (if (sh28-field-revocations-valid-from?
+             (get request :locks)
+             :lock-id
+             :lock
+             revocations
+             0)
+          (if (sh28-field-revocations-valid-from?
+               (get request :trust-anchors)
+               :anchor-id
+               :trust-anchor
+               revocations
+               0)
+            (if (sh28-field-revocations-valid-from?
+                 (get request :trust-anchors)
+                 :root-metadata-id
+                 :root-metadata
+                 revocations
+                 0)
+              (if (sh28-field-revocations-valid-from?
+                   (get request :signatures)
+                   :signer-identity-id
+                   :signing-identity
+                   revocations
+                   0)
+                (if (sh28-field-revocations-valid-from?
+                     (get request :signatures)
+                     :key-id
+                     :signing-key
+                     revocations
+                     0)
+                  (if (sh28-field-revocations-valid-from?
+                       (get request :bootstrap-inputs)
+                       :input-id
+                       :bootstrap-input
+                       revocations
+                       0)
+                    (if (sh28-dependency-revocations-valid-from?
+                         dependencies revocations 0)
+                      (if (sh28-field-revocations-valid-from?
+                           (get request :builders)
+                           :builder-id
+                           :builder
+                           revocations
+                           0)
+                        (if (sh28-field-revocations-valid-from?
+                             (get request :builders)
+                             :identity-id
+                             :builder-identity
+                             revocations
+                             0)
+                          (if (sh28-field-revocations-valid-from?
+                               builds
+                               :build-id
+                               :build
+                               revocations
+                               0)
+                            (if (sh28-field-revocations-valid-from?
+                                 (get request :source-graphs)
+                                 :source-graph-id
+                                 :source-graph
+                                 revocations
+                                 0)
+                              (if (sh28-field-revocations-valid-from?
+                                   (get request :dependency-graphs)
+                                   :dependency-graph-id
+                                   :dependency-graph
+                                   revocations
+                                   0)
+                                (if (sh28-field-revocations-valid-from?
+                                     (get request :build-recipes)
+                                     :build-recipe-id
+                                     :build-recipe
+                                     revocations
+                                     0)
+                                  (if (sh28-field-revocations-valid-from?
+                                       builds
+                                       :rebuild-report-id
+                                       :evidence
+                                       revocations
+                                       0)
+                                    (if (sh28-field-revocations-valid-from?
+                                         (get request :unsafe-audits)
+                                         :audit-id
+                                         :unsafe-audit
+                                         revocations
+                                         0)
+                                      (if
+                                       (sh28-field-revocations-valid-from?
+                                        (get request :signatures)
+                                        :signature-id
+                                        :signature
+                                        revocations
+                                        0)
+                                        (if
+                                         (sh28-field-revocations-valid-from?
+                                          (get request :runtime-artifacts)
+                                          :artifact-id
+                                          :runtime-artifact
+                                          revocations
+                                          0)
+                                          (if
+                                           (sh28-field-revocations-valid-from?
+                                            (get request
+                                                 :recovery-artifacts)
+                                            :artifact-id
+                                            :recovery-artifact
+                                            revocations
+                                            0)
+                                            (sh28-evidence-revocations-valid?
+                                             (get request :evidence)
+                                             revocations)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-unsafe-audit-valid? [audit]
+  (if (map? audit)
+    (if (= 8 (count audit))
+      (if (sh28-nonempty-string? (get audit :audit-id))
+        (if (sh28-nonempty-string? (get audit :unsafe-island-id))
+          (if (sh28-nonempty-string? (get audit :owner-id))
+            (if (sh28-nonempty-string? (get audit :review-id))
+              (if (= :accepted (get audit :review-status))
+                (if (sh28-nonempty-string? (get audit :safe-boundary-id))
+                  (if (vector? (get audit :evidence-ids))
+                    (if (> (count (get audit :evidence-ids)) 0)
+                      (keyword? (get audit :re-review-policy))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-unsafe-audits-valid-from? [records index]
+  (if (= index (count records))
+    true
+    (if (sh28-unsafe-audit-valid? (get records index))
+      (sh28-unsafe-audits-valid-from? records (+ index 1))
+      false)))
+
+(defn sh28-vector-append-from [left right index result]
+  (if (= index (count right))
+    result
+    (sh28-vector-append-from
+     left right (+ index 1) (conj result (get right index)))))
+
+(defn sh28-vector-append [left right]
+  (sh28-vector-append-from left right 0 left))
+
+(defn sh28-flatten-field-vectors-from
+  [records field index result]
+  (if (= index (count records))
+    result
+    (sh28-flatten-field-vectors-from
+     records
+     field
+     (+ index 1)
+     (sh28-vector-append result (get (get records index) field)))))
+
+(defn sh28-unsafe-audits-valid? [records]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (<= (count records) 128)
+        (if (sh28-unsafe-audits-valid-from? records 0)
+          (if (sh28-unique-from?
+               (sh28-field-values records :audit-id) 0)
+            (sh28-unique-from?
+             (sh28-flatten-field-vectors-from
+              records :evidence-ids 0 [])
+             0)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-filter-membership-from?
+  [values comparison expected-membership index]
+  (if (= index (count values))
+    true
+    (if (= expected-membership
+           (sh28-member? comparison (get values index)))
+      (sh28-filter-membership-from?
+       values comparison expected-membership (+ index 1))
+      false)))
+
+(defn sh28-partition-covered-from?
+  [source first-part second-part index]
+  (if (= index (count source))
+    true
+    (if (sh28-member? first-part (get source index))
+      (sh28-partition-covered-from?
+       source first-part second-part (+ index 1))
+      (if (sh28-member? second-part (get source index))
+        (sh28-partition-covered-from?
+         source first-part second-part (+ index 1))
+        false))))
+
+(defn sh28-tcb-delta-derived-valid? [delta]
+  (if (map? delta)
+    (if (= 13 (count delta))
+      (if (sh28-nonempty-string? (get delta :delta-id))
+        (if (sh28-nonempty-string? (get delta :prior-tcb-id))
+          (if (sh28-nonempty-string? (get delta :candidate-tcb-id))
+            (if (vector? (get delta :prior-components))
+              (if (vector? (get delta :candidate-components))
+                (if (vector? (get delta :removed-components))
+                  (if (> (count (get delta :removed-components)) 0)
+                    (if (vector? (get delta :added-components))
+                      (if (vector? (get delta :retained-components))
+                        (if (> (count (get delta :retained-components)) 0)
+                          (if (vector?
+                               (get delta :release-boundary-exclusions))
+                            (if (> (count
+                                    (get delta
+                                         :release-boundary-exclusions))
+                                   0)
+                              (if (sh28-filter-membership-from?
+                                     (get delta :removed-components)
+                                     (get delta :candidate-components)
+                                     false
+                                     0)
+                                  (if (sh28-filter-membership-from?
+                                       (get delta :added-components)
+                                       (get delta :prior-components)
+                                       false
+                                       0)
+                                    (if (sh28-filter-membership-from?
+                                         (get delta :retained-components)
+                                         (get delta :prior-components)
+                                         true
+                                         0)
+                                      (if (sh28-filter-membership-from?
+                                           (get delta :retained-components)
+                                           (get delta :candidate-components)
+                                           true
+                                           0)
+                                        (if (sh28-partition-covered-from?
+                                             (get delta :prior-components)
+                                             (get delta :removed-components)
+                                             (get delta :retained-components)
+                                             0)
+                                          (if (sh28-partition-covered-from?
+                                               (get delta
+                                                    :candidate-components)
+                                               (get delta :added-components)
+                                               (get delta
+                                                    :retained-components)
+                                               0)
+                                            (if (= :pending-independent-validation
+                                                   (get delta :closure-status))
+                                              (if (= false
+                                                     (get delta
+                                                          :seed-retirement-proven))
+                                                (if (= true
+                                                       (get delta
+                                                            :clojure-seed-boundary))
+                                                  (sh28-nonempty-string?
+                                                   (get delta :review-id))
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-tcb-delta-valid? [request]
+  (let [delta (get request :tcb-delta)
+        bootstrap-ids
+        (sh28-field-values (get request :bootstrap-inputs) :input-id)
+        lineage-ids
+        (sh28-field-values (get request :lineage) :artifact-id)
+        runtime-ids
+        (sh28-field-values
+         (get request :runtime-artifacts) :artifact-id)
+        build-ids
+        (sh28-field-values (get request :diverse-builds) :build-id)
+        toolchain-ids
+        (sh28-field-values (get request :toolchains) :toolchain-id)
+        recovery-ids
+        (sh28-field-values
+         (get request :recovery-artifacts) :artifact-id)
+        added
+        (sh28-vector-append
+         (sh28-vector-append lineage-ids runtime-ids) build-ids)
+        candidate (sh28-vector-append added toolchain-ids)
+        prior (sh28-vector-append bootstrap-ids toolchain-ids)]
+    (if (sh28-tcb-delta-derived-valid? delta)
+      (if (= prior (get delta :prior-components))
+        (if (= candidate (get delta :candidate-components))
+          (if (= bootstrap-ids (get delta :removed-components))
+            (if (= added (get delta :added-components))
+              (if (= toolchain-ids (get delta :retained-components))
+                (if (= recovery-ids
+                       (get delta :release-boundary-exclusions))
+                  (if (sh28-unique-from?
+                       (get delta :prior-components) 0)
+                    (sh28-unique-from?
+                     (get delta :candidate-components) 0)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh28-request-shape-valid? [request]
+  (if (map? request)
+    (if (= 29 (count request))
+      (if (= :gravity/sh28-trust-evidence-request
+             (get request :artifact))
+        (if (= 1 (get request :schema-version))
+          (if (sh28-nonempty-string? (get request :release-id))
+            (if (sh28-nonempty-string? (get request :root-artifact-id))
+              (if (sh28-nonempty-string?
+                   (get request :actual-release-root))
+                true
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-runtime-artifacts-valid-from? [records index]
+  (if (= index (count records))
+    true
+    (if (sh28-runtime-artifact-valid? (get records index))
+      (sh28-runtime-artifacts-valid-from? records (+ index 1))
+      false)))
+
+(defn sh28-runtime-artifacts-valid? [records]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (<= (count records) 16)
+        (if (sh28-runtime-artifacts-valid-from? records 0)
+          (sh28-unique-from?
+           (sh28-field-values records :artifact-id) 0)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-recovery-artifacts-valid-from? [records index]
+  (if (= index (count records))
+    true
+    (if (sh28-recovery-artifact-valid? (get records index))
+      (sh28-recovery-artifacts-valid-from? records (+ index 1))
+      false)))
+
+(defn sh28-recovery-artifacts-valid? [records]
+  (if (vector? records)
+    (if (> (count records) 0)
+      (if (<= (count records) 16)
+        (if (sh28-recovery-artifacts-valid-from? records 0)
+          (sh28-unique-from?
+           (sh28-field-values records :artifact-id) 0)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-declared-products-valid? [request]
+  (if (sh28-kind-records-valid?
+       :source-graph (get request :source-graphs) 64)
+    (if (sh28-unique-from?
+         (sh28-field-values
+          (get request :source-graphs) :source-graph-id)
+         0)
+      (if (sh28-kind-records-valid?
+           :dependency-graph (get request :dependency-graphs) 16)
+        (if (sh28-unique-from?
+             (sh28-field-values
+              (get request :dependency-graphs) :dependency-graph-id)
+             0)
+          (if (sh28-kind-records-valid?
+               :build-recipe (get request :build-recipes) 8)
+            (if (sh28-unique-from?
+                 (sh28-field-values
+                  (get request :build-recipes) :build-recipe-id)
+                 0)
+              (if (sh28-kind-records-valid?
+                   :builder (get request :builders) 8)
+                (if (sh28-unique-from?
+                     (sh28-field-values
+                      (get request :builders) :builder-id)
+                     0)
+                  (if (sh28-kind-records-valid?
+                       :bootstrap-input
+                       (get request :bootstrap-inputs)
+                       8)
+                    (if (sh28-unique-from?
+                         (sh28-field-values
+                          (get request :bootstrap-inputs) :input-id)
+                         0)
+                      (if (sh28-evidence-record-set-valid?
+                           :sbom (get request :sboms) :sbom-id)
+                        (if (sh28-evidence-record-set-valid?
+                             :signature
+                             (get request :signatures)
+                             :signature-id)
+                          (if (sh28-evidence-record-set-valid?
+                               :signing-policy
+                               (get request :signing-policies)
+                               :policy-id)
+                            (if (sh28-evidence-record-set-valid?
+                                 :attestation
+                                 (get request :attestations)
+                                 :attestation-id)
+                              (if (sh28-unsafe-audit-index-valid?
+                                   (get request :unsafe-audit-index))
+                                (if (sh28-release-inventory-valid?
+                                     (get request
+                                          :release-inventory))
+                                  (if (sh28-runtime-artifacts-valid?
+                                     (get request
+                                          :runtime-artifacts))
+                                  (sh28-recovery-artifacts-valid?
+                                   (get request
+                                        :recovery-artifacts))
+                                  false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh28-product-links-valid? [request]
+  (let [source-graphs (get request :source-graphs)
+        dependency-graphs (get request :dependency-graphs)
+        dependencies (get request :dependencies)
+        locks (get request :locks)
+        lineage (get request :lineage)
+        builds (get request :diverse-builds)]
+    (if (sh28-dependency-graphs-bind?
+         dependency-graphs dependencies)
+      (if (sh28-lock-graphs-valid-from?
+           locks dependency-graphs 0)
+        (if (sh28-lineage-source-graphs-valid-from?
+             lineage
+             (sh28-field-values source-graphs :source-graph-id)
+             0)
+          (if (sh28-seed-terminus-valid?
+               lineage
+               (get request :bootstrap-inputs)
+               (get request :trust-anchors))
+            (if (sh28-build-inputs-valid-from?
+                 builds
+                 source-graphs
+                 dependency-graphs
+                 (get request :build-recipes)
+                 (get request :builders)
+                 (get request :environments)
+                 locks
+                 (get request :toolchains)
+                 (get request :trust-anchors)
+                 lineage
+                 0)
+              (if (sh28-filter-membership-from?
+                   (sh28-field-values
+                    (get request :runtime-artifacts)
+                    :source-graph-id)
+                   (sh28-field-values
+                    source-graphs :source-graph-id)
+                   true
+                   0)
+                (sh28-evidence-links-valid? request)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh28-request-valid? [request]
+  (if (sh28-request-shape-valid? request)
+    (let [environments (get request :environments)
+          locks (get request :locks)
+          dependencies (get request :dependencies)
+          toolchains (get request :toolchains)
+          lineage (get request :lineage)
+          builds (get request :diverse-builds)
+          anchors (get request :trust-anchors)
+          root-id (get request :root-artifact-id)]
+      (if (sh28-environments-valid? environments)
+        (if (sh28-unique-from?
+             (sh28-field-values environments :environment-id) 0)
+          (if (sh28-locks-valid? locks)
+            (if (sh28-unique-from?
+                 (sh28-field-values locks :lock-id) 0)
+              (if (sh28-dependencies-valid? dependencies)
+                (if (sh28-unique-from?
+                     (sh28-field-values dependencies :dependency-id) 0)
+                  (if (sh28-toolchains-valid? toolchains)
+                    (if (sh28-unique-from?
+                         (sh28-field-values toolchains :toolchain-id) 0)
+                      (if (sh28-declared-products-valid? request)
+                        (if (sh28-lineage-valid? lineage root-id)
+                        (if (sh28-lineage-references-valid-from?
+                             lineage
+                             (sh28-field-values
+                              environments :environment-id)
+                             (sh28-field-values locks :lock-id)
+                             (sh28-field-values
+                              locks :dependency-graph-id)
+                             (sh28-field-values
+                              toolchains :toolchain-id)
+                             0)
+                          (if (sh28-anchors-valid? anchors)
+                            (if (sh28-diverse-builds-valid?
+                                 builds
+                                 root-id
+                                 (sh28-field-values
+                                  toolchains :toolchain-id)
+                                 (sh28-field-values anchors :anchor-id))
+                              (if (sh28-product-links-valid? request)
+                                (if (sh28-evidence-valid?
+                                     (get request :evidence))
+                                (if (sh28-revocations-valid?
+                                     (get request :revocations))
+                                  (if (sh28-revocation-links-valid?
+                                       request
+                                       dependencies
+                                       builds
+                                       (get request :revocations))
+                                    (if (sh28-unsafe-audits-valid?
+                                         (get request :unsafe-audits))
+                                      (sh28-tcb-delta-valid? request)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                        false)
+                      false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh28-request-rejection-details [request]
+  (if (sh28-request-shape-valid? request)
+    (let [environments (get request :environments)
+          locks (get request :locks)
+          dependencies (get request :dependencies)
+          toolchains (get request :toolchains)
+          lineage (get request :lineage)
+          builds (get request :diverse-builds)
+          anchors (get request :trust-anchors)
+          root-id (get request :root-artifact-id)]
+      (if (sh28-environments-valid? environments)
+        (if (sh28-locks-valid? locks)
+          (if (sh28-dependencies-valid? dependencies)
+            (if (sh28-toolchains-valid? toolchains)
+              (if (sh28-declared-products-valid? request)
+                (if (sh28-lineage-valid? lineage root-id)
+                (if (sh28-lineage-references-valid-from?
+                     lineage
+                     (sh28-field-values environments :environment-id)
+                     (sh28-field-values locks :lock-id)
+                     (sh28-field-values locks :dependency-graph-id)
+                     (sh28-field-values toolchains :toolchain-id)
+                     0)
+                  (if (sh28-anchors-valid? anchors)
+                    (if (sh28-diverse-builds-valid?
+                         builds
+                         root-id
+                         (sh28-field-values toolchains :toolchain-id)
+                         (sh28-field-values anchors :anchor-id))
+                      (if (sh28-product-links-valid? request)
+                        (if (sh28-evidence-valid? (get request :evidence))
+                        (if (sh28-revocations-valid?
+                             (get request :revocations))
+                          (if (sh28-revocation-links-valid?
+                               request
+                               dependencies
+                               builds
+                               (get request :revocations))
+                            (if (sh28-unsafe-audits-valid?
+                                 (get request :unsafe-audits))
+                              (if (sh28-tcb-delta-valid? request)
+                                {:rule "SH28-SCHEMA"
+                                 :reason :duplicate-or-noncanonical-identity}
+                                {:rule "SH28-TCB"
+                                 :reason :invalid-tcb-delta})
+                              {:rule "BOOT8004"
+                               :reason :unsafe-audit-evidence-gap})
+                            {:rule "BOOT8006"
+                             :reason :revocation-subject-link-gap})
+                          {:rule "BOOT8006"
+                           :reason :revoked-or-incomplete-revocation-status})
+                          {:rule "BOOT8004"
+                           :reason :missing-release-evidence-reference})
+                        {:rule "BOOT8004"
+                         :reason :declared-product-link-gap})
+                      {:rule "BOOT6005"
+                       :reason :diverse-build-identity-gap})
+                    {:rule "BOOT6005"
+                     :reason :independent-anchor-descriptor-gap})
+                  {:rule "BOOT8007"
+                   :reason :lineage-provenance-reference-gap})
+                  {:rule "BOOT8002"
+                   :reason :lineage-gap-cycle-or-unreachable-node})
+                {:rule "BOOT8004"
+                 :reason :declared-product-schema-gap})
+              {:rule "BOOT8007"
+               :reason :toolchain-provenance-gap})
+            {:rule "BOOT8007"
+             :reason :dependency-provenance-gap})
+          {:rule "BOOT8007"
+           :reason :lock-provenance-gap})
+        {:rule "BOOT8007"
+         :reason :environment-provenance-gap}))
+    {:rule "SH28-SCHEMA" :reason :invalid-request-schema}))
+
+(defn sh28-normalize-environments-from [records index result]
+  (if (= index (count records))
+    result
+    (let [record (get records index)]
+      (sh28-normalize-environments-from
+       records (+ index 1)
+       (conj result
+             {:environment-id (get record :environment-id)
+              :manifest-id (get record :manifest-id)
+              :locale (get record :locale)
+              :timezone (get record :timezone)
+              :filesystem-order (get record :filesystem-order)
+              :timestamp-policy (get record :timestamp-policy)
+              :random-seed (get record :random-seed)
+              :network-policy (get record :network-policy)
+              :allowed-environment (get record :allowed-environment)})))))
+
+(defn sh28-normalize-lineage-from [records index result]
+  (if (= index (count records))
+    result
+    (let [record (get records index)]
+      (sh28-normalize-lineage-from
+       records (+ index 1)
+       (conj result
+             {:artifact-id (get record :artifact-id)
+              :stage (get record :stage)
+              :compiler-artifact-id (get record :compiler-artifact-id)
+              :source-graph-id (get record :source-graph-id)
+              :environment-id (get record :environment-id)
+              :lock-id (get record :lock-id)
+              :dependency-graph-id (get record :dependency-graph-id)
+              :toolchain-id (get record :toolchain-id)
+              :rebuild-parent-ids (get record :rebuild-parent-ids)
+              :topological-ordinal (get record :topological-ordinal)
+              :content-hash (get record :content-hash)})))))
+
+(defn sh28-normalize-toolchains-from [records index result]
+  (if (= index (count records))
+    result
+    (let [record (get records index)]
+      (sh28-normalize-toolchains-from
+       records (+ index 1)
+       (conj result
+             {:toolchain-id (get record :toolchain-id)
+              :family (get record :family)
+              :version (get record :version)
+              :target (get record :target)
+              :content-hash (get record :content-hash)
+              :identity-status (get record :identity-status)})))))
+
+(defn sh28-normalize-builds-from [records index result]
+  (if (= index (count records))
+    result
+    (let [record (get records index)]
+      (sh28-normalize-builds-from
+       records (+ index 1)
+       (conj result
+             {:build-id (get record :build-id)
+              :artifact-id (get record :artifact-id)
+              :content-hash (get record :content-hash)
+              :source-graph-id (get record :source-graph-id)
+              :compiler-artifact-id (get record :compiler-artifact-id)
+              :lock-id (get record :lock-id)
+              :dependency-graph-id (get record :dependency-graph-id)
+              :build-recipe-id (get record :build-recipe-id)
+              :builder-id (get record :builder-id)
+              :capability-inventory-id
+              (get record :capability-inventory-id)
+              :toolchain-id (get record :toolchain-id)
+              :environment-id (get record :environment-id)
+              :trust-anchor-id (get record :trust-anchor-id)
+              :comparison-status (get record :comparison-status)
+              :independence-status (get record :independence-status)
+              :rebuild-report-id (get record :rebuild-report-id)})))))
+
+(defn sh28-normalize-anchors-from [records index result]
+  (if (= index (count records))
+    result
+    (let [record (get records index)]
+      (sh28-normalize-anchors-from
+       records (+ index 1)
+       (conj result
+             {:anchor-id (get record :anchor-id)
+              :anchor-kind (get record :anchor-kind)
+              :operator-id (get record :operator-id)
+              :root-metadata-id (get record :root-metadata-id)
+              :public-identity-id (get record :public-identity-id)
+              :verification-status (get record :verification-status)
+              :revocation-status (get record :revocation-status)
+              :policy-id (get record :policy-id)})))))
+
+(defn sh28-normalize-runtime-artifacts-from [records index result]
+  (if (= index (count records))
+    result
+    (let [record (get records index)]
+      (sh28-normalize-runtime-artifacts-from
+       records (+ index 1)
+       (conj result
+             {:artifact-id (get record :artifact-id)
+              :content-hash (get record :content-hash)
+              :source-graph-id (get record :source-graph-id)
+              :profile (get record :profile)
+              :target (get record :target)
+              :verification-status
+              (get record :verification-status)})))))
+
+(defn sh28-normalize-recovery-artifacts-from [records index result]
+  (if (= index (count records))
+    result
+    (let [record (get records index)]
+      (sh28-normalize-recovery-artifacts-from
+       records (+ index 1)
+       (conj result
+             {:artifact-id (get record :artifact-id)
+              :content-hash (get record :content-hash)
+              :role (get record :role)
+              :included-in-release-boundary
+              (get record :included-in-release-boundary)
+              :verification-status
+              (get record :verification-status)})))))
+
+(defn sh28-identity-input [request]
+  {:artifact :gravity/sh28-trust-evidence-identity-input
+   :schema-version 1
+   :release-id (get request :release-id)
+   :root-artifact-id (get request :root-artifact-id)
+   :source-graphs (get request :source-graphs)
+   :dependency-graphs (get request :dependency-graphs)
+   :environments
+   (sh28-normalize-environments-from (get request :environments) 0 [])
+   :locks (get request :locks)
+   :dependencies (get request :dependencies)
+   :toolchains
+   (sh28-normalize-toolchains-from (get request :toolchains) 0 [])
+   :build-recipes (get request :build-recipes)
+   :builders (get request :builders)
+   :bootstrap-inputs (get request :bootstrap-inputs)
+   :lineage
+   (sh28-normalize-lineage-from (get request :lineage) 0 [])
+   :diverse-builds
+   (sh28-normalize-builds-from (get request :diverse-builds) 0 [])
+   :trust-anchors
+   (sh28-normalize-anchors-from (get request :trust-anchors) 0 [])
+   :evidence (get request :evidence)
+   :sboms (get request :sboms)
+   :signatures (get request :signatures)
+   :signing-policies (get request :signing-policies)
+   :attestations (get request :attestations)
+   :unsafe-audit-index (get request :unsafe-audit-index)
+   :release-inventory (get request :release-inventory)
+   :revocations (get request :revocations)
+   :unsafe-audits (get request :unsafe-audits)
+   :runtime-artifacts
+   (sh28-normalize-runtime-artifacts-from
+    (get request :runtime-artifacts) 0 [])
+   :recovery-artifacts
+   (sh28-normalize-recovery-artifacts-from
+    (get request :recovery-artifacts) 0 [])
+   :tcb-delta (get request :tcb-delta)})
+
+(defn sh28-provenance [request]
+  {:actual-release-root (get request :actual-release-root)
+   :actual-environment-roots
+   (sh28-field-values (get request :environments) :actual-build-root)
+   :actual-toolchain-paths
+   (sh28-field-values (get request :toolchains) :actual-toolchain-path)
+   :actual-artifact-paths
+   (sh28-field-values (get request :lineage) :actual-artifact-path)
+   :actual-runtime-artifact-paths
+   (sh28-field-values
+    (get request :runtime-artifacts) :actual-artifact-path)
+   :actual-recovery-artifact-paths
+   (sh28-field-values
+    (get request :recovery-artifacts) :actual-artifact-path)
+   :actual-diverse-build-roots
+   (sh28-field-values (get request :diverse-builds) :actual-build-root)
+   :actual-anchor-locations
+   (sh28-field-values
+    (get request :trust-anchors) :actual-anchor-location)})
+
+(defn sh28-diagnostic [rule reason request]
+  {:rule rule
+   :phase :bootstrap-trust
+   :source-span
+   {:source
+    (if (map? request)
+      (get request :actual-release-root)
+      "<untrusted-carrier>")
+    :line 1
+    :column 1}
+   :facts
+   {:reason reason
+    :release-id
+    (if (map? request) (get request :release-id) nil)
+    :root-artifact-id
+    (if (map? request) (get request :root-artifact-id) nil)}
+   :remediation
+   :supply-complete-bounded-current-bootstrap-trust-evidence})
+
+(defn sh28-build-accepted [request preflight]
+  {:artifact :gravity/sh28-trust-evidence
+   :schema-version 1
+   :status :accepted
+   :release-id (get request :release-id)
+   :root-artifact-id (get request :root-artifact-id)
+   :lineage-status :acyclic-and-traversable
+   :diverse-build-status :descriptor-consistent
+   :trust-anchor-status :external-verification-pending
+   :revocation-status :clear-at-declared-sources
+   :unsafe-audit-status :complete-for-declared-islands
+   :tcb-delta-status :explicit-pending-independent-validation
+   :identity-input (sh28-identity-input request)
+   :provenance (sh28-provenance request)
+   :carrier-census preflight
+   :diagnostics []
+   :pending
+   [:authentic-sh27-equivalence-ingress
+    :independent-trust-anchor-verification
+    :external-signature-verification
+    :external-sbom-verification
+    :public-release-routing
+    :seedless-execution
+    :sh28-completion]
+   :release-trust-closed? false
+   :clojure-seed-retired? false
+   :clojure-seed-boundary? true})
+
+(defn sh28-build-trust-evidence [request]
+  (let [preflight (sh28-carrier-preflight request)]
+    (if (= :accepted (get preflight :status))
+      (if (sh28-request-valid? request)
+        (sh28-build-accepted request preflight)
+        (let [details (sh28-request-rejection-details request)]
+          {:artifact :gravity/sh28-trust-evidence
+           :schema-version 1
+           :status :rejected
+           :diagnostics
+           [(sh28-diagnostic
+             (get details :rule) (get details :reason) request)]
+           :pending
+           [:authentic-sh27-equivalence-ingress
+            :independent-trust-anchor-verification
+            :sh28-completion]
+           :release-trust-closed? false
+           :clojure-seed-retired? false
+           :clojure-seed-boundary? true}))
+      {:artifact :gravity/sh28-trust-evidence
+       :schema-version 1
+       :status :rejected
+       :diagnostics
+       [(sh28-diagnostic
+         "SH28-SCHEMA" (get preflight :reason) request)]
+       :pending
+       [:authentic-sh27-equivalence-ingress
+        :independent-trust-anchor-verification
+        :sh28-completion]
+       :release-trust-closed? false
+       :clojure-seed-retired? false
+       :clojure-seed-boundary? true})))
+
+(defn sh28-verification-rejection [reason]
+  {:artifact :gravity/sh28-trust-evidence-verification
+   :schema-version 1
+   :status :rejected
+   :diagnostics
+   [{:rule "SH28-VERIFY"
+     :phase :bootstrap-trust
+     :source-span {:source "<candidate-result>" :line 1 :column 1}
+     :facts {:reason reason}
+     :remediation :recompute-complete-trust-evidence}]
+   :release-trust-closed? false
+   :clojure-seed-retired? false
+   :clojure-seed-boundary? true})
+
+(defn sh28-verify-trust-evidence [request candidate]
+  (let [request-preflight (sh28-carrier-preflight request)
+        candidate-preflight (sh28-carrier-preflight candidate)]
+    (if (= :accepted (get request-preflight :status))
+      (if (= :accepted (get candidate-preflight :status))
+        (let [expected (sh28-build-trust-evidence request)]
+          (if (= expected candidate)
+            {:artifact :gravity/sh28-trust-evidence-verification
+             :schema-version 1
+             :status :passed
+             :verified-artifact :gravity/sh28-trust-evidence
+             :verified-release-id (get candidate :release-id)
+             :diagnostics []
+             :release-trust-closed? false
+             :clojure-seed-retired? false
+             :clojure-seed-boundary? true}
+            (sh28-verification-rejection :candidate-result-altered)))
+        (sh28-verification-rejection
+         (get candidate-preflight :reason)))
+      (sh28-verification-rejection
+       (get request-preflight :reason)))))

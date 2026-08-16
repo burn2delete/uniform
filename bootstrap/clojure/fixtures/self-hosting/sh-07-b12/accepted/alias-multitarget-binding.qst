@@ -1,0 +1,26 @@
+; SH-07-B12 accepts an alias target subset of a broader resolved binding.
+(ns self-hosting.sh07-b12.alias-multitarget-binding
+  (:profile :meta)
+  (:target :jvm)
+  (:requires [shared.core :as shared :profile :core
+              :boundary :pure-core :refer [checksum]])
+  (:exports [multi-target-control])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B12
+    :fixture :alias-multitarget-binding
+    :compiler
+    {:sh06-request
+     {:request-version 1
+      :references [{:symbol shared/checksum :position :expression}]
+      :candidate-bindings
+      [{:name checksum :namespace shared.core :visibility :public
+        :profile-set [:core] :target-set [:jvm :wasm]}]}}
+    :non-claims [:wasm-lowering
+                 :runtime-linking
+                 :whole-program-execution]}))
+
+(def multi-target-control
+  shared/checksum)

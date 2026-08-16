@@ -1,0 +1,17 @@
+(ns self-hosting.sh03.namespace-clause-shapes
+  (:profile :meta)
+  (:profiles #{:meta :hosted})
+  (:target :jvm)
+  (:targets #{:jvm :wasm32})
+  (:requires [gravity.reader :as reader] [gravity.syntax])
+  (:imports [gravity.reader.SourceUnit])
+  (:exports [namespace-clause-shapes])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:providers [])
+  (:doc "Gravity-owned namespace shape fixture")
+  (:metadata {:slice :SH-03}))
+
+(def namespace-clause-shapes
+  '([:profile :meta] (profile :meta) (:bogus 1)))

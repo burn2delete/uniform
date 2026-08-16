@@ -1,0 +1,373 @@
+{
+  "schema_version": 1,
+  "contract_id": "gravity/evidence-producers-v1",
+  "description": "Fail-closed inventory of Python filesystem producers for generated evidence, private development state, authority candidates, and reviewed document source.",
+  "normative_sources": [
+    "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+    "docs/phase-12-packaging-distribution-and-supply-chain/167-pkg3-artifact-model-specification.md",
+    "docs/phase-12-packaging-distribution-and-supply-chain/174-pkg10-supply-chain-security-and-provenance-specification.md",
+    "docs/phase-12-packaging-distribution-and-supply-chain/176-pkg12-artifact-signing-verification-and-sbom-specification.md",
+    "contracts/project-structure.json",
+    "contracts/python-tooling.json"
+  ],
+  "inventory": {
+    "root_pattern": "tools/*.py",
+    "excluded_patterns": [
+      "tools/tests/**",
+      "tools/output_publication.py",
+      "tools/validate_gravity_toolchain.py",
+      "tools/validate_w1_executable_carrier_interface.py"
+    ],
+    "producer_count": 67,
+    "producer_sha256": "sha256:0bdaa846475cf95fa253ba73693f61a51dbfb33229d8e1daef1e56ebe0b95fb5"
+  },
+  "boundaries": {
+    "filesystem_producers_only": true,
+    "compiler_artifact_graph_path": "contracts/project-structure.json#artifacts",
+    "compiler_artifact_graph_is_filesystem_inventory": false,
+    "publication_primitive_path": "tools/output_publication.py",
+    "publication_primitive_is_producer": false,
+    "test_writers_are_producers": false,
+    "temporary_scratch_is_producer": false,
+    "python_can_mint_authority": false
+  },
+  "output_policies": [
+    {
+      "id": "generated-evidence",
+      "patterns": ["target/**", "docs/artifacts/**"],
+      "python_tooling_policy": "generated-evidence",
+      "project_structure_policy": "generated-evidence",
+      "reviewed_source": false,
+      "isolated_atomic_publication_required": true
+    },
+    {
+      "id": "generated-coverage",
+      "patterns": [
+        "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
+        "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
+        "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md"
+      ],
+      "python_tooling_policy": "generated-coverage",
+      "project_structure_policy": "generated-coverage",
+      "reviewed_source": false,
+      "isolated_atomic_publication_required": true
+    },
+    {
+      "id": "development-private-state",
+      "patterns": [".cpcache/**"],
+      "python_tooling_policy": "development-private-state",
+      "project_structure_policy": null,
+      "reviewed_source": false,
+      "isolated_atomic_publication_required": false
+    },
+    {
+      "id": "reviewed-document-source",
+      "patterns": ["docs/**"],
+      "python_tooling_policy": "unresolved-reviewed-document-source",
+      "project_structure_policy": null,
+      "reviewed_source": true,
+      "isolated_atomic_publication_required": false
+    }
+  ],
+  "writers": [
+    {
+      "id": "isolated-atomic-publication",
+      "implementation": "tools/output_publication.py",
+      "mechanisms": ["atomic_write_json", "atomic_write_text"],
+      "regular_nosymlink_current_owner": true,
+      "atomic_replace": true,
+      "provenance_added_by_writer": false
+    },
+    {
+      "id": "reviewed-source-rewrite",
+      "implementation": "pathlib.Path.write_text",
+      "mechanisms": ["write_text"],
+      "regular_nosymlink_current_owner": false,
+      "atomic_replace": false,
+      "provenance_added_by_writer": false
+    },
+    {
+      "id": "development-receipt-writer",
+      "implementation": "tools/measure_development_baseline.py#_write_receipt",
+      "mechanisms": ["temporary-file-fsync-replace"],
+      "regular_nosymlink_current_owner": false,
+      "atomic_replace": true,
+      "provenance_added_by_writer": true
+    },
+    {
+      "id": "development-cache-writer",
+      "implementation": "tools/verify_development.py#_write_json",
+      "mechanisms": ["dirfd-nofollow-fsync-replace"],
+      "regular_nosymlink_current_owner": true,
+      "atomic_replace": true,
+      "provenance_added_by_writer": true
+    },
+    {
+      "id": "sh07-checkpoint-writer",
+      "implementation": "tools/run_sh07_authoritative_modules.py#atomic_json_write",
+      "mechanisms": ["temporary-file-fsync-replace", "bounded-log"],
+      "regular_nosymlink_current_owner": true,
+      "atomic_replace": true,
+      "provenance_added_by_writer": true
+    },
+    {
+      "id": "heartbeat-state-writer",
+      "implementation": "tools/run_with_heartbeat.py#atomic_json_write",
+      "mechanisms": ["temporary-file-fsync-replace", "durable-log"],
+      "regular_nosymlink_current_owner": false,
+      "atomic_replace": true,
+      "provenance_added_by_writer": true
+    }
+  ],
+  "producers": [
+    {
+      "id": "isolated-artifact-validators",
+      "sources": {
+        "includes": ["tools/validate_*.py"],
+        "excludes": [
+          "tools/validate_alternative_macros.py",
+          "tools/validate_alternative_memory.py",
+          "tools/validate_alternative_types.py",
+          "tools/validate_change_control.py",
+          "tools/validate_compile_time.py",
+          "tools/validate_contract_traceability.py",
+          "tools/validate_evidence_producers.py",
+          "tools/validate_facets.py",
+          "tools/validate_foundation_document_coverage.py",
+          "tools/validate_full_language_roadmap.py",
+          "tools/validate_gravity_docs.py",
+          "tools/validate_gravity_toolchain.py",
+          "tools/validate_interop.py",
+          "tools/validate_milestone_evidence.py",
+          "tools/validate_project_structure.py",
+          "tools/validate_providers.py",
+          "tools/validate_python_tooling_contract.py",
+          "tools/validate_repository_hygiene.py",
+          "tools/validate_safety_performance_gates.py",
+          "tools/validate_terminology_boundaries.py",
+          "tools/validate_w1_executable_carrier_interface.py"
+        ]
+      },
+      "commands": ["python3 {source} [--artifact-out target/validation/<tool>.json]"],
+      "cli_output_options": ["--artifact-out"],
+      "input_patterns": ["bootstrap/**", "contracts/**", "docs/**", "src/gravity/**"],
+      "output_policy_refs": ["generated-evidence"],
+      "output_patterns": ["target/validation/**/*.json"],
+      "output_kinds": ["validation-artifact"],
+      "schemas": ["source-defined-json-kind-v1"],
+      "writer": "isolated-atomic-publication",
+      "python_tooling_component": "isolated-artifact-validators",
+      "authority_ceiling": "none",
+      "provenance_required": ["producer-source", "command", "input-identities", "schema", "output-sha256"],
+      "review": {"generation_review_required": true, "direct_reviewed_source": false, "admission_review_required": true},
+      "nonclaims": ["authority", "aggregate-authority", "release", "signature"]
+    },
+    {
+      "id": "isolated-artifact-coverage-validators",
+      "sources": {
+        "includes": [
+          "tools/validate_alternative_macros.py",
+          "tools/validate_alternative_memory.py",
+          "tools/validate_alternative_types.py",
+          "tools/validate_compile_time.py",
+          "tools/validate_facets.py",
+          "tools/validate_interop.py",
+          "tools/validate_providers.py"
+        ],
+        "excludes": []
+      },
+      "commands": ["python3 {source} [--artifact-out target/validation/<tool>.json] [--coverage-out docs/artifacts/full-language/coverage/<tool>.json]"],
+      "cli_output_options": ["--artifact-out", "--coverage-out"],
+      "input_patterns": ["bootstrap/**", "contracts/**", "docs/**", "src/gravity/**"],
+      "output_policy_refs": ["generated-evidence", "generated-coverage"],
+      "output_patterns": ["target/validation/**/*.json", "docs/artifacts/full-language/coverage/**/*.json"],
+      "output_kinds": ["validation-artifact", "coverage-observation"],
+      "schemas": ["source-defined-json-kind-v1", "source-defined-document-coverage-kind-v1"],
+      "writer": "isolated-atomic-publication",
+      "python_tooling_component": "isolated-artifact-validators",
+      "authority_ceiling": "none",
+      "provenance_required": ["producer-source", "command", "input-identities", "schema", "output-sha256"],
+      "review": {"generation_review_required": true, "direct_reviewed_source": false, "admission_review_required": true},
+      "nonclaims": ["authority", "aggregate-authority", "release", "signature"]
+    },
+    {
+      "id": "full-language-coverage-generator",
+      "sources": {"includes": ["tools/generate_full_language_coverage_matrix.py"], "excludes": []},
+      "commands": [
+        "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --self-test",
+        "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --validate",
+        "PYTHONDONTWRITEBYTECODE=1 python3 tools/generate_full_language_coverage_matrix.py --write --audit-public"
+      ],
+      "cli_output_options": ["--gaps", "--matrix", "--report"],
+      "input_patterns": [
+        "contracts/full-language-coverage.json",
+        "docs/artifacts/full-language/coverage/full-language-completion-attestations.json",
+        "docs/artifacts/**",
+        "docs/document-inventory.json",
+        "docs/README.md",
+        "docs/implementation-roadmap.md",
+        "docs/roadmap-capability-audit.md",
+        "docs/phase-*/**",
+        "examples/**",
+        "src/gravity/**",
+        "bootstrap/**",
+        "target/phase-18/release/gravity",
+        "tools/fixtures/full_language_coverage/**"
+      ],
+      "output_policy_refs": ["generated-coverage"],
+      "output_patterns": [
+        "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
+        "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
+        "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md"
+      ],
+      "output_kinds": ["full-language-coverage-matrix", "full-language-gap-report", "coverage-report"],
+      "schemas": ["gravity/full-language-coverage-matrix", "gravity/full-language-coverage-gap-report", "markdown-report-v1"],
+      "writer": "isolated-atomic-publication",
+      "python_tooling_component": "isolated-coverage-generator",
+      "authority_ceiling": "non-authoritative-observation",
+      "provenance_required": ["producer-source", "command", "document-inventory", "input-identities", "schema", "output-sha256"],
+      "review": {"generation_review_required": true, "direct_reviewed_source": false, "admission_review_required": true},
+      "nonclaims": ["full-language-completion", "authority", "release", "signature"]
+    },
+    {
+      "id": "authoritative-evidence-candidate-composer",
+      "sources": {"includes": ["tools/compose_authoritative_evidence.py"], "excludes": []},
+      "commands": ["python3 tools/compose_authoritative_evidence.py compose <bounded-scope> --out target/validation/<candidate>.json", "python3 tools/compose_authoritative_evidence.py promote <candidate> --policy <policy> --attestation <attestation> --out target/validation/<promotion-candidate>.json"],
+      "cli_output_options": ["--out"],
+      "input_patterns": ["contracts/authoritative-evidence.json", "contracts/project-structure.json", "contracts/python-tooling.json", "tools/development_verification_manifest.json", "target/validation/**"],
+      "output_policy_refs": ["generated-evidence"],
+      "output_patterns": ["target/validation/**/*.json"],
+      "output_kinds": ["authority-candidate", "reviewed-promotion-candidate"],
+      "schemas": ["gravity/authoritative-evidence-candidate-v1", "gravity/reviewed-authority-promotion-candidate-v1"],
+      "writer": "isolated-atomic-publication",
+      "python_tooling_component": "authoritative-evidence-composition",
+      "authority_ceiling": "non-authoritative-observation",
+      "provenance_required": ["producer-source", "command", "current-contract-identities", "input-identities", "schema", "output-sha256"],
+      "review": {"generation_review_required": true, "direct_reviewed_source": false, "admission_review_required": true},
+      "nonclaims": ["authority", "module-authority", "context-authority", "aggregate-authority", "release", "signature"]
+    },
+    {
+      "id": "gravity-document-generator",
+      "sources": {"includes": ["tools/generate_gravity_docs.py"], "excludes": []},
+      "commands": ["python3 tools/generate_gravity_docs.py"],
+      "cli_output_options": [],
+      "input_patterns": ["tools/generate_gravity_docs.py", "tmp/pdfs/gravity-lisp-design.txt"],
+      "output_policy_refs": ["reviewed-document-source"],
+      "output_patterns": ["docs/README.md", "docs/document-sequence.md", "docs/document-inventory.json", "docs/phase-*/**"],
+      "output_kinds": ["reviewed-document-source", "reviewed-document-inventory"],
+      "schemas": ["gravity-canonical-document-v1", "gravity-document-inventory-v1"],
+      "writer": "reviewed-source-rewrite",
+      "python_tooling_component": "reviewed-source-generators",
+      "authority_ceiling": "none",
+      "provenance_required": ["producer-source", "command", "schema", "reviewed-commit", "reviewer", "source-basis", "input-identities", "output-sha256"],
+      "review": {"generation_review_required": true, "direct_reviewed_source": true, "admission_review_required": true},
+      "nonclaims": ["automatic-admission", "authority", "release", "signature"]
+    },
+    {
+      "id": "gravity-document-enricher",
+      "sources": {"includes": ["tools/enrich_remaining_docs.py"], "excludes": []},
+      "commands": ["python3 tools/enrich_remaining_docs.py"],
+      "cli_output_options": [],
+      "input_patterns": ["docs/document-inventory.json", "docs/phase-*/**"],
+      "output_policy_refs": ["reviewed-document-source"],
+      "output_patterns": ["docs/phase-*/**"],
+      "output_kinds": ["reviewed-document-source"],
+      "schemas": ["gravity-canonical-document-v1"],
+      "writer": "reviewed-source-rewrite",
+      "python_tooling_component": "reviewed-source-generators",
+      "authority_ceiling": "none",
+      "provenance_required": ["producer-source", "command", "schema", "reviewed-commit", "reviewer", "input-identities", "output-sha256"],
+      "review": {"generation_review_required": true, "direct_reviewed_source": true, "admission_review_required": true},
+      "nonclaims": ["automatic-admission", "authority", "release", "signature"]
+    },
+    {
+      "id": "development-baseline-receipt",
+      "sources": {"includes": ["tools/measure_development_baseline.py"], "excludes": []},
+      "commands": ["python3 tools/measure_development_baseline.py --output target/validation/<baseline>.json [--command <argv>...]"],
+      "cli_output_options": ["--output"],
+      "input_patterns": ["tools/measure_development_baseline.py", "<declared-command-argv-and-environment>"],
+      "output_policy_refs": ["generated-evidence"],
+      "output_patterns": ["target/validation/**/*.json"],
+      "output_kinds": ["development-performance-feedback"],
+      "schemas": ["gravity/development-performance-baseline-v1"],
+      "writer": "development-receipt-writer",
+      "python_tooling_component": "process-development-tools",
+      "authority_ceiling": "non-authoritative-observation",
+      "provenance_required": ["producer-source", "command", "schema", "runtime", "environment-bindings", "input-identities", "output-sha256"],
+      "review": {"generation_review_required": false, "direct_reviewed_source": false, "admission_review_required": true},
+      "nonclaims": ["benchmark-evidence", "performance-gate", "authority", "release"]
+    },
+    {
+      "id": "sh07-module-checkpoints",
+      "sources": {"includes": ["tools/run_sh07_authoritative_modules.py"], "excludes": []},
+      "commands": ["python3 tools/run_sh07_authoritative_modules.py (--all|--module <id>) --state-dir target/validation/<checkpoint-dir>"],
+      "cli_output_options": ["--state-dir"],
+      "input_patterns": ["deps.edn", "bootstrap/clojure/**", "bootstrap/gravity/**", "tools/run_sh07_authoritative_modules.py"],
+      "output_policy_refs": ["generated-evidence"],
+      "output_patterns": ["target/validation/**/manifest.json", "target/validation/**/modules/*.stdout.log", "target/validation/**/modules/*.stderr.log"],
+      "output_kinds": ["sh07-module-checkpoint-manifest", "child-stdout", "child-stderr"],
+      "schemas": ["gravity/sh07-authoritative-module-checkpoints-v2", "opaque-bounded-log-v1"],
+      "writer": "sh07-checkpoint-writer",
+      "python_tooling_component": "process-development-tools",
+      "authority_ceiling": "non-authoritative-observation",
+      "provenance_required": ["producer-source", "runner-identity", "command", "runtime", "input-identities", "dependency-identities", "child-output-identities", "schema", "output-sha256"],
+      "review": {"generation_review_required": false, "direct_reviewed_source": false, "admission_review_required": true},
+      "nonclaims": ["authority", "aggregate-authority", "release", "self-hosting-complete", "seed-retirement"]
+    },
+    {
+      "id": "long-running-command-heartbeat",
+      "sources": {"includes": ["tools/run_with_heartbeat.py"], "excludes": []},
+      "commands": ["python3 tools/run_with_heartbeat.py --log target/validation/<run>.log --status target/validation/<run>.json -- <argv>"],
+      "cli_output_options": ["--log", "--status"],
+      "input_patterns": ["tools/run_with_heartbeat.py", "<declared-command-argv-and-environment>"],
+      "output_policy_refs": ["generated-evidence"],
+      "output_patterns": ["target/validation/**/*.log", "target/validation/**/*.json"],
+      "output_kinds": ["durable-command-log", "long-running-command-status"],
+      "schemas": ["opaque-durable-log-v1", "gravity/long-running-command-status-v1"],
+      "writer": "heartbeat-state-writer",
+      "python_tooling_component": "process-development-tools",
+      "authority_ceiling": "non-authoritative-observation",
+      "provenance_required": ["producer-source", "command", "schema", "runtime", "environment-bindings", "input-identities", "status-identity", "output-byte-count", "output-sha256"],
+      "review": {"generation_review_required": false, "direct_reviewed_source": false, "admission_review_required": true},
+      "nonclaims": ["verification-pass", "authority", "release", "signature"]
+    },
+    {
+      "id": "development-verification-state",
+      "sources": {"includes": ["tools/verify_development.py"], "excludes": []},
+      "commands": ["python3 tools/verify_development.py <selection> [--cache .cpcache/development-verification-cache.json] [--receipt target/validation/<receipt>.json]"],
+      "cli_output_options": ["--cache", "--receipt"],
+      "input_patterns": ["tools/development_verification_manifest.json", "<selected-check-inputs>", "<changed-paths>"],
+      "output_policy_refs": ["development-private-state", "generated-evidence"],
+      "output_patterns": [".cpcache/development-verification-cache.json", "target/validation/**/*.json"],
+      "output_kinds": ["development-verification-cache", "development-verification-receipt"],
+      "schemas": ["gravity/development-verification-cache-v1", "gravity/development-verification-receipt-v1"],
+      "writer": "development-cache-writer",
+      "python_tooling_component": "process-development-tools",
+      "authority_ceiling": "non-authoritative-observation",
+      "provenance_required": ["producer-source", "manifest-identity", "command", "input-identities", "dependency-results", "cache-keys", "schema", "output-sha256"],
+      "review": {"generation_review_required": false, "direct_reviewed_source": false, "admission_review_required": true},
+      "nonclaims": ["authority", "cached-authority", "undeclared-output-authority", "aggregate-authority", "release"]
+    }
+  ],
+  "promotion_policy": {
+    "record_schema": "gravity/evidence-promotion-record-v1",
+    "tracked_record_patterns": ["docs/artifacts/evidence-promotions/*.json"],
+    "allowed_statuses": ["candidate", "admitted", "rejected"],
+    "admitted_required_fields": ["reviewed_commit", "reviewer", "producer_author", "checks", "source_sha256", "output_path", "output_sha256", "producer_inventory_sha256"],
+    "required_passed_checks": ["producer-inventory", "current-input-digests", "current-output-digest", "review-provenance"],
+    "reviewer_must_differ_from_producer_author": true,
+    "reviewed_commit_policy": "existing-commit-reachable-ancestor-of-current-head",
+    "trusted_authority_boundary_present": false,
+    "authoritative": false,
+    "aggregate_authoritative": false,
+    "release_authoritative": false,
+    "digest_is_signature": false
+  },
+  "required_nonclaims": [
+    "Inventory membership is not evidence authority.",
+    "A generated digest is an integrity identity, not a signature or trust root.",
+    "A promotion is a review/admission record and cannot mint authority.",
+    "Compiler artifact graph nodes are semantic dataflow concepts, not filesystem producer registrations.",
+    "Python producers cannot establish aggregate authority, release authority, self-hosting completion, or seed retirement."
+  ]
+}

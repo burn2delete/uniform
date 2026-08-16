@@ -1,0 +1,419 @@
+(ns gravity.self-hosting.sh25.accepted.component-builds
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh25-component-build-request
+             sh25-component-build-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh25-source-revisions []
+  [["sha256:04470b93d923611108df2c5167d72b27b5c444fe00052fa1c69bfec9e44f9c71" 59495]
+   ["sha256:cb416baa7330fd7db5507fcd5fc1d78d5c9e848feb9020552d4c21b9e1c17fe0" 36920]
+   ["sha256:bd262c746ad88d9213e4b3160943fecde948c5ceee12a65dfe67ffb29d4e5b77" 257161]
+   ["sha256:8f33d57ab88a8afd206b4a824dfaa38187afd74d9e2309626e10dbaa2b2a2d55" 4149]
+   ["sha256:afcab42f39743e1609657e389ee478a79f8e98cabcc6fe331c2168106e584553" 81241]
+   ["sha256:61314a0d94bace963758efb740859fdf7bb8214b22e1c69fe6de5478386cc574" 4053]
+   ["sha256:19fe589efb27228b8788347439381b61c907a7b6a562a2a3ac3f7256ae77e549" 56488]
+   ["sha256:9e8e57143fa1171e87c18cf03c40579fd91b522c22c5dcdd97d105e581ce174a" 4154]
+   ["sha256:001ef59741f17b98b37ee5bdb21e698cb1e6e56ce76c5f5fdd5f1fc9a4caeb56" 77209]
+   ["sha256:25cf07308bf8a98f9933b56ea3555a7c7906fcda81dd73be883c55140a986284" 17557]
+   ["sha256:d9d2acced4092f7e5c3244504351b6a4f6f2a90ce202400a48c3c1f690544afc" 9109]
+   ["sha256:3e15d5707cf4ea37ef37b8e6089ad6ff62712efc5f6c3659a94edf62bae3f092" 444325]
+   ["sha256:0299511c26c8b2a191309a4a4358528de397c88551ed98a2aed03d172067b2a5" 141562]
+   ["sha256:d101855439ef185727608ee696aacbfb41aff025ee8bbe0c62122f45f7c112ed" 56581]
+   ["sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4" 210220]
+   ["sha256:de3fb80e14336cadacf710a0b2fef33b19efab0728d5ca08e7a25c72df7afe16" 82797]
+   ["sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd" 71132]
+   ["sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968" 112712]
+   ["sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136" 253588]
+   ["sha256:6d56e7a0484be3abdf395ef41d5ecae85c47f090c263c08010f08ce82a8348d9" 140951]
+   ["sha256:5c54c7b533237ac18d6217d0b5c65e63e72b66dd6b311a7ac7848eead7668258" 6580]
+   ["sha256:a68e591f9e108051486d9f151f8a6682f9b3e76368dc310b106a38fc541ff5aa" 1960]
+   ["sha256:0cac3e273677061bf11144f3dc3520d93c4c67dbf607e5f03d68312f35265aad" 126249]
+   ["sha256:52529a1a77290252567b1a7e0c7c87aede36d0e94e7ef8f2939151f1e183f4c0" 30982]
+   ["sha256:5c500fd4ad8a6652ce9a8918ff31ee7d9947732b47860071f6dca0dfc61839ae" 173292]
+   ["sha256:c827a5bcbc6dcd8778d958ae8daba30a2861bf44cfb079a5d227dfc73ddb4e8d" 141683]
+   ["sha256:d78e042dbe6257ee4270ae3e784daf7298e74376602e06061c4b6686bff0e5e6" 122488]
+   ["sha256:3faf6a748485547abd6bd8da917a2214a7a8ba1cc9b3038bbbd3cdadd0562300" 91077]
+   ["sha256:b0e2f2c1e8ff98541f4af07770eb54488234124b8ed03975ff8a5ebed2412d85" 118572]
+   ["sha256:9b2f49770852a7e9efd8772d64270290bb8d4ac443f68369abc2a4555418da2c" 23533]
+   ["sha256:1e21fe3d4259639419824047a53c817f552f3b9aafbf9793984c311c21421b8d" 24655]
+   ["sha256:f61b3f5c127cf7f644efd0d7c3702c113f811230ea1edad713049f43852f8c21" 20671]
+   ["sha256:db5c7329bb485d9f67cccd9e14b2e10200c4c69b5a0b22071a174509618b3923" 21306]
+   ["sha256:5fc612ccaefc092f3fdd5b47941a7a4d8a0da0f4dd0f361df8fea2c9f8a7b99c" 20584]
+   ["sha256:8316d942e726144c049f819fe9ca3e9aba6814a8907f90f57d7eea01a2403a59" 20151]
+   ["sha256:d9cd51e112a5ab5d570fbb02887fc4a11aeb97c0012bff00d202af1f45d6014a" 23295]
+   ["sha256:48b463cf87ecaf33b07b4d7200a8ed0bca535cfb74a9186e56aeed2d9c1cf59e" 24232]
+   ["sha256:85c81af4feddf64783cea3da795d0a4652b8e0376a41df397b614ab744056d30" 24810]
+   ["sha256:ccf31cd25a79eb24667bc78385d5d82ee2eeba0cd5fa5918748bb888e57b2582" 25254]
+   ["sha256:57184c6d8931d0beeadc5b4be56c47c09d1e0fce379c0d398dcd6ae15929aef0" 28374]
+   ["sha256:6198d87e19ee86f72d51aa1253c2d438da6af8dea495f2dd5eb0e64ca3eff1e4" 45717]
+   ["sha256:70649e49d7130cf33e1d11ac226452ea908fee6731e0e49ca8e003e14cbabe1e" 39872]
+   ["sha256:0b5733f8322ae255324065f57ded23a30d397ef57391239326e304f960469fa7" 31969]])
+
+(defn sh25-component [component-id category source-path dependencies ordinal]
+  (let [revision (get (sh25-source-revisions) ordinal)
+        source-hash (first revision)
+        source-bytes (second revision)
+        compiler-id "gravityc:sh24:bounded"
+        sh21-product-id "gravity:sh21:bounded"
+        descriptor-id (str "gravity:sh02:" component-id)
+        semantic-root (str "sha256:sh25-semantic-" ordinal)
+        provenance-root (str "sha256:sh25-provenance-" ordinal)
+        legality-id (str "gravity:sh21:legality:" component-id)
+        artifact-id (str "gravityc:component:" component-id)
+        content-id (str "sha256:sh25-output-" ordinal)]
+    {:component-id component-id
+     :category category
+     :actual-source-path source-path
+     :dependencies dependencies
+     :profile :meta
+     :implementation-language :gravity
+     :source-identity
+     {:artifact :gravity/source-revision
+      :schema-version 1
+      :component-id component-id
+      :catalog-ordinal ordinal
+      :compiler-id compiler-id
+      :logical-source-path source-path
+      :content-hash source-hash
+      :byte-count source-bytes}
+     :authenticated-input
+     {:artifact :gravity/sh02-authenticated-envelope
+      :schema-version 1
+      :descriptor-id descriptor-id
+      :subject
+      {:component-id component-id
+       :source-content-hash source-hash
+       :compiler-id compiler-id}
+      :semantic-root semantic-root
+      :provenance-root provenance-root
+      :verification
+      {:artifact :gravity/sh02-envelope-verification
+       :schema-version 1
+       :status :passed
+       :subject-id descriptor-id
+       :semantic-root semantic-root
+       :external-recomputation :pending}}
+     :meta-legality
+     {:artifact :gravity/sh21-component-legality
+      :schema-version 1
+      :component-id component-id
+      :source-content-hash source-hash
+      :compiler-id compiler-id
+      :sh21-product-id sh21-product-id
+      :legality-id legality-id
+      :profile :meta
+      :status :accepted
+      :effects #{}
+      :capabilities #{}
+      :ambient-authority? false
+      :verification
+      {:artifact :gravity/sh21-legality-verification
+       :schema-version 1
+       :status :passed
+       :subject-id legality-id
+       :semantic-root source-hash
+       :external-recomputation :pending}}
+     :build-product
+     {:artifact :gravity/sh25-component-output
+      :schema-version 1
+      :component-id component-id
+      :compiler-id compiler-id
+      :source-content-hash source-hash
+      :envelope-semantic-root semantic-root
+      :legality-id legality-id
+      :artifact-id artifact-id
+      :content-id content-id
+      :records
+      {:artifact
+       {:artifact :gravity/compiler-component-artifact
+        :schema-version 1
+        :component-id component-id
+        :compiler-id compiler-id
+        :source-content-hash source-hash
+        :content-id content-id}
+       :manifest
+       {:artifact :gravity/compiler-component-manifest
+        :schema-version 1
+        :component-id component-id
+        :compiler-id compiler-id
+        :content-id content-id
+        :source-content-hash source-hash}
+       :diagnostics
+       {:artifact :gravity/compiler-diagnostic-bundle
+        :schema-version 1
+        :component-id component-id
+        :content-id content-id
+        :catalog-id (str "sha256:diagnostics:" ordinal)}
+       :provenance
+       {:artifact :gravity/compiler-component-provenance
+        :schema-version 1
+        :component-id component-id
+        :compiler-id compiler-id
+        :source-content-hash source-hash
+        :envelope-provenance-root provenance-root
+        :output-content-id content-id}}
+      :verification
+      {:artifact :gravity/sh25-output-verification
+       :schema-version 1
+       :status :passed
+       :subject-id artifact-id
+       :semantic-root content-id
+       :external-recomputation :pending}}}))
+
+(defn sh25-components []
+  [(sh25-component
+    :authenticated-envelope :compiler
+    "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
+    [] 0)
+   (sh25-component
+    :surface-reader :reader
+    "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
+    [:authenticated-envelope] 1)
+   (sh25-component
+    :bootstrap-reader :reader
+    "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+    [:surface-reader] 2)
+   (sh25-component
+    :syntax-model :syntax
+    "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+    [:bootstrap-reader :authenticated-envelope] 3)
+   (sh25-component
+    :bootstrap-syntax :syntax
+    "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"
+    [:syntax-model] 4)
+   (sh25-component
+    :macro-engine :macro
+    "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+    [:bootstrap-syntax] 5)
+   (sh25-component
+    :bootstrap-macro :macro
+    "bootstrap/gravity/src/gravity/macro.gravity"
+    [:macro-engine] 6)
+   (sh25-component
+    :resolution-engine :analyzer
+    "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+    [:bootstrap-macro] 7)
+   (sh25-component
+    :bootstrap-resolution :analyzer
+    "bootstrap/gravity/src/gravity/resolution.gravity"
+    [:resolution-engine] 8)
+   (sh25-component
+    :core-semantics :checked-core
+    "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+    [:bootstrap-resolution] 9)
+   (sh25-component
+    :core-lowering :checked-core
+    "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+    [:core-semantics] 10)
+   (sh25-component
+    :checked-core :checked-core
+    "bootstrap/gravity/src/gravity/checked_core.gravity"
+    [:core-lowering :authenticated-envelope] 11)
+   (sh25-component
+    :checked-core-pipeline :checked-core
+    "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+    [:checked-core] 12)
+   (sh25-component
+    :call-arity :analyzer
+    "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+    [:checked-core-pipeline] 13)
+   (sh25-component
+    :type-checker :analyzer
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    [:checked-core-pipeline] 14)
+   (sh25-component
+    :effect-checker :analyzer
+    "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+    [:type-checker] 15)
+   (sh25-component
+    :ownership-checker :analyzer
+    "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+    [:type-checker] 16)
+   (sh25-component
+    :safety-analysis :analyzer
+    "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+    [:effect-checker :ownership-checker] 17)
+   (sh25-component
+    :mir :mir
+    "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+    [:safety-analysis] 18)
+   (sh25-component
+    :domain-ir :mir
+    "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+    [:mir] 19)
+   (sh25-component
+    :compiler-diagnostics :diagnostic
+    "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"
+    [:mir] 20)
+   (sh25-component
+    :bootstrap-diagnostics :diagnostic
+    "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
+    [:compiler-diagnostics] 21)
+   (sh25-component
+    :mir-optimization :optimizer
+    "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+    [:mir :bootstrap-diagnostics] 22)
+   (sh25-component
+    :compiler-verification :optimizer
+    "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+    [:mir-optimization] 23)
+   (sh25-component
+    :target-lowering :lowering
+    "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+    [:compiler-verification :domain-ir] 24)
+   (sh25-component
+    :backend-interface :backend
+    "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
+    [:target-lowering] 25)
+   (sh25-component
+    :backend-c :backend
+    "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"
+    [:backend-interface] 26)
+   (sh25-component
+    :backend-llvm :backend
+    "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
+    [:backend-interface] 27)
+   (sh25-component
+    :backend-wasm :backend
+    "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"
+    [:backend-interface] 28)
+   (sh25-component
+    :backend-jvm :backend
+    "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
+    [:backend-interface] 29)
+   (sh25-component
+    :backend-js :backend
+    "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+    [:backend-interface] 30)
+   (sh25-component
+    :backend-mlir :backend
+    "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
+    [:backend-interface] 31)
+   (sh25-component
+    :backend-gpu :backend
+    "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"
+    [:backend-interface] 32)
+   (sh25-component
+    :backend-hdl :backend
+    "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+    [:backend-interface] 33)
+   (sh25-component
+    :backend-workflow :backend
+    "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+    [:backend-interface] 34)
+   (sh25-component
+    :backend-query :backend
+    "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"
+    [:backend-interface] 35)
+   (sh25-component
+    :backend-mobile :backend
+    "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
+    [:backend-interface] 36)
+   (sh25-component
+    :incremental-compiler :compiler
+    "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+    [:compiler-verification] 37)
+   (sh25-component
+    :compiler-pass-api :compiler
+    "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+    [:compiler-verification] 38)
+   (sh25-component
+    :meta-legality :compiler
+    "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity"
+    [:effect-checker :target-lowering] 39)
+   (sh25-component
+    :standard-library-subset :standard-library
+    "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity"
+    [:mir :meta-legality] 40)
+   (sh25-component
+    :package-build-subset :package-build
+    "bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity"
+    [:backend-c :meta-legality :standard-library-subset] 41)
+   (sh25-component
+    :runtime-subset :runtime
+    "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity"
+    [:backend-c :standard-library-subset] 42)])
+
+(defn sh25-prerequisite
+  [artifact verifier-artifact product-id logical-path actual-path ordinal]
+  {:artifact artifact
+   :schema-version 1
+   :product-id product-id
+   :source-revision
+   {:artifact :gravity/source-revision
+    :schema-version 1
+    :logical-source-path logical-path
+    :content-hash (str "sha256:prerequisite-source-" ordinal)
+    :byte-count (+ 1000 ordinal)}
+   :semantic-root (str "sha256:prerequisite-semantic-" ordinal)
+   :verification
+   {:artifact verifier-artifact
+    :schema-version 1
+    :status :passed
+    :subject-id product-id
+    :semantic-root (str "sha256:prerequisite-semantic-" ordinal)
+    :external-recomputation :pending}
+   :actual-source-path actual-path})
+
+(defn sh25-request-at [actual-build-root]
+  {:artifact :gravity/sh25-component-build-request
+   :schema-version 1
+   :build-id :sh25-bounded-component-build
+   :components (sh25-components)
+   :sh21-meta-legality
+   (sh25-prerequisite
+    :gravity/sh21-meta-legality
+    :gravity/sh21-meta-legality-verification
+    "gravity:sh21:bounded"
+    "gravity/self-hosting/meta-legality"
+    (str actual-build-root "/meta-legality.gravity") 21)
+   :sh22-standard-library
+   (sh25-prerequisite
+    :gravity/sh22-standard-library
+    :gravity/sh22-standard-library-verification
+    "gravity:sh22:bounded"
+    "gravity/stdlib/self-hosting-core"
+    (str actual-build-root "/stdlib.gravity") 22)
+   :sh24-driver
+   (sh25-prerequisite
+    :gravity/sh24-compiler-driver
+    :gravity/sh24-compiler-driver-verification
+    "gravityc:sh24:bounded"
+    "gravity/self-hosting/compiler-driver"
+    (str actual-build-root "/gravityc") 24)
+   :environment
+   {:locale "C"
+    :timezone "UTC"
+    :filesystem-order :sorted
+    :timestamp-policy :fixed
+    :network :disabled
+    :allowed-environment []
+    :locked-dependencies true}
+   :lock
+   {:artifact :gravity/bootstrap-lock
+    :schema-version 1
+    :content-id "sha256:sh25-lock"
+    :byte-count 4096}
+   :recipe
+   {:artifact :gravity/bootstrap-recipe
+    :schema-version 1
+    :content-id "sha256:sh25-recipe"
+    :byte-count 2048}
+   :profile :meta
+   :effects #{}
+   :capabilities #{}
+   :physical-provenance
+   {:actual-build-root actual-build-root
+    :actual-compiler-path (str actual-build-root "/gravityc")
+    :actual-output-root (str actual-build-root "/out")
+    :actual-lock-path (str actual-build-root "/gravity.lock")
+    :actual-recipe-path (str actual-build-root "/build.gravity")}})
+
+(defn sh25-component-build-request []
+  (sh25-request-at "/checkout-a/gravity"))
+
+(defn sh25-component-build-alternate-path-request []
+  (sh25-request-at "/checkout-b/gravity"))

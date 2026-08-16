@@ -1,0 +1,33 @@
+; SH-07-A semantic payloads that resemble private digest references.
+(ns self-hosting.sh07.quoted-carrier-payloads
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [carrier-value carrier-key quoted-carriers])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07 :fixture :quoted-carrier-payloads}))
+
+(def carrier-value
+  {:payload {:artifact :gravity/sh07-internal-digest-reference
+             :schema-version 1
+             :ordinal 73
+             :authority :sh07-digest-resolver}})
+
+(def carrier-key
+  {{:artifact :gravity/sh07-internal-digest-reference
+    :schema-version 1
+    :ordinal 74
+    :authority :sh07-digest-resolver}
+   :carrier-shaped-key})
+
+(def quoted-carriers
+  '({:value {:artifact :gravity/sh07-internal-digest-reference
+             :schema-version 1
+             :ordinal 75
+             :authority :sh07-digest-resolver}}
+    {{:artifact :gravity/sh07-internal-digest-reference
+      :schema-version 1
+      :ordinal 76
+      :authority :sh07-digest-resolver}
+     :quoted-carrier-shaped-key}))
