@@ -34,22 +34,28 @@
       "byte_count": 679
     },
     {
+      "path": "docs/artifacts/full-language/coverage/full-language-completion-attestations.json",
+      "mode": "100644",
+      "blob_oid": "6cb553e7bd08f1ee14b174c9c850f652aea29441",
+      "byte_count": 588
+    },
+    {
       "path": "docs/artifacts/full-language/coverage/full-language-coverage-gaps.json",
       "mode": "100644",
-      "blob_oid": "3513f3503cc4634f4f1fb2b9c92baa9f3cf8dd97",
-      "byte_count": 86440
+      "blob_oid": "e92886ea1ecf9589abc377d84d4635f87acbb52e",
+      "byte_count": 146205
     },
     {
       "path": "docs/artifacts/full-language/coverage/full-language-coverage-matrix.json",
       "mode": "100644",
-      "blob_oid": "b686fd6532503446c7c52991e2b64630e5017948",
-      "byte_count": 746736
+      "blob_oid": "b1695e57f9288c4633197519ddabbc5295c25509",
+      "byte_count": 803704
     },
     {
       "path": "docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md",
       "mode": "100644",
-      "blob_oid": "95e8c7d1210fc503ae3f856f2ffab85f686e7bb5",
-      "byte_count": 1310
+      "blob_oid": "0c9e71c44ed3c5e940432b15a301ac7441fcf884",
+      "byte_count": 1843
     },
     {
       "path": "docs/artifacts/phase-00/change-control-workflow.json",
@@ -6040,6 +6046,36 @@
       "byte_count": 5490
     },
     {
+      "path": "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
+      "mode": "100644",
+      "blob_oid": "b63594804a5a07b11f7971deb7ee126eaae02828",
+      "byte_count": 2836
+    },
+    {
+      "path": "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+      "mode": "100644",
+      "blob_oid": "4cae06b11eef5ce9e618a12c13d4cfcfec84e317",
+      "byte_count": 8764
+    },
+    {
+      "path": "docs/artifacts/phase-15/native-runtime/p15-s23-native-plan-specialization-input-comparison.edn",
+      "mode": "100644",
+      "blob_oid": "d1c43caea03b32156364530021b84b3933c82459",
+      "byte_count": 3486
+    },
+    {
+      "path": "docs/artifacts/phase-15/native-runtime/p15-s23-native-plan-specialization.edn",
+      "mode": "100644",
+      "blob_oid": "eed98c37ce519156bedc119d85aaabe4da3285f9",
+      "byte_count": 7635
+    },
+    {
+      "path": "docs/artifacts/phase-15/native-runtime/replay/contracts/p15-s23-gravity-native-runtime-provider-fragment-d-payload-binding-contract.edn",
+      "mode": "100644",
+      "blob_oid": "a41506d65ca86bd61c10c60f08149bd4e7e5891c",
+      "byte_count": 187111
+    },
+    {
       "path": "docs/artifacts/phase-15/reports/p15-document-coverage-report.md",
       "mode": "100644",
       "blob_oid": "b96ecf46441c3fa7915ce90b383f917ace17b168",
@@ -6082,6 +6118,12 @@
       "byte_count": 3428
     },
     {
+      "path": "docs/artifacts/phase-15/reports/p15-s23-native-plan-specialization-report.md",
+      "mode": "100644",
+      "blob_oid": "4487fe90ee64a8f2ad8b9c788ff5c36bec53eca8",
+      "byte_count": 4224
+    },
+    {
       "path": "docs/artifacts/phase-15/reports/p15-s23-provenance-attestation-report.md",
       "mode": "100644",
       "blob_oid": "f33301478583646207989c78c01c2b50b493c8ce",
@@ -6104,6 +6146,12 @@
       "mode": "100644",
       "blob_oid": "ed940d335c045d5a03f61121ca2878b845fb3819",
       "byte_count": 3377
+    },
+    {
+      "path": "docs/artifacts/phase-15/reports/p15-s23-seed-boundary-inventory.md",
+      "mode": "100644",
+      "blob_oid": "352bc189956809ef64704dc141ac6be6c9801e72",
+      "byte_count": 12360
     },
     {
       "path": "docs/artifacts/phase-15/reports/p15-s23-self-hosting-conformance-report.md",
@@ -13515,8 +13563,8 @@
       "id": "generated-full-language-reporting",
       "disposition": "generated-nonauthoritative",
       "file_count": 3,
-      "byte_count": 834486,
-      "record_sha256": "sha256:85c1fb2228776bc2a006a190c265233762a309e946ee4fd1f05a0a402d226380",
+      "byte_count": 951752,
+      "record_sha256": "sha256:a8fe5bc4bbf4093eb1127d26e7eeef931a4209a77ed08573b54ce26c5bcafa9f",
       "path_rule": "exact:{docs/artifacts/full-language/coverage/full-language-coverage-gaps.json,docs/artifacts/full-language/coverage/full-language-coverage-matrix.json,docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md}"
     },
     {
@@ -13554,18 +13602,18 @@
     {
       "id": "unclassified-artifacts",
       "disposition": "unclassified-blocking",
-      "file_count": 583,
-      "byte_count": 10489061,
-      "record_sha256": "sha256:9e0e093383e1011ed4a3eb2a0f3d60a157b891f6ec6691de7dcacdd310ad2cdc",
+      "file_count": 591,
+      "byte_count": 10716065,
+      "record_sha256": "sha256:3cf93ac5aa7bb020b8967d643ed8fd7faf31beb9a7500d47005b105300140213",
       "path_rule": "fallback:docs/artifacts/** or target/** after all known rules"
     }
   ],
   "totals": {
-    "file_count": 2247,
-    "byte_count": 28891704,
-    "record_sha256": "sha256:cd657512a460608b9e8ed66105743331560dbe54d2be5eaf7c4e70af6e812ab5",
-    "unclassified_file_count": 583,
-    "unclassified_byte_count": 10489061
+    "file_count": 2255,
+    "byte_count": 29235974,
+    "record_sha256": "sha256:d6daa0633b7fe5901c73ce5536210c38b5d6f18eab372f27930104f5334ee0d4",
+    "unclassified_file_count": 591,
+    "unclassified_byte_count": 10716065
   },
   "nonclaims": [
     "artifact-authority",

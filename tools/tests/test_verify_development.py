@@ -2037,6 +2037,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertTrue(item["fresh"])
         self.assertEqual("none", item["authority"])
         self.assertEqual(1800, item["timeout_seconds"])
+        self.assertEqual(["bootstrap/gravity/**"], item["impact_excludes"])
         for changed_path in (
             "bootstrap/clojure/src/gravity/c2_pass_cache.clj",
             "bootstrap/clojure/src/gravity/pass_cache.clj",
@@ -2068,6 +2069,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertTrue(item["fresh"])
         self.assertEqual("none", item["authority"])
         self.assertEqual(1800, item["timeout_seconds"])
+        self.assertEqual(["bootstrap/gravity/**"], item["impact_excludes"])
         for changed_path in (
             "bootstrap/clojure/src/gravity/c2_pass_cache.clj",
             "bootstrap/clojure/src/gravity/pass_cache.clj",
@@ -2341,7 +2343,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                     self.assertEqual(expected_hash, hashlib.sha256(form.encode()).hexdigest())
                     observed += 1
         self.assertEqual(16, observed)
-        self.assertEqual(471, central.count("\n(deftest ") + central.startswith("(deftest "))
+        self.assertEqual(472, central.count("\n(deftest ") + central.startswith("(deftest "))
 
     def test_c4_c18_compatibility_batches_are_exact_routable_and_cacheable(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
@@ -5120,6 +5122,10 @@ class VerifyDevelopmentTests(unittest.TestCase):
         for owned_path in launcher["inputs"]:
             with self.subTest(owned_path=owned_path):
                 path_expected_ids = set(expected_ids)
+                if owned_path.startswith("docs/artifacts/"):
+                    path_expected_ids.update(
+                        {"m0-docs", "artifact-census-contract", "artifact-census-unit"}
+                    )
                 if owned_path == "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj":
                     path_expected_ids.add("stage0-coordinator-integration-reservations")
                 selection = verifier.select_impacted_checks(
@@ -5451,7 +5457,11 @@ class VerifyDevelopmentTests(unittest.TestCase):
                     expected_direct.add("stage0-coordinator-integration-reservations")
                 if owned_path == "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj":
                     expected_direct.add("stage0-p15-native-plan-specialization-prerequisite")
+                if owned_path.startswith("docs/artifacts/"):
+                    expected_direct.add("artifact-census-contract")
                 expected_ids = {orchestrator_id} | expected_direct
+                if owned_path.startswith("docs/artifacts/"):
+                    expected_ids.update({"m0-docs", "artifact-census-unit"})
                 self.assertEqual(set(selection["selected_ids"]), expected_ids)
                 self.assertEqual(selection["unmatched_changes"], [])
                 self.assertEqual(direct, expected_direct)
@@ -5472,6 +5482,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                         auth_id,
                         "stage0-coordinator-integration-reservations",
                         "stage0-p15-native-plan-specialization-prerequisite",
+                        "artifact-census-contract",
                     }
                 )
                 receipt = verifier.run_verification(

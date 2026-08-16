@@ -4435,7 +4435,8 @@
         "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj"
       ],
       "tool_inputs": ["tools/validate_project_structure.py"],
-      "depends_on": ["stage0-project-structure"]
+      "depends_on": ["stage0-project-structure"],
+      "impact_excludes": ["bootstrap/gravity/**"]
     },
     {
       "id": "stage0-c2-pass-cache-envelope-profile",
@@ -4468,7 +4469,8 @@
         "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj"
       ],
       "tool_inputs": ["tools/validate_project_structure.py"],
-      "depends_on": ["stage0-project-structure"]
+      "depends_on": ["stage0-project-structure"],
+      "impact_excludes": ["bootstrap/gravity/**"]
     },
     {
       "id": "stage0-c3-compatibility",

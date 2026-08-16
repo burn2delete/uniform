@@ -19,8 +19,8 @@
       "tools/validate_w1_executable_carrier_interface.py",
       "tools/validate_artifact_census.py"
     ],
-    "producer_count": 67,
-    "producer_sha256": "sha256:0bdaa846475cf95fa253ba73693f61a51dbfb33229d8e1daef1e56ebe0b95fb5"
+    "producer_count": 68,
+    "producer_sha256": "sha256:2246ec079ce32ec4b3b4aec76c2f374b77f0ab1badcdaf80fd0e10cca23fe6f9"
   },
   "boundaries": {
     "filesystem_producers_only": true,
@@ -101,6 +101,14 @@
       "mechanisms": ["dirfd-nofollow-fsync-replace"],
       "regular_nosymlink_current_owner": true,
       "atomic_replace": true,
+      "provenance_added_by_writer": true
+    },
+    {
+      "id": "stage3-state-writer",
+      "implementation": "tools/run_stage3_verification.py#atomic_receipt_write",
+      "mechanisms": ["dirfd-nofollow-exclusive-link", "bounded-private-snapshot"],
+      "regular_nosymlink_current_owner": true,
+      "atomic_replace": false,
       "provenance_added_by_writer": true
     },
     {
@@ -332,6 +340,23 @@
       "provenance_required": ["producer-source", "command", "schema", "runtime", "environment-bindings", "input-identities", "status-identity", "output-byte-count", "output-sha256"],
       "review": {"generation_review_required": false, "direct_reviewed_source": false, "admission_review_required": true},
       "nonclaims": ["verification-pass", "authority", "release", "signature"]
+    },
+    {
+      "id": "stage3-verification-state",
+      "sources": {"includes": ["tools/run_stage3_verification.py"], "excludes": []},
+      "commands": ["python3 tools/run_stage3_verification.py --receipt .cpcache/stage3-receipts/<receipt>.json --report target/validation/<report>.json <fixed-stage3-selection>"],
+      "cli_output_options": ["--receipt", "--report"],
+      "input_patterns": ["tools/development_verification_manifest.json", "tools/stage3_runtime_contract.py", "<selected-check-inputs>", "<candidate-evidence-inputs>"],
+      "output_policy_refs": ["development-private-state", "generated-evidence"],
+      "output_patterns": [".cpcache/stage3-receipts/**/*.json", ".cpcache/stage3-authority/**", "target/validation/**/*.json"],
+      "output_kinds": ["stage3-verification-receipt", "stage3-authority-private-snapshot"],
+      "schemas": ["gravity/stage3-verification-receipt-v1", "opaque-stage3-authority-snapshot-v1"],
+      "writer": "stage3-state-writer",
+      "python_tooling_component": "process-development-tools",
+      "authority_ceiling": "non-authoritative-observation",
+      "provenance_required": ["producer-source", "command", "runtime", "input-identities", "dependency-identities", "schema", "output-sha256"],
+      "review": {"generation_review_required": false, "direct_reviewed_source": false, "admission_review_required": true},
+      "nonclaims": ["authority", "candidate-authority", "aggregate-authority", "release"]
     },
     {
       "id": "development-verification-state",

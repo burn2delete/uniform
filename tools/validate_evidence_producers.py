@@ -132,6 +132,7 @@ EXACT_WRITER_PROFILES = {
     "reviewed-source-rewrite": {"id": "reviewed-source-rewrite", "implementation": "pathlib.Path.write_text", "mechanisms": ["write_text"], "regular_nosymlink_current_owner": False, "atomic_replace": False, "provenance_added_by_writer": False},
     "development-receipt-writer": {"id": "development-receipt-writer", "implementation": "tools/measure_development_baseline.py#_write_receipt", "mechanisms": ["temporary-file-fsync-replace"], "regular_nosymlink_current_owner": False, "atomic_replace": True, "provenance_added_by_writer": True},
     "development-cache-writer": {"id": "development-cache-writer", "implementation": "tools/verify_development.py#_write_json", "mechanisms": ["dirfd-nofollow-fsync-replace"], "regular_nosymlink_current_owner": True, "atomic_replace": True, "provenance_added_by_writer": True},
+    "stage3-state-writer": {"id": "stage3-state-writer", "implementation": "tools/run_stage3_verification.py#atomic_receipt_write", "mechanisms": ["dirfd-nofollow-exclusive-link", "bounded-private-snapshot"], "regular_nosymlink_current_owner": True, "atomic_replace": False, "provenance_added_by_writer": True},
     "sh07-checkpoint-writer": {"id": "sh07-checkpoint-writer", "implementation": "tools/run_sh07_authoritative_modules.py#atomic_json_write", "mechanisms": ["temporary-file-fsync-replace", "bounded-log"], "regular_nosymlink_current_owner": True, "atomic_replace": True, "provenance_added_by_writer": True},
     "heartbeat-state-writer": {"id": "heartbeat-state-writer", "implementation": "tools/run_with_heartbeat.py#atomic_json_write", "mechanisms": ["temporary-file-fsync-replace", "durable-log"], "regular_nosymlink_current_owner": False, "atomic_replace": True, "provenance_added_by_writer": True},
 }
@@ -173,6 +174,7 @@ PRODUCER_PROVENANCE_REQUIREMENTS = {
     "sh07-module-checkpoints": {"producer-source", "runner-identity", "command", "runtime", "input-identities", "dependency-identities", "child-output-identities", "schema", "output-sha256"},
     "long-running-command-heartbeat": {"producer-source", "command", "runtime", "environment-bindings", "input-identities", "status-identity", "schema", "output-sha256"},
     "development-verification-state": {"producer-source", "manifest-identity", "command", "input-identities", "dependency-results", "cache-keys", "schema", "output-sha256"},
+    "stage3-verification-state": {"producer-source", "command", "runtime", "input-identities", "dependency-identities", "schema", "output-sha256"},
 }
 PRODUCER_SCHEMA_REQUIREMENTS = {
     "isolated-artifact-validators": {"source-defined-json-kind-v1"},
@@ -185,12 +187,14 @@ PRODUCER_SCHEMA_REQUIREMENTS = {
     "sh07-module-checkpoints": {"gravity/sh07-authoritative-module-checkpoints-v2", "opaque-bounded-log-v1"},
     "long-running-command-heartbeat": {"opaque-durable-log-v1", "gravity/long-running-command-status-v1"},
     "development-verification-state": {"gravity/development-verification-cache-v1", "gravity/development-verification-receipt-v1"},
+    "stage3-verification-state": {"gravity/stage3-verification-receipt-v1", "opaque-stage3-authority-snapshot-v1"},
 }
 WRITER_CALL_REQUIREMENTS = {
     "isolated-atomic-publication": {"atomic_write_json", "atomic_write_text"},
     "reviewed-source-rewrite": {"write_text"},
     "development-receipt-writer": {"_write_receipt"},
     "development-cache-writer": {"_write_json"},
+    "stage3-state-writer": {"atomic_receipt_write"},
     "sh07-checkpoint-writer": {"atomic_json_write"},
     "heartbeat-state-writer": {"atomic_json_write"},
 }
