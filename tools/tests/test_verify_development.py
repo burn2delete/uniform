@@ -2281,7 +2281,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
                     self.assertEqual(expected_hash, hashlib.sha256(form.encode()).hexdigest())
                     observed += 1
         self.assertEqual(16, observed)
-        self.assertEqual(471, central.count("\n(deftest ") + central.startswith("(deftest "))
+        self.assertEqual(472, central.count("\n(deftest ") + central.startswith("(deftest "))
 
     def test_c4_c18_compatibility_batches_are_exact_routable_and_cacheable(self) -> None:
         manifest = verifier.load_manifest(ROOT / "tools" / "development_verification_manifest.json")
@@ -5232,7 +5232,7 @@ class VerifyDevelopmentTests(unittest.TestCase):
             for path in (ROOT / "bootstrap/gravity/src").rglob("*.gravity")
             if path.is_file()
         }
-        self.assertEqual(len(expected_catalog), 42)
+        self.assertEqual(len(expected_catalog), 60)
         self.assertEqual(observed_catalog, expected_catalog)
         clojure_runtime_declaration = "bootstrap/clojure/src/**"
         observed_clojure_runtime = {
