@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "gravity-stage0-development-verification",
-  "description": "Stage 0 and Milestone 0 verification graph with bounded Stage1/Stage2 handoffs and fixed, non-authoritative Stage3--9 compiler candidate graphs for evidence-producing development loops.",
+  "description": "Stage 0 and Milestone 0 verification graph with bounded Stage1/Stage2 handoffs and fixed, non-authoritative Stage3--11 compiler candidate graphs for evidence-producing development loops.",
   "scope": {
     "stage": "stage0",
     "stage1_handoff": "SH-01 planner and parallel-runner unit preflight",
@@ -13,6 +13,8 @@
     "stage7_handoff": "fixed C11 MIR source, C10 adapter, public, and manual proof-candidate nodes; no legacy broad replay or authority promotion",
     "stage8_handoff": "fixed C12 shape, C11-domain evidence, and public development nodes; no proof candidate or authority promotion",
     "stage9_handoff": "fixed C13 source-shape gate followed by an evidence-only boundary over a reconstructed C12 carrier; no optimization credit, proof candidate, target lowering, or authority promotion",
+    "stage10_handoff": "fixed W1 C14 static admission, ordinary direct-mutation discriminator, independent SH25 source catalog, narrow SH25/SH26 fixture consumer, and manual hostile stable-candidate nodes; no automatic packet matrix, proof candidate, or authority promotion",
+    "stage11_handoff": "fixed C15 source preflight followed by independent SH15 semantic and public C15 branches; no deep SH07 census, proof candidate, authority, self-hosting, release, or seed-retirement claim",
     "milestones": [
       "M0-documentation-lock",
       "M1-hosted-hello-slice"
@@ -28,6 +30,8 @@
       "the fixed Stage7 C11 MIR development graph",
       "the fixed Stage8 C12/SH13 development graph",
       "the fixed Stage9 SH16/C13 evidence-only development boundary",
+      "the fixed Stage10 W1/C14 proportional development graph",
+      "the fixed Stage11 C15/SH15 non-authoritative development graph",
       "hosted reader validator",
       "first hosted hello and core application fixtures",
       "the focused project-structure extraction compatibility gate",
@@ -350,7 +354,11 @@
         "m0-docs"
       ],
       "impact_excludes": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_shape_preflight_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_source_coverage_test.clj",
         "bin/gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
@@ -412,6 +420,12 @@
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b1_backend_interface_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b2_c_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b3_llvm_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b4_wasm_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c14_target_lowering_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c9_ownership_source_coverage_test.clj",
@@ -427,7 +441,13 @@
         "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_c14_b1_linux_llvm_backend_continuity_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_target_lowering_hardening_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_fragment_size_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner_test.clj",
@@ -436,6 +456,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -487,7 +513,9 @@
         "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md",
         "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md",
         "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md",
-        "target/phase-18/jvm-cli/gravity-jvm-cli.jar"
+        "target/phase-18/jvm-cli/gravity-jvm-cli.jar",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj"
       ]
     },
     {
@@ -520,7 +548,11 @@
         "stage0-project-structure"
       ],
       "impact_excludes": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_shape_preflight_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_source_coverage_test.clj",
         "bin/gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
@@ -582,6 +614,12 @@
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b1_backend_interface_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b2_c_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b3_llvm_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b4_wasm_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c14_target_lowering_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c9_ownership_source_coverage_test.clj",
@@ -597,7 +635,13 @@
         "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_c14_b1_linux_llvm_backend_continuity_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_target_lowering_hardening_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_fragment_size_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner_test.clj",
@@ -606,6 +650,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -657,7 +707,9 @@
         "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md",
         "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md",
         "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md",
-        "target/phase-18/jvm-cli/gravity-jvm-cli.jar"
+        "target/phase-18/jvm-cli/gravity-jvm-cli.jar",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj"
       ]
     },
     {
@@ -734,6 +786,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -773,11 +831,21 @@
         "deps.edn"
       ],
       "impact_excludes": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_shape_preflight_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_safety_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b1_backend_interface_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b2_c_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b3_llvm_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b4_wasm_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c14_target_lowering_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c9_ownership_source_coverage_test.clj",
@@ -792,9 +860,16 @@
         "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_c14_b1_linux_llvm_backend_continuity_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_target_lowering_hardening_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_fragment_size_preflight_test.clj",
-        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner_test.clj"
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj"
       ],
       "depends_on": [
         "stage0-orchestrator-unit"
@@ -891,7 +966,8 @@
       "stage3_batch": "source-control-form-arity",
       "impact_excludes": [
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
-        "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj"
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "inputs": [
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
@@ -943,7 +1019,8 @@
       "stage3_batch": "coverage-census-contract",
       "impact_excludes": [
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
-        "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj"
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "inputs": [
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
@@ -1022,7 +1099,8 @@
       "minimum_heap_bytes": 2147483648,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -1048,7 +1126,8 @@
       "stage3_batch": "source-plan-contract",
       "impact_excludes": [
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
-        "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj"
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "inputs": [
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
@@ -1128,7 +1207,8 @@
       "minimum_heap_bytes": 8589934592,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -1181,7 +1261,8 @@
       "minimum_heap_bytes": 8589934592,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -1232,7 +1313,8 @@
       "minimum_heap_bytes": 8589934592,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -1285,7 +1367,8 @@
       "minimum_heap_bytes": 8589934592,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -1339,7 +1422,8 @@
       "minimum_heap_bytes": 8589934592,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -1393,7 +1477,8 @@
       "minimum_heap_bytes": 8589934592,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -1418,7 +1503,8 @@
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
         "bootstrap/clojure/test/gravity/bootstrap_test.clj",
         "bootstrap/clojure/test/gravity/cli_test.clj",
-        "bootstrap/clojure/test/gravity/diagnostics_test.clj"
+        "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "command": [
         "python3",
@@ -1534,7 +1620,8 @@
       "stage3_batch": "stage4-c8-source-structural",
       "impact_excludes": [
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
-        "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj"
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "inputs": [
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
@@ -1646,7 +1733,8 @@
       "minimum_heap_bytes": 8589934592,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -1669,7 +1757,8 @@
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
         "bootstrap/clojure/test/gravity/bootstrap_test.clj",
         "bootstrap/clojure/test/gravity/cli_test.clj",
-        "bootstrap/clojure/test/gravity/diagnostics_test.clj"
+        "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "command": [
         "python3",
@@ -1789,7 +1878,8 @@
       "stage3_batch": "stage5-c9-source-structural",
       "impact_excludes": [
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
-        "bootstrap/clojure/test/gravity/self_hosting/sh07_c9_ownership_source_coverage_test.clj"
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c9_ownership_source_coverage_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "inputs": [
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -1897,7 +1987,8 @@
       "minimum_heap_bytes": 2147483648,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -1954,7 +2045,8 @@
       "minimum_heap_bytes": 8589934592,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -1977,7 +2069,8 @@
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
         "bootstrap/clojure/test/gravity/bootstrap_test.clj",
         "bootstrap/clojure/test/gravity/cli_test.clj",
-        "bootstrap/clojure/test/gravity/diagnostics_test.clj"
+        "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "command": [
         "python3",
@@ -2096,7 +2189,8 @@
       "stage3_batch": "stage6-c10-source-structural",
       "impact_excludes": [
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
-        "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_safety_source_coverage_test.clj"
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_safety_source_coverage_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "inputs": [
         "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
@@ -2204,7 +2298,8 @@
       "minimum_heap_bytes": 2147483648,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -2227,7 +2322,8 @@
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
         "bootstrap/clojure/test/gravity/bootstrap_test.clj",
         "bootstrap/clojure/test/gravity/cli_test.clj",
-        "bootstrap/clojure/test/gravity/diagnostics_test.clj"
+        "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "command": [
         "python3",
@@ -2324,7 +2420,8 @@
       "minimum_heap_bytes": 8589934592,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -2442,7 +2539,8 @@
       "minimum_heap_bytes": 536870912,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -2504,7 +2602,8 @@
       "minimum_heap_bytes": 8589934592,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -2527,7 +2626,8 @@
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
         "bootstrap/clojure/test/gravity/bootstrap_test.clj",
         "bootstrap/clojure/test/gravity/cli_test.clj",
-        "bootstrap/clojure/test/gravity/diagnostics_test.clj"
+        "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "command": [
         "python3",
@@ -2681,7 +2781,8 @@
       "minimum_heap_bytes": 536870912,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -2704,7 +2805,8 @@
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
         "bootstrap/clojure/test/gravity/bootstrap_test.clj",
         "bootstrap/clojure/test/gravity/cli_test.clj",
-        "bootstrap/clojure/test/gravity/diagnostics_test.clj"
+        "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "command": [
         "python3",
@@ -2800,7 +2902,70 @@
       "minimum_heap_bytes": 8589934592,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
+      ],
+      "resource_class": "memory-heavy"
+    },
+    {
+      "id": "stage8-sh14-authenticated-layout",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1200,
+      "command": [
+        "python3",
+        "tools/run_stage3_verification.py"
+      ],
+      "stage3_mode": "pure",
+      "stage3_batch": "stage8-sh14-authenticated-layout",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/p15_s23/emitter.gravity",
+        "bootstrap/gravity/src/gravity/macro.gravity",
+        "bootstrap/gravity/src/gravity/resolution.gravity",
+        "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/clojure/src/**"
+      ],
+      "depends_on": [
+        "stage8-c12-source-shape",
+        "stage8-sh13-c11-domain-evidence"
+      ],
+      "jvm_heap": "-J-Xmx8g",
+      "minimum_heap_bytes": 8589934592,
+      "automatic": true,
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -2857,7 +3022,8 @@
       "minimum_heap_bytes": 536870912,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -2918,7 +3084,439 @@
       "minimum_heap_bytes": 8589934592,
       "automatic": true,
       "impact_excludes": [
-        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
+      ],
+      "resource_class": "memory-heavy"
+    },
+    {
+      "id": "w1-executable-carrier-interface-unit",
+      "lane": "preflight",
+      "cost": "cheap",
+      "resource_class": "python-cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "timeout_seconds": 120,
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "tools.tests.test_validate_w1_executable_carrier_interface"
+      ],
+      "inputs": [
+        "tools/validate_w1_executable_carrier_interface.py",
+        "tools/tests/test_validate_w1_executable_carrier_interface.py"
+      ],
+      "tool_inputs": [],
+      "depends_on": [
+        "stage0-orchestrator-unit"
+      ]
+    },
+    {
+      "id": "stage10-w1-static-admission",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 600,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "stage10-w1-static-admission",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
+        "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b1_backend_interface_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b2_c_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b3_llvm_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b4_wasm_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c14_target_lowering_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_c14_b1_linux_llvm_backend_continuity_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_target_lowering_hardening_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn",
+        "tools/run_stage3_verification.py",
+        "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/p15_s23/emitter.gravity",
+        "bootstrap/gravity/src/gravity/macro.gravity",
+        "bootstrap/gravity/src/gravity/resolution.gravity",
+        "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/clojure/src/**",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_census.clj"
+      ],
+      "depends_on": ["stage3-runner-unit"],
+      "jvm_heap": "-J-Xmx2g",
+      "minimum_heap_bytes": 2147483648,
+      "automatic": true,
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
+      ],
+      "resource_class": "memory-heavy"
+    },
+    {
+      "id": "stage10-w1-hostile-stable",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 1800,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "stage10-w1-hostile-stable",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn", "tools/run_stage3_verification.py", "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/p15_s23/emitter.gravity", "bootstrap/gravity/src/gravity/macro.gravity",
+        "bootstrap/gravity/src/gravity/resolution.gravity", "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/clojure/src/**"
+      ],
+      "depends_on": ["stage10-w1-static-admission"],
+      "jvm_heap": "-J-Xmx3g",
+      "minimum_heap_bytes": 3221225472,
+      "automatic": false,
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
+      ],
+      "resource_class": "memory-heavy"
+    },
+    {
+      "id": "stage10-w1-direct-mutation",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 600,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "stage10-w1-direct-mutation",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn", "tools/run_stage3_verification.py", "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/p15_s23/emitter.gravity", "bootstrap/gravity/src/gravity/macro.gravity",
+        "bootstrap/gravity/src/gravity/resolution.gravity", "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/clojure/src/**"
+      ],
+      "depends_on": ["stage10-w1-static-admission"],
+      "jvm_heap": "-J-Xmx3g",
+      "minimum_heap_bytes": 3221225472,
+      "automatic": true,
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
+      ],
+      "resource_class": "memory-heavy"
+    },
+    {
+      "id": "stage10-w1-sh25-catalog",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 600,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "stage10-w1-sh25-catalog",
+      "inputs": [
+        "docs/self-hosting-slice-ownership.edn",
+        "bootstrap/gravity/src/**/*.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn", "tools/run_stage3_verification.py", "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/p15_s23/emitter.gravity", "bootstrap/gravity/src/gravity/macro.gravity",
+        "bootstrap/gravity/src/gravity/resolution.gravity", "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/clojure/src/**"
+      ],
+      "depends_on": ["stage3-runner-unit"],
+      "jvm_heap": "-J-Xmx8g",
+      "minimum_heap_bytes": 8589934592,
+      "automatic": true,
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
+      ],
+      "resource_class": "memory-heavy"
+    },
+    {
+      "id": "stage10-w1-sh25-sh26-consumer",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 600,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "stage10-w1-sh25-sh26-consumer",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/accepted/component-builds.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/rejected/invalid-component-builds.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/rejected/invalid-component-builds.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-26/stage_rebuild_engine.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.qst",
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn", "tools/run_stage3_verification.py", "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/p15_s23/emitter.gravity", "bootstrap/gravity/src/gravity/macro.gravity",
+        "bootstrap/gravity/src/gravity/resolution.gravity", "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/clojure/src/**"
+      ],
+      "depends_on": ["stage3-runner-unit"],
+      "jvm_heap": "-J-Xmx8g",
+      "minimum_heap_bytes": 8589934592,
+      "automatic": true,
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
+      ],
+      "resource_class": "memory-heavy"
+    },
+    {
+      "id": "stage11-c15-source-preflight",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 600,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "stage11-c15-source-preflight",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_shape_preflight_test.clj",
+        "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+        "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+        "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+        "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+        "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md"
+      ],
+      "tool_inputs": [
+        "deps.edn", "tools/run_stage3_verification.py", "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/p15_s23/emitter.gravity", "bootstrap/gravity/src/gravity/macro.gravity",
+        "bootstrap/gravity/src/gravity/resolution.gravity", "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/clojure/src/**"
+      ],
+      "depends_on": ["stage3-runner-unit"],
+      "jvm_heap": "-J-Xmx512m",
+      "minimum_heap_bytes": 536870912,
+      "automatic": true,
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
+      ],
+      "resource_class": "memory-heavy"
+    },
+    {
+      "id": "stage11-sh15-diagnostic-boundary",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 600,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "stage11-sh15-diagnostic-boundary",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh11_c9_safety_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh10_c8_ownership_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh09_c7_effect_adapter_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn", "tools/run_stage3_verification.py", "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/p15_s23/emitter.gravity", "bootstrap/gravity/src/gravity/macro.gravity",
+        "bootstrap/gravity/src/gravity/resolution.gravity", "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/clojure/src/**"
+      ],
+      "depends_on": ["stage11-c15-source-preflight"],
+      "jvm_heap": "-J-Xmx8g",
+      "minimum_heap_bytes": 8589934592,
+      "automatic": true,
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
+      ],
+      "resource_class": "memory-heavy"
+    },
+    {
+      "id": "stage11-public-c15",
+      "lane": "heavy-candidate",
+      "cost": "heavy",
+      "lock": "/private/tmp/gravity-sh07-heavy.lock",
+      "lock_owner": "command",
+      "exclusive": true,
+      "capacity": 1,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "resume": false,
+      "state_dir_policy": "new-per-invocation",
+      "timeout_seconds": 900,
+      "command": ["python3", "tools/run_stage3_verification.py"],
+      "stage3_mode": "pure",
+      "stage3_batch": "stage11-public-c15",
+      "inputs": [
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+        "bootstrap/clojure/test/gravity/cli_test.clj",
+        "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+        "bin/gravity",
+        "target/phase-18/jvm-cli/gravity-jvm-cli.jar",
+        "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn"
+      ],
+      "tool_inputs": [
+        "deps.edn", "tools/run_stage3_verification.py", "tools/verify_development.py",
+        "tools/run_sh07_authoritative_modules.py",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/gravity/p15_s23/compiler.gravity",
+        "bootstrap/gravity/p15_s23/emitter.gravity", "bootstrap/gravity/src/gravity/macro.gravity",
+        "bootstrap/gravity/src/gravity/resolution.gravity", "bootstrap/gravity/src/gravity/checked_core.gravity",
+        "bootstrap/clojure/src/**"
+      ],
+      "depends_on": ["stage11-c15-source-preflight"],
+      "jvm_heap": "-J-Xmx2g",
+      "minimum_heap_bytes": 2147483648,
+      "automatic": true,
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
+        "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+        "bootstrap/clojure/test/gravity/cli_test.clj",
+        "bootstrap/clojure/test/gravity/diagnostics_test.clj",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "resource_class": "memory-heavy"
     },
@@ -2987,6 +3585,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -3222,7 +3826,11 @@
         "stage0-project-structure-unit"
       ],
       "impact_excludes": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_shape_preflight_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_source_coverage_test.clj",
         "bin/gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
@@ -3284,6 +3892,12 @@
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b1_backend_interface_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b2_c_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b3_llvm_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b4_wasm_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c14_target_lowering_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c9_ownership_source_coverage_test.clj",
@@ -3299,7 +3913,13 @@
         "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_c14_b1_linux_llvm_backend_continuity_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_target_lowering_hardening_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_fragment_size_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner_test.clj",
@@ -3308,6 +3928,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -3359,7 +3985,9 @@
         "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md",
         "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md",
         "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md",
-        "target/phase-18/jvm-cli/gravity-jvm-cli.jar"
+        "target/phase-18/jvm-cli/gravity-jvm-cli.jar",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj"
       ]
     },
     {
@@ -3424,7 +4052,11 @@
         "stage0-project-structure-unit"
       ],
       "impact_excludes": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_shape_preflight_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_source_coverage_test.clj",
         "bin/gravity",
+        "bootstrap/clojure/test/gravity/self_hosting/sh02_authenticated_envelope_test.clj",
         "bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c",
         "bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c",
@@ -3486,6 +4118,12 @@
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_shape_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_shape_preflight_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b1_backend_interface_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b2_c_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b3_llvm_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_b4_wasm_backend_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c13_mir_optimization_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c14_target_lowering_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh07_c9_ownership_source_coverage_test.clj",
@@ -3501,7 +4139,13 @@
         "bootstrap/clojure/test/gravity/self_hosting/sh11_numeric_safety_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh14_authenticated_layout_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_c14_b1_linux_llvm_backend_continuity_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh17_target_lowering_hardening_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh25_component_build_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh26_stage_rebuild_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_fragment_size_preflight_test.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
         "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner_test.clj",
@@ -3510,6 +4154,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -3561,7 +4211,9 @@
         "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md",
         "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md",
         "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md",
-        "target/phase-18/jvm-cli/gravity-jvm-cli.jar"
+        "target/phase-18/jvm-cli/gravity-jvm-cli.jar",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj"
       ]
     },
     {
@@ -3639,6 +4291,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -3647,7 +4305,8 @@
         "bootstrap/native/p15_native_runtime_driver.c",
         "bootstrap/native/p15_public_native_launcher.c",
         "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "depends_on": []
     },
@@ -3726,6 +4385,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -3734,7 +4399,8 @@
         "bootstrap/native/p15_native_runtime_driver.c",
         "bootstrap/native/p15_public_native_launcher.c",
         "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "depends_on": []
     },
@@ -3817,6 +4483,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -3825,7 +4497,8 @@
         "bootstrap/native/p15_native_runtime_driver.c",
         "bootstrap/native/p15_public_native_launcher.c",
         "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "depends_on": []
     },
@@ -3990,6 +4663,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -3998,7 +4677,8 @@
         "bootstrap/native/p15_native_runtime_driver.c",
         "bootstrap/native/p15_public_native_launcher.c",
         "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "depends_on": [
         "stage0-hosted-hello"
@@ -4250,6 +4930,8 @@
         "gravity.self-hosting.sh07-iteration-cache-runner",
         "--fail-fast",
         "--test-var",
+        "gravity.p15-native-plan-specialization-test/fixed-real-packet-cache-is-bounded-and-source-coherent",
+        "--test-var",
         "gravity.p15-native-plan-specialization-test/packet-and-context-tamper-reject-before-validator-or-emitter",
         "--test-var",
         "gravity.p15-native-plan-specialization-test/authenticated-unsupported-plan-rejects-before-emitter",
@@ -4292,7 +4974,9 @@
       ],
       "depends_on": ["stage0-orchestrator-unit"],
       "automatic": true,
-      "impact_excludes": []
+      "impact_excludes": [
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
+      ]
     },
     {
       "id": "stage0-coordinator-integration-reservations",
@@ -4309,6 +4993,9 @@
         "contracts/project-structure.json",
         "contracts/stage0-clojure-components.json",
         "docs/self-hosting-slice-ownership.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj",
+        "contracts/p15-public-native-admission-v1.edn",
         "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj",
         "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
         "bootstrap/clojure/test/gravity/p15_public_native_run_test.clj",
@@ -4393,7 +5080,8 @@
         "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
         "bootstrap/gravity/p15_s23/native_runtime_driver.gravity",
         "bootstrap/native/p15_native_runtime_driver.c",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ]
     },
     {
@@ -4551,7 +5239,8 @@
         "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
         "bootstrap/gravity/p15_s23/native_runtime_driver.gravity",
         "bootstrap/native/p15_native_runtime_driver.c",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ]
     },
     {
@@ -4625,7 +5314,8 @@
         "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
         "bootstrap/gravity/p15_s23/native_runtime_driver.gravity",
         "bootstrap/native/p15_native_runtime_driver.c",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ]
     },
     {
@@ -4707,7 +5397,8 @@
         "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
         "bootstrap/gravity/p15_s23/native_runtime_driver.gravity",
         "bootstrap/native/p15_native_runtime_driver.c",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ]
     },
     {
@@ -4793,7 +5484,8 @@
         "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
         "bootstrap/gravity/p15_s23/native_runtime_driver.gravity",
         "bootstrap/native/p15_native_runtime_driver.c",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ]
     },
     {
@@ -4906,7 +5598,8 @@
         "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj",
         "bootstrap/gravity/p15_s23/native_runtime_driver.gravity",
         "bootstrap/native/p15_native_runtime_driver.c",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ]
     },
     {
@@ -5056,6 +5749,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -5064,7 +5763,8 @@
         "bootstrap/native/p15_native_runtime_driver.c",
         "bootstrap/native/p15_public_native_launcher.c",
         "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "depends_on": [
         "stage0-hosted-core-app"
@@ -5207,6 +5907,11 @@
         "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-value-overflow.payload",
         "bootstrap/clojure/fixtures/self-hosting/sh-08/**",
         "bootstrap/clojure/fixtures/self-hosting/sh-10/**",
+        "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/**",
+        "bootstrap/clojure/fixtures/self-hosting/sh-26/stage_rebuild_engine.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-26/accepted/stage-rebuild.qst",
         "bootstrap/clojure/fixtures/self-hosting/sh-11/**",
         "bootstrap/clojure/src/gravity/diagnostics.clj",
         "bootstrap/clojure/src/gravity/digest.clj",
@@ -5226,6 +5931,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -5234,7 +5945,8 @@
         "bootstrap/native/p15_native_runtime_driver.c",
         "bootstrap/native/p15_public_native_launcher.c",
         "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "depends_on": [
         "m0-docs",
@@ -5313,6 +6025,7 @@
         "bootstrap/clojure/fixtures/p15-native-runtime-driver/rejected-value-overflow.payload",
         "bootstrap/clojure/fixtures/self-hosting/sh-08/**",
         "bootstrap/clojure/fixtures/self-hosting/sh-10/**",
+        "bootstrap/clojure/fixtures/self-hosting/sh-25/**",
         "bootstrap/clojure/src/gravity/diagnostics.clj",
         "bootstrap/clojure/src/gravity/digest.clj",
         "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj",
@@ -5331,6 +6044,12 @@
         "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity",
         "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity",
         "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity",
+        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity",
+        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity",
+        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity",
         "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity",
         "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity",
@@ -5339,7 +6058,8 @@
         "bootstrap/native/p15_native_runtime_driver.c",
         "bootstrap/native/p15_public_native_launcher.c",
         "docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn",
-        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn"
+        "docs/artifacts/phase-15/native-runtime/p15-s23-bounded-native-runtime-provider.edn",
+        "bootstrap/clojure/src/gravity/p15_public_native_admission.clj"
       ],
       "depends_on": [
         "stage0-clojure-suite"

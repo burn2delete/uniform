@@ -107,8 +107,17 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage8-c12-source-shape": "stage8-c12-source-shape-selectors",
             "stage8-public-c12": "stage8-public-c12-selectors",
             "stage8-sh13-c11-domain-evidence": "stage8-sh13-c11-domain-evidence-selectors",
+            "stage8-sh14-authenticated-layout": "stage8-sh14-authenticated-layout-selectors",
             "stage9-c13-source-shape": "stage9-c13-source-shape-selectors",
             "stage9-sh16-c13-evidence-boundary": "stage9-sh16-c13-evidence-boundary-selectors",
+            "stage10-w1-static-admission": "stage10-w1-static-admission-selectors",
+            "stage10-w1-hostile-stable": "stage10-w1-hostile-stable-selectors",
+            "stage10-w1-direct-mutation": "stage10-w1-direct-mutation-selectors",
+            "stage10-w1-sh25-catalog": "stage10-w1-sh25-catalog-selectors",
+            "stage10-w1-sh25-sh26-consumer": "stage10-w1-sh25-sh26-consumer-selectors",
+            "stage11-c15-source-preflight": "stage11-c15-source-preflight-selectors",
+            "stage11-sh15-diagnostic-boundary": "stage11-sh15-diagnostic-boundary-selectors",
+            "stage11-public-c15": "stage11-public-c15-selectors",
         }
         for batch, definition in selector_definitions.items():
             self.assertEqual(
@@ -149,8 +158,17 @@ class Stage3WrapperTests(unittest.TestCase):
             "stage8-c12-source-shape": "-J-Xmx512m",
             "stage8-public-c12": "-J-Xmx2g",
             "stage8-sh13-c11-domain-evidence": "-J-Xmx8g",
+            "stage8-sh14-authenticated-layout": "-J-Xmx8g",
             "stage9-c13-source-shape": "-J-Xmx512m",
             "stage9-sh16-c13-evidence-boundary": "-J-Xmx8g",
+            "stage10-w1-static-admission": "-J-Xmx2g",
+            "stage10-w1-hostile-stable": "-J-Xmx3g",
+            "stage10-w1-direct-mutation": "-J-Xmx3g",
+            "stage10-w1-sh25-catalog": "-J-Xmx8g",
+            "stage10-w1-sh25-sh26-consumer": "-J-Xmx8g",
+            "stage11-c15-source-preflight": "-J-Xmx512m",
+            "stage11-sh15-diagnostic-boundary": "-J-Xmx8g",
+            "stage11-public-c15": "-J-Xmx2g",
             "c10-authority": "-J-Xmx8g",
             "c11-authority": "-J-Xmx8g",
         }
@@ -203,7 +221,10 @@ class Stage3WrapperTests(unittest.TestCase):
         self.assertEqual(2, len(c11_shape))
         self.assertEqual(2, len(set(c11_shape)))
         self.assertEqual(
-            {"stage7-c11-shape-preflight": "stage7-c11-source-preflight"},
+            {
+                "stage7-c11-shape-preflight": "stage7-c11-source-preflight",
+                "stage10-w1-direct-mutation": "stage10-w1-hostile-stable",
+            },
             dict(stage3.EXECUTION_PROFILE_BATCH_OWNERS),
         )
         c11_adapter = list(
@@ -234,6 +255,11 @@ class Stage3WrapperTests(unittest.TestCase):
         self.assertEqual(6, len(c12_adapter))
         self.assertEqual(6, len(set(c12_adapter)))
         self.assertTrue(c12_adapter[-1].endswith("/sh13-c11-domain-evidence-path-neutral-provenance"))
+        sh14_layout = stage3._FIXED_BATCH_SELECTORS["stage8-sh14-authenticated-layout"]
+        self.assertEqual(5, len(sh14_layout))
+        self.assertEqual(5, len(set(sh14_layout)))
+        self.assertTrue(sh14_layout[0].endswith("/sh14-authenticated-layout-source-parses-before-compilation"))
+        self.assertTrue(sh14_layout[-1].endswith("/sh14-authenticated-layout-identity-is-path-neutral-with-separate-provenance"))
         self.assertEqual(
             (
                 "gravity.bootstrap-test/public-check-accepts-gravity-authored-c12-domain-ir-architecture",
@@ -263,6 +289,40 @@ class Stage3WrapperTests(unittest.TestCase):
             c13_boundary[-1].endswith(
                 "/sh16-c13-evidence-boundary-separates-top-level-provenance"
             )
+        )
+        static = stage3._FIXED_BATCH_SELECTORS["stage10-w1-static-admission"]
+        stable = stage3._FIXED_BATCH_SELECTORS["stage10-w1-hostile-stable"]
+        direct = stage3._FIXED_BATCH_SELECTORS["stage10-w1-direct-mutation"]
+        catalog = stage3._FIXED_BATCH_SELECTORS["stage10-w1-sh25-catalog"]
+        consumer = stage3._FIXED_BATCH_SELECTORS["stage10-w1-sh25-sh26-consumer"]
+        self.assertEqual(22, len(static))
+        self.assertEqual(22, len(set(static)))
+        self.assertTrue(static[0].endswith("source-parses-and-control-form-arities-are-exact"))
+        self.assertEqual(stable[:1], direct)
+        self.assertEqual(2, len(stable))
+        self.assertTrue(stable[-1].endswith("context-replay-fail-closed"))
+        self.assertEqual(1, len(catalog))
+        self.assertTrue(catalog[0].endswith("current-authoritative-inventory"))
+        self.assertEqual(3, len(consumer))
+        self.assertEqual(3, len(set(consumer)))
+        self.assertFalse(any("current-authoritative-inventory" in item for item in consumer))
+        c15_shape = stage3._FIXED_BATCH_SELECTORS["stage11-c15-source-preflight"]
+        c15_boundary = stage3._FIXED_BATCH_SELECTORS[
+            "stage11-sh15-diagnostic-boundary"
+        ]
+        self.assertEqual(2, len(c15_shape))
+        self.assertEqual(2, len(set(c15_shape)))
+        self.assertTrue(c15_shape[0].endswith("source-shape-and-control"))
+        self.assertTrue(c15_shape[1].endswith("source-identity"))
+        self.assertEqual(5, len(c15_boundary))
+        self.assertEqual(5, len(set(c15_boundary)))
+        self.assertTrue(c15_boundary[0].endswith("source-surface-and-policy"))
+        self.assertTrue(c15_boundary[-1].endswith("identity-is-path-neutral"))
+        self.assertEqual(
+            (
+                "gravity.bootstrap-test/public-check-accepts-gravity-authored-c15-compiler-diagnostics",
+            ),
+            stage3._FIXED_BATCH_SELECTORS["stage11-public-c15"],
         )
 
     def test_retired_singleton_batch_ids_are_rejected(self) -> None:

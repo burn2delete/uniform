@@ -511,26 +511,30 @@ attestation exists; calibration and adapter receipts remain non-authoritative.
 
 Stage8 owns the current C12 source through a bounded non-authoritative graph:
 
-`stage8-c12-source-shape` -> `stage8-sh13-c11-domain-evidence`
+`stage8-c12-source-shape` -> `stage8-sh13-c11-domain-evidence` ->
+`stage8-sh14-authenticated-layout`
 
 and source -> `stage8-public-c12`. The source node uses 512 MiB and runs only
 the source-only control-form and export-definition checks. The SH13 node keeps
 six exact selectors in one 8 GiB JVM so its namespace-local C12 plan and
 prepared evidence carrier are reused; its mutation and provenance checks retain
-an exact fail-fast skipped tail. The public sibling uses 2 GiB and one exact
+an exact fail-fast skipped tail. The SH14 node uses one 8 GiB JVM for its exact
+five source-ordered selectors. The public sibling uses 2 GiB and one exact
 C12 compatibility selector. Every node is fresh, exclusive, capacity one,
 command-owned on `/private/tmp/gravity-sh07-heavy.lock`, and reports
 `authority: none`.
 
-The current C12 source is 140,951 bytes with SHA
-`sha256:6d56e7a0484be3abdf395ef41d5ecae85c47f090c263c08010f08ce82a8348d9`.
-C12 changes select the four cheap unit prerequisites and exactly these three
-Stage8 nodes, not legacy Stage0 or proof work. The two Stage8 test namespaces
+The current C12 source is 162,404 bytes with SHA
+`sha256:827610557f96b2e54e5b89c675f44f7110e3c2658bebef4aafba981abfec9233`.
+C12 changes select the four cheap unit prerequisites, these four Stage8 nodes,
+and the two downstream Stage9 evidence nodes described below, but not legacy
+Stage0 or proof work. The three Stage8 test namespaces
 remain declared inputs but are excluded from Stage1's broad test glob. There
 is deliberately no C12 proof candidate or authority route in this graph. A
 fresh combined Stage8 closure on the final tool/input composition is still
-required; earlier source and six-selector semantic runs are planning evidence,
-not current admission, proof, attestation, or release evidence.
+required. The separate SH14 R3 5/304 receipt is non-authoritative and not
+source-bound; it is not current admission, proof, attestation, or release
+evidence.
 
 ## Fixed Stage9 C13 evidence boundary
 
@@ -555,6 +559,61 @@ Prior direct commands measured the shape checks at 2 tests/41 assertions in
 in 60.797 seconds with peak RSS 1,602,322,432 bytes. These are historical
 non-authoritative planning measurements, not current wrapper receipts. The
 composed graph still requires a fresh receipt-bearing run.
+
+## Fixed Stage10 W1 lowering admission
+
+Stage10 is a non-authoritative development boundary for the frozen
+C13-to-C14/B1-B4 lowering slice. `stage10-w1-static-admission` uses a 2 GiB JVM
+and runs the source-only C14 parse/control-form check first, then the exact
+source and plan pins, the complete six-test continuity catalog, and the
+complete seven-test target-hardening catalog. It branches to the automatic
+3 GiB direct carrier-mutation discriminator. An independent 8 GiB SH25 catalog
+node owns the full Gravity-source inventory, and an independent 8 GiB
+SH25/SH26 fixture consumer runs the remaining three selectors.
+
+The catalog node declares the SH25 ownership map, the complete
+`bootstrap/gravity/src/**/*.gravity` catalog that its selector hashes, the SH19
+runtime member, the SH25 engine and accepted fixture, and the SH25 test source.
+Because that selector loads the SH25 test namespace, its catalog receipt also
+binds the transitively loaded SH26 and authenticated-envelope test sources.
+The fixture consumer separately declares both SH25 fixture pairs, the exercised
+SH26 engine/accepted pair, and the authenticated-envelope source and all three
+test sources. Those are receipt inputs, not incidental namespace loads;
+raw C15 source drift selects the catalog and fails closed on its stale tuple.
+An accepted C15 revision refreshes the SH25 engine and accepted Gravity/QST
+pair and runs the SH25/SH26 consumer once; it does not avoid that consumer.
+
+The packet-substitution matrix is deliberately absent from ordinary change
+impact. Explicit stable-candidate selection runs `stage10-w1-hostile-stable`:
+direct mutation first and packet substitution second in the same JVM, with
+fail-fast and one cache entry, so the namespace-local C14 plan and prepared
+carrier are not rebuilt between the two checks. All production nodes are
+fresh, no-resume, exclusive, capacity one, command-owned on the canonical
+heavy lock, and declare `authority: none`. Existing timings are planning
+measurements for the frozen W1 implementation; the new wrapper/manifest
+identity still requires a focused receipt before current admission is claimed.
+
+## Fixed Stage11 C15 diagnostics boundary
+
+Stage11 begins with a 512 MiB source-only C15 preflight over one bounded,
+nofollow, strict-UTF8 snapshot. It checks control-form arity, exports, and the
+exact frozen source identity without compiling C15. From that gate the graph
+branches independently to the 8 GiB five-selector SH15 semantic batch and the
+2 GiB existing public C15 selector. Their timeouts are 600 and 900 seconds;
+all three nodes are fresh, no-resume, capacity-one users of the canonical
+command-owned lock with `authority: none`.
+
+The source helper establishes one bounded coherent snapshot; adversarial
+same-size swap/restore detection belongs to the combined node and supervising
+wrapper's transient-mutation boundary, not to the helper alone.
+
+The semantic receipt binds exactly C8-C12 plus C15 and SH09-SH15; C7 and SH08
+are not direct inputs. The public node keeps its bootstrap, CLI, and diagnostics
+tests as executable inputs while excluding unrelated edits to those broad
+files from Stage11 impact. The older deep C15 coverage namespace is excluded
+from broad owners and remains unmatched and fail-closed until its census is
+refreshed and a future manual deep node owns it. There is no Stage11 proof,
+authority, self-hosting, release, or seed-retirement claim.
 
 ## Selection and execution flow
 

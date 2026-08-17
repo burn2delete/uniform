@@ -190,6 +190,49 @@ class FullLanguageCoverageOutputIsolationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "outside repository root"):
             coverage.logical_output_path(Path("/outside/matrix.json"))
 
+    def test_document_path_matching_is_checkout_path_neutral(self) -> None:
+        inventory = coverage.read_inventory()
+        cases = {
+            "PKG9": "bootstrap/clojure/fixtures/accepted/namespace-module.gravity",
+            "GOV5": "target/phase-18/release/gravity",
+        }
+        by_id = {entry["id"]: entry for entry in inventory}
+        for document_id, relative in cases.items():
+            outcomes = []
+            for checkout_name in (
+                "uniform",
+                "gravity-python-semantic-support-compose",
+                "private-target-support-worktree",
+            ):
+                with tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory) / checkout_name
+                    candidate = root / relative
+                    with mock.patch.object(coverage, "ROOT", root):
+                        outcomes.append(
+                            (
+                                coverage.document_matches(
+                                    by_id[document_id], candidate
+                                ),
+                                coverage.matching_paths(
+                                    by_id[document_id], [candidate]
+                                ),
+                            )
+                        )
+            self.assertEqual(
+                [(False, []), (False, []), (False, [])], outcomes, document_id
+            )
+
+    def test_document_path_matching_rejects_paths_outside_repository(self) -> None:
+        entry = next(
+            item for item in coverage.read_inventory() if item["id"] == "GOV5"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "checkout"
+            outside = Path(directory) / "target-support" / "artifact.json"
+            with mock.patch.object(coverage, "ROOT", root):
+                with self.assertRaises(ValueError):
+                    coverage.document_matches(entry, outside)
+
 
 if __name__ == "__main__":
     unittest.main()

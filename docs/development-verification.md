@@ -1025,20 +1025,24 @@ node. `stage8-c12-source-shape` uses a 512 MiB JVM for exactly two source-only
 checks: control-form shape and export-definition completeness. It branches to
 `stage8-sh13-c11-domain-evidence`, which runs six exact selectors in one 8 GiB
 JVM, and `stage8-public-c12`, which runs one exact public compatibility selector
-in a 2 GiB JVM. Keeping the six SH13 selectors together preserves namespace-
-local C12 plan affinity and exact fail-fast skipped-tail reporting.
+in a 2 GiB JVM. A fourth node, `stage8-sh14-authenticated-layout`, depends on
+both the shape and SH13 nodes and runs its exact five selectors in source order
+in one 8 GiB JVM. Keeping each semantic selector family together preserves
+namespace-local plan affinity and exact fail-fast skipped-tail reporting.
 
-The bound C12 source is 140,951 bytes with SHA
-`sha256:6d56e7a0484be3abdf395ef41d5ecae85c47f090c263c08010f08ce82a8348d9`.
+The bound C12 source is 162,404 bytes with SHA
+`sha256:827610557f96b2e54e5b89c675f44f7110e3c2658bebef4aafba981abfec9233`.
 Every production node is fresh, exclusive, capacity one, command-owned on the
 canonical heavy lock, and declares `authority: none`. C12 source changes select
-only the four cheap unit prerequisites plus the three Stage8 nodes. The C12
-source is excluded exactly once from all seven legacy broad Stage0 owners, and
-the two Stage8 test files are excluded from the broad Stage1 test glob while
+the four cheap unit prerequisites, the four Stage8 nodes, and the two
+downstream Stage9 evidence nodes described below. The C12 source is excluded
+exactly once from all seven legacy broad Stage0 owners, and
+the three Stage8 test files are excluded from the broad Stage1 test glob while
 remaining exact declared inputs. No current Stage8 authority, proof candidate,
-reviewed attestation, or release evidence is claimed. The exact three-node
-closure must be rerun after final composition; earlier C12/SH13 runs are only
-historical non-authoritative planning evidence.
+reviewed attestation, or release evidence is claimed. The exact four-node
+closure must be rerun after final composition. The separate SH14 R3 result
+(5 tests/304 assertions) is non-authoritative and its receipt did not bind the
+source snapshot, so it is runtime calibration rather than graph admission.
 
 ### 13. Fixed Stage9 C13 evidence boundary
 
@@ -1070,7 +1074,64 @@ evidence namespace at 4 tests and 69 assertions in 60.797 seconds with peak RSS
 current wrapper receipts. A receipt-bearing run on the final composed tool and
 input identity is still required.
 
-### 14. Full release gate
+### 14. Fixed Stage10 W1 lowering admission
+
+The Stage10 W1 graph replaces broad Stage0 fallback for C14 and B1-B4 with a
+fixed, non-authoritative development boundary. The 2 GiB static node executes
+22 exact selectors, beginning with the source-only C14 parser and continuing
+through exact source/plan pins plus the complete SH17 continuity and hardening
+catalogs. The automatic C14 edit path then runs one 3 GiB direct
+carrier-mutation selector. A separate 8 GiB SH25 catalog node checks the
+complete owned Gravity-source inventory. The 8 GiB SH25/SH26 fixture consumer
+runs three selectors without forcing the hostile packet matrix.
+
+The SH25 catalog selector rereads the reviewed ownership map and every owned
+Gravity source. Raw C15 source drift selects that catalog and fails closed on
+its stale tuple. An accepted C15 revision refreshes the SH25 engine and
+accepted Gravity/QST pair and runs the SH25/SH26 consumer once. The
+catalog receipt also binds the transitively loaded SH26 and
+authenticated-envelope test sources. The fixture consumer separately binds the
+SH19 runtime member, SH25 accepted/rejected fixtures, the exercised SH26
+engine/accepted fixtures, the authenticated-envelope source, and all three test
+sources. Changes invalidate every node that actually consumes them instead of
+silently preserving an earlier receipt.
+
+`stage10-w1-hostile-stable` is manual. It owns the complete two-test carrier
+namespace and executes direct mutation before packet substitution in one JVM;
+the automatic direct node is only an execution-profile subset of that owner.
+Every production node is fresh, no-resume, exclusive, capacity one,
+command-owned on `/private/tmp/gravity-sh07-heavy.lock`, and has
+`authority: none`. Historical direct measurements (about 113 seconds for the
+mutation discriminator, about 1323 seconds for packet substitution, and about
+25 seconds for SH25/SH26) guide timeouts only. They are not current wrapper
+receipts, proof, attestation, release evidence, or a generalized speed claim.
+
+### 15. Fixed Stage11 C15 diagnostics boundary
+
+Stage11 uses a 512 MiB source-only preflight over one bounded, nofollow,
+strict-UTF8 C15 snapshot. It checks reader/control shape, export completeness,
+and the exact frozen source identity without compiling C15. The preflight then
+branches independently to an 8 GiB five-selector SH15 semantic batch with a
+600-second timeout and the existing 2 GiB public C15 selector with a 900-second
+timeout. All three nodes are automatic, fresh, no-resume, exclusive,
+capacity-one users of the canonical command-owned lock and have
+`authority: none`.
+
+The source helper alone establishes one bounded coherent snapshot. Adversarial
+same-size swap/restore detection is supplied by the combined node and
+supervising wrapper's transient-mutation boundary; it is not a helper-only
+claim.
+
+The semantic node binds exactly C8-C12 plus C15 and SH09-SH15; C7 and SH08 are
+not direct inputs. The public node retains bootstrap, CLI, and diagnostics
+tests as executable inputs but excludes unrelated edits to those broad files
+from Stage11 impact. The old deep C15 coverage namespace remains deliberately
+unmatched and fail-closed after exclusion from broad owners; it requires a
+future manual node and refreshed census. No Stage11 proof candidate, authority,
+self-hosting, release, public acceptance, or seed-retirement claim follows from
+these non-authoritative development receipts.
+
+### 16. Full release gate
 
 Run only after the candidate is stable, the selected authoritative modules
 pass, and the worktree is ready for release review. This preserves every

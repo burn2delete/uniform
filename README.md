@@ -283,19 +283,43 @@ fresh, no-resume, new-state, `automatic: false`, `authority: none`, and
 when explicitly requested. No current C11 proof candidate or reviewed
 attestation is claimed by this graph.
 
-The fixed Stage8 C12/SH13 graph replaces C12's legacy broad Stage0 fallback
-with three automatic, non-authoritative nodes. A 512 MiB two-selector source
-gate checks the moving C12 source's control-form shape and export completeness,
-then branches to an 8 GiB six-selector SH13 C11-domain evidence batch and a
-2 GiB exact public C12 compatibility selector. The semantic selectors remain
-in one namespace/JVM to reuse the C12 plan, preserve fail-fast skipped-tail
-evidence, and avoid six cold-plan launches. C12 source changes select only the
-four cheap unit prerequisites plus these three nodes; Stage8-owned test changes
-are excluded from the broad Stage1 matcher, and C12 is excluded exactly once
-from every legacy broad Stage0 owner. The current source is 140,951 bytes with
-SHA `sha256:6d56e7a0...a8348d9`. No Stage8 proof node exists, and the combined
-three-node graph has not yet been rerun on this exact tool/input composition;
-earlier C12/SH13 measurements remain non-authoritative planning evidence only.
+The fixed Stage8 C12 graph replaces C12's legacy broad Stage0 fallback with
+four automatic, non-authoritative nodes. A 512 MiB two-selector source gate
+checks the moving C12 source's control-form shape and export completeness, then
+branches to an 8 GiB six-selector SH13 C11-domain evidence batch, an 8 GiB
+five-selector SH14 authenticated-layout batch, and a 2 GiB exact public C12
+compatibility selector. Each semantic batch remains in one namespace/JVM to
+reuse its C12 plan and prepared evidence, preserve fail-fast skipped-tail
+reporting, and avoid repeated cold-plan launches. C12 source changes select the
+four cheap unit prerequisites, all four Stage8 nodes, and the two downstream
+Stage9 evidence nodes; Stage8-owned test changes are excluded from the broad
+Stage1 matcher, and C12 is excluded exactly once from every legacy broad
+Stage0 owner. The current source is 162,404 bytes with SHA
+`sha256:827610557f96b2e54e5b89c675f44f7110e3c2658bebef4aafba981abfec9233`.
+No Stage8 proof node exists, and the combined four-node graph has not yet been
+rerun on this exact tool/input composition. The separate SH14 R3 5/304 result
+remains non-authoritative, non-source-bound runtime calibration only.
+
+The fixed Stage10 W1 graph provides proportional non-authoritative admission
+for the frozen C14/B1-B4 lowering boundary. A 2 GiB static batch starts with
+the source-only C14 parser, binds the exact source/plan tuples, and runs the
+complete continuity and target-hardening catalogs. The 3 GiB direct
+carrier-mutation discriminator remains an automatic C14 branch. A separate
+8 GiB SH25 catalog node owns the complete Gravity-source inventory, while the
+8 GiB SH25/SH26 consumer keeps fixture parity and authenticated projection
+checks. The expensive packet-substitution check is retained
+only in the manual `stage10-w1-hostile-stable` batch, ordered after the direct
+mutation check so one JVM can reuse its namespace-local C14 plan and prepared
+carrier. The catalog receipt binds the SH25 ownership map and every owned
+Gravity source it hashes. The consumer receipt separately binds both SH25
+fixture pairs, the exercised SH26 fixtures, and the authenticated-envelope
+helper/source. Raw C15 source drift selects the truthful catalog and fails
+closed until the SH25 engine and accepted Gravity/QST pair carry the new tuple.
+An accepted C15 revision refreshes that pair and runs the SH25/SH26 consumer
+once; it does not avoid the consumer. All
+five production nodes are fresh, no-resume, capacity-one
+users of the canonical command-owned lock with `authority: none`; none is proof,
+attestation, release, or generalized performance evidence.
 
 Every Stage 0 manifest check explicitly sets `daemonization: forbidden`.
 Commands run in a new process group; ordinary descendants are cleaned before a

@@ -32,9 +32,13 @@
   "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 61946)
+(def ^:private expected-source-byte-count 162404)
 (def ^:private expected-source-revision-id
-  "sha256:45447d313f8cd6bf0c082e04c49f87a98cff33c9c5bcf582b968336eb27ff0e0")
+  "sha256:827610557f96b2e54e5b89c675f44f7110e3c2658bebef4aafba981abfec9233")
+;; These authenticated artifact/projection/census oracles intentionally retain
+;; the last measured values.  They remain fail-closed pending a fresh bounded
+;; authenticated measurement; the automatic Stage8 graph uses the separate
+;; source-shape and semantic nodes and does not claim these deep checks green.
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:8a57d56f28dfad5055ef0b1b3bb695dc4beed8473e0d4b212ba7a7bacc0d97ee")
 (def ^:private expected-coverage
@@ -95,9 +99,19 @@
     build-c12-semantic-anchor
     build-c12-domain-artifact
     verify-c12-domain-ir-architecture
+    sh13-c11-domain-evidence-policy
+    sh13-c11-domain-evidence-carrier-preflight
+    sh13-c11-domain-evidence-input-valid?
+    sh13-build-c11-domain-evidence-template
+    sh13-c11-domain-evidence-identity-request
+    sh13-bind-c11-domain-evidence
+    sh13-verify-c11-domain-evidence
     sh14-layout-policy
     sh14-build-layout
-    sh14-verify-layout])
+    sh14-verify-layout
+    sh14-authenticated-layout-input-valid?
+    sh14-build-authenticated-layout
+    sh14-verify-authenticated-layout])
 (def ^:private data-definition-names
   '#{c12-domain-ir-contract
      c12-domain-ir-registry-contract
@@ -138,7 +152,56 @@
      sh14-identity-generated-origin sh14-identity-origin-entry
      sh14-identity-origins-from sh14-identity-origins sh14-identity-input
      sh14-layout sh14-v3-structural-diagnostic sh14-build-layout
-     sh14-verify-layout})
+     sh14-verify-layout
+     sh13-bind-c11-domain-evidence sh13-build-c11-domain-evidence-template
+     sh13-c11-de-aggregate? sh13-c11-de-all-sha? sh13-c11-de-anchor
+     sh13-c11-de-block-valid? sh13-c11-de-bound-artifact
+     sh13-c11-de-c10-verification-checks
+     sh13-c11-de-c10-verification-nonclaims
+     sh13-c11-de-c11-candidate-nonclaims sh13-c11-de-c11-checks
+     sh13-c11-de-c11-pending sh13-c11-de-c11-verification-nonclaims
+     sh13-c11-de-candidate-envelope-valid? sh13-c11-de-candidate-keys
+     sh13-c11-de-candidate-valid? sh13-c11-de-canonical-source-span-valid?
+     sh13-c11-de-capability-entry-valid?
+     sh13-c11-de-capability-proof-entry-valid? sh13-c11-de-carrier-rejection
+     sh13-c11-de-checks sh13-c11-de-children sh13-c11-de-effect-entry-valid?
+     sh13-c11-de-exact-keys? sh13-c11-de-first-map-key
+     sh13-c11-de-function-facts-valid? sh13-c11-de-function-valid?
+     sh13-c11-de-hosted-source-span-valid? sh13-c11-de-identity-projection
+     sh13-c11-de-identity-resolution-valid? sh13-c11-de-lowercase-hex?
+     sh13-c11-de-member? sh13-c11-de-mir-source-valid?
+     sh13-c11-de-module-input-keys sh13-c11-de-nonclaims
+     sh13-c11-de-operation-facts-valid? sh13-c11-de-operation-input-keys
+     sh13-c11-de-operation-source-values-valid?
+     sh13-c11-de-operation-upstream-values-valid? sh13-c11-de-operation-valid?
+     sh13-c11-de-ownership-entry-valid? sh13-c11-de-pre-c11-upstream-ids
+     sh13-c11-de-profile-target-valid? sh13-c11-de-proof-entry-valid?
+     sh13-c11-de-push-children sh13-c11-de-resolution-entry-valid?
+     sh13-c11-de-resolution-valid? sh13-c11-de-safety-entry-valid?
+     sh13-c11-de-semantic-input sh13-c11-de-sha256-id?
+     sh13-c11-de-source-map-valid? sh13-c11-de-source-span-valid?
+     sh13-c11-de-source-valid? sh13-c11-de-tables-valid?
+     sh13-c11-de-template-valid? sh13-c11-de-terminator-valid?
+     sh13-c11-de-token-valid? sh13-c11-de-type-entry-valid?
+     sh13-c11-de-upstream-ids sh13-c11-de-verification-envelope
+     sh13-c11-de-verification-envelope-map sh13-c11-de-verification-members
+     sh13-c11-de-verification-metadata-valid?
+     sh13-c11-de-verification-rejection sh13-c11-de-verification-valid?
+     sh13-c11-de-walk sh13-c11-domain-evidence-carrier-preflight
+     sh13-c11-domain-evidence-identity-request
+     sh13-c11-domain-evidence-input-valid? sh13-c11-domain-evidence-policy
+     sh13-verify-c11-domain-evidence
+     sh14-auth-layout-anchor-identity sh14-auth-layout-diagnostic
+     sh14-auth-layout-diagnostic-keys sh14-auth-layout-domain-evidence-valid?
+     sh14-auth-layout-identity-input sh14-auth-layout-logical-origin-chain
+     sh14-auth-layout-logical-source-span sh14-auth-layout-missing-fact
+     sh14-auth-layout-nonclaims sh14-auth-layout-offsets
+     sh14-auth-layout-offsets-from sh14-auth-layout-operation-fact-tuple
+     sh14-auth-layout-pending sh14-auth-layout-rejection
+     sh14-auth-layout-request-error sh14-auth-layout-request-keys
+     sh14-auth-layout-request-members-error sh14-auth-layout-result-keys
+     sh14-auth-layout-tuple-error sh14-authenticated-layout-input-valid?
+     sh14-build-authenticated-layout sh14-verify-authenticated-layout})
 (def ^:private expected-definition-names
   (set/union data-definition-names quoted-definition-names
              executable-definition-names))
@@ -451,7 +514,7 @@
                name))
         policy (nth (get definitions 'sh14-layout-policy) 3)
         if-calls (mapcat #(collect-calls 'if %) (vals definitions))]
-    (is (= 86 (count forms)))
+    (is (= 179 (count forms)))
     (is (= 'gravity.compiler.c12-domain-ir-architecture
            (second namespace-form)))
     (is (= :meta (:profile namespace-clauses)))
@@ -491,18 +554,18 @@
            (:lineage metadata)))
     (is (= expected-definition-names (set (keys definitions))))
     (is (= 9 (count (filter #(= 'def (first %)) (vals definitions)))))
-    (is (= 76 (count (filter #(= 'defn (first %)) (vals definitions)))))
+    (is (= 169 (count (filter #(= 'defn (first %)) (vals definitions)))))
     (is (= quoted-definition-names
            (set (for [[name form] definitions :when (quoted-body form)] name))))
     (is (= executable-definition-names executable))
-    (is (= 72 (count executable)))
+    (is (= 165 (count executable)))
     (doseq [[name expected-hash] expected-contract-value-hashes]
       (is (= expected-hash
              (value-sha256-id (nth (get definitions name) 2)))))
     (is (= expected-diagnostic-catalog
            (nth (get definitions 'c12-domain-ir-diagnostic-catalog) 2)))
     (is (= expected-policy policy))
-    (is (= 325 (count if-calls)))
+    (is (= 773 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path c12-relative-path)))))
@@ -530,15 +593,17 @@
         verifier (get definitions 'sh14-verify-layout)
         identity-input-form (get definitions 'sh14-identity-input)
         sha-shape (get definitions 'sh14-v2-sha256-id?)]
-    (is (= 254 (count get-calls)))
-    (is (= 209 (count literal-gets)))
-    (is (= 45 (count dynamic-gets)))
-    (is (= [418 425 567 582 588 594 595 612 613 614 641 651
-            658 658 659 659 660 660 661 661 662 662 663 663 664 664
-            743 810 833 896 929 939 957 967 973 979 980 997 998 999
-            1108 1169 1170 1199 1457]
+    (is (= 903 (count get-calls)))
+    (is (= 837 (count literal-gets)))
+    (is (= 66 (count dynamic-gets)))
+    (is (= [487 820 1424 1427 1432 1513 1515 1517 1525 1526 1527
+            1529 1530 1541 1564 1597 1624 1628 1684 1700 1724 2209
+            2216 2358 2373 2379 2385 2386 2403 2404 2405 2432 2442
+            2449 2449 2450 2450 2451 2451 2452 2452 2453 2453 2454
+            2454 2455 2455 2534 2601 2624 2687 2720 2730 2748 2758
+            2764 2770 2771 2788 2789 2790 2899 2960 2961 2990 3248]
            (mapv #(-> % meta :line) dynamic-gets)))
-    (is (= '(get values value) (first dynamic-gets)))
+    (is (= '(get value (first remaining)) (first dynamic-gets)))
     (is (= '(get origins index) (last dynamic-gets)))
     (is (= 5 (count request-key-sets)))
     (is (every? #(contains? % :safety-fact-id) request-key-sets))

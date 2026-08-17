@@ -112,6 +112,18 @@ STAGE0_COORDINATOR_INTEGRATION_RESERVATIONS = [
         ],
     },
     {
+        "id": "p15-public-native-admission-negative-only",
+        "owner": "master-coordinator",
+        "authority_ceiling": "none",
+        "ordinary_component": False,
+        "focused_check_id": "stage0-coordinator-integration-reservations",
+        "paths": [
+            "bootstrap/clojure/src/gravity/p15_public_native_admission.clj",
+            "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj",
+            "contracts/p15-public-native-admission-v1.edn",
+        ],
+    },
+    {
         "id": "project-structure-runner-integration",
         "owner": "master-coordinator",
         "authority_ceiling": "none",
@@ -888,27 +900,28 @@ def _component_file_dependencies(
 
 def parse_normative_ownership(
     path: Path = NORMATIVE_OWNERSHIP,
-) -> tuple[list[str], list[str], list[str], dict[str, str], list[str]]:
+) -> tuple[list[str], list[str], list[str], list[str], dict[str, str], list[str]]:
     """Project only coordinator ownership facts from the normative EDN.
 
     This is deliberately not a permissive EDN parser.  The parity contract
     depends on simple, stable vector shapes for coordinator routing, generated
-    evidence, and integration surfaces, plus a string-to-keyword map under
-    ``:module-owners``. Any missing marker, duplicate marker, non-ASCII input,
-    or token outside those shapes is an error rather than a best-effort parse.
+    evidence, integration surfaces, and Python semantic-support prefixes, plus
+    a string-to-keyword map under ``:module-owners``. Any missing marker,
+    duplicate marker, non-ASCII input, or token outside those shapes is an
+    error rather than a best-effort parse.
     """
 
     errors: list[str] = []
     try:
         raw = path.read_bytes()
     except OSError as exc:
-        return [], [], [], {}, [f"cannot read normative ownership EDN {path}: {exc}"]
+        return [], [], [], [], {}, [f"cannot read normative ownership EDN {path}: {exc}"]
     if len(raw) > MAX_OWNERSHIP_EDN_BYTES:
-        return [], [], [], {}, [f"normative ownership EDN exceeds {MAX_OWNERSHIP_EDN_BYTES} bytes"]
+        return [], [], [], [], {}, [f"normative ownership EDN exceeds {MAX_OWNERSHIP_EDN_BYTES} bytes"]
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError as exc:
-        return [], [], [], {}, [f"normative ownership EDN is not UTF-8: {exc}"]
+        return [], [], [], [], {}, [f"normative ownership EDN is not UTF-8: {exc}"]
     try:
         text.encode("ascii")
     except UnicodeEncodeError:
@@ -933,12 +946,12 @@ def parse_normative_ownership(
     if len(module_matches) != 1:
         errors.append("normative ownership EDN must contain exactly one :module-owners map")
     if errors:
-        return [], [], [], {}, errors
+        return [], [], [], [], {}, errors
 
     coordinator_start = coordinator_matches[0].end()
     module_start = module_matches[0].start()
     if module_start <= coordinator_start:
-        return [], [], [], {}, ["normative ownership EDN coordinator/module owner order is unrecognized"]
+        return [], [], [], [], {}, ["normative ownership EDN coordinator/module owner order is unrecognized"]
     coordinator_section = text[coordinator_start:module_start]
     central_routing = _extract_normative_string_vector(
         coordinator_section, "central-routing", errors
@@ -949,11 +962,21 @@ def parse_normative_ownership(
     integration_surfaces = _extract_normative_string_vector(
         coordinator_section, "integration-surfaces", errors
     )
+    python_semantic_support_prefixes = _extract_normative_string_vector(
+        coordinator_section, "python-semantic-support-prefixes", errors
+    )
 
     reserved_matches = list(re.finditer(r":reserved-leaf-modules\s*\{", text))
     if len(reserved_matches) != 1 or reserved_matches[0].start() <= module_matches[0].end():
         errors.append("normative ownership EDN must delimit :module-owners before :reserved-leaf-modules")
-        return central_routing, generated_evidence_prefixes, integration_surfaces, {}, errors
+        return (
+            central_routing,
+            generated_evidence_prefixes,
+            integration_surfaces,
+            python_semantic_support_prefixes,
+            {},
+            errors,
+        )
     module_section = text[module_matches[0].end() : reserved_matches[0].start()]
     entry_re = re.compile(r'"([^"\\]*(?:\\.[^"\\]*)*)"\s+:([A-Za-z0-9_-]+)')
     entries = list(entry_re.finditer(module_section))
@@ -966,7 +989,14 @@ def parse_normative_ownership(
     remainder = entry_re.sub("", module_section).replace("}", "")
     if not entries or re.search(r"[^\s]", remainder):
         errors.append("normative ownership EDN :module-owners map contains unrecognized structure")
-    return central_routing, generated_evidence_prefixes, integration_surfaces, module_owners, errors
+    return (
+        central_routing,
+        generated_evidence_prefixes,
+        integration_surfaces,
+        python_semantic_support_prefixes,
+        module_owners,
+        errors,
+    )
 
 
 def _extract_edn_delimited_section(
@@ -1563,7 +1593,9 @@ def _path_pattern_matches(pattern: str, path: str) -> bool:
 
 
 def _validate_normative_ownership_parity(
-    manifest: Mapping[str, Any], errors: list[str]
+    manifest: Mapping[str, Any],
+    errors: list[str],
+    ownership_path: Path = NORMATIVE_OWNERSHIP,
 ) -> None:
     """Ensure coordinator paths in the normative EDN have the same owner here."""
 
@@ -1571,9 +1603,10 @@ def _validate_normative_ownership_parity(
         central_routing,
         generated_evidence_prefixes,
         integration_surfaces,
+        python_semantic_support_prefixes,
         module_owners,
         parse_errors,
-    ) = parse_normative_ownership()
+    ) = parse_normative_ownership(ownership_path)
     for parse_error in parse_errors:
         _add_error(errors, "normative ownership parity", parse_error)
     if parse_errors:
@@ -1632,6 +1665,18 @@ def _validate_normative_ownership_parity(
                 "kind": "generated",
                 "editable": False,
                 "review_required": True,
+            },
+        ),
+        (
+            PYTHON_SEMANTIC_SUPPORT_POLICY_ID,
+            python_semantic_support_prefixes,
+            {
+                "owner": "master-coordinator",
+                "kind": "reviewed",
+                "editable": True,
+                "review_required": True,
+                "reviewer": "master-coordinator",
+                "allow_overlap": False,
             },
         ),
     ):

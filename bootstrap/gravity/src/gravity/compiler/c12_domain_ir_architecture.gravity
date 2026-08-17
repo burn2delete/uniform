@@ -24,7 +24,10 @@
              sh13-verify-c11-domain-evidence
              sh14-layout-policy
              sh14-build-layout
-             sh14-verify-layout])
+             sh14-verify-layout
+             sh14-authenticated-layout-input-valid?
+             sh14-build-authenticated-layout
+             sh14-verify-authenticated-layout])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -3393,3 +3396,453 @@
              :diagnostic-id "C12-VERIFY"
              :rule "C12-VERIFY"
              :reason :layout-result-substitution}]})))))
+
+; SH-14a authenticates one bounded fixed-slot layout against the genuine SH12
+; prepared C11 carrier and the SH13 domain-evidence binding.  It computes a
+; descriptive layout artifact only; allocation, ABI, pointer, lifetime,
+; backend, runtime, executable, proof, authority, self-hosting, release, and
+; seed-retirement claims remain outside this slice.
+
+(defn sh14-auth-layout-nonclaims []
+  [:physical-allocation
+   :target-abi
+   :pointer-semantics
+   :lifetime-semantics
+   :backend-lowering
+   :runtime-execution
+   :executable-artifact
+   :compiler-authority
+   :proof-certificate
+   :trusted-digest-resolution
+   :independent-canonical-digest-verification
+   :c11-mir-verifier
+   :self-hosting
+   :release
+   :seed-retirement])
+
+(defn sh14-auth-layout-pending []
+  [:trusted-digest-resolution
+   :independent-canonical-digest-verification
+   :c11-mir-verifier
+   :physical-allocation
+   :target-abi
+   :pointer-and-lifetime-layouts
+   :backend-lowering
+   :runtime-execution
+   :executable-load
+   :semantic-authority
+   :proof-certificate
+   :self-hosting
+   :release
+   :seed-retirement])
+
+(defn sh14-auth-layout-result-keys []
+  #{:artifact :schema-version :status :layout :facts :semantic-anchor
+    :profile :target :target-independent? :executable-load?
+    :lowering-status :semantic-authority :identity-binding-status
+    :identity-input :provenance :diagnostics :pending :nonclaims})
+
+(defn sh14-auth-layout-diagnostic-keys []
+  #{:diagnostic-id :rule :family :reason :missing-fact :stage :domain
+    :artifact-id :semantic-anchor :owner-document :verifier :value-id
+    :kind :profile :target :source-span :generated-origin-chain
+    :remediation})
+
+(defn sh14-auth-layout-request-keys []
+  #{:artifact :schema-version :c11-mir :c11-verification
+    :domain-evidence :layout-request
+    :facts :semantic-anchor :profile :target :provenance})
+
+(defn sh14-auth-layout-offsets-from
+  [slot-count element-size alignment index offsets]
+  (if (= index slot-count)
+    offsets
+    (sh14-auth-layout-offsets-from
+     slot-count element-size alignment (+ index 1)
+     (conj offsets
+           (sh14-v2-aligned-size (* index element-size) alignment)))))
+
+(defn sh14-auth-layout-offsets [slot-count element-size alignment]
+  (sh14-auth-layout-offsets-from
+   slot-count element-size alignment 0 []))
+
+(defn sh14-auth-layout-anchor-identity [anchor]
+  {:artifact (get anchor :artifact)
+   :anchor-id (get anchor :anchor-id)
+   :domain (get anchor :domain)
+   :typed-core (get anchor :typed-core)
+   :mir-ops (get anchor :mir-ops)
+   :equivalence-proof (get anchor :equivalence-proof)
+   :fallback (get anchor :fallback)})
+
+(defn sh14-auth-layout-domain-evidence-valid?
+  [candidate verification evidence]
+  (let [template
+        (sh13-build-c11-domain-evidence-template candidate verification)
+        resolution (get evidence :identity-resolution)
+        result
+        (sh13-verify-c11-domain-evidence
+         candidate verification template resolution evidence)]
+    (= :passed (get result :status))))
+
+(defn sh14-auth-layout-operation-fact-tuple [candidate]
+  (let [facts (get (get candidate :operation) :facts)]
+    [(get facts :type-fact-id)
+     (get facts :effect-fact-id)
+     (get facts :ownership-fact-id)
+     (get facts :safety-outcome-id)]))
+
+(defn sh14-auth-layout-logical-source-span [candidate]
+  (let [c11-span
+        (get (get (get candidate :operation) :source) :source-span)
+        start-byte (get c11-span :start-byte)
+        end-byte (get c11-span :end-byte)]
+    {:source-id :authenticated-c11-mir
+     :actual-source-path "gravity-logical://authenticated-c11-mir"
+     :start {:byte start-byte :line 1 :column 1}
+     :end {:byte end-byte :line 1 :column 1}}))
+
+(defn sh14-auth-layout-logical-origin-chain [candidate]
+  [{:kind :source
+    :source-id :authenticated-c11-mir
+    :actual-source-path "gravity-logical://authenticated-c11-mir"}])
+
+(defn sh14-auth-layout-tuple-error [layout-request]
+  (if (sh14-v3-exact-keys?
+       layout-request (sh14-v3-request-keys :tuple))
+    (if (= :gravity/sh14-data-layout-request
+           (get layout-request :artifact))
+      (if (sh14-v3-canonical-identifier? (get layout-request :value-id))
+        (if (sh14-v3-source-span-valid? (get layout-request :source-span))
+          (if (sh14-v3-origin-chain-valid? (get layout-request :origin-chain))
+            (if (sh14-v2-sha256-id? (get layout-request :type-fact-id))
+              (if (sh14-v2-sha256-id? (get layout-request :effect-fact-id))
+                (if (sh14-v2-sha256-id?
+                     (get layout-request :ownership-fact-id))
+                  (if (sh14-v2-sha256-id?
+                       (get layout-request :safety-fact-id))
+                    (let [shape-error (sh14-v2-shape-error layout-request)]
+                      (if (= nil shape-error)
+                        (let [bounds-error
+                              (sh14-v2-bounds-error layout-request)]
+                          (if (= nil bounds-error)
+                            (if (sh14-allocation-valid? layout-request)
+                              (sh14-v2-size-error layout-request)
+                              :allocation-regime)
+                            bounds-error))
+                        shape-error))
+                    :invalid-safety-fact)
+                  :invalid-ownership-fact)
+                :invalid-effect-fact)
+              :invalid-type-fact)
+            :invalid-origin-chain)
+          :invalid-source-span)
+        :invalid-value-id)
+      :layout-request-artifact)
+    :layout-request-schema))
+
+(defn sh14-auth-layout-request-members-error [request]
+  (if (map? request)
+    (if (sh13-c11-de-exact-keys?
+         request (sh14-auth-layout-request-keys))
+      (let [metadata
+            {:artifact (get request :artifact)
+             :schema-version (get request :schema-version)
+             :profile (get request :profile)
+             :target (get request :target)}
+            metadata-preflight (sh13-c11-de-walk metadata)
+            facts-preflight (sh13-c11-de-walk (get request :facts))
+            anchor-preflight
+            (sh13-c11-de-walk (get request :semantic-anchor))
+            provenance-preflight
+            (sh13-c11-de-walk (get request :provenance))]
+        (if (= :accepted (get metadata-preflight :status))
+          (if (= :accepted (get facts-preflight :status))
+            (if (= :accepted (get anchor-preflight :status))
+              (if (= :accepted (get provenance-preflight :status))
+                nil
+                :request-member-carrier-rejected)
+              :request-member-carrier-rejected)
+            :request-member-carrier-rejected)
+          :request-member-carrier-rejected))
+      :request-schema-mismatch)
+    :request-schema-mismatch))
+
+(defn sh14-auth-layout-request-error [request]
+  (let [members-error (sh14-auth-layout-request-members-error request)]
+    (if (= nil members-error)
+      (if (sh13-c11-de-exact-keys?
+           request (sh14-auth-layout-request-keys))
+        (if (= :gravity/sh14-authenticated-layout-request
+               (get request :artifact))
+          (if (= 1 (get request :schema-version))
+            (let [candidate (get request :c11-mir)
+                  verification (get request :c11-verification)
+                  evidence (get request :domain-evidence)
+                  candidate-preflight (sh13-c11-de-walk candidate)
+                  verification-preflight
+                  (sh13-c11-de-verification-envelope verification)
+                  evidence-preflight (sh13-c11-de-walk evidence)
+                  layout-request (get request :layout-request)
+                  layout-preflight (sh13-c11-de-walk layout-request)]
+              (if (= :accepted (get candidate-preflight :status))
+                (if (= :accepted (get verification-preflight :status))
+                  (if (= :accepted (get evidence-preflight :status))
+                    (if (= :accepted (get layout-preflight :status))
+                    (if (sh13-c11-domain-evidence-input-valid?
+                         candidate verification)
+                      (if (sh14-auth-layout-domain-evidence-valid?
+                           candidate verification evidence)
+                        (if (= (get evidence :facts) (get request :facts))
+                          (if (= (get evidence :semantic-anchor)
+                                 (get request :semantic-anchor))
+                            (if (= (get (get evidence :identity-input) :profile)
+                                   (get request :profile))
+                              (if (= (get (get evidence :identity-input) :target)
+                                     (get request :target))
+                                (if (= (get evidence :provenance)
+                                       (get request :provenance))
+                                  (if (= :authenticated-fixed-slots
+                                         (get layout-request :value-id))
+                                  (if (= :static
+                                         (get layout-request :allocation-regime))
+                                  (if (= (get request :profile)
+                                         (get layout-request :profile))
+                                  (if (= (get request :target)
+                                         (get layout-request :target))
+                                  (if (= (sh14-auth-layout-logical-source-span
+                                          candidate)
+                                         (get layout-request :source-span))
+                                  (if (= (sh14-auth-layout-logical-origin-chain
+                                          candidate)
+                                         (get layout-request :origin-chain))
+                                  (if (= :tuple (get layout-request :kind))
+                                    (if (= 8 (get layout-request :element-size))
+                                      (if (= 8 (get layout-request :alignment))
+                                        (let [layout-error
+                                              (sh14-auth-layout-tuple-error
+                                               layout-request)
+                                              slot-count
+                                              (get layout-request :length)
+                                              operation-facts
+                                              (get (get candidate :operation)
+                                                   :facts)]
+                                          (if (= 4 slot-count)
+                                          (if (= 4 (get layout-request :capacity))
+                                          (if (= 4 (count (get layout-request :payload)))
+                                          (if (= nil layout-error)
+                                            (if (= (get operation-facts :type-fact-id)
+                                                   (get layout-request :type-fact-id))
+                                              (if (= (get operation-facts :effect-fact-id)
+                                                     (get layout-request :effect-fact-id))
+                                                (if (= (get operation-facts :ownership-fact-id)
+                                                       (get layout-request :ownership-fact-id))
+                                                  (if (= (get operation-facts :safety-outcome-id)
+                                                         (get layout-request :safety-fact-id))
+                                                    (if (= (sh14-auth-layout-operation-fact-tuple
+                                                            candidate)
+                                                           (get layout-request :payload))
+                                                      nil
+                                                      :layout-fact-substitution)
+                                                    :layout-safety-fact-substitution)
+                                                  :layout-ownership-fact-substitution)
+                                                :layout-effect-fact-substitution)
+                                              :layout-type-fact-substitution)
+                                            layout-error)
+                                          :layout-fact-count-not-four)
+                                          :layout-capacity-not-four)
+                                          :layout-length-not-four))
+                                        :alignment-not-eight)
+                                      :element-size-not-eight)
+                                    :layout-kind-not-tuple)
+                                  :layout-origin-substitution)
+                                  :layout-source-span-substitution)
+                                  :layout-target-substitution)
+                                  :layout-profile-substitution)
+                                  :allocation-regime-not-static)
+                                  :layout-value-id-substitution)
+                                  :provenance-substitution)
+                                :target-substitution)
+                              :profile-substitution)
+                            :semantic-anchor-substitution)
+                          :facts-substitution)
+                        :domain-evidence-rejected)
+                      :c11-input-rejected)
+                    :layout-request-carrier-rejected)
+                    :domain-evidence-carrier-rejected)
+                  :c11-verification-carrier-rejected)
+                :c11-carrier-rejected))
+            :schema-version-mismatch)
+          :artifact-mismatch)
+        :request-schema-mismatch)
+      members-error)))
+
+(defn sh14-authenticated-layout-input-valid? [request]
+  (= nil (sh14-auth-layout-request-error request)))
+
+(defn sh14-auth-layout-identity-input [request offsets raw-size aligned-size]
+  {:domain :gravity/sh14-authenticated-layout-v1
+   :schema-version 1
+   :domain-evidence-identity-input
+   (get (get request :domain-evidence) :identity-input)
+   :semantic-anchor
+   (sh14-auth-layout-anchor-identity (get request :semantic-anchor))
+   :facts (get request :facts)
+   :layout-fact-tuple (get (get request :layout-request) :payload)
+   :layout-request (sh14-identity-input (get request :layout-request))
+   :profile (get request :profile)
+   :target (get request :target)
+   :target-independent? true
+   :executable-load? false
+   :lowering-status :rejected
+   :semantic-authority :none
+   :identity-binding-status :unbound
+   :pending (sh14-auth-layout-pending)
+   :nonclaims (sh14-auth-layout-nonclaims)
+   :layout {:layout-model :fixed-slot-v1
+            :physical-layout? false
+            :slot-count (get (get request :layout-request) :length)
+            :element-size-bytes (get (get request :layout-request) :element-size)
+            :alignment-bytes (get (get request :layout-request) :alignment)
+            :logical-byte-offsets offsets
+            :raw-size-bytes raw-size
+            :logical-size-bytes aligned-size}})
+
+(defn sh14-auth-layout-missing-fact [reason]
+  (if (contains?
+       #{:layout-type-fact-substitution :layout-effect-fact-substitution
+         :layout-ownership-fact-substitution :layout-safety-fact-substitution
+         :layout-fact-substitution
+         :layout-fact-count-not-four :layout-capacity-not-four
+         :layout-length-not-four}
+       reason)
+    :authenticated-operation-fact-tuple
+    (if (= reason :candidate-substitution)
+      :canonical-authenticated-layout
+      :authenticated-layout-contract)))
+
+(defn sh14-auth-layout-diagnostic [request reason]
+  (let [layout-request (get request :layout-request)
+        evidence (get request :domain-evidence)
+        anchor (get request :semantic-anchor)
+        artifact-id (get evidence :artifact-id)
+        anchor-id (get anchor :anchor-id)
+        value-id (get layout-request :value-id)
+        kind (get layout-request :kind)
+        profile (get request :profile)
+        target (get request :target)
+        source-span (get layout-request :source-span)
+        origin-chain (get layout-request :origin-chain)]
+    {:diagnostic-id "S7-LAYOUT"
+     :rule "S7-LAYOUT"
+     :family :logical-data-layout
+     :reason reason
+     :missing-fact (sh14-auth-layout-missing-fact reason)
+     :stage :domain-ir-layout
+     :domain :compiler-data-layout
+     :artifact-id
+     (if (sh14-v2-sha256-id? artifact-id) artifact-id nil)
+     :semantic-anchor
+     (if (string? anchor-id)
+       (if (<= (count anchor-id) 512) anchor-id nil)
+       nil)
+     :owner-document "C12"
+     :verifier
+     :gravity.compiler.c12-domain-ir-architecture/sh14-verify-authenticated-layout
+     :value-id
+     (if (sh14-v3-canonical-identifier? value-id) value-id nil)
+     :kind (if (sh14-v3-canonical-identifier? kind) kind nil)
+     :profile (if (sh14-v3-canonical-identifier? profile) profile nil)
+     :target (if (sh14-v3-canonical-identifier? target) target nil)
+     :source-span
+     (if (sh14-v3-source-span-valid? source-span) source-span nil)
+     :generated-origin-chain
+     (if (sh14-v3-origin-chain-valid? origin-chain) origin-chain [])
+     :remediation :supply-exact-authenticated-four-fact-fixed-slot-layout}))
+
+(defn sh14-auth-layout-rejection [request reason pending]
+  {:artifact :gravity/sh14-authenticated-layout
+   :schema-version 1
+   :status :rejected
+   :diagnostics [(sh14-auth-layout-diagnostic request reason)]
+   :pending pending})
+
+(defn sh14-build-authenticated-layout [request]
+  (let [error (sh14-auth-layout-request-error request)]
+    (if (= nil error)
+      (let [layout-request (get request :layout-request)
+            slot-count (get layout-request :length)
+            element-size (get layout-request :element-size)
+            alignment (get layout-request :alignment)
+            raw-size (* slot-count element-size)
+            aligned-size
+            (sh14-v2-aligned-size raw-size alignment)
+            offsets
+            (sh14-auth-layout-offsets slot-count element-size alignment)]
+        {:artifact :gravity/sh14-authenticated-layout
+         :schema-version 1
+         :status :accepted
+         :layout {:layout-model :fixed-slot-v1
+                  :physical-layout? false
+                  :slot-count slot-count
+                  :element-size-bytes element-size
+                  :alignment-bytes alignment
+                  :logical-byte-offsets offsets
+                  :raw-size-bytes raw-size
+                  :logical-size-bytes aligned-size}
+         :facts (get request :facts)
+         :semantic-anchor (get request :semantic-anchor)
+         :profile (get request :profile)
+         :target (get request :target)
+         :target-independent? true
+         :executable-load? false
+         :lowering-status :rejected
+         :semantic-authority :none
+         :identity-binding-status :unbound
+         :identity-input
+         (sh14-auth-layout-identity-input
+          request offsets raw-size aligned-size)
+         :provenance (get request :provenance)
+         :diagnostics []
+         :pending (sh14-auth-layout-pending)
+         :nonclaims (sh14-auth-layout-nonclaims)})
+      (sh14-auth-layout-rejection
+       request error [:valid-authenticated-layout-request]))))
+
+(defn sh14-verify-authenticated-layout [request candidate]
+  (let [request-error (sh14-auth-layout-request-error request)
+        candidate-preflight (sh13-c11-de-walk candidate)]
+    (if (= nil request-error)
+      (if (= :accepted (get candidate-preflight :status))
+        (let [expected (sh14-build-authenticated-layout request)]
+          (if (= :accepted (get expected :status))
+            (if (sh13-c11-de-exact-keys?
+                 candidate (sh14-auth-layout-result-keys))
+            (if (= expected candidate)
+              {:artifact :gravity/sh14-authenticated-layout-verification
+               :schema-version 1
+               :status :passed
+               :expected expected
+               :candidate candidate
+               :nonclaims (sh14-auth-layout-nonclaims)}
+              (assoc (sh14-auth-layout-rejection
+                      request :candidate-substitution
+                      [:matching-canonical-layout])
+                     :artifact
+                     :gravity/sh14-authenticated-layout-verification))
+            (assoc (sh14-auth-layout-rejection
+                    request :candidate-schema-mismatch
+                    [:exact-candidate-schema])
+                   :artifact
+                   :gravity/sh14-authenticated-layout-verification))
+            {:artifact :gravity/sh14-authenticated-layout-verification
+             :schema-version 1
+             :status :rejected
+             :diagnostics (get expected :diagnostics)
+             :pending [:valid-authenticated-layout-request]}))
+        (assoc (sh14-auth-layout-rejection
+                request :candidate-carrier-rejected [:bounded-candidate])
+               :artifact :gravity/sh14-authenticated-layout-verification))
+      (assoc (sh14-auth-layout-rejection
+              request request-error [:valid-authenticated-layout-request])
+             :artifact :gravity/sh14-authenticated-layout-verification))))

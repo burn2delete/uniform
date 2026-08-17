@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the reviewed Stage 3--9 fixed verification boundary.
+"""Run the reviewed Stage 3--11 fixed verification boundary.
 
 The development verifier deliberately treats this file as the only command
 that may own the SH-07 heavy lock.  The command is intentionally boring: its
@@ -12,7 +12,12 @@ C11 source, cache-affine SH12 adapter, and public C11 batches.  Stage8 exposes
 a moving-source C12 shape gate, a cache-affine SH13 C11-domain evidence batch,
 and the exact C12 public compatibility check; it deliberately exposes no C12
 proof candidate.  Stage9 exposes the evidence-only C13 boundary over that
-prepared C12 carrier and likewise exposes no proof candidate.  The Stage7
+prepared C12 carrier and likewise exposes no proof candidate.  Stage10 exposes
+the fixed W1/C14 static, direct-mutation, SH25/SH26 consumer, and manual hostile
+stable-candidate batches; its packet-substitution matrix is never automatic.
+Stage11 exposes a bounded C15 source preflight and independent SH15 semantic
+and public C15 branches; it exposes no deep-census or proof candidate.
+The Stage7
 shape profile is an execution alias of the
 complete source profile and does not add catalog ownership.  A public/pure batch
 acquires the canonical SH-07 lease and runs one of the reviewed Clojure
@@ -120,8 +125,17 @@ FIXED_BATCHES = (
     "stage8-c12-source-shape",
     "stage8-public-c12",
     "stage8-sh13-c11-domain-evidence",
+    "stage8-sh14-authenticated-layout",
     "stage9-c13-source-shape",
     "stage9-sh16-c13-evidence-boundary",
+    "stage10-w1-static-admission",
+    "stage10-w1-hostile-stable",
+    "stage10-w1-direct-mutation",
+    "stage10-w1-sh25-catalog",
+    "stage10-w1-sh25-sh26-consumer",
+    "stage11-c15-source-preflight",
+    "stage11-sh15-diagnostic-boundary",
+    "stage11-public-c15",
     "authority",
     "c8-authority",
     "c9-authority",
@@ -167,8 +181,17 @@ _BATCH_HEAP = {
     "stage8-c12-source-shape": "-J-Xmx512m",
     "stage8-public-c12": "-J-Xmx2g",
     "stage8-sh13-c11-domain-evidence": "-J-Xmx8g",
+    "stage8-sh14-authenticated-layout": "-J-Xmx8g",
     "stage9-c13-source-shape": "-J-Xmx512m",
     "stage9-sh16-c13-evidence-boundary": "-J-Xmx8g",
+    "stage10-w1-static-admission": "-J-Xmx2g",
+    "stage10-w1-hostile-stable": "-J-Xmx3g",
+    "stage10-w1-direct-mutation": "-J-Xmx3g",
+    "stage10-w1-sh25-catalog": "-J-Xmx8g",
+    "stage10-w1-sh25-sh26-consumer": "-J-Xmx8g",
+    "stage11-c15-source-preflight": "-J-Xmx512m",
+    "stage11-sh15-diagnostic-boundary": "-J-Xmx8g",
+    "stage11-public-c15": "-J-Xmx2g",
     "c10-authority": "-J-Xmx8g",
     "c11-authority": "-J-Xmx8g",
 }
@@ -335,6 +358,13 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
         "gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-hostile-carriers-and-recomputation",
         "gravity.self-hosting.sh13-c11-domain-evidence-adapter-test/sh13-c11-domain-evidence-path-neutral-provenance",
     ),
+    "stage8-sh14-authenticated-layout": (
+        "gravity.self-hosting.sh14-authenticated-layout-test/sh14-authenticated-layout-source-parses-before-compilation",
+        "gravity.self-hosting.sh14-authenticated-layout-test/sh14-authenticated-layout-surface-arity-and-nonclaims",
+        "gravity.self-hosting.sh14-authenticated-layout-test/sh14-authenticated-layout-genuine-positive-computes-logical-offsets",
+        "gravity.self-hosting.sh14-authenticated-layout-test/sh14-authenticated-layout-rejects-mutations-and-hostile-carriers",
+        "gravity.self-hosting.sh14-authenticated-layout-test/sh14-authenticated-layout-identity-is-path-neutral-with-separate-provenance",
+    ),
     "stage9-c13-source-shape": (
         "gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test/sh07-c13-mir-optimization-source-shape-and-control",
         "gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test/sh07-c13-mir-optimization-export-completeness",
@@ -345,6 +375,59 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
         "gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-rejects-substitution-and-hostile-carriers",
         "gravity.self-hosting.sh16-c12-domain-evidence-boundary-test/sh16-c13-evidence-boundary-separates-top-level-provenance",
     ),
+    "stage11-c15-source-preflight": (
+        "gravity.self-hosting.sh07-c15-diagnostics-shape-preflight-test/sh07-c15-diagnostics-source-shape-and-control",
+        "gravity.self-hosting.sh07-c15-diagnostics-shape-preflight-test/sh07-c15-diagnostics-export-completeness-and-source-identity",
+    ),
+    "stage11-sh15-diagnostic-boundary": (
+        "gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-source-surface-and-policy",
+        "gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-accepts-small-genuine-derived-references",
+        "gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-preserves-real-rejection-partially",
+        "gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-rejects-schema-policy-and-hostile-inputs",
+        "gravity.self-hosting.sh15-diagnostic-boundary-test/sh15-diagnostic-boundary-identity-is-path-neutral",
+    ),
+    "stage11-public-c15": (
+        "gravity.bootstrap-test/public-check-accepts-gravity-authored-c15-compiler-diagnostics",
+    ),
+    "stage10-w1-static-admission": (
+        "gravity.self-hosting.sh07-c14-target-lowering-source-coverage-test/sh07-b34-c14-source-parses-and-control-form-arities-are-exact",
+        "gravity.self-hosting.sh07-b3-llvm-backend-source-coverage-test/sh07-b36-b3-source-contracts-and-static-shape-are-exact",
+        "gravity.self-hosting.sh07-c13-mir-optimization-source-coverage-test/sh07-b33-c13-source-contracts-policy-and-static-shape-are-exact",
+        "gravity.self-hosting.sh07-c14-target-lowering-source-coverage-test/sh07-b34-c14-source-contracts-and-static-shape-are-exact",
+        "gravity.self-hosting.sh07-b1-backend-interface-source-coverage-test/sh07-b35-b1-source-contracts-and-static-shape-are-exact",
+        "gravity.self-hosting.sh07-b2-c-backend-source-coverage-test/sh07-b38-b2-source-contracts-and-static-shape-are-exact",
+        "gravity.self-hosting.sh07-b4-wasm-backend-source-coverage-test/sh07-b37-b4-source-contracts-and-static-shape-are-exact",
+        "gravity.bootstrap-test/authenticated-c13-c14-b1-source-plans-are-pinned-and-bounded",
+        "gravity.bootstrap-test/authenticated-llvm-source-and-toolchain-records-are-pinned",
+        "gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test/sh17-linux-llvm-static-candidate-is-nonclaiming",
+        "gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test/sh17-linux-llvm-authenticated-continuity-when-enabled",
+        "gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test/sh17-hostile-targets-reject-before-tool-invocation",
+        "gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test/sh17-linux-static-tool-and-elf-hostiles",
+        "gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test/sh17-linux-tampered-complete-envelope-rejects-before-tools",
+        "gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test/sh17-linux-stage-content-tamper-rejects-after-envelope-rehash",
+        "gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-source-compiles-and-c11-revision-is-complete",
+        "gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-lowers-and-verifies-all-three-bounded-targets",
+        "gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-enforces-exact-normalized-schemas-and-references",
+        "gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-preflight-contains-hostile-depth-width-and-scalars",
+        "gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-linux-llvm-target-contract-rejects-cross-target-substitution",
+        "gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-identity-is-path-neutral-and-provenance-retains-paths",
+        "gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-verifier-rejects-result-substitution-before-comparison",
+    ),
+    "stage10-w1-hostile-stable": (
+        "gravity.self-hosting.sh17-c13-optimized-mir-carrier-test/sh17-c13-c14-carrier-mutations-fail-closed",
+        "gravity.self-hosting.sh17-c13-optimized-mir-carrier-test/sh17-full-packet-stage-substitution-and-context-replay-fail-closed",
+    ),
+    "stage10-w1-direct-mutation": (
+        "gravity.self-hosting.sh17-c13-optimized-mir-carrier-test/sh17-c13-c14-carrier-mutations-fail-closed",
+    ),
+    "stage10-w1-sh25-catalog": (
+        "gravity.self-hosting.sh25-component-build-test/sh25-catalog-covers-the-current-authoritative-inventory",
+    ),
+    "stage10-w1-sh25-sh26-consumer": (
+        "gravity.self-hosting.sh25-component-build-test/sh25-fixture-pairs-are-byte-identical",
+        "gravity.self-hosting.sh26-stage-rebuild-test/sh26-consumes-the-final-authenticated-sh25-projection",
+        "gravity.self-hosting.sh26-stage-rebuild-test/sh26-rejects-paired-sh25-alterations",
+    ),
 }
 
 # ``stage7-c11-shape-preflight`` is intentionally an execution-only alias of
@@ -352,6 +435,7 @@ _FIXED_BATCH_SELECTORS: dict[str, tuple[str, ...]] = {
 # selector overlap cannot be mistaken for a second catalog owner.
 EXECUTION_PROFILE_BATCH_OWNERS = MappingProxyType({
     "stage7-c11-shape-preflight": "stage7-c11-source-preflight",
+    "stage10-w1-direct-mutation": "stage10-w1-hostile-stable",
 })
 
 CANONICAL_LOCK = _sh07.canonical_shared_lock_path(_sh07.DEFAULT_LOCK)

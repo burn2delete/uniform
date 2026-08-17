@@ -38,6 +38,8 @@
    "bootstrap/clojure/test/gravity/development_test_runner.clj"
    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
    "tools/"]
+  :python-semantic-support-prefixes
+  ["src/gravity/"]
   :host-boundary-modules
   ["bootstrap/clojure/src/gravity/cli.clj"
    "bootstrap/clojure/src/gravity/darwin_publication.clj"
@@ -63,9 +65,9 @@
    "bootstrap/clojure/test/gravity/p15_native_launcher_test.clj"
    "bootstrap/clojure/test/gravity/p15_native_plan_specialization_test.clj"
    "bootstrap/clojure/test/gravity/p15_native_runtime_driver_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj"
    "bootstrap/clojure/test/gravity/p15_public_native_run_test.clj"
    "bootstrap/clojure/test/gravity/p15_public_native_run_wrapper_test.clj"
-   "bootstrap/clojure/test/gravity/self_hosting/p15_public_native_admission_test.clj"
    "contracts/p15-public-native-admission-v1.edn"
    "bootstrap/gravity/p15_s23/native_plan_c_emitter.gravity"
    "bootstrap/clojure/fixtures/p15-native-plan-specialization/"]

@@ -133,6 +133,49 @@ class ProjectStructureValidationTests(unittest.TestCase):
             errors,
         )
 
+    def test_python_semantic_support_matches_normative_ownership_prefix(self) -> None:
+        routing, generated, surfaces, python_support, owners, errors = (
+            validator.parse_normative_ownership()
+        )
+        self.assertEqual([], errors)
+        self.assertEqual(["src/gravity/"], python_support)
+
+    def test_python_semantic_support_normative_prefix_is_required_once(self) -> None:
+        source = validator.NORMATIVE_OWNERSHIP.read_text(encoding="utf-8")
+        marker = ':python-semantic-support-prefixes\n  ["src/gravity/"]\n'
+        for replacement in ("", marker + marker):
+            with self.subTest(replacement=replacement), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "ownership.edn"
+                path.write_text(source.replace(marker, replacement, 1), encoding="utf-8")
+                *_, errors = validator.parse_normative_ownership(path)
+                self.assertTrue(
+                    any("python-semantic-support-prefixes" in error for error in errors),
+                    errors,
+                )
+
+    def test_python_semantic_support_normative_path_drift_is_rejected(self) -> None:
+        source = validator.NORMATIVE_OWNERSHIP.read_text(encoding="utf-8")
+        source = source.replace(
+            ':python-semantic-support-prefixes\n  ["src/gravity/"]',
+            ':python-semantic-support-prefixes\n  ["src/gravity-legacy/"]',
+            1,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "ownership.edn"
+            path.write_text(source, encoding="utf-8")
+            errors: list[str] = []
+            validator._validate_normative_ownership_parity(
+                self.manifest, errors, path
+            )
+        self.assertTrue(
+            any(
+                "reviewed-python-semantic-support" in error
+                and "patterns differ" in error
+                for error in errors
+            ),
+            errors,
+        )
+
     def test_stage0_component_contract_projection_is_valid(self) -> None:
         contract = validator.load_stage0_component_contract()
         errors: list[str] = []
@@ -514,10 +557,11 @@ class ProjectStructureValidationTests(unittest.TestCase):
                 ":integration-owner :master-coordinator}\n",
                 encoding="utf-8",
             )
-            routing, generated, surfaces, owners, errors = validator.parse_normative_ownership(path)
+            routing, generated, surfaces, python_support, owners, errors = validator.parse_normative_ownership(path)
         self.assertEqual([], routing)
         self.assertEqual([], generated)
         self.assertEqual([], surfaces)
+        self.assertEqual([], python_support)
         self.assertEqual({}, owners)
         self.assertTrue(errors)
 

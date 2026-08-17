@@ -86,8 +86,8 @@ EXPECTED_EXCLUDED_PATTERNS = [
     "tools/tests/**",
     "tools/output_publication.py",
     "tools/validate_gravity_toolchain.py",
-    "tools/validate_w1_executable_carrier_interface.py",
     "tools/validate_artifact_census.py",
+    "tools/validate_w1_executable_carrier_interface.py",
 ]
 EXACT_OUTPUT_POLICY_PROFILES = {
     "generated-evidence": {
