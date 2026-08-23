@@ -56,13 +56,64 @@
       "disposition": "Rejected; a new active candidate now requires an architecture decision."
     },
     {
+      "id": "a1-canonical-schema-candidate-v1",
+      "title": "A1 bounded canonical schema candidate version 1",
+      "invariant_family": "seed-retirement/a1-canonical-schema",
+      "owner": "seed-retirement",
+      "author": "seed-retirement",
+      "state": "integration-eligible",
+      "dependencies": [],
+      "architecture_decision": "docs/artifacts/phase-15/reports/a1-canonical-schema-invariant-architecture-decision.md",
+      "base_commit": "bf7535bf66f681fb0f76e4016338f352ee58c325",
+      "candidate_commit": "def733f3fbb641b49bc9495d58c4be24580b8eff",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/fixtures/self-hosting/a1-canonical-schema/accepted.edn",
+        "bootstrap/clojure/fixtures/self-hosting/a1-canonical-schema/rejected.edn",
+        "bootstrap/clojure/src/gravity/self_hosting/a1_canonical_schema.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/a1_canonical_schema_test.clj",
+        "docs/artifacts/phase-15/bootstrap/a1-canonical-schema-candidate-v1.edn",
+        "docs/artifacts/phase-15/reports/a1-canonical-schema-candidate-v1-report.md",
+        "docs/artifacts/phase-15/reports/a1-canonical-schema-invariant-architecture-decision.md"
+      ],
+      "governing_contracts": ["D1", "D3", "D8", "D9", "BOOT8"],
+      "evidence": {
+        "accepted_fixtures": ["bootstrap/clojure/fixtures/self-hosting/a1-canonical-schema/accepted.edn"],
+        "rejected_fixtures": ["bootstrap/clojure/fixtures/self-hosting/a1-canonical-schema/rejected.edn"],
+        "stable_diagnostics": ["OK", "E-ID-TYPE", "E-ID-SYNTAX", "E-UNKNOWN-ID", "E-TYPE", "E-KEYSET", "E-CYCLE", "E-SCHEMA", "E-BOUND", "E-HOST"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.a1-canonical-schema-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base bf7535bf66f681fb0f76e4016338f352ee58c325 --candidate-commit def733f3fbb641b49bc9495d58c4be24580b8eff --candidate-tree bd665801b1edde1c128ef3ce413315a2f7675bf3", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [
+        {"reviewer": "independent-a1-read-only-review", "kind": "independent", "result": "accepted"}
+      ],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary seed and execution boundary",
+        "A1 is not a compiler stage; BOOT5 and BOOT7 stage advancement remains forbidden",
+        "A2, A3, Stage B, Stage C, and G1 through G6 remain held"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-23T21:52:10Z", "actor": "seed-retirement", "reason": "register the bounded A1 candidate under the accepted architecture decision"},
+        {"state": "frozen", "at": "2026-08-23T21:52:11Z", "actor": "seed-retirement", "reason": "freeze source, tests, fixtures, decision, report, and provenance tuple"},
+        {"state": "review-pending", "at": "2026-08-23T21:52:12Z", "actor": "seed-retirement", "reason": "request independent review of the exact frozen tuple"},
+        {"state": "accepted", "at": "2026-08-23T21:52:13Z", "actor": "independent-a1-read-only-review", "reason": "accept the exact A1 tuple with no remaining blockers"},
+        {"state": "integration-eligible", "at": "2026-08-23T21:52:14Z", "actor": "uniform-coordinator", "reason": "exact Git identities, clean worktree, evidence, review, boundaries, and nonclaims verified"}
+      ],
+      "disposition": "Eligible to integrate only the exact A1 candidate; all downstream gates remain held."
+    },
+    {
       "id": "gravity-closure-g1",
       "title": "G1 backend closure",
       "invariant_family": "seed-retirement/downstream-g1",
       "owner": "gravity-closure",
       "author": "gravity-closure",
       "state": "held",
-      "dependencies": ["a1-schema-lineage-v2"],
+      "dependencies": ["a1-canonical-schema-candidate-v1"],
       "architecture_decision": "",
       "base_commit": null,
       "candidate_commit": null,
@@ -71,10 +122,10 @@
       "governing_contracts": ["D1", "D2", "D9"],
       "evidence": {"accepted_fixtures": [], "rejected_fixtures": [], "stable_diagnostics": [], "validation_commands": []},
       "reviews": [],
-      "residual_host_boundaries": ["executable validation substrate is not accepted"],
+      "residual_host_boundaries": ["post-A1 sequencing and downstream scope are not authorized"],
       "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
       "history": [{"state": "draft", "at": "2026-08-20T06:00:00Z", "actor": "gravity-closure", "reason": "record downstream slice"}, {"state": "held", "at": "2026-08-20T07:00:00Z", "actor": "uniform-coordinator", "reason": "park behind rejected executable substrate"}],
-      "disposition": "Held until the canonical executable validation substrate is independently accepted."
+      "disposition": "Held pending an explicit post-A1 sequencing decision; A1 integration alone grants no G1 authority."
     },
     {
       "id": "gravity-closure-g2",
