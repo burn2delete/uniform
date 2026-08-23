@@ -147,26 +147,37 @@
     },
     {
       "id": "p15-sr-a2-contract-candidate-v1",
-      "title": "P15-SR-A2 contract-definition candidate version 1",
+      "title": "P15-SR-A2 unresolved contract-definition candidate version 1",
       "invariant_family": "seed-retirement/p15-sr-a2-contract",
       "owner": "seed-retirement",
       "author": "seed-retirement",
-      "state": "draft",
+      "state": "held",
       "dependencies": ["a1-canonical-schema-candidate-v1"],
-      "architecture_decision": "docs/artifacts/phase-15/reports/p15-sr-post-a1-sequencing-decision.md",
-      "base_commit": null,
+      "architecture_decision": "docs/artifacts/phase-15/reports/p15-sr-a2-unresolved-question-record.md",
+      "base_commit": "a56dfb4f4c151849d8e7dbcbcd5503e03114e555",
       "candidate_commit": null,
       "clean_worktree": false,
-      "owned_paths": [],
+      "owned_paths": ["contracts/workstream-ledger.json", "docs/artifacts/phase-15/reports/p15-sr-a2-unresolved-question-record.md"],
       "governing_contracts": ["D1", "D2", "D3", "D8", "D9", "BOOT7", "BOOT8"],
-      "evidence": {"accepted_fixtures": [], "rejected_fixtures": [], "stable_diagnostics": ["P15-SR-SEQ001", "P15-SR-SEQ002", "P15-SR-SEQ003", "P15-SR-SEQ004", "P15-SR-SEQ006"], "validation_commands": []},
-      "reviews": [],
-      "residual_host_boundaries": ["Clojure and the JVM remain the temporary seed boundary", "stage purpose, resource limits, total failure behavior, runtime diagnostics, and fixtures are unresolved", "implementation is not authorized"],
+      "evidence": {
+        "accepted_fixtures": [],
+        "rejected_fixtures": [],
+        "stable_diagnostics": ["P15-SR-SEQ001", "P15-SR-SEQ002", "P15-SR-SEQ003", "P15-SR-SEQ004", "P15-SR-SEQ006"],
+        "validation_commands": [
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.a1-canonical-schema-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "independent-a2-unresolved-record-review", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": ["Clojure and the JVM remain the temporary seed boundary", "stage purpose, executable role, A1 handoff, result shape, total failure behavior, resource accounting, runtime diagnostics, and behavioral fixtures are unresolved", "implementation and every successor remain unauthorized"],
       "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
       "history": [
-        {"state": "draft", "at": "2026-08-23T22:14:21Z", "actor": "seed-retirement", "reason": "authorize exactly one contract-definition candidate after integrated P15-SR-A1"}
+        {"state": "draft", "at": "2026-08-23T22:14:21Z", "actor": "seed-retirement", "reason": "authorize exactly one contract-definition candidate after integrated P15-SR-A1"},
+        {"state": "held", "at": "2026-08-23T22:34:55Z", "actor": "uniform-coordinator", "reason": "repository evidence does not determine the A2 executable role, handoff, result, failure, resource, diagnostic, equality, or behavioral-fixture semantics"}
       ],
-      "disposition": "Draft contract-definition candidate only; no implementation or downstream authority."
+      "disposition": "Held under P15-SR-SEQ003; the unresolved-question record authorizes no implementation or downstream work."
     },
     {
       "id": "gravity-closure-g1",
