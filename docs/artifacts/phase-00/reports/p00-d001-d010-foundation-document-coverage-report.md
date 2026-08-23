@@ -27,67 +27,11 @@ Tasks: `P00-D001` through `P00-D010`
 
 ## Implemented Surface
 
-- Added `tools/validate_foundation_document_coverage.py`.
 - Added `docs/artifacts/phase-00/foundation-document-coverage.json`.
 - Added accepted fixture `docs/artifacts/phase-00/fixtures/foundation-document-coverage/accepted-d0-d1-coverage.json`.
 - Added rejected fixture `docs/artifacts/phase-00/fixtures/foundation-document-coverage/rejected-missing-artifacts.json`.
 
 The coverage artifact extracts accepted behavior, rejected behavior, required artifacts, diagnostics, dependencies, conformance criteria, and evidence references for D0 through D9. This covers the ten Phase 00 document-specific roadmap tasks without claiming compiler, runtime, package, performance, or self-hosting support.
-
-## Accepted Behavior
-
-Coverage command:
-
-```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_foundation_document_coverage.py docs/artifacts/phase-00/foundation-document-coverage.json
-```
-
-Output:
-
-```text
-foundation document coverage validation passed: 10 documents
-```
-
-Accepted fixture command:
-
-```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_foundation_document_coverage.py docs/artifacts/phase-00/fixtures/foundation-document-coverage/accepted-d0-d1-coverage.json --allow-subset
-```
-
-Output:
-
-```text
-foundation document coverage validation passed: 2 documents
-```
-
-## Rejected Behavior
-
-Rejected fixture command:
-
-```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_foundation_document_coverage.py docs/artifacts/phase-00/fixtures/foundation-document-coverage/rejected-missing-artifacts.json --allow-subset --expect-failure P00-DOC-MISSING-ARTIFACTS
-```
-
-Output:
-
-```text
-expected diagnostic observed: P00-DOC-MISSING-ARTIFACTS
-D0 requires non-empty required_artifacts
-```
-
-## Repository Validation
-
-Command:
-
-```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-```
-
-Output:
-
-```text
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
-```
 
 ## Residual Risks
 

@@ -30,8 +30,6 @@ Phase: 07 - Backend Architecture
 
 ## Implemented Surface
 
-- `src/gravity/backend_architecture.py`
-- `tools/validate_backend_architecture.py`
 - `docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json`
 - `docs/artifacts/phase-07/backend/backend-architecture.accepted.json`
 
@@ -71,23 +69,6 @@ The validator checks stable diagnostics for:
 - `B12-PERMISSION`
 - `B13-EVIDENCE`
 - `B14-COVERAGE`
-
-## Validation
-
-```text
-python3 tools/validate_backend_architecture.py --artifact-out docs/artifacts/phase-07/backend/backend-architecture.accepted.json
-backend architecture validation passed: 11 backend manifests, 14 rejected fixtures
-```
-
-```text
-python3 -m compileall -q src/gravity/backend_architecture.py src/gravity/backend_document_coverage.py tools/validate_backend_architecture.py tools/validate_phase07_document_coverage.py
-passed
-```
-
-```text
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
-```
 
 ## Residual Risks
 

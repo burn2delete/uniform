@@ -24,18 +24,18 @@
 (def ^:private ledger-pattern
   #"^\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*[^|]+\|\s*`(FL-P\d{2}-T\d{2})`\s*\|([^|]+)\|([^|]+)\|")
 (def ^:private command-pattern
-  #"\b(gravity|bin/gravity|clojure -M(?::gravity| tools/)|python3 tools/)[^`;|]*")
+  #"\b(gravity|bin/gravity|clojure -M(?::gravity| tools/))[^`;|]*")
 
 (def ^:private p00-required-tokens
   {"FL-P00-T00" ["public binary audit" "bin/gravity check"
                    "accepted fixture audit" "rejected fixture audit"
                    "feature-specific public diagnostics"]
-   "FL-P00-T01" ["generate_full_language_coverage_matrix.py"
+   "FL-P00-T01" ["validate_full_language_roadmap.clj"
                    "full-language-coverage-matrix.json"
                    "full-language-coverage-gaps.json" "--self-test"
-                   "--write --audit-public"]
-   "FL-P00-T02" ["validate_full_language_roadmap.py"
-                   "validate_gravity_docs.py" "--self-test" "overclaim"
+                   "coverage matrix"]
+   "FL-P00-T02" ["validate_full_language_roadmap.clj"
+                   "validate_gravity_docs.clj" "--self-test" "overclaim"
                    "reject"]})
 (def ^:private non-p00-required
   ["accepted" "rejected" "diagnostic" "artifact" "provenance"])

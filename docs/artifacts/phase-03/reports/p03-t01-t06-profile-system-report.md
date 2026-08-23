@@ -3,9 +3,6 @@
 Date: 2026-06-24
 Status: superseded historical scaffold evidence
 
-This file records an earlier Python/scaffold-oriented profile report. It is not
-current capability evidence and must not be used as the proof for `P03-T06`.
-
 Current Phase 03 capability evidence starts with:
 
 - `docs/artifacts/phase-03/reports/p03-t01-profile-manifest-report.md`

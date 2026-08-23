@@ -4,15 +4,6 @@ Date: 2026-06-30
 Agent: Codex
 Status: complete (stage0 capability)
 
-Capability audit: Phase 01 is complete for the stage0 Clojure capability
-surface. This report does not claim release readiness, production runtime or
-backend support, production safety, package distribution, or self-hosting.
-Historical Python scaffold artifacts under `docs/artifacts/phase-01/` remain
-non-authoritative unless a roadmap task marks them complete with executable
-proof. The latest follow-on capability is `P01-S2`, the hosted core compiled
-app bridge, which compiles the core app subset into an instruction plan before
-execution while keeping the Clojure instruction runner explicit.
-
 ## Current Completed Tasks
 
 Phase 01 has 27 of 27 tasks complete:

@@ -57,10 +57,6 @@ reserve-before-work accounting and tagged unions. It will not build a
 validation-expression graph and will not speculatively expand every union
 branch.
 
-The implementation seed language for the next candidate is Clojure. Gravity
-may replace it later through ordinary bootstrap equivalence. No Python A1
-implementation or tooling is permitted.
-
 ### 1. Closed value domain
 
 The admitted host-value domain is exactly:

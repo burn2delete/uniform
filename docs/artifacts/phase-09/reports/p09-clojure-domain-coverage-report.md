@@ -12,10 +12,6 @@ Tasks: P09-T01 through P09-T06 and P09-D124 through P09-D144
 - `bootstrap/clojure/fixtures/rejected/domain-*.gravity`
 - `docs/artifacts/phase-09/domain/stage0-p09-domain-coverage-proof.edn`
 
-The active completion proof is Clojure-backed. Earlier Python validators and
-JSON fixtures remain historical contract evidence, but they are not the
-capability gate for completion.
-
 ## Capability Proven
 
 `clojure -M:gravity domain-coverage bootstrap/clojure/fixtures/accepted/domain-coverage.gravity`

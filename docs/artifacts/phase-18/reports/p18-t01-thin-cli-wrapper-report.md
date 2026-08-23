@@ -73,8 +73,6 @@ The P18-T01 proof records:
 `clojure -M:test` passed 239 tests and 11487 assertions with 0 failures and 0
 errors.
 
-`tools/validate_gravity_docs.py` passed with:
-
 ```text
 validation passed: 240 docs, 19 phase indexes, ASCII, no placeholders
 ```

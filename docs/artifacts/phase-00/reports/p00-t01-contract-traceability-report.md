@@ -27,67 +27,11 @@ Task: `P00-T01` - Contract traceability spine
 
 ## Implemented Surface
 
-- Added `tools/validate_contract_traceability.py`.
 - Added `docs/artifacts/phase-00/contract-traceability.json`.
 - Added accepted fixture `docs/artifacts/phase-00/fixtures/contract-traceability/accepted-minimal.json`.
 - Added rejected fixture `docs/artifacts/phase-00/fixtures/contract-traceability/rejected-missing-diagnostic.json`.
 
 The traceability artifact maps D0 through D9 foundation requirements to downstream documents, diagnostics, artifacts, and release gates M0 through M8. The validator enforces source document coverage, stable diagnostic IDs, D3 terminology boundaries, release gate coverage, and non-empty downstream, diagnostic, artifact, and gate links for each trace entry.
-
-## Accepted Behavior
-
-Command:
-
-```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_contract_traceability.py docs/artifacts/phase-00/contract-traceability.json
-```
-
-Output:
-
-```text
-contract traceability validation passed: 10 source docs, 26 trace links, 9 release gates
-```
-
-Accepted fixture command:
-
-```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_contract_traceability.py docs/artifacts/phase-00/fixtures/contract-traceability/accepted-minimal.json --allow-subset
-```
-
-Output:
-
-```text
-contract traceability validation passed: 1 source docs, 1 trace links, 1 release gates
-```
-
-## Rejected Behavior
-
-Rejected fixture command:
-
-```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_contract_traceability.py docs/artifacts/phase-00/fixtures/contract-traceability/rejected-missing-diagnostic.json --allow-subset --expect-failure P00-T01-MISSING-DIAGNOSTIC
-```
-
-Output:
-
-```text
-expected diagnostic observed: P00-T01-MISSING-DIAGNOSTIC
-D0-FIXTURE-TRACE-MISSING-DIAGNOSTIC requires non-empty diagnostics
-```
-
-## Repository Validation
-
-Command:
-
-```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-```
-
-Output:
-
-```text
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
-```
 
 ## Residual Risks
 

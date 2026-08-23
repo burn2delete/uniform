@@ -5,15 +5,6 @@ Phase: 07 - Backend Architecture
 Status: complete (stage0 backend architecture capability; compiled app backend gate active)
 Progress: 21/21 tasks complete
 
-Capability audit: current executable evidence completes exactly `P07-T01`,
-`P07-T02`, `P07-T03`, `P07-T04`, `P07-T05`, `P07-T06`, `P07-D098`, and
-`P07-D099`, `P07-D100`, `P07-D101`, `P07-D102`, `P07-D103`, `P07-D104`, and
-`P07-D105`, `P07-D106`, `P07-D107`, `P07-D108`, `P07-D109`, `P07-D110`,
-`P07-D111`, and `P07-S1`.
-The older JSON/Python scaffold files under `docs/artifacts/phase-07/` are
-review context and are not completion evidence for the remaining Phase 07
-tasks.
-
 ## Governing Documents Read
 
 - `docs/phase-07-backend-architecture/README.md`
@@ -1142,11 +1133,6 @@ Ran 150 tests containing 8649 assertions.
 ```text
 clojure -M -e <phase-07 backend EDN parse>
 parsed 21 phase-07 backend EDN proof files
-```
-
-```text
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
 ```
 
 ```text

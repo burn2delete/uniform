@@ -5,17 +5,6 @@ Tasks: `P04-T01` through `P04-T06`
 Phase: 04 - Performance Model
 Status: superseded historical scaffold evidence
 
-This file records the earlier JSON/Python scaffold harness. Current executable
-stage0 evidence begins with
-`docs/artifacts/phase-04/reports/p04-t01-performance-claim-report.md`,
-`docs/artifacts/phase-04/reports/p04-t02-zero-cost-abstraction-report.md`,
-`docs/artifacts/phase-04/reports/p04-t03-specialization-report.md`,
-`docs/artifacts/phase-04/reports/p04-t04-layout-optimization-report.md`,
-`docs/artifacts/phase-04/reports/p04-t05-performance-governance-report.md`,
-`docs/artifacts/phase-04/reports/p04-t06-realtime-governance-report.md`,
-and the current Phase 04 proof report. Do not use this scaffold-era report
-alone as completion evidence.
-
 ## Governing Documents Read
 
 - `docs/phase-04-performance-model/README.md`
@@ -37,8 +26,6 @@ alone as completion evidence.
 
 ## Implemented Surface
 
-- `src/gravity/performance.py`
-- `tools/validate_performance_model.py`
 - `docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json`
 - `docs/artifacts/phase-04/performance/performance-model.accepted.json`
 
@@ -74,23 +61,6 @@ The validator checks stable diagnostics for:
 - `PERF8-LANE`
 - `PERF9-LOOP`
 - `PERF10-PROOF-MISSING`
-
-## Validation
-
-```text
-python3 tools/validate_performance_model.py --artifact-out docs/artifacts/phase-04/performance/performance-model.accepted.json
-performance validation passed: 1 claim, 1 optimization decisions, 10 rejected fixtures
-```
-
-```text
-python3 -m compileall -q src/gravity/performance.py src/gravity/performance_document_coverage.py tools/validate_performance_model.py tools/validate_phase04_document_coverage.py
-passed
-```
-
-```text
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
-```
 
 ## Residual Risks
 

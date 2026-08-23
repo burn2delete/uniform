@@ -5,12 +5,6 @@ Tasks: `P05-D069` through `P05-D079`
 Phase: 05 - Mathematical and Elementary Function System
 Status: stage0 document coverage complete
 
-This file records the earlier JSON/Python scaffold harness. Current executable
-stage0 evidence has completed `P05-D069`, `P05-D070`, `P05-D071`, `P05-D072`,
-`P05-D073`, `P05-D074`, `P05-D075`, `P05-D076`, `P05-D077`, `P05-D078`, and
-`P05-D079`. Current completion evidence is the Clojure-backed stage0 capability
-proof listed below; the historical scaffold remains review context only.
-
 ## Governing Documents Read
 
 - `docs/phase-05-mathematical-and-elementary-function-system/069-math1-numeric-tower-specification.md`
@@ -27,8 +21,6 @@ proof listed below; the historical scaffold remains review context only.
 
 ## Implemented Surface
 
-- `src/gravity/math_document_coverage.py`
-- `tools/validate_phase05_document_coverage.py`
 - `docs/artifacts/phase-05/fixtures/document-coverage/accepted-math-document-coverage.json`
 - `docs/artifacts/phase-05/document-coverage/math-document-coverage.accepted.json`
 
@@ -50,18 +42,6 @@ capability-backed Clojure artifacts:
 - `docs/artifacts/phase-05/math/stage0-math9-document-coverage-proof.edn`
 - `docs/artifacts/phase-05/math/stage0-math10-document-coverage-proof.edn`
 - `docs/artifacts/phase-05/math/stage0-math11-document-coverage-proof.edn`
-
-## Validation
-
-```text
-python3 tools/validate_phase05_document_coverage.py --artifact-out docs/artifacts/phase-05/document-coverage/math-document-coverage.accepted.json
-Phase 05 document coverage validation passed: 11 accepted artifacts, 11 rejected diagnostics
-```
-
-```text
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
-```
 
 ## Residual Risks
 

@@ -103,4 +103,3 @@ $ clojure -M:gravity stage1-reader-compiler-driver bootstrap/clojure/fixtures/ac
 
 - `docs/artifacts/phase-15/bootstrap/stage1-reader-compiler-driver-proof.edn`
 - `docs/artifacts/phase-15/reports/stage1-reader-compiler-driver-proof-report.md`
-

@@ -6,9 +6,6 @@ Phase: 11
 
 ## Current Completion Evidence
 
-Phase 11 is completed by the Clojure bootstrap. The earlier Python validators
-remain supporting historical checks, not the active completion proof.
-
 The active standalone AI/agentic command is:
 
 ```bash
@@ -75,7 +72,6 @@ contracts.
   fixtures.
 - `bootstrap/clojure/fixtures/rejected/core-app-ai-*.gravity` are the rejected
   compiled app AI/agentic fixtures.
-- The earlier Python validators remain historical/supporting contract checks.
 
 The accepted fixture proves:
 
@@ -124,16 +120,6 @@ through `run-compiled` before instruction-plan execution.
 - `docs/artifacts/phase-11/reports/phase-11-proof-report.md`
 
 ## Validation Commands
-
-```bash
-clojure -M:gravity ai-agentic bootstrap/clojure/fixtures/accepted/ai-agentic.gravity
-clojure -M:gravity hosted-core-compiled-ai bootstrap/clojure/fixtures/accepted/core-app.gravity
-clojure -M:test
-python3 tools/validate_ai_agentic.py --artifact-out docs/artifacts/phase-11/ai/ai-agentic.accepted.json
-python3 tools/validate_phase11_document_coverage.py --artifact-out docs/artifacts/phase-11/document-coverage/ai-document-coverage.accepted.json
-python3 -m compileall src/gravity/ai_agentic.py src/gravity/ai_document_coverage.py tools/validate_ai_agentic.py tools/validate_phase11_document_coverage.py
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-```
 
 Observed validation outputs:
 

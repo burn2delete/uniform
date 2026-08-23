@@ -23,9 +23,6 @@ clojure -M:gravity domain-coverage bootstrap/clojure/fixtures/accepted/domain-co
 Artifact id:
 `sha256:4bf23d9d1720695755ab715013d44deef8c27a0ae127eff05a2dcf1e2aa82e00`.
 
-The earlier Python validator and JSON fixture remain supporting contract
-evidence, not the completion gate.
-
 ## Governing Documents Read
 
 - `docs/phase-09-domain-specific-computing-coverage/IMPLEMENTATION-ROADMAP.md`
@@ -59,8 +56,6 @@ evidence, not the completion gate.
 - `bootstrap/clojure/test/gravity/bootstrap_test.clj`
 - `bootstrap/clojure/fixtures/accepted/domain-coverage.gravity`
 - `bootstrap/clojure/fixtures/rejected/domain-*.gravity`
-- `src/gravity/domain_coverage.py`
-- `tools/validate_domain_coverage.py`
 - `docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json`
 - `docs/artifacts/phase-09/domain/domain-coverage.accepted.json`
 
@@ -88,23 +83,6 @@ The validator checks 22 rejected fixtures:
 - Domain slice manifest: `docs/artifacts/phase-09/domain/domain-coverage.accepted.json`
 - Per-domain rejected fixtures: `docs/artifacts/phase-09/fixtures/domain/rejected-dom*.json`
 - Broad-claim rejected fixture: `docs/artifacts/phase-09/fixtures/domain/rejected-p09-broad-claim.json`
-
-## Validation
-
-Command:
-
-```bash
-clojure -M:test
-python3 tools/validate_domain_coverage.py --artifact-out docs/artifacts/phase-09/domain/domain-coverage.accepted.json
-```
-
-Output:
-
-```text
-Ran 109 tests containing 6907 assertions.
-0 failures, 0 errors.
-domain coverage validation passed: 21 domain records, 22 rejected fixtures
-```
 
 ## Residual Risks
 

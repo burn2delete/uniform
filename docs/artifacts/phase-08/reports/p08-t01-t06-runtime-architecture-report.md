@@ -5,9 +5,6 @@ Tasks: `P08-T01` through `P08-T06`
 Phase: 08 - Runtime Architecture
 Status: superseded historical scaffold evidence
 
-This report described the earlier Python/JSON scaffold harness. It is retained
-only as historical context and is not completion evidence for Phase 08.
-
 Current capability evidence is recorded in:
 
 - `docs/phase-08-runtime-architecture/IMPLEMENTATION-ROADMAP.md`

@@ -3,8 +3,6 @@
 Status: complete; compiled app tooling gate active
 Progress: 20/20 tasks complete
 
-Capability audit: Phase 13 is complete for the stage0 capability surface. Historical Python scaffold rows remain non-completion evidence; the current claim is backed by the Clojure `tooling-experience` and `hosted-core-compiled-tooling` commands, `.gravity` fixtures, `clojure -M:test`, and the EDN proof artifacts.
-
 ## Downstream Phase 18 Release Work
 
 Phase 13 remains complete for its stated stage0 and compiled hosted core app

@@ -1,220 +1,124 @@
-{:schema :gravity/language-boundary-v1
- :policy
- {:bootstrap-seed-tooling-language :clojure
-  :successor-languages [:gravity :uniform]
-  :python-authority :none
-  :legacy-python-policy :frozen-removal-only
-  :legacy-java-policy :frozen-removal-only
-  :legacy-shell-policy :frozen-removal-only
-  :new-non-lisp-policy :reject}
- :scan-roots ["."]
- :ignored-directory-paths [".cpcache" ".git" "target"]
- :ignored-directory-names ["__pycache__"]
- :permitted-lisp-extensions [".clj" ".cljc" ".cljs" ".gravity" ".qst"]
- :permitted-data-extensions [".edn"]
+{:scan-roots ["."],
+ :schema :gravity/language-boundary-v1,
  :programming-language-extensions
- [".py" ".pyw" ".pyi" ".pyx" ".java" ".c" ".h" ".cc" ".cpp" ".cxx" ".hpp" ".hh" ".hxx"
-  ".m" ".mm" ".swift" ".rs" ".go" ".js" ".jsx" ".ts" ".tsx" ".rb"
-  ".php" ".pl" ".pm" ".lua" ".dart" ".kt" ".kts" ".scala" ".cs"
-  ".fs" ".fsx" ".vb" ".sh" ".bash" ".zsh" ".fish" ".ps1" ".r" ".jl"
-  ".ex" ".exs" ".erl" ".hrl" ".hs" ".lhs" ".ml" ".mli" ".asm" ".s"]
+ [".py"
+  ".pyw"
+  ".pyi"
+  ".pyx"
+  ".pyc"
+  ".pyo"
+  ".java"
+  ".c"
+  ".h"
+  ".cc"
+  ".cpp"
+  ".cxx"
+  ".hpp"
+  ".hh"
+  ".hxx"
+  ".m"
+  ".mm"
+  ".swift"
+  ".rs"
+  ".go"
+  ".js"
+  ".jsx"
+  ".ts"
+  ".tsx"
+  ".rb"
+  ".php"
+  ".pl"
+  ".pm"
+  ".lua"
+  ".dart"
+  ".kt"
+  ".kts"
+  ".scala"
+  ".cs"
+  ".fs"
+  ".fsx"
+  ".vb"
+  ".sh"
+  ".bash"
+  ".zsh"
+  ".fish"
+  ".ps1"
+  ".r"
+  ".jl"
+  ".ex"
+  ".exs"
+  ".erl"
+  ".hrl"
+  ".hs"
+  ".lhs"
+  ".ml"
+  ".mli"
+  ".asm"
+  ".s"],
  :non-lisp-shebang-interpreters
- ["bash" "deno" "fish" "lua" "node" "perl" "php" "python" "python2"
-  "python3" "ruby" "sh" "swift" "zsh"]
- :legacy-python
- {:classification :frozen-removal-only-debt
-  :authority :none
-  :entries
-  [
-    ["src/gravity/__init__.py" "00bfe59c09176de5380cbc8618fe60a290570061f3ae1ed23cfc7819f623e483"]
-    ["src/gravity/ai_agentic.py" "465fd992dbde2aa68a75b6139182128fcb0f140d91557494194c472d51e861b4"]
-    ["src/gravity/ai_document_coverage.py" "b71365bb8e13d1c7ad500deb3ec4824fecb58b16cd4aac0a5705ca50a4858ab7"]
-    ["src/gravity/alternative_macros.py" "824867e8c94f79866a6f2aedafeb34393d3f23db2795335ac04a370764a099fd"]
-    ["src/gravity/alternative_memory.py" "1846651345f8cc45246a11702076881c0973148b06f7cb0dc5ff2835ba20bf5d"]
-    ["src/gravity/alternative_types.py" "7a5e1a508fea0654b753c1b43180038b25b867b5e7e2ac9209ca983024328864"]
-    ["src/gravity/backend_architecture.py" "851ef3ab2d1e0465d4faf40f5331fab33e1585c3ad813f7144b00f3a7caac0b9"]
-    ["src/gravity/backend_document_coverage.py" "fad27074e709049e51637d1b799b1aabd321f7e265a446ac7a01cb94b68e971d"]
-    ["src/gravity/bootstrap_document_coverage.py" "f4fc37fa35d08c477417158ee419f85a22baa9ebe79f0735a01fa25df4200d1b"]
-    ["src/gravity/bootstrap_self_hosting.py" "b068a011bc0cd3b4d9bde5f47ea3b5dc1e8c6bd53aa02302daae312e341cd944"]
-    ["src/gravity/capability_supply_chain.py" "b45dd7425cfaefcc6e0a7b1aa0aa086629537f7d4551b07a3ba25ee6764ed7d9"]
-    ["src/gravity/compile_time.py" "8ebdcce3f56887d3008c4cf1e3c80c27cbc09fb1b6a547dc65347f069ea93e10"]
-    ["src/gravity/compiler_architecture.py" "b0c1225c4f081ae3e9e03600d0ebda24d744a3145a8dd18945cde61fdea839e1"]
-    ["src/gravity/compiler_document_coverage.py" "dd47b3e87f1a05b5f8d474ccb84a3b59e265f1d818ab2df972f85794918bf289"]
-    ["src/gravity/conformance_document_coverage.py" "90ca418d4c8bd1d8feeb4b49998f68a323fcd4fb84dd6116a0038198e78c7e62"]
-    ["src/gravity/conformance_system.py" "1b57ae80f9decbf3f865fe4706754b809bcd2089942e224340a2ceebc3e33f7d"]
-    ["src/gravity/core.py" "37b2c1bdfb7fffd858ed01eee5e2a6660469e58bf79d20d5fa629c27ddd11b89"]
-    ["src/gravity/dispatch.py" "1f43efa8cd467c3e195e891401eb674424fb3f0b0f39416f6de16bc5bd581f34"]
-    ["src/gravity/domain_coverage.py" "374aef98da26e08464c9f13a4f9bc048b0f301b2304825a9b3b01e6a5636fa57"]
-    ["src/gravity/domain_document_coverage.py" "0373d9ee660183d19f81c44d95671a57f41c355564ac5709b8370ab3c8fb96e6"]
-    ["src/gravity/domain_safety.py" "f2e6ac92bb94c7b6bda0a9ac834e93f5d0b7829c4bad5ba010011eee0d70d5d2"]
-    ["src/gravity/errors.py" "b9d0a024fffcf2b649afac5b36ba7635a6b8fc0a9d1fcb30e601c331022b3448"]
-    ["src/gravity/extensions.py" "5a0a4a7a8fcc24c8e41e22baadec1fb7af6dd49ebb882d462540fcbfaf1dceff"]
-    ["src/gravity/facets.py" "e55befb9773279af119702c3c8d7b5be1c0f0ebbec1b25576740bdb607b52f17"]
-    ["src/gravity/governance_document_coverage.py" "bef3302b47560ee039846c66ac39f8115c624293fe0f8d53a7bfb076b2d6250a"]
-    ["src/gravity/governance_evolution.py" "43307096159b18ca73f1c50d4119f4c833a6aa6476e6c9d81f79e4e2aacf73a3"]
-    ["src/gravity/interop.py" "411b016925db6483a4671f414771e5d327629e9a195098c149459acea80156ca"]
-    ["src/gravity/macros.py" "394ee9c48bc3942b7a15476ab5abf52ef9b8046401f02763d9c20e1fba23f18f"]
-    ["src/gravity/math_document_coverage.py" "48a7fabafc9b7c535e23ec5c9753b4a8d7137c54b7c6a2cdf871cf98249d53f8"]
-    ["src/gravity/math_system.py" "8eb622ccee92a44488841d09bbec0ae08c22bcbb971379f9308c61d1e471423f"]
-    ["src/gravity/memory_safety.py" "089c5bf593d728cba61bb9e70c295e57143d53630caf80fed36603e4f41f7e9a"]
-    ["src/gravity/namespace.py" "0d30fcab6869c44a42ac1512e9218888b1a89435dcdd131985f7959a377b09e7"]
-    ["src/gravity/package_artifacts.py" "4f53e16d78f11684e5a60cf3b1563fe3dcea44d0d46beb996519e6a941f4e126"]
-    ["src/gravity/package_document_coverage.py" "eed4a86ad395f971d021ffa3ad886b5ade5a0794c73b7e615e460b403776d92d"]
-    ["src/gravity/patterns.py" "87e379259f2188a96c0b04ae07c1dd928c48fbfa0aafa4f556bc9fa6a4174752"]
-    ["src/gravity/performance.py" "03fa46c181bae702ac459a078a9e65d39cae3e1d6fd1f36cbb89f99b22d2e744"]
-    ["src/gravity/performance_document_coverage.py" "f3cab38bb89904556f7c9293aa9ca81d094c2521dc5d61dfa6a8e8e4d33ed492"]
-    ["src/gravity/profile_document_coverage.py" "4cdd9a378504b62519f0692e51348435d97ce0add0df47cd0f4f8462dce949e8"]
-    ["src/gravity/profiles.py" "689a8a73eefbe9c80ce3004a5e3c57d0566b6585271cc29c9a75f4243859a633"]
-    ["src/gravity/providers.py" "2e275c7e99598880ddc38fc24c8d61311ccedb4e4083502c260a0e08eb3ab0fc"]
-    ["src/gravity/reader.py" "662167192766d5fbe08627162f87b080a0b1c4cf717c7735fb50a5660677461d"]
-    ["src/gravity/runtime_architecture.py" "d085ba5b09165dc99ca520ddb7f640d1b46905ec551f06a5d65d05ea62e84baa"]
-    ["src/gravity/runtime_document_coverage.py" "bdb6a081d5206826c4ad2ea57fd6ab8d0655ef3b218124e40e7a5f2894c8cc01"]
-    ["src/gravity/safety.py" "45cfa09fd37871b69674ead1ac99e78422fa620d864a0139bfe9acbd546d21e4"]
-    ["src/gravity/safety_conformance.py" "ee95b67a5ff2d7f11a131b8e682788abc273887466ae85473b8287404302dcb4"]
-    ["src/gravity/safety_document_coverage.py" "f6704434bdaa29801012251a0981891ddcf6383c76d5df1b285c3d5c3bb68701"]
-    ["src/gravity/schema_document_coverage.py" "1c24fc9816cac930f31db81483054297e8c52a96abe38df6f0886d50482872b6"]
-    ["src/gravity/schema_interop.py" "97e68f816b45ffb3ca9c39911608a0aa98e2fabfcd06b02c29e736c802685725"]
-    ["src/gravity/standard_library.py" "377257e3ed9770ea54ed41ee981603eb94bea76743be24a2fdd0a313d0abd4f5"]
-    ["src/gravity/standard_library_document_coverage.py" "b01cc9d0a9f24cab7d3bfb0c3e8b59b2880fc0b36d3efbb23c3d1fbb02bc03aa"]
-    ["src/gravity/tooling_document_coverage.py" "48097ec747c05e137c0a67e13482bd8c15b4c082ec43871bbb7a65c0ae98b51e"]
-    ["src/gravity/tooling_experience.py" "98bb8942173b9f981bb0cc8347990538e80596ff0c7c4c9ca99b74505c6ec20c"]
-    ["src/gravity/typed_core.py" "781445452b678b9405326d26bbba4ad8804ae1bfc0250512243bef9f1b30507b"]
-    ["src/gravity/unsafe_audit.py" "b3686ca4e77025c2d4b114ad473e6694e010b7137c8fa5fe3c62d17c5733cf98"]
-    ["tools/compose_authoritative_evidence.py" "c9b8bf7756c2de2a68372b3e0fb9f9222b4f6456651c32e7d1bde34c4cff6825"]
-    ["tools/compose_development_receipts.py" "2976673a27af97b76d63e1139f6d6df9bd86548129d42818390f6741ce0ea11f"]
-    ["tools/enrich_remaining_docs.py" "2f31a116419c55cb871cca15a4742c1b05024f33d3a2690cf153c79800348677"]
-    ["tools/generate_full_language_coverage_matrix.py" "a76a24b3de0cc611b6a3b60664c853c1cc69e257d6d1533ecefd6df4c646f6db"]
-    ["tools/generate_gravity_docs.py" "e29a9702f8d30dca8e9a21ce45340e89696a485a197a7c498702b5e1ee2bde54"]
-    ["tools/measure_development_baseline.py" "d16e6d8c0a3f489ea2a988cc6840e1481252167ca2537e4ccec92fe6fc383b6e"]
-    ["tools/output_publication.py" "51c768e5d230657a7cb2dcccb3b403bf20ab749f4c59376ef289aa17fe0ce8a7"]
-    ["tools/process_tree_telemetry.py" "96494eef7c3f1f48170456f96b8914ba741ab2dc8ae0d53abb58c9377303fa8a"]
-    ["tools/render_project_structure.py" "3c6b33a473e45e3ec71e66bbda7ceccbfd4ea0a1c8edc5dd829e162795d329f4"]
-    ["tools/run_sh07_authoritative_modules.py" "4c48b5e549f7bf6a3462a70d8dc8948afb50a330d0bd9a401cd4a5805bf85ae6"]
-    ["tools/run_stage3_verification.py" "a99808dd34797ffbc9d325457c9c35ff1e10513abbdcfeee4f5361b69f20a859"]
-    ["tools/run_with_heartbeat.py" "b23a498ff22f7a7e46bbda810eb975a3c182759c865ed3b296275cae6c174b8b"]
-    ["tools/stage2_authority_admission.py" "1493a88f632b43971853c192da84a7154b2c9caed1e5b09ae598d51c9161df4c"]
-    ["tools/tests/test_compose_authoritative_evidence.py" "59907c6642989c1f42e21aef3f13ebde4db51d032da706b81428d2bb9d9d3d65"]
-    ["tools/tests/test_compose_development_receipts.py" "7c52be95e4b039a55ea38b13c728829a00707915ce40763bbd9741f68e8210fd"]
-    ["tools/tests/test_full_language_coverage_output_isolation.py" "339f4fef37cf07eeea450f5f805dd90bdf85c3a55cc608edea8cfc3d16a28c45"]
-    ["tools/tests/test_measure_development_baseline.py" "0ac7555d754fe11be857f3606dbc7743d01d6f211d6d084ee0d67b1fd39ea9dd"]
-    ["tools/tests/test_output_publication.py" "33b3311457016ddd97f398ba2461fa950655ac448b042405db9029eb6180b057"]
-    ["tools/tests/test_process_tree_telemetry.py" "877da33eb9317757ed521bc68cdf10e34bb32d2b4c06ef91a8dc5679af4293bc"]
-    ["tools/tests/test_render_project_structure.py" "6c57109605fb9f35f8474eec17f7316c3c6299245c640ca7db29f85f74b7a74f"]
-    ["tools/tests/test_run_sh07_authoritative_modules.py" "ad6540c08c43f773a3bfa0995c0aa3b7fa68d8d64e8500e2d2817fc63a990464"]
-    ["tools/tests/test_run_stage3_verification.py" "c01736f7a0e7d3fe63016df735837cbf009d08ca6b37f99b6663d4de528adb72"]
-    ["tools/tests/test_run_with_heartbeat.py" "5a17abe9aa64992f240073335009a163adf2de0b1b4e6382f5f1e2660de841bd"]
-    ["tools/tests/test_stage2_authority_admission.py" "636e579400447d29a98dfa5c5d3b273c66bc445a0a2ccaccd2bd15600d745de9"]
-    ["tools/tests/test_validate_artifact_census.py" "d6db6ac5902c5b7d8a59d3e9f8e3bb10eea97f218304143cd706e3498ab9619f"]
-    ["tools/tests/test_validate_evidence_producers.py" "c5a5c1f8bb5b51e746ca3952ffa79cc8a2f8498002395ba171fe66c6021248e2"]
-    ["tools/tests/test_validate_project_structure.py" "ab02baf25f56eefca56614a30825694c7d1621855f21b291ba4c44ea5bdda727"]
-    ["tools/tests/test_validate_python_tooling_contract.py" "95d8a4f7c9038ecc5fd317e21ebd305663e42c94911f267b2e385021d7686d33"]
-    ["tools/tests/test_validate_repository_hygiene.py" "a29827718d710747da3327c0dfef4c4b30a9613b7ac5acd277770d8d84d9d79e"]
-    ["tools/tests/test_validate_w1_executable_carrier_interface.py" "884b3dcf3b34a41d04e7054345a7778296a6b719b355322e38d48d460fdd6f78"]
-    ["tools/tests/test_validator_output_isolation.py" "61dd29cab49b3b6954e3a981d5a6e1f9e22f42d7c9c8fb9a7f9635b3cb46c5ef"]
-    ["tools/tests/test_verify_development.py" "a8310b698d489a0a0ee6ad7761986c745c25b96d7b435076192e8507a4edaf0b"]
-    ["tools/validate_ai_agentic.py" "59746d16b1e88c5e4fd4e83ff5393dfb8657f049b79f3ff2e1a09308bff89cab"]
-    ["tools/validate_alternative_macros.py" "d1aefd5acf08c35835c34ed6dc55e56aa35b926f2d138e036cafe6dd12a747e9"]
-    ["tools/validate_alternative_memory.py" "37dfd1c8099d359ab3568bb0e6bcd357c7da9ebf8029ac76f68ddc06a3661352"]
-    ["tools/validate_alternative_types.py" "f3c3cda972b9f9dbab4cf0ce8962a6eee9d2de519f19216efce06bcc5c355ad7"]
-    ["tools/validate_artifact_census.py" "ecd7480e3d8a8601ce8c3bc8227cd874b9d221acbda2eeff5241e6e932c996ea"]
-    ["tools/validate_backend_architecture.py" "b19664b641dd27a1399f7374238cfc946300bcd62252f031d78b17dcbcb497a0"]
-    ["tools/validate_bootstrap_self_hosting.py" "6d561d4dd8477674b99584a6ed405787209de9e2c5d5903cd6822919fbbc369e"]
-    ["tools/validate_capability_supply_chain.py" "e01a15c55c00e0fdb73892cdc14e75079320391a59010e3aedd1ccc994969ee3"]
-    ["tools/validate_change_control.py" "350859354f0904b91407c02ac9c0e7ba073488a9914f8fa07a6b013a7e0ee463"]
-    ["tools/validate_compile_time.py" "17d778289a4d8000cbf4bce8f5bea471d738899e6d58cc54c24e1a6b067836a1"]
-    ["tools/validate_compiler_architecture.py" "cd514846b3d816f703773f3b1b3423b45025365ec38a2a21a0b4d9056027f88f"]
-    ["tools/validate_conformance_system.py" "99ad2b87bac97eccf802402aa96c6259b0977feae8b10bf98baa08668a6b0704"]
-    ["tools/validate_contract_traceability.py" "b598d8ddb59ed5e47cb905fb43770da5f14d452f500477634a14f86cba3816c4"]
-    ["tools/validate_core_lowering.py" "2fa378d6b2bbeea5a9668bb4a80dc4887e34513413475fa02334753e7e0ca70d"]
-    ["tools/validate_dispatch.py" "33b3ea3658c7680412b92c7eb00d7d8b3fd314847ef2958e0b18f3e9b79eaf96"]
-    ["tools/validate_domain_coverage.py" "9c199ad641051ffda07ab7aa346b4ea8534ae4c73d6392c82a0527067bf0ee3b"]
-    ["tools/validate_domain_safety.py" "9866b713dcdc8298e7b1407e2fd6aeda57d09aae2989153401c107f9ee97d45a"]
-    ["tools/validate_error_handling.py" "999fe45a32b0d4a5124ae11df00cfb7d8f641a9593748ef6242c718e4cea76c9"]
-    ["tools/validate_evidence_producers.py" "825a55b39d310bd4fefb183dabdc0b505c24fb6550c399f58f04d39e286e4be7"]
-    ["tools/validate_extension_hooks.py" "67d2dc521da06c6c8754cd48c634195506beeb0ebf802576f164c533612d20ea"]
-    ["tools/validate_facets.py" "4df4c57d675c3451fecdb94dd3c372c7cf41241607d948348a6492eb69a79266"]
-    ["tools/validate_foundation_document_coverage.py" "4c19d8a5ba61e326ed89c950f8d2d85a341dd9f877e1cf921ffc96cf4c946e69"]
-    ["tools/validate_full_language_roadmap.py" "79c99fd1410fec16fd9ea1201d8e2a0de99ead2d1066cc5e01590b8c6c6bccdf"]
-    ["tools/validate_governance_evolution.py" "e81b0147ade804f06688e1fd0470dbc72833489a971d377377b8e5e4a990eebf"]
-    ["tools/validate_gravity_docs.py" "53106a45bd78063f8a8608cfbd965430f0de9c90621c8622c767959c18404819"]
-    ["tools/validate_gravity_toolchain.py" "1100ce7bd0c5ba529ded7035310313ceec4f7fe51edc575eafe9a8195d49a7b9"]
-    ["tools/validate_interop.py" "fcebe634317c9f99f2a9092f0c709de7ec344a330df6ab896967223c35321bb7"]
-    ["tools/validate_l10_document_coverage.py" "b08b6e5e4495b8aa33778ce4b8aef121d21086b84f22156a50bb3772f1e2492d"]
-    ["tools/validate_l11_document_coverage.py" "e1c0c5a6dc89776eda825c8a45ebfdb7b3579c856f4222223f8cce617b82e5f3"]
-    ["tools/validate_l1_document_coverage.py" "4aa09e6570c082a9bbe19b39a1eaac055f88f191d231ab72942092393e88a524"]
-    ["tools/validate_l3_document_coverage.py" "e07f9ea95453fb3f1d1a8ce2a21f95273b87baa6cbd9c2c0a6d5f32c5cd3eadf"]
-    ["tools/validate_l5_document_coverage.py" "9690cd1025de26dd2e3cbb915c98e196b3c053883c5c7cbf10f62d88dd118839"]
-    ["tools/validate_l6_document_coverage.py" "9b16402ef8467474dd8b79e209881d550b07c4801eff0fdc3c63d88b78dbdac2"]
-    ["tools/validate_macro_expander.py" "cb889ec88c1457497150a34a7516f43ce504d20c83c402b90c1f3949a52f6193"]
-    ["tools/validate_math_system.py" "3aaee4c69b5bf27d71716ae7583fa7f1d226ed2e71209b98cb3e29d619d5dadd"]
-    ["tools/validate_memory_safety.py" "0993a37ed5bb6c63b514e64ffb87b362af535685df1601d4d55a5ce2209aa7c8"]
-    ["tools/validate_milestone_evidence.py" "8c84033f9752321ab4580908c44cef8917a469d406ce055f439bb7a5c9c1ffd0"]
-    ["tools/validate_namespace_analyzer.py" "5725eb88e81687f633f3cc1d6c8a73812c0946023cb88f943d21d7e0ac94c15c"]
-    ["tools/validate_package_artifacts.py" "f25929331164a2222fb62cc6c2a43b5976c8412b3300de77918efb8b338ba129"]
-    ["tools/validate_pattern_matching.py" "b278d4afc736c5d029afc87fe236c09cbd3a0a7c3185e3b26b16e9c59b4a1be8"]
-    ["tools/validate_performance_model.py" "8072936b4b383810f83ea0de3c84c6e36bf5596fbd17f7b5037931f7692a0142"]
-    ["tools/validate_phase02_document_coverage.py" "07b3259dfd2bdc452dffa64b9266bc29d53e2101ff780dc0bcbc3a21116598bd"]
-    ["tools/validate_phase03_document_coverage.py" "3af4469c4b03a13db3e366c746369d2dcf044597203ad10f5b9c1737283da779"]
-    ["tools/validate_phase04_document_coverage.py" "bc9fa497b24d3b64d4bafeeff80361e794c32a552559636e75f29ea343236e68"]
-    ["tools/validate_phase05_document_coverage.py" "50e29db46892fc58c9f5127f221f10efa66b7040269c34615c9b7c2504c5ab02"]
-    ["tools/validate_phase06_document_coverage.py" "64b38fc150324fb3223f2e7794d4a5a26fde9567ac63b4b585cc2d317f7cd681"]
-    ["tools/validate_phase07_document_coverage.py" "b2f11abdfc27d9273de0875e1575c9ab42395b31b8f5dc530015289fe592b1b5"]
-    ["tools/validate_phase08_document_coverage.py" "2e24370bb027d44e07f7de38eb48c60999ab4b0a3edab238d9383336c5c8dc3f"]
-    ["tools/validate_phase09_document_coverage.py" "f83ea0934e221b4a44002aef53b1018283a9fa074d1b0198f8d36a3d67e76e4a"]
-    ["tools/validate_phase10_document_coverage.py" "6ff08fb538e1184dc4fafc431a1be13fd404fc548680e6701a99edf8515aa929"]
-    ["tools/validate_phase11_document_coverage.py" "6bb31210a3ce1ab1f11b5fbfdf471048055857e6b7343d0f8e4981f5d341b688"]
-    ["tools/validate_phase12_document_coverage.py" "86dd51f41446cb29fc74cc7c8f101a99144e5d3a36f9e2a9e77ce1ec403990df"]
-    ["tools/validate_phase13_document_coverage.py" "119f8d431563e7ec581e293f10ca90c2abf9fada01a146c16346d8f6b7e0b2ec"]
-    ["tools/validate_phase14_document_coverage.py" "4da07f4a5b426e76de968197c449291316ad838f32b4515faf754345c30961d6"]
-    ["tools/validate_phase15_document_coverage.py" "e111129ab70f0ff1d994c1bae8149e4305aef6d8be5661bc47419758dab38a74"]
-    ["tools/validate_phase16_document_coverage.py" "33c77d4d4be492b0c23a204d7dc14e25bd590120bdca3d6779b492cf2af90389"]
-    ["tools/validate_phase17_document_coverage.py" "15284b2d75b820ede3288666929b0619afa3b5b33427fb91769abbdbe7bd9e14"]
-    ["tools/validate_profiles.py" "5c8daa59ebb8ff3fff7156bba9d785f089c27d83de59a9d48a47e812ea3a8eb8"]
-    ["tools/validate_project_structure.py" "997b940167962d4d1d91d4b7039134ba3509ba69d52d4c900911723c7acd342b"]
-    ["tools/validate_providers.py" "6fae0dc07295835afb3f33dd67a098b96dc85a4fcb52e6dd38d3283ac13a5cae"]
-    ["tools/validate_python_tooling_contract.py" "d2b14aa76a0d3b854f55dbbaf2be54c09358199a790001e5dc4c0bbbd09ef32d"]
-    ["tools/validate_reader.py" "c5fd8e4c30730c7e1098632eb69a64e1cc70b07ebc5b9a1dcfad5c3c4cb1d223"]
-    ["tools/validate_repository_hygiene.py" "59c30da7026aa68ae02e08f6ec8b632fbde312bfd4ad85b7ade48ee862f38584"]
-    ["tools/validate_runtime_architecture.py" "3ff10fe93635f1d4eda2cf68baaf35df604ae5cc365d01f4001cbb943bcf7dd8"]
-    ["tools/validate_safety_classifier.py" "ab2570a588449a155e31a908599caa194c17689048cc3cc26d8325d5052faf3c"]
-    ["tools/validate_safety_conformance.py" "75aa43cfc3e78b9ccbb19c01ba4f758ce3ba6fc8a49dbf3324d81d891f861616"]
-    ["tools/validate_safety_performance_gates.py" "64be640034c17694627937dddcedeadd115ddab2e780ef543dd41573c73adf03"]
-    ["tools/validate_schema_interop.py" "48a483a96c1ef2139bf82880f6de0cf7026cf1b130b8437d326533230f0a9621"]
-    ["tools/validate_standard_library.py" "be3d39550876121b06a613c124363137e791d369099c54d637aad534b4fe7f64"]
-    ["tools/validate_terminology_boundaries.py" "56b5e78edc8bbf82510d87ac995109bf1718bd54b59fa5803d1d0b290590543b"]
-    ["tools/validate_tooling_experience.py" "e9dc3bd3709524afc7e4714318e1f5700d7625d3dc5615588c902dc5604c2a91"]
-    ["tools/validate_typed_core.py" "93e1723e536eeaba71889bb5b1c708b8bce122196917effc1e58c3ad9ecd2518"]
-    ["tools/validate_unsafe_audit.py" "4a4c2228afa0975631669d7612bc3cb3d3089c06a21c46a57deb7e4919665499"]
-    ["tools/validate_w1_executable_carrier_interface.py" "312d37965e9d3d69b44fbc8f6222a347328bbd25342d88cb4abb60de8746a9ce"]
-    ["tools/verify_development.py" "1352da0ee151f8ae53b565b483b88b413d8448f9d251bb3655a675f8112f1a79"]
-    ["tools/verify_p15_s23_gravity_native_runtime_provider_fragment_d.py" "7a03c137f008bb00adf5afcf463ff737bce96c0f90c93465f23f76f3aae04995"]
-  ]}
- :legacy-java
- {:classification :frozen-host-shim-debt
-  :entries
-  [
-    ["bootstrap/clojure/java/gravity/cli/Main.java" "b8a9d62a8871f1fe9dc1394900f32a565d56b027a75db4397ceaf99a259e0d99"]
-  ]}
+ ["bash"
+  "deno"
+  "fish"
+  "lua"
+  "node"
+  "perl"
+  "php"
+  "python"
+  "python2"
+  "python3"
+  "ruby"
+  "sh"
+  "swift"
+  "zsh"],
+ :permitted-data-extensions [".edn"],
+ :permitted-lisp-extensions [".clj" ".cljc" ".cljs" ".gravity" ".qst"],
  :legacy-shell
- {:classification :frozen-removal-only-shell-launcher-debt
+ {:classification :frozen-removal-only-shell-launcher-debt,
   :entries
-  [
-    ["bin/gravity" "990d1dc11079df9fa1fbc267e49153be3c00239e0659843a0cfeaec542fc00a5"]
-    ["bin/gravity-bootstrap" "97d796548093e845255dc4ffc766cf50831f5a1a1712155e3b3804e0a6b2a118"]
-  ]}
+  [["bin/gravity"
+    "990d1dc11079df9fa1fbc267e49153be3c00239e0659843a0cfeaec542fc00a5"]
+   ["bin/gravity-bootstrap"
+    "97d796548093e845255dc4ffc766cf50831f5a1a1712155e3b3804e0a6b2a118"]]},
+ :policy
+ {:bootstrap-seed-tooling-language :clojure,
+  :successor-languages [:gravity :uniform],
+  :python-authority :none,
+  :legacy-python-policy :frozen-removal-only,
+  :legacy-java-policy :frozen-removal-only,
+  :legacy-shell-policy :frozen-removal-only,
+  :new-non-lisp-policy :reject},
+ :legacy-java
+ {:classification :frozen-host-shim-debt,
+  :entries
+  [["bootstrap/clojure/java/gravity/cli/Main.java"
+    "b8a9d62a8871f1fe9dc1394900f32a565d56b027a75db4397ceaf99a259e0d99"]]},
+ :ignored-directory-paths [".cpcache" ".git" "target"],
+ :legacy-python
+ {:classification :frozen-removal-only-debt,
+  :authority :none,
+  :entries []},
  :legacy-c
- {:classification :frozen-removal-only-target-and-native-debt
+ {:classification :frozen-removal-only-target-and-native-debt,
   :entries
-  [
-    ["bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c" "c8ccfa6f72601d45a61b403d54ec38d19edba7c4f302f15f5e6e05b16ec12c1c"]
-    ["bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c" "68e3186bbec465af00f296b5f7bc017bdb7380cb8c371d4b5e215514eeb0ffb3"]
-    ["bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c" "d3c8e928a34ef6892999957d9d14e1412583e72d8d071a53b1619f2b285a2a0e"]
-    ["bootstrap/clojure/fixtures/p15-native-launcher/marker.c" "ca02c8a2cc41d927e6c289125eab19cf18e9e6215b62d5e896a523f87b04b854"]
-    ["bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c" "a2ce6be6e383098eb8c617e638a40617f07cd85d0690ea4c082e7dd11227f318"]
-    ["bootstrap/clojure/fixtures/self-hosting/sh-18/accepted/argv-arithmetic-stdout.c" "a67408972d1a466d47dd129c96248c3e90ac66a900d33a0d72cd1dfa2ff4f003"]
-    ["bootstrap/clojure/fixtures/self-hosting/sh-18/rejected/compile-error.c" "751d251ed8de8e46c0fec7c657431e083dcd7a2232ab8ba05bbdfa1ec48e2fb5"]
-    ["bootstrap/clojure/fixtures/self-hosting/sh-18/rejected/runtime-nonzero.c" "7c99e46e7f36f7efa47e3614181007fc528e84fa2034ec8be4aa7c8cd8e2328a"]
-    ["bootstrap/clojure/fixtures/self-hosting/sh-18/rejected/runtime-timeout.c" "65ec94919b4db6dde47c182bcccff3eb41e521deff07b799ccd32640fe947a75"]
-    ["bootstrap/native/p15_native_runtime_driver.c" "ba62e0f054667daa9487d1d77e071ef2929b49ea7ffbccc83daac1b10a5f0ecd"]
-    ["bootstrap/native/p15_public_native_launcher.c" "8db1b618f7a3803229f464235cf2594ee95dfbdd7586b34574fe6a381c91f1d6"]
-  ]}}
+  [["bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c"
+    "c8ccfa6f72601d45a61b403d54ec38d19edba7c4f302f15f5e6e05b16ec12c1c"]
+   ["bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c"
+    "68e3186bbec465af00f296b5f7bc017bdb7380cb8c371d4b5e215514eeb0ffb3"]
+   ["bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c"
+    "d3c8e928a34ef6892999957d9d14e1412583e72d8d071a53b1619f2b285a2a0e"]
+   ["bootstrap/clojure/fixtures/p15-native-launcher/marker.c"
+    "ca02c8a2cc41d927e6c289125eab19cf18e9e6215b62d5e896a523f87b04b854"]
+   ["bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c"
+    "a2ce6be6e383098eb8c617e638a40617f07cd85d0690ea4c082e7dd11227f318"]
+   ["bootstrap/clojure/fixtures/self-hosting/sh-18/accepted/argv-arithmetic-stdout.c"
+    "a67408972d1a466d47dd129c96248c3e90ac66a900d33a0d72cd1dfa2ff4f003"]
+   ["bootstrap/clojure/fixtures/self-hosting/sh-18/rejected/compile-error.c"
+    "751d251ed8de8e46c0fec7c657431e083dcd7a2232ab8ba05bbdfa1ec48e2fb5"]
+   ["bootstrap/clojure/fixtures/self-hosting/sh-18/rejected/runtime-nonzero.c"
+    "7c99e46e7f36f7efa47e3614181007fc528e84fa2034ec8be4aa7c8cd8e2328a"]
+   ["bootstrap/clojure/fixtures/self-hosting/sh-18/rejected/runtime-timeout.c"
+    "65ec94919b4db6dde47c182bcccff3eb41e521deff07b799ccd32640fe947a75"]
+   ["bootstrap/native/p15_native_runtime_driver.c"
+    "ba62e0f054667daa9487d1d77e071ef2929b49ea7ffbccc83daac1b10a5f0ecd"]
+   ["bootstrap/native/p15_public_native_launcher.c"
+    "8db1b618f7a3803229f464235cf2594ee95dfbdd7586b34574fe6a381c91f1d6"]]}}

@@ -2,10 +2,7 @@
 
 ## Purpose
 
-Repository verification is Clojure-first. The retired Python scheduler,
-manifest, heartbeat wrapper, and receipt composer emitted development feedback
-only and conferred no authority. The existing Clojure runners are the live
-interfaces.
+Repository verification uses the Clojure runners directly.
 
 Run commands from the repository root.
 
@@ -14,7 +11,6 @@ Run commands from the repository root.
 ```bash
 clojure -M tools/validate_gravity_docs.clj
 clojure -M tools/validate_full_language_roadmap.clj
-clojure -M tools/validate_repository_hygiene.clj
 clojure -M tools/validate_workstream_governance.clj
 clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 clojure -M:test
@@ -26,8 +22,7 @@ self-hosting, seed-retirement, performance, or safety authority.
 
 ## Focused Development Runners
 
-Use the reviewed Clojure aliases rather than reconstructing the retired Python
-orchestration layer:
+Use the reviewed Clojure aliases:
 
 ```bash
 clojure -M:sh01-test
@@ -76,12 +71,3 @@ The preflight is read-only. Integration mode requires the exact recorded base,
 candidate commit, candidate tree, named branch, and clean worktree. A passing
 development command never substitutes for independent acceptance or grants
 authority beyond the workstream ledger.
-
-## Retired Surfaces
-
-The Python development manifest and scheduler, Stage2 admission wrapper,
-heartbeat wrapper, artifact census, project-structure validator, W1 interface
-validator, coverage generator, and receipt utilities were non-authoritative
-parallel infrastructure. They were retired after live behavior was mapped to
-the Clojure runners or found redundant. Historical reports may still record
-their commands; those rows are provenance, not live instructions.

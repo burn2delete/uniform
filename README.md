@@ -6,8 +6,7 @@ Gravity is a self-hosting, homoiconic, Clojure-inspired language platform for th
 
 Implementation direction is Lisp-only: Clojure is the temporary bootstrap,
 seed, and tooling language, and Gravity/Uniform incrementally replaces it. New
-or modified Python is prohibited. The former Python tree was migration debt,
-not an accepted architecture or authority surface, and has been removed. See
+Python source, bytecode, and executable shebangs are prohibited. See
 [docs/tooling-language-migration.md](docs/tooling-language-migration.md).
 
 ## Document Set
@@ -120,10 +119,8 @@ clojure -J-Xmx512m -M:project-structure-test --exact gravity.bootstrap-test/host
 
 These Clojure runners emit non-authoritative development feedback and exit
 nonzero on failure. They do not replace fresh authoritative or release
-verification. The retired Python scheduler, cache, heartbeat, and Stage2
-admission wrapper are not live commands. See
-`docs/development-verification.md` for direct Clojure Stage3, SH-07, governance,
-and preflight commands.
+verification. See `docs/development-verification.md` for direct Clojure Stage3,
+SH-07, governance, and preflight commands.
 
 The current SH-02 development audit measured namespace require at 5.88 seconds
 and about 1.40 GiB peak resident memory, and the first ten leaf vars warm in one

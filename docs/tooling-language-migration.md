@@ -1,109 +1,34 @@
-# Tooling Language Migration
+# Tooling Language Boundary
 
 ## Purpose
 
-Gravity/Uniform is a Lisp system and its implementation path must remain
-Lisp-based. This document makes the host-language direction explicit and turns
-the existing mixed-language tree into bounded migration debt instead of an
-architecture that future work can extend.
+Gravity/Uniform is a Lisp system. Repository tooling and the temporary seed are
+Clojure; Gravity/Uniform is the only successor implementation language.
 
-The machine-readable policy is `contracts/language-boundary.edn`. Its Clojure
-gate is part of the standard self-hosting test discovery and can be run directly
+## Requirements
+
+- New bootstrap and repository tooling must be Clojure.
+- New non-Lisp source and extensionless non-Lisp launchers are rejected.
+- Existing Java, C, and shell host-boundary files remain frozen and may only be
+  removed behind the evidence required by their governing contracts.
+- Clojure tooling is retired incrementally behind Gravity/Uniform equivalents
+  with behavioral, diagnostic, and provenance evidence.
+
+The machine-readable policy is `contracts/language-boundary.edn`. Run its gate
 with:
 
 ```bash
 clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 ```
 
-## Decision
+## Outputs And Artifacts
 
-- Gravity/Uniform is the destination language for the compiler, runtime,
-  standard library, and eventually its own tooling.
-- Clojure is the only temporary bootstrap, seed, and tooling implementation
-  language.
-- Python is prohibited for new work. The checked-in Python inventory is frozen,
-  removal-only migration debt and has no implementation, evidence, aggregate,
-  self-hosting, seed-retirement, or release authority.
-- The existing Java launcher, eleven C launcher/runtime/fixture files, and two
-  Bash public launchers are frozen host-boundary debt under the same
-  removal-only rule. No new Java, C, or shell implementation surface is
-  permitted.
-- No replacement host language may be introduced. Clojure replacements must be
-  designed so Gravity/Uniform can subsequently replace them behind explicit
-  equivalence and provenance evidence.
+The gate emits a deterministic report containing the scanned roots, frozen
+host-boundary counts, and any introduced or modified non-Lisp paths.
 
-## Starting Gap And Current Disposition
+## Conformance Criteria
 
-At adoption, the repository contains 162 Python files: 54 below `src/gravity`,
-89 non-test files below `tools`, and 19 Python tool tests. It also contains one
-Java launcher, eleven C launcher/runtime/fixture files, and two Bash public
-launchers. This means the repository is not yet physically Lisp-only. The
-policy does not hide that fact: it pins the legacy paths and contents, rejects
-growth or modification, and permits absence so reviewed migration can only
-move the counts downward.
-
-Historical reports and evidence may continue to mention commands that were
-actually run. Those records are provenance, not permission to execute or extend
-the Python tooling layer for new work.
-
-The 2026-08-23 audit replaced and removed the Python structural-document,
-full-language-roadmap, and repository-hygiene validators plus the superseded
-Python hygiene test. It also retired the two obsolete reviewed-source
-generators, the non-authoritative authority-candidate composer, and the
-self-referential Python tooling/evidence contracts, validators, and tests that
-could not represent valid deletion. Six redundant Phase 00 JSON inventory
-validators were also retired because they checked self-described artifact
-shape rather than normative document meaning or executable behavior. The
-semantic scaffold and its uncalled phase validators were then retired because
-Clojure and Gravity already own the live compiler behavior. Four closed,
-uncalled Python utility/test islands were also retired. The
-non-authoritative coverage generator and its private publication layer were
-retired while their checked-in reports remain historical provenance. Finally,
-the Python orchestration wrappers and redundant infrastructure contracts were
-retired in favor of direct Clojure runners, ownership, governance, and
-preflight. The current tracked Python inventory is zero. See
-`docs/python-tooling-audit.md` for the necessity/correctness findings and the
-recommended migration sequence.
-
-## Migration Order
-
-1. Freeze the legacy Python and Java inventories. Reject new or modified files;
-   allow deletion only.
-2. Move coordination, admission, source-policy, and worktree checks to Clojure
-   first so the migration is governed without depending on Python.
-3. Replace documentation, coverage, project-structure, evidence-production,
-   and development-orchestration tools in bounded Clojure slices. Each slice
-   must preserve positive fixtures, negative fixtures, stable diagnostics,
-   output schemas, and nonclaims before deleting its Python predecessor.
-4. Remove Python semantic scaffolds rather than treating them as compiler
-   authority. Port only behavior required by a governing Gravity contract.
-5. Retire the Python tooling and evidence contracts after their final path is
-   removed and their Clojure replacements are independently accepted.
-6. Replace Clojure incrementally with Gravity/Uniform-authored equivalents under
-   the self-hosting and seed-retirement contracts. Preserve the explicit
-   Clojure audit/recovery boundary until the successor evidence closes it.
-7. Remove the frozen Java, C, and Bash host-boundary files when Gravity/Uniform
-   no longer requires them; replace checked-in foreign fixtures with bounded
-   generated test inputs if their conformance coverage is still required.
-
-## Acceptance Criteria
-
-The direction is enforced when:
-
-1. new or content-modified Python, Java, C, and shell files fail the Clojure
-   boundary gate, including extensionless non-Lisp shebang scripts;
-2. deletion of a pinned legacy file passes;
-3. new tooling and bootstrap code is Clojure and no other host language is
-   admitted;
-4. Gravity/Uniform source remains the only successor direction;
-5. each migration deletion has behavioral and evidence parity appropriate to
-   the tool it replaces; and
-6. documentation reports the remaining legacy counts without claiming that the
-   physical tree is already Lisp-only.
-
-## Nonclaims
-
-Freezing a file does not validate it. A Clojure port is not automatically an
-authoritative compiler component, and removing Python does not by itself prove
-self-hosting or seed retirement. Those claims remain governed by D1, D2, D9,
-BOOT7, BOOT8, and the relevant milestone evidence.
+Conformance requires a passing boundary gate, Clojure-only repository tooling,
+and no unreviewed expansion of the Java, C, or shell inventories. Passing this
+gate does not establish compiler correctness, self-hosting, seed retirement,
+or release eligibility.

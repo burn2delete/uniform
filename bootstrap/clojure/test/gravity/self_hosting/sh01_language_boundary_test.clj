@@ -11,7 +11,7 @@
 (def ^:private contract-relative-path "contracts/language-boundary.edn")
 
 (def ^:private canonical-programming-language-extensions
-  [".py" ".pyw" ".pyi" ".pyx" ".java" ".c" ".h" ".cc" ".cpp" ".cxx" ".hpp" ".hh" ".hxx"
+  [".py" ".pyw" ".pyi" ".pyx" ".pyc" ".pyo" ".java" ".c" ".h" ".cc" ".cpp" ".cxx" ".hpp" ".hh" ".hxx"
    ".m" ".mm" ".swift" ".rs" ".go" ".js" ".jsx" ".ts" ".tsx" ".rb"
    ".php" ".pl" ".pm" ".lua" ".dart" ".kt" ".kts" ".scala" ".cs"
    ".fs" ".fsx" ".vb" ".sh" ".bash" ".zsh" ".fish" ".ps1" ".r" ".jl"
@@ -116,7 +116,6 @@
   (closed-keys!
    contract
    #{:schema :policy :scan-roots :ignored-directory-paths
-     :ignored-directory-names
      :permitted-lisp-extensions
      :permitted-data-extensions :programming-language-extensions
      :non-lisp-shebang-interpreters
@@ -144,7 +143,6 @@
   (doseq [[key expected]
           [[:scan-roots ["."]]
            [:ignored-directory-paths [".cpcache" ".git" "target"]]
-           [:ignored-directory-names ["__pycache__"]]
            [:permitted-lisp-extensions [".clj" ".cljc" ".cljs" ".gravity" ".qst"]]
            [:permitted-data-extensions [".edn"]]]]
     (exact-vector! (get contract key) key)
@@ -211,6 +209,10 @@
       (throw (ex-info "Exactly one legacy Java host shim is permitted"
                       {:id "LANGUAGE-BOUNDARY-CONTRACT-JAVA-COUNT"
                        :count (count java)})))
+    (when-not (empty? python)
+      (throw (ex-info "Retired Python inventory must remain empty"
+                      {:id "LANGUAGE-BOUNDARY-CONTRACT-PYTHON-COUNT"
+                       :count (count python)})))
     (when-not (= (+ (count python) (count java) (count shell) (count c))
                  (count (merge python java shell c)))
       (throw (ex-info "Frozen language inventories must be disjoint"
@@ -289,7 +291,7 @@
         files (scanned-files root-path
                              (:scan-roots contract)
                              (:ignored-directory-paths contract)
-                             (:ignored-directory-names contract))
+                             [])
         programming (set (:programming-language-extensions contract))
         permitted (set (concat (:permitted-lisp-extensions contract)
                                (:permitted-data-extensions contract)))
@@ -357,7 +359,7 @@
          (delete-tree! ~binding)))))
 
 (defn- fixture-contract
-  [python-sha java-sha]
+  [java-sha]
   {:schema :gravity/language-boundary-v1
    :policy {:bootstrap-seed-tooling-language :clojure
             :successor-languages [:gravity :uniform]
@@ -368,14 +370,13 @@
             :new-non-lisp-policy :reject}
    :scan-roots ["."]
    :ignored-directory-paths [".cpcache" ".git" "target"]
-   :ignored-directory-names ["__pycache__"]
    :permitted-lisp-extensions [".clj" ".cljc" ".cljs" ".gravity" ".qst"]
    :permitted-data-extensions [".edn"]
    :programming-language-extensions canonical-programming-language-extensions
    :non-lisp-shebang-interpreters canonical-non-lisp-shebang-interpreters
    :legacy-python {:classification :frozen-removal-only-debt
                    :authority :none
-                   :entries [["tools/legacy.py" python-sha]]}
+                   :entries []}
    :legacy-java {:classification :frozen-host-shim-debt
                  :entries [["bootstrap/legacy/Main.java" java-sha]]}
    :legacy-shell {:classification :frozen-removal-only-shell-launcher-debt
@@ -389,6 +390,7 @@
         report (validate-tree @root contract)]
     (is (= #{"bootstrap/clojure/java/gravity/cli/Main.java"}
            (set (keys (:java normalized)))))
+    (is (empty? (:python normalized)))
     (is (= #{"bin/gravity" "bin/gravity-bootstrap"}
            (set (keys (:shell normalized)))))
     (is (= :passed (:status report)) (pr-str (:violations report)))
@@ -396,16 +398,16 @@
 
 (deftest new-python-and-java-are-rejected
   (with-temp-tree [tree]
-    (let [legacy-python (write-file! tree "tools/legacy.py" "old python\n")
-          legacy-java (write-file! tree "bootstrap/legacy/Main.java" "old java\n")
-          contract (fixture-contract (sha256 (.toFile legacy-python))
-                                     (sha256 (.toFile legacy-java)))]
+    (let [legacy-java (write-file! tree "bootstrap/legacy/Main.java" "old java\n")
+          contract (fixture-contract (sha256 (.toFile legacy-java)))]
       (write-file! tree "experiments/new_tool.py" "print('forbidden')\n")
+      (write-file! tree "experiments/new_tool.pyc" "forbidden cache\n")
       (write-file! tree "tools/escape.pyw" "#!/usr/bin/python3\n")
       (write-file! tree "bootstrap/new/Launcher.java" "class Launcher {}\n")
       (write-file! tree "src/new_runtime.rs" "fn main() {}\n")
       (is (= [["LANGUAGE-BOUNDARY-NON-LISP-INTRODUCED" "bootstrap/new/Launcher.java"]
               ["LANGUAGE-BOUNDARY-NON-LISP-INTRODUCED" "experiments/new_tool.py"]
+              ["LANGUAGE-BOUNDARY-NON-LISP-INTRODUCED" "experiments/new_tool.pyc"]
               ["LANGUAGE-BOUNDARY-NON-LISP-INTRODUCED" "src/new_runtime.rs"]
               ["LANGUAGE-BOUNDARY-NON-LISP-INTRODUCED" "tools/escape.pyw"]
               ]
@@ -413,10 +415,8 @@
 
 (deftest extensionless-non-lisp-shebangs-are-rejected-repository-wide
   (with-temp-tree [tree]
-    (let [legacy-python (write-file! tree "tools/legacy.py" "old python\n")
-          legacy-java (write-file! tree "bootstrap/legacy/Main.java" "old java\n")
-          contract (fixture-contract (sha256 (.toFile legacy-python))
-                                     (sha256 (.toFile legacy-java)))]
+    (let [legacy-java (write-file! tree "bootstrap/legacy/Main.java" "old java\n")
+          contract (fixture-contract (sha256 (.toFile legacy-java)))]
       (write-file! tree "bin/new-launcher" "#!/usr/bin/env bash\nexit 0\n")
       (write-file! tree "examples/analyzer" "#!/usr/bin/python3.12\n")
       (is (= [["LANGUAGE-BOUNDARY-NON-LISP-SHEBANG-INTRODUCED"
@@ -428,13 +428,11 @@
 
 (deftest frozen-shell-launcher-may-be-removed-but-not-modified
   (with-temp-tree [tree]
-    (let [legacy-python (write-file! tree "tools/legacy.py" "old python\n")
-          legacy-java (write-file! tree "bootstrap/legacy/Main.java" "old java\n")
+    (let [legacy-java (write-file! tree "bootstrap/legacy/Main.java" "old java\n")
           launcher (write-file! tree "bin/gravity" "#!/usr/bin/env bash\nexit 0\n")
           contract
           (assoc-in
-           (fixture-contract (sha256 (.toFile legacy-python))
-                             (sha256 (.toFile legacy-java)))
+           (fixture-contract (sha256 (.toFile legacy-java)))
            [:legacy-shell :entries]
            [["bin/gravity" (sha256 (.toFile launcher))]])]
       (spit (.toFile launcher) "#!/usr/bin/env bash\nexit 1\n")
@@ -445,27 +443,10 @@
       (Files/delete launcher)
       (is (= :passed (:status (validate-tree tree contract)))))))
 
-(deftest modified-legacy-python-is-rejected-but-removal-is-accepted
-  (with-temp-tree [tree]
-    (let [legacy-python (write-file! tree "tools/legacy.py" "old python\n")
-          legacy-java (write-file! tree "bootstrap/legacy/Main.java" "old java\n")
-          contract (fixture-contract (sha256 (.toFile legacy-python))
-                                     (sha256 (.toFile legacy-java)))]
-      (spit (.toFile legacy-python) "changed python\n")
-      (is (= [{:id "LANGUAGE-BOUNDARY-FROZEN-DEBT-MODIFIED"
-               :path "tools/legacy.py"
-               :classification :frozen-removal-only-debt}]
-             (:violations (validate-tree tree contract))))
-      (Files/delete legacy-python)
-      (is (= :passed (:status (validate-tree tree contract))))
-      (is (= 1 (:frozen-retired (validate-tree tree contract)))))))
-
 (deftest clojure-gravity-uniform-and-edn-remain-permitted
   (with-temp-tree [tree]
-    (let [legacy-python (write-file! tree "tools/legacy.py" "old python\n")
-          legacy-java (write-file! tree "bootstrap/legacy/Main.java" "old java\n")
-          contract (fixture-contract (sha256 (.toFile legacy-python))
-                                     (sha256 (.toFile legacy-java)))]
+    (let [legacy-java (write-file! tree "bootstrap/legacy/Main.java" "old java\n")
+          contract (fixture-contract (sha256 (.toFile legacy-java)))]
       (write-file! tree "tools/gate.clj" "(ns gate)\n")
       (write-file! tree "bootstrap/seed.cljc" "(ns seed)\n")
       (write-file! tree "src/module.gravity" "(def answer 42)\n")
@@ -475,10 +456,8 @@
 
 (deftest closed-contract-rejects-policy-expansion
   (with-temp-tree [tree]
-    (let [legacy-python (write-file! tree "tools/legacy.py" "old python\n")
-          legacy-java (write-file! tree "bootstrap/legacy/Main.java" "old java\n")
-          contract (assoc (fixture-contract (sha256 (.toFile legacy-python))
-                                            (sha256 (.toFile legacy-java)))
+    (let [legacy-java (write-file! tree "bootstrap/legacy/Main.java" "old java\n")
+          contract (assoc (fixture-contract (sha256 (.toFile legacy-java)))
                           :escape-hatch true)]
       (is (= "LANGUAGE-BOUNDARY-CONTRACT-KEYS"
              (:id (try

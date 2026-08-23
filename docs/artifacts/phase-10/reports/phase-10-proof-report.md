@@ -6,9 +6,6 @@ Phase: 10
 
 ## Current Completion Evidence
 
-Phase 10 is completed by the Clojure bootstrap. The earlier Python validators
-remain supporting historical checks, not the active completion proof.
-
 The active standalone schema/data/interop command is:
 
 ```bash
@@ -70,7 +67,6 @@ The proof reads the Phase 10 roadmap, Phase 10 README, all nine S1-S9 source doc
   source fixtures.
 - `bootstrap/clojure/fixtures/rejected/core-app-schema-*.gravity` are the
   rejected compiled app schema/data/interop fixtures.
-- The earlier Python validators remain historical/supporting contract checks.
 
 The accepted fixture proves:
 
@@ -111,16 +107,6 @@ diagnostics through `run-compiled` before instruction-plan execution.
 - `docs/artifacts/phase-10/reports/phase-10-proof-report.md`
 
 ## Validation Commands
-
-```bash
-clojure -M:gravity schema-interop bootstrap/clojure/fixtures/accepted/schema-interop.gravity
-clojure -M:gravity hosted-core-compiled-schema bootstrap/clojure/fixtures/accepted/core-app.gravity
-clojure -M:test
-python3 tools/validate_schema_interop.py --artifact-out docs/artifacts/phase-10/schema/schema-interop.accepted.json
-python3 tools/validate_phase10_document_coverage.py --artifact-out docs/artifacts/phase-10/document-coverage/schema-document-coverage.accepted.json
-python3 -m compileall src/gravity/schema_interop.py src/gravity/schema_document_coverage.py tools/validate_schema_interop.py tools/validate_phase10_document_coverage.py
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-```
 
 Observed validation outputs:
 

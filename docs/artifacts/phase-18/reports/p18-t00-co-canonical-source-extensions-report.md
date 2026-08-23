@@ -23,4 +23,3 @@ P18-T00 proves that `.qst` and `.gravity` are co-canonical Gravity source file e
 - `docs/artifacts/phase-18/source-extensions/p18-t00-co-canonical-source-extensions-proof.edn`
 - `docs/artifacts/phase-18/source-extensions/p18-t00-accepted-extension-parity.edn`
 - `docs/artifacts/phase-18/source-extensions/p18-t00-rejected-extension-parity.edn`
-

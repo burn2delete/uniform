@@ -5,10 +5,6 @@ Tasks: `P08-D112` through `P08-D123`
 Phase: 08 - Runtime Architecture
 Status: superseded historical scaffold evidence
 
-This report described the earlier Python/JSON document-coverage scaffold. It is
-retained only as historical context and is not completion evidence for the
-Phase 08 document coverage tasks.
-
 Current capability evidence is recorded in:
 
 - `docs/phase-08-runtime-architecture/IMPLEMENTATION-ROADMAP.md`

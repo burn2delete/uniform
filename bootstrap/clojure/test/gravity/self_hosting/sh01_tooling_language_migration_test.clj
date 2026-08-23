@@ -3,7 +3,6 @@
             [clojure.test :refer [deftest is testing]]
             [gravity.tooling.document-validation :as documents]
             [gravity.tooling.full-language-roadmap :as roadmap]
-            [gravity.tooling.repository-hygiene :as hygiene]
             [gravity.tooling.strict-json :as json])
   (:import (java.nio.file Files Path)
            (java.nio.file.attribute FileAttribute)))
@@ -100,14 +99,3 @@
 (deftest roadmap-validator-preserves-positive-and-negative-fixtures
   (is (= {:accepted 1 :rejected 1} (roadmap/self-test)))
   (is (map? (roadmap/validate-current))))
-
-(deftest repository-hygiene-classifies-only-python-cache-output
-  (is (= ["src/gravity/__pycache__/reader.cpython-314.pyc"
-          "tools/cache/tool.pyo"]
-         (hygiene/tracked-python-cache-paths
-          ["src/gravity/__pycache__/reader.cpython-314.pyc"
-           "tools/cache/tool.pyo"
-           "src/gravity/reader.py"
-           "docs/artifacts/reviewed.json"
-           "tools/cache/tool.pyo"])))
-  (is (empty? (hygiene/validate-repository))))

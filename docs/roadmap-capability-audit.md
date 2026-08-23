@@ -77,7 +77,6 @@ Current public-binary audit on 2026-08-08:
   `.gravity` source files: 33 stage1 source modules under
   `bootstrap/gravity/src` plus the P15 compiler source at
   `bootstrap/gravity/p15_s23/compiler.gravity`.
-- Python scaffold inventory under `src/gravity` contains 54 modules.
 - The Clojure bootstrap seed remains present and must continue shrinking until
   final public-binary proof records no Clojure product behavior.
 

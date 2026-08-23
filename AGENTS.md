@@ -12,13 +12,11 @@ from a host language, target backend, or ad hoc prototype.
 - Gravity/Uniform is the destination implementation language.
 - Clojure is the only permitted temporary bootstrap, seed, and repository
   tooling language. New bootstrap or tooling code must be Clojure.
-- Do not add Python. The former Python migration debt has been removed and had
-  no implementation or evidence authority.
-- Do not introduce another host language to replace Python or extend the seed.
-- A Clojure replacement must preserve the old tool's accepted and rejected
-  behavior before the corresponding Python is removed. Clojure itself is then
-  retired incrementally behind Gravity/Uniform-authored equivalents and the
-  governing self-hosting evidence.
+- Do not add Python. The boundary gate rejects Python source, bytecode, and
+  executable shebangs; Python has no implementation or evidence authority.
+- Do not introduce another host language to extend the seed.
+- Clojure is retired incrementally behind Gravity/Uniform-authored equivalents
+  and the governing self-hosting evidence.
 
 Run the boundary gate after adding, removing, or replacing source or tooling:
 
@@ -144,8 +142,8 @@ clojure -M tools/validate_full_language_roadmap.clj
 ```
 
 Passing the Clojure suite is necessary but not sufficient; it does not prove
-semantic consistency across documents. The language-boundary gate prevents
-reintroduction of the retired Python tooling.
+semantic consistency across documents. The language-boundary gate enforces the
+repository language policy.
 
 ## Working Discipline
 

@@ -148,7 +148,7 @@
          (fail! "DOC012" (str "expected 19 phase README files, found " (count readmes))
                 {:count (count readmes)})))
      (doseq [path (concat (files-with-extension docs-root [".md"])
-                          (direct-files-with-extension (.resolve root "tools") [".py" ".clj"])
+                          (direct-files-with-extension (.resolve root "tools") [".clj"])
                           (files-with-extension (.resolve root "bootstrap/clojure/src/gravity/tooling") [".clj"]))]
        (assert-ascii! path))
      (when run-roadmap? (roadmap/validate-current))

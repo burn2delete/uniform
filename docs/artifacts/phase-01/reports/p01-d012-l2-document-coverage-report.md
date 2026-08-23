@@ -42,26 +42,6 @@ or domain lowering.
 clojure -M:test
 ```
 
-Output:
-
-```text
-Testing gravity.bootstrap-test
-
-Ran 14 tests containing 530 assertions.
-0 failures, 0 errors.
-clojure bootstrap validation passed: hosted hello, L1 reader artifacts, L2 core artifacts, L3 module artifacts, L4 macro artifacts, L5 typed/effected artifacts, L6 effect-system artifacts, L7 pattern-match artifacts, L8 dispatch artifacts, L9 error-handling artifacts, L10 memory-model artifacts, L11 concurrency artifacts, and 92 rejected fixtures
-```
-
-```bash
-python3 tools/validate_gravity_docs.py
-```
-
-Output:
-
-```text
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
-```
-
 ## Residual Risks
 
 L2 is complete only for the current stage0 core artifact surface. Full macro
