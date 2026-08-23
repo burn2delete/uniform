@@ -1,0 +1,97 @@
+{:artifact :gravity/bootstrap-provenance-record
+ :artifact-id "sha256:d701e6dab722f4fd188b74da8ee29161c775b45e0366e33897db895fdd801b4b"
+ :artifact-kind :gravity/a1-canonical-schema-candidate
+ :bootstrap-stage :seed-retirement-micro-stage-a1
+ :status :frozen
+ :release-candidate? false
+ :release-eligible? false
+ :source-graph-hash "sha256:d701e6dab722f4fd188b74da8ee29161c775b45e0366e33897db895fdd801b4b"
+ :source-graph
+ [{:path "bootstrap/clojure/src/gravity/self_hosting/a1_canonical_schema.clj"
+   :sha256 "05cb25633aaf7299de93a8573a8656ec88225d809abf699706ef7a18a36a6072"}
+  {:path "bootstrap/clojure/test/gravity/self_hosting/a1_canonical_schema_test.clj"
+   :sha256 "3990e5035601adf6d97a2ac371bd01ab98328892134d7517f05659399939598c"}
+  {:path "bootstrap/clojure/fixtures/self-hosting/a1-canonical-schema/accepted.edn"
+   :sha256 "ff0ad94971e2d63eb17e8551ea69560d040d6cef10076a9d598235ec48de1be9"}
+  {:path "bootstrap/clojure/fixtures/self-hosting/a1-canonical-schema/rejected.edn"
+   :sha256 "1ffbd4bf1694c2c0ed0be100085474fe9c93488e8a3e6f6de853c301bce8df96"}]
+ :decision
+ {:path "docs/artifacts/phase-15/reports/a1-canonical-schema-invariant-architecture-decision.md"
+  :sha256 "9b6c96077e45bb820a221d2aa95010a06d86c3cce153bbf525a389690f34c71d"
+  :independent-review :accepted}
+ :compiler-artifact-id :org.clojure/clojure-1.12.5
+ :compiler-hash "sha256:dfdee131460216a84fef22e537bb0d0579965f8f70338d748323dff26f8e5a8b"
+ :lockfile
+ {:policy :deps-edn-is-the-seed-dependency-input
+  :path "deps.edn"
+  :hash "sha256:49de24dda2e28b58982e9a4301e7c64461f41f4c1b46011e697f2eef772dd390"}
+ :build-recipe
+ {:command "clojure -M:test --namespace gravity.self-hosting.a1-canonical-schema-test"
+  :hash "sha256:3c7213a79c8843dd0a3f93ef17eefecb4113dc2cc28ac3c0c9919c5152834ddb"}
+ :environment-manifest
+ {:clojure "1.12.5"
+  :java-runtime "26.0.1"
+  :java-vm "OpenJDK 64-Bit Server VM"
+  :os "Mac OS X 26.5.2"
+  :architecture "aarch64"
+  :hash "sha256:76b5c039fb52710b944fe2327ab431bc6555068260b8431104e706c457b6ec67"}
+ :dependency-graph
+ {:dependencies [{:artifact :org.clojure/clojure :version "1.12.5"}
+                 {:artifact :org.clojure/spec.alpha :version "0.5.238"}
+                 {:artifact :org.clojure/core.specs.alpha :version "0.4.74"}]
+  :hash "sha256:f5bbc3d853af8971d6af7e5a5285ff0efccf1a9a1a642ed5992137320e0775c6"}
+ :builder-identity :openai-codex-clojure-seed-agent
+ :compiler-lineage
+ [{:artifact :gravity/a1-canonical-schema-candidate
+   :compiled-by :org.clojure/clojure-1.12.5
+   :executed-by :openjdk-jvm-26.0.1
+   :trust :temporary-clojure-seed}
+  {:artifact :org.clojure/clojure-1.12.5
+   :compiled-by :external-clojure-release-toolchain
+   :trust :external-seed}]
+ :evidence-links
+ {:conformance-report
+  "docs/artifacts/phase-15/reports/a1-canonical-schema-candidate-v1-report.md"
+  :safety-report
+  "docs/artifacts/phase-15/reports/a1-canonical-schema-candidate-v1-report.md"
+  :boot5-stage-compatibility
+  {:status :not-applicable
+   :policy :candidate-is-not-a-compiler-stage
+   :effect :stage-advancement-forbidden}
+  :boot7-equivalence
+  {:status :not-applicable
+   :policy :candidate-does-not-compare-two-compiler-artifacts
+   :effect :stage-advancement-forbidden}
+  :sbom {:status :not-required :policy :not-a-release-candidate}
+  :signature {:status :not-required :policy :not-a-release-candidate}}
+ :verification
+ {:focused-tests {:tests 22 :assertions 167 :failures 0 :errors 0}
+  :fresh-processes {:runs 2 :outputs-identical? true}
+  :diagnostics ["OK" "E-ID-TYPE" "E-ID-SYNTAX" "E-UNKNOWN-ID"
+                "E-TYPE" "E-KEYSET" "E-CYCLE" "E-SCHEMA" "E-BOUND"
+                "E-HOST"]}
+ :freeze
+ {:status :accepted-and-frozen
+  :scope :seed-retirement-micro-stage-a1-only
+  :tuple
+  {:source-graph-hash
+   "sha256:d701e6dab722f4fd188b74da8ee29161c775b45e0366e33897db895fdd801b4b"
+   :decision-hash
+   "sha256:9b6c96077e45bb820a221d2aa95010a06d86c3cce153bbf525a389690f34c71d"
+   :build-recipe-hash
+   "sha256:3c7213a79c8843dd0a3f93ef17eefecb4113dc2cc28ac3c0c9919c5152834ddb"}
+  :review
+  {:kind :independent-read-only
+   :verdict :accept
+   :remaining-blockers 0
+   :tests 22
+   :assertions 167}
+  :mutation-policy :new-reviewed-decision-and-candidate-required
+  :downstream-authority :none}
+ :claims
+ {:canonical-schema-invariant-implemented? true
+  :clojure-seed-retired? false
+  :self-hosted-compiler? false
+  :compiler-stage? false
+  :gates-held ["A2" "A3" "Stage B" "Stage C"
+               "G1" "G2" "G3" "G4" "G5" "G6"]}}

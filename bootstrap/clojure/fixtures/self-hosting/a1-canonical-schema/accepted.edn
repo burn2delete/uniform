@@ -1,0 +1,21 @@
+{:artifact :gravity/a1-canonical-schema-accepted-fixtures
+ :decision "docs/artifacts/phase-15/reports/a1-canonical-schema-invariant-architecture-decision.md"
+ :literal-cases
+ [{:operation :canonical-copy :value nil :diagnostic "OK"}
+  {:operation :canonical-copy :value 18446744073709551615N :diagnostic "OK"}
+  {:operation :canonical-copy :value {"b" 2 "a" [true nil]} :diagnostic "OK"}
+  {:operation :validate-and-copy
+   :registry {"u" {"kind" "uint64"}}
+   :schema-id "u" :value 0 :diagnostic "OK"}
+  {:operation :validate-and-copy
+   :registry {"n" {"kind" "null"}
+              "u" {"kind" "tagged-union" "tag-key" "tag"
+                   "variants" {"none" "n"}}}
+   :schema-id "u" :value {"tag" "none" "value" nil} :diagnostic "OK"}]
+ :generated-boundaries
+ [{:resource :string-utf8-bytes :accepted 65536}
+  {:resource :container-items :accepted 1024}
+  {:resource :schema-count :accepted 512}
+  {:resource :nesting-depth :accepted 64}
+  {:resource :input-meter :accepted 786432}
+  {:resource :accepted-value-meter :accepted 750000}]}
