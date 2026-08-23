@@ -108,6 +108,44 @@
       "disposition": "Integrated for A1 only; all downstream gates remain held."
     },
     {
+      "id": "p15-sr-post-a1-sequencing-decision-v1",
+      "title": "P15-SR post-A1 sequencing decision version 1",
+      "invariant_family": "seed-retirement/p15-sr-post-a1-sequencing",
+      "owner": "seed-retirement",
+      "author": "seed-retirement",
+      "state": "integrated",
+      "dependencies": ["a1-canonical-schema-candidate-v1"],
+      "architecture_decision": "docs/artifacts/phase-15/reports/p15-sr-post-a1-sequencing-decision.md",
+      "base_commit": "2308a771419ac4d762b35b148146dc2df7c9b3cb",
+      "candidate_commit": "5c9c1888e6a315a9154c8da9272f9940a7766d9a",
+      "clean_worktree": true,
+      "owned_paths": ["contracts/workstream-ledger.json", "docs/artifacts/phase-15/reports/p15-sr-post-a1-sequencing-decision.md"],
+      "governing_contracts": ["D1", "D2", "D3", "D8", "D9", "BOOT7", "BOOT8"],
+      "evidence": {
+        "accepted_fixtures": ["bootstrap/clojure/fixtures/self-hosting/a1-canonical-schema/accepted.edn"],
+        "rejected_fixtures": ["bootstrap/clojure/fixtures/self-hosting/a1-canonical-schema/rejected.edn"],
+        "stable_diagnostics": ["P15-SR-SEQ001", "P15-SR-SEQ002", "P15-SR-SEQ003", "P15-SR-SEQ004", "P15-SR-SEQ005", "P15-SR-SEQ006"],
+        "validation_commands": [
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.a1-canonical-schema-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 2308a771419ac4d762b35b148146dc2df7c9b3cb --candidate-commit 5c9c1888e6a315a9154c8da9272f9940a7766d9a --candidate-tree f3669fe947baf84a09299020e4d3d68b3006cd52", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "independent-post-a1-read-only-review", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": ["Clojure and the JVM remain the temporary seed boundary", "P15-SR-A2 is authorized for contract definition only", "P15-SR-A3, Stage B, Stage C, and G1 through G6 remain held"],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-23T22:28:43Z", "actor": "seed-retirement", "reason": "record the bounded post-A1 sequencing decision"},
+        {"state": "frozen", "at": "2026-08-23T22:28:44Z", "actor": "seed-retirement", "reason": "freeze the exact sequencing decision candidate tuple"},
+        {"state": "review-pending", "at": "2026-08-23T22:28:45Z", "actor": "seed-retirement", "reason": "request independent read-only review"},
+        {"state": "accepted", "at": "2026-08-23T22:28:46Z", "actor": "independent-post-a1-read-only-review", "reason": "accept the exact sequencing decision with no remaining blockers"},
+        {"state": "integration-eligible", "at": "2026-08-23T22:28:47Z", "actor": "uniform-coordinator", "reason": "exact Git identities, evidence, review, boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-23T22:28:49Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted sequencing candidate onto local main"}
+      ],
+      "disposition": "Integrated for sequencing authority only; exactly one P15-SR-A2 contract-definition candidate is active and every successor remains held."
+    },
+    {
       "id": "p15-sr-a2-contract-candidate-v1",
       "title": "P15-SR-A2 contract-definition candidate version 1",
       "invariant_family": "seed-retirement/p15-sr-a2-contract",
