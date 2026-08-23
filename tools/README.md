@@ -1,12 +1,20 @@
-# Python Tooling Layer
+# Frozen Python Tooling Migration Layer
 
-The Python code in `src/gravity/` and `tools/` is a bounded stage0 semantic and
-development-tooling layer. It is not the Gravity compiler authority, an
-implementation milestone claim, or a release gate.
+The Python code in `src/gravity/` and `tools/` is legacy migration debt. It is
+frozen: do not add or modify Python. It is not the Gravity compiler authority,
+an implementation milestone claim, a release gate, or an accepted language
+direction. New bootstrap, seed, and tooling work uses Clojure; admitted
+Gravity/Uniform replacements then retire the Clojure seed incrementally.
 
-Contract: `contracts/python-tooling.json`
+Legacy contract: `contracts/python-tooling.json`
 
-Validator: `python3 tools/validate_python_tooling_contract.py`
+Language boundary: `contracts/language-boundary.edn`
+
+Boundary gate:
+`clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test`
+
+The historical Python contract validator is itself migration debt. Do not
+extend it or use it as precedent for new tooling.
 
 Scope: every tracked or intentional untracked non-`__pycache__` Python file under `src/gravity/` and `tools/`.
 
@@ -97,3 +105,22 @@ The focused Python tests exercise schema failures, path traversal, inventory
 and dependency drift, cycles, semantic-layer violations, validator output
 policy parity, README parity, and bounded import smoke. They do not launch the
 Clojure compiler or a JVM.
+
+## Workstream governance tools
+
+`clojure -M tools/validate_workstream_governance.clj` validates the closed
+governance contract and ledger, lifecycle transitions, invariant-family
+exclusivity, dependency admission, the two-failure architecture stop, and the
+complete integration-evidence envelope. It reads repository records and emits
+diagnostics only. A passing result does not establish implementation,
+self-hosting, seed-retirement, or release correctness.
+
+`clojure -M tools/check_worktree_preflight.clj` performs a deterministic,
+read-only
+Git reconciliation check. Inspection mode inventories current and registered
+worktrees without mutating them. Integration mode additionally fails closed on
+dirty or detached state, missing or divergent bases, and expected-identity
+mismatches. Ancestry and tree equivalence are reported separately so a squashed
+or already integrated tree is not merged again. Explicit output exclusions are
+bounded inspection classifications only; they never make integration dirty
+state clean.

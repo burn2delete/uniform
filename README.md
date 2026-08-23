@@ -4,6 +4,12 @@ This workspace contains the Gravity design document set derived from `/Users/mat
 
 Gravity is a self-hosting, homoiconic, Clojure-inspired language platform for the whole stack. The core design is one semantic model with many compilation profiles, not one runtime everywhere.
 
+Implementation direction is Lisp-only: Clojure is the temporary bootstrap,
+seed, and tooling language, and Gravity/Uniform incrementally replaces it. New
+or modified Python is prohibited. The existing Python tree is frozen migration
+debt, not an accepted architecture or authority surface. See
+[docs/tooling-language-migration.md](docs/tooling-language-migration.md).
+
 ## Document Set
 
 - [docs/README.md](docs/README.md) is the entry point.
@@ -14,6 +20,26 @@ Gravity is a self-hosting, homoiconic, Clojure-inspired language platform for th
 - [docs/roadmap-capability-audit.md](docs/roadmap-capability-audit.md) records the capability-gated correction to roadmap status.
 - [docs/phase-18-binary-distribution-and-seedless-release/README.md](docs/phase-18-binary-distribution-and-seedless-release/README.md) owns the open product release roadmap for a user-facing seedless `gravity` executable.
 - [docs/bootstrap/clojure-bootstrap.md](docs/bootstrap/clojure-bootstrap.md) describes the active Clojure stage0 bootstrap.
+
+## Coordination Guardrails
+
+Parallel work is governed by a closed lifecycle contract and a current
+workstream ledger. The guardrails allow only one active candidate per invariant
+family, require an architecture decision after two rejected attempts, and bind
+integration eligibility to exact Git identities, evidence, independent review,
+residual boundaries, and explicit nonclaims. See
+[docs/workstream-governance.md](docs/workstream-governance.md).
+
+```bash
+clojure -M tools/validate_workstream_governance.clj
+clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref origin/main
+```
+
+Use preflight `--mode integration` with the ledger's exact base, candidate, and
+tree identities immediately before integration. The command is read-only and
+fails on a dirty or detached candidate, an unresolved or divergent base, or an
+identity mismatch. Identical and tree-equivalent candidates are reported as
+`no_remerge` so squashed or previously reconciled work is not replayed.
 
 ## Stage0 Bootstrap
 
@@ -86,8 +112,6 @@ unit namespaces in one JVM; use exact or related test vars for implementation
 work outside that unit boundary:
 
 ```bash
-python3 tools/verify_development.py --dry-run --explain --human
-python3 tools/verify_development.py --lane preflight --lane focused --resume --human
 clojure -M:sh01-test
 clojure -M:dev-test --exact hosted-hello-runs --exact hosted-core-app-runs-user-functions-and-builtins
 clojure -M:project-structure-runner-unit
@@ -128,12 +152,9 @@ explicit authority promotion step exist. See
 `docs/development-verification-workflow.md` for the gate, cache, lock, and
 evidence rules.
 
-The Stage2 authority-admission unit is a fresh, cheap preflight after the
-Stage1 gate:
-
-```bash
-python3 -m unittest tools.tests.test_stage2_authority_admission -v
-```
+The historical Stage2 authority-admission unit is Python migration debt and is
+not a permitted current command. Until its Clojure replacement is admitted,
+that unit cannot confer new integration or evidence authority.
 
 An integration that changes a shared or module fingerprint must use the
 lock-held wrapper, keeping `/private/tmp/gravity-sh07-heavy.lock` held through
@@ -1347,20 +1368,22 @@ clojure -M:gravity governance-evolution bootstrap/clojure/fixtures/accepted/gove
 
 ## Validation
 
-Run:
+Run the Clojure validation surface:
 
 ```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
+clojure -M:test
+clojure -M tools/validate_workstream_governance.clj
+clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref origin/main
 ```
 
-Expected result:
-
-```text
-validation passed: 240 docs, 19 phase indexes, ASCII, no placeholders
-```
+The historical Python document validator remains a migration gap and is not a
+permitted basis for new tooling. Use bounded manual document checks until its
+Clojure replacement is admitted; do not claim that the Clojure suite alone
+proves structural or semantic document completeness.
 
 ## Generation and Enrichment
 
-- [tools/generate_gravity_docs.py](tools/generate_gravity_docs.py) contains the canonical 240-document inventory and baseline document renderer.
-- [tools/enrich_remaining_docs.py](tools/enrich_remaining_docs.py) records the deterministic enrichment pass used for phases that were not completed by workers.
-- Do not rerun the baseline generator over edited documents unless you intend to regenerate the full tree and then reapply enrichment.
+- The historical Python document generator and enrichment pass are frozen
+  provenance only. Do not run or modify them.
+- A future Clojure replacement must preserve the canonical 240-document
+  inventory and reviewed enrichment before the Python files are removed.

@@ -1,7 +1,7 @@
 # Full Language Implementation Gap Map
 
 Status: active implementation track
-Date: 2026-07-08
+Date: 2026-08-08
 
 This document is the control point for completing Gravity as the designed
 language, not only as the current staged proof surface. It supplements
@@ -14,6 +14,23 @@ designed language and turns that gap into phase-by-phase implementation tasks.
 When a task cites a phase, read that phase `README.md`, its
 `IMPLEMENTATION-ROADMAP.md`, and the governing normative documents before
 editing code.
+
+## Status Dimensions
+
+The canonical 2026-08-08 coverage report is intentionally fail-closed:
+
+- full-language completion is `0/240` normative documents;
+- the public accepted audit is `74/198` fixtures passing, with `124` failing;
+- the public rejected audit covers `1720` fixtures, with `664` reaching
+  feature-specific diagnostics and `1056` remaining generic unsupported-source
+  diagnostics.
+
+These numbers must not be conflated with bounded roadmap bookkeeping. The
+current staged bookkeeping is `389/392` phase tasks checked, while the
+self-hosting slice backlog is `7/30` slices complete. Those two counts measure
+stage or slice gates and do not advance the `0/240` full-language count or
+prove a seedless release. The canonical report is
+`docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md`.
 
 ## Completion Rule
 
@@ -40,7 +57,7 @@ The current public binary is useful but narrow. It proves a small accepted app
 surface and a small set of rejected release fixtures. It does not prove the
 complete language, full conformance, or full self-hosting.
 
-Observed public surface on 2026-07-08 after the P08-T03 public check bridge
+Observed public surface on 2026-08-08 after the P08-T03 public check bridge
 refresh:
 
 - `bin/gravity check examples/core-app.qst` succeeds.
@@ -48,12 +65,12 @@ refresh:
 - `bin/gravity compile examples/core-app.qst -o target/audit-core-app-qst`
   succeeds and emits an executable whose artifact preserves
   `examples/core-app.qst`.
-- Only 74 of 181 accepted `.gravity` or `.qst` fixtures under the current
+- Only 74 of 198 accepted `.gravity` or `.qst` fixtures under the current
   examples, Clojure fixture, and Gravity bootstrap trees pass through
   `bin/gravity check`.
-- 107 accepted fixtures fail through the public binary.
-- 1718 rejected fixtures produce a rejection through the public binary, but
-  1054 of those rejections are generic unsupported-source diagnostics
+- 124 accepted fixtures fail through the public binary.
+- 1720 rejected fixtures produce a rejection through the public binary, but
+  1056 of those rejections are generic unsupported-source diagnostics
   (`P18T06004`) rather than the stable diagnostics required by their owning
   language features.
 - Only 664 rejected fixtures currently produce feature-specific public
@@ -670,6 +687,19 @@ Status: open for whole-language self-hosting through the public binary.
 
 Dependencies: `FL-P06-T03`, `FL-P08-T02`, `FL-P12-T01`, `FL-P14-T02`,
 `FL-P16-T01`.
+
+P15 has one named terminal gate, `P15-S23`, but that gate is not one small
+remaining step. The current final proof
+`docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn`
+is `:incomplete`, with
+`:full-language-compiler-self-hosted? false`,
+`:clojure-seed-retired? false`, and `:clojure-seed-boundary? true`. Its
+fail-closed diagnostics (`P15S23AD002` through `P15S23AD008`) cover missing
+evidence links, a seedless compiler/runtime boundary, stage3 equivalence and
+application execution, release-governance closure, TCB retirement, and
+provenance closure. Treating P15-S23 as a single checkbox hides these
+independent unresolved capabilities; none may be credited until the final
+public-binary proof closes them together.
 
 Tasks:
 
