@@ -61,7 +61,7 @@
       "invariant_family": "seed-retirement/a1-canonical-schema",
       "owner": "seed-retirement",
       "author": "seed-retirement",
-      "state": "integration-eligible",
+      "state": "integrated",
       "dependencies": [],
       "architecture_decision": "docs/artifacts/phase-15/reports/a1-canonical-schema-invariant-architecture-decision.md",
       "base_commit": "bf7535bf66f681fb0f76e4016338f352ee58c325",
@@ -102,9 +102,10 @@
         {"state": "frozen", "at": "2026-08-23T21:52:11Z", "actor": "seed-retirement", "reason": "freeze source, tests, fixtures, decision, report, and provenance tuple"},
         {"state": "review-pending", "at": "2026-08-23T21:52:12Z", "actor": "seed-retirement", "reason": "request independent review of the exact frozen tuple"},
         {"state": "accepted", "at": "2026-08-23T21:52:13Z", "actor": "independent-a1-read-only-review", "reason": "accept the exact A1 tuple with no remaining blockers"},
-        {"state": "integration-eligible", "at": "2026-08-23T21:52:14Z", "actor": "uniform-coordinator", "reason": "exact Git identities, clean worktree, evidence, review, boundaries, and nonclaims verified"}
+        {"state": "integration-eligible", "at": "2026-08-23T21:52:14Z", "actor": "uniform-coordinator", "reason": "exact Git identities, clean worktree, evidence, review, boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-23T21:53:26Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact admitted candidate and its admission record onto main"}
       ],
-      "disposition": "Eligible to integrate only the exact A1 candidate; all downstream gates remain held."
+      "disposition": "Integrated for A1 only; all downstream gates remain held."
     },
     {
       "id": "gravity-closure-g1",
