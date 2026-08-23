@@ -214,7 +214,7 @@ not claim full completion before the dependency proof exists.
 4. Keep the Clojure bootstrap as a shrinking seed and audit path until the
    self-hosted binary proves it is outside product behavior.
 5. After each slice, run `clojure -M:test`,
-   `tools/validate_gravity_docs.py`, `git diff --check`, and the
+   `clojure -M tools/validate_gravity_docs.clj`, `git diff --check`, and the
    capability-specific proof commands.
 6. Record evidence only after the commands pass.
 

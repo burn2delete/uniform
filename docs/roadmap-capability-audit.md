@@ -2389,9 +2389,9 @@ Expected artifact kind:
 ```
 
 - All roadmap phases are complete for the current stage0 Clojure bootstrap
-  capability surface. Existing Python modules, validators, manifests, and proof
-  reports remain scaffold evidence unless a task explicitly governs that
-  validation tooling.
+  capability surface. The retired Python modules, validators, and manifests are
+  no longer executable repository inputs; historical proof reports remain
+  scaffold evidence rather than implementation authority.
 - The first post-stage0 source bridge now exists:
   `clojure -M:gravity stage1-bootstrap-source bootstrap/gravity/src` emits a
   `:gravity/stage1-bootstrap-source-artifact` from Gravity-authored reader,

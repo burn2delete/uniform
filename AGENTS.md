@@ -12,9 +12,8 @@ from a host language, target backend, or ad hoc prototype.
 - Gravity/Uniform is the destination implementation language.
 - Clojure is the only permitted temporary bootstrap, seed, and repository
   tooling language. New bootstrap or tooling code must be Clojure.
-- Do not add or modify Python. Existing Python is frozen migration debt with no
-  implementation or evidence authority; it may only be deleted as a reviewed
-  Clojure or Gravity/Uniform replacement is admitted.
+- Do not add Python. The former Python migration debt has been removed and had
+  no implementation or evidence authority.
 - Do not introduce another host language to replace Python or extend the seed.
 - A Clojure replacement must preserve the old tool's accepted and rejected
   behavior before the corresponding Python is removed. Clojure itself is then
@@ -122,31 +121,31 @@ records the second-pass review standard and phase status.
 - Keep Markdown and tooling text ASCII unless a task explicitly requires
   otherwise.
 - Do not add scaffold or filler markers that the validator rejects to canonical
-  docs; see `tools/validate_gravity_docs.py` for the exact pattern.
+  docs; see `tools/validate_gravity_docs.clj` for the exact pattern.
 - Canonical docs are expected to contain sections equivalent to purpose,
   requirements, dependencies, outputs/artifacts, and conformance/acceptance
   criteria.
-- Do not rerun `tools/generate_gravity_docs.py` over edited documents unless the
-  task is a deliberate full-tree regeneration and you will reapply enrichment
-  afterward. `tools/enrich_remaining_docs.py` records the deterministic
-  enrichment pass used for earlier incomplete phases.
+- The historical reviewed-source generators were retired after the document
+  set was enriched. Do not reconstruct or rerun them over canonical documents;
+  Git history preserves them for audit and recovery.
 - When reviewing docs, read the phase README and the documents directly. Search
   is useful for drift scans, but it is not a substitute for document review.
 
 ## Validation
 
-The historical structural validator is Python migration debt and must not be
-extended. Until its Clojure replacement is admitted, use the repository's
-Clojure tests plus bounded manual document checks; do not add new Python to
+The structural document and full-language roadmap validators are Clojure
+tooling. Run them with the repository's Clojure tests; do not add new Python to
 close validation gaps:
 
 ```bash
 clojure -M:test
+clojure -M tools/validate_gravity_docs.clj
+clojure -M tools/validate_full_language_roadmap.clj
 ```
 
 Passing the Clojure suite is necessary but not sufficient; it does not prove
-semantic consistency across documents. The language-boundary gate and tooling
-migration roadmap own removal of the remaining Python-only validation gap.
+semantic consistency across documents. The language-boundary gate prevents
+reintroduction of the retired Python tooling.
 
 ## Working Discipline
 

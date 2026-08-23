@@ -32,7 +32,7 @@ clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
   designed so Gravity/Uniform can subsequently replace them behind explicit
   equivalence and provenance evidence.
 
-## Current Gap
+## Starting Gap And Current Disposition
 
 At adoption, the repository contains 162 Python files: 54 below `src/gravity`,
 89 non-test files below `tools`, and 19 Python tool tests. It also contains one
@@ -45,6 +45,25 @@ move the counts downward.
 Historical reports and evidence may continue to mention commands that were
 actually run. Those records are provenance, not permission to execute or extend
 the Python tooling layer for new work.
+
+The 2026-08-23 audit replaced and removed the Python structural-document,
+full-language-roadmap, and repository-hygiene validators plus the superseded
+Python hygiene test. It also retired the two obsolete reviewed-source
+generators, the non-authoritative authority-candidate composer, and the
+self-referential Python tooling/evidence contracts, validators, and tests that
+could not represent valid deletion. Six redundant Phase 00 JSON inventory
+validators were also retired because they checked self-described artifact
+shape rather than normative document meaning or executable behavior. The
+semantic scaffold and its uncalled phase validators were then retired because
+Clojure and Gravity already own the live compiler behavior. Four closed,
+uncalled Python utility/test islands were also retired. The
+non-authoritative coverage generator and its private publication layer were
+retired while their checked-in reports remain historical provenance. Finally,
+the Python orchestration wrappers and redundant infrastructure contracts were
+retired in favor of direct Clojure runners, ownership, governance, and
+preflight. The current tracked Python inventory is zero. See
+`docs/python-tooling-audit.md` for the necessity/correctness findings and the
+recommended migration sequence.
 
 ## Migration Order
 

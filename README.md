@@ -6,8 +6,8 @@ Gravity is a self-hosting, homoiconic, Clojure-inspired language platform for th
 
 Implementation direction is Lisp-only: Clojure is the temporary bootstrap,
 seed, and tooling language, and Gravity/Uniform incrementally replaces it. New
-or modified Python is prohibited. The existing Python tree is frozen migration
-debt, not an accepted architecture or authority surface. See
+or modified Python is prohibited. The former Python tree was migration debt,
+not an accepted architecture or authority surface, and has been removed. See
 [docs/tooling-language-migration.md](docs/tooling-language-migration.md).
 
 ## Document Set
@@ -118,51 +118,12 @@ clojure -M:project-structure-runner-unit
 clojure -J-Xmx512m -M:project-structure-test --exact gravity.bootstrap-test/hosted-hello-runs --exact gravity.bootstrap-test/reader-source-unit-identity-preserves-path-extension-and-options --exact gravity.bootstrap-test/reader-file-policy-rejects-extension-and-malformed-utf8 --exact gravity.bootstrap-test/c2-reader-treats-cr-lf-and-crlf-as-line-terminators --fail-fast
 ```
 
-`:sh01-test` runs its two namespaces in a fixed order, emits an explicitly
-non-authoritative EDN result, and exits nonzero on a failure or error. It does
-not run the selected self-hosting implementation namespaces or replace exact,
-iteration, authoritative, or release verification.
-
-The manifest's focused `stage0-project-structure-extraction` node is the
-one-JVM form of the final command. It runs the three extracted leaf test
-namespaces before the four compatibility vars, after the cheap runner-unit
-prerequisite, and is fresh and
-non-authoritative. Changing one of its six source-unit/source-span/digest
-leaves selects this node without selecting the broad `stage0-clojure-suite` or
-`stage0-bootstrap-authority`. The compatibility component alone was observed
-at 4 tests and 190 assertions in 51.05 seconds; the full gate's measured result
-was 19 tests and 397 assertions in 51.97 seconds with a peak resident set of
-789,315,584 bytes (about 753 MiB). These observations are not an equivalence or
-general speedup claim. The runner-unit prerequisite itself observed 9 tests and
-28 assertions in 0.62 seconds with a peak resident set of 144,703,488 bytes
-(about 138 MiB), without loading the production leaf or bootstrap test
-namespaces.
-
-The SH-01 parallel runner treats every child timeout as containment-unproven
-and stops the scheduler even without `--fail-fast`: queued and exclusive jobs
-are skipped while work already in flight drains. Its `ProcessHandle` cleanup
-is best effort, not strict containment of arbitrary descendants. Stream-capture
-failure is also a nonzero fatal stop; stdout and stderr are fully drained with
-bounded byte/character retention and stateful UTF-8 accounting.
-
-`--resume` applies only to matching non-authoritative receipts. The
-`heavy-candidate` lane is always fresh and serialized, but its command results
-remain non-authoritative until deferred output-artifact validation and an
-explicit authority promotion step exist. See
-`docs/development-verification-workflow.md` for the gate, cache, lock, and
-evidence rules.
-
-The historical Stage2 authority-admission unit is Python migration debt and is
-not a permitted current command. Until its Clojure replacement is admitted,
-that unit cannot confer new integration or evidence authority.
-
-An integration that changes a shared or module fingerprint must use the
-lock-held wrapper, keeping `/private/tmp/gravity-sh07-heavy.lock` held through
-the recheck and fast-forward mutation. An advisory probe grants no reservation
-or authority and cannot be used to justify a later merge. For long-running
-authority work, use an immutable detached worktree pinned to the candidate
-commit/tree and bind the proof to that exact revision; a changed fingerprint
-requires a new proof.
+These Clojure runners emit non-authoritative development feedback and exit
+nonzero on failure. They do not replace fresh authoritative or release
+verification. The retired Python scheduler, cache, heartbeat, and Stage2
+admission wrapper are not live commands. See
+`docs/development-verification.md` for direct Clojure Stage3, SH-07, governance,
+and preflight commands.
 
 The current SH-02 development audit measured namespace require at 5.88 seconds
 and about 1.40 GiB peak resident memory, and the first ten leaf vars warm in one
@@ -1376,14 +1337,11 @@ clojure -M tools/validate_workstream_governance.clj
 clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref origin/main
 ```
 
-The historical Python document validator remains a migration gap and is not a
-permitted basis for new tooling. Use bounded manual document checks until its
-Clojure replacement is admitted; do not claim that the Clojure suite alone
-proves structural or semantic document completeness.
+The Clojure structural validator checks the canonical inventory, phase indexes,
+ASCII policy, required headings, and roadmap completion evidence. Document
+semantic consistency still requires direct review of the governing documents.
 
 ## Generation and Enrichment
 
-- The historical Python document generator and enrichment pass are frozen
-  provenance only. Do not run or modify them.
-- A future Clojure replacement must preserve the canonical 240-document
-  inventory and reviewed enrichment before the Python files are removed.
+- The retired document generator and enrichment pass are provenance only. Git
+  history preserves them; do not reconstruct them over reviewed documents.

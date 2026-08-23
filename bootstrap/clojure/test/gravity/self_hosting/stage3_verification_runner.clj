@@ -4,8 +4,8 @@
   Stage7 exposes the exact C11 source profiles, one cache-affine SH12 adapter
   batch, and one public C11 check.  The shape profile remains an execution-only
   alias of the complete source profile; it does not own a second copy of the
-  namespace catalog.  Proof candidates are launched only by the Python policy
-  boundary and remain non-authoritative pending independent attestation.
+  namespace catalog. Proof candidates remain non-authoritative pending the
+  governing fresh-run contract and independent attestation.
 
   Stage10 exposes the W1/C14 source-only admission batch, the ordinary direct
   mutation discriminator, a narrow SH25/SH26 consumer closure, and a manual
@@ -1868,9 +1868,9 @@
 (defn publish-report!
   "Atomically publish one closed-shape JSON receipt after cleanup.
 
-  The Python wrapper independently validates its private parent directory and
-  report shape.  The Clojure side still rejects an existing/symlink target and
-  never replaces a target leaf."
+  The Clojure publisher validates its private parent directory and report
+  shape, rejects an existing or symlink target, and never replaces a target
+  leaf."
   [report-file receipt]
   (if *report-publisher*
     (*report-publisher* report-file receipt)
@@ -1887,9 +1887,9 @@
   "Build a bounded command-bound receipt for non-test infrastructure failure.
 
   This schema is intentionally not a verification receipt: it carries no
-  selector, execution, summary, or cache evidence that the wrapper could
-  mistake for a valid fixed batch.  The Python supervisor rejects this schema
-  as test evidence and maps the child to its infrastructure-failure outcome.
+  selector, execution, summary, or cache evidence that a consumer could
+  mistake for a valid fixed batch. Consumers reject this schema as test
+  evidence and map it to an infrastructure-failure outcome.
   The report binding remains present whenever strict argument parsing reached
   the selected batch."
   [throwable report-binding]

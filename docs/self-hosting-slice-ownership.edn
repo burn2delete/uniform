@@ -9,7 +9,6 @@
   ["deps.edn"
    "bin/gravity"
    "bin/gravity-bootstrap"
-   "contracts/project-structure.json"
    "bootstrap/clojure/java/gravity/cli/Main.java"
    "bootstrap/clojure/src/gravity/bootstrap.clj"
    "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj"
@@ -82,12 +81,9 @@
   ["docs/artifacts/full-language/coverage/"
    "docs/artifacts/full-language/reports/full-language-coverage-"]
   :coverage-generator-paths
-  ["tools/generate_full_language_coverage_matrix.py"
-   "tools/validate_full_language_roadmap.py"]
+  ["tools/validate_full_language_roadmap.clj"]
   :completion-state-paths
-  ["contracts/full-language-coverage.json"
-   "docs/artifacts/full-language/coverage/full-language-completion-attestations.json"
-   "docs/self-hosting-slice-backlog.md"]}
+  ["docs/self-hosting-slice-backlog.md"]}
 
  :module-owners
  {"bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity" :sh-target-workflow
