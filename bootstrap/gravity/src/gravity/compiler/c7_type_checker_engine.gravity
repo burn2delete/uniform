@@ -19,6 +19,9 @@
              sh08-record-union-type-boundary-policy
              sh08-record-union-type-core-artifact
              sh08-verify-record-union-type-result
+             sh08-record-access-match-typing-boundary-policy
+             sh08-record-access-match-typed-core-artifact
+             sh08-verify-record-access-match-typing-result
              verify-c7-type-checker])
   (:effects #{})
   (:capabilities #{})
@@ -5557,6 +5560,1115 @@
      :expected expected
      :candidate candidate}))
 
+; SH-08 record/access/match typing v1 consumes the integrated closed
+; descriptor without changing that descriptor invariant.  Each construction,
+; access, scrutinee, match, and branch is a separate named map definition in
+; the authenticated B47 core.  Narrowed payload types are derived from the
+; descriptor and checked against pattern annotations; callers do not supply
+; emitted type facts.  This remains a bounded typed-core leaf, not lowering,
+; general pattern compilation, ownership, safety, layout, or runtime behavior.
+
+(defn sh08-ram-node-link [definition-name source]
+  (let [node (get source :node)
+        source-record (get node :source)]
+    {:definition definition-name
+     :core-node-id (get node :node-id)
+     :syntax-id (get source-record :syntax-id)
+     :source-span (get source-record :semantic-span)
+     :origin-chain (get source-record :origin-chain)
+     :generated-origin (get source-record :generated-origin)
+     :binding-id (get (get source :definition) :binding-id)}))
+
+(defn sh08-ram-suffix-match? [value suffix index]
+  (if (= index (count suffix))
+    true
+    (if (> (count suffix) (count value))
+      false
+      (if (= (get value (- (count value) (+ index 1)))
+             (get suffix (- (count suffix) (+ index 1))))
+        (sh08-ram-suffix-match? value suffix (+ index 1))
+        false))))
+
+(defn sh08-ram-path-extension-valid? [source-path source-extension]
+  (if (string? source-path)
+    (if (contains? #{".gravity" ".qst"} source-extension)
+      (sh08-ram-suffix-match? source-path source-extension 0)
+      false)
+    false))
+
+(defn sh08-ram-best-evidence [request resolution]
+  (let [context (get request :b47-context)
+        wrapper (get context :authenticated-wrapper)
+        boundary (get wrapper :gravity-core-boundary)
+        wrapper-core (get boundary :canonical-core-artifact)
+        context-core (get context :canonical-core-artifact)
+        coordinator (get request :coordinator-verification)]
+    (if (= :accepted (get resolution :status))
+      (let [core (get resolution :core)
+            provenance (get context :provenance)]
+        {:core core
+         :provenance provenance
+         :actual-source-path (get provenance :source-path)
+         :source-extension (get coordinator :verified-source-extension)
+         :provenance-status :authenticated-b47-core-provenance})
+      (if (map? wrapper-core)
+        (let [provenance (get wrapper :provenance)]
+          {:core wrapper-core
+           :provenance provenance
+           :actual-source-path (get provenance :source-path)
+           :source-extension (get coordinator :verified-source-extension)
+           :provenance-status :retained-b47-wrapper-provenance})
+        (if (map? context-core)
+          (let [provenance (get context :provenance)]
+            {:core context-core
+             :provenance provenance
+             :actual-source-path (get provenance :source-path)
+             :source-extension (get coordinator :verified-source-extension)
+             :provenance-status :retained-b47-context-provenance})
+          {:core {}
+           :provenance {}
+           :actual-source-path nil
+           :source-extension nil
+           :provenance-status :no-authenticated-provenance-available})))))
+
+(defn sh08-ram-symbol-vector? [values]
+  (if (vector? values)
+    (if (> (count values) 0)
+      (if (<= (count values) 64)
+        (loop [remaining values seen #{}]
+          (if (= 0 (count remaining))
+            true
+            (let [value (first remaining)]
+              (if (symbol? value)
+                (if (contains? seen value)
+                  false
+                  (recur (rest remaining) (conj seen value)))
+                false))))
+        false)
+      false)
+    false))
+
+(defn sh08-ram-program-shape? [program]
+  (if (sh08-ft-record-shape?
+       program
+       #{:record-construction-definition :record-access-definition
+         :union-construction-definition :union-match-definition})
+    (if (symbol? (get program :record-construction-definition))
+      (if (symbol? (get program :record-access-definition))
+        (if (symbol? (get program :union-construction-definition))
+          (symbol? (get program :union-match-definition))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh08-ram-record-construction-shape? [construction]
+  (if (sh08-ft-record-shape? construction #{:type :fields})
+    (if (keyword? (get construction :type))
+      (sh08-ru-all-field-values-valid? (get construction :fields))
+      false)
+    false))
+
+(defn sh08-ram-record-access-shape? [access]
+  (if (sh08-ft-record-shape? access #{:record-definition :field})
+    (if (symbol? (get access :record-definition))
+      (keyword? (get access :field))
+      false)
+    false))
+
+(defn sh08-ram-union-construction-shape? [construction]
+  (if (sh08-ft-record-shape?
+       construction #{:type :variant :payload})
+    (if (keyword? (get construction :type))
+      (if (keyword? (get construction :variant))
+        (if (= :gravity.type/unknown
+               (sh08-ru-value-type (get construction :payload)))
+          false
+          true)
+        false)
+      false)
+    false))
+
+(defn sh08-ram-match-shape? [match-source]
+  (if (sh08-ft-record-shape?
+       match-source
+       #{:union-type :scrutinee-definition :branch-definitions})
+    (if (keyword? (get match-source :union-type))
+      (if (symbol? (get match-source :scrutinee-definition))
+        (sh08-ram-symbol-vector?
+         (get match-source :branch-definitions))
+        false)
+      false)
+    false))
+
+(defn sh08-ram-branch-shape? [branch]
+  (if (sh08-ft-record-shape?
+       branch
+       #{:variant :binding :pattern-payload-type :result})
+    (if (keyword? (get branch :variant))
+      (if (keyword? (get branch :binding))
+        (if (sh08-ru-supported-type?
+             (get branch :pattern-payload-type))
+          (if (= :gravity.type/unknown
+                 (sh08-ru-value-type (get branch :result)))
+            false
+            true)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh08-ram-resolve-branches [core names]
+  (loop [remaining names sources []]
+    (if (= 0 (count remaining))
+      {:status :accepted :sources sources}
+      (let [name (first remaining)
+            source (sh08-ru-family-from-core core name)]
+        (if (= :accepted (get source :status))
+          (recur (rest remaining) (conj sources source))
+          {:status :rejected
+           :rule "C7-VERIFY"
+           :reason :match-branch-definition-required
+           :expected :named-map-definition
+           :actual name
+           :node (get source :node)})))))
+
+(defn sh08-ram-program-error [program-source reason expected actual node]
+  {:status :rejected
+   :rule "C7-VERIFY"
+   :reason reason
+   :expected expected
+   :actual actual
+   :node (if (= node nil) (get program-source :node) node)})
+
+(defn sh08-ram-resolve-program [core input-definition]
+  (let [program-source
+        (sh08-ru-family-from-core core input-definition)]
+    (if (= :accepted (get program-source :status))
+      (let [program (get program-source :family)]
+        (if (sh08-ram-program-shape? program)
+          (let [record-name
+                (get program :record-construction-definition)
+                access-name (get program :record-access-definition)
+                union-name (get program :union-construction-definition)
+                match-name (get program :union-match-definition)
+                record-source (sh08-ru-family-from-core core record-name)
+                access-source (sh08-ru-family-from-core core access-name)
+                union-source (sh08-ru-family-from-core core union-name)
+                match-source (sh08-ru-family-from-core core match-name)]
+            (if (= :accepted (get record-source :status))
+              (if (= :accepted (get access-source :status))
+                (if (= :accepted (get union-source :status))
+                  (if (= :accepted (get match-source :status))
+                    (if (sh08-ram-match-shape?
+                         (get match-source :family))
+                      (let [branches
+                            (sh08-ram-resolve-branches
+                             core
+                             (get (get match-source :family)
+                                  :branch-definitions))]
+                        (if (= :accepted (get branches :status))
+                          {:status :accepted
+                           :program-source program-source
+                           :program program
+                           :record-source record-source
+                           :record-name record-name
+                           :access-source access-source
+                           :access-name access-name
+                           :union-source union-source
+                           :union-name union-name
+                           :match-source match-source
+                           :match-name match-name
+                           :branch-sources (get branches :sources)}
+                          branches))
+                      (sh08-ram-program-error
+                       program-source :union-match-shape-invalid
+                       :closed-node-linked-union-match
+                       (get match-source :family)
+                       (get match-source :node)))
+                    (sh08-ram-program-error
+                     program-source :union-match-definition-required
+                     :named-map-definition match-name
+                     (get match-source :node)))
+                  (sh08-ram-program-error
+                   program-source :union-construction-definition-required
+                   :named-map-definition union-name
+                   (get union-source :node)))
+                (sh08-ram-program-error
+                 program-source :record-access-definition-required
+                 :named-map-definition access-name
+                 (get access-source :node)))
+              (sh08-ram-program-error
+               program-source :record-construction-definition-required
+               :named-map-definition record-name
+               (get record-source :node))))
+          (sh08-ram-program-error
+           program-source :typing-program-shape-invalid
+           :closed-node-linked-typing-program program
+           (get program-source :node))))
+      {:status :rejected
+       :rule "C7-VERIFY"
+       :reason :authenticated-typing-program-required
+       :expected :named-map-definition
+       :actual (get program-source :reason)
+       :node (get program-source :node)})))
+
+(defn sh08-ram-first-extra-field [schema-fields value-fields]
+  (if (= 0 (count value-fields))
+    nil
+    (let [value-field (first value-fields)]
+      (if (= nil
+             (sh08-ru-entry-by
+              schema-fields :name (get value-field :name)))
+        value-field
+        (sh08-ram-first-extra-field
+         schema-fields (rest value-fields))))))
+
+(defn sh08-ram-first-invalid-branch-source [branch-sources]
+  (if (= 0 (count branch-sources))
+    nil
+    (let [source (first branch-sources)]
+      (if (sh08-ram-branch-shape? (get source :family))
+        (sh08-ram-first-invalid-branch-source (rest branch-sources))
+        source))))
+
+(defn sh08-ram-first-duplicate-branch [branch-sources seen]
+  (if (= 0 (count branch-sources))
+    nil
+    (let [source (first branch-sources)
+          variant (get (get source :family) :variant)]
+      (if (contains? seen variant)
+        source
+        (sh08-ram-first-duplicate-branch
+         (rest branch-sources) (conj seen variant))))))
+
+(defn sh08-ram-branch-values [branch-sources]
+  (loop [remaining branch-sources values []]
+    (if (= 0 (count remaining))
+      values
+      (recur
+       (rest remaining)
+       (conj values (get (first remaining) :family))))))
+
+(defn sh08-ram-check-record [descriptor sources]
+  (let [record-type (get descriptor :record-type)
+        construction-source (get sources :record-source)
+        construction (get construction-source :family)
+        access-source (get sources :access-source)
+        access (get access-source :family)
+        program (get sources :program)
+        schema-fields (get record-type :fields)]
+    (if (sh08-ram-record-construction-shape? construction)
+      (let [value-fields (get construction :fields)
+            missing
+            (sh08-ru-first-missing-field schema-fields value-fields)
+            extra (sh08-ram-first-extra-field schema-fields value-fields)]
+        (if (= (get record-type :name) (get construction :type))
+          (if (= nil missing)
+            (if (= nil extra)
+              (let [mismatch
+                    (sh08-ru-first-field-type-mismatch
+                     schema-fields value-fields)]
+                (if (= nil mismatch)
+                  (if (sh08-ram-record-access-shape? access)
+                    (if (= (get access :record-definition)
+                           (get program :record-construction-definition))
+                      (if (= nil
+                             (sh08-ru-entry-by
+                              schema-fields :name (get access :field)))
+                        {:status :rejected
+                         :rule "C7-TYPE-MISMATCH"
+                         :reason :record-access-invalid-field
+                         :expected
+                         (sh08-ru-name-values schema-fields :name)
+                         :actual (get access :field)
+                         :node (get access-source :node)}
+                        {:status :accepted})
+                      {:status :rejected
+                       :rule "C7-VERIFY"
+                       :reason :record-access-definition-substitution
+                       :expected
+                       (get program :record-construction-definition)
+                       :actual (get access :record-definition)
+                       :node (get access-source :node)})
+                    {:status :rejected
+                     :rule "C7-VERIFY"
+                     :reason :record-access-shape-invalid
+                     :expected :node-linked-record-access
+                     :actual access
+                     :node (get access-source :node)})
+                  {:status :rejected
+                   :rule "C7-TYPE-MISMATCH"
+                   :reason :record-field-type-mismatch
+                   :expected (get mismatch :expected)
+                   :actual (get mismatch :actual)
+                   :node (get construction-source :node)}))
+              {:status :rejected
+               :rule "C7-TYPE-MISMATCH"
+               :reason :record-extra-field
+               :expected (sh08-ru-name-values schema-fields :name)
+               :actual (get extra :name)
+               :node (get construction-source :node)})
+            {:status :rejected
+             :rule "C7-TYPE-MISMATCH"
+             :reason :record-missing-field
+             :expected (get missing :name)
+             :actual (sh08-ru-name-values value-fields :name)
+             :node (get construction-source :node)})
+          {:status :rejected
+           :rule "C7-TYPE-MISMATCH"
+           :reason :record-construction-type-mismatch
+           :expected (get record-type :name)
+           :actual (get construction :type)
+           :node (get construction-source :node)}))
+      {:status :rejected
+       :rule "C7-VERIFY"
+       :reason :record-construction-shape-invalid
+       :expected :closed-record-construction
+       :actual construction
+       :node (get construction-source :node)})))
+
+(defn sh08-ram-first-pattern-mismatch [variants branch-sources]
+  (if (= 0 (count branch-sources))
+    nil
+    (let [source (first branch-sources)
+          branch (get source :family)
+          variant
+          (sh08-ru-entry-by variants :tag (get branch :variant))]
+      (if (= variant nil)
+        (sh08-ram-first-pattern-mismatch
+         variants (rest branch-sources))
+        (if (= (get variant :payload-type)
+               (get branch :pattern-payload-type))
+          (sh08-ram-first-pattern-mismatch
+           variants (rest branch-sources))
+          {:source source
+           :expected (get variant :payload-type)
+           :actual (get branch :pattern-payload-type)})))))
+
+(defn sh08-ram-check-union [descriptor sources]
+  (let [union-type (get descriptor :union-type)
+        construction-source (get sources :union-source)
+        construction (get construction-source :family)
+        match-source (get sources :match-source)
+        match-value (get match-source :family)
+        program (get sources :program)
+        variants (get union-type :variants)
+        branch-sources (get sources :branch-sources)]
+    (if (sh08-ram-union-construction-shape? construction)
+      (if (sh08-ram-match-shape? match-value)
+        (if (= (get match-value :scrutinee-definition)
+               (get program :union-construction-definition))
+          (if (= (get union-type :name) (get construction :type))
+            (let [variant
+                  (sh08-ru-entry-by
+                   variants :tag (get construction :variant))]
+              (if (= variant nil)
+                {:status :rejected
+                 :rule "C7-TYPE-MISMATCH"
+                 :reason :union-invalid-variant
+                 :expected (sh08-ru-name-values variants :tag)
+                 :actual (get construction :variant)
+                 :node (get construction-source :node)}
+                (if (= (get variant :payload-type)
+                       (sh08-ru-value-type (get construction :payload)))
+                  (if (= (get union-type :name)
+                         (get match-value :union-type))
+                    (let [invalid-shape
+                          (sh08-ram-first-invalid-branch-source
+                           branch-sources)]
+                      (if (= nil invalid-shape)
+                        (let [branches
+                              (sh08-ram-branch-values branch-sources)
+                              duplicate
+                              (sh08-ram-first-duplicate-branch
+                               branch-sources #{})
+                              invalid
+                              (sh08-ru-first-invalid-branch
+                               variants branches)
+                              missing
+                              (sh08-ru-first-missing-variant
+                               variants branches)]
+                          (if (= nil duplicate)
+                            (if (= nil invalid)
+                              (if (= nil missing)
+                                (if (= (count variants) (count branches))
+                                  (let [pattern-mismatch
+                                        (sh08-ram-first-pattern-mismatch
+                                         variants branch-sources)
+                                        result-type
+                                        (sh08-ru-value-type
+                                         (get (first branches) :result))
+                                        result-mismatch
+                                        (sh08-ru-first-branch-type-mismatch
+                                         branches result-type)]
+                                    (if (= nil pattern-mismatch)
+                                      (if (= nil result-mismatch)
+                                        {:status :accepted
+                                         :match-expression-type result-type}
+                                        {:status :rejected
+                                         :rule "C7-TYPE-MISMATCH"
+                                         :reason
+                                         :union-match-branch-type-mismatch
+                                         :expected
+                                         (get result-mismatch :expected)
+                                         :actual
+                                         (get result-mismatch :actual)
+                                         :node (get match-source :node)})
+                                      {:status :rejected
+                                       :rule "C7-TYPE-MISMATCH"
+                                       :reason
+                                       :union-match-contradictory-narrowing
+                                       :expected
+                                       (get pattern-mismatch :expected)
+                                       :actual
+                                       (get pattern-mismatch :actual)
+                                       :node
+                                       (get
+                                        (get pattern-mismatch :source)
+                                        :node)}))
+                                  {:status :rejected
+                                   :rule "C7-TYPE-MISMATCH"
+                                   :reason :union-match-nonexhaustive
+                                   :expected (count variants)
+                                   :actual (count branches)
+                                   :node (get match-source :node)})
+                                {:status :rejected
+                                 :rule "C7-TYPE-MISMATCH"
+                                 :reason :union-match-nonexhaustive
+                                 :expected (get missing :tag)
+                                 :actual
+                                 (sh08-ru-name-values branches :variant)
+                                 :node (get match-source :node)})
+                              {:status :rejected
+                               :rule "C7-TYPE-MISMATCH"
+                               :reason :union-match-invalid-variant
+                               :expected :declared-union-variant
+                               :actual (get invalid :variant)
+                               :node (get match-source :node)})
+                            {:status :rejected
+                             :rule "C7-TYPE-MISMATCH"
+                             :reason :union-match-unreachable-duplicate-variant
+                             :expected :unique-closed-union-variants
+                             :actual
+                             (get (get duplicate :family) :variant)
+                             :node (get duplicate :node)}))
+                        {:status :rejected
+                         :rule "C7-VERIFY"
+                         :reason :union-match-branch-shape-invalid
+                         :expected :node-linked-union-pattern-branch
+                         :actual (get invalid-shape :family)
+                         :node (get invalid-shape :node)}))
+                    {:status :rejected
+                     :rule "C7-TYPE-MISMATCH"
+                     :reason :union-match-type-mismatch
+                     :expected (get union-type :name)
+                     :actual (get match-value :union-type)
+                     :node (get match-source :node)})
+                  {:status :rejected
+                   :rule "C7-TYPE-MISMATCH"
+                   :reason :union-payload-type-mismatch
+                   :expected (get variant :payload-type)
+                   :actual
+                   (sh08-ru-value-type (get construction :payload))
+                   :node (get construction-source :node)})))
+            {:status :rejected
+             :rule "C7-TYPE-MISMATCH"
+             :reason :union-construction-type-mismatch
+             :expected (get union-type :name)
+             :actual (get construction :type)
+             :node (get construction-source :node)})
+          {:status :rejected
+           :rule "C7-VERIFY"
+           :reason :union-match-scrutinee-substitution
+           :expected (get program :union-construction-definition)
+           :actual (get match-value :scrutinee-definition)
+           :node (get match-source :node)})
+        {:status :rejected
+         :rule "C7-VERIFY"
+         :reason :union-match-shape-invalid
+         :expected :closed-node-linked-union-match
+         :actual match-value
+         :node (get match-source :node)})
+      {:status :rejected
+       :rule "C7-VERIFY"
+       :reason :union-construction-shape-invalid
+       :expected :closed-union-construction
+       :actual construction
+       :node (get construction-source :node)})))
+
+(defn sh08-ram-constraint [kind definition source expected actual]
+  (let [node (get source :node)
+        source-record (get node :source)
+        request
+        {:domain :gravity/sh08-record-access-match-constraint-v1
+         :kind kind
+         :definition definition
+         :core-node-id (get node :node-id)
+         :syntax-id (get source-record :syntax-id)
+         :expected expected
+         :actual actual}]
+    {:constraint-id :coordinator-digest-required
+     :constraint-id-request request
+     :kind kind
+     :definition definition
+     :core-node-id (get node :node-id)
+     :syntax-id (get source-record :syntax-id)
+     :source-span (get source-record :semantic-span)
+     :expected expected
+     :actual actual
+     :status :solved
+     :solution :satisfied
+     :invalidation [:core-node-change :descriptor-change :source-change]}))
+
+(defn sh08-ram-record-facts [record-type definition source]
+  (let [node (get source :node)
+        source-record (get node :source)
+        construction (get source :family)
+        schema-fields (get record-type :fields)
+        value-fields (get construction :fields)]
+    (loop [remaining schema-fields facts []]
+      (if (= 0 (count remaining))
+        facts
+        (let [schema (first remaining)
+              value
+              (sh08-ru-entry-by
+               value-fields :name (get schema :name))]
+          (recur
+           (rest remaining)
+           (conj facts
+                 {:artifact :gravity/c7-record-field-type-fact
+                  :definition definition
+                  :core-node-id (get node :node-id)
+                  :syntax-id (get source-record :syntax-id)
+                  :source-span (get source-record :semantic-span)
+                  :origin-chain (get source-record :origin-chain)
+                  :generated-origin (get source-record :generated-origin)
+                  :record-type (get record-type :name)
+                  :field (get schema :name)
+                  :declared-type (get schema :type)
+                  :actual-type
+                  (sh08-ru-value-type (get value :value))
+                  :value (get value :value)})))))))
+
+(defn sh08-ram-record-constraints [record-type definition source]
+  (let [schema-fields (get record-type :fields)
+        value-fields (get (get source :family) :fields)]
+    (loop [remaining schema-fields constraints []]
+      (if (= 0 (count remaining))
+        constraints
+        (let [schema (first remaining)
+              value
+              (sh08-ru-entry-by
+               value-fields :name (get schema :name))]
+          (recur
+           (rest remaining)
+           (conj constraints
+                 (sh08-ram-constraint
+                  :record-field-equality definition source
+                  (get schema :type)
+                  (sh08-ru-value-type (get value :value))))))))))
+
+(defn sh08-ram-branch-facts [union-type sources selected-variant]
+  (let [variants (get union-type :variants)]
+    (loop [remaining (get sources :branch-sources) facts []]
+      (if (= 0 (count remaining))
+        facts
+        (let [source (first remaining)
+              node (get source :node)
+              source-record (get node :source)
+              branch (get source :family)
+              variant
+              (sh08-ru-entry-by variants :tag (get branch :variant))
+              binding-request
+              {:domain :gravity/sh08-pattern-binding-v1
+               :branch-core-node-id (get node :node-id)
+               :branch-syntax-id (get source-record :syntax-id)
+               :binding-name (get branch :binding)
+               :narrowed-type (get variant :payload-type)}]
+          (recur
+           (rest remaining)
+           (conj facts
+                 {:artifact :gravity/c7-union-match-narrowing-fact
+                 :branch-definition
+                  (get (get source :definition) :name)
+                  :core-node-id (get node :node-id)
+                  :syntax-id (get source-record :syntax-id)
+                  :source-span (get source-record :semantic-span)
+                  :branch-core-node-id (get node :node-id)
+                  :branch-syntax-id (get source-record :syntax-id)
+                  :branch-source-span (get source-record :semantic-span)
+                  :origin-chain (get source-record :origin-chain)
+                  :generated-origin (get source-record :generated-origin)
+                  :union-type (get union-type :name)
+                  :variant (get branch :variant)
+                  :pattern-payload-type
+                  (get branch :pattern-payload-type)
+                  :narrowed-payload-type (get variant :payload-type)
+                  :pattern-binding-environment
+                  {:scope-core-node-id (get node :node-id)
+                   :bindings
+                   [{:name (get branch :binding)
+                     :type (get variant :payload-type)
+                     :binding-id :coordinator-digest-required
+                     :binding-id-request binding-request}]}
+                  :guard :absent
+                  :guard-effects #{}
+                  :branch-result-type
+                  (sh08-ru-value-type (get branch :result))
+                  :selected?
+                  (= selected-variant (get branch :variant))})))))))
+
+(defn sh08-ram-branch-constraints [union-type sources]
+  (let [variants (get union-type :variants)]
+    (loop [remaining (get sources :branch-sources) constraints []]
+      (if (= 0 (count remaining))
+        constraints
+        (let [source (first remaining)
+              branch (get source :family)
+              variant
+              (sh08-ru-entry-by variants :tag (get branch :variant))]
+          (recur
+           (rest remaining)
+           (conj constraints
+                 (sh08-ram-constraint
+                  :union-pattern-narrowing
+                  (get (get source :definition) :name)
+                  source
+                  (get variant :payload-type)
+                  (get branch :pattern-payload-type)))))))))
+
+(defn sh08-ram-append [left right]
+  (loop [remaining right result left]
+    (if (= 0 (count remaining))
+      result
+      (recur (rest remaining) (conj result (first remaining))))))
+
+(defn sh08-ram-type-table [descriptor sources match-type]
+  (let [record-node (get (get sources :record-source) :node)
+        access-node (get (get sources :access-source) :node)
+        union-node (get (get sources :union-source) :node)
+        match-node (get (get sources :match-source) :node)
+        record-type
+        {:kind :closed-record
+         :name (get (get descriptor :record-type) :name)}
+        union-type
+        {:kind :closed-union
+         :name (get (get descriptor :union-type) :name)}]
+    (loop [remaining (get sources :branch-sources)
+           table
+           {(get record-node :node-id) record-type
+            (get access-node :node-id)
+            (get
+             (sh08-ru-entry-by
+              (get (get descriptor :record-type) :fields)
+              :name
+              (get (get (get sources :access-source) :family) :field))
+             :type)
+            (get union-node :node-id) union-type
+            (get match-node :node-id) match-type}]
+      (if (= 0 (count remaining))
+        table
+        (let [source (first remaining)
+              node (get source :node)
+              branch (get source :family)]
+          (recur
+           (rest remaining)
+           (assoc table
+                  (get node :node-id)
+                  (sh08-ru-value-type (get branch :result)))))))))
+
+(defn sh08-ram-diagnostic
+  [evidence node descriptor-definition input-definition
+   rule expected actual reason]
+  (let [core (get evidence :core)
+        module (get core :module)
+        source-record (get node :source)
+        identity
+        {:domain :gravity/sh08-record-access-match-typing-diagnostic-v2
+         :rule rule
+         :stage :type-checking
+         :core-artifact-id (get core :artifact-id)
+         :descriptor-definition descriptor-definition
+         :input-definition input-definition
+         :core-node-id (get node :node-id)
+         :syntax-id (get source-record :syntax-id)
+         :source-span (get source-record :semantic-span)
+         :actual-source-path (get evidence :actual-source-path)
+         :expected expected
+         :actual actual
+         :profile (get module :profile)
+         :target (get module :target)
+         :reason reason}]
+    {:artifact :gravity/c7-record-access-match-typing-diagnostic
+     :diagnostic-id :coordinator-digest-required
+     :diagnostic-id-request identity
+     :rule rule
+     :severity :error
+     :stage :type-checking
+     :core-artifact-id (get core :artifact-id)
+     :descriptor-definition descriptor-definition
+     :input-definition input-definition
+     :core-node-id (get node :node-id)
+     :syntax-id (get source-record :syntax-id)
+     :source-span (get source-record :semantic-span)
+     :actual-source-path (get evidence :actual-source-path)
+     :source-extension (get evidence :source-extension)
+     :provenance-status (get evidence :provenance-status)
+     :binding-id (first (get node :resolved-binding-ids))
+     :type-id nil
+     :constraint-id nil
+     :expected-type expected
+     :actual-type actual
+     :profile (get module :profile)
+     :target (get module :target)
+     :origin-chain (get source-record :origin-chain)
+     :generated-origin (get source-record :generated-origin)
+     :reason reason
+     :remediation
+     {:action :repair-authenticated-node-linked-type-input
+      :requirements
+      [:exact-authenticated-descriptor-result
+       :exact-b47-context-digest-path-and-extension
+       :separate-authenticated-core-nodes
+       :complete-exact-record-field-set
+       :declared-field-value-types
+       :declared-union-variant
+       :exhaustive-noncontradictory-branch-patterns
+       :consistent-match-result-type]}}))
+
+(defn sh08-ram-rejected
+  [evidence descriptor-definition input-definition node checked]
+  (let [core (get evidence :core)
+        source-record (get node :source)]
+    {:artifact :gravity/sh08-record-access-match-typed-core
+     :schema-version 2
+     :status :rejected
+     :scope :bounded-authenticated-node-linked-type-facts
+     :module (get core :module)
+     :sh07-shaped-artifact-id (get core :artifact-id)
+     :descriptor-definition descriptor-definition
+     :input-definition input-definition
+     :core-node-id (get node :node-id)
+     :syntax-id (get source-record :syntax-id)
+     :source-span (get source-record :semantic-span)
+     :actual-source-path (get evidence :actual-source-path)
+     :source-extension (get evidence :source-extension)
+     :provenance-status (get evidence :provenance-status)
+     :provenance (get evidence :provenance)
+     :diagnostics
+     [(sh08-ram-diagnostic
+       evidence node descriptor-definition input-definition
+       (get checked :rule) (get checked :expected)
+       (get checked :actual) (get checked :reason))]
+     :pending [:surface-record-union-syntax
+               :general-pattern-compiler
+               :match-guards-and-effects
+               :default-and-unreachable-branch-analysis
+               :general-pattern-binding-environments
+               :complete-branch-provenance
+               :complete-constraint-ledger
+               :ownership-and-linear-pattern-moves
+               :safe-classification
+               :generics :protocols :dynamic-dispatch
+               :layout-and-allocation :runtime-behavior
+               :native-gravity-cryptographic-verification
+               :clojure-jvm-digest-authority-retained
+               :sh07-completion :sh08-completion]}))
+
+(defn sh08-ram-accepted
+  [evidence descriptor-result descriptor-definition input-definition
+   sources checked]
+  (let [core (get evidence :core)
+        descriptor (get descriptor-result :descriptor)
+        record-type (get descriptor :record-type)
+        union-type (get descriptor :union-type)
+        record-source (get sources :record-source)
+        access-source (get sources :access-source)
+        union-source (get sources :union-source)
+        match-source (get sources :match-source)
+        access (get access-source :family)
+        construction (get record-source :family)
+        access-schema
+        (sh08-ru-entry-by
+         (get record-type :fields) :name (get access :field))
+        access-value
+        (sh08-ru-entry-by
+         (get construction :fields) :name (get access :field))
+        union-construction (get union-source :family)
+        branch-sources (get sources :branch-sources)
+        branches (sh08-ram-branch-values branch-sources)
+        selected-branch
+        (sh08-ru-entry-by
+         branches :variant (get union-construction :variant))
+        match-type (get checked :match-expression-type)
+        record-facts
+        (sh08-ram-record-facts
+         record-type (get sources :record-name) record-source)
+        branch-facts
+        (sh08-ram-branch-facts
+         union-type sources (get union-construction :variant))
+        record-constraints
+        (sh08-ram-record-constraints
+         record-type (get sources :record-name) record-source)
+        branch-constraints
+        (sh08-ram-branch-constraints union-type sources)
+        access-constraint
+        (sh08-ram-constraint
+         :record-field-access (get sources :access-name) access-source
+         (get access-schema :type) (get access-schema :type))
+        union-constraint
+        (sh08-ram-constraint
+         :union-construction (get sources :union-name) union-source
+         (get
+          (sh08-ru-entry-by
+           (get union-type :variants) :tag
+           (get union-construction :variant))
+          :payload-type)
+         (sh08-ru-value-type (get union-construction :payload)))
+        match-constraint
+        (sh08-ram-constraint
+         :match-expression-result (get sources :match-name) match-source
+         match-type match-type)
+        constraints
+        (conj
+         (sh08-ram-append
+          (conj
+           (conj record-constraints access-constraint)
+           union-constraint)
+          branch-constraints)
+         match-constraint)
+        semantic-input
+        {:program (get sources :program)
+         :record-construction (get record-source :family)
+         :record-access (get access-source :family)
+         :union-construction (get union-source :family)
+         :union-match (get match-source :family)
+         :branches branches}
+        identity-input
+        {:domain :gravity/sh08-record-access-match-typing-v2
+         :sh07-shaped-artifact-id (get core :artifact-id)
+         :descriptor-identity-input (get descriptor-result :identity-input)
+         :descriptor-definition descriptor-definition
+         :input-definition input-definition
+         :semantic-input semantic-input}]
+    {:artifact :gravity/sh08-record-access-match-typed-core
+     :schema-version 2
+     :status :accepted
+     :scope :bounded-authenticated-node-linked-type-facts
+     :executable-gravity-type-behavior? true
+     :roadmap-credit? false
+     :module (get core :module)
+     :sh07-shaped-artifact-id (get core :artifact-id)
+     :descriptor-definition descriptor-definition
+     :input-definition input-definition
+     :descriptor-identity-input (get descriptor-result :identity-input)
+     :typed-core
+     {:artifact :gravity/bounded-typed-core
+      :types (sh08-ram-type-table descriptor sources match-type)
+      :diagnostics []}
+     :record-construction-type-facts record-facts
+     :record-access-type-fact
+     {:artifact :gravity/c7-record-access-type-fact
+      :definition (get sources :access-name)
+      :core-node-id (get (get access-source :node) :node-id)
+      :syntax-id
+      (get (get (get access-source :node) :source) :syntax-id)
+      :source-span
+      (get (get (get access-source :node) :source) :semantic-span)
+      :record-definition (get access :record-definition)
+      :record-type (get record-type :name)
+      :field (get access :field)
+      :result-type (get access-schema :type)
+      :value (get access-value :value)}
+     :union-construction-type-fact
+     {:artifact :gravity/c7-union-construction-type-fact
+      :definition (get sources :union-name)
+      :core-node-id (get (get union-source :node) :node-id)
+      :syntax-id
+      (get (get (get union-source :node) :source) :syntax-id)
+      :source-span
+      (get (get (get union-source :node) :source) :semantic-span)
+      :union-type (get union-type :name)
+      :variant (get union-construction :variant)
+      :payload-type
+      (sh08-ru-value-type (get union-construction :payload))}
+     :union-match-narrowing-facts branch-facts
+     :pattern-binding-environments
+     (loop [remaining branch-facts environments []]
+       (if (= 0 (count remaining))
+         environments
+         (recur
+          (rest remaining)
+          (conj environments
+                (get (first remaining)
+                     :pattern-binding-environment)))))
+     :match-expression-type-fact
+     {:artifact :gravity/c7-match-expression-type-fact
+      :definition (get sources :match-name)
+      :core-node-id (get (get match-source :node) :node-id)
+      :syntax-id
+      (get (get (get match-source :node) :source) :syntax-id)
+      :source-span
+      (get (get (get match-source :node) :source) :semantic-span)
+      :scrutinee-type
+      {:kind :closed-union :name (get union-type :name)}
+      :expression-type match-type
+      :exhaustiveness :closed-total
+      :branch-count (count branch-facts)
+      :guard-effects #{}
+      :selected-result (get selected-branch :result)}
+     :constraint-ledger
+     {:artifact :gravity/c7-bounded-constraint-ledger
+      :constraints constraints
+      :unsolved []
+      :status :solved}
+     :diagnostics []
+     :artifact-id-request identity-input
+     :identity-input identity-input
+     :identity-resolution :coordinator-digest-required
+     :actual-source-path (get evidence :actual-source-path)
+     :source-extension (get evidence :source-extension)
+     :provenance-status (get evidence :provenance-status)
+     :provenance (get evidence :provenance)
+     :pending [:surface-record-union-syntax
+               :general-pattern-compiler
+               :match-guards-and-effects
+               :default-and-unreachable-branch-analysis
+               :general-pattern-binding-environments
+               :complete-branch-provenance
+               :complete-constraint-ledger
+               :ownership-and-linear-pattern-moves
+               :safe-classification
+               :generics :protocols :dynamic-dispatch
+               :layout-and-allocation :runtime-behavior
+               :native-gravity-cryptographic-verification
+               :clojure-jvm-digest-authority-retained
+               :sh07-completion :sh08-completion]}))
+
+(defn sh08-record-access-match-typing-boundary-policy []
+  {:invariant-family :self-hosting/sh08-record-access-match-typing-v1
+   :descriptor-invariant :self-hosting/sh08-records-unions
+   :descriptor-authentication
+   :exact-recomputation-from-authenticated-b47-core
+   :input-authentication
+   :separate-named-map-nodes-in-same-authenticated-b47-core
+   :narrowing-source :derived-union-variant-payload-type
+   :pattern-annotation-checking? true
+   :node-linked-type-facts? true
+   :branch-spans? true
+   :bounded-pattern-binding-environments? true
+   :bounded-constraint-ledger? true
+   :overall-match-expression-type? true
+   :closed-record-construction-and-access-only? true
+   :closed-union-match-narrowing-only? true
+   :executable-gravity-type-behavior? true
+   :roadmap-credit? false
+   :general-pattern-compiler? false
+   :match-guards-and-effects :pending
+   :defaults-and-unreachable-branches :pending
+   :general-pattern-binding-environments :pending
+   :complete-branch-provenance :pending
+   :complete-constraint-ledger :pending
+   :ownership-and-linear-pattern-moves :pending
+   :safe-classification :pending
+   :runtime-behavior? false
+   :independent-gravity-cryptographic-verification? false
+   :host-digest-authority-retained? true
+   :clojure-jvm-digest-authority-retained? true
+   :native-gravity-cryptographic-verification :pending})
+
+(defn sh08-record-access-match-typed-core-artifact
+  [request descriptor-definition input-definition descriptor-candidate]
+  (let [resolution (sh08-ft-authenticated-core request)
+        evidence (sh08-ram-best-evidence request resolution)
+        core (get evidence :core)]
+    (if (= :accepted (get resolution :status))
+      (if (sh08-ram-path-extension-valid?
+           (get evidence :actual-source-path)
+           (get evidence :source-extension))
+      (let [descriptor-result
+            (sh08-record-union-type-core-artifact
+             request descriptor-definition)
+            sources (sh08-ram-resolve-program core input-definition)
+            node
+            (if (= :accepted (get sources :status))
+              (get (get sources :program-source) :node)
+              (get sources :node))]
+        (if (= :accepted (get descriptor-result :status))
+          (if (= descriptor-result descriptor-candidate)
+            (if (= :accepted (get sources :status))
+              (let [record-check
+                    (sh08-ram-check-record
+                     (get descriptor-result :descriptor) sources)]
+                (if (= :accepted (get record-check :status))
+                  (let [union-check
+                        (sh08-ram-check-union
+                         (get descriptor-result :descriptor) sources)]
+                    (if (= :accepted (get union-check :status))
+                      (sh08-ram-accepted
+                       evidence descriptor-result descriptor-definition
+                       input-definition sources union-check)
+                      (sh08-ram-rejected
+                       evidence descriptor-definition input-definition
+                       (get union-check :node) union-check)))
+                  (sh08-ram-rejected
+                   evidence descriptor-definition input-definition
+                   (get record-check :node) record-check)))
+              (sh08-ram-rejected
+               evidence descriptor-definition input-definition node sources))
+            (sh08-ram-rejected
+             evidence descriptor-definition input-definition node
+             {:rule "C7-VERIFY"
+              :reason
+              (if (= (get descriptor-result :provenance)
+                     (get descriptor-candidate :provenance))
+                :descriptor-fact-substitution
+                :descriptor-provenance-substitution)
+              :expected :exact-recomputed-descriptor-result
+              :actual :substituted-descriptor-result}))
+          (sh08-ram-rejected
+           evidence descriptor-definition input-definition node
+           {:rule "C7-VERIFY"
+            :reason :authenticated-descriptor-required
+            :expected :accepted-integrated-descriptor
+            :actual (get descriptor-result :status)})))
+      (sh08-ram-rejected
+       evidence descriptor-definition input-definition
+       (get (sh08-ru-family-from-core core input-definition) :node)
+       {:rule "C7-VERIFY"
+        :reason :source-extension-path-mismatch
+        :expected (get evidence :actual-source-path)
+        :actual (get evidence :source-extension)}))
+      (sh08-ram-rejected
+       evidence descriptor-definition input-definition
+       (get (sh08-ru-family-from-core core input-definition) :node)
+       {:rule "C7-VERIFY"
+        :reason (get resolution :reason)
+        :expected :host-resolved-authentic-b47-context
+        :actual (get resolution :reason)}))))
+
+(defn sh08-verify-record-access-match-typing-result
+  [request descriptor-definition input-definition descriptor-candidate
+   candidate]
+  (let [expected
+        (sh08-record-access-match-typed-core-artifact
+         request descriptor-definition input-definition descriptor-candidate)]
+    {:artifact :gravity/sh08-record-access-match-typing-verification
+     :status (if (= expected candidate) :passed :rejected)
+     :checks [:authenticated-b47-core-context-digest-path-and-extension
+              :integrated-descriptor-exactly-recomputed
+              :typing-program-and-component-nodes-source-bound
+              :record-construction-field-facts-node-linked
+              :record-access-result-fact-node-linked
+              :closed-union-variant-fact-node-linked
+              :branch-spans-and-pattern-bindings-preserved
+              :exhaustive-derived-match-narrowing
+              :match-expression-type-derived
+              :bounded-constraint-ledger-solved
+              :result-identity-fact-and-provenance-mutation-rejected]
+     :expected expected
+     :candidate candidate}))
 (defn verify-c7-type-checker [typed-core-artifact]
   (quote {:status :stage1-source-owned
           :typed-core-artifact typed-core-artifact

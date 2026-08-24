@@ -1,0 +1,188 @@
+(ns self-hosting.sh08.record-access-match-typing.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [closed-record-union-descriptor
+             missing-field-program extra-field-program wrong-field-program
+             invalid-access-field-program invalid-variant-program
+             nonexhaustive-match-program contradictory-narrowing-program
+             branch-result-type-mismatch-program
+             malformed-record-program malformed-union-program
+             invalid-branch-shape-program duplicate-branch-program])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-08-record-access-match-typing-v1
+              :scope :bounded-authenticated-negative-type-fixtures
+              :roadmap-credit? false
+              :non-claims [:match-guards-and-effects
+                           :default-and-unreachable-branch-analysis
+                           :general-pattern-binding-environments
+                           :complete-branch-provenance
+                           :complete-constraint-ledger
+                           :ownership-and-linear-pattern-moves
+                           :safe-classification
+                           :clojure-jvm-digest-retirement]}))
+
+(def closed-record-union-descriptor
+  {:record-type
+   {:name :user
+    :fields [{:name :id :type :gravity.type/integer}
+             {:name :name :type :gravity.type/string}]}
+   :record-construction
+   {:type :user
+    :fields [{:name :id :value 7}
+             {:name :name :value "Ada"}]}
+   :record-access {:record-type :user :field :name}
+   :union-type
+   {:name :maybe-integer
+    :variants [{:tag :some :payload-type :gravity.type/integer}
+               {:tag :none :payload-type :gravity.type/nil}]}
+   :union-construction
+   {:type :maybe-integer :variant :some :payload 7}
+   :union-match
+   {:union-type :maybe-integer
+    :branches [{:variant :some :result 1}
+               {:variant :none :result 0}]}})
+
+(def valid-record-construction
+  {:type :user
+   :fields [{:name :id :value 7}
+            {:name :name :value "Ada"}]})
+(def valid-record-access
+  {:record-definition valid-record-construction :field :name})
+(def valid-union-construction
+  {:type :maybe-integer :variant :some :payload 7})
+(def valid-some-branch
+  {:variant :some :binding :payload
+   :pattern-payload-type :gravity.type/integer :result "present"})
+(def valid-none-branch
+  {:variant :none :binding :empty-payload
+   :pattern-payload-type :gravity.type/nil :result "absent"})
+(def valid-union-match
+  {:union-type :maybe-integer
+   :scrutinee-definition valid-union-construction
+   :branch-definitions [valid-some-branch valid-none-branch]})
+
+(def missing-field-construction
+  {:type :user :fields [{:name :id :value 7}]})
+(def missing-field-program
+  {:record-construction-definition missing-field-construction
+   :record-access-definition valid-record-access
+   :union-construction-definition valid-union-construction
+   :union-match-definition valid-union-match})
+
+(def extra-field-construction
+  {:type :user
+   :fields [{:name :id :value 7} {:name :name :value "Ada"}
+            {:name :admin :value true}]})
+(def extra-field-program
+  {:record-construction-definition extra-field-construction
+   :record-access-definition valid-record-access
+   :union-construction-definition valid-union-construction
+   :union-match-definition valid-union-match})
+
+(def wrong-field-construction
+  {:type :user
+   :fields [{:name :id :value "seven"} {:name :name :value "Ada"}]})
+(def wrong-field-program
+  {:record-construction-definition wrong-field-construction
+   :record-access-definition valid-record-access
+   :union-construction-definition valid-union-construction
+   :union-match-definition valid-union-match})
+
+(def invalid-record-access
+  {:record-definition valid-record-construction :field :unknown})
+(def invalid-access-field-program
+  {:record-construction-definition valid-record-construction
+   :record-access-definition invalid-record-access
+   :union-construction-definition valid-union-construction
+   :union-match-definition valid-union-match})
+
+(def invalid-union-construction
+  {:type :maybe-integer :variant :unknown :payload 7})
+(def invalid-variant-union-match
+  {:union-type :maybe-integer
+   :scrutinee-definition invalid-union-construction
+   :branch-definitions [valid-some-branch valid-none-branch]})
+(def invalid-variant-program
+  {:record-construction-definition valid-record-construction
+   :record-access-definition valid-record-access
+   :union-construction-definition invalid-union-construction
+   :union-match-definition invalid-variant-union-match})
+
+(def nonexhaustive-union-match
+  {:union-type :maybe-integer
+   :scrutinee-definition valid-union-construction
+   :branch-definitions [valid-some-branch]})
+(def nonexhaustive-match-program
+  {:record-construction-definition valid-record-construction
+   :record-access-definition valid-record-access
+   :union-construction-definition valid-union-construction
+   :union-match-definition nonexhaustive-union-match})
+
+(def contradictory-some-branch
+  {:variant :some :binding :payload
+   :pattern-payload-type :gravity.type/string :result "present"})
+(def contradictory-union-match
+  {:union-type :maybe-integer
+   :scrutinee-definition valid-union-construction
+   :branch-definitions [contradictory-some-branch valid-none-branch]})
+(def contradictory-narrowing-program
+  {:record-construction-definition valid-record-construction
+   :record-access-definition valid-record-access
+   :union-construction-definition valid-union-construction
+   :union-match-definition contradictory-union-match})
+
+(def integer-none-branch
+  {:variant :none :binding :empty-payload
+   :pattern-payload-type :gravity.type/nil :result 0})
+(def result-mismatch-union-match
+  {:union-type :maybe-integer
+   :scrutinee-definition valid-union-construction
+   :branch-definitions [valid-some-branch integer-none-branch]})
+(def branch-result-type-mismatch-program
+  {:record-construction-definition valid-record-construction
+   :record-access-definition valid-record-access
+   :union-construction-definition valid-union-construction
+   :union-match-definition result-mismatch-union-match})
+
+(def malformed-record-construction {:type :user})
+(def malformed-record-program
+  {:record-construction-definition malformed-record-construction
+   :record-access-definition valid-record-access
+   :union-construction-definition valid-union-construction
+   :union-match-definition valid-union-match})
+
+(def malformed-union-construction
+  {:type :maybe-integer :variant :some})
+(def malformed-union-program
+  {:record-construction-definition valid-record-construction
+   :record-access-definition valid-record-access
+   :union-construction-definition malformed-union-construction
+   :union-match-definition valid-union-match})
+
+(def invalid-binding-branch
+  {:variant :some :binding "payload"
+   :pattern-payload-type :gravity.type/integer :result "present"})
+(def invalid-branch-union-match
+  {:union-type :maybe-integer
+   :scrutinee-definition valid-union-construction
+   :branch-definitions [invalid-binding-branch valid-none-branch]})
+(def invalid-branch-shape-program
+  {:record-construction-definition valid-record-construction
+   :record-access-definition valid-record-access
+   :union-construction-definition valid-union-construction
+   :union-match-definition invalid-branch-union-match})
+
+(def duplicate-some-branch
+  {:variant :some :binding :other-payload
+   :pattern-payload-type :gravity.type/integer :result "again"})
+(def duplicate-branch-union-match
+  {:union-type :maybe-integer
+   :scrutinee-definition valid-union-construction
+   :branch-definitions [valid-some-branch duplicate-some-branch]})
+(def duplicate-branch-program
+  {:record-construction-definition valid-record-construction
+   :record-access-definition valid-record-access
+   :union-construction-definition valid-union-construction
+   :union-match-definition duplicate-branch-union-match})
