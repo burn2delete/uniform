@@ -813,7 +813,7 @@
       "dependencies": ["sh11-division-bounds-safety-v1"],
       "architecture_decision": "",
       "base_commit": "f68451e27cb65e81c619d94bfe5608feb9a09d1b",
-      "candidate_commit": "2d3f5052aadee07e645c7c76e5a729c8fa40398b",
+      "candidate_commit": "5025ddf03171974681f5cff70b204ec78f89b7d8",
       "clean_worktree": true,
       "owned_paths": [
         "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/branch_join_mir.gravity",
@@ -844,6 +844,7 @@
       },
       "reviews": [
         {"reviewer": "sh12_exact_review", "kind": "independent", "result": "rejected"},
+        {"reviewer": "sh12_exact_review", "kind": "independent", "result": "accepted"},
         {"reviewer": "sh12_exact_review", "kind": "independent", "result": "accepted"}
       ],
       "residual_host_boundaries": [
@@ -858,9 +859,9 @@
         {"state": "review-pending", "at": "2026-08-24T08:36:02Z", "actor": "uniform-coordinator", "reason": "request exact remediation review of both rejected substitutions"},
         {"state": "accepted", "at": "2026-08-24T08:36:03Z", "actor": "sh12_exact_review", "reason": "accept fail-closed ownership and effect fact binding, branch-join semantics, fixtures, and nonclaims"},
         {"state": "integration-eligible", "at": "2026-08-24T08:36:04Z", "actor": "uniform-coordinator", "reason": "SH-11 dependency, corrected exact identities, 1550-assertion focused gate, clean branch, independent acceptance, boundaries, and nonclaims verified"},
-        {"state": "integrated", "at": "2026-08-24T08:38:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the corrected exact accepted SH-12 candidate and its admission record onto main"}
+        {"state": "integrated", "at": "2026-08-24T08:47:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded corrected candidate 2d3f5052aadee07e645c7c76e5a729c8fa40398b and independently accepted two-file descendant 5025ddf03171974681f5cff70b204ec78f89b7d8 closing coordinated node and fact effect substitution"}
       ],
-      "disposition": "Integrated corrected bounded SH-12 branch-join MIR family only; initial candidate rejected, no SH-12 completion or roadmap credit."
+      "disposition": "Integrated corrected and coordinated-substitution-hardened bounded SH-12 branch-join MIR family only; initial candidate rejected, no SH-12 completion or roadmap credit."
     }
   ]
 }
