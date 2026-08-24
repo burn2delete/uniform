@@ -43,6 +43,13 @@ path has no owner. Its plan and execution report are explicitly
 non-authoritative and cannot satisfy the standard gates below or any release,
 self-hosting, or seed-retirement gate.
 
+The SH-01 impact runner batches only normal namespaces from the same slice in
+warm JVMs, with a reviewed maximum batch size of eight. `:memory-heavy` work
+retains its capacity-one fresh-process lane, and `:exclusive` work remains
+fresh and sequential after the parallel lanes drain. Batch reports preserve
+namespace fixture boundaries, deterministic fail-fast skips, bounded output,
+and explicit non-authority.
+
 Stage3 fixed batches run directly through the Clojure runner:
 
 ```bash

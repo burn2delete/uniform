@@ -22,6 +22,140 @@
     (catch clojure.lang.ExceptionInfo exception
       (ex-data exception))))
 
+(defn- batch-result
+  [jobs statuses skipped fail-fast?]
+  (let [namespaces (vec (sort (map :namespace jobs)))
+        attempted-count (- (count namespaces) (count skipped))
+        attempted (subvec namespaces 0 attempted-count)
+        results
+        (mapv (fn [namespace status]
+                {:namespace namespace
+                 :status status
+                 :exit-code (if (= :passed status) 0 1)
+                 :attempted? true
+                 :elapsed-ms 1
+                 :test 1 :pass (if (= :passed status) 1 0)
+                 :fail (if (= :failed status) 1 0) :error 0
+                 :summary {:test 1
+                           :pass (if (= :passed status) 1 0)
+                           :fail (if (= :failed status) 1 0)
+                           :error 0}
+                 :stdout {:text "" :bytes 0 :observed-bytes 0
+                          :limit-bytes 8192 :truncated? false}
+                 :stderr {:text "" :bytes 0 :observed-bytes 0
+                          :limit-bytes 8192 :truncated? false}})
+              attempted statuses)
+        passed? (and (empty? skipped)
+                     (every? #(= :passed (:status %)) results))]
+    {:schema :gravity/self-hosting-test-report-v2
+     :authority :non-authoritative
+     :authoritative? false
+     :status (if passed? :passed :failed)
+     :exit-code (if passed? 0 1)
+     :namespaces namespaces
+     :namespace-results results
+     :skipped-namespaces (vec skipped)
+     :fail-fast? fail-fast?
+     :summary {:test (count results)
+               :pass (count (filter #(= :passed (:status %)) results))
+               :fail (count (filter #(= :failed (:status %)) results))
+               :error 0}}))
+
+(deftest normal-jobs-share-bounded-workers-without-mixing-resource-classes
+  (let [normal-a (shard "gravity.self-hosting.normal-a-test" "SH-01" :normal)
+        normal-b (shard "gravity.self-hosting.normal-b-test" "SH-01" :normal)
+        normal-c (shard "gravity.self-hosting.normal-c-test" "SH-01" :normal)
+        memory (shard "gravity.self-hosting.memory-test" "SH-07" :memory-heavy)
+        exclusive (shard "gravity.self-hosting.exclusive-test" "SH-26" :exclusive)
+        batches (atom [])
+        isolated (atom [])
+        report
+        (runner/execute-plan
+         (plan [normal-c exclusive normal-a memory normal-b])
+         {:normal-parallelism 1
+          :normal-batch-size 2
+          :normal-batch-worker
+          (fn [jobs]
+            (swap! batches conj (mapv :namespace jobs))
+            (batch-result jobs (repeat (count jobs) :passed) [] false))
+          :worker (fn [job]
+                    (swap! isolated conj [(:namespace job)
+                                          (:resource-class job)])
+                    {:exit-code 0})})]
+    (is (= '[[gravity.self-hosting.normal-a-test
+              gravity.self-hosting.normal-b-test]
+             [gravity.self-hosting.normal-c-test]]
+           @batches))
+    (is (= '[[gravity.self-hosting.memory-test :memory-heavy]
+             [gravity.self-hosting.exclusive-test :exclusive]]
+           @isolated))
+    (is (true? (:normal-batching? report)))
+    (is (= 5 (:jobs report)))
+    (is (= '[gravity.self-hosting.exclusive-test
+             gravity.self-hosting.memory-test
+             gravity.self-hosting.normal-a-test
+             gravity.self-hosting.normal-b-test
+             gravity.self-hosting.normal-c-test]
+           (mapv :namespace (:results report))))))
+
+(deftest warm-batch-fail-fast-preserves-attempted-prefix-and-skipped-tail
+  (let [first-job (shard "gravity.self-hosting.normal-a-test" "SH-01" :normal)
+        second-job (shard "gravity.self-hosting.normal-b-test" "SH-01" :normal)
+        third-job (shard "gravity.self-hosting.normal-c-test" "SH-01" :normal)
+        exclusive (shard "gravity.self-hosting.exclusive-test" "SH-26" :exclusive)
+        report
+        (runner/execute-plan
+         (plan [first-job second-job third-job exclusive])
+         {:normal-parallelism 1
+          :normal-batch-size 2
+          :fail-fast true
+          :normal-batch-worker
+          (fn [jobs]
+            (batch-result jobs [:failed]
+                          [(:namespace (second jobs))] true))
+          :worker (fn [_] {:exit-code 0})})]
+    (is (= ['gravity.self-hosting.normal-a-test]
+           (mapv :namespace (:results report))))
+    (is (= '[gravity.self-hosting.exclusive-test
+             gravity.self-hosting.normal-b-test
+             gravity.self-hosting.normal-c-test]
+           (:skipped-namespaces report)))
+    (is (= :failed (:status report)))
+    (is (true? (:fail-fast-triggered? report)))
+    (is (= 1 (:exit-code report)))))
+
+(deftest warm-batch-command-and-resource-boundary-are-explicit
+  (let [jobs [(shard "gravity.self-hosting.normal-a-test" "SH-01" :normal)
+              (shard "gravity.self-hosting.normal-b-test" "SH-01" :normal)]]
+    (is (= ["clojure" "-M:test"
+            "--namespace" "gravity.self-hosting.normal-a-test"
+            "--namespace" "gravity.self-hosting.normal-b-test"
+            "--fail-fast" "--report-file" "/tmp/result.edn"]
+           (runner/normal-batch-command jobs "/tmp/result.edn"
+                                        {:fail-fast? true})))
+    (is (= "SH01-PARALLEL-BATCH-RESOURCE"
+           (:id
+            (exception-data
+             #(runner/run-normal-batch-process
+               [(shard "gravity.self-hosting.heavy-test"
+                       "SH-07" :memory-heavy)]))))))
+  (is (= "SH01-PARALLEL-BATCH-LIMIT"
+         (:id
+          (exception-data
+           #(runner/schedule-plan
+             (plan [(shard "gravity.self-hosting.normal-test"
+                           "SH-01" :normal)])
+             {:normal-batch-size 9})))))
+  (let [result
+        (runner/run-normal-batch-process
+         [(shard "gravity.self-hosting.normal-test" "SH-01" :normal)]
+         {:working-directory "/tmp"
+          :process-launcher (fn [_ _] {:status :passed :exit-code 0})})]
+    (is (= :error (:status result)))
+    (is (= 1 (:exit-code result)))
+    (is (clojure.string/includes? (:batch-report-error result)
+                                  "did not publish result.edn"))))
+
 (deftest schedule-declares-bounded-phases-and-exclusive-drain-order
   (let [impact-plan
         (plan

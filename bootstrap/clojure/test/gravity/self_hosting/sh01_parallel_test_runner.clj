@@ -10,7 +10,8 @@
   worker function and a process launcher can be injected by tests, so scheduler
   behaviour can be checked without starting a JVM for every fixture."
   (:gen-class)
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [gravity.self-hosting.sh01-impact-test-planner :as planner]))
 
@@ -21,11 +22,14 @@
           ExecutorService LinkedBlockingQueue TimeUnit))
 
 (def ^:private default-normal-parallelism 2)
+(def ^:private default-normal-batch-size 8)
+(def ^:private maximum-normal-batch-size 8)
 (def ^:private default-memory-parallelism 1)
 (def ^:private default-command ["clojure" "-M:test"])
 (def ^:private default-capture-limit-bytes (* 1024 1024))
 (def ^:private default-capture-limit-chars (* 1024 1024))
 (def ^:private default-capture-wait-ms 5000)
+(def ^:private batch-report-limit-bytes (* 256 1024))
 (def ^:private process-cleanup-grace-ms 100)
 (def ^:private process-cleanup-timeout-ms 1500)
 (def ^:private process-post-cleanup-wait-ms 100)
@@ -330,13 +334,23 @@
             (:normal-jobs options)
             (:parallelism options)
             default-normal-parallelism)
+        normal-batch-size
+        (or (:normal-batch-size options) default-normal-batch-size)
         memory
         (or (:memory-parallelism options)
             (:memory-heavy-parallelism options)
             (:memory-jobs options)
             default-memory-parallelism)]
     (let [normal (positive-integer normal :normal-parallelism)
+          normal-batch-size
+          (positive-integer normal-batch-size :normal-batch-size)
           memory (positive-integer memory :memory-parallelism)]
+      (when (> normal-batch-size maximum-normal-batch-size)
+        (throw
+         (ex-info "Normal SH-01 batch size exceeds the reviewed bound"
+                  {:id "SH01-PARALLEL-BATCH-LIMIT"
+                   :normal-batch-size normal-batch-size
+                   :maximum maximum-normal-batch-size})))
       (when-not (= 1 memory)
         (throw
          (ex-info
@@ -346,6 +360,7 @@
            :required 1})))
       (assoc options
              :normal-parallelism normal
+             :normal-batch-size normal-batch-size
              :memory-parallelism memory
              ;; Both spellings are accepted by the programmatic API.  The
              ;; question-mark spelling is used by the CLI, matching the
@@ -355,6 +370,29 @@
                                       (:fail-fast options)))
              :fail-fast (boolean (or (:fail-fast? options)
                                      (:fail-fast options)))))))
+
+(defn- normal-batches
+  "Packs normal jobs into bounded, deterministic cache-affine batches.
+
+  Slice identity is the only reviewed affinity fact in an SH-01 plan.  Jobs
+  are therefore ordered by slice and namespace before bounded partitioning;
+  no memory-heavy or exclusive job can enter this path."
+  [jobs batch-size]
+  (->> jobs
+       (group-by :slice)
+       (sort-by (comp str key))
+       (mapcat (fn [[_ slice-jobs]]
+                 (partition-all
+                  batch-size
+                  (sort-by #(namespace-name (:namespace %)) slice-jobs))))
+       (mapv
+        (fn [batch]
+          (let [batch (vec batch)]
+            {:namespace (:namespace (first batch))
+             :slice (:slice (first batch))
+             :resource-class :normal
+             :batch-jobs batch
+             :batch-namespaces (mapv :namespace batch)})))))
 
 (defn schedule-plan
   "Returns the deterministic execution schedule for an impact plan.
@@ -366,11 +404,13 @@
   ([plan]
    (schedule-plan plan {}))
   ([plan options]
-   (let [{:keys [normal-parallelism memory-parallelism] :as options}
+   (let [{:keys [normal-parallelism normal-batch-size memory-parallelism]
+          :as options}
          (execution-options options)
          jobs (canonical-jobs plan)
          grouped (group-by resource-class jobs)
          normal (vec (get grouped :normal []))
+         normal-batches (normal-batches normal normal-batch-size)
          memory (vec (get grouped :memory-heavy []))
          exclusive (vec (get grouped :exclusive []))
          parallel-phase
@@ -378,6 +418,7 @@
           :capacities {:normal normal-parallelism
                        :memory-heavy memory-parallelism}
           :normal normal
+          :normal-batches normal-batches
           :memory-heavy memory
           :exclusive []
           :jobs (vec (concat normal memory))}
@@ -396,6 +437,7 @@
       :plan-schema (:schema plan)
       :plan-authority (plan-authority plan)
       :normal-parallelism normal-parallelism
+      :normal-batch-size normal-batch-size
       :memory-parallelism memory-parallelism
       :fail-fast? (:fail-fast? options)
       :fail-fast (:fail-fast? options)
@@ -528,7 +570,52 @@
        :interrupted? (interrupted-throwable? throwable)
        :exception-class (class throwable)})))
 
-(declare run-namespace-process)
+(declare run-namespace-process run-normal-batch-process
+         process-result bound-launch-result)
+
+(defn- expand-batch-result
+  [batch-job result]
+  (let [jobs (:batch-jobs batch-job)
+        members (into {} (map (juxt :namespace identity)
+                              (:namespace-results result)))
+        common (dissoc result :namespace :slice :resource-class :result
+                       :batch-job
+                       :namespace-results :namespaces :skipped-namespaces
+                       :summary :test :pass :fail :error :status :exit-code
+                       :stdout :stderr :elapsed-ms)]
+    (mapv
+     (fn [job]
+       (if-let [member (get members (:namespace job))]
+         (let [stdout (:stdout member)
+               stderr (:stderr member)]
+           (normalize-result
+            job
+            (merge common member
+                   {:stdout (if (map? stdout) (:text stdout) stdout)
+                    :stderr (if (map? stderr) (:text stderr) stderr)
+                    :stdout-truncated? (boolean (and (map? stdout)
+                                                     (:truncated? stdout)))
+                    :stderr-truncated? (boolean (and (map? stderr)
+                                                     (:truncated? stderr)))
+                    :batch-namespaces (:batch-namespaces batch-job)})
+            (:elapsed-ms member)))
+         (when (empty? members)
+           (normalize-result
+            job
+            (assoc result :batch-namespaces (:batch-namespaces batch-job))
+            (:elapsed-ms result)))))
+     jobs)))
+
+(defn- expanded-results
+  [results]
+  (->> results
+       vals
+       (mapcat (fn [result]
+                 (if-let [batch-job (:batch-job result)]
+                   (expand-batch-result batch-job result)
+                   [result])))
+       (remove nil?)
+       (into {} (map (juxt (comp namespace-key :namespace) identity)))))
 
 (defn- lane-inflight-count
   [state lane]
@@ -663,10 +750,14 @@
 (defn execute-plan
   "Executes a plan according to `schedule-plan` and returns a report.
 
-  Options include `:normal-parallelism`, `:memory-parallelism`, `:timeout-ms`,
+  Options include `:normal-parallelism`, `:normal-batch-size`,
+  `:memory-parallelism`, `:timeout-ms`,
   `:working-directory`, `:command`, `:process-launcher`, and an injectable
-  one-argument `:worker`.  The default worker launches one fresh Clojure
-  process per namespace.  `:fail-fast?` (or `:fail-fast`) keeps only one
+  one-argument `:worker`.  The default worker launches bounded batches of
+  normal namespaces in warm Clojure processes. Memory-heavy and exclusive
+  jobs still launch one fresh process per namespace. Supplying `:worker`
+  preserves the one-job injectable unit-test API; `:normal-batch-worker` can
+  explicitly test batching. `:fail-fast?` (or `:fail-fast`) keeps only one
   capacity-sized submission set in flight and stops refilling both independent
   pools after the first failed, timed-out, or errored result.  Already-running
   jobs drain safely; skipped jobs are reported in deterministic plan order.
@@ -676,8 +767,17 @@
   ([plan options]
    (let [options (execution-options options)
          schedule (schedule-plan plan options)
-         worker (or (:worker options)
-                    #(run-namespace-process % options))
+         namespace-worker (or (:worker options)
+                              #(run-namespace-process % options))
+         batch? (or (nil? (:worker options))
+                    (some? (:normal-batch-worker options)))
+         batch-worker (or (:normal-batch-worker options)
+                          #(run-normal-batch-process % options))
+         worker (fn [job]
+                  (if (and (= :normal (:resource-class job))
+                           (:batch-jobs job))
+                    (assoc (batch-worker (:batch-jobs job)) :batch-job job)
+                    (namespace-worker job)))
          fail-fast? (:fail-fast? options)
          normal-executor
          (Executors/newFixedThreadPool
@@ -697,7 +797,9 @@
              (run-parallel-lanes!
               worker
               parallel-lanes
-              {:normal (vec (get-in schedule [:parallel-phase :normal]))
+              {:normal (vec (if batch?
+                              (get-in schedule [:parallel-phase :normal-batches])
+                              (get-in schedule [:parallel-phase :normal])))
                :memory-heavy
                (vec (get-in schedule [:parallel-phase :memory-heavy]))}
               fail-fast?
@@ -707,7 +809,7 @@
              ;; fail-fast is disabled, and the same stop marker prevents any
              ;; exclusive job from starting after a parallel failure.
              results-by-key
-             (atom (:results parallel-state))
+             (atom (expanded-results (:results parallel-state)))
              stop? (atom (:stop? parallel-state))
              failure (atom (:failure parallel-state))
              exclusive-jobs
@@ -747,12 +849,16 @@
             :authority :non-authoritative
             :authoritative? false
             :normal-parallelism (:normal-parallelism schedule)
+            :normal-batch-size (:normal-batch-size schedule)
+            :normal-batching? (boolean batch?)
             :memory-parallelism (:memory-parallelism schedule)
             :fail-fast? (boolean fail-fast?)
             :fail-fast (boolean fail-fast?)
             :fail-fast-triggered? (boolean (and fail-fast?
                                                 (seq skipped-jobs)))
-            :fail-fast-failure (or @failure (:failure parallel-state))
+            :fail-fast-failure (or (when fail-fast? (first failures))
+                                   @failure
+                                   (:failure parallel-state))
             :cleanup-failed? (boolean (seq cleanup-failures))
             :cleanup-failures cleanup-failures
             :capture-failed? (boolean (seq capture-failures))
@@ -795,6 +901,19 @@
    (into (vec (command-prefix options))
          ["--namespace" (namespace-name namespace)])))
 
+(defn normal-batch-command
+  "Returns the exact argument vector for one bounded warm-JVM normal batch."
+  ([jobs report-file]
+   (normal-batch-command jobs report-file {}))
+  ([jobs report-file options]
+   (cond->
+    (into (vec (command-prefix options))
+          (mapcat (fn [job]
+                    ["--namespace" (namespace-name (:namespace job))])
+                  jobs))
+     (:fail-fast? options) (conj "--fail-fast")
+     true (into ["--report-file" (str report-file)]))))
+
 (defn start-process
   "Starts a process from an argument vector and working directory.
 
@@ -805,6 +924,173 @@
       (.directory (io/file working-directory))
       (.redirectErrorStream false)
       (.start)))
+
+(defn- report-counter?
+  [value]
+  (and (integer? value) (<= 0 (long value))))
+
+(defn- valid-report-output?
+  [output]
+  (and (map? output)
+       (string? (:text output))
+       (every? report-counter?
+               [(:bytes output) (:observed-bytes output)
+                (:limit-bytes output)])
+       (<= (long (:bytes output)) (long (:observed-bytes output)))
+       (<= (long (:bytes output)) (long (:limit-bytes output)))
+       (boolean? (:truncated? output))
+       (= (alength (.getBytes ^String (:text output)
+                              StandardCharsets/UTF_8))
+          (long (:bytes output)))))
+
+(defn- valid-report-member?
+  [member]
+  (and (map? member)
+       (true? (:attempted? member))
+       (contains? #{:passed :failed :error} (:status member))
+       (every? report-counter?
+               [(:exit-code member) (:elapsed-ms member)
+                (:test member) (:pass member) (:fail member) (:error member)])
+       (= (:exit-code member) (if (= :passed (:status member)) 0 1))
+       (valid-report-output? (:stdout member))
+       (valid-report-output? (:stderr member))))
+
+(defn- valid-batch-report?
+  [report jobs fail-fast?]
+  (let [expected (vec (sort (map :namespace jobs)))
+        attempted (mapv :namespace (:namespace-results report))
+        skipped (vec (:skipped-namespaces report))
+        summary (:summary report)]
+    (and (map? report)
+         (= :gravity/self-hosting-test-report-v2 (:schema report))
+         (= :non-authoritative (:authority report))
+         (false? (:authoritative? report))
+         (= expected (:namespaces report))
+         (seq attempted)
+         (= expected (vec (concat attempted skipped)))
+         (= attempted (vec (take (count attempted) expected)))
+         (every? valid-report-member? (:namespace-results report))
+         (boolean? (:fail-fast? report))
+         (= (boolean fail-fast?) (:fail-fast? report))
+         (or (:fail-fast? report) (empty? skipped))
+         (every? report-counter?
+                 [(:test report) (:pass report) (:fail report) (:error report)
+                  (:test summary) (:pass summary)
+                  (:fail summary) (:error summary)])
+         (= (select-keys report [:test :pass :fail :error]) summary)
+         (contains? #{:passed :failed} (:status report))
+         (= (:status report)
+            (if (and (empty? skipped)
+                     (every? #(= :passed (:status %))
+                             (:namespace-results report)))
+              :passed
+              :failed))
+         (= (:exit-code report) (if (= :passed (:status report)) 0 1)))))
+
+(defn- read-batch-report
+  [report-file jobs fail-fast?]
+  (when-not (java.nio.file.Files/isRegularFile
+             report-file
+             (make-array java.nio.file.LinkOption 0))
+    (throw (ex-info "Warm-JVM batch did not publish result.edn"
+                    {:id "SH01-PARALLEL-BATCH-REPORT-MISSING"})))
+  (let [size (java.nio.file.Files/size report-file)]
+    (when (> size batch-report-limit-bytes)
+      (throw (ex-info "Warm-JVM batch report exceeds its bounded size"
+                      {:id "SH01-PARALLEL-BATCH-REPORT-LIMIT"
+                       :bytes size
+                       :limit batch-report-limit-bytes})))
+    (let [report
+          (edn/read-string
+           (String. (java.nio.file.Files/readAllBytes report-file)
+                    StandardCharsets/UTF_8))]
+      (when-not (valid-batch-report? report jobs fail-fast?)
+        (throw (ex-info "Warm-JVM batch report failed validation"
+                        {:id "SH01-PARALLEL-BATCH-REPORT-SCHEMA"})))
+      report)))
+
+(defn run-normal-batch-process
+  "Runs a bounded normal batch in one warm Clojure process.
+
+  The child publishes a separate bounded EDN receipt so verbose test output
+  cannot hide per-namespace results. Memory-heavy and exclusive jobs never
+  call this function."
+  ([jobs]
+   (run-normal-batch-process jobs {}))
+  ([jobs options]
+   (let [jobs (vec jobs)
+         _ (when (or (empty? jobs)
+                     (some #(not= :normal (:resource-class %)) jobs))
+             (throw (ex-info "Warm-JVM batching accepts normal jobs only"
+                             {:id "SH01-PARALLEL-BATCH-RESOURCE"})))
+         working-directory (or (:working-directory options) @root)
+         batch-directory
+         (java.nio.file.Files/createTempDirectory
+          (.toPath (io/file working-directory))
+          ".gravity-sh01-normal-batch-"
+          (make-array java.nio.file.attribute.FileAttribute 0))
+         report-file (.resolve batch-directory "result.edn")
+         command (normal-batch-command jobs report-file options)
+         launcher (or (:process-launcher options) start-process)
+         cleanup-failed? (atom false)
+         cleanup-errors (atom [])
+         result
+         (try
+           (let [launched (launcher command working-directory)
+                 process-result
+                 (if (instance? Process launched)
+                   (process-result launched options)
+                   (if (map? launched)
+                     (bound-launch-result launched options)
+                     {:status :failed
+                      :exit-code 1
+                      :stderr (str "Process launcher returned unsupported value: "
+                                   (pr-str (type launched))) }))]
+             (try
+               (let [report (read-batch-report report-file jobs
+                                               (:fail-fast? options))]
+                 (when-not (= (zero? (long (or (:exit-code process-result) 1)))
+                              (= :passed (:status report)))
+                   (throw
+                    (ex-info "Warm-JVM process exit disagrees with its report"
+                             {:id "SH01-PARALLEL-BATCH-EXIT-MISMATCH"
+                              :process-exit-code (:exit-code process-result)
+                              :report-exit-code (:exit-code report)})))
+                 (assoc process-result
+                        :result report
+                        :batch-report-schema (:schema report)
+                        :command command))
+               (catch Throwable throwable
+                 (rethrow-fatal! throwable)
+                 (cond-> (assoc process-result
+                                :batch-report-error
+                                (throwable-message throwable)
+                                :command command)
+                   (= :passed (:status process-result))
+                   (assoc :status :error :exit-code 1)))))
+           (finally
+             (doseq [[kind path] [[:report report-file]
+                                  [:directory batch-directory]]]
+               (try
+                 (let [deleted?
+                       (java.nio.file.Files/deleteIfExists path)]
+                   (when (and (= :directory kind) (not deleted?))
+                     (reset! cleanup-failed? true)
+                     (swap! cleanup-errors conj
+                            {:kind kind :error "temporary path was absent"})))
+                 (catch Throwable throwable
+                   (rethrow-fatal! throwable)
+                   (restore-interrupt! throwable)
+                   (reset! cleanup-failed? true)
+                   (swap! cleanup-errors conj
+                          {:kind kind :error (throwable-message throwable)}))))))]
+     (cond-> result
+       @cleanup-failed?
+       (assoc :status :error
+              :exit-code 1
+              :cleanup-failed? true
+              :cleanup-complete? false
+              :batch-cleanup-errors @cleanup-errors)))))
 
 (defn- capture-limit
   [value option]
@@ -1446,13 +1732,14 @@
                  capture-failed? :error
                  (:status result) (:status result)
                  (zero? (long (or (:exit-code result) 0))) :passed
-                 :else :failed)]
+                 :else :failed)
+        exit-code (if capture-failed?
+                    1
+                    (long (or (:exit-code result)
+                              (if (= :passed status) 0 1))))]
     (merge result
            {:status status
-            :exit-code (if (and capture-failed?
-                               (zero? (long (or (:exit-code result) 0))))
-                         1
-                         (:exit-code result))
+            :exit-code exit-code
             :capture-failed? (boolean capture-failed?)
             :stdout-capture-status (or (:stdout-capture-status result)
                                        :complete)
@@ -1667,6 +1954,14 @@
                    (assoc options :normal-parallelism value)
                    mode dry-run?))
 
+          (= "--normal-batch-size" argument)
+          (let [[_ value]
+                (parse-positive-option remaining 0 :normal-batch-size)]
+            (recur (subvec remaining 2)
+                   request
+                   (assoc options :normal-batch-size value)
+                   mode dry-run?))
+
           (or (= "--memory-parallelism" argument)
               (= "--memory-heavy-parallelism" argument)
               (= "--memory-jobs" argument))
@@ -1779,7 +2074,7 @@
             {:status :help
              :exit-code 0
              :usage
-             "sh01-parallel-test-runner (--namespace NS)...|--slice SH-NN|(--changed [--iteration-slice SH-NN]...) [--dry-run] [--fail-fast] [--normal-parallelism N] [--memory-parallelism 1] [--output-limit-bytes N] [--output-limit-chars N]"}]
+             "sh01-parallel-test-runner (--namespace NS)...|--slice SH-NN|(--changed [--iteration-slice SH-NN]...) [--dry-run] [--fail-fast] [--normal-parallelism N] [--normal-batch-size N] [--memory-parallelism 1] [--output-limit-bytes N] [--output-limit-chars N]"}]
         (println (:usage report))
         report)
       (let [schedule (dry-run plan options)]

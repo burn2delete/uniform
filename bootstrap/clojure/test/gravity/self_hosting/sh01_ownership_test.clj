@@ -3,6 +3,7 @@
             [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str]
+            [clojure.test :as test]
             [clojure.test :refer [deftest is testing]]
             [gravity.self-hosting-test-runner :as runner]))
 
@@ -288,12 +289,15 @@
           bootstrap-test-source
           "gravity.self-hosting.sh01-ownership-test")))
     (is (= {:mode :run :namespaces dedicated}
-           (runner/select-tests ["--dedicated"])))
+           (select-keys (runner/select-tests ["--dedicated"])
+                        [:mode :namespaces])))
     (is (= {:mode :run
             :namespaces ['gravity.self-hosting.sh01-ownership-test]}
-           (runner/select-tests
-            ["--namespace"
-             "gravity.self-hosting.sh01-ownership-test"])))
+           (select-keys
+            (runner/select-tests
+             ["--namespace"
+              "gravity.self-hosting.sh01-ownership-test"])
+            [:mode :namespaces])))
     (is (some
          #{'gravity.darwin-publication-test}
          (:namespaces (runner/select-tests ["--list"]))))
@@ -304,6 +308,93 @@
             nil
             (catch clojure.lang.ExceptionInfo exception exception))]
       (is (= "SH01-TEST-NAMESPACE" (:id (ex-data exception)))))))
+
+(deftest repeatable-namespace-selection-is-strict-and-deterministic
+  (let [selected
+        (runner/select-tests
+         ["--namespace" "gravity.self-hosting.sh01-ownership-test"
+          "--namespace" "gravity.self-hosting.sh01-parallel-test-runner-test"
+          "--fail-fast"])]
+    (is (= [:run true]
+           [(:mode selected) (:fail-fast? selected)]))
+    (is (= ['gravity.self-hosting.sh01-ownership-test
+            'gravity.self-hosting.sh01-parallel-test-runner-test]
+           (:namespaces selected))))
+  (doseq [[arguments expected-id]
+          [[["--namespace" "gravity.self-hosting.sh01-ownership-test"
+             "--namespace" "gravity.self-hosting.sh01-ownership-test"]
+            "SH01-TEST-NAMESPACE-DUPLICATE"]
+           [["--namespace" "gravity.self-hosting.sh01-does-not-exist"]
+            "SH01-TEST-NAMESPACE"]]]
+    (let [exception
+          (try
+            (runner/select-tests arguments)
+            nil
+            (catch clojure.lang.ExceptionInfo exception exception))]
+      (is (= expected-id (:id (ex-data exception)))))))
+
+(deftest run-namespaces-preserves-order-output-and-fail-fast-tail
+  (let [events (atom [])
+        summary (fn [namespace]
+                  (swap! events conj [:run namespace])
+                  (binding [test/*test-out* *out*]
+                    (println (str "report:" namespace)))
+                  {:test 1 :pass 1 :fail 0 :error 0})
+        report
+        (runner/run-namespaces
+         {:namespaces ['gravity.self-hosting.sh01-ownership-test
+                       'gravity.self-hosting.sh01-parallel-test-runner-test]
+          :fail-fast? true
+          :require-fn #(swap! events conj [:require %])
+          :run-tests-fn summary})]
+    (is (= [[:require 'gravity.self-hosting.sh01-ownership-test]
+            [:run 'gravity.self-hosting.sh01-ownership-test]
+            [:require 'gravity.self-hosting.sh01-parallel-test-runner-test]
+            [:run 'gravity.self-hosting.sh01-parallel-test-runner-test]]
+           @events))
+    (is (= :passed (:status report)))
+    (is (empty? (:skipped-namespaces report)))
+    (is (str/includes? (get-in report [:namespace-results 0 :stdout :text])
+                       "report:gravity.self-hosting.sh01-ownership-test"))))
+
+(deftest run-namespaces-fail-fast-does-not-load-tail-and-reports-error
+  (let [events (atom [])
+        report
+        (runner/run-namespaces
+         {:namespaces ['gravity.self-hosting.sh01-ownership-test
+                       'gravity.self-hosting.sh01-parallel-test-runner-test]
+          :fail-fast? true
+          :require-fn #(swap! events conj [:require %])
+          :run-tests-fn
+          (fn [namespace]
+            (swap! events conj [:run namespace])
+            (if (= namespace 'gravity.self-hosting.sh01-ownership-test)
+              {:test 1 :pass 0 :fail 1 :error 0}
+              {:test 1 :pass 1 :fail 0 :error 0}))})]
+    (is (= [[:require 'gravity.self-hosting.sh01-ownership-test]
+            [:run 'gravity.self-hosting.sh01-ownership-test]]
+           @events))
+    (is (= :failed (:status report)))
+    (is (= 1 (:exit-code report)))
+    (is (= ['gravity.self-hosting.sh01-parallel-test-runner-test]
+           (:skipped-namespaces report)))
+    (is (= :failed (get-in report [:namespace-results 0 :status])))))
+
+(deftest namespace-output-cap-never-emits-a-split-utf8-codepoint
+  (let [ascii (apply str (repeat 8191 "a"))
+        report
+        (runner/run-namespaces
+         {:namespaces ['gravity.self-hosting.sh01-ownership-test]
+          :require-fn (fn [_] nil)
+          :run-tests-fn
+          (fn [_]
+            (print (str ascii "€"))
+            {:test 0 :pass 0 :fail 0 :error 0})})
+        output (get-in report [:namespace-results 0 :stdout])]
+    (is (= 8191 (:bytes output)))
+    (is (= 8194 (:observed-bytes output)))
+    (is (not (str/includes? (:text output) "�")))
+    (is (= 8191 (count (:text output))))))
 
 (deftest duplicate-dedicated-namespace-mappings-are-rejected
   (let [resource (io/resource "gravity/self_hosting")

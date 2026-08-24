@@ -132,8 +132,12 @@ JVM at 13.97 seconds and about 1.46 GiB. The coordinator var exceeded the
 60-second bound and was stopped at 66.53 seconds after about 2.47 GiB; these
 are scheduling observations, not proof or speed claims. Run cheap exact vars
 first, then coordinator vars 11-13 together behind the heavy lock with
-`--fail-fast`; separate JVMs repeat the shared proof. Normal-only batching and
-SH-07 cache-affine scheduling remain future work.
+`--fail-fast`; separate JVMs repeat the shared proof. The SH-01 development
+runner now packs normal namespaces from the same slice into reviewed batches
+of at most eight per warm JVM. Memory-heavy work remains capacity-one and
+exclusive work remains fresh and sequential. These batches emit only
+non-authoritative development receipts; SH-07 cache-affine scheduling remains
+future work.
 
 The current C7 observation is 3351.068 seconds (55.85 minutes) at 176,551
 source bytes; a user-provided historical observation is 2416.213 seconds at
