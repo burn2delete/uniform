@@ -440,6 +440,45 @@
         {"state": "integrated", "at": "2026-08-24T04:28:43Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact eight-commit reconciliation and its eligibility record onto main"}
       ],
       "disposition": "Integrated the exact reconciled development-verification candidate; no roadmap, release, self-hosting, or seed-retirement credit."
+    },
+    {
+      "id": "incremental-development-verification-reconciliation-evidence-erratum-v1",
+      "title": "Incremental development verification reconciliation evidence erratum version 1",
+      "invariant_family": "tooling/incremental-development-verification",
+      "owner": "uniform-coordinator",
+      "author": "uniform-coordinator",
+      "state": "integration-eligible",
+      "dependencies": ["incremental-development-verification-reconciliation-v1"],
+      "architecture_decision": "",
+      "base_commit": "b567b89a41b7ca1c1e90df8968b3e0c3e07929a9",
+      "candidate_commit": "041e688e318633ab1baf9a43e6a7bdeef4c10294",
+      "clean_worktree": true,
+      "owned_paths": ["docs/artifacts/phase-15/reports/incremental-development-verification-reconciliation-v1-evidence-erratum.md"],
+      "governing_contracts": ["contracts/workstream-governance.json", "contracts/workstream-ledger.json", "docs/workstream-governance.md"],
+      "evidence": {
+        "accepted_fixtures": ["docs/artifacts/phase-15/reports/incremental-development-verification-reconciliation-v1-evidence-erratum.md", "bootstrap/clojure/test/gravity/compiler_pass_manifest_test.clj"],
+        "rejected_fixtures": ["bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"],
+        "stable_diagnostics": ["SH01-TEST-NAMESPACE", "Requested test namespace is not owned by this runner"],
+        "validation_commands": [
+          {"command": "clojure -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e '(require (quote clojure.test) (quote gravity.compiler-pass-manifest-test)) (let [r (clojure.test/run-tests (quote gravity.compiler-pass-manifest-test))] (when (pos? (+ (:fail r) (:error r))) (System/exit 1)))'", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base b567b89a41b7ca1c1e90df8968b3e0c3e07929a9 --candidate-commit 041e688e318633ab1baf9a43e6a7bdeef4c10294 --candidate-tree b96f7656a4ab4811f22cb52f40de0d16acb33aa6", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "incremental_exact_review", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": ["the immutable original terminal record retains the non-replayable compiler-pass-manifest command", "this erratum validates the truthful standalone Clojure command but cannot retroactively establish the incorrect command", "Clojure and the JVM remain the temporary seed and tooling boundary"],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-24T04:33:27Z", "actor": "uniform-coordinator", "reason": "start an append-only correction for the non-replayable terminal validation command"},
+        {"state": "frozen", "at": "2026-08-24T04:33:28Z", "actor": "uniform-coordinator", "reason": "freeze the exact one-report erratum candidate and Git identities"},
+        {"state": "review-pending", "at": "2026-08-24T04:33:29Z", "actor": "uniform-coordinator", "reason": "request independent replay and scope review of the exact erratum"},
+        {"state": "accepted", "at": "2026-08-24T04:33:30Z", "actor": "incremental_exact_review", "reason": "accept the exact append-only erratum and truthful Clojure replacement evidence"},
+        {"state": "integration-eligible", "at": "2026-08-24T04:33:31Z", "actor": "uniform-coordinator", "reason": "exact identities, evidence, independent acceptance, residual violation, and nonclaims verified"}
+      ],
+      "disposition": "Eligible to integrate the append-only evidence erratum only; no retroactive eligibility or roadmap credit."
     }
   ]
 }
