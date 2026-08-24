@@ -281,7 +281,7 @@
       "invariant_family": "tooling/python-retirement-boundary",
       "owner": "uniform-coordinator",
       "author": "uniform-coordinator",
-      "state": "integration-eligible",
+      "state": "integrated",
       "dependencies": [],
       "architecture_decision": "",
       "base_commit": "00bf598893f5e27ac94d995bc1081671599a1b9f",
@@ -311,9 +311,10 @@
         {"state": "frozen", "at": "2026-08-24T00:51:00Z", "actor": "uniform-coordinator", "reason": "freeze the exact one-file candidate and Git identities"},
         {"state": "review-pending", "at": "2026-08-24T00:52:00Z", "actor": "uniform-coordinator", "reason": "request independent review of the exact candidate"},
         {"state": "accepted", "at": "2026-08-24T00:54:00Z", "actor": "retirement_candidate_review", "reason": "accept the exact candidate with focused positive and negative evidence"},
-        {"state": "integration-eligible", "at": "2026-08-24T00:55:00Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, evidence, review, boundaries, and nonclaims verified"}
+        {"state": "integration-eligible", "at": "2026-08-24T00:55:00Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, evidence, review, boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-24T00:58:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted metadata candidate and its eligibility record onto main"}
       ],
-      "disposition": "Integration-eligible metadata reconciliation only; historical Python retirement is an already-present Git no-remerge fact."
+      "disposition": "Integrated metadata reconciliation only; historical Python retirement remains an already-present Git no-remerge fact."
     }
   ]
 }
