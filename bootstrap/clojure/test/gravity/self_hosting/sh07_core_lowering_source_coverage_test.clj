@@ -33,33 +33,71 @@
   "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 9109)
+(def ^:private expected-source-byte-count 35852)
 (def ^:private expected-source-revision-id
-  "sha256:d9d2acced4092f7e5c3244504351b6a4f6f2a90ce202400a48c3c1f690544afc")
+  "sha256:695920b23f2920f310657f0dc010edf2fbe43dd4570a00150f40666494114e44")
 (def ^:private expected-coverage
-  {:fragment-count 7
-   :root-form-count 7
-   :form-count 348
-   :binding-count 289
-   :local-binding-count 27
-   :resolution-count 13})
+  {:fragment-count 39
+   :root-form-count 39
+   :form-count 2801
+   :binding-count 410
+   :local-binding-count 148
+   :resolution-count 880})
 (def ^:private expected-core-census
-  {:core-node-count 220
-   :definition-count 7
-   :call-count 0
-   :reference-count 0
+  {:core-node-count 2264
+   :definition-count 39
+   :call-count 349
+   :reference-count 637
    :keyword-lookup-count 0
    :core-form-frequencies
-   {:literal 172
-    :collection-literal 35
-    :def 7
+   {:let 17
+    :fn 34
+    :call 349
+    :if 129
+    :recur 11
+    :loop 10
+    :reference 637
     :quote 3
-    :fn 3}})
+    :collection-literal 127
+    :literal 908
+    :def 39}})
 (def ^:private expected-definition-names
   '#{c6-core-node-contract
      c6-lowering-rule-contract
      c6-domain-boundary-contract
      c6-core-lowering-diagnostic-catalog
+     c6-set-mutation-execution-contract
+     c6-set-execution-contract-value
+     c6-set-execution-verification-checks
+     c6-set-execution-verification-carrier
+     c6-set-execution-exact-keys?
+     c6-set-execution-id?
+     c6-set-execution-find
+     c6-set-execution-remediation
+     c6-set-execution-diagnostic
+     c6-set-execution-request-shape?
+     c6-set-execution-store-entry?
+     c6-set-execution-store-valid?
+     c6-set-execution-node-index-valid?
+     c6-set-execution-mutation-shape?
+     c6-set-execution-mutation-index-valid?
+     c6-set-execution-positive-integer?
+     c6-set-execution-semantic-span-valid?
+     c6-set-execution-generated-origin-valid?
+     c6-set-execution-literal-value-kind-valid?
+     c6-set-execution-source-valid?
+     c6-set-execution-core-node-shape?
+     c6-set-execution-mutation-pending-legality?
+     c6-set-execution-set-node-ids
+     c6-set-execution-mutation-node-ids
+     c6-set-execution-first-mismatched-set-node
+     c6-set-execution-first-unseen-node
+     c6-set-execution-graph-check
+     c6-set-execution-literal-check
+     c6-set-execution-set-check
+     c6-set-execution-node-check
+     c6-set-execution-all-nodes-check
+     verify-c6-set-mutation-execution-request
      build-c6-core-node
      build-c6-desugaring-trace
      verify-c6-core-lowering})
@@ -213,7 +251,7 @@
   (let [contract
         (edn/read-string
          (slurp (path proof-contract-relative-path)))]
-    (is (= "SH-07-B18" (:coverage-milestone contract)))
+    (is (= "SH-07-B47" (:coverage-milestone contract)))
     (is (= c6-relative-path
            (get-in contract [:authoritative-modules :c6-core])))
     (is (= {:keyword-lookups 0}
@@ -269,8 +307,9 @@
         fn-nodes (filterv #(= :fn (:core-form %)) nodes)]
     (is (= expected-definition-names
            (set (map :name definitions))))
-    (is (= 7 (count definitions)))
-    (is (= 3 (count quote-nodes) (count fn-nodes)))
+    (is (= 39 (count definitions)))
+    (is (= 3 (count quote-nodes)))
+    (is (= 34 (count fn-nodes)))
     (is (every? #(= :def
                     (:core-form (get node-by-id (:core-node-id %))))
                 definitions))
@@ -280,9 +319,7 @@
       (is (= [] (get-in node [:evaluation :order])))
       (is (= #{:quoted-form-id :quoted-syntax-id
                :quoted-kind :quoted-value}
-             (set (keys (:attributes node))))))
-    (is (empty? (:reference-uses core-artifact)))
-    (is (empty? (:calls core-artifact)))))
+             (set (keys (:attributes node))))))))
 
 (deftest sh07-b18-c6-is-deterministic-path-neutral-and-provenanced
   (let [{:keys [left right left-path right-path]} @parity-artifacts]

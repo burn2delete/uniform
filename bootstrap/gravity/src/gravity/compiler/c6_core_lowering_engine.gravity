@@ -6,8 +6,10 @@
              c6-lowering-rule-contract
              c6-domain-boundary-contract
              c6-core-lowering-diagnostic-catalog
+             c6-set-mutation-execution-contract
              build-c6-core-node
              build-c6-desugaring-trace
+             verify-c6-set-mutation-execution-request
              verify-c6-core-lowering])
   (:effects #{})
   (:capabilities #{})
@@ -33,7 +35,8 @@
                              :domain-boundary-record
                              :core-verifier-report
                              :lowering-rule-version-record
-                             :core-lowering-diagnostic-catalog]
+                             :core-lowering-diagnostic-catalog
+                             :bounded-set-mutation-execution-preflight]
                :preserves #{:source-spans :syntax-identity
                             :diagnostic-codes :artifact-provenance
                             :origin-chains :generated-origin
@@ -139,6 +142,616 @@
                         :backend-only-legality
                         :runtime-only-profile-availability
                         :unrecorded-macro-output]})
+
+(def c6-set-mutation-execution-contract
+  {:artifact :gravity/c6-set-mutation-execution-contract
+   :schema-version 1
+   :scope :same-namespace-top-level-var
+   :input :gravity/sh07-c6-set-mutation-execution-request
+   :output :gravity/sh07-c6-verified-set-mutation-execution
+   :supported-value-forms [:literal :set!]
+   :supported-literal-kinds [:nil :integer]
+   :required-order [:evaluate-value :write-target :yield-unit]
+   :result :unit
+   :required-effect :state/write
+   :verification-carrier :request-bound-substitution-and-staleness-guard
+   :bounds {:maximum-nodes 32
+            :maximum-mutations 16
+            :maximum-store-entries 16}
+   :pending-legality {:types :pending-sh08
+                      :effects-and-capabilities :pending-sh09
+                      :ownership :pending-sh10
+                      :safety :pending-sh11}
+   :nonclaims [:authenticated-b47-linkage
+               :authenticated-c6-verifier-issuer-or-b47-lineage
+               :adversarial-request-and-carrier-co-forgery
+               :generated-or-macro-origin-mutation-execution
+               :other-literal-kind-execution
+               :lexical-or-qualified-mutation
+               :field-cell-or-reference-mutation
+               :general-core-expression-execution
+               :sh07-complete]})
+
+(defn c6-set-execution-contract-value []
+  {:artifact :gravity/c6-set-mutation-execution-contract
+   :schema-version 1
+   :scope :same-namespace-top-level-var
+   :input :gravity/sh07-c6-set-mutation-execution-request
+   :output :gravity/sh07-c6-verified-set-mutation-execution
+   :supported-value-forms [:literal :set!]
+   :supported-literal-kinds [:nil :integer]
+   :required-order [:evaluate-value :write-target :yield-unit]
+   :result :unit
+   :required-effect :state/write
+   :verification-carrier :request-bound-substitution-and-staleness-guard
+   :bounds {:maximum-nodes 32
+            :maximum-mutations 16
+            :maximum-store-entries 16}
+   :pending-legality {:types :pending-sh08
+                      :effects-and-capabilities :pending-sh09
+                      :ownership :pending-sh10
+                      :safety :pending-sh11}
+   :nonclaims [:authenticated-b47-linkage
+               :authenticated-c6-verifier-issuer-or-b47-lineage
+               :adversarial-request-and-carrier-co-forgery
+               :generated-or-macro-origin-mutation-execution
+               :other-literal-kind-execution
+               :lexical-or-qualified-mutation
+               :field-cell-or-reference-mutation
+               :general-core-expression-execution
+               :sh07-complete]})
+
+(defn c6-set-execution-verification-checks []
+  [:bounded-carriers
+   :unique-node-and-mutation-identities
+   :source-and-generated-origin-shape
+   :acyclic-root-reachable-node-graph
+   :exact-set-mutation-carriers
+   :literal-payload-shape
+   :same-namespace-top-level-var
+   :target-not-evaluated
+   :value-linked-exactly-once
+   :pending-downstream-legality-preserved
+   :value-then-write-then-unit])
+
+(defn c6-set-execution-verification-carrier [request]
+  {:artifact :gravity/sh07-c6-set-mutation-verification-carrier
+   :schema-version 1
+   :verified-request request
+   :checks (c6-set-execution-verification-checks)
+   :claim-boundary (c6-set-execution-contract-value)})
+
+(defn c6-set-execution-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn c6-set-execution-id? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (<= (count value) 256)
+      false)
+    false))
+
+(defn c6-set-execution-find [values key-name expected]
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      nil
+      (if (= (get (first remaining) key-name) expected)
+        (first remaining)
+        (recur (rest remaining))))))
+
+(defn c6-set-execution-remediation [rule]
+  (if (= rule "C6-CORE-SHAPE")
+    "Provide the bounded SH-07 set-mutation execution request shape."
+    (if (= rule "C6-EVAL-ORDER")
+      "Preserve evaluate-value, write-target, then yield-unit order."
+      (if (= rule "C6-LOWERING-GAP")
+        "Use only literal or nested set! values in this bounded execution slice."
+        "Replay the C6 set-mutation preflight without substituting nodes, bindings, or store locations."))))
+
+(defn c6-set-execution-diagnostic [request rule reason node]
+  (let [source (if (map? node) (get node :source) {})
+        semantic-span (if (map? source) (get source :semantic-span) nil)
+        source-span
+        (if (map? semantic-span)
+          (assoc semantic-span :source (get request :source-path))
+          {:source (get request :source-path)})]
+    {:artifact :gravity/c6-set-mutation-execution-result
+     :schema-version 1
+     :status :rejected
+     :verified-request nil
+     :verification-carrier nil
+     :diagnostics
+     [{:artifact :gravity/c6-set-mutation-execution-diagnostic
+       :diagnostic-id "SH07-C6-SET-MUTATION-EXECUTION"
+       :rule rule
+       :severity :error
+       :stage :core-lowering
+       :syntax-id (if (map? source) (get source :syntax-id) nil)
+       :core-node-id (if (map? node) (get node :node-id) nil)
+       :source-span source-span
+       :generated-origin-chain
+       (if (map? source) (get source :generated-origin) [])
+       :namespace (get request :namespace)
+       :profile (get request :profile)
+       :target (get request :target)
+       :lowering-rule :sh07-core-mutation-execution-v1
+       :facts {:reason reason :fail-closed true}
+       :remediation (c6-set-execution-remediation rule)}]
+     :claim-boundary (c6-set-execution-contract-value)}))
+
+(defn c6-set-execution-request-shape? [request]
+  (if
+   (c6-set-execution-exact-keys?
+    request
+    #{:artifact :schema-version :source-path :namespace :profile :target
+      :root-node-id :nodes :mutations :store :claim-boundary})
+    (if (= (get request :artifact)
+           :gravity/sh07-c6-set-mutation-execution-request)
+      (if (= (get request :schema-version) 1)
+        (if (string? (get request :source-path))
+          (if (> (count (get request :source-path)) 0)
+            (if (symbol? (get request :namespace))
+              (if (keyword? (get request :profile))
+                (if (keyword? (get request :target))
+                  (if (c6-set-execution-id?
+                       (get request :root-node-id))
+                    (= (get request :claim-boundary)
+                       :bounded-unintegrated-b47-projection)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c6-set-execution-store-entry? [entry namespace]
+  (if
+   (c6-set-execution-exact-keys?
+    entry #{:binding-id :namespace :location :value})
+    (if (c6-set-execution-id? (get entry :binding-id))
+      (if (= (get entry :namespace) namespace)
+        (= (get entry :location) :top-level-var)
+        false)
+      false)
+    false))
+
+(defn c6-set-execution-store-valid? [store namespace]
+  (if (vector? store)
+    (if (<= (count store) 16)
+      (loop [remaining store seen #{}]
+        (if (= (count remaining) 0)
+          true
+          (let [entry (first remaining)
+                binding-id (if (map? entry) (get entry :binding-id) nil)]
+            (if (c6-set-execution-store-entry? entry namespace)
+              (if (contains? seen binding-id)
+                false
+                (recur (rest remaining) (conj seen binding-id)))
+              false))))
+      false)
+    false))
+
+(defn c6-set-execution-node-index-valid? [nodes]
+  (if (vector? nodes)
+    (if (if (> (count nodes) 0) (<= (count nodes) 32) false)
+      (loop [remaining nodes seen #{}]
+        (if (= (count remaining) 0)
+          true
+          (let [node (first remaining)
+                node-id (if (map? node) (get node :node-id) nil)]
+            (if (c6-set-execution-id? node-id)
+              (if (contains? seen node-id)
+                false
+                (recur (rest remaining) (conj seen node-id)))
+              false))))
+      false)
+    false))
+
+(defn c6-set-execution-mutation-shape? [mutation]
+  (c6-set-execution-exact-keys?
+   mutation
+   #{:core-node-id :value-core-node-id :target-binding-id
+     :target-namespace :target-binding-class :target-location
+     :target-evaluated-children :evaluated-children :ordered-steps
+     :result-policy :required-effect :type-legality
+     :effect-registry-legality :effect-profile-capability-legality
+     :ownership-legality :safety-classification}))
+
+(defn c6-set-execution-mutation-index-valid? [mutations]
+  (if (vector? mutations)
+    (if (<= (count mutations) 16)
+      (loop [remaining mutations seen #{}]
+        (if (= (count remaining) 0)
+          true
+          (let [mutation (first remaining)
+                node-id
+                (if (map? mutation) (get mutation :core-node-id) nil)]
+            (if (c6-set-execution-mutation-shape? mutation)
+              (if (c6-set-execution-id? node-id)
+                (if (contains? seen node-id)
+                  false
+                  (recur (rest remaining) (conj seen node-id)))
+                false)
+              false))))
+      false)
+    false))
+
+(defn c6-set-execution-positive-integer? [value]
+  (if (integer? value) (> value 0) false))
+
+(defn c6-set-execution-semantic-span-valid? [span]
+  (if
+   (c6-set-execution-exact-keys?
+    span #{:line-start :column-start :line-end :column-end})
+    (if (c6-set-execution-positive-integer? (get span :line-start))
+      (if (c6-set-execution-positive-integer? (get span :column-start))
+        (if (c6-set-execution-positive-integer? (get span :line-end))
+          (if (c6-set-execution-positive-integer? (get span :column-end))
+            (if (<= (get span :line-start) (get span :line-end))
+              (if (= (get span :line-start) (get span :line-end))
+                (<= (get span :column-start) (get span :column-end))
+                true)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c6-set-execution-generated-origin-valid? [origin]
+  (= origin []))
+
+(defn c6-set-execution-literal-value-kind-valid? [attributes]
+  (let [literal-kind (get attributes :literal-kind)
+        value (get attributes :value)]
+    (if (= literal-kind :nil)
+      (= value nil)
+      (if (= literal-kind :integer)
+        (integer? value)
+        false))))
+
+(defn c6-set-execution-source-valid? [source]
+  (if
+   (c6-set-execution-exact-keys?
+    source #{:syntax-id :semantic-span :generated-origin})
+    (if (c6-set-execution-id? (get source :syntax-id))
+      (if (c6-set-execution-semantic-span-valid?
+           (get source :semantic-span))
+        (c6-set-execution-generated-origin-valid?
+         (get source :generated-origin))
+        false)
+      false)
+    false))
+
+(defn c6-set-execution-core-node-shape? [node]
+  (if (= (get node :core-form) :literal)
+    (c6-set-execution-exact-keys?
+     node #{:artifact :node-id :core-form :children :attributes :source})
+    (if (= (get node :core-form) :set!)
+      (c6-set-execution-exact-keys?
+       node
+       #{:artifact :node-id :core-form :children :attributes
+         :source :evaluation})
+      true)))
+
+(defn c6-set-execution-mutation-pending-legality? [mutation]
+  (if (= (get mutation :type-legality) :pending-sh08)
+    (if (= (get mutation :effect-registry-legality) :pending-sh09)
+      (if (= (get mutation :effect-profile-capability-legality)
+             :pending-sh09)
+        (if (= (get mutation :ownership-legality) :pending-sh10)
+          (= (get mutation :safety-classification) :pending-sh11)
+          false)
+        false)
+      false)
+    false))
+
+(defn c6-set-execution-set-node-ids [nodes]
+  (loop [remaining nodes result #{}]
+    (if (= (count remaining) 0)
+      result
+      (let [node (first remaining)]
+        (if (= (get node :core-form) :set!)
+          (recur (rest remaining) (conj result (get node :node-id)))
+          (recur (rest remaining) result))))))
+
+(defn c6-set-execution-mutation-node-ids [mutations]
+  (loop [remaining mutations result #{}]
+    (if (= (count remaining) 0)
+      result
+      (recur
+       (rest remaining)
+       (conj result (get (first remaining) :core-node-id))))))
+
+(defn c6-set-execution-first-mismatched-set-node
+  [request set-node-ids mutation-node-ids]
+  (loop [remaining (get request :nodes)]
+    (if (= (count remaining) 0)
+      (c6-set-execution-find
+       (get request :nodes) :node-id (get request :root-node-id))
+      (let [node (first remaining)
+            node-id (get node :node-id)]
+        (if (= (contains? set-node-ids node-id)
+               (contains? mutation-node-ids node-id))
+          (recur (rest remaining))
+          node)))))
+
+(defn c6-set-execution-first-unseen-node [nodes seen]
+  (loop [remaining nodes]
+    (if (= (count remaining) 0)
+      nil
+      (if (contains? seen (get (first remaining) :node-id))
+        (recur (rest remaining))
+        (first remaining)))))
+
+(defn c6-set-execution-graph-check [request]
+  (let [nodes (get request :nodes)
+        set-node-ids (c6-set-execution-set-node-ids nodes)
+        mutation-node-ids
+        (c6-set-execution-mutation-node-ids (get request :mutations))]
+    (if (= set-node-ids mutation-node-ids)
+      (loop [node-id (get request :root-node-id) seen #{}]
+        (let [node (c6-set-execution-find nodes :node-id node-id)]
+          (if (contains? seen node-id)
+            {:status :rejected
+             :rule "C6-VERIFY"
+             :reason :cyclic-core-child-graph
+             :node node}
+            (if (map? node)
+              (let [core-form (get node :core-form)
+                    children (get node :children)
+                    seen-now (conj seen node-id)]
+                (if (= core-form :set!)
+                  (if (if (vector? children) (= (count children) 1) false)
+                    (recur (first children) seen-now)
+                    {:status :accepted})
+                  (if (= core-form :literal)
+                    (if (= children [])
+                      (let [unseen
+                            (c6-set-execution-first-unseen-node
+                             nodes seen-now)]
+                        (if (map? unseen)
+                          {:status :rejected
+                           :rule "C6-VERIFY"
+                           :reason :unreachable-core-node-carrier
+                           :node unseen}
+                          {:status :accepted}))
+                      {:status :accepted})
+                    {:status :accepted})))
+              {:status :accepted}))))
+      {:status :rejected
+       :rule "C6-VERIFY"
+       :reason :set-mutation-node-set-mismatch
+       :node
+       (c6-set-execution-first-mismatched-set-node
+        request set-node-ids mutation-node-ids)})))
+
+(defn c6-set-execution-literal-check [node]
+  (if (= (get node :artifact) :gravity/sh07-core-node)
+    (if (= (get node :children) [])
+      (if (map? (get node :attributes))
+        (if (contains? (get node :attributes) :literal-kind)
+          (if (keyword? (get (get node :attributes) :literal-kind))
+            (if (contains? (get node :attributes) :value)
+              (if (c6-set-execution-literal-value-kind-valid?
+                   (get node :attributes))
+                {:status :accepted}
+                {:status :rejected :rule "C6-VERIFY"
+                 :reason :literal-kind-value-mismatch})
+              {:status :rejected :rule "C6-VERIFY"
+               :reason :literal-value-required})
+            {:status :rejected :rule "C6-VERIFY"
+             :reason :literal-kind-required})
+          {:status :rejected :rule "C6-VERIFY"
+           :reason :literal-kind-required})
+        {:status :rejected :rule "C6-CORE-SHAPE"
+         :reason :literal-attributes-required})
+      {:status :rejected :rule "C6-CORE-SHAPE"
+       :reason :literal-child-forbidden})
+    {:status :rejected :rule "C6-VERIFY"
+     :reason :canonical-core-node-required}))
+
+(defn c6-set-execution-set-check [request node]
+  (let [children (get node :children)
+        attributes (get node :attributes)
+        evaluation (get node :evaluation)
+        mutation
+        (c6-set-execution-find
+         (get request :mutations) :core-node-id (get node :node-id))]
+    (if (= (get node :artifact) :gravity/sh07-core-node)
+      (if (if (vector? children) (= (count children) 1) false)
+        (if (map? attributes)
+          (if (map? evaluation)
+            (if (= (get evaluation :kind) :value-then-write)
+              (if (= (get evaluation :order)
+                     [{:index 0 :core-node-id (first children)}])
+                (if (map? mutation)
+                  (if (= (get mutation :value-core-node-id)
+                         (first children))
+                    (if (= (get mutation :evaluated-children)
+                           [(first children)])
+                      (if (= (get mutation :target-evaluated-children) [])
+                        (if (= (get mutation :ordered-steps)
+                               [:evaluate-value :write-target :yield-unit])
+                          (if (= (get mutation :result-policy) :unit)
+                            (if (= (get mutation :required-effect)
+                                   :state/write)
+                              (if (= (get mutation :target-binding-class)
+                                     :namespace)
+                                (if (= (get mutation :target-location)
+                                       :top-level-var)
+                                  (if (= (get mutation :target-namespace)
+                                         (get request :namespace))
+                                    (if (= (get attributes :target-binding-id)
+                                           (get mutation :target-binding-id))
+                                      (if (= (get attributes :target-evaluation)
+                                             :none)
+                                        (if (= (get attributes :result-policy)
+                                               :unit)
+                                          (if (= (get attributes :required-effect)
+                                                 :state/write)
+                                            (if (map?
+                                                 (c6-set-execution-find
+                                                  (get request :nodes)
+                                                  :node-id
+                                                  (first children)))
+                                              (if (map?
+                                                   (c6-set-execution-find
+                                                    (get request :store)
+                                                    :binding-id
+                                                    (get mutation
+                                                         :target-binding-id)))
+                                                {:status :accepted}
+                                                {:status :rejected
+                                                 :rule "C6-VERIFY"
+                                                 :reason :set-target-store-location-required})
+                                              {:status :rejected
+                                               :rule "C6-VERIFY"
+                                               :reason :set-value-link-mismatch})
+                                            {:status :rejected
+                                             :rule "C6-VERIFY"
+                                             :reason :set-effect-mismatch})
+                                          {:status :rejected
+                                           :rule "C6-VERIFY"
+                                           :reason :set-result-mismatch})
+                                        {:status :rejected
+                                         :rule "C6-EVAL-ORDER"
+                                         :reason :set-target-must-not-evaluate})
+                                      {:status :rejected
+                                       :rule "C6-VERIFY"
+                                       :reason :set-binding-link-mismatch})
+                                    {:status :rejected
+                                     :rule "C6-LOWERING-GAP"
+                                     :reason :set-same-namespace-required})
+                                  {:status :rejected
+                                   :rule "C6-LOWERING-GAP"
+                                   :reason :set-location-deferred})
+                                {:status :rejected
+                                 :rule "C6-LOWERING-GAP"
+                                 :reason :set-binding-class-deferred})
+                              {:status :rejected :rule "C6-VERIFY"
+                               :reason :set-effect-mismatch})
+                            {:status :rejected :rule "C6-VERIFY"
+                             :reason :set-result-mismatch})
+                          {:status :rejected :rule "C6-EVAL-ORDER"
+                           :reason :set-ordered-steps-mismatch})
+                        {:status :rejected :rule "C6-EVAL-ORDER"
+                         :reason :set-target-must-not-evaluate})
+                      {:status :rejected :rule "C6-EVAL-ORDER"
+                       :reason :set-value-evaluation-mismatch})
+                    {:status :rejected :rule "C6-VERIFY"
+                     :reason :set-value-link-mismatch})
+                  {:status :rejected :rule "C6-VERIFY"
+                   :reason :set-mutation-record-required})
+                {:status :rejected :rule "C6-EVAL-ORDER"
+                 :reason :set-value-order-mismatch})
+              {:status :rejected :rule "C6-EVAL-ORDER"
+               :reason :set-evaluation-kind-mismatch})
+            {:status :rejected :rule "C6-CORE-SHAPE"
+             :reason :set-evaluation-record-required})
+          {:status :rejected :rule "C6-CORE-SHAPE"
+           :reason :set-attributes-required})
+        {:status :rejected :rule "C6-CORE-SHAPE"
+         :reason :set-value-child-required})
+      {:status :rejected :rule "C6-VERIFY"
+       :reason :canonical-core-node-required})))
+
+(defn c6-set-execution-node-check [request node]
+  (if (map? node)
+    (if (contains? node :source)
+      (if (c6-set-execution-core-node-shape? node)
+        (if (c6-set-execution-source-valid? (get node :source))
+          (if (= (get node :core-form) :literal)
+            (c6-set-execution-literal-check node)
+            (if (= (get node :core-form) :set!)
+              (let [mutation
+                    (c6-set-execution-find
+                     (get request :mutations)
+                     :core-node-id
+                     (get node :node-id))]
+                (if (map? mutation)
+                  (if (c6-set-execution-mutation-pending-legality? mutation)
+                    (c6-set-execution-set-check request node)
+                    {:status :rejected :rule "C6-VERIFY"
+                     :reason :set-pending-legality-mismatch})
+                  (c6-set-execution-set-check request node)))
+              {:status :rejected :rule "C6-LOWERING-GAP"
+               :reason :set-execution-value-form-deferred}))
+          {:status :rejected :rule "C6-ORIGIN"
+           :reason :core-node-source-invalid})
+        {:status :rejected :rule "C6-CORE-SHAPE"
+         :reason :core-node-carrier-shape-mismatch})
+      {:status :rejected :rule "C6-ORIGIN"
+       :reason :core-node-source-required})
+    {:status :rejected :rule "C6-CORE-SHAPE"
+     :reason :core-node-map-required}))
+
+(defn c6-set-execution-all-nodes-check [request]
+  (loop [remaining (get request :nodes)]
+    (if (= (count remaining) 0)
+      {:status :accepted}
+      (let [checked
+            (c6-set-execution-node-check request (first remaining))]
+        (if (= (get checked :status) :accepted)
+          (recur (rest remaining))
+          (assoc checked :node (first remaining)))))))
+
+(defn verify-c6-set-mutation-execution-request [request]
+  (if (c6-set-execution-request-shape? request)
+    (if (c6-set-execution-node-index-valid? (get request :nodes))
+      (if (c6-set-execution-mutation-index-valid?
+           (get request :mutations))
+        (if (c6-set-execution-store-valid?
+             (get request :store) (get request :namespace))
+          (let [root
+                (c6-set-execution-find
+                 (get request :nodes) :node-id
+                 (get request :root-node-id))]
+            (if (map? root)
+              (if (= (get root :core-form) :set!)
+                (let [graph-checked
+                      (c6-set-execution-graph-check request)]
+                  (if (= (get graph-checked :status) :accepted)
+                    (let [checked
+                          (c6-set-execution-all-nodes-check request)]
+                      (if (= (get checked :status) :accepted)
+                        {:artifact
+                         :gravity/sh07-c6-verified-set-mutation-execution
+                         :schema-version 1
+                         :status :accepted
+                         :verified-request request
+                         :checks
+                         (c6-set-execution-verification-checks)
+                         :verification-carrier
+                         (c6-set-execution-verification-carrier request)
+                         :diagnostics []
+                         :claim-boundary
+                         (c6-set-execution-contract-value)}
+                        (c6-set-execution-diagnostic
+                         request (get checked :rule) (get checked :reason)
+                         (get checked :node))))
+                    (c6-set-execution-diagnostic
+                     request
+                     (get graph-checked :rule)
+                     (get graph-checked :reason)
+                     (get graph-checked :node))))
+                (c6-set-execution-diagnostic
+                 request "C6-CORE-SHAPE" :set-root-required root))
+              (c6-set-execution-diagnostic
+               request "C6-VERIFY" :root-node-link-mismatch nil)))
+          (c6-set-execution-diagnostic
+           request "C6-CORE-SHAPE" :set-store-carrier-invalid nil))
+        (c6-set-execution-diagnostic
+         request "C6-CORE-SHAPE" :mutation-carrier-invalid nil))
+      (c6-set-execution-diagnostic
+       request "C6-CORE-SHAPE" :node-carrier-invalid nil))
+    (c6-set-execution-diagnostic
+     request "C6-CORE-SHAPE" :execution-request-shape nil)))
 
 (defn build-c6-core-node
   [node-id form children syntax-id source-span origin-chain binding-context profile target metadata facts generated?]

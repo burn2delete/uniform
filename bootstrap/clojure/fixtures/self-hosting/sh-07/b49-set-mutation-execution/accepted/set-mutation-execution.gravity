@@ -1,0 +1,102 @@
+; SH-07 bounded set! execution request with nested value ordering.
+(ns self-hosting.sh07-core-mutation-execution.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [mutation-execution-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07
+              :candidate :sh07-core-mutation-execution-v1
+              :fixture :accepted}))
+
+(defn mutation-execution-request []
+  (quote
+   {:artifact :gravity/sh07-c6-set-mutation-execution-request
+    :schema-version 1
+    :source-path nil
+    :namespace self-hosting.sh07-core-mutation-execution.fixture
+    :profile :meta
+    :target :jvm
+    :root-node-id "node/outer-set"
+    :nodes
+    [{:artifact :gravity/sh07-core-node
+      :node-id "node/literal"
+      :core-form :literal
+      :children []
+      :attributes {:literal-kind :integer :value 7}
+      :source {:syntax-id "syntax/literal"
+               :semantic-span {:line-start 18 :column-start 5
+                               :line-end 18 :column-end 6}
+               :generated-origin []}}
+     {:artifact :gravity/sh07-core-node
+      :node-id "node/inner-set"
+      :core-form :set!
+      :children ["node/literal"]
+      :attributes {:target-binding-id "binding/inner"
+                   :target-evaluation :none
+                   :result-policy :unit
+                   :required-effect :state/write}
+      :source {:syntax-id "syntax/inner-set"
+               :semantic-span {:line-start 17 :column-start 3
+                               :line-end 18 :column-end 7}
+               :generated-origin []}
+      :evaluation {:kind :value-then-write
+                   :order [{:index 0 :core-node-id "node/literal"}]}}
+     {:artifact :gravity/sh07-core-node
+      :node-id "node/outer-set"
+      :core-form :set!
+      :children ["node/inner-set"]
+      :attributes {:target-binding-id "binding/outer"
+                   :target-evaluation :none
+                   :result-policy :unit
+                   :required-effect :state/write}
+      :source {:syntax-id "syntax/outer-set"
+               :semantic-span {:line-start 16 :column-start 1
+                               :line-end 18 :column-end 8}
+               :generated-origin []}
+      :evaluation {:kind :value-then-write
+                   :order [{:index 0 :core-node-id "node/inner-set"}]}}]
+    :mutations
+    [{:core-node-id "node/inner-set"
+      :value-core-node-id "node/literal"
+      :target-binding-id "binding/inner"
+      :target-namespace self-hosting.sh07-core-mutation-execution.fixture
+      :target-binding-class :namespace
+      :target-location :top-level-var
+      :target-evaluated-children []
+      :evaluated-children ["node/literal"]
+      :ordered-steps [:evaluate-value :write-target :yield-unit]
+      :result-policy :unit
+      :required-effect :state/write
+      :type-legality :pending-sh08
+      :effect-registry-legality :pending-sh09
+      :effect-profile-capability-legality :pending-sh09
+      :ownership-legality :pending-sh10
+      :safety-classification :pending-sh11}
+     {:core-node-id "node/outer-set"
+      :value-core-node-id "node/inner-set"
+      :target-binding-id "binding/outer"
+      :target-namespace self-hosting.sh07-core-mutation-execution.fixture
+      :target-binding-class :namespace
+      :target-location :top-level-var
+      :target-evaluated-children []
+      :evaluated-children ["node/inner-set"]
+      :ordered-steps [:evaluate-value :write-target :yield-unit]
+      :result-policy :unit
+      :required-effect :state/write
+      :type-legality :pending-sh08
+      :effect-registry-legality :pending-sh09
+      :effect-profile-capability-legality :pending-sh09
+      :ownership-legality :pending-sh10
+      :safety-classification :pending-sh11}]
+    :store
+    [{:binding-id "binding/inner"
+      :namespace self-hosting.sh07-core-mutation-execution.fixture
+      :location :top-level-var
+      :value 0}
+     {:binding-id "binding/outer"
+      :namespace self-hosting.sh07-core-mutation-execution.fixture
+      :location :top-level-var
+      :value 0}]
+    :claim-boundary :bounded-unintegrated-b47-projection}))
