@@ -50,6 +50,30 @@ fresh and sequential after the parallel lanes drain. Batch reports preserve
 namespace fixture boundaries, deterministic fail-fast skips, bounded output,
 and explicit non-authority.
 
+The namespace-lazy development runner can write an opt-in EDN timing receipt:
+
+```bash
+clojure -M:dev-test \
+  --exact hosted-hello-runs \
+  --timing-receipt target/validation/development-test-timing.edn
+```
+
+The `gravity/development-verification-timing-v1` receipt separates each
+selected namespace's observable require interval from its fixture-wrapped test
+execution, and records per-test-var elapsed time, outcome, assertion counts,
+selection, and bounded JVM/OS metadata. The JVM-start-to-runner-load interval
+is explicitly combined because the bootstrap and runner namespace portions are
+not separately observable from inside the runner.
+
+The receipt is non-authoritative scheduling input. It has no benchmark,
+performance-regression, proof, conformance, release, self-hosting, or
+seed-retirement authority, and it does not make results comparable across
+different source, JVM, host, profile, target, or runtime conditions. Omitting
+`--timing-receipt` preserves the existing command output and behavior.
+Receipts are published only after a selected test run returns normally;
+namespace-load or fixture exceptions retain the runner's existing error path
+and do not publish a partial receipt.
+
 Stage3 fixed batches run directly through the Clojure runner:
 
 ```bash
