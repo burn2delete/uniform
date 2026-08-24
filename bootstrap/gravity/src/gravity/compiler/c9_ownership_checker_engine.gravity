@@ -18,6 +18,9 @@
              sh10-authenticated-sh09-adapter-policy
              sh10-build-authenticated-ownership-core
              sh10-verify-authenticated-ownership-core
+             sh10-authenticated-owned-mutable-policy
+             sh10-build-authenticated-owned-mutable-analysis
+             sh10-verify-authenticated-owned-mutable-analysis
              sh10-authenticated-ownership-identity-requests
              sh10-authenticated-ownership-core-identity-request
              sh10-bind-authenticated-ownership-identities
@@ -1151,6 +1154,372 @@
               :ownership-kernel-recomputation
               :path-neutral-identity-input
               :separate-actual-path-provenance]
+     :expected expected
+     :candidate candidate}))
+
+; This additive SH-09 seam binds one exact authenticated primitive fact to an
+; owned-mutable storage lifecycle. It does not infer ownership from the
+; primitive type. The caller supplies a bounded lifecycle scenario, while C9
+; derives all fact identities and source lineage from the authenticated SH-09
+; result before running the existing ownership state machine.
+(defn sh10-authenticated-owned-mutable-policy []
+  {:artifact :gravity/sh10-authenticated-owned-mutable-policy
+   :schema-version 1
+   :accepted-upstream-artifact
+   :gravity/sh09-identity-bound-effected-core-template
+   :accepted-upstream-scopes
+   #{:pure-authenticated-sh08-primitive-typed-core
+     :declared-pure-call-effects-with-thrown-effects-pending}
+   :accepted-types
+   #{:gravity.type/integer :gravity.type/bool :gravity.type/string}
+   :ownership-kind :owned-mutable
+   :storage-model :owned-mutable-slot-over-authenticated-primitive-value
+   :initialization-states #{:uninitialized :initialized}
+   :accepted-events
+   #{:initialize :read :borrow-immutable :end-borrow :move :consume
+     :escape-borrow}
+   :escape-destinations #{:function-return}
+   :profile :meta
+   :target :jvm
+   :diagnostics ["L10-UNINIT-READ"
+                 "C9-USE-AFTER-MOVE"
+                 "C9-USE-AFTER-CONSUME"
+                 "C9-MOVE-WHILE-BORROWED"
+                 "C9-BORROW-ESCAPE"
+                 "C9-UNSAFE"]
+   :pending [:general-owned-mutable-sh09-adapter
+             :owned-mutable-type-inference
+             :effectful-or-nonprimitive-sh09-adapter
+             :regions-arenas-and-linear-resources
+             :task-actor-and-ffi-transfer
+             :runtime-borrow-checks
+             :unsafe-audit-records
+             :mir-preservation
+             :trusted-digest-resolution]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh10-authenticated-owned-mutable-simple-event-fields? [event]
+  (if (= nil (get event :borrow-id))
+    (if (= nil (get event :destination-owner))
+      (if (= nil (get event :destination-lifetime-end))
+        (= nil (get event :escape-destination))
+        false)
+      false)
+    false))
+
+(defn sh10-authenticated-owned-mutable-borrow-event-fields? [event]
+  (if (= nil (get event :borrow-id))
+    false
+    (if (= nil (get event :destination-owner))
+      (if (= nil (get event :destination-lifetime-end))
+        (= nil (get event :escape-destination))
+        false)
+      false)))
+
+(defn sh10-authenticated-owned-mutable-move-event-fields? [event]
+  (if (= nil (get event :borrow-id))
+    (if (= nil (get event :destination-owner))
+      false
+      (if (= nil (get event :destination-lifetime-end))
+        (= nil (get event :escape-destination))
+        false))
+    false))
+
+(defn sh10-authenticated-owned-mutable-escape-event-fields? [event]
+  (if (= nil (get event :borrow-id))
+    false
+    (if (= nil (get event :destination-owner))
+      (if (number? (get event :destination-lifetime-end))
+        (= :function-return (get event :escape-destination))
+        false)
+      false)))
+
+(defn sh10-authenticated-owned-mutable-operation-fields? [event]
+  (let [operation (get event :op)]
+    (if (= :move operation)
+      (sh10-authenticated-owned-mutable-move-event-fields? event)
+      (if (sh10-member? #{:borrow-immutable :end-borrow} operation)
+        (sh10-authenticated-owned-mutable-borrow-event-fields? event)
+        (if (= :escape-borrow operation)
+          (sh10-authenticated-owned-mutable-escape-event-fields? event)
+          (sh10-authenticated-owned-mutable-simple-event-fields? event))))))
+
+(defn sh10-authenticated-owned-mutable-event-valid? [event]
+  (if
+   (sh10-exact-keys?
+    event
+    #{:event-id :op :borrow-id :destination-owner
+      :destination-lifetime-end :escape-destination :control-path})
+    (if (= nil (get event :event-id))
+      false
+      (if (= nil (get event :control-path))
+        false
+        (if
+         (sh10-member?
+          #{:initialize :read :borrow-immutable :end-borrow :move :consume
+            :escape-borrow}
+          (get event :op))
+          (sh10-authenticated-owned-mutable-operation-fields? event)
+          false)))
+    false))
+
+(defn sh10-authenticated-owned-mutable-events-valid? [remaining]
+  (if (= 0 (count remaining))
+    true
+    (if
+     (sh10-authenticated-owned-mutable-event-valid? (first remaining))
+      (sh10-authenticated-owned-mutable-events-valid? (rest remaining))
+      false)))
+
+(defn sh10-authenticated-owned-mutable-scenario-valid? [scenario]
+  (if
+   (sh10-exact-keys?
+    scenario
+    #{:artifact :schema-version :scenario-id :core-node-id
+      :initialization :owner-lifetime-end :events})
+    (if (= :gravity/sh10-authenticated-owned-mutable-scenario
+           (get scenario :artifact))
+      (if (= 1 (get scenario :schema-version))
+        (if (= nil (get scenario :scenario-id))
+          false
+          (if (= nil (get scenario :core-node-id))
+            false
+            (if (sh10-member?
+                 #{:uninitialized :initialized}
+                 (get scenario :initialization))
+              (if (number? (get scenario :owner-lifetime-end))
+                (if (vector? (get scenario :events))
+                  (if (<= (count (get scenario :events)) 16)
+                    (if (sh10-unique-event-ids?
+                         (get scenario :events) {})
+                      (sh10-authenticated-owned-mutable-events-valid?
+                       (get scenario :events))
+                      false)
+                    false)
+                  false)
+                false)
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh10-authenticated-effect-request-for
+  [remaining core-node-id]
+  (if (= 0 (count remaining))
+    nil
+    (if (= core-node-id (get (first remaining) :core-node-id))
+      (first remaining)
+      (sh10-authenticated-effect-request-for
+       (rest remaining) core-node-id))))
+
+(defn sh10-authenticated-owned-mutable-scenario-bound?
+  [bound scenario]
+  (let [effected (get bound :effected-core)
+        core-node-id (get scenario :core-node-id)
+        effect-request
+        (sh10-authenticated-effect-request-for
+         (get effected :effect-requests) core-node-id)
+        node (get (get (get effected :effect-graph) :nodes) core-node-id)
+        value-type (get (get effected :type-table) core-node-id)
+        identities (get (get bound :fact-identities) core-node-id)]
+    (if (map? effect-request)
+      (if (sh10-authenticated-primitive-type? value-type)
+        (if (sh10-authenticated-pure-node? node)
+          (if (map? identities)
+            (if (sh10-sha256-id? (get identities :type-fact-id))
+              (if (sh10-sha256-id? (get identities :effect-fact-id))
+                (sh10-sha256-id? (get identities :capability-proof-id))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh10-authenticated-owned-mutable-event
+  [scenario effect-request event]
+  {:event-id (get event :event-id)
+   :op (get event :op)
+   :borrow-id (get event :borrow-id)
+   :destination-owner (get event :destination-owner)
+   :destination-lifetime-end (get event :destination-lifetime-end)
+   :escape-destination (get event :escape-destination)
+   :control-path
+   [:authenticated-sh09-owned-mutable
+    (get scenario :scenario-id)
+    (get event :control-path)]
+   :source-span (get effect-request :source-span)
+   :origin-chain (get effect-request :origin-chain)})
+
+(defn sh10-authenticated-owned-mutable-events
+  [scenario effect-request remaining events]
+  (if (= 0 (count remaining))
+    events
+    (sh10-authenticated-owned-mutable-events
+     scenario effect-request (rest remaining)
+     (conj events
+           (sh10-authenticated-owned-mutable-event
+            scenario effect-request (first remaining))))))
+
+(defn sh10-authenticated-owned-mutable-request [bound scenario]
+  (let [effected (get bound :effected-core)
+        module (get effected :module)
+        core-node-id (get scenario :core-node-id)
+        effect-request
+        (sh10-authenticated-effect-request-for
+         (get effected :effect-requests) core-node-id)
+        identities (get (get bound :fact-identities) core-node-id)]
+    {:artifact :gravity/sh10-normalized-ownership-request
+     :request-id (get scenario :scenario-id)
+     :value-id core-node-id
+     :owner-id (get module :namespace)
+     :ownership-kind :owned-mutable
+     :initialization (get scenario :initialization)
+     :availability :available
+     :events
+     (sh10-authenticated-owned-mutable-events
+      scenario effect-request (get scenario :events) [])
+     :owner-lifetime-end (get scenario :owner-lifetime-end)
+     :type-fact-id (get identities :type-fact-id)
+     :effect-fact-id (get identities :effect-fact-id)
+     :capability-proof-id (get identities :capability-proof-id)
+     :source-span (get effect-request :source-span)
+     :origin-chain (get effect-request :origin-chain)
+     :profile (get module :profile)
+     :target (get module :target)}))
+
+(defn sh10-authenticated-owned-mutable-preserves [request]
+  {:value-id (get request :value-id)
+   :owner-id (get request :owner-id)
+   :type-fact-id (get request :type-fact-id)
+   :effect-fact-id (get request :effect-fact-id)
+   :capability-proof-id (get request :capability-proof-id)
+   :source-span (get request :source-span)
+   :origin-chain (get request :origin-chain)
+   :profile (get request :profile)
+   :target (get request :target)})
+
+(defn sh10-authenticated-owned-mutable-diagnostic
+  [bound scenario reason]
+  (let [effected (get bound :effected-core)
+        request
+        (sh10-authenticated-effect-request-for
+         (get effected :effect-requests) (get scenario :core-node-id))
+        source-request
+        (if (map? request)
+          request
+          (first (get effected :effect-requests)))]
+    {:diagnostic-id "C9-UNSAFE"
+     :rule "C9-UNSAFE"
+     :severity :error
+     :stage :ownership-checking
+     :reason reason
+     :request-id (get scenario :scenario-id)
+     :event-id nil
+     :operation nil
+     :value-id (get scenario :core-node-id)
+     :owner-id (get (get effected :module) :namespace)
+     :borrow-id nil
+     :lifetime-interval
+     {:owner-end (get scenario :owner-lifetime-end)
+      :destination-end nil}
+     :move-path nil
+     :escape-path nil
+     :region-id nil
+     :arena-generation nil
+     :resource-id nil
+     :control-path [:authenticated-sh09-owned-mutable]
+     :source-span (get source-request :source-span)
+     :generated-origin-chain (get source-request :origin-chain)
+     :profile (get (get effected :module) :profile)
+     :target (get (get effected :module) :target)
+     :remediation
+     :provide-an-exact-authenticated-owned-mutable-lifecycle-scenario}))
+
+(defn sh10-authenticated-owned-mutable-result
+  [bound scenario request result]
+  (let [pending
+        (get (sh10-authenticated-owned-mutable-policy) :pending)
+        identity-input
+        {:domain :gravity/sh10-authenticated-owned-mutable-analysis-v1
+         :sh09-identity-input (get bound :identity-input)
+         :scenario scenario
+         :ownership-request request
+         :ownership-result result
+         :pending pending}]
+    {:artifact :gravity/sh10-authenticated-owned-mutable-analysis
+     :schema-version 1
+     :status (get result :status)
+     :scope :authenticated-sh09-owned-mutable-initialization-move-consume
+     :authentication-status
+     :host-resolved-sh09-identity-binding-boundary
+     :effected-core bound
+     :scenario scenario
+     :ownership-request request
+     :ownership-result result
+     :ownership-facts (get result :ownership-facts)
+     :preserves (sh10-authenticated-owned-mutable-preserves request)
+     :identity-input identity-input
+     :provenance (get bound :provenance)
+     :diagnostics (get result :diagnostics)
+     :pending pending
+     :self-hosted? false
+     :clojure-seed-boundary? true}))
+
+(defn sh10-build-authenticated-owned-mutable-analysis
+  [bound verification scenario]
+  (if (sh10-authenticated-sh09-input-valid? bound verification)
+    (if (sh10-authenticated-owned-mutable-scenario-valid? scenario)
+      (if (sh10-authenticated-owned-mutable-scenario-bound? bound scenario)
+        (let [request
+              (sh10-authenticated-owned-mutable-request bound scenario)
+              result (sh10-check-ownership-request request)]
+          (sh10-authenticated-owned-mutable-result
+           bound scenario request result))
+        {:artifact :gravity/sh10-authenticated-owned-mutable-analysis
+         :schema-version 1
+         :status :rejected
+         :scope :authenticated-sh09-owned-mutable-initialization-move-consume
+         :diagnostics
+         [(sh10-authenticated-owned-mutable-diagnostic
+           bound scenario :scenario-does-not-bind-an-authenticated-sh09-fact)]
+         :pending
+         (get (sh10-authenticated-owned-mutable-policy) :pending)})
+      {:artifact :gravity/sh10-authenticated-owned-mutable-analysis
+       :schema-version 1
+       :status :rejected
+       :scope :authenticated-sh09-owned-mutable-initialization-move-consume
+       :diagnostics
+       [(sh10-authenticated-owned-mutable-diagnostic
+         bound scenario :malformed-owned-mutable-lifecycle-scenario)]
+       :pending
+       (get (sh10-authenticated-owned-mutable-policy) :pending)})
+    {:artifact :gravity/sh10-authenticated-owned-mutable-analysis
+     :schema-version 1
+     :status :rejected
+     :scope :authenticated-sh09-owned-mutable-initialization-move-consume
+     :diagnostics
+     [(sh10-authenticated-owned-mutable-diagnostic
+       bound scenario :untrusted-or-malformed-sh09-effected-core)]
+     :pending (get (sh10-authenticated-owned-mutable-policy) :pending)}))
+
+(defn sh10-verify-authenticated-owned-mutable-analysis
+  [bound verification scenario candidate]
+  (let [expected
+        (sh10-build-authenticated-owned-mutable-analysis
+         bound verification scenario)]
+    {:artifact
+     :gravity/sh10-authenticated-owned-mutable-analysis-verification
+     :status (if (= expected candidate) :passed :rejected)
+     :checks [:fresh-sh09-identity-binding
+              :exact-owned-mutable-scenario
+              :authenticated-type-effect-capability-facts
+              :authenticated-source-lineage
+              :ordered-initialization-move-consume-transitions
+              :ownership-kernel-recomputation
+              :stable-diagnostic-identity
+              :preserved-ownership-facts]
      :expected expected
      :candidate candidate}))
 
