@@ -1,0 +1,78 @@
+(ns gravity.self-hosting.sh11.overflow-cast.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh11-unproved-add-operation
+             sh11-incompatible-cast-operation
+             sh11-unsafe-multiply-operation])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh11-invalid-overflow-cast-operation
+  [operation-id kind operator source operands numeric-contract
+   numeric-mode safety-mode invalidation-conditions]
+  {:artifact :gravity/sh11-authenticated-overflow-cast-operation
+   :schema-version 1
+   :operation-id operation-id
+   :kind kind
+   :operator operator
+   :core-node-id (get source :core-node-id)
+   :source-span (get source :source-span)
+   :origin-chain (get source :origin-chain)
+   :profile (get source :profile)
+   :target (get source :target)
+   :type-fact-id (get source :type-fact-id)
+   :effect-fact-id (get source :effect-fact-id)
+   :capability-proof-id (get source :capability-proof-id)
+   :ownership-fact-id (get source :ownership-fact-id)
+   :operands operands
+   :numeric-contract numeric-contract
+   :numeric-mode numeric-mode
+   :safety-mode safety-mode
+   :failure-behavior
+   (if (= numeric-mode :checked) :error/numeric nil)
+   :effects-introduced
+   (if (= numeric-mode :checked) #{:error/raise} nil)
+   :performance-class
+   (if (= numeric-mode :checked) :constant-time-branch nil)
+   :invalidation-conditions invalidation-conditions
+   :target-support-id
+   (if (= numeric-mode :checked)
+     "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     nil)
+   :provider-id
+   (if (= numeric-mode :checked)
+     "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+     nil)
+   :support-evidence
+   (if (= numeric-mode :checked) #{:target-conformance} nil)})
+
+(defn sh11-unproved-add-operation [source operands]
+  (sh11-invalid-overflow-cast-operation
+   :unproved-add :numeric-overflow :add source operands
+   {:bit-width 64 :signedness :signed}
+   :proof-required :safe
+   [:operand-value-change :ownership-fact-change
+    :numeric-mode-change :integer-width-change
+    :profile-change :target-change]))
+
+(defn sh11-incompatible-cast-operation [source operands]
+  (sh11-invalid-overflow-cast-operation
+   :incompatible-cast :numeric-cast :checked-narrowing source operands
+   {:source-width 32
+    :target-width 64
+    :source-signedness :signed
+    :target-signedness :signed}
+   :checked :safe
+   [:operand-value-change :ownership-fact-change
+    :numeric-mode-change :source-type-change :target-type-change
+    :profile-change :target-change]))
+
+(defn sh11-unsafe-multiply-operation [source operands]
+  (sh11-invalid-overflow-cast-operation
+   :unsafe-multiply :numeric-overflow :multiply source operands
+   {:bit-width 64 :signedness :signed}
+   :unsafe-unchecked :systems
+   [:operand-value-change :ownership-fact-change
+    :numeric-mode-change :integer-width-change
+    :profile-change :target-change]))

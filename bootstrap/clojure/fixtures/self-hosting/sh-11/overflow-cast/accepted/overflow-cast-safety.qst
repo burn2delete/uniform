@@ -1,0 +1,79 @@
+(ns gravity.self-hosting.sh11.overflow-cast.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh11-authenticated-checked-add-operation
+             sh11-authenticated-checked-multiply-operation
+             sh11-authenticated-checked-cast-operation])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh11-authenticated-overflow-cast-operation
+  [operation-id kind operator source operands numeric-contract
+   invalidation-conditions]
+  {:artifact :gravity/sh11-authenticated-overflow-cast-operation
+   :schema-version 1
+   :operation-id operation-id
+   :kind kind
+   :operator operator
+   :core-node-id (get source :core-node-id)
+   :source-span (get source :source-span)
+   :origin-chain (get source :origin-chain)
+   :profile (get source :profile)
+   :target (get source :target)
+   :type-fact-id (get source :type-fact-id)
+   :effect-fact-id (get source :effect-fact-id)
+   :capability-proof-id (get source :capability-proof-id)
+   :ownership-fact-id (get source :ownership-fact-id)
+   :operands operands
+   :numeric-contract numeric-contract
+   :numeric-mode :checked
+   :safety-mode :safe
+   :failure-behavior :error/numeric
+   :effects-introduced #{:error/raise}
+   :performance-class :constant-time-branch
+   :invalidation-conditions invalidation-conditions
+   :target-support-id
+   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+   :provider-id
+   "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   :support-evidence #{:failure-path-test :target-conformance}})
+
+(defn sh11-authenticated-checked-add-operation [source operands]
+  (sh11-authenticated-overflow-cast-operation
+   :authenticated-checked-add
+   :numeric-overflow
+   :add
+   source
+   operands
+   {:bit-width 64 :signedness :signed}
+   [:operand-value-change :ownership-fact-change
+    :numeric-mode-change :integer-width-change
+    :profile-change :target-change]))
+
+(defn sh11-authenticated-checked-multiply-operation [source operands]
+  (sh11-authenticated-overflow-cast-operation
+   :authenticated-checked-multiply
+   :numeric-overflow
+   :multiply
+   source
+   operands
+   {:bit-width 64 :signedness :signed}
+   [:operand-value-change :ownership-fact-change
+    :numeric-mode-change :integer-width-change
+    :profile-change :target-change]))
+
+(defn sh11-authenticated-checked-cast-operation [source operands]
+  (sh11-authenticated-overflow-cast-operation
+   :authenticated-checked-cast
+   :numeric-cast
+   :checked-narrowing
+   source
+   operands
+   {:source-width 64
+    :target-width 32
+    :source-signedness :signed
+    :target-signedness :signed}
+   [:operand-value-change :ownership-fact-change
+    :numeric-mode-change :source-type-change :target-type-change
+    :profile-change :target-change]))
