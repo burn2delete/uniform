@@ -13,6 +13,7 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
             [gravity.self-hosting.sh01-impact-test-planner :as planner]))
 
 (import '(java.io ByteArrayOutputStream InputStream)
@@ -387,7 +388,12 @@
                   (sort-by #(namespace-name (:namespace %)) affinity-jobs))))
        (mapv
         (fn [batch]
-          (let [batch (vec batch)]
+          (let [batch (vec batch)
+                test-policies (mapv :test-policy batch)
+                common-test-policy
+                (when (and (every? map? test-policies)
+                           (apply = test-policies))
+                  (first test-policies))]
             (cond->
              {:namespace (:namespace (first batch))
               :slice (:slice (first batch))
@@ -397,7 +403,9 @@
               (:component-id (first batch))
               (assoc :component-id (:component-id (first batch)))
               (:batch-key (first batch))
-              (assoc :batch-key (:batch-key (first batch)))))))))
+              (assoc :batch-key (:batch-key (first batch)))
+              common-test-policy
+              (assoc :test-policy common-test-policy)))))))
 
 (defn schedule-plan
   "Returns the deterministic execution schedule for an impact plan.
@@ -555,15 +563,25 @@
       (catch Throwable throwable
         (rethrow-fatal! throwable)
         (restore-interrupt! throwable)
-        (normalize-result
-         job
-         {:status :error
-          :exit-code 1
-          :stderr (throwable-message throwable)
-          :interrupted? (interrupted-throwable? throwable)
-          :interrupt-restored? (.isInterrupted (Thread/currentThread))
-          :exception-class (class throwable)}
-          (elapsed-ms started))))))
+        (let [error-data (ex-data throwable)
+              broker-receipts
+              (or (:broker-receipts error-data)
+                  (when-let [receipt (:receipt error-data)] [receipt]))]
+          (normalize-result
+           job
+           (cond->
+            {:status :error
+             :exit-code 1
+             :stderr (throwable-message throwable)
+             :child-jvm-launched?
+             (boolean (:child-jvm-launched? error-data))
+             :diagnostic-id (:id error-data)
+             :interrupted? (interrupted-throwable? throwable)
+             :interrupt-restored? (.isInterrupted (Thread/currentThread))
+             :exception-class (class throwable)}
+             (seq broker-receipts)
+             (assoc :broker-receipts (vec broker-receipts)))
+           (elapsed-ms started)))))))
 
 (defn- await-future
   [future]
@@ -755,13 +773,37 @@
               (fill-lane! state lane-config worker fail-fast?)))
           (recur))))))
 
+(defn- prepare-development-jobs
+  [context plan options jobs]
+  (if-not context
+    {:pending (vec jobs) :hits {}}
+    (reduce
+     (fn [{:keys [pending hits]} job]
+       (let [job (wiring/attach-request context plan options job)
+             {:keys [hit-result]} (wiring/probe context job)
+             key (namespace-key (:namespace job))]
+         (if hit-result
+           {:pending pending
+            :hits (assoc hits key
+                         (cond-> (normalize-result job hit-result 0)
+                           (:batch-jobs job) (assoc :batch-job job)))}
+           {:pending (conj pending job) :hits hits})))
+     {:pending [] :hits {}}
+     jobs)))
+
+(defn- cache-report-count
+  [receipts predicate]
+  (count (filter predicate receipts)))
+
 (defn execute-plan
   "Executes a plan according to `schedule-plan` and returns a report.
 
   Options include `:normal-parallelism`, `:normal-batch-size`,
   `:memory-parallelism`, `:timeout-ms`,
   `:working-directory`, `:command`, `:process-launcher`, and an injectable
-  one-argument `:worker`.  The default worker launches bounded batches of
+  one-argument `:worker`. `:development-loop?` enables parent-side immutable
+  cache probes, cross-process singleflight on misses, and host-wide broker
+  admission at the child-process boundary. The default worker launches bounded batches of
   normal namespaces in warm Clojure processes. Memory-heavy and exclusive
   jobs still launch one fresh process per namespace. Supplying `:worker`
   preserves the one-job injectable unit-test API; `:normal-batch-worker` can
@@ -774,18 +816,65 @@
    (execute-plan plan {}))
   ([plan options]
    (let [options (execution-options options)
+         working-directory (or (:working-directory options) @root)
+         development-context
+         (when (:development-loop? options)
+           (or (:development-loop-context options)
+               (wiring/prepare-context working-directory options)))
+         options
+         (cond-> options
+           development-context
+           (assoc :timeout-ms (:timeout-ms development-context)
+                  :process-launch-observer
+                  #(wiring/record-launch! development-context)))
          schedule (schedule-plan plan options)
-         namespace-worker (or (:worker options)
-                              #(run-namespace-process % options))
+         development-options
+         (let [authority (:plan-authority schedule)]
+           (assoc options :authoritative?
+                  (boolean (or (:authoritative? options)
+                               (:authoritative? authority)
+                               (:conflict? authority)
+                               (:invalid? authority)))))
          batch? (or (nil? (:worker options))
                     (some? (:normal-batch-worker options)))
+         prepared-normal
+         (prepare-development-jobs
+          development-context plan development-options
+          (if batch?
+            (get-in schedule [:parallel-phase :normal-batches])
+            (get-in schedule [:parallel-phase :normal])))
+         prepared-memory
+         (prepare-development-jobs
+          development-context plan development-options
+          (get-in schedule [:parallel-phase :memory-heavy]))
+         prepared-exclusive
+         (prepare-development-jobs
+          development-context plan development-options
+          (get-in schedule [:exclusive-phase :exclusive]))
+         cached-units
+         (merge (:hits prepared-normal)
+                (:hits prepared-memory)
+                (:hits prepared-exclusive))
+         post-cache-planned-jvms
+         (+ (count (:pending prepared-normal))
+            (count (:pending prepared-memory))
+            (count (:pending prepared-exclusive)))
+         namespace-worker (or (:worker options)
+                              #(run-namespace-process % options))
          batch-worker (or (:normal-batch-worker options)
                           #(run-normal-batch-process % options))
          worker (fn [job]
-                  (if (and (= :normal (:resource-class job))
-                           (:batch-jobs job))
-                    (assoc (batch-worker (:batch-jobs job)) :batch-job job)
-                    (namespace-worker job)))
+                  (let [operation
+                        #(if (and (= :normal (:resource-class job))
+                                  (:batch-jobs job))
+                           (batch-worker (:batch-jobs job))
+                           (namespace-worker job))
+                        result
+                        (if development-context
+                          (wiring/run-unit! development-context job operation)
+                          (operation))]
+                    (cond-> result
+                      (:batch-jobs job) (assoc :batch-job job))))
          fail-fast? (:fail-fast? options)
          normal-executor
          (Executors/newFixedThreadPool
@@ -805,11 +894,9 @@
              (run-parallel-lanes!
               worker
               parallel-lanes
-              {:normal (vec (if batch?
-                              (get-in schedule [:parallel-phase :normal-batches])
-                              (get-in schedule [:parallel-phase :normal])))
+              {:normal (vec (:pending prepared-normal))
                :memory-heavy
-               (vec (get-in schedule [:parallel-phase :memory-heavy]))}
+               (vec (:pending prepared-memory))}
               fail-fast?
               (:completion-observer options))
              ;; Exclusive work is intentionally started only after both
@@ -817,11 +904,12 @@
              ;; fail-fast is disabled, and the same stop marker prevents any
              ;; exclusive job from starting after a parallel failure.
              results-by-key
-             (atom (expanded-results (:results parallel-state)))
+             (atom (merge (expanded-results cached-units)
+                          (expanded-results (:results parallel-state))))
              stop? (atom (:stop? parallel-state))
              failure (atom (:failure parallel-state))
              exclusive-jobs
-             (get-in schedule [:exclusive-phase :exclusive])]
+             (:pending prepared-exclusive)]
          (when-not @stop?
            (doseq [job exclusive-jobs]
              (when-not @stop?
@@ -847,7 +935,23 @@
                (vec (filter cleanup-failure? results))
                capture-failures
                (vec (filter capture-failure? results))
-               incomplete? (seq skipped-jobs)]
+               incomplete? (seq skipped-jobs)
+               development-facts
+               (when development-context
+                 (wiring/report-facts development-context))
+               cache-receipts (:cache-receipts development-facts)
+               broker-receipts
+               (->> results
+                    (mapcat #(or (:broker-receipts %) []))
+                    distinct
+                    (sort-by pr-str)
+                    vec)
+               producer-broker-receipts
+               (->> results
+                    (mapcat #(or (:producer-broker-receipts %) []))
+                    distinct
+                    (sort-by pr-str)
+                    vec)]
            {:schema :gravity/sh01-parallel-test-report-v1
             :plan-schema (:plan-schema schedule)
             :plan-authority (:plan-authority schedule)
@@ -874,6 +978,31 @@
             :jobs (count results)
             :planned-jobs (count (:jobs schedule))
             :planned-jvms (:planned-jvms schedule)
+            :post-cache-planned-jvms
+            (if development-context
+              post-cache-planned-jvms
+              (:planned-jvms schedule))
+            :launched-jvms
+            (if development-context
+              (:launched-jvms development-facts)
+              nil)
+            :cache-hit-jvms
+            (if development-context
+              (cache-report-count
+               cache-receipts
+               #(= :hit (get-in % [:receipt :decision])))
+              0)
+            :cache-producer-jvms
+            (if development-context
+              (cache-report-count
+               cache-receipts
+               #(and (= :execution (:phase %))
+                     (true? (get-in % [:receipt :producer-executed?]))
+                     (true? (get-in % [:receipt :cacheable?]))))
+              0)
+            :cache-receipts (vec (or cache-receipts []))
+            :broker-receipts broker-receipts
+            :producer-broker-receipts producer-broker-receipts
             :results results
             :reports results
             :failures failures
@@ -922,6 +1051,12 @@
                   jobs))
      (:fail-fast? options) (conj "--fail-fast")
      true (into ["--report-file" (str report-file)]))))
+
+(defn- reported-batch-command
+  [command]
+  ;; The final report-file path is a parent-owned random temporary identity.
+  ;; It must reach ProcessBuilder but must not enter a reusable result.
+  (vec (drop-last 2 command)))
 
 (defn start-process
   "Starts a process from an argument vector and working directory.
@@ -1033,9 +1168,17 @@
              (throw (ex-info "Warm-JVM batching accepts normal jobs only"
                              {:id "SH01-PARALLEL-BATCH-RESOURCE"})))
          working-directory (or (:working-directory options) @root)
+         batch-temporary-root
+         (if-let [temporary-directory (:batch-temporary-directory options)]
+           (.toPath (io/file temporary-directory))
+           (.resolve (.toPath (io/file working-directory))
+                     "target/development-loop-batches"))
+         _ (java.nio.file.Files/createDirectories
+            batch-temporary-root
+            (make-array java.nio.file.attribute.FileAttribute 0))
          batch-directory
          (java.nio.file.Files/createTempDirectory
-          (.toPath (io/file working-directory))
+          batch-temporary-root
           ".gravity-sh01-normal-batch-"
           (make-array java.nio.file.attribute.FileAttribute 0))
          report-file (.resolve batch-directory "result.edn")
@@ -1046,6 +1189,8 @@
          result
          (try
            (let [launched (launcher command working-directory)
+                 _ (when-let [observer (:process-launch-observer options)]
+                     (observer))
                  process-result
                  (if (instance? Process launched)
                    (process-result launched options)
@@ -1066,15 +1211,17 @@
                               :process-exit-code (:exit-code process-result)
                               :report-exit-code (:exit-code report)})))
                  (assoc process-result
+                        :child-jvm-launched? true
                         :result report
                         :batch-report-schema (:schema report)
-                        :command command))
+                        :command (reported-batch-command command)))
                (catch Throwable throwable
                  (rethrow-fatal! throwable)
                  (cond-> (assoc process-result
+                                :child-jvm-launched? true
                                 :batch-report-error
                                 (throwable-message throwable)
-                                :command command)
+                                :command (reported-batch-command command))
                    (= :passed (:status process-result))
                    (assoc :status :error :exit-code 1)))))
            (finally
@@ -1797,6 +1944,8 @@
          working-directory (or (:working-directory options) @root)
          launcher (or (:process-launcher options) start-process)
          launched (launcher command working-directory)
+         _ (when-let [observer (:process-launch-observer options)]
+             (observer))
          result
          (if (instance? Process launched)
            (process-result launched options)
@@ -1808,7 +1957,7 @@
                            (pr-str (type launched)))}))]
      (normalize-result
       job
-      (assoc result :command command)
+      (assoc result :command command :child-jvm-launched? true)
       (long (/ (- (System/nanoTime) started) 1000000.0))))))
 
 (defn- parse-positive-option

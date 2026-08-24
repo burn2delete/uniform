@@ -114,13 +114,61 @@ fresh and sequential after the parallel lanes drain. Batch reports preserve
 namespace fixture boundaries, deterministic fail-fast skips, bounded output,
 and explicit non-authority.
 
+`clojure -M:incremental-check` enables the thin development-loop wiring. In
+the parent, before any child JVM can launch, it computes one conservative
+SHA-256 identity over every tracked and non-ignored untracked repository path.
+Repository symlinks fail closed because their followed targets are outside this
+declared closure. That identity supplies the complete production, transitive,
+fixture/contract, runner, and classpath closure in each closed cache request;
+the request also
+binds the test unit, command, external classpath file bytes, Java and command
+executable bytes, runtime identities, policy, and bounded timeout. Ignored
+generated state is not an input: a test declared deterministic by this
+contract must not depend on it. The reviewed component dependency contract is
+the only current source of deterministic cache eligibility. Slice-closure and
+ad hoc dedicated tests have no such declaration and therefore execute
+uncached. Authoritative,
+freshness-required, performance, proof, and nondeterministic policies always
+execute and are never stored.
+
+An immutable parent probe removes an existing valid hit before executor
+submission, so that hit acquires no broker lease and launches no child JVM. A
+miss is rechecked by the cross-process per-key singleflight at execution time;
+concurrent identical checks can therefore race at the probe without producing
+duplicate child work. Only a successful, deterministic, non-authoritative
+result whose repository snapshot still matches after child completion is
+reusable. A parent hit is likewise revalidated before it is admitted. Failures,
+timeouts, corrupt entries, incomplete requests, and excluded policies run
+again. Reports retain deterministic cache receipts,
+the original producer's deterministic broker receipts, planned JVM count,
+post-cache planned JVM count, and successful launcher-return count. A launcher
+that throws before returning is not counted as a launch; its deterministic
+broker admission/release receipts and the parent cache-miss receipt remain in
+the failed report.
+
+The shared cache and broker roots are private mode-`0700` directories under
+the repository's Git common directory at
+`gravity-development-loop-v1/{cache,broker}`. Linked worktrees therefore use
+the same cooperative same-user state without a daemon. The default incremental
+child timeout is one hour. The authoritative `clojure -M:test` lane and fresh
+integration verifier do not enable this wiring, cannot observe its cache, and
+retain their existing authority boundaries.
+
+Fail-fast stops queue refill but does not cancel already-submitted workers that
+are waiting for a cache key or broker lease; those workers remain bounded by
+the same child/broker timeout and drain under the existing runner contract.
+The shared roots, repository snapshot reads, and child-published batch report
+remain a cooperative same-user boundary. They do not defend against hostile
+same-user path replacement while a check is running. No daemon, shared compiler
+blob, or authoritative result store is introduced by this slice.
+
 ## Host-Wide Development Resource Broker Foundation
 
 The Clojure-only SH-01 host resource broker is available at
-`gravity.self-hosting.sh01-host-resource-broker`. It is a cooperative
-foundation for later coordinator wiring and is not enabled implicitly by the
-current scheduler. A caller passes the same trusted, existing, absolute
-host-local `:coordination-root` from every participating worktree:
+`gravity.self-hosting.sh01-host-resource-broker`. The incremental-check wiring
+uses the canonical Git-common root described above. Other callers pass the
+same trusted, existing, absolute host-local `:coordination-root` from every
+participating worktree:
 
 ```clojure
 (broker/with-lease
@@ -163,12 +211,13 @@ restores the interrupted flag with
 revalidates the fixed policy and direct-child shapes before admission.
 
 The broker does not launch or execute tests, persist test results, or run a
-daemon. It holds a lease around only the caller's thunk. A parent process that
-dies after launching an uncontained descendant can release its OS lock while
-that descendant survives; strict cross-session descendant containment remains
-an OS job/container boundary and is not claimed. Final scheduler/entrypoint
-wiring and selection of the canonical trusted root remain coordinator work.
-The coordination root is a trusted cooperative boundary: same-user deletion or
+daemon. The incremental runner holds its lease only across one child process
+launch and completion; direct callers hold it around their thunk. A parent
+process that dies after launching an uncontained descendant can release its OS
+lock while that descendant survives; strict cross-session descendant
+containment remains
+an OS job/container boundary and is not claimed. The coordination root is a
+trusted cooperative boundary: same-user deletion or
 replacement of broker state files while leases are active is out of scope and
 can bypass inode-based file locks.
 

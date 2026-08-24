@@ -67,7 +67,9 @@
   (let [top-level-keys
         #{:schema :authority :authoritative? :components :nonclaims}
         component-keys #{:component-id :source-path :tests}
-        test-keys #{:path :namespace :jvm-group}
+        test-keys #{:path :namespace :jvm-group :test-policy}
+        test-policy-keys
+        #{:deterministic? :performance? :proof? :freshness-required?}
         components (:components contract)]
     (when-not (= top-level-keys (set (keys contract)))
       (contract-error "Incremental dependency contract keys changed"
@@ -110,7 +112,10 @@
                        (not (empty? (:path test-entry)))
                        (symbol? (:namespace test-entry))
                        (string? (:jvm-group test-entry))
-                       (not (empty? (:jvm-group test-entry))))
+                       (not (empty? (:jvm-group test-entry)))
+                       (= test-policy-keys
+                          (set (keys (:test-policy test-entry))))
+                       (every? boolean? (vals (:test-policy test-entry))))
           (contract-error "Incremental component test entry is malformed"
                           {:component-id (:component-id component)
                            :test test-entry}))

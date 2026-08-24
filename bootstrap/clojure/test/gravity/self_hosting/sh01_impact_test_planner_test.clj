@@ -128,6 +128,14 @@
       (is (empty? (:execution-affected-slices plan)) path)
       (is (= :non-authoritative (:authority plan)) path)
       (is (false? (:authoritative? plan)) path)
+      (is (every?
+           #(= {:deterministic? true
+                :performance? false
+                :proof? false
+                :freshness-required? false}
+               (:test-policy %))
+           (:shards plan))
+          path)
       (doseq [namespace expected-tests]
         (is (= [namespace]
                (:namespaces
@@ -172,6 +180,18 @@
         malformed
         (assoc-in contract [:components 0 :tests 0 :namespace]
                   'gravity.wrong-test)
+        exception
+        (try
+          (component-dependencies/validate-contract malformed)
+          nil
+          (catch clojure.lang.ExceptionInfo exception exception))]
+    (is (= "SH01-COMPONENT-DEPENDENCY-CONTRACT"
+           (:id (ex-data exception))))))
+
+(deftest component-dependency-contract-requires-closed-test-policy
+  (let [contract (component-dependencies/read-contract)
+        malformed (update-in contract [:components 0 :tests 0]
+                             dissoc :test-policy)
         exception
         (try
           (component-dependencies/validate-contract malformed)

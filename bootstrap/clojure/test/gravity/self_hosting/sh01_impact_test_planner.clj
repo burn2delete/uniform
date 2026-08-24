@@ -628,7 +628,8 @@
           {:selection :exact-test-path
            :reason :reviewed-component-test
            :component-id (:component-id test-entry)
-           :tests [(select-keys test-entry [:path :namespace :jvm-group])]
+           :tests [(select-keys test-entry
+                                [:path :namespace :jvm-group :test-policy])]
            :test-namespaces [(:namespace test-entry)]}
           (let [component
                 (get-in dependency-index
@@ -700,7 +701,8 @@
        :batch-key (str "component/"
                        (:development-component-id entry)
                        "/"
-                       (:jvm-group test-entry))}])))
+                       (:jvm-group test-entry))
+       :test-policy (:test-policy test-entry)}])))
 
 (defn- dedicated-test-path?
   "Returns true when a path names a dedicated self-hosting test file.

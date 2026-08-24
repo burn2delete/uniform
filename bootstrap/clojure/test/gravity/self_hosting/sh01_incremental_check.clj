@@ -68,7 +68,7 @@
   (let [explanation (invalidation-explanation plan)
         execution
         (if (seq (:namespaces plan))
-          (runner/execute-plan plan)
+          (runner/execute-plan plan {:development-loop? true})
           {:schema :gravity/sh01-parallel-test-report-v1
            :plan-schema (:schema plan)
            :authority :non-authoritative

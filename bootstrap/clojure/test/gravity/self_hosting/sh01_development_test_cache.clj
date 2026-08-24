@@ -1,7 +1,7 @@
 (ns gravity.self-hosting.sh01-development-test-cache
   "Concurrent persistent reuse for non-authoritative development test results.
 
-  The cache is an unwired Stage 0 development leaf. Callers supply a complete
+  The cache is a Stage 0 development leaf. Callers supply a complete
   dependency closure and a shared cache directory. Eligible results are stored
   as immutable, content-addressed per-key EDN files. A persistent per-key file
   lock provides cooperative cross-JVM singleflight without serializing
@@ -715,6 +715,40 @@
   {:result (operation)
    :receipt (receipt request decision reason key cacheable? false true
                      diagnostic-id)})
+
+(defn lookup!
+  "Probe one eligible immutable entry without executing a producer.
+
+  This parent-side seam lets the development runner remove a valid hit before
+  submitting child-JVM work. A miss is only an observation: callers must use
+  `lookup-or-run!` for the later execution so cross-process singleflight is
+  rechecked under the per-key lock. Ineligible and corrupt requests return a
+  deterministic non-authoritative receipt and no result."
+  [request]
+  (let [{:keys [cacheable? reason]} (request-eligibility request)]
+    (if-not cacheable?
+      {:result nil
+       :receipt (receipt request :miss reason nil false false false
+                         "DEV-TEST-CACHE-INELIGIBLE")}
+      (let [key (cache-key request)
+            directories (cache-directories! (:cache-directory request))
+            entry-path (.resolve ^Path (:entries directories)
+                                 (key-file-name key ".edn"))
+            loaded (read-entry entry-path request key)]
+        (if (= :hit (:status loaded))
+          {:result (:result loaded)
+           :receipt (receipt request :hit :matching-input-closure
+                             key true false false nil)}
+          {:result nil
+           :receipt
+           (receipt request
+                    (if (= :corrupt (:status loaded)) :invalidation :miss)
+                    (if (= :corrupt (:status loaded))
+                      (:reason loaded)
+                      :not-found)
+                    key true false false
+                    (when (= :corrupt (:status loaded))
+                      "DEV-TEST-CACHE-CORRUPT"))})))))
 
 (defn lookup-or-run!
   "Reuse one eligible successful result, or run `operation` fresh.

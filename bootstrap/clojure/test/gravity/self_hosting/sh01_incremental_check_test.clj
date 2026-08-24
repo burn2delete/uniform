@@ -36,8 +36,8 @@
          (reset! request value)
          selected-plan)
        runner/execute-plan
-       (fn [plan]
-         (reset! executed plan)
+       (fn [plan options]
+         (reset! executed {:plan plan :options options})
          {:authority :non-authoritative
           :authoritative? false
           :status :passed
@@ -47,9 +47,11 @@
         (is (= {:changed-paths (:changed-paths selected-plan)
                 :expand-dependants? true}
                @request))
-        (is (= (:namespaces selected-plan) (:namespaces @executed)))
-        (is (= :non-authoritative (:authority @executed)))
-        (is (false? (:authoritative? @executed)))
+        (is (= (:namespaces selected-plan)
+               (get-in @executed [:plan :namespaces])))
+        (is (= :non-authoritative (get-in @executed [:plan :authority])))
+        (is (false? (get-in @executed [:plan :authoritative?])))
+        (is (= {:development-loop? true} (:options @executed)))
         (is (= ["SH-07"]
                (get-in report
                        [:invalidation-explanation :dependant-slices])))

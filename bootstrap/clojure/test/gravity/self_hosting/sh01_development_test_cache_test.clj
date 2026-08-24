@@ -132,6 +132,28 @@
         (is (false? (:proof-authority? receipt)))
         (is (false? (:self-hosting-authority? receipt)))))))
 
+(deftest parent-probe-never-executes-a-producer
+  (with-cache-directory [directory]
+    (let [selected (request directory :parent-probe/test)
+          missing (cache/lookup! selected)]
+      (is (nil? (:result missing)))
+      (is (= :miss (get-in missing [:receipt :decision])))
+      (is (false? (get-in missing [:receipt :producer-executed?])))
+      (cache/lookup-or-run! selected #(passed :published))
+      (let [hit (cache/lookup! selected)]
+        (is (= (passed :published) (:result hit)))
+        (is (= :hit (get-in hit [:receipt :decision])))
+        (is (false? (get-in hit [:receipt :producer-executed?])))))
+    (let [ineligible
+          (cache/lookup!
+           (assoc-in (request directory :parent-probe/fresh)
+                     [:test-policy :freshness-required?]
+                     true))]
+      (is (nil? (:result ineligible)))
+      (is (= :freshness-required-test
+             (get-in ineligible [:receipt :reason])))
+      (is (false? (get-in ineligible [:receipt :cacheable?]))))))
+
 (deftest content-key-is-cross-worktree-and-covers-the-complete-declared-identity
   (with-cache-directory [first-directory]
     (with-cache-directory [second-directory]

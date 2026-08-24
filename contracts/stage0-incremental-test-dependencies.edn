@@ -7,19 +7,35 @@
    :tests
    [{:path "bootstrap/clojure/test/gravity/c11_mir_test.clj"
      :namespace gravity.c11-mir-test
-     :jvm-group "c11-mir-leaf"}
+     :jvm-group "c11-mir-leaf"
+     :test-policy {:deterministic? true
+                   :performance? false
+                   :proof? false
+                   :freshness-required? false}}
     {:path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj"
      :namespace gravity.bootstrap-compatibility.c11-test
-     :jvm-group "c11-mir-compatibility"}]}
+     :jvm-group "c11-mir-compatibility"
+     :test-policy {:deterministic? true
+                   :performance? false
+                   :proof? false
+                   :freshness-required? false}}]}
   {:component-id "compiler-pass-manifest"
    :source-path "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj"
    :tests
    [{:path "bootstrap/clojure/test/gravity/compiler_pass_manifest_test.clj"
      :namespace gravity.compiler-pass-manifest-test
-     :jvm-group "compiler-pass-manifest-leaf"}
+     :jvm-group "compiler-pass-manifest-leaf"
+     :test-policy {:deterministic? true
+                   :performance? false
+                   :proof? false
+                   :freshness-required? false}}
     {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_compiler_pass_manifest_compatibility_test.clj"
      :namespace gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test
-     :jvm-group "compiler-pass-manifest-compatibility"}]}]
+     :jvm-group "compiler-pass-manifest-compatibility"
+     :test-policy {:deterministic? true
+                   :performance? false
+                   :proof? false
+                   :freshness-required? false}}]}]
  :nonclaims
  ["This development dependency map does not replace slice ownership."
   "Selected tests are non-authoritative development feedback."

@@ -1,2 +1,4 @@
 .cpcache/
+.cpcache-bootstrap.lock
+target/development-loop-batches/
 target/validation/integration-fresh-verification/
