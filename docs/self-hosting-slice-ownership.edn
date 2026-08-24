@@ -69,7 +69,9 @@
    "bootstrap/gravity/p15_s23/native_plan_c_emitter.gravity"
    "bootstrap/clojure/fixtures/p15-native-plan-specialization/"]
   :coordinator-runner-integration-reservations
-  ["bootstrap/clojure/test/gravity/project_structure_test_runner_test.clj"]
+  ["bootstrap/clojure/test/gravity/project_structure_test_runner.clj"
+   "bootstrap/clojure/test/gravity/project_structure_test_runner_test.clj"
+   "bootstrap/clojure/test/gravity/project_structure_test_runner_unit.clj"]
   :coordination-state
   ["docs/self-hosting-slice-backlog.md"
    "docs/self-hosting-slice-ownership.edn"]
@@ -96,6 +98,8 @@
   "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity" :sh-target-mlir
   "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity" :sh-target-gpu
   "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity" :sh-target-hdl
+  "bootstrap/gravity/src/gravity/backend/w5_b13_artifact_emitter.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/backend/w5_b14_backend_conformance_verifier.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/bootstrap/reader.gravity" :sh-reader
   "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity" :sh-syntax
@@ -121,10 +125,26 @@
   "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity" :sh-ownership
   "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity" :sh-reader
   "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity" :sh-core
+  "bootstrap/gravity/src/gravity/compiler/w5_c16_incremental_executor.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/compiler/w5_c17_plugin_executor.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/compiler/w5_c18_pass_verifier.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/compiler/w5_compiler_pipeline_verifier.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/macro.gravity" :sh-macro
   "bootstrap/gravity/src/gravity/resolution.gravity" :sh-resolution
   "bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity" :sh-package-build
   "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity" :sh-meta-compiler
+  "bootstrap/gravity/src/gravity/self_hosting/w5_compiler_identity_verifier.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/self_hosting/w5_domain_schema_ai_executor.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/self_hosting/w5_full_language_evidence_verifier.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/self_hosting/w5_ir_lowering_executor.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/self_hosting/w5_performance_math_executor.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/self_hosting/w5_reader_module_executor.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/self_hosting/w5_stage_equivalence_verifier.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/self_hosting/w5_stage_rebuild_orchestrator.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/self_hosting/w5_subsystem_closure_verifier.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/self_hosting/w5_tooling_conformance_verifier.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/self_hosting/w5_trust_provenance_verifier.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/self_hosting/w5_typed_effect_safety_executor.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity" :sh-standard-library
 
   "bootstrap/clojure/src/gravity/bootstrap.clj" :master-coordinator
