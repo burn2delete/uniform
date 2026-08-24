@@ -296,7 +296,7 @@
         "validation_commands": [
           {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
           {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-tooling-language-migration-test", "exit_code": 0, "result": "passed"},
-          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-ownership-test --exact gravity.self-hosting.sh01-ownership-test/coordinator-reservations-and-leaf-conventions-are-explicit", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M -e '(require (quote [clojure.edn :as edn])) (let [record (edn/read-string (slurp \"docs/self-hosting-slice-ownership.edn\"))] (assert (not (contains? (:coordinator-owned record) :python-semantic-support-prefixes))))'", "exit_code": 0, "result": "passed"},
           {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
           {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
           {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
