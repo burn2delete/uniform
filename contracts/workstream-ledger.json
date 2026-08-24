@@ -363,7 +363,7 @@
       "invariant_family": "tooling/incremental-development-verification",
       "owner": "development-verification",
       "author": "development-verification",
-      "state": "integration-eligible",
+      "state": "integrated",
       "dependencies": [],
       "architecture_decision": "",
       "base_commit": "256d686ca2118ad58ae73f561aade82fce5c3418",
@@ -436,9 +436,10 @@
         {"state": "frozen", "at": "2026-08-24T04:26:37Z", "actor": "development-verification", "reason": "freeze the exact eight-commit candidate, tree, and 30-path ownership set"},
         {"state": "review-pending", "at": "2026-08-24T04:26:38Z", "actor": "uniform-coordinator", "reason": "request independent semantic and governance review of the exact tuple"},
         {"state": "accepted", "at": "2026-08-24T04:26:39Z", "actor": "incremental_exact_review", "reason": "accept the exact candidate after focused fail-closed, cache identity, authority, and verification review"},
-        {"state": "integration-eligible", "at": "2026-08-24T04:26:40Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, evidence, independent acceptance, residual boundaries, and nonclaims verified"}
+        {"state": "integration-eligible", "at": "2026-08-24T04:26:40Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, evidence, independent acceptance, residual boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-24T04:28:43Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact eight-commit reconciliation and its eligibility record onto main"}
       ],
-      "disposition": "Eligible to integrate the exact reconciled development-verification candidate; no roadmap, release, self-hosting, or seed-retirement credit."
+      "disposition": "Integrated the exact reconciled development-verification candidate; no roadmap, release, self-hosting, or seed-retirement credit."
     }
   ]
 }
