@@ -114,6 +114,73 @@ fresh and sequential after the parallel lanes drain. Batch reports preserve
 namespace fixture boundaries, deterministic fail-fast skips, bounded output,
 and explicit non-authority.
 
+## Host-Wide Development Resource Broker Foundation
+
+The Clojure-only SH-01 host resource broker is available at
+`gravity.self-hosting.sh01-host-resource-broker`. It is a cooperative
+foundation for later coordinator wiring and is not enabled implicitly by the
+current scheduler. A caller passes the same trusted, existing, absolute
+host-local `:coordination-root` from every participating worktree:
+
+```clojure
+(broker/with-lease
+ {:coordination-root "/private/tmp/gravity-sh01-resource-broker-v1"
+  :timeout-ms 3600000}
+ :memory-heavy
+ run-one-development-unit)
+```
+
+The coordination directory must be a non-symlink directory owned by the
+current user with mode `0700`. The broker creates only direct child policy,
+ticket, admission-lock, and slot-lock files. Reviewed host-wide capacities are
+fixed at two `:normal` leases, one `:memory-heavy` lease, and one
+`:exclusive` lease. An exclusive lease holds every class slot, so it cannot
+overlap normal or memory-heavy work. Tickets provide deterministic FIFO
+admission within each class; an earlier exclusive ticket blocks later class
+admission. Independent classes before that barrier may proceed within their
+own capacity.
+
+Waiting is bounded by `:timeout-ms`. OS file locks release on process death,
+and a queued ticket is reclaimed only after its lock proves that no process
+still owns it. Malformed state and policy mismatches fail closed. Queue,
+admission, timeout, stale-recovery, and release events use
+`:gravity/sh01-host-resource-telemetry-v1` with `:authority
+:non-authoritative`; they are operational observations, not test, proof,
+benchmark, integration, release, self-hosting, or seed-retirement evidence.
+An injected `:on-event` telemetry callback runs synchronously and must be
+nonblocking; callback work is outside the broker's bounded lock-wait claim.
+Each acquisition outcome also has a deterministic semantic receipt with schema
+`:gravity/sh01-host-resource-non-authoritative-receipt-v1`. The closed receipt
+fields are only `:schema`, `:resource-class`, `:capacity`, `:outcome`, and
+`:diagnostic-id`; successful release returns the same receipt shape. Absolute
+coordination roots, ticket names and sequences, queue positions and lengths,
+wait times, and concurrency-dependent stale counts remain observational
+telemetry and never enter the receipt. Neither form has evidence authority.
+Lease release is exactly-once and thread-affine. Callers must not nest
+acquisition; nested behavior is unspecified. Admission is interruptible and
+restores the interrupted flag with
+`SH01-BROKER-INTERRUPTED`; locks carry no poisoned state, so every acquisition
+revalidates the fixed policy and direct-child shapes before admission.
+
+The broker does not launch or execute tests, persist test results, or run a
+daemon. It holds a lease around only the caller's thunk. A parent process that
+dies after launching an uncontained descendant can release its OS lock while
+that descendant survives; strict cross-session descendant containment remains
+an OS job/container boundary and is not claimed. Final scheduler/entrypoint
+wiring and selection of the canonical trusted root remain coordinator work.
+The coordination root is a trusted cooperative boundary: same-user deletion or
+replacement of broker state files while leases are active is out of scope and
+can bypass inode-based file locks.
+
+Stable fail-closed diagnostics include `SH01-BROKER-ROOT-REQUIRED`,
+`SH01-BROKER-ROOT-ABSOLUTE`, `SH01-BROKER-ROOT-INVALID`,
+`SH01-BROKER-ROOT-OWNER`, `SH01-BROKER-ROOT-PERMISSIONS`,
+`SH01-BROKER-POLICY-MISMATCH`, `SH01-BROKER-RESOURCE-CLASS`,
+`SH01-BROKER-STATE-CORRUPT`, `SH01-BROKER-LOCK`,
+`SH01-BROKER-TIMEOUT-OPTION`, `SH01-BROKER-TIMEOUT`,
+`SH01-BROKER-INTERRUPTED`, `SH01-BROKER-STALE`, `SH01-BROKER-IO`, and
+`SH01-BROKER-RELEASE`.
+
 The namespace-lazy development runner can write an opt-in EDN timing receipt:
 
 ```bash
