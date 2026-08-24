@@ -1,0 +1,168 @@
+; Accepted SH-12 checked-core fixture for one explicit branch/join diamond.
+(ns gravity.self-hosting.sh12.branch-join.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh12-accepted-branch-join-checked-core])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh12-branch-join-source [node-id start end]
+  {:origin-id (str node-id ":origin")
+   :span {:source-id "sh12/branch-join/accepted"
+          :start start
+          :end end}
+   :enclosing-syntax-origin-id "sh12:branch-join:root:origin"
+   :generated? false
+   :generated-origin []})
+
+(defn sh12-branch-join-safety [node-id kind]
+  {:artifact :gravity/safety-outcome
+   :outcome-id (str node-id ":safety-outcome")
+   :operation node-id
+   :kind kind
+   :outcome :proven-safe
+   :proof {:proof-id (str node-id ":safety-proof")
+           :status :valid
+           :rule :bounded-branch-join-fixture}
+   :check nil
+   :unsafe-audit nil})
+
+(defn sh12-branch-join-node
+  [node-id path operation operands type value start end]
+  {:node-id node-id
+   :path path
+   :source-operation operation
+   :operands operands
+   :type type
+   :attributes {:value value
+                :intrinsic-effects #{}
+                :intrinsic-capabilities #{}}
+   :source (sh12-branch-join-source node-id start end)
+   :profile :meta
+   :ownership {:model :persistent-immutable
+               :value-id node-id}
+   :effects #{}
+   :safety (sh12-branch-join-safety node-id operation)})
+
+(defn sh12-branch-join-type-fact [node-id type]
+  {:fact-id (str node-id ":type-fact")
+   :core-node-id node-id
+   :type-id type
+   :type type
+   :producer-rule :fixture-checked-core
+   :dependencies []
+   :constraints []})
+
+(defn sh12-branch-join-effect-fact [node-id]
+  {:fact-id (str node-id ":effect-fact")
+   :core-node-id node-id
+   :direct #{}
+   :latent #{}
+   :transitive #{}
+   :residual #{}
+   :ordering :none})
+
+(defn sh12-branch-join-ownership-fact [node-id]
+  {:fact-id (str node-id ":ownership-fact")
+   :core-node-id node-id
+   :value-id node-id
+   :model :persistent-immutable
+   :mutation :forbidden})
+
+(defn sh12-branch-join-capability-fact [node-id]
+  {:fact-id (str node-id ":capability-fact")
+   :core-node-id node-id
+   :required #{}
+   :granted #{}
+   :capability-proof {:proof-ids ["sh12:branch-join:capability-proof"]}})
+
+(defn sh12-accepted-branch-join-checked-core [actual-source-path]
+  (let [condition-id "sh12:branch-join:condition"
+        then-id "sh12:branch-join:then"
+        else-id "sh12:branch-join:else"
+        if-id "sh12:branch-join:if"
+        root-id "sh12:branch-join:root"
+        condition
+        (sh12-branch-join-node
+         condition-id [:entry :body :condition]
+         :literal [] :gravity.type/bool true 0 4)
+        then-node
+        (sh12-branch-join-node
+         then-id [:entry :body :then :value]
+         :literal [] :gravity.type/i64 11 10 12)
+        else-node
+        (sh12-branch-join-node
+         else-id [:entry :body :else :value]
+         :literal [] :gravity.type/i64 22 18 20)
+        if-node
+        (sh12-branch-join-node
+         if-id [:entry :body]
+         :if [condition-id then-id else-id]
+         :gravity.type/i64 nil 5 21)
+        root
+        (sh12-branch-join-node
+         root-id [:entry]
+         :function [if-id] :gravity.type/i64 nil 0 22)
+        nodes [condition then-node else-node if-node root]]
+    {:artifact :gravity/sh12-c11-checked-core
+     :schema-version 1
+     :status :accepted
+     :artifact-id "sh12:branch-join:checked-core"
+     :mapping-id "sh12:branch-join:mapping"
+     :provenance-binding-id "sh12:branch-join:provenance"
+     :source-core-input
+     {:module (quote gravity.self-hosting.sh12.branch-join.fixture)
+      :declared-effects #{}
+      :declared-capabilities #{}}
+     :profile :meta
+     :source-target :jvm
+     :target-request-metadata {:requested-target :jvm}
+     :entrypoint (quote gravity.self-hosting.sh12.branch-join/main)
+     :core-nodes nodes
+     :root-node-ids [root-id]
+     :type-facts
+     {condition-id (sh12-branch-join-type-fact
+                    condition-id :gravity.type/bool)
+      then-id (sh12-branch-join-type-fact then-id :gravity.type/i64)
+      else-id (sh12-branch-join-type-fact else-id :gravity.type/i64)
+      if-id (sh12-branch-join-type-fact if-id :gravity.type/i64)
+      root-id (sh12-branch-join-type-fact root-id :gravity.type/i64)}
+     :effect-facts
+     {condition-id (sh12-branch-join-effect-fact condition-id)
+      then-id (sh12-branch-join-effect-fact then-id)
+      else-id (sh12-branch-join-effect-fact else-id)
+      if-id (sh12-branch-join-effect-fact if-id)
+      root-id (sh12-branch-join-effect-fact root-id)}
+     :effect-graph []
+     :ownership-facts
+     {condition-id (sh12-branch-join-ownership-fact condition-id)
+      then-id (sh12-branch-join-ownership-fact then-id)
+      else-id (sh12-branch-join-ownership-fact else-id)
+      if-id (sh12-branch-join-ownership-fact if-id)
+      root-id (sh12-branch-join-ownership-fact root-id)}
+     :capability-facts
+     {condition-id (sh12-branch-join-capability-fact condition-id)
+      then-id (sh12-branch-join-capability-fact then-id)
+      else-id (sh12-branch-join-capability-fact else-id)
+      if-id (sh12-branch-join-capability-fact if-id)
+      root-id (sh12-branch-join-capability-fact root-id)}
+     :capability-proof-records
+     [{:proof-id "sh12:branch-join:capability-proof"
+       :status :authenticated
+       :source-artifact-id "sh12:branch-join:checked-core"}]
+     :safety-facts
+     {condition-id (get condition :safety)
+      then-id (get then-node :safety)
+      else-id (get else-node :safety)
+      if-id (get if-node :safety)
+      root-id (get root :safety)}
+     :profile-facts
+     {condition-id {:profile :meta :target :jvm}
+      then-id {:profile :meta :target :jvm}
+      else-id {:profile :meta :target :jvm}
+      if-id {:profile :meta :target :jvm}
+      root-id {:profile :meta :target :jvm}}
+     :provenance
+     {:actual-source-path actual-source-path}
+     :diagnostics []}))
