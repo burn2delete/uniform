@@ -146838,14 +146838,30 @@
     (c2-reader-validate! source-path artifact)
     artifact))
 
-(defn compiler-c2-reader-file-artifact-cached
-  "Opt in to the local persistent C2 pass cache for one source file.
+(defn- compiler-c2-reader-file-artifact-uncached
+  [path]
+  (let [source-bytes (sh03-reader-read-target-source-bytes! path)
+        project-context (reader-project-context-for-source path)
+        resolved (sh03-reader-resolved-result!
+                  path source-bytes project-context standard-reader-options)
+        result (:result resolved)
+        _ (sh03-reader-raise-rejection!
+           path source-bytes standard-reader-options project-context result)
+        source-text (sh03-reader-strict-source-text!
+                     path path source-bytes)
+        products (sh03-reader-adapt-products!
+                  path source-text source-bytes standard-reader-options
+                  project-context resolved)]
+    (compiler-c2-reader-source-artifact
+     path source-text project-context products
+     sh03-reader-internal-product-authority)))
 
-  The existing `compiler-c2-reader-file-artifact` path remains the default.
-  This function returns an operational envelope containing the unchanged C2
-  artifact and explicit hit/miss evidence.  A validated hit does not execute
-  the target reader.  This local cache has no release, proof, equivalence, or
-  self-hosting authority."
+(defn compiler-c2-reader-file-artifact-cached
+  "Return the local persistent C2 pass-cache result for one source file.
+
+  The operational envelope contains the unchanged C2 artifact and explicit
+  hit/miss evidence.  A validated hit does not execute the target reader.  This
+  local cache has no release, proof, equivalence, or self-hosting authority."
   [path cache-base]
   (let [snapshot (c2-pass-cache/bounded-source-snapshot!
                   path sh03-reader-maximum-source-bytes)
@@ -146865,7 +146881,7 @@
             (c2-pass-cache-revalidate-artifact!
              path source-text source-unit current-binding
              artifact entry cache-key))
-          :compute! #(compiler-c2-reader-file-artifact path)})]
+          :compute! #(compiler-c2-reader-file-artifact-uncached path)})]
     {:kind :gravity/local-c2-pass-cache-result
      :stage :c2-reader
      :c2-reader-artifact (:artifact result)
@@ -146878,22 +146894,16 @@
      :equivalence-authority? false}))
 
 (defn compiler-c2-reader-file-artifact
+  "Compile one source file through the ordinary C2 reader path.
+
+  Reuse is content-addressed below the source's explicit project root and is
+  accepted only after current C2, pass, diagnostic, provenance, and SH-03
+  boundary revalidation.  The returned value is the unchanged C2 artifact;
+  local cache receipts remain non-authoritative."
   [path]
-  (let [source-bytes (sh03-reader-read-target-source-bytes! path)
-        project-context (reader-project-context-for-source path)
-        resolved (sh03-reader-resolved-result!
-                  path source-bytes project-context standard-reader-options)
-        result (:result resolved)
-        _ (sh03-reader-raise-rejection!
-           path source-bytes standard-reader-options project-context result)
-        source-text (sh03-reader-strict-source-text!
-                     path path source-bytes)
-        products (sh03-reader-adapt-products!
-                  path source-text source-bytes standard-reader-options
-                  project-context resolved)]
-    (compiler-c2-reader-source-artifact
-     path source-text project-context products
-     sh03-reader-internal-product-authority)))
+  (:c2-reader-artifact
+   (compiler-c2-reader-file-artifact-cached
+    path (.getPath (reader-project-root-path (str path))))))
 
 (def c3-syntax-diagnostic-ids
   c3-syntax-diagnostics/c3-syntax-diagnostic-ids)

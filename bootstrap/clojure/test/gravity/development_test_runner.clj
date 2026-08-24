@@ -27,7 +27,8 @@
      "gravity.c2-pass-cache-test/generic-v2-adapter-same-key-concurrency-executes-one-c2-producer"
      "gravity.c2-pass-cache-test/generic-v2-adapter-preserves-opaque-c2-size-and-depth-profile"
      "gravity.c2-pass-cache-test/leaf-contract-is-explicitly-local-and-nonauthoritative"
-     "gravity.c2-pass-cache-test/opt-in-bootstrap-integration-reuses-without-reader-execution"]}
+     "gravity.c2-pass-cache-test/ordinary-bootstrap-c2-path-reuses-without-reader-execution"
+     "gravity.c2-pass-cache-test/ordinary-bootstrap-c2-path-invalidates-changed-source"]}
    {:namespace 'gravity.bootstrap-compatibility.c3-test
     :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"}
    {:namespace 'gravity.bootstrap-compatibility.module-analysis-test
