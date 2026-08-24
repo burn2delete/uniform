@@ -322,7 +322,7 @@
       "invariant_family": "tooling/python-retirement-boundary",
       "owner": "uniform-coordinator",
       "author": "uniform-coordinator",
-      "state": "integration-eligible",
+      "state": "integrated",
       "dependencies": ["python-retirement-reconciliation-v1"],
       "architecture_decision": "",
       "base_commit": "6422d78459a47583a9a07bd1f22676d5dee8bb49",
@@ -352,9 +352,10 @@
         {"state": "frozen", "at": "2026-08-24T01:11:00Z", "actor": "uniform-coordinator", "reason": "freeze the exact one-report erratum candidate and Git identities"},
         {"state": "review-pending", "at": "2026-08-24T01:12:00Z", "actor": "uniform-coordinator", "reason": "request independent review of the exact erratum candidate"},
         {"state": "accepted", "at": "2026-08-24T01:14:00Z", "actor": "independent-python-retirement-erratum-review", "reason": "accept the exact append-only erratum and its replayable evidence"},
-        {"state": "integration-eligible", "at": "2026-08-24T01:15:00Z", "actor": "uniform-coordinator", "reason": "exact identities, evidence, review, residual violations, and nonclaims verified"}
+        {"state": "integration-eligible", "at": "2026-08-24T01:15:00Z", "actor": "uniform-coordinator", "reason": "exact identities, evidence, review, residual violations, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-24T01:18:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted erratum and its eligibility record onto main"}
       ],
-      "disposition": "Eligible to integrate the erratum artifact only; no retroactive eligibility or roadmap credit."
+      "disposition": "Integrated erratum artifact only; no retroactive eligibility or roadmap credit."
     }
   ]
 }
