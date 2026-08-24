@@ -375,6 +375,46 @@
                                [:diagnostics 0 :provenance
                                 :actual-source-path])))))))))))
 
+(deftest sh12-rejects-unbound-inline-ownership-and-effects
+  (doseq [extension [".gravity" ".qst"]]
+    (testing extension
+      (let [checked (checked-core extension)
+            mir (build-mir checked)
+            condition-id "sh12:branch-join:condition"
+            mutate-condition
+            (fn [transform]
+              (update checked :core-nodes
+                      (fn [nodes]
+                        (mapv
+                         (fn [node]
+                           (if (= condition-id (:node-id node))
+                             (transform node)
+                             node))
+                         nodes))))
+            cases
+            [{:malformed
+              (mutate-condition
+               #(assoc-in % [:ownership :value-id] "attacker:value"))
+              :diagnostic-id "C11-VERIFY"
+              :missing-fact :ownership-fact}
+             {:malformed
+              (mutate-condition #(assoc % :effects #{:network/http}))
+              :diagnostic-id "C11-EFFECT"
+              :missing-fact :effect-fact-or-ordering}]]
+        (doseq [{:keys [malformed diagnostic-id missing-fact]} cases]
+          (let [construction (build-mir malformed)
+                verification (verify-mir malformed mir)]
+            (is (= :rejected (:status construction)))
+            (is (= diagnostic-id
+                   (get-in construction [:diagnostics 0 :diagnostic-id])))
+            (is (= missing-fact
+                   (get-in construction [:diagnostics 0 :missing-fact])))
+            (is (= :rejected (:status verification)))
+            (is (= diagnostic-id
+                   (get-in verification [:diagnostics 0 :diagnostic-id])))
+            (is (= missing-fact
+                   (get-in verification [:diagnostics 0 :missing-fact])))))))))
+
 (deftest sh12-rejects-host-constructed-empty-symbol-origin
   (doseq [extension [".gravity" ".qst"]]
     (testing extension
