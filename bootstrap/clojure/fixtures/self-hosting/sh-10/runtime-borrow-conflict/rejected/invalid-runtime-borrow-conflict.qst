@@ -1,0 +1,92 @@
+(ns gravity.self-hosting.sh10.runtime-borrow-conflict.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh10-overlapping-mutable-borrows-scenario
+             sh10-immutable-then-mutable-borrow-scenario
+             sh10-mutable-then-immutable-borrow-scenario
+             sh10-move-while-mutably-borrowed-scenario
+             sh10-consume-while-mutably-borrowed-scenario
+             sh10-stale-mutable-borrow-end-scenario
+             sh10-mutable-borrow-escape-scenario])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh10-runtime-borrow-event
+  [event-id operation borrow-id destination-owner
+   destination-lifetime-end escape-destination]
+  {:event-id event-id
+   :op operation
+   :borrow-id borrow-id
+   :destination-owner destination-owner
+   :destination-lifetime-end destination-lifetime-end
+   :escape-destination escape-destination
+   :control-path :normal})
+
+(defn sh10-runtime-borrow-scenario [scenario-id core-node-id events]
+  {:artifact :gravity/sh10-runtime-checked-mutable-borrow-scenario
+   :schema-version 1
+   :scenario-id scenario-id
+   :core-node-id core-node-id
+   :initialization :initialized
+   :owner-lifetime-end 64
+   :events events})
+
+(defn sh10-overlapping-mutable-borrows-scenario [core-node-id]
+  (sh10-runtime-borrow-scenario
+   :overlapping-mutable-borrows core-node-id
+   [(sh10-runtime-borrow-event
+     :borrow-first :borrow-mutable :mutable-first nil nil nil)
+    (sh10-runtime-borrow-event
+     :borrow-second :borrow-mutable :mutable-second nil nil nil)]))
+
+(defn sh10-immutable-then-mutable-borrow-scenario [core-node-id]
+  (sh10-runtime-borrow-scenario
+   :immutable-then-mutable-borrow core-node-id
+   [(sh10-runtime-borrow-event
+     :borrow-shared :borrow-immutable :shared-first nil nil nil)
+    (sh10-runtime-borrow-event
+     :borrow-mutable :borrow-mutable :mutable-first nil nil nil)]))
+
+(defn sh10-mutable-then-immutable-borrow-scenario [core-node-id]
+  (sh10-runtime-borrow-scenario
+   :mutable-then-immutable-borrow core-node-id
+   [(sh10-runtime-borrow-event
+     :borrow-mutable :borrow-mutable :mutable-first nil nil nil)
+    (sh10-runtime-borrow-event
+     :borrow-shared :borrow-immutable :shared-first nil nil nil)]))
+
+(defn sh10-move-while-mutably-borrowed-scenario [core-node-id]
+  (sh10-runtime-borrow-scenario
+   :move-while-mutably-borrowed core-node-id
+   [(sh10-runtime-borrow-event
+     :borrow :borrow-mutable :mutable-first nil nil nil)
+    (sh10-runtime-borrow-event
+     :move :move nil :destination-owner nil nil)]))
+
+(defn sh10-consume-while-mutably-borrowed-scenario [core-node-id]
+  (sh10-runtime-borrow-scenario
+   :consume-while-mutably-borrowed core-node-id
+   [(sh10-runtime-borrow-event
+     :borrow :borrow-mutable :mutable-first nil nil nil)
+    (sh10-runtime-borrow-event :consume :consume nil nil nil nil)]))
+
+(defn sh10-stale-mutable-borrow-end-scenario [core-node-id]
+  (sh10-runtime-borrow-scenario
+   :stale-mutable-borrow-end core-node-id
+   [(sh10-runtime-borrow-event
+     :borrow-first :borrow-mutable :mutable-first nil nil nil)
+    (sh10-runtime-borrow-event
+     :end-first :end-borrow :mutable-first nil nil nil)
+    (sh10-runtime-borrow-event
+     :borrow-second :borrow-mutable :mutable-second nil nil nil)
+    (sh10-runtime-borrow-event
+     :end-stale :end-borrow :mutable-first nil nil nil)]))
+
+(defn sh10-mutable-borrow-escape-scenario [core-node-id]
+  (sh10-runtime-borrow-scenario
+   :mutable-borrow-escape core-node-id
+   [(sh10-runtime-borrow-event
+     :borrow :borrow-mutable :mutable-first nil nil nil)
+    (sh10-runtime-borrow-event
+     :escape :escape-borrow :mutable-first nil 65 :function-return)]))

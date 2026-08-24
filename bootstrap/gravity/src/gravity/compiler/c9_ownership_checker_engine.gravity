@@ -24,7 +24,10 @@
              sh10-authenticated-ownership-identity-requests
              sh10-authenticated-ownership-core-identity-request
              sh10-bind-authenticated-ownership-identities
-             sh10-verify-authenticated-ownership-identities])
+             sh10-verify-authenticated-ownership-identities
+             sh10-runtime-mutable-borrow-policy
+             sh10-build-runtime-mutable-borrow-analysis
+             sh10-verify-runtime-mutable-borrow-analysis])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -2097,3 +2100,329 @@
        [{:diagnostic-id "C9-UNSAFE"
          :reason :candidate-identity-carrier-bound
          :preflight candidate-preflight}]})))
+
+; This bounded extension authenticates one owned-mutable lifecycle and keeps
+; local alias ordering static. The authenticated primitive facts do not prove
+; the state of aliases held by a dynamic provider, so each mutable acquisition
+; and matching end emits an explicit :runtime-checked residual. This is not a
+; general runtime, aggregate ownership, region, arena, transfer, or MIR claim.
+(defn sh10-runtime-mutable-borrow-policy []
+  {:artifact :gravity/sh10-runtime-mutable-borrow-policy
+   :schema-version 1
+   :scenario-artifact
+   :gravity/sh10-runtime-checked-mutable-borrow-scenario
+   :analysis-artifact
+   :gravity/sh10-runtime-checked-mutable-borrow-analysis
+   :ownership-kind :owned-mutable
+   :accepted-events
+   #{:initialize :read :borrow-immutable :borrow-mutable :end-borrow
+     :move :consume :escape-borrow}
+   :static-rules [:one-mutable-or-many-immutable
+                  :borrow-end-precedes-reborrow
+                  :no-move-or-consume-during-active-borrow
+                  :borrow-does-not-escape-owner]
+   :runtime-check-kind :dynamic-borrow-state
+   :runtime-check-outcome :runtime-checked
+   :runtime-check-reason :external-dynamic-alias-state-not-statically-proven
+   :runtime-check-provider :meta-jvm-dynamic-borrow-state
+   :runtime-check-metadata :borrow-state-attached-to-owned-value
+   :runtime-failure-behavior :declared-error
+   :profile :meta
+   :target :jvm
+   :diagnostics ["C9-MUT-ALIAS"
+                 "C9-MOVE-WHILE-BORROWED"
+                 "C9-BORROW-ESCAPE"
+                 "C9-RUNTIME-CHECK"
+                 "C9-UNSAFE"]
+   :pending [:general-runtime-borrow-check-execution
+             :persistent-aggregate-copy-semantics
+             :regions-arenas-and-linear-resources
+             :task-actor-and-ffi-transfer
+             :unsafe-audit-records
+             :mir-preservation
+             :trusted-digest-resolution]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh10-runtime-mutable-borrow-operation-fields? [event]
+  (let [operation (get event :op)]
+    (if (= :move operation)
+      (sh10-authenticated-owned-mutable-move-event-fields? event)
+      (if
+       (sh10-member?
+        #{:borrow-immutable :borrow-mutable :end-borrow} operation)
+        (sh10-authenticated-owned-mutable-borrow-event-fields? event)
+        (if (= :escape-borrow operation)
+          (sh10-authenticated-owned-mutable-escape-event-fields? event)
+          (sh10-authenticated-owned-mutable-simple-event-fields? event))))))
+
+(defn sh10-runtime-mutable-borrow-event-valid? [event]
+  (if
+   (sh10-exact-keys?
+    event
+    #{:event-id :op :borrow-id :destination-owner
+      :destination-lifetime-end :escape-destination :control-path})
+    (if (= nil (get event :event-id))
+      false
+      (if (= nil (get event :control-path))
+        false
+        (if
+         (sh10-member?
+          #{:initialize :read :borrow-immutable :borrow-mutable :end-borrow
+            :move :consume :escape-borrow}
+          (get event :op))
+          (sh10-runtime-mutable-borrow-operation-fields? event)
+          false)))
+    false))
+
+(defn sh10-runtime-mutable-borrow-events-valid? [remaining]
+  (if (= 0 (count remaining))
+    true
+    (if (sh10-runtime-mutable-borrow-event-valid? (first remaining))
+      (sh10-runtime-mutable-borrow-events-valid? (rest remaining))
+      false)))
+
+(defn sh10-runtime-mutable-borrow-scenario-valid? [scenario]
+  (if
+   (sh10-exact-keys?
+    scenario
+    #{:artifact :schema-version :scenario-id :core-node-id
+      :initialization :owner-lifetime-end :events})
+    (if (= :gravity/sh10-runtime-checked-mutable-borrow-scenario
+           (get scenario :artifact))
+      (if (= 1 (get scenario :schema-version))
+        (if (= nil (get scenario :scenario-id))
+          false
+          (if (= nil (get scenario :core-node-id))
+            false
+            (if (sh10-member?
+                 #{:uninitialized :initialized}
+                 (get scenario :initialization))
+              (if (number? (get scenario :owner-lifetime-end))
+                (if (vector? (get scenario :events))
+                  (if (<= (count (get scenario :events)) 16)
+                    (if (sh10-unique-event-ids?
+                         (get scenario :events) {})
+                      (sh10-runtime-mutable-borrow-events-valid?
+                       (get scenario :events))
+                      false)
+                    false)
+                  false)
+                false)
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh10-runtime-mutable-borrow-check-record
+  [request fact sequence]
+  (let [operation (get fact :operation)
+        borrow-id (get fact :borrow-id)]
+    {:artifact :gravity/c9-runtime-check-record
+     :sequence sequence
+     :check-id [(get request :request-id) (get fact :event-id)]
+     :kind :dynamic-borrow-state
+     :provider :meta-jvm-dynamic-borrow-state
+     :metadata-location :owned-value
+     :condition :dynamic-borrow-state
+     :operation operation
+     :operation-id (get fact :event-id)
+     :emitted-location :before-operation
+     :safety-outcome :runtime-checked
+     :static-proof-status :insufficient-dynamic-alias-state
+     :required-state
+     (if (= :borrow-mutable operation)
+       :no-active-incompatible-borrow
+       :matching-active-mutable-borrow)
+     :value-id (get request :value-id)
+     :owner-id (get request :owner-id)
+     :borrow-id borrow-id
+     :failure
+     {:behavior :declared-error
+      :diagnostic-id
+      (if (= :borrow-mutable operation) "C9-MUT-ALIAS" "C9-UNSAFE")
+      :reason
+      (if (= :borrow-mutable operation)
+        :dynamic-borrow-conflict
+        :stale-borrow-end)}
+     :failure-behavior :declared-error
+     :effects-introduced []
+     :performance-class :bounded-constant-time
+     :invalidation-conditions
+     [:provider-borrow-state-change :owner-move :owner-consume]
+     :type-fact-id (get request :type-fact-id)
+     :effect-fact-id (get request :effect-fact-id)
+     :capability-proof-id (get request :capability-proof-id)
+     :source-span (get fact :source-span)
+     :origin-chain (get fact :origin-chain)
+     :profile (get request :profile)
+     :target (get request :target)}))
+
+(defn sh10-runtime-mutable-borrow-end-fact? [fact]
+  (if (= :end-borrow (get fact :operation))
+    (= (get fact :borrow-id)
+       (get (get fact :state-before) :mutable-borrow-id))
+    false))
+
+(defn sh10-runtime-mutable-borrow-check-records
+  [request remaining sequence result]
+  (if (= 0 (count remaining))
+    result
+    (let [fact (first remaining)]
+      (if (= :borrow-mutable (get fact :operation))
+        (sh10-runtime-mutable-borrow-check-records
+         request (rest remaining) (+ sequence 1)
+         (conj result
+               (sh10-runtime-mutable-borrow-check-record
+                request fact sequence)))
+        (if (sh10-runtime-mutable-borrow-end-fact? fact)
+          (sh10-runtime-mutable-borrow-check-records
+           request (rest remaining) (+ sequence 1)
+           (conj result
+                 (sh10-runtime-mutable-borrow-check-record
+                  request fact sequence)))
+          (sh10-runtime-mutable-borrow-check-records
+           request (rest remaining) sequence result))))))
+
+(defn sh10-runtime-mutable-borrow-diagnostic
+  [bound scenario reason]
+  (let [diagnostic
+        (sh10-authenticated-owned-mutable-diagnostic
+         bound scenario reason)]
+    (assoc diagnostic
+           :remediation
+           :supply-an-exact-authenticated-runtime-mutable-borrow-lifecycle)))
+
+(defn sh10-runtime-mutable-borrow-result
+  [bound scenario request result]
+  (let [facts (get result :ownership-facts)
+        runtime-checks
+        (if (= :accepted (get result :status))
+          (sh10-runtime-mutable-borrow-check-records request facts 0 [])
+          [])
+        pending (get (sh10-runtime-mutable-borrow-policy) :pending)
+        safety-outcome
+        (if (= :accepted (get result :status))
+          (if (> (count runtime-checks) 0)
+            :runtime-checked
+            :proven-safe)
+          :rejected)
+        identity-input
+        {:domain :gravity/sh10-runtime-mutable-borrow-analysis-v1
+         :sh09-identity-input (get bound :identity-input)
+         :scenario scenario
+         :ownership-request request
+         :ownership-result result
+         :ordered-runtime-check-records runtime-checks
+         :pending pending}]
+    {:artifact :gravity/sh10-runtime-checked-mutable-borrow-analysis
+     :schema-version 1
+     :status (get result :status)
+     :safety-outcome safety-outcome
+     :scope :authenticated-sh09-runtime-checked-mutable-borrow-conflict
+     :authentication-status
+     :host-resolved-sh09-identity-binding-boundary
+     :effected-core bound
+     :scenario scenario
+     :ownership-request request
+     :ownership-result result
+     :ownership-facts facts
+     :runtime-check-records runtime-checks
+     :runtime-checks runtime-checks
+     :residual-checks runtime-checks
+     :preserves (sh10-authenticated-owned-mutable-preserves request)
+     :identity-input identity-input
+     :provenance (get bound :provenance)
+     :diagnostics (get result :diagnostics)
+     :pending pending
+     :self-hosted? false
+     :clojure-seed-boundary? true}))
+
+(defn sh10-runtime-mutable-borrow-profile-supported? [bound]
+  (let [module (get (get bound :effected-core) :module)]
+    (if (= :meta (get module :profile))
+      (= :jvm (get module :target))
+      false)))
+
+(defn sh10-build-runtime-mutable-borrow-analysis
+  [bound verification scenario]
+  (if (sh10-authenticated-sh09-input-valid? bound verification)
+    (if (sh10-runtime-mutable-borrow-profile-supported? bound)
+      (if (sh10-runtime-mutable-borrow-scenario-valid? scenario)
+        (if (sh10-authenticated-owned-mutable-scenario-bound? bound scenario)
+          (let [request
+                (sh10-authenticated-owned-mutable-request bound scenario)
+                result (sh10-check-ownership-request request)]
+            (sh10-runtime-mutable-borrow-result
+             bound scenario request result))
+          {:artifact :gravity/sh10-runtime-checked-mutable-borrow-analysis
+           :schema-version 1
+           :status :rejected
+           :safety-outcome :rejected
+           :diagnostics
+           [(sh10-runtime-mutable-borrow-diagnostic
+             bound scenario :scenario-does-not-bind-an-authenticated-sh09-fact)]
+           :pending (get (sh10-runtime-mutable-borrow-policy) :pending)})
+        {:artifact :gravity/sh10-runtime-checked-mutable-borrow-analysis
+         :schema-version 1
+         :status :rejected
+         :safety-outcome :rejected
+         :diagnostics
+         [(sh10-runtime-mutable-borrow-diagnostic
+           bound scenario :malformed-runtime-mutable-borrow-scenario)]
+         :pending (get (sh10-runtime-mutable-borrow-policy) :pending)})
+      {:artifact :gravity/sh10-runtime-checked-mutable-borrow-analysis
+       :schema-version 1
+       :status :rejected
+       :safety-outcome :rejected
+       :diagnostics
+       [(assoc
+         (sh10-runtime-mutable-borrow-diagnostic
+          bound scenario :runtime-borrow-check-unavailable-in-profile)
+         :diagnostic-id "C9-RUNTIME-CHECK"
+         :rule "C9-RUNTIME-CHECK")]
+       :pending (get (sh10-runtime-mutable-borrow-policy) :pending)})
+    {:artifact :gravity/sh10-runtime-checked-mutable-borrow-analysis
+     :schema-version 1
+     :status :rejected
+     :safety-outcome :rejected
+     :diagnostics
+     [(sh10-runtime-mutable-borrow-diagnostic
+       bound scenario :untrusted-or-malformed-sh09-effected-core)]
+     :pending (get (sh10-runtime-mutable-borrow-policy) :pending)}))
+
+(defn sh10-verify-runtime-mutable-borrow-analysis
+  [bound verification scenario candidate]
+  (let [candidate-preflight
+        (sh10-identity-candidate-preflight candidate)]
+    (if (= :accepted (get candidate-preflight :status))
+      (let [expected
+            (sh10-build-runtime-mutable-borrow-analysis
+             bound verification scenario)
+            passed (= expected candidate)]
+        {:artifact
+         :gravity/sh10-runtime-checked-mutable-borrow-analysis-verification
+         :status (if passed :passed :rejected)
+         :checks [:candidate-identity-carrier-bound
+                  :fresh-sh09-identity-binding
+                  :exact-runtime-mutable-borrow-scenario
+                  :authenticated-type-effect-capability-facts
+                  :authenticated-source-lineage-and-provenance
+                  :ordered-borrow-end-reborrow-transitions
+                  :explicit-runtime-checked-residuals
+                  :ownership-kernel-recomputation
+                  :stable-c9-diagnostics]
+         :diagnostics
+         (if passed
+           []
+           [(sh10-runtime-mutable-borrow-diagnostic
+             bound scenario :runtime-mutable-borrow-analysis-substitution)])
+         :expected expected
+         :candidate candidate})
+      {:artifact
+       :gravity/sh10-runtime-checked-mutable-borrow-analysis-verification
+       :status :rejected
+       :checks [:candidate-identity-carrier-bound]
+       :diagnostics
+       [(sh10-runtime-mutable-borrow-diagnostic
+         bound scenario :runtime-mutable-borrow-candidate-carrier-bound)]})))
