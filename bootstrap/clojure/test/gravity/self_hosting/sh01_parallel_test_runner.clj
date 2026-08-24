@@ -374,25 +374,30 @@
 (defn- normal-batches
   "Packs normal jobs into bounded, deterministic cache-affine batches.
 
-  Slice identity is the only reviewed affinity fact in an SH-01 plan.  Jobs
-  are therefore ordered by slice and namespace before bounded partitioning;
-  no memory-heavy or exclusive job can enter this path."
+  A reviewed JVM group takes precedence over slice affinity. Jobs are ordered
+  by that affinity and namespace before bounded partitioning; no memory-heavy
+  or exclusive job can enter this path."
   [jobs batch-size]
   (->> jobs
-       (group-by :slice)
+       (group-by #(or (:batch-key %) (:slice %)))
        (sort-by (comp str key))
-       (mapcat (fn [[_ slice-jobs]]
+       (mapcat (fn [[_ affinity-jobs]]
                  (partition-all
                   batch-size
-                  (sort-by #(namespace-name (:namespace %)) slice-jobs))))
+                  (sort-by #(namespace-name (:namespace %)) affinity-jobs))))
        (mapv
         (fn [batch]
           (let [batch (vec batch)]
-            {:namespace (:namespace (first batch))
-             :slice (:slice (first batch))
-             :resource-class :normal
-             :batch-jobs batch
-             :batch-namespaces (mapv :namespace batch)})))))
+            (cond->
+             {:namespace (:namespace (first batch))
+              :slice (:slice (first batch))
+              :resource-class :normal
+              :batch-jobs batch
+              :batch-namespaces (mapv :namespace batch)}
+              (:component-id (first batch))
+              (assoc :component-id (:component-id (first batch)))
+              (:batch-key (first batch))
+              (assoc :batch-key (:batch-key (first batch)))))))))
 
 (defn schedule-plan
   "Returns the deterministic execution schedule for an impact plan.
@@ -441,6 +446,9 @@
       :memory-parallelism memory-parallelism
       :fail-fast? (:fail-fast? options)
       :fail-fast (:fail-fast? options)
+      :planned-jvms (+ (count normal-batches)
+                       (count memory)
+                       (count exclusive))
       :jobs jobs
       :parallel-phase parallel-phase
       :exclusive-phase exclusive-phase
@@ -865,6 +873,7 @@
             :capture-failures capture-failures
             :jobs (count results)
             :planned-jobs (count (:jobs schedule))
+            :planned-jvms (:planned-jvms schedule)
             :results results
             :reports results
             :failures failures

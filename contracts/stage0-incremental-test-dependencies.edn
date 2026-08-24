@@ -1,0 +1,26 @@
+{:schema :gravity/stage0-incremental-test-dependencies-v1
+ :authority :non-authoritative
+ :authoritative? false
+ :components
+ [{:component-id "c11-mir"
+   :source-path "bootstrap/clojure/src/gravity/c11_mir.clj"
+   :tests
+   [{:path "bootstrap/clojure/test/gravity/c11_mir_test.clj"
+     :namespace gravity.c11-mir-test
+     :jvm-group "c11-mir-leaf"}
+    {:path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj"
+     :namespace gravity.bootstrap-compatibility.c11-test
+     :jvm-group "c11-mir-compatibility"}]}
+  {:component-id "compiler-pass-manifest"
+   :source-path "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj"
+   :tests
+   [{:path "bootstrap/clojure/test/gravity/compiler_pass_manifest_test.clj"
+     :namespace gravity.compiler-pass-manifest-test
+     :jvm-group "compiler-pass-manifest-leaf"}
+    {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_compiler_pass_manifest_compatibility_test.clj"
+     :namespace gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test
+     :jvm-group "compiler-pass-manifest-compatibility"}]}]
+ :nonclaims
+ ["This development dependency map does not replace slice ownership."
+  "Selected tests are non-authoritative development feedback."
+  "Selection does not establish compiler, self-hosting, seed-retirement, or release authority."]}

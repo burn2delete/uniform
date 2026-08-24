@@ -170,7 +170,7 @@
       (is (empty? (set/intersection actual-stage0-tests support-paths)))
       (is (= 108 (count actual-stage0-paths)))
       (is (= actual-stage0-paths declared-stage0-paths))
-      (is (= 192 (count module-owners)))
+      (is (= 193 (count module-owners)))
       (is (every? keyword? (vals module-owners))))
     (testing "coordinator support paths stay reserved outside paired Stage0"
       (is (= 14 (count support-paths)))

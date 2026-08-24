@@ -11,6 +11,8 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :as test]
+            [gravity.self-hosting.sh01-component-test-dependencies
+             :as component-dependencies]
             [gravity.self-hosting-test-runner :as runner]))
 
 (def ^:private slice-count 30)
@@ -555,6 +557,10 @@
       (if (contains? options :dependencies)
         (:dependencies options)
         (backlog-dependencies))
+      :component-dependencies
+      (if (contains? options :component-dependencies)
+        (:component-dependencies options)
+        (component-dependencies/dependency-index))
       :catalog-delay
       (delay
        (if (contains? options :catalog)
@@ -576,12 +582,125 @@
       "SH-01 planner context is missing its test catalog"
       {:id "SH01-IMPACT-CONTEXT"}))))
 
+(declare dedicated-test-path? dedicated-test-namespace repository-path-exists?)
+
 (defn- resource-class
   [slice]
   (cond
     (= "SH-07" slice) :memory-heavy
     (contains? #{"SH-26" "SH-27" "SH-28" "SH-29"} slice) :exclusive
     :else :normal))
+
+(defn- reviewed-component-selection
+  [dependency-index entry]
+  (let [relative (:path entry)
+        source-entry (get-in dependency-index [:by-source-path relative])
+        test-entry (get-in dependency-index [:by-test-path relative])]
+    (cond
+      source-entry
+      (do
+        (when-not (= (:component-id source-entry) (:component-id entry))
+          (throw
+           (ex-info
+            "Reviewed component dependency disagrees with Stage0 ownership"
+            {:id "SH01-COMPONENT-DEPENDENCY-CONTRACT"
+             :path relative
+             :dependency-component (:component-id source-entry)
+             :ownership-component (:component-id entry)})))
+        {:selection :reviewed-component-dependencies
+         :reason :reviewed-component-source
+         :component-id (:component-id source-entry)
+         :tests (:tests source-entry)
+         :test-namespaces (mapv :namespace (:tests source-entry))})
+
+      test-entry
+      (do
+        (when (and (:component-id entry)
+                   (not= (:component-id test-entry) (:component-id entry)))
+          (throw
+           (ex-info
+            "Reviewed test dependency disagrees with Stage0 ownership"
+            {:id "SH01-COMPONENT-DEPENDENCY-CONTRACT"
+             :path relative
+             :dependency-component (:component-id test-entry)
+             :ownership-component (:component-id entry)})))
+        (if (repository-path-exists? relative)
+          {:selection :exact-test-path
+           :reason :reviewed-component-test
+           :component-id (:component-id test-entry)
+           :tests [(select-keys test-entry [:path :namespace :jvm-group])]
+           :test-namespaces [(:namespace test-entry)]}
+          (let [component
+                (get-in dependency-index
+                        [:by-component-id (:component-id test-entry)])]
+            {:selection :reviewed-component-dependencies
+             :reason :deleted-reviewed-component-test
+             :component-id (:component-id test-entry)
+             :tests (:tests component)
+             :test-namespaces (mapv :namespace (:tests component))})))
+
+      :else
+      nil)))
+
+(defn- exact-dedicated-selection
+  [catalog entry]
+  (when (and (= :dedicated (:classification entry))
+             (dedicated-test-path? (:path entry)))
+    (when-let [namespace (dedicated-test-namespace catalog (:path entry))]
+      {:selection :exact-test-path
+       :reason :changed-dedicated-test
+       :tests [{:path (:path entry) :namespace namespace}]
+       :test-namespaces [namespace]})))
+
+(defn- development-selection
+  [dependency-index catalog entry]
+  (or (reviewed-component-selection dependency-index entry)
+      (exact-dedicated-selection catalog entry)))
+
+(defn- enrich-development-selections
+  [dependency-index catalog classified]
+  (mapv
+   (fn [entry]
+     (if-let [selection (development-selection dependency-index catalog entry)]
+       (merge entry
+              {:development-selection (:selection selection)
+               :development-invalidation-reason (:reason selection)
+               :development-component-id (:component-id selection)
+               :development-tests (:tests selection)
+               :development-test-namespaces (:test-namespaces selection)})
+       (assoc entry
+              :development-selection
+              (if (= :unrelated (:classification entry))
+                :ignored
+                :slice-closure)
+              :development-invalidation-reason
+              (if (= :unrelated (:classification entry))
+                :unrelated-path
+                :unreviewed-or-deleted-path))))
+   classified))
+
+(defn- exact-development-namespaces
+  [classified]
+  (->> classified
+       (mapcat :development-test-namespaces)
+       distinct
+       sort
+       vec))
+
+(defn- exact-development-job-metadata
+  [classified]
+  (into
+   {}
+   (for [entry classified
+         test-entry (:development-tests entry)
+         :let [namespace (:namespace test-entry)]
+         :when (:development-component-id entry)]
+     [namespace
+      {:component-id (:development-component-id entry)
+       :batch-key (str "component/"
+                       (:development-component-id entry)
+                       "/"
+                       (:jvm-group test-entry))}])))
 
 (defn- dedicated-test-path?
   "Returns true when a path names a dedicated self-hosting test file.
@@ -901,10 +1020,33 @@
             _ (validate-unresolved-present-dedicated-test-paths!
                catalog
                classified)
+            classified
+            (enrich-development-selections
+             (:component-dependencies context)
+             catalog
+             classified)
+            exact-namespaces
+            (exact-development-namespaces classified)
+            job-metadata-by-namespace
+            (exact-development-job-metadata classified)
+            execution-path-slices
+            (->> classified
+                 (filter #(= :slice-closure
+                             (:development-selection %)))
+                 (mapcat :slices)
+                 set)
+            execution-direct
+            (set/union direct-slices execution-path-slices)
+            execution-selected
+            (if expand-dependants?
+              (downstream-closure dependencies execution-direct)
+              execution-direct)
             namespaces
             (->> catalog
-                 (filter #(contains? selected (:slice %)))
-                 (mapv :namespace)
+                 (filter #(contains? execution-selected (:slice %)))
+                 (map :namespace)
+                 (concat exact-namespaces)
+                 distinct
                  sort
                  vec)
             shards
@@ -912,21 +1054,33 @@
                  (mapv
                   (fn [namespace]
                     (let [slice (namespace-slice namespace)]
-                      {:namespace namespace
-                       :slice slice
-                       :resource-class (resource-class slice)}))))]
+                      (cond->
+                       {:namespace namespace
+                        :slice slice
+                        :resource-class (resource-class slice)}
+                        (contains? job-metadata-by-namespace namespace)
+                        (merge (get job-metadata-by-namespace namespace)))))))]
         (merge
-         {:schema :gravity/sh01-impact-test-plan-v1
+         (cond->
+          {:schema :gravity/sh01-impact-test-plan-v1
           :direct-slices (vec (sort direct))
           :affected-slices (vec (sort selected))
+          :execution-direct-slices (vec (sort execution-direct))
+          :execution-affected-slices (vec (sort execution-selected))
           :changed-paths changed-paths
           :classifications classified
           :namespaces namespaces
+          :development-selected-namespaces namespaces
           :shards shards
           :ignored-paths
           (->> classified
-              (filter #(= :unrelated (:classification %)))
-              (mapv :path))}
+               (filter #(= :unrelated (:classification %)))
+               (mapv :path))}
+           (seq exact-namespaces)
+           (assoc :authority :non-authoritative
+                  :authoritative? false
+                  :non-authoritative? true
+                  :selection-mode :exact-development-tests))
          (component-plan-fields classified))))))
 
 (defn build-namespace-plan
@@ -1011,11 +1165,15 @@
           :shards shards
           :ignored-paths []})))))
 
-(defn- process-lines
-  [& command]
-  (let [process
+(defn- process-lines-in
+  [working-directory & command]
+  (let [working-directory
+        (if (instance? java.nio.file.Path working-directory)
+          (.toFile ^java.nio.file.Path working-directory)
+          (io/file working-directory))
+        process
         (-> (ProcessBuilder. ^java.util.List (vec command))
-            (.directory (path "."))
+            (.directory working-directory)
             (.redirectErrorStream true)
             .start)
         output (slurp (.getInputStream process))
@@ -1030,16 +1188,110 @@
          :output output})))
     (remove str/blank? (str/split-lines output))))
 
+(defn- process-lines
+  [& command]
+  (apply process-lines-in (path ".") command))
+
+(defn- one-git-commit
+  [kind values details]
+  (let [values (vec values)]
+    (when-not (and (= 1 (count values))
+                   (re-matches #"[0-9a-f]{40}" (first values)))
+      (throw
+       (ex-info
+        "Repository base discovery did not produce one commit"
+        (merge {:id "SH01-IMPACT-BASE"
+                :kind kind
+                :values values}
+               details))))
+    (first values)))
+
+(defn change-discovery
+  "Returns deterministic committed and working change discovery metadata.
+
+  With an explicit base ref, committed paths are read from
+  merge-base(base, HEAD)..HEAD. Tracked and untracked working paths are always
+  included. The three sources remain separate in the result and their union is
+  returned under `:changed-paths`."
+  ([]
+   (change-discovery nil (path ".")))
+  ([base-ref]
+   (change-discovery base-ref (path ".")))
+  ([base-ref working-directory]
+   (when (and (some? base-ref)
+              (or (not (string? base-ref))
+                  (str/blank? base-ref)
+                  (some #(Character/isISOControl (int %)) base-ref)))
+     (throw
+      (ex-info
+       "Incremental base ref must be one nonempty line"
+       {:id "SH01-IMPACT-BASE" :base-ref base-ref})))
+   (let [run #(apply process-lines-in working-directory %)
+         base-commit
+         (when base-ref
+           (try
+             (one-git-commit
+              :base-commit
+              (run ["git" "rev-parse" "--verify" "--end-of-options"
+                    (str base-ref "^{commit}")])
+              {:base-ref base-ref})
+             (catch clojure.lang.ExceptionInfo exception
+               (throw
+                (ex-info
+                 "Incremental base ref could not be resolved"
+                 {:id "SH01-IMPACT-BASE"
+                  :base-ref base-ref
+                  :cause-id (:id (ex-data exception))}
+                 exception)))))
+         merge-base
+         (when base-commit
+           (try
+             (one-git-commit
+              :merge-base
+              (run ["git" "merge-base" base-commit "HEAD"])
+              {:base-ref base-ref :base-commit base-commit})
+             (catch clojure.lang.ExceptionInfo exception
+               (throw
+                (ex-info
+                 "Incremental base ref has no usable merge base with HEAD"
+                 {:id "SH01-IMPACT-BASE"
+                  :base-ref base-ref
+                  :base-commit base-commit
+                  :cause-id (:id (ex-data exception))}
+                 exception)))))
+         committed-paths
+         (if merge-base
+           (vec (run ["git" "diff" "--name-only" merge-base "HEAD"]))
+           [])
+         tracked-working-paths
+         (vec (run ["git" "diff" "--name-only" "HEAD"]))
+         untracked-paths
+         (vec (run ["git" "ls-files" "--others" "--exclude-standard"]))
+         changed-paths
+         (->> (concat committed-paths
+                      tracked-working-paths
+                      untracked-paths)
+              distinct
+              sort
+              vec)]
+     {:schema :gravity/sh01-change-discovery-v1
+      :authority :non-authoritative
+      :authoritative? false
+      :base-ref base-ref
+      :base-commit base-commit
+      :merge-base merge-base
+      :committed-paths (vec (sort (distinct committed-paths)))
+      :tracked-working-paths
+      (vec (sort (distinct tracked-working-paths)))
+      :untracked-paths (vec (sort (distinct untracked-paths)))
+      :changed-paths changed-paths})))
+
 (defn changed-paths
-  "Returns tracked and untracked working-tree paths in deterministic order."
-  []
-  (->> (concat
-        (process-lines "git" "diff" "--name-only" "HEAD")
-        (process-lines
-         "git" "ls-files" "--others" "--exclude-standard"))
-       distinct
-       sort
-       vec))
+  "Returns committed branch plus tracked/untracked working paths when based."
+  ([] (:changed-paths (change-discovery)))
+  ([base-ref] (:changed-paths (change-discovery base-ref)))
+  ([base-ref working-directory]
+   (:changed-paths (change-discovery base-ref working-directory))))
 
 (defn- owner-slices
   [owner]

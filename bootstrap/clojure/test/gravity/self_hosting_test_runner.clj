@@ -6,7 +6,9 @@
   gravity.bootstrap-test or to this runner."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :as test]))
+            [clojure.test :as test]
+            [gravity.self-hosting.sh01-component-test-dependencies
+             :as component-dependencies]))
 
 (import '(java.nio.charset CodingErrorAction StandardCharsets)
         '(java.nio.file Files LinkOption Path Paths StandardCopyOption
@@ -23,7 +25,9 @@
     gravity.p15-native-plan-specialization-test])
 
 (def ^:private explicitly-selectable-test-namespaces
-  '#{gravity.darwin-publication-test})
+  (into
+   '#{gravity.darwin-publication-test}
+   (:selectable-namespaces (component-dependencies/dependency-index))))
 
 (def ^:private dedicated-test-resource
   "gravity/self_hosting")

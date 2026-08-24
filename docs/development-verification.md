@@ -80,6 +80,7 @@ Use the reviewed Clojure aliases:
 
 ```bash
 clojure -M:incremental-check
+clojure -M:incremental-check --base-ref main
 clojure -M:sh01-test
 clojure -M:leaf-test --group foundation-reader
 clojure -M:dev-test --catalog
@@ -89,11 +90,20 @@ clojure -M:stage3-verification --help
 ```
 
 `clojure -M:incremental-check` passes the current tracked and untracked changed
-paths to the existing SH-01 impact planner, prints the ownership and
-dependency-expanded invalidation explanation, and runs only the selected test
-namespaces through the bounded parallel runner. It succeeds without starting a
-runner when all changed paths are unrelated, and fails closed when a relevant
-path has no owner. Its plan and execution report are explicitly
+paths to the existing SH-01 impact planner. `--base-ref REF` additionally
+includes committed branch changes from `merge-base(REF, HEAD)..HEAD`, so a
+clean candidate branch still produces a plan. Discovery records the resolved
+base and merge-base plus committed, tracked-working, and untracked path sets.
+
+The deterministic explanation keeps SH-01 ownership and downstream slice
+closure as governance metadata while using the reviewed
+`contracts/stage0-incremental-test-dependencies.edn` map for component-level
+development invalidation. A reviewed component source selects its declared
+leaf and compatibility tests. A present dedicated test-file change selects its
+exact namespace. Deleted dedicated tests retain conservative slice fallback;
+malformed dependency records and relevant unowned paths fail closed. JVM
+groups in the reviewed map keep bootstrap-free tests isolated from tests that
+load the bootstrap facade. The plan and execution report are explicitly
 non-authoritative and cannot satisfy the standard gates below or any release,
 self-hosting, or seed-retirement gate.
 

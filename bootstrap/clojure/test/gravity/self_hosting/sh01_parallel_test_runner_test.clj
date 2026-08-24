@@ -98,6 +98,39 @@
              gravity.self-hosting.normal-c-test]
            (mapv :namespace (:results report))))))
 
+(deftest reviewed-jvm-group-controls-component-test-isolation
+  (let [component-id "c11-mir"
+        first-job (assoc (shard "gravity.c11-mir-test" nil :normal)
+                         :component-id component-id
+                         :batch-key "component/c11-mir/leaf")
+        second-job
+        (assoc (shard "gravity.c11-mir-extra-test"
+                      nil :normal)
+               :component-id component-id
+               :batch-key "component/c11-mir/leaf")
+        compatibility-job
+        (assoc (shard "gravity.bootstrap-compatibility.c11-test"
+                      nil :normal)
+               :component-id component-id
+               :batch-key "component/c11-mir/compatibility")
+        schedule
+        (runner/schedule-plan
+         (plan [first-job second-job compatibility-job]))]
+    (is (= 3 (count (:jobs schedule))))
+    (is (= 2 (:planned-jvms schedule)))
+    (is (= 2 (count (get-in schedule
+                            [:parallel-phase :normal-batches]))))
+    (is (= component-id
+           (get-in schedule
+                   [:parallel-phase :normal-batches 0 :component-id])))
+    (is (= ['gravity.bootstrap-compatibility.c11-test]
+           (get-in schedule
+                   [:parallel-phase :normal-batches 0 :batch-namespaces])))
+    (is (= ['gravity.c11-mir-extra-test
+            'gravity.c11-mir-test]
+           (get-in schedule
+                   [:parallel-phase :normal-batches 1 :batch-namespaces])))))
+
 (deftest warm-batch-fail-fast-preserves-attempted-prefix-and-skipped-tail
   (let [first-job (shard "gravity.self-hosting.normal-a-test" "SH-01" :normal)
         second-job (shard "gravity.self-hosting.normal-b-test" "SH-01" :normal)

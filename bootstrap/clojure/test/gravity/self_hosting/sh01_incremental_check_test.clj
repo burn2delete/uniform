@@ -111,3 +111,43 @@
            (get-in aliases [:test :main-opts])))
     (is (= ["-m" "gravity.self-hosting.sh01-incremental-check"]
            (get-in aliases [:incremental-check :main-opts])))))
+
+(deftest base-aware-run-records-discovery-and-forwards-its-union
+  (let [discovery
+        {:schema :gravity/sh01-change-discovery-v1
+         :authority :non-authoritative
+         :authoritative? false
+         :base-ref "main"
+         :base-commit "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         :merge-base "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         :committed-paths ["committed.clj"]
+         :tracked-working-paths ["tracked.clj"]
+         :untracked-paths ["untracked.clj"]
+         :changed-paths ["committed.clj" "tracked.clj" "untracked.clj"]}
+        planned (atom nil)]
+    (with-redefs [planner/change-discovery (constantly discovery)
+                  check/build-check-plan
+                  (fn [paths metadata]
+                    (reset! planned [paths metadata])
+                    (assoc selected-plan :change-discovery metadata))
+                  check/execute-check identity]
+      (let [plan (check/run-check-from-base "main")]
+        (is (= [(:changed-paths discovery) discovery] @planned))
+        (is (= discovery (:change-discovery plan)))
+        (is (= discovery
+               (:change-discovery (check/invalidation-explanation plan))))))))
+
+(deftest incremental-cli-accepts-only-one-explicit-base-ref
+  (let [parse (ns-resolve 'gravity.self-hosting.sh01-incremental-check
+                          'parse-arguments)]
+    (is (= {:base-ref nil} (parse [])))
+    (is (= {:base-ref "main"} (parse ["--base-ref" "main"])))
+    (doseq [arguments [["main"] ["--base-ref"]
+                       ["--base-ref" ""] ["--base-ref" "main" "extra"]]]
+      (let [exception
+            (try
+              (parse arguments)
+              nil
+              (catch clojure.lang.ExceptionInfo exception exception))]
+        (is (= "SH01-INCREMENTAL-USAGE" (:id (ex-data exception)))
+            arguments)))))

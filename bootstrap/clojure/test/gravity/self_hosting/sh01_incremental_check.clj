@@ -2,6 +2,7 @@
   "Changed-path development check backed by the existing SH-01 planner."
   (:gen-class)
   (:require [clojure.set :as set]
+            [clojure.string :as str]
             [gravity.self-hosting.sh01-impact-test-planner :as planner]
             [gravity.self-hosting.sh01-parallel-test-runner :as runner]))
 
@@ -18,11 +19,18 @@
      :changed-paths (:changed-paths plan)
      :path-invalidations
      (mapv
-      (fn [{:keys [path classification slices]}]
+      (fn [{:keys [path classification slices development-selection
+                   development-invalidation-reason
+                   development-test-namespaces]}]
         (array-map
          :path path
          :classification classification
+         :governance-slices slices
          :invalidates-slices slices
+         :development-selection development-selection
+         :development-invalidation-reason development-invalidation-reason
+         :selected-test-namespaces
+         (vec (or development-test-namespaces []))
          :effect (if (= :unrelated classification)
                    :ignored
                    :selected)))
@@ -30,21 +38,29 @@
      :direct-slices (vec (sort direct))
      :dependant-slices (vec (sort (set/difference affected direct)))
      :affected-slices (vec (sort affected))
+     :execution-direct-slices (:execution-direct-slices plan)
+     :execution-affected-slices (:execution-affected-slices plan)
      :selected-namespaces (:namespaces plan)
      :ignored-paths (:ignored-paths plan)
+     :change-discovery (:change-discovery plan)
      :selection-rule
-     "Changed paths select their SH-01 owners; affected slices include the existing downstream dependency closure.")))
+     "Governance slices retain SH-01 ownership closure; reviewed component and dedicated test paths select exact development tests, while other owned paths retain conservative slice closure.")))
 
 (defn build-check-plan
   "Builds an explicitly non-authoritative plan for changed paths."
-  [changed-paths]
-  (assoc
-   (planner/build-plan
-    {:changed-paths changed-paths
-     :expand-dependants? true})
-   :authority :non-authoritative
-   :non-authoritative? true
-   :authoritative? false))
+  ([changed-paths]
+   (build-check-plan changed-paths nil))
+  ([changed-paths change-discovery]
+   (cond->
+    (assoc
+     (planner/build-plan
+      {:changed-paths changed-paths
+       :expand-dependants? true})
+     :authority :non-authoritative
+     :non-authoritative? true
+     :authoritative? false)
+     change-discovery
+     (assoc :change-discovery change-discovery))))
 
 (defn execute-check
   "Executes exactly the namespaces selected by an SH-01 development plan."
@@ -83,6 +99,32 @@
   ([changed-paths]
    (execute-check (build-check-plan changed-paths))))
 
+(defn run-check-from-base
+  "Discovers and checks committed plus working changes from an explicit base."
+  [base-ref]
+  (let [discovery (planner/change-discovery base-ref)]
+    (execute-check
+     (build-check-plan (:changed-paths discovery) discovery))))
+
+(defn- parse-arguments
+  [arguments]
+  (let [arguments (vec arguments)]
+    (cond
+      (empty? arguments) {:base-ref nil}
+
+      (and (= 2 (count arguments))
+           (= "--base-ref" (first arguments))
+           (string? (second arguments))
+           (not (str/blank? (second arguments))))
+      {:base-ref (second arguments)}
+
+      :else
+      (throw
+       (ex-info
+        "incremental-check accepts only --base-ref REF"
+        {:id "SH01-INCREMENTAL-USAGE"
+         :arguments arguments})))))
+
 (defn- cleanup!
   []
   (flush)
@@ -95,17 +137,19 @@
   [& arguments]
   (let [result
         (try
-          (if (seq arguments)
-            (do
-              (binding [*out* *err*]
-                (println "incremental-check accepts no arguments"))
-              {:exit-code 2})
-            (let [plan (build-check-plan (planner/changed-paths))]
+          (let [{:keys [base-ref]} (parse-arguments arguments)
+                discovery (planner/change-discovery base-ref)
+                plan (build-check-plan (:changed-paths discovery) discovery)]
               (println "SH-01 incremental developer check: non-authoritative")
               (prn (invalidation-explanation plan))
               (let [report (execute-check plan)]
                 (prn report)
-                report)))
+                report))
+          (catch clojure.lang.ExceptionInfo exception
+            (binding [*out* *err*]
+              (println (.getMessage exception))
+              (prn (ex-data exception)))
+            {:exit-code 2 :error (ex-data exception)})
           (finally
             (cleanup!)))]
     (when (pos? (long (:exit-code result)))

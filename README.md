@@ -112,20 +112,25 @@ for implementation work outside that unit boundary:
 
 ```bash
 clojure -M:incremental-check
+clojure -M:incremental-check --base-ref main
 clojure -M:sh01-test
 clojure -M:dev-test --exact hosted-hello-runs --exact hosted-core-app-runs-user-functions-and-builtins
 clojure -M:project-structure-runner-unit
 clojure -J-Xmx512m -M:project-structure-test --exact gravity.bootstrap-test/hosted-hello-runs --exact gravity.bootstrap-test/reader-source-unit-identity-preserves-path-extension-and-options --exact gravity.bootstrap-test/reader-file-policy-rejects-extension-and-malformed-utf8 --exact gravity.bootstrap-test/c2-reader-treats-cr-lf-and-crlf-as-line-terminators --fail-fast
 ```
 
-`clojure -M:incremental-check` discovers working-tree changes, emits the SH-01
-ownership classifications and dependency-expanded invalidation plan, and runs
-only the selected namespaces. Relevant paths without an SH-01 owner fail
-closed. These Clojure runners emit non-authoritative development feedback and
-exit nonzero on failure. They do not replace fresh authoritative or release
-verification. See `docs/development-verification.md` for direct Clojure
-Stage3, SH-07, governance, preflight, and the fresh integration-candidate
-lane.
+`clojure -M:incremental-check` discovers working-tree changes. With
+`--base-ref REF`, it also includes committed branch paths from
+`merge-base(REF, HEAD)..HEAD`. It emits the unchanged SH-01 governance
+ownership closure separately from the reviewed development-test selection and
+runs only the selected namespaces. Reviewed component sources select their
+declared leaf and compatibility tests; present dedicated test-file changes
+select their exact namespace. Deleted tests fall back conservatively, and
+relevant paths without an SH-01 owner fail closed. These Clojure runners emit
+non-authoritative development feedback and exit nonzero on failure. They do
+not replace fresh authoritative or release verification. See
+`docs/development-verification.md` for direct Clojure Stage3, SH-07,
+governance, preflight, and the fresh integration-candidate lane.
 
 The current SH-02 development audit measured namespace require at 5.88 seconds
 and about 1.40 GiB peak resident memory, and the first ten leaf vars warm in one
