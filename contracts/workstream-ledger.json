@@ -753,7 +753,7 @@
       "invariant_family": "self-hosting/sh11-division-bounds-safety",
       "owner": "sh-safety",
       "author": "sh-safety",
-      "state": "integration-eligible",
+      "state": "integrated",
       "dependencies": ["sh09-authenticated-compiler-read-v1", "sh10-initialization-move-family-v1"],
       "architecture_decision": "",
       "base_commit": "27c135135c00820505e77a4f54411b1c022eeb8c",
@@ -798,9 +798,10 @@
         {"state": "frozen", "at": "2026-08-24T08:24:01Z", "actor": "sh-safety", "reason": "freeze the exact six-path candidate, fixtures, tree, and provenance tuple"},
         {"state": "review-pending", "at": "2026-08-24T08:24:02Z", "actor": "uniform-coordinator", "reason": "request independent review of the exact reconciled tuple"},
         {"state": "accepted", "at": "2026-08-24T08:24:03Z", "actor": "sh11_exact_review", "reason": "accept authenticated operand facts, closed D8 outcomes, residual checks, fail-closed diagnostics, fixtures, and nonclaims"},
-        {"state": "integration-eligible", "at": "2026-08-24T08:24:04Z", "actor": "uniform-coordinator", "reason": "SH-09 and SH-10 dependencies, exact identities, final focused gate, clean branch, independent acceptance, boundaries, and nonclaims verified"}
+        {"state": "integration-eligible", "at": "2026-08-24T08:24:04Z", "actor": "uniform-coordinator", "reason": "SH-09 and SH-10 dependencies, exact identities, final focused gate, clean branch, independent acceptance, boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-24T08:25:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted SH-11 candidate and its admission record onto main"}
       ],
-      "disposition": "Integration-eligible bounded SH-11 division and bounds safety classifier only; no SH-11 completion or roadmap credit."
+      "disposition": "Integrated bounded SH-11 division and bounds safety classifier only; no SH-11 completion or roadmap credit."
     }
   ]
 }
