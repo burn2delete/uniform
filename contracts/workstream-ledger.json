@@ -1048,6 +1048,63 @@
         {"state": "integrated", "at": "2026-08-24T18:42:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted cache candidate and its admission record onto main"}
       ],
       "disposition": "Integrated the trusted-cooperative non-authoritative cross-worktree result cache foundation only; no authoritative, performance, roadmap, release, self-hosting, or seed-retirement credit."
+    },
+    {
+      "id": "host-wide-development-resource-broker-v1",
+      "title": "Host-wide development resource broker version 1",
+      "invariant_family": "tooling/host-wide-development-resource-broker",
+      "owner": "development-verification",
+      "author": "development-verification",
+      "state": "integrated",
+      "dependencies": ["incremental-component-invalidation-v1", "cross-worktree-development-result-cache-v2"],
+      "architecture_decision": "",
+      "base_commit": "76e4cdfb93a0fc9dae4146a3a5469b9d20fcd4f6",
+      "candidate_commit": "449bb3fc329374c4735e42b27322a0513c805802",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker_test.clj",
+        "docs/development-verification.md"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "C16", "TEST1", "TEST2", "TEST12", "TEST13", "contracts/workstream-governance.json", "docs/development-verification.md"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker_test.clj"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker_test.clj"
+        ],
+        "stable_diagnostics": ["SH01-BROKER-ROOT-REQUIRED", "SH01-BROKER-ROOT-PERMISSIONS", "SH01-BROKER-POLICY-MISMATCH", "SH01-BROKER-STATE-CORRUPT", "SH01-BROKER-TIMEOUT", "SH01-BROKER-INTERRUPTED", "SH01-BROKER-RELEASE"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-host-resource-broker-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check 76e4cdfb93a0fc9dae4146a3a5469b9d20fcd4f6 449bb3fc329374c4735e42b27322a0513c805802", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 76e4cdfb93a0fc9dae4146a3a5469b9d20fcd4f6 --candidate-commit 449bb3fc329374c4735e42b27322a0513c805802 --candidate-tree 1698329e82c4e071a79c13b4d90b99ce851e09c8", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [
+        {"reviewer": "broker_concurrency_security_exact", "kind": "independent", "result": "accepted"},
+        {"reviewer": "broker_identity_exact", "kind": "independent", "result": "accepted"}
+      ],
+      "residual_host_boundaries": [
+        "Clojure, the JVM, and cooperative host-local OS file locks remain the temporary broker boundary",
+        "the explicit 0700 coordination root is a trusted same-user boundary and does not defend against hostile state replacement",
+        "callbacks must be nonblocking, nested acquisition is unspecified, and descendants surviving parent death are not contained",
+        "the broker is an unwired development foundation at this disposition and grants no authoritative, performance, proof, release, self-hosting, or seed-retirement authority"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-24T18:43:00Z", "actor": "development-verification", "reason": "reconcile the broker producer net diff onto the integrated planner and cache base"},
+        {"state": "frozen", "at": "2026-08-24T18:48:00Z", "actor": "uniform-coordinator", "reason": "freeze exact candidate 449bb3fc329374c4735e42b27322a0513c805802 and tree 1698329e82c4e071a79c13b4d90b99ce851e09c8 after release and interruption hardening"},
+        {"state": "review-pending", "at": "2026-08-24T18:49:00Z", "actor": "uniform-coordinator", "reason": "request independent concurrency-security and identity review of the exact reconciled tuple"},
+        {"state": "accepted", "at": "2026-08-24T18:51:00Z", "actor": "broker_concurrency_security_exact", "reason": "accept host-global capacities, ordering, deterministic receipts, crash and interruption cleanup, retryable release, trusted-root boundary, and nonclaims"},
+        {"state": "integration-eligible", "at": "2026-08-24T18:52:00Z", "actor": "uniform-coordinator", "reason": "exact identities, focused gates, clean branch, independent acceptances, residual boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-24T18:53:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted broker candidate and its admission record onto main"}
+      ],
+      "disposition": "Integrated the trusted-cooperative non-authoritative host-wide resource broker foundation only; no authoritative, performance, roadmap, release, self-hosting, or seed-retirement credit."
     }
   ]
 }
