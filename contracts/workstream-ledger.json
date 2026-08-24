@@ -689,6 +689,62 @@
         {"state": "integrated", "at": "2026-08-24T08:08:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted SH-09 candidate and its admission record onto main"}
       ],
       "disposition": "Integrated bounded SH-09 compiler-read policy only; no SH-09 completion or roadmap credit."
+    },
+    {
+      "id": "sh10-initialization-move-family-v1",
+      "title": "SH-10 bounded initialization and move family version 1",
+      "invariant_family": "self-hosting/sh10-ownership-initialization-move",
+      "owner": "sh-ownership",
+      "author": "sh-ownership",
+      "state": "integration-eligible",
+      "dependencies": ["sh09-authenticated-compiler-read-v1"],
+      "architecture_decision": "",
+      "base_commit": "8f33d98d20facf77aed5c55159491ceb70786aa1",
+      "candidate_commit": "b6d0bce6e910d95744b9967528d8444eb2735fce",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-10/initialization-move/README.md",
+        "bootstrap/clojure/fixtures/self-hosting/sh-10/initialization-move/accepted/initialization-move.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-10/initialization-move/accepted/initialization-move.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-10/initialization-move/rejected/invalid-initialization-move.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-10/initialization-move/rejected/invalid-initialization-move.qst",
+        "bootstrap/clojure/test/gravity/self_hosting/sh10_initialization_move_family_test.clj",
+        "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D8", "D9", "C9", "BOOT7", "BOOT8", "docs/self-hosting-slice-backlog.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-10/initialization-move/accepted/initialization-move.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-10/initialization-move/accepted/initialization-move.qst"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-10/initialization-move/rejected/invalid-initialization-move.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-10/initialization-move/rejected/invalid-initialization-move.qst"
+        ],
+        "stable_diagnostics": ["C9-UNINITIALIZED-READ", "C9-USE-AFTER-MOVE", "C9-USE-AFTER-CONSUME", "C9-BORROW-ESCAPE", "C9-UNSAFE", "C9-MOVE-WHILE-BORROWED"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh10-initialization-move-family-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check main..HEAD", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 8f33d98d20facf77aed5c55159491ceb70786aa1 --candidate-commit b6d0bce6e910d95744b9967528d8444eb2735fce --candidate-tree a477e55372d1087cc47ef8a15053c4ec5ce36098", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "sh10_exact_review", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary seed and verifier boundary",
+        "the public direct C9 source check retains the pre-existing C16-KEY baseline limitation; the dedicated stage2-plan test executes every new bounded Gravity API",
+        "general ownership inference, aggregates, regions, arenas, linear transfer, runtime behavior, unsafe handling, MIR propagation, trusted coordinator digest, SH-10 completion, roadmap credit, self-hosting, release, and seed retirement are not claimed"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-24T08:18:00Z", "actor": "sh-ownership", "reason": "compose the bounded authenticated initialization and move family"},
+        {"state": "frozen", "at": "2026-08-24T08:18:01Z", "actor": "sh-ownership", "reason": "freeze the exact seven-path candidate, fixtures, tree, and provenance tuple"},
+        {"state": "review-pending", "at": "2026-08-24T08:18:02Z", "actor": "uniform-coordinator", "reason": "request independent review of the exact reconciled tuple"},
+        {"state": "accepted", "at": "2026-08-24T08:18:03Z", "actor": "sh10_exact_review", "reason": "accept authenticated ownership facts, bounded lifecycle semantics, fail-closed diagnostics, fixtures, baseline residual, and nonclaims"},
+        {"state": "integration-eligible", "at": "2026-08-24T08:18:04Z", "actor": "uniform-coordinator", "reason": "SH-09 dependency, exact identities, final focused gate, clean branch, independent acceptance, boundaries, and nonclaims verified"}
+      ],
+      "disposition": "Integration-eligible bounded SH-10 initialization and move family only; no SH-10 completion or roadmap credit."
     }
   ]
 }
