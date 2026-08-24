@@ -819,8 +819,10 @@
          working-directory (or (:working-directory options) @root)
          development-context
          (when (:development-loop? options)
-           (or (:development-loop-context options)
-               (wiring/prepare-context working-directory options)))
+           (if-let [supplied-context (:development-loop-context options)]
+             (wiring/validate-context! supplied-context
+                                       working-directory options)
+             (wiring/prepare-context working-directory options)))
          options
          (cond-> options
            development-context

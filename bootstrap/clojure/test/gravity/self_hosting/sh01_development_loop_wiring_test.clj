@@ -42,10 +42,12 @@
      broker-root
      (PosixFilePermissions/fromString "rwx------"))
     {:schema :gravity/sh01-development-loop-context-v1
+     :test-only? true
      :working-directory "/tmp"
      :cache-directory cache-directory
      :broker-root broker-root
      :timeout-ms 1000
+     :identity-options {}
      :snapshot
      {:schema :gravity/sh01-complete-repository-snapshot-v1
       :repository-identity snapshot-id
@@ -263,6 +265,30 @@
         (let [failure (exception-data #(verify-snapshot selected-context))]
           (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE" (:id failure)))
           (is (= :runtime-tool (:input-kind failure))))))))
+
+(deftest injected-context-must-match-current-root-and-command
+  (with-coordination-root [base]
+    (let [selected-context (context base)
+          validate-context
+          #(wiring/validate-context! selected-context %1 %2)]
+      (is (= selected-context
+             (validate-context
+              "/tmp"
+              {:process-launcher identity
+               :development-operation-identity
+               {:id :test-operation :sha256 snapshot-id}})))
+      (doseq [[working-directory options]
+              [["/" {:process-launcher identity
+                      :development-operation-identity
+                      {:id :test-operation :sha256 snapshot-id}}]
+               ["/tmp" {:command ["/bin/false"]
+                         :process-launcher identity
+                         :development-operation-identity
+                         {:id :test-operation :sha256 snapshot-id}}]]]
+        (is (= "SH01-DEVELOPMENT-LOOP-CONTEXT"
+               (:id
+                (exception-data
+                 #(validate-context working-directory options)))))))))
 
 (deftest parent-hit-is-removed-before-broker-or-child-launch
   (with-coordination-root [base]

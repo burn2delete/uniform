@@ -124,7 +124,10 @@ the request also
 binds the test unit, command, external classpath file bytes, Java and command
 executable bytes, runtime identities, policy, and bounded timeout. Ignored
 generated state is not an input: a test declared deterministic by this
-contract must not depend on it. The reviewed component dependency contract is
+contract must not depend on it or on undeclared ambient environment state. An
+injected development-loop context is a test seam; its repository root and
+command identity must match the current execution or
+`SH01-DEVELOPMENT-LOOP-CONTEXT` fails closed. The reviewed component dependency contract is
 the only current source of deterministic cache eligibility. Slice-closure and
 ad hoc dedicated tests have no such declaration and therefore execute
 uncached. Authoritative,

@@ -442,6 +442,40 @@
      :launch-count (atom 0)
      :cache-receipts (atom [])}))
 
+(defn validate-context!
+  "Fail closed when an injected context does not describe this execution."
+  [context working-directory options]
+  (let [expected-working-directory
+        (.normalize
+         (.toAbsolutePath
+          (.toPath (io/file working-directory))))
+        context-working-directory
+        (when-let [value (:working-directory context)]
+          (.normalize
+           (.toAbsolutePath
+            (.toPath (io/file value)))))
+        expected-identity-options
+        (select-keys options [:command :clojure-command])
+        custom-operation?
+        (boolean (or (:process-launcher options)
+                     (:worker options)
+                     (:normal-batch-worker options)))]
+    (when-not (and (= :gravity/sh01-development-loop-context-v1
+                      (:schema context))
+                   (= expected-working-directory context-working-directory)
+                   (= expected-identity-options (:identity-options context))
+                   (map? (:snapshot context))
+                   (:cache-directory context)
+                   (:broker-root context)
+                   (:launch-count context)
+                   (:cache-receipts context)
+                   (or (:revalidate-snapshot? context)
+                       (and (:test-only? context) custom-operation?)))
+      (fail! "SH01-DEVELOPMENT-LOOP-CONTEXT"
+             "Injected development-loop context does not match this execution"
+             {}))
+    context))
+
 (defn- policy-for-job
   [plan job options timeout-ms]
   (let [jobs (or (:batch-jobs job) [job])
