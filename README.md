@@ -124,7 +124,8 @@ only the selected namespaces. Relevant paths without an SH-01 owner fail
 closed. These Clojure runners emit non-authoritative development feedback and
 exit nonzero on failure. They do not replace fresh authoritative or release
 verification. See `docs/development-verification.md` for direct Clojure
-Stage3, SH-07, governance, and preflight commands.
+Stage3, SH-07, governance, preflight, and the fresh integration-candidate
+lane.
 
 The current SH-02 development audit measured namespace require at 5.88 seconds
 and about 1.40 GiB peak resident memory, and the first ten leaf vars warm in one

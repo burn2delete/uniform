@@ -3,7 +3,10 @@
 
 (System/setProperty "gravity.workstream-governance.library" "true")
 (load-file "tools/validate_workstream_governance.clj")
+(binding [*command-line-args* nil]
+  (load-file "tools/verify_integration_candidate.clj"))
 (alias 'governance 'gravity.workstream-governance)
+(alias 'fresh 'gravity.integration-candidate-verification)
 
 (def ^:private contract-path "contracts/workstream-governance.json")
 (def ^:private ledger-path "contracts/workstream-ledger.json")
@@ -13,6 +16,10 @@
    "release" false
    "seed_retirement" false
    "self_hosting" false})
+
+(def ^:private oid-a (apply str (repeat 40 "a")))
+(def ^:private oid-b (apply str (repeat 40 "b")))
+(def ^:private oid-c (apply str (repeat 40 "c")))
 
 (defn- errors-have? [errors diagnostic]
   (boolean (some #(clojure.string/starts-with? % (str diagnostic " ")) errors)))
@@ -184,3 +191,49 @@
   (let [overclaim (assoc-in (eligible)
                             ["no_overclaim_authority" "release"] true)]
     (is (errors-have? (governance/validate-ledger (ledger overclaim)) "WG012"))))
+
+(deftest fresh-integration-plan-preserves-the-full-suite-and-authority-ceiling
+  (let [plan (fresh/verification-plan
+              {:base oid-a :commit oid-b :tree oid-c})]
+    (is (= fresh/full-suite-command (first (:commands plan))))
+    (is (some #{["clojure" "-Srepro" "-Sforce" "-M:test"
+                 "--namespace"
+                 "gravity.self-hosting.sh01-language-boundary-test"]}
+              (:commands plan)))
+    (is (= {:mode :fresh :new-export true :resume false
+            :repository-cache false}
+           (:evidence plan)))
+    (is (= {:stage3 :not-substituted :sh07 :not-substituted}
+           (:external-proof-lanes plan)))
+    (is (= [:clojure-jvm :git :dependency-cache-tool-resolution]
+           (:residual-host-boundaries plan)))
+    (is (= {:integration-evidence :candidate-only
+            :release false :self-hosting false :seed-retirement false
+            :safety false :performance false :stage3 false :sh07 false
+            :reproducible-environment false}
+           (:authority plan)))
+    (is (= (str "target/validation/integration-fresh-verification/"
+                oid-b "/receipt.edn")
+           (fresh/default-receipt oid-b)))))
+
+(deftest fresh-integration-evidence-rejects-cache-and-speculation
+  (doseq [evidence [{:mode :speculative :new-export true
+                     :resume false :repository-cache false}
+                    {:mode :fresh :new-export false
+                     :resume true :repository-cache true}
+                    {:mode :fresh :new-export true :resume false
+                     :repository-cache false :reuse :speculative}]]
+    (testing (pr-str evidence)
+      (let [error (try
+                    (fresh/validate-publishable-evidence! evidence)
+                    nil
+                    (catch clojure.lang.ExceptionInfo value value))]
+        (is (= "C16-SPECULATIVE" (-> error ex-data :code)))))))
+
+(deftest fresh-integration-plan-requires-exact-identities
+  (let [error (try
+                (fresh/verification-plan
+                 {:base oid-a :commit "local-head" :tree oid-c})
+                nil
+                (catch clojure.lang.ExceptionInfo value value))]
+    (is (= "INTEGRATION-FRESH-IDENTITY" (-> error ex-data :code)))))

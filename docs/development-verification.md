@@ -20,6 +20,60 @@ git diff --check
 The full Clojure suite is necessary but does not by itself establish release,
 self-hosting, seed-retirement, performance, or safety authority.
 
+## Fresh Integration Candidate Lane
+
+Focused and incremental runners are development feedback. Before a candidate
+can supply publishable integration evidence, run the exact committed candidate
+through the separate fresh lane:
+
+```bash
+clojure -M tools/verify_integration_candidate.clj \
+  --base-ref BASE_COMMIT \
+  --candidate-base BASE_COMMIT \
+  --candidate-commit CANDIDATE_COMMIT \
+  --candidate-tree CANDIDATE_TREE
+```
+
+The runner first applies integration-mode worktree preflight to those exact
+identities. It then checks out the exact committed tree through a temporary
+Git index into a new directory,
+uses `-Srepro -Sforce`, runs the existing full `clojure -M:test` suite without
+narrowing it, and runs the document, roadmap, governance, and language-boundary
+gates in that tree. It also runs `git diff --check` over the exact base-to-
+candidate range in the preflight worktree. Existing repository target output
+and incremental runner caches are not visible to the exported tree; the
+temporary tree is not resumed.
+Candidate `.gitattributes` files are rejected so checkout filters cannot make
+the verified bytes depend on local Git configuration.
+
+The receipt is written once to
+`target/validation/integration-fresh-verification/CANDIDATE_COMMIT/receipt.edn`.
+It records the candidate identities, fixed command list, exit codes, elapsed
+times, fresh-tree policy, and explicit nonclaims. A prior receipt is never
+overwritten or resumed. `C16-SPECULATIVE` rejects speculative, resumed, or
+repository-local-cache evidence at this publishable boundary.
+
+For CI, provide the reviewed base SHA, candidate SHA, and candidate tree SHA
+from immutable job inputs and upload the receipt when the lane reaches receipt
+publication, including a failed verification receipt. Usage, identity, or
+receipt-publication errors can fail before a receipt exists.
+CI must also impose its own job timeout; an externally killed verifier cannot
+finish or publish a receipt.
+Do not derive a publishable candidate identity from a mutable branch after the
+job starts. For local admission preparation, commit first, keep the named
+branch clean, and pass the same identities intended for the workstream ledger.
+
+This lane supplies candidate-only integration evidence. It does not replace an
+independent accepted review or grant release, self-hosting, seed-retirement,
+safety, performance, Stage3, or SH-07 authority. When the owning contract
+requires a Stage3 or SH-07 proof, run its existing fresh/no-resume command
+separately and record that receipt in the governed evidence bundle.
+`contracts/workstream-governance.json` still requires owned paths, governing
+contracts, accepted and rejected fixtures, stable diagnostics, successful
+checks, independent acceptance, residual boundaries, and explicit nonclaims
+in addition to exact Git identities; `WG009` through `WG012` fail closed when
+that admission evidence or authority boundary is incomplete.
+
 ## Focused Development Runners
 
 Use the reviewed Clojure aliases:
