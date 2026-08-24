@@ -22027,9 +22027,15 @@
                                         [:mir-verifier-report :status]))
    :status :complete})
 
-(defn mir-source-artifact
-  [source-path source-text]
-  (let [checked-core (checked-core-source-artifact source-path source-text)
+(defn mir-artifact-from-checked-core
+  [source-path checked-core]
+  (let [_ (when-not (and (= :gravity/stage0-checked-core-pipeline-artifact
+                            (:kind checked-core))
+                         (map? (:module checked-core)))
+            (mir-fail! "C11-MODULE" source-path
+                       {:input-artifact checked-core}
+                       checked-core
+                       {:missing-fields [:kind :module]}))
         module (:module checked-core)
         type-by-node (into {} (map (juxt :node-id :type))
                            (:type-facts checked-core))
@@ -22150,6 +22156,12 @@
     (assoc artifact
            :capability-based-proof capability-proof
            :mir-results conformance)))
+
+(defn mir-source-artifact
+  [source-path source-text]
+  (mir-artifact-from-checked-core
+   source-path
+   (checked-core-source-artifact source-path source-text)))
 
 (def domain-ir-diagnostic-ids
   ["C12-REGISTRATION"
@@ -22517,11 +22529,19 @@
              domain-artifacts)
      :status :complete}))
 
-(defn domain-ir-source-artifact
-  [source-path source-text]
-  (let [checked-core (checked-core-source-artifact source-path source-text)
-        source-overrides (domain-ir-source-overrides (:module checked-core))
-        mir-artifact (mir-source-artifact source-path source-text)
+(defn domain-ir-artifact-from-mir
+  [source-path module mir-artifact]
+  (let [_ (when-not (and (map? module)
+                         (= :gravity/stage0-mir-artifact
+                            (:kind mir-artifact))
+                         (= :passed
+                            (get-in mir-artifact
+                                    [:mir-verifier-report :status])))
+            (domain-ir-fail! "C12-VERIFY" source-path
+                             {:input-artifact mir-artifact}
+                             mir-artifact
+                             {:missing-fields [:module :verified-mir]}))
+        source-overrides (domain-ir-source-overrides module)
         registrations (mapv domain-ir-registration-record
                             domain-ir-registry-seed)
         domain-artifacts (mapv #(domain-ir-artifact-record mir-artifact %1 %2)
@@ -22647,6 +22667,13 @@
     (assoc artifact
            :capability-based-proof capability-proof
            :domain-ir-results conformance)))
+
+(defn domain-ir-source-artifact
+  [source-path source-text]
+  (let [checked-core (checked-core-source-artifact source-path source-text)
+        module (:module checked-core)
+        mir-artifact (mir-artifact-from-checked-core source-path checked-core)]
+    (domain-ir-artifact-from-mir source-path module mir-artifact)))
 
 (def c12-domain-ir-governing-document c12/c12-domain-ir-governing-document)
 

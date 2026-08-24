@@ -14450,6 +14450,90 @@
     (is (= :complete (:plugin-policy-status conformance)))
     (is (= :complete (:status conformance)))))
 
+(deftest domain-ir-source-path-constructs-checked-core-exactly-once
+  (let [path (fixture "accepted/compiler-domain-ir.gravity")
+        source-text (slurp path)
+        build-checked-core bootstrap/checked-core-source-artifact
+        build-mir bootstrap/mir-artifact-from-checked-core
+        build-domain-ir bootstrap/domain-ir-artifact-from-mir
+        checked-core-calls (atom 0)
+        mir-calls (atom 0)
+        domain-ir-calls (atom 0)
+        actual (with-redefs [bootstrap/checked-core-source-artifact
+                             (fn [source-path source]
+                               (swap! checked-core-calls inc)
+                               (build-checked-core source-path source))
+                             bootstrap/mir-artifact-from-checked-core
+                             (fn [source-path checked-core]
+                               (swap! mir-calls inc)
+                               (build-mir source-path checked-core))
+                             bootstrap/domain-ir-artifact-from-mir
+                             (fn [source-path module mir]
+                               (swap! domain-ir-calls inc)
+                               (build-domain-ir source-path module mir))]
+                 (bootstrap/domain-ir-source-artifact path source-text))
+        checked-core (build-checked-core path source-text)
+        mir (build-mir path checked-core)
+        expected (build-domain-ir path (:module checked-core) mir)]
+    (is (= '([source-path source-text])
+           (:arglists (meta #'bootstrap/mir-source-artifact))))
+    (is (= '([source-path source-text])
+           (:arglists (meta #'bootstrap/domain-ir-source-artifact))))
+    (is (= 1 @checked-core-calls))
+    (is (= 1 @mir-calls))
+    (is (= 1 @domain-ir-calls))
+    (is (= expected actual))
+    (is (= (:checked-core-artifact-hash mir)
+           (get-in actual [:mir-artifact :checked-core-artifact-hash])))
+    (is (= (:mir-artifact-hash expected) (:mir-artifact-hash actual)))
+    (is (= (:diagnostics expected) (:diagnostics actual)))
+    (is (= (get-in expected [:mir-artifact :pass])
+           (get-in actual [:mir-artifact :pass])))))
+
+(deftest artifact-input-constructors-do-not-rebuild-from-source
+  (let [path (fixture "accepted/compiler-domain-ir.gravity")
+        source-text (slurp path)
+        checked-core (bootstrap/checked-core-source-artifact path source-text)
+        mir (with-redefs [bootstrap/checked-core-source-artifact
+                          (fn [& _]
+                            (throw (ex-info "unexpected checked-core rebuild"
+                                            {:id "TEST-REBUILD"})))]
+              (bootstrap/mir-artifact-from-checked-core path checked-core))
+        domain-ir (with-redefs [bootstrap/mir-source-artifact
+                                (fn [& _]
+                                  (throw (ex-info "unexpected MIR rebuild"
+                                                  {:id "TEST-REBUILD"})))]
+                    (bootstrap/domain-ir-artifact-from-mir
+                     path (:module checked-core) mir))]
+    (is (= (bootstrap/checked-core-artifact-id checked-core)
+           (:checked-core-artifact-hash mir)))
+    (is (= :passed (get-in mir [:mir-verifier-report :status])))
+    (is (= (str "sha256:" (bootstrap/sha256-hex (pr-str mir)))
+           (:mir-artifact-hash domain-ir)))
+    (is (= :passed (get-in domain-ir [:domain-verifier-report :status])))
+    (is (= (:diagnostics mir)
+           (get-in domain-ir [:mir-artifact :diagnostics])))))
+
+(deftest artifact-input-constructors-reject-invalid-upstream-artifacts
+  (let [path "invalid-upstream.gravity"
+        mir-error (try
+                    (bootstrap/mir-artifact-from-checked-core
+                     path {:kind :gravity/not-checked-core})
+                    nil
+                    (catch clojure.lang.ExceptionInfo exception exception))
+        domain-error (try
+                       (bootstrap/domain-ir-artifact-from-mir
+                        path {} {:kind :gravity/stage0-mir-artifact
+                                 :mir-verifier-report {:status :failed}})
+                       nil
+                       (catch clojure.lang.ExceptionInfo exception exception))]
+    (is (= "C11-MODULE" (:id (ex-data mir-error))))
+    (is (= [:kind :module]
+           (:missing-fields (ex-data mir-error))))
+    (is (= "C12-VERIFY" (:id (ex-data domain-error))))
+    (is (= [:module :verified-mir]
+           (:missing-fields (ex-data domain-error))))))
+
 (deftest optimization-lowering-artifact-preserves-p06-t05-contract
   (let [artifact (bootstrap/optimization-lowering-file-artifact
                   (fixture "accepted/compiler-optimization-lowering.gravity"))
