@@ -542,6 +542,47 @@
         {"state": "integrated", "at": "2026-08-24T06:33:08Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted SH-07 candidate and its admission record onto main"}
       ],
       "disposition": "Integrated bounded SH-07 set-mutation execution only; no roadmap credit."
+    },
+    {
+      "id": "p15-s23-dual-source-identity-preservation-v1",
+      "title": "P15 S23 dual source identity preservation version 1",
+      "invariant_family": "phase-15/source-syntax-identity",
+      "owner": "p15-source-syntax",
+      "author": "p15-source-syntax",
+      "state": "integration-eligible",
+      "dependencies": [],
+      "architecture_decision": "",
+      "base_commit": "a7e33a3f2af0afe1db1001561fdc556125d04c45",
+      "candidate_commit": "a294c958a071a9c68593de31c2c7e175e6b185dc",
+      "clean_worktree": true,
+      "owned_paths": ["bootstrap/clojure/src/gravity/bootstrap.clj", "bootstrap/clojure/test/gravity/bootstrap_test.clj"],
+      "governing_contracts": ["AGENTS.md", "D1", "D3", "D8", "D9", "P15", "SH03", "SH04", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": ["bootstrap/clojure/test/gravity/bootstrap_test.clj"],
+        "rejected_fixtures": ["bootstrap/clojure/test/gravity/bootstrap_test.clj"],
+        "stable_diagnostics": ["P15S23S003", "J001", "J002", "J003", "J004", "J005", "J006", "J007", "J008"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check main..HEAD", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base a7e33a3f2af0afe1db1001561fdc556125d04c45 --candidate-commit a294c958a071a9c68593de31c2c7e175e6b185dc --candidate-tree ed4231f1bd43c5e7affc7fc654f31079f8e23c0b", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "p15_a7_exact_review", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary seed and execution boundary",
+        "the change preserves path-neutral semantic identity and actual-path provenance only within the bounded P15 S23 front-end route",
+        "the result does not establish compiler completion, self-hosting, release, seed retirement, or roadmap completion"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-24T07:38:22Z", "actor": "p15-source-syntax", "reason": "compose the bounded dual source identity correction"},
+        {"state": "frozen", "at": "2026-08-24T07:38:23Z", "actor": "p15-source-syntax", "reason": "freeze the exact two-file candidate, tree, and provenance tuple"},
+        {"state": "review-pending", "at": "2026-08-24T07:38:24Z", "actor": "uniform-coordinator", "reason": "request independent review of the exact reconciled tuple"},
+        {"state": "accepted", "at": "2026-08-24T07:38:25Z", "actor": "p15_a7_exact_review", "reason": "accept exact semantic identity, actual-path provenance, tamper rejection, and cache compatibility"},
+        {"state": "integration-eligible", "at": "2026-08-24T07:38:26Z", "actor": "uniform-coordinator", "reason": "exact identities, final J001-J008 proof, clean branch, independent acceptance, boundaries, and nonclaims verified"}
+      ],
+      "disposition": "Integration-eligible bounded P15 S23 source/syntax identity preservation only; no roadmap credit."
     }
   ]
 }
