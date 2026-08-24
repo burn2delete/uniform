@@ -447,7 +447,7 @@
       "invariant_family": "tooling/incremental-development-verification",
       "owner": "uniform-coordinator",
       "author": "uniform-coordinator",
-      "state": "integration-eligible",
+      "state": "integrated",
       "dependencies": ["incremental-development-verification-reconciliation-v1"],
       "architecture_decision": "",
       "base_commit": "b567b89a41b7ca1c1e90df8968b3e0c3e07929a9",
@@ -476,9 +476,10 @@
         {"state": "frozen", "at": "2026-08-24T04:33:28Z", "actor": "uniform-coordinator", "reason": "freeze the exact one-report erratum candidate and Git identities"},
         {"state": "review-pending", "at": "2026-08-24T04:33:29Z", "actor": "uniform-coordinator", "reason": "request independent replay and scope review of the exact erratum"},
         {"state": "accepted", "at": "2026-08-24T04:33:30Z", "actor": "incremental_exact_review", "reason": "accept the exact append-only erratum and truthful Clojure replacement evidence"},
-        {"state": "integration-eligible", "at": "2026-08-24T04:33:31Z", "actor": "uniform-coordinator", "reason": "exact identities, evidence, independent acceptance, residual violation, and nonclaims verified"}
+        {"state": "integration-eligible", "at": "2026-08-24T04:33:31Z", "actor": "uniform-coordinator", "reason": "exact identities, evidence, independent acceptance, residual violation, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-24T04:34:45Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact append-only erratum and its eligibility record onto main"}
       ],
-      "disposition": "Eligible to integrate the append-only evidence erratum only; no retroactive eligibility or roadmap credit."
+      "disposition": "Integrated the append-only evidence erratum only; no retroactive eligibility or roadmap credit."
     }
   ]
 }
