@@ -400,6 +400,13 @@
              {:malformed
               (mutate-condition #(assoc % :effects #{:network/http}))
               :diagnostic-id "C11-EFFECT"
+              :missing-fact :effect-fact-or-ordering}
+             {:malformed
+              (assoc-in
+               (mutate-condition #(assoc % :effects #{:network/http}))
+               [:effect-facts condition-id :transitive]
+               #{:network/http})
+              :diagnostic-id "C11-EFFECT"
               :missing-fact :effect-fact-or-ordering}]]
         (doseq [{:keys [malformed diagnostic-id missing-fact]} cases]
           (let [construction (build-mir malformed)

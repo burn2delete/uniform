@@ -2251,8 +2251,21 @@
             false
             (if (= (get fact :direct)
                    (get attributes :intrinsic-effects))
-              (if (set? (get node :effects))
-                (= (get node :effects) (get fact :transitive))
+              (if (= #{} (get fact :direct))
+                (if (= #{} (get fact :latent))
+                  (if (= #{} (get fact :transitive))
+                    (if (= #{} (get fact :residual))
+                      (if (= #{} (get node :effects))
+                        (if (= #{}
+                               (get
+                                (get checked-core :source-core-input)
+                                :declared-effects))
+                          (= [] (get checked-core :effect-graph))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
                 false)
               false))
           false)
