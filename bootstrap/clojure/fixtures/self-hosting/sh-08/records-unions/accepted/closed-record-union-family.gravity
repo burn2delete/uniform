@@ -1,0 +1,47 @@
+(ns self-hosting.sh08.records-unions.closed-family
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [accepted-record-union-family])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-08-records-unions
+              :scope :authenticated-descriptor-model
+              :preparatory-source-model? true
+              :roadmap-credit? false
+              :executable-record-union-language-behavior? false
+              :nominal-sh07-carrier? false
+              :non-claims [:surface-record-union-syntax
+                           :record-construction-typing
+                           :record-access-typing
+                           :union-construction-typing
+                           :union-match-typing-and-narrowing
+                           :constructor-pattern-lowering
+                           :uniform-gravity-and-qst-execution-gates
+                           :sh07-completion
+                           :sh08-completion]}))
+
+(def accepted-record-union-family
+  {:record-type
+   {:name :user
+    :fields [{:name :id :type :gravity.type/integer}
+             {:name :name :type :gravity.type/string}]}
+   :record-construction
+   {:type :user
+    :fields [{:name :id :value 7}
+             {:name :name :value "Ada"}]}
+   :record-access
+   {:record-type :user
+    :field :name}
+   :union-type
+   {:name :maybe-integer
+    :variants [{:tag :some :payload-type :gravity.type/integer}
+               {:tag :none :payload-type :gravity.type/nil}]}
+   :union-construction
+   {:type :maybe-integer
+    :variant :some
+    :payload 7}
+   :union-match
+   {:union-type :maybe-integer
+    :branches [{:variant :some :result 1}
+               {:variant :none :result 0}]}})

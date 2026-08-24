@@ -16,6 +16,9 @@
              sh08-function-type-boundary-policy
              sh08-function-type-core-artifact
              sh08-verify-function-type-result
+             sh08-record-union-type-boundary-policy
+             sh08-record-union-type-core-artifact
+             sh08-verify-record-union-type-result
              verify-c7-type-checker])
   (:effects #{})
   (:capabilities #{})
@@ -202,9 +205,11 @@
 ; validated SH-07-shaped core records. Its older public API remains local and
 ; does not authenticate lineage. The function/local/call entry point below has
 ; a separate host-resolved B47 report/digest boundary. This primitive leaf
-; covers literals, definitions, and equal-type conditional joins. Records,
-; unions, protocols, generics, casts, ownership types, layout, dynamic
-; boundaries, and list lowering remain later SH-08 work.
+; covers literals, definitions, and equal-type conditional joins. The separate
+; authenticated records/unions entry point below covers one closed descriptor
+; family. Protocols, generics, casts, ownership types, layout, dynamic
+; boundaries, general record/union syntax, and list lowering remain later
+; SH-08 work.
 
 (defn sh08-local-bounds-value []
   {:maximum-core-nodes 65536
@@ -4951,6 +4956,604 @@
     {:artifact :gravity/sh08-function-type-verification
      :status (if (= expected candidate) :passed :rejected)
      :checks (sh08-ft-verification-checks expected)
+     :expected expected
+     :candidate candidate}))
+
+; SH-08 records/unions is an early leaf over the authenticated B47 checked-core
+; interface.  A named source definition carries a closed descriptor family as
+; ordinary Gravity data.  The checker selects that definition from the
+; authenticated core and validates bounded descriptor consistency.  It emits
+; no typed-core, constructor, access, match, narrowing, or constraint facts.
+; Surface defrecord/defunion and pattern lowering remain blocked on SH-07.
+
+(defn sh08-ru-value-type [value]
+  (if (= value nil)
+    :gravity.type/nil
+    (if (contains? #{true false} value)
+      :gravity.type/bool
+      (if (integer? value)
+        :gravity.type/integer
+        (if (string? value)
+          :gravity.type/string
+          (if (keyword? value)
+            :gravity.type/keyword
+            :gravity.type/unknown))))))
+
+(defn sh08-ru-supported-type? [value]
+  (contains? #{:gravity.type/nil
+               :gravity.type/bool
+               :gravity.type/integer
+               :gravity.type/string
+               :gravity.type/keyword}
+             value))
+
+(defn sh08-ru-entry-by [entries key-name value]
+  (if (= (count entries) 0)
+    nil
+    (if (= value (get (first entries) key-name))
+      (first entries)
+      (sh08-ru-entry-by (rest entries) key-name value))))
+
+(defn sh08-ru-all-record-shapes? [entries expected]
+  (if (vector? entries)
+    (if (<= (count entries) 64)
+      (loop [remaining entries]
+        (if (= (count remaining) 0)
+          true
+          (if (sh08-ft-record-shape? (first remaining) expected)
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn sh08-ru-all-field-schemas-valid? [fields]
+  (if (sh08-ru-all-record-shapes? fields #{:name :type})
+    (if (sh08-ft-unique-records? fields :name)
+      (loop [remaining fields]
+        (if (= (count remaining) 0)
+          true
+          (let [field (first remaining)]
+            (if (keyword? (get field :name))
+              (if (sh08-ru-supported-type? (get field :type))
+                (recur (rest remaining))
+                false)
+              false))))
+      false)
+    false))
+
+(defn sh08-ru-all-field-values-valid? [fields]
+  (if (sh08-ru-all-record-shapes? fields #{:name :value})
+    (if (sh08-ft-unique-records? fields :name)
+      (loop [remaining fields]
+        (if (= (count remaining) 0)
+          true
+          (if (keyword? (get (first remaining) :name))
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn sh08-ru-all-variant-schemas-valid? [variants]
+  (if (sh08-ru-all-record-shapes? variants #{:tag :payload-type})
+    (if (sh08-ft-unique-records? variants :tag)
+      (loop [remaining variants]
+        (if (= (count remaining) 0)
+          true
+          (let [variant (first remaining)]
+            (if (keyword? (get variant :tag))
+              (if (sh08-ru-supported-type?
+                   (get variant :payload-type))
+                (recur (rest remaining))
+                false)
+              false))))
+      false)
+    false))
+
+(defn sh08-ru-all-match-branches-valid? [branches]
+  (if (sh08-ru-all-record-shapes? branches #{:variant :result})
+    (if (sh08-ft-unique-records? branches :variant)
+      (loop [remaining branches]
+        (if (= (count remaining) 0)
+          true
+          (if (keyword? (get (first remaining) :variant))
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn sh08-ru-family-shape? [family]
+  (if (sh08-ft-record-shape?
+       family
+       #{:record-type :record-construction :record-access
+         :union-type :union-construction :union-match})
+    (let [record-type (get family :record-type)
+          record-construction (get family :record-construction)
+          record-access (get family :record-access)
+          union-type (get family :union-type)
+          union-construction (get family :union-construction)
+          union-match (get family :union-match)]
+      (if (sh08-ft-record-shape? record-type #{:name :fields})
+        (if (keyword? (get record-type :name))
+          (if (sh08-ru-all-field-schemas-valid?
+               (get record-type :fields))
+            (if (sh08-ft-record-shape?
+                 record-construction #{:type :fields})
+              (if (keyword? (get record-construction :type))
+                (if (sh08-ru-all-field-values-valid?
+                     (get record-construction :fields))
+                  (if (sh08-ft-record-shape?
+                       record-access #{:record-type :field})
+                    (if (keyword? (get record-access :record-type))
+                      (if (keyword? (get record-access :field))
+                        (if (sh08-ft-record-shape?
+                             union-type #{:name :variants})
+                          (if (keyword? (get union-type :name))
+                            (if (sh08-ru-all-variant-schemas-valid?
+                                 (get union-type :variants))
+                              (if (sh08-ft-record-shape?
+                                   union-construction
+                                   #{:type :variant :payload})
+                                (if (keyword?
+                                     (get union-construction :type))
+                                  (if (keyword?
+                                       (get union-construction :variant))
+                                    (if (sh08-ft-record-shape?
+                                         union-match
+                                         #{:union-type :branches})
+                                      (if (keyword?
+                                           (get union-match :union-type))
+                                        (sh08-ru-all-match-branches-valid?
+                                         (get union-match :branches))
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh08-ru-definition-matches [definitions definition-name]
+  (loop [remaining definitions values []]
+    (if (= (count remaining) 0)
+      values
+      (if (= definition-name (get (first remaining) :name))
+        (recur (rest remaining) (conj values (first remaining)))
+        (recur (rest remaining) values)))))
+
+(defn sh08-ru-family-from-core [core definition-name]
+  (if (symbol? definition-name)
+    (let [matches
+          (sh08-ru-definition-matches
+           (get core :definitions) definition-name)]
+      (if (= 1 (count matches))
+        (let [definition (first matches)
+              node-table (sh08-ft-node-index (get core :nodes))
+              value-node
+              (get node-table (get definition :value-node-id))
+              source-value (get (get value-node :attributes) :source-value)]
+          (if (= :collection-literal (get value-node :core-form))
+            (if (= :map (get (get value-node :attributes) :literal-kind))
+              (if (map? source-value)
+                {:status :accepted
+                 :definition definition
+                 :node value-node
+                 :family source-value}
+                {:status :rejected :reason :family-source-map-required
+                 :node value-node})
+              {:status :rejected :reason :family-map-literal-required
+               :node value-node})
+            {:status :rejected :reason :family-map-literal-required
+             :node value-node}))
+        {:status :rejected
+         :reason :family-definition-must-exist-exactly-once
+         :node {}}))
+    {:status :rejected :reason :family-definition-symbol-required :node {}}))
+
+(defn sh08-ru-first-missing-field [schema-fields value-fields]
+  (if (= (count schema-fields) 0)
+    nil
+    (let [schema (first schema-fields)
+          value (sh08-ru-entry-by value-fields :name (get schema :name))]
+      (if (= value nil)
+        schema
+        (sh08-ru-first-missing-field (rest schema-fields) value-fields)))))
+
+(defn sh08-ru-first-field-type-mismatch [schema-fields value-fields]
+  (if (= (count schema-fields) 0)
+    nil
+    (let [schema (first schema-fields)
+          value (sh08-ru-entry-by value-fields :name (get schema :name))
+          actual (sh08-ru-value-type (get value :value))]
+      (if (= (get schema :type) actual)
+        (sh08-ru-first-field-type-mismatch
+         (rest schema-fields) value-fields)
+        {:field (get schema :name)
+         :expected (get schema :type)
+         :actual actual}))))
+
+(defn sh08-ru-first-missing-variant [variants branches]
+  (if (= (count variants) 0)
+    nil
+    (let [variant (first variants)]
+      (if (= nil
+             (sh08-ru-entry-by branches :variant (get variant :tag)))
+        variant
+        (sh08-ru-first-missing-variant (rest variants) branches)))))
+
+(defn sh08-ru-first-invalid-branch [variants branches]
+  (if (= (count branches) 0)
+    nil
+    (let [branch (first branches)]
+      (if (= nil
+             (sh08-ru-entry-by variants :tag (get branch :variant)))
+        branch
+        (sh08-ru-first-invalid-branch variants (rest branches))))))
+
+(defn sh08-ru-first-branch-type-mismatch [branches expected]
+  (if (= expected :gravity.type/unknown)
+    {:variant (get (first branches) :variant)
+     :expected :supported-descriptor-value
+     :actual expected}
+    (if (= (count branches) 0)
+      nil
+      (let [branch (first branches)
+            actual (sh08-ru-value-type (get branch :result))]
+        (if (= actual expected)
+          (sh08-ru-first-branch-type-mismatch (rest branches) expected)
+          {:variant (get branch :variant)
+           :expected expected
+           :actual actual})))))
+
+(defn sh08-ru-diagnostic
+  [node module core-artifact-id definition-name expected actual reason]
+  (let [identity
+        {:domain :gravity/sh08-record-union-descriptor-diagnostic-v1
+         :rule "C7-VERIFY"
+         :stage :type-checking
+         :core-artifact-id core-artifact-id
+         :definition-name definition-name
+         :core-node-id (get node :node-id)
+         :syntax-id (get (get node :source) :syntax-id)
+         :source-span (get (get node :source) :semantic-span)
+         :expected expected
+         :actual actual
+         :profile (get module :profile)
+         :target (get module :target)
+         :reason reason}]
+    {:artifact :gravity/c7-record-union-descriptor-diagnostic
+     :diagnostic-id :coordinator-digest-required
+     :diagnostic-id-request identity
+     :rule "C7-VERIFY"
+     :severity :error
+     :stage :type-checking
+     :core-artifact-id core-artifact-id
+     :definition-name definition-name
+     :core-node-id (get node :node-id)
+     :syntax-id (get (get node :source) :syntax-id)
+     :source-span (get (get node :source) :semantic-span)
+     :binding-id (first (get node :resolved-binding-ids))
+     :type-id nil
+     :constraint-id nil
+     :expected-type expected
+     :actual-type actual
+     :profile (get module :profile)
+     :target (get module :target)
+     :origin-chain (get (get node :source) :origin-chain)
+     :generated-origin (get (get node :source) :generated-origin)
+     :reason reason
+     :remediation
+     {:action :repair-authenticated-record-union-descriptor
+      :requirements
+      [:closed-record-fields
+       :supported-descriptor-value-types
+       :declared-union-variants
+       :complete-descriptor-branch-set]}}))
+
+(defn sh08-ru-name-values [records key-name]
+  (loop [remaining records values []]
+    (if (= (count remaining) 0)
+      values
+      (recur
+       (rest remaining)
+       (conj values (get (first remaining) key-name))))))
+
+(defn sh08-ru-check-match [union-name variants union-match]
+  (let [branches (get union-match :branches)
+        invalid-branch
+        (sh08-ru-first-invalid-branch variants branches)
+        missing-variant
+        (sh08-ru-first-missing-variant variants branches)]
+    (if (= union-name (get union-match :union-type))
+      (if (= invalid-branch nil)
+        (if (= missing-variant nil)
+          (if (= (count variants) (count branches))
+            (let [result-type
+                  (sh08-ru-value-type (get (first branches) :result))
+                  branch-mismatch
+                  (sh08-ru-first-branch-type-mismatch
+                   branches result-type)]
+              (if (= branch-mismatch nil)
+                {:status :accepted}
+                {:status :rejected
+                 :reason :union-match-branch-type-mismatch
+                 :expected (get branch-mismatch :expected)
+                 :actual (get branch-mismatch :actual)}))
+            {:status :rejected
+             :reason :union-match-nonexhaustive
+             :expected (count variants)
+             :actual (count branches)})
+          {:status :rejected
+           :reason :union-match-nonexhaustive
+           :expected (get missing-variant :tag)
+           :actual (sh08-ru-name-values branches :variant)})
+        {:status :rejected
+         :reason :union-match-invalid-variant
+         :expected :declared-union-variant
+         :actual (get invalid-branch :variant)})
+      {:status :rejected
+       :reason :union-match-type-mismatch
+       :expected union-name
+       :actual (get union-match :union-type)})))
+
+(defn sh08-ru-check-union [family]
+  (let [union-type (get family :union-type)
+        union-construction (get family :union-construction)
+        variants (get union-type :variants)
+        variant
+        (sh08-ru-entry-by
+         variants :tag (get union-construction :variant))]
+    (if (= (get union-type :name) (get union-construction :type))
+      (if (= variant nil)
+        {:status :rejected
+         :reason :union-invalid-variant
+         :expected (sh08-ru-name-values variants :tag)
+         :actual (get union-construction :variant)}
+        (let [payload-type
+              (sh08-ru-value-type (get union-construction :payload))]
+          (if (= payload-type (get variant :payload-type))
+            (sh08-ru-check-match
+             (get union-type :name) variants (get family :union-match))
+            {:status :rejected
+             :reason :union-payload-type-mismatch
+             :expected (get variant :payload-type)
+             :actual payload-type})))
+      {:status :rejected
+       :reason :union-construction-type-mismatch
+       :expected (get union-type :name)
+       :actual (get union-construction :type)})))
+
+(defn sh08-ru-check-record [family]
+  (let [record-type (get family :record-type)
+        record-construction (get family :record-construction)
+        record-access (get family :record-access)
+        schema-fields (get record-type :fields)
+        value-fields (get record-construction :fields)
+        missing-field
+        (sh08-ru-first-missing-field schema-fields value-fields)]
+    (if (= (get record-type :name) (get record-construction :type))
+      (if (= missing-field nil)
+        (if (= (count schema-fields) (count value-fields))
+          (let [field-mismatch
+                (sh08-ru-first-field-type-mismatch
+                 schema-fields value-fields)]
+            (if (= field-mismatch nil)
+              (if (= (get record-type :name)
+                     (get record-access :record-type))
+                (if (= nil
+                       (sh08-ru-entry-by
+                        schema-fields :name (get record-access :field)))
+                  {:status :rejected
+                   :reason :record-access-invalid-field
+                   :expected (sh08-ru-name-values schema-fields :name)
+                   :actual (get record-access :field)}
+                  (sh08-ru-check-union family))
+                {:status :rejected
+                 :reason :record-access-type-mismatch
+                 :expected (get record-type :name)
+                 :actual (get record-access :record-type)})
+              {:status :rejected
+               :reason :record-field-type-mismatch
+               :expected (get field-mismatch :expected)
+               :actual (get field-mismatch :actual)}))
+          {:status :rejected
+           :reason :record-field-set-mismatch
+           :expected (count schema-fields)
+           :actual (count value-fields)})
+        {:status :rejected
+         :reason :record-missing-field
+         :expected (get missing-field :name)
+         :actual (sh08-ru-name-values value-fields :name)})
+      {:status :rejected
+       :reason :record-construction-type-mismatch
+       :expected (get record-type :name)
+       :actual (get record-construction :type)})))
+
+(defn sh08-ru-check-family [family]
+  (if (sh08-ru-family-shape? family)
+    (sh08-ru-check-record family)
+    {:status :rejected
+     :reason :malformed-record-union-family
+     :expected :closed-record-union-family
+     :actual family}))
+
+(defn sh08-ru-accepted-result
+  [core definition-name family-source]
+  (let [module (get core :module)
+        node (get family-source :node)
+        identity-input
+        {:domain :gravity/sh08-record-union-descriptor-model-v1
+         :sh07-shaped-artifact-id (get core :artifact-id)
+         :definition-name definition-name
+         :descriptor (get family-source :family)}]
+    {:artifact :gravity/sh08-record-union-preparatory-model
+     :schema-version 1
+     :status :accepted
+     :scope :authenticated-closed-record-union-descriptor-model
+     :preparatory-source-model? true
+     :roadmap-credit? false
+     :executable-record-union-language-behavior? false
+     :nominal-sh07-carrier? false
+     :authentication-status :host-resolved-b47-verification-boundary
+     :module module
+     :sh07-shaped-artifact-id (get core :artifact-id)
+     :family-definition-name definition-name
+     :descriptor-core-node-id (get node :node-id)
+     :descriptor (get family-source :family)
+     :descriptor-consistency-checks
+     [:record-field-set-and-value-model
+      :record-access-model
+      :union-variant-and-payload-model
+      :closed-branch-set-and-result-model]
+     :diagnostics []
+     :artifact-id-request identity-input
+     :identity-input identity-input
+     :identity-resolution :coordinator-digest-required
+     :provenance (get core :provenance)
+     :pending [:general-record-and-union-surface-syntax
+               :constructor-pattern-lowering
+               :open-records-and-unions
+               :general-match-guard-effects
+               :ownership-layout-schema-links
+               :native-gravity-cryptographic-verification
+               :record-construction-typing
+               :record-access-typing
+               :union-construction-typing
+               :union-match-typing-and-narrowing
+               :uniform-gravity-and-qst-execution-gates
+               :sh07-completion :sh08-completion]}))
+
+(defn sh08-record-union-type-boundary-policy []
+  {:verification-boundary
+   :host-validated-b47-report-and-opaque-provenance-digest
+   :verification-preimage-domain
+   :gravity/sh08-b47-verification-binding-v1
+   :descriptor-source
+   :named-map-definition-in-authenticated-checked-core
+   :closed-family-only? true
+   :preparatory-source-model? true
+   :roadmap-credit? false
+   :executable-record-union-language-behavior? false
+   :nominal-sh07-carrier? false
+   :independent-gravity-cryptographic-verification? false
+   :host-digest-authority-retained? true
+   :native-gravity-cryptographic-verification :pending})
+
+(defn sh08-record-union-type-core-artifact [request definition-name]
+  (let [resolution (sh08-ft-authenticated-core request)]
+    (if (= :accepted (get resolution :status))
+      (let [core (get resolution :core)
+            module (get core :module)
+            family-source
+            (sh08-ru-family-from-core core definition-name)]
+        (if (= :accepted (get family-source :status))
+          (let [checked
+                (sh08-ru-check-family (get family-source :family))]
+            (if (= :accepted (get checked :status))
+              (sh08-ru-accepted-result
+               core definition-name family-source)
+              {:artifact :gravity/sh08-record-union-preparatory-model
+               :schema-version 1
+               :status :rejected
+               :scope :authenticated-closed-record-union-descriptor-model
+               :preparatory-source-model? true
+               :roadmap-credit? false
+               :executable-record-union-language-behavior? false
+               :nominal-sh07-carrier? false
+               :authentication-status
+               :host-resolved-b47-verification-boundary
+               :module module
+               :sh07-shaped-artifact-id (get core :artifact-id)
+               :family-definition-name definition-name
+               :diagnostics
+               [(sh08-ru-diagnostic
+                 (get family-source :node) module
+                 (get core :artifact-id) definition-name
+                 (get checked :expected)
+                 (get checked :actual)
+                 (get checked :reason))]
+               :pending [:general-record-and-union-surface-syntax
+                         :constructor-pattern-lowering
+                         :record-construction-typing
+                         :record-access-typing
+                         :union-construction-typing
+                         :union-match-typing-and-narrowing
+                         :uniform-gravity-and-qst-execution-gates
+                         :sh07-completion :sh08-completion]}))
+          {:artifact :gravity/sh08-record-union-preparatory-model
+           :schema-version 1
+           :status :rejected
+           :scope :authenticated-closed-record-union-descriptor-model
+           :preparatory-source-model? true
+           :roadmap-credit? false
+           :executable-record-union-language-behavior? false
+           :nominal-sh07-carrier? false
+           :authentication-status :host-resolved-b47-verification-boundary
+           :module module
+           :sh07-shaped-artifact-id (get core :artifact-id)
+           :family-definition-name definition-name
+           :diagnostics
+           [(sh08-ru-diagnostic
+             (get family-source :node) module
+             (get core :artifact-id) definition-name
+             :named-record-union-family definition-name
+             (get family-source :reason))]
+           :pending [:general-record-and-union-surface-syntax
+                     :constructor-pattern-lowering
+                     :record-construction-typing
+                     :record-access-typing
+                     :union-construction-typing
+                     :union-match-typing-and-narrowing
+                     :uniform-gravity-and-qst-execution-gates
+                     :sh07-completion :sh08-completion]}))
+      {:artifact :gravity/sh08-record-union-preparatory-model
+       :schema-version 1
+       :status :rejected
+       :scope :authenticated-closed-record-union-descriptor-model
+       :preparatory-source-model? true
+       :roadmap-credit? false
+       :executable-record-union-language-behavior? false
+       :nominal-sh07-carrier? false
+       :authentication-status :host-resolved-b47-verification-required
+       :module {}
+       :family-definition-name definition-name
+       :diagnostics
+       [(sh08-ru-diagnostic
+         {} {} nil definition-name
+         :host-resolved-authentic-b47-context
+         (get resolution :reason)
+         (get resolution :reason))]
+       :pending [:native-gravity-cryptographic-verification
+                 :record-construction-typing
+                 :record-access-typing
+                 :union-construction-typing
+                 :union-match-typing-and-narrowing
+                 :uniform-gravity-and-qst-execution-gates
+                 :sh07-completion :sh08-completion]})))
+
+(defn sh08-verify-record-union-type-result
+  [request definition-name candidate]
+  (let [expected
+        (sh08-record-union-type-core-artifact request definition-name)]
+    {:artifact :gravity/sh08-record-union-descriptor-model-verification
+     :status (if (= expected candidate) :passed :rejected)
+     :checks [:authenticated-b47-core-boundary
+              :named-family-source-bound
+              :closed-descriptor-schema-bounded
+              :descriptor-consistency-result-recomputed
+              :supported-descriptor-value-types-only
+              :path-neutral-descriptor-identity-input
+              :preparatory-no-credit-boundary]
      :expected expected
      :candidate candidate}))
 
