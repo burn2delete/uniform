@@ -648,7 +648,7 @@
       "invariant_family": "self-hosting/sh09-effect-capability-policy",
       "owner": "sh-effects",
       "author": "sh-effects",
-      "state": "integration-eligible",
+      "state": "integrated",
       "dependencies": ["sh08-records-unions-descriptor-v1"],
       "architecture_decision": "",
       "base_commit": "76787ed06a63fa67f8d0742c22fb426a162919c4",
@@ -685,9 +685,10 @@
         {"state": "frozen", "at": "2026-08-24T08:02:10Z", "actor": "sh-effects", "reason": "freeze the exact four-path candidate, fixtures, tree, and provenance tuple"},
         {"state": "review-pending", "at": "2026-08-24T08:02:11Z", "actor": "uniform-coordinator", "reason": "request independent review of the exact reconciled tuple"},
         {"state": "accepted", "at": "2026-08-24T08:02:12Z", "actor": "sh09_767_exact_review", "reason": "accept effect and capability separation, authenticated B47 binding, fail-closed diagnostics, fixtures, and nonclaims"},
-        {"state": "integration-eligible", "at": "2026-08-24T08:02:13Z", "actor": "uniform-coordinator", "reason": "SH-08 dependency, exact identities, final focused gate, clean branch, independent acceptance, boundaries, and nonclaims verified"}
+        {"state": "integration-eligible", "at": "2026-08-24T08:02:13Z", "actor": "uniform-coordinator", "reason": "SH-08 dependency, exact identities, final focused gate, clean branch, independent acceptance, boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-24T08:08:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted SH-09 candidate and its admission record onto main"}
       ],
-      "disposition": "Integration-eligible bounded SH-09 compiler-read policy only; no SH-09 completion or roadmap credit."
+      "disposition": "Integrated bounded SH-09 compiler-read policy only; no SH-09 completion or roadmap credit."
     }
   ]
 }
