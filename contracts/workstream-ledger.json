@@ -487,7 +487,7 @@
       "invariant_family": "self-hosting/sh07-core-mutation-execution",
       "owner": "sh07-core",
       "author": "sh07-core",
-      "state": "integration-eligible",
+      "state": "integrated",
       "dependencies": [],
       "architecture_decision": "",
       "base_commit": "e88dd8108f4bfe1c0e9a971e4c6b25bbe5a31f05",
@@ -538,9 +538,10 @@
         {"state": "frozen", "at": "2026-08-24T06:31:56Z", "actor": "sh07-core", "reason": "freeze the exact nine-path candidate, tree, fixtures, and provenance tuple"},
         {"state": "review-pending", "at": "2026-08-24T06:31:57Z", "actor": "uniform-coordinator", "reason": "request independent semantic and governance review of the exact tuple"},
         {"state": "accepted", "at": "2026-08-24T06:31:58Z", "actor": "sh07_final_review", "reason": "accept the exact candidate after fail-closed mutation, provenance, fixture, and identity review"},
-        {"state": "integration-eligible", "at": "2026-08-24T06:31:59Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, final focused gates, independent acceptance, residual boundaries, and nonclaims verified"}
+        {"state": "integration-eligible", "at": "2026-08-24T06:31:59Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, final focused gates, independent acceptance, residual boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-24T06:33:08Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted SH-07 candidate and its admission record onto main"}
       ],
-      "disposition": "Integration-eligible bounded SH-07 set-mutation execution only; no roadmap credit."
+      "disposition": "Integrated bounded SH-07 set-mutation execution only; no roadmap credit."
     }
   ]
 }
