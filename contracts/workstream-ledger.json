@@ -549,7 +549,7 @@
       "invariant_family": "phase-15/source-syntax-identity",
       "owner": "p15-source-syntax",
       "author": "p15-source-syntax",
-      "state": "integration-eligible",
+      "state": "integrated",
       "dependencies": [],
       "architecture_decision": "",
       "base_commit": "a7e33a3f2af0afe1db1001561fdc556125d04c45",
@@ -580,9 +580,10 @@
         {"state": "frozen", "at": "2026-08-24T07:38:23Z", "actor": "p15-source-syntax", "reason": "freeze the exact two-file candidate, tree, and provenance tuple"},
         {"state": "review-pending", "at": "2026-08-24T07:38:24Z", "actor": "uniform-coordinator", "reason": "request independent review of the exact reconciled tuple"},
         {"state": "accepted", "at": "2026-08-24T07:38:25Z", "actor": "p15_a7_exact_review", "reason": "accept exact semantic identity, actual-path provenance, tamper rejection, and cache compatibility"},
-        {"state": "integration-eligible", "at": "2026-08-24T07:38:26Z", "actor": "uniform-coordinator", "reason": "exact identities, final J001-J008 proof, clean branch, independent acceptance, boundaries, and nonclaims verified"}
+        {"state": "integration-eligible", "at": "2026-08-24T07:38:26Z", "actor": "uniform-coordinator", "reason": "exact identities, final J001-J008 proof, clean branch, independent acceptance, boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-24T07:39:17Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted P15 candidate and its admission record onto main"}
       ],
-      "disposition": "Integration-eligible bounded P15 S23 source/syntax identity preservation only; no roadmap credit."
+      "disposition": "Integrated bounded P15 S23 source/syntax identity preservation only; no roadmap credit."
     }
   ]
 }
