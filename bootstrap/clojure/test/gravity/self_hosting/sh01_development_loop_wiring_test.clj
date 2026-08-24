@@ -141,7 +141,7 @@
            (:id (exception-data
                  #(wiring/repository-snapshot "bootstrap")))))))
 
-(deftest external-classpath-and-command-bytes-affect-identities
+(deftest external-classpath-command-bytes-and-mode-affect-identities
   (with-coordination-root [base]
     (let [repository-root (.resolve base "repository")
           external-file (.resolve base "external.jar")
@@ -152,6 +152,9 @@
           runtime-identities
           (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
                       'base-runtime-identities)
+          regular-file-identity
+          (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                      'regular-file-identity)
           original-classpath (System/getProperty "java.class.path")
           separator (System/getProperty "path.separator")]
       (Files/createDirectories repository-root no-file-attributes)
@@ -159,6 +162,8 @@
                    (make-array java.nio.file.OpenOption 0))
       (Files/write command-file (.getBytes "tool-first" "UTF-8")
                    (make-array java.nio.file.OpenOption 0))
+      (Files/setPosixFilePermissions
+       command-file (PosixFilePermissions/fromString "rwx------"))
       (try
         (System/setProperty "java.class.path"
                             (str repository-root separator external-file))
@@ -179,7 +184,17 @@
             (is (not= (get-in first-classpath [1 :sha256])
                       (get-in second-classpath [1 :sha256])))
             (is (not= (:sha256 (last first-runtime))
-                      (:sha256 (last second-runtime))))))
+                      (:sha256 (last second-runtime))))
+            (Files/setPosixFilePermissions
+             command-file (PosixFilePermissions/fromString "rw-------"))
+            (is (not= (:sha256 (last second-runtime))
+                      (regular-file-identity command-file)))
+            (is (= "SH01-DEVELOPMENT-LOOP-TOOL"
+                   (:id
+                    (exception-data
+                     #(runtime-identities
+                       repository-root
+                       {:command [(str command-file)]})))))))
         (finally
           (System/setProperty "java.class.path" original-classpath))))))
 

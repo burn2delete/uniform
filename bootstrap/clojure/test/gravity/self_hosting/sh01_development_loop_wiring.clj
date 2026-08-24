@@ -257,12 +257,18 @@
 (defn- regular-file-identity
   [^Path input-path]
   (let [path (.toRealPath input-path (make-array LinkOption 0))
-        before (Files/readAttributes path BasicFileAttributes no-links)]
+        before (Files/readAttributes path BasicFileAttributes no-links)
+        before-executable? (Files/isExecutable path)]
     (when-not (.isRegularFile before)
       (fail! "SH01-DEVELOPMENT-LOOP-TOOL"
              "Development-loop external input must be a regular file"
              {}))
     (let [message-digest (MessageDigest/getInstance "SHA-256")]
+      (update-framed-text! message-digest
+                           :gravity/sh01-external-file-identity-v1)
+      (update-framed-text! message-digest
+                           (if before-executable? :executable
+                               :non-executable))
       (with-open [input (Files/newInputStream
                          path (make-array java.nio.file.OpenOption 0))]
         (let [buffer (byte-array 65536)]
@@ -271,12 +277,12 @@
               (when (pos? count)
                 (.update message-digest buffer 0 count)
                 (recur))))))
-      (when-not (same-file-snapshot?
-                 before
-                 (Files/readAttributes path BasicFileAttributes no-links))
-        (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
-               "External runtime or classpath input changed while read"
-               {}))
+      (let [after (Files/readAttributes path BasicFileAttributes no-links)]
+        (when-not (and (same-file-snapshot? before after)
+                       (= before-executable? (Files/isExecutable path)))
+          (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                 "External runtime or classpath input changed while read"
+                 {})))
       (message-digest-id message-digest))))
 
 (defn repository-snapshot
@@ -335,28 +341,34 @@
 
 (defn- resolve-executable
   [^Path repository-root executable]
-  (let [candidate (.toPath (io/file executable))]
-    (cond
-      (.isAbsolute candidate) candidate
+  (let [candidate (.toPath (io/file executable))
+        resolved
+        (cond
+          (.isAbsolute candidate) candidate
 
-      (str/includes? executable java.io.File/separator)
-      (.resolve repository-root candidate)
+          (str/includes? executable java.io.File/separator)
+          (.resolve repository-root candidate)
 
-      :else
-      (or
-       (some
-        (fn [directory]
-          (let [path (.resolve (.toPath (io/file directory)) executable)]
-            (when (and (Files/isRegularFile path (make-array LinkOption 0))
-                       (Files/isExecutable path))
-              path)))
-        (str/split (or (System/getenv "PATH") "")
-                   (re-pattern
-                    (java.util.regex.Pattern/quote
-                     (System/getProperty "path.separator")))))
-       (fail! "SH01-DEVELOPMENT-LOOP-TOOL"
-              "Development-loop command executable could not be resolved"
-              {:executable executable})))))
+          :else
+          (some
+           (fn [directory]
+             (let [path (.resolve (.toPath (io/file directory)) executable)]
+               (when (and (Files/isRegularFile path
+                                               (make-array LinkOption 0))
+                          (Files/isExecutable path))
+                 path)))
+           (str/split (or (System/getenv "PATH") "")
+                      (re-pattern
+                       (java.util.regex.Pattern/quote
+                        (System/getProperty "path.separator"))))))]
+    (when-not (and resolved
+                   (Files/isRegularFile ^Path resolved
+                                        (make-array LinkOption 0))
+                   (Files/isExecutable ^Path resolved))
+      (fail! "SH01-DEVELOPMENT-LOOP-TOOL"
+             "Development-loop command executable could not be resolved"
+             {:executable executable}))
+    resolved))
 
 (declare semantic-command)
 
