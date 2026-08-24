@@ -920,6 +920,77 @@
         {"state": "integrated", "at": "2026-08-24T18:23:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted ownership repair and its admission record onto main"}
       ],
       "disposition": "Integrated the bounded SH-01 ownership projection repair only; no implementation, roadmap, release, self-hosting, or seed-retirement credit."
+    },
+    {
+      "id": "incremental-component-invalidation-v1",
+      "title": "Component and explicit-base incremental invalidation version 1",
+      "invariant_family": "tooling/incremental-component-invalidation",
+      "owner": "development-verification",
+      "author": "development-verification",
+      "state": "integrated",
+      "dependencies": ["incremental-development-verification-reconciliation-v1", "sh01-ownership-projection-repair-v1"],
+      "architecture_decision": "",
+      "base_commit": "91182bb33f2ae852437358196befe9659a09934b",
+      "candidate_commit": "436999cf5df24bc3c0c080ff04daa2eb886efdb6",
+      "clean_worktree": true,
+      "owned_paths": [
+        "README.md",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_incremental_check.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_incremental_check_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_ownership_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "contracts/stage0-incremental-test-dependencies.edn",
+        "docs/development-verification.md",
+        "docs/self-hosting-slice-ownership.edn"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "C16", "TEST1", "TEST2", "TEST12", "TEST13", "contracts/workstream-governance.json", "docs/development-verification.md"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_incremental_check_test.clj",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner_test.clj",
+          "contracts/stage0-incremental-test-dependencies.edn"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_incremental_check_test.clj"
+        ],
+        "stable_diagnostics": ["SH01-IMPACT-BASE", "SH01-IMPACT-UNOWNED", "SH01-IMPACT-NAMESPACE", "SH01-COMPONENT-DEPENDENCY-CONTRACT"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-impact-test-planner-test --namespace gravity.self-hosting.sh01-incremental-check-test --namespace gravity.self-hosting.sh01-parallel-test-runner-test --namespace gravity.self-hosting.sh01-ownership-test --namespace gravity.self-hosting.sh01-stage0-leaf-test-runner-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check 91182bb33f2ae852437358196befe9659a09934b 436999cf5df24bc3c0c080ff04daa2eb886efdb6", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 91182bb33f2ae852437358196befe9659a09934b --candidate-commit 436999cf5df24bc3c0c080ff04daa2eb886efdb6 --candidate-tree fd32c490165f9c652ab2722bd7ffb6748342962b", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [
+        {"reviewer": "planner_semantic_exact", "kind": "independent", "result": "accepted"},
+        {"reviewer": "planner_identity_exact", "kind": "independent", "result": "accepted"}
+      ],
+      "residual_host_boundaries": [
+        "Clojure, the JVM, and Git remain the temporary development planning boundary",
+        "the reviewed component dependency contract covers only compiler-pass-manifest and c11-mir in this tranche",
+        "the measured namespace and planned-JVM reductions are non-authoritative observations and are not performance claims",
+        "incremental selection grants no fresh, proof, benchmark, release, self-hosting, or seed-retirement authority"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-24T18:24:00Z", "actor": "development-verification", "reason": "reconcile the producer net diff onto the ownership-repaired main"},
+        {"state": "frozen", "at": "2026-08-24T18:26:00Z", "actor": "uniform-coordinator", "reason": "freeze corrected candidate 436999cf5df24bc3c0c080ff04daa2eb886efdb6 and tree fd32c490165f9c652ab2722bd7ffb6748342962b after reconciling the owner total"},
+        {"state": "review-pending", "at": "2026-08-24T18:27:00Z", "actor": "uniform-coordinator", "reason": "request independent semantic and identity review of the exact reconciled tuple"},
+        {"state": "accepted", "at": "2026-08-24T18:32:00Z", "actor": "planner_semantic_exact", "reason": "accept explicit-base discovery, fail-closed ownership, exact component selection, deterministic scheduling, measured receipts, and nonclaims"},
+        {"state": "integration-eligible", "at": "2026-08-24T18:33:00Z", "actor": "uniform-coordinator", "reason": "exact identities, focused gates, clean branch, independent acceptances, residual boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-24T18:34:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted planner candidate and its admission record onto main"}
+      ],
+      "disposition": "Integrated bounded component and explicit-base development invalidation only; no authoritative, performance, roadmap, release, self-hosting, or seed-retirement credit."
     }
   ]
 }
