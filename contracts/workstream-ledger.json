@@ -862,6 +862,64 @@
         {"state": "integrated", "at": "2026-08-24T08:47:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded corrected candidate 2d3f5052aadee07e645c7c76e5a729c8fa40398b and independently accepted two-file descendant 5025ddf03171974681f5cff70b204ec78f89b7d8 closing coordinated node and fact effect substitution"}
       ],
       "disposition": "Integrated corrected and coordinated-substitution-hardened bounded SH-12 branch-join MIR family only; initial candidate rejected, no SH-12 completion or roadmap credit."
+    },
+    {
+      "id": "sh01-ownership-projection-repair-v1",
+      "title": "SH-01 ownership projection repair version 1",
+      "invariant_family": "tooling/self-hosting-ownership-projection",
+      "owner": "uniform-coordinator",
+      "author": "uniform-coordinator",
+      "state": "integrated",
+      "dependencies": ["incremental-development-verification-reconciliation-v1", "sh12-branch-join-mir-v1"],
+      "architecture_decision": "",
+      "base_commit": "e21ec9d81cf9ff854dd454e74dcfc0c3a3dfddfe",
+      "candidate_commit": "eb416d1becaca04fc67af6356e7d36906cafa152",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_ownership_test.clj",
+        "docs/self-hosting-slice-ownership.edn"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D8", "D9", "docs/self-hosting-slice-ownership.edn", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_ownership_test.clj",
+          "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_stage0_leaf_test_runner_test.clj"
+        ],
+        "stable_diagnostics": ["S0LEAF-CATALOG-OWNERSHIP", "S0LEAF-CATALOG-SURFACE", "SH01-TEST-NAMESPACE"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-ownership-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-stage0-leaf-test-runner-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check e21ec9d81cf9ff854dd454e74dcfc0c3a3dfddfe eb416d1becaca04fc67af6356e7d36906cafa152", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base e21ec9d81cf9ff854dd454e74dcfc0c3a3dfddfe --candidate-commit eb416d1becaca04fc67af6356e7d36906cafa152 --candidate-tree b902565cd8cec232c1d0583a65bc9563f0bf4cb8", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [
+        {"reviewer": "ownership_semantic_exact", "kind": "independent", "result": "accepted"},
+        {"reviewer": "ownership_identity_exact", "kind": "independent", "result": "accepted"}
+      ],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary seed and verifier boundary",
+        "the W5 module assignments establish coordinator ownership only and do not establish implementation or self-hosting completion",
+        "the projection repair grants no roadmap, release, performance, self-hosting, or seed-retirement authority"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-24T17:03:00Z", "actor": "uniform-coordinator", "reason": "repair the pre-existing bootstrap-free ownership projection blocker"},
+        {"state": "frozen", "at": "2026-08-24T17:05:00Z", "actor": "uniform-coordinator", "reason": "freeze the exact three-path candidate and Git identities"},
+        {"state": "review-pending", "at": "2026-08-24T17:06:00Z", "actor": "uniform-coordinator", "reason": "request independent semantic and identity review of the exact tuple"},
+        {"state": "accepted", "at": "2026-08-24T17:15:00Z", "actor": "ownership_semantic_exact", "reason": "accept reviewed exclusions, W5 assignments, coordinator reservations, focused evidence, and nonclaims"},
+        {"state": "integration-eligible", "at": "2026-08-24T17:16:00Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, focused gates, independent acceptances, residual boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-24T18:23:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted ownership repair and its admission record onto main"}
+      ],
+      "disposition": "Integrated the bounded SH-01 ownership projection repair only; no implementation, roadmap, release, self-hosting, or seed-retirement credit."
     }
   ]
 }
