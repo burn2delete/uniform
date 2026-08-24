@@ -696,7 +696,7 @@
       "invariant_family": "self-hosting/sh10-ownership-initialization-move",
       "owner": "sh-ownership",
       "author": "sh-ownership",
-      "state": "integration-eligible",
+      "state": "integrated",
       "dependencies": ["sh09-authenticated-compiler-read-v1"],
       "architecture_decision": "",
       "base_commit": "8f33d98d20facf77aed5c55159491ceb70786aa1",
@@ -742,9 +742,10 @@
         {"state": "frozen", "at": "2026-08-24T08:18:01Z", "actor": "sh-ownership", "reason": "freeze the exact seven-path candidate, fixtures, tree, and provenance tuple"},
         {"state": "review-pending", "at": "2026-08-24T08:18:02Z", "actor": "uniform-coordinator", "reason": "request independent review of the exact reconciled tuple"},
         {"state": "accepted", "at": "2026-08-24T08:18:03Z", "actor": "sh10_exact_review", "reason": "accept authenticated ownership facts, bounded lifecycle semantics, fail-closed diagnostics, fixtures, baseline residual, and nonclaims"},
-        {"state": "integration-eligible", "at": "2026-08-24T08:18:04Z", "actor": "uniform-coordinator", "reason": "SH-09 dependency, exact identities, final focused gate, clean branch, independent acceptance, boundaries, and nonclaims verified"}
+        {"state": "integration-eligible", "at": "2026-08-24T08:18:04Z", "actor": "uniform-coordinator", "reason": "SH-09 dependency, exact identities, final focused gate, clean branch, independent acceptance, boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-24T08:19:00Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted SH-10 candidate and its admission record onto main"}
       ],
-      "disposition": "Integration-eligible bounded SH-10 initialization and move family only; no SH-10 completion or roadmap credit."
+      "disposition": "Integrated bounded SH-10 initialization and move family only; no SH-10 completion or roadmap credit."
     }
   ]
 }
