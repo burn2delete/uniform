@@ -584,6 +584,62 @@
         {"state": "integrated", "at": "2026-08-24T07:39:17Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted P15 candidate and its admission record onto main"}
       ],
       "disposition": "Integrated bounded P15 S23 source/syntax identity preservation only; no roadmap credit."
+    },
+    {
+      "id": "sh08-records-unions-descriptor-v1",
+      "title": "SH-08 bounded records and unions descriptor version 1",
+      "invariant_family": "self-hosting/sh08-records-unions",
+      "owner": "sh-types",
+      "author": "sh-types",
+      "state": "integration-eligible",
+      "dependencies": ["sh07-core-mutation-execution-v1"],
+      "architecture_decision": "",
+      "base_commit": "461fb3c617e968247bb1ebb2d3a0304753e68f72",
+      "candidate_commit": "f92939f7bfc644e305fefd0145ec4c61c050f705",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/records-unions/accepted/closed-record-union-family.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/records-unions/accepted/closed-record-union-family.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/records-unions/rejected/closed-record-union-errors.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/records-unions/rejected/closed-record-union-errors.qst",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_records_unions_type_test.clj",
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D8", "D9", "C7", "BOOT7", "BOOT8", "docs/self-hosting-slice-backlog.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-08/records-unions/accepted/closed-record-union-family.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-08/records-unions/accepted/closed-record-union-family.qst"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-08/records-unions/rejected/closed-record-union-errors.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-08/records-unions/rejected/closed-record-union-errors.qst"
+        ],
+        "stable_diagnostics": ["C7-VERIFY", "missing-field", "wrong-field-type", "invalid-variant", "non-exhaustive-match"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh08-records-unions-type-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:gravity check bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check main..HEAD", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 461fb3c617e968247bb1ebb2d3a0304753e68f72 --candidate-commit f92939f7bfc644e305fefd0145ec4c61c050f705 --candidate-tree bc63c5fdc44f29ad418230e40a7e0353de0e6171", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "sh08_461_exact_review", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary seed and verifier boundary",
+        "the result is a bounded authenticated descriptor model and does not emit typed core or executable record and union behavior",
+        "surface syntax, constructor and access lowering, match narrowing, full SH-08 completion, roadmap credit, self-hosting, release, and seed retirement are not claimed"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-24T07:52:10Z", "actor": "sh-types", "reason": "compose the bounded authenticated records and unions descriptor"},
+        {"state": "frozen", "at": "2026-08-24T07:52:11Z", "actor": "sh-types", "reason": "freeze the exact six-path candidate, fixtures, tree, and provenance tuple"},
+        {"state": "review-pending", "at": "2026-08-24T07:52:12Z", "actor": "uniform-coordinator", "reason": "request independent review of the exact reconciled tuple"},
+        {"state": "accepted", "at": "2026-08-24T07:52:13Z", "actor": "sh08_461_exact_review", "reason": "accept authenticated B47 provenance, closed descriptor semantics, fail-closed diagnostics, fixtures, and nonclaims"},
+        {"state": "integration-eligible", "at": "2026-08-24T07:52:14Z", "actor": "uniform-coordinator", "reason": "SH-07 dependency, exact identities, final focused and source gates, clean branch, independent acceptance, boundaries, and nonclaims verified"}
+      ],
+      "disposition": "Integration-eligible bounded SH-08 descriptor only; no SH-08 completion or roadmap credit."
     }
   ]
 }
