@@ -15,11 +15,35 @@
 
 (def ^:private slice-count 30)
 
-;; These namespaces are fixed-stage verification infrastructure.  The general
+;; These reviewed namespaces are verification infrastructure.  The general
 ;; self-hosting runner discovers and can execute them, but they are not SH-00
 ;; through SH-29 leaf tests and therefore must never enter the slice planner's
 ;; catalog (or be inferred as SH-07 by a broad fallback).
-(def ^:private fixed-stage-infrastructure-namespaces
+(def ^:private reviewed-non-slice-namespaces
+  #{'gravity.self-hosting.a1-canonical-schema-test
+    'gravity.self-hosting.p15-public-native-admission-test
+    'gravity.self-hosting.stage3-fragment-size-preflight-test
+    'gravity.self-hosting.stage3-verification-runner-test
+    'gravity.self-hosting.w5-b13-artifact-emitter-test
+    'gravity.self-hosting.w5-b14-backend-conformance-verifier-test
+    'gravity.self-hosting.w5-c16-incremental-executor-test
+    'gravity.self-hosting.w5-c17-plugin-executor-test
+    'gravity.self-hosting.w5-c18-pass-verifier-test
+    'gravity.self-hosting.w5-compiler-identity-verifier-test
+    'gravity.self-hosting.w5-compiler-pipeline-verifier-test
+    'gravity.self-hosting.w5-domain-schema-ai-executor-test
+    'gravity.self-hosting.w5-full-language-evidence-verifier-test
+    'gravity.self-hosting.w5-ir-lowering-executor-test
+    'gravity.self-hosting.w5-performance-math-executor-test
+    'gravity.self-hosting.w5-reader-module-executor-test
+    'gravity.self-hosting.w5-stage-equivalence-verifier-test
+    'gravity.self-hosting.w5-stage-rebuild-orchestrator-test
+    'gravity.self-hosting.w5-subsystem-closure-verifier-test
+    'gravity.self-hosting.w5-tooling-conformance-verifier-test
+    'gravity.self-hosting.w5-trust-provenance-verifier-test
+    'gravity.self-hosting.w5-typed-effect-safety-executor-test})
+
+(def ^:private required-fixed-stage-infrastructure-namespaces
   #{'gravity.self-hosting.stage3-fragment-size-preflight-test
     'gravity.self-hosting.stage3-verification-runner-test})
 
@@ -378,11 +402,12 @@
         duplicates (duplicate-namespaces namespaces)
         discovered (set namespaces)
         missing-infrastructure
-        (set/difference fixed-stage-infrastructure-namespaces discovered)
+        (set/difference required-fixed-stage-infrastructure-namespaces
+                        discovered)
         unknown-non-slice
         (->> namespaces
              (remove
-              #(or (contains? fixed-stage-infrastructure-namespaces %)
+              #(or (contains? reviewed-non-slice-namespaces %)
                    (namespace-slice %)))
              distinct
              sort
@@ -416,7 +441,7 @@
          :unknown-non-slice-namespaces unknown-non-slice
          :discovered-namespaces (vec (sort namespaces))})))
     (->> namespaces
-         (remove #(contains? fixed-stage-infrastructure-namespaces %))
+         (remove #(contains? reviewed-non-slice-namespaces %))
          (map
           (fn [namespace]
             {:namespace namespace

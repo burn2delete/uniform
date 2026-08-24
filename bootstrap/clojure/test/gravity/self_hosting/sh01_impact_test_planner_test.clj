@@ -502,21 +502,29 @@
                    (:reason (last (:entries data))))
                 request)))))))
 
-(deftest fixed-stage-infrastructure-is-discoverable-but-never-a-slice
-  (let [fixed-stage
-        #{'gravity.self-hosting.stage3-fragment-size-preflight-test
-          'gravity.self-hosting.stage3-verification-runner-test}
+(deftest reviewed-non-slice-infrastructure-is-discoverable-but-never-a-slice
+  (let [reviewed-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'reviewed-non-slice-namespaces)
+        reviewed @reviewed-var
         catalog-var
         (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
                     'test-catalog)
         general (set (runner/dedicated-test-namespaces))
         catalog (@catalog-var)]
-    (testing "the general runner still owns both fixed-stage namespaces"
-      (is (every? #(contains? general %) fixed-stage))
-      (is (= (- (count general) (count fixed-stage))
+    (testing "the reviewed exclusions are explicit and discoverable"
+      (is (= 22 (count reviewed)))
+      (is (contains? reviewed
+                     'gravity.self-hosting.a1-canonical-schema-test))
+      (is (contains? reviewed
+                     'gravity.self-hosting.p15-public-native-admission-test))
+      (is (contains? reviewed
+                     'gravity.self-hosting.w5-c16-incremental-executor-test))
+      (is (every? #(contains? general %) reviewed))
+      (is (= (- (count general) (count reviewed))
              (count catalog))))
     (testing "the planner catalog contains only bounded SH slices"
-      (is (not-any? fixed-stage (map :namespace catalog)))
+      (is (not-any? reviewed (map :namespace catalog)))
       (is (every? #(re-matches #"SH-\d{2}" (:slice %)) catalog))
       (is (some #{'gravity.self-hosting.sh07-checked-core-test}
                 (map :namespace catalog))))))

@@ -106,21 +106,25 @@ gravity self-host verify
 until final self-hosting and seed retirement are proven.
 
 For development, plan the smallest Stage 0 verification graph before running
-it. The bounded Stage1 SH-01 handoff runs only the planner and parallel-runner
-unit namespaces in one JVM; use exact or related test vars for implementation
-work outside that unit boundary:
+it. The bounded Stage1 SH-01 handoff runs only the incremental-check, planner,
+and parallel-runner unit namespaces in one JVM; use exact or related test vars
+for implementation work outside that unit boundary:
 
 ```bash
+clojure -M:incremental-check
 clojure -M:sh01-test
 clojure -M:dev-test --exact hosted-hello-runs --exact hosted-core-app-runs-user-functions-and-builtins
 clojure -M:project-structure-runner-unit
 clojure -J-Xmx512m -M:project-structure-test --exact gravity.bootstrap-test/hosted-hello-runs --exact gravity.bootstrap-test/reader-source-unit-identity-preserves-path-extension-and-options --exact gravity.bootstrap-test/reader-file-policy-rejects-extension-and-malformed-utf8 --exact gravity.bootstrap-test/c2-reader-treats-cr-lf-and-crlf-as-line-terminators --fail-fast
 ```
 
-These Clojure runners emit non-authoritative development feedback and exit
-nonzero on failure. They do not replace fresh authoritative or release
-verification. See `docs/development-verification.md` for direct Clojure Stage3,
-SH-07, governance, and preflight commands.
+`clojure -M:incremental-check` discovers working-tree changes, emits the SH-01
+ownership classifications and dependency-expanded invalidation plan, and runs
+only the selected namespaces. Relevant paths without an SH-01 owner fail
+closed. These Clojure runners emit non-authoritative development feedback and
+exit nonzero on failure. They do not replace fresh authoritative or release
+verification. See `docs/development-verification.md` for direct Clojure
+Stage3, SH-07, governance, and preflight commands.
 
 The current SH-02 development audit measured namespace require at 5.88 seconds
 and about 1.40 GiB peak resident memory, and the first ten leaf vars warm in one

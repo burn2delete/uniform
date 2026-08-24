@@ -25,6 +25,7 @@ self-hosting, seed-retirement, performance, or safety authority.
 Use the reviewed Clojure aliases:
 
 ```bash
+clojure -M:incremental-check
 clojure -M:sh01-test
 clojure -M:leaf-test --group foundation-reader
 clojure -M:dev-test --catalog
@@ -32,6 +33,15 @@ clojure -M:project-structure-runner-unit
 clojure -M:project-structure-test --help
 clojure -M:stage3-verification --help
 ```
+
+`clojure -M:incremental-check` passes the current tracked and untracked changed
+paths to the existing SH-01 impact planner, prints the ownership and
+dependency-expanded invalidation explanation, and runs only the selected test
+namespaces through the bounded parallel runner. It succeeds without starting a
+runner when all changed paths are unrelated, and fails closed when a relevant
+path has no owner. Its plan and execution report are explicitly
+non-authoritative and cannot satisfy the standard gates below or any release,
+self-hosting, or seed-retirement gate.
 
 Stage3 fixed batches run directly through the Clojure runner:
 
