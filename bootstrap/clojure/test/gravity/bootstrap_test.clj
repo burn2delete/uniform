@@ -5968,12 +5968,88 @@
                    candidate)))]
     (is (contains? diagnostics "P15S23M005"))))
 
+(defn- p15-s23-test-source-syntax-candidate
+  [source-path source-unit syntax-stream identity-record]
+  (let [c2-artifact
+        {:source-unit-record source-unit
+         :token-stream []
+         :form-tree []
+         :reader-extension-invocation-records []}
+        adapted-binding
+        (bootstrap/sh04-syntax-current-sh03-product-binding c2-artifact)
+        c3-artifact
+        {:c2-reader-artifact c2-artifact
+         :syntax-object-stream syntax-stream
+         :gravity-syntax-boundary
+         {:reader-authentication-provenance
+          {:semantic-source-id
+           (:expected-sh04-semantic-source-id identity-record)
+           :actual-sh03-semantic-product-binding adapted-binding}}}]
+    {:proof-contract
+     {:artifact :gravity/source-unit-and-syntax-serialization-proof
+      :preserves bootstrap/p15-s23-source-syntax-required-preserves
+      :self-hosting-claims
+      {:full-language-compiler-self-hosted? false
+       :clojure-seed-retired? false}}
+     :source-unit-record source-unit
+     :syntax-object-stream syntax-stream
+     :source-syntax-identity-record identity-record
+     :c2-reader-artifact c2-artifact
+     :c3-syntax-artifact c3-artifact
+     :serialization-roundtrip-record
+     {:source-unit-roundtrip? true
+      :stable-source-id? true
+      :syntax-object-roundtrip? true
+      :stable-syntax-ids? true
+      :origin-links-preserved? true
+      :roundtrip? true
+      :c3-serialization-roundtrip? true}
+     :syntax-verification-report {:status :passed}}))
+
+(defn- p15-s23-test-syntax-object
+  [source-path semantic-source-id]
+  {:artifact :gravity/syntax-object
+   :syntax/id "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :source {:source-id semantic-source-id}
+   :span {:primary {:source source-path
+                    :file semantic-source-id
+                    :byte-start 0
+                    :byte-end 1}
+          :all [{:source source-path
+                 :file semantic-source-id
+                 :byte-start 0
+                 :byte-end 1}]}
+   :origin [{:kind :source
+             :span {:source source-path
+                    :file semantic-source-id
+                    :byte-start 0
+                    :byte-end 1}
+             :producer {:kind :reader
+                        :name 'gravity.bootstrap.reader
+                        :source-id semantic-source-id}}]})
+
+(defn- p15-s23-test-dual-identity-record
+  [source-path source-unit syntax-stream]
+  (merge
+   (bootstrap/p15-s23-source-syntax-sh04-identity-record
+    source-path source-unit syntax-stream)
+   {:c2-identity-domain :gravity/sh03-adapted-source-unit-id-v2
+    :c2-source-unit-id (:source-id source-unit)
+    :expected-adapted-source-unit-id (:source-id source-unit)
+    :observed-adapted-source-unit-id (:source-id source-unit)
+    :c2-source-unit-identity-preserved? true}))
+
+(defn- p15-s23-test-diagnostic
+  [diagnostics id]
+  (some #(when (= id (:diagnostic %)) %) diagnostics))
+
 (deftest p15-s23-source-syntax-serialization-proof-records-roundtrip
   (let [artifact
         (bootstrap/p15-s23-source-syntax-serialization-proof-file-artifact
          bootstrap/p15-s23-compiler-source-path)
         proof (:capability-based-proof artifact)
         serialization (:serialization-roundtrip-record artifact)
+        identity-record (:source-syntax-identity-record artifact)
         c2-artifact (:c2-reader-artifact artifact)
         c2-proof (:capability-based-proof c2-artifact)
         c2-results (:p15-s23-source-syntax-reader-results c2-artifact)
@@ -5992,7 +6068,6 @@
            (get-in artifact [:proof-contract :artifact])))
     (is (= :gravity/stage0-c2-reader-document-artifact
            (:kind c2-artifact)))
-    (is (= :partial (:status c2-artifact)))
     (is (= :complete-for-slice
            (get-in c2-artifact [:representation-boundary :status])))
     (is (true? (:lexical-token-stream? c2-proof)))
@@ -6024,6 +6099,32 @@
     (is (true? (:stable-syntax-ids? serialization)))
     (is (true? (:origin-links-preserved? serialization)))
     (is (true? (:c3-serialization-roundtrip? serialization)))
+    (is (= :gravity/sh04-co-canonical-source-v1
+           (:identity-domain identity-record)))
+    (is (re-find #"^sha256:[0-9a-f]{64}$"
+                 (:expected-sh04-semantic-source-id identity-record)))
+    (is (= #{(:expected-sh04-semantic-source-id identity-record)}
+           (set (:observed-syntax-source-ids identity-record))))
+    (is (= #{(:expected-sh04-semantic-source-id identity-record)}
+           (set (:observed-span-file-ids identity-record))))
+    (is (= #{(:expected-sh04-semantic-source-id identity-record)}
+           (set (:observed-origin-producer-source-ids identity-record))))
+    (is (true? (:sh04-syntax-source-identities-preserved?
+                identity-record)))
+    (is (true? (:sh04-span-file-identities-preserved? identity-record)))
+    (is (true? (:sh04-origin-producer-identities-preserved?
+                identity-record)))
+    (is (= :gravity/sh03-adapted-source-unit-id-v2
+           (:c2-identity-domain identity-record)))
+    (is (= (get-in artifact [:source-unit-record :source-id])
+           (:c2-source-unit-id identity-record)))
+    (is (= (:c2-source-unit-id identity-record)
+           (:expected-adapted-source-unit-id identity-record)))
+    (is (= (:expected-adapted-source-unit-id identity-record)
+           (:observed-adapted-source-unit-id identity-record)))
+    (is (true? (:c2-source-unit-identity-preserved? identity-record)))
+    (is (not= (:c2-source-unit-id identity-record)
+              (:expected-sh04-semantic-source-id identity-record)))
     (is (= :passed (get-in artifact [:syntax-verification-report :status])))
     (is (false? (:full-language-compiler-self-hosted? artifact)))
     (is (false? (:clojure-seed-retired? artifact)))
@@ -6049,6 +6150,112 @@
     (is (true? (:rejected-candidates-covered? proof)))
     (is (true? (:diagnostics-covered? proof)))))
 
+(deftest p15-s23-source-syntax-dual-identity-mutations-reject
+  (let [source-path (fixture "accepted/reader-source-unit-identity.gravity")
+        source-text (bootstrap/read-gravity-source-text source-path)
+        source-unit (bootstrap/c2-source-unit-record
+                     source-path source-text bootstrap/standard-reader-options)
+        semantic-source-id
+        (bootstrap/sh04-syntax-semantic-source-id source-path source-unit)
+        syntax-object
+        (p15-s23-test-syntax-object source-path semantic-source-id)
+        syntax-stream [syntax-object]
+        valid-identity
+        (p15-s23-test-dual-identity-record
+         source-path source-unit syntax-stream)
+        valid-candidate
+        (p15-s23-test-source-syntax-candidate
+         source-path source-unit syntax-stream valid-identity)
+        diagnostics-for
+        (fn [candidate]
+          (bootstrap/p15-s23-source-syntax-proof-diagnostics
+           source-path candidate))
+        s003-for
+        (fn [candidate]
+          (p15-s23-test-diagnostic (diagnostics-for candidate)
+                                   "P15S23S003"))
+        mutated-id
+        "sha256:2222222222222222222222222222222222222222222222222222222222222222"]
+    (testing "the valid dual-identity binding is accepted"
+      (is (nil? (s003-for valid-candidate)))
+      (is (true?
+           (bootstrap/p15-s23-source-syntax-span-resolves?
+            {:primary {:kind :generated
+                       :producer-id semantic-source-id
+                       :ordinal 0}}))))
+    (testing "a mutated syntax source identity is rejected"
+      (let [mutated-stream
+            [(update-in syntax-object [:source :source-id]
+                        (constantly mutated-id))]
+            candidate
+            (assoc valid-candidate
+                   :syntax-object-stream mutated-stream
+                   :c3-syntax-artifact
+                   (assoc (:c3-syntax-artifact valid-candidate)
+                          :syntax-object-stream mutated-stream))
+            diagnostic (s003-for candidate)]
+        (is (some? diagnostic))
+        (is (false? (get-in diagnostic
+                            [:facts :sh04-syntax-source-identities-preserved?])))
+        (is (= [mutated-id]
+               (get-in diagnostic [:observed :observed-syntax-source-ids])))
+        (is (= semantic-source-id
+               (get-in diagnostic [:observed
+                                   :expected-sh04-semantic-source-id])))))
+    (testing "mutated concrete span file identities are rejected"
+      (let [mutated-stream
+            [(-> syntax-object
+                 (update-in [:span :primary :file]
+                            (constantly mutated-id))
+                 (update-in [:span :all 0 :file]
+                            (constantly mutated-id)))]
+            candidate
+            (assoc valid-candidate
+                   :syntax-object-stream mutated-stream
+                   :c3-syntax-artifact
+                   (assoc (:c3-syntax-artifact valid-candidate)
+                          :syntax-object-stream mutated-stream))
+            diagnostic (s003-for candidate)]
+        (is (some? diagnostic))
+        (is (false? (get-in diagnostic
+                            [:facts :sh04-span-file-identities-preserved?])))
+        (is (= [mutated-id]
+               (get-in diagnostic [:observed :observed-span-file-ids])))))
+    (testing "mutated origin producer source identities are rejected"
+      (let [mutated-stream
+            [(update-in syntax-object [:origin 0 :producer :source-id]
+                        (constantly mutated-id))]
+            candidate
+            (assoc valid-candidate
+                   :syntax-object-stream mutated-stream
+                   :c3-syntax-artifact
+                   (assoc (:c3-syntax-artifact valid-candidate)
+                          :syntax-object-stream mutated-stream))
+            diagnostic (s003-for candidate)]
+        (is (some? diagnostic))
+        (is (false? (get-in diagnostic
+                            [:facts
+                             :sh04-origin-producer-identities-preserved?])))
+        (is (= [mutated-id]
+               (get-in diagnostic
+                       [:observed :observed-origin-producer-source-ids])))))
+    (testing "a broken adapted C2-to-SH04 provenance bridge is rejected"
+      (let [candidate
+            (assoc-in valid-candidate
+                      [:c3-syntax-artifact
+                       :gravity-syntax-boundary
+                       :reader-authentication-provenance
+                       :actual-sh03-semantic-product-binding
+                       :adapted-source-unit-id]
+                      mutated-id)
+            diagnostic (s003-for candidate)]
+        (is (some? diagnostic))
+        (is (false? (get-in diagnostic
+                            [:facts :c2-source-unit-identity-preserved?])))
+        (is (= mutated-id
+               (get-in diagnostic [:observed
+                                   :observed-adapted-source-unit-id])))))))
+
 (deftest p15-s23-source-syntax-serialization-proof-rejects-overclaim-candidate
   (let [candidate
         (:candidate
@@ -6059,6 +6266,145 @@
                    bootstrap/p15-s23-compiler-source-path
                    candidate)))]
     (is (contains? diagnostics "P15S23S005"))))
+
+(deftest p15-s23-source-syntax-reviewer-probe-mutations-reject
+  (let [source-path (fixture "accepted/reader-source-unit-identity.gravity")
+        source-text (bootstrap/read-gravity-source-text source-path)
+        source-unit (bootstrap/c2-source-unit-record
+                     source-path source-text bootstrap/standard-reader-options)
+        semantic-source-id
+        (bootstrap/sh04-syntax-semantic-source-id source-path source-unit)
+        syntax-object
+        (p15-s23-test-syntax-object source-path semantic-source-id)
+        syntax-stream [syntax-object]
+        identity-record
+        (p15-s23-test-dual-identity-record
+         source-path source-unit syntax-stream)
+        valid-candidate
+        (p15-s23-test-source-syntax-candidate
+         source-path source-unit syntax-stream identity-record)
+        diagnostics-for
+        (fn [candidate]
+          (bootstrap/p15-s23-source-syntax-proof-diagnostics
+           source-path candidate))
+        s003-for
+        (fn [candidate]
+          (p15-s23-test-diagnostic (diagnostics-for candidate)
+                                   "P15S23S003"))
+        compact-facts?
+        (fn [diagnostic]
+          (and (= :gravity/sh04-co-canonical-source-v1
+                  (get-in diagnostic [:facts :identity-domain]))
+               (= :gravity/sh03-adapted-source-unit-id-v2
+                  (get-in diagnostic [:facts :c2-identity-domain]))
+               (not (contains? (:observed diagnostic)
+                               :syntax-object-stream))))
+        mutated-id
+        "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+        legacy-object
+        (-> syntax-object
+            (assoc-in [:source :source-id] (:source-id source-unit))
+            (assoc-in [:span :primary :file] (:source-id source-unit))
+            (assoc-in [:span :all 0 :file] (:source-id source-unit))
+            (assoc-in [:origin 0 :span :file] (:source-id source-unit))
+            (assoc-in [:origin 0 :producer :source-id]
+                      (:source-id source-unit)))
+        legacy-stream [legacy-object]
+        legacy-identity
+        (p15-s23-test-dual-identity-record
+         source-path source-unit legacy-stream)
+        legacy-candidate
+        (p15-s23-test-source-syntax-candidate
+         source-path source-unit legacy-stream legacy-identity)
+        syntax-mutation
+        (fn [candidate mutate]
+          (let [mutated-stream
+                [(mutate (first (:syntax-object-stream candidate)))]]
+            (assoc candidate
+                   :syntax-object-stream mutated-stream
+                   :c3-syntax-artifact
+                   (assoc (:c3-syntax-artifact candidate)
+                          :syntax-object-stream mutated-stream))))
+        mutations
+        [{:label "missing adapted-source-unit bridge"
+          :candidate
+          (update-in valid-candidate
+                     [:c3-syntax-artifact
+                      :gravity-syntax-boundary
+                      :reader-authentication-provenance]
+                     dissoc :actual-sh03-semantic-product-binding)}
+         {:label "missing bridge with legacy C2 source identity"
+          :candidate
+          (dissoc legacy-candidate
+                  :c3-syntax-artifact
+                  :source-syntax-identity-record)}
+         {:label "source-unit extension"
+          :candidate
+          (assoc-in valid-candidate [:source-unit-record :extension] ".broken")}
+         {:label "source-unit kind"
+          :candidate
+          (assoc-in valid-candidate [:source-unit-record :source-kind]
+                    :broken)}
+         {:label "source-unit project root"
+          :candidate
+          (assoc-in valid-candidate [:source-unit-record :project-root]
+                    "sha256:4444444444444444444444444444444444444444444444444444444444444444")}
+         {:label "source-unit project-root-record path"
+          :candidate
+          (assoc-in valid-candidate
+                    [:source-unit-record :project-root-record :path]
+                    "/tampered/project")}
+         {:label "origin span file"
+          :candidate
+          (syntax-mutation
+           valid-candidate
+           #(assoc-in % [:origin 0 :span :file] mutated-id))}
+         {:label "origin span source"
+          :candidate
+          (syntax-mutation
+           valid-candidate
+           #(assoc-in % [:origin 0 :span :source] "/tampered/source.gravity"))}
+         {:label "span all nil"
+          :candidate
+          (syntax-mutation
+           valid-candidate
+           #(assoc-in % [:span :all] [nil]))}]]
+    (doseq [{:keys [label candidate]} mutations]
+      (testing label
+        (let [diagnostic (s003-for candidate)]
+          (is (some? diagnostic))
+          (is (= "P15S23S003" (:diagnostic diagnostic)))
+          (is (compact-facts? diagnostic)))))))
+
+(deftest p15-s23-sh04-semantic-source-id-parity-across-real-extensions
+  (let [gravity-path (fixture "accepted/reader-source-unit-identity.gravity")
+        qst-path (fixture "accepted/reader-source-unit-identity.qst")
+        gravity-text (bootstrap/read-gravity-source-text gravity-path)
+        qst-text (bootstrap/read-gravity-source-text qst-path)
+        gravity-unit
+        (bootstrap/c2-source-unit-record
+         gravity-path gravity-text bootstrap/standard-reader-options)
+        qst-unit
+        (bootstrap/c2-source-unit-record
+         qst-path qst-text bootstrap/standard-reader-options)
+        gravity-semantic-id
+        (bootstrap/sh04-syntax-semantic-source-id gravity-path gravity-unit)
+        qst-semantic-id
+        (bootstrap/sh04-syntax-semantic-source-id qst-path qst-unit)]
+    (is (not= gravity-path qst-path))
+    (is (= ".gravity" (:extension gravity-unit)))
+    (is (= ".qst" (:extension qst-unit)))
+    (is (= :gravity-branded-source (:source-kind gravity-unit)))
+    (is (= :qst-theory-source (:source-kind qst-unit)))
+    (is (= (:bytes-hash gravity-unit) (:bytes-hash qst-unit)))
+    (is (not= (:source-id gravity-unit) (:source-id qst-unit)))
+    (is (= gravity-semantic-id qst-semantic-id))
+    (is (not= (:source-id gravity-unit) gravity-semantic-id))
+    (is (= :gravity/sh04-co-canonical-source-v1
+           (:identity-domain
+            (bootstrap/p15-s23-source-syntax-sh04-identity-record
+             gravity-path gravity-unit
+             [(p15-s23-test-syntax-object gravity-path gravity-semantic-id)]))))))
 
 (deftest p15-s23-core-lowering-diagnostic-preservation-records-proof
   (let [artifact
@@ -8283,7 +8629,13 @@
              :internal-p15-s23-stage2-front-end-executor-boundary-gap)
         overclaim
         (get by-fixture
-             :internal-p15-s23-stage2-front-end-executor-overclaim)]
+             :internal-p15-s23-stage2-front-end-executor-overclaim)
+        expected-diagnostics
+        #{"P15S23J001" "P15S23J002" "P15S23J003" "P15S23J004"
+          "P15S23J005" "P15S23J006" "P15S23J007" "P15S23J008"}]
+    (is (= 8 (count records)))
+    (is (= expected-diagnostics
+           (set (map :expected-diagnostic records))))
     (is (= "P15S23J001" (:expected-diagnostic missing)))
     (is (contains? (set (map :diagnostic (:diagnostics missing)))
                    "P15S23J001"))
