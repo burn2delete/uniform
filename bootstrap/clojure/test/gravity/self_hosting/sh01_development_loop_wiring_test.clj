@@ -204,6 +204,28 @@
                  repository-root
                  "link.txt"))))))))
 
+(deftest repository-executable-mode-affects-identity
+  (with-coordination-root [base]
+    (let [repository-root (.resolve base "repository")
+          source (.resolve repository-root "tool.clj")
+          update-file
+          (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                      'update-file!)
+          identity
+          (fn []
+            (let [digest (java.security.MessageDigest/getInstance "SHA-256")]
+              (update-file digest repository-root "tool.clj")
+              (vec (.digest digest))))]
+      (Files/createDirectories repository-root no-file-attributes)
+      (Files/write source (.getBytes "(println :tool)" "UTF-8")
+                   (make-array java.nio.file.OpenOption 0))
+      (Files/setPosixFilePermissions
+       source (PosixFilePermissions/fromString "rw-------"))
+      (let [non-executable-identity (identity)]
+        (Files/setPosixFilePermissions
+         source (PosixFilePermissions/fromString "rwx------"))
+        (is (not= non-executable-identity (identity)))))))
+
 (deftest parent-hit-is-removed-before-broker-or-child-launch
   (with-coordination-root [base]
     (let [plan (impact-plan 'gravity.self-hosting.sh07-wiring-hit-test)

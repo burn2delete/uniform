@@ -214,7 +214,9 @@
     (update-framed-text! message-digest relative)
     (if-not (Files/exists path no-links)
       (update-framed-text! message-digest :absent)
-      (let [before (Files/readAttributes path BasicFileAttributes no-links)]
+      (let [before (Files/readAttributes path BasicFileAttributes no-links)
+            before-executable? (and (.isRegularFile before)
+                                    (Files/isExecutable path))]
         (cond
           (.isSymbolicLink before)
           (fail! "SH01-DEVELOPMENT-LOOP-SYMLINK"
@@ -225,7 +227,7 @@
           (do
             (update-framed-text! message-digest :regular-file)
             (update-framed-text! message-digest
-                                 (if (Files/isExecutable path) :executable
+                                 (if before-executable? :executable
                                      :non-executable))
             (update-framed-text! message-digest (.size before))
             (with-open [input (Files/newInputStream path
@@ -243,8 +245,11 @@
           (fail! "SH01-DEVELOPMENT-LOOP-PATH"
                  "Repository snapshot contains an unsupported path kind"
                  {:path relative}))
-        (let [after (Files/readAttributes path BasicFileAttributes no-links)]
-          (when-not (same-file-snapshot? before after)
+        (let [after (Files/readAttributes path BasicFileAttributes no-links)
+              after-executable? (and (.isRegularFile after)
+                                     (Files/isExecutable path))]
+          (when-not (and (same-file-snapshot? before after)
+                         (= before-executable? after-executable?))
             (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
                    "Repository input changed while its cache identity was read"
                    {:path relative})))))))
