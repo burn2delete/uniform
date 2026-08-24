@@ -1,0 +1,64 @@
+(ns gravity.self-hosting.sh11.division-bounds.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh11-unproved-division-operation
+             sh11-unproved-bounds-operation
+             sh11-unsafe-division-operation
+             sh11-invalid-bounds-check-operation])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh11-invalid-operation
+  [operation-id kind source operands numeric-mode safety-mode
+   invalidation-conditions]
+  {:artifact :gravity/sh11-authenticated-division-bounds-operation
+   :schema-version 1
+   :operation-id operation-id
+   :kind kind
+   :core-node-id (get source :core-node-id)
+   :source-span (get source :source-span)
+   :origin-chain (get source :origin-chain)
+   :profile (get source :profile)
+   :target (get source :target)
+   :type-fact-id (get source :type-fact-id)
+   :effect-fact-id (get source :effect-fact-id)
+   :capability-proof-id (get source :capability-proof-id)
+   :ownership-fact-id (get source :ownership-fact-id)
+   :operands operands
+   :numeric-mode numeric-mode
+   :safety-mode safety-mode
+   :failure-behavior
+   (if (= numeric-mode :checked) :error/numeric nil)
+   :effects-introduced
+   (if (= numeric-mode :checked) #{:error/raise} nil)
+   :performance-class
+   (if (= numeric-mode :checked) :constant-time-branch nil)
+   :invalidation-conditions invalidation-conditions
+   :target-support-id
+   (if (= numeric-mode :checked)
+     "sha256:8888888888888888888888888888888888888888888888888888888888888888"
+     nil)
+   :provider-id
+   (if (= numeric-mode :checked)
+     "sha256:9999999999999999999999999999999999999999999999999999999999999999"
+     nil)
+   :support-evidence
+   (if (= numeric-mode :checked) #{:target-conformance} nil)})
+
+(defn sh11-unproved-division-operation [source operands]
+  (sh11-invalid-operation
+   :unproved-division :division source operands :proof-required :safe nil))
+
+(defn sh11-unproved-bounds-operation [source operands]
+  (sh11-invalid-operation
+   :unproved-bounds :index source operands :proof-required :safe nil))
+
+(defn sh11-unsafe-division-operation [source operands]
+  (sh11-invalid-operation
+   :unsafe-division :division source operands :unsafe-unchecked :systems nil))
+
+(defn sh11-invalid-bounds-check-operation [source operands]
+  (sh11-invalid-operation
+   :invalid-bounds-check :index source operands :checked :safe
+   [:operand-value-change :ownership-fact-change]))

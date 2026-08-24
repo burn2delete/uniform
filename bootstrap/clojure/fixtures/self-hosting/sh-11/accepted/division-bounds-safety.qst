@@ -1,0 +1,57 @@
+(ns gravity.self-hosting.sh11.division-bounds.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh11-authenticated-division-operation
+             sh11-authenticated-bounds-operation])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh11-authenticated-runtime-operation
+  [operation-id kind source operands invalidation-conditions]
+  {:artifact :gravity/sh11-authenticated-division-bounds-operation
+   :schema-version 1
+   :operation-id operation-id
+   :kind kind
+   :core-node-id (get source :core-node-id)
+   :source-span (get source :source-span)
+   :origin-chain (get source :origin-chain)
+   :profile (get source :profile)
+   :target (get source :target)
+   :type-fact-id (get source :type-fact-id)
+   :effect-fact-id (get source :effect-fact-id)
+   :capability-proof-id (get source :capability-proof-id)
+   :ownership-fact-id (get source :ownership-fact-id)
+   :operands operands
+   :numeric-mode (if (= kind :index) :panic :checked)
+   :safety-mode :safe
+   :failure-behavior
+   (if (= kind :index) :panic/bounds :error/numeric)
+   :effects-introduced
+   (if (= kind :index) #{:panic} #{:error/raise})
+   :performance-class :constant-time-branch
+   :invalidation-conditions invalidation-conditions
+   :target-support-id
+   "sha256:8888888888888888888888888888888888888888888888888888888888888888"
+   :provider-id
+   "sha256:9999999999999999999999999999999999999999999999999999999999999999"
+   :support-evidence #{:failure-path-test :target-conformance}})
+
+(defn sh11-authenticated-division-operation [source operands]
+  (sh11-authenticated-runtime-operation
+   :authenticated-division
+   :division
+   source
+   operands
+   [:operand-value-change :ownership-fact-change
+    :numeric-mode-change :profile-change :target-change]))
+
+(defn sh11-authenticated-bounds-operation [source operands]
+  (sh11-authenticated-runtime-operation
+   :authenticated-bounds
+   :index
+   source
+   operands
+   [:operand-value-change :collection-length-change
+    :ownership-fact-change :numeric-mode-change
+    :profile-change :target-change]))
