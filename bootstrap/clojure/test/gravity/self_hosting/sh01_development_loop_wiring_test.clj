@@ -241,6 +241,29 @@
          source (PosixFilePermissions/fromString "rwx------"))
         (is (not= non-executable-identity (identity)))))))
 
+(deftest prepared-context-revalidates-external-inputs
+  (with-coordination-root [base]
+    (let [command-file (.resolve base "external-command")]
+      (Files/write command-file (.getBytes "command-v1" "UTF-8")
+                   (make-array java.nio.file.OpenOption 0))
+      (Files/setPosixFilePermissions
+       command-file (PosixFilePermissions/fromString "rwx------"))
+      (let [selected-context
+            (wiring/prepare-context
+             "."
+             {:cache-directory (str (.resolve base "cache"))
+              :broker-root (str (.resolve base "broker"))
+              :command [(str command-file)]})
+            verify-snapshot
+            (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                        'verify-snapshot!)]
+        (is (nil? (verify-snapshot selected-context)))
+        (Files/write command-file (.getBytes "command-v2" "UTF-8")
+                     (make-array java.nio.file.OpenOption 0))
+        (let [failure (exception-data #(verify-snapshot selected-context))]
+          (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE" (:id failure)))
+          (is (= :runtime-tool (:input-kind failure))))))))
+
 (deftest parent-hit-is-removed-before-broker-or-child-launch
   (with-coordination-root [base]
     (let [plan (impact-plan 'gravity.self-hosting.sh07-wiring-hit-test)

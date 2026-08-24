@@ -419,7 +419,8 @@
            (configured-path! configured :broker-root)
            (.resolve shared-root "broker")))
         timeout-ms (long (or (:timeout-ms options) default-timeout-ms))
-        snapshot (repository-snapshot working-directory)]
+        snapshot (repository-snapshot working-directory)
+        identity-options (select-keys options [:command :clojure-command])]
     (when-not (pos? timeout-ms)
       (fail! "SH01-DEVELOPMENT-LOOP-TIMEOUT"
              "Development-loop child timeout must be positive"
@@ -431,11 +432,13 @@
      :timeout-ms timeout-ms
      :snapshot snapshot
      :revalidate-snapshot? true
+     :revalidate-external-inputs? true
+     :identity-options identity-options
      :classpath-inputs
      (classpath-identities working-directory
                            (:repository-identity snapshot))
      :runtime-tool-inputs
-     (base-runtime-identities working-directory options)
+     (base-runtime-identities working-directory identity-options)
      :launch-count (atom 0)
      :cache-receipts (atom [])}))
 
@@ -575,11 +578,30 @@
 (defn- verify-snapshot!
   [context]
   (when (:revalidate-snapshot? context)
-    (when-not (= (:snapshot context)
-                 (repository-snapshot (:working-directory context)))
-      (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
-             "Repository inputs changed after parent cache-key computation"
-             {})))
+    (let [working-directory (:working-directory context)
+          current-snapshot (repository-snapshot working-directory)]
+      (when-not (= (:snapshot context) current-snapshot)
+        (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+               "Repository inputs changed after parent cache-key computation"
+               {:input-kind :repository}))
+      (when (:revalidate-external-inputs? context)
+        (let [repository-root
+              (.normalize (.toAbsolutePath
+                           (.toPath (io/file working-directory))))
+              current-classpath
+              (classpath-identities
+               repository-root (:repository-identity current-snapshot))
+              current-runtime
+              (base-runtime-identities repository-root
+                                       (:identity-options context))]
+          (when-not (= (:classpath-inputs context) current-classpath)
+            (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                   "External classpath inputs changed after cache-key computation"
+                   {:input-kind :classpath}))
+          (when-not (= (:runtime-tool-inputs context) current-runtime)
+            (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                   "Runtime or command inputs changed after cache-key computation"
+                   {:input-kind :runtime-tool}))))))
   nil)
 
 (defn probe
