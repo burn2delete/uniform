@@ -274,6 +274,46 @@
       "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
       "history": [{"state": "draft", "at": "2026-08-21T00:00:00Z", "actor": "verification-optimization", "reason": "prepare native specialization evidence"}, {"state": "frozen", "at": "2026-08-21T01:00:00Z", "actor": "verification-optimization", "reason": "freeze current candidate"}, {"state": "review-pending", "at": "2026-08-21T02:00:00Z", "actor": "verification-optimization", "reason": "await platform and runtime evidence"}],
       "disposition": "Pending and unaccepted until required platform and runtime evidence exists."
+    },
+    {
+      "id": "python-retirement-reconciliation-v1",
+      "title": "Python retirement ownership reconciliation version 1",
+      "invariant_family": "tooling/python-retirement-boundary",
+      "owner": "uniform-coordinator",
+      "author": "uniform-coordinator",
+      "state": "integration-eligible",
+      "dependencies": [],
+      "architecture_decision": "",
+      "base_commit": "00bf598893f5e27ac94d995bc1081671599a1b9f",
+      "candidate_commit": "904efa50469ee0a94dafc1be1a9b0e6462c1ddea",
+      "clean_worktree": true,
+      "owned_paths": ["docs/self-hosting-slice-ownership.edn"],
+      "governing_contracts": ["AGENTS.md", "contracts/language-boundary.edn", "docs/tooling-language-migration.md", "docs/workstream-governance.md"],
+      "evidence": {
+        "accepted_fixtures": ["contracts/language-boundary.edn", "docs/self-hosting-slice-ownership.edn"],
+        "rejected_fixtures": ["bootstrap/clojure/test/gravity/self_hosting/sh01_language_boundary_test.clj"],
+        "stable_diagnostics": ["LANGUAGE-BOUNDARY-NON-LISP-INTRODUCED", "LANGUAGE-BOUNDARY-NON-LISP-SHEBANG-INTRODUCED", "LANGUAGE-BOUNDARY-FROZEN-DEBT-MODIFIED", "LANGUAGE-BOUNDARY-CONTRACT-KEYS"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-tooling-language-migration-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-ownership-test --exact gravity.self-hosting.sh01-ownership-test/coordinator-reservations-and-leaf-conventions-are-explicit", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 00bf598893f5e27ac94d995bc1081671599a1b9f --candidate-commit 904efa50469ee0a94dafc1be1a9b0e6462c1ddea --candidate-tree 9060d47ce6f0f431912c5c6383aa6b91d7d50189", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "retirement_candidate_review", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": ["Clojure and the JVM remain the temporary seed and tooling boundary", "Java, shell, and C remain frozen reviewed host boundaries"],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-24T00:50:00Z", "actor": "uniform-coordinator", "reason": "start the bounded stale ownership metadata reconciliation on current main"},
+        {"state": "frozen", "at": "2026-08-24T00:51:00Z", "actor": "uniform-coordinator", "reason": "freeze the exact one-file candidate and Git identities"},
+        {"state": "review-pending", "at": "2026-08-24T00:52:00Z", "actor": "uniform-coordinator", "reason": "request independent review of the exact candidate"},
+        {"state": "accepted", "at": "2026-08-24T00:54:00Z", "actor": "retirement_candidate_review", "reason": "accept the exact candidate with focused positive and negative evidence"},
+        {"state": "integration-eligible", "at": "2026-08-24T00:55:00Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, evidence, review, boundaries, and nonclaims verified"}
+      ],
+      "disposition": "Integration-eligible metadata reconciliation only; historical Python retirement is an already-present Git no-remerge fact."
     }
   ]
 }
