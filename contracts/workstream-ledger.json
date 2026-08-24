@@ -480,6 +480,67 @@
         {"state": "integrated", "at": "2026-08-24T04:34:45Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact append-only erratum and its eligibility record onto main"}
       ],
       "disposition": "Integrated the append-only evidence erratum only; no retroactive eligibility or roadmap credit."
+    },
+    {
+      "id": "sh07-core-mutation-execution-v1",
+      "title": "SH-07 bounded core set-mutation execution version 1",
+      "invariant_family": "self-hosting/sh07-core-mutation-execution",
+      "owner": "sh07-core",
+      "author": "sh07-core",
+      "state": "integration-eligible",
+      "dependencies": [],
+      "architecture_decision": "",
+      "base_commit": "e88dd8108f4bfe1c0e9a971e4c6b25bbe5a31f05",
+      "candidate_commit": "6c950d962cdeb6d117d3fba71b990c94fdb343a2",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b49-set-mutation-execution/accepted/set-mutation-execution.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b49-set-mutation-execution/accepted/set-mutation-execution.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b49-set-mutation-execution/rejected/set-mutation-execution.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b49-set-mutation-execution/rejected/set-mutation-execution.qst",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_core_lowering_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_l2_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_set_mutation_execution_test.clj",
+        "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity",
+        "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "L2", "C6", "BOOT7", "BOOT8", "TEST13", "docs/self-hosting-slice-backlog.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-07/b49-set-mutation-execution/accepted/set-mutation-execution.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-07/b49-set-mutation-execution/accepted/set-mutation-execution.qst"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-07/b49-set-mutation-execution/rejected/set-mutation-execution.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-07/b49-set-mutation-execution/rejected/set-mutation-execution.qst"
+        ],
+        "stable_diagnostics": ["SH07-C6-SET-MUTATION-EXECUTION", "SH07-L2-SET-MUTATION-EXECUTION", "C6-VERIFY", "C6-ORIGIN", "L2-LOWERING-GAP"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh07-set-mutation-execution-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh07-core-lowering-source-coverage-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh07-l2-source-coverage-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check main..HEAD", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base e88dd8108f4bfe1c0e9a971e4c6b25bbe5a31f05 --candidate-commit 6c950d962cdeb6d117d3fba71b990c94fdb343a2 --candidate-tree bf83f6de3e7d099621b5bd41b84dfed7b61f4f92", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "sh07_final_review", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary seed and verifier boundary",
+        "the C6 carrier authenticates request consistency only, not the C6 issuer or B47 lineage and not coordinated request-and-carrier forgery",
+        "generated and macro-origin execution and mutation kinds beyond the bounded set-mutation slice remain out of scope",
+        "SH-07 completion, roadmap credit, production completion, self-hosting, release, and Clojure retirement are not claimed"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-24T06:31:55Z", "actor": "sh07-core", "reason": "compose the bounded SH-07 set-mutation execution slice"},
+        {"state": "frozen", "at": "2026-08-24T06:31:56Z", "actor": "sh07-core", "reason": "freeze the exact nine-path candidate, tree, fixtures, and provenance tuple"},
+        {"state": "review-pending", "at": "2026-08-24T06:31:57Z", "actor": "uniform-coordinator", "reason": "request independent semantic and governance review of the exact tuple"},
+        {"state": "accepted", "at": "2026-08-24T06:31:58Z", "actor": "sh07_final_review", "reason": "accept the exact candidate after fail-closed mutation, provenance, fixture, and identity review"},
+        {"state": "integration-eligible", "at": "2026-08-24T06:31:59Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, final focused gates, independent acceptance, residual boundaries, and nonclaims verified"}
+      ],
+      "disposition": "Integration-eligible bounded SH-07 set-mutation execution only; no roadmap credit."
     }
   ]
 }
