@@ -25,7 +25,7 @@
 (def ^:const summary-schema
   :gravity/bootstrap-free-leaf-test-summary-v1)
 
-(def ^:const expected-catalog-count 47)
+(def ^:const expected-catalog-count 48)
 
 (def excluded-top-level-test-files
   "The top-level tests that intentionally remain outside the leaf runner."
@@ -80,6 +80,7 @@
    "c9_ownership_checker"
    "capability_validation"
    "compiler_verification_shared"
+   "compiler_pass_manifest"
    "core_ast_lowering"
    "darwin_publication"
    "digest"

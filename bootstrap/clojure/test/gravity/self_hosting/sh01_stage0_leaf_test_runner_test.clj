@@ -115,9 +115,9 @@
                      runner/catalog)]
     (is (= "gravity/stage0-clojure-components-v1"
            (get contract "schema")))
-    (is (= 47 (count expected)))
+    (is (= 48 (count expected)))
     (is (= expected actual))
-    (is (= {:foundation-reader 9 :c2-c3 12 :compiler 26}
+    (is (= {:foundation-reader 9 :c2-c3 12 :compiler 27}
            (frequencies (map :group expected))))))
 
 (deftest component-contract-json-is-strict

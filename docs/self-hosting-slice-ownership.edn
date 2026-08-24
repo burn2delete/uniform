@@ -128,6 +128,7 @@
   "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity" :sh-standard-library
 
   "bootstrap/clojure/src/gravity/bootstrap.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/c10_safety_analysis.clj" :sh-safety
   "bootstrap/clojure/src/gravity/c11_mir.clj" :sh-mir
   "bootstrap/clojure/src/gravity/c12_domain_ir.clj" :sh-domain-ir
@@ -203,6 +204,7 @@
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/capability_validation_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/bootstrap_test.clj" :master-coordinator
+  "bootstrap/clojure/test/gravity/compiler_pass_manifest_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/development_test_runner.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/c10_safety_analysis_test.clj" :sh-safety
@@ -293,6 +295,7 @@
   "capability-validation" :sh-capability
   "cli" :master-coordinator
   "compiler-verification-shared" :sh-verification
+  "compiler-pass-manifest" :master-coordinator
   "core-ast-lowering" :sh-core
   "darwin-publication" :master-coordinator
   "diagnostics" :master-coordinator

@@ -154,9 +154,9 @@
       (is (= all-direct-stage0-tests
              (set/union actual-stage0-tests support-paths)))
       (is (empty? (set/intersection actual-stage0-tests support-paths)))
-      (is (= 106 (count actual-stage0-paths)))
+      (is (= 108 (count actual-stage0-paths)))
       (is (= actual-stage0-paths declared-stage0-paths))
-      (is (= 172 (count module-owners)))
+      (is (= 174 (count module-owners)))
       (is (every? keyword? (vals module-owners))))
     (testing "coordinator support paths stay reserved outside paired Stage0"
       (is (= #{"bootstrap/clojure/test/gravity/development_test_runner.clj"
@@ -189,10 +189,10 @@
               (get-in record [:coordinator-owned :integration-surfaces])
               :when (str/starts-with? module "bootstrap/gravity/src/")]
         (is (= :master-coordinator (get module-owners module)) module)))
-    (testing "reserved Stage0 ids cover exactly the 53 source components"
+    (testing "reserved Stage0 ids cover exactly the 54 source components"
       (let [reserved (:reserved-leaf-modules record)
             expected-ids (set (map stage0-component-id actual-stage0-sources))]
-        (is (= 53 (count reserved)))
+        (is (= 54 (count reserved)))
         (is (= expected-ids (set (keys reserved))))
         (doseq [source actual-stage0-sources
                 :let [id (stage0-component-id source)
@@ -246,7 +246,7 @@
       (is (= owner (get module-owners source-path)) [test-path source-path]))))
 
 (deftest bootstrap-free-stage0-catalog-is-exact-when-runner-is-available
-  (testing "the optional bootstrap-free runner owns exactly the 47 leaf tests"
+  (testing "the optional bootstrap-free runner owns exactly the 48 leaf tests"
     (if-not (io/resource "gravity/bootstrap_free_leaf_test_runner.clj")
       (is true "bootstrap-free runner is not present in this checkout")
       (do
@@ -261,7 +261,7 @@
                stage0-tests
                (set (:bootstrap-compatibility-tests record))
                #{"bootstrap/clojure/test/gravity/bootstrap_test.clj"})]
-          (is (= 47 (count catalog)))
+          (is (= 48 (count catalog)))
           (is (= expected (set (map :test-path catalog))))
           (is (true? (validate!)))
           (is (every? symbol? (map :namespace catalog)))
