@@ -218,6 +218,15 @@ Do not run it alongside unrelated same-JVM execution. It grants no fresh/no-
 cache, performance, allocation-bound, cost-ranking, integration, release,
 self-hosting, or seed-retirement authority.
 
+The profiler also exposes an opt-in targeted-cost view for the two currently
+authenticated clusters: `:authenticated-envelope-digest-cluster` and
+`:syntax-c3-lowercase-hex?`. Selection is predeclared and bounded (sample
+stride at most 4096); primitive counters count every selected call while host
+elapsed/allocation values are sampled only around selected spans. Targeted
+rows remain inclusive and non-exclusive. A ranking is withheld unless both
+clusters have nonzero deterministic counts and no sampled-cost saturation;
+unsupported targets and unbounded strides are rejected.
+
 `clojure -M:incremental-check` enables the thin development-loop wiring. In
 the parent, before any child JVM can launch, it computes one conservative
 SHA-256 identity over every tracked and non-ignored untracked repository path.

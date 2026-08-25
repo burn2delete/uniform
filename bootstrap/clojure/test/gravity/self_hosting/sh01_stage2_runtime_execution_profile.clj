@@ -21,6 +21,9 @@
 (def ^:private instruction-op-count (count instruction-ops))
 (def ^:private other-function-slot (dec maximum-function-rows))
 (def ^:private maximum-function-depth 128)
+(def ^:private targeted-cost-targets
+  #{:authenticated-envelope-digest-cluster :syntax-c3-lowercase-hex?})
+(def ^:private maximum-target-sample-stride 4096)
 
 ;; `with-redefs` changes root Vars. Only this explicit profiler uses this lock.
 (def ^:private profile-lock (Object.))
@@ -88,14 +91,27 @@
       (let [next (inc current)]
         (if (.compareAndSet value current next) next (recur (.get value)))))))
 
-(defn- new-state []
-  (let [ids (object-array source-count) labels (object-array source-count)]
+(defn- new-state
+  ([] (new-state {}))
+  ([{:keys [targeted-cost]}]
+   (let [targets (vec (or (:targets targeted-cost) []))
+         stride (long (or (:sample-stride targeted-cost) 1))]
+     (when (some (complement targeted-cost-targets) targets)
+       (throw (ex-info "Stage2 targeted profile target is unsupported"
+                       {:id "SH01-STAGE2-TARGETED-PROFILE-TARGET"
+                        :targets targets})))
+     (when (or (empty? targets) (> stride maximum-target-sample-stride) (not (pos? stride)))
+       (when targeted-cost
+         (throw (ex-info "Stage2 targeted profile sample stride is out of bounds"
+                         {:id "SH01-STAGE2-TARGETED-PROFILE-STRIDE"
+                          :sample-stride stride :maximum maximum-target-sample-stride}))))
+     (let [ids (object-array source-count) labels (object-array source-count)]
     (dotimes [source source-count]
       (let [m (java.util.HashMap.) row-labels (object-array maximum-function-rows)]
         (.put m "<entrypoint>" 0) (aset row-labels 0 "<entrypoint>")
         (aset row-labels other-function-slot "<other-functions>")
         (aset ids source m) (aset labels source row-labels)))
-    {:plan-sources (java.util.IdentityHashMap.) :plan-source-registry (java.util.HashMap.)
+       {:plan-sources (java.util.IdentityHashMap.) :plan-source-registry (java.util.HashMap.)
      :source-identities (object-array source-count) :function-ids ids :function-labels labels
      :next-function-index (int-array source-count 1)
      :function-calls (long-array (* scope-count source-count maximum-function-rows))
@@ -108,7 +124,10 @@
      :sample-overflow (java.util.concurrent.atomic.AtomicBoolean. false)
      :scope (int-array 1) :owner-thread (Thread/currentThread)
      :thread-context (proxy [ThreadLocal] [] (initialValue [] (ExecutionContext. (long-array 256) (volatile! 0))))
-     :off-owner-events (java.util.concurrent.atomic.AtomicLong. 0)}))
+     :off-owner-events (java.util.concurrent.atomic.AtomicLong. 0)
+     :targeted-cost-targets (when targeted-cost targets) :targeted-cost-stride stride
+     :targeted-calls (long-array 2) :targeted-sample-count (long-array 2)
+        :targeted-elapsed-ns (long-array 2) :targeted-allocated-bytes (long-array 2)}))))
 
 (defn- register-plan! [state plan path]
   (let [source (source-id (path-source path))]
@@ -142,19 +161,41 @@
     (when (pos? depth) (let [offset (* 2 (dec depth)) frames (.-frames context)]
                          [(aget ^longs frames offset) (aget ^longs frames (inc offset))]))))
 
+(defn- targeted-target-index [targets source label]
+  (cond
+    (and (= source (source-id :authenticated-envelope))
+         (some #{:authenticated-envelope-digest-cluster} targets)
+         (str/includes? (str/lower-case label) "digest")) 0
+    (and (= source (source-id :syntax))
+         (= label "c3-lowercase-hex?")
+         (some #{:syntax-c3-lowercase-hex?} targets)) 1
+    :else -1))
+
+(defn- record-target-call! [state target-index]
+  (when (>= target-index 0)
+    (saturated-increment! state (:targeted-calls state) target-index)))
+
 (defn- run-function [state runtime plan callee operation]
   (if-not (owner? state)
     (do (saturated-atomic-increment! state (:off-owner-events state)) (operation))
     (let [scope (aget ^ints (:scope state) 0) source (int (runtime-source state runtime plan))
           function (function-index! state source callee) offset (function-offset scope source function)
           ^longs calls (:function-calls state) call-count (saturated-increment! state calls offset)
-          sampled? (zero? (bit-and call-count function-sample-mask))
-          before (when sampled? (thread-allocated-bytes)) started (when sampled? (System/nanoTime))
+          label (str callee)
+          target-index (targeted-target-index (:targeted-cost-targets state) source label)
+          target-call-count (when (>= target-index 0)
+                              (record-target-call! state target-index))
+          target-sampled? (and (>= target-index 0)
+                               (zero? (mod target-call-count (:targeted-cost-stride state))))
+          sampled? (and (nil? (:targeted-cost-targets state))
+                        (zero? (bit-and call-count function-sample-mask)))
+          measured? (or sampled? target-sampled?)
+          before (when measured? (thread-allocated-bytes))
+          started (when measured? (System/nanoTime))
           ^ExecutionContext context (.get ^ThreadLocal (:thread-context state)) depth @(.-depth context) frames (.-frames context)]
       (record-source! state source runtime plan)
       (when (pos? depth)
-        (let [caller-offset (* 2 (dec depth))
-              caller-source (aget ^longs frames caller-offset)
+        (let [caller-offset (* 2 (dec depth)) caller-source (aget ^longs frames caller-offset)
               caller-function (aget ^longs frames (inc caller-offset))
               edge (edge-offset scope caller-source caller-function source function)]
           (saturated-increment! state (:call-edges state) edge)))
@@ -163,19 +204,22 @@
                         {:id "SH01-STAGE2-RUNTIME-PROFILE-DEPTH"
                          :maximum-function-depth maximum-function-depth
                          :observed-function-depth (inc depth)})))
-      (aset-long ^longs frames (* 2 depth) source) (aset-long ^longs frames (inc (* 2 depth)) function) (vreset! (.-depth context) (inc depth))
-      (try
-        (operation)
-        (finally
-          (vreset! (.-depth context) depth)
-          (when sampled?
-            (saturated-sample-increment! state (:sample-count state) offset)
-            (saturated-add! state (:sample-elapsed-ns state) offset
-                            (- (System/nanoTime) started))
-            (when-let [after (thread-allocated-bytes)]
-              (when (some? before)
-                (saturated-add! state (:sample-allocated-bytes state) offset
-                                (- after before))))))))))
+      (aset-long ^longs frames (* 2 depth) source)
+      (aset-long ^longs frames (inc (* 2 depth)) function)
+      (vreset! (.-depth context) (inc depth))
+      (try (operation)
+           (finally
+             (vreset! (.-depth context) depth)
+             (when sampled?
+               (saturated-sample-increment! state (:sample-count state) offset)
+               (saturated-add! state (:sample-elapsed-ns state) offset (- (System/nanoTime) started)))
+             (when target-sampled?
+               (saturated-sample-increment! state (:targeted-sample-count state) target-index)
+               (saturated-add! state (:targeted-elapsed-ns state) target-index (- (System/nanoTime) started)))
+             (when (and measured? (some? before))
+               (when-let [after (thread-allocated-bytes)]
+                 (when sampled? (saturated-add! state (:sample-allocated-bytes state) offset (- after before)))
+                 (when target-sampled? (saturated-add! state (:targeted-allocated-bytes state) target-index (- after before))))))))))
 (defn- run-instruction [state runtime plan instruction operation]
   (if-not (owner? state)
     (do (saturated-atomic-increment! state (:off-owner-events state)) (operation))
@@ -205,7 +249,19 @@
              :when (and label (pos? n))]
          {:scope (nth scopes scope) :source (nth sources source) :function label :sample-count n
           :inclusive-elapsed-ns (aget ^longs (:sample-elapsed-ns state) offset)
-          :inclusive-allocated-bytes (aget ^longs (:sample-allocated-bytes state) offset)})))
+         :inclusive-allocated-bytes (aget ^longs (:sample-allocated-bytes state) offset)})))
+(defn- targeted-cost-rows [state]
+  (mapv (fn [index target]
+          {:target target :call-count (aget ^longs (:targeted-calls state) index)
+           :sample-count (aget ^longs (:targeted-sample-count state) index)
+           :inclusive-elapsed-ns (aget ^longs (:targeted-elapsed-ns state) index)
+           :inclusive-allocated-bytes (aget ^longs (:targeted-allocated-bytes state) index)})
+        (range 2) [:authenticated-envelope-digest-cluster :syntax-c3-lowercase-hex?]))
+(defn- targeted-cost-ranking? [state rows]
+  (and (= 2 (count (:targeted-cost-targets state)))
+       (every? #(pos? (:call-count %)) rows)
+       (not (.get ^java.util.concurrent.atomic.AtomicBoolean (:counter-overflow state)))
+       (not (.get ^java.util.concurrent.atomic.AtomicBoolean (:sample-overflow state)))))
 (declare receipt-sum)
 (defn- call-edge-rows [state]
   (let [rows (for [scope (range scope-count) caller-source (range source-count) caller-function (range maximum-function-rows)
@@ -251,9 +307,9 @@
      :instruction-summary (:instruction-summary plan)
      :effect-summary (:effect-summary plan)}))
 
-(defn- run-once [emit-plan execute-plan initialize-state]
+(defn- run-once [emit-plan execute-plan initialize-state targeted-cost]
   (locking profile-lock
-    (let [state (new-state) _ (when initialize-state (initialize-state state)) original-function bootstrap/p15-s23-stage2-runtime-execute-function original-instruction bootstrap/p15-s23-stage2-runtime-execute-instruction original-artifact bootstrap/p15-s23-stage2-runtime-artifact-invoke original-compiler bootstrap/p15-s23-stage2-compiler-artifact-plan started (System/nanoTime)
+    (let [state (new-state {:targeted-cost targeted-cost}) _ (when initialize-state (initialize-state state)) original-function bootstrap/p15-s23-stage2-runtime-execute-function original-instruction bootstrap/p15-s23-stage2-runtime-execute-instruction original-artifact bootstrap/p15-s23-stage2-runtime-artifact-invoke original-compiler bootstrap/p15-s23-stage2-compiler-artifact-plan started (System/nanoTime)
           [plan runtime-record]
           (with-redefs [bootstrap/p15-s23-stage2-compiler-artifact-plan (fn [emitter path text] (let [plan (original-compiler emitter path text)] (register-plan! state plan path) plan))
                         bootstrap/p15-s23-stage2-runtime-execute-function (fn [runtime plan callee args] (run-function state runtime plan callee #(original-function runtime plan callee args)))
@@ -277,6 +333,9 @@
                           :function-order (vec (keys (:functions plan))) :stage0-output (:stdout stage0-record)
                           :stage2-runtime-output (:stdout runtime-record) :stage2-runtime-result (:entrypoint-result runtime-record)}
        :function-rows functions :instruction-rows instructions :call-edge-rows edges :sampled-function-cost-rows (sample-rows state)
+       :targeted-cost-rows (targeted-cost-rows state)
+       :targeted-cost-overflow? (.get ^java.util.concurrent.atomic.AtomicBoolean (:sample-overflow state))
+       :targeted-cost-ranking? (targeted-cost-ranking? state (targeted-cost-rows state))
        :row-sum-coverage {:function (row-sum-coverage state functions (:function-calls state))
                           :instruction (row-sum-coverage state instructions (:instruction-calls state))
                           :call-edge (row-sum-coverage state edges (:call-edges state))}
@@ -289,14 +348,14 @@
 
 (defn run-profile
   ([] (run-profile {}))
-  ([{:keys [iterations emit-plan execute-plan initialize-state] :or {iterations 1 emit-plan emitted-plan execute-plan execute-emitted-plan}}]
+  ([{:keys [iterations emit-plan execute-plan initialize-state targeted-cost] :or {iterations 1 emit-plan emitted-plan execute-plan execute-emitted-plan}}]
    (when-not (= maximum-iterations iterations) (throw (ex-info "Stage2 runtime profile iteration count is out of bounds" {:id "SH01-STAGE2-RUNTIME-PROFILE-COUNT" :iterations iterations :maximum maximum-iterations})))
    {:artifact :gravity/sh01-stage2-runtime-execution-profile :authority :non-authoritative :authoritative? false :purpose :bounded-runtime-allocation-attribution :fresh-plan-emission? true :persistent-cache-authority? false
     :deterministic-accounting [:semantic-receipt :function-rows :instruction-rows :call-edge-rows :row-sum-coverage :source-identities :plan-source-registry :counter-overflow? :off-owner-thread-event-count]
-    :host-variable-observations [:elapsed-ns :sampled-function-cost-rows :sample-overflow? :java-runtime-version :clojure-version]
+    :host-variable-observations [:elapsed-ns :sampled-function-cost-rows :targeted-cost-rows :targeted-cost-ranking? :sample-overflow? :java-runtime-version :clojure-version]
     :bounds {:iterations maximum-iterations :maximum-function-rows maximum-function-rows :maximum-instruction-ops maximum-instruction-ops :maximum-call-edge-rows maximum-call-edge-rows :maximum-plan-identities maximum-plan-identities :function-sample-interval (inc function-sample-mask)}
     :concurrency {:same-jvm :serialized-by-private-lock :global-var-redefinition :explicit-profiler-only :off-owner-thread-events :excluded-from-attribution}
     :nonclaims [:performance-baseline :performance-improvement :allocation-bound :fresh-no-cache-verification :cost-ranking-without-control :integration :release :self-hosting :seed-retirement]
-    :java-runtime-version (System/getProperty "java.runtime.version") :clojure-version (clojure-version) :sample (run-once emit-plan execute-plan initialize-state)}))
+    :java-runtime-version (System/getProperty "java.runtime.version") :clojure-version (clojure-version) :sample (run-once emit-plan execute-plan initialize-state targeted-cost)}))
 (defn parse-arguments [arguments] (if (empty? arguments) {:iterations 1} (throw (ex-info "Stage2 runtime profile takes no arguments" {:id "SH01-STAGE2-RUNTIME-PROFILE-USAGE" :arguments (vec arguments)}))))
 (defn -main [& arguments] (println (pr-str (run-profile (parse-arguments arguments)))))

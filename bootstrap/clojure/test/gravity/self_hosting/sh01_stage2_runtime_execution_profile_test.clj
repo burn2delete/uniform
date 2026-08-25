@@ -130,3 +130,48 @@
     (is (true? (get-in receipt [:sample :sample-overflow?])))
     (is (false? (get-in receipt [:sample :counter-overflow?])))
     (is (true? (get-in receipt [:sample :row-sum-coverage :function :complete?])))))
+
+(deftest targeted-cost-selection-is-bounded-and-explicit
+  (let [receipt (profile/run-profile
+                 {:emit-plan (constantly synthetic-plan)
+                  :execute-plan #(bootstrap/p15-s23-stage2-runtime-execute-plan {:engine :synthetic} %)
+                  :targeted-cost {:targets [:authenticated-envelope-digest-cluster
+                                            :syntax-c3-lowercase-hex?]
+                                  :sample-stride 2}})
+        rows (get-in receipt [:sample :targeted-cost-rows])]
+    (is (= #{:authenticated-envelope-digest-cluster :syntax-c3-lowercase-hex?}
+           (set (map :target rows))))
+    (is (every? #(contains? % :call-count) rows))
+    (is (false? (get-in receipt [:sample :targeted-cost-ranking?])))))
+
+(deftest targeted-cost-rejects-unsupported-target-and-stride
+  (is (= "SH01-STAGE2-TARGETED-PROFILE-TARGET"
+         (:id (diagnostic #(profile/run-profile
+                            {:targeted-cost {:targets [:unsupported]}})))))
+  (is (= "SH01-STAGE2-TARGETED-PROFILE-STRIDE"
+         (:id (diagnostic #(profile/run-profile
+                            {:targeted-cost {:targets [:syntax-c3-lowercase-hex?]
+                                             :sample-stride 4097}}))))))
+
+(deftest targeted-cost-ranking-withheld-on-counter-overflow
+  (let [new-state (deref (var profile/new-state))
+        target-index (deref (var profile/targeted-target-index))
+        record-target-call! (deref (var profile/record-target-call!))
+        targeted-cost-ranking? (deref (var profile/targeted-cost-ranking?))
+        state (new-state {:targeted-cost {:targets [:authenticated-envelope-digest-cluster
+                                                    :syntax-c3-lowercase-hex?]}})]
+    (is (= 0 (target-index [:authenticated-envelope-digest-cluster]
+                           0 "authenticated-envelope-digest")))
+    (is (= 1 (target-index [:syntax-c3-lowercase-hex?] 1 "c3-lowercase-hex?")))
+    (aset-long ^longs (:targeted-calls state) 0 (dec Long/MAX_VALUE))
+    (aset-long ^longs (:targeted-calls state) 1 (dec Long/MAX_VALUE))
+    (record-target-call! state 0)
+    (record-target-call! state 0)
+    (record-target-call! state 1)
+    (is (= [Long/MAX_VALUE Long/MAX_VALUE]
+           (mapv #(aget ^longs (:targeted-calls state) %) [0 1])))
+    (is (false? (targeted-cost-ranking? state
+                                         [{:call-count Long/MAX_VALUE}
+                                          {:call-count Long/MAX_VALUE}])))
+    (is (true? (.get ^java.util.concurrent.atomic.AtomicBoolean (:counter-overflow state))))
+    (is (false? (.get ^java.util.concurrent.atomic.AtomicBoolean (:sample-overflow state))))))
