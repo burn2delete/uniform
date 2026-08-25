@@ -1,22 +1,120 @@
 (ns gravity.self-hosting.sh11.overflow-cast.accepted
   (:profile :meta)
   (:target :jvm)
-  (:exports [sh11-authenticated-checked-add-operation
-             sh11-authenticated-checked-multiply-operation
-             sh11-authenticated-checked-cast-operation])
+  (:exports [sh11-authenticated-typed-add-operation
+             sh11-authenticated-typed-multiply-operation
+             sh11-authenticated-typed-cast-operation
+             sh11-runtime-target-support
+             sh11-authenticated-checked-operation])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe))
 
-(defn sh11-authenticated-overflow-cast-operation
-  [operation-id kind operator source operands numeric-contract
-   invalidation-conditions]
-  {:artifact :gravity/sh11-authenticated-overflow-cast-operation
+(defn sh11-execute-guard-case
+  [case-id kind operator contract operands]
+  (let [left (first operands)
+        right (first (rest operands))
+        value (if (= kind :numeric-cast)
+                left
+                (if (= operator :add) (+ left right) (* left right)))
+        width (if (= kind :numeric-cast)
+                (get contract :target-width)
+                (get contract :bit-width))
+        signedness (if (= kind :numeric-cast)
+                     (get contract :target-signedness)
+                     (get contract :signedness))
+        minimum (if (= signedness :unsigned)
+                  0
+                  (if (= width 8) -128 -32768))
+        maximum (if (= width 8)
+                  (if (= signedness :signed) 127 255)
+                  (if (= signedness :signed) 32767 65535))
+        passed (if (>= value minimum) (<= value maximum) false)]
+    {:case-id case-id
+     :kind kind
+     :operator operator
+     :numeric-contract contract
+     :operands operands
+     :computed-value value
+     :guard-result (if passed :pass :fail)
+     :failure-path (if passed :not-taken :error/numeric-raised)}))
+
+(defn sh11-runtime-target-support []
+  {:artifact :gravity/sh11-runtime-target-support
+   :schema-version 1
+   :target :jvm
+   :provider :gravity/sh11-jvm-checked-integer-provider
+   :failure-behavior :error/numeric
+   :effects-introduced #{:error/raise}
+   :execution-evidence
+   [(sh11-execute-guard-case :signed-add-max-inside :numeric-overflow :add
+     {:bit-width 8 :signedness :signed} [126 1])
+    (sh11-execute-guard-case :signed-add-max-outside :numeric-overflow :add
+     {:bit-width 8 :signedness :signed} [127 1])
+    (sh11-execute-guard-case :signed-add-min-inside :numeric-overflow :add
+     {:bit-width 8 :signedness :signed} [-127 -1])
+    (sh11-execute-guard-case :signed-add-min-outside :numeric-overflow :add
+     {:bit-width 8 :signedness :signed} [-128 -1])
+    (sh11-execute-guard-case :unsigned-add-max-inside :numeric-overflow :add
+     {:bit-width 8 :signedness :unsigned} [254 1])
+    (sh11-execute-guard-case :unsigned-add-max-outside :numeric-overflow :add
+     {:bit-width 8 :signedness :unsigned} [255 1])
+    (sh11-execute-guard-case :unsigned-add-min-inside :numeric-overflow :add
+     {:bit-width 8 :signedness :unsigned} [0 0])
+    (sh11-execute-guard-case :unsigned-add-min-outside :numeric-overflow :add
+     {:bit-width 8 :signedness :unsigned} [0 -1])
+    (sh11-execute-guard-case :signed-multiply-max-inside :numeric-overflow :multiply
+     {:bit-width 8 :signedness :signed} [63 2])
+    (sh11-execute-guard-case :signed-multiply-max-outside :numeric-overflow :multiply
+     {:bit-width 8 :signedness :signed} [64 2])
+    (sh11-execute-guard-case :signed-multiply-min-inside :numeric-overflow :multiply
+     {:bit-width 8 :signedness :signed} [-64 2])
+    (sh11-execute-guard-case :signed-multiply-min-outside :numeric-overflow :multiply
+     {:bit-width 8 :signedness :signed} [-65 2])
+    (sh11-execute-guard-case :unsigned-multiply-inside :numeric-overflow :multiply
+     {:bit-width 8 :signedness :unsigned} [51 5])
+    (sh11-execute-guard-case :unsigned-multiply-outside :numeric-overflow :multiply
+     {:bit-width 8 :signedness :unsigned} [52 5])
+    (sh11-execute-guard-case :unsigned-multiply-min :numeric-overflow :multiply
+     {:bit-width 8 :signedness :unsigned} [0 255])
+    (sh11-execute-guard-case :signed-cast-min :numeric-cast :checked-narrowing
+     {:source-width 16 :target-width 8 :source-signedness :signed
+      :target-signedness :signed} [-128])
+    (sh11-execute-guard-case :signed-cast-max :numeric-cast :checked-narrowing
+     {:source-width 16 :target-width 8 :source-signedness :signed
+      :target-signedness :signed} [127])
+    (sh11-execute-guard-case :signed-cast-outside :numeric-cast :checked-narrowing
+     {:source-width 16 :target-width 8 :source-signedness :signed
+     :target-signedness :signed} [128])
+    (sh11-execute-guard-case :signed-cast-low-outside :numeric-cast :checked-narrowing
+     {:source-width 16 :target-width 8 :source-signedness :signed
+      :target-signedness :signed} [-129])
+    (sh11-execute-guard-case :unsigned-cast-min :numeric-cast :checked-narrowing
+     {:source-width 16 :target-width 8 :source-signedness :unsigned
+      :target-signedness :unsigned} [0])
+    (sh11-execute-guard-case :unsigned-cast-max :numeric-cast :checked-narrowing
+     {:source-width 16 :target-width 8 :source-signedness :unsigned
+      :target-signedness :unsigned} [255])
+    (sh11-execute-guard-case :unsigned-cast-outside :numeric-cast :checked-narrowing
+     {:source-width 16 :target-width 8 :source-signedness :unsigned
+      :target-signedness :unsigned} [256])
+    (sh11-execute-guard-case :unsigned-cast-low-outside :numeric-cast :checked-narrowing
+     {:source-width 16 :target-width 8 :source-signedness :unsigned
+      :target-signedness :unsigned} [-1])]})
+
+(defn sh11-authenticated-typed-numeric-operation
+  [operation-id kind operator source operands numeric-contract]
+  {:artifact :gravity/sh11-typed-numeric-core-operation
    :schema-version 1
    :operation-id operation-id
    :kind kind
    :operator operator
    :core-node-id (get source :core-node-id)
+   :operands operands
+   :numeric-contract numeric-contract
+   :result-type :gravity.type/integer
+   :effect-contract {:failure-behavior :error/numeric
+                     :effects #{:error/raise}}
    :source-span (get source :source-span)
    :origin-chain (get source :origin-chain)
    :profile (get source :profile)
@@ -24,56 +122,53 @@
    :type-fact-id (get source :type-fact-id)
    :effect-fact-id (get source :effect-fact-id)
    :capability-proof-id (get source :capability-proof-id)
-   :ownership-fact-id (get source :ownership-fact-id)
-   :operands operands
-   :numeric-contract numeric-contract
+   :ownership-fact-id (get source :ownership-fact-id)})
+
+(defn sh11-authenticated-typed-add-operation [source operands]
+  (sh11-authenticated-typed-numeric-operation
+   :authenticated-checked-add :numeric-overflow :add source operands
+   {:bit-width 8 :signedness :signed}))
+
+(defn sh11-authenticated-typed-multiply-operation [source operands]
+  (sh11-authenticated-typed-numeric-operation
+   :authenticated-checked-multiply :numeric-overflow :multiply source operands
+   {:bit-width 8 :signedness :unsigned}))
+
+(defn sh11-authenticated-typed-cast-operation [source operands]
+  (sh11-authenticated-typed-numeric-operation
+   :authenticated-checked-cast :numeric-cast :checked-narrowing source operands
+   {:source-width 16 :target-width 8
+    :source-signedness :signed :target-signedness :signed}))
+
+(defn sh11-authenticated-checked-operation
+  [typed-operation typed-operation-resolution
+   target-support target-support-resolution invalidation-conditions]
+  {:artifact :gravity/sh11-authenticated-overflow-cast-operation
+   :schema-version 2
+   :typed-operation typed-operation
+   :typed-operation-resolution typed-operation-resolution
+   :operation-id (get typed-operation :operation-id)
+   :kind (get typed-operation :kind)
+   :operator (get typed-operation :operator)
+   :core-node-id (get typed-operation :core-node-id)
+   :source-span (get typed-operation :source-span)
+   :origin-chain (get typed-operation :origin-chain)
+   :profile (get typed-operation :profile)
+   :target (get typed-operation :target)
+   :type-fact-id (get typed-operation :type-fact-id)
+   :effect-fact-id (get typed-operation :effect-fact-id)
+   :capability-proof-id (get typed-operation :capability-proof-id)
+   :ownership-fact-id (get typed-operation :ownership-fact-id)
+   :operands (get typed-operation :operands)
+   :numeric-contract (get typed-operation :numeric-contract)
    :numeric-mode :checked
    :safety-mode :safe
    :failure-behavior :error/numeric
    :effects-introduced #{:error/raise}
    :performance-class :constant-time-branch
    :invalidation-conditions invalidation-conditions
-   :target-support-id
-   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-   :provider-id
-   "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-   :support-evidence #{:failure-path-test :target-conformance}})
-
-(defn sh11-authenticated-checked-add-operation [source operands]
-  (sh11-authenticated-overflow-cast-operation
-   :authenticated-checked-add
-   :numeric-overflow
-   :add
-   source
-   operands
-   {:bit-width 64 :signedness :signed}
-   [:operand-value-change :ownership-fact-change
-    :numeric-mode-change :integer-width-change
-    :profile-change :target-change]))
-
-(defn sh11-authenticated-checked-multiply-operation [source operands]
-  (sh11-authenticated-overflow-cast-operation
-   :authenticated-checked-multiply
-   :numeric-overflow
-   :multiply
-   source
-   operands
-   {:bit-width 64 :signedness :signed}
-   [:operand-value-change :ownership-fact-change
-    :numeric-mode-change :integer-width-change
-    :profile-change :target-change]))
-
-(defn sh11-authenticated-checked-cast-operation [source operands]
-  (sh11-authenticated-overflow-cast-operation
-   :authenticated-checked-cast
-   :numeric-cast
-   :checked-narrowing
-   source
-   operands
-   {:source-width 64
-    :target-width 32
-    :source-signedness :signed
-    :target-signedness :signed}
-   [:operand-value-change :ownership-fact-change
-    :numeric-mode-change :source-type-change :target-type-change
-    :profile-change :target-change]))
+   :target-support target-support
+   :target-support-resolution target-support-resolution
+   :target-support-id (get target-support-resolution :digest)
+   :provider-id (get target-support :provider)
+   :support-evidence (get target-support :execution-evidence)})

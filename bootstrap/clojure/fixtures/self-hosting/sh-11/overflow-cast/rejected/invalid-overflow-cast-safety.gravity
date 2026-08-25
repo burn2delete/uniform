@@ -1,32 +1,34 @@
 (ns gravity.self-hosting.sh11.overflow-cast.rejected
   (:profile :meta)
   (:target :jvm)
-  (:exports [sh11-unproved-add-operation
-             sh11-incompatible-cast-operation
-             sh11-unsafe-multiply-operation])
+  (:exports [sh11-unproved-operation
+             sh11-unsafe-operation
+             sh11-malformed-operation])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe))
 
-(defn sh11-invalid-overflow-cast-operation
-  [operation-id kind operator source operands numeric-contract
-   numeric-mode safety-mode invalidation-conditions]
+(defn sh11-invalid-operation
+  [typed-operation typed-operation-resolution target-support
+   target-support-resolution invalidation-conditions numeric-mode safety-mode]
   {:artifact :gravity/sh11-authenticated-overflow-cast-operation
-   :schema-version 1
-   :operation-id operation-id
-   :kind kind
-   :operator operator
-   :core-node-id (get source :core-node-id)
-   :source-span (get source :source-span)
-   :origin-chain (get source :origin-chain)
-   :profile (get source :profile)
-   :target (get source :target)
-   :type-fact-id (get source :type-fact-id)
-   :effect-fact-id (get source :effect-fact-id)
-   :capability-proof-id (get source :capability-proof-id)
-   :ownership-fact-id (get source :ownership-fact-id)
-   :operands operands
-   :numeric-contract numeric-contract
+   :schema-version 2
+   :typed-operation typed-operation
+   :typed-operation-resolution typed-operation-resolution
+   :operation-id (get typed-operation :operation-id)
+   :kind (get typed-operation :kind)
+   :operator (get typed-operation :operator)
+   :core-node-id (get typed-operation :core-node-id)
+   :source-span (get typed-operation :source-span)
+   :origin-chain (get typed-operation :origin-chain)
+   :profile (get typed-operation :profile)
+   :target (get typed-operation :target)
+   :type-fact-id (get typed-operation :type-fact-id)
+   :effect-fact-id (get typed-operation :effect-fact-id)
+   :capability-proof-id (get typed-operation :capability-proof-id)
+   :ownership-fact-id (get typed-operation :ownership-fact-id)
+   :operands (get typed-operation :operands)
+   :numeric-contract (get typed-operation :numeric-contract)
    :numeric-mode numeric-mode
    :safety-mode safety-mode
    :failure-behavior
@@ -36,43 +38,28 @@
    :performance-class
    (if (= numeric-mode :checked) :constant-time-branch nil)
    :invalidation-conditions invalidation-conditions
-   :target-support-id
-   (if (= numeric-mode :checked)
-     "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-     nil)
-   :provider-id
-   (if (= numeric-mode :checked)
-     "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-     nil)
-   :support-evidence
-   (if (= numeric-mode :checked) #{:target-conformance} nil)})
+   :target-support target-support
+   :target-support-resolution target-support-resolution
+   :target-support-id (get target-support-resolution :digest)
+   :provider-id (get target-support :provider)
+   :support-evidence (get target-support :execution-evidence)})
 
-(defn sh11-unproved-add-operation [source operands]
-  (sh11-invalid-overflow-cast-operation
-   :unproved-add :numeric-overflow :add source operands
-   {:bit-width 64 :signedness :signed}
-   :proof-required :safe
-   [:operand-value-change :ownership-fact-change
-    :numeric-mode-change :integer-width-change
-    :profile-change :target-change]))
+(defn sh11-unproved-operation
+  [typed-operation typed-operation-resolution target-support
+   target-support-resolution invalidation-conditions]
+  (sh11-invalid-operation
+   typed-operation typed-operation-resolution target-support
+   target-support-resolution invalidation-conditions :proof-required :safe))
 
-(defn sh11-incompatible-cast-operation [source operands]
-  (sh11-invalid-overflow-cast-operation
-   :incompatible-cast :numeric-cast :checked-narrowing source operands
-   {:source-width 32
-    :target-width 64
-    :source-signedness :signed
-    :target-signedness :signed}
-   :checked :safe
-   [:operand-value-change :ownership-fact-change
-    :numeric-mode-change :source-type-change :target-type-change
-    :profile-change :target-change]))
+(defn sh11-unsafe-operation
+  [typed-operation typed-operation-resolution target-support
+   target-support-resolution invalidation-conditions]
+  (sh11-invalid-operation
+   typed-operation typed-operation-resolution target-support
+   target-support-resolution invalidation-conditions
+   :unsafe-unchecked :systems))
 
-(defn sh11-unsafe-multiply-operation [source operands]
-  (sh11-invalid-overflow-cast-operation
-   :unsafe-multiply :numeric-overflow :multiply source operands
-   {:bit-width 64 :signedness :signed}
-   :unsafe-unchecked :systems
-   [:operand-value-change :ownership-fact-change
-    :numeric-mode-change :integer-width-change
-    :profile-change :target-change]))
+(defn sh11-malformed-operation [typed-operation]
+  {:artifact :gravity/sh11-authenticated-overflow-cast-operation
+   :schema-version 2
+   :typed-operation typed-operation})

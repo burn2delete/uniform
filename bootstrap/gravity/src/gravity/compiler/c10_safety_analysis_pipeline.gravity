@@ -3583,14 +3583,18 @@
                        :numeric-cast :SAFE9-NARROW}
    :invalidation-conditions
    {:add [:operand-value-change :ownership-fact-change
-          :numeric-mode-change :integer-width-change
+          :numeric-mode-change :operator-change :integer-width-change
+          :signedness-change
           :profile-change :target-change]
     :multiply [:operand-value-change :ownership-fact-change
-               :numeric-mode-change :integer-width-change
+               :numeric-mode-change :operator-change :integer-width-change
+               :signedness-change
                :profile-change :target-change]
     :checked-narrowing
     [:operand-value-change :ownership-fact-change
-     :numeric-mode-change :source-type-change :target-type-change
+     :numeric-mode-change :operator-change
+     :source-type-change :target-type-change
+     :source-signedness-change :target-signedness-change
      :profile-change :target-change]}
    :diagnostics ["C10-NO-OUTCOME" "C10-PROOF" "C10-CHECK"
                  "C10-UNSAFE" "C10-NUMERIC" "C10-OPTIMIZATION"]
@@ -3599,7 +3603,6 @@
                :static-overflow-or-cast-proof
                :trusted-digest-resolution
                :independent-canonical-digest-verification
-               :operation-core-node-authenticated-by-c9
                :wrapping-saturating-or-arbitrary-precision-adapter
                :unsafe-overflow-or-cast-adapter
                :floating-or-elementary-math-safety
@@ -3624,13 +3627,15 @@
          :core-node-id :source-span :origin-chain :profile :target
          :type-fact-id :effect-fact-id :capability-proof-id
          :ownership-fact-id :operands :numeric-contract
+         :typed-operation :typed-operation-resolution
          :numeric-mode :safety-mode :failure-behavior
          :effects-introduced :performance-class
          :invalidation-conditions :target-support-id
-         :provider-id :support-evidence})
+         :provider-id :support-evidence
+         :target-support :target-support-resolution})
     (if (= :gravity/sh11-authenticated-overflow-cast-operation
            (get descriptor :artifact))
-      (if (= 1 (get descriptor :schema-version))
+      (if (= 2 (get descriptor :schema-version))
         (if (keyword? (get descriptor :operation-id))
           (if (sh11-member?
                #{:numeric-overflow :numeric-cast}
@@ -3692,6 +3697,189 @@
                  (get contract :bit-width))
               (sh11-member?
                #{:signed :unsigned} (get contract :signedness))
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh11-overflow-cast-typed-operation-fields-match?
+  [operation descriptor fields]
+  (if (= 0 (count fields))
+    true
+    (if (= (get operation (first fields))
+           (get descriptor (first fields)))
+      (sh11-overflow-cast-typed-operation-fields-match?
+       operation descriptor (rest fields))
+      false)))
+
+(defn sh11-overflow-cast-typed-operation-valid? [descriptor]
+  (let [operation (get descriptor :typed-operation)]
+    (if (sh11-exact-keys?
+         operation
+         #{:artifact :schema-version :operation-id :kind :operator
+           :core-node-id :operands :numeric-contract :result-type
+           :effect-contract :source-span :origin-chain :profile :target
+           :type-fact-id :effect-fact-id :capability-proof-id
+           :ownership-fact-id})
+      (if (= :gravity/sh11-typed-numeric-core-operation
+             (get operation :artifact))
+        (if (= 1 (get operation :schema-version))
+          (if (= :gravity.type/integer (get operation :result-type))
+            (if (= {:failure-behavior :error/numeric
+                    :effects #{:error/raise}}
+                   (get operation :effect-contract))
+              (if (sh11-overflow-cast-typed-operation-fields-match?
+                   operation descriptor
+                   [:operation-id :kind :operator :core-node-id
+                    :operands :numeric-contract :source-span
+                    :origin-chain :profile :target :type-fact-id
+                    :effect-fact-id :capability-proof-id
+                    :ownership-fact-id])
+                (sh11-resolution-entry-valid?
+                 operation
+                 (get descriptor :typed-operation-resolution))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh11-overflow-cast-execute-guard-case
+  [case-id kind operator contract operands]
+  (let [left (first operands)
+        right (first (rest operands))
+        value (if (= kind :numeric-cast)
+                left
+                (if (= operator :add) (+ left right) (* left right)))
+        width (if (= kind :numeric-cast)
+                (get contract :target-width)
+                (get contract :bit-width))
+        signedness (if (= kind :numeric-cast)
+                     (get contract :target-signedness)
+                     (get contract :signedness))
+        minimum (sh11-width-minimum width signedness)
+        maximum (sh11-width-maximum width signedness)
+        passed (if (>= value minimum) (<= value maximum) false)]
+    {:case-id case-id
+     :kind kind
+     :operator operator
+     :numeric-contract contract
+     :operands operands
+     :computed-value value
+     :guard-result (if passed :pass :fail)
+     :failure-path (if passed :not-taken :error/numeric-raised)}))
+
+(defn sh11-overflow-cast-expected-execution-evidence []
+  [(sh11-overflow-cast-execute-guard-case
+    :signed-add-max-inside :numeric-overflow :add
+    {:bit-width 8 :signedness :signed} [126 1])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-add-max-outside :numeric-overflow :add
+    {:bit-width 8 :signedness :signed} [127 1])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-add-min-inside :numeric-overflow :add
+    {:bit-width 8 :signedness :signed} [-127 -1])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-add-min-outside :numeric-overflow :add
+    {:bit-width 8 :signedness :signed} [-128 -1])
+   (sh11-overflow-cast-execute-guard-case
+    :unsigned-add-max-inside :numeric-overflow :add
+    {:bit-width 8 :signedness :unsigned} [254 1])
+   (sh11-overflow-cast-execute-guard-case
+    :unsigned-add-max-outside :numeric-overflow :add
+    {:bit-width 8 :signedness :unsigned} [255 1])
+   (sh11-overflow-cast-execute-guard-case
+    :unsigned-add-min-inside :numeric-overflow :add
+    {:bit-width 8 :signedness :unsigned} [0 0])
+   (sh11-overflow-cast-execute-guard-case
+    :unsigned-add-min-outside :numeric-overflow :add
+    {:bit-width 8 :signedness :unsigned} [0 -1])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-multiply-max-inside :numeric-overflow :multiply
+    {:bit-width 8 :signedness :signed} [63 2])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-multiply-max-outside :numeric-overflow :multiply
+    {:bit-width 8 :signedness :signed} [64 2])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-multiply-min-inside :numeric-overflow :multiply
+    {:bit-width 8 :signedness :signed} [-64 2])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-multiply-min-outside :numeric-overflow :multiply
+    {:bit-width 8 :signedness :signed} [-65 2])
+   (sh11-overflow-cast-execute-guard-case
+    :unsigned-multiply-inside :numeric-overflow :multiply
+    {:bit-width 8 :signedness :unsigned} [51 5])
+   (sh11-overflow-cast-execute-guard-case
+    :unsigned-multiply-outside :numeric-overflow :multiply
+    {:bit-width 8 :signedness :unsigned} [52 5])
+   (sh11-overflow-cast-execute-guard-case
+    :unsigned-multiply-min :numeric-overflow :multiply
+    {:bit-width 8 :signedness :unsigned} [0 255])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-cast-min :numeric-cast :checked-narrowing
+    {:source-width 16 :target-width 8
+     :source-signedness :signed :target-signedness :signed} [-128])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-cast-max :numeric-cast :checked-narrowing
+    {:source-width 16 :target-width 8
+     :source-signedness :signed :target-signedness :signed} [127])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-cast-outside :numeric-cast :checked-narrowing
+    {:source-width 16 :target-width 8
+     :source-signedness :signed :target-signedness :signed} [128])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-cast-low-outside :numeric-cast :checked-narrowing
+    {:source-width 16 :target-width 8
+     :source-signedness :signed :target-signedness :signed} [-129])
+   (sh11-overflow-cast-execute-guard-case
+    :unsigned-cast-min :numeric-cast :checked-narrowing
+    {:source-width 16 :target-width 8
+     :source-signedness :unsigned :target-signedness :unsigned} [0])
+   (sh11-overflow-cast-execute-guard-case
+    :unsigned-cast-max :numeric-cast :checked-narrowing
+    {:source-width 16 :target-width 8
+     :source-signedness :unsigned :target-signedness :unsigned} [255])
+   (sh11-overflow-cast-execute-guard-case
+    :unsigned-cast-outside :numeric-cast :checked-narrowing
+    {:source-width 16 :target-width 8
+     :source-signedness :unsigned :target-signedness :unsigned} [256])
+   (sh11-overflow-cast-execute-guard-case
+    :unsigned-cast-low-outside :numeric-cast :checked-narrowing
+    {:source-width 16 :target-width 8
+     :source-signedness :unsigned :target-signedness :unsigned} [-1])])
+
+(defn sh11-overflow-cast-target-support-valid? [descriptor]
+  (let [support (get descriptor :target-support)
+        resolution (get descriptor :target-support-resolution)]
+    (if (sh11-exact-keys?
+         support
+         #{:artifact :schema-version :target :provider
+           :failure-behavior :effects-introduced :execution-evidence})
+      (if (= :gravity/sh11-runtime-target-support
+             (get support :artifact))
+        (if (= 1 (get support :schema-version))
+          (if (= :jvm (get support :target))
+            (if (= :gravity/sh11-jvm-checked-integer-provider
+                   (get support :provider))
+              (if (= :error/numeric (get support :failure-behavior))
+                (if (= #{:error/raise} (get support :effects-introduced))
+                  (if (= (sh11-overflow-cast-expected-execution-evidence)
+                         (get support :execution-evidence))
+                    (if (sh11-resolution-entry-valid? support resolution)
+                      (if (= (get resolution :digest)
+                             (get descriptor :target-support-id))
+                        (if (= (get support :provider)
+                               (get descriptor :provider-id))
+                          (= (get support :execution-evidence)
+                             (get descriptor :support-evidence))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
               false)
             false)
           false)
@@ -3846,9 +4034,8 @@
                         operator)
                    (get descriptor :invalidation-conditions))
               (if (sh11-sha256-id? (get descriptor :target-support-id))
-                (if (sh11-sha256-id? (get descriptor :provider-id))
-                  (sh11-nonempty-keyword-set?
-                   (get descriptor :support-evidence))
+                (if (keyword? (get descriptor :provider-id))
+                  (sh11-overflow-cast-target-support-valid? descriptor)
                   false)
                 false)
               false)
@@ -3857,9 +4044,61 @@
         false)
       false)))
 
+(defn sh11-overflow-cast-diagnostic-context [descriptor bound]
+  (let [operation (get descriptor :typed-operation)
+        operation-authenticated
+        (if (map? operation)
+          (if (sh11-resolution-entry-valid?
+               operation (get descriptor :typed-operation-resolution))
+            (if (sh11-valid-source-span? (get operation :source-span))
+              (vector? (get operation :origin-chain))
+              false)
+            false)
+          false)
+        single-record (sh11-single-c9-read-record bound)
+        pair-records (sh11-two-c9-read-records bound)
+        record
+        (if (= :accepted (get single-record :status))
+          single-record
+          (first (get pair-records :records)))
+        record-authenticated
+        (if (= :accepted (get record :status))
+          (if (sh11-c9-read-record-valid? bound record)
+            (sh11-c9-read-record-exactly-linked? record)
+            false)
+          false)
+        request (get record :request)
+        fact (get record :fact)]
+    (if operation-authenticated
+      {:source-span (get operation :source-span)
+       :origin-chain (get operation :origin-chain)
+       :profile (get operation :profile)
+       :target (get operation :target)
+       :provenance-source :authenticated-typed-operation
+       :untrusted-fields []}
+      (if record-authenticated
+        {:source-span (get fact :source-span)
+         :origin-chain (get fact :origin-chain)
+         :profile (get request :profile)
+         :target (get request :target)
+         :provenance-source :authenticated-c9-operand
+         :untrusted-fields
+         [:descriptor/source-span :descriptor/origin-chain
+          :typed-operation :typed-operation-resolution]}
+        {:source-span (get descriptor :source-span)
+         :origin-chain (get descriptor :origin-chain)
+         :profile (get descriptor :profile)
+         :target (get descriptor :target)
+         :provenance-source :untrusted-descriptor
+         :untrusted-fields
+         [:descriptor/source-span :descriptor/origin-chain
+          :descriptor/profile :descriptor/target
+          :typed-operation :typed-operation-resolution]}))))
+
 (defn sh11-overflow-cast-diagnostic
   [descriptor bound rule reason missing-fact remediation]
-  {:diagnostic-id rule
+  (let [context (sh11-overflow-cast-diagnostic-context descriptor bound)]
+   {:diagnostic-id rule
    :rule rule
    :severity :error
    :stage :safety-analysis
@@ -3872,17 +4111,29 @@
    :numeric-contract (get descriptor :numeric-contract)
    :specialized-safe-rule
    (sh11-overflow-cast-specialized-rule (get descriptor :kind))
-   :source-span (get descriptor :source-span)
-   :generated-origin-chain (get descriptor :origin-chain)
-   :profile (get descriptor :profile)
-   :target (get descriptor :target)
+   :source-span (get context :source-span)
+   :generated-origin-chain (get context :origin-chain)
+   :profile (get context :profile)
+   :target (get context :target)
+   :provenance-source (get context :provenance-source)
+   :untrusted-fields
+   (if (= reason :invalid-authenticated-runtime-check-policy)
+     [:target-support :target-support-resolution :target-support-id
+      :provider-id :support-evidence :invalidation-conditions]
+     (if (= reason :untrusted-or-stale-typed-numeric-operation)
+       [:typed-operation :typed-operation-resolution
+        :operation-id :operator :core-node-id :operands
+        :numeric-contract]
+       (if (= reason :malformed-authenticated-overflow-cast-operation)
+         [:descriptor-envelope]
+         (get context :untrusted-fields))))
    :safety-mode (get descriptor :safety-mode)
    :missing-fact missing-fact
    :ownership-core-identity-id
    (get bound :ownership-core-identity-id)
    :proof-id nil
    :runtime-check-id nil
-   :remediation remediation})
+   :remediation remediation}))
 
 (defn sh11-overflow-cast-template-rejection
   [descriptor bound rule reason missing-fact remediation]
@@ -3900,8 +4151,9 @@
   [bound verification descriptor]
   (let [records (sh11-overflow-cast-read-records bound descriptor)]
     (if (sh11-overflow-cast-basic-descriptor-valid? descriptor)
-      (if (sh11-overflow-cast-read-records-valid?
-           bound verification descriptor records)
+      (if (sh11-overflow-cast-typed-operation-valid? descriptor)
+        (if (sh11-overflow-cast-read-records-valid?
+             bound verification descriptor records)
         (let [bindings
               (sh11-overflow-cast-operand-bindings descriptor records)
               mode (get descriptor :numeric-mode)]
@@ -3971,11 +4223,16 @@
              :operation-operands-not-bound-to-c9-facts
              :exact-authenticated-operand-fact-references
              :bind-each-operation-operand-to-its-current-c9-fact)))
+          (sh11-overflow-cast-template-rejection
+           descriptor bound "C10-PROOF"
+           :untrusted-or-incomplete-c9-operand-facts
+           :authenticated-integer-read-facts-required
+           :supply-current-identity-bound-c9-integer-reads))
         (sh11-overflow-cast-template-rejection
          descriptor bound "C10-PROOF"
-         :untrusted-or-incomplete-c9-operand-facts
-         :authenticated-integer-read-facts-required
-         :supply-current-identity-bound-c9-integer-reads))
+         :untrusted-or-stale-typed-numeric-operation
+         :authenticated-typed-numeric-core-operation
+         :resolve-the-exact-current-typed-numeric-operation))
       (sh11-overflow-cast-template-rejection
        descriptor bound "C10-NO-OUTCOME"
        :malformed-authenticated-overflow-cast-operation
@@ -4004,6 +4261,9 @@
        :operator (get descriptor :operator)
        :numeric-contract (get descriptor :numeric-contract)
        :operands bindings}
+      :core-node-id (get descriptor :core-node-id)
+      :typed-operation-resolution
+      (get descriptor :typed-operation-resolution)
       :operation-id (get descriptor :operation-id)
       :condition condition
       :ownership-core-identity-id
@@ -4075,6 +4335,14 @@
        :origin-chain (get descriptor :origin-chain)}}
      :preserves
      {:core-node-id (get descriptor :core-node-id)
+      :operation-id (get descriptor :operation-id)
+      :kind (get descriptor :kind)
+      :operator (get descriptor :operator)
+      :numeric-contract (get descriptor :numeric-contract)
+      :typed-operation-resolution
+      (get descriptor :typed-operation-resolution)
+      :target-support-resolution
+      (get descriptor :target-support-resolution)
       :type-fact-id (get descriptor :type-fact-id)
       :effect-fact-id (get descriptor :effect-fact-id)
       :capability-proof-id (get descriptor :capability-proof-id)
@@ -4161,6 +4429,8 @@
    :generated-origin-chain (get descriptor :origin-chain)
    :profile (get descriptor :profile)
    :target (get descriptor :target)
+   :provenance-source :authenticated-typed-operation
+   :untrusted-fields []
    :safety-mode (get descriptor :safety-mode)
    :missing-fact missing-fact
    :proof-id nil
