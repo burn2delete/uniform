@@ -87488,8 +87488,9 @@
           (persistent! result))))
     (loop [remaining (seq entries)
            result (transient {})]
-      (if-let [{:keys [key value]} (first remaining)]
-        (let [evaluated-key
+      (if (seq remaining)
+        (let [{:keys [key value]} (first remaining)
+              evaluated-key
               (p15-s23-stage2-runtime-nontail-value!
                plan
                (p15-s23-stage2-runtime-execute-instruction

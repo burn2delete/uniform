@@ -161,6 +161,13 @@
            (instruction [(entry :same :first) (entry :same :last)])))
     (is (= {:first 1 :second 2}
            (instruction (apply list [(entry :first 1) (entry :second 2)]))))
+    (testing "malformed list entries fail closed instead of ending traversal"
+      (doseq [entries [(list nil (entry :second 2))
+                       (list false (entry :second 2))
+                       (list (entry :first 1) nil)
+                       (list (entry :first 1) false)]]
+        (let [data (diagnostic #(instruction entries))]
+          (is (= "L2-UNKNOWN-CORE-FORM" (:id data)) entries))))
     (testing "key evaluation precedes value evaluation and preserves recur rejection"
       (let [data
             (diagnostic

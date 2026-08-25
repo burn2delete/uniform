@@ -42,11 +42,11 @@ profiles are diagnostic evidence only and are not authoritative proof results.
 
 ## Semantic checks
 
-The focused stage2 iteration suite passed 30 tests and 398 assertions. The
+The focused stage2 iteration suite passed 30 tests and 402 assertions. The
 stage2 benchmark contract passed 2 tests and 229 assertions. Added fixtures
 cover vector and list entry carriers, duplicate keys, key-before-value
-evaluation, and `recur` rejection. No full P15-S23 verifier was run for this
-candidate.
+evaluation, malformed `nil`/`false` list entries, and `recur` rejection. No
+full P15-S23 verifier was run for this candidate.
 
 ## Nonclaims and residual boundary
 
