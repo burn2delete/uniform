@@ -27,9 +27,9 @@
   "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 118572)
+(def ^:private expected-source-byte-count 118633)
 (def ^:private expected-source-revision-id
-  "sha256:b0e2f2c1e8ff98541f4af07770eb54488234124b8ed03975ff8a5ebed2412d85")
+  "sha256:96e2fa6a41118edacd026f878cc6c817a5d65f06973ccee24974b62a3b3d7488")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:eec6df18b4b20898f79da0b11d13c688fef58a0fcbe0f4a524ec65203345b812")
 (def ^:private expected-sh07-artifact-id
@@ -69,9 +69,9 @@
    {:let 37 :fn 61 :call 1280 :if 349 :reference 2347 :quote 34
     :collection-literal 327 :literal 2323 :def 72}})
 (def ^:private expected-plan-semantic-id
-  "sha256:67f28ecef53335b9e0a65bc8671c194bf3ea84620497ef10ac89f6d3973e7dac")
+  "sha256:ee8a72102449defce04f89dadcb3cd9f211b4db24edecd08e5291b21a6f8c960")
 (def ^:private expected-functions-semantic-id
-  "sha256:617ee850d511270ae86619261666ad418608d50e422e522f25a23f4635ea79d0")
+  "sha256:9fdfa4a165210e613138f038ae74edb9f3170ce8ddff2396ebb9da21978488d9")
 (def ^:private expected-builder-semantic-id
   "sha256:f3e7c33fc18167ea5c3ae5da1aa8005cf7939feaaf60e9be5c488266cf1c16a9")
 (def ^:private expected-export-names

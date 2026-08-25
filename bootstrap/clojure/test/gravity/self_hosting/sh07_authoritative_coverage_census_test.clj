@@ -162,9 +162,9 @@
             "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
             :source-binding (:source-binding c10-expectation)}
            (get source-contracts "c10-safety")))
-    (is (= {:source-byte-count 253588
+    (is (= {:source-byte-count 330835
             :source-bytes-sha256
-            "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"}
+            "sha256:cf7af2e3a7709bcc3ce5056cf75bab1bb0b4ac01c6627fe3d1f3d90d5c83c0aa"}
            (:source-binding c11-expectation)))
     (is (not (contains? c11-expectation :request-counts)))
     (is (not (contains? c11-expectation :core-counts)))

@@ -669,10 +669,10 @@
         (get rule :compiled-by) (get rule :executed-by)
         (get rule :self-hosted?)]
        [:gravity/pinned-gravity-source-rule
-        :gravity.backend/b1-backend-interface 141683
-        "sha256:c827a5bcbc6dcd8778d958ae8daba30a2861bf44cfb079a5d227dfc73ddb4e8d"
-        "sha256:1953611fc5ad4dc10b2344b0158b6fb7ddd6a1589f8ac9af6d745874eebf69d1"
-        "sha256:6e952b4b7cce3091b05434d35137c5360f52c124c65c4e78d936377e784f19e2"
+        :gravity.backend/b1-backend-interface 141751
+        "sha256:75a1fd3364636249919f9853bd3ace2e77fc5e69aaf7289b12d754924ed9eefe"
+        "sha256:9f6e095b79061119d9bbdeae40776656c40b822dbb67f2f5ead5104084a628eb"
+        "sha256:6d81c3e571e8bbdde906b98d12e350f3626bad2c9851002a4c3bc3e5c1eec084"
         'b1-build-bounded-c-authenticated-packet
         "sha256:9fa86940d7874c4260fea5e6c38bc6d01a5bbd3115bdd1e2c8c8d2bbf4d82760"
         '{b1-bounded-c14-c-input-valid?

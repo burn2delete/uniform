@@ -36,9 +36,9 @@
   "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 253588)
+(def ^:private expected-source-byte-count 330835)
 (def ^:private expected-source-revision-id
-  "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136")
+  "sha256:cf7af2e3a7709bcc3ce5056cf75bab1bb0b4ac01c6627fe3d1f3d90d5c83c0aa")
 (def ^:private expected-source-exports
   '[c11-mir-contract
     c11-build-mir-pass-contract
@@ -60,6 +60,9 @@
     build-c11-mir-source-map
     verify-c11-mir-module
     c11-build-target-independent-mir
+    sh12-branch-join-mir-policy
+    sh12-build-branch-join-mir
+    sh12-verify-branch-join-mir
     sh12-authenticated-c10-mir-adapter-policy
     sh12-authenticated-c10-mir-carrier-preflight
     sh12-authenticated-c10-mir-input-valid?

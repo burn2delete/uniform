@@ -34828,14 +34828,14 @@
               :provenance-binding-hash "sha256:semantic-binding"
               :actual-path-binding-hash "sha256:physical-binding"
               :actual-source-path "/checkout/physical/path"}))))
-    (is (= 253588 bootstrap/p15-s23-c11-mir-source-byte-count))
-    (is (= "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"
+    (is (= 330835 bootstrap/p15-s23-c11-mir-source-byte-count))
+    (is (= "sha256:cf7af2e3a7709bcc3ce5056cf75bab1bb0b4ac01c6627fe3d1f3d90d5c83c0aa"
            bootstrap/p15-s23-c11-mir-expected-source-content-hash))
-    (is (= "sha256:974d3949e224d136a2d95c0c348b11c8858becdddd47542ffd4ae24c0233fb39"
+    (is (= "sha256:ec6ed386b8802f6cf9ef6e693f41d780a591cf7cc1d23ca42b3f08d78ff6e234"
            bootstrap/p15-s23-c11-mir-expected-plan-semantic-hash))
-    (is (= "sha256:ece068d2c82e550798cb98e1b0ac9bd0c5e15b5c932c591b93b821411eed89a4"
+    (is (= "sha256:c15b126cfd712cefc6bea53a6a63ee44df38a6944e55030478d811cd4223d62a"
            bootstrap/p15-s23-c11-mir-expected-functions-semantic-hash))
-    (is (= "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
+    (is (= "sha256:594d0e4042bf0bf4274fe70a3b914ab79d9a40d7111084434e0aa56a5808bdb2"
            bootstrap/p15-s23-c11-mir-expected-builder-semantic-hash))
     (is (= "sha256:13a4cbc1f63e62728aa821a75e85626a4fd14b4d14d6017ac3d5ca47531e4079"
            bootstrap/p15-s23-c11-mir-expected-verifier-semantic-hash))
@@ -34861,7 +34861,7 @@
              binding))))
     (is (= bootstrap/p15-s23-c11-mir-required-functions
            (:function-shapes binding)))
-    (is (= 237 (count (get-in binding [:plan :functions]))))
+    (is (= 351 (count (get-in binding [:plan :functions]))))
     (with-temp-directory
       "gravity-c11-unrelated-cwd-"
       (fn [directory]
@@ -37597,7 +37597,7 @@
          #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
            "effectful-wasm.gravity" effectful :wasm))]
     (is (contains? bootstrap/stage2-runtime-derived-source-targets :wasm))
-    (is (= 118572 (alength (.getBytes
+    (is (= 118633 (alength (.getBytes
                            source java.nio.charset.StandardCharsets/UTF_8))))
     (is (= bootstrap/p15-s23-b4-wasm-expected-source-content-hash
            (str "sha256:" (bootstrap/sha256-hex source))))

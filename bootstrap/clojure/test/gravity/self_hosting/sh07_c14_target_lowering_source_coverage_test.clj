@@ -26,9 +26,9 @@
   "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 173292)
+(def ^:private expected-source-byte-count 173349)
 (def ^:private expected-source-revision-id
-  "sha256:5c500fd4ad8a6652ce9a8918ff31ee7d9947732b47860071f6dca0dfc61839ae")
+  "sha256:18843bb01315cd5a55902fd8c9f38875d93aeba3c2b2fd1e3252afa2107114aa")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:aee0b3c997a661ae9a08391a0468483b2459a2d814fe05e4f09a43ef90a1b70e")
 (def ^:private expected-coverage

@@ -102,17 +102,17 @@
    :logical-source-path
    "compiler/c11-mir-specification"
    :source-content-hash
-   "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"
-   :source-byte-count 253588
+   "sha256:cf7af2e3a7709bcc3ce5056cf75bab1bb0b4ac01c6627fe3d1f3d90d5c83c0aa"
+   :source-byte-count 330835
    :plan-semantic-hash
-   "sha256:974d3949e224d136a2d95c0c348b11c8858becdddd47542ffd4ae24c0233fb39"
+   "sha256:ec6ed386b8802f6cf9ef6e693f41d780a591cf7cc1d23ca42b3f08d78ff6e234"
    :functions-semantic-hash
-   "sha256:ece068d2c82e550798cb98e1b0ac9bd0c5e15b5c932c591b93b821411eed89a4"
-   :function-count 237
+   "sha256:c15b126cfd712cefc6bea53a6a63ee44df38a6944e55030478d811cd4223d62a"
+   :function-count 351
    :builder-function
    (quote c11-build-target-independent-mir)
    :builder-semantic-hash
-   "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
+   "sha256:594d0e4042bf0bf4274fe70a3b914ab79d9a40d7111084434e0aa56a5808bdb2"
    :verifier-function (quote verify-c11-mir-module)
    :verifier-semantic-hash
    "sha256:13a4cbc1f63e62728aa821a75e85626a4fd14b4d14d6017ac3d5ca47531e4079"})

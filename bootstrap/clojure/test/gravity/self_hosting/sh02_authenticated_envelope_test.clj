@@ -917,6 +917,84 @@
           (java.nio.file.Files/deleteIfExists candidate))
         (java.nio.file.Files/deleteIfExists temporary-root)))))
 
+(deftest c11-pin-refresh-rejects-stale-size-semantic-pin-and-tamper
+  (let [source-path
+        (.toPath
+         (io/file
+          (path bootstrap/p15-s23-c11-mir-source-relative-path)))
+        temporary-root
+        (java.nio.file.Files/createTempDirectory
+         "gravity-sh02-c11-pin-tamper-"
+         (make-array java.nio.file.attribute.FileAttribute 0))
+        tampered-source (.resolve temporary-root "c11-tampered.gravity")]
+    (try
+      (let [source-bytes (java.nio.file.Files/readAllBytes source-path)
+            tampered-bytes (java.util.Arrays/copyOf source-bytes
+                                                    (alength source-bytes))]
+        (aset-byte tampered-bytes 0
+                   (unchecked-byte
+                    (bit-xor 1 (bit-and 255 (aget tampered-bytes 0)))))
+        (java.nio.file.Files/write
+         tampered-source tampered-bytes
+         (into-array
+          java.nio.file.OpenOption
+          [java.nio.file.StandardOpenOption/CREATE_NEW
+           java.nio.file.StandardOpenOption/WRITE]))
+        (let [stale-size
+              (try
+                (with-redefs
+                 [bootstrap/p15-s23-c11-mir-source-byte-count 253588]
+                  (bootstrap/p15-s23-c11-mir-source-binding!
+                   "sh02-stale-c11-size.gravity" :jvm))
+                nil
+                (catch clojure.lang.ExceptionInfo exception
+                  (ex-data exception)))
+              stale-semantic-pin
+              (try
+                (with-redefs
+                 [bootstrap/p15-s23-c11-mir-expected-plan-semantic-hash
+                  "sha256:974d3949e224d136a2d95c0c348b11c8858becdddd47542ffd4ae24c0233fb39"]
+                  (bootstrap/p15-s23-c11-mir-source-binding!
+                   "sh02-stale-c11-semantic-pin.gravity" :jvm))
+                nil
+                (catch clojure.lang.ExceptionInfo exception
+                  (ex-data exception)))
+              same-size-tamper
+              (try
+                (with-redefs
+                 [bootstrap/p15-s23-c11-mir-resolve-source-path
+                  (fn [] (.toString tampered-source))]
+                  (bootstrap/p15-s23-c11-mir-source-binding!
+                   "sh02-same-size-c11-tamper.gravity" :jvm))
+                nil
+                (catch clojure.lang.ExceptionInfo exception
+                  (ex-data exception)))]
+          (is (= "C11-VERIFY" (:id stale-size)))
+          (is (= :pinned-gravity-c11-source-byte-size
+                 (:missing-fact stale-size)))
+          (is (= 253588 (get-in stale-size [:facts :expected-source-bytes])))
+          (is (= 330835 (get-in stale-size [:facts :observed-source-bytes])))
+          (is (= "C11-VERIFY" (:id stale-semantic-pin)))
+          (is (= :pinned-gravity-c11-function-identity
+                 (:missing-fact stale-semantic-pin)))
+          (is (= bootstrap/p15-s23-c11-mir-expected-plan-semantic-hash
+                 (get-in stale-semantic-pin
+                         [:facts :observed-plan-semantic-hash])))
+          (is (= (alength source-bytes) (alength tampered-bytes)))
+          (is (= "C11-VERIFY" (:id same-size-tamper)))
+          (is (= :pinned-gravity-c11-source-identity
+                 (:missing-fact same-size-tamper)))
+          (is (= (get-in same-size-tamper [:facts :expected-source-bytes])
+                 (get-in same-size-tamper [:facts :observed-source-bytes])))
+          (is (not=
+               (get-in same-size-tamper
+                       [:facts :expected-source-content-hash])
+               (get-in same-size-tamper
+                       [:facts :observed-source-content-hash])))))
+      (finally
+        (java.nio.file.Files/deleteIfExists tampered-source)
+        (java.nio.file.Files/deleteIfExists temporary-root)))))
+
 (deftest sh02-descriptor-preflight-rejects-hostile-carriers-and-bounded-graphs
   (let [fixture (fixture-case "accepted/envelope-comparison.gravity")
         base (descriptor fixture)
