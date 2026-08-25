@@ -1525,6 +1525,67 @@
         {"state": "integrated", "at": "2026-08-25T15:59:33Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted reconciled P15 proof artifact DAG candidate onto main"}
       ],
       "disposition": "Integrated bounded request-scoped P15 proof artifact DAG reuse only; fresh/no-cache authority and artifact semantics remain unchanged, with no benchmark, roadmap, release, self-hosting, or seed-retirement credit and no multi-hour suite run."
+    },
+    {
+      "id": "sh08-record-access-match-typing-v1",
+      "title": "SH-08 bounded record access and match typing version 1",
+      "invariant_family": "self-hosting/sh08-record-access-match-typing",
+      "owner": "sh-types",
+      "author": "sh-types",
+      "state": "integration-eligible",
+      "dependencies": ["sh08-records-unions-descriptor-v1"],
+      "architecture_decision": "",
+      "base_commit": "5393a12139ed189e1b5b262b7a5fe920168f0fc5",
+      "candidate_commit": "c3dc736bc1665e4dc181d82a7a12d4660a4f774f",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/record-access-match-typing/accepted/closed-record-access-match.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/record-access-match-typing/accepted/closed-record-access-match.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/record-access-match-typing/rejected/closed-record-access-match-errors.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/record-access-match-typing/rejected/closed-record-access-match-errors.qst",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh08_record_access_match_typing_test.clj",
+        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D8", "D9", "L7", "C7", "BOOT7", "BOOT8", "TEST13", "docs/self-hosting-slice-backlog.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-08/record-access-match-typing/accepted/closed-record-access-match.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-08/record-access-match-typing/accepted/closed-record-access-match.qst"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-08/record-access-match-typing/rejected/closed-record-access-match-errors.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-08/record-access-match-typing/rejected/closed-record-access-match-errors.qst"
+        ],
+        "stable_diagnostics": ["C7-TYPE-MISMATCH", "C7-VERIFY", "missing-field", "invalid-record-access", "invalid-variant", "duplicate-match-branch", "non-exhaustive-match", "contradictory-narrowing", "branch-result-type-mismatch"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh08-record-access-match-typing-test --fail-fast", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh08-records-unions-type-test --fail-fast", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh07-c7-type-source-coverage-test --fail-fast", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test --fail-fast", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check 5393a12139ed189e1b5b262b7a5fe920168f0fc5..c3dc736bc1665e4dc181d82a7a12d4660a4f774f", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 5393a12139ed189e1b5b262b7a5fe920168f0fc5 --candidate-commit c3dc736bc1665e4dc181d82a7a12d4660a4f774f --candidate-tree 2c4adbb35f7414824e82b83390f7b40a5c252d01", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [
+        {"reviewer": "review_sh08_exact", "kind": "independent", "result": "accepted"}
+      ],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary seed, coordinator-digest, and verifier boundary",
+        "the result authenticates bounded closed descriptor inputs and emits node-linked record-access and match typing facts, but complete per-fact origin chains and the complete constraint ledger remain pending",
+        "match guards and effects, defaults and unreachable branches, general pattern-binding environments, ownership and linear pattern moves, SAFE classification, and runtime behavior remain pending",
+        "native Gravity cryptographic verification, general SH-08 completion, compiler completion, roadmap credit, self-hosting, release, and seed retirement are not claimed"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-25T18:58:40Z", "actor": "sh-types", "reason": "reconcile the corrected bounded record-access and match-typing implementation onto the then-current main"},
+        {"state": "frozen", "at": "2026-08-25T18:58:41Z", "actor": "uniform-coordinator", "reason": "freeze exact base 5393a12139ed189e1b5b262b7a5fe920168f0fc5, candidate c3dc736bc1665e4dc181d82a7a12d4660a4f774f, tree 2c4adbb35f7414824e82b83390f7b40a5c252d01, and seven-path ownership set"},
+        {"state": "review-pending", "at": "2026-08-25T18:58:42Z", "actor": "uniform-coordinator", "reason": "request fresh independent exact review after reconciliation and coordinator-owned source-guard refresh"},
+        {"state": "accepted", "at": "2026-08-25T18:58:43Z", "actor": "review_sh08_exact", "reason": "accept authenticated descriptor recomputation, genuine node-linked facts, actual-path diagnostics, dual-source traversal, fail-closed substitutions, exact guard non-weakening, and explicit residuals"},
+        {"state": "integration-eligible", "at": "2026-08-25T18:58:44Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, focused and boundary gates, coordinator-authorized C7 guard assumption, independent acceptance, residual boundaries, and nonclaims verified"}
+      ],
+      "disposition": "Integration-eligible bounded SH-08 record-access and match typing only; no SH-08 completion, roadmap credit, self-hosting, release, or seed-retirement authority."
     }
   ]
 }
