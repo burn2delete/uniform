@@ -1912,6 +1912,67 @@
         {"state": "integrated", "at": "2026-08-25T21:36:23Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted C11 pin repair and this append-only admission record onto main"}
       ],
       "disposition": "Integrated the bounded SH-02 C11 authenticated source pin and mechanically coupled recursive identity refresh only; downstream C13/C14 semantic corrections and unrelated SH25 catalog drift remain held, with no roadmap, release, self-hosting, or seed-retirement authority."
+    },
+    {
+      "id": "p15-s23-stage2-runtime-execution-profile-v1",
+      "title": "P15-S23 bounded Stage2 runtime execution attribution profile version 1",
+      "invariant_family": "tooling/p15-s23-stage2-runtime-execution-profile",
+      "owner": "development-verification",
+      "author": "development-verification",
+      "state": "integrated",
+      "dependencies": ["p15-s23-stage2-emitter-phase-profile-v1"],
+      "architecture_decision": "Add opt-in bounded runtime execution attribution before attempting another optimization: retain deterministic semantic and count accounting, keep sampled inclusive costs and elapsed time explicitly host-variable, saturate counters instead of wrapping, and fail closed on semantic mismatch or excess call depth.",
+      "base_commit": "496531814486e76c1f12db6ee14f53cfc1ae5860",
+      "candidate_commit": "186663e2d089948cc9734c3417af83d2c115c1c1",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_execution_profile.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_execution_profile_test.clj",
+        "docs/development-verification.md"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "C16", "BOOT7", "BOOT8", "TEST2", "TEST13", "docs/development-verification.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/fixtures/accepted/core-app.gravity",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_execution_profile_test.clj#fixed-profile-records-bounded-deterministic-attribution"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_execution_profile_test.clj#profile-rejects-unbounded-or-mismatched-requests",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_execution_profile_test.clj#profile-rejects-forged-result-and-depth-overflow"
+        ],
+        "stable_diagnostics": ["SH01-STAGE2-RUNTIME-PROFILE-COUNT", "SH01-STAGE2-RUNTIME-PROFILE-USAGE", "SH01-STAGE2-RUNTIME-PROFILE-EQUIVALENCE", "SH01-STAGE2-RUNTIME-PROFILE-DEPTH"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-stage2-runtime-execution-profile-test --fail-fast", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test --fail-fast", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check 496531814486e76c1f12db6ee14f53cfc1ae5860..186663e2d089948cc9734c3417af83d2c115c1c1", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 496531814486e76c1f12db6ee14f53cfc1ae5860 --candidate-commit 186663e2d089948cc9734c3417af83d2c115c1c1 --candidate-tree d13d801905eded9f55b1d3d2f8c5598648b32012", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [
+        {"reviewer": "review_emitter_allocation", "kind": "independent", "result": "accepted"}
+      ],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary Stage2 plan-emission, runtime execution, instrumentation, allocation-sampling, and verification boundary",
+        "temporary root-Var wrappers are serialized only between explicit profiler requests in one JVM and are not safe authority for unrelated concurrent same-JVM work",
+        "deterministic authority is limited to semantic receipt and bounded count accounting; elapsed time and sampled inclusive function costs are host-variable observations and establish no allocation bound, cost ranking, performance baseline, or improvement",
+        "the profiler emits and executes one plan but does not confer fresh no-cache verification authority or alter authoritative verifier outcomes",
+        "the explicit representative profile was not run during admission or post-merge validation; default focused coverage uses bounded synthetic seams",
+        "the failed macro-operation reuse prototype is held without a commit and is not included in this candidate",
+        "this slice adds attribution only and implements no runtime optimization, release capability, self-hosting completion, or seed retirement"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-25T22:31:37Z", "actor": "development-verification", "reason": "add bounded runtime execution attribution after source and phase profiling left most Stage2 emission cost unattributed"},
+        {"state": "frozen", "at": "2026-08-25T22:31:38Z", "actor": "uniform-coordinator", "reason": "freeze exact base 496531814486e76c1f12db6ee14f53cfc1ae5860, candidate 186663e2d089948cc9734c3417af83d2c115c1c1, tree d13d801905eded9f55b1d3d2f8c5598648b32012, and three-path ownership set"},
+        {"state": "review-pending", "at": "2026-08-25T22:31:39Z", "actor": "uniform-coordinator", "reason": "request independent exact review of semantic equivalence, bounded depth, counter and sample saturation, deterministic accounting, host-variable observations, focused checks, and nonclaims"},
+        {"state": "accepted", "at": "2026-08-25T22:31:40Z", "actor": "review_emitter_allocation", "reason": "accept the exact bounded profiler, semantic guard, depth rejection, independent counter and sample saturation, focused evidence, explicit-only representative run, and nonclaims"},
+        {"state": "integration-eligible", "at": "2026-08-25T22:31:41Z", "actor": "uniform-coordinator", "reason": "exact identities, clean named branch, three-path scope, positive and negative fixtures, stable diagnostics, successful bounded checks, independent acceptance, residual boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-25T22:31:42Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted runtime attribution profiler and this append-only admission record onto main"}
+      ],
+      "disposition": "Integrated bounded opt-in Stage2 runtime execution attribution only; no representative profile, optimization, performance, allocation-bound, cost-ranking, roadmap, release, self-hosting, or seed-retirement authority, and the macro-operation reuse prototype remains held and excluded."
     }
   ]
 }
