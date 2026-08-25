@@ -1300,6 +1300,65 @@
         {"state": "integrated", "at": "2026-08-25T15:25:32Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted five-commit runner-wiring candidate onto main and recorded the authorized fresh-verification result"}
       ],
       "disposition": "Integrated bounded non-authoritative incremental development-loop wiring only; authoritative and P15-S23 proof lanes remain fresh and cache-invisible, with no performance, roadmap, release, self-hosting, or seed-retirement credit."
+    },
+    {
+      "id": "p15-s23-stage2-map-literal-hotpath-v1",
+      "title": "P15-S23 Stage2 map-literal hotpath version 1",
+      "invariant_family": "tooling/p15-s23-stage2-map-literal-hotpath",
+      "owner": "development-verification",
+      "author": "development-verification",
+      "state": "integrated",
+      "dependencies": ["incremental-development-loop-runner-wiring-v1"],
+      "architecture_decision": "",
+      "base_commit": "fb1d77ca5d600377d91901c9339cd0e35e2d9852",
+      "candidate_commit": "ceea5f66230d13ada15826223a692b83d829e5e7",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_benchmark.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_benchmark_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+        "docs/artifacts/phase-15/reports/p15-s23-stage2-runtime-map-literal-optimization-report.md"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "L2", "BOOT7", "BOOT8", "TEST2", "TEST13", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_benchmark_test.clj"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+        ],
+        "stable_diagnostics": ["L2-UNKNOWN-CORE-FORM", "L2-HOST-SEMANTICS"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --namespace gravity.self-hosting.sh01-stage2-runtime-benchmark-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check fb1d77ca5d600377d91901c9339cd0e35e2d9852..ceea5f66230d13ada15826223a692b83d829e5e7", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base fb1d77ca5d600377d91901c9339cd0e35e2d9852 --candidate-commit ceea5f66230d13ada15826223a692b83d829e5e7 --candidate-tree e0e3e0c264489a7f1947e6e18ef784fd89cf1740", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [
+        {"reviewer": "stage2_hotpath_exact_review", "kind": "independent", "result": "accepted"}
+      ],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary Stage2 execution and verification boundary",
+        "the bounded map-literal path optimization preserves the existing hosted interpreter and does not retire any seed boundary",
+        "focused benchmark-contract observations grant no release-grade or comparative performance authority",
+        "P15-S23 fresh proof remains cache-invisible and was not rerun for this bounded integration"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-25T15:40:00Z", "actor": "development-verification", "reason": "implement the smallest Stage2 map-literal execution hotpath for the P15-S23 fresh-proof bottleneck"},
+        {"state": "frozen", "at": "2026-08-25T15:42:00Z", "actor": "uniform-coordinator", "reason": "freeze exact base fb1d77ca5d600377d91901c9339cd0e35e2d9852, corrected candidate ceea5f66230d13ada15826223a692b83d829e5e7, tree e0e3e0c264489a7f1947e6e18ef784fd89cf1740, and five-path ownership set"},
+        {"state": "review-pending", "at": "2026-08-25T15:43:00Z", "actor": "uniform-coordinator", "reason": "request independent exact review after the malformed map-entry fail-closed correction"},
+        {"state": "accepted", "at": "2026-08-25T15:44:00Z", "actor": "stage2_hotpath_exact_review", "reason": "accept semantic preservation, malformed-entry rejection, focused iteration and benchmark-contract evidence, and authority nonclaims"},
+        {"state": "integration-eligible", "at": "2026-08-25T15:47:00Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, bounded gates, independent acceptance, residual boundaries, and nonclaims verified without launching the multi-hour full suite"},
+        {"state": "integrated", "at": "2026-08-25T15:47:17Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted corrected Stage2 map-literal candidate onto main"}
+      ],
+      "disposition": "Integrated the bounded Stage2 map-literal execution hotpath only; no benchmark, roadmap, release, self-hosting, or seed-retirement credit, and no multi-hour P15-S23 suite was run."
     }
   ]
 }
