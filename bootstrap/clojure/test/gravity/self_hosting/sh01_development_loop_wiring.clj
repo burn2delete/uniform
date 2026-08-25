@@ -420,6 +420,10 @@
            (.resolve shared-root "broker")))
         timeout-ms (long (or (:timeout-ms options) default-timeout-ms))
         snapshot (repository-snapshot working-directory)
+        snapshot-telemetry
+        (atom {:full-snapshot-invocations 1
+               :full-snapshot-path-observations (:path-count snapshot)
+               :phases {:initial 1}})
         identity-options (select-keys options [:command :clojure-command])]
     (when-not (pos? timeout-ms)
       (fail! "SH01-DEVELOPMENT-LOOP-TIMEOUT"
@@ -431,6 +435,7 @@
      :broker-root broker-root
      :timeout-ms timeout-ms
      :snapshot snapshot
+     :snapshot-telemetry snapshot-telemetry
      :revalidate-snapshot? true
      :revalidate-external-inputs? true
      :identity-options identity-options
@@ -609,44 +614,60 @@
                             (or (:batch-jobs job) [job]))
           :receipt receipt}))
 
-(defn- verify-snapshot!
-  [context]
-  (when (:revalidate-snapshot? context)
-    (let [working-directory (:working-directory context)
-          current-snapshot (repository-snapshot working-directory)]
-      (when-not (= (:snapshot context) current-snapshot)
-        (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
-               "Repository inputs changed after parent cache-key computation"
-               {:input-kind :repository}))
-      (when (:revalidate-external-inputs? context)
-        (let [repository-root
-              (.normalize (.toAbsolutePath
-                           (.toPath (io/file working-directory))))
-              current-classpath
-              (classpath-identities
-               repository-root (:repository-identity current-snapshot))
-              current-runtime
-              (base-runtime-identities repository-root
-                                       (:identity-options context))]
-          (when-not (= (:classpath-inputs context) current-classpath)
-            (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
-                   "External classpath inputs changed after cache-key computation"
-                   {:input-kind :classpath}))
-          (when-not (= (:runtime-tool-inputs context) current-runtime)
-            (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
-                   "Runtime or command inputs changed after cache-key computation"
-                   {:input-kind :runtime-tool}))))))
-  nil)
+(defn- record-snapshot!
+  [context phase snapshot]
+  (when-let [telemetry (:snapshot-telemetry context)]
+    (swap! telemetry
+           (fn [current]
+             (-> current
+                 (update :full-snapshot-invocations (fnil inc 0))
+                 (update :full-snapshot-path-observations
+                         (fnil + 0) (:path-count snapshot))
+                 (update-in [:phases phase] (fnil inc 0))))))
+  snapshot)
 
-(defn probe
-  "Probe in the parent and return the unchanged job or its immutable hit."
-  [context job]
+(defn- verify-snapshot!
+  ([context]
+   (verify-snapshot! context :verification))
+  ([context phase]
+   (when (:revalidate-snapshot? context)
+     (let [working-directory (:working-directory context)
+           current-snapshot
+           (record-snapshot! context phase
+                             (repository-snapshot working-directory))]
+       (when-not (= (:snapshot context) current-snapshot)
+         (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                "Repository inputs changed after parent cache-key computation"
+                {:input-kind :repository}))
+       (when (:revalidate-external-inputs? context)
+         (let [repository-root
+               (.normalize (.toAbsolutePath
+                            (.toPath (io/file working-directory))))
+               current-classpath
+               (classpath-identities
+                repository-root (:repository-identity current-snapshot))
+               current-runtime
+               (base-runtime-identities repository-root
+                                        (:identity-options context))]
+           (when-not (= (:classpath-inputs context) current-classpath)
+             (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                    "External classpath inputs changed after cache-key computation"
+                    {:input-kind :classpath}))
+           (when-not (= (:runtime-tool-inputs context) current-runtime)
+             (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                    "Runtime or command inputs changed after cache-key computation"
+                    {:input-kind :runtime-tool}))))))
+   nil))
+
+(defn- probe*
+  [context job verify-hit?]
   (let [outcome (cache/lookup! (:development-cache-request job))
         receipt (:receipt outcome)]
     (record-cache-receipt! context :parent-probe job receipt)
     (if (= :hit (:decision receipt))
       (do
-        (verify-snapshot! context)
+        (when verify-hit?
+          (verify-snapshot! context :standalone-parent-hit))
         {:job job
          :hit-result
          (assoc (:result outcome)
@@ -655,6 +676,19 @@
                 :child-jvm-launched? false
                 :broker-acquired-this-run? false)})
       {:job job :hit-result nil})))
+
+(defn probe
+  "Probe in the parent and return the unchanged job or its immutable hit."
+  [context job]
+  (probe* context job true))
+
+(defn probe-batch
+  "Probe all scheduled units, then validate once before admitting any result."
+  [context jobs]
+  (let [outcomes (mapv #(probe* context % false) jobs)]
+    (when (some :hit-result outcomes)
+      (verify-snapshot! context :parent-probe-batch))
+    outcomes))
 
 (defn record-launch!
   "Record one successful ProcessBuilder or injected launcher return."
@@ -729,7 +763,7 @@
             (fn []
               (let [result (operation)]
                 (try
-                  (verify-snapshot! context)
+                  (verify-snapshot! context :producer-post-operation)
                   result
                   (catch clojure.lang.ExceptionInfo exception
                     (throw
@@ -741,6 +775,8 @@
                       exception)))))))
            (:test-policy request)))
         receipt (:receipt outcome)]
+    (when (= :hit (:decision receipt))
+      (verify-snapshot! context :secondary-singleflight-hit))
     (record-cache-receipt! context :execution job receipt)
     (assoc (:result outcome)
            :cache-receipt receipt
@@ -754,6 +790,8 @@
   "Return deterministic cache receipts plus the exact launch count."
   [context]
   {:launched-jvms @(:launch-count context)
+   :snapshot-telemetry
+   (when-let [telemetry (:snapshot-telemetry context)] @telemetry)
    :cache-receipts
    (->> @(:cache-receipts context)
         (sort-by (juxt :namespaces :phase))

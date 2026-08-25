@@ -774,22 +774,18 @@
           (recur))))))
 
 (defn- prepare-development-jobs
-  [context plan options jobs]
-  (if-not context
-    {:pending (vec jobs) :hits {}}
-    (reduce
-     (fn [{:keys [pending hits]} job]
-       (let [job (wiring/attach-request context plan options job)
-             {:keys [hit-result]} (wiring/probe context job)
-             key (namespace-key (:namespace job))]
-         (if hit-result
-           {:pending pending
-            :hits (assoc hits key
-                         (cond-> (normalize-result job hit-result 0)
-                           (:batch-jobs job) (assoc :batch-job job)))}
-           {:pending (conj pending job) :hits hits})))
-     {:pending [] :hits {}}
-     jobs)))
+  [jobs probe-outcomes]
+  (reduce
+   (fn [{:keys [pending hits]} [job {:keys [hit-result]}]]
+     (let [key (namespace-key (:namespace job))]
+       (if hit-result
+         {:pending pending
+          :hits (assoc hits key
+                       (cond-> (normalize-result job hit-result 0)
+                         (:batch-jobs job) (assoc :batch-job job)))}
+         {:pending (conj pending job) :hits hits})))
+   {:pending [] :hits {}}
+   (map vector jobs probe-outcomes)))
 
 (defn- cache-report-count
   [receipts predicate]
@@ -839,20 +835,38 @@
                                (:invalid? authority)))))
          batch? (or (nil? (:worker options))
                     (some? (:normal-batch-worker options)))
+         normal-jobs
+         (vec (if batch?
+                (get-in schedule [:parallel-phase :normal-batches])
+                (get-in schedule [:parallel-phase :normal])))
+         memory-jobs (vec (get-in schedule [:parallel-phase :memory-heavy]))
+         exclusive-jobs (vec (get-in schedule [:exclusive-phase :exclusive]))
+         attach-jobs
+         (fn [jobs]
+           (if development-context
+             (mapv #(wiring/attach-request development-context plan
+                                            development-options %)
+                   jobs)
+             jobs))
+         attached-normal (attach-jobs normal-jobs)
+         attached-memory (attach-jobs memory-jobs)
+         attached-exclusive (attach-jobs exclusive-jobs)
+         attached-jobs
+         (vec (concat attached-normal attached-memory attached-exclusive))
+         probe-outcomes
+         (if development-context
+           (wiring/probe-batch development-context attached-jobs)
+           (mapv (fn [job] {:job job :hit-result nil}) attached-jobs))
+         [normal-probes remaining-probes]
+         (split-at (count attached-normal) probe-outcomes)
+         [memory-probes exclusive-probes]
+         (split-at (count attached-memory) remaining-probes)
          prepared-normal
-         (prepare-development-jobs
-          development-context plan development-options
-          (if batch?
-            (get-in schedule [:parallel-phase :normal-batches])
-            (get-in schedule [:parallel-phase :normal])))
+         (prepare-development-jobs attached-normal normal-probes)
          prepared-memory
-         (prepare-development-jobs
-          development-context plan development-options
-          (get-in schedule [:parallel-phase :memory-heavy]))
+         (prepare-development-jobs attached-memory memory-probes)
          prepared-exclusive
-         (prepare-development-jobs
-          development-context plan development-options
-          (get-in schedule [:exclusive-phase :exclusive]))
+         (prepare-development-jobs attached-exclusive exclusive-probes)
          cached-units
          (merge (:hits prepared-normal)
                 (:hits prepared-memory)
@@ -1002,6 +1016,9 @@
                      (true? (get-in % [:receipt :producer-executed?]))
                      (true? (get-in % [:receipt :cacheable?]))))
               0)
+            :snapshot-telemetry
+            (when development-context
+              (:snapshot-telemetry development-facts))
             :cache-receipts (vec (or cache-receipts []))
             :broker-receipts broker-receipts
             :producer-broker-receipts producer-broker-receipts

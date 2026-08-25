@@ -1,5 +1,7 @@
 (ns gravity.self-hosting.sh01-development-loop-wiring-test
   (:require [clojure.test :refer [deftest is testing]]
+            [clojure.java.shell :as shell]
+            [gravity.self-hosting.sh01-development-test-cache :as cache]
             [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
             [gravity.self-hosting.sh01-parallel-test-runner :as runner])
   (:import [java.nio.file Files LinkOption Path]
@@ -52,6 +54,10 @@
      {:schema :gravity/sh01-complete-repository-snapshot-v1
       :repository-identity snapshot-id
       :path-count 1}
+     :snapshot-telemetry
+     (atom {:full-snapshot-invocations 0
+            :full-snapshot-path-observations 0
+            :phases {}})
      :launch-count (atom 0)
      :cache-receipts (atom [])}))
 
@@ -142,6 +148,35 @@
     (is (= "SH01-DEVELOPMENT-LOOP-ROOT"
            (:id (exception-data
                  #(wiring/repository-snapshot "bootstrap")))))))
+
+(deftest repository-snapshot-detects-content-and-inventory-without-metadata-help
+  (with-coordination-root [base]
+    (let [repository-root (.resolve (.toRealPath base no-links) "repository")
+          tracked (.resolve repository-root "tracked.txt")
+          untracked (.resolve repository-root "untracked.txt")]
+      (Files/createDirectories repository-root no-file-attributes)
+      (is (zero? (:exit (shell/sh "git" "init" "-q"
+                                  :dir (str repository-root)))))
+      (Files/write tracked (.getBytes "first" "UTF-8")
+                   (make-array java.nio.file.OpenOption 0))
+      (is (zero? (:exit (shell/sh "git" "add" "tracked.txt"
+                                  :dir (str repository-root)))))
+      (let [first-snapshot (wiring/repository-snapshot repository-root)
+            original-time (Files/getLastModifiedTime tracked no-links)]
+        (Files/write tracked (.getBytes "other" "UTF-8")
+                     (make-array java.nio.file.OpenOption 0))
+        (Files/setLastModifiedTime tracked original-time)
+        (let [content-snapshot (wiring/repository-snapshot repository-root)]
+          (is (not= (:repository-identity first-snapshot)
+                    (:repository-identity content-snapshot)))
+          (Files/write untracked (.getBytes "inventory" "UTF-8")
+                       (make-array java.nio.file.OpenOption 0))
+          (let [inventory-snapshot
+                (wiring/repository-snapshot repository-root)]
+            (is (= (inc (:path-count content-snapshot))
+                   (:path-count inventory-snapshot)))
+            (is (not= (:repository-identity content-snapshot)
+                      (:repository-identity inventory-snapshot)))))))))
 
 (deftest external-classpath-command-bytes-and-mode-affect-identities
   (with-coordination-root [base]
@@ -336,6 +371,138 @@
       (is (= 1 (:cache-hit-jvms second-report)))
       (is (zero? (:post-cache-planned-jvms second-report))))))
 
+(deftest all-miss-parent-probe-defers-verification-to-producer
+  (with-coordination-root [base]
+    (let [namespace 'gravity.self-hosting.sh07-wiring-all-miss-test
+          plan (impact-plan namespace)
+          selected-context (assoc (context base) :revalidate-snapshot? true)
+          report
+          (with-redefs [wiring/repository-snapshot
+                        (fn [_] (:snapshot selected-context))]
+            (execute plan selected-context
+                     (fn [_ _] {:status :passed :exit-code 0})))]
+      (is (= :passed (:status report)))
+      (is (= [namespace] (mapv :namespace (:results report))))
+      (is (= 1 (:launched-jvms report)))
+      (is (zero? (:cache-hit-jvms report)))
+      (is (= [:miss :miss]
+             (mapv #(get-in % [:receipt :decision])
+                   (:cache-receipts report))))
+      (is (= {:full-snapshot-invocations 1
+              :full-snapshot-path-observations 1
+              :phases {:producer-post-operation 1}}
+             (:snapshot-telemetry report))))))
+
+(deftest parent-probes-share-one-verification-before-hit-admission
+  (with-coordination-root [base]
+    (let [namespaces
+          '[gravity.self-hosting.sh07-wiring-batch-a-test
+            gravity.self-hosting.sh07-wiring-batch-b-test
+            gravity.self-hosting.sh07-wiring-batch-c-test]
+          shards
+          (mapv (fn [namespace]
+                  {:namespace namespace
+                   :slice "SH-07"
+                   :resource-class :memory-heavy
+                   :component-id (str namespace)
+                   :batch-key (str "component/wiring-test/" namespace)
+                   :test-policy (reviewed-policy)})
+                namespaces)
+          full-plan {:schema :gravity/sh01-impact-test-plan-v1
+                     :authority :non-authoritative
+                     :authoritative? false
+                     :namespaces namespaces
+                     :shards shards}
+          first-plan (assoc full-plan
+                            :namespaces [(first namespaces)]
+                            :shards [(first shards)])
+          launches (atom 0)
+          launcher (fn [_ _]
+                     (swap! launches inc)
+                     {:status :passed :exit-code 0})]
+      (execute first-plan (context base) launcher)
+      (let [mixed-context (assoc (context base) :revalidate-snapshot? true)
+            mixed-report
+            (with-redefs [wiring/repository-snapshot
+                          (fn [_] (:snapshot mixed-context))]
+              (execute full-plan mixed-context launcher))]
+        (is (= 3 @launches))
+        (is (= 1 (:cache-hit-jvms mixed-report)))
+        (is (= 2 (:launched-jvms mixed-report)))
+        (is (= {:full-snapshot-invocations 3
+                :full-snapshot-path-observations 3
+                :phases {:parent-probe-batch 1
+                         :producer-post-operation 2}}
+               (:snapshot-telemetry mixed-report))))
+      (let [warm-context (assoc (context base) :revalidate-snapshot? true)
+            warm-report
+            (with-redefs [wiring/repository-snapshot
+                          (fn [_] (:snapshot warm-context))]
+              (execute full-plan warm-context launcher))]
+        (is (= 3 @launches))
+        (is (= 3 (:cache-hit-jvms warm-report)))
+        (is (zero? (:launched-jvms warm-report)))
+        (is (= {:full-snapshot-invocations 1
+                :full-snapshot-path-observations 1
+                :phases {:parent-probe-batch 1}}
+               (:snapshot-telemetry warm-report)))))))
+
+(deftest mutation-during-parent-probes-rejects-before-result-or-launch
+  (with-coordination-root [base]
+    (let [plan (impact-plan 'gravity.self-hosting.sh07-wiring-probe-race-test)
+          launches (atom 0)
+          launcher (fn [_ _]
+                     (swap! launches inc)
+                     {:status :passed :exit-code 0})]
+      (execute plan (context base) launcher)
+      (let [selected-context (assoc (context base) :revalidate-snapshot? true)
+            changed-snapshot
+            (assoc (:snapshot selected-context)
+                   :repository-identity
+                   (str "sha256:" (apply str (repeat 64 "b"))))
+            failure
+            (with-redefs [wiring/repository-snapshot
+                          (fn [_] changed-snapshot)]
+              (exception-data #(execute plan selected-context launcher)))]
+        (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE" (:id failure)))
+        (is (= :repository (:input-kind failure)))
+        (is (= 1 @launches))
+        (is (= {:parent-probe-batch 1}
+               (:phases @(:snapshot-telemetry selected-context))))))))
+
+(deftest standalone-and-secondary-hits-retain-race-validation
+  (with-coordination-root [base]
+    (let [plan (impact-plan 'gravity.self-hosting.sh07-wiring-secondary-hit-test)
+          selected-context (assoc (context base) :revalidate-snapshot? true)
+          job (wiring/attach-request
+               selected-context plan
+               {:development-operation-identity
+                {:id :test-operation :sha256 snapshot-id}}
+               (first (:shards plan)))
+          changed-snapshot
+          (assoc (:snapshot selected-context)
+                 :repository-identity
+                 (str "sha256:" (apply str (repeat 64 "b"))))
+          hit {:receipt {:decision :hit
+                         :producer-executed? false
+                         :cacheable? true}
+               :result {:status :passed :exit-code 0}}]
+      (with-redefs [cache/lookup! (fn [_] hit)
+                    wiring/repository-snapshot (fn [_] changed-snapshot)]
+        (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+               (:id (exception-data #(wiring/probe selected-context job))))))
+      (with-redefs [cache/lookup-or-run! (fn [_ _] hit)
+                    wiring/repository-snapshot (fn [_] changed-snapshot)]
+        (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+               (:id
+                (exception-data
+                 #(wiring/run-unit!
+                   selected-context job
+                   (fn [] (throw (Error. "secondary hit ran producer")))))))))
+      (is (= {:standalone-parent-hit 1
+              :secondary-singleflight-hit 1}
+             (:phases @(:snapshot-telemetry selected-context)))))))
+
 (deftest concurrent-identical-checks-retain-one-producer
   (with-coordination-root [base]
     (let [plan (impact-plan 'gravity.self-hosting.sh07-wiring-race-test)
@@ -347,18 +514,40 @@
                      (.countDown ready)
                      (.await release 500 TimeUnit/MILLISECONDS)
                      {:status :passed :exit-code 0})
-          first (future (execute plan (context base) launcher))
-          second (future (execute plan (context base) launcher))]
-      ;; Only the producer reaches the launch boundary; release it after the
-      ;; second parent has had time to enter the same-key cache path.
-      (.await ready 100 TimeUnit/MILLISECONDS)
-      (Thread/sleep 50)
-      (.countDown release)
-      (let [reports [@first @second]]
-        (is (= 1 @launches))
-        (is (every? #(= :passed (:status %)) reports))
-        (is (= 1 (reduce + (map :launched-jvms reports))))
-        (is (= 1 (reduce + (map :cache-hit-jvms reports))))))))
+          first-context (assoc (context base) :revalidate-snapshot? true)
+          second-context (assoc (context base) :revalidate-snapshot? true)]
+      (with-redefs [wiring/repository-snapshot
+                    (fn [_] (:snapshot first-context))]
+        (let [first (future (execute plan first-context launcher))
+              second (future (execute plan second-context launcher))]
+          ;; Only the producer reaches the launch boundary; release it after
+          ;; the second parent has entered the same-key cache path.
+          (.await ready 100 TimeUnit/MILLISECONDS)
+          (Thread/sleep 50)
+          (.countDown release)
+          (let [reports [@first @second]]
+            (is (= 1 @launches))
+            (is (every? #(= :passed (:status %)) reports))
+            (is (= 1 (reduce + (map :launched-jvms reports))))
+            (is (= 1 (reduce + (map :cache-hit-jvms reports))))
+            (is (zero? (reduce +
+                                (map #(get-in % [:snapshot-telemetry
+                                                 :phases
+                                                 :parent-probe-batch]
+                                              0)
+                                     reports))))
+            (is (= 1 (reduce +
+                             (map #(get-in % [:snapshot-telemetry
+                                              :phases
+                                              :producer-post-operation]
+                                           0)
+                                  reports))))
+            (is (= 1 (reduce +
+                             (map #(get-in % [:snapshot-telemetry
+                                              :phases
+                                              :secondary-singleflight-hit]
+                                           0)
+                                  reports))))))))))
 
 (deftest launcher-start-failure-has-no-false-launch-and-keeps-receipts
   (with-coordination-root [base]
@@ -385,6 +574,7 @@
   (with-coordination-root [base]
     (let [plan (impact-plan 'gravity.self-hosting.sh07-wiring-race-close-test)
           selected-context (assoc (context base) :revalidate-snapshot? true)
+          launches (atom 0)
           changed-snapshot
           (assoc (:snapshot selected-context)
                  :repository-identity
@@ -393,14 +583,24 @@
                     (fn [_] changed-snapshot)]
         (let [report
               (execute plan selected-context
-                       (fn [_ _] {:status :passed :exit-code 0}))]
+                       (fn [_ _]
+                         (swap! launches inc)
+                         {:status :passed :exit-code 0}))]
           (is (= :failed (:status report)))
           (is (= 1 (:launched-jvms report)))
           (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
                  (:diagnostic-id (first (:results report)))))
           (is (true? (:child-jvm-launched? (first (:results report)))))
           (is (= [:admitted :released]
-                 (mapv :outcome (:broker-receipts report)))))))))
+                 (mapv :outcome (:broker-receipts report))))))
+      (let [retry-report
+            (execute plan (context base)
+                     (fn [_ _]
+                       (swap! launches inc)
+                       {:status :passed :exit-code 0}))]
+        (is (= :passed (:status retry-report)))
+        (is (= 2 @launches))
+        (is (zero? (:cache-hit-jvms retry-report)))))))
 
 (deftest failure-timeout-and-excluded-policies-always-execute
   (doseq [{:keys [label plan-options policy-options runner-options result
