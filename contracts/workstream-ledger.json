@@ -1532,7 +1532,7 @@
       "invariant_family": "self-hosting/sh08-record-access-match-typing",
       "owner": "sh-types",
       "author": "sh-types",
-      "state": "integration-eligible",
+      "state": "integrated",
       "dependencies": ["sh08-records-unions-descriptor-v1"],
       "architecture_decision": "",
       "base_commit": "5393a12139ed189e1b5b262b7a5fe920168f0fc5",
@@ -1583,9 +1583,10 @@
         {"state": "frozen", "at": "2026-08-25T18:58:41Z", "actor": "uniform-coordinator", "reason": "freeze exact base 5393a12139ed189e1b5b262b7a5fe920168f0fc5, candidate c3dc736bc1665e4dc181d82a7a12d4660a4f774f, tree 2c4adbb35f7414824e82b83390f7b40a5c252d01, and seven-path ownership set"},
         {"state": "review-pending", "at": "2026-08-25T18:58:42Z", "actor": "uniform-coordinator", "reason": "request fresh independent exact review after reconciliation and coordinator-owned source-guard refresh"},
         {"state": "accepted", "at": "2026-08-25T18:58:43Z", "actor": "review_sh08_exact", "reason": "accept authenticated descriptor recomputation, genuine node-linked facts, actual-path diagnostics, dual-source traversal, fail-closed substitutions, exact guard non-weakening, and explicit residuals"},
-        {"state": "integration-eligible", "at": "2026-08-25T18:58:44Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, focused and boundary gates, coordinator-authorized C7 guard assumption, independent acceptance, residual boundaries, and nonclaims verified"}
+        {"state": "integration-eligible", "at": "2026-08-25T18:58:44Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, focused and boundary gates, coordinator-authorized C7 guard assumption, independent acceptance, residual boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-25T19:03:06Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted SH-08 candidate and admission record onto main"}
       ],
-      "disposition": "Integration-eligible bounded SH-08 record-access and match typing only; no SH-08 completion, roadmap credit, self-hosting, release, or seed-retirement authority."
+      "disposition": "Integrated bounded SH-08 record-access and match typing only; no SH-08 completion, roadmap credit, self-hosting, release, or seed-retirement authority."
     }
   ]
 }
