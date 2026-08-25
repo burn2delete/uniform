@@ -65045,8 +65045,89 @@
       (assoc artifact-base
              :capability-based-proof proof
 	             :artifact-id
-	             (c4-artifact-id
-	              (assoc artifact-base :capability-based-proof proof))))))
+             (c4-artifact-id
+              (assoc artifact-base :capability-based-proof proof))))))
+
+;; A fresh authoritative P15 run must rebuild from an empty context, but it
+;; should not rebuild the same immutable evidence node for every downstream
+;; proof that consumes it.  This dynamic context is deliberately scoped to a
+;; single top-level artifact request: it is not persisted, serialized, or
+;; consulted by the developer result cache.  Artifact identities therefore
+;; continue to be computed from the same values while sibling evidence shares
+;; the already-built node in that request.
+(def ^:dynamic *p15-s23-artifact-build-context* nil)
+
+(def ^:private p15-s23-artifact-context-contract-version
+  :p15-s23-proof-artifact-dag-v2)
+
+(defn p15-s23-artifact-context-key
+  [kind source-path]
+  (let [file (java.io.File. source-path)]
+    ;; The context is request-scoped, but metadata-only keys can still alias
+    ;; two same-size edits made within one request.  Hash the source bytes so
+    ;; a fresh authoritative request never reuses an artifact for different
+    ;; source content.
+    ;; `kind` identifies the fixed builder closure.  A context cannot outlive
+    ;; the current request/process, so code, policy, and tool inputs cannot
+    ;; change underneath it; recursively requested sibling artifacts are
+    ;; content-keyed by this same function.
+    [p15-s23-artifact-context-contract-version
+     kind
+     (.getCanonicalPath file)
+     (sha256-hex (slurp file))]))
+
+(defn p15-s23-with-artifact-build-context
+  [build-fn]
+  (if *p15-s23-artifact-build-context*
+    (build-fn)
+    (binding [*p15-s23-artifact-build-context*
+              (atom {:artifacts {} :in-flight {}})]
+      (build-fn))))
+
+(declare p15-s23-context-artifact)
+
+(defn p15-s23-context-source-data
+  [source-path build-fn]
+  (if-not *p15-s23-artifact-build-context*
+    (build-fn)
+    (p15-s23-context-artifact :source-data source-path build-fn)))
+
+(defn p15-s23-context-artifact
+  [kind source-path build-fn]
+  (if-not *p15-s23-artifact-build-context*
+    (p15-s23-with-artifact-build-context
+     #(p15-s23-context-artifact kind source-path build-fn))
+    (let [key (p15-s23-artifact-context-key kind source-path)
+          context *p15-s23-artifact-build-context*]
+      (loop []
+        (let [state @context]
+          (cond
+            (contains? (:artifacts state) key)
+            (get-in state [:artifacts key])
+
+            (contains? (:in-flight state) key)
+            (let [[status value] @(get-in state [:in-flight key])]
+              (if (= :ok status)
+                value
+                (throw value)))
+
+            :else
+            (let [pending (promise)
+                  next-state (assoc-in state [:in-flight key] pending)]
+              (if (compare-and-set! context state next-state)
+                (try
+                  (let [artifact (build-fn)]
+                    (swap! context
+                           #(-> %
+                                (update :in-flight dissoc key)
+                                (assoc-in [:artifacts key] artifact)))
+                    (deliver pending [:ok artifact])
+                    artifact)
+                  (catch Throwable error
+                    (swap! context update :in-flight dissoc key)
+                    (deliver pending [:error error])
+                    (throw error)))
+                (recur)))))))))
 
 (defn p15-s23-whole-language-self-hosting-gate-source-artifact
   [path source-text]
@@ -65058,9 +65139,10 @@
 
 (defn p15-s23-whole-language-self-hosting-gate-file-artifact
   [path]
-  (p15-s23-whole-language-self-hosting-gate-source-artifact
-   path
-   (slurp path)))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-whole-language-self-hosting-gate-source-artifact
+     path
+     (slurp path))))
 
 (def p15-s23-compiler-source-path
   "bootstrap/gravity/p15_s23/compiler.gravity")
@@ -65141,15 +65223,17 @@
 
 (defn p15-s23-compiler-source-form-record
   [source-path]
-  (let [source-text (slurp source-path)
-        records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)]
-    {:source-text source-text
-     :records records
-     :forms forms
-     :module module}))
+  (p15-s23-context-source-data
+   source-path
+   #(let [source-text (slurp source-path)
+          records (read-source-form-records source-path source-text)
+          forms (mapv :form records)
+          _ (validate-ns-syntax! source-path forms)
+          module (parse-module source-path forms)]
+      {:source-text source-text
+       :records records
+       :forms forms
+       :module module})))
 
 (defn p15-s23-compiler-def-value
   [source-path forms symbol-name]
@@ -65551,7 +65635,9 @@
 
 (defn p15-s23-compiler-source-inventory-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :compiler-source-inventory source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         compiler-stage
         (p15-s23-compiler-def-value source-path
                                      (:forms source-data)
@@ -65606,14 +65692,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-compiler-source-inventory-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-compiler-source-inventory-fail!
      "P15S23C001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-compiler-source-inventory-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-compiler-source-inventory-source-artifact path)))
 
 (def p15-s23-compiler-pipeline-manifest-required-preserves
   #{:source-spans :syntax-identity :diagnostic-codes
@@ -65847,7 +65934,9 @@
 
 (defn p15-s23-compiler-pipeline-manifest-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :compiler-pipeline-manifest source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         manifest (p15-s23-compiler-def-value
                   source-path
                   (:forms source-data)
@@ -65909,14 +65998,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-compiler-pipeline-manifest-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-compiler-pipeline-manifest-fail!
      "P15S23M001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-compiler-pipeline-manifest-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-compiler-pipeline-manifest-source-artifact path)))
 
 (declare c1-architecture-artifact-id
          reader-canonical-hash
@@ -66710,7 +66800,9 @@
 
 (defn p15-s23-source-syntax-serialization-proof-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :source-syntax-serialization-proof source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -66833,14 +66925,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-source-syntax-serialization-proof-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-source-syntax-serialization-fail!
      "P15S23S001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-source-syntax-serialization-proof-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-source-syntax-serialization-proof-source-artifact path)))
 
 (def p15-s23-core-diagnostic-required-preserves
   #{:source-spans :syntax-identity :origin-chain :diagnostic-codes
@@ -67458,7 +67551,9 @@
 
 (defn p15-s23-core-lowering-diagnostic-preservation-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :core-lowering-diagnostic-preservation source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -67562,14 +67657,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-core-lowering-diagnostic-preservation-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-core-diagnostic-fail!
      "P15S23D001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-core-lowering-diagnostic-preservation-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-core-lowering-diagnostic-preservation-source-artifact path)))
 
 (def p15-s23-runtime-required-preserves
   #{:profile :target :effects :capabilities :source-spans
@@ -68414,7 +68510,9 @@
 
 (defn p15-s23-runtime-manifest-capability-enforcement-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :runtime-manifest-capability-enforcement source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -68531,14 +68629,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-runtime-manifest-capability-enforcement-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-runtime-fail!
      "P15S23R001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-runtime-manifest-capability-enforcement-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-runtime-manifest-capability-enforcement-source-artifact path)))
 
 (def p15-s23-accepted-app-source-path
   "bootstrap/clojure/fixtures/accepted/core-app.gravity")
@@ -68922,7 +69021,9 @@
 
 (defn p15-s23-accepted-app-execution-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :accepted-app-execution source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -68938,7 +69039,10 @@
              "P15S23A002" source-path nil
              {:missing-fields [:hosted-core-compiled-app-proof-file-artifact]}))
         accepted-app-artifact
-        (compiled-app-fn p15-s23-accepted-app-source-path)
+        (p15-s23-context-artifact
+         :hosted-core-compiled-app-proof
+         p15-s23-accepted-app-source-path
+         (fn [] (compiled-app-fn p15-s23-accepted-app-source-path)))
         runtime-artifact
         (p15-s23-runtime-manifest-capability-enforcement-source-artifact
          source-path)
@@ -69046,14 +69150,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-accepted-app-execution-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-accepted-app-fail!
      "P15S23A001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-accepted-app-execution-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-accepted-app-execution-source-artifact path)))
 
 (def p15-s23-rejected-app-fixtures
   [{:fixture
@@ -69347,7 +69452,9 @@
 
 (defn p15-s23-rejected-app-diagnostic-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :rejected-app-diagnostic source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -69442,14 +69549,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-rejected-app-diagnostic-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-rejected-app-fail!
      "P15S23E001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-rejected-app-diagnostic-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-rejected-app-diagnostic-source-artifact path)))
 
 (def p15-s23-reproducible-rebuild-stages
   [:compiler-source-inventory
@@ -69819,7 +69927,9 @@
 
 (defn p15-s23-reproducible-rebuild-log-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :reproducible-rebuild-log source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -69911,14 +70021,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-reproducible-rebuild-log-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-reproducible-rebuild-fail!
      "P15S23B001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-reproducible-rebuild-log-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-reproducible-rebuild-log-source-artifact path)))
 
 (def p15-s23-stage-comparison-scope
   [:compiler-pipeline-manifest
@@ -70269,7 +70380,9 @@
 
 (defn p15-s23-stage-comparison-report-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :stage-comparison-report source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -70394,14 +70507,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-stage-comparison-report-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-stage-comparison-fail!
      "P15S23G001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-stage-comparison-report-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-stage-comparison-report-source-artifact path)))
 
 (def p15-s23-self-hosting-conformance-scope
   [:phase14-hosted-core-compiled-conformance
@@ -70801,7 +70915,9 @@
 
 (defn p15-s23-self-hosting-conformance-report-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :self-hosting-conformance-report source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -70817,8 +70933,12 @@
             (p15-s23-self-hosting-conformance-fail!
              "P15S23H003" source-path nil
              {:missing-fields [:phase14-conformance-helper]}))
-          (artifact-fn
-           "bootstrap/clojure/fixtures/accepted/core-app.gravity"))
+          (p15-s23-context-artifact
+           :hosted-core-compiled-conformance-proof
+           "bootstrap/clojure/fixtures/accepted/core-app.gravity"
+           (fn []
+             (artifact-fn
+              "bootstrap/clojure/fixtures/accepted/core-app.gravity"))))
         support-record
         (p15-s23-stage-support-conformance-record
          source-path stage-artifact phase14-artifact)
@@ -70921,14 +71041,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-self-hosting-conformance-report-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-self-hosting-conformance-fail!
      "P15S23H001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-self-hosting-conformance-report-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-self-hosting-conformance-report-source-artifact path)))
 
 (def p15-s23-provenance-required-fields
   #{:artifact-id :artifact-kind :bootstrap-stage
@@ -71494,7 +71615,9 @@
 
 (defn p15-s23-provenance-attestation-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :provenance-attestation source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -71649,14 +71772,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-provenance-attestation-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-provenance-fail!
      "P15S23P001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-provenance-attestation-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-provenance-attestation-source-artifact path)))
 
 (def p15-s23-tcb-required-preserves
   #{:artifact-provenance :compiler-lineage
@@ -72244,7 +72368,9 @@
 
 (defn p15-s23-tcb-delta-record-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :tcb-delta-record source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -72408,14 +72534,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-tcb-delta-record-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-tcb-fail!
      "P15S23T001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-tcb-delta-record-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-tcb-delta-record-source-artifact path)))
 
 (def p15-s23-unsafe-required-preserves
   #{:source-spans :artifact-provenance
@@ -72999,7 +73126,9 @@
 
 (defn p15-s23-unsafe-audit-report-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :unsafe-audit-report source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -73164,14 +73293,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-unsafe-audit-report-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-unsafe-fail!
      "P15S23U001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-unsafe-audit-report-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-unsafe-audit-report-source-artifact path)))
 
 (def p15-s23-whole-language-compiler-required-preserves
   #{:source-spans :syntax-identity :diagnostic-codes
@@ -73823,7 +73953,9 @@
 
 (defn p15-s23-whole-language-compiler-artifact-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :whole-language-compiler-artifact source-path
+   (fn [] (let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -73865,7 +73997,10 @@
              {:missing-fields
               [:hosted-core-compiled-compiler-proof-file-artifact]}))
         hosted-compiler-artifact
-        (hosted-compiler-fn p15-s23-accepted-app-source-path)
+        (p15-s23-context-artifact
+         :hosted-core-compiled-compiler-proof
+         p15-s23-accepted-app-source-path
+         (fn [] (hosted-compiler-fn p15-s23-accepted-app-source-path)))
         stage-support
         (p15-s23-whole-language-compiler-stage-support-matrix
          source-path proof-contract inventory-artifact pipeline-artifact
@@ -74070,14 +74205,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof)))))))
 
 (defn p15-s23-whole-language-compiler-artifact-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-whole-language-compiler-fail!
      "P15S23W001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-whole-language-compiler-artifact-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-whole-language-compiler-artifact-source-artifact path)))
 
 (def p15-s23-governance-package-release-diagnostic-messages
   {"P15S23L001" "governance and package release record contract is missing"
@@ -74694,7 +74830,9 @@
 
 (defn p15-s23-governance-and-package-release-record-source-artifact
   [source-path]
-  (let [source-data (p15-s23-compiler-source-form-record source-path)
+  (p15-s23-context-artifact
+   :governance-and-package-release-record source-path
+   #(let [source-data (p15-s23-compiler-source-form-record source-path)
         proof-contract
         (p15-s23-compiler-def-value
          source-path
@@ -74880,14 +75018,15 @@
            :capability-based-proof proof
            :artifact-id
            (c4-artifact-id
-            (assoc artifact-base :capability-based-proof proof)))))
+            (assoc artifact-base :capability-based-proof proof))))))
 
 (defn p15-s23-governance-and-package-release-record-file-artifact
   [path]
   (when-not (.isFile (java.io.File. path))
     (p15-s23-governance-package-release-fail!
      "P15S23L001" path nil {:missing-fields [:compiler-source]}))
-  (p15-s23-governance-and-package-release-record-source-artifact path))
+  (p15-s23-with-artifact-build-context
+   #(p15-s23-governance-and-package-release-record-source-artifact path)))
 
 (declare hosted-core-compiled-app-proof-file-artifact)
 
@@ -89495,12 +89634,14 @@
 
 (defn p15-s23-cached-source-artifact
   [kind source-path build-fn]
-  (let [cache-key (p15-s23-source-artifact-cache-key kind source-path)]
-    (if-let [artifact (get @p15-s23-source-artifact-cache cache-key)]
-      artifact
-      (let [artifact (build-fn)]
-        (swap! p15-s23-source-artifact-cache assoc cache-key artifact)
-        artifact))))
+  (if *p15-s23-artifact-build-context*
+    (p15-s23-context-artifact kind source-path build-fn)
+    (let [cache-key (p15-s23-source-artifact-cache-key kind source-path)]
+      (if-let [artifact (get @p15-s23-source-artifact-cache cache-key)]
+        artifact
+        (let [artifact (build-fn)]
+          (swap! p15-s23-source-artifact-cache assoc cache-key artifact)
+          artifact)))))
 
 (defn p15-s23-front-end-state
   [source-path source-text]
@@ -157966,39 +158107,40 @@
    (p15-s23-write-current-candidate-artifacts!
     p15-s23-compiler-source-path))
   ([source-path]
-   (let [written
-         (mapv
-          (fn [key]
-            (let [path (get p15-s23-current-candidate-artifact-files key)
-                  artifact (p15-s23-current-candidate-artifact
-                            key source-path)]
-              (p18-t02-write-edn! path artifact)
-              {:key key
-               :path path
-               :artifact (:kind artifact)
-               :artifact-id (:artifact-id artifact)
-               :status (:status artifact)}))
-          p15-s23-current-candidate-artifact-write-order)
-         final-artifact
-         (p15-s23-final-seed-retirement-file-artifact source-path)
-         final-path
-         "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn"]
-     (p18-t02-write-edn! final-path final-artifact)
-     (let [record
-           {:kind :gravity/p15-s23-current-candidate-artifact-write
-            :task "P15-S23"
-            :source-path source-path
-            :written-artifacts
-            (conj written
-                  {:key :final-seed-retirement-proof
-                   :path final-path
-                   :artifact (:kind final-artifact)
-                   :artifact-id (:artifact-id final-artifact)
-                   :status (:status final-artifact)})
-            :clojure-seed-boundary? true
-            :full-language-compiler-self-hosted? false
-            :clojure-seed-retired? false}]
-       (assoc record :artifact-id (c4-artifact-id record))))))
+   (p15-s23-with-artifact-build-context
+    #(let [written
+           (mapv
+            (fn [key]
+              (let [path (get p15-s23-current-candidate-artifact-files key)
+                    artifact (p15-s23-current-candidate-artifact
+                              key source-path)]
+                (p18-t02-write-edn! path artifact)
+                {:key key
+                 :path path
+                 :artifact (:kind artifact)
+                 :artifact-id (:artifact-id artifact)
+                 :status (:status artifact)}))
+            p15-s23-current-candidate-artifact-write-order)
+           final-artifact
+           (p15-s23-final-seed-retirement-file-artifact source-path)
+           final-path
+           "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn"]
+       (p18-t02-write-edn! final-path final-artifact)
+       (let [record
+             {:kind :gravity/p15-s23-current-candidate-artifact-write
+              :task "P15-S23"
+              :source-path source-path
+              :written-artifacts
+              (conj written
+                    {:key :final-seed-retirement-proof
+                     :path final-path
+                     :artifact (:kind final-artifact)
+                     :artifact-id (:artifact-id final-artifact)
+                     :status (:status final-artifact)})
+              :clojure-seed-boundary? true
+              :full-language-compiler-self-hosted? false
+              :clojure-seed-retired? false}]
+         (assoc record :artifact-id (c4-artifact-id record)))))))
 
 (defn p18-t02-write-packaged-jvm-cli-artifacts!
   []
