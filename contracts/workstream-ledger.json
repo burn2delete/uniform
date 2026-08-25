@@ -2101,6 +2101,56 @@
         {"state": "integrated", "at": "2026-08-25T23:46:45Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted batched snapshot verification candidate and this append-only admission record onto main"}
       ],
       "disposition": "Integrated batched parent-hit snapshot verification for the SH-01 development runner only; standalone, secondary-hit, producer, mutation, receipt, and authority behavior remain guarded, with no benchmark, release, self-hosting, roadmap, or seed-retirement authority."
+    },
+    {
+      "id": "sh01-batched-parent-hit-snapshot-verification-evidence-erratum-v1",
+      "title": "SH-01 batched parent-hit snapshot verification evidence erratum version 1",
+      "invariant_family": "tooling/sh01-batched-parent-hit-snapshot-verification-evidence",
+      "owner": "uniform-coordinator",
+      "author": "uniform-coordinator",
+      "state": "integrated",
+      "dependencies": ["sh01-batched-parent-hit-snapshot-verification-v1"],
+      "architecture_decision": "",
+      "base_commit": "d95b799d0d20b5b0a8ef086a31db753423297f58",
+      "candidate_commit": "8db31d3156612f390262fd3c04efd3089b5c25d5",
+      "clean_worktree": true,
+      "owned_paths": ["docs/artifacts/phase-15/reports/sh01-batched-parent-hit-snapshot-verification-v1-evidence-erratum.md"],
+      "governing_contracts": ["contracts/workstream-governance.json", "contracts/workstream-ledger.json", "docs/workstream-governance.md"],
+      "evidence": {
+        "accepted_fixtures": [
+          "docs/artifacts/phase-15/reports/sh01-batched-parent-hit-snapshot-verification-v1-evidence-erratum.md",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_cache_test.clj",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_language_boundary_test.clj"
+        ],
+        "rejected_fixtures": ["bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner_test.clj"],
+        "stable_diagnostics": ["SH01-IMPACT-CATALOG"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-development-loop-wiring-test --namespace gravity.self-hosting.sh01-development-test-cache-test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check d95b799d0d20b5b0a8ef086a31db753423297f58..8db31d3156612f390262fd3c04efd3089b5c25d5", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base d95b799d0d20b5b0a8ef086a31db753423297f58 --candidate-commit 8db31d3156612f390262fd3c04efd3089b5c25d5 --candidate-tree c20b56c690e6c725366190318a52b65c3889b654", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "review_sh01_snapshot_erratum", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": [
+        "the immutable original terminal record retains the incorrect combined wiring and parallel-runner validation command",
+        "the standalone parallel-runner namespace reproduces SH01-IMPACT-CATALOG on both the exact original base and exact code candidate and remains outside the passing 47-test claim",
+        "this erratum validates the truthful focused command but cannot retroactively establish the incorrect command",
+        "Clojure and the JVM remain the temporary development runner, cache, filesystem snapshot, hashing, classpath, runtime, and tool-identity boundary"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-25T23:55:18Z", "actor": "uniform-coordinator", "reason": "start an append-only correction for the non-replayable terminal validation command"},
+        {"state": "frozen", "at": "2026-08-25T23:55:19Z", "actor": "uniform-coordinator", "reason": "freeze exact base d95b799d0d20b5b0a8ef086a31db753423297f58, one-report candidate 8db31d3156612f390262fd3c04efd3089b5c25d5, and tree c20b56c690e6c725366190318a52b65c3889b654"},
+        {"state": "review-pending", "at": "2026-08-25T23:55:20Z", "actor": "uniform-coordinator", "reason": "request independent replay, base reproduction, scope, governance, and nonclaim review of the exact erratum"},
+        {"state": "accepted", "at": "2026-08-25T23:55:21Z", "actor": "review_sh01_snapshot_erratum", "reason": "accept the exact append-only report after independently replaying the 47-test focused command and reproducing identical catalog drift on the original base and code candidate"},
+        {"state": "integration-eligible", "at": "2026-08-25T23:55:22Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, report-only scope, truthful evidence, independent acceptance, residual violation, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-25T23:55:23Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact append-only evidence erratum and this admission record onto main"}
+      ],
+      "disposition": "Integrated the append-only evidence erratum only; no code change, retroactive eligibility, benchmark authority, or roadmap credit."
     }
   ]
 }
