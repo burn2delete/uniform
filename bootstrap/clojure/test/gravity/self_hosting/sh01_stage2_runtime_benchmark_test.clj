@@ -14,7 +14,7 @@
     (is (false? (:authoritative? result)))
     (is (= :performance-regression-feedback (:purpose result)))
     (is (= workload-names (set (keys (:results result)))))
-    (is (= 24 (count workload-names)))
+    (is (= 25 (count workload-names)))
     (is (contains? workload-names :interpreted-assoc-three))
     (is (contains? workload-names :legacy-carrier-assoc))
     (is (contains? workload-names :interpreted-equality))
@@ -22,6 +22,7 @@
     (doseq [sentinel [:interpreted-get
                       :interpreted-count
                       :interpreted-map-predicate
+                      :interpreted-map-literal
                       :interpreted-binary-add
                       :interpreted-ternary-add
                       :interpreted-four-argument-add]]

@@ -87452,6 +87452,59 @@
              runtime plan env instruction reason))
           instructions)))
 
+(defn- p15-s23-stage2-runtime-execute-map-entries
+  "Evaluate map-literal entries without allocating an intermediate pair.
+
+  Compiler plans represent entries as a vector of {:key ... :value ...}
+  records. The old `into {}`/`map` path evaluated each record into a fresh
+  two-element vector before conjoining it into the transient map. Large
+  compiler artifacts contain many map literals, so that short-lived carrier
+  became a measurable allocation and sequence-traversal hot path. Keep the
+  same left-to-right key/value evaluation and last-key-wins semantics while
+  associating directly into one transient map. The sequence branch preserves
+  the public helper's established behavior for direct list callers.
+  "
+  [runtime plan env entries]
+  (if (vector? entries)
+    (let [entry-count (count entries)]
+      (loop [index 0
+             result (transient {})]
+        (if (< index entry-count)
+          (let [{:keys [key value]} (nth entries index)
+                evaluated-key
+                (p15-s23-stage2-runtime-nontail-value!
+                 plan
+                 (p15-s23-stage2-runtime-execute-instruction
+                  runtime plan env key)
+                 :recur-inside-map-key)
+                evaluated-value
+                (p15-s23-stage2-runtime-nontail-value!
+                 plan
+                 (p15-s23-stage2-runtime-execute-instruction
+                  runtime plan env value)
+                 :recur-inside-map-value)]
+            (recur (inc index)
+                   (assoc! result evaluated-key evaluated-value)))
+          (persistent! result))))
+    (loop [remaining (seq entries)
+           result (transient {})]
+      (if-let [{:keys [key value]} (first remaining)]
+        (let [evaluated-key
+              (p15-s23-stage2-runtime-nontail-value!
+               plan
+               (p15-s23-stage2-runtime-execute-instruction
+                runtime plan env key)
+               :recur-inside-map-key)
+              evaluated-value
+              (p15-s23-stage2-runtime-nontail-value!
+               plan
+               (p15-s23-stage2-runtime-execute-instruction
+                runtime plan env value)
+               :recur-inside-map-value)]
+          (recur (next remaining)
+                 (assoc! result evaluated-key evaluated-value)))
+        (persistent! result)))))
+
 (defn p15-s23-stage2-runtime-execute-instructions
   [runtime plan env instructions]
   (if (vector? instructions)
@@ -87661,19 +87714,8 @@
     (set (p15-s23-stage2-runtime-execute-values
           runtime plan env (:items instruction) :recur-inside-set))
     :map-literal
-    (into {}
-          (map (fn [{:keys [key value]}]
-                 [(p15-s23-stage2-runtime-nontail-value!
-                   plan
-                   (p15-s23-stage2-runtime-execute-instruction
-                    runtime plan env key)
-                   :recur-inside-map-key)
-                  (p15-s23-stage2-runtime-nontail-value!
-                   plan
-                   (p15-s23-stage2-runtime-execute-instruction
-                    runtime plan env value)
-                   :recur-inside-map-value)]))
-          (:entries instruction))
+    (p15-s23-stage2-runtime-execute-map-entries
+     runtime plan env (:entries instruction))
     :println
     (let [module (:module plan)
           args (p15-s23-stage2-runtime-execute-values
