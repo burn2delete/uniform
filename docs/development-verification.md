@@ -78,11 +78,13 @@ The fresh lane also emits optional bounded observability. During the full suite
 it gives the child test runner a temporary progress path, which records the
 currently running namespace/test var, and the parent prints sparse heartbeats
 with elapsed time, descendant RSS, and RSS high-water. These records are
-diagnostic-only: they do not resume work, read repository caches, select tests,
-change exit status, or add integration/release authority. The final receipt
-keeps the existing identities, command list, status, and exit-code semantics;
-the additive `:observability` field is safe to ignore when telemetry is
-unavailable.
+diagnostic-only. Process sampling inspects at most 256 process identifiers and
+records when that view is truncated; the host `ps` invocation is separately
+time-bounded. Telemetry does not resume work, read repository caches, select
+tests, change exit status, or add integration/release authority. The final
+receipt keeps the existing identities, command list, status, and exit-code
+semantics; the additive `:observability` field is safe to ignore when telemetry
+is unavailable.
 
 ## Focused Development Runners
 

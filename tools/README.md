@@ -28,10 +28,11 @@ Stage3, SH-07, or release proof.
 The fresh verifier's full-suite process has bounded diagnostic observability:
 the child runner reports its latest namespace/test-var progress in the
 temporary export, while the parent prints sparse elapsed/RSS/high-water
-heartbeats and records an additive `:observability` receipt section. This is
-best-effort, non-authoritative telemetry. It cannot resume a run, use
-repository-local caches, select or skip tests, or alter the existing command,
-status, exit-code, identity, or authority semantics.
+heartbeats and records an additive `:observability` receipt section. Process
+sampling is capped at 256 identifiers, records truncation, and time-bounds the
+host RSS command. This is best-effort, non-authoritative telemetry. It cannot
+resume a run, use repository-local caches, select or skip tests, or alter the
+existing command, status, exit-code, identity, or authority semantics.
 
 The source-language boundary is enforced by:
 

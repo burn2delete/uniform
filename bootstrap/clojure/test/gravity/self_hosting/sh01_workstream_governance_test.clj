@@ -241,12 +241,15 @@
     (is (= "INTEGRATION-FRESH-IDENTITY" (-> error ex-data :code)))))
 
 (deftest fresh-observability-progress-is-bounded-and-non-authoritative
-  (let [path (Paths/get "target/validation/fresh-observability-progress.edn"
-                        (make-array String 0))
+  (let [root (Files/createTempDirectory
+              "gravity-fresh-observability-export-"
+              (make-array java.nio.file.attribute.FileAttribute 0))
+        path (.resolve root ".gravity-fresh-progress.edn")
         state (atom {:phase-history []
                      :sample-count 0
                      :rss-high-water-bytes nil
                      :last-rss-bytes nil
+                     :process-sample-truncated? false
                      :last-progress nil
                      :last-phase nil
                      :last-elapsed-ms 0})
@@ -261,11 +264,12 @@
     (try
       (Files/deleteIfExists path)
       (spit (str path) (pr-str progress))
-      (is (= progress (#'fresh/progress-record path)))
+      (is (= progress (#'fresh/progress-record root path)))
       (let [output (java.io.StringWriter.)
             summary (binding [*out* output]
                       (#'fresh/telemetry-summary
-                       state fresh/full-suite-command (System/nanoTime) path))]
+                       state fresh/full-suite-command root path
+                       (System/nanoTime)))]
         (is (= :gravity/fresh-verification-observability-v1
                (:schema summary)))
         (is (false? (:authoritative? summary)))
@@ -276,9 +280,10 @@
         (is (re-find #"fresh verification heartbeat: phase=gravity\.bootstrap-test/p15-s23-proof"
                      (str output))))
       (spit (str path) (apply str (repeat 33000 "x")))
-      (is (nil? (#'fresh/progress-record path)))
+      (is (nil? (#'fresh/progress-record root path)))
       (finally
-        (Files/deleteIfExists path)))))
+        (Files/deleteIfExists path)
+        (Files/deleteIfExists root)))))
 
 (deftest fresh-observability-process-sample-never-changes-exit-semantics
   (let [root (Paths/get "." (make-array String 0))
@@ -303,3 +308,28 @@
         elapsed-ms (long (/ (- (System/nanoTime) started) 1000000))]
     (is (nil? observed))
     (is (< elapsed-ms 1000) elapsed-ms)))
+
+(deftest fresh-observability-descendant-sample-is-capped-and-truthful
+  (let [limit (var-get #'fresh/process-pid-limit)
+        sample (#'fresh/bounded-pid-sample 7 (iterate inc 8))
+        state (atom {:phase-history []
+                     :sample-count 0
+                     :rss-high-water-bytes nil
+                     :last-rss-bytes nil
+                     :process-sample-truncated? false
+                     :last-progress nil
+                     :last-phase nil
+                     :last-elapsed-ms 0})
+        output (java.io.StringWriter.)]
+    (is (= limit (count (:pids sample))))
+    (is (= 7 (first (:pids sample))))
+    (is (true? (:truncated? sample)))
+    (with-redefs-fn {#'fresh/process-pids (constantly sample)
+                     #'fresh/rss-bytes (constantly nil)}
+      #(binding [*out* output]
+         (#'fresh/telemetry-sample!
+          state (Object.) ["bounded-process-sample"]
+          (Paths/get "." (make-array String 0)) nil
+          (System/nanoTime))))
+    (is (true? (:process-sample-truncated? @state)))
+    (is (re-find #"process-truncated=true" (str output)))))

@@ -18,6 +18,7 @@
 (def ^:private oid-pattern #"[0-9a-f]{40,64}")
 (def ^:private progress-max-bytes (* 32 1024))
 (def ^:private telemetry-history-limit 32)
+(def ^:private process-pid-limit 256)
 (def ^:dynamic *telemetry-interval-ms*
   ;; Sparse heartbeats keep long fresh runs observable without creating a
   ;; second workload. Tests may bind this to a small value.
@@ -94,17 +95,16 @@
    :residual-host-boundaries [:clojure-jvm :git :dependency-cache-tool-resolution]})
 
 (defn- safe-progress-path?
-  [^Path candidate]
+  [^Path root ^Path candidate]
   (try
-    (let [working (.toRealPath
-                   (.toAbsolutePath
-                    (.toPath (io/file (System/getProperty "user.dir"))))
-                   (make-array LinkOption 0))
+    (let [root-path (.normalize (.toAbsolutePath root))
+          working (.toRealPath root-path
+                               (make-array LinkOption 0))
           candidate (.normalize (.toAbsolutePath candidate))]
-      (and (.startsWith candidate working)
+      (and (.startsWith candidate root-path)
            (loop [current working
                   remaining (seq (iterator-seq
-                                  (.iterator (.relativize working candidate))))]
+                                  (.iterator (.relativize root-path candidate))))]
              (if-let [name (first remaining)]
                (let [next-path (.resolve ^Path current ^Path name)]
                  (and (not (Files/isSymbolicLink next-path))
@@ -119,9 +119,9 @@
   The progress file is diagnostic-only and lives inside the temporary fresh
   export. Malformed, partial, or unavailable telemetry is ignored so it cannot
   change the verifier's existing exit status or diagnostics."
-  [path]
-  (when (and path
-             (safe-progress-path? path)
+  [root path]
+  (when (and root path
+             (safe-progress-path? root path)
              (Files/exists ^Path path
                            (into-array LinkOption [LinkOption/NOFOLLOW_LINKS])))
     (try
@@ -140,15 +140,25 @@
       (catch Throwable _
         nil))))
 
+(defn- bounded-pid-sample
+  [root-pid descendant-pids]
+  (let [observed (vec (take (inc process-pid-limit)
+                            (cons root-pid descendant-pids)))
+        truncated? (> (count observed) process-pid-limit)]
+    {:pids (vec (take process-pid-limit observed))
+     :truncated? truncated?}))
+
 (defn- process-pids
   [^Process process]
   (try
     (let [handle (.toHandle process)]
-      (into [(.pid handle)]
-            (map #(.pid ^java.lang.ProcessHandle %))
-            (iterator-seq (.iterator (.descendants handle)))))
+      (with-open [descendants (.descendants handle)]
+        (bounded-pid-sample
+         (.pid handle)
+         (map #(.pid ^java.lang.ProcessHandle %)
+              (iterator-seq (.iterator descendants))))))
     (catch Throwable _
-      [])))
+      {:pids [] :truncated? false})))
 
 (defn- rss-bytes
   "Best-effort RSS for the verifier process and its descendants.
@@ -222,12 +232,15 @@
      :phase-elapsed-ms phase-elapsed-ms}))
 
 (defn- telemetry-sample!
-  [state process command progress-path started]
+  [state process command progress-root progress-path started]
   (locking state
     (try
       (let [elapsed-ms (long (/ (- (System/nanoTime) started) 1000000))
-            progress (progress-record progress-path)
-            pids (if process (process-pids process) [])
+            progress (progress-record progress-root progress-path)
+            pid-sample (if process
+                         (process-pids process)
+                         {:pids [] :truncated? false})
+            pids (:pids pid-sample)
             rss (when process (rss-bytes pids))
             previous @state
             current-phase (or (:phase progress)
@@ -261,6 +274,9 @@
                               :last-progress progress
                               :last-rss-bytes rss
                               :rss-high-water-bytes high-water
+                              :process-sample-truncated?
+                              (or (:process-sample-truncated? previous)
+                                  (:truncated? pid-sample))
                               :sample-count (inc (long (:sample-count previous)))
                               :phase-history history
                               :phase-started-elapsed-ms phase-started-elapsed-ms
@@ -273,15 +289,17 @@
               " phase-elapsed-ms=" phase-elapsed-ms
               " rss-bytes=" (or rss "unknown")
               " rss-high-water-bytes=" (or high-water "unknown")
-              " process-count=" (count pids)))
+              " process-count=" (count pids)
+              " process-truncated=" (:truncated? pid-sample)))
         (flush)
         next-state)
       (catch Throwable _
         @state))))
 
 (defn- telemetry-summary
-  [state command started progress-path]
-  (let [result (telemetry-sample! state nil command progress-path started)]
+  [state command progress-root progress-path started]
+  (let [result (telemetry-sample! state nil command progress-root progress-path
+                                  started)]
     (-> result
         (dissoc :last-phase)
         (assoc :schema :gravity/fresh-verification-observability-v1
@@ -306,6 +324,7 @@
                 :sample-count 0
                 :rss-high-water-bytes nil
                 :last-rss-bytes nil
+                :process-sample-truncated? false
                 :last-progress nil
                 :last-phase nil
                 :last-elapsed-ms 0})
@@ -321,7 +340,7 @@
                (loop []
                  (Thread/sleep (long *telemetry-interval-ms*))
                  (telemetry-sample! telemetry-state process command
-                                    progress-path started)
+                                    directory progress-path started)
                  (recur))
                (catch InterruptedException _
                  nil)
@@ -332,12 +351,14 @@
              (.waitFor process)
              (finally
                (future-cancel monitor)))]
-       (telemetry-sample! telemetry-state process command progress-path started)
+       (telemetry-sample! telemetry-state process command directory progress-path
+                          started)
        {:command command
         :exit-code exit-code
         :elapsed-ms (long (/ (- (System/nanoTime) started) 1000000))
         :telemetry
-        (telemetry-summary telemetry-state command started progress-path)}))))
+        (telemetry-summary telemetry-state command directory progress-path
+                           started)}))))
 
 (defn- run-captured
   [directory command]
