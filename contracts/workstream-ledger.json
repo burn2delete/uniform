@@ -1973,6 +1973,71 @@
         {"state": "integrated", "at": "2026-08-25T22:31:42Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted runtime attribution profiler and this append-only admission record onto main"}
       ],
       "disposition": "Integrated bounded opt-in Stage2 runtime execution attribution only; no representative profile, optimization, performance, allocation-bound, cost-ranking, roadmap, release, self-hosting, or seed-retirement authority, and the macro-operation reuse prototype remains held and excluded."
+    },
+    {
+      "id": "p15-s23-stage2-targeted-cost-sampler-v1",
+      "title": "P15-S23 bounded Stage2 targeted cost sampler version 1",
+      "invariant_family": "tooling/p15-s23-stage2-targeted-cost-sampler",
+      "owner": "development-verification",
+      "author": "development-verification",
+      "state": "integrated",
+      "dependencies": ["p15-s23-stage2-runtime-execution-profile-v1"],
+      "architecture_decision": "Measure only the two predeclared authenticated hot clusters with exact primitive call counters and bounded sampled spans, because generic runtime samples did not observe the syntax cluster; keep rows inclusive, reject unsupported targets and unbounded strides, and withhold ranking whenever deterministic counts or saturation evidence is incomplete.",
+      "base_commit": "7f439b73702219068ab94027eabe5ec745ff008e",
+      "candidate_commit": "5954353d8e6c83e2ba48086efb40158a2103d413",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_execution_profile.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_execution_profile_test.clj",
+        "docs/development-verification.md"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "C16", "BOOT7", "BOOT8", "TEST2", "TEST13", "docs/development-verification.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/fixtures/accepted/core-app.gravity",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_execution_profile_test.clj#targeted-cost-selection-is-bounded-and-explicit"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_execution_profile_test.clj#targeted-cost-rejects-unsupported-target-and-stride",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_execution_profile_test.clj#targeted-cost-ranking-withheld-on-counter-overflow"
+        ],
+        "stable_diagnostics": ["SH01-STAGE2-TARGETED-PROFILE-TARGET", "SH01-STAGE2-TARGETED-PROFILE-STRIDE", "SH01-STAGE2-RUNTIME-PROFILE-EQUIVALENCE", "SH01-STAGE2-RUNTIME-PROFILE-DEPTH"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-stage2-runtime-execution-profile-test --fail-fast", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --fail-fast", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-stage2-runtime-benchmark-test --fail-fast", "exit_code": 0, "result": "passed"},
+          {"command": "fresh-JVM targeted/control pair at sample stride 1 with exact semantic receipt and complete row reconciliation", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test --fail-fast", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check 7f439b73702219068ab94027eabe5ec745ff008e..5954353d8e6c83e2ba48086efb40158a2103d413", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 7f439b73702219068ab94027eabe5ec745ff008e --candidate-commit 5954353d8e6c83e2ba48086efb40158a2103d413 --candidate-tree cf87240d7d4eec03823c22d2b52686a629ce3135", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [
+        {"reviewer": "review_observability_correction", "kind": "independent", "result": "accepted"}
+      ],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary Stage2 instrumentation, execution, timing, allocation-sampling, and verification boundary",
+        "targeted elapsed and allocation rows are host-variable inclusive observations and are not exclusive costs, allocation bounds, performance baselines, or product rankings",
+        "the accepted fresh pair observed targeted-to-control factors of 1.0949 for internal elapsed time and 1.0756 for wall time, both below the 1.5 admission ceiling, but this grants no stable overhead or regression authority",
+        "sample stride 1 observed 891806 authenticated-envelope digest calls and 8512 syntax lowercase-hex calls with complete row reconciliation; those environment-specific observations are not release-grade benchmark claims",
+        "target matching retains approximately 173 bytes of observed allocation per event and remains a documented optimization target rather than a zero-allocation claim",
+        "temporary root-Var instrumentation retains the process-local locking and unrelated same-JVM concurrency limitations of the underlying runtime profiler",
+        "the authentication and syntax optimization prototypes are both held with clean worktrees and no commits and are not included in this candidate",
+        "no long representative profile or full Clojure suite was run during admission or post-merge validation"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-25T23:09:39Z", "actor": "development-verification", "reason": "add bounded target-only sampling after generic runtime samples did not observe the syntax digest cluster"},
+        {"state": "frozen", "at": "2026-08-25T23:09:40Z", "actor": "uniform-coordinator", "reason": "freeze exact base 7f439b73702219068ab94027eabe5ec745ff008e, candidate 5954353d8e6c83e2ba48086efb40158a2103d413, tree cf87240d7d4eec03823c22d2b52686a629ce3135, and three-path ownership set"},
+        {"state": "review-pending", "at": "2026-08-25T23:09:41Z", "actor": "uniform-coordinator", "reason": "request independent exact review of selection bounds, semantic equivalence, fresh paired overhead, nonzero target samples, reconciliation, saturation, focused compatibility checks, and nonclaims"},
+        {"state": "accepted", "at": "2026-08-25T23:09:42Z", "actor": "review_observability_correction", "reason": "accept the exact bounded sampler, fresh paired overhead below the admission ceiling, identical semantic receipts, complete row reconciliation, positive target samples, overflow and bounds behavior, and documented residual matching allocation"},
+        {"state": "integration-eligible", "at": "2026-08-25T23:09:43Z", "actor": "uniform-coordinator", "reason": "exact identities, clean named branch, three-path scope, positive and negative evidence, stable diagnostics, bounded validation, independent acceptance, residual boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-25T23:09:44Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted targeted cost sampler and this append-only admission record onto main"}
+      ],
+      "disposition": "Integrated bounded opt-in targeted sampling for the authenticated-envelope digest and syntax lowercase-hex clusters only; no optimization, exclusive costing, benchmark, performance, allocation-bound, roadmap, release, self-hosting, or seed-retirement authority, and both optimization prototypes remain held and excluded."
     }
   ]
 }
