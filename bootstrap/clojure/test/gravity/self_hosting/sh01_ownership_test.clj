@@ -7,6 +7,9 @@
             [clojure.test :refer [deftest is testing]]
             [gravity.self-hosting-test-runner :as runner]))
 
+(import '(java.nio.file Files LinkOption Paths)
+        '(java.nio.file.attribute FileAttribute))
+
 (defn- repository-root
   []
   (let [resource
@@ -369,6 +372,84 @@
     (is (empty? (:skipped-namespaces report)))
     (is (str/includes? (get-in report [:namespace-results 0 :stdout :text])
                        "report:gravity.self-hosting.sh01-ownership-test"))))
+
+(deftest fresh-progress-telemetry-is-bounded-and-path-contained
+  (let [relative "target/validation/sh01-fresh-progress-test.edn"
+        path (Paths/get relative (make-array String 0))
+        outside "/tmp/gravity-fresh-progress-outside.edn"
+        link (Paths/get "target/validation/sh01-progress-linkdir"
+                        (make-array String 0))
+        linked-progress (.resolve link "progress.edn")]
+    (try
+      (Files/deleteIfExists path)
+      (Files/deleteIfExists link)
+      (let [emit (#'runner/progress-emitter relative)]
+        (is (fn? emit))
+        (emit {:event :test-var-start
+               :namespace "gravity.bootstrap-test"
+               :test-var "gravity.bootstrap-test/p15-s23-whole-language-compiler-artifact-records-current-stage-proof"
+               :phase "gravity.bootstrap-test/p15-s23-whole-language-compiler-artifact-records-current-stage-proof"
+               :active? true})
+        (is (Files/exists path (make-array LinkOption 0)))
+        (let [record (edn/read-string (slurp relative))]
+          (is (= :gravity/fresh-verification-progress-v1 (:schema record)))
+          (is (= :test-var-start (:event record)))
+          (is (= 1 (:sequence record)))
+          (is (integer? (:timestamp-ms record)))
+          (is (true? (:active? record)))))
+      (is (nil? (#'runner/progress-emitter outside)))
+      (Files/createDirectories (.getParent link)
+                               (make-array java.nio.file.attribute.FileAttribute 0))
+      (Files/createSymbolicLink link (Paths/get "/tmp" (make-array String 0))
+                               (make-array FileAttribute 0))
+      (is (nil? (#'runner/progress-emitter (str linked-progress))))
+      (finally
+        (Files/deleteIfExists path)
+        (Files/deleteIfExists link)))))
+
+(deftest fresh-progress-telemetry-identifies-test-var-phase
+  (let [events (atom [])
+        emit #(swap! events conj %)]
+    (#'runner/report-progress-event
+     emit
+     'gravity.bootstrap-test
+     {:type :begin-test-var
+      :var #'run-namespaces-preserves-order-output-and-fail-fast-tail})
+    (is (= [{:event :test-var-start
+             :namespace "gravity.bootstrap-test"
+             :test-var "gravity.self-hosting.sh01-ownership-test/run-namespaces-preserves-order-output-and-fail-fast-tail"
+             :phase "gravity.self-hosting.sh01-ownership-test/run-namespaces-preserves-order-output-and-fail-fast-tail"
+             :active? true}]
+           @events))))
+
+(deftest fresh-progress-telemetry-rechecks-parent-before-publication
+  (let [directory (Paths/get "target/validation/sh01-progress-race-dir"
+                            (make-array String 0))
+        progress (.resolve directory "progress.edn")
+        outside (Files/createTempDirectory
+                 "gravity-fresh-progress-race-outside-"
+                 (make-array FileAttribute 0))]
+    (try
+      (Files/deleteIfExists directory)
+      (Files/createDirectories directory
+                               (make-array FileAttribute 0))
+      (let [emit (#'runner/progress-emitter (str progress))]
+        (is (fn? emit))
+        ;; Replace the already-validated parent after setup. The per-write
+        ;; recheck must disable publication rather than follow the new link.
+        (Files/deleteIfExists directory)
+        (Files/createSymbolicLink directory outside
+                                   (make-array FileAttribute 0))
+        (emit {:event :test-var-start
+               :namespace "gravity.bootstrap-test"
+               :test-var "gravity.bootstrap-test/p15-s23-proof"
+               :phase "gravity.bootstrap-test/p15-s23-proof"
+               :active? true})
+        (is (not (Files/exists (.resolve outside "progress.edn")
+                               (make-array LinkOption 0)))))
+      (finally
+        (Files/deleteIfExists directory)
+        (Files/deleteIfExists outside)))))
 
 (deftest run-namespaces-fail-fast-does-not-load-tail-and-reports-error
   (let [events (atom [])

@@ -1,6 +1,8 @@
 (ns gravity.self-hosting.sh01-workstream-governance-test
   (:require [clojure.test :refer [deftest is testing]]))
 
+(import '(java.nio.file Files LinkOption Paths))
+
 (System/setProperty "gravity.workstream-governance.library" "true")
 (load-file "tools/validate_workstream_governance.clj")
 (binding [*command-line-args* nil]
@@ -237,3 +239,67 @@
                 nil
                 (catch clojure.lang.ExceptionInfo value value))]
     (is (= "INTEGRATION-FRESH-IDENTITY" (-> error ex-data :code)))))
+
+(deftest fresh-observability-progress-is-bounded-and-non-authoritative
+  (let [path (Paths/get "target/validation/fresh-observability-progress.edn"
+                        (make-array String 0))
+        state (atom {:phase-history []
+                     :sample-count 0
+                     :rss-high-water-bytes nil
+                     :last-rss-bytes nil
+                     :last-progress nil
+                     :last-phase nil
+                     :last-elapsed-ms 0})
+        progress {:schema :gravity/fresh-verification-progress-v1
+                  :sequence 7
+                  :timestamp-ms 123
+                  :event :test-var-start
+                  :namespace "gravity.bootstrap-test"
+                  :test-var "gravity.bootstrap-test/p15-s23-proof"
+                  :phase "gravity.bootstrap-test/p15-s23-proof"
+                  :active? true}]
+    (try
+      (Files/deleteIfExists path)
+      (spit (str path) (pr-str progress))
+      (is (= progress (#'fresh/progress-record path)))
+      (let [output (java.io.StringWriter.)
+            summary (binding [*out* output]
+                      (#'fresh/telemetry-summary
+                       state fresh/full-suite-command (System/nanoTime) path))]
+        (is (= :gravity/fresh-verification-observability-v1
+               (:schema summary)))
+        (is (false? (:authoritative? summary)))
+        (is (= :fresh-child-progress-file (:progress-source summary)))
+        (is (= progress (:last-progress summary)))
+        (is (= "gravity.bootstrap-test/p15-s23-proof"
+               (:phase (first (:phase-history summary)))))
+        (is (re-find #"fresh verification heartbeat: phase=gravity\.bootstrap-test/p15-s23-proof"
+                     (str output))))
+      (spit (str path) (apply str (repeat 33000 "x")))
+      (is (nil? (#'fresh/progress-record path)))
+      (finally
+        (Files/deleteIfExists path)))))
+
+(deftest fresh-observability-process-sample-never-changes-exit-semantics
+  (let [root (Paths/get "." (make-array String 0))
+        output (java.io.StringWriter.)
+        result (binding [*out* output]
+                 (#'fresh/run-process root ["sh" "-c" "exit 0"]))]
+    (is (= 0 (:exit-code result)))
+    (is (= :gravity/fresh-verification-observability-v1
+           (get-in result [:telemetry :schema])))
+    (is (false? (get-in result [:telemetry :authoritative?])))
+    (is (pos? (get-in result [:telemetry :sample-count])))
+    (is (re-find #"fresh verification heartbeat: phase=process"
+                 (str output)))))
+
+(deftest fresh-observability-hung-rss-sampler-is-bounded
+  (let [started (System/nanoTime)
+        observed
+        (binding [fresh/*telemetry-sampler-timeout-ms* 50
+                  fresh/*rss-process-command*
+                  (fn [_] ["sh" "-c" "sleep 5"])]
+          (#'fresh/rss-bytes [1]))
+        elapsed-ms (long (/ (- (System/nanoTime) started) 1000000))]
+    (is (nil? observed))
+    (is (< elapsed-ms 1000) elapsed-ms)))

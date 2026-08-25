@@ -4,16 +4,32 @@
   This repository tool is not compiler or release authority.  It verifies the
   committed candidate from a temporary Git-index checkout, never resumes prior
   test output, and records the exact commands and identities in an EDN receipt."
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.pprint :as pprint]
             [clojure.string :as str])
   (:import [java.nio.file Files LinkOption Path StandardOpenOption]
            [java.nio.file.attribute FileAttribute]
            [java.time Instant]
-           [java.util Comparator]))
+           [java.util Comparator]
+           [java.util.concurrent TimeUnit]))
 
 (def schema :gravity/integration-fresh-verification-receipt-v1)
 (def ^:private oid-pattern #"[0-9a-f]{40,64}")
+(def ^:private progress-max-bytes (* 32 1024))
+(def ^:private telemetry-history-limit 32)
+(def ^:dynamic *telemetry-interval-ms*
+  ;; Sparse heartbeats keep long fresh runs observable without creating a
+  ;; second workload. Tests may bind this to a small value.
+  30000)
+(def ^:dynamic *telemetry-sampler-timeout-ms*
+  ;; `ps` is diagnostic input. A broken host utility must never hold the
+  ;; authoritative verifier indefinitely.
+  1000)
+(def ^:dynamic *rss-process-command*
+  (fn [pids]
+    ["ps" "-o" "pid=,rss=" "-p"
+     (str/join "," (map str pids))]))
 (defn default-receipt [candidate-commit]
   (str "target/validation/integration-fresh-verification/"
        candidate-commit "/receipt.edn"))
@@ -77,20 +93,251 @@
     :sh07 :not-substituted}
    :residual-host-boundaries [:clojure-jvm :git :dependency-cache-tool-resolution]})
 
+(defn- safe-progress-path?
+  [^Path candidate]
+  (try
+    (let [working (.toRealPath
+                   (.toAbsolutePath
+                    (.toPath (io/file (System/getProperty "user.dir"))))
+                   (make-array LinkOption 0))
+          candidate (.normalize (.toAbsolutePath candidate))]
+      (and (.startsWith candidate working)
+           (loop [current working
+                  remaining (seq (iterator-seq
+                                  (.iterator (.relativize working candidate))))]
+             (if-let [name (first remaining)]
+               (let [next-path (.resolve ^Path current ^Path name)]
+                 (and (not (Files/isSymbolicLink next-path))
+                      (recur next-path (next remaining))))
+               true))))
+    (catch Throwable _
+      false)))
+
+(defn- progress-record
+  "Read the child runner's last bounded progress record, if available.
+
+  The progress file is diagnostic-only and lives inside the temporary fresh
+  export. Malformed, partial, or unavailable telemetry is ignored so it cannot
+  change the verifier's existing exit status or diagnostics."
+  [path]
+  (when (and path
+             (safe-progress-path? path)
+             (Files/exists ^Path path
+                           (into-array LinkOption [LinkOption/NOFOLLOW_LINKS])))
+    (try
+      (let [bytes (Files/readAllBytes ^Path path)]
+        (when (<= (alength bytes) progress-max-bytes)
+          (let [record (edn/read-string
+                        (String. bytes java.nio.charset.StandardCharsets/UTF_8))]
+            (when (and (map? record)
+                       (= :gravity/fresh-verification-progress-v1
+                          (:schema record))
+                       (integer? (:sequence record))
+                       (not (neg? (:sequence record)))
+                       (string? (:phase record))
+                       (boolean? (:active? record)))
+              record))))
+      (catch Throwable _
+        nil))))
+
+(defn- process-pids
+  [^Process process]
+  (try
+    (let [handle (.toHandle process)]
+      (into [(.pid handle)]
+            (map #(.pid ^java.lang.ProcessHandle %))
+            (iterator-seq (.iterator (.descendants handle)))))
+    (catch Throwable _
+      [])))
+
+(defn- rss-bytes
+  "Best-effort RSS for the verifier process and its descendants.
+
+  `ps` is used only as diagnostic input; a missing platform tool, permission
+  error, or malformed line yields nil rather than a verification failure."
+  [pids]
+  (when (seq pids)
+    (try
+      (let [builder (ProcessBuilder.
+                     ^java.util.List (*rss-process-command* pids))
+            process (.start builder)
+            stdout (future (slurp (.getInputStream process)))
+            stderr (future (slurp (.getErrorStream process)))
+            finished? (.waitFor process
+                                (long *telemetry-sampler-timeout-ms*)
+                                TimeUnit/MILLISECONDS)]
+        (if-not finished?
+          (do
+            (.destroyForcibly process)
+            (.waitFor process (long *telemetry-sampler-timeout-ms*)
+                      TimeUnit/MILLISECONDS)
+            (future-cancel stdout)
+            (future-cancel stderr)
+            nil)
+          (let [exit-code (.exitValue process)
+                stdout-future stdout
+                stderr-future stderr
+                stdout (deref stdout-future
+                               (long *telemetry-sampler-timeout-ms*) ::timeout)
+                stderr (deref stderr-future
+                               (long *telemetry-sampler-timeout-ms*) ::timeout)]
+            (when (or (= ::timeout stdout) (= ::timeout stderr))
+              (future-cancel stdout-future)
+              (future-cancel stderr-future))
+            (when (and (zero? exit-code) (string? stdout)
+                       (string? stderr))
+              (let [values
+                    (keep (fn [line]
+                            (let [[_ _ rss]
+                                  (re-matches #"\s*(\d+)\s+(\d+)\s*"
+                                              line)]
+                              (try
+                                (Long/parseLong rss)
+                                (catch Throwable _ nil))))
+                          (str/split-lines stdout))]
+                (when (seq values)
+                  (* 1024 (reduce + 0 values))))))))
+      (catch Throwable _
+        nil))))
+
+(defn- command-phase
+  [command]
+  (cond
+    (= command full-suite-command) :full-suite
+    (= (last command) "tools/validate_gravity_docs.clj") :document-gate
+    (= (last command) "tools/validate_full_language_roadmap.clj") :roadmap-gate
+    (= (last command) "tools/validate_workstream_governance.clj") :governance-gate
+    (= (last command) "gravity.self-hosting.sh01-language-boundary-test")
+    :language-boundary-gate
+    :else :process))
+
+(defn- phase-history-entry
+  [progress elapsed-ms phase-elapsed-ms]
+  (when progress
+    {:phase (:phase progress)
+     :event (:event progress)
+     :active? (:active? progress)
+     :sequence (:sequence progress)
+     :started-elapsed-ms (- elapsed-ms phase-elapsed-ms)
+     :phase-elapsed-ms phase-elapsed-ms}))
+
+(defn- telemetry-sample!
+  [state process command progress-path started]
+  (locking state
+    (try
+      (let [elapsed-ms (long (/ (- (System/nanoTime) started) 1000000))
+            progress (progress-record progress-path)
+            pids (if process (process-pids process) [])
+            rss (when process (rss-bytes pids))
+            previous @state
+            current-phase (or (:phase progress)
+                              (:last-phase previous)
+                              (name (command-phase command)))
+            phase-changed? (not= current-phase (:last-phase previous))
+            phase-started-elapsed-ms
+            (if phase-changed?
+              elapsed-ms
+              (long (or (:phase-started-elapsed-ms previous)
+                        elapsed-ms)))
+            phase-elapsed-ms (- elapsed-ms phase-started-elapsed-ms)
+            history (if (and phase-changed? current-phase)
+                      (let [entry (phase-history-entry progress elapsed-ms
+                                                       phase-elapsed-ms)]
+                        (vec
+                         (take-last
+                          telemetry-history-limit
+                          (conj (vec (:phase-history previous))
+                                (or entry {:phase current-phase
+                                           :started-elapsed-ms
+                                           phase-started-elapsed-ms
+                                           :phase-elapsed-ms phase-elapsed-ms})))))
+                      (:phase-history previous))
+            high-water (if (number? rss)
+                         (max (long (or (:rss-high-water-bytes previous) 0))
+                              (long rss))
+                         (:rss-high-water-bytes previous))
+            next-state (assoc previous
+                              :last-phase current-phase
+                              :last-progress progress
+                              :last-rss-bytes rss
+                              :rss-high-water-bytes high-water
+                              :sample-count (inc (long (:sample-count previous)))
+                              :phase-history history
+                              :phase-started-elapsed-ms phase-started-elapsed-ms
+                              :phase-elapsed-ms phase-elapsed-ms
+                              :last-elapsed-ms elapsed-ms)]
+        (reset! state next-state)
+        (println
+         (str "fresh verification heartbeat: phase=" current-phase
+              " elapsed-ms=" elapsed-ms
+              " phase-elapsed-ms=" phase-elapsed-ms
+              " rss-bytes=" (or rss "unknown")
+              " rss-high-water-bytes=" (or high-water "unknown")
+              " process-count=" (count pids)))
+        (flush)
+        next-state)
+      (catch Throwable _
+        @state))))
+
+(defn- telemetry-summary
+  [state command started progress-path]
+  (let [result (telemetry-sample! state nil command progress-path started)]
+    (-> result
+        (dissoc :last-phase)
+        (assoc :schema :gravity/fresh-verification-observability-v1
+               :command-phase (command-phase command)
+               :progress-source (when progress-path :fresh-child-progress-file)
+               :memory-source (when (:rss-high-water-bytes result) :ps-rss)
+               :authoritative? false))))
+
 (defn- run-process
   ([directory command] (run-process directory command {}))
   ([directory command environment]
    (let [started (System/nanoTime)
+         progress-path
+         (when (= command full-suite-command)
+           (.resolve ^Path directory ".gravity-fresh-progress.edn"))
+         environment
+         (cond-> environment
+           progress-path
+           (assoc "GRAVITY_FRESH_PROGRESS_FILE" (str progress-path)))
+         telemetry-state
+         (atom {:phase-history []
+                :sample-count 0
+                :rss-high-water-bytes nil
+                :last-rss-bytes nil
+                :last-progress nil
+                :last-phase nil
+                :last-elapsed-ms 0})
          builder (doto (ProcessBuilder. ^java.util.List command)
                    (.directory (.toFile ^Path directory))
                    (.inheritIO))]
      (doseq [[name value] environment]
        (.put (.environment builder) name value))
      (let [process (.start builder)
-           exit-code (.waitFor process)]
+           monitor
+           (future
+             (try
+               (loop []
+                 (Thread/sleep (long *telemetry-interval-ms*))
+                 (telemetry-sample! telemetry-state process command
+                                    progress-path started)
+                 (recur))
+               (catch InterruptedException _
+                 nil)
+               (catch Throwable _
+                 nil)))
+           exit-code
+           (try
+             (.waitFor process)
+             (finally
+               (future-cancel monitor)))]
+       (telemetry-sample! telemetry-state process command progress-path started)
        {:command command
         :exit-code exit-code
-        :elapsed-ms (long (/ (- (System/nanoTime) started) 1000000))}))))
+        :elapsed-ms (long (/ (- (System/nanoTime) started) 1000000))
+        :telemetry
+        (telemetry-summary telemetry-state command started progress-path)}))))
 
 (defn- run-captured
   [directory command]
@@ -276,9 +523,14 @@
                    :fresh-export {:kind :temporary-git-index-checkout
                                   :filter-check filter-check
                                   :read-tree read-tree-result
-                                  :checkout checkout-result
-                                  :symlink-boundary-checked true}
+                   :checkout checkout-result
+                   :symlink-boundary-checked true}
                    :results results
+                   :observability
+                   {:schema :gravity/fresh-verification-observability-v1
+                    :authoritative? false
+                    :commands (mapv #(select-keys % [:command :telemetry])
+                                    results)}
                    :fresh-workspace {:kind :temporary-git-index-checkout
                                      :retained false
                                      :prior-target-output-visible false})]

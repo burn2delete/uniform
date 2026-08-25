@@ -14,6 +14,17 @@
         '(java.nio.file Files LinkOption Path Paths StandardCopyOption
           StandardOpenOption))
 
+(def ^:private progress-file-environment
+  "GRAVITY_FRESH_PROGRESS_FILE")
+
+(def ^:private progress-schema
+  :gravity/fresh-verification-progress-v1)
+
+(def ^:private progress-max-bytes
+  ;; Progress is diagnostic-only. Keep the file bounded even if a future
+  ;; caller supplies an unexpectedly large event value.
+  (* 32 1024))
+
 (def ^:private base-test-namespaces
   '[gravity.diagnostics-test
     gravity.cli-test
@@ -362,10 +373,110 @@
   (flush)
   (.flush *err*))
 
+(defn- progress-path
+  "Return a caller-provided progress path only when it is inside the current
+  checkout.  Telemetry must never turn an otherwise valid test run into an
+  ambient filesystem writer; an invalid or unavailable path simply disables
+  this optional diagnostic channel."
+  [value]
+  (when (and (string? value) (not (str/blank? value)))
+    (try
+      (let [working (.toRealPath
+                     (.toAbsolutePath
+                      (Paths/get (System/getProperty "user.dir")
+                                 (make-array String 0)))
+                     (make-array LinkOption 0))
+            candidate (.normalize
+                       (.toAbsolutePath
+                        (Paths/get value (make-array String 0))))]
+        (when (and (.startsWith candidate working)
+                   (loop [current working
+                          remaining (seq (iterator-seq
+                                          (.iterator (.relativize working candidate))))]
+                     (if-let [name (first remaining)]
+                       (let [next-path (.resolve ^Path current ^Path name)]
+                         (and (not (Files/isSymbolicLink next-path))
+                              (recur next-path (next remaining))))
+                       true)))
+          candidate))
+      (catch Throwable _
+        nil))))
+
+(defn- progress-emitter
+  "Create an optional, atomic, bounded progress writer.
+
+  The writer is deliberately separate from the test report.  It is not read
+  by the test runner for scheduling or acceptance, and a write failure is
+  swallowed so the authoritative test result and its existing diagnostics are
+  unchanged."
+  [configured-path]
+  (let [path (progress-path configured-path)
+        sequence (atom 0)]
+    (when path
+      (fn [event]
+        (try
+          (let [record (assoc event
+                              :schema progress-schema
+                              :sequence (swap! sequence inc)
+                              :timestamp-ms (System/currentTimeMillis))
+                bytes (.getBytes (pr-str record) StandardCharsets/UTF_8)]
+            (when (and (<= (alength bytes) progress-max-bytes)
+                       ;; Re-check on every write so a path that becomes a
+                       ;; symlink after setup is disabled before publication.
+                       (progress-path (str path)))
+              (let [parent (.getParent path)]
+                (Files/createDirectories parent
+                                         (make-array java.nio.file.attribute.FileAttribute 0))
+                (let [temporary
+                      (Files/createTempFile
+                       parent ".gravity-fresh-progress-" ".tmp"
+                       (make-array java.nio.file.attribute.FileAttribute 0))]
+                  (try
+                    (Files/write temporary bytes
+                                 (into-array StandardOpenOption
+                                             [StandardOpenOption/WRITE
+                                              StandardOpenOption/TRUNCATE_EXISTING]))
+                    (Files/move temporary path
+                                 (into-array StandardCopyOption
+                                             [StandardCopyOption/ATOMIC_MOVE
+                                              StandardCopyOption/REPLACE_EXISTING]))
+                    (finally
+                      (Files/deleteIfExists temporary)))))))
+          (catch Throwable _
+            ;; Observability is best effort and non-authoritative by contract.
+            nil))))))
+
+(defn- report-progress-event
+  [emit namespace event]
+  (when emit
+    (let [event-type (:type event)
+          test-var (:var event)
+          test-var-name
+          (when (instance? clojure.lang.Var test-var)
+            (let [{:keys [ns name]} (meta test-var)]
+              (when (and ns name)
+                (str ns "/" name))))
+          phase (or test-var-name (str namespace))]
+      (when (contains? #{:begin-test-ns :end-test-ns
+                         :begin-test-var :end-test-var}
+                       event-type)
+        (emit {:event (case event-type
+                        :begin-test-ns :namespace-start
+                        :end-test-ns :namespace-complete
+                        :begin-test-var :test-var-start
+                        :end-test-var :test-var-complete)
+               :namespace (str namespace)
+               :test-var test-var-name
+               :phase phase
+               :active? (contains? #{:begin-test-ns :begin-test-var}
+                                    event-type)})))))
+
 (defn- run-one-namespace
   ([namespace]
-   (run-one-namespace namespace require test/run-tests))
+   (run-one-namespace namespace require test/run-tests nil))
   ([namespace require-fn run-tests-fn]
+   (run-one-namespace namespace require-fn run-tests-fn nil))
+  ([namespace require-fn run-tests-fn emit]
   (let [started (System/nanoTime)
         stdout (bounded-output-stream namespace-output-limit-bytes)
         stderr (bounded-output-stream namespace-output-limit-bytes)
@@ -379,6 +490,12 @@
                      StandardCharsets/UTF_8))
         run-result (atom nil)]
     (try
+      (when emit
+        (emit {:event :namespace-start
+               :namespace (str namespace)
+               :test-var nil
+               :phase (str namespace)
+               :active? true}))
       (binding [*out* out-writer
                 *err* err-writer
                 test/*test-out* out-writer]
@@ -386,7 +503,13 @@
         ;; must not eagerly load the tail, and clojure.test remains responsible
         ;; for once/each fixtures and test-ns-hook semantics.
         (require-fn namespace)
-        (let [summary (run-tests-fn namespace)
+        (let [summary
+              (let [original-report test/report]
+                (with-redefs [test/report
+                              (fn [event]
+                                (report-progress-event emit namespace event)
+                                (original-report event))]
+                  (run-tests-fn namespace)))
               passed? (and (zero? (long (or (:fail summary) 0)))
                            (zero? (long (or (:error summary) 0))))
               elapsed-ms (long (/ (- (System/nanoTime) started) 1000000.0))]
@@ -416,7 +539,13 @@
           (long (/ (- (System/nanoTime) started) 1000000.0)))))
       (finally
         (.flush out-writer)
-        (.flush err-writer)))
+        (.flush err-writer)
+        (when emit
+          (emit {:event :namespace-complete
+                 :namespace (str namespace)
+                 :test-var nil
+                 :phase (str namespace)
+                 :active? false}))))
     (merge @run-result
            {:stdout (bounded-output-result stdout)
             :stderr (bounded-output-result stderr)}))))
@@ -428,15 +557,16 @@
   is retained in `:namespace-results`; with `fail-fast?`, the remaining names
   are reported explicitly under `:skipped-namespaces` and are never inferred
   to have passed."
-  [{:keys [namespaces fail-fast? require-fn run-tests-fn visible?]}]
+  [{:keys [namespaces fail-fast? require-fn run-tests-fn visible? progress-file]}]
   (let [namespaces (vec (sort namespaces))
         require-fn (or require-fn require)
-        run-tests-fn (or run-tests-fn test/run-tests)]
+        run-tests-fn (or run-tests-fn test/run-tests)
+        emit (progress-emitter progress-file)]
     (loop [remaining namespaces
            results []
            summaries []]
       (if-let [namespace (first remaining)]
-        (let [result (run-one-namespace namespace require-fn run-tests-fn)
+        (let [result (run-one-namespace namespace require-fn run-tests-fn emit)
               results (conj results result)
               summaries (conj summaries (:summary result))
               failed? (not= :passed (:status result))
@@ -634,7 +764,9 @@
               :run
               (let [report (run-namespaces {:namespaces namespaces
                                             :fail-fast? fail-fast?
-                                            :visible? (nil? report-file)})]
+                                            :visible? (nil? report-file)
+                                            :progress-file
+                                            (System/getenv progress-file-environment)})]
                 (when report-file
                   (write-report! report-file report))
                 (print-run-summary report)
