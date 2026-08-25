@@ -1359,6 +1359,67 @@
         {"state": "integrated", "at": "2026-08-25T15:47:17Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted corrected Stage2 map-literal candidate onto main"}
       ],
       "disposition": "Integrated the bounded Stage2 map-literal execution hotpath only; no benchmark, roadmap, release, self-hosting, or seed-retirement credit, and no multi-hour P15-S23 suite was run."
+    },
+    {
+      "id": "fresh-verifier-observability-v1",
+      "title": "Fresh verifier observability version 1",
+      "invariant_family": "tooling/fresh-verifier-observability",
+      "owner": "development-verification",
+      "author": "development-verification",
+      "state": "integrated",
+      "dependencies": ["incremental-development-loop-runner-wiring-v1", "p15-s23-stage2-map-literal-hotpath-v1"],
+      "architecture_decision": "",
+      "base_commit": "831831b240b4ef5547be849c327abae22ba91797",
+      "candidate_commit": "4ed5f7faf9684e228092ba838b2db72392a0cf29",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_ownership_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_workstream_governance_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "docs/development-verification.md",
+        "tools/README.md",
+        "tools/verify_integration_candidate.clj"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "C16", "BOOT7", "BOOT8", "TEST2", "TEST13", "contracts/workstream-governance.json", "docs/development-verification.md"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_workstream_governance_test.clj",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_ownership_test.clj"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_workstream_governance_test.clj"
+        ],
+        "stable_diagnostics": ["INTEGRATION-FRESH-ARCHIVE", "INTEGRATION-FRESH-CHECK", "INTEGRATION-FRESH-IDENTITY", "INTEGRATION-FRESH-RECEIPT", "INTEGRATION-FRESH-REPOSITORY", "C16-SPECULATIVE"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-workstream-governance-test --namespace gravity.self-hosting.sh01-ownership-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check 831831b240b4ef5547be849c327abae22ba91797..4ed5f7faf9684e228092ba838b2db72392a0cf29", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 831831b240b4ef5547be849c327abae22ba91797 --candidate-commit 4ed5f7faf9684e228092ba838b2db72392a0cf29 --candidate-tree abab86248cb06cd5ec5ad9dedc8c6652c42998ed", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [
+        {"reviewer": "observability_reconciled_exact_review", "kind": "independent", "result": "accepted"}
+      ],
+      "residual_host_boundaries": [
+        "Clojure, the JVM, Git, and host process inspection remain the temporary verifier and observability boundary",
+        "phase progress, elapsed time, RSS, and high-water observations are additive non-authoritative telemetry",
+        "sampling is best effort and may report unavailable without changing candidate verification status",
+        "the authoritative verifier remains fresh, no-resume, and repository-cache-invisible",
+        "no multi-hour full-suite verification was launched for this bounded observability integration"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-25T15:48:00Z", "actor": "development-verification", "reason": "reconcile bounded fresh-verifier observability behind the integrated Stage2 hotpath"},
+        {"state": "frozen", "at": "2026-08-25T15:49:00Z", "actor": "uniform-coordinator", "reason": "freeze exact reconciled base 831831b240b4ef5547be849c327abae22ba91797, candidate 4ed5f7faf9684e228092ba838b2db72392a0cf29, tree abab86248cb06cd5ec5ad9dedc8c6652c42998ed, and six-path ownership set"},
+        {"state": "review-pending", "at": "2026-08-25T15:50:00Z", "actor": "uniform-coordinator", "reason": "request renewed independent exact review of symlink, timeout, cleanup, and fresh-authority behavior after reconciliation"},
+        {"state": "accepted", "at": "2026-08-25T15:54:00Z", "actor": "observability_reconciled_exact_review", "reason": "accept exact patch identity, symlink fail-closed handling, bounded RSS sampling and cleanup, additive telemetry, and unchanged fresh no-cache authority"},
+        {"state": "integration-eligible", "at": "2026-08-25T15:55:00Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, bounded gates, renewed independent acceptance, residual boundaries, and nonclaims verified without launching the full suite"},
+        {"state": "integrated", "at": "2026-08-25T15:55:23Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted reconciled observability candidate onto main"}
+      ],
+      "disposition": "Integrated bounded fresh-verifier observability only; fresh/no-cache authority and verification semantics are unchanged, with no roadmap, release, self-hosting, or seed-retirement credit and no multi-hour suite run."
     }
   ]
 }
