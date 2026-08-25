@@ -179,6 +179,45 @@ verification, integration, release, self-hosting, seed-retirement, or stage
 advancement authority. The Clojure/JVM observer and the remaining Clojure seed
 rule runner remain explicit residual boundaries.
 
+## Explicit Stage2 Runtime Execution Attribution
+
+The real runtime-execution profiler is an opt-in, single-iteration observation
+over the accepted hosted-core fixture:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-stage2-runtime-execution-profile
+```
+
+It attributes the Stage2 runtime calls made during fresh plan emission and one
+direct execution of that emitted plan. Deterministic accounting is limited to
+the semantic receipt, sparse function/instruction/call-edge rows, row-sum
+coverage, source identities, and a bounded plan-ID registry. The hot seams use
+preallocated primitive counters and an identity-keyed plan registry: they do
+not take clocks, read thread allocation, update atoms or persistent maps, or
+bind dynamic function state per instruction. Compiler artifact plans omit
+source paths, so the profiler registers at most eight plan identities at the
+compiler-plan seam and distinguishes authenticated-envelope, syntax, reader,
+plan-emitter, emitted-plan, runtime-artifact, and explicit `:other` execution.
+
+Elapsed time, runtime versions, and sampled inclusive function costs are
+host-variable. Allocation and elapsed samples are taken only once per 8,192
+calls of a function; they are inclusive, sparse, and not a cost ranking or a
+sum of the work. Exact instruction attribution is count-only. The output
+permits one sample, 128 function rows per source (including an overflow row),
+32 instruction operations, 255 named call-edge rows plus one exact overflow
+row, and eight plan identities.
+The receipt reports off-owner-thread events separately and excludes them from
+the owner-thread counters. Counters and sampled sums saturate instead of
+wrapping. `:counter-overflow?` makes row reconciliation explicitly incomplete;
+the separately host-variable `:sample-overflow?` marks sampled-cost saturation.
+
+Temporary root-Var wrappers are serialized by a private process-local lock.
+The lock prevents two explicit profiler requests from overlapping in one JVM;
+it does not make global Var replacement safe for unrelated concurrent work.
+Do not run it alongside unrelated same-JVM execution. It grants no fresh/no-
+cache, performance, allocation-bound, cost-ranking, integration, release,
+self-hosting, or seed-retirement authority.
+
 `clojure -M:incremental-check` enables the thin development-loop wiring. In
 the parent, before any child JVM can launch, it computes one conservative
 SHA-256 identity over every tracked and non-ignored untracked repository path.
