@@ -86474,27 +86474,44 @@
 
 (declare p15-s23-stage2-c2-c3-front-end-products)
 
+;; The C2/C3 ingress authenticates the same pinned SH-02 compiler source at
+;; several sibling boundaries.  Keep one compiled binding only for the current
+;; plan-emission request; source bytes and the emitter rule are still reloaded
+;; and authenticated before every lookup, and no binding survives this dynamic
+;; scope.
+(def ^:private ^:dynamic *p15-s23-stage2-plan-emission-context* nil)
+
+(defn- p15-s23-with-stage2-plan-emission-context
+  [build-fn]
+  (if *p15-s23-stage2-plan-emission-context*
+    (build-fn)
+    (binding [*p15-s23-stage2-plan-emission-context* (atom {})]
+      (build-fn))))
+
 (defn p15-s23-stage2-plan-emitter-compile-source
   [emitter source-path source-text]
-  (let [_ (validate-stage0-source-profile! source-path source-text)
-        _ (validate-stage0-source-safety! source-path source-text)
-        macro-artifact (macro-source-artifact source-path source-text)
-        authoritative-products
-        (p15-s23-stage2-c2-c3-front-end-products source-path source-text)
-        authoritative-module
-        (parse-module source-path (:forms authoritative-products))
-        ;; Export visibility and provider selection are semantic.  The
-        ;; historical macro artifact retains neither ns clause, while the
-        ;; C2/C3 stage2 front end does.  Restore those authoritative fields at
-        ;; this narrow direct emitter boundary so driver/direct plans agree
-        ;; without normalizing either contract away.
-        module (cond-> (assoc (:module macro-artifact)
-                              :forms (:expanded-forms macro-artifact))
-                 (seq (:exports authoritative-module))
-                 (assoc :exports (:exports authoritative-module))
-                 (seq (:providers authoritative-module))
-                 (assoc :providers (:providers authoritative-module)))]
-    (p15-s23-stage2-emitted-core-plan emitter source-path source-text module)))
+  (p15-s23-with-stage2-plan-emission-context
+   (fn []
+     (let [_ (validate-stage0-source-profile! source-path source-text)
+           _ (validate-stage0-source-safety! source-path source-text)
+           macro-artifact (macro-source-artifact source-path source-text)
+           authoritative-products
+           (p15-s23-stage2-c2-c3-front-end-products source-path source-text)
+           authoritative-module
+           (parse-module source-path (:forms authoritative-products))
+           ;; Export visibility and provider selection are semantic.  The
+           ;; historical macro artifact retains neither ns clause, while the
+           ;; C2/C3 stage2 front end does.  Restore those authoritative fields at
+           ;; this narrow direct emitter boundary so driver/direct plans agree
+           ;; without normalizing either contract away.
+           module (cond-> (assoc (:module macro-artifact)
+                                 :forms (:expanded-forms macro-artifact))
+                    (seq (:exports authoritative-module))
+                    (assoc :exports (:exports authoritative-module))
+                    (seq (:providers authoritative-module))
+                    (assoc :providers (:providers authoritative-module)))]
+       (p15-s23-stage2-emitted-core-plan
+        emitter source-path source-text module)))))
 
 (defn p15-s23-stage2-plan-emitter-accepted-record
   [emitter]
@@ -127322,15 +127339,54 @@
      :function-shapes complete-shapes
      :plan plan}))
 
+(defn- p15-s23-sh02-source-binding-cache-key
+  [request]
+  {:schema-version 2
+   :owner :gravity/p15-s23-sh02-source-binding
+   :source-relative-path p15-s23-sh02-source-relative-path
+   :authenticated-inputs (:inputs request)
+   :additional-bootstrap-targets *additional-bootstrap-targets*
+   :expected-source-byte-count p15-s23-sh02-source-byte-count
+   :expected-source-content-hash
+   p15-s23-sh02-expected-source-content-hash
+   :expected-plan-semantic-hash
+   p15-s23-sh02-expected-plan-semantic-hash
+   :expected-functions-semantic-hash
+   p15-s23-sh02-expected-functions-semantic-hash
+   :expected-builder-semantic-hash
+   p15-s23-sh02-expected-builder-semantic-hash
+   :expected-verifier-semantic-hash
+   p15-s23-sh02-expected-verifier-semantic-hash
+   :expected-function-count p15-s23-sh02-expected-function-count
+   :builder-function p15-s23-sh02-builder-function
+   :verifier-function p15-s23-sh02-verifier-function
+   :required-functions p15-s23-sh02-required-functions})
+
+(defn- p15-s23-sh02-cached-source-binding!
+  [source-path request]
+  (if-not *p15-s23-stage2-plan-emission-context*
+    (p15-s23-sh02-compile-source-binding! source-path request)
+    (let [key (p15-s23-sh02-source-binding-cache-key request)
+          context *p15-s23-stage2-plan-emission-context*]
+      (locking context
+        (if-let [binding (get @context key)]
+          binding
+          (let [binding
+                (p15-s23-sh02-compile-source-binding!
+                 source-path request)]
+            (swap! context assoc key binding)
+            binding))))))
+
 (defn- p15-s23-sh02-source-binding!
   [candidate source-path]
   (p15-s23-c13-c14-b1-require-authority!
    candidate source-path :load-pinned-sh02-source)
-  ;; Source bytes, the emitter rule, and the compiled SH-02 plan are all
-  ;; authenticated and reconstructed for every authority-bearing call.
-  (p15-s23-sh02-compile-source-binding!
-   source-path
-   (p15-s23-sh02-source-binding-inputs! candidate source-path)))
+  (let [request (p15-s23-sh02-source-binding-inputs! candidate source-path)]
+    ;; Every authority-bearing call reopens and authenticates both source
+    ;; inputs above.  Successful compilation may be shared only between exact
+    ;; authenticated inputs and validation policy in the current plan-emission
+    ;; request.
+    (p15-s23-sh02-cached-source-binding! source-path request)))
 
 (defn- p15-s23-c13-c14-b1-c-source-bindings!
   [candidate source-path]
