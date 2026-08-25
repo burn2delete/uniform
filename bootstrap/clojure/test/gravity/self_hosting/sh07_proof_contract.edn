@@ -309,9 +309,9 @@
    :c9-ownership
    {:module-namespace gravity.compiler.c9-ownership-checker-engine
     :source-binding
-    {:source-byte-count 71132
+    {:source-byte-count 111921
      :source-bytes-sha256
-     "sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd"}}
+     "sha256:130faedf9ba0af79b557f4cc05dd8077397e0cdafd0d12f0b9efef27d0a8ce06"}}
    :c10-safety
    {:module-namespace gravity.compiler.c10-safety-analysis-pipeline
     :source-binding

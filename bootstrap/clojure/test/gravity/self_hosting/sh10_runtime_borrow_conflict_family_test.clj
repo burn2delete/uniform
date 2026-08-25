@@ -145,6 +145,36 @@
     :reason :end-of-inactive-borrow
     :operation :end-borrow
     :facts [:borrow-mutable :end-borrow :borrow-mutable]}
+   'sh10-mutable-borrow-identity-reuse-scenario
+   {:rule "C9-UNSAFE"
+    :reason :borrow-identity-reuse
+    :operation :borrow-mutable
+    :facts [:borrow-mutable :end-borrow]}
+   'sh10-cross-kind-borrow-identity-reuse-scenario
+   {:rule "C9-UNSAFE"
+    :reason :borrow-identity-reuse
+    :operation :borrow-mutable
+    :facts [:borrow-immutable :end-borrow]}
+   'sh10-active-mutable-borrow-at-exit-scenario
+   {:rule "C9-BORROW-ESCAPE"
+    :reason :active-borrow-at-scope-exit
+    :operation :scope-exit
+    :facts [:borrow-mutable]}
+   'sh10-active-immutable-borrow-at-exit-scenario
+   {:rule "C9-BORROW-ESCAPE"
+    :reason :active-borrow-at-scope-exit
+    :operation :scope-exit
+    :facts [:borrow-immutable]}
+   'sh10-negative-owner-lifetime-scenario
+   {:rule "C9-UNSAFE"
+    :reason :malformed-runtime-mutable-borrow-scenario
+    :operation nil
+    :facts []}
+   'sh10-fractional-owner-lifetime-scenario
+   {:rule "C9-UNSAFE"
+    :reason :malformed-runtime-mutable-borrow-scenario
+    :operation nil
+    :facts []}
    'sh10-mutable-borrow-escape-scenario
    {:rule "C9-BORROW-ESCAPE"
     :reason :borrow-outlives-owner
@@ -160,6 +190,14 @@
     (is (= :meta-jvm-dynamic-borrow-state
            (:runtime-check-provider policy)))
     (is (= :declared-error (:runtime-failure-behavior policy)))
+    (is (= :forbidden (:runtime-panic-behavior policy)))
+    (is (= :finite-integral-bounded-i32
+           (:lifetime-numeric-mode policy)))
+    (is (= 2147483647 (:lifetime-coordinate-maximum policy)))
+    (is (= :meta
+           (get-in policy [:runtime-provider-contract :profile])))
+    (is (= #{}
+           (get-in policy [:runtime-provider-contract :effects])))
     (is (= #{:initialize :read :borrow-immutable :borrow-mutable
              :end-borrow :move :consume :escape-borrow}
            (:accepted-events policy)))
@@ -219,13 +257,24 @@
       (is (= :insufficient-dynamic-alias-state
              (:static-proof-status check)))
       (is (= :meta-jvm-dynamic-borrow-state (:provider check)))
+      (is (= :required-at-lowering (:provider-binding-status check)))
+      (is (= (:runtime-provider-contract
+              (invoke-c9 'sh10-runtime-mutable-borrow-policy []))
+             (:provider-contract check)))
       (is (= :owned-value (:metadata-location check)))
       (is (= :dynamic-borrow-state (:condition check)))
       (is (= :before-operation (:emitted-location check)))
       (is (= :bounded-constant-time (:performance-class check)))
       (is (= [] (:effects-introduced check)))
       (is (= :declared-error (get-in check [:failure :behavior])))
+      (is (= :forbidden (get-in check [:failure :panic-behavior])))
       (is (= :declared-error (:failure-behavior check)))
+      (is (= :forbidden (:panic-behavior check)))
+      (is (= :finite-integral-bounded-i32
+             (:lifetime-numeric-mode check)))
+      (is (= #{}
+             (get-in check [:c8-residual-effect-evidence
+                            :residual-effects])))
       (is (= :meta (:profile check)))
       (is (= :jvm (:target check)))
       (is (= (:source-span effect-request) (:source-span check)))
@@ -237,6 +286,29 @@
                  [:ownership-result :state :mutable-borrow-id])))
     (is (= :passed
            (:status (verify-analysis gravity-scenario gravity-result))))))
+
+(deftest sh10-runtime-borrow-residual-checks-immutable-acquisition-and-end
+  (let [gravity-scenario
+        (scenario accepted-gravity-plan
+                  'sh10-runtime-immutable-borrow-end-scenario)
+        qst-scenario
+        (scenario accepted-qst-plan
+                  'sh10-runtime-immutable-borrow-end-scenario)
+        result (analyze gravity-scenario)
+        checks (:runtime-check-records result)]
+    (is (= gravity-scenario qst-scenario))
+    (is (= result (analyze qst-scenario)))
+    (is (= :accepted (:status result)))
+    (is (= :runtime-checked (:safety-outcome result)))
+    (is (= [:initialize :borrow-immutable :end-borrow :read]
+           (mapv :operation (:ownership-facts result))))
+    (is (= [:borrow-immutable :end-borrow]
+           (mapv :operation checks)))
+    (is (= [:no-active-mutable-or-external-exclusive-alias
+            :matching-active-immutable-borrow]
+           (mapv :required-state checks)))
+    (is (= [0 1] (mapv :sequence checks)))
+    (is (= :passed (:status (verify-analysis gravity-scenario result))))))
 
 (deftest sh10-runtime-borrow-rejects-static-conflicts
   (doseq [[function expected] rejected-cases]
@@ -285,6 +357,56 @@
         (assoc bound :provenance [{:substituted true}])
         wrong-provenance-result
         (analyze-with wrong-provenance verification scenario)
+        coordinated-provenance-bound
+        (assoc bound :provenance
+               {:actual-source-path "substituted.gravity"
+                :provenance-binding-id
+                "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"})
+        coordinated-provenance-verification
+        (assoc verification
+               :expected coordinated-provenance-bound
+               :candidate coordinated-provenance-bound)
+        coordinated-provenance-result
+        (analyze-with coordinated-provenance-bound
+                      coordinated-provenance-verification scenario)
+        coordinated-effect-bound
+        (assoc-in bound [:effected-core :effect-requests 0 :effect]
+                  :compiler/write-ir)
+        coordinated-effect-verification
+        (assoc verification
+               :expected coordinated-effect-bound
+               :candidate coordinated-effect-bound)
+        coordinated-effect-result
+        (analyze-with coordinated-effect-bound
+                      coordinated-effect-verification scenario)
+        coordinated-unsafe-bound
+        (assoc-in bound [:effected-core :module :safety] :unsafe)
+        coordinated-unsafe-verification
+        (assoc verification
+               :expected coordinated-unsafe-bound
+               :candidate coordinated-unsafe-bound)
+        coordinated-unsafe-result
+        (analyze-with coordinated-unsafe-bound
+                      coordinated-unsafe-verification scenario)
+        duplicate-evidence-bound
+        (let [effected (:effected-core bound)]
+          (assoc
+           bound :effected-core
+           (assoc
+            (assoc effected
+                   :effect-requests
+                   (conj (:effect-requests effected)
+                         (first (:effect-requests effected))))
+            :effect-legality-results
+            (conj (:effect-legality-results effected)
+                  (first (:effect-legality-results effected))))))
+        duplicate-evidence-verification
+        (assoc verification
+               :expected duplicate-evidence-bound
+               :candidate duplicate-evidence-bound)
+        duplicate-evidence-result
+        (analyze-with duplicate-evidence-bound
+                      duplicate-evidence-verification scenario)
         unsupported-bound
         (assoc-in bound [:effected-core :module :target] :no-runtime)
         unsupported-verification
@@ -296,10 +418,17 @@
          unsupported-bound unsupported-verification scenario)
         altered-facts (assoc accepted :ownership-facts [])
         altered-checks (assoc accepted :runtime-check-records [])
+        altered-provider
+        (assoc-in accepted [:runtime-check-records 0 :provider]
+                  :substituted-provider)
+        altered-panic
+        (assoc-in accepted [:runtime-check-records 0 :panic-behavior]
+                  :panic)
         altered-result-provenance
         (assoc accepted :provenance [{:substituted true}])
         altered-results
-        [altered-facts altered-checks altered-result-provenance]]
+        [altered-facts altered-checks altered-provider altered-panic
+         altered-result-provenance]]
     (is (= :rejected (:status wrong-node-result)))
     (is (= "C9-UNSAFE"
            (get-in wrong-node-result [:diagnostics 0 :diagnostic-id])))
@@ -313,6 +442,19 @@
              (get-in result [:diagnostics 0 :diagnostic-id])))
       (is (= :untrusted-or-malformed-sh09-effected-core
              (get-in result [:diagnostics 0 :reason]))))
+    (doseq [result [coordinated-provenance-result
+                    coordinated-effect-result
+                    coordinated-unsafe-result]]
+      (is (= :rejected (:status result)))
+      (is (= "C9-RUNTIME-CHECK"
+             (get-in result [:diagnostics 0 :diagnostic-id])))
+      (is (= :unauthenticated-runtime-effect-capability-provider-contract
+             (get-in result [:diagnostics 0 :reason]))))
+    (is (= :rejected (:status duplicate-evidence-result)))
+    (is (= "C9-UNSAFE"
+           (get-in duplicate-evidence-result [:diagnostics 0 :diagnostic-id])))
+    (is (= :scenario-does-not-bind-an-authenticated-sh09-fact
+           (get-in duplicate-evidence-result [:diagnostics 0 :reason])))
     (is (= :rejected (:status unsupported-result)))
     (is (= "C9-RUNTIME-CHECK"
            (get-in unsupported-result [:diagnostics 0 :diagnostic-id])))
@@ -326,3 +468,54 @@
                        [:diagnostics 0 :diagnostic-id])))
         (is (= :runtime-mutable-borrow-analysis-substitution
                (get-in verification-result [:diagnostics 0 :reason])))))))
+
+(deftest sh10-runtime-borrow-rejects-nonfinite-and-out-of-range-lifetimes
+  (let [base (scenario accepted-gravity-plan accepted-function)
+        invalid-owner-values
+        [Double/NaN Double/POSITIVE_INFINITY Double/NEGATIVE_INFINITY
+         -1 3/2 2147483648]
+        escape-base
+        (scenario rejected-gravity-plan
+                  'sh10-mutable-borrow-escape-scenario)]
+    (doseq [value invalid-owner-values]
+      (let [result (analyze (assoc base :owner-lifetime-end value))]
+        (is (= :rejected (:status result)))
+        (is (= "C9-UNSAFE"
+               (get-in result [:diagnostics 0 :diagnostic-id])))
+        (is (= :malformed-runtime-mutable-borrow-scenario
+               (get-in result [:diagnostics 0 :reason])))))
+    (doseq [value invalid-owner-values]
+      (let [candidate
+            (assoc-in escape-base
+                      [:events 1 :destination-lifetime-end] value)
+            result (analyze candidate)]
+        (is (= :rejected (:status result)))
+        (is (= :malformed-runtime-mutable-borrow-scenario
+               (get-in result [:diagnostics 0 :reason])))))))
+
+(deftest sh10-runtime-borrow-narrows-fully-coordinated-provenance-claim
+  (let [scenario (scenario accepted-gravity-plan accepted-function)
+        bound (:bound (prepared))
+        verification (:verification (prepared))
+        substituted
+        {:actual-source-path "substituted.gravity"
+         :provenance-binding-id
+         "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+        coordinated-bound
+        (assoc
+         (assoc bound :provenance substituted)
+         :effected-core
+         (assoc (:effected-core bound) :provenance substituted))
+        coordinated-verification
+        (assoc verification
+               :expected coordinated-bound
+               :candidate coordinated-bound)
+        result
+        (analyze-with coordinated-bound coordinated-verification scenario)]
+    (is (= :accepted (:status result)))
+    (is (= :cross-carrier-consistency-only
+           (:provenance-authentication result)))
+    (is (some #{:independent-provenance-issuer} (:nonclaims result)))
+    (is (some #{:full-coordinated-provenance-substitution-resistance}
+              (:nonclaims result)))
+    (is (= substituted (:provenance result)))))

@@ -7,6 +7,12 @@
              sh10-move-while-mutably-borrowed-scenario
              sh10-consume-while-mutably-borrowed-scenario
              sh10-stale-mutable-borrow-end-scenario
+             sh10-mutable-borrow-identity-reuse-scenario
+             sh10-cross-kind-borrow-identity-reuse-scenario
+             sh10-active-mutable-borrow-at-exit-scenario
+             sh10-active-immutable-borrow-at-exit-scenario
+             sh10-negative-owner-lifetime-scenario
+             sh10-fractional-owner-lifetime-scenario
              sh10-mutable-borrow-escape-scenario])
   (:effects #{})
   (:capabilities #{})
@@ -82,6 +88,52 @@
      :borrow-second :borrow-mutable :mutable-second nil nil nil)
     (sh10-runtime-borrow-event
      :end-stale :end-borrow :mutable-first nil nil nil)]))
+
+(defn sh10-mutable-borrow-identity-reuse-scenario [core-node-id]
+  (sh10-runtime-borrow-scenario
+   :mutable-borrow-identity-reuse core-node-id
+   [(sh10-runtime-borrow-event
+     :borrow-first :borrow-mutable :mutable-first nil nil nil)
+    (sh10-runtime-borrow-event
+     :end-first :end-borrow :mutable-first nil nil nil)
+    (sh10-runtime-borrow-event
+     :borrow-reused :borrow-mutable :mutable-first nil nil nil)
+    (sh10-runtime-borrow-event
+     :end-stale :end-borrow :mutable-first nil nil nil)]))
+
+(defn sh10-cross-kind-borrow-identity-reuse-scenario [core-node-id]
+  (sh10-runtime-borrow-scenario
+   :cross-kind-borrow-identity-reuse core-node-id
+   [(sh10-runtime-borrow-event
+     :borrow-shared :borrow-immutable :shared-first nil nil nil)
+    (sh10-runtime-borrow-event
+     :end-shared :end-borrow :shared-first nil nil nil)
+    (sh10-runtime-borrow-event
+     :borrow-mutable :borrow-mutable :shared-first nil nil nil)]))
+
+(defn sh10-active-mutable-borrow-at-exit-scenario [core-node-id]
+  (sh10-runtime-borrow-scenario
+   :active-mutable-borrow-at-exit core-node-id
+   [(sh10-runtime-borrow-event
+     :borrow :borrow-mutable :mutable-first nil nil nil)]))
+
+(defn sh10-active-immutable-borrow-at-exit-scenario [core-node-id]
+  (sh10-runtime-borrow-scenario
+   :active-immutable-borrow-at-exit core-node-id
+   [(sh10-runtime-borrow-event
+     :borrow :borrow-immutable :shared-first nil nil nil)]))
+
+(defn sh10-negative-owner-lifetime-scenario [core-node-id]
+  (assoc
+   (sh10-runtime-borrow-scenario
+    :negative-owner-lifetime core-node-id [])
+   :owner-lifetime-end -1))
+
+(defn sh10-fractional-owner-lifetime-scenario [core-node-id]
+  (assoc
+   (sh10-runtime-borrow-scenario
+    :fractional-owner-lifetime core-node-id [])
+   :owner-lifetime-end 3/2))
 
 (defn sh10-mutable-borrow-escape-scenario [core-node-id]
   (sh10-runtime-borrow-scenario

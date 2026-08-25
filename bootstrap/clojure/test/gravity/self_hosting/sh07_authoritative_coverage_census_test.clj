@@ -142,9 +142,9 @@
             "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
             :source-binding (:source-binding c8-expectation)}
            (get source-contracts "c8-effects")))
-    (is (= {:source-byte-count 71132
+    (is (= {:source-byte-count 111921
             :source-bytes-sha256
-            "sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd"}
+            "sha256:130faedf9ba0af79b557f4cc05dd8077397e0cdafd0d12f0b9efef27d0a8ce06"}
            (:source-binding c9-expectation)))
     (is (not (contains? c9-expectation :request-counts)))
     (is (not (contains? c9-expectation :core-counts)))
