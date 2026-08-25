@@ -1420,6 +1420,64 @@
         {"state": "integrated", "at": "2026-08-25T15:55:23Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted reconciled observability candidate onto main"}
       ],
       "disposition": "Integrated bounded fresh-verifier observability only; fresh/no-cache authority and verification semantics are unchanged, with no roadmap, release, self-hosting, or seed-retirement credit and no multi-hour suite run."
+    },
+    {
+      "id": "p15-s23-proof-artifact-dag-v1",
+      "title": "P15-S23 request-scoped proof artifact DAG version 1",
+      "invariant_family": "tooling/p15-s23-proof-artifact-dag",
+      "owner": "development-verification",
+      "author": "development-verification",
+      "state": "integrated",
+      "dependencies": ["p15-s23-stage2-map-literal-hotpath-v1", "fresh-verifier-observability-v1"],
+      "architecture_decision": "",
+      "base_commit": "3b3e7d90b5ecdd6567a26ddaf3e65a1dffc8b5df",
+      "candidate_commit": "ee7a13074deb221441b9599fab74de297afb8c6e",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/src/gravity/bootstrap.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/p15_proof_artifact_dag_test.clj"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "C16", "BOOT7", "BOOT8", "TEST2", "TEST13", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/p15_proof_artifact_dag_test.clj",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_benchmark_test.clj"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/p15_proof_artifact_dag_test.clj"
+        ],
+        "stable_diagnostics": ["P15S23A001", "P15S23C001", "P15S23S001", "P15S23W001"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.p15-proof-artifact-dag-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --namespace gravity.self-hosting.sh01-stage2-runtime-benchmark-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check 3b3e7d90b5ecdd6567a26ddaf3e65a1dffc8b5df..ee7a13074deb221441b9599fab74de297afb8c6e", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 3b3e7d90b5ecdd6567a26ddaf3e65a1dffc8b5df --candidate-commit ee7a13074deb221441b9599fab74de297afb8c6e --candidate-tree abdf197c195bfbb5859590886df5f16cbd1cb319", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [
+        {"reviewer": "p15_dag_reconciled_exact_review", "kind": "independent", "result": "accepted"}
+      ],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary P15 proof-construction and verification boundary",
+        "request-scoped reuse is in-memory only and does not persist authoritative artifacts across fresh runs",
+        "the current P15 constructor graph is acyclic; arbitrary future same-key reentrancy is not supported by this tranche",
+        "artifact values, IDs, diagnostics, and ordered evidence publication remain unchanged because reuse metadata is not embedded",
+        "the authoritative verifier remains fresh and cache-invisible, and no multi-hour full suite was launched for this integration"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-25T15:55:30Z", "actor": "development-verification", "reason": "reconcile corrected request-scoped P15 proof artifact reuse behind the integrated Stage2 and observability candidates"},
+        {"state": "frozen", "at": "2026-08-25T15:56:00Z", "actor": "uniform-coordinator", "reason": "freeze exact reconciled base 3b3e7d90b5ecdd6567a26ddaf3e65a1dffc8b5df, candidate ee7a13074deb221441b9599fab74de297afb8c6e, tree abdf197c195bfbb5859590886df5f16cbd1cb319, and two-path ownership set"},
+        {"state": "review-pending", "at": "2026-08-25T15:57:00Z", "actor": "uniform-coordinator", "reason": "request renewed independent exact review of identity closure, concurrent single-build behavior, failure cleanup, cache bypass, dependency shape, and Stage2 overlap"},
+        {"state": "accepted", "at": "2026-08-25T15:59:00Z", "actor": "p15_dag_reconciled_exact_review", "reason": "accept exact patch application, content identity, same-size same-mtime invalidation, CAS single-build behavior, retry cleanup, fresh persistent-cache bypass, current acyclic graph, and preserved Stage2 semantics"},
+        {"state": "integration-eligible", "at": "2026-08-25T15:59:20Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, bounded DAG and Stage2 overlap gates, renewed independent acceptance, residual boundaries, and nonclaims verified without launching the full suite"},
+        {"state": "integrated", "at": "2026-08-25T15:59:33Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted reconciled P15 proof artifact DAG candidate onto main"}
+      ],
+      "disposition": "Integrated bounded request-scoped P15 proof artifact DAG reuse only; fresh/no-cache authority and artifact semantics remain unchanged, with no benchmark, roadmap, release, self-hosting, or seed-retirement credit and no multi-hour suite run."
     }
   ]
 }
