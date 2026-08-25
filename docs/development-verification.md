@@ -126,6 +126,26 @@ fresh and sequential after the parallel lanes drain. Batch reports preserve
 namespace fixture boundaries, deterministic fail-fast skips, bounded output,
 and explicit non-authority.
 
+## Bounded P15 Profiling Receipt
+
+The fixed P15 stage2 profiling slice is a development-only observation over
+`bootstrap/clojure/fixtures/accepted/core-app.gravity`. It returns an EDN
+receipt with static stage2 instruction/function-call counts, finite static
+function-frame depth, request-scoped proof-DAG hit/build accounting, phase
+duration observations, and JVM thread-allocation observations when available:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -e '(require (quote [gravity.self-hosting.p15-bounded-profile :as p])) (prn (p/run-profile))'
+```
+
+The receipt id covers only stable source/accounting fields; duration and
+allocation remain observational. This slice neither changes nor reads the
+development result cache or fresh-verification authority. It is not benchmark,
+performance, allocation/stack-bound, stage-advancement, self-hosting, or
+seed-retirement evidence. Its DAG counters cover only the request-scoped
+P15 source-data node, and its frame-depth field is the static direct-call
+depth from the fixture entrypoint, not a runtime stack measurement.
+
 `clojure -M:incremental-check` enables the thin development-loop wiring. In
 the parent, before any child JVM can launch, it computes one conservative
 SHA-256 identity over every tracked and non-ignored untracked repository path.
