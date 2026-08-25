@@ -32,6 +32,13 @@
       (throw (ex-info "Private bootstrap helper is absent"
                       {:symbol symbol}))))
 
+(defn- private-benchmark-var
+  [symbol]
+  (or (ns-resolve 'gravity.self-hosting.sh01-stage2-plan-emitter-benchmark
+                  symbol)
+      (throw (ex-info "Private benchmark helper is absent"
+                      {:symbol symbol}))))
+
 (defn- emitter
   [source-path]
   (:emitter
@@ -55,6 +62,40 @@
   [source-path]
   (.endsWith (.replace source-path "\\" "/")
              authenticated-envelope-suffix))
+
+(deftest phase-observer-seam-attributes-one-lightweight-operation
+  (let [empty-observations (private-benchmark-var 'empty-phase-observations)
+        observe-phase (private-benchmark-var 'observe-phase)
+        source-kind-var (private-benchmark-var '*source-kind*)
+        observations (atom (@empty-observations))]
+    (is (= :observed
+           (with-bindings {source-kind-var :plan-emitter}
+             (@observe-phase observations :hashing (constantly :observed)))))
+    (let [observation (get-in @observations [:plan-emitter :hashing])]
+      (is (= 1 (:call-count observation)))
+      (is (pos? (:elapsed-ns observation)))
+      (is (boolean? (:allocation-telemetry-available? observation)))
+      (when (:allocation-telemetry-available? observation)
+        (is (number? (:allocated-bytes observation)))))))
+
+(deftest benchmark-lock-is-process-local-mutual-exclusion
+  (let [benchmark-lock @(private-benchmark-var 'benchmark-lock)
+        active (atom 0)
+        maximum-active (atom 0)
+        run
+        #(locking benchmark-lock
+           (let [current (swap! active inc)]
+             (swap! maximum-active max current)
+             (try
+               (Thread/sleep 25)
+               :serialized
+               (finally
+                 (swap! active dec)))))]
+    (let [left (future (run))
+          right (future (run))]
+      (is (= :serialized (deref left 5000 :timeout)))
+      (is (= :serialized (deref right 5000 :timeout)))
+      (is (= 1 @maximum-active)))))
 
 (deftest accepted-and-rejected-emission-preserve-semantics-and-fresh-authority
   (let [original bootstrap/p15-s23-stage2-compiler-artifact-plan
@@ -283,8 +324,23 @@
     (is (false? (:authoritative? result)))
     (is (true? (:fresh-plan-emission-per-iteration? result)))
     (is (false? (:persistent-cache-authority? result)))
+    (is (= [:compiler-artifact-plan-calls :phase-call-counts :semantic-receipt]
+           (:deterministic-accounting result)))
+    (is (= [:elapsed-ns :elapsed-ms :allocated-bytes
+            :allocation-telemetry-available? :java-runtime-version
+            :clojure-version]
+           (:host-variable-observations result)))
     (is (= 2 (count (:samples result))))
-    (is (= "sha256:fake" (get-in result [:semantic-receipt :plan-id]))))
+    (is (= "sha256:fake" (get-in result [:semantic-receipt :plan-id])))
+    (is (= #{:authenticated-envelope :syntax :plan-emitter :other}
+           (set (keys (get-in result [:samples 0 :phase-call-counts])))))
+    (is (every? zero?
+                (vals (get-in result [:samples 0 :phase-call-counts
+                                      :plan-emitter]))))
+    (is (= 0 (get-in result [:samples 0 :phase-observations
+                              :plan-emitter :hashing :call-count])))
+    (is (= 0 (get-in result [:samples 0 :phase-observations
+                              :plan-emitter :hashing :elapsed-ns]))))
   (testing "CLI and execution bounds fail closed"
     (is (= {:iterations 2}
            (benchmark/parse-arguments ["--iterations" "2"])))

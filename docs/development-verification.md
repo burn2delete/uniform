@@ -146,6 +146,39 @@ seed-retirement evidence. Its DAG counters cover only the request-scoped
 P15 source-data node, and its frame-depth field is the static direct-call
 depth from the fixture entrypoint, not a runtime stack measurement.
 
+## Explicit Stage2 Emitter Phase Benchmark
+
+The real Stage2 emitter benchmark is an explicit, bounded development
+observation; default-suite coverage uses only lightweight seams. Run at most
+three fresh emissions of the accepted hosted-core fixture with:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-stage2-plan-emitter-benchmark --iterations 1
+```
+
+Each sample retains the existing whole-emission elapsed time and optional
+current-thread allocation observation. Deterministic accounting is limited to
+the source/phase call counts and semantic receipt. The benchmark reports source
+kinds `:authenticated-envelope`, `:syntax`, `:plan-emitter`, and `:other`;
+`:other` includes the requested fixture and any unclassified source rather than
+silently dropping it. Elapsed time, allocation availability/bytes, and Java and
+Clojure runtime versions are host-variable observations. Safely observable
+phases are macro parse/expand, function-table construction, function lowering,
+instruction summary, canonicalization, and hashing. The emitted plan, semantic
+receipt, cache scope, and fresh-emission behavior are unchanged; nested calls
+are attributed once to their outermost observable phase.
+
+The temporary `with-redefs` wrappers are protected by a private process-local
+lock, so simultaneous benchmark requests in one JVM serialize rather than
+overlap. This isolation applies only to explicit benchmark invocations; it does
+not make the global Clojure Var replacement an authority boundary.
+
+This is diagnostic profiling only. It supplies no benchmark baseline,
+performance improvement/regression, allocation bound, fresh/no-cache
+verification, integration, release, self-hosting, seed-retirement, or stage
+advancement authority. The Clojure/JVM observer and the remaining Clojure seed
+rule runner remain explicit residual boundaries.
+
 `clojure -M:incremental-check` enables the thin development-loop wiring. In
 the parent, before any child JVM can launch, it computes one conservative
 SHA-256 identity over every tracked and non-ignored untracked repository path.
