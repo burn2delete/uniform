@@ -1778,7 +1778,7 @@
       "invariant_family": "self-hosting/sh10-runtime-borrow-conflict-v1",
       "owner": "sh-ownership",
       "author": "sh-ownership",
-      "state": "integration-eligible",
+      "state": "integrated",
       "dependencies": ["sh09-authenticated-compiler-read-v1", "sh10-initialization-move-family-v1"],
       "architecture_decision": "",
       "base_commit": "122d27f2333c8d0ea9ee960ac339fb2728dfe412",
@@ -1830,9 +1830,10 @@
         {"state": "frozen", "at": "2026-08-25T21:22:25Z", "actor": "uniform-coordinator", "reason": "freeze exact base 122d27f2333c8d0ea9ee960ac339fb2728dfe412, candidate c9b8ab3373504a321791aee858ac4f7a99c69fb3, tree 8b8e710ad6a0709cb895580aa5b00eba69157cad, and ten-path ownership set"},
         {"state": "review-pending", "at": "2026-08-25T21:22:26Z", "actor": "uniform-coordinator", "reason": "request renewed independent exact review after final newer-main reconciliation"},
         {"state": "accepted", "at": "2026-08-25T21:22:27Z", "actor": "review_sh10_exact", "reason": "accept authenticated C8 evidence, recomputed ownership lifecycle, finite i32 lifetimes, source-bound runtime-check requirement, stable diagnostics, unchanged exact blobs, and explicit residuals"},
-        {"state": "integration-eligible", "at": "2026-08-25T21:22:28Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, final focused, source, boundary, governance, parity, diff, and preflight gates, renewed independent acceptance, residual boundaries, and nonclaims verified"}
+        {"state": "integration-eligible", "at": "2026-08-25T21:22:28Z", "actor": "uniform-coordinator", "reason": "exact identities, clean branch, final focused, source, boundary, governance, parity, diff, and preflight gates, renewed independent acceptance, residual boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-25T21:24:28Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted SH-10 candidate and admission record onto main"}
       ],
-      "disposition": "Integration-eligible bounded SH-10 runtime-checked borrow conflict family only; no SH-10 completion, roadmap credit, self-hosting, release, or seed-retirement authority."
+      "disposition": "Integrated bounded SH-10 runtime-checked borrow conflict family only; no SH-10 completion, roadmap credit, self-hosting, release, or seed-retirement authority."
     }
   ]
 }
