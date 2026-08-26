@@ -4021,6 +4021,181 @@
       }
     ],
     "disposition": "Held before freeze and semantic review. The candidate cannot proceed until separately accepted real SH-07/B47 direct-call edge and stable C7 typed-record carriers exist, then must be reconstructed on current main with new exact identities and independent review. No implementation, SH-09 completion, roadmap, performance, self-hosting, release, or seed-retirement credit is granted."
+  },
+  {
+    "id": "sh07-exception-core-lowering-attempt-3-replay-d1220dd",
+    "title": "SH-07 exception core-lowering attempt 3 current-main replay",
+    "invariant_family": "self-hosting/sh07-exception-core-lowering-v1",
+    "owner": "sh-core",
+    "author": "sh07-core",
+    "state": "superseded",
+    "dependencies": [
+      "sh07-exception-core-lowering-architecture-decision-v1",
+      "sh07-exception-core-lowering-attempt-3"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision.md",
+    "base_commit": "d1220dd2623e8d61e5faed0b026719aeee5aff24",
+    "candidate_commit": "689357307db996677a36460d6bf5b566c122fd59",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/exception-error-exit.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/exception-error-exit.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/exception-error-exit.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/exception-error-exit.qst",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_core_lowering_source_coverage_test.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_exception_error_exit_test.clj",
+      "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "C6",
+      "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision.md",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/exception-error-exit.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/exception-error-exit.qst"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/exception-error-exit.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/exception-error-exit.qst"
+      ],
+      "stable_diagnostics": [
+        "C6-VERIFY",
+        "C6-CORE-SHAPE",
+        "C6-EVAL-ORDER",
+        "C6-ORIGIN",
+        "C6-LOWERING-GAP"
+      ],
+      "validation_commands": [
+        {
+          "command": "git range-diff e2577adb43e4a5e8f151b364c2a502b4bdb5afdd..7e061f9996f8711527004b93122949aea98820fb d1220dd2623e8d61e5faed0b026719aeee5aff24..689357307db996677a36460d6bf5b566c122fd59",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "all five implementation patches and all seven candidate-owned file blobs are identical to rejected attempt 3",
+      "the accepted architecture authorized at most the already rejected successor and grants no new implementation activation",
+      "the replay received no renewed exact semantic acceptance and remains outside main",
+      "Clojure and the JVM remain the temporary seed and verification boundary"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-26T16:25:00Z",
+        "actor": "sh07-core",
+        "reason": "replay the same implementation patches after the architecture-only main advance"
+      },
+      {
+        "state": "superseded",
+        "at": "2026-08-26T16:54:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "supersede the exact replay because it is patch- and blob-identical to terminally rejected attempt 3 and no new architecture authority exists"
+      }
+    ],
+    "disposition": "Superseded exact replay; it is not a new semantic candidate, enters no main path, and receives no implementation, roadmap, performance, SH-07 completion, self-hosting, release, or seed-retirement credit."
+  },
+  {
+    "id": "sh12-loop-backedge-mir-attempt-1-replay-ea7dfd2",
+    "title": "SH-12 loop/backedge MIR attempt 1 producer replay",
+    "invariant_family": "self-hosting/sh12-loop-backedge-mir-v1",
+    "owner": "sh-mir",
+    "author": "sh-mir",
+    "state": "superseded",
+    "dependencies": [
+      "sh12-loop-backedge-mir-attempt-1"
+    ],
+    "architecture_decision": "",
+    "base_commit": "ea7dfd2f42fd15cdb72ec0fb5e9932127a440a3d",
+    "candidate_commit": "ff4fe5ef6830d92bb531b592a1c2f9c279b43b65",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/accepted/loop_backedge_mir.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/accepted/loop_backedge_mir.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/rejected/malformed_loop_backedge_mir.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/rejected/malformed_loop_backedge_mir.qst",
+      "bootstrap/clojure/test/gravity/self_hosting/sh12_loop_backedge_mir_test.clj",
+      "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "C11",
+      "docs/artifacts/phase-15/reports/sh13-typed-direct-call-mir-architecture-decision.md",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/accepted/loop_backedge_mir.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/accepted/loop_backedge_mir.qst"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/rejected/malformed_loop_backedge_mir.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/rejected/malformed_loop_backedge_mir.qst"
+      ],
+      "stable_diagnostics": [
+        "C11-VERIFY",
+        "C11-DOMINANCE",
+        "C11-TYPE",
+        "C11-EFFECT",
+        "C11-SAFETY",
+        "C11-ORIGIN"
+      ],
+      "validation_commands": [
+        {
+          "command": "git range-diff 88b7c86ed4041f845a7114df6b35ee21679c88fd..78d989405ebea8bf6fa920458cb7f611e197e089 ea7dfd2f42fd15cdb72ec0fb5e9932127a440a3d..ff4fe5ef6830d92bb531b592a1c2f9c279b43b65",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "all three producer patches and all six candidate-owned file blobs are identical to the later coordinator reconstruction reviewed as attempt 1",
+      "the later exact tuple 50a275eb666318c68bdaae478c8e2a26adb2dc72 to 8c02348e1a50dc5c4588d15a651b574ce7a39b42 received the terminal semantic rejection",
+      "the replay remains outside main and cannot activate SH-13 or claim SH-12 completion",
+      "Clojure and the JVM remain the temporary seed and verification boundary"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-26T16:30:00Z",
+        "actor": "sh-mir",
+        "reason": "replay the three unchanged loop/backedge MIR patches after the SH-07 governance advance"
+      },
+      {
+        "state": "superseded",
+        "at": "2026-08-26T16:54:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "supersede this producer identity by the later exact coordinator reconstruction and its independent terminal rejection"
+      }
+    ],
+    "disposition": "Superseded exact replay; it is not a corrected attempt, enters no main path, cannot activate SH-13, and receives no SH-12 completion, roadmap, performance, self-hosting, release, or seed-retirement credit."
   }
 ]
 }
