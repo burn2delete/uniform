@@ -3126,7 +3126,7 @@
       {
         "reviewer": "review_sh07_incremental_digest",
         "kind": "independent",
-        "result": "blocked"
+        "result": "rejected"
       }
     ],
     "residual_host_boundaries": [
