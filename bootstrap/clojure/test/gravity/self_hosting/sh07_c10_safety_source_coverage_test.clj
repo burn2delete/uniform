@@ -32,35 +32,35 @@
   "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 196156)
+(def ^:private expected-source-byte-count 199567)
 (def ^:private expected-source-revision-id
-  "sha256:c232a59c64affd4c64bd6c679d844a47c9a8dffcb588480ef83ee1372d82554d")
+  "sha256:cf521ff65b6ed3f0e211ef4938293a8b159b2331ab8e20990534f5b387d1d539")
 (def ^:private expected-sh06-semantic-projection-id
-  "sha256:13312eba92eb8c173719a8ef426c46c712e391b114e348969321973f2f6cd0a1")
+  "sha256:aab09114b07a9d96932d6f8cdff4d09124d0f9ebd97fc342f6c2f513dfe5d4c5")
 (def ^:private expected-coverage
-  {:fragment-count 162
-   :root-form-count 162
-   :form-count 15853
-   :binding-count 1045
-   :resolution-count 5653})
+  {:fragment-count 164
+   :root-form-count 164
+   :form-count 16079
+   :binding-count 1058
+   :resolution-count 5740})
 (def ^:private expected-core-census
-  {:core-node-count 13557
-   :definition-count 162
-   :call-count 2355
-   :reference-count 4494
+  {:core-node-count 13747
+   :definition-count 164
+   :call-count 2392
+   :reference-count 4562
    :keyword-lookup-count 0
    :core-form-frequencies
-   {:literal 5035
-    :collection-literal 514
-    :def 162
-    :reference 4494
-    :call 2355
-    :if 707
-    :let 96
-    :loop 16
-    :recur 20
+   {:literal 5094
+    :collection-literal 521
+    :def 164
+    :reference 4562
+    :call 2392
+    :if 719
+    :let 97
+    :loop 17
+    :recur 21
     :quote 3
-    :fn 155}})
+    :fn 157}})
 (def ^:private expected-census-measurements
   {:fragments 73
    :top-level-forms 73
@@ -214,7 +214,9 @@
      sh11-overflow-cast-target-support-valid?
      sh11-overflow-cast-template-rejection
      sh11-overflow-cast-typed-operation-contract
+     sh11-overflow-cast-operation-operand-core-node-ids
      sh11-overflow-cast-typed-operation-fields-match?
+     sh11-overflow-cast-typed-operation-binding-valid?
      sh11-overflow-cast-typed-operation-valid?
      sh11-overflow-cast-verification-diagnostic
      sh11-overflow-contract-valid?
@@ -828,7 +830,7 @@
                             :candidate-structural-bound} entry)]
                entry))
         all-if-calls (mapcat #(collect-calls 'if %) (vals definitions))]
-    (is (= 163 (count forms)))
+    (is (= 165 (count forms)))
     (is (= 'gravity.compiler.c10-safety-analysis-pipeline
            (second namespace-form)))
     (is (= :meta (:profile namespace-clauses)))
@@ -882,11 +884,11 @@
            (:lineage bootstrap-metadata)))
     (is (= expected-definition-names (set (keys definitions))))
     (is (= 7 (count (filter #(= 'def (first %)) (vals definitions)))))
-    (is (= 155 (count (filter #(= 'defn (first %)) (vals definitions)))))
+    (is (= 157 (count (filter #(= 'defn (first %)) (vals definitions)))))
     (is (= quoted-definition-names
            (set (for [[name form] definitions :when (quoted-body form)] name))))
     (is (= expected-executable-sh11-names executable))
-    (is (= 152 (count executable)))
+    (is (= 154 (count executable)))
     (is (= expected-policy policy))
     (is (= expected-diagnostic-catalog
            (nth (get definitions 'c10-safety-diagnostic-catalog) 2)))
@@ -895,7 +897,7 @@
     (is (= expected-rejection-tuples rejection-tuples))
     (is (= expected-structural-reasons
            (set/union preflight-reasons verification-reasons)))
-    (is (= 707 (count all-if-calls)))
+    (is (= 719 (count all-if-calls)))
     (is (every? #(= 4 (count %)) all-if-calls))
     (is (= :gravity/c10-safety-operation
            (:artifact (quoted-body
@@ -927,8 +929,8 @@
         preflight (get definitions 'sh11-structural-preflight)
         verifier (get definitions 'sh11-verify-safety-result)
         sha-shape (get definitions 'sh11-sha256-id?)]
-    (is (= 1085 (count get-calls)))
-    (is (= 1066 (count literal-gets)))
+    (is (= 1102 (count get-calls)))
+    (is (= 1083 (count literal-gets)))
     (is (= '[(get values value)
              (get value (first remaining))
              (get value (first remaining))
@@ -954,6 +956,11 @@
                     :core-node-id
                     "sha256:0000000000000000000000000000000000000000000000000000000000000321"
                     :numeric-contract {:bit-width 8 :signedness :signed}
+                    :operand-core-node-ids
+                    ["sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                     "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"]
+                    :ownership-core-identity-id
+                    "sha256:0000000000000000000000000000000000000000000000000000000000000259"
                     :resolution-id
                     "sha256:000000000000000000000000000000000000000000000000000000000000032b"}
                    :authenticated-checked-multiply
@@ -961,6 +968,11 @@
                     :core-node-id
                     "sha256:0000000000000000000000000000000000000000000000000000000000000322"
                     :numeric-contract {:bit-width 8 :signedness :unsigned}
+                    :operand-core-node-ids
+                    ["sha256:00000000000000000000000000000000000000000000000000000000000002bd"
+                     "sha256:00000000000000000000000000000000000000000000000000000000000002be"]
+                    :ownership-core-identity-id
+                    "sha256:000000000000000000000000000000000000000000000000000000000000025a"
                     :resolution-id
                     "sha256:000000000000000000000000000000000000000000000000000000000000032c"}
                    :authenticated-checked-cast
@@ -970,6 +982,10 @@
                     :numeric-contract
                     {:source-width 16 :target-width 8
                      :source-signedness :signed :target-signedness :signed}
+                    :operand-core-node-ids
+                    ["sha256:00000000000000000000000000000000000000000000000000000000000002bf"]
+                    :ownership-core-identity-id
+                    "sha256:000000000000000000000000000000000000000000000000000000000000025b"
                     :resolution-id
                     "sha256:000000000000000000000000000000000000000000000000000000000000032d"}
                    :authenticated-incompatible-cast
@@ -979,6 +995,10 @@
                     :numeric-contract
                     {:source-width 8 :target-width 16
                      :source-signedness :signed :target-signedness :signed}
+                    :operand-core-node-ids
+                    ["sha256:00000000000000000000000000000000000000000000000000000000000002bf"]
+                    :ownership-core-identity-id
+                    "sha256:000000000000000000000000000000000000000000000000000000000000025b"
                     :resolution-id
                     "sha256:000000000000000000000000000000000000000000000000000000000000032e"}}
                   operation-id)
@@ -992,7 +1012,7 @@
                        :predicate-expressions) operator)]
            (vec dynamic-gets)))
     (is (= [469 649 742 751 838 2198 3087 3105 3133
-            3213 3218 3622 3713 3714 3720 4053 4135 4294 4299]
+            3213 3218 3622 3713 3714 3720 4121 4203 4366 4371]
            (mapv #(-> % meta :line) dynamic-gets)))
     (is (= #{"C10-PROOF" "C10-GENERATED" "C10-TAINT"
              "C10-CAPABILITY" "C10-FFI" "C10-OPTIMIZATION"}
@@ -1063,8 +1083,8 @@
         quote-nodes (filterv #(= :quote (:core-form %)) nodes)]
     (is (= expected-definition-names
            (set (map :name (:definitions core-artifact)))))
-    (is (= 1085 (count get-calls)))
-    (is (= 1066 (count literal-gets)))
+    (is (= 1102 (count get-calls)))
+    (is (= 1083 (count literal-gets)))
     (is (= 19 (count dynamic-gets)))
     (is (= {:reference 11 :call 8}
            (frequencies
