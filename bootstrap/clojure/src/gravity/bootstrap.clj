@@ -710,9 +710,13 @@
   (macro-expansion/expand-syntax-object registry module syntax trace depth
                                         (macro-expansion-ops)))
 
+(def ^:private ^:dynamic *macro-expansion-ops-context* nil)
+
 (defn macro-expansion-ops
   []
-  {:fail! fail!
+  (if *macro-expansion-ops-context*
+    *macro-expansion-ops-context*
+    {:fail! fail!
    :form-op? form-op?
    :contains-form-op? contains-form-op?
    :collect-symbols collect-symbols
@@ -750,7 +754,7 @@
    :expand-form-children expand-form-children
    :expansion-trace-record expansion-trace-record
    :distinct-by-pr-str distinct-by-pr-str
-   :expand-syntax-object expand-syntax-object})
+   :expand-syntax-object expand-syntax-object}))
 
 (defn macro-source-artifact-from-records
   [source-path source-text records]
@@ -758,8 +762,12 @@
         _ (validate-ns-syntax! source-path forms)
         module (parse-module source-path forms)
         syntax (syntax-object-stream source-path records module)]
-    (macro-expansion/macro-source-artifact-from-records
-     source-path source-text records module syntax (macro-expansion-ops))))
+    (macro-expansion/with-normalized-operations
+     (macro-expansion-ops)
+     (fn [operations]
+       (binding [*macro-expansion-ops-context* operations]
+         (macro-expansion/macro-source-artifact-from-records
+          source-path source-text records module syntax operations))))))
 
 (defn macro-source-artifact
   [source-path source-text]

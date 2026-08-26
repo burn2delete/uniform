@@ -66,7 +66,9 @@
     'expand-syntax-object
     {:arglists '([registry module syntax trace depth])}
     'macro-source-artifact-from-records
-    {:arglists '([source-path source-text records module syntax])}}
+    {:arglists '([source-path source-text records module syntax])}
+    'with-normalized-operations
+    {:arglists '([operations operation])}}
    :artifact-inputs [:reader-syntax-records :module-context :source-path]
    :artifact-outputs [:stage0-macro-artifact :expanded-syntax :macro-trace]
    :operation-interposition
@@ -144,7 +146,14 @@
    :splice-key ::splice
    :max-macro-expansion-depth 16})
 
-(defn- normalize-ops
+;; Operation maps cross the hosted bootstrap boundary for every recursive
+;; macro-expansion call.  Keep the fast path request-local and identity-bound:
+;; the private token cannot be forged by supplying an ordinary operation map,
+;; and no normalized map is retained after the caller's dynamic binding ends.
+(def ^:private normalized-ops-context-token (Object.))
+(def ^:private ^:dynamic *normalized-ops-context* nil)
+
+(defn- normalize-ops-uncached
   [ops]
   (when-not (or (nil? ops) (map? ops))
     (throw (ex-info "macro expansion operations must be a map"
@@ -171,6 +180,28 @@
                        :non-function-operation-keys non-functions
                        :operations provided})))
     (merge (default-ops) provided)))
+
+(defn- normalize-ops
+  [ops]
+  (let [context *normalized-ops-context*]
+    (if (and (map? context)
+             (identical? normalized-ops-context-token (:token context))
+             (identical? ops (:ops context)))
+      ops
+      (normalize-ops-uncached ops))))
+
+(defn with-normalized-operations
+  "Run `operation` with one validated operation map for this request.
+
+  The normalized map is passed to the operation and is also bound by identity
+  for nested calls.  The binding is dynamic and request-local; it is not a
+  persistent cache or an authority-bearing artifact field."
+  [operations operation]
+  (let [normalized (normalize-ops operations)]
+    (binding [*normalized-ops-context*
+              {:token normalized-ops-context-token
+               :ops normalized}]
+      (operation normalized))))
 
 (defn- op
   [ops key fallback]
