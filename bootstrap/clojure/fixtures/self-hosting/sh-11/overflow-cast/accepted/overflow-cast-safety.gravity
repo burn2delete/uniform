@@ -4,6 +4,7 @@
   (:exports [sh11-authenticated-typed-add-operation
              sh11-authenticated-typed-multiply-operation
              sh11-authenticated-typed-cast-operation
+             sh11-authenticated-typed-operation-binding
              sh11-runtime-target-support
              sh11-authenticated-checked-operation])
   (:effects #{})
@@ -181,6 +182,24 @@
    :authenticated-checked-cast :numeric-cast :checked-narrowing source operands
    {:source-width 16 :target-width 8
     :source-signedness :signed :target-signedness :signed}))
+
+(defn sh11-typed-operation-operand-core-node-ids [typed-operation]
+  (loop [remaining (get typed-operation :operands) result []]
+    (if (= 0 (count remaining))
+      result
+      (recur
+       (rest remaining)
+       (conj result (get (first remaining) :core-node-id))))))
+
+(defn sh11-authenticated-typed-operation-binding
+  [ownership-core-identity-id typed-operation typed-operation-resolution]
+  {:artifact :gravity/sh11-authenticated-typed-numeric-operation-binding
+   :schema-version 1
+   :ownership-core-identity-id ownership-core-identity-id
+   :operand-core-node-ids
+   (sh11-typed-operation-operand-core-node-ids typed-operation)
+   :typed-operation typed-operation
+   :typed-operation-resolution typed-operation-resolution})
 
 (defn sh11-authenticated-checked-operation
   [typed-operation typed-operation-resolution

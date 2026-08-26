@@ -3724,6 +3724,11 @@
      :core-node-id
      "sha256:0000000000000000000000000000000000000000000000000000000000000321"
      :numeric-contract {:bit-width 8 :signedness :signed}
+     :operand-core-node-ids
+     ["sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"]
+     :ownership-core-identity-id
+     "sha256:0000000000000000000000000000000000000000000000000000000000000259"
      :resolution-id
      "sha256:000000000000000000000000000000000000000000000000000000000000032b"}
     :authenticated-checked-multiply
@@ -3732,6 +3737,11 @@
      :core-node-id
      "sha256:0000000000000000000000000000000000000000000000000000000000000322"
      :numeric-contract {:bit-width 8 :signedness :unsigned}
+     :operand-core-node-ids
+     ["sha256:00000000000000000000000000000000000000000000000000000000000002bd"
+      "sha256:00000000000000000000000000000000000000000000000000000000000002be"]
+     :ownership-core-identity-id
+     "sha256:000000000000000000000000000000000000000000000000000000000000025a"
      :resolution-id
      "sha256:000000000000000000000000000000000000000000000000000000000000032c"}
     :authenticated-checked-cast
@@ -3742,6 +3752,10 @@
      :numeric-contract
      {:source-width 16 :target-width 8
       :source-signedness :signed :target-signedness :signed}
+     :operand-core-node-ids
+     ["sha256:00000000000000000000000000000000000000000000000000000000000002bf"]
+     :ownership-core-identity-id
+     "sha256:000000000000000000000000000000000000000000000000000000000000025b"
      :resolution-id
      "sha256:000000000000000000000000000000000000000000000000000000000000032d"}
     :authenticated-incompatible-cast
@@ -3752,6 +3766,10 @@
      :numeric-contract
      {:source-width 8 :target-width 16
       :source-signedness :signed :target-signedness :signed}
+     :operand-core-node-ids
+     ["sha256:00000000000000000000000000000000000000000000000000000000000002bf"]
+     :ownership-core-identity-id
+     "sha256:000000000000000000000000000000000000000000000000000000000000025b"
      :resolution-id
      "sha256:000000000000000000000000000000000000000000000000000000000000032e"}}
    operation-id))
@@ -3780,7 +3798,10 @@
               (if (sh11-overflow-cast-typed-operation-fields-match?
                    operation contract
                    [:kind :operator :core-node-id :numeric-contract])
-               (if (sh11-overflow-cast-typed-operation-fields-match?
+               (if (= (get contract :operand-core-node-ids)
+                      (sh11-overflow-cast-operation-operand-core-node-ids
+                       operation))
+                (if (sh11-overflow-cast-typed-operation-fields-match?
                    operation descriptor
                    [:operation-id :kind :operator :core-node-id
                     :operands :numeric-contract :source-span
@@ -3792,6 +3813,7 @@
                      (get resolution :digest))
                   false)
                 false)
+                false)
                false)
               false)
             false)
@@ -3799,6 +3821,52 @@
         false)
        false)
       false)))
+
+(defn sh11-overflow-cast-operation-operand-core-node-ids [operation]
+  (loop [remaining (get operation :operands) result []]
+    (if (= 0 (count remaining))
+      result
+      (recur
+       (rest remaining)
+       (conj result (get (first remaining) :core-node-id))))))
+
+(defn sh11-overflow-cast-typed-operation-binding-valid?
+  [bound binding descriptor]
+  (if (sh11-exact-keys?
+       binding
+       #{:artifact :schema-version :ownership-core-identity-id
+         :operand-core-node-ids
+         :typed-operation
+         :typed-operation-resolution})
+    (if (= :gravity/sh11-authenticated-typed-numeric-operation-binding
+           (get binding :artifact))
+      (if (= 1 (get binding :schema-version))
+        (let [operation (get binding :typed-operation)
+              contract
+              (sh11-overflow-cast-typed-operation-contract
+               (get operation :operation-id))]
+         (if (= (get binding :ownership-core-identity-id)
+                (get bound :ownership-core-identity-id))
+         (if (= (get binding :ownership-core-identity-id)
+                 (get contract :ownership-core-identity-id))
+           (if (= (get binding :operand-core-node-ids)
+                  (get contract :operand-core-node-ids))
+            (if (= (get binding :operand-core-node-ids)
+                   (sh11-overflow-cast-operation-operand-core-node-ids
+                    operation))
+             (if (= operation (get descriptor :typed-operation))
+            (if (= (get binding :typed-operation-resolution)
+                   (get descriptor :typed-operation-resolution))
+              (sh11-overflow-cast-typed-operation-valid? descriptor)
+              false)
+            false)
+             false)
+            false)
+           false)
+          false))
+        false)
+      false)
+    false))
 
 (defn sh11-overflow-cast-execute-guard-case
   [case-id kind operator contract operands]
@@ -4228,13 +4296,16 @@
    (if (= reason :invalid-authenticated-runtime-check-policy)
      [:target-support :target-support-resolution :target-support-id
       :provider-id :support-evidence :invalidation-conditions]
-     (if (= reason :untrusted-or-stale-typed-numeric-operation)
+       (if (= reason :untrusted-or-stale-typed-numeric-operation)
        [:typed-operation :typed-operation-resolution
+        :typed-operation-binding
         :operation-id :operator :core-node-id :operands
         :numeric-contract]
-       (if (= reason :malformed-authenticated-overflow-cast-operation)
-         [:descriptor-envelope]
-         (get context :untrusted-fields))))
+       (if (= reason :operation-operands-not-bound-to-c9-facts)
+        [:typed-operation-binding :operands :ownership-core-identity-id]
+        (if (= reason :malformed-authenticated-overflow-cast-operation)
+          [:descriptor-envelope]
+          (get context :untrusted-fields)))))
    :safety-mode (get descriptor :safety-mode)
    :missing-fact missing-fact
    :ownership-core-identity-id
@@ -4256,10 +4327,11 @@
    (get (sh11-authenticated-overflow-cast-policy) :nonclaims)})
 
 (defn sh11-authenticated-overflow-cast-check-request
-  [bound verification descriptor]
+  [bound verification typed-operation-binding descriptor]
   (let [records (sh11-overflow-cast-read-records bound descriptor)]
     (if (sh11-overflow-cast-basic-descriptor-valid? descriptor)
-      (if (sh11-overflow-cast-typed-operation-valid? descriptor)
+      (if (sh11-overflow-cast-typed-operation-binding-valid?
+           bound typed-operation-binding descriptor)
         (if (sh11-overflow-cast-read-records-valid?
              bound verification descriptor records)
         (let [bindings
@@ -4494,10 +4566,10 @@
      :rejected nil diagnostic)))
 
 (defn sh11-classify-authenticated-overflow-cast
-  [bound verification descriptor check-resolution]
+  [bound verification typed-operation-binding descriptor check-resolution]
   (let [template
         (sh11-authenticated-overflow-cast-check-request
-         bound verification descriptor)]
+         bound verification typed-operation-binding descriptor)]
     (if (= :accepted (get template :status))
       (if (= nil check-resolution)
         (sh11-overflow-cast-rejected-result
@@ -4591,7 +4663,8 @@
     false))
 
 (defn sh11-verify-authenticated-overflow-cast-result
-  [bound verification descriptor check-resolution candidate]
+  [bound verification typed-operation-binding descriptor
+   check-resolution candidate]
   (let [candidate-preflight
         (if (sh11-overflow-cast-candidate-shape-valid? candidate)
           (sh11-authenticated-identity-preflight candidate)
@@ -4599,7 +4672,8 @@
     (if (= :accepted (get candidate-preflight :status))
       (let [expected
             (sh11-classify-authenticated-overflow-cast
-             bound verification descriptor check-resolution)
+             bound verification typed-operation-binding
+             descriptor check-resolution)
             outcomes (get candidate :outcomes)
             outcome (get candidate :outcome)]
         (if (sh11-not (= 1 (count outcomes)))
