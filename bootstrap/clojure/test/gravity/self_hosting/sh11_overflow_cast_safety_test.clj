@@ -538,7 +538,7 @@
         (is (= (get-in add [:inputs :source :source-span]) (:source-span d)))
         (is (= (get-in add [:inputs :source :origin-chain])
                (:generated-origin-chain d)))
-        (is (contains? #{:authenticated-typed-operation
+        (is (contains? #{:fixture-contract-registry-validated-typed-operation
                          :authenticated-c9-operand}
                        (:provenance-source d)))
         (is (vector? (:untrusted-fields d)))))

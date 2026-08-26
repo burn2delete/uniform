@@ -4253,7 +4253,8 @@
        :origin-chain (get operation :origin-chain)
        :profile (get operation :profile)
        :target (get operation :target)
-       :provenance-source :authenticated-typed-operation
+       :provenance-source
+       :fixture-contract-registry-validated-typed-operation
        :untrusted-fields []}
       (if record-authenticated
         {:source-span (get fact :source-span)
@@ -4616,7 +4617,8 @@
    :generated-origin-chain (get descriptor :origin-chain)
    :profile (get descriptor :profile)
    :target (get descriptor :target)
-   :provenance-source :authenticated-typed-operation
+   :provenance-source
+   :fixture-contract-registry-validated-typed-operation
    :untrusted-fields []
    :safety-mode (get descriptor :safety-mode)
    :missing-fact missing-fact
