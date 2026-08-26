@@ -2351,6 +2351,53 @@
         {"state": "integrated", "at": "2026-08-26T02:33:40Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted bootstrap compatibility closure candidate and this append-only admission record onto main"}
       ],
       "disposition": "Integrated explicit 66-input cache closures for exactly two deterministic bootstrap compatibility tests; no batching, bootstrap semantics, compatibility expansion, benchmark, roadmap, release, self-hosting, or seed-retirement authority."
+    },
+    {
+      "id": "c11-bootstrap-compatibility-single-artifact-build-v1",
+      "title": "C11 bootstrap compatibility single artifact build version 1",
+      "invariant_family": "testing/c11-bootstrap-compatibility-artifact-build",
+      "owner": "uniform-coordinator",
+      "author": "development-verification",
+      "state": "integrated",
+      "dependencies": ["sh01-bootstrap-compatibility-test-cache-closure-v1"],
+      "architecture_decision": "Exercise the existing C11 operation interposition and binding-count assertions in one direct facade operation, then perform one full fixture artifact build for diagnostic and governing-document compatibility, eliminating a duplicate full artifact build without changing production, compiler, cache, runner, or bootstrap behavior.",
+      "base_commit": "d8708401ae74e3bae78888ef2a34e6d1e6e98d63",
+      "candidate_commit": "a36dfc03f2bff28a1cf584f6034ed914ad76d31f",
+      "clean_worktree": true,
+      "owned_paths": ["bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj"],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "C11", "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": ["bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj#c11-mir-compatibility-wrappers-preserve-interposition"],
+        "rejected_fixtures": ["bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj#C11-SENTINEL"],
+        "stable_diagnostics": ["C11-SENTINEL"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.bootstrap-compatibility.c11-test", "exit_code": 0, "result": "passed"},
+          {"command": "deterministic facade-build count comparison preserving operation interposition, artifact diagnostics, governing document, and public API assertions", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check d8708401ae74e3bae78888ef2a34e6d1e6e98d63..a36dfc03f2bff28a1cf584f6034ed914ad76d31f", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base d8708401ae74e3bae78888ef2a34e6d1e6e98d63 --candidate-commit a36dfc03f2bff28a1cf584f6034ed914ad76d31f --candidate-tree 52a8f1c93b59d6c672f03dbb8a486eaa8418af5a", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "review_proof_artifact_dag", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary bootstrap compatibility, test execution, fixture, filesystem, and timing boundary",
+        "the exact focused compatibility result of one test and 11 assertions is reused from the independently reviewed candidate and is not rerun after admission",
+        "the candidate observed 34.96 seconds under contention versus a prior clean 68.69-second base observation; these unpaired environment-specific timings are non-authoritative and grant no stable benchmark, performance, or allocation claim",
+        "the change is confined to a test assertion arrangement and changes no production, compiler, cache, runner, bootstrap, artifact, or diagnostic semantics"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-26T06:15:52Z", "actor": "development-verification", "reason": "remove one duplicate full C11 compatibility artifact build while retaining all facade, diagnostic, governing-document, and API assertions"},
+        {"state": "frozen", "at": "2026-08-26T06:15:53Z", "actor": "uniform-coordinator", "reason": "freeze exact base d8708401ae74e3bae78888ef2a34e6d1e6e98d63, candidate a36dfc03f2bff28a1cf584f6034ed914ad76d31f, tree 52a8f1c93b59d6c672f03dbb8a486eaa8418af5a, and one-path ownership set"},
+        {"state": "review-pending", "at": "2026-08-26T06:15:54Z", "actor": "uniform-coordinator", "reason": "request independent exact review of retained interposition, diagnostic, governing-document, public API, build-count, bounded timing, gates, and nonclaims"},
+        {"state": "accepted", "at": "2026-08-26T06:15:55Z", "actor": "review_proof_artifact_dag", "reason": "accept the exact one-path candidate after focused compatibility, deterministic build-count, boundary, governance, documentation, roadmap, diff, and preflight verification"},
+        {"state": "integration-eligible", "at": "2026-08-26T06:15:56Z", "actor": "uniform-coordinator", "reason": "exact identities, clean named branch, one-path scope, retained positive and diagnostic evidence, successful bounded checks, independent acceptance, residual boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-26T06:15:57Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted C11 compatibility single-build candidate and this append-only admission record onto main"}
+      ],
+      "disposition": "Integrated one C11 bootstrap compatibility test-only build deduplication; no production, compiler, cache, runner, bootstrap, self-hosting, release, roadmap, or seed-retirement authority."
     }
   ]
 }
