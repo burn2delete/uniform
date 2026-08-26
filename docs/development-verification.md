@@ -247,6 +247,26 @@ uncached. Authoritative,
 freshness-required, performance, proof, and nondeterministic policies always
 execute and are never stored.
 
+The contract may additionally opt a reviewed bootstrap-free leaf test into an
+explicit cache closure. Such a closure lists every production, transitive,
+test, fixture, runner, contract, and internal-classpath input directly; the
+runner never infers Clojure `require` edges. The content key sorts and hashes
+the declared repository-relative paths, roles, executable modes, and bytes,
+and also binds the dependency-contract schema, runner, semantic command,
+policy, external classpath, and runtime/tool identities. Internal classpath
+order, alternate `.cljc` and compiled-class shadows, data-reader resources,
+unexpected internal class files, and the self-hosting test-catalog path set are
+also bound; inventories are compared before and after closure reads. Absolute
+worktree paths are excluded, so identical declared inputs may reuse a result
+across Git worktrees. Missing, malformed, unknown, unowned, or undeclared
+closures retain the complete-repository identity. A detected read or inventory
+race fails closed rather than falling back. The initial and post-operation
+repository snapshot checks remain full. This initial slice covers only
+`gravity.c11-mir-test` and
+`gravity.compiler-pass-manifest-test`; their bootstrap compatibility jobs keep
+the complete-repository identity because the bootstrap facade has a broader
+eager dependency and file-read surface.
+
 An immutable parent probe removes an existing valid hit before executor
 submission, so that hit acquires no broker lease and launches no child JVM. A
 miss is rechecked by the cross-process per-key singleflight at execution time;

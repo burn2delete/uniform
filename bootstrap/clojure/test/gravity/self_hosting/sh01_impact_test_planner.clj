@@ -706,7 +706,9 @@
            :reason :reviewed-component-test
            :component-id test-id
            :tests [(select-keys test-entry
-                                [:path :namespace :jvm-group :test-policy])]
+                                [:path :namespace :jvm-group :test-policy
+                                 :cache-closure
+                                 :cache-closure-valid?])]
            :test-namespaces [(:namespace test-entry)]}
           (let [component
                 (get-in dependency-index
@@ -765,8 +767,15 @@
        sort
        vec))
 
+(defn- closure-owned?
+  [ownership closure]
+  (every?
+   #(contains? #{:coordinator :dedicated :module}
+               (:classification (classify-path ownership (:path %))))
+   (:inputs closure)))
+
 (defn- exact-development-job-metadata
-  [classified]
+  [ownership classified]
   (into
    {}
    (for [entry classified
@@ -774,12 +783,17 @@
          :let [namespace (:namespace test-entry)]
          :when (:development-component-id entry)]
      [namespace
-      {:component-id (:development-component-id entry)
-       :batch-key (str "component/"
-                       (:development-component-id entry)
-                       "/"
-                       (:jvm-group test-entry))
-       :test-policy (:test-policy test-entry)}])))
+      (cond->
+       {:component-id (:development-component-id entry)
+        :batch-key (str "component/"
+                        (:development-component-id entry)
+                        "/"
+                        (:jvm-group test-entry))
+        :test-policy (:test-policy test-entry)}
+        (and (:cache-closure-valid? test-entry)
+             (closure-owned? ownership (:cache-closure test-entry)))
+        (assoc :cache-closure (:cache-closure test-entry)
+               :cache-closure-authorized? true))])))
 
 (defn- dedicated-test-path?
   "Returns true when a path names a dedicated self-hosting test file.
@@ -1113,7 +1127,7 @@
             exact-namespaces
             (exact-development-namespaces classified)
             job-metadata-by-namespace
-            (exact-development-job-metadata classified)
+            (exact-development-job-metadata record classified)
             execution-path-slices
             (->> classified
                  (filter #(= :slice-closure

@@ -9,6 +9,8 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [gravity.digest :as digest]
+            [gravity.self-hosting.sh01-component-test-dependencies
+             :as component-dependencies]
             [gravity.self-hosting.sh01-development-test-cache :as cache]
             [gravity.self-hosting.sh01-host-resource-broker :as broker])
   (:import [java.io ByteArrayOutputStream]
@@ -548,11 +550,263 @@
       (sequential? command) (mapv str command)
       :else [(str command) "-M:test"])))
 
+(defn- explicit-classpath-identities
+  [^Path repository-root closure-root]
+  (let [separator (java.util.regex.Pattern/quote
+                   (System/getProperty "path.separator"))
+        entries (str/split (System/getProperty "java.class.path")
+                           (re-pattern separator) -1)
+        paths
+        (mapv
+         (fn [entry]
+           (let [candidate (.toPath (io/file entry))]
+             (.normalize
+              (if (.isAbsolute candidate)
+                candidate
+                (.resolve repository-root candidate)))))
+         entries)
+        internal-roots
+        (->> paths
+             (filter #(.startsWith ^Path % repository-root))
+             (mapv #(str (.relativize repository-root ^Path %))))
+        external-paths
+        (remove #(.startsWith ^Path % repository-root) paths)]
+    (when (and (= ["bootstrap/clojure/src" "bootstrap/clojure/test"]
+                  internal-roots)
+               (every? #(Files/isRegularFile ^Path % no-links)
+                       external-paths))
+      (mapv
+       (fn [index ^Path path]
+         {:path (format "classpath/entry-%04d" index)
+          :sha256
+          (if (.startsWith path repository-root)
+            (sha256-id
+             (pr-str
+              (array-map
+               :repository-identity closure-root
+               :relative-entry (str (.relativize repository-root path)))))
+            (regular-file-identity path))})
+       (range)
+       paths))))
+
+(defn- reviewed-job-cache-closure
+  [job]
+  (try
+    (let [index (component-dependencies/dependency-index)
+          members (or (:batch-jobs job) [job])
+          closures
+          (mapv
+           (fn [member]
+             (let [reviewed
+                   (component-dependencies/reviewed-cache-closure
+                    index (:namespace member))]
+               (when (and (:cache-closure-authorized? member)
+                          (= reviewed (:cache-closure member)))
+                 reviewed)))
+           members)]
+      (when (and (seq closures) (every? some? closures))
+        {:schema component-dependencies/cache-closure-schema
+         :inventories
+         (->> closures
+              (mapcat :inventories)
+              distinct
+              (sort-by (juxt (comp str :kind) :root :suffix))
+              vec)
+         :inputs
+         (->> closures
+              (mapcat :inputs)
+              distinct
+              (sort-by (juxt (comp str :role) :path))
+              vec)}))
+    (catch clojure.lang.ExceptionInfo _ nil)))
+
+(defn- repository-input-identity
+  [^Path repository-root {:keys [path role]}]
+  (let [message-digest (MessageDigest/getInstance "SHA-256")]
+    (update-framed-text!
+     message-digest :gravity/sh01-explicit-cache-input-v1)
+    (update-framed-text! message-digest role)
+    (update-file! message-digest repository-root path)
+    {:path path :role role :sha256 (message-digest-id message-digest)}))
+
+(defn- closure-inventory
+  [^Path repository-root {:keys [kind root suffix] :as declaration}]
+  (let [inventory-root (.normalize (.resolve repository-root ^String root))]
+    (when-not (and (.startsWith inventory-root repository-root)
+                   (Files/isDirectory inventory-root no-links))
+      (fail! "SH01-DEVELOPMENT-LOOP-PATH"
+             "Explicit cache-closure inventory root is unavailable"
+             {:root root :kind kind}))
+    (with-open [paths (Files/walk
+                       inventory-root
+                       (make-array java.nio.file.FileVisitOption 0))]
+      (let [matches
+            (->> (.iterator paths)
+                 iterator-seq
+                 (keep
+                  (fn [^Path path]
+                    (when (Files/isSymbolicLink path)
+                      (fail! "SH01-DEVELOPMENT-LOOP-SYMLINK"
+                             "Repository symlinks are outside the explicit cache closure"
+                             {:path (str (.relativize repository-root path))}))
+                    (when (and (Files/isRegularFile path no-links)
+                               (str/ends-with? (str path) suffix))
+                      (str (.relativize repository-root path)))))
+                 sort
+                 vec)]
+        (when (> (count matches) maximum-path-count)
+          (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-LIMIT"
+                 "Explicit cache-closure inventory exceeds its reviewed bound"
+                 {:root root :path-count (count matches)}))
+        (assoc declaration :paths matches)))))
+
+(defn- declared-shadow-paths
+  [inputs inventories]
+  (let [declared-paths (set (map :path inputs))
+        classpath-roots ["bootstrap/clojure/src" "bootstrap/clojure/test"]
+        clojure-paths
+        (->> inputs
+             (map :path)
+             (filter #(str/ends-with? % ".clj")))
+        alternatives
+        (mapcat
+         (fn [path]
+           (let [classpath-root
+                 (some #(when (str/starts-with? path (str % "/")) %)
+                       classpath-roots)
+                 relative (when classpath-root
+                            (subs path (inc (count classpath-root))))]
+             (when relative
+               (mapcat
+                (fn [root]
+                  (let [stem (subs relative 0 (- (count relative) 4))]
+                    [(str root "/" relative)
+                     (str root "/" stem ".cljc")
+                     (str root "/" stem "__init.class")]))
+                classpath-roots))))
+         clojure-paths)
+        data-readers
+        ["bootstrap/clojure/src/data_readers.clj"
+         "bootstrap/clojure/src/data_readers.cljc"
+         "bootstrap/clojure/test/data_readers.clj"
+         "bootstrap/clojure/test/data_readers.cljc"]
+        class-paths
+        (mapcat :paths
+                (filter #(= :internal-class-path-set-v1 (:kind %))
+                        inventories))]
+    (->> (concat alternatives data-readers class-paths)
+         (remove declared-paths)
+         distinct
+         sort
+         vec)))
+
+(defn- required-input-state
+  [^Path repository-root relative]
+  (let [path (.normalize (.resolve repository-root ^String relative))]
+    (try
+      (let [attributes
+            (Files/readAttributes path BasicFileAttributes no-links)]
+        {:attributes attributes
+         :executable? (and (.isRegularFile attributes)
+                           (Files/isExecutable path))})
+      (catch java.nio.file.NoSuchFileException _ nil))))
+
+(defn- same-required-input-state?
+  [before after]
+  (and before
+       after
+       (same-file-snapshot? (:attributes before) (:attributes after))
+       (= (:executable? before) (:executable? after))))
+
+(defn- explicit-closure-material
+  [context job]
+  (when-let [closure (reviewed-job-cache-closure job)]
+    (let [repository-root
+          (.normalize (.toAbsolutePath
+                       (.toPath (io/file (:working-directory context)))))
+          paths (mapv :path (:inputs closure))]
+      (when (every? #(Files/exists (.resolve repository-root ^String %)
+                                   no-links)
+                    paths)
+        (let [inventories
+              (mapv #(closure-inventory repository-root %)
+                    (:inventories closure))
+              required-input-states
+              (mapv #(required-input-state repository-root %) paths)
+              _
+              (when (some nil? required-input-states)
+                (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                       "Required explicit cache-closure input disappeared"
+                       {}))
+              inputs
+              (mapv #(repository-input-identity repository-root %)
+                    (:inputs closure))
+              shadow-inputs
+              (mapv #(repository-input-identity
+                      repository-root {:path % :role :shadow})
+                    (declared-shadow-paths inputs inventories))
+              verified-inventories
+              (mapv #(closure-inventory repository-root %)
+                    (:inventories closure))
+              verified-required-input-states
+              (mapv #(required-input-state repository-root %) paths)
+              _
+              (when-not
+               (and (= inventories verified-inventories)
+                    (every? true?
+                            (map same-required-input-state?
+                                 required-input-states
+                                 verified-required-input-states)))
+                (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                       "Explicit cache-closure inputs changed while read"
+                       {}))
+              closure-root
+              (sha256-id
+               (pr-str
+                (array-map
+                 :schema component-dependencies/cache-closure-schema
+                 :dependency-contract-schema
+                 component-dependencies/contract-schema
+                 :inputs inputs
+                 :shadow-inputs shadow-inputs
+                 :inventories inventories)))
+              classpath-inputs
+              (explicit-classpath-identities repository-root closure-root)
+              by-role (group-by :role inputs)
+              identities
+              (fn [& roles]
+                (->> roles
+                     (mapcat #(get by-role %))
+                     (mapv #(select-keys % [:path :sha256]))))]
+          (when classpath-inputs
+            {:repository-identity closure-root
+             :dependencies
+             {:complete? true
+              :production-inputs (identities :production)
+              :transitive-production-inputs (identities :transitive)
+              :fixture-contract-inputs
+              (identities :test :fixture :contract :classpath)
+              :runner-identity
+              {:id :sh01-development-loop-runner
+               :sha256
+               (sha256-id
+                (pr-str
+                 (array-map
+                  :schema :gravity/sh01-explicit-runner-identity-v1
+                  :inputs (vec (get by-role :runner)))))}
+              :classpath-inputs classpath-inputs
+              :runtime-tool-inputs
+              (:runtime-tool-inputs context)}}))))))
+
 (defn cache-request
   "Build the closed cache request for one scheduled execution unit."
   [context plan job options]
-  (let [repository-identity
+  (let [full-repository-identity
         (get-in context [:snapshot :repository-identity])
+        explicit-material (explicit-closure-material context job)
+        repository-identity
+        (or (:repository-identity explicit-material)
+            full-repository-identity)
         timeout-ms (:timeout-ms context)
         policy (policy-for-job plan job options timeout-ms)
         namespaces (mapv (comp str :namespace)
@@ -580,24 +834,31 @@
       :sha256 (sha256-id (pr-str test-material))}
      :test-policy policy
      :dependencies
-     {:complete? true
-      :production-inputs
-      [(snapshot-input "repository/complete-production-closure-v1")]
-      :transitive-production-inputs
-      [(snapshot-input "repository/complete-transitive-closure-v1")]
-      :fixture-contract-inputs
-      [(snapshot-input "repository/complete-fixture-contract-closure-v1")]
-      :runner-identity
-      {:id :sh01-development-loop-runner
-       :sha256 repository-identity}
-      :classpath-inputs
-      (or (:classpath-inputs context)
-          [(snapshot-input "repository/complete-classpath-closure-v1")])
-      :runtime-tool-inputs
-      (vec (concat (or (:runtime-tool-inputs context)
-                       (runtime-identities {}))
-                   (when (:development-operation-identity options)
-                     [(:development-operation-identity options)])))}}))
+     (or
+      (some-> (:dependencies explicit-material)
+              (update :runtime-tool-inputs
+                      #(vec
+                        (concat (or % (runtime-identities {}))
+                                (when (:development-operation-identity options)
+                                  [(:development-operation-identity options)])))))
+      {:complete? true
+       :production-inputs
+       [(snapshot-input "repository/complete-production-closure-v1")]
+       :transitive-production-inputs
+       [(snapshot-input "repository/complete-transitive-closure-v1")]
+       :fixture-contract-inputs
+       [(snapshot-input "repository/complete-fixture-contract-closure-v1")]
+       :runner-identity
+       {:id :sh01-development-loop-runner
+        :sha256 repository-identity}
+       :classpath-inputs
+       (or (:classpath-inputs context)
+           [(snapshot-input "repository/complete-classpath-closure-v1")])
+       :runtime-tool-inputs
+       (vec (concat (or (:runtime-tool-inputs context)
+                        (runtime-identities {}))
+                    (when (:development-operation-identity options)
+                      [(:development-operation-identity options)])))})}))
 
 (defn attach-request
   "Attach a fully computed parent-side request to one execution unit."

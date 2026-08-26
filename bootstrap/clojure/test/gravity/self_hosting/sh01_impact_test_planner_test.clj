@@ -253,6 +253,63 @@
     (is (= "SH01-COMPONENT-DEPENDENCY-CONTRACT"
            (:id (ex-data exception))))))
 
+(deftest explicit-cache-closures-are-reviewed-opt-in-and-fallback-safe
+  (let [index (component-dependencies/dependency-index)
+        entries (vals (:by-test-path index))
+        by-namespace (into {} (map (juxt :namespace identity)) entries)]
+    (is (= :gravity/stage0-incremental-test-dependencies-v2
+           (:schema index)))
+    (is (true? (get-in by-namespace
+                       ['gravity.c11-mir-test :cache-closure-valid?])))
+    (is (true? (get-in by-namespace
+                       ['gravity.compiler-pass-manifest-test
+                        :cache-closure-valid?])))
+    (is (false? (get-in by-namespace
+                        ['gravity.bootstrap-compatibility.c11-test
+                         :cache-closure-valid?])))
+    (is (false? (get-in by-namespace
+                        ['gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test
+                         :cache-closure-valid?])))
+    (let [contract (component-dependencies/read-contract)
+          malformed
+          (assoc-in contract
+                    [:components 0 :tests 0 :cache-closure :schema]
+                    :gravity/unknown-closure)
+          unknown-path
+          (assoc-in contract
+                    [:components 0 :tests 0 :cache-closure :inputs 0 :path]
+                    "bootstrap/clojure/src/gravity/unowned.clj")]
+      (is (false?
+           (get-in (component-dependencies/dependency-index malformed)
+                   [:by-test-path
+                    "bootstrap/clojure/test/gravity/c11_mir_test.clj"
+                    :cache-closure-valid?])))
+      (is (false?
+           (get-in (component-dependencies/dependency-index unknown-path)
+                   [:by-test-path
+                    "bootstrap/clojure/test/gravity/c11_mir_test.clj"
+                    :cache-closure-valid?]))))))
+
+(deftest exact-development-metadata-carries-only-validated-closure
+  (let [index (component-dependencies/dependency-index)
+        component (get-in index [:by-component-id "c11-mir"])
+        metadata-builder
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'exact-development-job-metadata)
+        metadata
+        (metadata-builder
+         (:ownership (planner/planning-context))
+         [{:development-component-id "c11-mir"
+           :development-tests (:tests component)}])]
+    (is (map? (get-in metadata
+                      ['gravity.c11-mir-test :cache-closure])))
+    (is (true? (get-in metadata
+                       ['gravity.c11-mir-test
+                        :cache-closure-authorized?])))
+    (is (nil? (get-in metadata
+                      ['gravity.bootstrap-compatibility.c11-test
+                       :cache-closure])))))
+
 (deftest stage0-c2-module-maps-to-reader-slice-and-downstream-closure
   (let [source "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"
         plan
