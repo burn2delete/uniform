@@ -446,6 +446,24 @@ clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
   -M -m gravity.self-hosting.sh07-iteration-cache-runner --help
 ```
 
+For a bounded exact SH-07 development selection, use the dedicated process
+runner:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -m gravity.self-hosting.sh07-bounded-development-runner \
+  --route c6-contract --timeout-ms 900000
+```
+
+The route catalog is closed.  `c6-coverage` selects the single authentic C6
+coverage test and additionally requires the existing coordination-root option.
+The terminal non-authoritative receipt is printed as EDN on stdout; pass
+`--progress-file PATH` to retain bounded phase/heartbeat progress while the
+child runs.  Timeout, malformed output, failed tests, or missing admission are
+always non-passing, and no result is cached.  This helper does not replace the
+authoritative SH-07 command or grant proof, performance, integration, release,
+self-hosting, or seed-retirement authority.
+
 For a fresh reviewed SH-07 transaction:
 
 ```bash
