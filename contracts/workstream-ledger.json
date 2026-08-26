@@ -3557,6 +3557,129 @@
       }
     ],
     "disposition": "Accepted architecture authority for at most one separately governed SH-07 exception core-lowering candidate. This record grants no implementation acceptance, integration eligibility, SH-07 completion, roadmap credit, self-hosting, release, seed-retirement, or performance authority."
+  },
+  {
+    "id": "sh07-exception-core-lowering-attempt-3",
+    "title": "SH-07 authenticated exception core-lowering candidate attempt 3",
+    "invariant_family": "self-hosting/sh07-exception-core-lowering-v1",
+    "owner": "sh-core",
+    "author": "sh07-core",
+    "state": "rejected",
+    "dependencies": [
+      "sh07-exception-core-lowering-architecture-decision-v1",
+      "sh07-core-mutation-execution-v1"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision.md",
+    "base_commit": "e2577adb43e4a5e8f151b364c2a502b4bdb5afdd",
+    "candidate_commit": "7e061f9996f8711527004b93122949aea98820fb",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/exception-error-exit.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/exception-error-exit.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/exception-error-exit.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/exception-error-exit.qst",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_core_lowering_source_coverage_test.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_exception_error_exit_test.clj",
+      "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L2",
+      "L9",
+      "C6",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/exception-error-exit.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/exception-error-exit.qst"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/exception-error-exit.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/exception-error-exit.qst"
+      ],
+      "stable_diagnostics": [
+        "SH07-C6-EXCEPTION-ERROR-EXIT",
+        "C6-VERIFY",
+        "C6-CORE-SHAPE",
+        "C6-EVAL-ORDER",
+        "C6-ORIGIN",
+        "C6-LOWERING-GAP"
+      ],
+      "validation_commands": [
+        {
+          "command": "git diff --check e2577adb43e4a5e8f151b364c2a502b4bdb5afdd..7e061f9996f8711527004b93122949aea98820fb",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref 833810eb56baf47b602c2ba650bb9918803512ee",
+          "exit_code": 0,
+          "result": "failed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "sh07_semantic_review",
+        "kind": "independent",
+        "result": "rejected"
+      },
+      {
+        "reviewer": "sh07_reconcile_audit",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
+    "residual_host_boundaries": [
+      "Gravity C6 did not reconstruct and authenticate the receipt-derived projection binding; a Clojure fixture oracle substituted for the public boundary",
+      "the candidate synthesized fragment, coverage, module, and top-level membership instead of retaining the actual verified B47 owning records",
+      "project-root and path closure, introduced-origin classification, independent core verification, and emitted artifact identity remained incomplete",
+      "the exact source-coverage namespace required incompatible quote and function counts and therefore had no possible passing focused result",
+      "Clojure and the JVM remained the temporary seed, verifier, digest, execution, and observation boundary"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-26T15:45:00Z",
+        "actor": "sh07-core",
+        "reason": "compose the one bounded successor permitted by the separately reviewed exception-lowering architecture"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-26T16:05:24Z",
+        "actor": "sh07-core",
+        "reason": "freeze exact stale-lineage candidate 7e061f9996f8711527004b93122949aea98820fb and tree de01ed7359d5940a9070af53d0095bdfb8146910 for coordinator review"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-26T16:07:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "request independent exact semantic, authentication, ancestry, scope, and governance review"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-26T16:19:00Z",
+        "actor": "sh07_semantic_review",
+        "reason": "reject the impossible census, unauthenticated projection, synthesized upstream membership, incomplete path and origin closure, oracle-masked adversarial evidence, and non-independent verifier"
+      }
+    ],
+    "disposition": "Rejected exact attempt 3. No implementation paths enter main and no SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement credit is granted. The accepted decision authorized at most this one successor, so another implementation candidate requires a new separately accepted architecture decision."
   }
 ]
 }
