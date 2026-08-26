@@ -146,6 +146,39 @@ seed-retirement evidence. Its DAG counters cover only the request-scoped
 P15 source-data node, and its frame-depth field is the static direct-call
 depth from the fixture entrypoint, not a runtime stack measurement.
 
+## Explicit SH-07 Cold-Build Phase Telemetry
+
+The SH-07 cold-build telemetry slice is an opt-in diagnostic around one
+`sh07-core-file-artifact` invocation.  It is intended for a long C6 source
+build, not for the ordinary test suite.  Run it only when the requested source
+path and its JVM have been reserved for this diagnostic:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-cold-build-phase-telemetry --source PATH
+```
+
+The receipt aggregates a fixed set of SH-06, SH-07, and Stage2 plan phases and
+the three declared SH-07 digest purposes plus a bounded `:other` bucket.  Each
+digest row records call count, elapsed time, failed calls, and capped counts
+for large preimage collections such as forms, nodes, bindings, resolutions,
+and children.  A synchronous `:on-progress` callback can print sparse phase
+and digest records while a long phase is running; callback failures are
+swallowed and a maximum of 256 progress records is retained by default.
+The collection bound is checked before realization, so an accidental infinite
+or unexpectedly wide sequence cannot make the observer unbounded.
+
+The profiler uses temporary process-local root-Var wrappers under a private
+lock.  It does not alter the observed source, plan, digest, proof, diagnostic,
+cache, or authoritative runner, and it does not memoize or reuse an artifact.
+The `:cold-plan-binding-realized-before?` field indicates whether the pinned
+SH-07 plan delay was already realized in that JVM; use a fresh JVM when a cold
+binding observation is required.  Elapsed values and the source path are
+host-variable observations.  The phase and digest accounting is diagnostic
+only and grants no benchmark, performance, proof, integration, release,
+self-hosting, seed-retirement, or cache authority.  No full or multi-hour
+SH-07 run is part of the default telemetry tests; those tests exercise the
+observer through bounded synthetic seams.
+
 ## Explicit Stage2 Emitter Phase Benchmark
 
 The real Stage2 emitter benchmark is an explicit, bounded development
