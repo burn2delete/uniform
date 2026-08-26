@@ -36,6 +36,23 @@
                    :performance? false
                    :proof? false
                    :freshness-required? false}}]}]
+ :standalone-tests
+ [{:test-id "p15-bounded-profile"
+   :path "bootstrap/clojure/test/gravity/self_hosting/p15_bounded_profile_test.clj"
+   :namespace gravity.self-hosting.p15-bounded-profile-test
+   :jvm-group "p15-bounded-profile"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? false}}
+  {:test-id "p15-proof-artifact-dag"
+   :path "bootstrap/clojure/test/gravity/self_hosting/p15_proof_artifact_dag_test.clj"
+   :namespace gravity.self-hosting.p15-proof-artifact-dag-test
+   :jvm-group "p15-proof-artifact-dag"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? false}}]
  :nonclaims
  ["This development dependency map does not replace slice ownership."
   "Selected tests are non-authoritative development feedback."

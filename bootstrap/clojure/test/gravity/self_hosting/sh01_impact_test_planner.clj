@@ -52,6 +52,55 @@
 (def ^:private component-cross-cutting-reason
   :reserved-component-owner-has-no-slice)
 
+(declare valid-slice?)
+
+(defn- standalone-test-index
+  [record dependency-index]
+  (let [owners (:standalone-test-owners record)
+        dependencies (:standalone-tests dependency-index)
+        dependencies-by-path (into {} (map (juxt :path identity)) dependencies)
+        owner-paths (set (keys owners))
+        dependency-paths (set (keys dependencies-by-path))]
+    (when-not (and (map? owners)
+                   (= owner-paths dependency-paths))
+      (throw
+       (ex-info
+        "Standalone incremental tests require matching ownership and dependency records"
+        {:id "SH01-STANDALONE-TEST-CONTRACT"
+         :ownership-only-paths
+         (vec (sort (set/difference owner-paths dependency-paths)))
+         :dependency-only-paths
+         (vec (sort (set/difference dependency-paths owner-paths)))})))
+    (let [entries
+          (mapv
+           (fn [relative]
+             (let [owner (get owners relative)
+                   dependency (get dependencies-by-path relative)
+                   slice (:slice owner)
+                   expected-owner
+                   (get-in record [:slice-owners slice :leaf-owner])]
+               (when-not (and (= #{:namespace :slice :owner}
+                                 (set (keys owner)))
+                              (= (:namespace owner) (:namespace dependency))
+                              (valid-slice? slice)
+                              (= expected-owner (:owner owner)))
+                 (throw
+                  (ex-info
+                   "Standalone incremental test ownership is malformed or disagrees with its dependency record"
+                   {:id "SH01-STANDALONE-TEST-CONTRACT"
+                    :path relative
+                    :owner owner
+                    :dependency dependency
+                    :expected-owner expected-owner})))
+               (merge dependency
+                      {:slice slice
+                       :owner (:owner owner)
+                       :classification :standalone-test})))
+           (sort owner-paths))]
+      {:by-path (into (sorted-map) (map (juxt :path identity)) entries)
+       :by-namespace
+       (into (sorted-map) (map (juxt :namespace identity)) entries)})))
+
 (defn- repository-root
   []
   (let [resource
@@ -324,7 +373,8 @@
   non-authoritative. A path inside an owned self-hosting root that matches
   neither rule is unowned and causes changed-file planning to fail closed."
   [record relative]
-  (let [module-owner (get (:module-owners record) relative)
+  (let [standalone-owner (get (:standalone-test-owners record) relative)
+        module-owner (get (:module-owners record) relative)
         slice-owners (:slice-owners record)
         owner-slices
         (when module-owner
@@ -349,6 +399,12 @@
         :classification :coordinator
         :slices (vec (sort (all-slices)))}
        component-metadata)
+
+      standalone-owner
+      {:path relative
+       :classification :module
+       :slices [(:slice standalone-owner)]
+       :test-namespace (:namespace standalone-owner)}
 
       dedicated-slice
       {:path relative
@@ -399,10 +455,15 @@
        vec))
 
 (defn- test-catalog
-  []
+  ([]
+   (let [record (ownership-record)
+         dependencies (component-dependencies/dependency-index)]
+     (test-catalog (standalone-test-index record dependencies))))
+  ([standalone-index]
   (let [namespaces (vec (runner/dedicated-test-namespaces))
         duplicates (duplicate-namespaces namespaces)
         discovered (set namespaces)
+        standalone-by-namespace (:by-namespace standalone-index)
         missing-infrastructure
         (set/difference required-fixed-stage-infrastructure-namespaces
                         discovered)
@@ -410,6 +471,7 @@
         (->> namespaces
              (remove
               #(or (contains? reviewed-non-slice-namespaces %)
+                   (contains? standalone-by-namespace %)
                    (namespace-slice %)))
              distinct
              sort
@@ -445,10 +507,12 @@
     (->> namespaces
          (remove #(contains? reviewed-non-slice-namespaces %))
          (map
-          (fn [namespace]
+         (fn [namespace]
             {:namespace namespace
-             :slice (namespace-slice namespace)}))
-         vec)))
+             :slice (or (namespace-slice namespace)
+                        (get-in standalone-by-namespace
+                                [namespace :slice]))}))
+         vec))))
 
 (defn- valid-slice?
   [slice]
@@ -465,8 +529,11 @@
   is allowed to have no tests for a particular slice; every discovered entry
   must simply map to one of the bounded slices exactly once.
   "
-  [catalog]
+  ([catalog]
+   (validate-test-catalog catalog {:by-namespace {}}))
+  ([catalog standalone-index]
   (let [catalog (when (some? catalog) (vec catalog))
+        standalone-by-namespace (:by-namespace standalone-index)
         duplicate-details
         (when catalog
           (->> catalog
@@ -498,7 +565,10 @@
                     (not (valid-slice? (:slice entry)))
                     {:entry entry :reason :slice-invalid}
 
-                    (not= (:slice entry) (namespace-slice (:namespace entry)))
+                    (not= (:slice entry)
+                          (or (namespace-slice (:namespace entry))
+                              (get-in standalone-by-namespace
+                                      [(:namespace entry) :slice])))
                     {:entry entry :reason :namespace-slice-mismatch}
 
                     :else
@@ -530,7 +600,7 @@
               distinct
               (sort-by str)
               vec)})))
-    catalog))
+    catalog)))
 
 (defn planning-context
   "Creates an isolated, request-local planner context.
@@ -548,24 +618,31 @@
   ([]
    (planning-context {}))
   ([options]
-   (let [options (or options {})]
+   (let [options (or options {})
+         ownership
+         (if (contains? options :ownership)
+           (:ownership options)
+           (ownership-record))
+         component-dependencies
+         (if (contains? options :component-dependencies)
+           (:component-dependencies options)
+           (component-dependencies/dependency-index))
+         standalone-index
+         (standalone-test-index ownership component-dependencies)]
      {:ownership
-      (if (contains? options :ownership)
-        (:ownership options)
-        (ownership-record))
+      ownership
       :dependencies
       (if (contains? options :dependencies)
         (:dependencies options)
         (backlog-dependencies))
       :component-dependencies
-      (if (contains? options :component-dependencies)
-        (:component-dependencies options)
-        (component-dependencies/dependency-index))
+      component-dependencies
+      :standalone-test-index standalone-index
       :catalog-delay
       (delay
        (if (contains? options :catalog)
          (:catalog options)
-         (test-catalog)))})))
+         (test-catalog standalone-index)))})))
 
 (defn- context-catalog
   [context]
@@ -614,29 +691,29 @@
          :test-namespaces (mapv :namespace (:tests source-entry))})
 
       test-entry
-      (do
+      (let [test-id (or (:component-id test-entry) (:test-id test-entry))]
         (when (and (:component-id entry)
-                   (not= (:component-id test-entry) (:component-id entry)))
+                   (not= test-id (:component-id entry)))
           (throw
            (ex-info
             "Reviewed test dependency disagrees with Stage0 ownership"
             {:id "SH01-COMPONENT-DEPENDENCY-CONTRACT"
              :path relative
-             :dependency-component (:component-id test-entry)
+             :dependency-component test-id
              :ownership-component (:component-id entry)})))
         (if (repository-path-exists? relative)
           {:selection :exact-test-path
            :reason :reviewed-component-test
-           :component-id (:component-id test-entry)
+           :component-id test-id
            :tests [(select-keys test-entry
                                 [:path :namespace :jvm-group :test-policy])]
            :test-namespaces [(:namespace test-entry)]}
           (let [component
                 (get-in dependency-index
-                        [:by-component-id (:component-id test-entry)])]
+                        [:by-component-id test-id])]
             {:selection :reviewed-component-dependencies
              :reason :deleted-reviewed-component-test
-             :component-id (:component-id test-entry)
+             :component-id test-id
              :tests (:tests component)
              :test-namespaces (mapv :namespace (:tests component))})))
 
@@ -847,7 +924,9 @@
 
 (defn- build-iteration-plan
   [context classified changed-paths requested]
-  (let [catalog (-> context context-catalog validate-test-catalog)
+  (let [catalog (validate-test-catalog
+                 (context-catalog context)
+                 (:standalone-test-index context))
         requested (canonical-iteration-slices requested)
         _ (validate-unresolved-present-dedicated-test-paths!
            catalog
@@ -909,11 +988,13 @@
              distinct
              sort
              vec)
+        catalog-by-namespace
+        (into {} (map (juxt :namespace :slice)) catalog)
         shards
         (->> namespaces
              (mapv
               (fn [namespace]
-                (let [slice (namespace-slice namespace)]
+                (let [slice (get catalog-by-namespace namespace)]
                   {:namespace namespace
                    :slice slice
                    :resource-class (resource-class slice)}))))]
@@ -1018,7 +1099,9 @@
             (if expand-dependants?
               (downstream-closure dependencies direct)
               direct)
-            catalog (-> context context-catalog validate-test-catalog)
+            catalog (validate-test-catalog
+                     (context-catalog context)
+                     (:standalone-test-index context))
             _ (validate-unresolved-present-dedicated-test-paths!
                catalog
                classified)
@@ -1051,11 +1134,13 @@
                  distinct
                  sort
                  vec)
+            catalog-by-namespace
+            (into {} (map (juxt :namespace :slice)) catalog)
             shards
             (->> namespaces
                  (mapv
                   (fn [namespace]
-                    (let [slice (namespace-slice namespace)]
+                    (let [slice (get catalog-by-namespace namespace)]
                       (cond->
                        {:namespace namespace
                         :slice slice
@@ -1123,7 +1208,9 @@
            "Requested namespace has no valid SH-00 through SH-29 slice"
            {:id "SH01-IMPACT-NAMESPACE-SLICE"
             :namespaces invalid-requested-slices}))))
-     (let [catalog (-> context context-catalog validate-test-catalog)
+     (let [catalog (validate-test-catalog
+                    (context-catalog context)
+                    (:standalone-test-index context))
            by-namespace (into {} (map (juxt :namespace identity)) catalog)
            unknown (vec (sort (remove #(contains? by-namespace %) namespaces)))
            invalid-slice-namespaces

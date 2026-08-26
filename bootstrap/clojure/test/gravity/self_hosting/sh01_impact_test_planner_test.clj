@@ -157,6 +157,31 @@
     (is (= 30 (count (:affected-slices plan))))
     (is (empty? (:execution-affected-slices plan)))))
 
+(deftest standalone-p15-tests-have-exact-fail-closed-incremental-plans
+  (doseq [[path namespace test-id]
+          [["bootstrap/clojure/test/gravity/self_hosting/p15_bounded_profile_test.clj"
+            'gravity.self-hosting.p15-bounded-profile-test
+            "p15-bounded-profile"]
+           ["bootstrap/clojure/test/gravity/self_hosting/p15_proof_artifact_dag_test.clj"
+            'gravity.self-hosting.p15-proof-artifact-dag-test
+            "p15-proof-artifact-dag"]]]
+    (let [path-plan (planner/build-plan {:changed-paths [path]})
+          namespace-plan (planner/build-namespace-plan [namespace])
+          classification (first (:classifications path-plan))]
+      (is (= ["SH-01"] (:direct-slices path-plan)) path)
+      (is (= [namespace] (:namespaces path-plan)) path)
+      (is (= :exact-test-path
+             (:development-selection classification)) path)
+      (is (= :reviewed-component-test
+             (:development-invalidation-reason classification)) path)
+      (is (= test-id (:development-component-id classification)) path)
+      (is (= [namespace] (:namespaces namespace-plan)) namespace)
+      (is (= ["SH-01"] (:affected-slices namespace-plan)) namespace)
+      (is (= [namespace]
+             (:namespaces
+              (runner/select-tests ["--namespace" (str namespace)])))
+          namespace))))
+
 (deftest deleted-reviewed-test-conservatively-selects-component-dependencies
   (let [exists-var
         (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
@@ -187,6 +212,34 @@
           (catch clojure.lang.ExceptionInfo exception exception))]
     (is (= "SH01-COMPONENT-DEPENDENCY-CONTRACT"
            (:id (ex-data exception))))))
+
+(deftest standalone-test-contract-rejects-stale-dependency-and-owner-pins
+  (let [contract (component-dependencies/read-contract)
+        malformed
+        (assoc-in contract [:standalone-tests 0 :namespace]
+                  'gravity.self-hosting.stale-test)
+        dependency-exception
+        (try
+          (component-dependencies/validate-contract malformed)
+          nil
+          (catch clojure.lang.ExceptionInfo exception exception))
+        ownership-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'ownership-record)
+        ownership (@ownership-var)
+        path "bootstrap/clojure/test/gravity/self_hosting/p15_bounded_profile_test.clj"
+        stale-ownership (assoc-in ownership
+                                  [:standalone-test-owners path :slice]
+                                  "SH-02")
+        ownership-exception
+        (try
+          (planner/planning-context {:ownership stale-ownership})
+          nil
+          (catch clojure.lang.ExceptionInfo exception exception))]
+    (is (= "SH01-COMPONENT-DEPENDENCY-CONTRACT"
+           (:id (ex-data dependency-exception))))
+    (is (= "SH01-STANDALONE-TEST-CONTRACT"
+           (:id (ex-data ownership-exception))))))
 
 (deftest component-dependency-contract-requires-closed-test-policy
   (let [contract (component-dependencies/read-contract)
@@ -726,7 +779,7 @@
          (swap! dependency-scans inc)
          (dependency-loader))
        catalog-var
-       (fn []
+       (fn [_standalone-index]
          (swap! catalog-scans inc)
          [{:namespace 'gravity.self-hosting.sh01-ownership-test
            :slice "SH-01"}])}

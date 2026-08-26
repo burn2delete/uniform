@@ -65,12 +65,16 @@
   "Validates and returns the closed incremental component/test contract."
   [contract]
   (let [top-level-keys
-        #{:schema :authority :authoritative? :components :nonclaims}
+        #{:schema :authority :authoritative? :components :standalone-tests
+          :nonclaims}
         component-keys #{:component-id :source-path :tests}
         test-keys #{:path :namespace :jvm-group :test-policy}
+        standalone-test-keys
+        #{:test-id :path :namespace :jvm-group :test-policy}
         test-policy-keys
         #{:deterministic? :performance? :proof? :freshness-required?}
-        components (:components contract)]
+        components (:components contract)
+        standalone-tests (:standalone-tests contract)]
     (when-not (= top-level-keys (set (keys contract)))
       (contract-error "Incremental dependency contract keys changed"
                       {:keys (vec (sort (keys contract)))}))
@@ -79,6 +83,7 @@
                    (false? (:authoritative? contract))
                    (vector? components)
                    (seq components)
+                   (vector? standalone-tests)
                    (vector? (:nonclaims contract))
                    (seq (:nonclaims contract))
                    (every? #(and (string? %) (not (empty? %)))
@@ -122,14 +127,39 @@
         (when-not (= (:namespace test-entry)
                      (expected-test-namespace (:path test-entry)))
           (contract-error "Incremental test path and namespace disagree"
-                          {:component-id (:component-id component)
+                         {:component-id (:component-id component)
                            :test test-entry}))))
+    (doseq [test-entry standalone-tests]
+      (when-not (= standalone-test-keys (set (keys test-entry)))
+        (contract-error "Incremental standalone test entry keys changed"
+                        {:test test-entry}))
+      (when-not (and (string? (:test-id test-entry))
+                     (not (empty? (:test-id test-entry)))
+                     (string? (:path test-entry))
+                     (not (empty? (:path test-entry)))
+                     (symbol? (:namespace test-entry))
+                     (string? (:jvm-group test-entry))
+                     (not (empty? (:jvm-group test-entry)))
+                     (= test-policy-keys
+                        (set (keys (:test-policy test-entry))))
+                     (every? boolean? (vals (:test-policy test-entry))))
+        (contract-error "Incremental standalone test entry is malformed"
+                        {:test test-entry}))
+      (when-not (= (:namespace test-entry)
+                   (expected-test-namespace (:path test-entry)))
+        (contract-error "Incremental standalone test path and namespace disagree"
+                        {:test test-entry})))
     (doseq [[kind values]
             [[:component-id (map :component-id components)]
              [:source-path (map :source-path components)]
-             [:test-path (mapcat #(map :path (:tests %)) components)]
+             [:test-id (map :test-id standalone-tests)]
+             [:test-path (concat
+                          (mapcat #(map :path (:tests %)) components)
+                          (map :path standalone-tests))]
              [:test-namespace
-              (mapcat #(map :namespace (:tests %)) components)]]]
+              (concat
+               (mapcat #(map :namespace (:tests %)) components)
+               (map :namespace standalone-tests))]]]
       (when-not (= (count values) (count (distinct values)))
         (contract-error "Incremental dependency identities must be unique"
                         {:kind kind :values (vec values)})))
@@ -153,7 +183,9 @@
   "Returns deterministic source, test-path, and selectable-namespace indexes."
   ([] (dependency-index (read-contract)))
   ([contract]
-   (let [components (:components (validate-contract contract))
+   (let [contract (validate-contract contract)
+         components (:components contract)
+         standalone-tests (:standalone-tests contract)
          by-component-id
          (into
           (sorted-map)
@@ -167,19 +199,21 @@
          by-test-path
          (into
           (sorted-map)
-          (for [component components
-                test-entry (:tests component)]
-            [(:path test-entry)
-             (assoc test-entry :component-id (:component-id component))]))]
+          (concat
+           (for [component components
+                 test-entry (:tests component)]
+             [(:path test-entry)
+              (assoc test-entry :component-id (:component-id component))])
+           (map (juxt :path identity) standalone-tests)))]
      {:schema contract-schema
       :authority :non-authoritative
       :authoritative? false
       :by-component-id by-component-id
       :by-source-path by-source-path
       :by-test-path by-test-path
+      :standalone-tests standalone-tests
       :selectable-namespaces
-      (->> components
-           (mapcat :tests)
+      (->> (concat (mapcat :tests components) standalone-tests)
            (map :namespace)
            distinct
            sort

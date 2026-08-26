@@ -282,6 +282,17 @@
   "bootstrap/clojure/test/gravity/source_unit_test.clj" :sh-reader
   "bootstrap/clojure/test/gravity/syntax_object_stream_test.clj" :sh-syntax
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
+
+ :standalone-test-owners
+ {"bootstrap/clojure/test/gravity/self_hosting/p15_bounded_profile_test.clj"
+  {:namespace gravity.self-hosting.p15-bounded-profile-test
+   :slice "SH-01"
+   :owner :sh-01-leaf}
+  "bootstrap/clojure/test/gravity/self_hosting/p15_proof_artifact_dag_test.clj"
+  {:namespace gravity.self-hosting.p15-proof-artifact-dag-test
+   :slice "SH-01"
+   :owner :sh-01-leaf}}
+
  :reserved-leaf-modules
  {
   "bootstrap" :master-coordinator
