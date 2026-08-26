@@ -2806,6 +2806,133 @@
         {"state": "rejected", "at": "2026-08-26T10:19:57Z", "actor": "audit_sh13_current", "reason": "public API remains correctly blocked, but the receipt is locally C12-fabricated and path-selected rather than executed by C11 or SH12; typed-core lineage remains fixture-hardcoded and fallback is unproven"}
       ],
       "disposition": "Rejected exact attempt 2 and closed the invariant family under the two-rejection rule. No third candidate, follow-up implementation, integration, roadmap credit, SH-13 completion, self-hosting, release, or seed-retirement authority."
-    }
-  ]
+  },
+  {
+    "id": "sh07-cold-build-phase-telemetry-v1",
+    "title": "SH-07 cold-build phase telemetry version 1",
+    "invariant_family": "verification/sh07-cold-build-observability",
+    "owner": "uniform-coordinator",
+    "author": "sh07_phase_telemetry",
+    "state": "integrated",
+    "dependencies": [
+      "ho2-phase-telemetry"
+    ],
+    "architecture_decision": "Expose bounded, development-only SH-07 phase and digest work measurements without changing bootstrap semantics, canonical identities, diagnostics, caches, or authoritative verification. Progress callbacks are observational, capped, failure-isolated, and explicitly unable to confer semantic or performance authority.",
+    "base_commit": "e2577adb43e4a5e8f151b364c2a502b4bdb5afdd",
+    "candidate_commit": "97423c98b135f899dd3fedc8821a7e23fd88630a",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_cold_build_phase_telemetry.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_cold_build_phase_telemetry_test.clj",
+      "docs/development-verification.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D6",
+      "D9",
+      "contracts/workstream-governance.json",
+      "docs/development-verification.md"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_cold_build_phase_telemetry_test.clj"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_cold_build_phase_telemetry_test.clj"
+      ],
+      "stable_diagnostics": [
+        "SH07-COLD-BUILD-TELEMETRY"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh07-cold-build-phase-telemetry-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh07-carrier-profile-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base e2577adb43e4a5e8f151b364c2a502b4bdb5afdd --candidate-commit 97423c98b135f899dd3fedc8821a7e23fd88630a --candidate-tree f5229f686b3a239ec5891373efb0331b08df7c97",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "review_observability_correction",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the temporary SH-07 bootstrap and telemetry boundary",
+      "telemetry does not itself reduce cold-build work or prove semantic equivalence",
+      "the authentic C6 cold-build run remains required for authoritative admission"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-26T18:00:00Z",
+        "actor": "sh07_phase_telemetry",
+        "reason": "start bounded SH-07 cold-build phase telemetry from current main"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-26T18:10:00Z",
+        "actor": "sh07_phase_telemetry",
+        "reason": "freeze the exact development-only telemetry candidate and Git identities"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-26T18:11:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "request independent semantic and governance review"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-26T18:15:00Z",
+        "actor": "review_observability_correction",
+        "reason": "accept bounded observational telemetry with no semantic or authoritative changes"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-26T18:16:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "exact identities, clean worktree, focused evidence, independent acceptance, boundaries, and nonclaims verified"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-26T18:18:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "fast-forwarded the exact accepted telemetry candidate onto main and appended its lifecycle record"
+      }
+    ],
+    "disposition": "Integrated development-only observability. No semantic equivalence, benchmark, release, self-hosting, or seed-retirement credit is granted."
+  }
+]
 }
