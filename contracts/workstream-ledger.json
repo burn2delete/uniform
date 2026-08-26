@@ -2398,6 +2398,123 @@
         {"state": "integrated", "at": "2026-08-26T06:15:57Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted C11 compatibility single-build candidate and this append-only admission record onto main"}
       ],
       "disposition": "Integrated one C11 bootstrap compatibility test-only build deduplication; no production, compiler, cache, runner, bootstrap, self-hosting, release, roadmap, or seed-retirement authority."
+    },
+    {
+      "id": "sh07-c10-development-routing-attempt-1",
+      "title": "SH-07 C10 development routing candidate attempt 1",
+      "invariant_family": "tooling/sh07-c10-development-routing",
+      "owner": "development-verification",
+      "author": "development-verification",
+      "state": "rejected",
+      "dependencies": ["host-wide-development-resource-broker-v1", "incremental-development-loop-runner-wiring-v1"],
+      "architecture_decision": "",
+      "base_commit": "51adb7745f453a726028eb8b996a3faae9726a77",
+      "candidate_commit": "0393d97167c49ff2319dbfd54db56b57b4e41283",
+      "clean_worktree": true,
+      "owned_paths": [
+        "README.md",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_development_router.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_development_router_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner_test.clj",
+        "docs/development-verification.md"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "C10", "TEST2", "TEST13", "docs/development-verification.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_development_router_test.clj#source-and-identity-paths-are-the-only-artifact-tail-admissions",
+          "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_development_router_test.clj#kernel-and-adapter-inputs-stop-before-artifact-coverage",
+          "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_development_router_test.clj#failed-cheap-work-stops-before-later-route-work"
+        ],
+        "rejected_fixtures": [
+          "independent-review#unbounded-thunk",
+          "independent-review#forged-plan-and-empty-result",
+          "independent-review#inverted-pinned-dependency-closure",
+          "independent-review#unstable-path-and-authority-failure"
+        ],
+        "stable_diagnostics": ["SH07-C10-ROUTE-AUTHORITY", "SH07-C10-ROUTE-EXECUTOR", "SH07-C10-ROUTE-MIXED", "SH07-C10-ROUTE-PATHS", "SH07-C10-ROUTE-PLAN", "SH07-C10-ROUTE-POLICY", "SH07-C10-ROUTE-RESULT"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh07-c10-development-router-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.stage3-verification-runner-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check 51adb7745f453a726028eb8b996a3faae9726a77..0393d97167c49ff2319dbfd54db56b57b4e41283", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 51adb7745f453a726028eb8b996a3faae9726a77 --candidate-commit 0393d97167c49ff2319dbfd54db56b57b4e41283 --candidate-tree 307660d67ac561aa341a100b1098bd974ea04c49", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "review_sh07_c10_routing", "kind": "independent", "result": "rejected"}],
+      "residual_host_boundaries": [
+        "the candidate accepted an unbounded caller-supplied thunk at the execution boundary",
+        "forged plans and results could cross the proposed seal and executor boundary",
+        "the proposed pinned dependency closure was inverted and could omit required artifact-tail work",
+        "malformed path and release-authority failures were not stable and fail-closed across the reviewed boundary",
+        "Clojure, the JVM, subprocesses, the filesystem, and the cooperative host resource broker remained temporary development boundaries"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-26T07:26:04Z", "actor": "development-verification", "reason": "route bounded SH-07 C10 development coverage through an incremental artifact-tail plan"},
+        {"state": "frozen", "at": "2026-08-26T07:26:05Z", "actor": "uniform-coordinator", "reason": "freeze exact base 51adb7745f453a726028eb8b996a3faae9726a77, candidate 0393d97167c49ff2319dbfd54db56b57b4e41283, tree 307660d67ac561aa341a100b1098bd974ea04c49, and six-path scope"},
+        {"state": "review-pending", "at": "2026-08-26T07:26:06Z", "actor": "uniform-coordinator", "reason": "request independent adversarial review of execution bounds, plan and result sealing, dependency closure, path and authority failure, focused gates, and nonclaims"},
+        {"state": "rejected", "at": "2026-08-26T07:26:07Z", "actor": "review_sh07_c10_routing", "reason": "reject the unbounded thunk, forgeable plans and results, inverted dependency closure, and unstable path and authority failures"}
+      ],
+      "disposition": "Rejected exact attempt 1; its focused router 7/26, Stage3 33/290, and boundary 6/11 checks do not confer integration, roadmap, release, self-hosting, or seed-retirement credit."
+    },
+    {
+      "id": "sh07-c10-development-routing-attempt-2",
+      "title": "SH-07 C10 development routing candidate attempt 2",
+      "invariant_family": "tooling/sh07-c10-development-routing",
+      "owner": "development-verification",
+      "author": "development-verification",
+      "state": "rejected",
+      "dependencies": ["host-wide-development-resource-broker-v1", "incremental-development-loop-runner-wiring-v1"],
+      "architecture_decision": "Stop this invariant family after two independently rejected exact candidates. Before any third candidate becomes active, replace unordered eviction with an explicitly ordered, atomic bounded lifecycle, or eliminate the mutable registry. The replacement must guarantee that a newly returned sealed plan remains executable, bind the closed normalized plan and generation, and include capacity-boundary, eviction-order, concurrency, timeout and cleanup, forged-plan and forged-result, exact dependency-closure, malformed-path, and authority fixtures. This record authorizes no third candidate or follow-up implementation.",
+      "base_commit": "51adb7745f453a726028eb8b996a3faae9726a77",
+      "candidate_commit": "54abcae9c86a9fade7ec7e6971b318425708ef53",
+      "clean_worktree": true,
+      "owned_paths": [
+        "README.md",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_development_router.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_development_router_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/stage3_verification_runner_test.clj",
+        "docs/development-verification.md"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "C10", "TEST2", "TEST13", "docs/development-verification.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_development_router_test.clj#source-and-exact-pinned-closure-admit-the-artifact-tail",
+          "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_development_router_test.clj#kernel-and-adapter-inputs-stop-before-artifact-coverage",
+          "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_development_router_test.clj#sealed-plans-reject-forged-jobs-and-empty-commands",
+          "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_development_router_test.clj#execution-is-brokered-and-stops-on-child-failure",
+          "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_development_router_test.clj#child-timeout-is-elapsed-bounded-and-cleans-descendants"
+        ],
+        "rejected_fixtures": ["independent-rereview#unordered-capacity-128-registry-self-evicts-newly-returned-plan"],
+        "stable_diagnostics": ["SH07-C10-ROUTE-AUTHORITY", "SH07-C10-ROUTE-COMMAND", "SH07-C10-ROUTE-EXECUTION-TIMEOUT", "SH07-C10-ROUTE-MIXED", "SH07-C10-ROUTE-PATHS", "SH07-C10-ROUTE-PLAN", "SH07-C10-ROUTE-POLICY", "SH07-C10-ROUTE-RESULT"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh07-c10-development-router-test --namespace gravity.self-hosting.stage3-verification-runner-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check 51adb7745f453a726028eb8b996a3faae9726a77..54abcae9c86a9fade7ec7e6971b318425708ef53", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 51adb7745f453a726028eb8b996a3faae9726a77 --candidate-commit 54abcae9c86a9fade7ec7e6971b318425708ef53 --candidate-tree c8f1b52847f2dfe8e38407d4e664c9647fd8cba2", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "rereview_sh07_c10_routing", "kind": "independent", "result": "rejected"}],
+      "residual_host_boundaries": [
+        "the capacity-128 mutable sealed-plan registry used unordered map-key eviction and could evict a freshly returned plan before its caller executed it",
+        "ten independent 256-plan trials observed between 33 and 45 immediate self-evictions per trial",
+        "successful forged-plan, forged-result, exact-closure, malformed-path, authority, timeout, descendant-cleanup, and brokered-failure fixtures did not close the capacity-boundary lifecycle defect",
+        "Clojure, the JVM, subprocesses, the filesystem, mutable process-local registry state, and the cooperative host resource broker remained temporary development boundaries"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-26T07:26:08Z", "actor": "development-verification", "reason": "harden the first rejected routing attempt with bounded commands, sealed normalized plans, exact closure, stable failures, and timeout cleanup"},
+        {"state": "frozen", "at": "2026-08-26T07:26:09Z", "actor": "uniform-coordinator", "reason": "freeze exact base 51adb7745f453a726028eb8b996a3faae9726a77, cumulative candidate 54abcae9c86a9fade7ec7e6971b318425708ef53, tree c8f1b52847f2dfe8e38407d4e664c9647fd8cba2, and six-path net scope"},
+        {"state": "review-pending", "at": "2026-08-26T07:26:10Z", "actor": "uniform-coordinator", "reason": "request independent exact rereview of the corrected execution, sealing, closure, failure, cleanup, concurrency, capacity, evidence, and nonclaim boundaries"},
+        {"state": "rejected", "at": "2026-08-26T07:26:11Z", "actor": "rereview_sh07_c10_routing", "reason": "reject unordered capped-registry eviction that self-evicts freshly returned sealed plans at the capacity boundary"}
+      ],
+      "disposition": "Rejected exact attempt 2 and closed the invariant family under the two-rejection rule; focused router and Stage3 39/319 plus boundary 6/11 evidence grants no third-candidate authorization, integration, roadmap, release, self-hosting, or seed-retirement credit."
     }
   ]
 }
