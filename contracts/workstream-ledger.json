@@ -3680,6 +3680,125 @@
       }
     ],
     "disposition": "Rejected exact attempt 3. No implementation paths enter main and no SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement credit is granted. The accepted decision authorized at most this one successor, so another implementation candidate requires a new separately accepted architecture decision."
+  },
+  {
+    "id": "sh08-exact-two-hop-typing-attempt-1",
+    "title": "SH-08 exact bounded two-hop typing candidate attempt 1",
+    "invariant_family": "self-hosting/sh08-exact-two-hop-typing-v1",
+    "owner": "sh-types",
+    "author": "sh-types",
+    "state": "rejected",
+    "dependencies": [
+      "sh07-core-mutation-execution-v1"
+    ],
+    "architecture_decision": "",
+    "base_commit": "ea7dfd2f42fd15cdb72ec0fb5e9932127a440a3d",
+    "candidate_commit": "55a4dda54f86da5653ce903a3cf88778250b9885",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/accepted/exact-two-hop.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/accepted/exact-two-hop.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/rejected/capture.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/rejected/capture.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/rejected/third-hop.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/rejected/third-hop.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/rejected/variadic.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/rejected/variadic.qst",
+      "bootstrap/clojure/test/gravity/self_hosting/sh08_exact_two_hop_typing_test.clj",
+      "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "C7",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/accepted/exact-two-hop.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/accepted/exact-two-hop.qst"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/rejected/capture.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/rejected/capture.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/rejected/third-hop.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/rejected/third-hop.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/rejected/variadic.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-08/exact-two-hop/rejected/variadic.qst"
+      ],
+      "stable_diagnostics": [
+        "C7-ANNOTATION",
+        "C7-VERIFY"
+      ],
+      "validation_commands": [
+        {
+          "command": "git diff --check ea7dfd2f42fd15cdb72ec0fb5e9932127a440a3d..55a4dda54f86da5653ce903a3cf88778250b9885",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "sh08_exact_mechanical",
+        "kind": "independent",
+        "result": "accepted"
+      },
+      {
+        "reviewer": "sh08_exact_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
+    "residual_host_boundaries": [
+      "the candidate changed C7 source identity, exports, function count, plan identity, and census without refreshing mandatory source-authentication and stage-equivalence guards",
+      "polymorphism, overload, and multi-arity absence were asserted in output rather than derived from authenticated type, binding, generic, and dispatch evidence",
+      "capture diagnostics reported the root body rather than the offending anonymous or capturing function and therefore lost causal provenance",
+      "Clojure and the JVM remained the temporary source-loading, plan-execution, digest, B47-verification, and final-assembly boundary",
+      "native Gravity cryptographic verification, general multi-hop typing, complete SH-08, roadmap credit, self-hosting, release, and seed retirement remain absent"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-26T16:10:00Z",
+        "actor": "sh-types",
+        "reason": "compose the bounded exact two-hop C7 typing candidate"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-26T16:28:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "reconcile the producer patch and freeze exact base ea7dfd2f42fd15cdb72ec0fb5e9932127a440a3d, candidate 55a4dda54f86da5653ce903a3cf88778250b9885, tree 6070566c8dd881f2ce359f8d9447ddca1f83c843, and ten owned paths"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-26T16:29:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "request fresh independent exact mechanical and semantic authentication review"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-26T16:35:00Z",
+        "actor": "sh08_exact_review",
+        "reason": "reject stale mandatory C7 guards, asserted exclusion facts, and capture diagnostics that lose the offending function provenance"
+      }
+    ],
+    "disposition": "Rejected exact attempt 1. No SH-08 implementation paths enter main and no SH-08 completion, roadmap, performance, self-hosting, release, or seed-retirement credit is granted."
   }
 ]
 }
