@@ -3064,6 +3064,109 @@
       }
     ],
     "disposition": "Accepted architecture authority for at most one separately governed successor after all recorded prerequisites are satisfied. This record grants no third-candidate activation, implementation, integration eligibility, roadmap credit, SH-13 completion, self-hosting, release, or seed-retirement authority."
+  },
+  {
+    "id": "sh07-request-local-incremental-digest-v1",
+    "title": "SH-07 request-local incremental digest attempt 1",
+    "invariant_family": "verification/sh07-incremental-digest",
+    "owner": "uniform-coordinator",
+    "author": "sh07_incremental_digest",
+    "state": "rejected",
+    "dependencies": [
+      "sh07-cold-build-phase-telemetry-v1"
+    ],
+    "architecture_decision": "Attempt request-local reuse only for successful immutable semantic normalization and digest subproducts while retaining exact source path, purpose, ordinal, and preimage identities. Independent authentic-fixture evidence showed that the proposed digest cache did not reduce canonical hashing and lacked a retained-byte bound and complete dependency identity, so the candidate is rejected rather than admitted.",
+    "base_commit": "2139750d4b8d933ac1be30ee49307cc44a4c6473",
+    "candidate_commit": "6fe546605a2a2cff83054a399e520bf2f957e012",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/src/gravity/bootstrap.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_incremental_digest_test.clj"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D6",
+      "D9",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-07-b10/accepted/control-flow-order.gravity"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_incremental_digest_test.clj"
+      ],
+      "stable_diagnostics": [
+        "SH07-INCREMENTAL-DIGEST-FAIL"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh07-incremental-digest-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh07-cold-build-phase-telemetry-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "review_sh07_incremental_digest",
+        "kind": "independent",
+        "result": "blocked"
+      }
+    ],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the temporary SH-07 bootstrap boundary",
+      "the authentic C6 phase and canonical-hash hot path is not yet isolated",
+      "request-local semantic hits do not establish an end-to-end cold-build improvement"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-26T18:20:00Z",
+        "actor": "sh07_incremental_digest",
+        "reason": "start request-local semantic and digest subproduct reuse from telemetry-enabled main"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-26T18:30:00Z",
+        "actor": "sh07_incremental_digest",
+        "reason": "freeze exact bootstrap and focused-test candidate identities"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-26T18:31:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "request independent review with an authentic SH-07 fixture probe"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-26T18:40:00Z",
+        "actor": "review_sh07_incremental_digest",
+        "reason": "authentic fixture retained 4476 canonical hashes with zero digest hits; cache bytes and dependency identity were not closed"
+      }
+    ],
+    "disposition": "Rejected exact attempt 1. The code candidate remains outside main ancestry and receives no performance, integration, roadmap, release, self-hosting, or seed-retirement credit."
   }
 ]
 }
