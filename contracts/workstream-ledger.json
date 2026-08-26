@@ -2214,6 +2214,79 @@
         {"state": "integrated", "at": "2026-08-26T00:25:15Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted SH-01 P15 standalone catalog candidate and this append-only admission record onto main"}
       ],
       "disposition": "Integrated explicit fail-closed incremental catalog routing for the two present P15 standalone tests only; no P15 or Merkle semantics, benchmark, roadmap, release, self-hosting, or seed-retirement authority."
+    },
+    {
+      "id": "sh01-explicit-two-leaf-test-cache-closure-v1",
+      "title": "SH-01 explicit two-leaf test cache closure version 1",
+      "invariant_family": "tooling/sh01-explicit-test-cache-closure",
+      "owner": "development-verification",
+      "author": "development-verification",
+      "state": "integrated",
+      "dependencies": [
+        "cross-worktree-development-result-cache-v2",
+        "incremental-development-loop-runner-wiring-v1",
+        "sh01-p15-incremental-catalog-v1"
+      ],
+      "architecture_decision": "Permit only reviewed bootstrap-free leaf tests to declare a closed, explicit cache-input set; hash every declared input and closed inventory with runner, contract, command, policy, classpath, runtime, and tool identity, while retaining the complete-repository identity for every undeclared, malformed, mixed, compatibility, or otherwise ineligible execution unit.",
+      "base_commit": "70cda9e9f47940cec87030da3a272a1ddadf12b1",
+      "candidate_commit": "20373acb55e6d4d3513aef4592005c6ad3f97832",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj",
+        "contracts/stage0-incremental-test-dependencies.edn",
+        "docs/development-verification.md"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "BOOT7", "BOOT8", "TEST2", "TEST13", "docs/development-verification.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#reviewed-leaf-closure-is-path-neutral-and-content-complete",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#reviewed-leaf-closure-reuses-only-identical-declared-inputs",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj#explicit-cache-closures-are-reviewed-opt-in-and-fallback-safe",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj#exact-development-metadata-carries-only-validated-closure"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#invalid-or-undeclared-closure-retains-full-repository-key",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#explicit-closure-read-race-and-symlink-fail-closed",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#required-closure-input-deletion-cannot-produce-a-cache-request"
+        ],
+        "stable_diagnostics": ["SH01-COMPONENT-DEPENDENCY-CONTRACT", "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE", "SH01-DEVELOPMENT-LOOP-SYMLINK"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-development-loop-wiring-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-impact-test-planner-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-development-test-cache-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.c11-mir-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e '(require (quote clojure.test) (quote gravity.compiler-pass-manifest-test)) (let [r (clojure.test/run-tests (quote gravity.compiler-pass-manifest-test))] (when (pos? (+ (:fail r) (:error r))) (System/exit 1)))'", "exit_code": 0, "result": "passed"},
+          {"command": "fresh-JVM explicit two-leaf closure versus complete-repository key comparison with unrelated, relevant-change, and deletion-race checks", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check 70cda9e9f47940cec87030da3a272a1ddadf12b1..20373acb55e6d4d3513aef4592005c6ad3f97832", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 70cda9e9f47940cec87030da3a272a1ddadf12b1 --candidate-commit 20373acb55e6d4d3513aef4592005c6ad3f97832 --candidate-tree b454ea1148a2371f489b656d1fe06c23e49a5d4f", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "review_observability_correction", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary planner, runner, cache, filesystem, classpath, runtime, hashing, and tool-identity boundary",
+        "only gravity.c11-mir-test and gravity.compiler-pass-manifest-test have reviewed explicit closures; every other test and both bootstrap compatibility jobs retain the complete-repository identity",
+        "repository symlinks continue to fail closed and external classpath symlink resolution behavior is unchanged by this candidate",
+        "the observed fresh-JVM closure median of 70.4 milliseconds versus 1249.1 milliseconds for the complete repository key, or 5.64 percent, is environment-specific development evidence and grants no stable performance or allocation authority",
+        "unrelated transitions produced two of two candidate hits versus zero of two base hits, relevant declared-input changes missed, and a deletion race performed zero operations and zero cache requests"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-26T00:48:59Z", "actor": "development-verification", "reason": "introduce an explicit reviewed input closure for two bootstrap-free leaf tests after complete-repository identity remained the next warm-hit bottleneck"},
+        {"state": "frozen", "at": "2026-08-26T00:49:00Z", "actor": "uniform-coordinator", "reason": "freeze exact base 70cda9e9f47940cec87030da3a272a1ddadf12b1, candidate 20373acb55e6d4d3513aef4592005c6ad3f97832, tree b454ea1148a2371f489b656d1fe06c23e49a5d4f, and seven-path ownership set"},
+        {"state": "review-pending", "at": "2026-08-26T00:49:01Z", "actor": "uniform-coordinator", "reason": "request independent exact review of explicit closure completeness, fallback identity, mutation and deletion races, symlink behavior, cache reuse, bounded measurements, gates, and nonclaims"},
+        {"state": "accepted", "at": "2026-08-26T00:49:02Z", "actor": "review_observability_correction", "reason": "accept the exact seven-path candidate after focused wiring, planner, cache, two-leaf, boundary, measurement, diff, and preflight verification"},
+        {"state": "integration-eligible", "at": "2026-08-26T00:49:03Z", "actor": "uniform-coordinator", "reason": "exact identities, clean named branch, seven-path scope, positive and negative evidence, stable diagnostics, successful bounded checks, independent acceptance, residual boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-26T00:49:04Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted explicit two-leaf closure candidate and this append-only admission record onto main"}
+      ],
+      "disposition": "Integrated explicit content-complete cache closures for two bootstrap-free leaf tests only; all other test units retain fallback behavior, with no compatibility, full-suite, benchmark, roadmap, release, self-hosting, or seed-retirement authority."
     }
   ]
 }
