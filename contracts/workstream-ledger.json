@@ -2287,6 +2287,70 @@
         {"state": "integrated", "at": "2026-08-26T00:49:04Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted explicit two-leaf closure candidate and this append-only admission record onto main"}
       ],
       "disposition": "Integrated explicit content-complete cache closures for two bootstrap-free leaf tests only; all other test units retain fallback behavior, with no compatibility, full-suite, benchmark, roadmap, release, self-hosting, or seed-retirement authority."
+    },
+    {
+      "id": "sh01-bootstrap-compatibility-test-cache-closure-v1",
+      "title": "SH-01 bootstrap compatibility test cache closure version 1",
+      "invariant_family": "tooling/sh01-explicit-test-cache-closure",
+      "owner": "development-verification",
+      "author": "development-verification",
+      "state": "integrated",
+      "dependencies": ["sh01-explicit-two-leaf-test-cache-closure-v1"],
+      "architecture_decision": "Extend the reviewed explicit-closure mechanism to exactly two deterministic bootstrap compatibility tests by enumerating each test's complete 66-input bootstrap eager-load and fixture closure; preserve individual execution units, bootstrap behavior, cold execution, and complete-repository fallback for every other or mixed unit.",
+      "base_commit": "9880be08a98ee8ef5abec3b7c315f891fe04a1bf",
+      "candidate_commit": "74cdcc23ac64019d487a59efacd0682637ba729d",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj",
+        "contracts/stage0-incremental-test-dependencies.edn",
+        "docs/development-verification.md"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "BOOT7", "BOOT8", "TEST2", "TEST13", "docs/development-verification.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#bootstrap-compatibility-closures-bind-exact-content-mode-and-fixtures",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#bootstrap-compatibility-closure-singleflight-is-cross-worktree-safe",
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#bootstrap-compatibility-fixtures-invalidate-only-their-owner"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#explicit-closure-falls-back-for-mixed-fresh-and-authoritative-work"
+        ],
+        "stable_diagnostics": ["SH01-COMPONENT-DEPENDENCY-CONTRACT", "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE", "SH01-DEVELOPMENT-LOOP-SYMLINK"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-development-loop-wiring-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-impact-test-planner-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-development-test-cache-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.bootstrap-compatibility.c11-test --namespace gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test", "exit_code": 0, "result": "passed"},
+          {"command": "fresh-JVM candidate/base cold and unrelated-change A/B with exact semantic receipts, hit counts, closure cost, and cold-regression comparison", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check 9880be08a98ee8ef5abec3b7c315f891fe04a1bf..74cdcc23ac64019d487a59efacd0682637ba729d", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 9880be08a98ee8ef5abec3b7c315f891fe04a1bf --candidate-commit 74cdcc23ac64019d487a59efacd0682637ba729d --candidate-tree c6f88e9ada7f2e6f9b207c0e245d4de86ca129a0", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "review_observability_correction", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary planner, runner, cache, bootstrap loader, filesystem, classpath, runtime, hashing, and tool-identity boundary",
+        "exact compatibility evidence of two tests and 59 assertions is reused from the independently reviewed candidate and the approximately 68-second C11 compatibility test is not rerun after admission",
+        "repository symlinks continue to fail closed and external classpath symlink resolution behavior is unchanged by this candidate",
+        "the two compatibility tests remain distinct execution units with unchanged bootstrap and test semantics; no JVM batching or shared bootstrap process is introduced",
+        "an unrelated-change A/B observed candidate hits in 1.427 seconds versus base misses in 84.610 seconds, the explicit closure cost was 12.83 percent of the complete-repository snapshot, and cold execution showed no regression; these environment-specific observations grant no stable performance or allocation authority"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-26T02:33:35Z", "actor": "development-verification", "reason": "extend explicit cache closures to two deterministic bootstrap compatibility tests whose unrelated changes still forced expensive cold execution"},
+        {"state": "frozen", "at": "2026-08-26T02:33:36Z", "actor": "uniform-coordinator", "reason": "freeze exact base 9880be08a98ee8ef5abec3b7c315f891fe04a1bf, candidate 74cdcc23ac64019d487a59efacd0682637ba729d, tree c6f88e9ada7f2e6f9b207c0e245d4de86ca129a0, and six-path ownership set"},
+        {"state": "review-pending", "at": "2026-08-26T02:33:37Z", "actor": "uniform-coordinator", "reason": "request independent exact review of both 66-input closures, fixture isolation, fallback behavior, cross-worktree reuse, cold semantics, A/B measurements, bounded gates, and nonclaims"},
+        {"state": "accepted", "at": "2026-08-26T02:33:38Z", "actor": "review_observability_correction", "reason": "accept the exact six-path candidate after focused wiring, planner, cache, exact compatibility, boundary, A/B, diff, and preflight verification"},
+        {"state": "integration-eligible", "at": "2026-08-26T02:33:39Z", "actor": "uniform-coordinator", "reason": "exact identities, clean named branch, six-path scope, positive and negative evidence, stable diagnostics, successful bounded checks, independent acceptance, residual boundaries, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-26T02:33:40Z", "actor": "uniform-coordinator", "reason": "fast-forwarded the exact accepted bootstrap compatibility closure candidate and this append-only admission record onto main"}
+      ],
+      "disposition": "Integrated explicit 66-input cache closures for exactly two deterministic bootstrap compatibility tests; no batching, bootstrap semantics, compatibility expansion, benchmark, roadmap, release, self-hosting, or seed-retirement authority."
     }
   ]
 }
