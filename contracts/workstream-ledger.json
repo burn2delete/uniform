@@ -3167,6 +3167,136 @@
       }
     ],
     "disposition": "Rejected exact attempt 1. The code candidate remains outside main ancestry and receives no performance, integration, roadmap, release, self-hosting, or seed-retirement credit."
+  },
+  {
+    "id": "sh07-bounded-development-runner-v1",
+    "title": "SH-07 bounded development runner version 1",
+    "invariant_family": "verification/sh07-bounded-development-execution",
+    "owner": "uniform-coordinator",
+    "author": "sh07_bounded_runner",
+    "state": "integrated",
+    "dependencies": [
+      "sh07-cold-build-phase-telemetry-v1"
+    ],
+    "architecture_decision": "Run only a closed SH-07 development route under explicit deadline, bounded output and progress capture, descendant cleanup, and existing host-resource admission. Publish a terminal non-authoritative receipt; timeout, malformed output, resource denial, or cleanup failure can never be interpreted or cached as a passing verification.",
+    "base_commit": "815954e84861a038259827601abd8ce1534d20a7",
+    "candidate_commit": "0ab86c180b5ce1f39813ce1e14d6b4dafcad917b",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_bounded_development_runner.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_bounded_development_runner_test.clj",
+      "docs/development-verification.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D6",
+      "D9",
+      "contracts/workstream-governance.json",
+      "docs/development-verification.md"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_bounded_development_runner_test.clj"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_bounded_development_runner_test.clj"
+      ],
+      "stable_diagnostics": [
+        "SH07-DEV-ROUTE",
+        "SH07-DEV-MALFORMED-OUTPUT",
+        "SH07-DEV-TIMEOUT",
+        "SH07-DEV-RESOURCE-ROOT"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh07-bounded-development-runner-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 815954e84861a038259827601abd8ce1534d20a7 --candidate-commit 0ab86c180b5ce1f39813ce1e14d6b4dafcad917b --candidate-tree 489864cddbab0e468940d38153512e168112c990",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "review_observability_correction",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
+    "residual_host_boundaries": [
+      "Clojure, the JVM, and host process control remain temporary development boundaries",
+      "the runner contains long executions but does not reduce SH-07 compiler work",
+      "authoritative SH-07 validation remains separate and unchanged"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-26T18:20:00Z",
+        "actor": "sh07_bounded_runner",
+        "reason": "start a fail-closed bounded development wrapper for the long SH-07 lane"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-26T18:35:00Z",
+        "actor": "sh07_bounded_runner",
+        "reason": "freeze the exact runner, fixtures, documentation, and identities"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-26T18:36:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "request independent semantic and process-lifecycle review"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-26T18:45:00Z",
+        "actor": "review_observability_correction",
+        "reason": "accept closed routing, timeout ordering, descendant cleanup, bounded capture, and non-authoritative receipts"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-26T18:50:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "rebased exact identities, clean worktree, focused evidence, independent acceptance, boundaries, and nonclaims verified"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-26T18:52:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "fast-forwarded the exact accepted bounded runner and appended its lifecycle record"
+      }
+    ],
+    "disposition": "Integrated development-only containment and observability. No compiler speedup, benchmark, release, self-hosting, or seed-retirement credit is granted."
   }
 ]
 }
