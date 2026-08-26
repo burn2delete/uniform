@@ -3573,9 +3573,11 @@
    :conditions {:numeric-overflow :overflow
                 :numeric-cast :representable-cast}
    :predicate-expressions
-   {:add :checked-add-result-within-width
-    :multiply :checked-multiply-result-within-width
-    :checked-narrowing :value-representable-in-target-width}
+   {:add :operands-in-declared-width-and-checked-add-result-within-width
+    :multiply
+    :operands-in-declared-width-and-checked-multiply-result-within-width
+    :checked-narrowing
+    :value-in-source-width-and-representable-in-target-width}
    :operand-roles {:add [:left :right]
                    :multiply [:left :right]
                    :checked-narrowing [:value]}
@@ -3603,6 +3605,7 @@
                :static-overflow-or-cast-proof
                :trusted-digest-resolution
                :independent-canonical-digest-verification
+               :performance-class-authority
                :wrapping-saturating-or-arbitrary-precision-adapter
                :unsafe-overflow-or-cast-adapter
                :floating-or-elementary-math-safety
@@ -3713,8 +3716,52 @@
        operation descriptor (rest fields))
       false)))
 
+(defn sh11-overflow-cast-typed-operation-contract [operation-id]
+  (get
+   {:authenticated-checked-add
+    {:kind :numeric-overflow
+     :operator :add
+     :core-node-id
+     "sha256:0000000000000000000000000000000000000000000000000000000000000321"
+     :numeric-contract {:bit-width 8 :signedness :signed}
+     :resolution-id
+     "sha256:000000000000000000000000000000000000000000000000000000000000032b"}
+    :authenticated-checked-multiply
+    {:kind :numeric-overflow
+     :operator :multiply
+     :core-node-id
+     "sha256:0000000000000000000000000000000000000000000000000000000000000322"
+     :numeric-contract {:bit-width 8 :signedness :unsigned}
+     :resolution-id
+     "sha256:000000000000000000000000000000000000000000000000000000000000032c"}
+    :authenticated-checked-cast
+    {:kind :numeric-cast
+     :operator :checked-narrowing
+     :core-node-id
+     "sha256:0000000000000000000000000000000000000000000000000000000000000323"
+     :numeric-contract
+     {:source-width 16 :target-width 8
+      :source-signedness :signed :target-signedness :signed}
+     :resolution-id
+     "sha256:000000000000000000000000000000000000000000000000000000000000032d"}
+    :authenticated-incompatible-cast
+    {:kind :numeric-cast
+     :operator :checked-narrowing
+     :core-node-id
+     "sha256:0000000000000000000000000000000000000000000000000000000000000324"
+     :numeric-contract
+     {:source-width 8 :target-width 16
+      :source-signedness :signed :target-signedness :signed}
+     :resolution-id
+     "sha256:000000000000000000000000000000000000000000000000000000000000032e"}}
+   operation-id))
+
 (defn sh11-overflow-cast-typed-operation-valid? [descriptor]
-  (let [operation (get descriptor :typed-operation)]
+  (let [operation (get descriptor :typed-operation)
+        resolution (get descriptor :typed-operation-resolution)
+        contract
+        (sh11-overflow-cast-typed-operation-contract
+         (get operation :operation-id))]
     (if (sh11-exact-keys?
          operation
          #{:artifact :schema-version :operation-id :kind :operator
@@ -3722,7 +3769,8 @@
            :effect-contract :source-span :origin-chain :profile :target
            :type-fact-id :effect-fact-id :capability-proof-id
            :ownership-fact-id})
-      (if (= :gravity/sh11-typed-numeric-core-operation
+      (if (map? contract)
+       (if (= :gravity/sh11-typed-numeric-core-operation
              (get operation :artifact))
         (if (= 1 (get operation :schema-version))
           (if (= :gravity.type/integer (get operation :result-type))
@@ -3730,20 +3778,26 @@
                     :effects #{:error/raise}}
                    (get operation :effect-contract))
               (if (sh11-overflow-cast-typed-operation-fields-match?
+                   operation contract
+                   [:kind :operator :core-node-id :numeric-contract])
+               (if (sh11-overflow-cast-typed-operation-fields-match?
                    operation descriptor
                    [:operation-id :kind :operator :core-node-id
                     :operands :numeric-contract :source-span
                     :origin-chain :profile :target :type-fact-id
                     :effect-fact-id :capability-proof-id
                     :ownership-fact-id])
-                (sh11-resolution-entry-valid?
-                 operation
-                 (get descriptor :typed-operation-resolution))
+                (if (sh11-resolution-entry-valid? operation resolution)
+                  (= (get contract :resolution-id)
+                     (get resolution :digest))
+                  false)
                 false)
+               false)
               false)
             false)
           false)
         false)
+       false)
       false)))
 
 (defn sh11-overflow-cast-execute-guard-case
@@ -3753,6 +3807,24 @@
         value (if (= kind :numeric-cast)
                 left
                 (if (= operator :add) (+ left right) (* left right)))
+        source-width (if (= kind :numeric-cast)
+                       (get contract :source-width)
+                       (get contract :bit-width))
+        source-signedness (if (= kind :numeric-cast)
+                            (get contract :source-signedness)
+                            (get contract :signedness))
+        source-minimum
+        (sh11-width-minimum source-width source-signedness)
+        source-maximum
+        (sh11-width-maximum source-width source-signedness)
+        left-member
+        (if (>= left source-minimum) (<= left source-maximum) false)
+        right-member
+        (if (= kind :numeric-cast)
+          true
+          (if (>= right source-minimum)
+            (<= right source-maximum)
+            false))
         width (if (= kind :numeric-cast)
                 (get contract :target-width)
                 (get contract :bit-width))
@@ -3761,13 +3833,24 @@
                      (get contract :signedness))
         minimum (sh11-width-minimum width signedness)
         maximum (sh11-width-maximum width signedness)
-        passed (if (>= value minimum) (<= value maximum) false)]
+        result-member
+        (if (>= value minimum) (<= value maximum) false)
+        passed
+        (if left-member
+          (if right-member result-member false)
+          false)]
     {:case-id case-id
      :kind kind
      :operator operator
      :numeric-contract contract
      :operands operands
+     :operand-membership
+     (if (= kind :numeric-cast)
+       [{:operand left :member left-member}]
+       [{:operand left :member left-member}
+        {:operand right :member right-member}])
      :computed-value value
+     :result-membership result-member
      :guard-result (if passed :pass :fail)
      :failure-path (if passed :not-taken :error/numeric-raised)}))
 
@@ -3784,6 +3867,9 @@
    (sh11-overflow-cast-execute-guard-case
     :signed-add-min-outside :numeric-overflow :add
     {:bit-width 8 :signedness :signed} [-128 -1])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-add-cancellation-invalid-operands :numeric-overflow :add
+    {:bit-width 8 :signedness :signed} [200 -100])
    (sh11-overflow-cast-execute-guard-case
     :unsigned-add-max-inside :numeric-overflow :add
     {:bit-width 8 :signedness :unsigned} [254 1])
@@ -3818,6 +3904,9 @@
     :unsigned-multiply-min :numeric-overflow :multiply
     {:bit-width 8 :signedness :unsigned} [0 255])
    (sh11-overflow-cast-execute-guard-case
+    :unsigned-multiply-cancellation-invalid-operand :numeric-overflow :multiply
+    {:bit-width 8 :signedness :unsigned} [256 0])
+   (sh11-overflow-cast-execute-guard-case
     :signed-cast-min :numeric-cast :checked-narrowing
     {:source-width 16 :target-width 8
      :source-signedness :signed :target-signedness :signed} [-128])
@@ -3833,6 +3922,10 @@
     :signed-cast-low-outside :numeric-cast :checked-narrowing
     {:source-width 16 :target-width 8
      :source-signedness :signed :target-signedness :signed} [-129])
+   (sh11-overflow-cast-execute-guard-case
+    :signed-cast-source-outside :numeric-cast :checked-narrowing
+    {:source-width 16 :target-width 8
+     :source-signedness :signed :target-signedness :signed} [40000])
    (sh11-overflow-cast-execute-guard-case
     :unsigned-cast-min :numeric-cast :checked-narrowing
     {:source-width 16 :target-width 8
@@ -3856,7 +3949,8 @@
     (if (sh11-exact-keys?
          support
          #{:artifact :schema-version :target :provider
-           :failure-behavior :effects-introduced :execution-evidence})
+           :failure-behavior :effects-introduced :performance-class
+           :execution-evidence})
       (if (= :gravity/sh11-runtime-target-support
              (get support :artifact))
         (if (= 1 (get support :schema-version))
@@ -3865,10 +3959,16 @@
                    (get support :provider))
               (if (= :error/numeric (get support :failure-behavior))
                 (if (= #{:error/raise} (get support :effects-introduced))
-                  (if (= (sh11-overflow-cast-expected-execution-evidence)
+                  (if (= :constant-time-branch
+                         (get support :performance-class))
+                   (if (= (get support :performance-class)
+                          (get descriptor :performance-class))
+                    (if (= (sh11-overflow-cast-expected-execution-evidence)
                          (get support :execution-evidence))
                     (if (sh11-resolution-entry-valid? support resolution)
-                      (if (= (get resolution :digest)
+                      (if (= "sha256:0000000000000000000000000000000000000000000000000000000000000352"
+                             (get resolution :digest))
+                        (if (= (get resolution :digest)
                              (get descriptor :target-support-id))
                         (if (= (get support :provider)
                                (get descriptor :provider-id))
@@ -3877,7 +3977,10 @@
                           false)
                         false)
                       false)
+                      false)
                     false)
+                    false)
+                   false)
                   false)
                 false)
               false)
@@ -4027,7 +4130,8 @@
              :checked
              (get descriptor :failure-behavior)
              (get descriptor :effects-introduced))
-          (if (keyword? (get descriptor :performance-class))
+          (if (= :constant-time-branch
+                 (get descriptor :performance-class))
             (if (= (get (get
                          (sh11-authenticated-overflow-cast-policy)
                          :invalidation-conditions)
@@ -4046,15 +4150,6 @@
 
 (defn sh11-overflow-cast-diagnostic-context [descriptor bound]
   (let [operation (get descriptor :typed-operation)
-        operation-authenticated
-        (if (map? operation)
-          (if (sh11-resolution-entry-valid?
-               operation (get descriptor :typed-operation-resolution))
-            (if (sh11-valid-source-span? (get operation :source-span))
-              (vector? (get operation :origin-chain))
-              false)
-            false)
-          false)
         single-record (sh11-single-c9-read-record bound)
         pair-records (sh11-two-c9-read-records bound)
         record
@@ -4068,7 +4163,20 @@
             false)
           false)
         request (get record :request)
-        fact (get record :fact)]
+        fact (get record :fact)
+        operation-authenticated
+        (if record-authenticated
+          (if (sh11-overflow-cast-typed-operation-valid? descriptor)
+            (if (= (get operation :source-span) (get fact :source-span))
+              (if (= (get operation :origin-chain)
+                     (get fact :origin-chain))
+                (if (= (get operation :profile) (get request :profile))
+                  (= (get operation :target) (get request :target))
+                  false)
+                false)
+              false)
+            false)
+          false)]
     (if operation-authenticated
       {:source-span (get operation :source-span)
        :origin-chain (get operation :origin-chain)
@@ -4192,6 +4300,9 @@
                                  (sh11-authenticated-overflow-cast-policy)
                                  :predicate-expressions)
                                 operator)
+                           :guard-components
+                           [:operand-source-membership
+                            :result-target-membership]
                            :numeric-contract
                            (get descriptor :numeric-contract)
                            :invalidation-conditions
@@ -4260,6 +4371,7 @@
        :kind (get descriptor :kind)
        :operator (get descriptor :operator)
        :numeric-contract (get descriptor :numeric-contract)
+       :guard-components (get check-request :guard-components)
        :operands bindings}
       :core-node-id (get descriptor :core-node-id)
       :typed-operation-resolution

@@ -315,9 +315,9 @@
    :c10-safety
    {:module-namespace gravity.compiler.c10-safety-analysis-pipeline
     :source-binding
-    {:source-byte-count 191356
+    {:source-byte-count 196156
      :source-bytes-sha256
-     "sha256:281f1dbbff4cb28733ee5c0499b2045b77c73fcf5b02b135bebed25b1b703db5"}}
+     "sha256:c232a59c64affd4c64bd6c679d844a47c9a8dffcb588480ef83ee1372d82554d"}}
    :c11-mir
    {:module-namespace gravity.compiler.c11-mir-specification
     :source-binding

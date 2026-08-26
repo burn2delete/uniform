@@ -17,6 +17,26 @@
         value (if (= kind :numeric-cast)
                 left
                 (if (= operator :add) (+ left right) (* left right)))
+        source-width (if (= kind :numeric-cast)
+                       (get contract :source-width)
+                       (get contract :bit-width))
+        source-signedness (if (= kind :numeric-cast)
+                            (get contract :source-signedness)
+                            (get contract :signedness))
+        source-minimum (if (= source-signedness :unsigned)
+                         0
+                         (if (= source-width 8) -128 -32768))
+        source-maximum (if (= source-width 8)
+                         (if (= source-signedness :signed) 127 255)
+                         (if (= source-signedness :signed) 32767 65535))
+        left-member
+        (if (>= left source-minimum) (<= left source-maximum) false)
+        right-member
+        (if (= kind :numeric-cast)
+          true
+          (if (>= right source-minimum)
+            (<= right source-maximum)
+            false))
         width (if (= kind :numeric-cast)
                 (get contract :target-width)
                 (get contract :bit-width))
@@ -29,13 +49,23 @@
         maximum (if (= width 8)
                   (if (= signedness :signed) 127 255)
                   (if (= signedness :signed) 32767 65535))
-        passed (if (>= value minimum) (<= value maximum) false)]
+        result-member (if (>= value minimum) (<= value maximum) false)
+        passed
+        (if left-member
+          (if right-member result-member false)
+          false)]
     {:case-id case-id
      :kind kind
      :operator operator
      :numeric-contract contract
      :operands operands
+     :operand-membership
+     (if (= kind :numeric-cast)
+       [{:operand left :member left-member}]
+       [{:operand left :member left-member}
+        {:operand right :member right-member}])
      :computed-value value
+     :result-membership result-member
      :guard-result (if passed :pass :fail)
      :failure-path (if passed :not-taken :error/numeric-raised)}))
 
@@ -46,6 +76,7 @@
    :provider :gravity/sh11-jvm-checked-integer-provider
    :failure-behavior :error/numeric
    :effects-introduced #{:error/raise}
+   :performance-class :constant-time-branch
    :execution-evidence
    [(sh11-execute-guard-case :signed-add-max-inside :numeric-overflow :add
      {:bit-width 8 :signedness :signed} [126 1])
@@ -55,6 +86,9 @@
      {:bit-width 8 :signedness :signed} [-127 -1])
     (sh11-execute-guard-case :signed-add-min-outside :numeric-overflow :add
      {:bit-width 8 :signedness :signed} [-128 -1])
+    (sh11-execute-guard-case
+     :signed-add-cancellation-invalid-operands :numeric-overflow :add
+     {:bit-width 8 :signedness :signed} [200 -100])
     (sh11-execute-guard-case :unsigned-add-max-inside :numeric-overflow :add
      {:bit-width 8 :signedness :unsigned} [254 1])
     (sh11-execute-guard-case :unsigned-add-max-outside :numeric-overflow :add
@@ -77,6 +111,10 @@
      {:bit-width 8 :signedness :unsigned} [52 5])
     (sh11-execute-guard-case :unsigned-multiply-min :numeric-overflow :multiply
      {:bit-width 8 :signedness :unsigned} [0 255])
+    (sh11-execute-guard-case
+     :unsigned-multiply-cancellation-invalid-operand
+     :numeric-overflow :multiply
+     {:bit-width 8 :signedness :unsigned} [256 0])
     (sh11-execute-guard-case :signed-cast-min :numeric-cast :checked-narrowing
      {:source-width 16 :target-width 8 :source-signedness :signed
       :target-signedness :signed} [-128])
@@ -89,6 +127,10 @@
     (sh11-execute-guard-case :signed-cast-low-outside :numeric-cast :checked-narrowing
      {:source-width 16 :target-width 8 :source-signedness :signed
       :target-signedness :signed} [-129])
+    (sh11-execute-guard-case :signed-cast-source-outside
+     :numeric-cast :checked-narrowing
+     {:source-width 16 :target-width 8 :source-signedness :signed
+      :target-signedness :signed} [40000])
     (sh11-execute-guard-case :unsigned-cast-min :numeric-cast :checked-narrowing
      {:source-width 16 :target-width 8 :source-signedness :unsigned
       :target-signedness :unsigned} [0])

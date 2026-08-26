@@ -122,9 +122,10 @@
         typed (invoke-fixture
                @plan (typed-function operator)
                [(:source inputs) (:operands inputs)])
-        typed-resolution (resolved typed ordinal)
+        typed-resolution
+        (resolved typed (case operator :add 811 :multiply 812 813))
         support (runtime-support plan)
-        support-resolution (resolved support (+ ordinal 50))
+        support-resolution (resolved support 850)
         descriptor
         (invoke-fixture
          @plan 'sh11-authenticated-checked-operation
@@ -173,6 +174,7 @@
     (is (= #{:proven-safe :runtime-checked :rejected :unsafe-island}
            (:outcomes policy)))
     (is (some #{:sh11-completion} (:nonclaims policy)))
+    (is (some #{:performance-class-authority} (:nonclaims policy)))
     (is (not (some #{:operation-core-node-authenticated-by-c9}
                    (:nonclaims policy))))
     (doseq [[operator semantic]
@@ -210,7 +212,7 @@
         evidence (:execution-evidence gravity-support)]
     (is (= gravity-support qst-support))
     (is (= expected evidence))
-    (is (= 23 (count evidence)))
+    (is (= 26 (count evidence)))
     (is (= #{:pass :fail} (set (map :guard-result evidence))))
     (is (= #{:not-taken :error/numeric-raised}
            (set (map :failure-path evidence))))
@@ -219,17 +221,34 @@
                           (get-in % [:numeric-contract :target-signedness]))
                      evidence))))
     (is (= #{:add :multiply :checked-narrowing}
-           (set (map :operator evidence))))))
+           (set (map :operator evidence))))
+    (doseq [case-id
+            [:signed-add-cancellation-invalid-operands
+             :unsigned-multiply-cancellation-invalid-operand
+             :signed-cast-source-outside]]
+      (let [case (first (filter #(= case-id (:case-id %)) evidence))]
+        (is (= :fail (:guard-result case)))
+        (is (= :error/numeric-raised (:failure-path case)))
+        (is (some false? (map :member (:operand-membership case))))))
+    (let [cancellation
+          (first
+           (filter
+            #(= :signed-add-cancellation-invalid-operands (:case-id %))
+            evidence))]
+      (is (true? (:result-membership cancellation))))))
 
 (deftest sh11-checked-add-multiply-and-cast-bind-exact-operation-and-support
   (let [prepared (prepared-two-integer-c9)]
     (doseq [[operator condition expression rule ordinal]
-            [[:add :overflow :checked-add-result-within-width
+            [[:add :overflow
+              :operands-in-declared-width-and-checked-add-result-within-width
               :SAFE9-OVERFLOW 811]
-             [:multiply :overflow :checked-multiply-result-within-width
+             [:multiply :overflow
+              :operands-in-declared-width-and-checked-multiply-result-within-width
               :SAFE9-OVERFLOW 812]
              [:checked-narrowing :representable-cast
-              :value-representable-in-target-width :SAFE9-NARROW 813]]]
+              :value-in-source-width-and-representable-in-target-width
+              :SAFE9-NARROW 813]]]
       (let [{:keys [inputs typed support descriptor]}
             (accepted-operation accepted-gravity-plan prepared operator ordinal)
             qst (accepted-operation accepted-qst-plan prepared operator ordinal)
@@ -255,6 +274,10 @@
           (is (= (:numeric-contract typed)
                  (get-in runtime-check
                          [:guard-proof :predicate :numeric-contract])))
+          (is (= [:operand-source-membership
+                  :result-target-membership]
+                 (get-in runtime-check
+                         [:guard-proof :predicate :guard-components])))
           (is (= (:bindings inputs)
                  (get-in runtime-check [:guard-proof :predicate :operands])))
           (is (true? (get-in runtime-check
@@ -287,17 +310,31 @@
                                 [:operation-id :operator :core-node-id
                                  :numeric-contract]))
             (assoc :typed-operation forged-typed))
+        coordinated-forgery
+        (rewrite-typed
+         descriptor
+         {:operation-id :forged-operation
+          :operator :multiply
+          :core-node-id (digest 999)
+          :numeric-contract {:bit-width 16 :signedness :unsigned}}
+         999)
         provider-forgery
         (-> descriptor
             (assoc-in [:target-support :provider] :attacker/provider)
             (assoc :provider-id :attacker/provider))
         arbitrary-support-label
         (assoc descriptor :target-support-id (digest 903))
+        coordinated-support-forgery
+        (-> descriptor
+            (assoc :target-support-id (digest 903))
+            (assoc-in [:target-support-resolution :digest] (digest 903)))
         forged-support-evidence
         (-> descriptor
             (assoc-in [:target-support :execution-evidence 0 :guard-result]
                       :fail)
             (assoc-in [:support-evidence 0 :guard-result] :fail))
+        forged-performance-class
+        (assoc descriptor :performance-class :forged)
         forged-result-type
         (rewrite-typed descriptor {:result-type :gravity.type/bool} 908)
         forged-effect-contract
@@ -308,25 +345,27 @@
         swapped-operands
         (rewrite-typed descriptor
                        {:operands (vec (reverse (:operands descriptor)))}
-                       910)
+                       811)
+        multiply-descriptor
+        (:descriptor
+         (accepted-operation accepted-gravity-plan prepared :multiply 904))
         stale-operator
-        (rewrite-typed descriptor {:operator :multiply} 904)
+        multiply-descriptor
         stale-signedness
-        (rewrite-typed descriptor
-                       {:numeric-contract {:bit-width 8
-                                           :signedness :unsigned}}
-                       905)
+        multiply-descriptor
         widening-cast-base
         (:descriptor
          (accepted-operation accepted-gravity-plan prepared
                              :checked-narrowing 906))
         widening-cast
         (rewrite-typed widening-cast-base
-                       {:numeric-contract
+                       {:operation-id :authenticated-incompatible-cast
+                        :core-node-id (digest 804)
+                        :numeric-contract
                         {:source-width 8 :target-width 16
                          :source-signedness :signed
                          :target-signedness :signed}}
-                       907)
+                       814)
         malformed
         (invoke-fixture
          @rejected-gravity-plan 'sh11-malformed-operation
@@ -334,14 +373,27 @@
         substituted-envelope
         (assoc-in descriptor [:typed-operation :source-span]
                   {:source "forged.gravity" :start-byte 90 :end-byte 99})
+        coordinated-provenance-forgery
+        (rewrite-typed
+         descriptor
+         {:source-span
+          {:source "forged.gravity" :start-byte 90 :end-byte 99}
+          :origin-chain [{:generated-by :attacker}]}
+         811)
         cases
         [[(template prepared coordinated-stale)
+          "C10-PROOF" :untrusted-or-stale-typed-numeric-operation]
+         [(template prepared coordinated-forgery)
           "C10-PROOF" :untrusted-or-stale-typed-numeric-operation]
          [(template prepared provider-forgery)
           "C10-CHECK" :invalid-authenticated-runtime-check-policy]
          [(template prepared arbitrary-support-label)
           "C10-CHECK" :invalid-authenticated-runtime-check-policy]
+         [(template prepared coordinated-support-forgery)
+          "C10-CHECK" :invalid-authenticated-runtime-check-policy]
          [(template prepared forged-support-evidence)
+          "C10-CHECK" :invalid-authenticated-runtime-check-policy]
+         [(template prepared forged-performance-class)
           "C10-CHECK" :invalid-authenticated-runtime-check-policy]
          [(template prepared forged-result-type)
           "C10-PROOF" :untrusted-or-stale-typed-numeric-operation]
@@ -358,7 +410,9 @@
          [(template prepared malformed)
           "C10-NO-OUTCOME" :malformed-authenticated-overflow-cast-operation]
          [(template prepared substituted-envelope)
-          "C10-PROOF" :untrusted-or-stale-typed-numeric-operation]]]
+          "C10-PROOF" :untrusted-or-stale-typed-numeric-operation]
+         [(template prepared coordinated-provenance-forgery)
+          "C10-PROOF" :operation-operands-not-bound-to-c9-facts]]]
     (doseq [[result id reason] cases]
       (let [d (diagnostic result)]
         (is (= :rejected (:status result)) (pr-str result))
@@ -370,7 +424,10 @@
         (is (contains? #{:authenticated-typed-operation
                          :authenticated-c9-operand}
                        (:provenance-source d)))
-        (is (vector? (:untrusted-fields d)))))))
+        (is (vector? (:untrusted-fields d)))))
+    (let [d (diagnostic (template prepared coordinated-provenance-forgery))]
+      (is (= :authenticated-c9-operand (:provenance-source d)))
+      (is (seq (:untrusted-fields d))))))
 
 (deftest sh11-proof-unsafe-erasure-fifth-outcome-and-result-substitution-reject
   (let [prepared (prepared-two-integer-c9)
