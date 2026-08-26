@@ -32,25 +32,25 @@
   "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 199567)
+(def ^:private expected-source-byte-count 199815)
 (def ^:private expected-source-revision-id
-  "sha256:cf521ff65b6ed3f0e211ef4938293a8b159b2331ab8e20990534f5b387d1d539")
+  "sha256:1413be3abe20427f57af9c3c394d2512b21754acc90754ce24ad89be50a400a9")
 (def ^:private expected-sh06-semantic-projection-id
-  "sha256:aab09114b07a9d96932d6f8cdff4d09124d0f9ebd97fc342f6c2f513dfe5d4c5")
+  "sha256:617c022fbfaf9f0d45de3eabe69e03e921de2f9c0626d7563e932146f5da695e")
 (def ^:private expected-coverage
   {:fragment-count 164
    :root-form-count 164
-   :form-count 16079
+   :form-count 16082
    :binding-count 1058
    :resolution-count 5740})
 (def ^:private expected-core-census
-  {:core-node-count 13747
+  {:core-node-count 13750
    :definition-count 164
    :call-count 2392
    :reference-count 4562
    :keyword-lookup-count 0
    :core-form-frequencies
-   {:literal 5094
+   {:literal 5097
     :collection-literal 521
     :def 164
     :reference 4562
@@ -1012,7 +1012,7 @@
                        :predicate-expressions) operator)]
            (vec dynamic-gets)))
     (is (= [469 649 742 751 838 2198 3087 3105 3133
-            3213 3218 3622 3713 3714 3720 4121 4203 4366 4371]
+            3213 3218 3625 3716 3717 3723 4124 4206 4370 4375]
            (mapv #(-> % meta :line) dynamic-gets)))
     (is (= #{"C10-PROOF" "C10-GENERATED" "C10-TAINT"
              "C10-CAPABILITY" "C10-FFI" "C10-OPTIMIZATION"}
