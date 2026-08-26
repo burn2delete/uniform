@@ -4196,6 +4196,161 @@
       }
     ],
     "disposition": "Superseded exact replay; it is not a corrected attempt, enters no main path, cannot activate SH-13, and receives no SH-12 completion, roadmap, performance, self-hosting, release, or seed-retirement credit."
+  },
+  {
+    "id": "sh12-loop-backedge-mir-attempt-2",
+    "title": "SH-12 bounded loop/backedge MIR candidate attempt 2",
+    "invariant_family": "self-hosting/sh12-loop-backedge-mir-v1",
+    "owner": "sh-mir",
+    "author": "sh-mir",
+    "state": "rejected",
+    "dependencies": [
+      "sh11-division-bounds-safety-v1",
+      "sh12-branch-join-mir-v1"
+    ],
+    "architecture_decision": "",
+    "base_commit": "35baf549421fb16c24b7869206605fd7ebf3f3e9",
+    "candidate_commit": "b68cdb4995b095d5b60dc8ad66ffe3130916b5ee",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/accepted/loop_backedge_mir.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/accepted/loop_backedge_mir.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/rejected/malformed_loop_backedge_mir.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/rejected/malformed_loop_backedge_mir.qst",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_c11_mir_source_preflight_test.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+      "bootstrap/clojure/test/gravity/self_hosting/sh12_loop_backedge_mir_test.clj",
+      "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D6",
+      "D8",
+      "D9",
+      "C11",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-11/accepted/numeric-safety-outcomes.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-11/accepted/numeric-safety-outcomes.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/accepted/loop_backedge_mir.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/accepted/loop_backedge_mir.qst"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/rejected/malformed_loop_backedge_mir.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-12/loop-backedge/rejected/malformed_loop_backedge_mir.qst"
+      ],
+      "stable_diagnostics": [
+        "C11-VERIFY",
+        "C11-DOMINANCE",
+        "C11-TYPE",
+        "C11-EFFECT",
+        "C11-SAFETY",
+        "C11-ORIGIN",
+        "SH07-C11-PREFLIGHT-SOURCE-UTF8"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh12-loop-backedge-mir-test --namespace gravity.self-hosting.sh12-branch-join-mir-test --namespace gravity.self-hosting.sh07-c11-mir-source-preflight-test (16 tests, 2201 assertions)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test (6 tests, 11 assertions)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj (65 pre-disposition workstreams)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj (240 documents, 19 phase indexes, ASCII, no placeholders)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git range-diff ea7dfd2f42fd15cdb72ec0fb5e9932127a440a3d..ff4fe5ef6830d92bb531b592a1c2f9c279b43b65 35baf549421fb16c24b7869206605fd7ebf3f3e9..806e1043ee0900011b56df2037c60d800c3e5c8b",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 35baf549421fb16c24b7869206605fd7ebf3f3e9..b68cdb4995b095d5b60dc8ad66ffe3130916b5ee",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 35baf549421fb16c24b7869206605fd7ebf3f3e9 --candidate-commit b68cdb4995b095d5b60dc8ad66ffe3130916b5ee --candidate-tree 990514748392785354ca20c38637bd62a3158af7 (Git and worktree identity only)",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "sh12_attempt2_exact_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
+    "residual_host_boundaries": [
+      "the exact three implementation patches preserve the stale-source candidate patch identities, and the two extra coordinated SH-02-owned pin consumers authenticate the reconciled C11 source as 380088 bytes with SHA-256 070312284a3495e15f4a08b480469eac1014d4d5ed1b0666002cc833604c020b",
+      "the MIR input still authenticates fixture-authored placeholder checked-core and SH-11 facts by equality to duplicate constants rather than consuming a content-bound checked-core artifact or receipt",
+      "source provenance remains a caller-authored nonempty path without authenticated root, normalized relative path, byte hash, source-unit identity, or provenance-binding identity",
+      "the verifier regenerates its oracle with the same builder and reports passed while the MIR, pass execution record, output identity, verifier identity, operations, and terminators remain pending or constructed-unverified",
+      "malformed nested input, provenance, function, CFG, block, and terminator carriers can reach JVM-backed builtins and escape as L2-BUILTIN-ERROR instead of a structured C11 diagnostic",
+      "the two SH-02-owned direct pin consumers were coordinated and recorded as an ownership expansion, while recursive C11 consumer identities and unrelated SH-25 catalog drift remain outside this rejected candidate",
+      "direct and indirect calls, exception and error exits, recursion, C12 and domain IR, the final seven-node run, and the SH-13 combined graph remain excluded",
+      "Clojure and the JVM remain the temporary source loader, compiler-plan executor, runtime, digest, verifier, and final observation boundary"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-26T17:18:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "reconstruct the three stale-source SH-12 implementation patches onto authoritative main and coordinate only the two direct authenticated C11 pin consumers"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-26T17:22:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "freeze exact base 35baf549421fb16c24b7869206605fd7ebf3f3e9, candidate b68cdb4995b095d5b60dc8ad66ffe3130916b5ee, tree 990514748392785354ca20c38637bd62a3158af7, and eight-path coordinated scope"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-26T17:23:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "request fresh independent high-reasoning semantic and authentication review of the exact current-main tuple; prior stale-base acceptance is supporting evidence only"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-26T17:32:15Z",
+        "actor": "sh12_attempt2_exact_review",
+        "reason": "reject fixture-equality checked-core authority, caller-authored provenance, a passed report bound to explicitly pending MIR artifacts, and malformed nested carriers that can escape the C11 diagnostic boundary"
+      }
+    ],
+    "disposition": "Rejected exact attempt 2. No implementation, fixture, test, or direct pin-consumer path enters main. This is the second rejected candidate in the invariant family, so another implementation candidate requires a separately accepted nonempty architecture decision. No SH-12 completion, roadmap, performance, self-hosting, release, or seed-retirement credit is granted."
   }
 ]
 }
