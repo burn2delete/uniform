@@ -242,8 +242,11 @@
            (:outcomes policy)))
     (is (some #{:sh11-completion} (:nonclaims policy)))
     (is (some #{:performance-class-authority} (:nonclaims policy)))
-    (is (not (some #{:operation-core-node-authenticated-by-c9}
-                   (:nonclaims policy))))
+    (is (every?
+         (set (:nonclaims policy))
+         [:operation-core-node-authenticated-by-c9
+          :typed-operation-receipt-issued-by-c9-producer
+          :fixture-contract-content-derived-typed-operation-production]))
     (doseq [[operator semantic]
             [[:add [:operator-change :signedness-change]]
              [:multiply [:operator-change :signedness-change]]

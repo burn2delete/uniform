@@ -3605,6 +3605,9 @@
                :static-overflow-or-cast-proof
                :trusted-digest-resolution
                :independent-canonical-digest-verification
+               :operation-core-node-authenticated-by-c9
+               :typed-operation-receipt-issued-by-c9-producer
+               :fixture-contract-content-derived-typed-operation-production
                :performance-class-authority
                :wrapping-saturating-or-arbitrary-precision-adapter
                :unsafe-overflow-or-cast-adapter
