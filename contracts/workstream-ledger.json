@@ -2573,6 +2573,239 @@
         {"state": "rejected", "at": "2026-08-26T07:30:27Z", "actor": "review_sh07_c10_reuse", "reason": "reject stale masked identity, provenance collapse, open selection, failed-value caching, and absent live binding snapshots"}
       ],
       "disposition": "Rejected exact artifact-reuse attempt 1; preserve path-aware expected rebuild reuse at three builds reduced to two. No second candidate is activated and the focused 19/142 plus boundary 6/11 evidence grants no performance, integration, roadmap, release, self-hosting, or seed-retirement credit."
+    },
+    {
+      "id": "sh11-overflow-cast-safety-attempt-1",
+      "title": "SH-11 bounded overflow and numeric-cast safety candidate attempt 1",
+      "invariant_family": "self-hosting/sh11-overflow-cast-safety-v1",
+      "owner": "sh-safety",
+      "author": "sh-safety",
+      "state": "rejected",
+      "dependencies": ["sh09-authenticated-compiler-read-v1", "sh10-runtime-borrow-conflict-v1", "sh11-division-bounds-safety-v1"],
+      "architecture_decision": "",
+      "base_commit": "bc38357d1080fedb3d8a78f2e676ab15bf86eaeb",
+      "candidate_commit": "284164bf6d371ee06eeb002cbe844d926aec8f9d",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/accepted/overflow-cast-safety.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/accepted/overflow-cast-safety.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/rejected/invalid-overflow-cast-safety.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/rejected/invalid-overflow-cast-safety.qst",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_safety_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+        "bootstrap/clojure/test/gravity/self_hosting/sh11_overflow_cast_safety_test.clj",
+        "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D8", "D9", "C9", "C10", "SAFE9", "BOOT7", "BOOT8", "TEST13", "docs/self-hosting-slice-backlog.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/accepted/overflow-cast-safety.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/accepted/overflow-cast-safety.qst"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/rejected/invalid-overflow-cast-safety.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/rejected/invalid-overflow-cast-safety.qst"
+        ],
+        "stable_diagnostics": ["C10-PROOF", "C10-CHECK", "C10-UNSAFE", "C10-NO-OUTCOME", "C10-NUMERIC", "C10-OPTIMIZATION"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh11-overflow-cast-safety-test --fail-fast (5 tests, 240 assertions)", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh11-division-bounds-safety-test --fail-fast (4 tests, 116 assertions)", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh11-numeric-safety-test --fail-fast (7 tests, 495 assertions)", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test --fail-fast (6 tests, 11 assertions)", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check bc38357d1080fedb3d8a78f2e676ab15bf86eaeb..284164bf6d371ee06eeb002cbe844d926aec8f9d", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "review_sh11_exact_final", "kind": "independent", "result": "rejected"}],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary fixture, bootstrap, verifier, runtime-check, and coordinator-digest boundary",
+        "the C10 typed-operation registry hardcodes operation and core IDs, numeric contracts, operand and ownership IDs, and resolution IDs; it is not a content-derived Gravity operation producer and its resolution digest is shape-checked only",
+        "C9 references authenticate operand carriers and ownership facts, not the operation core, operator, width, signedness, or a C9-issued typed-operation receipt",
+        "static numeric proof, trusted independent digest resolution, performance authority, wrapping, saturating, arbitrary precision, floating and elementary math, MIR, unsafe, concurrency, FFI, taint, and SH-11 completion remain outside this candidate"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-26T10:19:40Z", "actor": "sh-safety", "reason": "compose bounded overflow and numeric-cast classification and runtime guards"},
+        {"state": "frozen", "at": "2026-08-26T10:19:41Z", "actor": "uniform-coordinator", "reason": "freeze exact base bc38357d1080fedb3d8a78f2e676ab15bf86eaeb, candidate 284164bf6d371ee06eeb002cbe844d926aec8f9d, tree 2f66f3375f7b1363f7e44e06478fc66251cd24ee, and eight-path scope"},
+        {"state": "review-pending", "at": "2026-08-26T10:19:42Z", "actor": "uniform-coordinator", "reason": "request fresh independent exact review of C9 binding, arithmetic guards, substitutions, fixtures, diagnostics, provenance, guards, and nonclaims"},
+        {"state": "rejected", "at": "2026-08-26T10:19:43Z", "actor": "review_sh11_exact_final", "reason": "reject the self-authenticating hardcoded typed-operation registry and omitted operation-core/C9 nonclaim; the full operation, operand, and ownership authentication claim is not met"}
+      ],
+      "disposition": "Rejected exact attempt 1. Passing arithmetic, runtime-guard, fixture, diagnostic, and provenance evidence does not authenticate the hardcoded typed-operation registry or grant integration, SH-11 completion, roadmap, release, self-hosting, or seed-retirement credit."
+    },
+    {
+      "id": "sh11-overflow-cast-safety-attempt-2",
+      "title": "SH-11 bounded overflow and numeric-cast safety candidate attempt 2",
+      "invariant_family": "self-hosting/sh11-overflow-cast-safety-v1",
+      "owner": "sh-safety",
+      "author": "sh-safety",
+      "state": "integrated",
+      "dependencies": ["sh09-authenticated-compiler-read-v1", "sh10-runtime-borrow-conflict-v1", "sh11-division-bounds-safety-v1"],
+      "architecture_decision": "After attempt 1 rejection, admit only a bounded fixture-contract-registry slice: explicitly deny C9 operation-core authentication, a C9-issued typed-operation receipt, and content-derived typed-operation production; qualify emitted provenance as fixture-contract-registry validation. Any future claim of real operation-core or typed-producer authentication requires a separately governed architecture and fresh candidate.",
+      "base_commit": "bc38357d1080fedb3d8a78f2e676ab15bf86eaeb",
+      "candidate_commit": "ca9575e61661d32671a204afa904badd8235f0b8",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/accepted/overflow-cast-safety.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/accepted/overflow-cast-safety.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/rejected/invalid-overflow-cast-safety.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/rejected/invalid-overflow-cast-safety.qst",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c10_safety_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+        "bootstrap/clojure/test/gravity/self_hosting/sh11_overflow_cast_safety_test.clj",
+        "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D8", "D9", "C9", "C10", "SAFE9", "BOOT7", "BOOT8", "TEST13", "docs/self-hosting-slice-backlog.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/accepted/overflow-cast-safety.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/accepted/overflow-cast-safety.qst"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/rejected/invalid-overflow-cast-safety.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-11/overflow-cast/rejected/invalid-overflow-cast-safety.qst"
+        ],
+        "stable_diagnostics": ["C10-PROOF", "C10-CHECK", "C10-UNSAFE", "C10-NO-OUTCOME", "C10-NUMERIC", "C10-OPTIMIZATION"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh11-overflow-cast-safety-test --namespace gravity.self-hosting.sh11-division-bounds-safety-test --namespace gravity.self-hosting.sh11-numeric-safety-test --fail-fast (16 tests, 851 assertions)", "exit_code": 0, "result": "passed"},
+          {"command": "selected exact C10 source/proof/static guard vars (5 tests, 79 assertions)", "exit_code": 0, "result": "passed"},
+          {"command": "single authoritative accepted C10 artifact build and exact projection/census read: source 199815 bytes at sha256:1413be3abe20427f57af9c3c394d2512b21754acc90754ce24ad89be50a400a9, semantic projection sha256:617c022fbfaf9f0d45de3eabe69e03e921de2f9c0626d7563e932146f5da695e, coverage 164/164/16082/1058/5740, core nodes 13750", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test --fail-fast (6 tests, 11 assertions)", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+          {"command": "cmp accepted and rejected Gravity/QST fixture pairs", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check bc38357d1080fedb3d8a78f2e676ab15bf86eaeb..ca9575e61661d32671a204afa904badd8235f0b8", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base bc38357d1080fedb3d8a78f2e676ab15bf86eaeb --candidate-commit ca9575e61661d32671a204afa904badd8235f0b8 --candidate-tree 36d7a3c1a8ded642447da8247d3902d6e9554e16", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "review_sh11_attempt2_exact", "kind": "independent", "result": "accepted"}],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary fixture, bootstrap, verifier, runtime-check, and coordinator-digest boundary",
+        "the accepted operation metadata comes from a four-entry hardcoded fixture contract registry, not a content-derived Gravity typed-operation producer; C10 does not authenticate operation core nodes through C9 or consume a C9-issued typed-operation receipt",
+        "authority is limited to byte-identical Gravity/QST fixtures, current C9 integer operand and ownership references, and JVM checked operand-source and result-target runtime guards",
+        "the full two-artifact C10 guard rerun was not observed after the final nonclaim-only correction; exact static guard and one authoritative accepted artifact build were observed, and the remaining success was used only under the user's explicit assumption",
+        "static numeric proof, trusted independent digest resolution, performance authority, wrapping, saturating, arbitrary precision, floating and elementary math, MIR, unsafe, concurrency, FFI, taint, and SH-11 completion remain outside this slice"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-26T10:19:44Z", "actor": "sh-safety", "reason": "narrow attempt 1 to fixture-registry validation and restore explicit operation-producer nonclaims"},
+        {"state": "frozen", "at": "2026-08-26T10:19:45Z", "actor": "uniform-coordinator", "reason": "freeze exact base bc38357d1080fedb3d8a78f2e676ab15bf86eaeb, candidate ca9575e61661d32671a204afa904badd8235f0b8, tree 36d7a3c1a8ded642447da8247d3902d6e9554e16, and eight-path scope"},
+        {"state": "review-pending", "at": "2026-08-26T10:19:46Z", "actor": "uniform-coordinator", "reason": "request fresh independent exact review of the narrowed authority, qualified provenance, guards, fixtures, source pins, residuals, and nonclaims"},
+        {"state": "accepted", "at": "2026-08-26T10:19:47Z", "actor": "review_sh11_attempt2_exact", "reason": "accept exact bounded fixture-registry authority, source-range and result-range guards, C9 operand and ownership references, fail-closed substitutions, qualified provenance, exact pins, and explicit nonclaims"},
+        {"state": "integration-eligible", "at": "2026-08-26T10:19:48Z", "actor": "uniform-coordinator", "reason": "exact identities, clean named branch, eight-path scope, focused, static, artifact, boundary, governance, parity, diff, preflight, independent acceptance, residuals, and nonclaims verified"},
+        {"state": "integrated", "at": "2026-08-26T10:19:49Z", "actor": "uniform-coordinator", "reason": "fast-forwarded exact accepted candidate ca9575e61661d32671a204afa904badd8235f0b8 onto clean main; this separate append-only record marks the bounded disposition"}
+      ],
+      "disposition": "Integrated only the bounded fixture-contract-registry SH-11 overflow and numeric-cast classifier with C9 operand and ownership references plus JVM runtime guards. No C9 operation-core authentication, C9-issued typed-operation receipt, content-derived producer, static proof, general numeric safety, SH-11 completion, roadmap credit, release, self-hosting, or seed-retirement authority."
+    },
+    {
+      "id": "sh13-typed-direct-call-mir-attempt-1",
+      "title": "SH-13 typed direct-call MIR candidate attempt 1",
+      "invariant_family": "self-hosting/sh13-typed-direct-call-mir-v1",
+      "owner": "sh-mir",
+      "author": "sh-mir",
+      "state": "rejected",
+      "dependencies": ["sh12-branch-join-mir-v1"],
+      "architecture_decision": "",
+      "base_commit": "e21ec9d81cf9ff854dd454e74dcfc0c3a3dfddfe",
+      "candidate_commit": "95f6b5a588f3c255b9a1577928fa6b018d93830c",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/accepted/typed_direct_call.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/accepted/typed_direct_call.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/rejected/invalid_typed_direct_call.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/rejected/invalid_typed_direct_call.qst",
+        "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh13_typed_direct_call_mir_test.clj",
+        "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D8", "D9", "C11", "C12", "BOOT7", "BOOT8", "TEST13", "docs/self-hosting-slice-backlog.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/accepted/typed_direct_call.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/accepted/typed_direct_call.qst"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/rejected/invalid_typed_direct_call.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/rejected/invalid_typed_direct_call.qst"
+        ],
+        "stable_diagnostics": ["C12-ANCHOR", "C12-SCHEMA", "C12-FACTS", "C12-VERIFY"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh13-typed-direct-call-mir-test --fail-fast", "exit_code": 0, "result": "passed"},
+          {"command": "Gravity/QST accepted and rejected fixture parity", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check e21ec9d81cf9ff854dd454e74dcfc0c3a3dfddfe..95f6b5a588f3c255b9a1577928fa6b018d93830c", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "audit_sh13_attempt_1", "kind": "independent", "result": "rejected"}],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary seed, fixture, verifier, and coordinator boundary",
+        "the candidate accepts a forgeable hand-shaped verifier map and hardcodes direct typed-core body, fact, structural, source, and identity lineage to the fixtures",
+        "there is no content-derived authenticated typed-core producer, executed C11 or SH12 verifier receipt, or independent coordinated provenance binding",
+        "public admission, generic MIR, control flow, indirect and recursive calls, loops, backend execution, SH-13 completion, roadmap credit, self-hosting, release, and seed retirement remain absent"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-26T10:19:50Z", "actor": "sh-mir", "reason": "compose bounded typed direct-call fixture MIR"},
+        {"state": "frozen", "at": "2026-08-26T10:19:51Z", "actor": "uniform-coordinator", "reason": "freeze exact base e21ec9d81cf9ff854dd454e74dcfc0c3a3dfddfe, candidate 95f6b5a588f3c255b9a1577928fa6b018d93830c, tree 889578f0e5514e7d2fcf672f6ae3a1a60b1b4303, and eight-path scope"},
+        {"state": "review-pending", "at": "2026-08-26T10:19:52Z", "actor": "uniform-coordinator", "reason": "request independent exact review of producer authentication, verifier receipt, direct typed-core lineage, diagnostics, fixtures, and nonclaims"},
+        {"state": "rejected", "at": "2026-08-26T10:19:53Z", "actor": "audit_sh13_attempt_1", "reason": "reject forgeable verifier maps, fixture-hardcoded typed-core body and identities, and unauthenticated coordinated provenance"}
+      ],
+      "disposition": "Rejected exact attempt 1; passing fixture tests confer no integration, SH-13 completion, roadmap credit, self-hosting, release, or seed-retirement authority."
+    },
+    {
+      "id": "sh13-typed-direct-call-mir-attempt-2",
+      "title": "SH-13 typed direct-call MIR candidate attempt 2",
+      "invariant_family": "self-hosting/sh13-typed-direct-call-mir-v1",
+      "owner": "sh-mir",
+      "author": "sh-mir",
+      "state": "rejected",
+      "dependencies": ["sh12-branch-join-mir-v1"],
+      "architecture_decision": "Stop after two independently rejected frozen candidates. No third candidate until a separately governed architecture decision defines a content-derived authenticated direct-call typed-core producer, an actually executed C11/SH12 verifier receipt bound to candidate bytes and identity, source root and path, provenance, and fail-closed diagnostic fallback. This run closes the family rejected and authorizes no follow-up implementation.",
+      "base_commit": "e21ec9d81cf9ff854dd454e74dcfc0c3a3dfddfe",
+      "candidate_commit": "435f15e9f0737d216ee5daf90b0842e7a7404ec8",
+      "clean_worktree": true,
+      "owned_paths": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/accepted/typed_direct_call.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/accepted/typed_direct_call.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/rejected/invalid_typed_direct_call.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/rejected/invalid_typed_direct_call.qst",
+        "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_c12_domain_ir_source_coverage_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh13_c11_domain_evidence_adapter_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh13_typed_direct_call_mir_test.clj",
+        "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+      ],
+      "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D8", "D9", "C11", "C12", "BOOT7", "BOOT8", "TEST13", "docs/self-hosting-slice-backlog.md", "contracts/workstream-governance.json"],
+      "evidence": {
+        "accepted_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/accepted/typed_direct_call.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/accepted/typed_direct_call.qst"
+        ],
+        "rejected_fixtures": [
+          "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/rejected/invalid_typed_direct_call.gravity",
+          "bootstrap/clojure/fixtures/self-hosting/sh-13/typed-direct-call/rejected/invalid_typed_direct_call.qst"
+        ],
+        "stable_diagnostics": ["C12-ANCHOR", "C12-SCHEMA", "C12-FACTS", "C12-VERIFY", "C12-EVIDENCE"],
+        "validation_commands": [
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh13-typed-direct-call-mir-test (12 tests, 891 assertions)", "exit_code": 0, "result": "passed"},
+          {"command": "clojure -M:test --namespace gravity.self-hosting.sh13-c11-domain-evidence-adapter-test (6 tests, 104 assertions)", "exit_code": 0, "result": "passed"},
+          {"command": "Gravity/QST accepted and rejected fixture parity", "exit_code": 0, "result": "passed"},
+          {"command": "git diff --check e21ec9d81cf9ff854dd454e74dcfc0c3a3dfddfe..435f15e9f0737d216ee5daf90b0842e7a7404ec8", "exit_code": 0, "result": "passed"}
+        ]
+      },
+      "reviews": [{"reviewer": "audit_sh13_current", "kind": "independent", "result": "rejected"}],
+      "residual_host_boundaries": [
+        "Clojure and the JVM remain the temporary seed, fixture, verifier, and coordinator boundary",
+        "the public API correctly fails closed with :authenticated-direct-call-producer-unavailable, but the purported receipt is fabricated locally by C12 and selected from hardcoded checkout paths rather than produced by an executed C11 or SH12 verifier",
+        "direct typed-core body and identity lineage remain fixture-hardcoded; candidate bytes, source root and path, and provenance are not authenticated together, and diagnostic fallback remains unproven",
+        "there is no public typed direct-call MIR admission, generic MIR, control flow, indirect or recursive calls, loops, backend execution, SH-13 completion, roadmap credit, self-hosting, release, or seed retirement"
+      ],
+      "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+      "history": [
+        {"state": "draft", "at": "2026-08-26T10:19:54Z", "actor": "sh-mir", "reason": "attempt to bind typed direct-call producer lineage and verifier evidence"},
+        {"state": "frozen", "at": "2026-08-26T10:19:55Z", "actor": "uniform-coordinator", "reason": "freeze exact base e21ec9d81cf9ff854dd454e74dcfc0c3a3dfddfe, candidate 435f15e9f0737d216ee5daf90b0842e7a7404ec8, tree 274df73680f815c692dbf054e40f17c5eeb30051, and nine-path scope"},
+        {"state": "review-pending", "at": "2026-08-26T10:19:56Z", "actor": "uniform-coordinator", "reason": "request fresh independent exact review of the corrected public boundary, executed receipt, source and provenance binding, diagnostics, fixtures, and nonclaims"},
+        {"state": "rejected", "at": "2026-08-26T10:19:57Z", "actor": "audit_sh13_current", "reason": "public API remains correctly blocked, but the receipt is locally C12-fabricated and path-selected rather than executed by C11 or SH12; typed-core lineage remains fixture-hardcoded and fallback is unproven"}
+      ],
+      "disposition": "Rejected exact attempt 2 and closed the invariant family under the two-rejection rule. No third candidate, follow-up implementation, integration, roadmap credit, SH-13 completion, self-hosting, release, or seed-retirement authority."
     }
   ]
 }
