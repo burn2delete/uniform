@@ -3928,6 +3928,99 @@
       }
     ],
     "disposition": "Rejected exact attempt 1. No C11, fixture, or test path enters main and no SH-12 completion, SH-13 activation, roadmap, performance, self-hosting, release, or seed-retirement credit is granted."
+  },
+  {
+    "id": "sh09-direct-call-latent-effects-v1",
+    "title": "SH-09 authenticated direct-call latent-effect candidate version 1",
+    "invariant_family": "self-hosting/sh09-direct-call-latent-effects-v1",
+    "owner": "sh-effects",
+    "author": "sh-effects",
+    "state": "held",
+    "dependencies": [
+      "sh09-authenticated-compiler-read-v1",
+      "sh07-exception-core-lowering-attempt-3",
+      "sh08-exact-two-hop-typing-attempt-1"
+    ],
+    "architecture_decision": "",
+    "base_commit": "9880be08a98ee8ef5abec3b7c315f891fe04a1bf",
+    "candidate_commit": "8f51e2df1ef263ef7b590c20f7466a08875e57ef",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/fixtures/self-hosting/sh-09/accepted/direct-call-latent-effects.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-09/accepted/direct-call-latent-effects.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-09/rejected/direct-call-latent-effects.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-09/rejected/direct-call-latent-effects.qst",
+      "bootstrap/clojure/test/gravity/self_hosting/sh09_direct_call_latent_effect_test.clj",
+      "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "C7",
+      "C8",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-09/accepted/direct-call-latent-effects.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-09/accepted/direct-call-latent-effects.qst"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-09/rejected/direct-call-latent-effects.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-09/rejected/direct-call-latent-effects.qst"
+      ],
+      "stable_diagnostics": [],
+      "validation_commands": [
+        {
+          "command": "git diff --check 9880be08a98ee8ef5abec3b7c315f891fe04a1bf..8f51e2df1ef263ef7b590c20f7466a08875e57ef",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref 50a275eb666318c68bdaae478c8e2a26adb2dc72",
+          "exit_code": 0,
+          "result": "failed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "the required accepted real SH-07/B47 direct-call edge carrier is unavailable because SH-07 exception attempt 3 is rejected",
+      "the required stable accepted C7 two-hop typed records are unavailable because SH-08 exact two-hop attempt 1 is rejected",
+      "the candidate remains divergent from main and has no frozen or reviewed exact current-main identity",
+      "candidate tests use placeholder identifiers, manually asserted host-resolved B47 and C7 products, and coordinator-digest-required identity rather than accepted carrier bindings",
+      "Clojure and the JVM remain the temporary source-loading, verifier, digest, execution, and observation boundary"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-26T15:30:00Z",
+        "actor": "sh-effects",
+        "reason": "prepare a bounded direct-call latent-effect candidate subject to stable SH-07 edge and C7 typed-record dependencies"
+      },
+      {
+        "state": "held",
+        "at": "2026-08-26T16:49:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "hold before freeze because the exact branch is divergent and both required new carrier workstreams are rejected"
+      }
+    ],
+    "disposition": "Held before freeze and semantic review. The candidate cannot proceed until separately accepted real SH-07/B47 direct-call edge and stable C7 typed-record carriers exist, then must be reconstructed on current main with new exact identities and independent review. No implementation, SH-09 completion, roadmap, performance, self-hosting, release, or seed-retirement credit is granted."
   }
 ]
 }
