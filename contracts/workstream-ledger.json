@@ -2933,6 +2933,137 @@
       }
     ],
     "disposition": "Integrated development-only observability. No semantic equivalence, benchmark, release, self-hosting, or seed-retirement credit is granted."
+  },
+  {
+    "id": "sh13-typed-direct-call-mir-architecture-decision-v1",
+    "title": "SH-13 authenticated pure direct-call MIR architecture decision version 1",
+    "invariant_family": "architecture/self-hosting-sh13-typed-direct-call-mir-v1",
+    "owner": "sh-mir-architecture",
+    "author": "sh-mir-architecture",
+    "state": "accepted",
+    "dependencies": [],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh13-typed-direct-call-mir-architecture-decision.md",
+    "base_commit": "2139750d4b8d933ac1be30ee49307cc44a4c6473",
+    "candidate_commit": "5e05d19dc993b851eaf96dc59b5a553d6a885d71",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh13-typed-direct-call-mir-architecture-decision.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "C7",
+      "C11",
+      "C12",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "bootstrap/clojure/fixtures/self-hosting/sh-12/authenticated_mir_bridge.gravity",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "docs/artifacts/phase-15/reports/sh13-typed-direct-call-mir-architecture-decision.md"
+      ],
+      "rejected_fixtures": [
+        "sh13-typed-direct-call-mir-attempt-1:95f6b5a588f3c255b9a1577928fa6b018d93830c",
+        "sh13-typed-direct-call-mir-attempt-2:435f15e9f0737d216ee5daf90b0842e7a7404ec8"
+      ],
+      "stable_diagnostics": [
+        "WG008",
+        "C7-VERIFY",
+        "C11-MODULE",
+        "C11-TYPE",
+        "C11-EFFECT",
+        "C11-SAFETY",
+        "C11-ORIGIN",
+        "C11-VERIFY"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 2139750d4b8d933ac1be30ee49307cc44a4c6473..5e05d19dc993b851eaf96dc59b5a553d6a885d71",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 2139750d4b8d933ac1be30ee49307cc44a4c6473 --candidate-commit 5e05d19dc993b851eaf96dc59b5a553d6a885d71 --candidate-tree 38c052423d1c404426e1e857b924479f68a267b7",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "review_sh13_architecture_exact",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
+    "residual_host_boundaries": [
+      "This accepted record governs architecture only; it does not implement or activate a third SH-13 candidate",
+      "Clojure and the JVM remain temporary bootstrap, producer, verifier, fixture, and coordination boundaries",
+      "the content-derived C7 producer and the executed SH12 receipt carrier remain prerequisites for any separately governed successor",
+      "C12 and domain IR, coordinator-owned tests and central routing, exceptions, recursion, branches, joins, loops, closures, indirect calls, backend execution, SH-13 completion, roadmap credit, self-hosting, release, and seed retirement remain absent"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-26T15:38:00Z",
+        "actor": "sh-mir-architecture",
+        "reason": "draft the separately governed decision required after two rejected SH-13 typed direct-call MIR candidates"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-26T15:40:00Z",
+        "actor": "sh-mir-architecture",
+        "reason": "after reconciling latest main, freeze exact base 2139750d4b8d933ac1be30ee49307cc44a4c6473, candidate 5e05d19dc993b851eaf96dc59b5a553d6a885d71, tree 38c052423d1c404426e1e857b924479f68a267b7, and the sole owned decision path"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-26T15:41:00Z",
+        "actor": "sh-mir-architecture",
+        "reason": "request fresh independent read-only review of the exact reconciled decision tuple"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-26T15:41:56Z",
+        "actor": "review_sh13_architecture_exact",
+        "reason": "accept the exact decision tuple for authenticated content-derived C7 production, executed C11 and SH12 receipt binding, source provenance, fail-closed diagnostics, pure C11 leaf scope, exclusions, and nonclaims"
+      }
+    ],
+    "disposition": "Accepted architecture authority for at most one separately governed successor after all recorded prerequisites are satisfied. This record grants no third-candidate activation, implementation, integration eligibility, roadmap credit, SH-13 completion, self-hosting, release, or seed-retirement authority."
   }
 ]
 }
