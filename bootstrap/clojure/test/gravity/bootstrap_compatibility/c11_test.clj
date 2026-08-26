@@ -16,26 +16,24 @@
   (is (= '([path])
          (:arglists (meta #'bootstrap/compiler-c11-mir-file-artifact))))
   (let [calls (atom [])
+        bindings (atom 0)
+        with-operations c11/with-operations
         operation
         (with-redefs [bootstrap/c11-family-effects
                       (fn [family]
                         (swap! calls conj family)
-                        #{:interposed/effect})]
+                        #{:interposed/effect})
+                      c11/with-operations
+                      (fn [operations thunk]
+                        (swap! bindings inc)
+                        (with-operations operations thunk))]
           (bootstrap/c11-mir-operation
            {:profile :hosted}
            {:source "c11-probe.gravity" :form-index 0}
            [{:operation "op-safe" :proof "proof-safe"}]
            0 :constant))]
     (is (= #{:interposed/effect} (:effects operation)))
-    (is (= [:constant] @calls)))
-  (let [bindings (atom 0)
-        with-operations c11/with-operations]
-    (with-redefs [c11/with-operations
-                  (fn [operations thunk]
-                    (swap! bindings inc)
-                    (with-operations operations thunk))]
-      (bootstrap/compiler-c11-mir-file-artifact
-       (fixture "accepted/compiler-c11-mir-spec.gravity")))
+    (is (= [:constant] @calls))
     (is (= 1 @bindings)))
   (let [artifact
         (with-redefs [bootstrap/c11-mir-diagnostic-ids ["C11-SENTINEL"]
