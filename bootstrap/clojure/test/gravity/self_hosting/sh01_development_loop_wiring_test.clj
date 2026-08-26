@@ -145,9 +145,12 @@
     {:namespace namespace
      :slice "SH-00"
      :resource-class :normal
-     :component-id (if (= namespace 'gravity.c11-mir-test)
-                     "c11-mir"
-                     "compiler-pass-manifest")
+     :component-id
+     (if (contains? #{'gravity.c11-mir-test
+                      'gravity.bootstrap-compatibility.c11-test}
+                    namespace)
+       "c11-mir"
+       "compiler-pass-manifest")
      :batch-key (str "closure/" namespace)
      :cache-closure closure
      :cache-closure-authorized? true
@@ -168,7 +171,7 @@
 
 (defn- closure-cache-request
   [^Path coordination-root ^Path repository-root job repository-id
-   & [policy-overrides command]]
+   & [policy-overrides command authoritative?]]
   (let [selected-context
         (assoc (context coordination-root)
                :working-directory (str repository-root)
@@ -181,8 +184,8 @@
         (update job :test-policy merge (or policy-overrides {}))
         selected-plan
         {:schema :gravity/sh01-impact-test-plan-v1
-         :authority :non-authoritative
-         :authoritative? false
+         :authority (if authoritative? :authoritative :non-authoritative)
+         :authoritative? (boolean authoritative?)
          :namespaces [(:namespace selected-job)]
          :shards [selected-job]}
         explicit-classpath-identities
@@ -197,7 +200,8 @@
         (cond->
          {:development-operation-identity
           {:id :closure-test-operation :sha256 snapshot-id}}
-          command (assoc :command command))))))
+          command (assoc :command command)
+          authoritative? (assoc :authoritative? true))))))
 
 (deftest repository-snapshot-is-stable-and-complete-before-launch
   (let [first-snapshot (wiring/repository-snapshot ".")
@@ -500,6 +504,219 @@
                            [:receipt :decision])))
             (is (= 2 @calls))))))))
 
+(deftest bootstrap-compatibility-closures-bind-exact-content-mode-and-fixtures
+  (doseq [[namespace fixture]
+          [['gravity.bootstrap-compatibility.c11-test
+            "bootstrap/clojure/fixtures/accepted/compiler-c11-mir-spec.gravity"]
+           ['gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test
+            "bootstrap/clojure/fixtures/accepted/compiler-passes.gravity"]]]
+    (with-coordination-root [base]
+      (let [first-root (.resolve base "first-worktree")
+            second-root (.resolve base "second-worktree")
+            job (reviewed-closure-job namespace)
+            full-id-b (str "sha256:" (apply str (repeat 64 "b")))]
+        (Files/createDirectories first-root no-file-attributes)
+        (Files/createDirectories second-root no-file-attributes)
+        (copy-reviewed-closure! first-root job)
+        (copy-reviewed-closure! second-root job)
+        (Files/write (.resolve second-root "unrelated.txt")
+                     (.getBytes "unrelated" "UTF-8")
+                     (make-array java.nio.file.OpenOption 0))
+        (let [first-request
+              (closure-cache-request (.resolve base "first-coordination")
+                                     first-root job snapshot-id)
+              unrelated-request
+              (closure-cache-request (.resolve base "second-coordination")
+                                     second-root job full-id-b)
+              bootstrap-relative "bootstrap/clojure/src/gravity/bootstrap.clj"
+              bootstrap-path (.resolve second-root bootstrap-relative)
+              bootstrap-bytes (Files/readAllBytes bootstrap-path)
+              bootstrap-time
+              (Files/getLastModifiedTime bootstrap-path no-links)]
+          (is (= (cache/cache-key first-request)
+                 (cache/cache-key unrelated-request))
+              (str namespace))
+          (is (not (str/includes? (pr-str unrelated-request)
+                                  (str second-root))))
+          (aset-byte bootstrap-bytes 0
+                     (byte (bit-xor 1
+                                    (bit-and 0xff (aget bootstrap-bytes 0)))))
+          (Files/write bootstrap-path bootstrap-bytes
+                       (make-array java.nio.file.OpenOption 0))
+          (Files/setLastModifiedTime bootstrap-path bootstrap-time)
+          (is (not= (cache/cache-key first-request)
+                    (cache/cache-key
+                     (closure-cache-request
+                      (.resolve base "content-coordination") second-root job
+                      full-id-b))))
+          (Files/copy (.resolve first-root bootstrap-relative) bootstrap-path
+                      (into-array StandardCopyOption
+                                  [StandardCopyOption/REPLACE_EXISTING
+                                   StandardCopyOption/COPY_ATTRIBUTES]))
+          (Files/setPosixFilePermissions
+           bootstrap-path (PosixFilePermissions/fromString "rwx------"))
+          (is (not= (cache/cache-key first-request)
+                    (cache/cache-key
+                     (closure-cache-request
+                      (.resolve base "mode-coordination") second-root job
+                      full-id-b))))
+          (Files/copy (.resolve first-root bootstrap-relative) bootstrap-path
+                      (into-array StandardCopyOption
+                                  [StandardCopyOption/REPLACE_EXISTING
+                                   StandardCopyOption/COPY_ATTRIBUTES]))
+          (let [fixture-path (.resolve second-root fixture)]
+            (Files/write fixture-path
+                         (byte-array
+                          (concat (Files/readAllBytes fixture-path) [(byte 10)]))
+                         (make-array java.nio.file.OpenOption 0))
+            (is (not= (cache/cache-key first-request)
+                      (cache/cache-key
+                      (closure-cache-request
+                        (.resolve base "fixture-coordination") second-root job
+                        full-id-b))))
+            (Files/copy (.resolve first-root fixture) fixture-path
+                        (into-array StandardCopyOption
+                                    [StandardCopyOption/REPLACE_EXISTING
+                                     StandardCopyOption/COPY_ATTRIBUTES]))
+            (Files/delete fixture-path)
+            (is (= full-id-b
+                   (:repository-identity
+                    (closure-cache-request
+                     (.resolve base "missing-fixture-coordination")
+                     second-root job full-id-b))))
+            (Files/copy (.resolve first-root fixture) fixture-path
+                        (into-array StandardCopyOption
+                                    [StandardCopyOption/REPLACE_EXISTING
+                                     StandardCopyOption/COPY_ATTRIBUTES])))
+          (Files/delete
+           (.resolve second-root
+                     "bootstrap/clojure/src/gravity/c10_safety_analysis.clj"))
+          (is (= full-id-b
+                 (:repository-identity
+                  (closure-cache-request
+                   (.resolve base "missing-transitive-coordination")
+                   second-root job full-id-b)))))))))
+
+(deftest bootstrap-compatibility-closure-singleflight-is-cross-worktree-safe
+  (with-coordination-root [base]
+    (let [first-root (.resolve base "first-worktree")
+          second-root (.resolve base "second-worktree")
+          job
+          (reviewed-closure-job
+           'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test)
+          calls (atom 0)
+          entered (CountDownLatch. 1)
+          release (CountDownLatch. 1)]
+      (Files/createDirectories first-root no-file-attributes)
+      (Files/createDirectories second-root no-file-attributes)
+      (copy-reviewed-closure! first-root job)
+      (copy-reviewed-closure! second-root job)
+      (let [first-request
+            (closure-cache-request (.resolve base "first-coordination")
+                                   first-root job snapshot-id)
+            second-request
+            (assoc
+             (closure-cache-request
+              (.resolve base "second-coordination") second-root job
+              (str "sha256:" (apply str (repeat 64 "b"))))
+             :cache-directory (:cache-directory first-request))
+            operation
+            (fn []
+              (swap! calls inc)
+              (.countDown entered)
+              (.await release 5 TimeUnit/SECONDS)
+              {:status :passed
+               :exit-code 0
+               :authority :non-authoritative
+               :authoritative? false
+               :timed-out? false
+               :nondeterministic? false
+               :performance? false
+               :proof? false
+               :freshness-required? false})
+            first-result (future (cache/lookup-or-run! first-request operation))
+            _ (is (.await entered 5 TimeUnit/SECONDS))
+            second-result
+            (future (cache/lookup-or-run! second-request operation))]
+        (.countDown release)
+        (is (= [:hit :miss]
+               (sort [(get-in @first-result [:receipt :decision])
+                      (get-in @second-result [:receipt :decision])])) )
+        (is (= 1 @calls))))))
+
+(deftest bootstrap-compatibility-fixtures-invalidate-only-their-owner
+  (with-coordination-root [base]
+    (let [repository-root (.resolve base "worktree")
+          c11-job
+          (reviewed-closure-job 'gravity.bootstrap-compatibility.c11-test)
+          manifest-job
+          (reviewed-closure-job
+           'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test)
+          c11-fixture
+          "bootstrap/clojure/fixtures/accepted/compiler-c11-mir-spec.gravity"
+          manifest-fixture
+          "bootstrap/clojure/fixtures/accepted/compiler-passes.gravity"
+          selected-request
+          (fn [suffix job]
+            (closure-cache-request (.resolve base suffix) repository-root job
+                                   snapshot-id))]
+      (Files/createDirectories repository-root no-file-attributes)
+      (copy-reviewed-closure! repository-root c11-job)
+      (copy-reviewed-closure! repository-root manifest-job)
+      (let [c11-request (selected-request "c11-initial" c11-job)
+            manifest-request
+            (selected-request "manifest-initial" manifest-job)
+            append! (fn [relative]
+                      (let [path (.resolve repository-root relative)]
+                        (Files/write
+                         path
+                         (byte-array
+                          (concat (Files/readAllBytes path) [(byte 10)]))
+                         (make-array java.nio.file.OpenOption 0))))]
+        (append! c11-fixture)
+        (is (not= (cache/cache-key c11-request)
+                  (cache/cache-key
+                   (selected-request "c11-fixture-change" c11-job))))
+        (is (= (cache/cache-key manifest-request)
+               (cache/cache-key
+                (selected-request "c11-fixture-manifest" manifest-job))))
+        (Files/copy (.resolve (.toRealPath (.toPath (java.io.File. "."))
+                                           no-links)
+                              c11-fixture)
+                    (.resolve repository-root c11-fixture)
+                    (into-array StandardCopyOption
+                                [StandardCopyOption/REPLACE_EXISTING
+                                 StandardCopyOption/COPY_ATTRIBUTES]))
+        (append! manifest-fixture)
+        (is (= (cache/cache-key c11-request)
+               (cache/cache-key
+                (selected-request "manifest-fixture-c11" c11-job))))
+        (is (not= (cache/cache-key manifest-request)
+                  (cache/cache-key
+                   (selected-request "manifest-fixture-change"
+                                     manifest-job))))))))
+
+(deftest explicit-closure-falls-back-for-mixed-fresh-and-authoritative-work
+  (with-coordination-root [base]
+    (let [repository-root (.resolve base "worktree")
+          job (reviewed-closure-job 'gravity.bootstrap-compatibility.c11-test)
+          full-id (str "sha256:" (apply str (repeat 64 "b")))]
+      (Files/createDirectories repository-root no-file-attributes)
+      (copy-reviewed-closure! repository-root job)
+      (doseq [request
+              [(closure-cache-request (.resolve base "fresh-coordination")
+                                      repository-root job full-id
+                                      {:freshness-required? true})
+               (closure-cache-request (.resolve base "authority-coordination")
+                                      repository-root job full-id nil nil true)
+               (closure-cache-request
+                (.resolve base "mixed-coordination") repository-root
+                (assoc job :batch-jobs
+                       [job {:namespace 'gravity.unknown-test
+                             :test-policy (reviewed-policy)}])
+                full-id)]]
+        (is (= full-id (:repository-identity request)))))))
+
 (deftest invalid-or-undeclared-closure-retains-full-repository-key
   (with-coordination-root [base]
     (let [repository-root (.resolve base "worktree")
@@ -547,7 +764,9 @@
 (deftest explicit-closure-read-race-and-symlink-fail-closed
   (with-coordination-root [base]
     (let [repository-root (.resolve base "worktree")
-          job (reviewed-closure-job 'gravity.c11-mir-test)
+          job
+          (reviewed-closure-job
+           'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test)
           update-file
           (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
                       'update-file!)
@@ -586,7 +805,7 @@
         (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE" (:id failure))))
       (let [source
             (.resolve repository-root
-                      "bootstrap/clojure/src/gravity/c11_mir.clj")
+                      "bootstrap/clojure/src/gravity/bootstrap.clj")
             target (.resolve repository-root "replacement.clj")]
         (Files/write target (.getBytes "replacement" "UTF-8")
                      (make-array java.nio.file.OpenOption 0))
@@ -603,8 +822,9 @@
   (with-coordination-root [base]
     (let [repository-root (.resolve base "worktree")
           coordination-root (.resolve base "deletion-race-coordination")
-          job (reviewed-closure-job 'gravity.c11-mir-test)
-          source-relative "bootstrap/clojure/src/gravity/c11_mir.clj"
+          job
+          (reviewed-closure-job 'gravity.bootstrap-compatibility.c11-test)
+          source-relative "bootstrap/clojure/src/gravity/bootstrap.clj"
           source (.resolve repository-root source-relative)
           update-file
           (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring

@@ -136,7 +136,7 @@
          (= #{:schema :inputs :inventories} (set (keys closure)))
          (= cache-closure-schema (:schema closure))
          (vector? inputs)
-         (<= 1 (count inputs) 64)
+         (<= 1 (count inputs) 96)
          (= reviewed-inventories inventories)
          (every? #(and (map? %)
                        (nil? (meta %))

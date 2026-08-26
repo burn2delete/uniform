@@ -264,12 +264,20 @@
     (is (true? (get-in by-namespace
                        ['gravity.compiler-pass-manifest-test
                         :cache-closure-valid?])))
-    (is (false? (get-in by-namespace
-                        ['gravity.bootstrap-compatibility.c11-test
-                         :cache-closure-valid?])))
-    (is (false? (get-in by-namespace
-                        ['gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test
-                         :cache-closure-valid?])))
+    (is (true? (get-in by-namespace
+                       ['gravity.bootstrap-compatibility.c11-test
+                        :cache-closure-valid?])))
+    (is (true? (get-in by-namespace
+                       ['gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test
+                        :cache-closure-valid?])))
+    (doseq [namespace
+            ['gravity.bootstrap-compatibility.c11-test
+             'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test]]
+      (let [inputs (get-in by-namespace [namespace :cache-closure :inputs])]
+        (is (= 52 (count (filter #(contains? #{:production :transitive}
+                                             (:role %))
+                                 inputs))))
+        (is (= 1 (count (filter #(= :fixture (:role %)) inputs))))))
     (let [contract (component-dependencies/read-contract)
           malformed
           (assoc-in contract
@@ -306,9 +314,12 @@
     (is (true? (get-in metadata
                        ['gravity.c11-mir-test
                         :cache-closure-authorized?])))
-    (is (nil? (get-in metadata
+    (is (map? (get-in metadata
                       ['gravity.bootstrap-compatibility.c11-test
-                       :cache-closure])))))
+                       :cache-closure])))
+    (is (true? (get-in metadata
+                       ['gravity.bootstrap-compatibility.c11-test
+                        :cache-closure-authorized?])))))
 
 (deftest stage0-c2-module-maps-to-reader-slice-and-downstream-closure
   (let [source "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"

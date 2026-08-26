@@ -247,7 +247,7 @@ uncached. Authoritative,
 freshness-required, performance, proof, and nondeterministic policies always
 execute and are never stored.
 
-The contract may additionally opt a reviewed bootstrap-free leaf test into an
+The contract may additionally opt a reviewed deterministic test into an
 explicit cache closure. Such a closure lists every production, transitive,
 test, fixture, runner, contract, and internal-classpath input directly; the
 runner never infers Clojure `require` edges. The content key sorts and hashes
@@ -261,11 +261,14 @@ worktree paths are excluded, so identical declared inputs may reuse a result
 across Git worktrees. Missing, malformed, unknown, unowned, or undeclared
 closures retain the complete-repository identity. A detected read or inventory
 race fails closed rather than falling back. The initial and post-operation
-repository snapshot checks remain full. This initial slice covers only
-`gravity.c11-mir-test` and
-`gravity.compiler-pass-manifest-test`; their bootstrap compatibility jobs keep
-the complete-repository identity because the bootstrap facade has a broader
-eager dependency and file-read surface.
+repository snapshot checks remain full. The reviewed set covers
+`gravity.c11-mir-test`, `gravity.compiler-pass-manifest-test`,
+`gravity.bootstrap-compatibility.c11-test`, and
+`gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test`. The two
+compatibility closures enumerate `gravity.bootstrap`'s complete internal eager
+namespace load set and the exact fixture used by each test. Mixed batches and
+authoritative, freshness-required, performance, proof, or nondeterministic
+work retain the complete-repository identity and remain uncached.
 
 An immutable parent probe removes an existing valid hit before executor
 submission, so that hit acquires no broker lease and launches no child JVM. A

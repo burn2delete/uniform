@@ -803,12 +803,18 @@
   [context plan job options]
   (let [full-repository-identity
         (get-in context [:snapshot :repository-identity])
-        explicit-material (explicit-closure-material context job)
+        timeout-ms (:timeout-ms context)
+        policy (policy-for-job plan job options timeout-ms)
+        explicit-material
+        (when (and (= :non-authoritative (:authority policy))
+                   (:deterministic? policy)
+                   (not (:performance? policy))
+                   (not (:proof? policy))
+                   (not (:freshness-required? policy)))
+          (explicit-closure-material context job))
         repository-identity
         (or (:repository-identity explicit-material)
             full-repository-identity)
-        timeout-ms (:timeout-ms context)
-        policy (policy-for-job plan job options timeout-ms)
         namespaces (mapv (comp str :namespace)
                          (or (:batch-jobs job) [job]))
         command (semantic-command options)
