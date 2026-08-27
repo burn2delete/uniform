@@ -4351,6 +4351,135 @@
       }
     ],
     "disposition": "Rejected exact attempt 2. No implementation, fixture, test, or direct pin-consumer path enters main. This is the second rejected candidate in the invariant family, so another implementation candidate requires a separately accepted nonempty architecture decision. No SH-12 completion, roadmap, performance, self-hosting, release, or seed-retirement credit is granted."
+  },
+  {
+    "id": "sh07-exception-core-lowering-architecture-decision-v2-attempt-1",
+    "title": "SH-07 authenticated exception core-lowering architecture decision version 2 attempt 1",
+    "invariant_family": "architecture/self-hosting-sh07-exception-core-lowering-v2",
+    "owner": "sh-core-architecture",
+    "author": "sh07-core-architecture",
+    "state": "rejected",
+    "dependencies": [],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision-v2.md",
+    "base_commit": "1f1c9615d094fd240f0662e6d537f1bcf58c46d5",
+    "candidate_commit": "17ee313ecb6bdc31c3387631e94aa874c10ad3a3",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision-v2.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "L9",
+      "C6",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [],
+      "rejected_fixtures": [
+        "sh07-exception-core-lowering-architecture-decision-v2:17ee313ecb6bdc31c3387631e94aa874c10ad3a3",
+        "same-snapshot byte-length and C2 identity are not available from the required sh07-core-file-artifact boundary within the authorized successor paths",
+        "duplicate raw map keys cannot reach the post-reader C6 carrier boundary and cyclic raw-carrier decoding would require a separately governed boundary"
+      ],
+      "stable_diagnostics": [
+        "WG008",
+        "C6-VERIFY",
+        "C6-CORE-SHAPE",
+        "C6-EVAL-ORDER",
+        "C6-ORIGIN",
+        "C6-LOWERING-GAP"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test (6 tests, 11 assertions)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj (240 documents, 19 phase indexes, ASCII, no placeholders)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj (66 workstreams before this rejection record)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 1f1c9615d094fd240f0662e6d537f1bcf58c46d5..17ee313ecb6bdc31c3387631e94aa874c10ad3a3",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 1f1c9615d094fd240f0662e6d537f1bcf58c46d5 --candidate-commit 17ee313ecb6bdc31c3387631e94aa874c10ad3a3 --candidate-tree 79a475985fe3f3da8b01f43c7119a50c334d7a73 (Git identity and worktree preconditions only)",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "sh07_arch_v2_exact_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
+    "residual_host_boundaries": [
+      "the exact decision closes the recorded attempt-3 semantic defect families but requires one observed byte snapshot and byte length that the mandated sh07-core-file-artifact boundary does not retain",
+      "satisfying the stated membership rule would require a second racy source read, a forbidden host-synthesized fact, or a narrowly governed source-loader carrier expansion",
+      "duplicate raw map keys are rejected before the post-reader C6 carrier boundary and immutable carrier maps cannot retain them; raw cyclic-carrier decoding would require a separately governed reader or serialization boundary",
+      "Clojure and the JVM remain the temporary source-loading, verification, digest, independent-review, and observation boundary",
+      "no successor implementation is authorized by this rejected architecture tuple"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-27T02:13:00Z",
+        "actor": "sh07-core-architecture",
+        "reason": "author a new separately governed architecture decision after rejected attempt 3 consumed the version 1 authority"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-27T02:13:50Z",
+        "actor": "sh07-core-architecture",
+        "reason": "freeze exact base 1f1c9615d094fd240f0662e6d537f1bcf58c46d5, candidate 17ee313ecb6bdc31c3387631e94aa874c10ad3a3, tree 79a475985fe3f3da8b01f43c7119a50c334d7a73, and the sole owned decision path"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-27T02:34:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "request fresh independent high-reasoning semantic and governance review of the exact clean architecture tuple"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-27T02:42:00Z",
+        "actor": "sh07_arch_v2_exact_review",
+        "reason": "reject the unattainable same-snapshot byte-length boundary and the out-of-scope requirement that raw duplicate-key and cyclic carriers reach C6 diagnostics"
+      }
+    ],
+    "disposition": "Rejected exact architecture decision version 2 attempt 1. The decision file does not enter main and no successor implementation is authorized. A corrected architecture candidate must use an attainable single-snapshot source boundary or explicitly govern a narrow loader-carrier expansion, and must limit C6 malformed-carrier totality to representable post-reader values and identifier graphs unless a separate raw-carrier boundary is governed. No SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement credit is granted."
   }
 ]
 }
