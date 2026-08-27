@@ -4480,6 +4480,147 @@
       }
     ],
     "disposition": "Rejected exact architecture decision version 2 attempt 1. The decision file does not enter main and no successor implementation is authorized. A corrected architecture candidate must use an attainable single-snapshot source boundary or explicitly govern a narrow loader-carrier expansion, and must limit C6 malformed-carrier totality to representable post-reader values and identifier graphs unless a separate raw-carrier boundary is governed. No SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement credit is granted."
+  },
+  {
+    "id": "sh07-exception-core-lowering-architecture-decision-v2-attempt-2",
+    "title": "SH-07 authenticated exception core-lowering architecture decision version 2 corrected attempt 2",
+    "invariant_family": "architecture/self-hosting-sh07-exception-core-lowering-v2",
+    "owner": "sh-core-architecture",
+    "author": "sh07-completion-coordinator",
+    "state": "rejected",
+    "dependencies": [],
+    "architecture_decision": "Stop this architecture invariant family after its second independently rejected exact candidate. Before any further exception-core-lowering architecture candidate becomes active, specify one attainable versioned carrier and entrypoint that transports the exact authenticated SH-06/B47 request, retained lineage, and immutable one-snapshot evidence into Gravity C6 without host-synthesized membership; select the nested try closure through its authentic owning top-level defn fragment; and distinguish permitted authenticated external core, catalog, and declared bindings from unauthorized cross-fragment edges. The replacement must also separate physical provenance authentication from path-neutral semantic identity, define bounded post-reader admission and diagnostic precedence, preserve required C6 effect, unsafe, and domain diagnostics, and close independent non-circular verification. This rejection authorizes no successor or implementation.",
+    "base_commit": "d9679960a6cd993cb60eeadb09f7980f6caa53d3",
+    "candidate_commit": "794e29e6311952a3662876a3e2c58f49725cb82a",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision-v3.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D6",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "L9",
+      "C6",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [],
+      "rejected_fixtures": [
+        "sh07-exception-core-lowering-architecture-decision-v2-attempt-2:794e29e6311952a3662876a3e2c58f49725cb82a",
+        "the selected schema-15 entrypoint cannot transport the retained lineage and snapshot envelope required by the decision within the authorized ownership boundary",
+        "the governed try form is nested under the authentic top-level defn fragment rather than being an authenticated top-level form root",
+        "blanket cross-fragment identifier rejection conflicts with authenticated external core, catalog, and declared binding references recorded by B13",
+        "sh07-exception-core-lowering-architecture-decision-v2-attempt-1:17ee313ecb6bdc31c3387631e94aa874c10ad3a3",
+        "sh07-exception-core-lowering-attempt-3:7e061f9996f8711527004b93122949aea98820fb",
+        "sh07-exception-core-lowering-attempt-3-replay-d1220dd:689357307db996677a36460d6bf5b566c122fd59"
+      ],
+      "stable_diagnostics": [
+        "WG008",
+        "C6-VERIFY",
+        "C6-CORE-SHAPE",
+        "C6-EVAL-ORDER",
+        "C6-ORIGIN",
+        "C6-LOWERING-GAP"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test (6 tests, 11 assertions)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj (240 documents, 19 phase indexes, ASCII, no placeholders)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj (67 workstreams before this acceptance record)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check d9679960a6cd993cb60eeadb09f7980f6caa53d3..794e29e6311952a3662876a3e2c58f49725cb82a",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base d9679960a6cd993cb60eeadb09f7980f6caa53d3 --candidate-commit 794e29e6311952a3662876a3e2c58f49725cb82a --candidate-tree b8cf011695f06ac8d338ba6f2d38a3ecc72b1eca",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "review_sh07_arch_v3_exact",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
+    "residual_host_boundaries": [
+      "the exact decision has no governed carrier or entrypoint capable of passing both the authenticated request and retained snapshot evidence into Gravity C6",
+      "the exact decision selects the wrong top-level root relation and rejects authenticated external bindings needed by the governed fixture",
+      "Clojure and the JVM remain the temporary one-snapshot loader, strict UTF-8 decoder, compiler-plan executor, SH-06/B47 verification invoker, digest resolver, independent-verifier host, and test observer",
+      "C6 malformed-carrier totality is scoped to representable post-reader values and identifier graphs; raw decoding remains outside this decision",
+      "no successor implementation is authorized by this rejected architecture tuple"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-27T15:28:00Z",
+        "actor": "sh07-completion-coordinator",
+        "reason": "author the smallest corrected architecture decision after the exact version 2 attempt 1 rejection"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-27T15:33:00Z",
+        "actor": "sh07-completion-coordinator",
+        "reason": "freeze exact base d9679960a6cd993cb60eeadb09f7980f6caa53d3, candidate 794e29e6311952a3662876a3e2c58f49725cb82a, tree b8cf011695f06ac8d338ba6f2d38a3ecc72b1eca, and the sole owned decision path"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-27T15:34:00Z",
+        "actor": "sh07-completion-coordinator",
+        "reason": "request fresh independent high-reasoning semantic, authentication, and governance review of the exact clean tuple"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-27T15:44:00Z",
+        "actor": "review_sh07_arch_v3_exact",
+        "reason": "accept the attainable one-snapshot source boundary, post-reader C6 totality scope, receipt-derived projection, closed membership and origins, independent verification, adversarial containment, stable diagnostics, exact semantic obligations, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-27T15:52:17Z",
+        "actor": "review_sh07_arch_v3_exact",
+        "reason": "withdraw the earlier acceptance and reject the missing governed snapshot carrier transport, the selector's false top-level try model, and blanket rejection of authenticated external binding edges"
+      }
+    ],
+    "disposition": "Rejected exact corrected architecture decision attempt 2 after the independent reviewer withdrew the earlier acceptance. The decision file does not enter main. This is the second rejection in the architecture invariant family; implementation remains stopped, and no further architecture candidate may become active until the recorded nonempty stop decision is obeyed. No SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement credit is granted."
   }
 ]
 }
