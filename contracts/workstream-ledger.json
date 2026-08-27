@@ -4628,7 +4628,7 @@
     "invariant_family": "architecture/self-hosting-sh07-exception-core-lowering-v2",
     "owner": "sh-core-architecture",
     "author": "author_sh07_arch_v4",
-    "state": "accepted",
+    "state": "integrated",
     "dependencies": [],
     "architecture_decision": "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision-v4.md",
     "base_commit": "a372d9d56f045db4c8e265f6e68eac7681c22a14",
@@ -4704,6 +4704,11 @@
           "command": "git diff --check a372d9d56f045db4c8e265f6e68eac7681c22a14..f45c41cd8c7dc3f91576ef722996172f121c8980",
           "exit_code": 0,
           "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base a372d9d56f045db4c8e265f6e68eac7681c22a14 --candidate-commit f45c41cd8c7dc3f91576ef722996172f121c8980 --candidate-tree e8be7dc7922d4f3c24068b9ddbe4f7482c8dd8fe",
+          "exit_code": 0,
+          "result": "passed"
         }
       ]
     },
@@ -4751,9 +4756,21 @@
         "at": "2026-08-27T16:39:26Z",
         "actor": "review_sh07_arch_v4_exact",
         "reason": "accept the exact complete-artifact one-snapshot carrier, authentic nested closure, external-binding policy, identity split, bounded domain, independent verification, semantic obligations, ownership, and nonclaims"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-27T16:40:30Z",
+        "actor": "sh07-completion-coordinator",
+        "reason": "exact clean named-candidate preflight passed against authoritative main with recommendation integrate_candidate"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-27T16:40:53Z",
+        "actor": "sh07-completion-coordinator",
+        "reason": "fast-forward the accepted architecture decision and admission record serially into authoritative local main"
       }
     ],
-    "disposition": "Accepted architecture authority for at most one separately governed SH-07 exception/error-exit successor after this exact decision is integrated into authoritative main. This record grants no implementation acceptance, SH-07 completion, roadmap credit, performance, self-hosting, release, or seed-retirement authority."
+    "disposition": "Integrated exact architecture decision version 4 into authoritative local main. It authorizes at most one separately governed SH-07 exception/error-exit successor and grants no implementation acceptance, SH-07 completion, roadmap credit, performance, self-hosting, release, or seed-retirement authority."
   }
 ]
 }
