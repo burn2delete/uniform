@@ -4621,6 +4621,139 @@
       }
     ],
     "disposition": "Rejected exact corrected architecture decision attempt 2 after the independent reviewer withdrew the earlier acceptance. The decision file does not enter main. This is the second rejection in the architecture invariant family; implementation remains stopped, and no further architecture candidate may become active until the recorded nonempty stop decision is obeyed. No SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement credit is granted."
+  },
+  {
+    "id": "sh07-exception-core-lowering-architecture-decision-v2-attempt-3",
+    "title": "SH-07 authenticated exception core-lowering architecture decision version 4",
+    "invariant_family": "architecture/self-hosting-sh07-exception-core-lowering-v2",
+    "owner": "sh-core-architecture",
+    "author": "author_sh07_arch_v4",
+    "state": "accepted",
+    "dependencies": [],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision-v4.md",
+    "base_commit": "a372d9d56f045db4c8e265f6e68eac7681c22a14",
+    "candidate_commit": "f45c41cd8c7dc3f91576ef722996172f121c8980",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision-v4.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D6",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "L9",
+      "C6",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision-v4.md"
+      ],
+      "rejected_fixtures": [
+        "sh07-exception-core-lowering-architecture-decision-v2-attempt-2:794e29e6311952a3662876a3e2c58f49725cb82a",
+        "schema-15-only transport without retained snapshot and full-artifact carrier",
+        "top-level try selection where the authentic root is def/fn",
+        "blanket rejection of authenticated external core, catalog, and declared bindings"
+      ],
+      "stable_diagnostics": [
+        "WG008",
+        "C6-VERIFY",
+        "C6-CORE-SHAPE",
+        "C6-EVAL-ORDER",
+        "C6-ORIGIN",
+        "C6-EFFECT-DROP",
+        "C6-UNSAFE-DROP",
+        "C6-DOMAIN-BOUNDARY",
+        "C6-LOWERING-GAP",
+        "SH07-C6-EXCEPTION-ERROR-EXIT"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj (68 workstreams before this acceptance record)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj (240 documents, 19 phase indexes, ASCII, no placeholders)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test (6 tests, 11 assertions)",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check a372d9d56f045db4c8e265f6e68eac7681c22a14..f45c41cd8c7dc3f91576ef722996172f121c8980",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "review_sh07_arch_v4_exact",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the temporary one-read source loader, strict decoder, project-manifest observer, SH-06/B47 producer and verifier invoker, opaque digest resolver, phase orchestrator, and final test observer",
+      "final-component no-follow reading does not provide a secure parent handle or eliminate parent-symlink, TOCTOU, or file-identity residuals",
+      "C6 preserves typed-catch, profile, target, effect, capability, and unsafe facts but C7/C8 compatibility and latent-effect legality remain pending",
+      "the accepted decision is architecture authority only and does not establish successor implementation correctness",
+      "SH-07 completion, roadmap credit, performance, self-hosting, release, and seed retirement remain unclaimed"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-27T15:58:00Z",
+        "actor": "author_sh07_arch_v4",
+        "reason": "author a new decision under the integrated two-rejection stop without activating implementation"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-27T16:10:00Z",
+        "actor": "sh07-completion-coordinator",
+        "reason": "freeze exact base a372d9d56f045db4c8e265f6e68eac7681c22a14, candidate f45c41cd8c7dc3f91576ef722996172f121c8980, tree e8be7dc7922d4f3c24068b9ddbe4f7482c8dd8fe, and sole owned decision path"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-27T16:11:00Z",
+        "actor": "sh07-completion-coordinator",
+        "reason": "request fresh independent high-reasoning exact semantic, authentication, attainability, and governance review"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-27T16:39:26Z",
+        "actor": "review_sh07_arch_v4_exact",
+        "reason": "accept the exact complete-artifact one-snapshot carrier, authentic nested closure, external-binding policy, identity split, bounded domain, independent verification, semantic obligations, ownership, and nonclaims"
+      }
+    ],
+    "disposition": "Accepted architecture authority for at most one separately governed SH-07 exception/error-exit successor after this exact decision is integrated into authoritative main. This record grants no implementation acceptance, SH-07 completion, roadmap credit, performance, self-hosting, release, or seed-retirement authority."
   }
 ]
 }
