@@ -765,6 +765,8 @@
    :host-boundary
    {:authority [:mechanical-envelope-assembly :opaque-sha256-resolution
                 :phase-orchestration :fresh-digest-replay]
+    :post-reader-domain-authority :exact-class-adapter-normalization
+    :gravity-domain-preflight :bounded-defense-in-depth
     :caller-supplied-digests-authoritative? false
     :workflow-acceptance :verified-fresh-replay}
    :lowering-rule :sh07-authenticated-exception-error-exit-v1
@@ -839,7 +841,7 @@
     true
     (if (vector? value)
       true
-      (if (set? value) true (list? value)))))
+      (if (set? value) true (seq? value)))))
 
 (defn c6-sh07-exception-post-reader-scalar? [value]
   (if (= value nil)
@@ -3749,7 +3751,7 @@
 (defn c6-sh07-independent-exception-aggregate? [value]
   (if (map? value)
     true
-    (if (vector? value) true (if (set? value) true (list? value)))))
+    (if (vector? value) true (if (set? value) true (seq? value)))))
 
 (defn c6-sh07-independent-exception-post-reader-scalar? [value]
   (if (= value nil)
