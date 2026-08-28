@@ -5456,6 +5456,111 @@
       }
     ],
     "disposition": "Integrated development verification reuse. The B8 alteration family now shares one fresh expected build; no authoritative benchmark, release, self-hosting, or seed-retirement claim is granted."
+  },
+  {
+    "id": "sh07-verification-session-v2-evidence-erratum",
+    "title": "SH-07 verification session version 2 evidence erratum",
+    "invariant_family": "tooling/sh07-verification-session",
+    "owner": "uniform-coordinator",
+    "author": "uniform-coordinator",
+    "state": "integrated",
+    "dependencies": [
+      "sh07-verification-session-v2"
+    ],
+    "architecture_decision": "Preserve the immutable integrated lifecycle record and append a replayable erratum when exact-var evidence was encoded with an unsupported SH-01 runner argument combination. Execute the focused vars together through direct clojure.test with explicit counters and exit status.",
+    "base_commit": "8428b3c9e46b2eb742ff3bc5d251d9d2e2162a97",
+    "candidate_commit": "e0f3acc0e29f16978f6a2842d831e19310079034",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-verification-session-v2-evidence-erratum.md"
+    ],
+    "governing_contracts": [
+      "contracts/workstream-governance.json",
+      "contracts/workstream-ledger.json",
+      "docs/workstream-governance.md"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "docs/artifacts/phase-15/reports/sh07-verification-session-v2-evidence-erratum.md",
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
+      ],
+      "stable_diagnostics": [
+        "SH01-TEST-USAGE",
+        "Unsupported self-hosting test runner arguments"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e \"(require 'clojure.test 'gravity.self-hosting.sh07-try-catch-test) (binding [clojure.test/*report-counters* (ref clojure.test/*initial-report-counters*)] (clojure.test/test-vars [#'gravity.self-hosting.sh07-try-catch-test/sh07-b8-shared-verification-report-parity-is-lightweight #'gravity.self-hosting.sh07-try-catch-test/sh07-b8-verification-session-integrity-concurrency-and-teardown-are-lightweight]) (let [r @clojure.test/*report-counters*] (println (pr-str r)) (when (pos? (+ (:fail r) (:error r))) (System/exit 1))))\"",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "review_proof_artifact_dag",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
+    "residual_host_boundaries": [
+      "the immutable original lifecycle record retains two unsupported SH-01 runner commands",
+      "the erratum cannot retroactively establish that either original command passed",
+      "Clojure and the JVM remain the temporary SH-07 verification-session boundary"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-27T17:17:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "start append-only correction after exact replay rejected combined namespace and exact arguments"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-27T17:18:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "freeze the one-report command erratum and Git identities"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-27T17:19:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "request independent replay of both failures and the corrected combined command"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-27T17:23:00Z",
+        "actor": "review_proof_artifact_dag",
+        "reason": "accept both exact SH01-TEST-USAGE failures, corrected two-test replay, append-only scope, and nonclaims"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-27T17:24:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "exact identities, report-only diff, independent acceptance, residual violations, and nonclaims verified"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-27T17:25:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "appended the accepted verification-session evidence erratum lifecycle record on main"
+      }
+    ],
+    "disposition": "Integrated evidence correction only. Verification-session code is unchanged and no retroactive admission or additional performance authority is granted."
   }
 ]
 }
