@@ -5926,7 +5926,7 @@
     "invariant_family": "self-hosting/sh07-exception-core-lowering-v1",
     "owner": "sh-core",
     "author": "sh07_exception_v4_writer",
-    "state": "review-pending",
+    "state": "integration-eligible",
     "dependencies": [
       "sh07-exception-core-lowering-architecture-decision-v2-attempt-3"
     ],
@@ -6004,7 +6004,13 @@
         {"command": "git diff --check", "exit_code": 0, "result": "passed"}
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "b8_maintenance_final_review",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the temporary one-read source loader, strict decoder, project-manifest observer, SH-06/B47 producer and verifier invoker, opaque digest resolver, phase orchestrator, and final test observer",
       "final-component no-follow reading does not provide a secure parent handle or eliminate parent-symlink, TOCTOU, or file-identity residuals",
@@ -6035,9 +6041,21 @@
         "at": "2026-08-28T19:35:18Z",
         "actor": "sh07-implementation-coordinator",
         "reason": "request independent exact-candidate architecture, authentication, diagnostic, evidence, and no-overclaim review before integration eligibility"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-28T19:42:00Z",
+        "actor": "b8_maintenance_final_review",
+        "reason": "accept exact candidate 1ef83cfe31f3143cd55c47117243e8e6b891cac7 tree bdf03f1dcf0e85b6656c1c62c0efd3b49dcb9fcc after independently confirming the three architecture blockers, non-circular digest replay, D085/v4 diagnostics, coherent exact coverage, fixture repair, evidence, residual boundaries, and nonclaims"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-28T19:42:57Z",
+        "actor": "sh07-implementation-coordinator",
+        "reason": "verify exact base and candidate identities, clean candidate, independent acceptance, complete passing evidence, unchanged clean authoritative main 58d8d8e8814663ea0875767caf2515e42c976cf8, residual host boundaries, and no-overclaim authority"
       }
     ],
-    "disposition": "Exact bounded candidate is frozen and review-pending under the integrated v4 architecture decision. Passing implementation evidence confers no acceptance or integration eligibility until independent review is recorded, and no SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement authority is claimed."
+    "disposition": "Exact bounded candidate is independently accepted and integration-eligible under the integrated v4 architecture decision. This authorizes only serial integration of the reviewed tuple and makes no SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement claim."
   }
 ]
 }
