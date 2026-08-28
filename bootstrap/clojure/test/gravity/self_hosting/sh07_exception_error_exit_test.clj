@@ -30,6 +30,8 @@
   "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit")
 (def ^:private extensions [".gravity" ".qst"])
 
+(defrecord UnsupportedCarrierRecord [value])
+
 (defn- path [relative]
   (str (.normalize (.toAbsolutePath (.resolve @root relative)))))
 
@@ -97,7 +99,10 @@
                (ex-info
                 "B50 carrier is outside the bounded immutable post-reader EDN domain"
                 {:id "SH07-B50-POST-READER-DOMAIN"
+                 :artifact :gravity/sh07-core-diagnostic
+                 :rule "C6-DOMAIN-BOUNDARY"
                  :reason reason
+                 :fail-closed true
                  :source-path source-path
                  :value-class (some-> current class .getName)})))
             (convert [current depth]
@@ -106,33 +111,58 @@
                 (reject! :carrier-node-bound current))
               (when (> depth 256)
                 (reject! :carrier-depth-bound current))
-              (cond
-                (and (map? current) (not (record? current)))
+              (let [class-name (some-> current class .getName)]
+                (cond
+                (or
+                 (contains? #{"clojure.lang.PersistentArrayMap"
+                              "clojure.lang.PersistentHashMap"}
+                            class-name)
+                 (and
+                  (= "clojure.lang.PersistentTreeMap" class-name)
+                  (= "clojure.lang.RT$DefaultComparator"
+                     (some-> current .comparator class .getName))))
                 (do
                   (when (> (* 2 (count current)) 65536)
                     (reject! :carrier-width-bound current))
+                  (when (> (+ @node-count (* 2 (count current))) 8388608)
+                    (reject! :carrier-node-bound current))
                   (into {}
                         (map (fn [[key child]]
                                [(convert key (inc depth))
                                 (convert child (inc depth))]))
                         current))
 
-                (vector? current)
+                (contains? #{"clojure.lang.PersistentVector"
+                             "clojure.lang.APersistentVector$SubVector"}
+                           class-name)
                 (do
                   (when (> (count current) 65536)
                     (reject! :carrier-width-bound current))
+                  (when (> (+ @node-count (count current)) 8388608)
+                    (reject! :carrier-node-bound current))
                   (mapv #(convert % (inc depth)) current))
 
-                (set? current)
+                (or
+                 (= "clojure.lang.PersistentHashSet" class-name)
+                 (and
+                  (= "clojure.lang.PersistentTreeSet" class-name)
+                  (= "clojure.lang.RT$DefaultComparator"
+                     (some-> current .comparator class .getName))))
                 (do
                   (when (> (count current) 65536)
                     (reject! :carrier-width-bound current))
+                  (when (> (+ @node-count (count current)) 8388608)
+                    (reject! :carrier-node-bound current))
                   (into #{} (map #(convert % (inc depth))) current))
 
-                (list? current)
+                (contains? #{"clojure.lang.PersistentList"
+                             "clojure.lang.PersistentList$EmptyList"}
+                           class-name)
                 (do
                   (when (> (count current) 65536)
                     (reject! :carrier-width-bound current))
+                  (when (> (+ @node-count (count current)) 8388608)
+                    (reject! :carrier-node-bound current))
                   (apply list (map #(convert % (inc depth)) current)))
 
                 (or (nil? current) (boolean? current) (integer? current)
@@ -145,7 +175,7 @@
                   current)
 
                 :else
-                (reject! :carrier-value-domain-invalid current)))]
+                (reject! :carrier-value-domain-invalid current))))]
       (convert value 0))))
 
 (defn- snapshot-and-carrier
@@ -233,9 +263,18 @@
    :digest-requests requests
    :resolved-digests digests})
 
-(defn- call-phase [phase carrier template requests digests]
+(defn- raw-call-phase [phase carrier template requests digests]
   (invoke 'c6-sh07-authenticated-exception-entrypoint
           [(entry-request phase carrier template requests digests)]))
+
+(defn- call-phase [phase carrier template requests digests]
+  (let [source-path (get-in carrier [:source-snapshot :canonical-path])
+        request
+        (immutable-post-reader-edn!
+         source-path (entry-request phase carrier template requests digests))
+        result
+        (invoke 'c6-sh07-authenticated-exception-entrypoint [request])]
+    (immutable-post-reader-edn! source-path result)))
 
 (def ^:private maximum-source-bytes 1048576)
 
@@ -1040,13 +1079,6 @@
           :rule "C6-VERIFY"}
          {:name :malformed-byte-domain
           :carrier (assoc-in carrier [:source-snapshot :bytes 0] -1)
-          :rule "C6-DOMAIN-BOUNDARY"}
-         {:name :lazy-sequence-host-value
-          :carrier (assoc-in carrier [:source-snapshot :bytes]
-                            (map identity [40 41]))
-          :rule "C6-DOMAIN-BOUNDARY"}
-         {:name :arbitrary-host-object
-          :carrier (assoc carrier :untrusted-host-value (Object.))
           :rule "C6-DOMAIN-BOUNDARY"}]]
     (doseq [{:keys [name carrier rule]} probes]
       (testing name
@@ -1058,25 +1090,73 @@
           (is (nil? (:template result))))))))
 
 (deftest sh07-b50-adapter-rejects-values-outside-immutable-edn
-  (let [carrier (get @accepted-carriers ".gravity")]
-    (doseq [[name altered]
-            [[:lazy-sequence
-              (assoc-in carrier [:source-snapshot :bytes]
-                        (map identity [40 41]))]
-             [:record
-              (assoc carrier :untrusted-record
-                     (ex-info "not EDN" {:kind :record}))]
-             [:arbitrary-host-object
-              (assoc carrier :untrusted-host-value (Object.))]]]
+  (let [carrier (get @accepted-carriers ".gravity")
+        realizations (atom 0)
+        unsupported
+        [[:lazy-sequence
+          (map (fn [value]
+                 (swap! realizations inc)
+                 value)
+               [40 41])]
+         [:function (fn [] :not-edn)]
+         [:java-array (byte-array 0)]
+         [:record (->UnsupportedCarrierRecord :not-edn)]
+         [:custom-comparator-map
+          (sorted-map-by #(compare (str %2) (str %1)) :a 1)]
+         [:arbitrary-object (Object.)]]]
+    (doseq [[name value] unsupported]
       (testing name
-        (let [failure
+        (let [altered (assoc carrier :untrusted-host-value value)
+              failure
               (try
                 (execute-carrier altered)
                 nil
                 (catch clojure.lang.ExceptionInfo exception
                   exception))]
           (is (= "SH07-B50-POST-READER-DOMAIN"
-                 (:id (ex-data failure)))))))))
+                 (:id (ex-data failure))))
+          (is (= :gravity/sh07-core-diagnostic
+                 (:artifact (ex-data failure))))
+          (is (= "C6-DOMAIN-BOUNDARY"
+                 (:rule (ex-data failure))))
+          (is (= :carrier-value-domain-invalid
+                 (:reason (ex-data failure))))
+          (is (true? (:fail-closed (ex-data failure)))))))
+    (is (zero? @realizations))
+    (let [converted
+          (immutable-post-reader-edn!
+           (get-in carrier [:source-snapshot :canonical-path])
+           (with-meta
+             {:scalars [nil false 0 "" :keyword 'symbol]
+              :list (with-meta (list 1 2) {:host-metadata true})
+              :set #{1 2}}
+             {:host-metadata true}))]
+      (is (= {:scalars [nil false 0 "" :keyword 'symbol]
+              :list (list 1 2)
+              :set #{1 2}}
+             converted))
+      (is (nil? (meta converted)))
+      (is (nil? (meta (:list converted)))))))
+
+(deftest sh07-b50-gravity-preflights-enforce-finite-post-reader-domain
+  (let [accepted-values
+        [nil false true -1 0 1 "" "text" :keyword 'symbol
+         {} [] #{} (list) (list 1 2)]
+        rejected-values
+        [(fn [] :not-edn) (byte-array 0) (Object.)]
+        preflights
+        ['c6-sh07-exception-carrier-preflight
+         'c6-sh07-independent-exception-carrier-preflight]]
+    (doseq [preflight preflights
+            value accepted-values]
+      (is (= :accepted (:status (invoke preflight [value])))
+          (str preflight " accepts bounded immutable EDN class "
+               (some-> value class .getName))))
+    (doseq [preflight preflights
+            value rejected-values]
+      (let [result (invoke preflight [value])]
+        (is (= :rejected (:status result)))
+        (is (= :carrier-value-domain-invalid (:reason result)))))))
 
 (deftest sh07-b50-outer-first-domain-diagnostic-wins-with-source-provenance
   (let [carrier (get @accepted-carriers ".gravity")
