@@ -604,7 +604,7 @@
     (is (= :gravity/sh07-core-diagnostic
            (:artifact diagnostic)))
     (is (= "C6-VERIFY" (:rule diagnostic)))
-    (is (= :authenticated-sh06-projection-mismatch
+    (is (= :authenticated-sh06-request-membership-mismatch
            (get-in diagnostic [:facts :reason])))
     (is (true? (get-in diagnostic [:facts :fail-closed])))))
 
@@ -951,6 +951,20 @@
         (is (= :passed
                (get-in boundary [:resolved-verification :status])))
         (is (not-any? #{:try-handlers} pending))
-        (is (some #{:patterns} pending))
+        (is (= #{:map-list-set-record-constructor-patterns
+                 :variable-width-vector-patterns
+                 :duplicate-pattern-binding-policy
+                 :guard-patterns
+                 :match-exhaustiveness
+                 :match-result-type-join}
+               (set
+                (filter
+                 #{:map-list-set-record-constructor-patterns
+                   :variable-width-vector-patterns
+                   :duplicate-pattern-binding-policy
+                   :guard-patterns
+                   :match-exhaustiveness
+                   :match-result-type-join}
+                 pending))))
         (is (= [:types :effects :ownership :safety]
                (:pending-fact-families canonical)))))))
