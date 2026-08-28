@@ -99,6 +99,10 @@
         (edn/read-string
          (slurp
           (io/resource "gravity/self_hosting/sh07_proof_contract.edn")))
+        c6-expectation
+        (get-in contract
+                [:authoritative-coverage-census
+                 :module-expectations :c6-core])
         c7-expectation
         (get-in contract
                 [:authoritative-coverage-census
@@ -122,6 +126,16 @@
         source-contracts (runner/module-source-contracts)]
     (is (= :source-bound-derived
            (:coverage-census-policy contract)))
+    (is (= {:source-byte-count 298180
+            :source-bytes-sha256
+            "sha256:da0ab07d6fad0304c0a3ac0e42533c4ef51197262e503cb928dbe4aecfd937c2"}
+           (:source-binding c6-expectation)))
+    (is (not (contains? c6-expectation :request-counts)))
+    (is (not (contains? c6-expectation :core-counts)))
+    (is (= {:source-path
+            "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+            :source-binding (:source-binding c6-expectation)}
+           (get source-contracts "c6-core")))
     (is (= {:source-byte-count 210220
             :source-bytes-sha256
             "sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4"}
@@ -182,7 +196,7 @@
         (or (ns-resolve 'gravity.bootstrap 'sh07-core-file-proof-transaction)
             (throw (ex-info "proof transaction seam is absent" {})))
         proof-called? (atom false)]
-    (doseq [selection ["c7-types" "all"]]
+    (doseq [selection ["c6-core" "c7-types" "all"]]
       (reset! proof-called? false)
       (let [failure
             (try
