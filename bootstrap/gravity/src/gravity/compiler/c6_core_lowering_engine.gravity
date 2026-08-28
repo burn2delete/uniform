@@ -5820,6 +5820,81 @@
                       {:status :failed
                        :reason :resolved-identity-mismatch})))))))))))
 
+(defn c6-sh07-independent-exception-lower-hex-character? [value]
+  (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+               \a \b \c \d \e \f}
+             value))
+
+(defn c6-sh07-independent-exception-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (if (= (subvec (vec value) 0 7) [\s \h \a \2 \5 \6 \:])
+        (loop [remaining (subvec (vec value) 7 71)]
+          (if (= (count remaining) 0)
+            true
+            (if (c6-sh07-independent-exception-lower-hex-character?
+                 (first remaining))
+              (recur (rest remaining))
+              false)))
+        false)
+      false)
+    false))
+
+(defn c6-sh07-independent-exception-digest-entry-valid?
+  [request entry ordinal]
+  (if (map? request)
+    (if (= (set (keys request)) #{:ordinal :purpose :preimage})
+      (if (map? entry)
+        (if (= (set (keys entry))
+               #{:ordinal :purpose :preimage :digest})
+          (if (= [(get request :ordinal)
+                  (get entry :ordinal)
+                  (get entry :purpose)
+                  (get entry :preimage)]
+                 [ordinal ordinal
+                  (get request :purpose)
+                  (get request :preimage)])
+            (c6-sh07-independent-exception-sha256-id?
+             (get entry :digest))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c6-sh07-independent-exception-digest-transcript-valid?
+  [expected-requests digests]
+  (if (vector? expected-requests)
+    (if (vector? digests)
+      (if (= [(count expected-requests) (count digests)] [10 10])
+        (loop [requests expected-requests entries digests ordinal 0]
+          (if (= (count requests) 0)
+            true
+            (if (c6-sh07-independent-exception-digest-entry-valid?
+                 (first requests) (first entries) ordinal)
+              (recur (rest requests) (rest entries) (+ ordinal 1))
+              false)))
+        false)
+      false)
+    false))
+
+(defn c6-sh07-independent-exception-expected-digest-requests [carrier]
+  (let [admission
+        (c6-sh07-independent-exception-carrier-admission carrier)]
+    (if (= (get admission :status) :accepted)
+      (let [raw (c6-sh07-independent-exception-raw-selection carrier)]
+        (if (= (get raw :status) :accepted)
+          (let [shape
+                (c6-sh07-independent-exception-canonical-cross-check
+                 carrier raw)]
+            (if (= (get shape :status) :accepted)
+              (get
+               (c6-sh07-independent-exception-derived-context carrier shape)
+               :requests)
+              []))
+          []))
+      [])))
+
 (defn c6-sh07-independent-exception-snapshot-digests-valid?
   [carrier digests]
   (let [snapshot (get carrier :source-snapshot)
@@ -5846,7 +5921,7 @@
                                (get resolved :digest-requests) [])
                     digests (if (map? resolved)
                               (get resolved :resolved-digests) [])]
-                (if (c6-sh07-exception-digest-transcript-valid?
+                (if (c6-sh07-independent-exception-digest-transcript-valid?
                      requests digests)
                   (if (c6-sh07-independent-exception-snapshot-digests-valid?
                        carrier digests)
@@ -5925,16 +6000,19 @@
 
 (defn c6-sh07-independent-exception-verifier
   [carrier resolved verifier-requests verifier-digests]
-  (if (= [verifier-requests verifier-digests]
-         [(get resolved :digest-requests)
-          (get resolved :resolved-digests)])
-    (if (c6-sh07-exception-digest-transcript-valid?
-         verifier-requests verifier-digests)
-      (c6-sh07-independent-exception-verifier-from-resolved
-       carrier resolved)
-      {:status :failed :reason :resolved-digest-transcript-invalid})
-    {:status :failed
-     :reason :resolved-transcript-replay-mismatch}))
+  (let [expected-requests
+        (c6-sh07-independent-exception-expected-digest-requests carrier)]
+    (if (c6-sh07-independent-exception-digest-transcript-valid?
+         expected-requests verifier-digests)
+      (if (= [verifier-requests verifier-digests]
+             [expected-requests (get resolved :resolved-digests)])
+        (if (= (get resolved :digest-requests) expected-requests)
+          (c6-sh07-independent-exception-verifier-from-resolved
+           carrier resolved)
+          {:status :failed :reason :digest-request-replay-mismatch})
+        {:status :failed
+         :reason :resolved-transcript-replay-mismatch})
+      {:status :failed :reason :resolved-digest-transcript-invalid})))
 
 (defn c6-sh07-exception-admission-diagnostic [request admission]
   (c6-sh07-exception-diagnostic

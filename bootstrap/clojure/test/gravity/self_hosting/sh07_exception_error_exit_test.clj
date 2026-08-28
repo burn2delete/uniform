@@ -49,6 +49,28 @@
     (bootstrap/p15-s23-stage2-compiler-artifact-plan
      emitter source-path source-text)))
 
+(defn- read-gravity-source-forms [relative]
+  (with-open [reader
+              (java.io.PushbackReader.
+               (io/reader (path relative)))]
+    (loop [forms []]
+      (let [form (read {:eof ::eof} reader)]
+        (if (= ::eof form)
+          forms
+          (recur (conj forms form)))))))
+
+(defn- gravity-defn-form [forms function-name]
+  (some
+   (fn [form]
+     (when (and (seq? form)
+                (contains? #{'defn 'defn-} (first form))
+                (= function-name (second form)))
+       form))
+   forms))
+
+(defn- source-form-symbols [form]
+  (set (filter symbol? (tree-seq coll? seq form))))
+
 (def ^:private c6-plan
   (delay
     (compile-plan
@@ -317,6 +339,80 @@
                 :preimage (:preimage request)
                 :digest digest}))))))
 
+(defn- independently-resolve-digests [source-path requests]
+  (let [expected-purposes
+        [:source-snapshot-raw-bytes
+         :source-snapshot-text-utf8
+         :sh07-core-artifact-id
+         :project-root-id
+         :membership-binding
+         :projection-binding
+         :semantic-artifact
+         :provenance-binding
+         :verifier-report
+         :final-artifact]]
+    (when-not (and (vector? requests)
+                   (= 10 (count requests))
+                   (= expected-purposes (mapv :purpose requests)))
+      (throw
+       (ex-info "B50 independent digest replay request shape is invalid"
+                {:id "SH07-B50-INDEPENDENT-DIGEST-REQUESTS"
+                 :source-path source-path})))
+    (loop [remaining requests resolved []]
+      (if (empty? remaining)
+        resolved
+        (let [request (first remaining)
+              ordinal (:ordinal request)
+              _ (when-not (and (= #{:ordinal :purpose :preimage}
+                                  (set (keys request)))
+                               (= ordinal (count resolved)))
+                  (throw
+                   (ex-info
+                    "B50 independent digest replay is not exactly ordered"
+                    {:id "SH07-B50-INDEPENDENT-DIGEST-ORDER"
+                     :source-path source-path
+                     :request request
+                     :resolved-count (count resolved)})))
+              preimage
+              (if (< ordinal 7)
+                (:preimage request)
+                (bootstrap/p15-s23-c6c10-resolve-digest-references!
+                 source-path (:preimage request) (count requests)
+                 ordinal (mapv :digest resolved)))
+              digest
+              (cond
+                (= (:purpose request) :source-snapshot-raw-bytes)
+                (str "sha256:"
+                     (bootstrap/sha256-bytes-hex
+                      (resolver-raw-u8-bytes! source-path preimage)))
+
+                (= (:purpose request) :source-snapshot-text-utf8)
+                (str "sha256:"
+                     (bootstrap/sha256-bytes-hex
+                      (resolver-strict-utf8-bytes! source-path preimage)))
+
+                (= (:purpose request) :sh07-core-artifact-id)
+                (bootstrap/reader-canonical-hash
+                 {:domain :gravity/sh07-declared-digest-v1
+                  :purpose (:purpose request)
+                  :preimage preimage})
+
+                (= (:purpose request) :project-root-id)
+                (bootstrap/reader-canonical-hash preimage)
+
+                :else
+                (bootstrap/reader-canonical-hash
+                 {:domain :gravity/sh07-c6-declared-digest-v1
+                  :purpose (:purpose request)
+                  :preimage preimage}))]
+          (recur
+           (rest remaining)
+           (conj resolved
+                 {:ordinal ordinal
+                  :purpose (:purpose request)
+                  :preimage (:preimage request)
+                  :digest digest})))))))
+
 (defn- execute-carrier [carrier]
   ;; This is the governed bootstrap adapter boundary.  Callers supply only the
   ;; authenticated carrier; the adapter owns both opaque resolver passes and
@@ -330,7 +426,8 @@
         (call-phase :verify-template carrier template requests [])
         digests (resolve-digests source-path requests)
         resolved (call-phase :resolve carrier template requests digests)
-        verification-digests (resolve-digests source-path requests)
+        verification-digests
+        (independently-resolve-digests source-path requests)
         verified
         (call-phase
          :verify-resolved carrier (:template resolved) requests
@@ -1266,6 +1363,65 @@
       (is (= :rejected (:status independently-verified)))
       (is (= "C6-VERIFY"
              (:rule (first-diagnostic independently-verified)))))))
+
+(deftest sh07-b50-independent-digest-replay-rejects-coherent-derived-forgery
+  (let [carrier (get @accepted-carriers ".gravity")
+        honest-resolver resolve-digests
+        forged-id (str "sha256:" (apply str (repeat 64 "a")))]
+    (with-redefs
+      [resolve-digests
+       (fn [source-path requests]
+         (reduce
+          (fn [digests ordinal]
+            (assoc-in digests [ordinal :digest] forged-id))
+          (honest-resolver source-path requests)
+          (range 4 10)))]
+      (let [run (execute-carrier carrier)
+            diagnostic (first-diagnostic (:verified run))]
+        (is (= :accepted (get-in run [:resolved :status])))
+        (is (= :rejected (:status run)))
+        (is (= "C6-VERIFY" (:rule diagnostic)))
+        (is (= :resolved-transcript-replay-mismatch
+               (get-in diagnostic [:facts :reason])))
+        (doseq [ordinal (range 4 10)]
+          (is (not= (get-in run [:digests ordinal :digest])
+                    (get-in run
+                            [:verification-digests ordinal :digest]))))))))
+
+(deftest sh07-b50-independent-verifier-does-not-reuse-production-transcript-validator
+  (let [forms
+        (read-gravity-source-forms
+         "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity")
+        wrapper-forms
+        (read-gravity-source-forms
+         "bootstrap/clojure/test/gravity/self_hosting/sh07_exception_error_exit_test.clj")
+        production-validator
+        'c6-sh07-exception-digest-transcript-valid?
+        independent-validator
+        'c6-sh07-independent-exception-digest-transcript-valid?
+        expected-request-builder
+        'c6-sh07-independent-exception-expected-digest-requests
+        from-resolved
+        (gravity-defn-form
+         forms 'c6-sh07-independent-exception-verifier-from-resolved)
+        verifier
+        (gravity-defn-form forms 'c6-sh07-independent-exception-verifier)
+        replay-resolver
+        (gravity-defn-form wrapper-forms 'independently-resolve-digests)
+        from-resolved-symbols (source-form-symbols from-resolved)
+        verifier-symbols (source-form-symbols verifier)
+        replay-resolver-symbols (source-form-symbols replay-resolver)]
+    (is (some? from-resolved))
+    (is (some? verifier))
+    (is (some? replay-resolver))
+    (is (contains? from-resolved-symbols independent-validator))
+    (is (contains? verifier-symbols independent-validator))
+    (is (contains? verifier-symbols expected-request-builder))
+    (is (not (contains? from-resolved-symbols production-validator)))
+    (is (not (contains? verifier-symbols production-validator)))
+    (is (contains? replay-resolver-symbols
+                   'bootstrap/reader-canonical-hash))
+    (is (not (contains? replay-resolver-symbols 'resolve-digests)))))
 
 (deftest sh07-b50-manifest-hash-must-resolve-to-retained-project-root
   (let [carrier (get @accepted-carriers ".gravity")
