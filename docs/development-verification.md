@@ -126,6 +126,27 @@ fresh and sequential after the parallel lanes drain. Batch reports preserve
 namespace fixture boundaries, deterministic fail-fast skips, bounded output,
 and explicit non-authority.
 
+### Exact SH-07 B8 regression route
+
+The current B8 expectation changes are owned by one closed route. It runs the
+two affected test vars in one bounded child JVM, allowing the existing
+process-local fixture/artifact cache to be shared:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -m gravity.self-hosting.sh07-bounded-development-runner \
+  --route b8-regression \
+  --coordination-root "$GRAVITY_SH01_COORDINATION_ROOT"
+```
+
+The route is memory-heavy and therefore requires the reviewed SH-01 host
+resource broker. Its child receipt reports the exact selected-var count and
+the number of calls to the SH-07 artifact constructor; both values are
+development observations only. Unknown routes, mixed namespace/route
+selection, and extra options fail closed before launch. This route remains
+non-authoritative: use the complete SH-07 namespace and fresh integration lane
+for acceptance evidence.
+
 ## Bounded P15 Profiling Receipt
 
 The fixed P15 stage2 profiling slice is a development-only observation over

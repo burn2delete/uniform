@@ -17,6 +17,8 @@
 
 (def ^:private slice-count 30)
 
+(declare valid-slice?)
+
 ;; These reviewed namespaces are verification infrastructure.  The general
 ;; self-hosting runner discovers and can execute them, but they are not SH-00
 ;; through SH-29 leaf tests and therefore must never enter the slice planner's
@@ -43,7 +45,73 @@
     'gravity.self-hosting.w5-subsystem-closure-verifier-test
     'gravity.self-hosting.w5-tooling-conformance-verifier-test
     'gravity.self-hosting.w5-trust-provenance-verifier-test
-    'gravity.self-hosting.w5-typed-effect-safety-executor-test})
+    'gravity.self-hosting.w5-typed-effect-safety-executor-test
+    ;; Request-local optimization coverage is verification infrastructure, not
+    ;; a countable SH-00..SH-29 leaf namespace.  Keep it outside the slice
+    ;; catalog so adding it cannot make ordinary impact planning fail closed.
+    'gravity.self-hosting.macro-operations-normalization-test})
+
+(def ^:private exact-test-var-routes
+  "Reviewed exact test-var ownership for bounded development routes.
+
+  These routes deliberately narrow execution below a namespace boundary.  The
+  route still owns the complete test source path and slice; only the listed
+  vars are allowed to run during ordinary iteration.  A fresh namespace or
+  integration run remains required for authoritative evidence."
+  (sorted-map
+   "b8-regression"
+   {:slice "SH-07"
+    :owner :sh-core
+    :path "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj"
+    :namespace 'gravity.self-hosting.sh07-try-catch-test
+    :test-vars
+    '[gravity.self-hosting.sh07-try-catch-test/sh07-b8-authenticated-input-substitution-fails-before-lowering
+      gravity.self-hosting.sh07-try-catch-test/sh07-b8-public-proof-is-bounded-and-does-not-claim-later-facts]
+    :selection-mode :exact-test-vars
+    :resource-class :memory-heavy}))
+
+(defn exact-test-var-route-names
+  "Returns the closed exact-test-var route catalog in deterministic order."
+  []
+  (vec (keys exact-test-var-routes)))
+
+(declare exact-test-var-route-options)
+
+(defn exact-test-var-route
+  "Returns one reviewed exact-test-var route or fails closed."
+  [route-name]
+  (let [route-name (when (string? route-name) route-name)]
+    (if-let [route (get exact-test-var-routes route-name)]
+      (exact-test-var-route-options route)
+      (throw
+       (ex-info
+        "Unknown SH-01 exact test-var route"
+        {:id "SH01-IMPACT-ROUTE"
+         :route route-name
+         :available (exact-test-var-route-names)})))))
+
+(defn- exact-test-var-route-options
+  [route]
+  (let [{:keys [slice namespace test-vars]} route
+        invalid-vars
+        (->> test-vars
+             (remove
+              #(and (symbol? %)
+                    (= namespace (symbol (clojure.core/namespace %)))))
+             vec)]
+    (when-not (and (valid-slice? slice)
+                   (symbol? namespace)
+                   (vector? test-vars)
+                   (seq test-vars)
+                   (= (count test-vars) (count (distinct test-vars)))
+                   (empty? invalid-vars))
+      (throw
+       (ex-info
+        "SH-01 exact test-var route metadata is malformed"
+        {:id "SH01-IMPACT-ROUTE-CONTRACT"
+         :route route
+         :invalid-test-vars invalid-vars})))
+    route))
 
 (def ^:private required-fixed-stage-infrastructure-namespaces
   #{'gravity.self-hosting.stage3-fragment-size-preflight-test
@@ -51,8 +119,6 @@
 
 (def ^:private component-cross-cutting-reason
   :reserved-component-owner-has-no-slice)
-
-(declare valid-slice?)
 
 (defn- standalone-test-index
   [record dependency-index]
@@ -1183,6 +1249,69 @@
                   :non-authoritative? true
                   :selection-mode :exact-development-tests))
          (component-plan-fields classified))))))
+
+(defn build-test-var-plan
+  "Builds a closed, non-authoritative plan for one exact test-var route.
+
+  The route owns one complete dedicated test path but narrows development
+  execution to its reviewed vars.  A caller may provide the exact changed path
+  (for base-aware planning); any additional or mixed selection input fails
+  closed before ordinary slice planning is attempted.  The returned plan
+  retains the normal SH-01 slice/dependency metadata and adds the exact vars
+  that a bounded runner may execute in one JVM.
+  "
+  ([route-name]
+   (build-test-var-plan route-name {}))
+  ([route-name options]
+   (let [route (exact-test-var-route route-name)
+         options (or options {})
+         allowed #{:context :changed-paths}
+         extra (vec (sort (map str (set/difference (set (keys options))
+                                                   allowed))))
+         changed-paths
+         (if (contains? options :changed-paths)
+           (->> (or (:changed-paths options) []) distinct sort vec)
+           [(:path route)])]
+     (when (seq extra)
+       (throw
+        (ex-info
+         "Exact test-var routes do not accept mixed or extra selections"
+         {:id "SH01-IMPACT-ROUTE-SELECTION"
+          :route route-name
+          :extra-options extra})))
+     (when-not (= [(:path route)] changed-paths)
+       (throw
+        (ex-info
+         "Exact test-var route changed paths must match its owned path exactly"
+         {:id "SH01-IMPACT-ROUTE-PATH"
+          :route route-name
+          :expected [(:path route)]
+          :changed-paths changed-paths})))
+     (let [plan-request
+           (cond-> {:changed-paths changed-paths
+                    :expand-dependants? false}
+             (contains? options :context)
+             (assoc :context (:context options)))
+           plan (build-plan plan-request)]
+       (when-not (= [(:namespace route)] (:namespaces plan))
+         (throw
+          (ex-info
+           "Exact test-var route namespace does not match SH-01 ownership"
+           {:id "SH01-IMPACT-ROUTE-CONTRACT"
+            :route route-name
+            :expected [(:namespace route)]
+            :actual (:namespaces plan)})))
+       (assoc plan
+              :selection-mode :exact-test-vars
+              :route route-name
+              :route-owner (:owner route)
+              :route-path (:path route)
+              :test-vars (:test-vars route)
+              :test-var-count (count (:test-vars route))
+              :resource-class (:resource-class route)
+              :route-authority :non-authoritative
+              :authoritative? false
+              :non-authoritative? true)))))
 
 (defn build-namespace-plan
   "Builds a non-authoritative plan for exact dedicated test namespaces.

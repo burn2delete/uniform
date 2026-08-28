@@ -7,8 +7,10 @@
   authoritative SH-07 runner: a development receipt never proves a fresh
   artifact or any integration/release property."
   (:require [clojure.edn :as edn]
+            [clojure.set :as set]
             [clojure.string :as str]
-            [clojure.test :as test])
+            [clojure.test :as test]
+            [gravity.self-hosting.sh01-impact-test-planner :as impact-planner])
   (:import (java.io ByteArrayOutputStream PushbackReader StringReader)
            (java.nio.charset StandardCharsets)
            (java.nio.file Files LinkOption Path Paths StandardCopyOption
@@ -38,6 +40,14 @@
 (def ^:private c6-namespace
   'gravity.self-hosting.sh07-core-lowering-source-coverage-test)
 
+(def ^:private b8-regression-route
+  (let [route (impact-planner/exact-test-var-route "b8-regression")]
+    (assoc route
+           ;; The bounded child resolves unqualified names in the owned
+           ;; namespace; the planner remains the source of exact var identity.
+           :test-symbols (mapv #(symbol (name %)) (:test-vars route))
+           :jvm-options ["-J-Xmx8g"])))
+
 (def ^:private routes
   "Closed route catalog.  The child may execute only these exact test vars.
 
@@ -46,6 +56,8 @@
   `:memory-heavy`; callers must provide the reviewed SH-01 coordination root
   before it can launch."
   (sorted-map
+   "b8-regression"
+   b8-regression-route
    "c6-contract"
    {:namespace c6-namespace
     :test-symbols '[sh07-b18-proof-contract-registers-c6-source-exactly]
@@ -338,6 +350,12 @@
   [value]
   (and (integer? value) (not (neg? (long value)))))
 
+(defn- report-selection-counts?
+  [report selected]
+  (and (report-counters? (:selection-count report))
+       (report-counters? (:artifact-build-count report))
+       (= (count selected) (:selection-count report))))
+
 (defn- route-selection
   [route-name]
   (let [{:keys [namespace test-symbols]} (route route-name)]
@@ -358,6 +376,7 @@
                      (zero? (long (:error summary))))]
     (and (map? report)
          (= #{:schema :authority :authoritative? :route :selected
+              :selection-count :artifact-build-count
               :status :exit-code :summary :elapsed-ms}
             (set (keys report)))
          (= :gravity/sh07-development-child-result-v1 (:schema report))
@@ -365,6 +384,7 @@
          (false? (:authoritative? report))
          (= route-name (:route report))
          (= selected (:selected report))
+         (report-selection-counts? report selected)
          counters-valid?
          (report-counters? (:elapsed-ms report))
          (contains? #{:passed :failed} status)
@@ -553,7 +573,9 @@
                                        [:last-progress :progress-history
                                         :last-elapsed-ms])}
                (if-let [report (:report parsed)]
-                 {:child-report report}
+                 {:child-report report
+                  :selection-count (:selection-count report)
+                  :artifact-build-count (:artifact-build-count report)}
                  {:diagnostic-id (:diagnostic-id parsed)
                   :diagnostic (:diagnostic parsed)})))
 
@@ -572,6 +594,15 @@
   [options]
   (or (:coordination-root options)
       (System/getenv "GRAVITY_SH01_COORDINATION_ROOT")))
+
+(defn- validate-route-ownership!
+  [route-name route]
+  (when (= :exact-test-vars (:selection-mode route))
+    ;; Validate the route against the SH-01 catalog before acquiring host
+    ;; capacity or launching a child.  This keeps runner selection and
+    ;; ownership selection closed over the same exact path and vars.
+    (impact-planner/build-test-var-plan route-name))
+  route)
 
 (defn- host-resource-lease
   "Resolve the reviewed SH-01 broker lazily.
@@ -593,6 +624,19 @@
   [route-name options]
   (let [route (route route-name)
         options (or options {})
+        allowed-options #{:timeout-ms :heartbeat-interval-ms :progress-file
+                          :coordination-root :child-command-fn}
+        extra-options (vec (sort (map str
+                                      (set/difference (set (keys options))
+                                                      allowed-options))))
+        _ (when (seq extra-options)
+            (throw
+             (ex-info
+              "SH-07 bounded routes reject mixed or extra selections"
+              {:id "SH07-DEV-SELECTION"
+               :route route-name
+               :extra-options extra-options})))
+        route (validate-route-ownership! route-name route)
         resource-class (:resource-class route)
         root (resource-root options)]
     (when (and (= :memory-heavy resource-class) (nil? root))
@@ -694,6 +738,30 @@
                (emit)))
            (catch InterruptedException _ nil)))})))
 
+(defn- with-artifact-build-counter
+  "Run one child test batch while counting SH-07 artifact constructor calls.
+
+  The counter is a development receipt metric only.  It wraps the existing
+  constructor in this child JVM and never changes its return value or cache;
+  authoritative callers do not use this helper."
+  [builds operation]
+  (require 'gravity.bootstrap)
+  (let [artifact-var (ns-resolve 'gravity.bootstrap
+                                 'sh07-core-file-artifact)
+        _ (when-not (var? artifact-var)
+            (throw
+             (ex-info
+              "SH-07 artifact constructor is unavailable in the development child"
+              {:id "SH07-DEV-ARTIFACT-COUNTER"})))
+        original (var-get artifact-var)
+        _ (with-redefs-fn
+            {artifact-var
+             (fn [& arguments]
+               (swap! builds inc)
+               (apply original arguments))}
+            operation)]
+    (long @builds)))
+
 (defn run-child!
   "Execute one route in the child process and print one machine result line."
   [route-name progress-file]
@@ -704,6 +772,7 @@
                               not-empty))
         emitter (child-progress-emitter progress-file route-name heartbeat-ms)
         counters (ref test/*initial-report-counters*)
+        artifact-builds (atom 0)
         started (System/nanoTime)
         report-fn (when emitter
                     (fn [event]
@@ -711,13 +780,16 @@
                       event))]
     (try
       (when emitter ((:emit! emitter)))
-      (binding [test/*report-counters* counters]
-        (let [original-report test/report]
-          (with-redefs [test/report
-                        (fn [event]
-                          (when report-fn (report-fn event))
-                          (original-report event))]
-            (test/test-vars vars))))
+      (with-artifact-build-counter
+       artifact-builds
+       (fn []
+         (binding [test/*report-counters* counters]
+           (let [original-report test/report]
+             (with-redefs [test/report
+                           (fn [event]
+                             (when report-fn (report-fn event))
+                             (original-report event))]
+               (test/test-vars vars))))))
       (let [summary @counters
             passed? (and (zero? (:fail summary))
                          (zero? (:error summary)))
@@ -726,6 +798,8 @@
                     :authoritative? false
                     :route route-name
                     :selected (route-selection route-name)
+                    :selection-count (count (route-selection route-name))
+                    :artifact-build-count (long @artifact-builds)
                     :status (if passed? :passed :failed)
                     :exit-code (if passed? 0 1)
                     :summary (select-keys summary [:test :pass :fail :error])
@@ -740,6 +814,8 @@
                       :authoritative? false
                       :route route-name
                       :selected (route-selection route-name)
+                      :selection-count (count (route-selection route-name))
+                      :artifact-build-count (long @artifact-builds)
                       :status :failed
                       :exit-code 1
                       :summary {:test 0 :pass 0 :fail 0 :error 1}
@@ -825,7 +901,12 @@
           (when-not route
             (throw (ex-info "--route is required"
                             {:id "SH07-DEV-USAGE"})))
-          (let [result (run-route! route options)]
+          (let [result
+                (run-route!
+                 route
+                 (select-keys options
+                              [:timeout-ms :heartbeat-interval-ms
+                               :progress-file :coordination-root]))]
             (println (pr-str result))
             (flush)
             (when (not= :passed (:status result))

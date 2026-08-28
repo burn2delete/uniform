@@ -102,6 +102,42 @@
                    [:classifications 0
                     :development-invalidation-reason])))))
 
+(deftest sh07-b8-exact-route-is-owned-and-var-scoped
+  (let [route (planner/exact-test-var-route "b8-regression")
+        plan (planner/build-test-var-plan "b8-regression")
+        route-path (:path route)
+        error-data
+        (fn [request]
+          (try
+            (planner/build-test-var-plan "b8-regression" request)
+            nil
+            (catch clojure.lang.ExceptionInfo error
+              (ex-data error))))]
+    (is (= ["b8-regression"]
+           (planner/exact-test-var-route-names)))
+    (is (= "SH-07" (:slice route)))
+    (is (= :sh-core (:owner route)))
+    (is (= route-path (:route-path plan)))
+    (is (= :exact-test-vars (:selection-mode plan)))
+    (is (= 2 (:test-var-count plan)))
+    (is (= (:test-vars route) (:test-vars plan)))
+    (is (= ['gravity.self-hosting.sh07-try-catch-test]
+           (:namespaces plan)))
+    (is (= [route-path]
+           (:changed-paths plan)))
+    (is (= "SH01-IMPACT-ROUTE"
+           (:id (try
+                  (planner/build-test-var-plan "unknown")
+                  nil
+                  (catch clojure.lang.ExceptionInfo error
+                    (ex-data error))))))
+    (is (= "SH01-IMPACT-ROUTE-PATH"
+           (:id (error-data {:changed-paths
+                             [route-path
+                              "bootstrap/clojure/test/gravity/self_hosting/sh07_throw_test.clj"]}))))
+    (is (= "SH01-IMPACT-ROUTE-SELECTION"
+           (:id (error-data {:test-vars (:test-vars route)}))))))
+
 (deftest reviewed-component-sources-select-declared-tests-without-changing-governance
   (doseq [[path expected-component expected-tests direct-count affected-count]
           [["bootstrap/clojure/src/gravity/compiler_pass_manifest.clj"
@@ -766,11 +802,13 @@
         general (set (runner/dedicated-test-namespaces))
         catalog (@catalog-var)]
     (testing "the reviewed exclusions are explicit and discoverable"
-      (is (= 22 (count reviewed)))
+      (is (= 23 (count reviewed)))
       (is (contains? reviewed
                      'gravity.self-hosting.a1-canonical-schema-test))
       (is (contains? reviewed
                      'gravity.self-hosting.p15-public-native-admission-test))
+      (is (contains? reviewed
+                     'gravity.self-hosting.macro-operations-normalization-test))
       (is (contains? reviewed
                      'gravity.self-hosting.w5-c16-incremental-executor-test))
       (is (every? #(contains? general %) reviewed))

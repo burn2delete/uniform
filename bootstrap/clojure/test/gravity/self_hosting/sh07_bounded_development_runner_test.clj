@@ -21,6 +21,8 @@
      :authoritative? false
      :route route-name
      :selected selected
+     :selection-count (count selected)
+     :artifact-build-count (if (= "b8-regression" route-name) 4 0)
      :status status
      :exit-code exit-code
      :summary {:test 1 :pass (if (= :passed status) 1 0)
@@ -134,7 +136,7 @@
                  (fn [_ _] (reset! launched? true) ["/bin/false"])}))]
     (is (= "SH07-DEV-ROUTE" (:id data)) data)
     (is (false? @launched?))
-    (is (= ["c6-contract" "c6-coverage"]
+    (is (= ["b8-regression" "c6-contract" "c6-coverage"]
            (:available data)))))
 
 (deftest memory-heavy-route-requires-host-admission-root
@@ -146,3 +148,36 @@
                  (fn [_ _] (reset! launched? true) ["/bin/false"])}))]
     (is (= "SH07-DEV-RESOURCE-ROOT" (:id data)) data)
     (is (false? @launched?))))
+
+(deftest b8-regression-route-is-closed-and-counts-one-jvm-selection
+  (let [route (runner/route "b8-regression")
+        selected (:test-symbols route)
+        parse (ns-resolve 'gravity.self-hosting.sh07-bounded-development-runner
+                          'parse-args)
+        mixed
+        (exception-data
+         #(parse ["--route" "b8-regression"
+                  "--namespace" "gravity.self-hosting.sh07-try-catch-test"]))]
+    (is (= :exact-test-vars (:selection-mode route)) route)
+    (is (= 'gravity.self-hosting.sh07-try-catch-test
+           (:namespace route)) route)
+    (is (= 2 (count selected)) selected)
+    (is (= 2 (count (set selected))) selected)
+    (is (= "SH07-DEV-USAGE" (:id mixed)) mixed)
+    (let [extra
+          (exception-data
+           #(runner/run-route!
+             "b8-regression"
+             {:test-var "gravity.self-hosting.sh07-try-catch-test/foo"}))]
+      (is (= "SH07-DEV-SELECTION" (:id extra)) extra))
+    (let [result
+          (runner/run-process!
+           "b8-regression"
+           {:timeout-ms 2000
+            :heartbeat-interval-ms 50
+            :child-command-fn (successful-command "b8-regression")})]
+      (is (= :passed (:status result)) result)
+      (is (= 2 (get-in result [:child-report :selection-count])) result)
+      (is (= 4 (get-in result [:child-report :artifact-build-count])) result)
+      (is (= 2 (:selection-count result)) result)
+      (is (= 4 (:artifact-build-count result)) result))))
