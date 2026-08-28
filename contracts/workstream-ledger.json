@@ -5190,6 +5190,148 @@
       }
     ],
     "disposition": "Rejected exact attempt 1. No verification reuse, performance, integration, roadmap, release, self-hosting, or seed-retirement credit is granted."
+  },
+  {
+    "id": "sh07-b8-exact-routing-v2",
+    "title": "SH-07 B8 exact development routing attempt 2",
+    "invariant_family": "tooling/sh07-b8-exact-routing",
+    "owner": "uniform-coordinator",
+    "author": "sh07_b8_exact_routing",
+    "state": "integrated",
+    "dependencies": [
+      "sh07-bounded-development-runner-v1"
+    ],
+    "architecture_decision": "Execute the two affected B8 regression vars in one bounded child JVM and share their namespace-local artifact cache. Admit the route only under an exact seven-key contract whose path, slice, namespace, test vars, resource class, JVM options, and owner agree with the validated catalog and live SH-07 ownership record. Missing, malformed, drifted, or extra ownership and route identities fail closed.",
+    "base_commit": "9a0b475c32ed601e82a7447612d2d72c3bc06882",
+    "candidate_commit": "fbef6567ee4f015f5b34d09078dbe50e405c7ce8",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_bounded_development_runner.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_bounded_development_runner_test.clj",
+      "docs/development-verification.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "contracts/workstream-governance.json",
+      "docs/development-verification.md",
+      "docs/self-hosting-slice-ownership.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_bounded_development_runner_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj"
+      ],
+      "stable_diagnostics": [
+        "SH01-IMPACT-ROUTE",
+        "SH01-IMPACT-ROUTE-OWNER",
+        "SH01-IMPACT-ROUTE-CONTRACT",
+        "SH07-DEV-ROUTE"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-impact-test-planner-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh07-bounded-development-runner-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-ownership-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 9a0b475c32ed601e82a7447612d2d72c3bc06882 --candidate-commit fbef6567ee4f015f5b34d09078dbe50e405c7ce8 --candidate-tree 2ea0b43f7ff3532f469f682999853824da36f8cc",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "rereview_sh07_c10_routing",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
+    "residual_host_boundaries": [
+      "Clojure, the JVM, and host process control remain development boundaries",
+      "the route is non-authoritative and does not replace the full B8 namespace or SH-07 admission runner",
+      "constructor count four is deterministic development evidence, not a wall-clock benchmark"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-27T16:44:00Z",
+        "actor": "sh07_b8_exact_routing",
+        "reason": "start corrective attempt 2 after recording the owner-drift rejection"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-27T16:55:00Z",
+        "actor": "sh07_b8_exact_routing",
+        "reason": "freeze exact live-owner, route-contract, planner, runner, tests, docs, and Git identities"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-27T16:56:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "request fresh independent review of the corrected ownership and route closure"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-27T17:02:00Z",
+        "actor": "rereview_sh07_c10_routing",
+        "reason": "accept exact live-owner closure, catalog identity, two-var one-JVM execution, and fail-closed drift probes"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-27T17:03:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "exact identities, clean worktree, focused evidence, independent acceptance, boundaries, and nonclaims verified"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-27T17:05:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "fast-forwarded the exact accepted B8 routing candidate and appended its lifecycle record"
+      }
+    ],
+    "disposition": "Integrated exact two-var B8 development routing. No authoritative full-namespace, benchmark, release, self-hosting, or seed-retirement claim is granted."
   }
 ]
 }
