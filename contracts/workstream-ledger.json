@@ -5926,14 +5926,14 @@
     "invariant_family": "self-hosting/sh07-exception-core-lowering-v1",
     "owner": "sh-core",
     "author": "sh07_exception_v4_writer",
-    "state": "draft",
+    "state": "review-pending",
     "dependencies": [
       "sh07-exception-core-lowering-architecture-decision-v2-attempt-3"
     ],
     "architecture_decision": "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision-v4.md",
     "base_commit": "58d8d8e8814663ea0875767caf2515e42c976cf8",
-    "candidate_commit": null,
-    "clean_worktree": false,
+    "candidate_commit": "1ef83cfe31f3143cd55c47117243e8e6b891cac7",
+    "clean_worktree": true,
     "owned_paths": [
       "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity",
       "bootstrap/clojure/test/gravity/self_hosting/sh07_exception_error_exit_test.clj",
@@ -5992,7 +5992,17 @@
         "C6-LOWERING-GAP",
         "SH07-C6-EXCEPTION-ERROR-EXIT"
       ],
-      "validation_commands": []
+      "validation_commands": [
+        {"command": "clojure -M -m gravity.self-hosting.sh07-bounded-development-runner --route c6-contract # 1 test, 6 assertions", "exit_code": 0, "result": "passed"},
+        {"command": "brokered clojure.test/run-tests gravity.self-hosting.sh07-exception-error-exit-test # 26 tests, 495 assertions", "exit_code": 0, "result": "passed"},
+        {"command": "clojure -M -m gravity.self-hosting.sh07-bounded-development-runner --route b8-regression # 2 tests, 66 assertions, 4 artifact builds", "exit_code": 0, "result": "passed"},
+        {"command": "brokered clojure.test/run-tests gravity.self-hosting.sh07-set-mutation-execution-test # 7 tests, 499 assertions", "exit_code": 0, "result": "passed"},
+        {"command": "clojure -M -m gravity.self-hosting.sh07-bounded-development-runner --route c6-coverage # 1 test, 13 assertions, 1 artifact build", "exit_code": 0, "result": "passed"},
+        {"command": "clojure -M tools/validate_gravity_docs.clj # 240 docs, 19 phase indexes", "exit_code": 0, "result": "passed"},
+        {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+        {"command": "clojure -M tools/validate_workstream_governance.clj # before lifecycle transition", "exit_code": 0, "result": "passed"},
+        {"command": "git diff --check", "exit_code": 0, "result": "passed"}
+      ]
     },
     "reviews": [],
     "residual_host_boundaries": [
@@ -6013,9 +6023,21 @@
         "at": "2026-08-28T07:17:00Z",
         "actor": "sh07-implementation-coordinator",
         "reason": "restart attempt 4 on current-main base 58d8d8e8814663ea0875767caf2515e42c976cf8; replay commit 2e8eba3b975ca2fe401c8cad21d33c3435def01b is an implementation checkpoint only, and all old-base validation and review evidence must be regenerated before freezing any candidate"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-28T19:34:00Z",
+        "actor": "sh07-implementation-coordinator",
+        "reason": "freeze exact clean candidate 1ef83cfe31f3143cd55c47117243e8e6b891cac7 tree bdf03f1dcf0e85b6656c1c62c0efd3b49dcb9fcc after focused/full B50, B8, B49, exact C6 contract/coverage, documentation, roadmap, governance, and diff validation passed"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-28T19:35:18Z",
+        "actor": "sh07-implementation-coordinator",
+        "reason": "request independent exact-candidate architecture, authentication, diagnostic, evidence, and no-overclaim review before integration eligibility"
       }
     ],
-    "disposition": "Active bounded implementation draft under the integrated v4 architecture decision. The reconciled content commit is only an implementation checkpoint: candidate identity remains unset, validation and review evidence are empty, the worktree is not frozen clean, and no acceptance, integration eligibility, SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement authority is claimed."
+    "disposition": "Exact bounded candidate is frozen and review-pending under the integrated v4 architecture decision. Passing implementation evidence confers no acceptance or integration eligibility until independent review is recorded, and no SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement authority is claimed."
   }
 ]
 }
