@@ -5919,6 +5919,103 @@
       }
     ],
     "disposition": "Integrated the exact independently accepted one-file B8 regression expectation maintenance onto authoritative main. This record makes no production, bootstrap, routing, verifier, artifact, fixture-behavior, benchmark, performance, SH-07 completion, roadmap-completion, release, self-hosting, or seed-retirement claim."
+  },
+  {
+    "id": "sh07-exception-core-lowering-attempt-4",
+    "title": "SH-07 authenticated exception and error-exit core lowering candidate attempt 4",
+    "invariant_family": "self-hosting/sh07-exception-core-lowering-v1",
+    "owner": "sh-core",
+    "author": "sh07_exception_v4_writer",
+    "state": "draft",
+    "dependencies": [
+      "sh07-exception-core-lowering-architecture-decision-v2-attempt-3"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision-v4.md",
+    "base_commit": "58d8d8e8814663ea0875767caf2515e42c976cf8",
+    "candidate_commit": null,
+    "clean_worktree": false,
+    "owned_paths": [
+      "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_exception_error_exit_test.clj",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/exception-error-exit.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/exception-error-exit.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/declared-import-alias.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/declared-import-alias.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/ambiguous-exception-error-exit.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/ambiguous-exception-error-exit.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/unauthorized-cross-fragment.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/unauthorized-cross-fragment.qst",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_core_lowering_source_coverage_test.clj"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D6",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "L9",
+      "C6",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision-v4.md"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/exception-error-exit.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/exception-error-exit.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/declared-import-alias.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/accepted/declared-import-alias.qst"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/ambiguous-exception-error-exit.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/ambiguous-exception-error-exit.qst",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/unauthorized-cross-fragment.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07/b50-exception-error-exit/rejected/unauthorized-cross-fragment.qst"
+      ],
+      "stable_diagnostics": [
+        "C6-VERIFY",
+        "C6-CORE-SHAPE",
+        "C6-EVAL-ORDER",
+        "C6-ORIGIN",
+        "C6-EFFECT-DROP",
+        "C6-UNSAFE-DROP",
+        "C6-DOMAIN-BOUNDARY",
+        "C6-LOWERING-GAP",
+        "SH07-C6-EXCEPTION-ERROR-EXIT"
+      ],
+      "validation_commands": []
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the temporary one-read source loader, strict decoder, project-manifest observer, SH-06/B47 producer and verifier invoker, opaque digest resolver, phase orchestrator, and final test observer",
+      "final-component no-follow reading does not provide a secure parent handle or eliminate parent-symlink, TOCTOU, or file-identity residuals",
+      "C6 preserves typed-catch, profile, target, effect, capability, and unsafe facts while C7/C8 compatibility and latent-effect legality remain pending",
+      "this bounded successor does not establish SH-07 completion, roadmap credit, performance, self-hosting, release, or seed retirement"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-28T07:17:00Z",
+        "actor": "sh07-implementation-coordinator",
+        "reason": "restart attempt 4 on current-main base 58d8d8e8814663ea0875767caf2515e42c976cf8; replay commit 2e8eba3b975ca2fe401c8cad21d33c3435def01b is an implementation checkpoint only, and all old-base validation and review evidence must be regenerated before freezing any candidate"
+      }
+    ],
+    "disposition": "Active bounded implementation draft under the integrated v4 architecture decision. The reconciled content commit is only an implementation checkpoint: candidate identity remains unset, validation and review evidence are empty, the worktree is not frozen clean, and no acceptance, integration eligibility, SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement authority is claimed."
   }
 ]
 }
