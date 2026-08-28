@@ -156827,9 +156827,15 @@
    resolution-artifact
    (sh07-core-authenticated-request resolution-artifact)))
 
-(def ^:private sh07-core-verification-session-schema-version 1)
+(def ^:private sh07-core-verification-session-schema-version 2)
 (def ^:private sh07-core-verification-session-kind
   :gravity/sh07-core-verification-session)
+
+(def ^:private sh07-core-verification-session-upstream-identity-keys
+  [:source-path :source-byte-count :source-content-hash
+   :plan-semantic-hash :functions-semantic-hash :function-count
+   :function-names-hash :function-shapes-hash :public-function-hashes
+   :public-function-shapes])
 
 (defn- sh07-core-verification-session-expected-integrity
   [expected]
@@ -156837,18 +156843,47 @@
    {:domain :gravity/sh07-verification-session-expected-v1
     :expected (sh07-core-exact-comparison-value expected)}))
 
+(defn- sh07-core-verification-session-upstream-snapshot
+  [resolution-artifact]
+  ;; The artifact digest covers every retained SH-06 product; the explicit
+  ;; identity projection keeps the source and plan/function pins visible in
+  ;; the session binding as well. Replay compares this immutable snapshot and
+  ;; never trusts an artifact-id by itself.
+  (let [plan-binding
+        (get-in resolution-artifact
+                [:gravity-resolution-boundary :plan-binding])]
+    {:artifact-id (:artifact-id resolution-artifact)
+     :source-path (sh07-core-source-path-from-resolution resolution-artifact)
+     :source-and-plan-identities
+     (select-keys plan-binding
+                  sh07-core-verification-session-upstream-identity-keys)
+     :plan-binding-integrity
+     (reader-canonical-hash
+      {:domain :gravity/sh07-verification-session-plan-binding-v1
+       :plan-binding (sh07-core-exact-comparison-value plan-binding)})
+     :resolution-artifact-integrity
+     (reader-canonical-hash
+      {:domain :gravity/sh07-verification-session-upstream-v1
+       :resolution-artifact
+       (sh07-core-exact-comparison-value resolution-artifact)})}))
+
 (defn- sh07-core-verification-session-binding
-  ([resolution-artifact expected upstream-verification]
+  ([upstream-snapshot expected upstream-verification]
    (sh07-core-verification-session-binding
-    resolution-artifact expected upstream-verification
+    upstream-snapshot expected upstream-verification
     (sh07-core-verification-session-expected-integrity expected)))
-  ([resolution-artifact expected upstream-verification expected-integrity]
+  ([upstream-snapshot expected upstream-verification expected-integrity]
    (reader-canonical-hash
     {:domain :gravity/sh07-verification-session-v1
-     :resolution-artifact-id (:artifact-id resolution-artifact)
+     :resolution-artifact-id (:artifact-id upstream-snapshot)
      :expected-artifact-id (:artifact-id expected)
      :expected-integrity expected-integrity
-     :source-path (sh07-core-source-path-from-resolution resolution-artifact)
+     :source-path (:source-path upstream-snapshot)
+     :source-and-plan-identities
+     (:source-and-plan-identities upstream-snapshot)
+     :plan-binding-integrity (:plan-binding-integrity upstream-snapshot)
+     :resolution-artifact-integrity
+     (:resolution-artifact-integrity upstream-snapshot)
      :upstream-status (:status upstream-verification)})))
 
 (defn sh07-core-verification-session
@@ -156861,8 +156896,9 @@
   the exact upstream artifact and expected artifact identity; stale or
   substituted candidates fail closed without rebuilding the expected product."
   [resolution-artifact]
-  (let [source-path
-        (sh07-core-source-path-from-resolution resolution-artifact)
+  (let [upstream-snapshot
+        (sh07-core-verification-session-upstream-snapshot resolution-artifact)
+        source-path (:source-path upstream-snapshot)
         expected
         (try
           (sh07-core-from-resolution-artifact resolution-artifact)
@@ -156896,6 +156932,7 @@
      :status status
      :source-path source-path
      :resolution-artifact-id (:artifact-id resolution-artifact)
+     :upstream-snapshot upstream-snapshot
      :expected-artifact-id (:artifact-id expected)
      :expected-integrity
      (when expected
@@ -156906,33 +156943,45 @@
      (when (and expected
                 (= :passed (:status upstream-verification)))
        (sh07-core-verification-session-binding
-        resolution-artifact expected upstream-verification))
+        upstream-snapshot expected upstream-verification))
      :failure-reason failure-reason}))
 
 (defn- sh07-core-verification-session-valid?
   [artifact session]
-  (let [expected (:expected session)
-        resolution-artifact (:sh06-resolution-artifact artifact)
-        session-resolution-id (:resolution-artifact-id session)
-        expected-resolution-id
-        (get-in expected [:sh06-resolution-artifact :artifact-id])
-        expected-integrity
-        (when (map? expected)
-          (sh07-core-verification-session-expected-integrity expected))]
-    (and (= sh07-core-verification-session-kind (:artifact session))
-         (= sh07-core-verification-session-schema-version
-            (:schema-version session))
-         (= :ready (:status session))
-         (map? expected)
-         (= (:expected-artifact-id session) (:artifact-id expected))
-         (= (:expected-integrity session) expected-integrity)
-         (= session-resolution-id expected-resolution-id)
-         (= session-resolution-id (:artifact-id resolution-artifact))
-         (= :passed (get-in session [:upstream-verification :status]))
-         (= (:session-binding session)
-            (sh07-core-verification-session-binding
-             resolution-artifact expected (:upstream-verification session)
-             expected-integrity)))))
+  (try
+    (let [expected (:expected session)
+          resolution-artifact (:sh06-resolution-artifact artifact)
+          upstream-snapshot (:upstream-snapshot session)
+          candidate-upstream-snapshot
+          (when (map? resolution-artifact)
+            (sh07-core-verification-session-upstream-snapshot
+             resolution-artifact))
+          session-resolution-id (:resolution-artifact-id session)
+          expected-resolution-id
+          (get-in expected [:sh06-resolution-artifact :artifact-id])
+          expected-integrity
+          (when (map? expected)
+            (sh07-core-verification-session-expected-integrity expected))]
+      (and (= sh07-core-verification-session-kind (:artifact session))
+           (= sh07-core-verification-session-schema-version
+              (:schema-version session))
+           (= :ready (:status session))
+           (map? expected)
+           (= (:expected-artifact-id session) (:artifact-id expected))
+           (= (:expected-integrity session) expected-integrity)
+           (= session-resolution-id expected-resolution-id)
+           (= session-resolution-id (:artifact-id resolution-artifact))
+           (map? upstream-snapshot)
+           (= upstream-snapshot candidate-upstream-snapshot)
+           (= :passed (get-in session [:upstream-verification :status]))
+           (= (:session-binding session)
+              (sh07-core-verification-session-binding
+               upstream-snapshot expected (:upstream-verification session)
+               expected-integrity))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Throwable _ false)))
 
 (defn sh07-core-source-artifact
   [source-path source-text]

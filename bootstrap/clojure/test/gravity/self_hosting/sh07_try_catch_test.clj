@@ -650,6 +650,95 @@
     (is (= :ready (:status session)))
     (is (= authoritative positive))))
 
+(deftest sh07-b8-verification-session-integrity-concurrency-and-teardown-are-lightweight
+  (let [upstream
+        {:artifact-id "sha256:upstream"
+         :provenance {:source-path "fixture.gravity"
+                      :source-revision-id "sha256:source"}
+         :gravity-resolution-boundary
+         {:plan-binding
+          {:source-path "fixture.gravity"
+           :source-byte-count 1
+           :source-content-hash "sha256:source"
+           :plan-semantic-hash "sha256:plan"
+           :functions-semantic-hash "sha256:functions"
+           :function-count 1
+           :function-names-hash "sha256:names"
+           :function-shapes-hash "sha256:shapes"
+           :public-function-hashes {'sh06-fake "sha256:public"}
+           :public-function-shapes {'sh06-fake {:arity 1 :params ['value]}}}
+         :resolved-analysis {:artifact-id "sha256:analysis"}}}
+        expected
+        {:artifact :gravity/sh07-core-artifact
+         :artifact-id "sha256:expected"
+         :sh06-resolution-artifact upstream}
+        artifact
+        {:artifact-id "sha256:candidate"
+         :sh06-resolution-artifact upstream
+         :provenance {:source-path "fixture.gravity"}
+         :gravity-core-boundary {}}
+        mutated-upstream
+        (-> upstream
+            (assoc-in [:gravity-resolution-boundary :resolved-analysis
+                       :artifact-id]
+                      "sha256:mutated-content")
+            (assoc-in [:gravity-resolution-boundary :plan-binding
+                       :plan-semantic-hash]
+                      "sha256:mutated-plan")
+            (assoc-in [:provenance :source-revision-id]
+                      "sha256:mutated-source"))
+        mutated-artifact
+        (assoc artifact :sh06-resolution-artifact mutated-upstream)
+        builder-calls (atom 0)
+        check-calls (atom 0)]
+    (with-redefs [bootstrap/sh07-core-from-resolution-artifact
+                  (fn [_]
+                    (swap! builder-calls inc)
+                    expected)
+                  bootstrap/sh06-resolution-artifact-verification
+                  (fn [_] {:status :passed})
+                  bootstrap/sh07-core-verification-checks
+                  (fn [_ _ _]
+                    (swap! check-calls inc)
+                    {:synthetic-replay? true})]
+      (let [session
+            ((required-var 'sh07-core-verification-session) upstream)
+            positive
+            ((required-var 'sh07-core-artifact-verification-against-expected)
+             artifact session)
+            mutated
+            ((required-var 'sh07-core-artifact-verification-against-expected)
+             mutated-artifact session)
+            closed-session (assoc session :status :closed)
+            closed
+            ((required-var 'sh07-core-artifact-verification-against-expected)
+             artifact closed-session)
+            concurrent
+            (mapv deref
+                  (repeatedly 8
+                              #(future
+                                 ((required-var
+                                   'sh07-core-artifact-verification-against-expected)
+                                  artifact session))))
+            original
+            ((required-var 'sh07-core-artifact-verification-against-expected)
+             artifact session)]
+        (is (= (:artifact-id upstream)
+               (:artifact-id mutated-upstream)))
+        (is (= (get-in upstream [:provenance :source-path])
+               (get-in mutated-upstream [:provenance :source-path])))
+        (is (= 1 @builder-calls))
+        (is (= 10 @check-calls))
+        (is (= :ready (:status session)))
+        (is (= :passed (:status positive)))
+        (is (= :failed (:status mutated)))
+        (is (= [:contained-verification?] (:failed-checks mutated)))
+        (is (= :failed (:status closed)))
+        (is (= [:contained-verification?] (:failed-checks closed)))
+        (is (= 8 (count concurrent)))
+        (is (every? #(= :passed (:status %)) concurrent))
+        (is (= :passed (:status original)))))))
+
 (deftest sh07-b8-verification-session-reuses-one-fresh-expected
   (let [artifact
         (file-artifact "accepted" "nested-typed-catches" ".gravity")
@@ -695,6 +784,18 @@
                (assoc-in (:expected session)
                          [:provenance :source-path]
                          "<substituted-expected>"))
+        mutated-upstream
+        (-> (:sh06-resolution-artifact artifact)
+            (assoc-in [:gravity-resolution-boundary :resolved-analysis
+                       :artifact-id]
+                      "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+            (assoc-in [:gravity-resolution-boundary :plan-binding
+                       :plan-semantic-hash]
+                      "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+            (assoc-in [:provenance :source-revision-id]
+                      "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"))
+        mutated-upstream-artifact
+        (assoc artifact :sh06-resolution-artifact mutated-upstream)
         substituted
         (assoc-in
          artifact
@@ -707,6 +808,9 @@
         mutated-expected-result
         ((required-var 'sh07-core-artifact-verification-against-expected)
          artifact mutated-expected-session)
+        mutated-upstream-result
+        ((required-var 'sh07-core-artifact-verification-against-expected)
+         mutated-upstream-artifact session)
         substituted-result
         ((required-var 'sh07-core-artifact-verification-against-expected)
          substituted session)
@@ -722,6 +826,13 @@
     (is (= :failed (:status mutated-expected-result)))
     (is (= [:contained-verification?]
            (:failed-checks mutated-expected-result)))
+    (is (= (:artifact-id (:sh06-resolution-artifact artifact))
+           (:artifact-id mutated-upstream)))
+    (is (= (get-in artifact [:sh06-resolution-artifact :provenance :source-path])
+           (get-in mutated-upstream [:provenance :source-path])))
+    (is (= :failed (:status mutated-upstream-result)))
+    (is (= [:contained-verification?]
+           (:failed-checks mutated-upstream-result)))
     (is (= :failed (:status substituted-result)))
     (is (seq (:failed-checks substituted-result)))
     (is (= :failed (:status failed-session)))
