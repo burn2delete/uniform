@@ -5561,6 +5561,131 @@
       }
     ],
     "disposition": "Integrated evidence correction only. Verification-session code is unchanged and no retroactive admission or additional performance authority is granted."
+  },
+  {
+    "id": "sh07-b8-semantic-product-split-v1",
+    "title": "SH-07 B8 path-neutral semantic product split version 1",
+    "invariant_family": "architecture/sh07-path-neutral-semantic-carrier",
+    "owner": "uniform-coordinator",
+    "author": "canonical_encoding_hotpath",
+    "state": "held",
+    "dependencies": [
+      "sh07-b8-exact-routing-v2",
+      "sh07-verification-session-v2"
+    ],
+    "architecture_decision": "Do not alias complete SH-07 artifacts across paths. A future implementation must introduce an explicit immutable path-neutral semantic carrier spanning C2, C3, SH-05, SH-06, and SH-07, plus an independently authenticated per-path provenance and diagnostic envelope. Cache admission must bind exact source, plan, function, and policy identities; admit only successful products; enforce bounded single-flight; and fail closed for mutation, symlink, missing-file, failure, and concurrency cases.",
+    "base_commit": "e0f3acc0e29f16978f6a2842d831e19310079034",
+    "candidate_commit": null,
+    "clean_worktree": true,
+    "owned_paths": [],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D6",
+      "D9",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-07-b8/accepted"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-07-b8/rejected"
+      ],
+      "stable_diagnostics": [],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "24 B8 fixture paths contain 12 unique byte contents and approximately 14 duplicate semantic-build opportunities",
+      "current stage artifacts embed actual path throughout spans, provenance, and diagnostics",
+      "current path-neutral APIs expose identity projections only and cannot reconstruct or rebind semantic products",
+      "whole-artifact reuse would repeat the previously rejected provenance-collapse failure"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-27T17:27:00Z",
+        "actor": "canonical_encoding_hotpath",
+        "reason": "investigate byte-identical B8 semantic reuse without collapsing path provenance"
+      },
+      {
+        "state": "held",
+        "at": "2026-08-27T17:40:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "hold before implementation because no authenticated path-neutral carrier and per-path rebind boundary exists"
+      }
+    ],
+    "disposition": "Held before implementation. No code candidate, performance credit, integration credit, roadmap credit, release, self-hosting, or seed-retirement authority."
+  },
+  {
+    "id": "sh07-stage2-request-direct-dispatch-v1",
+    "title": "SH-07 Stage2 request direct-dispatch version 1",
+    "invariant_family": "performance/sh07-stage2-direct-dispatch",
+    "owner": "uniform-coordinator",
+    "author": "stage2_direct_dispatch",
+    "state": "held",
+    "dependencies": [
+      "canonical-encoding-decorated-sort-v1"
+    ],
+    "architecture_decision": "Do not add request-context and Delay overhead merely to hoist compiler-context predicates and outer function-table reads. A future direct-dispatch candidate must reduce actual opcode resolution or interpreter dispatch work on authentic plans, preserve exact instruction/opcode/depth/results, bind exact plan/source/function identities, and demonstrate that request setup and allocation costs do not exceed the removed work.",
+    "base_commit": "54fb82cd3f204b08f7372ac2a740656bf74b0aec",
+    "candidate_commit": null,
+    "clean_worktree": true,
+    "owned_paths": [],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D6",
+      "D9",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [],
+      "rejected_fixtures": [],
+      "stable_diagnostics": [],
+      "validation_commands": []
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "authentic C3 plan retained all 85 instruction and opcode resolutions",
+      "prototype reduced compiler-context validations from 10 to 1, derived predicate map reads from 60 to 6, and outer function-table reads from 2 to 1",
+      "prototype added a context and Delay to every root request without allocation or compensating opcode-dispatch evidence",
+      "the prototype and tests were removed and no candidate commit exists"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-27T17:27:00Z",
+        "actor": "stage2_direct_dispatch",
+        "reason": "measure request-local Stage2 plan-context and dispatch work on an authentic small plan"
+      },
+      {
+        "state": "held",
+        "at": "2026-08-27T17:42:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "hold after removing the prototype because opcode dispatch was unchanged and request setup overhead lacked benefit evidence"
+      }
+    ],
+    "disposition": "Held with prototype removed. No code candidate, performance credit, integration credit, roadmap credit, release, self-hosting, or seed-retirement authority."
   }
 ]
 }
