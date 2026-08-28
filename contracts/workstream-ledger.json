@@ -4993,6 +4993,109 @@
       }
     ],
     "disposition": "Integrated evidence correction only. Canonical code is unchanged and no retroactive admission or additional performance authority is granted."
+  },
+  {
+    "id": "sh07-b8-exact-routing-v1",
+    "title": "SH-07 B8 exact development routing attempt 1",
+    "invariant_family": "tooling/sh07-b8-exact-routing",
+    "owner": "uniform-coordinator",
+    "author": "sh07_b8_exact_routing",
+    "state": "rejected",
+    "dependencies": [
+      "sh07-bounded-development-runner-v1"
+    ],
+    "architecture_decision": "Select the two changed B8 regression vars in one bounded child JVM so process-local artifact reuse is preserved, but admit the route only when namespace, test vars, path, and live ownership identities all match the closed planning contract. Attempt 1 omitted the live leaf-owner comparison and is rejected.",
+    "base_commit": "5288fc6d65c53cea07af4aeb682e74d01a09c5d6",
+    "candidate_commit": "6c36b6de8ef6edac40dc55eed44201dcc7ed7b64",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_bounded_development_runner.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_bounded_development_runner_test.clj",
+      "docs/development-verification.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "contracts/workstream-governance.json",
+      "docs/development-verification.md",
+      "docs/self-hosting-slice-ownership.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_bounded_development_runner_test.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner_test.clj"
+      ],
+      "stable_diagnostics": [
+        "SH01-IMPACT-ROUTE",
+        "SH07-DEV-ROUTE"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh07-bounded-development-runner-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-impact-test-planner-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "rereview_sh07_c10_routing",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
+    "residual_host_boundaries": [
+      "attempt 1 admits a route when the live SH-07 leaf owner differs from the hardcoded route owner",
+      "the candidate remains outside main ancestry",
+      "the full B8 namespace remains authoritative and was not run by this candidate"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-27T16:00:00Z",
+        "actor": "sh07_b8_exact_routing",
+        "reason": "start closed two-var B8 development routing from current main"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-27T16:18:00Z",
+        "actor": "sh07_b8_exact_routing",
+        "reason": "freeze exact planner, bounded runner, tests, docs, and identities"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-27T16:19:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "request independent route closure and ownership review"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-27T16:35:00Z",
+        "actor": "rereview_sh07_c10_routing",
+        "reason": "owner-drift challenge remained admitted because route owner was not compared with the live SH-07 leaf owner"
+      }
+    ],
+    "disposition": "Rejected exact attempt 1. No routing, performance, integration, roadmap, release, self-hosting, or seed-retirement credit is granted."
   }
 ]
 }
