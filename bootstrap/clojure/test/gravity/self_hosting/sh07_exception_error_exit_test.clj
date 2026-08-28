@@ -66,6 +66,66 @@
            :gravity-macro-boundary :authenticated-sh04-artifact
            :c2-reader-artifact :source-unit-record]))
 
+(defn- immutable-post-reader-edn!
+  [source-path value]
+  (let [node-count (volatile! 0)
+        scalar-bytes (volatile! 0)]
+    (letfn [(reject! [reason current]
+              (throw
+               (ex-info
+                "B50 carrier is outside the bounded immutable post-reader EDN domain"
+                {:id "SH07-B50-POST-READER-DOMAIN"
+                 :reason reason
+                 :source-path source-path
+                 :value-class (some-> current class .getName)})))
+            (convert [current depth]
+              (vswap! node-count inc)
+              (when (> @node-count 8388608)
+                (reject! :carrier-node-bound current))
+              (when (> depth 256)
+                (reject! :carrier-depth-bound current))
+              (cond
+                (and (map? current) (not (record? current)))
+                (do
+                  (when (> (* 2 (count current)) 65536)
+                    (reject! :carrier-width-bound current))
+                  (into {}
+                        (map (fn [[key child]]
+                               [(convert key (inc depth))
+                                (convert child (inc depth))]))
+                        current))
+
+                (vector? current)
+                (do
+                  (when (> (count current) 65536)
+                    (reject! :carrier-width-bound current))
+                  (mapv #(convert % (inc depth)) current))
+
+                (set? current)
+                (do
+                  (when (> (count current) 65536)
+                    (reject! :carrier-width-bound current))
+                  (into #{} (map #(convert % (inc depth))) current))
+
+                (list? current)
+                (do
+                  (when (> (count current) 65536)
+                    (reject! :carrier-width-bound current))
+                  (apply list (map #(convert % (inc depth)) current)))
+
+                (or (nil? current) (boolean? current) (integer? current)
+                    (string? current) (keyword? current) (symbol? current))
+                (let [next-scalar-bytes
+                      (+ @scalar-bytes (* 4 (count (str current))))]
+                  (when (> next-scalar-bytes 268435456)
+                    (reject! :carrier-scalar-byte-bound current))
+                  (vreset! scalar-bytes next-scalar-bytes)
+                  current)
+
+                :else
+                (reject! :carrier-value-domain-invalid current)))]
+      (convert value 0))))
+
 (defn- snapshot-and-carrier
   ([source-path] (snapshot-and-carrier source-path nil))
   ([source-path read-count]
@@ -137,8 +197,10 @@
           :sh06-verification-report
           (bootstrap/sh06-resolution-artifact-verification sh06)
           :b47-verification-report
-          (bootstrap/sh07-core-artifact-verification b47)}]
-     {:snapshot snapshot :carrier carrier})))
+          (bootstrap/sh07-core-artifact-verification b47)}
+         checked-carrier
+         (immutable-post-reader-edn! canonical-path carrier)]
+     {:snapshot snapshot :carrier checked-carrier})))
 
 (defn- entry-request [phase carrier template requests digests]
   {:artifact :gravity/sh07-c6-entry-request
@@ -260,6 +322,7 @@
   ;; authenticated carrier; the adapter owns both opaque resolver passes and
   ;; only the independently replayed verification status is authoritative.
   (let [source-path (get-in carrier [:source-snapshot :canonical-path])
+        carrier (immutable-post-reader-edn! source-path carrier)
         admitted (call-phase :admit carrier nil [] [])
         template (:template admitted)
         requests (:digest-requests admitted)
@@ -880,6 +943,13 @@
           :rule "C6-VERIFY"}
          {:name :malformed-byte-domain
           :carrier (assoc-in carrier [:source-snapshot :bytes 0] -1)
+          :rule "C6-DOMAIN-BOUNDARY"}
+         {:name :lazy-sequence-host-value
+          :carrier (assoc-in carrier [:source-snapshot :bytes]
+                            (map identity [40 41]))
+          :rule "C6-DOMAIN-BOUNDARY"}
+         {:name :arbitrary-host-object
+          :carrier (assoc carrier :untrusted-host-value (Object.))
           :rule "C6-DOMAIN-BOUNDARY"}]]
     (doseq [{:keys [name carrier rule]} probes]
       (testing name
@@ -889,6 +959,27 @@
           (is (= rule (:rule diagnostic)))
           (is (true? (get-in diagnostic [:facts :fail-closed])))
           (is (nil? (:template result))))))))
+
+(deftest sh07-b50-adapter-rejects-values-outside-immutable-edn
+  (let [carrier (get @accepted-carriers ".gravity")]
+    (doseq [[name altered]
+            [[:lazy-sequence
+              (assoc-in carrier [:source-snapshot :bytes]
+                        (map identity [40 41]))]
+             [:record
+              (assoc carrier :untrusted-record
+                     (ex-info "not EDN" {:kind :record}))]
+             [:arbitrary-host-object
+              (assoc carrier :untrusted-host-value (Object.))]]]
+      (testing name
+        (let [failure
+              (try
+                (execute-carrier altered)
+                nil
+                (catch clojure.lang.ExceptionInfo exception
+                  exception))]
+          (is (= "SH07-B50-POST-READER-DOMAIN"
+                 (:id (ex-data failure)))))))))
 
 (deftest sh07-b50-outer-first-domain-diagnostic-wins-with-source-provenance
   (let [carrier (get @accepted-carriers ".gravity")

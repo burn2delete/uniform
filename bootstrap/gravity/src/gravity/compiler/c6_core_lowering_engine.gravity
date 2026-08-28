@@ -839,7 +839,18 @@
     true
     (if (vector? value)
       true
-      (if (set? value) true (seq? value)))))
+      (if (set? value) true (list? value)))))
+
+(defn c6-sh07-exception-post-reader-scalar? [value]
+  (if (= value nil)
+    true
+    (if (boolean? value)
+      true
+      (if (integer? value)
+        true
+        (if (string? value)
+          true
+          (if (keyword? value) true (symbol? value)))))))
 
 (defn c6-sh07-exception-components [value]
   (if (map? value)
@@ -883,12 +894,15 @@
                                            [(first remaining)
                                             (+ depth 1)]))))]
                       (recur next-frontier next-nodes scalar-bytes)))))
-              (let [next-scalar-bytes
-                    (+ scalar-bytes (* 4 (count (str current))))]
-                (if (> next-scalar-bytes 268435456)
-                  {:status :rejected :reason :carrier-scalar-byte-bound}
-                  (recur (rest frontier) next-nodes
-                         next-scalar-bytes))))))))))
+              (if (c6-sh07-exception-post-reader-scalar? current)
+                (let [next-scalar-bytes
+                      (+ scalar-bytes (* 4 (count (str current))))]
+                  (if (> next-scalar-bytes 268435456)
+                    {:status :rejected :reason :carrier-scalar-byte-bound}
+                    (recur (rest frontier) next-nodes
+                           next-scalar-bytes)))
+                {:status :rejected
+                 :reason :carrier-value-domain-invalid}))))))))
 
 (defn c6-sh07-exception-diagnostic
   [request rule reason provenance]
@@ -3735,7 +3749,18 @@
 (defn c6-sh07-independent-exception-aggregate? [value]
   (if (map? value)
     true
-    (if (vector? value) true (if (set? value) true (seq? value)))))
+    (if (vector? value) true (if (set? value) true (list? value)))))
+
+(defn c6-sh07-independent-exception-post-reader-scalar? [value]
+  (if (= value nil)
+    true
+    (if (boolean? value)
+      true
+      (if (integer? value)
+        true
+        (if (string? value)
+          true
+          (if (keyword? value) true (symbol? value)))))))
 
 (defn c6-sh07-independent-exception-components [value]
   (if (map? value)
@@ -3777,12 +3802,15 @@
                                   (conj result
                                         [(first remaining) (+ depth 1)]))))
                        next-nodes scalar-bytes)))))
-              (let [next-scalar-bytes
-                    (+ scalar-bytes (* 4 (count (str current))))]
-                (if (> next-scalar-bytes 268435456)
-                  {:status :rejected :reason :carrier-scalar-byte-bound}
-                  (recur (rest frontier) next-nodes
-                         next-scalar-bytes))))))))))
+              (if (c6-sh07-independent-exception-post-reader-scalar? current)
+                (let [next-scalar-bytes
+                      (+ scalar-bytes (* 4 (count (str current))))]
+                  (if (> next-scalar-bytes 268435456)
+                    {:status :rejected :reason :carrier-scalar-byte-bound}
+                    (recur (rest frontier) next-nodes
+                           next-scalar-bytes)))
+                {:status :rejected
+                 :reason :carrier-value-domain-invalid}))))))))
 
 (defn c6-sh07-independent-exception-utf8-continuation? [value]
   (if (integer? value)
