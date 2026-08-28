@@ -4771,6 +4771,124 @@
       }
     ],
     "disposition": "Integrated exact architecture decision version 4 into authoritative local main. It authorizes at most one separately governed SH-07 exception/error-exit successor and grants no implementation acceptance, SH-07 completion, roadmap credit, performance, self-hosting, release, or seed-retirement authority."
+  },
+  {
+    "id": "canonical-encoding-decorated-sort-v1",
+    "title": "Canonical encoding decorated sort hotpath version 1",
+    "invariant_family": "verification/canonical-encoding-sort-work",
+    "owner": "uniform-coordinator",
+    "author": "canonical_encoding_hotpath",
+    "state": "integrated",
+    "dependencies": [
+      "stage0-macro-operations-normalization-v1"
+    ],
+    "architecture_decision": "Decorate canonical map and set entries with their canonical sort representation once, sort the decorated entries with the existing exact ordering and collision tie-break behavior, then emit the original canonical values. This removes repeated serialization inside comparison without caching across requests or changing canonical values, hashes, diagnostics, or metadata policy.",
+    "base_commit": "5288fc6d65c53cea07af4aeb682e74d01a09c5d6",
+    "candidate_commit": "a9b37fca0f076083a430f4b67d4e8382b3c06f8d",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/src/gravity/bootstrap.clj",
+      "bootstrap/clojure/src/gravity/c2_artifact_identity.clj",
+      "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+      "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D6",
+      "D9",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj",
+        "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj"
+      ],
+      "stable_diagnostics": [
+        "C2-ARTIFACT-IDENTITY-OPERATIONS"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M:test --namespace gravity.c2-artifact-identity-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 5288fc6d65c53cea07af4aeb682e74d01a09c5d6 --candidate-commit a9b37fca0f076083a430f4b67d4e8382b3c06f8d --candidate-tree 22eb760b655c7745692282fa2f11ee871b3b7d29",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "review_observability_correction",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the temporary canonical encoding boundary",
+      "the authentic full SH-07 duration has not yet been rerun on an uncontended host",
+      "decorated sorting does not address Stage2 interpreter dispatch"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-27T16:00:00Z",
+        "actor": "canonical_encoding_hotpath",
+        "reason": "start bounded canonical serialization work-count optimization from current main"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-27T16:15:00Z",
+        "actor": "canonical_encoding_hotpath",
+        "reason": "freeze exact decorated-sort implementation and deterministic work-count fixtures"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-27T16:16:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "request independent canonical compatibility and performance-work review"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-27T16:22:00Z",
+        "actor": "review_observability_correction",
+        "reason": "accept exact canonical compatibility, collision behavior, and deterministic serialization reduction"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-27T16:23:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "exact identities, clean worktree, focused evidence, independent acceptance, boundaries, and nonclaims verified"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-27T16:25:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "fast-forwarded the exact accepted canonical hotpath candidate and appended its lifecycle record"
+      }
+    ],
+    "disposition": "Integrated deterministic canonical sort-work reduction. No full-SH-07 benchmark, release, self-hosting, or seed-retirement claim is granted."
   }
 ]
 }
