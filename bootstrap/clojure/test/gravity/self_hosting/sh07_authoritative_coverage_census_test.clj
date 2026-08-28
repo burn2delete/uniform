@@ -152,9 +152,9 @@
             "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
             :source-binding (:source-binding c9-expectation)}
            (get source-contracts "c9-ownership")))
-    (is (= {:source-byte-count 112712
+    (is (= {:source-byte-count 199815
             :source-bytes-sha256
-            "sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968"}
+            "sha256:1413be3abe20427f57af9c3c394d2512b21754acc90754ce24ad89be50a400a9"}
            (:source-binding c10-expectation)))
     (is (not (contains? c10-expectation :request-counts)))
     (is (not (contains? c10-expectation :core-counts)))
