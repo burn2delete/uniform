@@ -6408,6 +6408,11 @@
           "result": "passed"
         },
         {
+          "command": "clojure -J-Xmx1g -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e '(require (quote gravity.self-hosting.sh01-host-resource-broker)) (let [lease (gravity.self-hosting.sh01-host-resource-broker/acquire! {:coordination-root \"/private/tmp/gravity-sh01-resource-broker-v1\" :timeout-ms 14400000} :memory-heavy) exit-code (try (println (pr-str {:phase :authoritative-c6-core-fresh :broker-receipt (:receipt lease) :broker-telemetry (:telemetry lease)})) (flush) (let [command [\"clojure\" \"-J-Xmx8g\" \"-Sdeps\" \"{:paths [\\\"bootstrap/clojure/src\\\" \\\"bootstrap/clojure/test\\\"]}\" \"-M\" \"-m\" \"gravity.self-hosting.sh07-authoritative-runner\" \"--fresh\" \"c6-core\"] process (.start (.inheritIO (ProcessBuilder. ^java.util.List command)))] (.waitFor process)) (finally (println (pr-str {:phase :authoritative-c6-core-fresh :broker-release (gravity.self-hosting.sh01-host-resource-broker/release! lease)})) (flush)))] (println (pr-str {:phase :authoritative-c6-core-fresh :child-exit-code exit-code})) (flush) (when-not (zero? exit-code) (System/exit exit-code)))'",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
           "command": "git diff --check 84185a767f6c93ebd540d57607282f5751d54804..1b0ab7632ccba10395c267d0129696e76057f404",
           "exit_code": 0,
           "result": "passed"
@@ -6422,10 +6427,10 @@
     "reviews": [],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the temporary source-contract reader, authoritative runner, proof observer, and governance tooling boundary",
-      "the SH-01 broker remains a cooperative same-user scheduling boundary for a future fresh exact-candidate C6 proof run",
-      "attempt 1 produced a sound historical individual C6 proof with artifact sha256:915b302d0daeff8b7292b1934ea050ac90e6b39f682b3a8655228a9a1ab888e6 and census sha256:f5dcb4d241ffef1fb8be6309bf13ffa7a38247becc85f67cc945c1da2ea05192 over the same proof-contract sha256:49cc2b6300d709edd4b31d37378a8da1cda94b0f6f4aadaea6e65d941448a6f3 and C6 source sha256:da0ab07d6fad0304c0a3ac0e42533c4ef51197262e503cb928dbe4aecfd937c2, but that receipt is prior evidence and is not claimed as exact-candidate validation",
-      "a fresh brokered c6-core run on candidate 1b0ab7632ccba10395c267d0129696e76057f404 remains required before integration eligibility",
-      "this source admission and any future individual C6 proof do not establish aggregate SH-07 completion, release, self-hosting, seed retirement, performance, or removal of bootstrap host boundaries"
+      "the SH-01 broker remains a cooperative same-user scheduling boundary; the exact-candidate run released its memory-heavy lease and returned child exit code 0",
+      "the fresh exact-candidate proof reproduced individual artifact sha256:915b302d0daeff8b7292b1934ea050ac90e6b39f682b3a8655228a9a1ab888e6 and census sha256:f5dcb4d241ffef1fb8be6309bf13ffa7a38247becc85f67cc945c1da2ea05192 over proof-contract sha256:49cc2b6300d709edd4b31d37378a8da1cda94b0f6f4aadaea6e65d941448a6f and C6 source sha256:da0ab07d6fad0304c0a3ac0e42533c4ef51197262e503cb928dbe4aecfd937c2",
+      "the passed proof remains individual-source-bound-derived with counts-precommitted false, independent-count-oracle false, aggregate-authoritative false, and unsupported claims exact-authentic-coverage, aggregate, and release",
+      "this source admission and individual C6 proof do not establish aggregate SH-07 completion, release, self-hosting, seed retirement, performance, or removal of bootstrap host boundaries"
     ],
     "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
     "history": [
@@ -6448,7 +6453,7 @@
         "reason": "request independent exact-tuple review of the C6-only source binding, fail-before-proof behavior, evidence, prior-receipt nonclaim, residual boundaries, and authority limits before any fresh rerun or eligibility transition"
       }
     ],
-    "disposition": "Review pending for the exact C6-only content candidate. The attempt-1 fresh result is retained only as prior unchanged-input evidence; a fresh exact-candidate C6 run and independent acceptance are required before integration eligibility."
+    "disposition": "Review pending after the fresh exact-candidate individual C6 proof passed all contract checks, released the broker, and exited 0. Independent acceptance remains required before integration eligibility; no aggregate SH-07, release, self-hosting, or seed-retirement authority is claimed."
   }
 ]
 }
