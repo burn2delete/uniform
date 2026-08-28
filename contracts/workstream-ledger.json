@@ -5800,7 +5800,7 @@
     "invariant_family": "test-maintenance/sh07-b8-regression-expectations-v1",
     "owner": "uniform-coordinator",
     "author": "sh07-implementation-coordinator",
-    "state": "review-pending",
+    "state": "integration-eligible",
     "dependencies": [
       "sh07-b8-exact-routing-v2",
       "sh07-verification-session-v2"
@@ -5857,7 +5857,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "b8_maintenance_rereview",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
     "residual_host_boundaries": [
       "the accepted b8-regression route passed 2 selected vars and 66 assertions with selection-count 2, artifact-build-count 4, and zero failures or errors",
       "the full B8 namespace passed 13 tests and 910 assertions with zero failures or errors",
@@ -5866,7 +5872,7 @@
       "the SH-01 resource broker is a cooperative same-user scheduling boundary and its receipt is non-authoritative",
       "the accepted b8-regression route is bounded development evidence and does not replace authoritative SH-07 verification",
       "this candidate changes one test namespace only; it adds no production, bootstrap, route, verifier, artifact, or fixture behavior",
-      "independent exact-tuple review remains pending"
+      "independent exact-tuple review accepted the corrected selector and diagnostic evidence while preserving the test-only scope and nonclaims"
     ],
     "no_overclaim_authority": {
       "integration_only": true,
@@ -5892,9 +5898,21 @@
         "at": "2026-08-28T07:04:03Z",
         "actor": "uniform-coordinator",
         "reason": "request fresh independent exact-tuple review of corrected WG009 evidence, unchanged one-file content, residual host boundaries, and nonclaims"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-28T07:12:00Z",
+        "actor": "b8_maintenance_rereview",
+        "reason": "accept exact content candidate a99b877c86e5f809ca286ae9e4668ec15f93a03a, tree ae9ea834ee2de10d77d029ebc7652483926b964d, corrected positive and negative selector evidence, stable C6 rule and reason, passing regressions, residual boundaries, and nonclaims"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-28T07:12:01Z",
+        "actor": "uniform-coordinator",
+        "reason": "verify exact base and candidate identities, clean candidate, independent acceptance, complete evidence, unchanged clean authoritative main 94aa23994b6b43f9ede6a5f78819d64b0f2f9c31, residual host boundaries, and no-overclaim authority"
       }
     ],
-    "disposition": "Corrected attempt 2 is review pending for the exact unchanged frozen content tuple only. It makes no production, bootstrap, routing, verifier, artifact, fixture-behavior, benchmark, performance, SH-07 completion, roadmap, integration, release, self-hosting, or seed-retirement claim."
+    "disposition": "Integration eligible only for the exact unchanged frozen test-content tuple over base 94aa23994b6b43f9ede6a5f78819d64b0f2f9c31. No integration has occurred, and this record makes no production, bootstrap, routing, verifier, artifact, fixture-behavior, benchmark, performance, SH-07 completion, roadmap-completion, release, self-hosting, or seed-retirement claim."
   }
 ]
 }
