@@ -115591,17 +115591,25 @@
            :actual-kind :map
            :missing-key-count (count (remove actual-keys expected-keys))
            :unexpected-key-count (count (remove expected-keys actual-keys))}
-          (some
-           (fn [identity]
-             (let [[key expected-child] (get expected-index identity)
-                   [_ actual-child] (get actual-index identity)]
-               (p15-s23-c6c10-strict-first-mismatch
-                source-path expected-child actual-child
-                (conj path
-                      [:map-key
-                       (p15-s23-c6c10-canonical-digest
-                        source-path key)]))))
-           (sort-by p15-s23-c6c10-canonical-sort-key expected-keys))))
+          (let [ordered-identities
+                (->> expected-keys
+                     (mapv (fn [identity]
+                             {:identity identity
+                              :sort-key
+                              (p15-s23-c6c10-canonical-sort-key identity)}))
+                     (sort-by :sort-key)
+                     (mapv :identity))]
+            (some
+             (fn [identity]
+               (let [[key expected-child] (get expected-index identity)
+                     [_ actual-child] (get actual-index identity)]
+                 (p15-s23-c6c10-strict-first-mismatch
+                  source-path expected-child actual-child
+                  (conj path
+                        [:map-key
+                         (p15-s23-c6c10-canonical-digest
+                          source-path key)]))))
+             ordered-identities))))
 
       (contains? #{:vector :list} expected-kind)
       (if (not= (count expected) (count actual))

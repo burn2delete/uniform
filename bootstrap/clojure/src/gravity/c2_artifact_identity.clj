@@ -187,10 +187,12 @@
             (mapv second))])
 
     (set? value)
-    [:set (->> value
-               (map reader-canonical-value)
-               (sort-by pr-str)
-               vec)]
+    (let [decorated
+          (mapv (fn [item]
+                  (let [entry (reader-canonical-value item)]
+                    [(pr-str entry) entry]))
+                value)]
+      [:set (mapv second (sort-by first decorated))])
 
     (vector? value)
     [:vector (mapv reader-canonical-value value)]

@@ -32306,6 +32306,27 @@
          (bootstrap/p15-s23-c6c10-canonical-digest source-path 1.250M))
         "decimal scale is part of exact canonical identity")))
 
+(deftest gravity-c6c10-strict-map-order-caches-sort-keys
+  (let [source-path "/tmp/gravity-c6c10-strict-map-order.gravity"
+        value (into {}
+                    (map (fn [index]
+                           [(keyword (str "key-" index)) index])
+                         (range 64)))
+        original bootstrap/p15-s23-c6c10-canonical-sort-key
+        calls (atom 0)
+        counted
+        (fn [form]
+          (swap! calls inc)
+          (original form))]
+    (with-redefs [bootstrap/p15-s23-c6c10-canonical-sort-key counted]
+      (is (nil?
+           (bootstrap/p15-s23-c6c10-strict-first-mismatch
+            source-path value value []))))
+    ;; sort-by invokes its key function from the comparator.  The strict
+    ;; zipper decorates identities first so canonical key encoding is once per
+    ;; map key rather than once per comparator call.
+    (is (= (count value) @calls))))
+
 (deftest sh05-pinned-macro-plan-identities-reuse-only-the-exact-plan
   (let [binding
         (bootstrap/sh05-macro-current-binding!
