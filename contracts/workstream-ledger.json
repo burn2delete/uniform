@@ -4889,6 +4889,110 @@
       }
     ],
     "disposition": "Integrated deterministic canonical sort-work reduction. No full-SH-07 benchmark, release, self-hosting, or seed-retirement claim is granted."
+  },
+  {
+    "id": "canonical-encoding-decorated-sort-v1-evidence-erratum",
+    "title": "Canonical encoding decorated sort evidence erratum",
+    "invariant_family": "verification/canonical-encoding-sort-work",
+    "owner": "uniform-coordinator",
+    "author": "uniform-coordinator",
+    "state": "integrated",
+    "dependencies": [
+      "canonical-encoding-decorated-sort-v1"
+    ],
+    "architecture_decision": "Preserve the immutable integrated lifecycle record and append a replayable erratum whenever a recorded command used the wrong test-runner ownership boundary. The correction changes evidence routing only and cannot retroactively make the original command pass.",
+    "base_commit": "223792090398dc923d4ff3a38ade4b4e9128f1d8",
+    "candidate_commit": "82f44f69f0017fd98ee7ca3b42676ba1045b2d56",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/canonical-encoding-hotpath-v1-evidence-erratum.md"
+    ],
+    "governing_contracts": [
+      "contracts/workstream-governance.json",
+      "contracts/workstream-ledger.json",
+      "docs/workstream-governance.md"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "docs/artifacts/phase-15/reports/canonical-encoding-hotpath-v1-evidence-erratum.md",
+        "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
+      ],
+      "stable_diagnostics": [
+        "Requested test namespace is not owned by this runner"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e \"(require 'clojure.test 'gravity.c2-artifact-identity-test) (let [r (clojure.test/run-tests 'gravity.c2-artifact-identity-test)] (when (pos? (+ (:fail r) (:error r))) (System/exit 1)))\"",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "review_proof_artifact_dag",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
+    "residual_host_boundaries": [
+      "the immutable original lifecycle record retains its incorrect SH-01 runner command",
+      "the erratum cannot retroactively establish that the original command passed",
+      "Clojure and the JVM remain the temporary canonical encoding boundary"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-27T16:27:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "start append-only evidence correction after exact replay rejected the standalone namespace through the SH-01 runner"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-27T16:28:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "freeze the one-report erratum candidate and exact Git identities"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-27T16:29:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "request independent command replay and immutability review"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-27T16:32:00Z",
+        "actor": "review_proof_artifact_dag",
+        "reason": "accept exact original failure, corrected 14-test replay, append-only scope, and nonclaims"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-27T16:33:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "exact identities, report-only diff, independent acceptance, residual violation, and nonclaims verified"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-27T16:35:00Z",
+        "actor": "uniform-coordinator",
+        "reason": "appended the accepted evidence erratum lifecycle record on main"
+      }
+    ],
+    "disposition": "Integrated evidence correction only. Canonical code is unchanged and no retroactive admission or additional performance authority is granted."
   }
 ]
 }
