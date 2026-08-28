@@ -17,7 +17,7 @@
 
 (def ^:private slice-count 30)
 
-(declare valid-slice?)
+(declare valid-slice? path-slice)
 
 ;; These reviewed namespaces are verification infrastructure.  The general
 ;; self-hosting runner discovers and can execute them, but they are not SH-00
@@ -70,6 +70,10 @@
     :selection-mode :exact-test-vars
     :resource-class :memory-heavy}))
 
+(def ^:private exact-test-var-route-keys
+  #{:slice :owner :path :namespace :test-vars :selection-mode
+    :resource-class})
+
 (defn exact-test-var-route-names
   "Returns the closed exact-test-var route catalog in deterministic order."
   []
@@ -92,24 +96,38 @@
 
 (defn- exact-test-var-route-options
   [route]
-  (let [{:keys [slice namespace test-vars]} route
+  (let [{:keys [slice owner path namespace test-vars selection-mode
+                resource-class]} route
+        route-keys (when (map? route) (set (keys route)))
+        missing-keys (vec (sort (set/difference exact-test-var-route-keys
+                                                (or route-keys #{}))))
+        extra-keys (vec (sort (set/difference (or route-keys #{})
+                                              exact-test-var-route-keys)))
         invalid-vars
         (->> test-vars
              (remove
               #(and (symbol? %)
                     (= namespace (symbol (clojure.core/namespace %)))))
              vec)]
-    (when-not (and (valid-slice? slice)
+    (when-not (and (map? route)
+                   (= exact-test-var-route-keys route-keys)
+                   (valid-slice? slice)
+                   (keyword? owner)
+                   (string? path)
                    (symbol? namespace)
                    (vector? test-vars)
                    (seq test-vars)
                    (= (count test-vars) (count (distinct test-vars)))
+                   (= :exact-test-vars selection-mode)
+                   (keyword? resource-class)
                    (empty? invalid-vars))
       (throw
        (ex-info
         "SH-01 exact test-var route metadata is malformed"
         {:id "SH01-IMPACT-ROUTE-CONTRACT"
          :route route
+         :missing-keys missing-keys
+         :extra-keys extra-keys
          :invalid-test-vars invalid-vars})))
     route))
 
@@ -1116,6 +1134,116 @@
       (:context request)
       (planning-context)))
 
+(defn- validate-exact-test-var-route-owner!
+  "Admit an exact route only when its owner is live and unambiguous.
+
+  The route catalog is reviewed code, while the slice owner is mutable
+  coordinator state.  Keeping both identities in the admission check prevents
+  a stale route from selecting a leaf after ownership moves.  The owner entry
+  is intentionally closed as well: an extra or malformed owner field cannot
+  be silently ignored by the route planner.
+  "
+  [route context]
+  (let [ownership (when (map? context) (:ownership context))
+        slice-owners (when (map? ownership) (:slice-owners ownership))
+        slice (:slice route)
+        live-entry (when (map? slice-owners) (get slice-owners slice))
+        live-owner (when (map? live-entry) (:leaf-owner live-entry))
+        live-entry-keys (when (map? live-entry) (set (keys live-entry)))
+        expected-entry-keys #{:integration-owner :leaf-owner}]
+    (cond
+      (not (map? context))
+      (throw
+       (ex-info
+        "Exact test-var route planning requires one planner context"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :route-path (:path route)
+         :reason :context-missing}))
+
+      (not (map? ownership))
+      (throw
+       (ex-info
+        "Exact test-var route planning requires the live ownership record"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :slice slice
+         :reason :ownership-missing}))
+
+      (not (map? slice-owners))
+      (throw
+       (ex-info
+        "Exact test-var route planning requires live slice owners"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :slice slice
+         :reason :slice-owners-malformed}))
+
+      (not (map? live-entry))
+      (throw
+       (ex-info
+        "Exact test-var route has no live owner entry for its slice"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :slice slice
+         :reason :slice-owner-missing
+         :slice-owners (vec (sort-by str (keys slice-owners)))}))
+
+      (not= expected-entry-keys live-entry-keys)
+      (throw
+       (ex-info
+        "Exact test-var route live owner entry has an unexpected shape"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :slice slice
+         :reason :slice-owner-shape
+         :expected-keys expected-entry-keys
+         :actual-keys live-entry-keys}))
+
+      (not (and (keyword? (:integration-owner live-entry))
+                (keyword? live-owner)))
+      (throw
+       (ex-info
+        "Exact test-var route live owner entry is malformed"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :slice slice
+         :reason :slice-owner-malformed
+         :live-entry live-entry}))
+
+      (not= (:owner route) live-owner)
+      (throw
+       (ex-info
+        "Exact test-var route owner disagrees with the live slice owner"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :slice slice
+         :route-owner (:owner route)
+         :live-owner live-owner
+         :reason :owner-drift}))
+
+      :else
+      route)))
+
+(defn- validate-exact-test-var-route-dependency!
+  "Require the route path and namespace to resolve to one catalog identity.
+
+  This is the route-specific counterpart to the ordinary planner's dependency
+  checks.  It runs against the same request-local catalog that build-plan will
+  consume, so a stale or substituted test entry cannot be admitted as an exact
+  route merely because its path still looks slice-shaped.
+  "
+  [route context]
+  (let [catalog (validate-test-catalog
+                 (context-catalog context)
+                 (:standalone-test-index context))
+        catalog-namespace (dedicated-test-namespace catalog (:path route))]
+    (when-not (and (= (:slice route) (path-slice (:path route)))
+                   (= (:namespace route) catalog-namespace))
+      (throw
+       (ex-info
+        "Exact test-var route path and namespace disagree with the test dependency catalog"
+        {:id "SH01-IMPACT-ROUTE-CONTRACT"
+         :route-path (:path route)
+         :route-slice (:slice route)
+         :route-namespace (:namespace route)
+         :catalog-namespace catalog-namespace
+         :reason :dependency-identity})))
+    route))
+
 (defn- invalid-slices!
   [slices]
   (let [invalid (set/difference (set slices) (all-slices))]
@@ -1287,31 +1415,53 @@
           :route route-name
           :expected [(:path route)]
           :changed-paths changed-paths})))
-     (let [plan-request
-           (cond-> {:changed-paths changed-paths
-                    :expand-dependants? false}
-             (contains? options :context)
-             (assoc :context (:context options)))
-           plan (build-plan plan-request)]
-       (when-not (= [(:namespace route)] (:namespaces plan))
-         (throw
-          (ex-info
-           "Exact test-var route namespace does not match SH-01 ownership"
-           {:id "SH01-IMPACT-ROUTE-CONTRACT"
-            :route route-name
-            :expected [(:namespace route)]
-            :actual (:namespaces plan)})))
-       (assoc plan
-              :selection-mode :exact-test-vars
+     (let [context (if (contains? options :context)
+                     (:context options)
+                     (planning-context))]
+       ;; Validate the live ownership identity before the normal planner can
+       ;; admit the path.  The same request-local context is then passed into
+       ;; build-plan so ownership, catalog, and dependency identities cannot
+       ;; change between admission and plan construction.
+       (validate-exact-test-var-route-owner! route context)
+       (validate-exact-test-var-route-dependency! route context)
+       (let [plan (build-plan {:changed-paths changed-paths
+                               :expand-dependants? false
+                               :context context})
+             classification (first (:classifications plan))
+             exact-dependency?
+             (and (= 1 (count (:classifications plan)))
+                  (= (:path route) (:path classification))
+                  (= :dedicated (:classification classification))
+                  (= [(:slice route)] (:slices classification))
+                  (= :exact-test-path
+                     (:development-selection classification))
+                  (= [(:namespace route)]
+                     (:development-test-namespaces classification)))]
+         (when-not (and (= [(:namespace route)] (:namespaces plan))
+                        exact-dependency?)
+           (throw
+            (ex-info
+             "Exact test-var route identity disagrees with SH-01 ownership or dependency planning"
+             {:id "SH01-IMPACT-ROUTE-CONTRACT"
               :route route-name
-              :route-owner (:owner route)
-              :route-path (:path route)
-              :test-vars (:test-vars route)
-              :test-var-count (count (:test-vars route))
-              :resource-class (:resource-class route)
-              :route-authority :non-authoritative
-              :authoritative? false
-              :non-authoritative? true)))))
+              :expected {:path (:path route)
+                         :slice (:slice route)
+                         :namespace (:namespace route)
+                         :classification :dedicated
+                         :development-selection :exact-test-path}
+              :actual {:namespaces (:namespaces plan)
+                       :classification classification}})))
+         (assoc plan
+                :selection-mode :exact-test-vars
+                :route route-name
+                :route-owner (:owner route)
+                :route-path (:path route)
+                :test-vars (:test-vars route)
+                :test-var-count (count (:test-vars route))
+                :resource-class (:resource-class route)
+                :route-authority :non-authoritative
+                :authoritative? false
+                :non-authoritative? true))))))
 
 (defn build-namespace-plan
   "Builds a non-authoritative plan for exact dedicated test namespaces.

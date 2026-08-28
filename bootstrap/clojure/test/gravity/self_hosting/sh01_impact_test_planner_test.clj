@@ -117,6 +117,10 @@
            (planner/exact-test-var-route-names)))
     (is (= "SH-07" (:slice route)))
     (is (= :sh-core (:owner route)))
+    (is (= :sh-core
+           (get-in (planner/planning-context)
+                   [:ownership :slice-owners "SH-07" :leaf-owner])))
+    (is (= :sh-core (:route-owner plan)))
     (is (= route-path (:route-path plan)))
     (is (= :exact-test-vars (:selection-mode plan)))
     (is (= 2 (:test-var-count plan)))
@@ -137,6 +141,87 @@
                               "bootstrap/clojure/test/gravity/self_hosting/sh07_throw_test.clj"]}))))
     (is (= "SH01-IMPACT-ROUTE-SELECTION"
            (:id (error-data {:test-vars (:test-vars route)}))))))
+
+(deftest sh07-b8-route-owner-and-dependency-identities-fail-closed
+  (let [route (planner/exact-test-var-route "b8-regression")
+        context (planner/planning-context)
+        owner-path [:ownership :slice-owners "SH-07"]
+        error-data
+        (fn [request]
+          (try
+            (planner/build-test-var-plan "b8-regression" request)
+            nil
+            (catch clojure.lang.ExceptionInfo error
+              (ex-data error))))
+        owner-validator
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'validate-exact-test-var-route-owner!)
+        route-options
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'exact-test-var-route-options)
+        owner-error
+        (fn [candidate-route candidate-context]
+          (try
+            (owner-validator candidate-route candidate-context)
+            nil
+            (catch clojure.lang.ExceptionInfo error
+              (ex-data error))))]
+    (testing "the route owner matches the live leaf owner"
+      (is (= route
+             (owner-validator route context)))
+      (is (= :sh-core
+             (get-in (:ownership context)
+                     [:slice-owners "SH-07" :leaf-owner]))))
+    (testing "owner drift, missing, malformed, and extra owner records reject"
+      (doseq [[label candidate expected-reason]
+              [["drifted route owner" (assoc route :owner :other-owner)
+                :owner-drift]
+               ["missing live owner"
+                route
+                :slice-owner-missing]
+               ["malformed live owner"
+                route
+                :slice-owner-malformed]
+               ["extra live owner key"
+                route
+                :slice-owner-shape]]]
+        (let [candidate-context
+              (case label
+                "missing live owner"
+                (update-in context [:ownership :slice-owners] dissoc "SH-07")
+                "malformed live owner"
+                (assoc-in context (conj owner-path :leaf-owner) "sh-core")
+                "extra live owner key"
+                (assoc-in context (conj owner-path :extra-owner) :other-owner)
+                context)
+              data (owner-error candidate candidate-context)
+              admission-data (when (= candidate route)
+                               (error-data {:context candidate-context}))]
+          (is (= "SH01-IMPACT-ROUTE-OWNER" (:id data)) label)
+          (is (= expected-reason (:reason data)) label)
+          (when admission-data
+            (is (= "SH01-IMPACT-ROUTE-OWNER" (:id admission-data)) label)
+            (is (= expected-reason (:reason admission-data)) label)))))
+    (testing "route owner metadata is closed"
+      (doseq [candidate [(dissoc route :owner)
+                        (assoc route :owner "sh-core")
+                        (assoc route :extra-owner :other-owner)]]
+        (let [data
+              (try
+                (route-options candidate)
+                nil
+                (catch clojure.lang.ExceptionInfo error
+                  (ex-data error)))]
+          (is (= "SH01-IMPACT-ROUTE-CONTRACT" (:id data)) candidate))))
+    (testing "the exact path/namespace dependency identity is required"
+      (let [catalog (->> @(:catalog-delay context)
+                         (mapv #(if (= (:namespace %) (:namespace route))
+                                  (assoc % :namespace
+                                         'gravity.self-hosting.sh07-other-test)
+                                  %)))
+            data (error-data {:context (assoc context
+                                              :catalog-delay (delay catalog))})]
+        (is (= "SH01-IMPACT-ROUTE-CONTRACT" (:id data)) data)))))
 
 (deftest reviewed-component-sources-select-declared-tests-without-changing-governance
   (doseq [[path expected-component expected-tests direct-count affected-count]

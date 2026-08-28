@@ -143,9 +143,11 @@ The route is memory-heavy and therefore requires the reviewed SH-01 host
 resource broker. Its child receipt reports the exact selected-var count and
 the number of calls to the SH-07 artifact constructor; both values are
 development observations only. Unknown routes, mixed namespace/route
-selection, and extra options fail closed before launch. This route remains
-non-authoritative: use the complete SH-07 namespace and fresh integration lane
-for acceptance evidence.
+selection, and extra options fail closed before launch. Admission also compares
+the route owner with the live `SH-07` leaf owner and binds its path/namespace to
+the current test dependency catalog; drifted, missing, malformed, or extra
+owner metadata fails closed. This route remains non-authoritative: use the
+complete SH-07 namespace and fresh integration lane for acceptance evidence.
 
 ## Bounded P15 Profiling Receipt
 
