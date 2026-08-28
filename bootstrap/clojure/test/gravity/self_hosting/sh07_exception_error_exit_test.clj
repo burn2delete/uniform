@@ -539,8 +539,8 @@
 
     (list? value)
     (apply list
-           (map #(recursively-rewrite-key
-                  % target-key replacement)) value)
+           (mapv #(recursively-rewrite-key
+                   % target-key replacement) value))
 
     :else value))
 
@@ -1148,7 +1148,17 @@
              converted))
       (is (nil? (meta converted)))
       (is (nil? (meta (:list converted))))
-      (is (nil? (meta (:metadata-symbol converted)))))))
+      (is (nil? (meta (:metadata-symbol converted)))))
+    (let [rewritten
+          (recursively-rewrite-key
+           (list {:target "old"} 'tail) :target "new")]
+      (is (= (list {:target "new"} 'tail) rewritten))
+      (is (= "clojure.lang.PersistentList"
+             (some-> rewritten class .getName)))
+      (is (= rewritten
+             (immutable-post-reader-edn!
+              (get-in carrier [:source-snapshot :canonical-path])
+              rewritten))))))
 
 (deftest sh07-b50-gravity-preflights-enforce-finite-post-reader-domain
   (let [accepted-values
