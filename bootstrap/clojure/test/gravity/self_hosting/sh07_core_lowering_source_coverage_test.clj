@@ -33,34 +33,34 @@
   "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 294386)
+(def ^:private expected-source-byte-count 298180)
 (def ^:private expected-source-revision-id
-  "sha256:4e8fef01eb10d15e5896301bb06d6b6153187a78e321712277bcbabd5e9f872c")
+  "sha256:da0ab07d6fad0304c0a3ac0e42533c4ef51197262e503cb928dbe4aecfd937c2")
 (def ^:private expected-coverage
-  {:fragment-count 256
-   :root-form-count 256
-   :form-count 28773
-   :binding-count 1853
-   :local-binding-count 1591
-   :resolution-count 11606})
+  {:fragment-count 263
+   :root-form-count 263
+   :form-count 29231
+   :binding-count 1878
+   :local-binding-count 1616
+   :resolution-count 11790})
 (def ^:private expected-core-census
-  {:core-node-count 24230
-   :definition-count 256
-   :call-count 4825
-   :reference-count 9377
+  {:core-node-count 24597
+   :definition-count 263
+   :call-count 4896
+   :reference-count 9508
    :keyword-lookup-count 0
    :core-form-frequencies
-   {:call 4825
-    :collection-literal 867
-    :def 256
-    :fn 251
-    :if 1143
-    :let 196
-    :literal 6932
-    :loop 154
+   {:call 4896
+    :collection-literal 881
+    :def 263
+    :fn 258
+    :if 1174
+    :let 200
+    :literal 7030
+    :loop 156
     :quote 40
-    :recur 189
-    :reference 9377}})
+    :recur 191
+    :reference 9508}})
 (def ^:private expected-definition-names
   '[c6-core-node-contract
     c6-lowering-rule-contract
@@ -105,6 +105,7 @@
     c6-sh07-exception-all-unique?
     c6-sh07-exception-bounded-vector?
     c6-sh07-exception-aggregate?
+    c6-sh07-exception-post-reader-scalar?
     c6-sh07-exception-components
     c6-sh07-exception-carrier-preflight
     c6-sh07-exception-diagnostic
@@ -214,6 +215,7 @@
     c6-sh07-exception-resolved-template
     c6-sh07-exception-circular-verifier-retired
     c6-sh07-independent-exception-aggregate?
+    c6-sh07-independent-exception-post-reader-scalar?
     c6-sh07-independent-exception-components
     c6-sh07-independent-exception-carrier-preflight
     c6-sh07-independent-exception-utf8-continuation?
@@ -304,6 +306,11 @@
     c6-sh07-exception-not-equal?
     c6-sh07-independent-exception-resolved-template-check
     c6-sh07-independent-exception-resolved-core-check
+    c6-sh07-independent-exception-lower-hex-character?
+    c6-sh07-independent-exception-sha256-id?
+    c6-sh07-independent-exception-digest-entry-valid?
+    c6-sh07-independent-exception-digest-transcript-valid?
+    c6-sh07-independent-exception-expected-digest-requests
     c6-sh07-independent-exception-snapshot-digests-valid?
     c6-sh07-independent-exception-verifier-from-resolved
     c6-sh07-independent-exception-verifier
@@ -319,7 +326,7 @@
     build-c6-desugaring-trace
     verify-c6-core-lowering])
 (def ^:private expected-definition-names-hash
-  "sha256:dac69746e106d1a1f36a829df8581c302f0d5e68a5cdac6ab5d24abda9c308d5")
+  "sha256:14a9f0c1894b0d1eaba775e5a42d69f2c56bd96960fa698d39a3f5d024f46df3")
 (def ^:private rejected-families
   {"core-shape" "C6-CORE-SHAPE"
    "lowering-gap" "C6-LOWERING-GAP"})
@@ -529,9 +536,9 @@
     (is (= expected-definition-names-hash
            (gravity.bootstrap/p15-s23-c11-mir-digest
             expected-definition-names)))
-    (is (= 256 (count definitions)))
+    (is (= 263 (count definitions)))
     (is (= 40 (count quote-nodes)))
-    (is (= 251 (count fn-nodes)))
+    (is (= 258 (count fn-nodes)))
     (is (every? #(= :def
                     (:core-form (get node-by-id (:core-node-id %))))
                 definitions))

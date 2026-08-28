@@ -100,7 +100,7 @@
                 "B50 carrier is outside the bounded immutable post-reader EDN domain"
                 {:id "SH07-B50-POST-READER-DOMAIN"
                  :artifact :gravity/sh07-core-diagnostic
-                 :rule "C6-DOMAIN-BOUNDARY"
+                 :rule "C6-VERIFY"
                  :reason reason
                  :fail-closed true
                  :source-path source-path
@@ -165,8 +165,16 @@
                     (reject! :carrier-node-bound current))
                   (apply list (map #(convert % (inc depth)) current)))
 
+                (symbol? current)
+                (let [next-scalar-bytes
+                      (+ @scalar-bytes (* 4 (count (str current))))]
+                  (when (> next-scalar-bytes 268435456)
+                    (reject! :carrier-scalar-byte-bound current))
+                  (vreset! scalar-bytes next-scalar-bytes)
+                  (with-meta current nil))
+
                 (or (nil? current) (boolean? current) (integer? current)
-                    (string? current) (keyword? current) (symbol? current))
+                    (string? current) (keyword? current))
                 (let [next-scalar-bytes
                       (+ @scalar-bytes (* 4 (count (str current))))]
                   (when (> next-scalar-bytes 268435456)
@@ -268,10 +276,10 @@
           [(entry-request phase carrier template requests digests)]))
 
 (defn- call-phase [phase carrier template requests digests]
-  (let [source-path (get-in carrier [:source-snapshot :canonical-path])
-        request
+  (let [request
         (immutable-post-reader-edn!
-         source-path (entry-request phase carrier template requests digests))
+         nil (entry-request phase carrier template requests digests))
+        source-path (get-in request [:carrier :source-snapshot :canonical-path])
         result
         (invoke 'c6-sh07-authenticated-exception-entrypoint [request])]
     (immutable-post-reader-edn! source-path result)))
@@ -456,8 +464,8 @@
   ;; This is the governed bootstrap adapter boundary.  Callers supply only the
   ;; authenticated carrier; the adapter owns both opaque resolver passes and
   ;; only the independently replayed verification status is authoritative.
-  (let [source-path (get-in carrier [:source-snapshot :canonical-path])
-        carrier (immutable-post-reader-edn! source-path carrier)
+  (let [carrier (immutable-post-reader-edn! nil carrier)
+        source-path (get-in carrier [:source-snapshot :canonical-path])
         admitted (call-phase :admit carrier nil [] [])
         template (:template admitted)
         requests (:digest-requests admitted)
@@ -1027,18 +1035,18 @@
           :rule "C6-VERIFY"}
          {:name :malformed-request-collection
           :carrier (assoc-in carrier (conj request-path :forms) {})
-          :rule "C6-DOMAIN-BOUNDARY"}
+          :rule "C6-VERIFY"}
          {:name :alias-record-extra-field
           :carrier
           (assoc-in (get @declared-import-carriers ".gravity")
                     (into request-path [:alias-table 0 :untrusted]) true)
-          :rule "C6-DOMAIN-BOUNDARY"}
+          :rule "C6-VERIFY"}
          {:name :macro-trace-extra-field
           :carrier
           (assoc-in carrier
                     (into request-path
                           [:macro-origin-traces 0 :untrusted]) true)
-          :rule "C6-DOMAIN-BOUNDARY"}
+          :rule "C6-VERIFY"}
          {:name :duplicate-retained-origin
           :carrier
           (assoc-in carrier
@@ -1052,7 +1060,7 @@
                     [:b47-artifact :gravity-core-boundary
                      :authenticated-core-request :top-level-form-ids 0]
                     zero-id)
-          :rule "C6-DOMAIN-BOUNDARY"}
+          :rule "C6-VERIFY"}
          {:name :assembly-substitution
           :carrier
           (assoc-in carrier
@@ -1060,7 +1068,7 @@
                      :authenticated-core-request
                      :module-assembly-manifest :root-form-ids 0]
                     zero-id)
-          :rule "C6-DOMAIN-BOUNDARY"}
+          :rule "C6-VERIFY"}
          {:name :coverage-substitution
           :carrier
           (update-in carrier
@@ -1068,7 +1076,7 @@
                       :authenticated-core-request
                       :fragment-coverage :form-count]
                      inc)
-          :rule "C6-DOMAIN-BOUNDARY"}
+          :rule "C6-VERIFY"}
          {:name :unauthorized-edge
           :carrier
           (assoc-in carrier
@@ -1079,7 +1087,7 @@
           :rule "C6-VERIFY"}
          {:name :malformed-byte-domain
           :carrier (assoc-in carrier [:source-snapshot :bytes 0] -1)
-          :rule "C6-DOMAIN-BOUNDARY"}]]
+          :rule "C6-VERIFY"}]]
     (doseq [{:keys [name carrier rule]} probes]
       (testing name
         (let [result (call-phase :admit carrier nil [] [])
@@ -1117,7 +1125,7 @@
                  (:id (ex-data failure))))
           (is (= :gravity/sh07-core-diagnostic
                  (:artifact (ex-data failure))))
-          (is (= "C6-DOMAIN-BOUNDARY"
+          (is (= "C6-VERIFY"
                  (:rule (ex-data failure))))
           (is (= :carrier-value-domain-invalid
                  (:reason (ex-data failure))))
@@ -1129,14 +1137,18 @@
            (with-meta
              {:scalars [nil false 0 "" :keyword 'symbol]
               :list (with-meta (list 1 2) {:host-metadata true})
+              :metadata-symbol
+              (with-meta 'metadata-symbol {:host-value (Object.)})
               :set #{1 2}}
              {:host-metadata true}))]
       (is (= {:scalars [nil false 0 "" :keyword 'symbol]
               :list (list 1 2)
+              :metadata-symbol 'metadata-symbol
               :set #{1 2}}
              converted))
       (is (nil? (meta converted)))
-      (is (nil? (meta (:list converted)))))))
+      (is (nil? (meta (:list converted))))
+      (is (nil? (meta (:metadata-symbol converted)))))))
 
 (deftest sh07-b50-gravity-preflights-enforce-finite-post-reader-domain
   (let [accepted-values
@@ -1158,7 +1170,21 @@
         (is (= :rejected (:status result)))
         (is (= :carrier-value-domain-invalid (:reason result)))))))
 
-(deftest sh07-b50-outer-first-domain-diagnostic-wins-with-source-provenance
+(deftest sh07-b50-carrier-census-failures-use-verification-diagnostics
+  (let [too-deep (nth (iterate vector nil) 257)
+        too-wide (vec (range 65537))
+        admissions
+        ['c6-sh07-exception-carrier-admission
+         'c6-sh07-independent-exception-carrier-admission]]
+    (doseq [admission admissions
+            [value reason] [[too-deep :carrier-depth-bound]
+                            [too-wide :carrier-width-bound]]]
+      (let [result (invoke admission [value])]
+        (is (= :rejected (:status result)))
+        (is (= "C6-VERIFY" (:rule result)))
+        (is (= reason (:reason result)))))))
+
+(deftest sh07-b50-outer-first-verification-diagnostic-wins-with-source-provenance
   (let [carrier (get @accepted-carriers ".gravity")
         altered
         (-> carrier
@@ -1167,7 +1193,7 @@
         result (call-phase :admit altered nil [] [])
         diagnostic (first-diagnostic result)]
     (is (= :rejected (:status result)))
-    (is (= "C6-DOMAIN-BOUNDARY" (:rule diagnostic)))
+    (is (= "C6-VERIFY" (:rule diagnostic)))
     (is (= :snapshot-byte-vector-outside-domain
            (get-in diagnostic [:facts :reason])))
     (is (= (get-in carrier [:source-snapshot :canonical-path])
@@ -1197,10 +1223,10 @@
           (update-in carrier
                      (into request-path [:fragment-coverage :form-count])
                      inc)
-          :rule "C6-DOMAIN-BOUNDARY"}
+          :rule "C6-VERIFY"}
          {:name :malformed-forms
           :carrier (assoc-in carrier (conj request-path :forms) {})
-          :rule "C6-DOMAIN-BOUNDARY"}
+          :rule "C6-VERIFY"}
          {:name :retained-origin-duplicate
           :carrier
           (assoc-in carrier
@@ -1428,7 +1454,7 @@
     (let [malformed
           (call-phase :admit carrier template requests digests)]
       (is (= :rejected (:status malformed)))
-      (is (= "C6-DOMAIN-BOUNDARY"
+      (is (= "C6-VERIFY"
              (:rule (first-diagnostic malformed)))))
     (let [mutated-resolver-digests
           (assoc-in digests [4 :digest] arbitrary-id)
@@ -1579,7 +1605,7 @@
                   :phase :admit}])
         diagnostic (first-diagnostic result)]
     (is (= :rejected (:status result)))
-    (is (= "C6-DOMAIN-BOUNDARY" (:rule diagnostic)))
+    (is (= "C6-VERIFY" (:rule diagnostic)))
     (is (= :entry-request-shape-invalid
            (get-in diagnostic [:facts :reason])))
     (is (true? (get-in diagnostic [:facts :fail-closed])))))
