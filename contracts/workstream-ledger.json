@@ -5926,7 +5926,7 @@
     "invariant_family": "self-hosting/sh07-exception-core-lowering-v1",
     "owner": "sh-core",
     "author": "sh07_exception_v4_writer",
-    "state": "integration-eligible",
+    "state": "integrated",
     "dependencies": [
       "sh07-exception-core-lowering-architecture-decision-v2-attempt-3"
     ],
@@ -6053,9 +6053,15 @@
         "at": "2026-08-28T19:42:57Z",
         "actor": "sh07-implementation-coordinator",
         "reason": "verify exact base and candidate identities, clean candidate, independent acceptance, complete passing evidence, unchanged clean authoritative main 58d8d8e8814663ea0875767caf2515e42c976cf8, residual host boundaries, and no-overclaim authority"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-28T19:44:20Z",
+        "actor": "sh07-implementation-coordinator",
+        "reason": "fast-forward the exact independently accepted candidate and lifecycle commits onto authoritative main, preserving the bounded exception/error-exit scope, residual host boundaries, and explicit denial of SH-07 completion authority"
       }
     ],
-    "disposition": "Exact bounded candidate is independently accepted and integration-eligible under the integrated v4 architecture decision. This authorizes only serial integration of the reviewed tuple and makes no SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement claim."
+    "disposition": "Integrated the exact independently accepted bounded exception/error-exit lowering candidate onto authoritative main. This closes attempt 4 only and makes no SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement claim."
   }
 ]
 }
