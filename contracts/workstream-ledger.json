@@ -6178,7 +6178,7 @@
     "invariant_family": "self-hosting/sh07-c10-source-contract-assertion-sync",
     "owner": "uniform-coordinator",
     "author": "sh07-implementation-coordinator",
-    "state": "review-pending",
+    "state": "integration-eligible",
     "dependencies": ["sh11-overflow-cast-safety-attempt-2"],
     "architecture_decision": "Correct only the rejected attempt-1 WG009 selector while retaining the exact accepted one-path content candidate and the already governed C10 source identity; this grants no fresh C10 proof authority.",
     "base_commit": "16a6b95311048a037047f69f9c4daa2c275aca73",
@@ -6221,7 +6221,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "b8_maintenance_final_review",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the temporary source-contract reader, test runner, and diagnostic-observation boundary",
       "the C10 source identity was established by the integrated SH-11 attempt; this candidate only synchronizes one stale test assertion",
@@ -6247,9 +6253,21 @@
         "at": "2026-08-28T21:57:23Z",
         "actor": "uniform-coordinator",
         "reason": "request independent review of the corrected exact ledger tuple before any integration eligibility"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-28T21:58:42Z",
+        "actor": "b8_maintenance_final_review",
+        "reason": "accept the unchanged exact one-path candidate after confirming the corrected existing positive selector, negative selector, stable diagnostics, replayable evidence, residual boundaries, and no-overclaim authority"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-28T21:58:43Z",
+        "actor": "uniform-coordinator",
+        "reason": "verify exact identities, clean candidate, integrated C10 dependency, passing bounded evidence, independent acceptance, and unchanged clean authoritative main 16a6b95311048a037047f69f9c4daa2c275aca73"
       }
     ],
-    "disposition": "Corrected exact ledger tuple is review-pending; no integration or fresh C10 authority is claimed."
+    "disposition": "Independently accepted and integration-eligible for the one-path C10 assertion synchronization only; no fresh C10 or aggregate authority is claimed."
   }
 ]
 }
