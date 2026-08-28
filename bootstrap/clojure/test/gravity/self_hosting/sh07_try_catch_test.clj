@@ -155,6 +155,8 @@
          {'sh07-core-source-artifact '[source-path source-text]
           'sh07-core-file-artifact '[source-path]
           'sh07-core-artifact-verification '[artifact]
+          'sh07-core-verification-session '[resolution-artifact]
+          'sh07-core-artifact-verification-against-expected '[artifact session]
           'sh07-core-artifact-identity-input '[artifact]
           'sh07-core-verification-checks
           '[artifact expected upstream-verification]
@@ -606,9 +608,134 @@
            (get-in diagnostic [:facts :reason])))
     (is (true? (get-in diagnostic [:facts :fail-closed])))))
 
+(deftest sh07-b8-shared-verification-report-parity-is-lightweight
+  (let [upstream
+        {:artifact-id "sha256:upstream"
+         :provenance {:source-path "fixture.gravity"}}
+        expected
+        {:artifact :gravity/sh07-core-artifact
+         :artifact-id "sha256:expected"
+         :sh06-resolution-artifact upstream}
+        artifact
+        {:artifact-id "sha256:candidate"
+         :sh06-resolution-artifact upstream
+         :provenance {:source-path "fixture.gravity"}
+         :gravity-core-boundary {}}
+        builder-calls (atom 0)
+        check-calls (atom 0)
+        [authoritative session positive]
+        (with-redefs [bootstrap/sh07-core-from-resolution-artifact
+                      (fn [_]
+                        (swap! builder-calls inc)
+                        expected)
+                      bootstrap/sh06-resolution-artifact-verification
+                      (fn [_] {:status :passed})
+                      bootstrap/sh07-core-verification-checks
+                      (fn [_ _ _]
+                        (swap! check-calls inc)
+                        {:synthetic-replay? true})]
+          (let [authoritative
+                ((required-var 'sh07-core-artifact-verification) artifact)]
+            (reset! builder-calls 0)
+            (let [session
+                  ((required-var 'sh07-core-verification-session) upstream)
+                  positive
+                  ((required-var
+                    'sh07-core-artifact-verification-against-expected)
+                   artifact session)]
+              [authoritative session positive])))]
+    (is (= 1 @builder-calls))
+    (is (= 2 @check-calls))
+    (is (= :passed (:status authoritative)))
+    (is (= :ready (:status session)))
+    (is (= authoritative positive))))
+
+(deftest sh07-b8-verification-session-reuses-one-fresh-expected
+  (let [artifact
+        (file-artifact "accepted" "nested-typed-catches" ".gravity")
+        authoritative
+        ((required-var 'sh07-core-artifact-verification) artifact)
+        builds (atom 0)
+        original-builder
+        (var-get #'bootstrap/sh07-core-from-resolution-artifact)
+        [session positive repeat]
+        (with-redefs [bootstrap/sh07-core-from-resolution-artifact
+                      (fn [resolution-artifact]
+                        (swap! builds inc)
+                        (original-builder resolution-artifact))]
+          (let [session
+                ((required-var 'sh07-core-verification-session)
+                 (:sh06-resolution-artifact artifact))
+                positive
+                ((required-var
+                  'sh07-core-artifact-verification-against-expected)
+                 artifact session)
+                repeat
+                ((required-var
+                  'sh07-core-artifact-verification-against-expected)
+                 artifact session)]
+            [session positive repeat]))]
+    (is (= :passed (:status authoritative)))
+    (is (= :ready (:status session)))
+    (is (= 1 @builds))
+    (is (= authoritative positive))
+    (is (= positive repeat))))
+
+(deftest sh07-b8-verification-session-fails-closed-for-stale-substituted-or-failed-inputs
+  (let [artifact
+        (file-artifact "accepted" "nested-typed-catches" ".gravity")
+        session
+        ((required-var 'sh07-core-verification-session)
+         (:sh06-resolution-artifact artifact))
+        stale-session
+        (assoc session :resolution-artifact-id
+               "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+        mutated-expected-session
+        (assoc session :expected
+               (assoc-in (:expected session)
+                         [:provenance :source-path]
+                         "<substituted-expected>"))
+        substituted
+        (assoc-in
+         artifact
+         [:gravity-core-boundary :authenticated-core-request :lineage
+          :sh06-semantic-projection-id]
+         "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+        stale-result
+        ((required-var 'sh07-core-artifact-verification-against-expected)
+         artifact stale-session)
+        mutated-expected-result
+        ((required-var 'sh07-core-artifact-verification-against-expected)
+         artifact mutated-expected-session)
+        substituted-result
+        ((required-var 'sh07-core-artifact-verification-against-expected)
+         substituted session)
+        failed-session
+        ((required-var 'sh07-core-verification-session)
+         {:artifact :gravity/not-an-sh06-artifact})
+        failed-result
+        ((required-var 'sh07-core-artifact-verification-against-expected)
+         artifact failed-session)]
+    (is (= :failed (:status stale-result)))
+    (is (= [:contained-verification?]
+           (:failed-checks stale-result)))
+    (is (= :failed (:status mutated-expected-result)))
+    (is (= [:contained-verification?]
+           (:failed-checks mutated-expected-result)))
+    (is (= :failed (:status substituted-result)))
+    (is (seq (:failed-checks substituted-result)))
+    (is (= :failed (:status failed-session)))
+    (is (= :expected-build-failed (:failure-reason failed-session)))
+    (is (= :failed (:status failed-result)))
+    (is (= [:contained-verification?]
+           (:failed-checks failed-result)))))
+
 (deftest sh07-b8-error-handler-alterations-fail-replay
   (let [artifact
         (file-artifact "accepted" "nested-typed-catches" ".gravity")
+        session
+        ((required-var 'sh07-core-verification-session)
+         (:sh06-resolution-artifact artifact))
         first-handler
         (get-in artifact
                 [:gravity-core-boundary :canonical-core-artifact
@@ -673,16 +800,16 @@
               failed
               (set (for [[check passed?] checks
                          :when (not (true? passed?))]
-                     check))]
+                     check))
+              verification
+              ((required-var
+                'sh07-core-artifact-verification-against-expected)
+               altered session)]
           (is (not= artifact altered))
           (is (contains? failed :canonical-core-replays?))
           (is (contains? failed :error-handlers-replay?))
           (is (contains? failed :authoritative-products-replay?))
-          (is (= :failed
-                 (:status
-                  ((required-var
-                    'sh07-core-artifact-verification)
-                   altered)))))))))
+          (is (= :failed (:status verification))))))))
 
 (deftest sh07-b8-public-proof-is-bounded-and-does-not-claim-later-facts
   (doseq [basename accepted-basenames]
