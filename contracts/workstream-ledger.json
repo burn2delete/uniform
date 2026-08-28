@@ -5800,7 +5800,7 @@
     "invariant_family": "test-maintenance/sh07-b8-regression-expectations-v1",
     "owner": "uniform-coordinator",
     "author": "sh07-implementation-coordinator",
-    "state": "integration-eligible",
+    "state": "integrated",
     "dependencies": [
       "sh07-b8-exact-routing-v2",
       "sh07-verification-session-v2"
@@ -5910,9 +5910,15 @@
         "at": "2026-08-28T07:12:01Z",
         "actor": "uniform-coordinator",
         "reason": "verify exact base and candidate identities, clean candidate, independent acceptance, complete evidence, unchanged clean authoritative main 94aa23994b6b43f9ede6a5f78819d64b0f2f9c31, residual host boundaries, and no-overclaim authority"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-28T07:14:07Z",
+        "actor": "uniform-coordinator",
+        "reason": "fast-forward the exact independently accepted candidate branch onto authoritative main, preserving the bounded one-file test-maintenance scope and all explicit nonclaims"
       }
     ],
-    "disposition": "Integration eligible only for the exact unchanged frozen test-content tuple over base 94aa23994b6b43f9ede6a5f78819d64b0f2f9c31. No integration has occurred, and this record makes no production, bootstrap, routing, verifier, artifact, fixture-behavior, benchmark, performance, SH-07 completion, roadmap-completion, release, self-hosting, or seed-retirement claim."
+    "disposition": "Integrated the exact independently accepted one-file B8 regression expectation maintenance onto authoritative main. This record makes no production, bootstrap, routing, verifier, artifact, fixture-behavior, benchmark, performance, SH-07 completion, roadmap-completion, release, self-hosting, or seed-retirement claim."
   }
 ]
 }
