@@ -6062,6 +6062,103 @@
       }
     ],
     "disposition": "Integrated the exact independently accepted bounded exception/error-exit lowering candidate onto authoritative main. This closes attempt 4 only and makes no SH-07 completion, roadmap, performance, self-hosting, release, or seed-retirement claim."
+  },
+  {
+    "id": "sh07-c10-source-contract-assertion-sync-v1",
+    "title": "SH-07 C10 source-contract assertion synchronization version 1",
+    "invariant_family": "self-hosting/sh07-c10-source-contract-assertion-sync",
+    "owner": "uniform-coordinator",
+    "author": "sh07-implementation-coordinator",
+    "state": "review-pending",
+    "dependencies": [
+      "sh11-overflow-cast-safety-attempt-2"
+    ],
+    "architecture_decision": "Synchronize only the stale SH-07 census-test assertion with the already governed C10 source contract introduced by the integrated SH-11 attempt; preserve exact source identity and fail-before-proof rejection without asserting fresh C10 proof authority.",
+    "base_commit": "16a6b95311048a037047f69f9c4daa2c275aca73",
+    "candidate_commit": "e5c6bd0b188ed91e483c8382d85391e8c5dd4d72",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D9",
+      "C10",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+      "docs/development-verification.md",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj#proof-contract-binds-the-measured-c7-census"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj#source-contract-mismatch-stops-before-authoritative-proof"
+      ],
+      "stable_diagnostics": [
+        "SH07-AUTHORITATIVE-SOURCE-MISMATCH",
+        "SH07-COVERAGE-CENSUS-MODULE-MISSING"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -J-Xmx2g -M:test --namespace gravity.self-hosting.sh07-authoritative-coverage-census-test # 5 tests, 44 assertions",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -J-Xmx2g -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -m gravity.self-hosting.sh07-authoritative-runner --source-contracts # c10-safety 199815 bytes sha256:1413be3abe20427f57af9c3c394d2512b21754acc90754ce24ad89be50a400a9",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 16a6b95311048a037047f69f9c4daa2c275aca73..e5c6bd0b188ed91e483c8382d85391e8c5dd4d72",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the temporary source-contract reader, test runner, and diagnostic-observation boundary",
+      "the C10 source identity was established by the integrated SH-11 attempt; this candidate only synchronizes one stale test assertion",
+      "--source-contracts reports the retained proof contract and is not a fresh C10 authoritative proof run",
+      "no fresh C10 proof, aggregate census, full suite, or heavyweight authoritative run was performed"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-28T21:54:19Z",
+        "actor": "sh07-implementation-coordinator",
+        "reason": "start one-file maintenance to align the stale C10 census assertion with the already governed source contract"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-28T21:54:20Z",
+        "actor": "uniform-coordinator",
+        "reason": "freeze base 16a6b95311048a037047f69f9c4daa2c275aca73, candidate e5c6bd0b188ed91e483c8382d85391e8c5dd4d72, tree 1e3db62c6bc995837e098f431aa5c0b513f9a994, one owned test path, and passing bounded evidence"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-28T21:55:22Z",
+        "actor": "uniform-coordinator",
+        "reason": "request independent exact-tuple review of the assertion-only change, WG009 evidence, residual boundaries, and no-overclaim authority"
+      }
+    ],
+    "disposition": "Pending independent review; no integration or fresh C10 authority is claimed."
   }
 ]
 }
